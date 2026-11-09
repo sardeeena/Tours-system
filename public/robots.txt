@@ -1,0 +1,17 @@
+# Robots.txt for Red Sea Excursions & Tours
+User-agent: *
+Allow: /
+Allow: /excursions
+Allow: /excursions/*
+Allow: /booking
+Allow: /my-booking
+Allow: /privacy
+Allow: /terms
+
+# Disallow admin back-office and private API endpoints
+Disallow: /admin/
+Disallow: /admin/*
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://awesomeadventure.tours/sitemap.xml

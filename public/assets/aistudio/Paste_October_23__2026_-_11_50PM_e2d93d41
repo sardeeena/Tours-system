@@ -1,0 +1,612 @@
+PHASE 7 — COMPLETE ADMIN OPERATIONS, BUSINESS WORKFLOWS & SYSTEM RELIABILITY
+
+Project: Mahmoud CRM — Red Sea Excursions & Voyages
+Phase: 7
+Mode: Existing-system enhancement, implementation, integration, and verification
+Primary objective: Make every existing admin dashboard module operational, persistent, secure, and correctly integrated with the public website and Supabase.
+
+---
+
+1. PROJECT CONTEXT
+
+Continue working on my existing project.
+
+- Repository: https://github.com/sardeeena/Mahmoud-crm
+- Existing website: https://mahmoud-crm-eosin.vercel.app/
+- Frontend: React, TypeScript, Vite
+- Backend and database: Supabase
+- Hosting: Vercel
+- Development environment: Google AI Studio and Termux
+
+Previous phases reportedly completed:
+
+- Phase 6.1: Dynamic Experiences and Destinations.
+- Phase 6.2: Dynamic Reviews, Pickup Locations, Extras, and related public content.
+- Phase 6.3: Dynamic-data auditing, pricing calculations, security review, and staging verification preparation.
+- Reported automated pipeline: 239 passing assertions across 11 suites.
+- Reported successful TypeScript checks and production build.
+
+Treat these as previous-phase claims. Independently inspect the current repository, tests, migrations, services, and reports before relying on them.
+
+Do not rebuild the application from scratch. Do not replace existing modules with a new template. Extend and repair the actual project in place.
+
+2. PHASE 7 MISSION
+
+Make the application function as a coherent travel-business management system.
+
+The required data flow is:
+
+"Admin action → authorized service → validated business logic → Supabase persistence → updated operational records → accurate customer-facing website"
+
+Every implemented workflow must behave correctly through its complete lifecycle, including loading, validation, success, failure, persistence, refresh, authorization, and related-data updates.
+
+Prioritize correctness and operational reliability over cosmetic redesign.
+
+3. NON-NEGOTIABLE SAFETY RULES
+
+1. Inspect the actual code before changing it.
+2. Preserve the existing architecture, branding, routes, components, and working functionality.
+3. Do not perform a destructive database reset, truncate tables, delete production records in bulk, or reseed production.
+4. Do not deploy, commit, push, or run destructive production migrations without my explicit permission.
+5. Never expose Supabase service-role credentials, payment secrets, private customer information, or access tokens in browser code or logs.
+6. Never weaken RLS, bypass authorization, or grant broad public permissions to make functionality work.
+7. Never simulate successful persistence when a database operation fails.
+8. Never use mock records, static business data, or localStorage as an authoritative production data source.
+9. Do not claim that an external integration works unless it has been genuinely tested.
+10. Preserve backward compatibility unless a necessary change is documented and validated.
+11. Do not introduce new dependencies unless there is a clear technical justification.
+12. Use migrations for required schema changes, preserve existing data, and document dependencies and rollback considerations.
+13. Use isolated staging data for testing wherever possible.
+14. If an integration, credential, or external account is unavailable, implement the safe portions and document what remains blocked.
+
+---
+
+4. STAGE A — REPOSITORY AND SYSTEM INVENTORY
+
+Before implementation, inspect:
+
+- Application entry points and route configuration.
+- Every admin route and dashboard module.
+- All service and repository layers.
+- Supabase client initialization.
+- Database migrations and schema definitions.
+- RLS policies, grants, triggers, and RPC functions.
+- Authentication and admin-role provisioning.
+- Forms, validation, loading states, and error handling.
+- Public website integration.
+- API endpoints and Vercel deployment configuration.
+- Existing test suites and package scripts.
+- Existing Phase 6 audit reports and unresolved findings.
+
+Discover the actual module inventory from the repository. Do not rely solely on old reports or assume the number of admin modules is unchanged.
+
+Create a baseline matrix:
+
+"Module | Route | Main Actions | Service | Database Tables | Authorization | Existing Defects | Test Coverage"
+
+For every module, determine whether its buttons and forms perform real operations or merely render a user interface.
+
+Identify dead buttons, placeholder actions, missing handlers, mock data, local-only mutations, incorrect database queries, broken navigation, stale cache behavior, and false success messages.
+
+Deliverable
+
+Create "PHASE_7_BASELINE_AUDIT.md" containing verified findings and a prioritized remediation plan.
+
+After the initial audit, begin implementing confirmed defects. Do not stop after producing documentation.
+
+---
+
+5. STAGE B — COMPLETE ADMIN MODULE FUNCTIONALITY
+
+Audit every existing admin module and implement the functionality appropriate to its actual purpose.
+
+The following areas must be covered wherever corresponding modules exist.
+
+A. Dashboard and business overview
+
+- Calculate dashboard metrics from authoritative persisted records.
+- Ensure revenue, booking counts, pending inquiries, upcoming departures, and other figures use clearly defined business rules.
+- Distinguish confirmed, pending, cancelled, refunded, and failed transactions where applicable.
+- Apply appropriate date ranges and timezone handling.
+- Remove fabricated totals and misleading sample statistics.
+- Provide useful loading, empty, and error states.
+- Ensure the dashboard does not count the same transaction multiple times.
+
+Do not label bookings as paid merely because a booking exists.
+
+B. Tours and catalogue management
+
+- Create, edit, publish, unpublish, archive, duplicate, and delete tours where permitted.
+- Validate slugs, identifiers, required fields, prices, durations, destinations, and categories.
+- Preserve referential integrity when modifying or removing related records.
+- Manage images, galleries, itinerary stops, highlights, inclusions, exclusions, and FAQs.
+- Ensure tour changes appear on the public website from persisted data.
+- Ensure unpublished and archived tours are excluded from public queries.
+- Prevent duplicate submissions and misleading success notifications.
+
+Use existing services and database structures where possible.
+
+C. Destinations and categories
+
+- Complete CRUD operations supported by the existing application.
+- Validate relationships and prevent invalid orphaned records.
+- Maintain accurate counts derived from published tours.
+- Ensure category and destination changes update public filters and navigation.
+- Prevent deletion of referenced records unless a safe, explicit business rule permits it.
+
+D. Bookings and reservations
+
+Implement and verify the complete booking lifecycle supported by the existing product:
+
+- List, search, filter, and inspect bookings.
+- View guest details with appropriate authorization.
+- Assign booking references safely.
+- Update booking status using valid state transitions.
+- Manage booking notes and operational details.
+- Track payment status separately from booking status.
+- Support cancellations and refunds only through valid business workflows.
+- Record changes in an audit trail.
+- Prevent accidental duplicate booking creation.
+- Ensure the customer portal reflects legitimate booking changes.
+
+Define valid booking and payment state transitions. Prevent invalid transitions, such as marking an unpaid booking as paid without verified payment evidence.
+
+Do not invent a new workflow that conflicts with the existing schema. Document and safely migrate only when necessary.
+
+E. Availability and departures
+
+- Manage departure dates, capacity, blackout dates, and availability.
+- Prevent negative capacity and invalid date ranges.
+- Keep public availability consistent with operational records.
+- Validate capacity at booking time, not only when rendering the frontend.
+- Prevent overselling when simultaneous bookings compete for the same capacity.
+- Use appropriate database transactions, locking, or atomic RPC operations when needed.
+- Make repeated requests safe where idempotency is required.
+
+F. Pickup locations and extras
+
+- Complete creation, editing, activation, deactivation, and deletion where appropriate.
+- Validate pricing type and surcharge values.
+- Ensure inactive records are excluded from customer checkout.
+- Ensure changes are reflected in booking calculations.
+- Preserve the exact pricing distinction between per-person and per-booking fees.
+- Prevent duplicate surcharge application.
+
+G. Reviews and moderation
+
+- List and inspect submitted reviews.
+- Publish, unpublish, and delete reviews with authorization.
+- Preserve moderation history where appropriate.
+- Calculate ratings and distributions from genuine persisted review records.
+- Prevent unpublished reviews from appearing publicly.
+- Prevent unauthorized users from editing another customer's review.
+- Verify that review submission and moderation failures are surfaced honestly.
+
+H. Customer relationship management
+
+Audit and complete existing CRM functionality, including:
+
+- Customer records and profiles.
+- Customer booking history.
+- Inquiries and lead management.
+- Lead status, assignment, notes, and follow-up dates.
+- Customer communication history where implemented.
+- Search, filters, pagination, and relevant customer segmentation.
+- Customer profile updates and deduplication where supported.
+
+Protect personally identifiable information through least-privilege access. Do not expose private customer records through public queries.
+
+I. Communications
+
+Inspect existing email, WhatsApp, notification, and messaging modules.
+
+For each integration:
+
+- Validate required configuration.
+- Keep credentials on the server.
+- Validate destinations and message content.
+- Record delivery status where supported.
+- Handle provider timeouts and API errors.
+- Avoid duplicate messages during retries.
+- Keep delivery failures separate from booking success.
+- Ensure the user interface accurately reports whether a message was queued, sent, delivered, or failed, according to what the provider actually confirms.
+
+Do not claim delivery when the provider merely accepted a request.
+
+Do not send real messages during automated testing without an explicitly configured sandbox or test mode.
+
+J. Finance and payments
+
+Audit all existing financial modules and complete supported workflows:
+
+- Payment records and reconciliation.
+- Booking totals and outstanding balances.
+- Refund tracking.
+- Revenue reports.
+- Currency handling.
+- Financial adjustments and audit history.
+- Transaction references and payment-provider integration.
+
+Use integer minor units or an appropriate decimal-safe approach for financial calculations. Avoid floating-point rounding errors in persisted monetary values.
+
+Define how EUR, USD, GBP, and EGP are represented, converted, rounded, and reported. Do not silently combine amounts from different currencies into one revenue figure.
+
+A payment must be verified using trusted provider evidence or an authorized reconciliation process—not a client-supplied status.
+
+Do not create fake transactions or initiate real charges during testing.
+
+K. Suppliers, vessels, guides, and operations
+
+Where these modules exist:
+
+- Complete management of vessels, guides, operational assignments, and supplier records.
+- Validate capacity, assignment dates, availability, and conflicts.
+- Prevent invalid or conflicting assignments.
+- Connect operational assignments to the appropriate bookings and departures.
+- Preserve existing schema naming and relationships.
+- Verify that operational changes are reflected in related views.
+
+L. Reports, analytics, and exports
+
+- Calculate reports from actual records.
+- Define each metric and its underlying query.
+- Apply date ranges and timezone boundaries correctly.
+- Avoid double-counting bookings, payments, or customers.
+- Apply role-based access to financial and personal data.
+- Validate export filters against the visible report.
+- Avoid leaking private information through generated files.
+- Handle empty datasets and large result sets correctly.
+
+M. Settings, users, and access control
+
+- Inspect all existing configuration and access-management modules.
+- Protect admin provisioning and role changes.
+- Ensure ordinary users cannot grant themselves administrative privileges.
+- Apply least-privilege authorization to sensitive actions.
+- Validate configuration before saving it.
+- Keep secrets out of frontend-readable settings.
+- Record sensitive administrative changes where appropriate.
+
+Do not create a general-purpose client-accessible mechanism for elevating roles.
+
+N. Remaining modules
+
+Inspect all other discovered modules, including coupons, newsletter subscriptions, media library, templates, customer support, or additional business features.
+
+Do not skip a module simply because it is not listed above.
+
+---
+
+6. STAGE C — CONSISTENT SERVICE AND ERROR-HANDLING ARCHITECTURE
+
+Review existing service patterns and consolidate only where beneficial.
+
+Ensure that:
+
+- Components call appropriate service methods rather than duplicating database logic.
+- Mutations validate inputs before writing.
+- Database errors are propagated and handled.
+- Success notifications occur only after confirmed persistence.
+- Failed operations preserve user input where practical.
+- Loading indicators prevent accidental duplicate submissions.
+- Pagination and filters use stable, predictable behavior.
+- Queries select only necessary fields.
+- Related updates preserve data integrity.
+- Public cache invalidation occurs after successful relevant mutations.
+- Cache invalidation does not imply that a failed write succeeded.
+- Optimistic UI updates roll back correctly when persistence fails.
+- Retries do not duplicate financial, booking, or messaging operations.
+
+Do not introduce broad abstractions that make the code harder to maintain. Follow the existing architecture unless a targeted change is justified.
+
+---
+
+7. STAGE D — DATABASE, RLS, AND SECURITY
+
+Independently inspect the actual database schema and authorization policies.
+
+Verify:
+
+1. Every required query uses valid tables, columns, and relationships.
+2. RLS is enabled on tables containing protected data.
+3. Policies correctly distinguish public, authenticated-customer, and administrative access.
+4. Customers can access only their authorized records.
+5. Unpublished tours, private reviews, and protected business records are not exposed to anonymous users.
+6. Admin actions are authorized at the trusted backend or database layer.
+7. Security-definer functions use a safe search path and appropriate execution grants.
+8. Sensitive RPC functions validate authorization and inputs.
+9. Storage policies restrict private uploads and permit only intended public media access.
+10. API endpoints are actually deployable on the current hosting platform.
+11. Rate limiting and abuse protections cover sensitive public operations.
+12. Authentication, password recovery, and admin provisioning remain secure.
+
+Inspect actual SQL and function definitions. Do not accept an audit statement as proof that a policy is correct.
+
+Where fixes are necessary:
+
+- Add targeted, forward-only migrations.
+- Preserve existing data.
+- Document migration ordering and dependencies.
+- Include verification queries and rollback considerations.
+- Never weaken security for convenience.
+
+Do not apply migrations to production without my explicit permission.
+
+---
+
+8. STAGE E — PUBLIC WEBSITE AND ADMIN CONSISTENCY
+
+Verify that the existing public website and admin dashboard use the same authoritative business records.
+
+For each relevant mutation, test:
+
+"Admin form → validation → service → Supabase → persisted record → cache refresh → public query → rendered result"
+
+Cover at least:
+
+- Tour creation and publication.
+- Tour title, description, price, and image updates.
+- Destination and category changes.
+- Review moderation.
+- Pickup and extra price changes.
+- Availability changes.
+- Booking status changes.
+- Relevant customer-facing settings and promotions.
+
+Verify that:
+
+- Changes survive browser refresh.
+- Multiple open tabs do not remain permanently stale.
+- Drafts and unpublished records remain hidden from public visitors.
+- Failed writes never result in fabricated public updates.
+- Deleted or deactivated records no longer appear where they should not.
+- Search, filters, and derived counts remain accurate.
+
+Keep legitimate static UI copy static. Focus on actual business data.
+
+---
+
+9. STAGE F — OPERATIONAL RELIABILITY AND AUDIT TRAILS
+
+Inspect the existing audit-log and operational-event mechanisms.
+
+Where appropriate, record:
+
+- Actor and authorization context.
+- Action performed.
+- Affected record.
+- Timestamp.
+- Relevant before-and-after values, excluding secrets and unnecessary sensitive data.
+- Success or failure outcome.
+
+Prioritize audit logging for:
+
+- Booking status changes.
+- Payment and refund actions.
+- Admin role changes.
+- Tour publication.
+- Availability and capacity changes.
+- Sensitive customer record modifications.
+- Financial adjustments.
+
+Audit events should be trustworthy and protected from unauthorized alteration. Do not rely on client-generated log entries as the sole evidence of sensitive actions.
+
+Add safe recovery behavior for partial failures. Where a workflow spans multiple tables or external providers, document which operations are atomic and how incomplete operations are detected and reconciled.
+
+---
+
+10. STAGE G — TESTING AND VERIFICATION
+
+Inspect the actual existing test pipeline before adding or changing tests.
+
+Run available checks, including:
+
+- Full automated test suite.
+- TypeScript type checking.
+- Linting.
+- Production build.
+- Service and repository tests.
+- Database integration tests against isolated staging or test infrastructure.
+- RLS and authorization tests.
+- Browser end-to-end tests, where available.
+
+Add regression tests for each significant defect fixed.
+
+Required test categories
+
+CRUD and persistence
+
+- Successful creation, update, and deletion where permitted.
+- Invalid inputs.
+- Database failures.
+- Refresh and reload persistence.
+- Referential integrity.
+
+Authorization
+
+- Anonymous access.
+- Ordinary customer access.
+- Cross-customer access attempts.
+- Admin-only mutations.
+- Sensitive RPC and storage access.
+
+Bookings and finance
+
+- Valid and invalid status transitions.
+- Pricing and currency correctness.
+- Concurrent capacity reservation.
+- Duplicate requests.
+- Failed payment and refund operations.
+- Reconciliation and audit logging.
+
+Communications
+
+- Missing provider configuration.
+- Provider errors and timeouts.
+- Retry behavior.
+- Duplicate prevention.
+- Correct delivery-status reporting.
+
+Public integration
+
+- Admin changes reflected on the public site.
+- Correct visibility of published records.
+- Correct behavior when data is empty or unavailable.
+
+Regression
+
+- Preserve all previously passing Phase 6.1, 6.2, and 6.3 tests.
+- Do not weaken assertions to obtain green results.
+- Do not count tests that were not actually executed.
+
+For every test command, record the actual exit code, number of tests or assertions, failures, and relevant limitations.
+
+Distinguish unit tests, mocked integration tests, real database tests, and browser end-to-end tests.
+
+---
+
+11. STAGE H — ADMIN USER EXPERIENCE
+
+Preserve the current design while making the existing dashboard dependable and usable.
+
+Where defects are found, improve:
+
+- Loading and skeleton states.
+- Empty states.
+- Form validation.
+- Action confirmation for destructive operations.
+- Clear error messages.
+- Search and filtering.
+- Pagination.
+- Accessible labels and keyboard navigation.
+- Responsive layouts.
+- Consistent status indicators.
+- Success and failure feedback.
+- Navigation and route handling.
+
+Do not redesign the whole dashboard or change the brand without a concrete reason.
+
+Every visible action must either work correctly, be deliberately disabled with a clear explanation, or be explicitly identified as an unimplemented feature. Never leave a button that appears functional but silently does nothing.
+
+---
+
+12. STAGE I — IMPLEMENTATION STRATEGY
+
+Work in controlled, reviewable increments.
+
+1. Establish the baseline.
+2. Identify critical defects and dependencies.
+3. Fix security and data-integrity defects first.
+4. Fix broken core workflows.
+5. Complete remaining module functionality.
+6. Integrate admin mutations with public updates.
+7. Add regression tests.
+8. Run the complete verification pipeline.
+9. Update technical documentation.
+10. Report outstanding blockers honestly.
+
+Prioritize by severity:
+
+- P0: Security exposure, unauthorized access, incorrect financial transactions, data corruption, or unsafe capacity handling.
+- P1: Broken booking lifecycle, failed persistence, major admin workflows that do not function.
+- P2: Incorrect reports, broken integrations, stale public data, and incomplete module behavior.
+- P3: Usability improvements, cosmetic inconsistencies, and non-critical enhancements.
+
+Do not spend time polishing minor styling while a critical booking, payment, or authorization defect remains.
+
+If the project is too large to complete safely in one pass, finish a coherent set of high-priority workflows, document the remaining modules, and provide a precise continuation plan. Do not claim that all modules are complete when only a subset was implemented.
+
+---
+
+13. REQUIRED DELIVERABLES
+
+Create the following documents in the existing project.
+
+"PHASE_7_BASELINE_AUDIT.md"
+
+Document the discovered modules, verified data flows, existing defects, severity, dependencies, and baseline test results.
+
+"PHASE_7_IMPLEMENTATION_REPORT.md"
+
+Include:
+
+- Summary of changes.
+- Every affected file and why it changed.
+- Each admin module audited.
+- Features fixed or implemented.
+- Database changes and migration files.
+- Security and RLS findings.
+- Admin-to-public synchronization results.
+- Booking, finance, and availability integrity findings.
+- Test commands and actual results.
+- Known limitations and unresolved issues.
+
+"PHASE_7_ADMIN_FUNCTIONALITY_MATRIX.md"
+
+Use these columns:
+
+"Module | Route | Action | Before | Change Made | Persistence Verified | Authorization Verified | Regression Test | Status"
+
+Include every discovered admin module and all significant actions. Use "NOT VERIFIED" when evidence is missing.
+
+"PHASE_7_MANUAL_ACCEPTANCE_TESTS.md"
+
+Provide a practical staging checklist for an administrator to verify the major workflows manually.
+
+Include preconditions, exact actions, expected results, actual results, status, and evidence. Do not mark unperformed tests as passed.
+
+"PHASE_7_DEPLOYMENT_READINESS.md"
+
+Document the remaining staging checks, environment requirements, migration prerequisites, backup and rollback considerations, external integration requirements, and outstanding production risks.
+
+---
+
+14. COMPLETION CRITERIA
+
+Phase 7 is not complete merely because the dashboard renders or the build passes.
+
+The work must establish, with evidence, that:
+
+- Every discovered admin module has been audited.
+- All critical and high-priority defects identified during this phase have been fixed or clearly blocked with reasons.
+- Every claimed functional action has a real implementation.
+- Mutations persist to the correct authoritative database.
+- Authorization is enforced at the appropriate trusted layer.
+- Public and admin views remain consistent.
+- Booking, pricing, payment, and capacity logic preserve business integrity.
+- Errors are surfaced honestly.
+- Automated regression tests pass.
+- Unverified integrations and manual staging steps are documented.
+- No unauthorized production changes have been made.
+
+Final verdict
+
+Choose exactly one:
+
+- "INCOMPLETE — CRITICAL DEFECTS REMAIN"
+- "IMPLEMENTATION COMPLETE — AUTOMATED TESTS PASSED, STAGING NOT VERIFIED"
+- "STAGING VERIFIED — PRODUCTION READINESS REVIEW REQUIRED"
+- "PRODUCTION READINESS VERIFIED — DEPLOYMENT NOT AUTHORIZED"
+
+The last verdict is permitted only when the actual production configuration and all release-critical controls have been genuinely verified. It does not authorize deployment.
+
+---
+
+15. FINAL EXECUTION INSTRUCTIONS
+
+Start by inspecting the current repository and Phase 6.3 deliverables.
+
+Report the most important verified findings, then immediately proceed with targeted implementation.
+
+Do not rebuild the application. Do not replace existing functionality with mock data. Do not stop at an audit report. Fix the real defects, preserve the working system, and verify each change.
+
+When finished, summarize:
+
+1. What was inspected.
+2. What was fixed.
+3. Which admin modules are genuinely functional.
+4. Which tests were actually executed and their results.
+5. What remains unverified.
+6. Whether the project is ready for staging or needs further remediation.
+
+No deployment, commit, push, destructive database operation, production migration, or production data modification without my explicit permission.

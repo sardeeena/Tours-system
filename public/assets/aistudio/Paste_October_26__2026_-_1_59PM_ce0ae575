@@ -1,0 +1,523 @@
+Mahmoud CRM — Production Migration to Hostinger, Existing Supabase Preservation, and Complete Deployment Repair
+
+1. Your Role and Mission
+
+Act as a senior full-stack engineer, DevOps engineer, Supabase database/security specialist, and production migration auditor.
+
+Repository: https://github.com/sardeeena/Mahmoud-crm
+
+Current production website: https://mahmoud-crm-eosin.vercel.app/
+
+New and canonical production domain: https://awesomeadventure.tours
+
+Production hosting platform: Hostinger Business Web Hosting
+
+Existing production Supabase project: "cyifhjqqvtiguitrziqs"
+
+Your mission is to thoroughly inspect the existing repository, verify current official documentation, identify and fix deployment and application defects, and prepare the existing project to run reliably on Hostinger using the existing Supabase project and its production database.
+
+This is a migration and repair of the existing application. It is not a rebuild, redesign, or replacement project.
+
+Do not begin by changing code. First understand the repository, hosting environment, application architecture, integrations, and current database dependencies. Then establish a safe implementation plan and execute the changes that can be made and verified from the available environment.
+
+2. Non-Negotiable Requirements
+
+1. Hostinger is the only hosting platform for production.
+   
+   - Do not depend on Vercel for application hosting, API execution, builds, environment variables, redirects, scheduled tasks, or any other runtime functionality.
+   - Do not deploy the production application to Vercel.
+   - Inspect the entire repository for Vercel-specific assumptions and remove or replace active dependencies where appropriate.
+   - Do not delete unrelated project functionality or configuration merely because it mentions Vercel. Explain any removal that could affect the existing application.
+
+2. The new domain is the canonical production domain.
+   
+   - Use "https://awesomeadventure.tours" as the primary public website URL.
+   - Inspect and update canonical URLs, metadata, OAuth callback configuration requirements, redirects, CORS settings, API base URLs, email links, sitemap, robots configuration, and any other domain-dependent settings where applicable.
+   - Do not assume that DNS, SSL, OAuth provider settings, or external dashboards have been changed automatically. Identify any actions that require manual configuration.
+
+3. Keep the existing production Supabase project and database.
+   
+   - Continue using project ref "cyifhjqqvtiguitrziqs".
+   - Do not create a replacement Supabase project.
+   - Do not switch to a new database, local database, mock backend, or alternative data provider.
+   - Do not reset, reseed, empty, recreate, or replace the existing production database.
+   - Do not delete existing production records or storage objects.
+   - Preserve existing tables, data, users, authentication identities, bookings, customers, financial records, and relationships.
+   - Any schema change must be justified, reviewed for backward compatibility, and delivered as a migration that preserves existing data.
+   - Do not apply destructive migrations or execute unreviewed SQL against production.
+
+4. Preserve the existing application.
+   
+   - Do not rebuild the project from scratch.
+   - Do not redesign the UI or remove existing features.
+   - Do not replace the existing application architecture without proving it is necessary.
+   - Preserve the current public website, admin dashboard, business workflows, routes, integrations, and existing user experience.
+   - Fix the underlying problems rather than hiding them with mock data, hardcoded success messages, or temporary workarounds.
+
+5. Inspect first, implement second, verify third.
+   
+   - Read the actual repository and all relevant source files, configuration files, scripts, package manifests, migrations, and deployment instructions.
+   - Do not claim a change or test succeeded unless it was actually performed and verified.
+   - Clearly distinguish verified facts, inferred risks, unresolved issues, and manual actions that I must perform.
+
+3. Mandatory Documentation Research — Use Current Official Documentation
+
+Before implementing changes, consult the latest official documentation relevant to the actual technologies and integrations found in the repository.
+
+Supabase documentation
+
+Start with:
+
+- https://supabase.com/docs
+- https://supabase.com/docs/reference/javascript/introduction
+- https://supabase.com/docs/guides/getting-started/api-keys
+- https://supabase.com/docs/guides/getting-started/migrating-to-new-api-keys
+- https://supabase.com/docs/guides/database/secure-data
+- https://supabase.com/docs/guides/database/postgres/row-level-security
+- https://supabase.com/docs/guides/deployment/going-into-prod
+- https://supabase.com/docs/guides/auth
+- https://supabase.com/docs/reference/javascript/installing
+- https://supabase.com/docs/guides/storage/security/access-control
+
+Also consult any newer or more specific official documentation relevant to the installed Supabase packages, authentication approach, database features, Storage, Edge Functions, or other features actually used.
+
+Do not rely exclusively on remembered practices, old tutorials, outdated blog posts, or assumptions based on an earlier Supabase architecture.
+
+Other documentation
+
+Inspect and consult the official documentation for the actual versions and services used by this repository, including where applicable:
+
+- Hostinger's current Node.js application deployment, build, startup, environment variable, and domain configuration documentation.
+- The installed Node.js version and package manager.
+- Vite's build and deployment documentation.
+- Express's production deployment and security recommendations.
+- The actual authentication provider and OAuth integrations.
+- Any email, messaging, payment, AI, analytics, maps, or other API integrations discovered in the code.
+
+Use documentation matching the installed package versions where possible. Check for breaking changes before upgrading dependencies.
+
+If you cannot access a documentation page, say so and continue using the accessible official sources. Do not claim to have read documentation that you could not access.
+
+4. Phase One — Full Repository and Architecture Audit
+
+Inspect the existing GitHub repository comprehensively before editing files.
+
+Identify:
+
+- Frontend framework, language, installed versions, and build tooling.
+- Backend framework, server entry point, and actual runtime architecture.
+- Package manager, lockfile, scripts, build output, and production start command.
+- All public routes, admin routes, API routes, and authentication flows.
+- Supabase client initialization and every place the application accesses Supabase.
+- Database tables, views, functions, RPC calls, migrations, triggers, policies, and Storage buckets referenced by the code.
+- Every external API, service integration, webhook, OAuth provider, scheduled task, and background process.
+- Every environment variable accessed through "process.env", "import.meta.env", configuration files, deployment scripts, or runtime code.
+- All references to Vercel, including "vercel.json", Vercel-specific functions, rewrites, environment assumptions, and deployment scripts.
+- Any JSON-file persistence, in-memory persistence, localStorage business-data caches, hardcoded fallback data, or mock API behavior.
+- Any functionality that silently switches to local or mock data when the real backend fails.
+- Any code that reports a successful booking, payment, inquiry, or database write when the actual operation failed.
+
+Trace critical workflows from the user interface to the backend and database. Do not limit the audit to searching filenames or reading only the main application component.
+
+Produce a concise findings report and a prioritized implementation plan before proceeding.
+
+5. Phase Two — Fix the Hostinger Build and Entry-File Failure
+
+The current deployment has encountered a Hostinger build/deployment failure described as “Entry file not found.” Investigate and resolve the actual root cause.
+
+Do not assume the correct entry file is "server.js", "server.ts", or any other filename without verifying the repository and build output.
+
+Specifically:
+
+1. Inspect "package.json", all build scripts, server source files, TypeScript configuration, Vite configuration, and any build plugins.
+2. Run the appropriate clean installation and production build commands where the available environment permits.
+3. Inspect the generated output and establish exactly which files are produced.
+4. Determine whether the backend server is actually compiled, bundled, or copied into the production output.
+5. Verify the actual production entry point and its dependencies.
+6. Ensure the production start command launches the correct generated server file.
+7. Ensure that the frontend build and backend build do not accidentally delete one another's output.
+8. Investigate whether any clean script deletes the configured entry file.
+9. Confirm that all required runtime dependencies are available in production.
+10. Check Node.js compatibility against the versions supported by Hostinger and the application's installed dependencies.
+11. Ensure that the server listens on the port supplied by the hosting environment where required, rather than assuming a fixed development port.
+12. Ensure that the frontend static assets are served correctly and that direct navigation or page refreshes on valid application routes work.
+13. Ensure that API requests are routed to the real backend and do not accidentally receive the SPA's "index.html".
+14. Ensure that unknown API routes return appropriate API errors rather than misleading HTML responses.
+15. Confirm that the application starts in production mode without relying on development-only tools or commands.
+
+If the project uses Express with Vite, maintain that architecture if it is appropriate for Hostinger. Correctly configure the production frontend and backend build process rather than replacing the architecture unnecessarily.
+
+If Hostinger's selected hosting product or deployment configuration cannot support a required runtime feature, identify the precise limitation and provide a compatible solution within the available Hostinger hosting plan. Do not silently move the application to another hosting provider.
+
+Required deployment outcome
+
+Document the exact values that Hostinger should use for:
+
+- Repository and deployment branch.
+- Build command.
+- Output directory, if required.
+- Node.js version, based on verified compatibility.
+- Application entry file or start command, as required by the actual Hostinger interface.
+- Required production environment variables.
+- Domain and SSL configuration.
+- Any necessary rewrite, proxy, or SPA fallback configuration.
+
+Use the actual Hostinger interface and supported deployment model. Do not invent dashboard settings or assume the interface has options that have not been verified.
+
+6. Phase Three — Keep the Existing Supabase Database as the Production Source of Truth
+
+Continue using the existing Supabase project "cyifhjqqvtiguitrziqs".
+
+Inspect the current code and determine whether the frontend and backend are using the correct Supabase URL, keys, authentication configuration, and database access patterns.
+
+Verify the existing database architecture without resetting or replacing it.
+
+Database integrity
+
+- Preserve all existing production data.
+- Identify missing tables, columns, indexes, constraints, foreign keys, triggers, functions, or migrations required by the current application.
+- Compare the code's expectations with the available schema wherever the necessary access is available.
+- Do not invent database contents or claim a live schema inspection if no authenticated database access is available.
+- If a schema change is required, prepare a safe, reviewed, version-controlled migration.
+- Avoid duplicate records and ensure critical operations are transactionally safe where appropriate.
+- Identify any differences between production schema and the repository's migration history.
+- Never assume the migration history is authoritative without checking it against the actual production schema.
+
+Remove unreliable business-data fallbacks
+
+Inspect the application for any use of localStorage, sessionStorage, static arrays, JSON files, in-memory stores, or fallback data as substitutes for real production business records.
+
+Where business data must come from Supabase:
+
+- Supabase must remain the authoritative data source.
+- Do not silently display fabricated, stale, or hardcoded business records when Supabase fails.
+- Show clear loading, empty, and error states.
+- Do not report success until the real operation has completed successfully.
+- Preserve localStorage only for appropriate client-side preferences and transient UI state, such as theme, language, or temporary filters, where suitable.
+
+Do not delete legitimate temporary state or cached data without tracing its purpose and determining the safe migration path.
+
+Booking and business operations
+
+Verify the actual persistence and error handling for bookings, inquiries, customers, tours, availability, payments, expenses, and other existing business workflows.
+
+Do not assume a booking, payment, or reservation is real merely because the UI displays a success message.
+
+If a workflow cannot be completed because of a missing table, incorrect permission, unavailable integration, or server error, expose the actual failure and document the necessary fix.
+
+Do not change business rules or invent new booking behavior without explicit justification.
+
+7. Phase Four — Apply Current Supabase API-Key and Security Practices
+
+Follow the latest official Supabase guidance applicable to the current project.
+
+Browser-safe keys
+
+Determine the correct browser-side key based on the project's existing configuration and the current Supabase API-key guidance.
+
+- Prefer the current Supabase publishable key ("sb_publishable_...") for browser-side use when supported by the project's configuration.
+- If the existing project uses the legacy "anon" key, determine whether it is still supported and whether a staged migration is appropriate.
+- Do not assume that changing a key name alone is sufficient; verify the project's API-key configuration and compatibility.
+- Do not revoke or disable existing production keys before all dependent application code and services have been migrated and verified.
+
+A browser-side Supabase key is not a substitute for authorization. Security must be enforced through appropriate database permissions, Row Level Security (RLS), and server-side controls.
+
+Server-only secrets
+
+- Never expose Supabase secret keys or legacy "service_role" keys in browser code.
+- Never put privileged keys into variables prefixed with "VITE_".
+- Never commit real credentials to GitHub.
+- Never print secrets into logs, reports, generated documentation, or test output.
+- Use server-only secrets only where a privileged server-side operation is genuinely necessary.
+- Prefer appropriately scoped, least-privilege access.
+- Keep authentication and authorization checks on the server for sensitive operations.
+
+Row Level Security and database permissions
+
+Audit the actual RLS policies, grants, and authorization logic for tables and Storage buckets used by the application.
+
+Verify that:
+
+- Public users can access only data intentionally made public.
+- Authenticated users cannot access other users' private records without authorization.
+- Admin-only actions require verified admin permissions.
+- Staff access is limited to the intended roles and operations.
+- Sensitive customer, booking, payment, financial, and internal business data are not publicly readable or writable.
+- Storage upload, read, update, and delete policies enforce the intended permissions.
+- Server-side privileged operations validate user identity, role, and input independently of client-side controls.
+
+Do not disable RLS, create unrestricted policies, grant broad permissions, or expose sensitive tables merely to make the application work.
+
+Where access to the live Supabase project is unavailable, identify what needs verification in the Supabase dashboard or through an authorized database connection.
+
+8. Phase Five — Create a Complete and Accurate ".env.example"
+
+Create or update the repository's root ".env.example".
+
+This file must document every environment variable required or optionally supported by the existing project, based on a comprehensive inspection of the actual code and configuration.
+
+Do not generate a generic template containing guessed variables. Do not omit integrations simply because they are used in only one route or one administrative feature.
+
+Search all source files, scripts, server code, configuration files, deployment files, and integration modules for environment-variable access.
+
+Include all applicable variables discovered, such as:
+
+- Supabase project URL.
+- Browser-safe Supabase publishable key or legacy anon key, depending on the verified configuration.
+- Server-only Supabase secret key or legacy service-role key, only if actually required.
+- Authentication and OAuth credentials.
+- API keys for any AI services.
+- Email delivery credentials.
+- Telegram or other messaging credentials.
+- Payment provider credentials.
+- Webhook secrets.
+- Analytics or third-party integration credentials.
+- Application URL, API URL, CORS origins, and domain-dependent settings.
+- Session and authentication configuration.
+- Any other environment variables genuinely required by the application.
+
+These are examples of categories to investigate, not permission to invent variables or integrations.
+
+For every variable, provide:
+
+1. The exact variable name used by the application.
+2. A safe placeholder value, never a real secret.
+3. Whether it is required or optional.
+4. Whether it is browser-visible or server-only.
+5. Whether it is needed at build time, runtime, or both.
+6. Which feature or integration uses it.
+7. Where it must be configured in Hostinger or, if applicable, the relevant external provider.
+8. Any formatting or URL requirements.
+
+Use comments to distinguish public configuration from secrets. Explain that any "VITE_" variable may be exposed to browser users and must never contain a privileged secret.
+
+Example structure only; populate it with the actual variables discovered:
+
+# Public application configuration
+# Replace placeholders with values from the existing production project.
+VITE_SUPABASE_URL=https://your-existing-project.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=your_publishable_key
+
+# Server-only credentials, if the existing server requires them.
+# Never expose these through VITE_ variables.
+SUPABASE_SECRET_KEY=your_server_only_secret
+
+Do not blindly rename existing variables to match this illustrative example. Match the actual variable names consumed by the code and use the correct current Supabase key type.
+
+If both legacy and new Supabase key names appear in the code, explain the relationship and resolve the configuration consistently without breaking production.
+
+Environment and secret handling
+
+- Ensure ".env.example" is committed to Git.
+- Ensure real ".env" files and other secret-bearing files are excluded from Git using ".gitignore".
+- Inspect the repository history and current tracked files for accidentally committed secrets.
+- Do not print or reproduce any discovered real secret in your report.
+- Do not rotate production credentials automatically without approval and a safe migration plan.
+- Validate required environment variables at startup or build time, as appropriate.
+- Provide clear errors for missing configuration without exposing secret values.
+- Ensure build-time variables are actually available at build time when required, and server-side secrets are available at runtime.
+- Do not assume changing Hostinger environment variables automatically rebuilds frontend assets that embed public build-time configuration.
+
+Finally, produce a complete variable inventory mapping each variable to the source files and integrations that use it. The inventory must be consistent with the generated ".env.example".
+
+9. Phase Six — Audit All External Integrations and API Dependencies
+
+Identify every external service used by the application and determine whether it will work after migration to Hostinger and the new domain.
+
+For each integration, document:
+
+- Provider and purpose.
+- Source files that use it.
+- Environment variables and credentials required.
+- Whether it runs in the browser, server, or both.
+- Required callback URLs, webhook URLs, redirect URIs, and permitted origins.
+- Whether the provider needs its dashboard configuration updated to the new domain.
+- Whether the integration is compatible with the actual Hostinger runtime.
+- How its success and failure are handled.
+- Whether any Vercel-specific configuration must be replaced.
+
+Preserve existing integrations that are part of the project. Do not remove an integration simply because its credentials are not available in the current development environment.
+
+If a service cannot be tested without credentials or external dashboard access, explain exactly what remains unverified and provide the required manual steps.
+
+10. Phase Seven — Remove Production Dependencies on Vercel
+
+Make Hostinger the sole production deployment target.
+
+Inspect and resolve any active Vercel-specific dependencies, including:
+
+- Vercel serverless API routes.
+- Vercel rewrites and redirects.
+- Vercel-specific environment variables.
+- Deployment-only assumptions.
+- Vercel cron jobs or scheduled tasks.
+- Functions or middleware that require Vercel's runtime.
+- Documentation or scripts that direct production deployment to Vercel.
+- URLs or callbacks that continue to depend on the old deployment.
+
+If the current backend is implemented in Express, ensure the necessary API endpoints run through the actual Hostinger-compatible server architecture.
+
+Do not leave essential endpoints available only during local development.
+
+Do not introduce a new serverless provider or an unnecessary additional hosting platform.
+
+Preserve the old domain only where needed for temporary reference or a clearly documented migration step. The final production architecture must not depend on the old Vercel deployment.
+
+11. Phase Eight — Production Security and Reliability Audit
+
+Inspect the existing application for security and reliability problems, including:
+
+- Hardcoded admin passwords or default credentials.
+- Weak session generation or session validation.
+- Missing authentication or authorization checks.
+- Password storage or verification problems.
+- Unrestricted CORS.
+- Unsafe HTTP security headers or Content Security Policy.
+- Missing input validation and sanitization.
+- SQL injection or unsafe query construction.
+- Cross-site scripting risks.
+- CSRF risks where relevant.
+- Rate limiting and abuse protection.
+- Exposed API keys or secrets.
+- Publicly accessible administrative endpoints.
+- Insecure file upload or Storage access.
+- Incorrect error handling that leaks internal information.
+- Duplicate booking or payment submission risks.
+- In-memory or file-based persistence that fails across restarts or deployments.
+- Missing health checks or unreliable production startup.
+- Incomplete cleanup or error handling for failed external API calls.
+
+For every confirmed issue, determine the correct fix based on the actual application architecture and current official documentation.
+
+Do not replace security with cosmetic protections. Do not rely on hiding admin pages or buttons as authorization.
+
+Do not change production passwords, revoke keys, delete records, or invalidate all user sessions without a documented reason and an approved safe plan.
+
+12. Phase Nine — Build, Test, and Verify
+
+Run all meaningful checks supported by the available environment, including:
+
+- Clean dependency installation using the repository's existing lockfile and package manager.
+- Production frontend build.
+- Production backend build, if separate.
+- Verification of the generated server entry file.
+- Type checking and linting, if configured.
+- Existing automated tests.
+- API route and server startup checks.
+- Frontend asset and SPA route checks.
+- Environment-variable validation.
+- Supabase client initialization and data-access checks.
+- Authentication and authorization checks.
+- RLS and Storage policy verification, where authorized access permits.
+- Booking and inquiry failure-path tests.
+- Duplicate-submission and persistence tests where applicable.
+- Checks for secrets in browser bundles and tracked files.
+- Checks for active Vercel dependencies in production configuration.
+- Checks for incorrect hardcoded domains.
+- Checks for reliance on mock or local business data.
+
+Never claim that a production database operation, external integration, Hostinger deployment, domain, or live RLS policy was verified unless it was actually tested with the necessary access.
+
+If a test requires the live Hostinger environment or an external dashboard, provide the exact verification steps and mark the test as pending rather than passed.
+
+Do not run destructive tests against the live production database.
+
+13. Phase Ten — Hostinger Production Configuration Guide
+
+After the repository changes, provide a simple, exact, step-by-step guide for configuring the existing Hostinger deployment.
+
+The guide must cover:
+
+1. Selecting the correct GitHub repository and deployment branch.
+2. Configuring the correct build command and production startup method.
+3. Setting the correct generated server entry file, based on verified output.
+4. Setting the supported Node.js version.
+5. Adding all required environment variables from ".env.example".
+6. Configuring the domain "awesomeadventure.tours".
+7. Enabling and verifying SSL/HTTPS.
+8. Updating any required OAuth callback URLs and authorized origins.
+9. Updating any webhook endpoints or external service configurations.
+10. Confirming the application can connect to the existing Supabase project.
+11. Testing public pages, admin access, API endpoints, and critical workflows.
+12. Confirming the application works after a server restart or a new GitHub deployment.
+13. Verifying that subsequent pushes to the configured GitHub branch trigger the intended Hostinger deployment process.
+
+Clearly distinguish tasks that can be completed in the repository from tasks that require access to Hostinger, Supabase, DNS, or external provider dashboards.
+
+Do not assume that connecting GitHub automatically configures the server entry point, production environment variables, DNS, SSL, or external callback URLs.
+
+14. Phase Eleven — Final Audit Report and Handover
+
+When the work is complete, provide a factual report containing:
+
+A. Executive summary
+
+- What was wrong.
+- What was fixed.
+- What remains unresolved.
+- Whether the project is ready for deployment, ready for staging verification, or fully verified in production.
+
+B. Files changed
+
+For every changed or added file, explain its purpose and why the change was necessary.
+
+C. Hostinger deployment details
+
+Provide the exact verified build command, start command or entry file, output directory if applicable, Node.js compatibility, and configuration requirements.
+
+D. Supabase configuration and preservation
+
+Confirm that the existing project ref remains "cyifhjqqvtiguitrziqs".
+
+List any schema changes and explain how they preserve production data. Explicitly identify any database checks that could not be performed.
+
+E. Complete ".env.example"
+
+Include the actual final file contents or a clear reference to the file in the repository.
+
+Provide the complete variable inventory and explain which values must be obtained from Supabase, Hostinger, or other providers.
+
+F. Security findings
+
+List confirmed security issues, fixes applied, remaining risks, and any actions requiring approval.
+
+G. Test results
+
+For every test, report whether it passed, failed, was not run, or remains pending external access. Do not fabricate results.
+
+H. Manual actions required
+
+Give me a numbered checklist of the exact remaining actions I must perform, with simple instructions suitable for someone who is not a professional developer.
+
+I. Rollback and recovery
+
+Explain how to recover from a failed deployment without deleting production database records, resetting Supabase, or losing the existing application.
+
+15. Strict Rules
+
+- Do not rebuild the project from scratch.
+- Do not redesign the website or admin dashboard.
+- Do not create a new Supabase project.
+- Do not replace or reset the existing production database.
+- Do not delete or overwrite production data.
+- Do not disable RLS to make requests succeed.
+- Do not expose Supabase secret keys, legacy service-role keys, or other privileged credentials.
+- Do not place secrets in "VITE_" variables or browser bundles.
+- Do not invent environment variables, tables, integrations, test results, deployment settings, or successful outcomes.
+- Do not blindly rename files to satisfy Hostinger's entry-file setting.
+- Do not leave essential API functionality working only in local development.
+- Do not make Vercel part of the final production architecture.
+- Do not replace real business data with mocks or local fallbacks.
+- Do not remove existing features just to simplify deployment.
+- Do not apply destructive production changes without explaining them and obtaining approval.
+- Do not upgrade dependencies indiscriminately. Verify compatibility and the need for each upgrade.
+- Follow current official documentation and explain important technical decisions.
+- Keep the existing production Supabase project and its data intact.
+
+Final Objective
+
+Deliver the existing Mahmoud CRM application, repaired and prepared to run on Hostinger, using https://awesomeadventure.tours as its canonical production domain and the existing production Supabase project "cyifhjqqvtiguitrziqs" as its database and backend source of truth.
+
+Fix the Hostinger build and entry-file failure, eliminate production dependence on Vercel, verify and repair the actual application architecture, apply current Supabase security and integration practices, and create a complete, accurate ".env.example" documenting every real API and environment variable used by the project.
+
+Work methodically, preserve production data, verify every claim, and deliver clear evidence of what is complete and what still requires manual action.

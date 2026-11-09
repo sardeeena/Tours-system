@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  
+  <!-- Core Public Pages -->
+  <url>
+    <loc>https://awesomeadventure.tours/</loc>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <url>
+    <loc>https://awesomeadventure.tours/excursions</loc>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://awesomeadventure.tours/booking</loc>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://awesomeadventure.tours/my-booking</loc>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+
+  <url>
+    <loc>https://awesomeadventure.tours/privacy</loc>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <url>
+    <loc>https://awesomeadventure.tours/terms</loc>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+
+  <!-- Individual Excursion Product Pages -->
+  <url>
+    <loc>https://awesomeadventure.tours/excursions/orange-bay-island-snorkeling</loc>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&amp;fit=crop&amp;w=1200&amp;q=80</image:loc>
+      <image:title>Orange Bay Island &amp; Snorkeling Tour</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://awesomeadventure.tours/excursions/paradise-island-snorkeling-trip</loc>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&amp;fit=crop&amp;w=1200&amp;q=80</image:loc>
+      <image:title>Paradise Island Snorkeling Trip</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://awesomeadventure.tours/excursions/dolphin-house-snorkeling</loc>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&amp;fit=crop&amp;w=1200&amp;q=80</image:loc>
+      <image:title>Dolphin House Coral Reef Snorkeling Cruise</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://awesomeadventure.tours/excursions/giftun-island-boat-trip</loc>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&amp;fit=crop&amp;w=1200&amp;q=80</image:loc>
+      <image:title>Giftun Island National Park Boat Trip</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://awesomeadventure.tours/excursions/desert-quad-safari</loc>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&amp;fit=crop&amp;w=1200&amp;q=80</image:loc>
+      <image:title>Eastern Desert Quad Bike Safari</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://awesomeadventure.tours/excursions/desert-safari-bedouin-experience</loc>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&amp;fit=crop&amp;w=1200&amp;q=80</image:loc>
+      <image:title>Desert Safari &amp; Bedouin Dinner BBQ Experience</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://awesomeadventure.tours/excursions/private-red-sea-yacht</loc>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1569263979104-865ab7cd8d17?auto=format&amp;fit=crop&amp;w=1200&amp;q=80</image:loc>
+      <image:title>Private Luxury Yacht Charter Red Sea</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://awesomeadventure.tours/excursions/el-gouna-private-boat-trip</loc>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&amp;fit=crop&amp;w=1200&amp;q=80</image:loc>
+      <image:title>El Gouna Lagoon &amp; Reef Private Boat Tour</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://awesomeadventure.tours/excursions/introductory-scuba-diving-experience</loc>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1682687220063-4742bd7fd538?auto=format&amp;fit=crop&amp;w=1200&amp;q=80</image:loc>
+      <image:title>Introductory PADI Scuba Diving Day</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://awesomeadventure.tours/excursions/marsa-alam-dolphin-house</loc>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.80</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&amp;fit=crop&amp;w=1200&amp;q=80</image:loc>
+      <image:title>Marsa Alam Shaab Samadai Dolphin Reef</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://awesomeadventure.tours/excursions/sharm-el-naga-beach-reef-day</loc>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.75</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&amp;fit=crop&amp;w=1200&amp;q=80</image:loc>
+      <image:title>Sharm El Naga Protected Marine Bay &amp; Beach Day</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://awesomeadventure.tours/excursions/sahl-hasheesh-glass-bottom-boat</loc>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.70</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&amp;fit=crop&amp;w=1200&amp;q=80</image:loc>
+      <image:title>Sahl Hasheesh Glass Bottom Boat &amp; Sunken City</image:title>
+    </image:image>
+  </url>
+
+  <url>
+    <loc>https://awesomeadventure.tours/excursions/ras-mohammed-white-island-cruise</loc>
+    <lastmod>2026-10-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+    <image:image>
+      <image:loc>https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&amp;fit=crop&amp;w=1200&amp;q=80</image:loc>
+      <image:title>Ras Mohammed National Park &amp; White Island Cruise</image:title>
+    </image:image>
+  </url>
+
+</urlset>

@@ -1,0 +1,66 @@
+{
+  "name": "react-example",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0 <23.0.0"
+  },
+  "scripts": {
+    "dev": "tsx server.ts",
+    "start": "node server.js",
+    "build": "vite build && esbuild server.ts --bundle --platform=node --format=esm --packages=external --outfile=server.js",
+    "preview": "vite preview",
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit",
+    "test:catalogue": "tsx scripts/test_catalogue_import.ts",
+    "test:parity": "tsx scripts/verify_schema_parity.ts",
+    "test:admin": "tsx scripts/test_admin_dashboard_persistence.ts",
+    "test:security": "tsx scripts/test_admin_security.ts",
+    "test:abuse": "tsx scripts/test_abuse_prevention.ts",
+    "test:routes": "tsx scripts/test_routes.ts",
+    "test:recovery": "tsx scripts/test_password_recovery.ts",
+    "test:comm": "tsx scripts/test_communication_validation.ts",
+    "test:experiences-destinations": "tsx scripts/test_dynamic_experiences_destinations.ts",
+    "test:audit-6-2": "tsx scripts/test_phase6_2_dynamic_audit.ts",
+    "test:staging-6-3": "tsx scripts/test_phase6_3_staging_verification.ts",
+    "test:admin-ops-7": "tsx scripts/test_phase7_admin_operations.ts",
+    "test:phase-8": "tsx scripts/test_phase8_financial_and_workflow_validation.ts",
+    "test:all": "tsx scripts/test_catalogue_import.ts && tsx scripts/verify_schema_parity.ts && tsx scripts/test_admin_security.ts && tsx scripts/test_abuse_prevention.ts && tsx scripts/test_routes.ts && tsx scripts/test_admin_dashboard_persistence.ts && tsx scripts/test_password_recovery.ts && tsx scripts/test_communication_validation.ts && tsx scripts/test_dynamic_experiences_destinations.ts && tsx scripts/test_phase6_2_dynamic_audit.ts && tsx scripts/test_phase6_3_staging_verification.ts && tsx scripts/test_phase7_admin_operations.ts && tsx scripts/test_phase8_financial_and_workflow_validation.ts"
+  },
+  "dependencies": {
+    "@google/genai": "^2.4.0",
+    "@supabase/supabase-js": "^2.117.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "@vitejs/plugin-react": "^6.1.1",
+    "dotenv": "^17.2.3",
+    "esbuild": "^0.28.2",
+    "express": "^4.21.2",
+    "lucide-react": "^0.546.0",
+    "motion": "^12.23.24",
+    "react": "^19.0.1",
+    "react-dom": "^19.0.1",
+    "recharts": "^3.10.1",
+    "vite": "^8.3.3"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "autoprefixer": "^10.4.21",
+    "sharp": "^0.35.5",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.21.0",
+    "typescript": "^7.0.2",
+    "vite-plugin-pwa": "^1.3.0"
+  },
+  "overrides": {
+    "body-parser": "1.20.9",
+    "fast-uri": "3.1.9",
+    "glob": "14.0.2",
+    "minimatch": "11.0.1",
+    "qs": "6.16.1",
+    "serialize-javascript": "7.1.3"
+  }
+}

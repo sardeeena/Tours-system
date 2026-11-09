@@ -1,0 +1,80 @@
+# Red Sea Excursions & Tours (Red Sea Marine Travel S.A.E.)
+
+> Official tourism platform and verified maritime tour operator for Egypt's Red Sea coast. We specialize in boat trips, coral reef snorkeling, PADI scuba diving, and desert quad safaris in Hurghada, El Gouna, Makadi Bay, Sahl Hasheesh, Safaga, Marsa Alam, and Sharm El-Sheikh.
+
+## Key Facts & Operational Policies
+- **Destinations Served:** Hurghada, El Gouna, Makadi Bay, Sahl Hasheesh, Safaga, Marsa Alam, Sharm El-Sheikh (Red Sea Governorate, Egypt).
+- **Harbor Clearances:** All maritime departures comply with Egyptian Coast Guard regulations and harbor master weather clearances.
+- **Transfers & Pickups:** Door-to-door hotel lobby pickups and returns are included in air-conditioned vehicles across central resort zones.
+- **Payment Options:** Pay at Pickup (cash in EUR, USD, GBP, EGP or credit card upon resort transfer) or secure online pre-payment.
+- **Cancellation Guarantee:** Free cancellation up to 24 hours prior to departure for a 100% refund. Automatic full refund or free rescheduling if coast guard restricts harbor departures due to wind or weather.
+- **Equipment & Catering:** Snorkeling masks, snorkels, fins, flotation life vests, freshly prepared open buffet lunches, soft drinks, and bottled mineral water are provided on all full-day cruises.
+- **Hotline & Pier Desk:** +20 102 345 6789 | Berth B-14, Hurghada Marina Boulevard, Hurghada, Egypt.
+
+## Featured Excursion Catalog
+
+### 1. Orange Bay Island & Coral Reef Snorkeling
+- **Slug:** `orange-bay-island-snorkeling`
+- **Destination:** Hurghada (Giftun Island National Park)
+- **Duration:** 7 Hours (Full Day, ~08:30 to 16:00)
+- **Starting Price:** €35 per adult / €18 per child
+- **Highlights:** 2 hours on Orange Bay white-sand beach with shaded loungers; two guided 45-minute coral reef snorkeling stops; freshly prepared onboard hot buffet lunch with beverages.
+
+### 2. Paradise Island Snorkeling Trip
+- **Slug:** `paradise-island-snorkeling-trip`
+- **Destination:** Hurghada
+- **Duration:** 7 Hours (Full Day)
+- **Starting Price:** €32 per adult / €16 per child
+- **Highlights:** 2.5 hours on Paradise Island Giftun beach, two offshore coral reef drift snorkeling stops, folklore dance show.
+
+### 3. Dolphin House Coral Reef Snorkeling Cruise
+- **Slug:** `dolphin-house-snorkeling`
+- **Destination:** Hurghada (Shaab El Erg Reef)
+- **Duration:** 8 Hours (Full Day)
+- **Starting Price:** €38 per adult / €19 per child
+- **Highlights:** Cruise to wild spinner dolphin natural habitat; two guided reef snorkeling sessions; water sports (banana boat & quadra); hot buffet lunch.
+
+### 4. Eastern Desert Quad Bike Safari (ATV)
+- **Slug:** `desert-quad-safari`
+- **Destination:** Hurghada / Makadi Bay
+- **Duration:** 3 Hours
+- **Starting Price:** €25 per person
+- **Highlights:** 25 km quad biking across coastal desert dunes; Bedouin village tea and cultural visit; camel ride.
+
+### 5. Introductory PADI Scuba Diving Day
+- **Slug:** `introductory-scuba-diving-experience`
+- **Destination:** Hurghada
+- **Duration:** 7 Hours
+- **Starting Price:** €45 per adult
+- **Highlights:** Two 20-minute 1-on-1 guided sea dives to 7-10 meters depth; certified PADI divemasters; full Mares equipment; onboard buffet lunch.
+
+### 6. Private Luxury Yacht Charter Red Sea
+- **Slug:** `private-red-sea-yacht`
+- **Destination:** Hurghada / El Gouna
+- **Duration:** 6 Hours (Private)
+- **Starting Price:** €320 (up to 8 guests private group)
+- **Highlights:** Exclusive 48ft private motor yacht with dedicated captain and crew; customizable itinerary (Orange Bay, Magawish, or Dolphin Reef); fresh seafood lunch.
+
+### 7. Ras Mohammed National Park & White Island Cruise
+- **Slug:** `ras-mohammed-white-island-cruise`
+- **Destination:** Sharm El-Sheikh
+- **Duration:** 8 Hours (Full Day)
+- **Starting Price:** €45 per adult / €22 per child
+- **Highlights:** Sail to Ras Mohammed National Park coral reefs; walk on the shifting sandbar of White Island; guided snorkeling.
+
+## Developer & API Endpoints
+- **Health & Telemetry:** `GET /api/health` - Live system status, uptime, and database cache.
+- **Public Configuration:** `GET /api/config` - Supported currencies, contact channels, and operating hours.
+- **Tours Catalog API:** `GET /api/tours` - Filterable JSON catalog by destination, category, and keyword.
+- **Availability Engine:** `POST /api/availability/check` - Real-time slot verification for departure dates.
+- **Booking Verification:** `POST /api/bookings/lookup` - Validates reservation references (`RST-YYYY-XXXX`).
+- **Concierge Inquiries:** `POST /api/inquiries` - Custom yacht charter and VIP inquiries.
+- **Newsletter Subscription:** `POST /api/newsletter` - Email subscriptions with automated promotional vouchers.
+
+## Important URLs
+- Homepage: `/`
+- Excursions Catalog: `/excursions`
+- Reservation Checkout: `/booking`
+- Self-Service My Booking Voucher Portal: `/my-booking`
+- XML Sitemap: `/sitemap.xml`
+- Robots Policy: `/robots.txt`
