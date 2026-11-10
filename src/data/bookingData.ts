@@ -152,7 +152,7 @@ export const BOOKING_LEGAL_TERMS = {
     },
     {
       heading: '2. Free Cancellation & Refund Guarantee',
-      text: 'You may cancel or reschedule your booking free of charge up to 24 hours prior to the scheduled hotel pickup time. If cancellation is requested with at least 24 hours notice, no penalties apply. In the rare event of maritime port closure by the Egyptian Coast Guard due to unfavorable weather, a 100% full refund or free rescheduling is guaranteed.',
+      text: 'The cancellation window shown on the selected excursion page and booking voucher applies; different excursions may have different notice periods. If you cancel within the stated free-cancellation window, no cancellation penalty applies. If maritime port closure by the Egyptian Coast Guard prevents the excursion from operating, the operations team will contact affected guests about a refund or rescheduling.',
     },
     {
       heading: '3. Hotel Pickup & Maritime Regulations',
