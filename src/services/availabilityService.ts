@@ -1,6 +1,7 @@
 import { Tour } from '../types';
 import { Availability } from '../types/booking';
 import { APP_CONFIG } from '../config/appConfig';
+import { supabase, isSupabaseConfigured, formatSupabaseError } from './supabaseClient';
 
 /**
  * Calculates earliest selectable booking date considering minimum notice hours
@@ -22,7 +23,8 @@ export function getEarliestSelectableDate(minNoticeHours: number = APP_CONFIG.DE
  */
 export function isDateInPast(dateStr: string): boolean {
   if (!dateStr) return true;
-  const todayStr = new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   return dateStr < todayStr;
 }
 
@@ -169,5 +171,56 @@ export function getTourAvailability(
     isPastDate: false,
     meetsMinimumNotice: true,
     minNoticeHours,
+  };
+}
+
+
+/**
+ * Fetches authoritative departure capacity from the database schedule RPC.
+ * Browser/localStorage values are only a development fallback and are never
+ * presented as live availability in production.
+ */
+export async function getTourAvailabilityFromServer(
+  tour: Tour,
+  selectedDate: string
+): Promise<Availability> {
+  const fallback = getTourAvailability(tour, selectedDate);
+  if (fallback.isPastDate || !fallback.meetsMinimumNotice) return fallback;
+
+  if (!isSupabaseConfigured()) {
+    if (import.meta.env.DEV) return fallback;
+    throw new Error('Live departure availability is temporarily unavailable.');
+  }
+
+  const { data, error } = await supabase.rpc('get_tour_availability_schedule', {
+    p_tour_identifier: tour.id,
+    p_start_date: selectedDate,
+    p_end_date: selectedDate,
+  });
+
+  if (error) {
+    throw new Error(formatSupabaseError(error));
+  }
+
+  const slot = Array.isArray(data) ? data[0] : null;
+  if (!slot) {
+    throw new Error('The selected tour or departure date could not be found.');
+  }
+
+  const capacity = Math.max(0, Number(slot.max_capacity) || tour.maxGuests || 30);
+  const booked = Math.max(0, Number(slot.booked_count) || 0);
+  const remaining = Math.max(0, Number(slot.remaining_capacity) || 0);
+
+  return {
+    date: selectedDate,
+    tourId: tour.id,
+    capacity,
+    booked,
+    remaining,
+    isAvailable: slot.is_available === true,
+    isSoldOut: slot.status === 'sold_out' || remaining <= 0,
+    isPastDate: false,
+    meetsMinimumNotice: true,
+    minNoticeHours: APP_CONFIG.DEFAULT_MIN_BOOKING_NOTICE_HOURS,
   };
 }
