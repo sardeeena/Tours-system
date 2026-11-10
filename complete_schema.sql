@@ -2085,6 +2085,9 @@ $$;
 -- Restrict guest schedule reads to published tours and bound date-range work.
 -- Admins retain access to draft and archived tours for operational review.
 
+-- Restrict guest schedule reads to published tours and bound date-range work.
+-- Admins retain access to draft and archived tours for operational review.
+
 CREATE OR REPLACE FUNCTION public.get_tour_availability_schedule(
   p_tour_identifier TEXT,
   p_start_date DATE,
@@ -2110,7 +2113,7 @@ AS $availability$
 DECLARE
   v_tour RECORD;
   v_tour_identifier TEXT := NULLIF(BTRIM(p_tour_identifier), '');
-  v_is_admin BOOLEAN := public.is_admin();
+  v_is_admin BOOLEAN := COALESCE(auth.jwt() ->> 'role' = 'service_role', FALSE) OR public.is_admin();
   v_today DATE := (now() AT TIME ZONE 'Africa/Cairo')::date;
 BEGIN
   IF v_tour_identifier IS NULL THEN
