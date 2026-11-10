@@ -329,6 +329,14 @@ BEGIN
     JSONB_BUILD_OBJECT('status', 'cancellation_requested', 'reason', v_reason)
   );
 
+  INSERT INTO public.automation_events (event_name, payload, entity_type, entity_id)
+  VALUES (
+    'booking.cancellation_requested',
+    JSONB_BUILD_OBJECT('bookingReference', v_booking.booking_reference, 'reason', v_reason),
+    'booking',
+    v_booking.id::text
+  );
+
   RETURN JSONB_BUILD_OBJECT(
     'success', TRUE,
     'bookingReference', v_booking.booking_reference,
@@ -406,6 +414,14 @@ BEGIN
       JSONB_BUILD_OBJECT('status', v_previous_status, 'reason', LEFT(COALESCE(p_reason, ''), 500))
     );
 
+    INSERT INTO public.automation_events (event_name, payload, entity_type, entity_id)
+    VALUES (
+      'booking.updated',
+      JSONB_BUILD_OBJECT('bookingReference', v_booking.booking_reference, 'status', v_previous_status, 'cancellationDecision', 'rejected'),
+      'booking',
+      v_booking.id::text
+    );
+
     RETURN JSONB_BUILD_OBJECT('success', TRUE, 'bookingReference', v_booking.booking_reference, 'status', v_previous_status);
   END IF;
 
@@ -443,6 +459,14 @@ BEGIN
     v_booking.id::text,
     JSONB_BUILD_OBJECT('status', 'cancellation_requested', 'guestCount', v_guest_count),
     JSONB_BUILD_OBJECT('status', 'cancelled', 'reason', LEFT(COALESCE(p_reason, ''), 500), 'availabilityRowsUpdated', v_new_booked_count)
+  );
+
+  INSERT INTO public.automation_events (event_name, payload, entity_type, entity_id)
+  VALUES (
+    'booking.cancelled',
+    JSONB_BUILD_OBJECT('bookingReference', v_booking.booking_reference, 'reason', LEFT(COALESCE(p_reason, ''), 500), 'capacityReleased', v_guest_count),
+    'booking',
+    v_booking.id::text
   );
 
   RETURN JSONB_BUILD_OBJECT('success', TRUE, 'bookingReference', v_booking.booking_reference, 'status', 'cancelled', 'capacityReleased', v_guest_count);
