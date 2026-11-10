@@ -8,6 +8,7 @@ import dotenv from 'dotenv';
 import { CONCIERGE_SYSTEM_PROMPT, TOUR_CATALOG_SUMMARY } from './src/data/chatKnowledge';
 import { STANDARD_PICKUP_LOCATIONS, GLOBAL_BOOKING_EXTRAS } from './src/data/bookingData';
 import { startBookingNotificationWorker } from './src/server/bookingNotificationWorker';
+import { EXPECTED_KEMET_SUPABASE_PROJECT_REF, isExpectedKemetSupabaseUrl } from './src/lib/supabaseProjectGuard';
 
 dotenv.config();
 
@@ -97,6 +98,16 @@ function resolveServerSupabaseConfig(): ServerSupabaseConfig {
       resolvedUrl = validated;
     } else {
       configError = 'Environment variable VITE_SUPABASE_URL is defined but is not a valid HTTP/HTTPS URL.';
+    }
+  }
+
+  // 1A. Pin production to the Kemet Spirit Supabase project. Local/staging
+  // projects are permitted only when NODE_ENV explicitly marks development/test.
+  if (resolvedUrl) {
+    const allowNonProductionProject = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
+    if (!isExpectedKemetSupabaseUrl(resolvedUrl, allowNonProductionProject)) {
+      configError = `CONFIGURATION ERROR: This production Kemet Spirit server must use Supabase project ${EXPECTED_KEMET_SUPABASE_PROJECT_REF}.`;
+      resolvedUrl = null;
     }
   }
 
