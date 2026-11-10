@@ -1662,12 +1662,23 @@ async function startServer() {
     });
   }
 
+  let stopBookingNotificationWorker: (() => void) | null = null;
+
   const server = app.listen(Number(PORT), '0.0.0.0', () => {
     console.log(`Awesome Adventure Tours server running on port/socket ${PORT} [${process.env.NODE_ENV || 'development'}]`);
+
+    // The durable queue consumer must use a server-only Supabase secret key.
+    // It never starts with an anon/publishable key or in local development.
+    if (process.env.NODE_ENV === 'production' && serverSupabase && SUPABASE_KEY_TYPE === 'service_role') {
+      stopBookingNotificationWorker = startBookingNotificationWorker(serverSupabase);
+    } else if (process.env.NODE_ENV === 'production') {
+      console.warn('[Booking Notification Worker] Not started: a valid server-side Supabase secret key is required.');
+    }
   });
 
   const shutdown = (signal: string) => {
     console.log(`Received ${signal}. Shutting down gracefully...`);
+    stopBookingNotificationWorker?.();
     server.close(() => {
       console.log('HTTP server closed.');
       process.exit(0);
