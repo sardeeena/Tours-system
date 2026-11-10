@@ -6,7 +6,10 @@ Allow: /excursions/*
 Allow: /booking
 Allow: /my-booking
 Allow: /privacy
-Allow: /terms
+Allow: /about
+Allow: /why-us
+Allow: /booking-conditions
+Allow: /marine-safety
 
 # Disallow admin back-office and private API endpoints
 Disallow: /admin/
