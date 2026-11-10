@@ -1,0 +1,424 @@
+-- Booking lookup and cancellation lifecycle hardening.
+-- This migration is additive and does not touch the remote database until explicitly applied.
+
+ALTER TABLE public.bookings
+  ADD COLUMN IF NOT EXISTS cancellation_previous_status TEXT,
+  ADD COLUMN IF NOT EXISTS cancellation_requested_at TIMESTAMPTZ;
+
+CREATE OR REPLACE FUNCTION public.lookup_booking_secure(
+  p_reference TEXT,
+  p_verification TEXT
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $lookup$
+DECLARE
+  v_clean_ref TEXT;
+  v_clean_contact TEXT;
+  v_digits_contact TEXT;
+  v_cust_email TEXT;
+  v_cust_phone_digits TEXT;
+  v_client_ip TEXT;
+  v_booking RECORD;
+  v_tour RECORD;
+  v_customer RECORD;
+  v_extras JSONB;
+  v_masked_email TEXT;
+  v_masked_phone TEXT;
+  v_email_parts TEXT[];
+BEGIN
+  IF p_reference IS NULL OR LENGTH(TRIM(p_reference)) < 10 OR LENGTH(TRIM(p_reference)) > 80
+     OR p_verification IS NULL OR LENGTH(TRIM(p_verification)) < 3 OR LENGTH(TRIM(p_verification)) > 254 THEN
+    RETURN NULL;
+  END IF;
+
+  v_clean_ref := UPPER(TRIM(p_reference));
+  v_clean_contact := LOWER(TRIM(p_verification));
+  v_digits_contact := REGEXP_REPLACE(p_verification, '[^0-9]', '', 'g');
+
+  PERFORM public.check_atomic_rate_limit(
+    'lookup_booking_reference', v_clean_ref, INTERVAL '1 minute', 10,
+    'Too many verification attempts for this reservation. Please wait a moment.'
+  );
+  PERFORM public.check_atomic_rate_limit(
+    'lookup_booking_contact', MD5(v_clean_contact), INTERVAL '1 minute', 20,
+    'Too many reservation verification attempts. Please wait a moment.'
+  );
+
+  BEGIN
+    v_client_ip := NULLIF(current_setting('request.headers', true)::json->>'cf-connecting-ip', '');
+    IF v_client_ip IS NULL THEN
+      v_client_ip := NULLIF(current_setting('request.headers', true)::json->>'x-forwarded-for', '');
+      IF v_client_ip LIKE '%,%' THEN
+        v_client_ip := TRIM(SPLIT_PART(v_client_ip, ',', 1));
+      END IF;
+    END IF;
+  EXCEPTION WHEN OTHERS THEN
+    v_client_ip := NULL;
+  END;
+
+  IF v_client_ip IS NOT NULL THEN
+    PERFORM public.check_atomic_rate_limit(
+      'lookup_booking_ip', v_client_ip, INTERVAL '1 minute', 30,
+      'Too many reservation lookup requests from this network. Please wait a moment.'
+    );
+  END IF;
+
+  SELECT b.* INTO v_booking
+  FROM public.bookings AS b
+  WHERE b.booking_reference = v_clean_ref;
+
+  IF NOT FOUND THEN
+    RETURN NULL;
+  END IF;
+
+  SELECT c.* INTO v_customer
+  FROM public.customers AS c
+  WHERE c.id = v_booking.customer_id;
+
+  IF NOT FOUND THEN
+    RETURN NULL;
+  END IF;
+
+  v_cust_email := LOWER(TRIM(COALESCE(v_customer.email, '')));
+  v_cust_phone_digits := REGEXP_REPLACE(COALESCE(v_customer.phone, ''), '[^0-9]', '', 'g');
+
+  IF v_cust_email = v_clean_contact THEN
+    NULL;
+  ELSIF LENGTH(v_digits_contact) >= 8 AND (
+    v_cust_phone_digits = v_digits_contact
+    OR (v_digits_contact ~ '^20' AND SUBSTRING(v_digits_contact FROM 3) = v_cust_phone_digits)
+    OR (v_cust_phone_digits ~ '^20' AND SUBSTRING(v_cust_phone_digits FROM 3) = v_digits_contact)
+  ) THEN
+    NULL;
+  ELSE
+    RETURN NULL;
+  END IF;
+
+  SELECT t.id, t.title, t.slug, t.departure_time, t.duration,
+         d.name AS destination_name
+  INTO v_tour
+  FROM public.tours AS t
+  LEFT JOIN public.destinations AS d ON d.id = t.destination_id
+  WHERE t.id = v_booking.tour_id;
+
+  SELECT COALESCE(
+    JSONB_AGG(
+      JSONB_BUILD_OBJECT(
+        'name', be.name,
+        'quantity', be.quantity,
+        'unitPrice', be.unit_price,
+        'totalPrice', be.total_price,
+        'pricingType', be.pricing_type
+      ) ORDER BY be.created_at
+    ),
+    '[]'::jsonb
+  )
+  INTO v_extras
+  FROM public.booking_extras AS be
+  WHERE be.booking_id = v_booking.id;
+
+  IF POSITION('@' IN COALESCE(v_customer.email, '')) > 0 THEN
+    v_email_parts := STRING_TO_ARRAY(v_customer.email, '@');
+    IF LENGTH(v_email_parts[1]) > 2 THEN
+      v_masked_email := SUBSTRING(v_email_parts[1] FROM 1 FOR 1) || '***' ||
+        SUBSTRING(v_email_parts[1] FROM LENGTH(v_email_parts[1]) FOR 1) || '@' || v_email_parts[2];
+    ELSE
+      v_masked_email := '***@' || v_email_parts[2];
+    END IF;
+  ELSE
+    v_masked_email := '***';
+  END IF;
+
+  IF LENGTH(COALESCE(v_customer.phone, '')) > 4 THEN
+    v_masked_phone := '***' || RIGHT(v_customer.phone, 4);
+  ELSE
+    v_masked_phone := '***';
+  END IF;
+
+  RETURN JSONB_BUILD_OBJECT(
+    'found', TRUE,
+    'bookingReference', v_booking.booking_reference,
+    'status', v_booking.status,
+    'paymentStatus', v_booking.payment_status,
+    'paymentMethod', v_booking.payment_method,
+    'bookingDate', v_booking.booking_date,
+    'createdAt', v_booking.created_at,
+    'guests', JSONB_BUILD_OBJECT(
+      'adults', v_booking.adult_count,
+      'children', v_booking.child_count,
+      'infants', v_booking.infant_count,
+      'total', v_booking.adult_count + v_booking.child_count + v_booking.infant_count
+    ),
+    'tour', JSONB_BUILD_OBJECT(
+      'id', v_tour.id,
+      'title', COALESCE(v_tour.title, 'Red Sea Excursion'),
+      'slug', v_tour.slug,
+      'destination', COALESCE(v_tour.destination_name, 'Hurghada'),
+      'departureTime', COALESCE(v_tour.departure_time, '08:30 AM'),
+      'duration', v_tour.duration
+    ),
+    'pickup', JSONB_BUILD_OBJECT(
+      'hotelName', v_booking.pickup_hotel_name,
+      'roomNumber', v_booking.pickup_room_number
+    ),
+    'pricing', JSONB_BUILD_OBJECT(
+      'subtotal', v_booking.subtotal,
+      'extrasTotal', v_booking.extras_total,
+      'discount', v_booking.discount,
+      'total', v_booking.total,
+      'currency', v_booking.currency,
+      'paymentStatus', v_booking.payment_status,
+      'paymentMethod', v_booking.payment_method
+    ),
+    'customer', JSONB_BUILD_OBJECT(
+      'firstName', v_customer.first_name,
+      'lastName', COALESCE(SUBSTRING(v_customer.last_name FROM 1 FOR 1), '') || '.',
+      'emailMasked', v_masked_email,
+      'phoneMasked', v_masked_phone,
+      'country', v_customer.country
+    ),
+    'extras', v_extras,
+    'specialRequests', v_booking.special_requests
+  );
+END;
+$lookup$;
+
+REVOKE ALL ON FUNCTION public.lookup_booking_secure(TEXT, TEXT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.lookup_booking_secure(TEXT, TEXT) TO anon, authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION public.request_booking_cancellation_secure(
+  p_reference TEXT,
+  p_verification TEXT,
+  p_reason TEXT
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $cancel_request$
+DECLARE
+  v_clean_ref TEXT;
+  v_clean_contact TEXT;
+  v_digits_contact TEXT;
+  v_cust_email TEXT;
+  v_cust_phone_digits TEXT;
+  v_client_ip TEXT;
+  v_booking RECORD;
+  v_customer RECORD;
+  v_reason TEXT;
+BEGIN
+  IF p_reference IS NULL OR LENGTH(TRIM(p_reference)) < 10 OR LENGTH(TRIM(p_reference)) > 80
+     OR p_verification IS NULL OR LENGTH(TRIM(p_verification)) < 3 OR LENGTH(TRIM(p_verification)) > 254 THEN
+    RETURN JSONB_BUILD_OBJECT('success', FALSE, 'error', 'Reservation details could not be verified.');
+  END IF;
+
+  v_clean_ref := UPPER(TRIM(p_reference));
+  v_clean_contact := LOWER(TRIM(p_verification));
+  v_digits_contact := REGEXP_REPLACE(p_verification, '[^0-9]', '', 'g');
+  v_reason := LEFT(COALESCE(NULLIF(TRIM(p_reason), ''), 'Guest requested online cancellation'), 500);
+
+  PERFORM public.check_atomic_rate_limit(
+    'cancel_booking_reference', v_clean_ref, INTERVAL '1 minute', 5,
+    'Too many cancellation requests for this reservation. Please wait a moment.'
+  );
+  PERFORM public.check_atomic_rate_limit(
+    'cancel_booking_contact', MD5(v_clean_contact), INTERVAL '1 minute', 10,
+    'Too many cancellation requests. Please wait a moment.'
+  );
+
+  BEGIN
+    v_client_ip := NULLIF(current_setting('request.headers', true)::json->>'cf-connecting-ip', '');
+    IF v_client_ip IS NULL THEN
+      v_client_ip := NULLIF(current_setting('request.headers', true)::json->>'x-forwarded-for', '');
+      IF v_client_ip LIKE '%,%' THEN
+        v_client_ip := TRIM(SPLIT_PART(v_client_ip, ',', 1));
+      END IF;
+    END IF;
+  EXCEPTION WHEN OTHERS THEN
+    v_client_ip := NULL;
+  END;
+
+  IF v_client_ip IS NOT NULL THEN
+    PERFORM public.check_atomic_rate_limit(
+      'cancel_booking_ip', v_client_ip, INTERVAL '1 minute', 10,
+      'Too many cancellation requests from this network. Please wait a moment.'
+    );
+  END IF;
+
+  SELECT b.* INTO v_booking
+  FROM public.bookings AS b
+  WHERE b.booking_reference = v_clean_ref
+  FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RETURN JSONB_BUILD_OBJECT('success', FALSE, 'error', 'Reservation details could not be verified.');
+  END IF;
+
+  SELECT c.* INTO v_customer
+  FROM public.customers AS c
+  WHERE c.id = v_booking.customer_id;
+
+  IF NOT FOUND THEN
+    RETURN JSONB_BUILD_OBJECT('success', FALSE, 'error', 'Reservation details could not be verified.');
+  END IF;
+
+  v_cust_email := LOWER(TRIM(COALESCE(v_customer.email, '')));
+  v_cust_phone_digits := REGEXP_REPLACE(COALESCE(v_customer.phone, ''), '[^0-9]', '', 'g');
+
+  IF v_cust_email <> v_clean_contact AND NOT (
+    LENGTH(v_digits_contact) >= 8 AND (
+      v_cust_phone_digits = v_digits_contact
+      OR (v_digits_contact ~ '^20' AND SUBSTRING(v_digits_contact FROM 3) = v_cust_phone_digits)
+      OR (v_cust_phone_digits ~ '^20' AND SUBSTRING(v_cust_phone_digits FROM 3) = v_digits_contact)
+    )
+  ) THEN
+    RETURN JSONB_BUILD_OBJECT('success', FALSE, 'error', 'Reservation details could not be verified.');
+  END IF;
+
+  IF v_booking.status IN ('cancelled', 'completed', 'no_show') THEN
+    RETURN JSONB_BUILD_OBJECT('success', FALSE, 'error', 'This reservation cannot be cancelled in its current state.');
+  END IF;
+
+  IF v_booking.status = 'cancellation_requested' THEN
+    RETURN JSONB_BUILD_OBJECT(
+      'success', TRUE,
+      'bookingReference', v_booking.booking_reference,
+      'status', 'cancellation_requested',
+      'alreadyRequested', TRUE,
+      'message', 'Your cancellation request is already awaiting review.'
+    );
+  END IF;
+
+  UPDATE public.bookings
+  SET status = 'cancellation_requested',
+      cancellation_previous_status = v_booking.status,
+      cancellation_requested_at = NOW(),
+      cancellation_reason = v_reason,
+      updated_at = NOW()
+  WHERE id = v_booking.id;
+
+  INSERT INTO public.audit_logs (action, entity_type, entity_id, old_data, new_data)
+  VALUES (
+    'BOOKING_CANCELLATION_REQUESTED',
+    'booking',
+    v_booking.id::text,
+    JSONB_BUILD_OBJECT('status', v_booking.status),
+    JSONB_BUILD_OBJECT('status', 'cancellation_requested', 'reason', v_reason)
+  );
+
+  RETURN JSONB_BUILD_OBJECT(
+    'success', TRUE,
+    'bookingReference', v_booking.booking_reference,
+    'status', 'cancellation_requested',
+    'message', 'Your cancellation request has been submitted and is awaiting staff approval.'
+  );
+END;
+$cancel_request$;
+
+REVOKE ALL ON FUNCTION public.request_booking_cancellation_secure(TEXT, TEXT, TEXT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.request_booking_cancellation_secure(TEXT, TEXT, TEXT) TO anon, authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION public.admin_resolve_booking_cancellation(
+  p_reference TEXT,
+  p_decision TEXT,
+  p_reason TEXT DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $cancel_resolution$
+DECLARE
+  v_booking RECORD;
+  v_previous_status TEXT;
+  v_guest_count INTEGER;
+  v_new_booked_count INTEGER;
+BEGIN
+  IF COALESCE(auth.jwt() ->> 'role', '') <> 'service_role' AND NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Administrator authorization is required to resolve cancellation requests.'
+      USING ERRCODE = '42501';
+  END IF;
+
+  IF p_decision NOT IN ('approve', 'reject') THEN
+    RETURN JSONB_BUILD_OBJECT('success', FALSE, 'error', 'Decision must be approve or reject.');
+  END IF;
+
+  SELECT b.* INTO v_booking
+  FROM public.bookings AS b
+  WHERE b.booking_reference = UPPER(TRIM(p_reference))
+  FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RETURN JSONB_BUILD_OBJECT('success', FALSE, 'error', 'Booking not found.');
+  END IF;
+
+  IF p_decision = 'approve' AND v_booking.status = 'cancelled' THEN
+    RETURN JSONB_BUILD_OBJECT('success', TRUE, 'bookingReference', v_booking.booking_reference, 'status', 'cancelled', 'alreadyResolved', TRUE);
+  END IF;
+
+  IF v_booking.status <> 'cancellation_requested' THEN
+    RETURN JSONB_BUILD_OBJECT('success', FALSE, 'error', 'This booking has no pending cancellation request.');
+  END IF;
+
+  v_previous_status := COALESCE(v_booking.cancellation_previous_status, 'confirmed');
+
+  IF p_decision = 'reject' THEN
+    UPDATE public.bookings
+    SET status = v_previous_status,
+        cancellation_previous_status = NULL,
+        cancellation_requested_at = NULL,
+        updated_at = NOW()
+    WHERE id = v_booking.id;
+
+    INSERT INTO public.audit_logs (action, entity_type, entity_id, old_data, new_data)
+    VALUES (
+      'BOOKING_CANCELLATION_REJECTED',
+      'booking',
+      v_booking.id::text,
+      JSONB_BUILD_OBJECT('status', 'cancellation_requested'),
+      JSONB_BUILD_OBJECT('status', v_previous_status, 'reason', LEFT(COALESCE(p_reason, ''), 500))
+    );
+
+    RETURN JSONB_BUILD_OBJECT('success', TRUE, 'bookingReference', v_booking.booking_reference, 'status', v_previous_status);
+  END IF;
+
+  v_guest_count := COALESCE(v_booking.adult_count, 0) + COALESCE(v_booking.child_count, 0) + COALESCE(v_booking.infant_count, 0);
+
+  UPDATE public.bookings
+  SET status = 'cancelled',
+      cancellation_previous_status = NULL,
+      cancellation_requested_at = NULL,
+      cancellation_reason = COALESCE(NULLIF(LEFT(TRIM(p_reason), 500), ''), cancellation_reason),
+      updated_at = NOW()
+  WHERE id = v_booking.id;
+
+  UPDATE public.tour_availability AS ta
+  SET booked_count = GREATEST(0, ta.booked_count - v_guest_count),
+      status = CASE
+        WHEN ta.status = 'sold_out' AND GREATEST(0, ta.booked_count - v_guest_count) < ta.max_capacity THEN 'available'
+        ELSE ta.status
+      END,
+      updated_at = NOW()
+  WHERE ta.tour_id = v_booking.tour_id
+    AND ta.date = v_booking.booking_date;
+
+  GET DIAGNOSTICS v_new_booked_count = ROW_COUNT;
+
+  INSERT INTO public.audit_logs (action, entity_type, entity_id, old_data, new_data)
+  VALUES (
+    'BOOKING_CANCELLATION_APPROVED',
+    'booking',
+    v_booking.id::text,
+    JSONB_BUILD_OBJECT('status', 'cancellation_requested', 'guestCount', v_guest_count),
+    JSONB_BUILD_OBJECT('status', 'cancelled', 'reason', LEFT(COALESCE(p_reason, ''), 500), 'availabilityRowsUpdated', v_new_booked_count)
+  );
+
+  RETURN JSONB_BUILD_OBJECT('success', TRUE, 'bookingReference', v_booking.booking_reference, 'status', 'cancelled', 'capacityReleased', v_guest_count);
+END;
+$cancel_resolution$;
+
+REVOKE ALL ON FUNCTION public.admin_resolve_booking_cancellation(TEXT, TEXT, TEXT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.admin_resolve_booking_cancellation(TEXT, TEXT, TEXT) TO authenticated, service_role;
