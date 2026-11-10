@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(57);
+SELECT plan(60);
 
 SELECT ok(
   EXISTS (
@@ -539,6 +539,37 @@ SELECT ok(
 );
 
 RESET ROLE;
+
+
+SELECT ok(
+  EXISTS (
+    SELECT 1 FROM pg_proc
+    WHERE pronamespace = 'public'::regnamespace
+      AND proname = 'create_booking_atomic'
+      AND COALESCE(array_to_string(proconfig, ','), '') LIKE '%search_path=""%'
+  ),
+  'atomic booking SECURITY DEFINER function pins an empty search_path'
+);
+
+SELECT ok(
+  EXISTS (
+    SELECT 1 FROM pg_proc
+    WHERE pronamespace = 'public'::regnamespace
+      AND proname = 'check_atomic_rate_limit'
+      AND COALESCE(array_to_string(proconfig, ','), '') LIKE '%search_path=""%'
+  ),
+  'atomic rate limiter SECURITY DEFINER function pins an empty search_path'
+);
+
+SELECT ok(
+  EXISTS (
+    SELECT 1 FROM pg_proc
+    WHERE pronamespace = 'public'::regnamespace
+      AND proname = 'check_public_submission_rate_limit'
+      AND COALESCE(array_to_string(proconfig, ','), '') LIKE '%search_path=""%'
+  ),
+  'public submission trigger SECURITY DEFINER function pins an empty search_path'
+);
 
 SELECT * FROM finish();
 
