@@ -42,6 +42,9 @@ jobs:
       - name: Verify communication provider security and validation
         run: npm run test:comm
 
+      - name: Verify booking identifier and production fallback behavior
+        run: npm run test:booking
+
   database:
     name: Supabase migrations and RLS tests
     runs-on: ubuntu-latest
