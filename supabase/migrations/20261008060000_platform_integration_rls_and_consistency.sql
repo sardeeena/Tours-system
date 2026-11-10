@@ -18,13 +18,13 @@ ALTER TABLE public.profiles
 
 -- The platform-installed event trigger must remain enabled, but its trigger
 -- function must not be callable through the public Data API.
-DO $
+DO $block$
 BEGIN
     IF to_regprocedure('public.rls_auto_enable()') IS NOT NULL THEN
         REVOKE ALL ON FUNCTION public.rls_auto_enable() FROM PUBLIC, anon, authenticated;
     END IF;
 END;
-$;
+$block$;
 
 
 -- ------------------------------------------------------------------------------
@@ -68,7 +68,7 @@ LANGUAGE sql
 STABLE
 SECURITY DEFINER
 SET search_path = ''
-AS $
+AS $admin$
     SELECT COALESCE(
         (auth.jwt() ->> 'role' = 'service_role')
         OR EXISTS (
@@ -79,7 +79,7 @@ AS $
         ),
         FALSE
     );
-$;
+$admin$;
 
 -- This helper is intentionally callable by the roles whose RLS policies use it.
 -- It returns only a boolean and derives authorization from the protected profiles table.
