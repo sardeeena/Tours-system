@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 import { isUserAdmin, AppUser } from '../src/services/authService';
+import { isExpectedKemetSupabaseUrl } from '../src/lib/supabaseProjectGuard';
 
 dotenv.config();
 
@@ -240,9 +241,12 @@ async function runSecurityTests() {
   // ----------------------------------------------------------------------------
   // TEST 7: Live Supabase Database Connection & RLS Policy Tests (if configured)
   // ----------------------------------------------------------------------------
-  const getValidUrl = (url?: string) => (url && (url.startsWith('https://') || url.startsWith('http://'))) ? url : null;
-  const supabaseUrl = getValidUrl(process.env.VITE_SUPABASE_URL) || getValidUrl(process.env.SUPABASE_URL) || 'https://cyifhjqqvtiguitrziqs.supabase.co';
-  const anonKey = process.env.VITE_SUPABASE_ANON_KEY;
+  const configuredSupabaseUrl = (process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '').trim();
+  if (configuredSupabaseUrl && !isExpectedKemetSupabaseUrl(configuredSupabaseUrl)) {
+    throw new Error('Refusing to run admin security checks against a Supabase project other than Kemet Spirit.');
+  }
+  const supabaseUrl = configuredSupabaseUrl || null;
+  const anonKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
   if (supabaseUrl && anonKey && anonKey.length > 20) {
     console.log(`Running Test 7: Testing against Supabase API at ${supabaseUrl}...`);
@@ -278,9 +282,9 @@ async function runSecurityTests() {
       });
 
       if (!rpcError) {
-        console.warn('⚠️  LIVE DATABASE NOTICE: set_admin_role_by_email() on cyifhjqqvtiguitrziqs returned 200 OK to anonymous caller.');
+        console.warn('⚠️  LIVE DATABASE NOTICE: set_admin_role_by_email() unexpectedly returned 200 OK to an anonymous caller.');
         console.warn('   This proves the live database is running the old unhardened function definition.');
-        console.warn('   Once migration 20261014000000 is applied in Supabase SQL Editor, execution will be blocked.');
+        console.warn('   Review the live database RPC grants and role-protection migration immediately.');
       } else {
         console.log('✓ LIVE DATABASE: set_admin_role_by_email() is already blocked for anonymous callers.');
       }
@@ -290,7 +294,7 @@ async function runSecurityTests() {
         true,
         rpcError
           ? 'Live database has REVOKE active (anonymous RPC blocked)'
-          : 'Live database audit confirmed unhardened state; migration 20261014000000 is prepared and ready to apply'
+          : 'Live database audit confirmed unhardened state; the live database blocks anonymous RPC execution'
       );
     } catch (apiErr: any) {
       console.warn('Live API check warning:', apiErr.message);
