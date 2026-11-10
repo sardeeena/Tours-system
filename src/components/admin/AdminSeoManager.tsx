@@ -202,7 +202,7 @@ export const AdminSeoManager: React.FC = () => {
           setMetaDescription(data.meta_description || defaultDesc);
           setCanonicalUrl(data.canonical_url || defaultCanonical);
           setOgTitle(data.og_title || data.seo_title || defaultTitle);
-          setOgDescription(data.og_description || data.seo_description || defaultDesc);
+          setOgDescription(data.og_description || data.meta_description || defaultDesc);
           setOgImage(data.og_image || defaultOgImage);
           setRobotsIndex(data.robots_index ?? true);
           setRobotsFollow(data.robots_follow ?? true);
