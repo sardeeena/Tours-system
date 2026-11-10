@@ -21,6 +21,7 @@ export interface IBookingRepository {
   getBookingsByEmail(email: string): Promise<Booking[]>;
   updateBooking(booking: Booking): Promise<Booking>;
   cancelBooking(bookingReference: string, reason: string, verification: string): Promise<Booking | null>;
+  resolveBookingCancellation(bookingReference: string, decision: 'approve' | 'reject', reason?: string): Promise<Booking | null>;
   listBookings(filters?: { status?: string; limit?: number }): Promise<Booking[]>;
 }
 
