@@ -204,7 +204,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       clearTimeout(idleTimerRef.current);
     }
 
-    if (user && (user.role === 'admin' || user.role === 'manager')) {
+    if (user && user.role !== 'customer') {
       idleTimerRef.current = setTimeout(() => {
         handleSignOut(true);
       }, IDLE_TIMEOUT_MS);
