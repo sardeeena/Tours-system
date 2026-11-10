@@ -132,7 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!stored) return false;
       try {
         const u = JSON.parse(stored) as AppUser;
-        return u.role === 'admin' || u.role === 'manager' || u.role === 'staff';
+        return u.role === 'admin' || u.role === 'super_admin' || u.role === 'manager' || u.role === 'staff';
       } catch {
         return false;
       }
@@ -158,8 +158,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return false;
       }
 
-      const role = profile.role as 'admin' | 'manager' | 'staff' | 'customer';
-      const isAllowed = role === 'admin' || role === 'manager' || role === 'staff';
+      const role = profile.role as 'admin' | 'super_admin' | 'manager' | 'staff' | 'customer';
+      const isAllowed = role === 'admin' || role === 'super_admin' || role === 'manager' || role === 'staff';
 
       if (isAllowed) {
         // Synchronize the in-memory user state with the live database profile
