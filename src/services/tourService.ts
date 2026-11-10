@@ -47,7 +47,7 @@ export function mapDbTourToFrontendTour(
     extras?: DbTourExtra[];
   }
 ): Tour {
-  const images = relations.images || [];
+  const images = [...(relations.images || [])].sort((a, b) => a.sort_order - b.sort_order);
   const primaryImgObj = images.find((img) => img.is_primary) || images[0];
   const primaryImageUrl = primaryImgObj?.image_url || '';
   const galleryImageUrls = images.length > 0 ? images.map((i) => i.image_url) : (primaryImageUrl ? [primaryImageUrl] : []);
@@ -242,7 +242,10 @@ export async function getPublishedTours(options?: TourFilterOptions): Promise<To
 
     const baseTours = data.map((row: any) => {
       const destName = row.destinations?.name;
-      const catNames = row.tour_categories?.map((tc: any) => tc.categories?.name).filter(Boolean) || [];
+      const catNames = [...(row.tour_categories || [])]
+        .sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0))
+        .map((tc: any) => tc.categories?.name)
+        .filter(Boolean);
 
       return mapDbTourToFrontendTour(row, {
         destinationName: destName,
@@ -999,9 +1002,10 @@ async function syncTourRelations(tourId: string, payload: AdminTourPayload): Pro
   if (payload.categoryIds !== undefined) {
     await supabase.from('tour_categories').delete().eq('tour_id', tourId);
     if (payload.categoryIds.length > 0) {
-      const links = payload.categoryIds.map((catId) => ({
+      const links = payload.categoryIds.map((catId, idx) => ({
         tour_id: tourId,
         category_id: catId,
+        sort_order: idx + 1,
       }));
       await supabase.from('tour_categories').insert(links);
     }
@@ -1942,7 +1946,8 @@ export async function getPublishedTourExtras(tourIdOrSlug?: string): Promise<Boo
         if (assignedData !== null) {
           // Explicit tour assignments in database: return ONLY active assigned extras.
           // If assignedData.length === 0, this tour has no assigned extras. Return [].
-          return assignedData
+          return [...assignedData]
+            .sort((a: any, b: any) => (a.sort_order || 0) - (b.sort_order || 0))
             .map((item: any) => {
               const extra = item.tour_extras;
               // Must be active in both catalog and tour assignment
