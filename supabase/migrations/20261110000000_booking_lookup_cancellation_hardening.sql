@@ -882,3 +882,9 @@ DROP POLICY IF EXISTS "Public can insert customer on booking" ON public.customer
 -- status transitions. Remove a duplicate RLS policy; the general owner policy
 -- is still narrowed by protect_booking_customer_updates().
 DROP POLICY IF EXISTS "Users can request booking cancellation" ON public.bookings;
+
+-- BI SECURITY DEFINER RPCs already perform a trusted profile-role check. Their
+-- referenced tables and helper functions are schema-qualified, so an empty path
+-- is safe and avoids relying on the mutable session search path.
+ALTER FUNCTION public.get_executive_bi_metrics(DATE, DATE) SET search_path = '';
+ALTER FUNCTION public.query_custom_bi_report(JSONB) SET search_path = '';
