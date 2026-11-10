@@ -1,4 +1,5 @@
 import { Tour } from '../types';
+import { supabase, isSupabaseConfigured } from './supabaseClient';
 
 export interface SeoMetadata {
   title: string;
@@ -6,9 +7,13 @@ export interface SeoMetadata {
   keywords?: string[];
   canonicalUrl?: string;
   ogType?: 'website' | 'article' | 'product';
+  ogTitle?: string;
+  ogDescription?: string;
   ogImage?: string;
   ogImageAlt?: string;
   twitterCard?: 'summary' | 'summary_large_image';
+  robotsIndex?: boolean;
+  robotsFollow?: boolean;
   schemaJsonLd?: Record<string, unknown>;
 }
 
@@ -72,6 +77,54 @@ function setSchemaJsonLd(schemaData?: Record<string, unknown>): void {
 }
 
 /**
+ * Loads optional SEO overrides saved by Admin > SEO & Meta Tags.
+ * Page records are keyed by page_slug; entity records use their UUID entity_id.
+ */
+export async function getStoredSeoMetadata(
+  entityType: string,
+  identifier: string,
+  usePageSlug = false
+): Promise<Partial<SeoMetadata> | null> {
+  if (!isSupabaseConfigured()) return null;
+
+  try {
+    let query = supabase
+      .from('seo_metadata')
+      .select('seo_title, meta_description, canonical_url, og_title, og_description, og_image, robots_index, robots_follow, structured_data')
+      .eq('entity_type', entityType);
+
+    query = usePageSlug
+      ? query.eq('page_slug', identifier)
+      : query.eq('entity_id', identifier);
+
+    const { data, error } = await query.maybeSingle();
+    if (error) {
+      console.warn('Could not load saved SEO metadata:', error);
+      return null;
+    }
+    if (!data) return null;
+
+    const schema = data.structured_data;
+    return {
+      title: data.seo_title || undefined,
+      description: data.meta_description || undefined,
+      canonicalUrl: data.canonical_url || undefined,
+      ogTitle: data.og_title || undefined,
+      ogDescription: data.og_description || undefined,
+      ogImage: data.og_image || undefined,
+      robotsIndex: data.robots_index ?? undefined,
+      robotsFollow: data.robots_follow ?? undefined,
+      schemaJsonLd: schema && typeof schema === 'object' && !Array.isArray(schema)
+        ? schema as Record<string, unknown>
+        : undefined,
+    };
+  } catch (err) {
+    console.warn('Saved SEO metadata lookup failed:', err);
+    return null;
+  }
+}
+
+/**
  * Dynamic Meta-Tag Generator Service
  * Updates titles, meta descriptions, OpenGraph, Twitter Cards, canonical URLs, and Schema.org JSON-LD
  */
@@ -97,9 +150,15 @@ export const seoService = {
     const canonical = meta.canonicalUrl || `${window.location.origin}${window.location.pathname}`;
     setCanonicalUrl(canonical);
 
-    // 5. OpenGraph Tags
-    setMetaTag('property', 'og:title', meta.title || DEFAULT_TITLE);
-    setMetaTag('property', 'og:description', meta.description || DEFAULT_DESCRIPTION);
+    // 5. Robots directives
+    const robots = `${meta.robotsIndex === false ? 'noindex' : 'index'}, ${meta.robotsFollow === false ? 'nofollow' : 'follow'}`;
+    setMetaTag('name', 'robots', robots);
+
+    // 6. OpenGraph Tags
+    const ogTitle = meta.ogTitle || meta.title || DEFAULT_TITLE;
+    const ogDescription = meta.ogDescription || meta.description || DEFAULT_DESCRIPTION;
+    setMetaTag('property', 'og:title', ogTitle);
+    setMetaTag('property', 'og:description', ogDescription);
     setMetaTag('property', 'og:url', canonical);
     setMetaTag('property', 'og:site_name', SITE_NAME);
     setMetaTag('property', 'og:type', meta.ogType || 'website');
@@ -110,10 +169,10 @@ export const seoService = {
       setMetaTag('property', 'og:image:alt', meta.ogImageAlt);
     }
 
-    // 6. Twitter / X Cards
+    // 7. Twitter / X Cards
     setMetaTag('name', 'twitter:card', meta.twitterCard || 'summary_large_image');
-    setMetaTag('name', 'twitter:title', meta.title || DEFAULT_TITLE);
-    setMetaTag('name', 'twitter:description', meta.description || DEFAULT_DESCRIPTION);
+    setMetaTag('name', 'twitter:title', ogTitle);
+    setMetaTag('name', 'twitter:description', ogDescription);
     setMetaTag('name', 'twitter:image', ogImg);
 
     // 7. Schema.org JSON-LD
