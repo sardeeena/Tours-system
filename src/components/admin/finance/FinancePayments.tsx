@@ -63,7 +63,7 @@ export const FinancePayments: React.FC<FinancePaymentsProps> = ({ onNavigateTab 
   const [statusInput, setStatusInput] = useState<FinancePaymentStatus>('Paid');
   const [txRefInput, setTxRefInput] = useState<string>('');
   const [notesInput, setNotesInput] = useState<string>('');
-  const [recordedByInput, setRecordedByInput] = useState<string>('Pier Cashier');
+  const [recordedByInput, setRecordedByInput] = useState<string>('Staff');
   const [savingAction, setSavingAction] = useState(false);
 
   // Payment Detail Modal
@@ -119,8 +119,8 @@ export const FinancePayments: React.FC<FinancePaymentsProps> = ({ onNavigateTab 
     } else if (selectedBookingRef) {
       handleBookingSelect(selectedBookingRef);
     }
-    setTxRefInput(`TXN-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`);
-    setNotesInput('Settlement recorded at marina departure pier.');
+    setTxRefInput(`KS-MANUAL-${crypto.randomUUID()}`);
+    setNotesInput('');
     setIsModalOpen(true);
   };
 
@@ -145,7 +145,7 @@ export const FinancePayments: React.FC<FinancePaymentsProps> = ({ onNavigateTab 
     const prov = providers.find((p) => p.id === providerInput);
     if (prov && !prov.isConnected && !prov.isManual) {
       showToast(
-        `Provider "${prov.name}" is currently disconnected. Live API keys are not provisioned. Please choose an active manual provider (Cash Office, Pier POS, or Bank Wire).`,
+        `Provider "${prov.name}" is currently disconnected. Live API keys are not provisioned. Please choose an enabled manual provider and verify the receipt first.`,
         'error'
       );
       return;
@@ -172,7 +172,7 @@ export const FinancePayments: React.FC<FinancePaymentsProps> = ({ onNavigateTab 
         recordedBy: recordedByInput.trim(),
       });
 
-      showToast(`Payment of €${amountInput} successfully logged.`, 'success');
+      showToast(`Payment of ${currencyInput} ${amountInput.toFixed(2)} recorded in the ledger.`, 'success');
       setIsModalOpen(false);
       await loadData();
     } catch (err: any) {
@@ -641,10 +641,10 @@ export const FinancePayments: React.FC<FinancePaymentsProps> = ({ onNavigateTab 
                     onChange={(e) => setMethodInput(e.target.value as FinancePaymentMethod)}
                     className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-hidden focus:border-[#0A6C74]"
                   >
-                    <option value="Cash">Cash (Harbour / Pier Office)</option>
-                    <option value="Card">Card (Mobile POS Terminal)</option>
-                    <option value="Bank Transfer">Bank Transfer (CIB Wire)</option>
-                    <option value="Online Payment">Online Gateway</option>
+                    <option value="Cash">Cash (manual receipt)</option>
+                    <option value="Card">Card (verified terminal receipt)</option>
+                    <option value="Bank Transfer">Bank transfer (verified funds)</option>
+                    <option value="Online Payment" disabled>Online gateway (not configured)</option>
                     <option value="Other">Other</option>
                   </select>
                 </div>
@@ -669,13 +669,13 @@ export const FinancePayments: React.FC<FinancePaymentsProps> = ({ onNavigateTab 
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-stone-300 mb-1">
-                    Tx / Receipt / Slip Reference
+                    Internal receipt / external transaction reference
                   </label>
                   <input
                     type="text"
                     value={txRefInput}
                     onChange={(e) => setTxRefInput(e.target.value)}
-                    placeholder="e.g. POS-RECEIPT-9482"
+                    placeholder="Enter the verified receipt or terminal reference"
                     className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2 text-xs font-mono text-white focus:outline-hidden focus:border-[#0A6C74]"
                     required
                   />
@@ -725,7 +725,7 @@ export const FinancePayments: React.FC<FinancePaymentsProps> = ({ onNavigateTab 
               <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 flex items-start space-x-2 text-amber-300 text-[11px]">
                 <ShieldCheck className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>
-                  PCI-DSS Compliance Notice: Raw credit card numbers and CVV codes are never stored. Only external terminal transaction authorizations are retained.
+                  Do not enter card numbers or CVV. This ledger does not process card payments; record only a verified cash receipt, bank confirmation or terminal authorization reference.
                 </span>
               </div>
 
