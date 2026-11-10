@@ -157,10 +157,11 @@ async function runTestSuite() {
       catalogueSeedSql.includes("'important_information'"),
     'Catalogue seed imports published tour records and preserves preparation sections'
   );
+  const pickupSeedBlock = catalogueSeedSql.split('INSERT INTO public.pickup_locations')[1]?.split(';')[0] || '';
   assert(
     catalogueSeedSql.includes("'Illustrative stock photo") &&
-      catalogueSeedSql.includes('FALSE'),
-    'Catalogue seed labels stock imagery and keeps unverified pickup fee records inactive'
+      pickupSeedBlock.includes('TRUE'),
+    'Catalogue seed labels stock imagery and activates the current public pickup zones'
   );
   assert(
     catalogueSeedSql.includes('rating,review_count') &&
