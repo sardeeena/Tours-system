@@ -75,7 +75,6 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
   // Provider Settings Modal
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [tempWaProvider, setTempWaProvider] = useState<'meta_cloud' | 'none'>('meta_cloud');
-  const [tempApiKey, setTempApiKey] = useState('');
   const [tempPhoneNumberId, setTempPhoneNumberId] = useState('');
   const [tempBusinessAccountId, setTempBusinessAccountId] = useState('');
   const [tempFromNumber, setTempFromNumber] = useState('+20 100 456 7890');
@@ -231,7 +230,6 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
 
   const openSettingsModal = () => {
     setTempWaProvider(providerConfig.whatsapp.provider === 'meta_cloud' ? 'meta_cloud' : 'none');
-    setTempApiKey(providerConfig.whatsapp.apiKey || '');
     setTempPhoneNumberId(providerConfig.whatsapp.phoneNumberId || '');
     setTempBusinessAccountId(providerConfig.whatsapp.businessAccountId || '');
     setTempFromNumber(providerConfig.whatsapp.fromNumber || '+20 100 456 7890');
@@ -243,7 +241,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
       ...providerConfig,
       whatsapp: {
         provider: tempWaProvider,
-        apiKey: tempApiKey.trim(),
+        apiKey: '',
         phoneNumberId: tempPhoneNumberId.trim(),
         businessAccountId: tempBusinessAccountId.trim(),
         fromNumber: tempFromNumber.trim(),
@@ -251,7 +249,6 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
       },
     };
     saveProviderConfig(newConfig);
-    setTempApiKey('');
     const updatedConfig = await refreshProviderConfigFromServer();
     setProviderConfig(updatedConfig);
     setIsSettingsOpen(false);
@@ -783,7 +780,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
             </div>
 
             <p className="text-xs text-stone-400">
-              Delivery uses the official Meta Cloud API server-side adapter. Tokens are discarded by this form and must be configured as Hostinger environment variables.
+              Delivery uses the official Meta Cloud API server-side adapter. Configure the access token, phone number ID, and Graph API version in Hostinger environment variables; this screen never handles secrets.
             </p>
 
             <div className="space-y-3 text-xs">
@@ -799,19 +796,6 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
                 </select>
               </div>
 
-              <div>
-                <label className="block text-stone-300 font-medium mb-1">
-                  API Token / Secret Key <span className="text-rose-400">*</span>
-                </label>
-                <input
-                  type="password"
-                  placeholder="EAAxxx... (Permanent System User Token)"
-                  value={tempApiKey}
-                  onChange={(e) => setTempApiKey(e.target.value)}
-                  className="w-full bg-stone-950 border border-stone-800 rounded-lg px-3 py-2 text-white font-mono placeholder-stone-600 focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-
               {tempWaProvider === 'meta_cloud' && (
                 <>
                   <div>
@@ -820,7 +804,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
                       type="text"
                       placeholder="e.g. 104829104810294"
                       value={tempPhoneNumberId}
-                      onChange={(e) => setTempPhoneNumberId(e.target.value)}
+                      readOnly
                       className="w-full bg-stone-950 border border-stone-800 rounded-lg px-3 py-2 text-white font-mono placeholder-stone-600 focus:outline-none focus:border-emerald-500"
                     />
                   </div>
@@ -830,7 +814,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
                       type="text"
                       placeholder="e.g. 984719284719283"
                       value={tempBusinessAccountId}
-                      onChange={(e) => setTempBusinessAccountId(e.target.value)}
+                      readOnly
                       className="w-full bg-stone-950 border border-stone-800 rounded-lg px-3 py-2 text-white font-mono placeholder-stone-600 focus:outline-none focus:border-emerald-500"
                     />
                   </div>
