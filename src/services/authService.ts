@@ -319,11 +319,13 @@ export async function signUpUser(data: {
         };
       }
     } catch (err) {
-      console.warn('Supabase signup notice, saving locally:', err);
+      return { user: null, error: formatSupabaseError(err) };
     }
+  } else if (!import.meta.env.DEV) {
+    return { user: null, error: 'Registration is unavailable because Supabase is not configured.' };
   }
 
-  // 2. Save to local registry with isConfirmed = false
+  // 2. Save to local registry with isConfirmed = false (development only)
   // CRITICAL: Notice we do NOT set localStorage.setItem(LOCAL_ACTIVE_USER_KEY)
   // because user MUST confirm email first.
   const existingIdx = localUsers.findIndex((u) => u.user.email.toLowerCase() === cleanEmail);
@@ -402,18 +404,9 @@ export async function resendConfirmationEmail(
     }
   }
 
-  // Local fallback
-  const localUsers = getStoredLocalUsers();
-  const matched = localUsers.find((u) => u.user.email.toLowerCase() === cleanEmail);
-  if (matched) {
-    matched.confirmationToken = Math.floor(100000 + Math.random() * 900000).toString();
-    matched.confirmationSentAt = new Date().toISOString();
-    saveStoredLocalUsers(localUsers);
-  }
-
   return {
-    success: true,
-    message: `A fresh confirmation link has been sent to ${cleanEmail}. Check your inbox.`,
+    success: false,
+    error: 'Email confirmation requires a configured Supabase Auth connection.',
   };
 }
 
@@ -429,57 +422,55 @@ export async function confirmUserEmail(
     return { success: false, error: 'Email address is required.' };
   }
 
-  let confirmedInSupabase = false;
+  if (!isSupabaseConfigured()) {
+    return { success: false, error: 'Email confirmation requires a configured Supabase Auth connection.' };
+  }
 
-  // 1. If using Supabase and a token was provided
-  if (isSupabaseConfigured() && token) {
-    try {
+  try {
+    let confirmedUserId: string;
+
+    if (token) {
       const { data, error } = await supabase.auth.verifyOtp({
         email: cleanEmail,
         token: token.trim(),
         type: 'signup',
       });
 
-      if (!error && data?.user) {
-        confirmedInSupabase = true;
-        try {
-          await supabase.from('profiles').update({ is_confirmed: true }).eq('id', data.user.id);
-        } catch {
-          // ignore
-        }
+      if (error || !data.user) {
+        return { success: false, error: error ? formatSupabaseError(error) : 'Supabase did not confirm this account.' };
       }
-    } catch (err) {
-      console.warn('Supabase verifyOtp notice:', err);
+      confirmedUserId = data.user.id;
+    } else {
+      // A redirect without an OTP is accepted only when Supabase has already
+      // established a session for this exact, email-confirmed account.
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data.user) {
+        return { success: false, error: 'The confirmation session is missing or expired. Please use the latest email link.' };
+      }
+      if (data.user.email?.trim().toLowerCase() !== cleanEmail || !data.user.email_confirmed_at) {
+        return { success: false, error: 'This Supabase session does not confirm the requested email address.' };
+      }
+      confirmedUserId = data.user.id;
     }
-  }
 
-  // 2. If using Supabase without token (e.g. user clicked confirmation link or confirmed=true in URL)
-  if (isSupabaseConfigured() && !token) {
-    try {
-      await supabase.from('profiles').update({ is_confirmed: true }).eq('email', cleanEmail);
-    } catch {
-      // ignore
-    }
-  }
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .update({ is_confirmed: true })
+      .eq('id', confirmedUserId)
+      .select('id')
+      .maybeSingle();
 
-  // 3. Always update local fallback registry so local storage stays confirmed
-  const localUsers = getStoredLocalUsers();
-  const matched = localUsers.find((u) => u.user.email.toLowerCase() === cleanEmail);
-  if (matched) {
-    // If token was provided and doesn't match local token AND wasn't confirmed in Supabase:
-    if (token && matched.confirmationToken && matched.confirmationToken !== token.trim() && !confirmedInSupabase) {
-      return { 
-        success: false, 
-        error: 'Invalid confirmation code. Please check the email sent from Supabase.' 
+    if (profileError || !profile) {
+      return {
+        success: false,
+        error: profileError ? formatSupabaseError(profileError) : 'The account was confirmed, but its profile could not be synchronized.',
       };
     }
-    matched.isConfirmed = true;
-    matched.user.isConfirmed = true;
-    saveStoredLocalUsers(localUsers);
-    return { success: true };
-  }
 
-  return { success: true };
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: formatSupabaseError(err) };
+  }
 }
 
 /**
@@ -511,8 +502,8 @@ export async function resetPasswordRequest(
   }
 
   return {
-    success: true,
-    message: `If an account exists for ${cleanEmail}, a password recovery link has been sent. Please check your inbox and spam folder.`,
+    success: false,
+    error: 'Password recovery is unavailable because Supabase is not configured.',
   };
 }
 
@@ -542,18 +533,8 @@ export async function updateUserPassword(
     }
   }
 
-  // Local cache update without storing passwords
-  if (email) {
-    const cleanEmail = email.trim().toLowerCase();
-    const localUsers = getStoredLocalUsers();
-    const matched = localUsers.find((u) => u.user.email.toLowerCase() === cleanEmail);
-    if (matched) {
-      saveStoredLocalUsers(localUsers);
-      return { success: true };
-    }
-  }
-
-  return { success: true };
+  // Never report a password change as successful without Supabase Auth.
+  return { success: false, error: 'Password updates require a configured Supabase Auth connection.' };
 }
 
 /**
@@ -652,7 +633,7 @@ export async function getCurrentAdminUser(): Promise<AppUser | null> {
       }
 
       // Administrators are never blocked by missing confirmation flags
-      const hasAdminRole = userRole === 'admin' || userRole === 'manager' || userRole === 'staff';
+      const hasAdminRole = userRole === 'admin' || userRole === 'super_admin' || userRole === 'manager' || userRole === 'staff';
       if (!isProfileConfirmed && !hasAdminRole) {
         return null;
       }
@@ -678,17 +659,9 @@ export async function getCurrentAdminUser(): Promise<AppUser | null> {
     }
   }
 
-  // 2. Fallback: Check active user in local storage (sandbox mode)
-  const activeUserRaw = localStorage.getItem(LOCAL_ACTIVE_USER_KEY);
-  if (activeUserRaw) {
-    try {
-      const user = JSON.parse(activeUserRaw) as AppUser;
-      return user;
-    } catch {
-      localStorage.removeItem(LOCAL_ACTIVE_USER_KEY);
-    }
-  }
-
+  // Never treat browser storage as an authentication or authorization source.
+  // If Supabase is not configured, fail closed rather than trusting a client-editable role.
+  localStorage.removeItem(LOCAL_ACTIVE_USER_KEY);
   return null;
 }
 
@@ -698,14 +671,8 @@ export async function getCurrentAdminUser(): Promise<AppUser | null> {
  */
 export async function verifyAdminAccess(): Promise<boolean> {
   if (!isSupabaseConfigured()) {
-    const activeUserRaw = localStorage.getItem(LOCAL_ACTIVE_USER_KEY);
-    if (!activeUserRaw) return false;
-    try {
-      const u = JSON.parse(activeUserRaw) as AppUser;
-      return isUserAdmin(u);
-    } catch {
-      return false;
-    }
+    // A role stored in localStorage is user-editable and must never grant admin access.
+    return false;
   }
 
   try {
@@ -723,10 +690,10 @@ export async function verifyAdminAccess(): Promise<boolean> {
     if (profileError || !profile) {
       // Only server-signed app_metadata can be trusted; user_metadata is client-editable
       const appRole = user.app_metadata?.role as string | undefined;
-      return appRole === 'admin' || appRole === 'manager' || appRole === 'staff';
+      return appRole === 'admin' || appRole === 'super_admin' || appRole === 'manager' || appRole === 'staff';
     }
 
-    return profile.role === 'admin' || profile.role === 'manager' || profile.role === 'staff';
+    return profile.role === 'admin' || profile.role === 'super_admin' || profile.role === 'manager' || profile.role === 'staff';
   } catch (err) {
     console.error('Error verifying admin access against profiles table:', err);
     return false;

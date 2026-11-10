@@ -8,7 +8,7 @@
 --    - Untrusted clients setting custom configuration variables are strictly rejected.
 --    - Avoids global trigger bypass for postgres.
 -- 2. Restructures set_admin_role_by_email() to:
---    - Verify caller permissions (restricted to session_user in postgres, service_role).
+--    - Verify caller permissions (restricted to direct postgres sessions or signed service_role JWTs).
 --    - Target matching auth.users row and canonical is_confirmed column.
 --    - Set transaction-scoped config parameter app.admin_provisioning_nonce & active user.
 --    - Upsert public.profiles with role = 'admin'.
@@ -27,8 +27,8 @@ CREATE OR REPLACE FUNCTION public.protect_profile_role()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public, auth, pg_temp
-AS $$
+SET search_path = ''
+AS $protect$
 DECLARE
     active_nonce text;
     active_target text;
@@ -37,10 +37,10 @@ BEGIN
     IF NEW.role IS DISTINCT FROM OLD.role THEN
         -- Check if trusted operator provisioning is active:
         -- Untrusted clients (anon, authenticated, authenticator) CANNOT bypass this because:
-        -- 1. session_user MUST be postgres or service_role
+        -- 1. session_user must be postgres, or the request must carry a valid service_role JWT
         -- 2. app.admin_provisioning_active_user MUST match NEW.id
         -- 3. app.admin_provisioning_nonce MUST be non-empty (set only by set_admin_role_by_email)
-        IF session_user IN ('postgres', 'service_role') THEN
+        IF session_user = 'postgres' OR (auth.jwt() ->> 'role') = 'service_role' THEN
             active_nonce := NULLIF(current_setting('app.admin_provisioning_nonce', true), '');
             active_target := NULLIF(current_setting('app.admin_provisioning_active_user', true), '');
             IF active_nonce IS NOT NULL AND active_target = NEW.id::text THEN
@@ -57,7 +57,10 @@ BEGIN
     END IF;
     RETURN NEW;
 END;
-$$;
+$protect$;
+
+-- Trigger-only function; do not expose it as an RPC.
+REVOKE ALL ON FUNCTION public.protect_profile_role() FROM PUBLIC, anon, authenticated;
 
 -- Ensure trigger is active on public.profiles
 DROP TRIGGER IF EXISTS trigger_protect_profile_role ON public.profiles;
@@ -70,7 +73,7 @@ CREATE OR REPLACE FUNCTION public.set_admin_role_by_email(target_email text)
 RETURNS text
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public, auth, pg_temp
+SET search_path = ''
 AS $$
 DECLARE
     clean_email text;
@@ -81,7 +84,7 @@ DECLARE
     provisioning_nonce text;
 BEGIN
     -- 1. Authorization guard: Only postgres (SQL Editor / superuser) or service_role session may execute
-    IF session_user NOT IN ('postgres', 'service_role') THEN
+    IF session_user <> 'postgres' AND COALESCE(auth.jwt() ->> 'role', '') <> 'service_role' THEN
         RAISE EXCEPTION 'Access Denied: public.set_admin_role_by_email may only be executed by trusted database operators (postgres, service_role). Current session_user is "%".', session_user;
     END IF;
 

@@ -255,7 +255,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ redirectUrl, onNavigate })
 
     setIsCheckingConfirmation(true);
     try {
-      await confirmEmail(targetEmail);
+      const confirmation = await confirmEmail(targetEmail);
+      if (!confirmation.success) {
+        const message = confirmation.error || 'Supabase could not verify this account yet. Open the latest confirmation email link on this device, then try again.';
+        setErrorMessage(message);
+        showToast(message, 'error');
+        return;
+      }
       setConfirmedNotice(true);
       setRequiresConfirmation(false);
       setErrorMessage(null);
