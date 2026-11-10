@@ -1,7 +1,7 @@
 -- Kemet Spirit catalogue seed. Imported from the currently published site and repository.
 -- Tour, destination and category records are published to preserve the existing public catalogue.
 -- Ratings/reviews are intentionally zero/empty. Stock imagery is explicitly labelled illustrative.
--- Pickup fee records are inactive pending a separate operational fee review.
+-- Pickup fee records match the current public booking defaults and are active; the server validates active status.
 -- Existing tour_extras rows are preserved; only per-tour add-ons are added and assigned.
 -- This file is idempotent and non-destructive: it uses INSERT ... ON CONFLICT DO NOTHING only.
 BEGIN;
@@ -58,13 +58,13 @@ ON CONFLICT DO NOTHING;
 
 INSERT INTO public.pickup_locations (id,code,name,area,fee_eur_per_person,fee_eur_flat,description,is_active,sort_order)
 VALUES
-('b1000000-0000-0000-0000-000000000001'::uuid, 'hurghada', 'Hurghada Hotels', 'Hurghada (Mamsha, Dahar, Sheraton, Marina)', 0, 0, 'Free pickup from any hotel in Hurghada.', FALSE, 1),
-('b1000000-0000-0000-0000-000000000002'::uuid, 'el-gouna', 'El Gouna', 'El Gouna Resorts & Marina', 5, 0, '+€5 per person (approx. 25-30 km north of Hurghada).', FALSE, 2),
-('b1000000-0000-0000-0000-000000000003'::uuid, 'makadi-bay', 'Makadi Bay', 'Makadi Bay & Madinat Makadi', 5, 0, '+€5 per person (approx. 30 km south of Hurghada).', FALSE, 3),
-('b1000000-0000-0000-0000-000000000004'::uuid, 'sahl-hasheesh', 'Sahl Hasheesh', 'Sahl Hasheesh Bay & Old Town', 5, 0, '+€5 per person (approx. 18 km south of Hurghada).', FALSE, 4),
-('b1000000-0000-0000-0000-000000000005'::uuid, 'safaga', 'Safaga & Soma Bay', 'Port Safaga, Soma Bay Peninsula', 10, 0, '+€10 per person (approx. 50 km south of Hurghada).', FALSE, 5),
-('b1000000-0000-0000-0000-000000000006'::uuid, 'marsa-alam', 'Marsa Alam', 'Marsa Alam / Port Ghalib (for local tours)', 10, 0, '+€10 per person for regional pickup.', FALSE, 6),
-('b1000000-0000-0000-0000-000000000007'::uuid, 'sharm-el-sheikh', 'Sharm El-Sheikh Hotels', 'Naama Bay, Nabq, Sharks Bay, Hadaba, Ras Um Sid', 0, 0, 'Free lobby pickup from any hotel across Sharm El-Sheikh.', FALSE, 7)
+('b1000000-0000-0000-0000-000000000001'::uuid, 'hurghada', 'Hurghada Hotels', 'Hurghada (Mamsha, Dahar, Sheraton, Marina)', 0, 0, 'Free pickup from any hotel in Hurghada.', TRUE, 1),
+('b1000000-0000-0000-0000-000000000002'::uuid, 'el-gouna', 'El Gouna', 'El Gouna Resorts & Marina', 5, 0, '+€5 per person (approx. 25-30 km north of Hurghada).', TRUE, 2),
+('b1000000-0000-0000-0000-000000000003'::uuid, 'makadi-bay', 'Makadi Bay', 'Makadi Bay & Madinat Makadi', 5, 0, '+€5 per person (approx. 30 km south of Hurghada).', TRUE, 3),
+('b1000000-0000-0000-0000-000000000004'::uuid, 'sahl-hasheesh', 'Sahl Hasheesh', 'Sahl Hasheesh Bay & Old Town', 5, 0, '+€5 per person (approx. 18 km south of Hurghada).', TRUE, 4),
+('b1000000-0000-0000-0000-000000000005'::uuid, 'safaga', 'Safaga & Soma Bay', 'Port Safaga, Soma Bay Peninsula', 10, 0, '+€10 per person (approx. 50 km south of Hurghada).', TRUE, 5),
+('b1000000-0000-0000-0000-000000000006'::uuid, 'marsa-alam', 'Marsa Alam', 'Marsa Alam / Port Ghalib (for local tours)', 10, 0, '+€10 per person for regional pickup.', TRUE, 6),
+('b1000000-0000-0000-0000-000000000007'::uuid, 'sharm-el-sheikh', 'Sharm El-Sheikh Hotels', 'Naama Bay, Nabq, Sharks Bay, Hadaba, Ras Um Sid', 0, 0, 'Free lobby pickup from any hotel across Sharm El-Sheikh.', TRUE, 7)
 ON CONFLICT DO NOTHING;
 
 INSERT INTO public.tours (id,title,slug,short_description,description,destination_id,duration,duration_type,duration_hours,tour_type,status,featured,price,child_price,infant_price,private_price,currency,max_guests,minimum_booking_notice_hours,pickup_available,pickup_info,cancellation_policy,departure_time,available_days,languages,difficulty,age_restrictions,badge,rating,review_count,sort_order)
@@ -503,7 +503,7 @@ SELECT json_build_object(
   'destinations_total', (SELECT count(*) FROM public.destinations),
   'destinations_published', (SELECT count(*) FROM public.destinations WHERE status='published'),
   'categories_total', (SELECT count(*) FROM public.categories),
-  'pickup_locations_inactive', (SELECT count(*) FROM public.pickup_locations WHERE is_active=false),
+  'pickup_locations_active', (SELECT count(*) FROM public.pickup_locations WHERE is_active=true),
   'tour_extras_existing_and_seeded', (SELECT count(*) FROM public.tour_extras),
   'tour_extra_assignments_active', (SELECT count(*) FROM public.tour_assigned_extras WHERE is_active=true),
   'tour_reviews', (SELECT count(*) FROM public.reviews),
