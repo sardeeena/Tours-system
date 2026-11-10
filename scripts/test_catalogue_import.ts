@@ -148,8 +148,32 @@ async function runTestSuite() {
 
   const catalogueSeedSql = fs.readFileSync(path.resolve('supabase/seed/kemet_spirit_catalogue.sql'), 'utf8');
   assert(
-    !/\\b(DELETE|UPDATE|TRUNCATE|DROP)\\s+/i.test(catalogueSeedSql),
+    !/\b(DELETE|UPDATE|TRUNCATE|DROP)\s+/i.test(catalogueSeedSql),
     'Catalogue seed never deletes, updates, truncates, or drops existing production records'
+  );
+  const categoryInsertStart = catalogueSeedSql.indexOf('INSERT INTO public.tour_categories');
+  const categoryInsertEnd = catalogueSeedSql.indexOf('INSERT INTO public.tour_images', categoryInsertStart);
+  const categoryInsertSql = catalogueSeedSql.slice(categoryInsertStart, categoryInsertEnd);
+  const seededCategoryPairs = new Set(
+    [...categoryInsertSql.matchAll(/\('([0-9a-f-]{36})'::uuid,\s*'([0-9a-f-]{36})'::uuid,\s*\d+\)/g)]
+      .map((match) => `${match[1]}:${match[2]}`)
+  );
+  const expectedCategoryPairs = new Set(
+    ALL_TOURS.flatMap((tour) =>
+      [...new Set([tour.category, ...tour.categories].map((name) => CATEGORY_UUIDS[name]).filter(Boolean))]
+        .map((categoryId) => `${TOUR_UUIDS[tour.slug]}:${categoryId}`)
+    )
+  );
+  assert(
+    seededCategoryPairs.size === expectedCategoryPairs.size &&
+      [...expectedCategoryPairs].every((pair) => seededCategoryPairs.has(pair)),
+    'Catalogue seed maps every tour category alias to one unique canonical category relationship'
+  );
+  assert(
+    catalogueSeedSql.includes('a deterministic tour ID already belongs to a different slug') &&
+      catalogueSeedSql.includes('a deterministic destination ID already belongs to a different slug') &&
+      catalogueSeedSql.includes('a deterministic category ID already belongs to a different slug'),
+    'Catalogue seed aborts on deterministic ID collisions as well as slug collisions'
   );
   assert(
     catalogueSeedSql.includes("'published'") &&
