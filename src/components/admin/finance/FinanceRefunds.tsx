@@ -103,15 +103,15 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
       const bPayments = payments.filter(
         (p) =>
           (p.bookingReference === b.bookingReference || p.bookingId === b.bookingId) &&
-          (p.paymentStatus === 'Paid' || p.paymentStatus === 'paid')
+          ['paid', 'partially paid', 'partially_paid'].includes(String(p.paymentStatus).toLowerCase())
       );
       const totalPaid = bPayments.reduce((s, p) => s + p.amount, 0);
       const bRefunds = refunds.filter(
         (r) =>
           (r.bookingReference === b.bookingReference || r.bookingId === b.bookingId) &&
-          r.status === 'processed'
+          ['pending_approval', 'approved', 'processed'].includes(r.status)
       );
-      const totalRefunded = bRefunds.reduce((s, r) => s + (r.approvedAmount || r.amount), 0);
+      const totalRefunded = bRefunds.reduce((s, r) => s + (r.approvedAmount || r.requestedAmount || r.amount), 0);
       return totalPaid - totalRefunded > 0;
     });
   }, [bookings, payments, refunds]);
@@ -124,15 +124,15 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
       const bPayments = payments.filter(
         (p) =>
           (p.bookingReference === first.bookingReference || p.bookingId === first.bookingId) &&
-          (p.paymentStatus === 'Paid' || p.paymentStatus === 'paid')
+          ['paid', 'partially paid', 'partially_paid'].includes(String(p.paymentStatus).toLowerCase())
       );
       const totalPaid = bPayments.reduce((s, p) => s + p.amount, 0);
       const bRefunds = refunds.filter(
         (r) =>
           (r.bookingReference === first.bookingReference || r.bookingId === first.bookingId) &&
-          r.status === 'processed'
+          ['pending_approval', 'approved', 'processed'].includes(r.status)
       );
-      const totalRefunded = bRefunds.reduce((s, r) => s + (r.approvedAmount || r.amount), 0);
+      const totalRefunded = bRefunds.reduce((s, r) => s + (r.approvedAmount || r.requestedAmount || r.amount), 0);
       setRequestedAmount(Math.max(0, totalPaid - totalRefunded));
       setRefundCurrency((first.pricing as any)?.currency || 'EUR');
     }
@@ -146,15 +146,15 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
       const bPayments = payments.filter(
         (p) =>
           (p.bookingReference === ref || p.bookingId === b.bookingId) &&
-          (p.paymentStatus === 'Paid' || p.paymentStatus === 'paid')
+          ['paid', 'partially paid', 'partially_paid'].includes(String(p.paymentStatus).toLowerCase())
       );
       const totalPaid = bPayments.reduce((s, p) => s + p.amount, 0);
       const bRefunds = refunds.filter(
         (r) =>
           (r.bookingReference === ref || r.bookingId === b.bookingId) &&
-          r.status === 'processed'
+          ['pending_approval', 'approved', 'processed'].includes(r.status)
       );
-      const totalRefunded = bRefunds.reduce((s, r) => s + (r.approvedAmount || r.amount), 0);
+      const totalRefunded = bRefunds.reduce((s, r) => s + (r.approvedAmount || r.requestedAmount || r.amount), 0);
       setRequestedAmount(Math.max(0, totalPaid - totalRefunded));
       setRefundCurrency((b.pricing as any)?.currency || 'EUR');
     }
@@ -296,8 +296,8 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
   // Aggregate metrics
   const metrics = useMemo(() => {
     const processedTotal = refunds
-      .filter((r) => r.status === 'processed')
-      .reduce((sum, r) => sum + (r.approvedAmount || r.amount), 0);
+      .filter((r) => ['pending_approval', 'approved', 'processed'].includes(r.status))
+      .reduce((sum, r) => sum + (r.approvedAmount || r.requestedAmount || r.amount), 0);
 
     const pendingCount = refunds.filter((r) => r.status === 'pending_approval' || r.status === 'requested').length;
     const approvedCount = refunds.filter((r) => r.status === 'approved').length;
@@ -509,7 +509,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
               </thead>
               <tbody className="divide-y divide-stone-800/60 text-stone-300">
                 {filteredRefunds.map((r) => {
-                  const isProcessed = r.status === 'processed';
+                  const isProcessed = ['pending_approval', 'approved', 'processed'].includes(r.status);
                   const isPending = r.status === 'pending_approval' || r.status === 'requested';
                   const isApproved = r.status === 'approved';
                   const isRejected = r.status === 'rejected';
@@ -556,7 +556,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
                               ? 'Pending Approval'
                               : r.status === 'approved'
                               ? 'Approved (Unpaid)'
-                              : r.status === 'processed'
+                              : ['pending_approval', 'approved', 'processed'].includes(r.status)
                               ? 'Payout recorded'
                               : 'Rejected'}
                           </span>
@@ -564,7 +564,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
                       </td>
                       <td className="py-3.5 px-4 font-mono">
                         <div className="font-bold text-white text-sm">
-                          €{(r.approvedAmount || r.amount).toLocaleString()}
+                          €{(r.approvedAmount || r.requestedAmount || r.amount).toLocaleString()}
                         </div>
                         {r.approvedAmount && r.approvedAmount !== r.requestedAmount && (
                           <div className="text-[10px] text-stone-500 line-through">
