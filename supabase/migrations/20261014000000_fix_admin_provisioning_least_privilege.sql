@@ -8,7 +8,7 @@
 --    - Untrusted clients setting custom configuration variables are strictly rejected.
 --    - Avoids global trigger bypass for postgres.
 -- 2. Restructures set_admin_role_by_email() to:
---    - Verify caller permissions (restricted to session_user in postgres, service_role).
+--    - Verify caller permissions (restricted to direct postgres sessions or signed service_role JWTs).
 --    - Target matching auth.users row and canonical is_confirmed column.
 --    - Set transaction-scoped config parameter app.admin_provisioning_nonce & active user.
 --    - Upsert public.profiles with role = 'admin'.
@@ -37,10 +37,10 @@ BEGIN
     IF NEW.role IS DISTINCT FROM OLD.role THEN
         -- Check if trusted operator provisioning is active:
         -- Untrusted clients (anon, authenticated, authenticator) CANNOT bypass this because:
-        -- 1. session_user MUST be postgres or service_role
+        -- 1. session_user must be postgres, or the request must carry a valid service_role JWT
         -- 2. app.admin_provisioning_active_user MUST match NEW.id
         -- 3. app.admin_provisioning_nonce MUST be non-empty (set only by set_admin_role_by_email)
-        IF session_user IN ('postgres', 'service_role') THEN
+        IF session_user = 'postgres' OR (auth.jwt() ->> 'role') = 'service_role' THEN
             active_nonce := NULLIF(current_setting('app.admin_provisioning_nonce', true), '');
             active_target := NULLIF(current_setting('app.admin_provisioning_active_user', true), '');
             IF active_nonce IS NOT NULL AND active_target = NEW.id::text THEN
@@ -81,7 +81,7 @@ DECLARE
     provisioning_nonce text;
 BEGIN
     -- 1. Authorization guard: Only postgres (SQL Editor / superuser) or service_role session may execute
-    IF session_user NOT IN ('postgres', 'service_role') THEN
+    IF session_user <> 'postgres' AND COALESCE(auth.jwt() ->> 'role', '') <> 'service_role' THEN
         RAISE EXCEPTION 'Access Denied: public.set_admin_role_by_email may only be executed by trusted database operators (postgres, service_role). Current session_user is "%".', session_user;
     END IF;
 
