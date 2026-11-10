@@ -99,8 +99,8 @@ BEGIN
   IF p_idempotency_key IS NULL OR length(btrim(p_idempotency_key)) < 16 OR length(p_idempotency_key) > 200 THEN
     RAISE EXCEPTION 'A valid idempotency key is required' USING ERRCODE = '22023';
   END IF;
-  IF p_amount IS NULL OR p_amount <= 0 OR p_amount > 100000000 THEN
-    RAISE EXCEPTION 'Payment amount must be positive and within supported limits' USING ERRCODE = '22023';
+  IF p_amount IS NULL OR p_amount <= 0 OR p_amount > 99999999.99 OR p_amount <> round(p_amount, 2) THEN
+    RAISE EXCEPTION 'Payment amount must be positive, have at most two decimal places, and be within supported limits' USING ERRCODE = '22023';
   END IF;
   IF v_currency IS NULL OR v_currency !~ '^[A-Z]{3}
   IF p_status IS NULL OR p_status NOT IN ('Pending', 'Paid', 'Partially Paid', 'Failed', 'pending', 'paid', 'partially_paid', 'failed') THEN
@@ -132,6 +132,7 @@ BEGIN
       OR upper(v_existing.currency) <> v_currency
       OR v_existing.payment_method <> v_method
       OR coalesce(v_existing.provider, '') <> coalesce(p_provider, '')
+      OR upper(coalesce(v_existing.booking_reference, '')) <> upper(btrim(p_booking_reference))
       OR lower(v_existing.transaction_reference) <> lower(btrim(p_transaction_reference)) THEN
       RAISE EXCEPTION 'Idempotency key was already used for a different payment' USING ERRCODE = '23505';
     END IF;
@@ -264,8 +265,9 @@ BEGIN
   IF p_idempotency_key IS NULL OR length(btrim(p_idempotency_key)) < 16 OR length(p_idempotency_key) > 200 THEN
     RAISE EXCEPTION 'A valid idempotency key is required' USING ERRCODE = '22023';
   END IF;
-  IF p_requested_amount IS NULL OR p_requested_amount <= 0 OR p_requested_amount > 100000000 THEN
-    RAISE EXCEPTION 'Refund amount must be positive and within supported limits' USING ERRCODE = '22023';
+  IF p_requested_amount IS NULL OR p_requested_amount <= 0 OR p_requested_amount > 99999999.99
+    OR p_requested_amount <> round(p_requested_amount, 2) THEN
+    RAISE EXCEPTION 'Refund amount must be positive, have at most two decimal places, and be within supported limits' USING ERRCODE = '22023';
   END IF;
   IF v_currency IS NULL OR v_currency !~ '^[A-Z]{3}
     RAISE EXCEPTION 'Unsupported refund method' USING ERRCODE = '22023';
@@ -279,7 +281,10 @@ BEGIN
   IF FOUND THEN
     IF v_existing.requested_amount <> p_requested_amount
       OR upper(v_existing.currency) <> v_currency
-      OR v_existing.booking_reference <> upper(btrim(p_booking_reference)) THEN
+      OR v_existing.booking_reference <> upper(btrim(p_booking_reference))
+      OR v_existing.payment_id IS DISTINCT FROM p_payment_id
+      OR v_existing.refund_method <> p_refund_method
+      OR lower(v_existing.reason) <> lower(btrim(p_reason)) THEN
       RAISE EXCEPTION 'Idempotency key was already used for a different refund' USING ERRCODE = '23505';
     END IF;
     RETURN jsonb_build_object('success', true, 'duplicate', true, 'refund', to_jsonb(v_existing));
