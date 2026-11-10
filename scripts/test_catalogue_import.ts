@@ -192,6 +192,14 @@ async function runTestSuite() {
       catalogueSeedSql.includes("'important_information'"),
     'Catalogue seed imports published tour records and preserves preparation sections'
   );
+  const destinationInsertStart = catalogueSeedSql.indexOf('INSERT INTO public.destinations');
+  const destinationInsertEnd = catalogueSeedSql.indexOf('INSERT INTO public.categories', destinationInsertStart);
+  const destinationInsertSql = catalogueSeedSql.slice(destinationInsertStart, destinationInsertEnd);
+  assert(
+    (destinationInsertSql.match(/'published'/g) || []).length === POPULAR_DESTINATIONS.length &&
+      !destinationInsertSql.includes("'draft'"),
+    'All seven public destinations remain published, including Makadi Bay with zero tours'
+  );
   assert(
     catalogueSeedSql.includes("'08:00 AM or 02:00 PM'") &&
       catalogueSeedSql.includes("'01:30 PM'") &&
