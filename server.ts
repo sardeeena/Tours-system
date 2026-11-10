@@ -141,6 +141,9 @@ if (supabaseConfig.configError) {
 const SUPABASE_URL = supabaseConfig.url;
 const SUPABASE_KEY = supabaseConfig.key;
 const SUPABASE_KEY_TYPE = supabaseConfig.keyType;
+// Public key for user-scoped requests. Never run guest/customer RPCs with a service-role key.
+const rawUserSupabaseKey = process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+const SUPABASE_USER_KEY = isSupabasePublishableKey(rawUserSupabaseKey) ? rawUserSupabaseKey!.trim() : null;
 
 let serverSupabase: SupabaseClient | null = null;
 if (SUPABASE_URL && SUPABASE_KEY) {
@@ -230,8 +233,8 @@ async function authenticateToken(req: AuthenticatedRequest, _res: Response, next
       let role = (user.app_metadata?.role as string) || 'customer';
       // Query the caller's own profile using their verified JWT so RLS works
       // even when the server client is configured with a publishable/anon key.
-      if (SUPABASE_URL && SUPABASE_KEY) {
-        const userScopedSupabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+      if (SUPABASE_URL && SUPABASE_USER_KEY) {
+        const userScopedSupabase = createClient(SUPABASE_URL, SUPABASE_USER_KEY, {
           global: { headers: { Authorization: `Bearer ${token}` } },
           auth: { persistSession: false, autoRefreshToken: false },
         });
@@ -440,6 +443,7 @@ app.get('/api/health', (_req: Request, res: Response) => {
         urlProvided: Boolean(SUPABASE_URL),
         keyType: SUPABASE_KEY_TYPE,
         serviceRoleKeyConfigured: SUPABASE_KEY_TYPE === 'service_role',
+        userScopedPublicKeyConfigured: Boolean(SUPABASE_USER_KEY),
         secretIsolationVerified: true,
       },
       databaseSchema: { configured: Boolean(serverSupabase), ready: false, verification: 'not_checked' },
@@ -799,7 +803,7 @@ app.post('/api/bookings/create', rateLimit(10, 60_000), async (req: Authenticate
     couponCode,
   } = req.body || {};
 
-  if (!serverSupabase || !SUPABASE_URL || !SUPABASE_KEY) {
+  if (!serverSupabase || !SUPABASE_URL || !SUPABASE_USER_KEY) {
     return res.status(503).json({
       success: false,
       error: 'The reservation service is temporarily unavailable. Please try again later.',
@@ -852,7 +856,7 @@ app.post('/api/bookings/create', rateLimit(10, 60_000), async (req: Authenticate
     // Use the verified caller JWT for the RPC when present so auth.uid() remains
     // the real customer identity. Guest checkout uses the configured public key.
     const authorization = req.get('Authorization');
-    const requestClient = createClient(SUPABASE_URL, SUPABASE_KEY, {
+    const requestClient = createClient(SUPABASE_URL, SUPABASE_USER_KEY, {
       auth: { persistSession: false, autoRefreshToken: false },
       global: authorization ? { headers: { Authorization: authorization } } : undefined,
     });
