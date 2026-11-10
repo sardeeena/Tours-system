@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(40);
+SELECT plan(42);
 
 SELECT ok(
   to_regprocedure('public.record_payment_atomic(text,numeric,text,text,text,text,text,text,text,text)') IS NOT NULL,
@@ -74,6 +74,11 @@ SELECT ok(EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname='public' AND indexna
   'payment transaction references are unique per provider');
 SELECT ok(EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname='public' AND indexname='refund_records_idempotency_key_uidx'),
   'refund idempotency keys are unique');
+
+SELECT ok(EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname='public' AND indexname='refund_records_processed_reference_uidx'),
+  'processed refund payout references are unique');
+SELECT is((SELECT name FROM public.payment_providers WHERE id='bank_transfer'),
+  'Bank transfer (manual)', 'unverified bank-provider branding is replaced with neutral manual reconciliation wording');
 
 SELECT ok(to_regprocedure('public.next_invoice_number()') IS NOT NULL,
   'server-side invoice number allocator exists');
