@@ -217,12 +217,11 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
     };
     saveProviderConfig(newConfig);
     setProviderConfig(getProviderConfig());
+    setTempApiKey('');
     setIsSettingsOpen(false);
     showToast(
-      newConfig.email.isConfigured
-        ? `Email provider configured (${newConfig.email.provider})`
-        : 'Email provider set to unconfigured',
-      newConfig.email.isConfigured ? 'success' : 'info'
+      'Provider selection saved. API keys are never stored in this browser; sending remains disabled until a server-side email provider is configured.',
+      'info'
     );
   };
 
