@@ -400,29 +400,50 @@ export async function listInvoices(filter?: {
     if (error) throw new Error(formatSupabaseError(error));
 
     const bookingIds = Array.from(new Set((data || []).map((row: any) => row.booking_id).filter(Boolean)));
-    const guestCounts = new Map<string, { adults: number; children: number; infants: number }>();
+    const bookingDetails = new Map<string, {
+      adults: number;
+      children: number;
+      infants: number;
+      bookingReference: string;
+      bookingDate: string;
+      tourId: string;
+    }>();
+    const tourTitles = new Map<string, string>();
 
     if (bookingIds.length > 0) {
       const { data: bookingRows, error: bookingError } = await supabase
         .from('bookings')
-        .select('id,adult_count,child_count,infant_count')
+        .select('id,booking_reference,booking_date,adult_count,child_count,infant_count,tour_id')
         .in('id', bookingIds);
 
       if (bookingError) throw new Error(formatSupabaseError(bookingError));
       (bookingRows || []).forEach((booking: any) => {
-        guestCounts.set(booking.id, {
+        bookingDetails.set(booking.id, {
           adults: Number(booking.adult_count || 0),
           children: Number(booking.child_count || 0),
           infants: Number(booking.infant_count || 0),
+          bookingReference: booking.booking_reference || booking.id,
+          bookingDate: booking.booking_date || '',
+          tourId: booking.tour_id || '',
         });
       });
+
+      const tourIds = Array.from(new Set((bookingRows || []).map((booking: any) => booking.tour_id).filter(Boolean)));
+      if (tourIds.length > 0) {
+        const { data: tours, error: toursError } = await supabase
+          .from('tours')
+          .select('id,title')
+          .in('id', tourIds);
+        if (toursError) throw new Error(formatSupabaseError(toursError));
+        (tours || []).forEach((tour: any) => tourTitles.set(tour.id, tour.title || ''));
+      }
     }
 
     invoices = (data || []).map((row: any) => ({
       id: row.id,
       invoiceNumber: row.invoice_number,
       bookingId: row.booking_id,
-      bookingReference: row.booking_reference || row.booking_id,
+      bookingReference: row.booking_reference || bookingDetails.get(row.booking_id)?.bookingReference || row.booking_id,
       customerId: row.customer_id || null,
       issueDate: row.issue_date,
       dueDate: row.due_date,
@@ -431,9 +452,9 @@ export async function listInvoices(filter?: {
         email: row.customer_email || '',
         phone: row.customer_phone || null,
       },
-      tourTitle: row.tour_title || '',
-      tourDate: row.tour_date || '',
-      guests: guestCounts.get(row.booking_id) || { adults: 0, children: 0, infants: 0 },
+      tourTitle: row.tour_title || tourTitles.get(bookingDetails.get(row.booking_id)?.tourId || '') || '',
+      tourDate: row.tour_date || bookingDetails.get(row.booking_id)?.bookingDate || '',
+      guests: bookingDetails.get(row.booking_id) || { adults: 0, children: 0, infants: 0, bookingReference: row.booking_id, bookingDate: '', tourId: '' },
       lineItems: (row.line_items as InvoiceLineItem[]) || [],
       subtotal: Number(row.subtotal || 0),
       discount: Number(row.discount || 0),
