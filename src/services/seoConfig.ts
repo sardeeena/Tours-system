@@ -307,7 +307,7 @@ export function generateDestinationJsonLd(
  */
 export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> = {
   '/': (origin) => ({
-    title: 'Awesome Adventure Tours | Verified Excursions, Boat Trips & Safaris',
+    title: 'Awesome Adventure Tours | Excursions, Boat Trips & Safaris',
     description:
       'Book verified Red Sea boat trips to Orange Bay, Giftun Island, Ras Mohammed, and desert safaris. Direct pier rates, hotel pickup included, free cancellation.',
     keywords: SEO_DEFAULTS.KEYWORDS,
