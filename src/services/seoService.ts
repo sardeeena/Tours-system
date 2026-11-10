@@ -124,7 +124,7 @@ export const seoService = {
    * Generates tailored SEO metadata for an Excursion Detail Page
    */
   generateTourSeo(tour: Tour): SeoMetadata {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://awesomeadventure.tours';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kemetspirit.com';
     const tourUrl = `${origin}/excursions/${tour.slug}`;
     const formattedPrice = `€${tour.priceEur}`;
 
@@ -202,7 +202,7 @@ export const seoService = {
    * Generates tailored SEO metadata for Category & Filter Views
    */
   generateCategorySeo(categoryName: string, tourCount: number, matchingTours: Tour[] = []): SeoMetadata {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://awesomeadventure.tours';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kemetspirit.com';
     const isAll = categoryName === 'All' || !categoryName;
 
     const title = isAll
@@ -251,7 +251,7 @@ export const seoService = {
    * Generates tailored SEO metadata for Destination Views
    */
   generateDestinationSeo(destinationName: string, tourCount: number): SeoMetadata {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://awesomeadventure.tours';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kemetspirit.com';
     const title = `${destinationName} Excursions & Boat Tours | Red Sea Direct Booking`;
     const description = `Discover ${tourCount} excursions departing directly from ${destinationName}. Island cruises, coral reef snorkeling, PADI diving, and desert quad safaris.`;
 
@@ -270,7 +270,7 @@ export const seoService = {
    * Default Homepage SEO & Organization Schema
    */
   generateDefaultSeo(): SeoMetadata {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://awesomeadventure.tours';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kemetspirit.com';
 
     const schemaJsonLd: Record<string, unknown> = {
       '@context': 'https://schema.org',
