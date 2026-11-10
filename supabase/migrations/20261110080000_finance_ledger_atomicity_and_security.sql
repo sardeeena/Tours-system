@@ -456,3 +456,36 @@ REVOKE ALL ON FUNCTION public.transition_refund_atomic(UUID, TEXT, NUMERIC, TEXT
 GRANT EXECUTE ON FUNCTION public.record_payment_atomic(TEXT, NUMERIC, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.request_refund_atomic(TEXT, UUID, NUMERIC, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.transition_refund_atomic(UUID, TEXT, NUMERIC, TEXT, TEXT, TEXT) TO authenticated, service_role;
+
+
+-- A booking can have at most one issued invoice. Sequence allocation is server-side
+-- so concurrent invoice requests cannot generate the same invoice number.
+CREATE UNIQUE INDEX IF NOT EXISTS invoices_booking_id_uidx
+  ON public.invoices (booking_id);
+
+CREATE SEQUENCE IF NOT EXISTS public.invoice_number_seq
+  START WITH 1 INCREMENT BY 1 NO MINVALUE NO MAXVALUE CACHE 1;
+
+CREATE OR REPLACE FUNCTION public.next_invoice_number()
+RETURNS TEXT
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $function$
+DECLARE
+  v_sequence BIGINT;
+BEGIN
+  IF NOT (
+    auth.role() = 'service_role'
+    OR (auth.uid() IS NOT NULL AND public.is_admin())
+  ) THEN
+    RAISE EXCEPTION 'Not authorized to issue invoices' USING ERRCODE = '42501';
+  END IF;
+
+  v_sequence := pg_catalog.nextval('public.invoice_number_seq'::regclass);
+  RETURN pg_catalog.format('INV-%s-%s', pg_catalog.to_char(CURRENT_DATE, 'YYYY'), pg_catalog.lpad(v_sequence::TEXT, 6, '0'));
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.next_invoice_number() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.next_invoice_number() TO authenticated, service_role;
