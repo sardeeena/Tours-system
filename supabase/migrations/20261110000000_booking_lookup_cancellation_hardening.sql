@@ -489,7 +489,7 @@ SECURITY DEFINER
 SET search_path = ''
 AS $protect_booking$
 BEGIN
-  IF public.is_admin() THEN
+  IF COALESCE(auth.jwt() ->> 'role', '') = 'service_role' OR public.is_admin() THEN
     RETURN NEW;
   END IF;
 
