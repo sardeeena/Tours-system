@@ -158,6 +158,27 @@ async function runTestSuite() {
   );
 
   const catalogueSeedSql = fs.readFileSync(path.resolve('supabase/seed/kemet_spirit_catalogue.sql'), 'utf8');
+  const catalogueCorrectionsSql = fs.readFileSync(path.resolve('supabase/seed/kemet_spirit_catalogue_live_corrections.sql'), 'utf8');
+  const guardedCorrectionUpdates = [...catalogueCorrectionsSql.matchAll(/UPDATE public\.(tours|destinations)\b/g)];
+  assert(
+    guardedCorrectionUpdates.length === 5 &&
+      !/\b(DELETE|TRUNCATE|DROP)\s+/i.test(catalogueCorrectionsSql) &&
+      catalogueCorrectionsSql.includes("AND departure_time = '08:00 AM or 14:00 PM'") &&
+      catalogueCorrectionsSql.includes("AND departure_time = '13:30 PM'") &&
+      catalogueCorrectionsSql.includes("AND departure_time = '10:00 AM or 14:00 PM'") &&
+      catalogueCorrectionsSql.includes("AND age_restrictions IS NULL") &&
+      catalogueCorrectionsSql.includes("AND status = 'draft'"),
+    'Live catalogue correction script changes only five specifically identified old values and never deletes records'
+  );
+  assert(
+    catalogueCorrectionsSql.includes("'Minimum age 10 years'") &&
+      catalogueCorrectionsSql.includes("'08:00 AM or 02:00 PM'") &&
+      catalogueCorrectionsSql.includes("'01:30 PM'") &&
+      catalogueCorrectionsSql.includes("'10:00 AM or 02:00 PM'") &&
+      catalogueCorrectionsSql.includes("SET status = 'published'"),
+    'Live catalogue correction script contains the reviewed replacement values'
+  );
+
   assert(
     !/\b(DELETE|UPDATE|TRUNCATE|DROP)\s+/i.test(catalogueSeedSql),
     'Catalogue seed never deletes, updates, truncates, or drops existing production records'
