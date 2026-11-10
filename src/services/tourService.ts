@@ -475,17 +475,19 @@ export async function adminListTours(filters?: {
     if (error) {
       if (isSchemaMissingError(error)) {
         setSchemaMissing(true);
+        return getLocalList();
       }
       console.error('Supabase adminListTours query error:', error.message);
-      return [];
+      throw new Error(formatSupabaseError(error));
     }
     return (data || []) as DbTour[];
   } catch (err) {
     if (isSchemaMissingError(err)) {
       setSchemaMissing(true);
+      return getLocalList();
     }
     console.error('Failed to list admin tours:', err);
-    return [];
+    throw new Error(formatSupabaseError(err));
   }
 }
 
