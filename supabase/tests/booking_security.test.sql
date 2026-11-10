@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(87);
+SELECT plan(90);
 
 SELECT ok(
   EXISTS (
@@ -200,6 +200,31 @@ SELECT ok(
   (SELECT times_used = 1 FROM public.coupons WHERE code = 'PGTAPONCE'),
   'successful booking redeems the coupon exactly once'
 );
+
+INSERT INTO public.tour_availability (tour_id, date, max_capacity, booked_count, status)
+SELECT id, CURRENT_DATE + 30, 1, 0, 'available'
+FROM public.tours WHERE slug = 'pgtap-booking-test'
+ON CONFLICT (tour_id, date) DO UPDATE
+SET max_capacity = 1, booked_count = 0, status = 'available';
+
+SELECT ok(
+  EXISTS (
+    SELECT 1
+    FROM public.get_tour_availability_schedule(
+      'pgtap-booking-test', CURRENT_DATE + 30, CURRENT_DATE + 30
+    ) AS availability
+    WHERE availability.status = 'sold_out'
+      AND availability.booked_count = 1
+      AND availability.remaining_capacity = 0
+      AND availability.is_available = FALSE
+  ),
+  'availability schedule counts live bookings even when the cached booked_count is stale'
+);
+
+UPDATE public.tour_availability
+SET max_capacity = 10, booked_count = 1, status = 'available'
+WHERE tour_id = (SELECT id FROM public.tours WHERE slug = 'pgtap-booking-test')
+  AND date = CURRENT_DATE + 30;
 
 INSERT INTO pg_temp.pgtap_booking_results (case_name, result)
 SELECT 'duplicate_booking', public.create_booking_atomic(
@@ -677,6 +702,20 @@ SELECT ok(
       AND COALESCE(qual, '') ILIKE '%foldername%'
   ),
   'avatar deletion is restricted to the authenticated user folder'
+);
+
+SELECT ok(
+  to_regprocedure('public.get_tour_availability_schedule(text,date,date)') IS NOT NULL,
+  'authoritative public departure availability RPC is installed'
+);
+
+SELECT ok(
+  EXISTS (
+    SELECT 1 FROM pg_proc
+    WHERE oid = 'public.get_tour_availability_schedule(text,date,date)'::regprocedure
+      AND COALESCE(array_to_string(proconfig, ','), '') LIKE '%search_path=""%'
+  ),
+  'availability SECURITY DEFINER RPC pins an empty search_path'
 );
 
 SELECT * FROM finish();
