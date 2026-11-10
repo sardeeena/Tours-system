@@ -618,11 +618,12 @@ export const FinancePayments: React.FC<FinancePaymentsProps> = ({ onNavigateTab 
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-stone-300 mb-1">Operating Currency</label>
+                  <label className="block text-xs font-medium text-stone-300 mb-1">Operating Booking currency (fixed)</label>
                   <select
                     value={currencyInput}
                     onChange={(e) => setCurrencyInput(e.target.value)}
-                    className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-hidden focus:border-[#0A6C74]"
+                    disabled
+                    className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2 text-xs text-white opacity-70 cursor-not-allowed"
                   >
                     <option value="EUR">EUR (€)</option>
                     <option value="USD">USD ($)</option>
