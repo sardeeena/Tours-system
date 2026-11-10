@@ -1,7 +1,7 @@
 BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(14);
+SELECT plan(15);
 
 INSERT INTO public.tours (id, title, slug, status, max_guests)
 VALUES
@@ -71,10 +71,17 @@ SELECT is(
 );
 
 SELECT throws_ok(
-  $$SELECT * FROM public.get_tour_availability_schedule('pgtap-availability-published', CURRENT_DATE, CURRENT_DATE + 366)$$,
+  $SELECT * FROM public.get_tour_availability_schedule('pgtap-availability-published', CURRENT_DATE, CURRENT_DATE + 366)$,
   '22023',
   'Availability date range cannot exceed 366 days',
   'availability RPC rejects date ranges longer than 366 days'
+);
+
+SELECT throws_ok(
+  $SELECT * FROM public.get_tour_availability_schedule('pgtap-availability-published', CURRENT_DATE - 1, CURRENT_DATE - 1)$,
+  '22023',
+  'Public availability lookup cannot include past dates',
+  'anonymous availability lookup cannot disclose historical booking capacity'
 );
 
 SELECT throws_ok(
