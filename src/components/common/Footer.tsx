@@ -308,19 +308,29 @@ export const Footer: React.FC<FooterProps> = ({
                 </li>
               )}
               <li>
-                <span>Hotel Pickup Coverage</span>
+                <a href="/booking-conditions" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">
+                  Hotel Pickup Coverage
+                </a>
               </li>
               <li>
-                <span>Weather & Refund Policy</span>
+                <a href="/why-us" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">
+                  Weather & Refund Policy
+                </a>
               </li>
               <li>
-                <span>Snorkeling Gear Safety</span>
+                <a href="/marine-safety" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">
+                  Snorkeling Gear Safety
+                </a>
               </li>
               <li>
-                <span>Terms & Conditions</span>
+                <a href="/booking-conditions" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">
+                  Terms & Conditions
+                </a>
               </li>
               <li>
-                <span>Privacy Policy</span>
+                <a href="/privacy" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">
+                  Privacy Policy
+                </a>
               </li>
               {onOpenAdmin && (
                 <li className="pt-2 border-t border-stone-200 dark:border-slate-800">
