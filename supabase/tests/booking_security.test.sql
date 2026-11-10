@@ -488,14 +488,20 @@ SELECT ok(
 SELECT ok(
   (SELECT user_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid
    FROM public.bookings
-   WHERE booking_reference = (SELECT result->>'bookingReference' FROM pg_temp.pgtap_booking_results WHERE case_name = 'authenticated_booking')),
+   WHERE booking_reference = (current_setting('pgtap.auth_booking_ref', TRUE))),
   'atomic booking binds the authenticated user id to the reservation'
+);
+
+SELECT set_config(
+  'pgtap.auth_booking_ref',
+  (current_setting('pgtap.auth_booking_ref', TRUE)),
+  TRUE
 );
 
 SET LOCAL ROLE authenticated;
 
 SELECT throws_ok(
-  'UPDATE public.bookings SET status = ''cancelled'' WHERE booking_reference = (SELECT result->>''bookingReference'' FROM pg_temp.pgtap_booking_results WHERE case_name = ''authenticated_booking'')',
+  'UPDATE public.bookings SET status = ''cancelled'' WHERE booking_reference = (current_setting(''pgtap.auth_booking_ref'', TRUE))',
   '42501',
   'Customers may only update pickup details and special requests. Booking status, payment, price, guest counts, and inventory are protected.',
   'customer cannot change booking status directly through the Data API'
@@ -511,7 +517,7 @@ WHERE booking_reference = (
 
 SELECT ok(
   (SELECT pickup_room_number = '501' FROM public.bookings
-   WHERE booking_reference = (SELECT result->>'bookingReference' FROM pg_temp.pgtap_booking_results WHERE case_name = 'authenticated_booking')),
+   WHERE booking_reference = (current_setting('pgtap.auth_booking_ref', TRUE))),
   'customer can update permitted pickup details'
 );
 
@@ -529,7 +535,7 @@ WHERE booking_reference = (
 
 SELECT ok(
   (SELECT status = 'cancellation_requested' FROM public.bookings
-   WHERE booking_reference = (SELECT result->>'bookingReference' FROM pg_temp.pgtap_booking_results WHERE case_name = 'authenticated_booking')),
+   WHERE booking_reference = (current_setting('pgtap.auth_booking_ref', TRUE))),
   'authenticated customer may request cancellation without cancelling the booking'
 );
 
