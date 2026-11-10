@@ -363,11 +363,15 @@ BEGIN
     RETURN JSONB_BUILD_OBJECT('success', TRUE, 'bookingReference', v_booking.booking_reference, 'status', 'cancelled', 'alreadyResolved', TRUE);
   END IF;
 
-  IF v_booking.status <> 'cancellation_requested' THEN
+  IF p_decision = 'reject' AND v_booking.status <> 'cancellation_requested' THEN
     RETURN JSONB_BUILD_OBJECT('success', FALSE, 'error', 'This booking has no pending cancellation request.');
   END IF;
 
-  v_previous_status := COALESCE(v_booking.cancellation_previous_status, 'confirmed');
+  IF p_decision = 'approve' AND v_booking.status NOT IN ('cancellation_requested', 'pending', 'confirmed') THEN
+    RETURN JSONB_BUILD_OBJECT('success', FALSE, 'error', 'This booking cannot be cancelled in its current state.');
+  END IF;
+
+  v_previous_status := COALESCE(v_booking.cancellation_previous_status, v_booking.status);
 
   IF p_decision = 'reject' THEN
     UPDATE public.bookings
@@ -431,3 +435,44 @@ $cancel_resolution$;
 
 REVOKE ALL ON FUNCTION public.admin_resolve_booking_cancellation(TEXT, TEXT, TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.admin_resolve_booking_cancellation(TEXT, TEXT, TEXT) TO authenticated, service_role;
+
+-- Direct table writes must not bypass the booking RPCs.
+-- Guest creation is exclusively through create_booking_atomic; customer updates are limited
+-- to non-financial pickup/contact-note fields. Staff changes remain server-authorized by RLS.
+DROP POLICY IF EXISTS "Controlled booking creation" ON public.bookings;
+REVOKE INSERT, DELETE ON public.bookings FROM PUBLIC, anon, authenticated;
+
+CREATE OR REPLACE FUNCTION public.protect_booking_customer_updates()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $protect_booking$
+BEGIN
+  IF public.is_admin() THEN
+    RETURN NEW;
+  END IF;
+
+  IF auth.uid() IS NULL OR OLD.user_id IS DISTINCT FROM auth.uid() THEN
+    RAISE EXCEPTION 'You are not authorized to update this reservation.'
+      USING ERRCODE = '42501';
+  END IF;
+
+  IF (TO_JSONB(NEW) - ARRAY['pickup_hotel_name', 'pickup_room_number', 'special_requests', 'updated_at'])
+     IS DISTINCT FROM
+     (TO_JSONB(OLD) - ARRAY['pickup_hotel_name', 'pickup_room_number', 'special_requests', 'updated_at']) THEN
+    RAISE EXCEPTION 'Customers may only update pickup details and special requests. Booking status, payment, price, guest counts, and inventory are protected.'
+      USING ERRCODE = '42501';
+  END IF;
+
+  RETURN NEW;
+END;
+$protect_booking$;
+
+REVOKE ALL ON FUNCTION public.protect_booking_customer_updates() FROM PUBLIC, anon, authenticated;
+
+DROP TRIGGER IF EXISTS protect_booking_customer_updates_trigger ON public.bookings;
+CREATE TRIGGER protect_booking_customer_updates_trigger
+  BEFORE UPDATE ON public.bookings
+  FOR EACH ROW
+  EXECUTE FUNCTION public.protect_booking_customer_updates();
