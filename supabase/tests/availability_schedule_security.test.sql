@@ -10,7 +10,7 @@ VALUES
   ('a9000000-0000-0000-0000-000000000003', 'Archived availability test', 'pgtap-availability-archived', 'archived', 12);
 
 INSERT INTO public.tour_availability (tour_id, date, status, max_capacity, booked_count, notes)
-VALUES ('a9000000-0000-0000-0000-000000000001', CURRENT_DATE, 'available', 12, 0, 'Internal operations note must not be public');
+VALUES ('a9000000-0000-0000-0000-000000000001', (now() AT TIME ZONE 'Africa/Cairo')::date, 'available', 12, 0, 'Internal operations note must not be public');
 
 SET LOCAL request.jwt.claim.sub = '';
 SET LOCAL request.jwt.claims = '{}';
@@ -41,65 +41,65 @@ SELECT ok(
 );
 
 SELECT is(
-  (SELECT count(*)::int FROM public.get_tour_availability_schedule('pgtap-availability-published', CURRENT_DATE, CURRENT_DATE)),
+  (SELECT count(*)::int FROM public.get_tour_availability_schedule('pgtap-availability-published', (now() AT TIME ZONE 'Africa/Cairo')::date, (now() AT TIME ZONE 'Africa/Cairo')::date)),
   1,
   'anonymous availability lookup returns a published tour'
 );
 
 SELECT is(
-  (SELECT count(*)::int FROM public.get_tour_availability_schedule('pgtap-availability-draft', CURRENT_DATE, CURRENT_DATE)),
+  (SELECT count(*)::int FROM public.get_tour_availability_schedule('pgtap-availability-draft', (now() AT TIME ZONE 'Africa/Cairo')::date, (now() AT TIME ZONE 'Africa/Cairo')::date)),
   0,
   'anonymous availability lookup hides draft tours'
 );
 
 SELECT is(
-  (SELECT count(*)::int FROM public.get_tour_availability_schedule('pgtap-availability-archived', CURRENT_DATE, CURRENT_DATE)),
+  (SELECT count(*)::int FROM public.get_tour_availability_schedule('pgtap-availability-archived', (now() AT TIME ZONE 'Africa/Cairo')::date, (now() AT TIME ZONE 'Africa/Cairo')::date)),
   0,
   'anonymous availability lookup hides archived tours'
 );
 
 SELECT is(
-  (SELECT notes FROM public.get_tour_availability_schedule('pgtap-availability-published', CURRENT_DATE, CURRENT_DATE)),
+  (SELECT notes FROM public.get_tour_availability_schedule('pgtap-availability-published', (now() AT TIME ZONE 'Africa/Cairo')::date, (now() AT TIME ZONE 'Africa/Cairo')::date)),
   NULL::text,
   'anonymous availability lookup never exposes internal operational notes'
 );
 
 SELECT is(
-  (SELECT count(*)::int FROM public.get_tour_availability_schedule('pgtap-availability-published', CURRENT_DATE, CURRENT_DATE + 365)),
+  (SELECT count(*)::int FROM public.get_tour_availability_schedule('pgtap-availability-published', (now() AT TIME ZONE 'Africa/Cairo')::date, (now() AT TIME ZONE 'Africa/Cairo')::date + 365)),
   366,
   'the maximum supported date range contains 366 calendar days'
 );
 
 SELECT throws_ok(
-  $SELECT * FROM public.get_tour_availability_schedule('pgtap-availability-published', CURRENT_DATE, CURRENT_DATE + 366)$,
+  $SELECT * FROM public.get_tour_availability_schedule('pgtap-availability-published', (now() AT TIME ZONE 'Africa/Cairo')::date, (now() AT TIME ZONE 'Africa/Cairo')::date + 366)$,
   '22023',
   'Availability date range cannot exceed 366 days',
   'availability RPC rejects date ranges longer than 366 days'
 );
 
 SELECT throws_ok(
-  $SELECT * FROM public.get_tour_availability_schedule('pgtap-availability-published', CURRENT_DATE - 1, CURRENT_DATE - 1)$,
+  $SELECT * FROM public.get_tour_availability_schedule('pgtap-availability-published', (now() AT TIME ZONE 'Africa/Cairo')::date - 1, (now() AT TIME ZONE 'Africa/Cairo')::date - 1)$,
   '22023',
   'Public availability lookup cannot include past dates',
   'anonymous availability lookup cannot disclose historical booking capacity'
 );
 
 SELECT throws_ok(
-  $$SELECT * FROM public.get_tour_availability_schedule('pgtap-availability-published', CURRENT_DATE + 1, CURRENT_DATE)$$,
+  $$SELECT * FROM public.get_tour_availability_schedule('pgtap-availability-published', (now() AT TIME ZONE 'Africa/Cairo')::date + 1, (now() AT TIME ZONE 'Africa/Cairo')::date)$$,
   '22023',
   'Availability start date must not be after end date',
   'availability RPC rejects reversed date ranges'
 );
 
 SELECT throws_ok(
-  $$SELECT * FROM public.get_tour_availability_schedule('  ', CURRENT_DATE, CURRENT_DATE)$$,
+  $$SELECT * FROM public.get_tour_availability_schedule('  ', (now() AT TIME ZONE 'Africa/Cairo')::date, (now() AT TIME ZONE 'Africa/Cairo')::date)$$,
   '22023',
   'Tour identifier is required',
   'availability RPC rejects blank tour identifiers'
 );
 
 SELECT throws_ok(
-  $$SELECT * FROM public.get_tour_availability_schedule('pgtap-availability-published', NULL, CURRENT_DATE)$$,
+  $$SELECT * FROM public.get_tour_availability_schedule('pgtap-availability-published', NULL, (now() AT TIME ZONE 'Africa/Cairo')::date)$$,
   '22023',
   'Availability start and end dates are required',
   'availability RPC rejects missing date bounds'
