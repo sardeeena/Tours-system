@@ -5,6 +5,22 @@ ALTER TABLE public.bookings
   ADD COLUMN IF NOT EXISTS cancellation_previous_status TEXT,
   ADD COLUMN IF NOT EXISTS cancellation_requested_at TIMESTAMPTZ;
 
+-- Keep the cancellation-request event distinct from a completed cancellation.
+ALTER TABLE public.automation_events
+  DROP CONSTRAINT IF EXISTS automation_events_event_name_check;
+ALTER TABLE public.automation_events
+  ADD CONSTRAINT automation_events_event_name_check
+  CHECK (event_name IN (
+    'booking.created',
+    'booking.updated',
+    'payment.received',
+    'payment.failed',
+    'booking.cancelled',
+    'booking.cancellation_requested',
+    'departure.tomorrow',
+    'followup.due'
+  ));
+
 CREATE OR REPLACE FUNCTION public.lookup_booking_secure(
   p_reference TEXT,
   p_verification TEXT
