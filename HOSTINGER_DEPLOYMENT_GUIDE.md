@@ -78,7 +78,19 @@ In Hostinger hPanel > **Node.js** > **Environment Variables** (or create a `.env
 | `PORT` | `3000` | Port for Express server (Hostinger sets this dynamically if left blank) |
 | `APP_URL` | `https://kemetspirit.com` | Canonical production domain |
 | `VITE_SUPABASE_URL` | `https://mktrtoctcjyokclpdeui.supabase.co` | Authoritative production Supabase project URL |
-| `VITE_SUPABASE_ANON_KEY` | *(Your Supabase anon/publishable key)* | Public API key (from Supabase Project Settings > API) |
+| `VITE_SUPABASE_ANON_KEY` | *(Your Supabase anon/publishable key)* | Public browser API key (safe to expose only with RLS and least-privilege grants) |
+| `VITE_APP_URL` | `https://kemetspirit.com` | Frontend canonical origin |
+| `SUPABASE_URL` | `https://mktrtoctcjyokclpdeui.supabase.co` | Server-side Supabase URL |
+| `SUPABASE_ANON_KEY` | *(Same publishable/anon key)* | Server-side key used with verified user JWTs |
+| `SUPABASE_SERVICE_ROLE_KEY` | *(Optional server-only secret key)* | Privileged server operations only; never add a `VITE_` prefix |
+| `RESEND_API_KEY` | *(Resend API key)* | Server-only email delivery secret |
+| `RESEND_FROM_EMAIL` | *(Verified sender address)* | Must be verified in Resend |
+| `RESEND_FROM_NAME` | `Kemet Spirit` | Email sender display name |
+| `WHATSAPP_ACCESS_TOKEN` | *(Meta system-user access token)* | Server-only Meta WhatsApp Cloud API token |
+| `WHATSAPP_PHONE_NUMBER_ID` | *(Meta phone number ID)* | WhatsApp Cloud API sender ID |
+| `WHATSAPP_BUSINESS_ACCOUNT_ID` | *(Meta WABA ID)* | Optional account metadata |
+| `WHATSAPP_FROM_NUMBER` | *(E.164 sender number)* | Optional display metadata |
+| `WHATSAPP_GRAPH_API_VERSION` | *(Supported Meta Graph API version)* | Required explicit Graph API version |
 | `GEMINI_API_KEY` | *(Your Google AI Studio Gemini API key)* | Powers the AI Concierge assistant (`gemini-3.8-flash`) |
 
 > **Communications Note**: Resend and Meta Cloud API credentials must be stored only in Hostinger server environment variables. The admin UI intentionally discards API keys typed into the browser. Email uses Resend; WhatsApp uses Meta Cloud API. The WhatsApp adapter sends text messages and Meta may reject free-form messages outside its customer-service window unless an approved template is used.  
@@ -102,7 +114,6 @@ To ensure seamless Google/email authentication and password reset flows on the n
    ```
    https://kemetspirit.com/**
    https://www.kemetspirit.com/**
-   https://kemetspirit.com/**
    http://localhost:3000/**
    ```
 5. Click **Save**.
