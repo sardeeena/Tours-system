@@ -1,0 +1,24 @@
+# Kemet Spirit catalogue seed
+
+The SQL file `supabase/seed/kemet_spirit_catalogue.sql` imports the 13 excursions currently published on `kemetspirit.com` into the relational Supabase catalogue.
+
+## Safety and scope
+
+- The seed is additive and idempotent. It uses `INSERT ... ON CONFLICT DO NOTHING`; it contains no `UPDATE`, `DELETE`, `TRUNCATE`, or `DROP`.
+- Existing catalogue rows with a matching slug but a different ID cause the preflight to abort rather than attaching relations to the wrong record.
+- All 13 tours are published to preserve the existing public catalogue. Six destinations with active tours and all six categories are published; Makadi Bay remains a draft destination because no current tour is assigned to it.
+- Tour ratings and review counts are zero. No reviews or bookings are inserted.
+- The current tour-specific optional extras are inserted and assigned. The four pre-existing generic extras are preserved. The separate legacy `GLOBAL_BOOKING_EXTRAS` list is intentionally not imported because its prices differ from the tour-specific options currently shown on the live tour pages.
+- Stock images are marked as illustrative in their alt text and captions; replace them with operator-approved photography when available.
+- Pickup-location fee records are inserted inactive. Tour-level pickup instructions are preserved, but global area surcharges are not activated because the current tour pages contain exceptions that need an operator fee review.
+- No customer, auth user, staff, or availability-date records are created. The booking schedule continues to derive from each tour's published days and departure time.
+
+## Execution
+
+Run this file only after applying all migrations on the target project. Review the preflight and verification output in the SQL file. It can be run again safely to add missing rows without overwriting edits made after the first import.
+
+For a production run, use the Supabase SQL Editor or an authenticated database session with migration-owner privileges. Do not place the service-role key in source control or in a client-side environment variable.
+
+## Verification
+
+The final query reports tour, destination, category, pickup, add-on, image, itinerary, inclusion/exclusion, preparation-detail, SEO, and rating/review counts. Expected core counts are 13 published tours, 6 published destinations, 1 draft destination, 6 published categories, 5 per-tour add-ons assigned, 0 rated tours, and 0 reviews.
