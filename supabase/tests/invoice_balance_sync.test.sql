@@ -1,7 +1,7 @@
 BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(8);
+SELECT plan(9);
 
 -- Isolated test fixtures. All writes are rolled back at the end of this file.
 INSERT INTO public.tours (id, title, slug, status, price)
@@ -149,11 +149,22 @@ SELECT ok(
 
 SELECT ok(
   (
-    SELECT i.indisunique
+    SELECT i.indisunique AND i.indisvalid
     FROM pg_index AS i
-    WHERE i.indexrelid = 'public.idx_invoices_booking_id'::regclass
+    WHERE i.indexrelid = 'public.invoices_booking_id_uidx'::regclass
   ),
-  'a booking can have only one invoice'
+  'the canonical existing unique index enforces one invoice per booking'
+);
+
+SELECT ok(
+  NOT EXISTS (
+    SELECT 1
+    FROM pg_class AS c
+    JOIN pg_namespace AS n ON n.oid = c.relnamespace
+    WHERE n.nspname = 'public'
+      AND c.relname = 'idx_invoices_booking_id'
+  ),
+  'the redundant invoice booking index is absent'
 );
 
 SELECT ok(
