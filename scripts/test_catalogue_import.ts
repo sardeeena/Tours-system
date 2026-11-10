@@ -118,6 +118,17 @@ async function runTestSuite() {
   assert(TOUR_CATEGORIES.length === 6, `Source contains exact 6 categories (found ${TOUR_CATEGORIES.length})`);
   assert(REVIEWS_DATA.length === 0, 'No fabricated static guest reviews are shipped');
 
+  const departureTimesAreValid = ALL_TOURS.every((tour) => {
+    const matches = [...tour.departureTime.matchAll(/\b(\d{1,2}):(\d{2})\s*(AM|PM)\b/g)];
+    return matches.length > 0 && matches.every((match) => {
+      const hour = Number(match[1]);
+      const minute = Number(match[2]);
+      return hour >= 1 && hour <= 12 && minute >= 0 && minute <= 59;
+    });
+  });
+  assert(departureTimesAreValid, 'Every tour departure time uses valid 12-hour clock notation');
+
+
   assert(
     ALL_TOURS.every((tour) => tour.rating === 0 && tour.reviewCount === 0 && (!tour.reviews || tour.reviews.length === 0)),
     'Tours do not ship unsupported ratings, review counts, or embedded testimonials'
@@ -180,6 +191,28 @@ async function runTestSuite() {
       catalogueSeedSql.includes("'what_to_bring'") &&
       catalogueSeedSql.includes("'important_information'"),
     'Catalogue seed imports published tour records and preserves preparation sections'
+  );
+  assert(
+    catalogueSeedSql.includes("'08:00 AM or 02:00 PM'") &&
+      catalogueSeedSql.includes("'01:30 PM'") &&
+      catalogueSeedSql.includes("'10:00 AM or 02:00 PM'"),
+    'Catalogue seed uses normalized departure time labels'
+  );
+  assert(
+    catalogueSeedSql.includes("'Minimum age 10 years'") &&
+      catalogueSeedSql.includes('difficulty,age_restrictions,badge'),
+    'Catalogue seed preserves the scuba experience minimum age restriction'
+  );
+  const tourInsertStart = catalogueSeedSql.indexOf('INSERT INTO public.tours');
+  const tourInsertEnd = catalogueSeedSql.indexOf('INSERT INTO public.tour_categories', tourInsertStart);
+  const tourInsertSql = catalogueSeedSql.slice(tourInsertStart, tourInsertEnd);
+  assert(
+    ALL_TOURS.every((tour) =>
+      tourInsertSql.includes(`'${tour.slug}'`) &&
+      tourInsertSql.includes(`'${tour.title.replace(/'/g, "''")}'`) &&
+      tourInsertSql.includes(`, ${tour.priceEur}, ${tour.childPriceEur},`)
+    ),
+    'Catalogue seed carries every source tour title, slug, and adult/child starting price'
   );
   assert(
     catalogueSeedSql.includes("'Illustrative stock photo") &&
