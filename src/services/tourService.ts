@@ -388,6 +388,8 @@ export interface AdminTourPayload {
   inclusions?: string[];
   exclusions?: string[];
   faqs?: Array<{ question: string; answer: string }>;
+  whatToBring?: string[];
+  importantInformation?: string[];
   pickupLocationIds?: string[];
   extraIds?: string[];
   extraPrices?: Record<string, number>;
@@ -916,14 +918,43 @@ async function syncTourRelations(tourId: string, payload: AdminTourPayload): Pro
     }
   }
 
-  // FAQs
+  // FAQs (preserve preparation sections when normal FAQs are edited)
   if (payload.faqs !== undefined) {
-    await supabase.from('tour_faqs').delete().eq('tour_id', tourId);
+    await supabase.from('tour_faqs').delete().eq('tour_id', tourId).eq('section', 'faq');
     if (payload.faqs.length > 0) {
       const items = payload.faqs.map((f, idx) => ({
         tour_id: tourId,
         question: f.question,
         answer: f.answer,
+        section: 'faq',
+        sort_order: idx + 1,
+      }));
+      await supabase.from('tour_faqs').insert(items);
+    }
+  }
+
+  if (payload.whatToBring !== undefined) {
+    await supabase.from('tour_faqs').delete().eq('tour_id', tourId).eq('section', 'what_to_bring');
+    if (payload.whatToBring.length > 0) {
+      const items = payload.whatToBring.map((item, idx) => ({
+        tour_id: tourId,
+        question: 'What to bring',
+        answer: item,
+        section: 'what_to_bring',
+        sort_order: idx + 1,
+      }));
+      await supabase.from('tour_faqs').insert(items);
+    }
+  }
+
+  if (payload.importantInformation !== undefined) {
+    await supabase.from('tour_faqs').delete().eq('tour_id', tourId).eq('section', 'important_information');
+    if (payload.importantInformation.length > 0) {
+      const items = payload.importantInformation.map((item, idx) => ({
+        tour_id: tourId,
+        question: 'Important information',
+        answer: item,
+        section: 'important_information',
         sort_order: idx + 1,
       }));
       await supabase.from('tour_faqs').insert(items);
