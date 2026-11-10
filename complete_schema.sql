@@ -2079,6 +2079,9 @@ $$;
 -- Restrict guest schedule reads to published tours and bound date-range work.
 -- Admins retain access to draft and archived tours for operational review.
 
+-- Restrict guest schedule reads to published tours and bound date-range work.
+-- Admins retain access to draft and archived tours for operational review.
+
 CREATE OR REPLACE FUNCTION public.get_tour_availability_schedule(
   p_tour_identifier TEXT,
   p_start_date DATE,
@@ -2128,6 +2131,12 @@ BEGIN
     RAISE EXCEPTION USING
       ERRCODE = '22023',
       MESSAGE = 'Availability date range cannot exceed 366 days';
+  END IF;
+
+  IF NOT v_is_admin AND p_start_date < CURRENT_DATE THEN
+    RAISE EXCEPTION USING
+      ERRCODE = '22023',
+      MESSAGE = 'Public availability lookup cannot include past dates';
   END IF;
 
   SELECT t.*
