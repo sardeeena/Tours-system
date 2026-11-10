@@ -228,15 +228,22 @@ async function authenticateToken(req: AuthenticatedRequest, _res: Response, next
     const { data: { user }, error } = await serverSupabase.auth.getUser(token);
     if (!error && user) {
       let role = (user.app_metadata?.role as string) || 'customer';
-      // Query profiles table for authoritative role
-      const { data: profile } = await serverSupabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .maybeSingle();
+      // Query the caller's own profile using their verified JWT so RLS works
+      // even when the server client is configured with a publishable/anon key.
+      if (SUPABASE_URL && SUPABASE_KEY) {
+        const userScopedSupabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+          global: { headers: { Authorization: `Bearer ${token}` } },
+          auth: { persistSession: false, autoRefreshToken: false },
+        });
+        const { data: profile } = await userScopedSupabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle();
 
-      if (profile?.role) {
-        role = profile.role;
+        if (profile?.role) {
+          role = profile.role;
+        }
       }
 
       req.user = {
@@ -443,6 +450,163 @@ app.get('/api/health', (_req: Request, res: Response) => {
       heapTotalMb: Math.round((mem.heapTotal / 1024 / 1024) * 100) / 100,
     },
   });
+
+});
+
+// ------------------------------------------------------------------------------
+// 2A. Server-side communications status and delivery endpoints
+// Provider secrets are read only from Hostinger/server environment variables.
+// Browser-supplied API keys are never accepted.
+// ------------------------------------------------------------------------------
+function requireCommunicationsStaff(req: AuthenticatedRequest, res: Response): boolean {
+  if (!req.user) {
+    res.status(401).json({ success: false, error: 'Sign in with an authorized staff account to send communications.' });
+    return false;
+  }
+
+  if (!['staff', 'manager', 'admin', 'super_admin'].includes(req.user.role)) {
+    res.status(403).json({ success: false, error: 'Administrative or staff permissions are required.' });
+    return false;
+  }
+
+  return true;
+}
+
+app.get('/api/communications/status', rateLimit(60, 60_000), (req: AuthenticatedRequest, res: Response) => {
+  if (!requireCommunicationsStaff(req, res)) return;
+
+  const emailConfigured = Boolean(process.env.RESEND_API_KEY?.trim() && process.env.RESEND_FROM_EMAIL?.trim());
+  const whatsappConfigured = Boolean(
+    process.env.WHATSAPP_ACCESS_TOKEN?.trim()
+    && process.env.WHATSAPP_PHONE_NUMBER_ID?.trim()
+    && /^v\\d+\\.\\d+$/.test(process.env.WHATSAPP_GRAPH_API_VERSION || '')
+  );
+
+  res.json({
+    email: { configured: emailConfigured, provider: 'Resend' },
+    whatsapp: { configured: whatsappConfigured, provider: 'Meta Cloud API' },
+  });
+});
+
+app.post('/api/communications/email', rateLimit(20, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireCommunicationsStaff(req, res)) return;
+
+  const to = typeof req.body?.to === 'string' ? req.body.to.trim() : '';
+  const subject = typeof req.body?.subject === 'string' ? req.body.subject.trim() : '';
+  const textBody = typeof req.body?.text === 'string' ? req.body.text.trim() : '';
+
+  if (!isValidEmail(to) || !subject || subject.length > 200 || !textBody || textBody.length > 20_000) {
+    return res.status(400).json({ success: false, error: 'A valid recipient, subject (max 200 characters), and message (max 20,000 characters) are required.' });
+  }
+
+  const apiKey = process.env.RESEND_API_KEY?.trim();
+  const fromEmail = process.env.RESEND_FROM_EMAIL?.trim();
+  const fromName = (process.env.RESEND_FROM_NAME || 'Kemet Spirit').trim();
+
+  if (!apiKey || !fromEmail || !isValidEmail(fromEmail)) {
+    return res.status(503).json({ success: false, error: 'Server-side email delivery is not configured. Set RESEND_API_KEY and RESEND_FROM_EMAIL in Hostinger environment variables.' });
+  }
+
+  try {
+    const idempotencyKey = typeof req.headers['idempotency-key'] === 'string'
+      && /^[a-zA-Z0-9._:-]{8,128}$/.test(req.headers['idempotency-key'])
+      ? req.headers['idempotency-key']
+      : randomUUID();
+
+    const providerResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'Idempotency-Key': idempotencyKey,
+      },
+      body: JSON.stringify({
+        from: `${fromName} <${fromEmail}>`,
+        to: [to],
+        subject,
+        text: textBody,
+      }),
+      signal: AbortSignal.timeout(15_000),
+    });
+
+    const providerBody = await providerResponse.json().catch(() => ({} as any));
+    if (!providerResponse.ok || typeof providerBody?.id !== 'string') {
+      const providerError = typeof providerBody?.message === 'string'
+        ? providerBody.message
+        : `Email provider rejected the request (HTTP ${providerResponse.status}).`;
+      return res.status(502).json({ success: false, error: providerError });
+    }
+
+    return res.status(200).json({
+      success: true,
+      providerName: 'Resend',
+      providerMessageId: providerBody.id,
+      status: 'sent',
+    });
+  } catch (error: any) {
+    const message = error?.name === 'TimeoutError'
+      ? 'Email provider request timed out. No delivery confirmation was received.'
+      : 'Email provider request failed. Please retry after checking the server logs.';
+    return res.status(502).json({ success: false, error: message });
+  }
+});
+
+app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireCommunicationsStaff(req, res)) return;
+
+  const phone = typeof req.body?.phone === 'string' ? req.body.phone.replace(/[^0-9]/g, '') : '';
+  const message = typeof req.body?.text === 'string' ? req.body.text.trim() : '';
+
+  if (phone.length < 8 || phone.length > 15 || !message || message.length > 4096) {
+    return res.status(400).json({ success: false, error: 'A valid international phone number and message (max 4,096 characters) are required.' });
+  }
+
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN?.trim();
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID?.trim();
+  const graphVersion = process.env.WHATSAPP_GRAPH_API_VERSION?.trim();
+
+  if (!accessToken || !phoneNumberId || !/^\\d{5,30}$/.test(phoneNumberId) || !/^v\\d+\\.\\d+$/.test(graphVersion || '')) {
+    return res.status(503).json({ success: false, error: 'Server-side WhatsApp delivery is not configured. Set WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID, and WHATSAPP_GRAPH_API_VERSION in Hostinger environment variables.' });
+  }
+
+  try {
+    const providerResponse = await fetch(`https://graph.facebook.com/${graphVersion}/${phoneNumberId}/messages`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messaging_product: 'whatsapp',
+        recipient_type: 'individual',
+        to: phone,
+        type: 'text',
+        text: { preview_url: false, body: message },
+      }),
+      signal: AbortSignal.timeout(15_000),
+    });
+
+    const providerBody = await providerResponse.json().catch(() => ({} as any));
+    const providerMessageId = providerBody?.messages?.[0]?.id;
+    if (!providerResponse.ok || typeof providerMessageId !== 'string') {
+      const providerError = typeof providerBody?.error?.message === 'string'
+        ? providerBody.error.message
+        : `WhatsApp provider rejected the request (HTTP ${providerResponse.status}).`;
+      return res.status(502).json({ success: false, error: providerError });
+    }
+
+    return res.status(200).json({
+      success: true,
+      providerName: 'Meta Cloud API',
+      providerMessageId,
+      status: 'sent',
+    });
+  } catch (error: any) {
+    const message = error?.name === 'TimeoutError'
+      ? 'WhatsApp provider request timed out. No delivery confirmation was received.'
+      : 'WhatsApp provider request failed. Please retry after checking the server logs.';
+    return res.status(502).json({ success: false, error: message });
+  }
 });
 
 // ------------------------------------------------------------------------------
