@@ -420,6 +420,30 @@ function MainApp() {
           : 'Booking Confirmation | Awesome Adventure Tours',
         description: 'Your excursion booking voucher and confirmed hotel pickup transfer itinerary.',
         canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
+        robotsIndex: false,
+        robotsFollow: false,
+      });
+      return;
+    }
+
+    if (currentPath === '/my-booking' || currentPath.startsWith('/my-booking/')) {
+      seoService.apply({
+        title: 'Manage Your Booking | Awesome Adventure Tours',
+        description: 'Retrieve your booking details and voucher using your secure booking reference.',
+        canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
+        robotsIndex: false,
+        robotsFollow: false,
+      });
+      return;
+    }
+
+    if (currentPath === '/booking' || currentPath.startsWith('/booking/')) {
+      seoService.apply({
+        title: 'Book Your Excursion | Awesome Adventure Tours',
+        description: 'Complete your secure reservation for a Red Sea excursion.',
+        canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
+        robotsIndex: false,
+        robotsFollow: true,
       });
       return;
     }
