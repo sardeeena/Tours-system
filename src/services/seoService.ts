@@ -129,7 +129,7 @@ export const seoService = {
     const formattedPrice = `€${tour.priceEur}`;
 
     const title = `${tour.title} (${tour.destination}) | Direct Booking`;
-    const description = `Book ${tour.title} in ${tour.destination}. ${tour.durationLabel}, hotel lobby pickup included, free 24h cancellation. Starting from ${formattedPrice}/person.`;
+    const description = `Book ${tour.title} in ${tour.destination}. ${tour.durationLabel}. Check this excursion's pickup details, inclusions, and cancellation terms before booking. From ${formattedPrice}/person.`;
 
     const schemaJsonLd: Record<string, unknown> = {
       '@context': 'https://schema.org',
@@ -142,8 +142,6 @@ export const seoService = {
         '@type': 'Offer',
         price: tour.priceEur,
         priceCurrency: 'EUR',
-        availability: 'https://schema.org/InStock',
-        validFrom: new Date().toISOString().split('T')[0],
         url: tourUrl,
         seller: {
           '@type': 'TravelAgency',
@@ -187,7 +185,6 @@ export const seoService = {
         tour.category,
         'Red Sea excursion',
         'Hurghada boat trip',
-        'hotel pickup included',
       ],
       canonicalUrl: tourUrl,
       ogType: 'product',
@@ -210,8 +207,8 @@ export const seoService = {
       : `${categoryName} Excursions in Red Sea | Boat Trips & Safaris`;
 
     const description = isAll
-      ? `Compare ${tourCount} Red Sea boat trips, island cruises, snorkeling reefs, and desert safaris. Direct local operator with free cancellation and hotel pickup.`
-      : `Explore ${tourCount} ${categoryName.toLowerCase()} in Hurghada and the Red Sea. Direct harbor departures, snorkeling equipment, and door-to-door hotel transfers included.`;
+      ? `Compare ${tourCount} Red Sea boat trips, island cruises, snorkeling reefs, and desert safaris. Review pickup details, inclusions, and cancellation terms for each excursion.`
+      : `Explore ${tourCount} ${categoryName.toLowerCase()} in Hurghada and the Red Sea. Compare departure details, inclusions, and pickup arrangements for each excursion.`;
 
     const schemaJsonLd: Record<string, unknown> = {
       '@context': 'https://schema.org',
