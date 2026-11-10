@@ -1039,8 +1039,8 @@ export async function getFinancialReports(
 
   // Filter bookings strictly matching targetCurrency
   const currencyBookings = bookings.filter((b) => {
-    const cur = 'EUR'; // Standard catalog base currency
-    if (cur !== targetCurrency) return false;
+    const cur = String(b.pricing?.currency || 'EUR').toUpperCase();
+    if (cur !== targetCurrency.toUpperCase()) return false;
     if (b.status === 'cancelled') return false;
     const bDate = b.date ? b.date.split('T')[0] : '';
     if (dateRange?.start && bDate < dateRange.start) return false;
@@ -1049,8 +1049,8 @@ export async function getFinancialReports(
   });
 
   const currencyPayments = payments.filter((p) => {
-    if (p.currency !== targetCurrency) return false;
-    if (p.paymentStatus !== 'Paid' && p.paymentStatus !== 'paid') return false;
+    if (p.currency !== targetCurrency.toUpperCase()) return false;
+    if (!isSettledPayment(p)) return false;
     const pDate = p.paymentDate.split('T')[0];
     if (dateRange?.start && pDate < dateRange.start) return false;
     if (dateRange?.end && pDate > dateRange.end) return false;
@@ -1071,7 +1071,20 @@ export async function getFinancialReports(
   const totalPaid = currencyPayments.reduce((sum, p) => sum + p.amount, 0);
   const totalRefunded = currencyRefunds.reduce((sum, r) => sum + (r.approvedAmount || r.amount), 0);
   const totalDiscounts = currencyBookings.reduce((sum, b) => sum + (b.pricing?.discountEur || 0), 0);
-  const totalOutstanding = Math.max(0, totalRevenue - totalPaid);
+  const totalOutstanding = currencyBookings.reduce((sum, booking) => {
+    const bookingPayments = currencyPayments.filter(
+      (payment) => payment.bookingReference === booking.bookingReference || payment.bookingId === booking.bookingId
+    );
+    const bookingRefunds = currencyRefunds.filter(
+      (refund) => refund.bookingReference === booking.bookingReference || refund.bookingId === booking.bookingId
+    );
+    const netPaid = Math.max(
+      0,
+      bookingPayments.reduce((paid, payment) => paid + payment.amount, 0) -
+        bookingRefunds.reduce((refunded, refund) => refunded + (refund.approvedAmount || refund.amount), 0)
+    );
+    return sum + Math.max(0, (booking.pricing?.totalEur || 0) - netPaid);
+  }, 0);
 
   // Revenue by Date
   const dateMap = new Map<string, { amount: number; bookingsCount: number }>();
@@ -1158,15 +1171,25 @@ export async function getFinancialReports(
   // Full Multi-Currency Breakdown
   const supportedCurrencies = ['EUR', 'USD', 'GBP', 'EGP'];
   const currencyBreakdown: CurrencyBreakdownItem[] = supportedCurrencies.map((cur) => {
-    const cBookings = bookings.filter((b) => cur === 'EUR' && b.status !== 'cancelled');
-    const cPayments = payments.filter((p) => p.currency === cur && (p.paymentStatus === 'Paid' || p.paymentStatus === 'paid'));
-    const cRefunds = refunds.filter((r) => r.currency === cur && r.status === 'processed');
+    const cBookings = bookings.filter(
+      (booking) => String(booking.pricing?.currency || 'EUR').toUpperCase() === cur && booking.status !== 'cancelled'
+    );
+    const cPayments = payments.filter((payment) => payment.currency === cur && isSettledPayment(payment));
+    const cRefunds = refunds.filter((refund) => refund.currency === cur && refund.status === 'processed');
 
-    const gross = cBookings.reduce((sum, b) => sum + (b.pricing?.totalEur || 0), 0);
-    const collected = cPayments.reduce((sum, p) => sum + p.amount, 0);
-    const ref = cRefunds.reduce((sum, r) => sum + (r.approvedAmount || r.amount), 0);
+    const gross = cBookings.reduce((sum, booking) => sum + (booking.pricing?.totalEur || 0), 0);
+    const collected = cPayments.reduce((sum, payment) => sum + payment.amount, 0);
+    const ref = cRefunds.reduce((sum, refund) => sum + (refund.approvedAmount || refund.amount), 0);
     const net = Math.max(0, collected - ref);
-    const out = Math.max(0, gross - collected);
+    const out = cBookings.reduce((sum, booking) => {
+      const bookingPaid = cPayments
+        .filter((payment) => payment.bookingReference === booking.bookingReference || payment.bookingId === booking.bookingId)
+        .reduce((paid, payment) => paid + payment.amount, 0);
+      const bookingRefunded = cRefunds
+        .filter((refund) => refund.bookingReference === booking.bookingReference || refund.bookingId === booking.bookingId)
+        .reduce((refunded, refund) => refunded + (refund.approvedAmount || refund.amount), 0);
+      return sum + Math.max(0, (booking.pricing?.totalEur || 0) - Math.max(0, bookingPaid - bookingRefunded));
+    }, 0);
 
     return {
       currency: cur,
