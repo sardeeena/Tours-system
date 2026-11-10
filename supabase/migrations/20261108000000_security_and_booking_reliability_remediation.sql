@@ -160,7 +160,7 @@ BEGIN
         'customer_first_name', LOWER(TRIM(p_customer_first_name)),
         'customer_last_name', LOWER(TRIM(p_customer_last_name)),
         'customer_email', LOWER(TRIM(p_customer_email)),
-        'customer_phone', REGEXP_REPLACE(COALESCE(p_customer_phone, ''), '\\s+', ' ', 'g'),
+        'customer_phone', REGEXP_REPLACE(COALESCE(p_customer_phone, ''), '\s+', ' ', 'g'),
         'customer_country', LOWER(TRIM(COALESCE(p_customer_country, 'International'))),
         'customer_hotel', LOWER(TRIM(COALESCE(p_customer_hotel, ''))),
         'pickup_location_id', COALESCE(p_pickup_location_id, ''),
@@ -210,6 +210,30 @@ BEGIN
     FROM public.tour_availability
     WHERE id = v_avail.id
     FOR UPDATE;
+
+    -- Recheck after acquiring the capacity lock: a concurrent request with the same
+    -- key may have committed while this transaction waited for the availability row.
+    SELECT * INTO v_existing_dup
+    FROM public.bookings
+    WHERE idempotency_key = TRIM(p_idempotency_key)
+    LIMIT 1;
+
+    IF FOUND THEN
+        IF v_existing_dup.idempotency_payload IS DISTINCT FROM v_idempotency_payload THEN
+            RETURN jsonb_build_object('success', false, 'error', 'This reservation request key has already been used for different booking details.');
+        END IF;
+        RETURN jsonb_build_object(
+            'success', true,
+            'bookingId', v_existing_dup.id,
+            'bookingReference', v_existing_dup.booking_reference,
+            'status', v_existing_dup.status,
+            'paymentStatus', v_existing_dup.payment_status,
+            'totalEur', v_existing_dup.total,
+            'bookingDate', v_existing_dup.booking_date,
+            'isDuplicate', true,
+            'message', 'Idempotent replay: original booking returned.'
+        );
+    END IF;
 
     IF v_avail.status IN ('unavailable', 'sold_out') THEN
         RETURN jsonb_build_object(
