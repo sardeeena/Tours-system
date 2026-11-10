@@ -41,6 +41,7 @@ export const AdminTourList: React.FC<AdminTourListProps> = ({
   const { showToast } = useToast();
   const [tours, setTours] = useState<DbTour[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft' | 'archived' | 'featured'>('all');
   const [sortField, setSortField] = useState<'title' | 'price' | 'status' | 'updated_at'>('updated_at');
@@ -54,12 +55,15 @@ export const AdminTourList: React.FC<AdminTourListProps> = ({
 
   const loadTours = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const data = await adminListTours();
       setTours(data);
     } catch (err: any) {
+      const message = err?.message || 'Failed to load excursions from database.';
       console.error('Error loading tours:', err);
-      showToast(err.message || 'Failed to load excursions from database', 'error');
+      setLoadError(message);
+      showToast(message, 'error');
     } finally {
       setLoading(false);
     }
@@ -237,6 +241,19 @@ export const AdminTourList: React.FC<AdminTourListProps> = ({
           <div className="p-12 text-center text-xs text-stone-400 space-y-2">
             <div className="w-6 h-6 border-2 border-[#0A6C74] border-t-transparent rounded-full animate-spin mx-auto" />
             <p>Loading tours from Supabase...</p>
+          </div>
+        ) : loadError && tours.length === 0 ? (
+          <div className="p-12 text-center text-xs text-stone-400 space-y-3" role="alert">
+            <AlertTriangle className="w-7 h-7 text-amber-400 mx-auto" />
+            <p className="font-semibold text-stone-200">Unable to load tours from the database.</p>
+            <p className="max-w-xl mx-auto text-stone-400">{loadError}</p>
+            <button
+              type="button"
+              onClick={loadTours}
+              className="px-4 py-2 bg-[#0A6C74] hover:bg-[#08565C] text-white rounded text-xs font-semibold"
+            >
+              Retry
+            </button>
           </div>
         ) : filteredTours.length === 0 ? (
           <div className="p-12 text-center text-xs text-stone-400 space-y-3">
