@@ -252,12 +252,11 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
     saveProviderConfig(newConfig);
     const updatedConfig = getProviderConfig();
     setProviderConfig(updatedConfig);
+    setTempApiKey('');
     setIsSettingsOpen(false);
     showToast(
-      updatedConfig.whatsapp.isConfigured
-        ? `WhatsApp provider connected (${updatedConfig.whatsapp.provider})`
-        : 'WhatsApp provider set to unconfigured / incomplete credentials',
-      updatedConfig.whatsapp.isConfigured ? 'success' : 'info'
+      'Provider selection saved. API keys are never stored in this browser; sending remains disabled until a server-side WhatsApp provider is configured.',
+      'info'
     );
   };
 
