@@ -399,7 +399,6 @@ export function getPageSeo(
         tour.destination,
         tour.category,
         'Red Sea excursion',
-        'hotel pickup included',
         'free cancellation',
         ...(tour.categories || []),
       ],
