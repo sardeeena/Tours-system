@@ -39,6 +39,16 @@ const STATIC_PAGES: StaticPageItem[] = [
 
 const LOCAL_SEO_PREFIX = 'rse_seo_cache_';
 
+const getSeoEntityType = (scope: SeoScopeType): 'page' | 'tour' | 'destination' | 'category' => {
+  if (scope === 'homepage' || scope === 'pages') return 'page';
+  if (scope === 'tours') return 'tour';
+  if (scope === 'destinations') return 'destination';
+  return 'category';
+};
+
+const isPageSeoScope = (scope: SeoScopeType): boolean =>
+  scope === 'homepage' || scope === 'pages';
+
 export const AdminSeoManager: React.FC = () => {
   const { showToast } = useToast();
   const [scope, setScope] = useState<SeoScopeType>('homepage');
@@ -175,17 +185,21 @@ export const AdminSeoManager: React.FC = () => {
     let loadedFromDb = false;
     if (isSupabaseConfigured()) {
       try {
-        const entityType = currentScope === 'homepage' ? 'page' : currentScope === 'pages' ? 'page' : currentScope.slice(0, -1);
-        const { data, error } = await supabase
+        const entityType = getSeoEntityType(currentScope);
+        let query = supabase
           .from('seo_metadata')
           .select('*')
-          .eq('entity_type', entityType)
-          .eq('entity_id', entityId)
-          .maybeSingle();
+          .eq('entity_type', entityType);
+
+        query = isPageSeoScope(currentScope)
+          ? query.eq('page_slug', entityId)
+          : query.eq('entity_id', entityId);
+
+        const { data, error } = await query.maybeSingle();
 
         if (!error && data) {
           setSeoTitle(data.seo_title || defaultTitle);
-          setMetaDescription(data.seo_description || defaultDesc);
+          setMetaDescription(data.meta_description || defaultDesc);
           setCanonicalUrl(data.canonical_url || defaultCanonical);
           setOgTitle(data.og_title || data.seo_title || defaultTitle);
           setOgDescription(data.og_description || data.seo_description || defaultDesc);
@@ -271,14 +285,15 @@ export const AdminSeoManager: React.FC = () => {
       }
     }
 
-    const entityType =
-      scope === 'homepage' ? 'page' : scope === 'pages' ? 'page' : scope.slice(0, -1);
+    const entityType = getSeoEntityType(scope);
+    const isPageEntity = isPageSeoScope(scope);
 
     const payload = {
       entity_type: entityType,
-      entity_id: selectedEntityId,
+      entity_id: isPageEntity ? null : selectedEntityId,
+      page_slug: isPageEntity ? selectedEntityId : null,
       seo_title: seoTitle,
-      seo_description: metaDescription,
+      meta_description: metaDescription,
       canonical_url: canonicalUrl,
       og_title: ogTitle || seoTitle,
       og_description: ogDescription || metaDescription,
@@ -311,16 +326,27 @@ export const AdminSeoManager: React.FC = () => {
 
     if (isSupabaseConfigured()) {
       try {
-        const { error } = await supabase.from('seo_metadata').upsert(payload);
+        const conflictTarget = isPageEntity ? 'entity_type,page_slug' : 'entity_type,entity_id';
+        const { error } = await supabase
+          .from('seo_metadata')
+          .upsert(payload, { onConflict: conflictTarget });
         if (error) throw error;
       } catch (err: any) {
-        console.warn('Supabase SEO save warning:', err);
+        console.error('Supabase SEO save failed:', err);
+        setSaving(false);
+        showToast(err?.message || 'Could not save SEO metadata to the database.', 'error');
+        return;
       }
     }
 
     setSaving(false);
     setSaveSuccess(true);
-    showToast('SEO & OpenGraph metadata saved successfully.', 'success');
+    showToast(
+      isSupabaseConfigured()
+        ? 'SEO & OpenGraph metadata saved to the database.'
+        : 'SEO metadata saved in this browser only; it is not published to visitors.',
+      isSupabaseConfigured() ? 'success' : 'info'
+    );
     setTimeout(() => setSaveSuccess(false), 3000);
   };
 
