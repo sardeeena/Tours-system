@@ -129,6 +129,7 @@ export const AdminPagesManager: React.FC = () => {
       setPages(allUpdated);
       setActivePage(updatedPage);
       setHasUnsavedChanges(false);
+      window.dispatchEvent(new Event('rse_pages_updated'));
       showToast(`Page "${activePage.title}" saved successfully.`, 'success');
     } catch (err: any) {
       showToast(err.message || 'Failed to save page', 'error');
