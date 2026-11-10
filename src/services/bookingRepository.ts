@@ -13,6 +13,9 @@ import { bookingRateLimiter } from '../lib/security';
 import { findOrCreateAuthoritativeCustomer } from './platformConsistency';
 import { recordActivity } from './crmService';
 import { publishAutomationEvent } from './communicationService';
+import { resolveBookingTourIdentifier, shouldUseLocalBookingCache } from '../lib/bookingIdentifiers';
+
+const isDevelopmentBuild = Boolean(import.meta.env.DEV);
 
 export interface IBookingRepository {
   createBooking(booking: Booking): Promise<Booking>;
@@ -170,7 +173,7 @@ class SupabaseBookingRepository implements IBookingRepository {
       // Executes single PostgreSQL transaction with row-level capacity lock, server-side pricing,
       // passenger manifest creation, extras persistence, genuine request idempotency, and audit logging.
       const { data: atomicRes, error: rpcErr } = await supabase.rpc('create_booking_atomic', {
-        p_tour_identifier: booking.tourId || booking.tourSlug || '',
+        p_tour_identifier: resolveBookingTourIdentifier(booking.tourId, booking.tourSlug),
         p_booking_date: bookingDateStr,
         p_adult_count: adults,
         p_child_count: children,
@@ -272,6 +275,8 @@ class SupabaseBookingRepository implements IBookingRepository {
       }
     }
 
+    if (!isDevelopmentBuild) return null;
+
     const local = this.getLocalBookings();
     const found = local.find((b) => b.bookingReference === cleanRef);
     return found || null;
@@ -354,6 +359,9 @@ class SupabaseBookingRepository implements IBookingRepository {
       }
     }
 
+    // Browser-local lookup is permitted only in the explicit development sandbox.
+    if (!isDevelopmentBuild) return null;
+
     // Dev sandbox fallback: require exact email or normalized phone match (>= 8 digits)
     const b = await this.getBooking(bookingReference);
     if (!b || !cleanContact) return null;
@@ -433,7 +441,8 @@ class SupabaseBookingRepository implements IBookingRepository {
       }
     }
 
-    // Dev sandbox fallback only
+    // Dev sandbox fallback only; production never reads browser-local bookings.
+    if (!isDevelopmentBuild) return [];
     return this.getLocalBookings().filter((b) => b.customer.email.toLowerCase() === cleanEmail);
   }
 
@@ -441,10 +450,13 @@ class SupabaseBookingRepository implements IBookingRepository {
     if (booking.status === 'cancelled') {
       throw new Error('Bookings must be cancelled through the authorized cancellation approval workflow.');
     }
-    const local = this.getLocalBookings().map((item) => (item.bookingReference === booking.bookingReference ? booking : item));
-    this.saveLocalBookings(local);
 
-    if (isSupabaseConfigured()) {
+    const supabaseConfigured = isSupabaseConfigured();
+    if (!supabaseConfigured && !isDevelopmentBuild) {
+      throw new Error('The reservation service is temporarily unavailable. Booking changes were not saved.');
+    }
+
+    if (supabaseConfigured) {
       try {
         const { error } = await supabase
           .from('bookings')
@@ -466,6 +478,13 @@ class SupabaseBookingRepository implements IBookingRepository {
         throw err;
       }
     }
+
+    // Update the browser cache only after the authoritative write succeeds, or
+    // in the explicit development sandbox when Supabase is intentionally absent.
+    const local = this.getLocalBookings().map((item) =>
+      item.bookingReference === booking.bookingReference ? booking : item
+    );
+    this.saveLocalBookings(local);
 
     // CRM Activity Timeline
     try {
@@ -504,6 +523,9 @@ class SupabaseBookingRepository implements IBookingRepository {
   }
 
   async cancelBooking(bookingReference: string, reason: string, verification: string): Promise<Booking | null> {
+    if (!isSupabaseConfigured() && !isDevelopmentBuild) {
+      throw new Error('The cancellation service is temporarily unavailable.');
+    }
     if (!verification?.trim()) {
       throw new Error('The booking email address or full phone number is required to verify a cancellation request.');
     }
@@ -605,12 +627,21 @@ class SupabaseBookingRepository implements IBookingRepository {
   }
 
   async listBookings(filters?: { status?: string; limit?: number }): Promise<Booking[]> {
-    if (!isSupabaseConfigured() || isSchemaMissing()) {
+    const supabaseConfigured = isSupabaseConfigured();
+    const schemaMissing = isSchemaMissing();
+
+    if (shouldUseLocalBookingCache(isDevelopmentBuild, supabaseConfigured, schemaMissing)) {
       const local = this.getLocalBookings();
       if (filters?.status && filters.status !== 'all') {
         return local.filter((b) => b.status === filters.status);
       }
       return local;
+    }
+
+    // In production, a missing connection/schema must never expose stale
+    // per-browser records as authoritative bookings.
+    if (!supabaseConfigured || schemaMissing) {
+      return [];
     }
 
     try {
