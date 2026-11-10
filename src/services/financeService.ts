@@ -808,7 +808,18 @@ export async function requestRefund(refundData: {
     return { success: true, refund: localRefund };
   }
 
-  const idempotencyKey = `refund:${refundData.bookingReference.trim().toUpperCase()}:${refundData.requestedAmount.toFixed(2)}:${refundData.reason.trim().toLowerCase().slice(0, 90)}`;
+  const idempotencyPayload = [
+    refundData.bookingReference.trim().toUpperCase(),
+    refundData.requestedAmount.toFixed(2),
+    refundData.currency.toUpperCase(),
+    refundData.reason.trim().toLowerCase(),
+    refundData.refundMethod,
+  ].join('|');
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(idempotencyPayload));
+  const idempotencyHash = Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('');
+  const idempotencyKey = `refund:${idempotencyHash}`;
   const { data, error } = await supabase.rpc('request_refund_atomic', {
     p_booking_reference: refundData.bookingReference,
     p_payment_id: refundData.paymentId && UUID_PATTERN.test(refundData.paymentId) ? refundData.paymentId : null,
