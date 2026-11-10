@@ -888,3 +888,6 @@ DROP POLICY IF EXISTS "Users can request booking cancellation" ON public.booking
 -- is safe and avoids relying on the mutable session search path.
 ALTER FUNCTION public.get_executive_bi_metrics(DATE, DATE) SET search_path = '';
 ALTER FUNCTION public.query_custom_bi_report(JSONB) SET search_path = '';
+
+ALTER FUNCTION public.handle_updated_at() SET search_path = '';
+ALTER FUNCTION public.handle_user_confirmed() SET search_path = '';
