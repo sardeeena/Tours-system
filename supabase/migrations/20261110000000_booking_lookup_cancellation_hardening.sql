@@ -721,3 +721,164 @@ $submission_limit$;
 
 REVOKE ALL ON FUNCTION public.check_public_submission_rate_limit() FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.check_public_submission_rate_limit() TO postgres, service_role;
+
+
+-- Close remaining public-data and RPC privilege gaps found by live Supabase advisors.
+-- SECURITY DEFINER trigger functions are invoked by triggers; API roles do not need
+-- direct EXECUTE permission on them.
+REVOKE ALL ON FUNCTION public.handle_updated_at() FROM PUBLIC, anon, authenticated;
+REVOKE ALL ON FUNCTION public.handle_user_confirmed() FROM PUBLIC, anon, authenticated;
+
+-- These assignment RPCs already perform an internal trusted-admin check.
+-- Guests must not be able to invoke them at all.
+REVOKE ALL ON FUNCTION public.replace_extra_tour_assignments_atomic(UUID, JSONB) FROM PUBLIC, anon;
+REVOKE ALL ON FUNCTION public.replace_tour_extra_assignments_atomic(UUID, JSONB) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.replace_extra_tour_assignments_atomic(UUID, JSONB) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.replace_tour_extra_assignments_atomic(UUID, JSONB) TO authenticated, service_role;
+
+-- The recalculation helper previously rejected only anon, allowing any signed-in
+-- customer to alter aggregate statistics for an arbitrary customer UUID.
+CREATE OR REPLACE FUNCTION public.recalculate_customer_stats(p_customer_id UUID)
+RETURNS VOID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $recalculate$
+DECLARE
+  v_total_spent NUMERIC(10,2) := 0;
+  v_outstanding NUMERIC(10,2) := 0;
+  v_total_count INT := 0;
+  v_completed_count INT := 0;
+  v_cancelled_count INT := 0;
+  v_first_date DATE;
+  v_latest_date DATE;
+  v_upcoming_date DATE;
+  v_current_tags TEXT[];
+BEGIN
+  IF COALESCE(auth.jwt() ->> 'role', '') <> 'service_role'
+     AND NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Access denied: customer statistics recalculation is restricted to authorized staff.'
+      USING ERRCODE = '42501';
+  END IF;
+
+  IF p_customer_id IS NULL THEN
+    RETURN;
+  END IF;
+
+  SELECT
+    COALESCE(SUM(CASE WHEN status <> 'cancelled' THEN total ELSE 0 END), 0),
+    COALESCE(SUM(CASE WHEN status <> 'cancelled' AND payment_status <> 'paid' THEN total ELSE 0 END), 0),
+    COUNT(*),
+    COUNT(*) FILTER (WHERE status = 'completed'),
+    COUNT(*) FILTER (WHERE status = 'cancelled'),
+    MIN(booking_date),
+    MAX(booking_date),
+    MIN(booking_date) FILTER (WHERE booking_date >= CURRENT_DATE AND status IN ('confirmed', 'pending'))
+  INTO
+    v_total_spent, v_outstanding, v_total_count, v_completed_count,
+    v_cancelled_count, v_first_date, v_latest_date, v_upcoming_date
+  FROM public.bookings
+  WHERE customer_id = p_customer_id;
+
+  SELECT tags INTO v_current_tags
+  FROM public.customers
+  WHERE id = p_customer_id;
+
+  IF NOT FOUND THEN
+    RETURN;
+  END IF;
+
+  v_current_tags := COALESCE(v_current_tags, '{}'::TEXT[]);
+
+  IF v_total_spent >= 1000 OR v_total_count >= 5 THEN
+    IF NOT ('VIP' = ANY(v_current_tags)) THEN
+      v_current_tags := array_append(v_current_tags, 'VIP');
+    END IF;
+  END IF;
+
+  IF v_total_count >= 2 THEN
+    IF NOT ('Repeat Guest' = ANY(v_current_tags)) THEN
+      v_current_tags := array_append(v_current_tags, 'Repeat Guest');
+    END IF;
+  END IF;
+
+  UPDATE public.customers
+  SET
+    total_spent = v_total_spent,
+    outstanding_balance = v_outstanding,
+    total_bookings = v_total_count,
+    completed_bookings = v_completed_count,
+    cancelled_bookings = v_cancelled_count,
+    first_booking_date = v_first_date,
+    last_booking_date = v_latest_date,
+    upcoming_booking_date = v_upcoming_date,
+    tags = v_current_tags,
+    updated_at = NOW()
+  WHERE id = p_customer_id;
+END;
+$recalculate$;
+
+REVOKE ALL ON FUNCTION public.recalculate_customer_stats(UUID) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.recalculate_customer_stats(UUID) TO authenticated, service_role;
+
+-- These records contain guest PII or payment-provider configuration. Public
+-- newsletter insertion remains enabled; reads and updates are staff-only.
+DROP POLICY IF EXISTS "Public can view own newsletter status" ON public.newsletter_subscriptions;
+DROP POLICY IF EXISTS "Public can update own subscription" ON public.newsletter_subscriptions;
+DROP POLICY IF EXISTS "Anyone authenticated can view payment providers" ON public.payment_providers;
+
+-- Guest-specific booking children are available only to their authenticated owner
+-- (or trusted staff). Inserts are made inside create_booking_atomic, not directly.
+DROP POLICY IF EXISTS "Public insert booking extras" ON public.booking_extras;
+DROP POLICY IF EXISTS "Public view booking extras" ON public.booking_extras;
+CREATE POLICY "Customers can view their own booking extras"
+  ON public.booking_extras
+  FOR SELECT
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1
+      FROM public.bookings AS b
+      WHERE b.id = booking_extras.booking_id
+        AND (
+          b.user_id = (SELECT auth.uid())
+          OR b.customer_id IN (
+            SELECT c.id FROM public.customers AS c
+            WHERE c.user_id = (SELECT auth.uid())
+          )
+        )
+    )
+    OR public.is_admin()
+  );
+
+DROP POLICY IF EXISTS "Public insert booking passengers" ON public.booking_passengers;
+DROP POLICY IF EXISTS "Users can view linked booking passengers" ON public.booking_passengers;
+CREATE POLICY "Customers can view their own booking passengers"
+  ON public.booking_passengers
+  FOR SELECT
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1
+      FROM public.bookings AS b
+      WHERE b.id = booking_passengers.booking_id
+        AND (
+          b.user_id = (SELECT auth.uid())
+          OR b.customer_id IN (
+            SELECT c.id FROM public.customers AS c
+            WHERE c.user_id = (SELECT auth.uid())
+          )
+        )
+    )
+    OR public.is_admin()
+  );
+
+-- Customer rows are created by the atomic booking RPC or staff workflows.
+-- Anonymous direct inserts are unnecessary and permit customer-table pollution.
+DROP POLICY IF EXISTS "Public can create customer record" ON public.customers;
+DROP POLICY IF EXISTS "Public can insert customer on booking" ON public.customers;
+
+-- Keep the customer cancellation/status trigger as the only route for owner
+-- status transitions. Remove a duplicate RLS policy; the general owner policy
+-- is still narrowed by protect_booking_customer_updates().
+DROP POLICY IF EXISTS "Users can request booking cancellation" ON public.bookings;
