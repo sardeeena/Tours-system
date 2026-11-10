@@ -85,13 +85,15 @@ BEGIN
   v_cust_email := LOWER(TRIM(COALESCE(v_customer.email, '')));
   v_cust_phone_digits := REGEXP_REPLACE(COALESCE(v_customer.phone, ''), '[^0-9]', '', 'g');
 
+  -- Normalize Egypt's +20 and domestic leading-zero formats before exact comparison.
+  IF LEFT(v_digits_contact, 2) = '20' THEN v_digits_contact := SUBSTRING(v_digits_contact FROM 3); END IF;
+  IF LEFT(v_digits_contact, 1) = '0' THEN v_digits_contact := SUBSTRING(v_digits_contact FROM 2); END IF;
+  IF LEFT(v_cust_phone_digits, 2) = '20' THEN v_cust_phone_digits := SUBSTRING(v_cust_phone_digits FROM 3); END IF;
+  IF LEFT(v_cust_phone_digits, 1) = '0' THEN v_cust_phone_digits := SUBSTRING(v_cust_phone_digits FROM 2); END IF;
+
   IF v_cust_email = v_clean_contact THEN
     NULL;
-  ELSIF LENGTH(v_digits_contact) >= 8 AND (
-    v_cust_phone_digits = v_digits_contact
-    OR (v_digits_contact ~ '^20' AND SUBSTRING(v_digits_contact FROM 3) = v_cust_phone_digits)
-    OR (v_cust_phone_digits ~ '^20' AND SUBSTRING(v_cust_phone_digits FROM 3) = v_digits_contact)
-  ) THEN
+  ELSIF LENGTH(v_digits_contact) >= 8 AND v_cust_phone_digits = v_digits_contact THEN
     NULL;
   ELSE
     RETURN NULL;
@@ -268,12 +270,14 @@ BEGIN
   v_cust_email := LOWER(TRIM(COALESCE(v_customer.email, '')));
   v_cust_phone_digits := REGEXP_REPLACE(COALESCE(v_customer.phone, ''), '[^0-9]', '', 'g');
 
+  -- Normalize Egypt's +20 and domestic leading-zero formats before exact comparison.
+  IF LEFT(v_digits_contact, 2) = '20' THEN v_digits_contact := SUBSTRING(v_digits_contact FROM 3); END IF;
+  IF LEFT(v_digits_contact, 1) = '0' THEN v_digits_contact := SUBSTRING(v_digits_contact FROM 2); END IF;
+  IF LEFT(v_cust_phone_digits, 2) = '20' THEN v_cust_phone_digits := SUBSTRING(v_cust_phone_digits FROM 3); END IF;
+  IF LEFT(v_cust_phone_digits, 1) = '0' THEN v_cust_phone_digits := SUBSTRING(v_cust_phone_digits FROM 2); END IF;
+
   IF v_cust_email <> v_clean_contact AND NOT (
-    LENGTH(v_digits_contact) >= 8 AND (
-      v_cust_phone_digits = v_digits_contact
-      OR (v_digits_contact ~ '^20' AND SUBSTRING(v_digits_contact FROM 3) = v_cust_phone_digits)
-      OR (v_cust_phone_digits ~ '^20' AND SUBSTRING(v_cust_phone_digits FROM 3) = v_digits_contact)
-    )
+    LENGTH(v_digits_contact) >= 8 AND v_cust_phone_digits = v_digits_contact
   ) THEN
     RETURN JSONB_BUILD_OBJECT('success', FALSE, 'error', 'Reservation details could not be verified.');
   END IF;
@@ -342,7 +346,7 @@ BEGIN
       USING ERRCODE = '42501';
   END IF;
 
-  IF p_decision NOT IN ('approve', 'reject') THEN
+  IF p_decision IS NULL OR p_decision NOT IN ('approve', 'reject') THEN
     RETURN JSONB_BUILD_OBJECT('success', FALSE, 'error', 'Decision must be approve or reject.');
   END IF;
 
@@ -396,16 +400,21 @@ BEGIN
   WHERE id = v_booking.id;
 
   UPDATE public.tour_availability AS ta
-  SET booked_count = GREATEST(0, ta.booked_count - v_guest_count),
+  SET booked_count = ta.booked_count - v_guest_count,
       status = CASE
-        WHEN ta.status = 'sold_out' AND GREATEST(0, ta.booked_count - v_guest_count) < ta.max_capacity THEN 'available'
+        WHEN ta.status = 'sold_out' AND (ta.booked_count - v_guest_count) < ta.max_capacity THEN 'available'
         ELSE ta.status
       END,
       updated_at = NOW()
   WHERE ta.tour_id = v_booking.tour_id
-    AND ta.date = v_booking.booking_date;
+    AND ta.date = v_booking.booking_date
+    AND ta.booked_count >= v_guest_count;
 
   GET DIAGNOSTICS v_new_booked_count = ROW_COUNT;
+  IF v_new_booked_count <> 1 THEN
+    RAISE EXCEPTION 'Cannot approve cancellation: availability capacity is missing or inconsistent for booking %.', v_booking.booking_reference
+      USING ERRCODE = '23514';
+  END IF;
 
   INSERT INTO public.audit_logs (action, entity_type, entity_id, old_data, new_data)
   VALUES (
