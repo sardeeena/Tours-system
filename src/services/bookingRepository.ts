@@ -20,7 +20,7 @@ export interface IBookingRepository {
   findBooking(bookingReference: string, emailOrPhone: string): Promise<Booking | null>;
   getBookingsByEmail(email: string): Promise<Booking[]>;
   updateBooking(booking: Booking): Promise<Booking>;
-  cancelBooking(bookingReference: string, reason: string): Promise<Booking | null>;
+  cancelBooking(bookingReference: string, reason: string, verification: string): Promise<Booking | null>;
   listBookings(filters?: { status?: string; limit?: number }): Promise<Booking[]>;
 }
 
