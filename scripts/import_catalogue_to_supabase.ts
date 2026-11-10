@@ -25,6 +25,10 @@ dotenv.config();
 // UUID verification regex (RFC 4122)
 export const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+// This repository is bound to the Kemet Spirit production Supabase project.
+// Never silently inspect or import data from the older Tours-system project.
+export const EXPECTED_SUPABASE_PROJECT_REF = 'mktrtoctcjyokclpdeui';
+
 /**
  * Validates whether a string is a valid PostgreSQL hexadecimal UUID
  */
@@ -218,28 +222,55 @@ export function normalizeDifficulty(val?: string): 'Easy' | 'Moderate' | 'Advent
 export async function runCatalogueDryRun(options?: {
   executeLive?: boolean;
   verbose?: boolean;
+  offline?: boolean;
 }): Promise<DryRunReport> {
-  const isLive = Boolean(options?.executeLive);
+  if (options?.executeLive) {
+    throw new Error('Live catalogue writes are not implemented in this validator. Use read-only dry-run mode only.');
+  }
   const verbose = Boolean(options?.verbose);
   const issues: ValidationIssue[] = [];
 
   console.log('================================================================');
-  console.log(`  Mahmoud CRM - Catalogue Import Engine [${isLive ? 'LIVE WRITE' : 'DRY-RUN MODE'}]`);
+  console.log('  Kemet Spirit - Catalogue Import Validator [READ-ONLY DRY-RUN]');
   console.log('================================================================\n');
 
-  // 1. Supabase Client Setup (Read-Only when dry-run)
-  const getValidUrl = (url?: string) => (url && (url.startsWith('https://') || url.startsWith('http://'))) ? url : null;
-  const supabaseUrl = getValidUrl(process.env.SUPABASE_URL) || getValidUrl(process.env.VITE_SUPABASE_URL) || 'https://cyifhjqqvtiguitrziqs.supabase.co';
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_KEY || process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+  // 1. Supabase Client Setup (strictly read-only; no project fallback)
+  const getValidUrl = (url?: string) => {
+    if (!url) return null;
+    try {
+      const parsed = new URL(url);
+      return parsed.protocol === 'https:' || parsed.protocol === 'http:' ? parsed.toString() : null;
+    } catch {
+      return null;
+    }
+  };
+  const supabaseUrl = options?.offline
+    ? null
+    : getValidUrl(process.env.SUPABASE_URL) || getValidUrl(process.env.VITE_SUPABASE_URL);
+  const supabaseKey =
+    process.env.SUPABASE_SECRET_KEY ||
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_KEY ||
+    process.env.SUPABASE_ANON_KEY ||
+    process.env.VITE_SUPABASE_ANON_KEY;
   let supabase: SupabaseClient | null = null;
 
-  if (supabaseUrl && supabaseKey) {
-    supabase = createClient(supabaseUrl, supabaseKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
-    console.log(`✓ Connected to Supabase endpoint: ${supabaseUrl.replace(/https?:\/\//, '').split('.')[0]}...`);
+  if (supabaseUrl) {
+    const configuredProjectRef = new URL(supabaseUrl).hostname.split('.')[0];
+    if (configuredProjectRef !== EXPECTED_SUPABASE_PROJECT_REF) {
+      const message = `Refusing to inspect unexpected Supabase project "${configuredProjectRef}". Expected Kemet Spirit project "${EXPECTED_SUPABASE_PROJECT_REF}".`;
+      issues.push({ severity: 'error', entity: 'configuration', idOrSlug: configuredProjectRef, field: 'project_ref', message });
+      console.error(message);
+    } else if (supabaseKey) {
+      supabase = createClient(supabaseUrl, supabaseKey, {
+        auth: { autoRefreshToken: false, persistSession: false },
+      });
+      console.log(`✓ Read-only Supabase inspection: ${configuredProjectRef}`);
+    } else {
+      console.log('ℹ No Supabase key supplied; running offline source validation only.');
+    }
   } else {
-    console.log('ℹ Running in standalone/offline validation mode (no remote Supabase credentials supplied).');
+    console.log('ℹ Running in standalone/offline validation mode (no explicit Supabase URL supplied).');
   }
 
   // 2. Validate All Primary Keys
@@ -436,7 +467,7 @@ export async function runCatalogueDryRun(options?: {
 
   // 6. Build the Final Report
   const report: DryRunReport = {
-    executionMode: isLive ? 'live' : 'dry-run',
+    executionMode: 'dry-run',
     timestamp: new Date().toISOString(),
     sourceCounts: {
       destinations: POPULAR_DESTINATIONS.length,
@@ -557,13 +588,9 @@ export async function runCatalogueDryRun(options?: {
   console.log(`    Status: STRICTLY PRESERVED. Zero writes, zero truncations, zero deletions.`);
 
   console.log('\n================================================================');
-  if (isLive) {
-    console.log('⚡ DRY-RUN COMPLETE. READY FOR CONTROLLED STAGING EXECUTION.');
-  } else {
-    console.log('✅ DRY-RUN VERIFICATION PASSED (0 WRITES PERFORMED).');
-    console.log('   All 13 tours, 7 destinations, 6 categories, and 10 child tables');
-    console.log('   are 100% validated and ready for idempotent deployment.');
-  }
+  console.log('✅ READ-ONLY DRY-RUN COMPLETE (0 WRITES PERFORMED).');
+  console.log('   The validator does not implement live writes or deployment.');
+  console.log('   A separate reviewed seed workflow is required for catalogue import.');
   console.log('================================================================\n');
 
   return report;
@@ -577,7 +604,12 @@ if (process.argv[1]?.endsWith('import_catalogue_to_supabase.ts')) {
   const isExecute = args.includes('--execute') || args.includes('--apply');
   const isVerbose = args.includes('--verbose') || args.includes('-v');
 
-  runCatalogueDryRun({ executeLive: isExecute, verbose: isVerbose })
+  if (isExecute) {
+    console.error('This catalogue validator is read-only. --execute/--apply is not supported; no live write path exists.');
+    process.exit(1);
+  }
+
+  runCatalogueDryRun({ executeLive: false, verbose: isVerbose })
     .then((report) => {
       if (report.issues.some((i) => i.severity === 'error')) {
         console.error('Validation concluded with errors.');
@@ -586,7 +618,7 @@ if (process.argv[1]?.endsWith('import_catalogue_to_supabase.ts')) {
       process.exit(0);
     })
     .catch((err) => {
-      console.error('Fatal error during dry-run validation:', err);
+      console.error('Fatal error during read-only catalogue validation:', err);
       process.exit(1);
     });
 }

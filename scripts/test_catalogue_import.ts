@@ -49,6 +49,20 @@ async function runTestSuite() {
   console.log('  Running Catalogue Import & Schema Validation Test Suite');
   console.log('================================================================\n');
 
+  const importerSource = fs.readFileSync(path.resolve('scripts/import_catalogue_to_supabase.ts'), 'utf8');
+  assert(
+    !importerSource.includes('cyifhjqqvtiguitrziqs.supabase.co'),
+    'Catalogue validator does not default to the unrelated legacy Supabase project'
+  );
+  assert(
+    importerSource.includes("EXPECTED_SUPABASE_PROJECT_REF = 'mktrtoctcjyokclpdeui'"),
+    'Catalogue validator is pinned to the Kemet Spirit Supabase project'
+  );
+  assert(
+    importerSource.includes('--execute/--apply is not supported'),
+    'Catalogue validator cannot claim to execute a live import'
+  );
+
   // ----------------------------------------------------------------------------
   // TEST GROUP 1: UUID VALIDATION & RFC-4122 COMPLIANCE
   // ----------------------------------------------------------------------------
@@ -76,6 +90,7 @@ async function runTestSuite() {
 
   const allTourUuidsValid = Object.values(TOUR_UUIDS).every(isValidUuid);
   assert(allTourUuidsValid, 'All 13 tour UUIDs are valid hex UUIDs');
+  assert(Object.keys(TOUR_UUIDS).length === ALL_TOURS.length, 'Every static tour has exactly one deterministic UUID mapping');
 
   // ----------------------------------------------------------------------------
   // TEST GROUP 2: DETERMINISTIC ID MAPPING & STABILITY
@@ -170,7 +185,7 @@ async function runTestSuite() {
   // TEST GROUP 6: DRY-RUN EXECUTION & REPORT VERIFICATION
   // ----------------------------------------------------------------------------
   console.log('\n--- Test Group 6: Dry-Run Mode & Non-Destructive Execution ---');
-  const report = await runCatalogueDryRun({ executeLive: false });
+  const report = await runCatalogueDryRun({ executeLive: false, offline: true });
 
   assert(report.executionMode === 'dry-run', 'Execution mode is strictly "dry-run"');
   assert(report.sourceCounts.tours === 13, 'Dry-run parsed exactly 13 tours');
