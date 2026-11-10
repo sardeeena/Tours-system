@@ -8,6 +8,7 @@ import { listAutomationEvents } from './communicationService';
 import { fetchExecutiveReport, fetchFinanceReport } from './reportingService';
 import { calculateAuthoritativeBalance } from './platformConsistency';
 import { Booking } from '../types/booking';
+import { isSupabaseConfigured } from './supabaseClient';
 
 export interface SimulationStepResult {
   step: number;
@@ -47,6 +48,14 @@ export interface SimulationReport {
 export async function runPlatformIntegrationSimulation(
   onProgress?: (step: SimulationStepResult) => void
 ): Promise<SimulationReport> {
+  // This workflow creates test inquiries, leads, bookings and payment rows.
+  // Never permit it to mutate a connected cloud project or run in a production build.
+  if (Boolean((import.meta as any).env?.PROD) || isSupabaseConfigured()) {
+    throw new Error(
+      'The integration simulator is disabled for production builds and connected Supabase projects because it creates persistent test records. Use an isolated, non-production environment.'
+    );
+  }
+
   const startTime = Date.now();
   const testRunId = Date.now().toString(36).substring(2, 6);
   const testCustomerEmail = `traveler.test.${testRunId}@redseavoyages.com`;
@@ -396,7 +405,9 @@ export async function runPlatformIntegrationSimulation(
       provider: 'cash',
       isManual: true,
       paymentStatus: 'Paid',
-      notes: 'Settled at marina dispatch counter.',
+      transactionReference: `SIM-${testRunId}-CASH-01`,
+      notes: 'Local integration simulation only; not a real payment.',
+
     });
     context.paymentId = recordedPaymentRes.id;
 
