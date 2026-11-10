@@ -87,6 +87,34 @@ async function runSecurityTests() {
   console.log('Running Test 3: Audit handle_new_user() SQL definition for privilege leaks...');
   const fs = await import('fs');
   const completeSchemaSql = fs.readFileSync('complete_schema.sql', 'utf8');
+  const adminSetupSource = fs.readFileSync('scripts/setup-admin.ts', 'utf8');
+  assert(
+    'First-admin setup is pinned to the Kemet Spirit Supabase project',
+    adminSetupSource.includes('isExpectedKemetSupabaseUrl') &&
+      adminSetupSource.includes('mktrtoctcjyokclpdeui') &&
+      !adminSetupSource.includes('cyifhjqqvtiguitrziqs'),
+    'Admin setup fails closed instead of defaulting to the unrelated legacy Supabase project'
+  );
+  assert(
+    'First-admin setup requires an explicit email and never embeds a default administrator',
+    adminSetupSource.includes('ADMIN_EMAIL is required') &&
+      !adminSetupSource.includes('admin@awesomeadventure.tours'),
+    'Admin setup never provisions a hardcoded default administrator account'
+  );
+  assert(
+    'First-admin setup never creates users or resets passwords',
+    !adminSetupSource.includes('auth.admin.createUser') &&
+      !adminSetupSource.includes('auth.admin.updateUserById') &&
+      !adminSetupSource.includes('ADMIN_PASSWORD'),
+    'Admin setup only promotes an existing confirmed account and never sets a password'
+  );
+  assert(
+    'First-admin setup uses the restricted database provisioning RPC',
+    adminSetupSource.includes("'set_admin_role_by_email'") &&
+      adminSetupSource.includes('email_confirmed_at'),
+    'Admin setup requires a confirmed Auth user and calls the trusted role provisioning RPC'
+  );
+
 
   // Extract handle_new_user function body
   const fnMatch = completeSchemaSql.match(/CREATE OR REPLACE FUNCTION public\.handle_new_user\(\)[\s\S]*?\$\$ LANGUAGE plpgsql|CREATE OR REPLACE FUNCTION public\.handle_new_user\(\)[\s\S]*?END;\s*\$\$/i);
