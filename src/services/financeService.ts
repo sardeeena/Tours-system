@@ -14,7 +14,6 @@ import {
   CurrencyBreakdownItem,
 } from '../types/finance';
 import { bookingRepository } from './bookingRepository';
-import { Booking } from '../types/booking';
 import { recordActivity } from './crmService';
 import { publishAutomationEvent } from './communicationService';
 
