@@ -591,7 +591,7 @@ class SupabaseBookingRepository implements IBookingRepository {
       }
     }
 
-    const resolvedStatus = decision === 'approve' ? 'cancelled' : (existing.status === 'cancellation_requested' ? 'confirmed' : existing.status);
+    const resolvedStatus = (data as any)?.status || (decision === 'approve' ? 'cancelled' : (existing.status === 'cancellation_requested' ? 'confirmed' : existing.status));
     const updated: Booking = {
       ...existing,
       status: resolvedStatus,
