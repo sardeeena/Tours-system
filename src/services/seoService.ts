@@ -90,7 +90,7 @@ export async function getStoredSeoMetadata(
   try {
     let query = supabase
       .from('seo_metadata')
-      .select('seo_title, meta_description, canonical_url, og_title, og_description, og_image, robots_index, robots_follow, structured_data')
+      .select('seo_title, meta_description, seo_keywords, canonical_url, og_title, og_description, og_image, robots_index, robots_follow, structured_data')
       .eq('entity_type', entityType);
 
     query = usePageSlug
