@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(60);
+SELECT plan(76);
 
 SELECT ok(
   EXISTS (
@@ -501,6 +501,13 @@ SELECT ok(
 SET LOCAL ROLE authenticated;
 
 SELECT throws_ok(
+  'SELECT public.recalculate_customer_stats(''aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa''::uuid)',
+  '42501',
+  'Access denied: customer statistics recalculation is restricted to authorized staff.',
+  'ordinary authenticated customers cannot recalculate arbitrary customer statistics'
+);
+
+SELECT throws_ok(
   'UPDATE public.bookings SET status = ''cancelled'' WHERE booking_reference = (current_setting(''pgtap.auth_booking_ref'', TRUE))',
   '42501',
   'Customers may only update pickup details and special requests. Booking status, payment, price, guest counts, and inventory are protected.',
@@ -570,6 +577,23 @@ SELECT ok(
   ),
   'public submission trigger SECURITY DEFINER function pins an empty search_path'
 );
+
+
+SELECT ok(NOT has_function_privilege('anon', 'public.handle_updated_at()', 'EXECUTE'),'anonymous role cannot invoke the timestamp trigger function directly');
+SELECT ok(NOT has_function_privilege('authenticated', 'public.handle_updated_at()', 'EXECUTE'),'authenticated role cannot invoke the timestamp trigger function directly');
+SELECT ok(NOT has_function_privilege('anon', 'public.handle_user_confirmed()', 'EXECUTE'),'anonymous role cannot invoke the auth-confirmation trigger function directly');
+SELECT ok(NOT has_function_privilege('authenticated', 'public.handle_user_confirmed()', 'EXECUTE'),'authenticated role cannot invoke the auth-confirmation trigger function directly');
+SELECT ok(NOT has_function_privilege('anon', 'public.replace_extra_tour_assignments_atomic(uuid,jsonb)', 'EXECUTE'),'anonymous role cannot invoke the add-on assignment RPC');
+SELECT ok(NOT has_function_privilege('anon', 'public.replace_tour_extra_assignments_atomic(uuid,jsonb)', 'EXECUTE'),'anonymous role cannot invoke the tour assignment RPC');
+SELECT ok(NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='newsletter_subscriptions' AND cmd='SELECT' AND roles @> ARRAY['public']::name[]),'newsletter email addresses are not publicly readable');
+SELECT ok(NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='newsletter_subscriptions' AND cmd='UPDATE' AND roles @> ARRAY['public']::name[]),'newsletter subscriptions cannot be publicly modified');
+SELECT ok(NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='payment_providers' AND cmd='SELECT' AND roles @> ARRAY['authenticated']::name[] AND qual='true'),'payment-provider configuration is not visible to every authenticated user');
+SELECT ok(NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='booking_extras' AND cmd='SELECT' AND roles @> ARRAY['public']::name[]),'booking extras are not publicly readable across all reservations');
+SELECT ok(NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='booking_extras' AND cmd='INSERT' AND roles @> ARRAY['public']::name[]),'booking extras cannot be inserted outside the atomic booking flow by guests');
+SELECT ok(NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='booking_passengers' AND cmd='INSERT' AND roles @> ARRAY['public']::name[]),'booking passenger PII cannot be inserted directly by guests');
+SELECT ok(NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='customers' AND cmd='INSERT' AND roles @> ARRAY['public']::name[]),'customer rows cannot be created directly by anonymous guests');
+SELECT ok(EXISTS (SELECT 1 FROM pg_proc WHERE oid='public.recalculate_customer_stats(uuid)'::regprocedure AND COALESCE(array_to_string(proconfig, ','),'') LIKE '%search_path=""%'),'customer-statistics SECURITY DEFINER function pins an empty search_path');
+SELECT ok(NOT has_function_privilege('anon', 'public.recalculate_customer_stats(uuid)', 'EXECUTE'),'anonymous role cannot invoke customer-statistics recalculation');
 
 SELECT * FROM finish();
 
