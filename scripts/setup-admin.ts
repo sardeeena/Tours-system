@@ -1,182 +1,131 @@
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
+import { isExpectedKemetSupabaseUrl } from '../src/lib/supabaseProjectGuard';
 
 dotenv.config();
 
 /**
- * ==============================================================================
- * SECURE SUPABASE AUTH ADMINISTRATOR SETUP SCRIPT
- * ==============================================================================
- * This script runs strictly server-side using the trusted Supabase Auth Admin API.
- * It NEVER runs in the browser and NEVER commits or exposes plaintext credentials.
+ * Securely promotes an already-registered, email-confirmed Kemet Spirit user.
  *
- * REQUIRED ENVIRONMENT VARIABLES:
- *   SUPABASE_SERVICE_ROLE_KEY: The project service_role secret key (Dashboard > Project Settings > API)
- *   ADMIN_PASSWORD:            Initial password chosen securely by the project administrator
+ * Required environment variables:
+ *   SUPABASE_URL or VITE_SUPABASE_URL: the exact Kemet Spirit Supabase project URL
+ *   SUPABASE_SERVICE_ROLE_KEY: a server-only Supabase secret/service-role key
+ *   ADMIN_EMAIL: the exact email address that already registered and confirmed
  *
- * OPTIONAL ENVIRONMENT VARIABLES:
- *   SUPABASE_URL:              Supabase project URL (defaults to VITE_SUPABASE_URL from env)
- *   ADMIN_EMAIL:               Admin email (defaults to "admin@awesomeadventure.tours")
+ * This script never creates an Auth user, sets/resets a password, or sends an
+ * invitation. It invokes the restricted public.set_admin_role_by_email RPC,
+ * which is executable only by trusted database operators/service_role.
  *
- * USAGE:
- *   SUPABASE_SERVICE_ROLE_KEY="ey..." ADMIN_PASSWORD="StrongPassword123!" npx tsx scripts/setup-admin.ts
- * ==============================================================================
+ * Run:
+ *   SUPABASE_URL="https://mktrtoctcjyokclpdeui.supabase.co" \
+ *   ADMIN_EMAIL="owner@example.com" \
+ *   SUPABASE_SERVICE_ROLE_KEY="<server-only-secret>" \
+ *   npx tsx scripts/setup-admin.ts
  */
-
 async function main() {
-  const getValidUrl = (url?: string) => (url && (url.startsWith('https://') || url.startsWith('http://'))) ? url : null;
-  const supabaseUrl = getValidUrl(process.env.SUPABASE_URL) || getValidUrl(process.env.VITE_SUPABASE_URL) || 'https://cyifhjqqvtiguitrziqs.supabase.co';
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const adminEmail = (process.env.ADMIN_EMAIL || 'admin@awesomeadventure.tours').trim().toLowerCase();
-  const adminPassword = process.env.ADMIN_PASSWORD;
+  const supabaseUrl = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '').trim();
+  const serviceRoleKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
+  const adminEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
 
-  console.log('================================================================');
-  console.log('  Awesome Adventure Tours — Supabase Admin Provisioning');
-  console.log('================================================================\n');
-
-  if (!supabaseUrl) {
-    console.error('❌ Error: SUPABASE_URL (or VITE_SUPABASE_URL) environment variable is required.');
-    process.exit(1);
+  if (!supabaseUrl || !isExpectedKemetSupabaseUrl(supabaseUrl)) {
+    throw new Error(
+      'Refusing to continue: SUPABASE_URL must point to the configured Kemet Spirit project ' +
+      '(mktrtoctcjyokclpdeui.supabase.co). No fallback project is permitted.'
+    );
   }
 
   if (!serviceRoleKey) {
-    console.error('❌ Error: SUPABASE_SERVICE_ROLE_KEY environment variable is required.');
-    console.error('   Please retrieve your service_role key from your Supabase Dashboard:');
-    console.error('   Project Settings -> API -> Project API keys -> service_role (secret)');
-    console.error('\n   Run: SUPABASE_SERVICE_ROLE_KEY="<secret>" ADMIN_PASSWORD="<password>" npx tsx scripts/setup-admin.ts');
-    process.exit(1);
+    throw new Error('SUPABASE_SERVICE_ROLE_KEY is required and must remain server-side.');
   }
 
-  if (!adminPassword || adminPassword.length < 8) {
-    console.error('❌ Error: ADMIN_PASSWORD environment variable is required (minimum 8 characters).');
-    console.error('   Run: ADMIN_PASSWORD="<your-secure-password>" SUPABASE_SERVICE_ROLE_KEY="<secret>" npx tsx scripts/setup-admin.ts');
-    process.exit(1);
+  if (!adminEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adminEmail)) {
+    throw new Error('ADMIN_EMAIL is required and must be a valid email address.');
   }
 
-  console.log(`Connecting to Supabase at: ${supabaseUrl}`);
-  console.log(`Target Admin Account:      ${adminEmail}\n`);
+  const isServiceCredential =
+    serviceRoleKey.startsWith('sb_secret_') ||
+    (() => {
+      try {
+        const payload = serviceRoleKey.split('.')[1];
+        if (!payload) return false;
+        const normalized = payload.replace(/-/g, '+').replace(/_/g, '/');
+        const decoded = JSON.parse(Buffer.from(normalized, 'base64').toString('utf8'));
+        return decoded.role === 'service_role';
+      } catch {
+        return false;
+      }
+    })();
 
-  // Initialize administrative client with service_role privileges
-  const adminClient = createClient(supabaseUrl, serviceRoleKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
+  if (!isServiceCredential) {
+    throw new Error('The supplied key is not a recognized Supabase secret/service_role credential.');
+  }
+
+  const supabase = createClient(supabaseUrl, serviceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
   });
 
-  try {
-    // 1. Check if user already exists via Admin API
-    const { data: usersData, error: listError } = await adminClient.auth.admin.listUsers({
-      page: 1,
-      perPage: 100,
-    });
+  console.log('Checking for the existing confirmed Kemet Spirit account...');
 
-    if (listError) {
-      throw new Error(`Failed to list existing auth users: ${listError.message}`);
-    }
+  let matchingUser: { id: string; email?: string; email_confirmed_at?: string | null } | null = null;
+  for (let page = 1; page <= 100; page += 1) {
+    const { data, error } = await supabase.auth.admin.listUsers({ page, perPage: 1000 });
+    if (error) throw new Error(`Could not list Auth users: ${error.message}`);
 
-    const existingUser = usersData.users.find(
-      (u) => u.email?.toLowerCase() === adminEmail
-    );
-
-    let userId: string;
-
-    if (existingUser) {
-      console.log(`✓ Auth user already exists: ${existingUser.id}`);
-      userId = existingUser.id;
-
-      // Update password and metadata to verify role state
-      const { data: updatedUser, error: updateError } = await adminClient.auth.admin.updateUserById(
-        userId,
-        {
-          password: adminPassword,
-          email_confirm: true,
-          app_metadata: {
-            ...existingUser.app_metadata,
-            role: 'admin',
-          },
-          user_metadata: {
-            ...existingUser.user_metadata,
-            role: 'admin',
-            full_name: 'Awesome Adventure Administrator',
-          },
-        }
-      );
-
-      if (updateError) {
-        throw new Error(`Failed to update existing auth user: ${updateError.message}`);
-      }
-      console.log('✓ Successfully verified credentials and confirmed email on Auth user.');
-    } else {
-      console.log('Creating new Auth user via Supabase Auth Admin API...');
-      const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
-        email: adminEmail,
-        password: adminPassword,
-        email_confirm: true,
-        app_metadata: {
-          role: 'admin',
-        },
-        user_metadata: {
-          role: 'admin',
-          full_name: 'Awesome Adventure Administrator',
-        },
-      });
-
-      if (createError || !newUser.user) {
-        throw new Error(`Failed to create auth user: ${createError?.message}`);
-      }
-
-      userId = newUser.user.id;
-      console.log(`✓ Auth user created successfully: ${userId}`);
-    }
-
-    // 2. Synchronize and verify public.profiles record
-    console.log('Synchronizing public.profiles record...');
-    const { error: profileError } = await adminClient
-      .from('profiles')
-      .upsert({
-        id: userId,
-        email: adminEmail,
-        full_name: existingUser?.user_metadata?.full_name || 'Administrator',
-        role: 'admin',
-        is_confirmed: true,
-        updated_at: new Date().toISOString(),
-      }, { onConflict: 'id' });
-
-    if (profileError) {
-      throw new Error(`Failed to upsert public.profiles record: ${profileError.message}`);
-    }
-
-    // 3. Explicit verification: Query public.profiles directly to verify the persisted role
-    const { data: verifiedProfile, error: verifyError } = await adminClient
-      .from('profiles')
-      .select('id, email, role, is_confirmed')
-      .eq('id', userId)
-      .single();
-
-    if (verifyError || !verifiedProfile) {
-      throw new Error(`Verification query failed for profile ${userId}: ${verifyError?.message || 'Profile not found'}`);
-    }
-
-    if (verifiedProfile.role !== 'admin') {
-      throw new Error(
-        `Admin provisioning failed honest verification: public.profiles.role is "${verifiedProfile.role}" instead of "admin". Trigger or policy intervention prevented promotion.`
-      );
-    }
-
-    console.log(`✓ Public profile strictly verified: id=${verifiedProfile.id}, role="${verifiedProfile.role}"`);
-
-    console.log('\n================================================================');
-    console.log('✅ Admin account setup completed successfully!');
-    console.log(`   Email: ${adminEmail}`);
-    console.log('   Role:  admin');
-    console.log('   Status: Confirmed & Active');
-    console.log('================================================================\n');
-  } catch (err: any) {
-    console.error('\n❌ Admin setup encountered an error:');
-    console.error(`   ${err.message || err}`);
-    process.exit(1);
+    matchingUser = data.users.find((user) => user.email?.trim().toLowerCase() === adminEmail) || null;
+    if (matchingUser || data.users.length < 1000) break;
   }
+
+  if (!matchingUser) {
+    throw new Error(
+      `No Auth user exists for ${adminEmail}. Register through the Kemet Spirit website first; this script never creates accounts.`
+    );
+  }
+
+  if (!matchingUser.email_confirmed_at) {
+    throw new Error(
+      `The account ${adminEmail} has not confirmed its email. Complete email verification before promotion.`
+    );
+  }
+
+  const { data: promotionResult, error: promotionError } = await supabase.rpc(
+    'set_admin_role_by_email',
+    { target_email: adminEmail }
+  );
+
+  if (promotionError) {
+    throw new Error(`Trusted admin promotion failed: ${promotionError.message}`);
+  }
+
+  const { data: profile, error: profileError } = await supabase
+    .from('profiles')
+    .select('id,email,role,is_confirmed')
+    .eq('id', matchingUser.id)
+    .single();
+
+  if (profileError || !profile) {
+    throw new Error(`Could not verify the promoted profile: ${profileError?.message || 'profile not found'}`);
+  }
+
+  const { data: authUser, error: authError } = await supabase.auth.admin.getUserById(matchingUser.id);
+  if (authError || !authUser.user) {
+    throw new Error(`Could not verify Auth app metadata: ${authError?.message || 'Auth user not found'}`);
+  }
+
+  if (profile.role !== 'admin' || authUser.user.app_metadata?.role !== 'admin' || !profile.is_confirmed) {
+    throw new Error(
+      `Promotion verification failed. Profile role=${profile.role}, app_metadata role=${authUser.user.app_metadata?.role}, confirmed=${profile.is_confirmed}.`
+    );
+  }
+
+  console.log('Administrator account verified successfully.');
+  console.log(`Email: ${profile.email}`);
+  console.log(`Role: ${profile.role}`);
+  console.log(`User ID: ${profile.id}`);
+  console.log(String(promotionResult || 'Trusted promotion completed.'));
 }
 
-main();
+main().catch((error: unknown) => {
+  const message = error instanceof Error ? error.message : String(error);
+  console.error(`Admin setup failed: ${message}`);
+  process.exitCode = 1;
+});
