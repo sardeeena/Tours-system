@@ -282,233 +282,99 @@ export async function recordPayment(paymentData: {
   isManual?: boolean;
   paymentStatus: FinancePaymentStatus;
   paymentDate?: string;
-  transactionReference?: string;
+  transactionReference: string;
   notes?: string | null;
   recordedBy?: string;
 }): Promise<FinancePayment> {
-  // Provider Validation: Do NOT pretend provider is connected
-  const providers = await listPaymentProviders();
+  if (!Number.isFinite(paymentData.amount) || paymentData.amount <= 0) {
+    throw new Error('Payment amount must be a valid number greater than zero.');
+  }
+
+  const transactionReference = paymentData.transactionReference?.trim();
+  if (!transactionReference || transactionReference.length < 3 || transactionReference.length > 160) {
+    throw new Error('A valid transaction reference is required.');
+  }
+
   const selectedProviderId = paymentData.provider || (paymentData.paymentMethod === 'Cash' ? 'cash' : 'pos_terminal');
-  const providerDef = providers.find((p) => p.id === selectedProviderId);
-
-  if (providerDef && !providerDef.isConnected && !providerDef.isManual) {
-    throw new Error(
-      `Payment provider "${providerDef.name}" is currently disconnected. Live API keys are not provisioned. Please record this payment using an active manual provider (Cash Office, Pier POS, or Bank Wire).`
-    );
+  const providers = await listPaymentProviders();
+  const provider = providers.find((item) => item.id === selectedProviderId);
+  if (!provider || !provider.isConnected) {
+    throw new Error('The selected payment provider is unavailable or disconnected.');
+  }
+  if (!provider.isManual) {
+    throw new Error('Online payment gateway processing is not configured. Do not record a gateway payment manually.');
   }
 
-  if (paymentData.amount <= 0) {
-    throw new Error('Payment amount must be greater than zero.');
+  if (!requireFinanceBackend()) {
+    const localPayment: FinancePayment = {
+      id: `dev-pay-${crypto.randomUUID()}`,
+      bookingId: paymentData.bookingId,
+      bookingReference: paymentData.bookingReference,
+      customerId: paymentData.customerId || null,
+      customerName: paymentData.customerName,
+      customerEmail: paymentData.customerEmail,
+      customerPhone: paymentData.customerPhone || null,
+      amount: Number(paymentData.amount),
+      currency: paymentData.currency.toUpperCase(),
+      paymentMethod: paymentData.paymentMethod,
+      provider: selectedProviderId,
+      isManual: true,
+      paymentStatus: paymentData.paymentStatus,
+      paymentDate: paymentData.paymentDate || new Date().toISOString(),
+      transactionReference,
+      notes: paymentData.notes || null,
+      recordedBy: paymentData.recordedBy || 'Staff',
+      createdAt: new Date().toISOString(),
+    };
+    const current = getLocal<FinancePayment[]>(LOCAL_PAYMENTS_KEY, []);
+    setLocal(LOCAL_PAYMENTS_KEY, [localPayment, ...current]);
+    return localPayment;
   }
 
-  const allPayments = await listPayments();
-  const paymentDate = paymentData.paymentDate || new Date().toISOString();
+  const idempotencyKey = `payment:${selectedProviderId}:${transactionReference.toLowerCase()}`;
+  const { data, error } = await supabase.rpc('record_payment_atomic', {
+    p_booking_reference: paymentData.bookingReference,
+    p_amount: Number(paymentData.amount),
+    p_currency: paymentData.currency.toUpperCase(),
+    p_payment_method: paymentData.paymentMethod,
+    p_provider: selectedProviderId,
+    p_status: String(paymentData.paymentStatus),
+    p_transaction_reference: transactionReference,
+    p_notes: paymentData.notes || null,
+    p_recorded_by: paymentData.recordedBy || 'Staff',
+    p_idempotency_key: idempotencyKey,
+  });
 
-  if (paymentData.transactionReference?.trim()) {
-    const existingTx = allPayments.find(
-      (p) => p.transactionReference?.trim().toLowerCase() === paymentData.transactionReference?.trim().toLowerCase()
-    );
-    if (existingTx) {
-      throw new Error(`Duplicate transaction reference: Transaction "${paymentData.transactionReference.trim()}" has already been recorded.`);
-    }
+  if (error) throw new Error(formatSupabaseError(error));
+  const result = data as any;
+  if (!result?.success || !result?.payment?.id) {
+    throw new Error('The database did not confirm that the payment was recorded.');
   }
 
-  const txRef =
-    paymentData.transactionReference?.trim() ||
-    `TXN-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
-
-  const newPayment: FinancePayment = {
-    id: `pay-${Date.now().toString(36)}`,
-    bookingId: paymentData.bookingId,
-    bookingReference: paymentData.bookingReference,
-    customerId: paymentData.customerId || null,
-    customerName: paymentData.customerName,
-    customerEmail: paymentData.customerEmail,
-    customerPhone: paymentData.customerPhone || null,
-    amount: Number(paymentData.amount),
-    currency: paymentData.currency || 'EUR',
-    paymentMethod: paymentData.paymentMethod,
-    provider: selectedProviderId,
-    isManual: providerDef ? providerDef.isManual : true,
-    paymentStatus: paymentData.paymentStatus,
-    paymentDate,
-    transactionReference: txRef,
-    notes: paymentData.notes || null,
-    recordedBy: paymentData.recordedBy || 'Finance Staff',
-    createdAt: new Date().toISOString(),
-  };
-
-  // Sync with Supabase if configured (Authoritative Database First)
-  if (isSupabaseConfigured()) {
-    try {
-      let resolvedBookingUuid = newPayment.bookingId;
-      let resolvedCustomerUuid = newPayment.customerId;
-
-      // If bookingId is not a UUID, resolve it from bookings table by booking_reference
-      if (!resolvedBookingUuid?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-        const { data: bRow } = await supabase
-          .from('bookings')
-          .select('id, customer_id')
-          .eq('booking_reference', newPayment.bookingReference)
-          .maybeSingle();
-
-        if (bRow) {
-          resolvedBookingUuid = bRow.id;
-          if (!resolvedCustomerUuid && bRow.customer_id) {
-            resolvedCustomerUuid = bRow.customer_id;
-          }
-        }
-      }
-
-      if (resolvedBookingUuid?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-        const paymentPayload: Record<string, any> = {
-          booking_id: resolvedBookingUuid,
-          amount: newPayment.amount,
-          currency: newPayment.currency || 'EUR',
-          payment_method: newPayment.paymentMethod,
-          status: newPayment.paymentStatus,
-          transaction_reference: newPayment.transactionReference,
-          notes: newPayment.notes,
-          recorded_by: newPayment.recordedBy,
-          payment_date: newPayment.paymentDate,
-        };
-
-        if (resolvedCustomerUuid?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-          paymentPayload.customer_id = resolvedCustomerUuid;
-        }
-
-        const { data: inserted, error: payError } = await supabase
-          .from('payment_transactions')
-          .insert(paymentPayload)
-          .select('id')
-          .maybeSingle();
-
-        if (payError) {
-          throw new Error(formatSupabaseError(payError));
-        }
-
-        if (inserted?.id) {
-          newPayment.id = inserted.id;
-        }
-      }
-    } catch (err: any) {
-      console.error('Error inserting payment transaction in Supabase:', err);
-      throw err;
-    }
-  }
-
-  // Only commit to local state after authoritative write succeeds
-  const updatedPayments = [newPayment, ...allPayments];
-  setLocal(LOCAL_PAYMENTS_KEY, updatedPayments);
-
-  // Recalculate booking payment status server/service side
-  try {
-    const allBookings = await bookingRepository.listBookings();
-    const targetBooking = allBookings.find(
-      (b) => b.bookingReference === paymentData.bookingReference || b.bookingId === paymentData.bookingId
-    );
-
-    if (targetBooking) {
-      const bookingPayments = updatedPayments.filter(
-        (p) =>
-          (p.bookingReference === targetBooking.bookingReference || p.bookingId === targetBooking.bookingId) &&
-          (p.paymentStatus === 'Paid' || p.paymentStatus === 'paid')
-      );
-      const totalPaid = bookingPayments.reduce((sum, p) => sum + p.amount, 0);
-
-      // Subtract processed refunds
-      const allRefunds = await listRefunds();
-      const processedRefunds = allRefunds.filter(
-        (r) =>
-          (r.bookingReference === targetBooking.bookingReference || r.bookingId === targetBooking.bookingId) &&
-          r.status === 'processed'
-      );
-      const totalRefunded = processedRefunds.reduce((sum, r) => sum + (r.approvedAmount || r.amount), 0);
-      const netPaid = Math.max(0, totalPaid - totalRefunded);
-      const bookingTotal = targetBooking.pricing?.totalEur || 0;
-
-      let nextStatus: any = 'pending';
-      if (netPaid >= bookingTotal) {
-        nextStatus = 'paid';
-      } else if (netPaid > 0) {
-        nextStatus = 'partially_paid';
-      }
-
-      await bookingRepository.updateBooking({
-        ...targetBooking,
-        paymentStatus: nextStatus,
-        updatedAt: new Date().toISOString(),
-      });
-    }
-  } catch (err) {
-    console.warn('Failed to update booking status after payment:', err);
-  }
-
-  // CRM Activity Timeline Event
+  const savedPayment = mapDbPayment(result.payment);
   try {
     await recordActivity({
-      customerId: newPayment.customerId || undefined,
-      bookingId: newPayment.bookingId || newPayment.bookingReference,
+      customerId: savedPayment.customerId || undefined,
+      bookingId: savedPayment.bookingId,
       eventType: 'payment_recorded',
-      title: `Payment Received: €${newPayment.amount.toFixed(2)}`,
-      description: `Payment settled via ${newPayment.paymentMethod} (Provider: ${newPayment.provider}). Reference: ${newPayment.transactionReference}.`,
-      actor: newPayment.recordedBy || 'Finance Desk',
+      title: `Payment Received: ${savedPayment.currency} ${savedPayment.amount.toFixed(2)}`,
+      description: `Payment recorded via ${savedPayment.paymentMethod} (${savedPayment.provider}). Reference: ${savedPayment.transactionReference}.`,
+      actor: savedPayment.recordedBy,
       metadata: {
-        paymentId: newPayment.id,
-        amount: newPayment.amount,
-        currency: newPayment.currency,
-        bookingReference: newPayment.bookingReference,
-        transactionReference: newPayment.transactionReference,
+        paymentId: savedPayment.id,
+        amount: savedPayment.amount,
+        currency: savedPayment.currency,
+        bookingReference: savedPayment.bookingReference,
+        transactionReference: savedPayment.transactionReference,
       },
     });
-  } catch {}
+  } catch {
+    // The immutable database audit log is written by record_payment_atomic.
+  }
 
-  // Staff Notification
-  try {
-    const notifsRaw = localStorage.getItem('rse_staff_notifications') || '[]';
-    const notifs = JSON.parse(notifsRaw);
-    notifs.unshift({
-      id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-      category: 'new_payment',
-      dedupKey: `new_payment_${newPayment.id}`,
-      title: `New Payment: €${newPayment.amount.toFixed(2)} (${newPayment.currency || 'EUR'})`,
-      message: `Received ${newPayment.paymentMethod} from ${newPayment.customerName} for ${newPayment.bookingReference || 'Direct Payment'}.`,
-      severity: 'success',
-      entityType: 'payment',
-      entityId: newPayment.id,
-      linkTab: 'fin_payments',
-      isRead: false,
-      createdAt: newPayment.paymentDate || new Date().toISOString(),
-    });
-    localStorage.setItem('rse_staff_notifications', JSON.stringify(notifs.slice(0, 100)));
-  } catch {}
-
-  // Automation & Communications Event: payment.received
-  try {
-    await publishAutomationEvent(
-      'payment.received',
-      {
-        paymentId: newPayment.id,
-        bookingReference: newPayment.bookingReference,
-        bookingId: newPayment.bookingId,
-        customerId: newPayment.customerId,
-        customerName: newPayment.customerName,
-        customerEmail: newPayment.customerEmail,
-        amount: newPayment.amount,
-        currency: newPayment.currency,
-        paymentMethod: newPayment.paymentMethod,
-        transactionReference: newPayment.transactionReference,
-        provider: newPayment.provider,
-      },
-      'payment',
-      newPayment.id
-    );
-  } catch {}
-
-  return newPayment;
+  return savedPayment;
 }
 
-// ------------------------------------------------------------------------------
 // 2. INVOICE GENERATION & MANAGEMENT
 // ------------------------------------------------------------------------------
 
