@@ -265,9 +265,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // ignore
       }
 
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event) => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED' || event === 'PASSWORD_RECOVERY') {
-          await refreshUser();
+          // Supabase advises against awaiting client calls inside this callback:
+          // it runs while auth state is being processed and can deadlock the auth lock.
+          window.setTimeout(() => {
+            void refreshUser();
+          }, 0);
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
         }
