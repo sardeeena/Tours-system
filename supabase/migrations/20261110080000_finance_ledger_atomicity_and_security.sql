@@ -274,7 +274,11 @@ BEGIN
     OR p_requested_amount <> round(p_requested_amount, 2) THEN
     RAISE EXCEPTION 'Refund amount must be positive, have at most two decimal places, and be within supported limits' USING ERRCODE = '22023';
   END IF;
-  IF v_currency IS NULL OR v_currency !~ '^[A-Z]{3}
+  IF v_currency IS NULL OR v_currency !~ '^[A-Z]{3}$'
+    OR nullif(btrim(coalesce(p_reason, '')), '') IS NULL THEN
+    RAISE EXCEPTION 'Valid currency and refund reason are required' USING ERRCODE = '22023';
+  END IF;
+  IF p_refund_method IS NULL OR p_refund_method NOT IN ('Card Reversal', 'Cash Return', 'Bank Wire', 'Store Credit / Voucher', 'Other') THEN
     RAISE EXCEPTION 'Unsupported refund method' USING ERRCODE = '22023';
   END IF;
 
