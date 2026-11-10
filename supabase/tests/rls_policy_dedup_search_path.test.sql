@@ -1,0 +1,79 @@
+BEGIN;
+
+CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
+SELECT plan(3);
+
+WITH redundant(tablename, policyname) AS (
+  VALUES
+    ('bookings','Staff can manage all bookings'),
+    ('crm_activities','Staff can view crm activities'),
+    ('customers','Staff can manage all customers'),
+    ('customers','Admins can view all customers'),
+    ('guides','Staff can manage guides'),
+    ('payment_transactions','Staff can manage payments'),
+    ('profiles','Admins can view all profiles'),
+    ('refund_records','Staff can manage refunds'),
+    ('vessels','Staff can manage vessels'),
+    ('weather_bulletins','Staff can manage weather bulletins'),
+    ('guides','Public can view active guides'),
+    ('vessels','Public can view active vessels'),
+    ('weather_bulletins','Public can view weather bulletins')
+)
+SELECT is(
+  (
+    SELECT count(*)::integer
+    FROM redundant r
+    JOIN pg_policies p
+      ON p.schemaname='public'
+     AND p.tablename=r.tablename
+     AND p.policyname=r.policyname
+  ),
+  0,
+  'all 13 verified duplicate policies are removed'
+);
+
+WITH retained(tablename, policyname) AS (
+  VALUES
+    ('bookings','Admins manage bookings'),
+    ('crm_activities','Staff can manage activities'),
+    ('customers','Admins can manage customers'),
+    ('guides','Admins can manage guides'),
+    ('guides','Anyone can view active guides'),
+    ('payment_transactions','Staff can manage payment transactions'),
+    ('profiles','Admins can manage all profiles'),
+    ('refund_records','Staff can manage refund records'),
+    ('vessels','Admins can manage vessels'),
+    ('vessels','Anyone can view active vessels'),
+    ('weather_bulletins','Admins can manage weather bulletins'),
+    ('weather_bulletins','Anyone can read weather bulletins')
+)
+SELECT is(
+  (
+    SELECT count(*)::integer
+    FROM retained r
+    JOIN pg_policies p
+      ON p.schemaname='public'
+     AND p.tablename=r.tablename
+     AND p.policyname=r.policyname
+  ),
+  12,
+  'all canonical admin, staff, and public policies remain'
+);
+
+SELECT is(
+  (
+    SELECT count(*)::integer
+    FROM pg_proc p
+    WHERE p.oid IN (
+      'public.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)'::regprocedure,
+      'public.replace_extra_tour_assignments_atomic(uuid,jsonb)'::regprocedure,
+      'public.replace_tour_extra_assignments_atomic(uuid,jsonb)'::regprocedure
+    )
+    AND p.proconfig @> ARRAY['search_path=""']::text[]
+  ),
+  3,
+  'all exposed SECURITY DEFINER functions use an empty search_path'
+);
+
+SELECT * FROM finish();
+ROLLBACK;
