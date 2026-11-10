@@ -26,6 +26,7 @@ import {
   listTemplates,
   getProviderConfig,
   saveProviderConfig,
+  refreshProviderConfigFromServer,
   renderTemplateVariables,
 } from '../../../services/communicationService';
 import {
@@ -66,7 +67,7 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
 
   // Provider Settings Modal
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [tempEmailProvider, setTempEmailProvider] = useState<'resend' | 'sendgrid' | 'smtp' | 'none'>('resend');
+  const [tempEmailProvider, setTempEmailProvider] = useState<'resend' | 'none'>('resend');
   const [tempApiKey, setTempApiKey] = useState('');
   const [tempFromEmail, setTempFromEmail] = useState('dispatch@redseavoyages.com');
   const [tempFromName, setTempFromName] = useState('Red Sea Voyages Dispatch');
@@ -85,7 +86,7 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
       setMessages(msgs.filter((m) => m.channel === 'Email'));
       setTemplates(tmpls.filter((t) => t.channel === 'Email' || t.channel === 'Both'));
       setBookings(bks);
-      setProviderConfig(getProviderConfig());
+      setProviderConfig(await refreshProviderConfigFromServer());
     } catch (err) {
       console.error('Failed to load email comms data:', err);
     } finally {
@@ -204,7 +205,7 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
     setIsSettingsOpen(true);
   };
 
-  const saveSettings = () => {
+  const saveSettings = async () => {
     const newConfig: ProviderConfig = {
       ...providerConfig,
       email: {
@@ -212,16 +213,19 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
         apiKey: tempApiKey.trim(),
         fromEmail: tempFromEmail.trim(),
         fromName: tempFromName.trim(),
-        isConfigured: tempEmailProvider !== 'none' && tempApiKey.trim().length > 5,
+        isConfigured: false,
       },
     };
     saveProviderConfig(newConfig);
-    setProviderConfig(getProviderConfig());
     setTempApiKey('');
+    const updatedConfig = await refreshProviderConfigFromServer();
+    setProviderConfig(updatedConfig);
     setIsSettingsOpen(false);
     showToast(
-      'Provider selection saved. API keys are never stored in this browser; sending remains disabled until a server-side email provider is configured.',
-      'info'
+      updatedConfig.email.isConfigured
+        ? 'Server-side Resend is configured and ready.'
+        : 'Provider selection saved. Add RESEND_API_KEY and RESEND_FROM_EMAIL in Hostinger environment variables to enable sending.',
+      updatedConfig.email.isConfigured ? 'success' : 'info'
     );
   };
 
@@ -672,8 +676,7 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
             </div>
 
             <p className="text-xs text-stone-400">
-              Configure production email provider API credentials. If unconfigured, the system strictly marks
-              dispatches as <strong>&ldquo;Not configured&rdquo;</strong> to guarantee truthfulness.
+              Email delivery uses the server-side Resend adapter. API keys entered below are discarded and never saved in the browser; configure RESEND_API_KEY and RESEND_FROM_EMAIL in Hostinger environment variables.
             </p>
 
             <div className="space-y-3 text-xs">
@@ -686,8 +689,6 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
                 >
                   <option value="none">None (Disabled / Testing Mode)</option>
                   <option value="resend">Resend (Recommended API)</option>
-                  <option value="sendgrid">SendGrid Web API</option>
-                  <option value="smtp">Direct SMTP Server</option>
                 </select>
               </div>
 
