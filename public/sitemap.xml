@@ -4,42 +4,42 @@
   
   <!-- Core Public Pages -->
   <url>
-    <loc>https://awesomeadventure.tours/</loc>
+    <loc>https://kemetspirit.com/</loc>
     <lastmod>2026-10-05</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 
   <url>
-    <loc>https://awesomeadventure.tours/excursions</loc>
+    <loc>https://kemetspirit.com/excursions</loc>
     <lastmod>2026-10-05</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
-    <loc>https://awesomeadventure.tours/booking</loc>
+    <loc>https://kemetspirit.com/booking</loc>
     <lastmod>2026-10-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
-    <loc>https://awesomeadventure.tours/my-booking</loc>
+    <loc>https://kemetspirit.com/my-booking</loc>
     <lastmod>2026-10-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
 
   <url>
-    <loc>https://awesomeadventure.tours/privacy</loc>
+    <loc>https://kemetspirit.com/privacy</loc>
     <lastmod>2026-10-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
 
   <url>
-    <loc>https://awesomeadventure.tours/terms</loc>
+    <loc>https://kemetspirit.com/terms</loc>
     <lastmod>2026-10-05</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
@@ -47,7 +47,7 @@
 
   <!-- Individual Excursion Product Pages -->
   <url>
-    <loc>https://awesomeadventure.tours/excursions/orange-bay-island-snorkeling</loc>
+    <loc>https://kemetspirit.com/excursions/orange-bay-island-snorkeling</loc>
     <lastmod>2026-10-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
@@ -58,7 +58,7 @@
   </url>
 
   <url>
-    <loc>https://awesomeadventure.tours/excursions/paradise-island-snorkeling-trip</loc>
+    <loc>https://kemetspirit.com/excursions/paradise-island-snorkeling-trip</loc>
     <lastmod>2026-10-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
@@ -69,7 +69,7 @@
   </url>
 
   <url>
-    <loc>https://awesomeadventure.tours/excursions/dolphin-house-snorkeling</loc>
+    <loc>https://kemetspirit.com/excursions/dolphin-house-snorkeling</loc>
     <lastmod>2026-10-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
@@ -80,7 +80,7 @@
   </url>
 
   <url>
-    <loc>https://awesomeadventure.tours/excursions/giftun-island-boat-trip</loc>
+    <loc>https://kemetspirit.com/excursions/giftun-island-boat-trip</loc>
     <lastmod>2026-10-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
@@ -91,7 +91,7 @@
   </url>
 
   <url>
-    <loc>https://awesomeadventure.tours/excursions/desert-quad-safari</loc>
+    <loc>https://kemetspirit.com/excursions/desert-quad-safari</loc>
     <lastmod>2026-10-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
@@ -102,7 +102,7 @@
   </url>
 
   <url>
-    <loc>https://awesomeadventure.tours/excursions/desert-safari-bedouin-experience</loc>
+    <loc>https://kemetspirit.com/excursions/desert-safari-bedouin-experience</loc>
     <lastmod>2026-10-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
@@ -113,7 +113,7 @@
   </url>
 
   <url>
-    <loc>https://awesomeadventure.tours/excursions/private-red-sea-yacht</loc>
+    <loc>https://kemetspirit.com/excursions/private-red-sea-yacht</loc>
     <lastmod>2026-10-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
@@ -124,7 +124,7 @@
   </url>
 
   <url>
-    <loc>https://awesomeadventure.tours/excursions/el-gouna-private-boat-trip</loc>
+    <loc>https://kemetspirit.com/excursions/el-gouna-private-boat-trip</loc>
     <lastmod>2026-10-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
@@ -135,7 +135,7 @@
   </url>
 
   <url>
-    <loc>https://awesomeadventure.tours/excursions/introductory-scuba-diving-experience</loc>
+    <loc>https://kemetspirit.com/excursions/introductory-scuba-diving-experience</loc>
     <lastmod>2026-10-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
@@ -146,7 +146,7 @@
   </url>
 
   <url>
-    <loc>https://awesomeadventure.tours/excursions/marsa-alam-dolphin-house</loc>
+    <loc>https://kemetspirit.com/excursions/marsa-alam-dolphin-house</loc>
     <lastmod>2026-10-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.80</priority>
@@ -157,7 +157,7 @@
   </url>
 
   <url>
-    <loc>https://awesomeadventure.tours/excursions/sharm-el-naga-beach-reef-day</loc>
+    <loc>https://kemetspirit.com/excursions/sharm-el-naga-beach-reef-day</loc>
     <lastmod>2026-10-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.75</priority>
@@ -168,7 +168,7 @@
   </url>
 
   <url>
-    <loc>https://awesomeadventure.tours/excursions/sahl-hasheesh-glass-bottom-boat</loc>
+    <loc>https://kemetspirit.com/excursions/sahl-hasheesh-glass-bottom-boat</loc>
     <lastmod>2026-10-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.70</priority>
@@ -179,7 +179,7 @@
   </url>
 
   <url>
-    <loc>https://awesomeadventure.tours/excursions/ras-mohammed-white-island-cruise</loc>
+    <loc>https://kemetspirit.com/excursions/ras-mohammed-white-island-cruise</loc>
     <lastmod>2026-10-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
