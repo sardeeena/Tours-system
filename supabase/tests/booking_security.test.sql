@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(76);
+SELECT plan(78);
 
 SELECT ok(
   EXISTS (
@@ -594,6 +594,19 @@ SELECT ok(NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND ta
 SELECT ok(NOT EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='customers' AND cmd='INSERT' AND roles @> ARRAY['public']::name[]),'customer rows cannot be created directly by anonymous guests');
 SELECT ok(EXISTS (SELECT 1 FROM pg_proc WHERE oid='public.recalculate_customer_stats(uuid)'::regprocedure AND COALESCE(array_to_string(proconfig, ','),'') LIKE '%search_path=""%'),'customer-statistics SECURITY DEFINER function pins an empty search_path');
 SELECT ok(NOT has_function_privilege('anon', 'public.recalculate_customer_stats(uuid)', 'EXECUTE'),'anonymous role cannot invoke customer-statistics recalculation');
+
+
+SELECT ok(
+  EXISTS (SELECT 1 FROM pg_proc WHERE oid='public.get_executive_bi_metrics(date,date)'::regprocedure
+    AND COALESCE(array_to_string(proconfig, ','),'') LIKE '%search_path=""%'),
+  'executive BI SECURITY DEFINER function pins an empty search_path'
+);
+
+SELECT ok(
+  EXISTS (SELECT 1 FROM pg_proc WHERE oid='public.query_custom_bi_report(jsonb)'::regprocedure
+    AND COALESCE(array_to_string(proconfig, ','),'') LIKE '%search_path=""%'),
+  'custom BI SECURITY DEFINER function pins an empty search_path'
+);
 
 SELECT * FROM finish();
 
