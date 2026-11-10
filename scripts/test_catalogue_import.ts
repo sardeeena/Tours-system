@@ -146,6 +146,33 @@ async function runTestSuite() {
     'Category excursion counts are derived from the actual catalogue'
   );
 
+  const catalogueSeedSql = fs.readFileSync(path.resolve('supabase/seed/kemet_spirit_catalogue.sql'), 'utf8');
+  assert(
+    !/\\b(DELETE|UPDATE|TRUNCATE|DROP)\\s+/i.test(catalogueSeedSql),
+    'Catalogue seed never deletes, updates, truncates, or drops existing production records'
+  );
+  assert(
+    catalogueSeedSql.includes("'published'") &&
+      catalogueSeedSql.includes("'what_to_bring'") &&
+      catalogueSeedSql.includes("'important_information'"),
+    'Catalogue seed imports published tour records and preserves preparation sections'
+  );
+  assert(
+    catalogueSeedSql.includes("'Illustrative stock photo") &&
+      catalogueSeedSql.includes('FALSE'),
+    'Catalogue seed labels stock imagery and keeps unverified pickup fee records inactive'
+  );
+  assert(
+    catalogueSeedSql.includes('rating,review_count') &&
+      catalogueSeedSql.includes(', 0, 0,'),
+    'Catalogue seed never assigns synthetic tour ratings or review counts'
+  );
+  assert(
+    !catalogueSeedSql.includes('REVIEWS_DATA') &&
+      !catalogueSeedSql.includes('verifiedBooking'),
+    'Catalogue seed imports no fabricated customer reviews'
+  );
+
   const tourServiceSource = fs.readFileSync(path.resolve('src/services/tourService.ts'), 'utf8');
   assert(
     !tourServiceSource.includes('recommendationRate: 98') && !tourServiceSource.includes('REVIEWS_DATA.filter'),
