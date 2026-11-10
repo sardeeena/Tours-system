@@ -6,6 +6,8 @@ The SQL file `supabase/seed/kemet_spirit_catalogue.sql` imports the 13 excursion
 
 - The seed is additive and idempotent. It uses `INSERT ... ON CONFLICT DO NOTHING`; it contains no `UPDATE`, `DELETE`, `TRUNCATE`, or `DROP`.
 - Existing catalogue rows with a matching slug but a different ID cause the preflight to abort rather than attaching relations to the wrong record.
+- Preflight checks both slug-to-ID and ID-to-slug collisions for tours, destinations, and categories; a conflict aborts the transaction instead of attaching child records to an unrelated row.
+- Legacy category aliases (`Boat Trip`, `Island`, `Island Visits`, `Private Tour`, and `Quad`) are normalized to the six canonical categories, and each tour/category link is inserted once with the primary category first.
 - All 13 tours are published to preserve the existing public catalogue. Six destinations with active tours and all six categories are published; Makadi Bay remains a draft destination because no current tour is assigned to it.
 - Tour ratings and review counts are zero. No reviews or bookings are inserted.
 - The current tour-specific optional extras are inserted and assigned. The four pre-existing generic extras are preserved. The separate legacy `GLOBAL_BOOKING_EXTRAS` list is intentionally not imported because its prices differ from the tour-specific options currently shown on the live tour pages.
