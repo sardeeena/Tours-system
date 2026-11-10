@@ -242,10 +242,10 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
         setProcessingRefund(null);
         await loadData();
       } else {
-        showToast(res.error || 'Failed to disburse refund', 'error');
+        showToast(res.error || 'Failed to record payout', 'error');
       }
     } catch (err: any) {
-      showToast(err.message || 'Error executing refund disbursement', 'error');
+      showToast(err.message || 'Error recording refund payout', 'error');
     } finally {
       setProcessingAction(false);
     }
@@ -362,7 +362,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
             <span>Refunds & Financial Returns</span>
           </h1>
           <p className="text-xs text-stone-400 mt-1">
-            Controlled refund approval and disbursement lifecycle. Only executed transactions impact ledger totals.
+            Controlled refund workflow. Only externally completed payouts with a verified reference are recorded in ledger totals.
           </p>
         </div>
 
@@ -402,7 +402,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
             <RotateCcw className="w-5 h-5 text-rose-400" />
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold tracking-wider text-stone-400">Total Disbursed</span>
+            <span className="text-[10px] uppercase font-bold tracking-wider text-stone-400">Total payouts recorded</span>
             <div className="text-xl font-bold font-mono text-white">€{metrics.processedTotal.toLocaleString()}</div>
           </div>
         </div>
@@ -557,7 +557,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
                               : r.status === 'approved'
                               ? 'Approved (Unpaid)'
                               : r.status === 'processed'
-                              ? 'Disbursed'
+                              ? 'Payout recorded'
                               : 'Rejected'}
                           </span>
                         </span>
@@ -579,7 +579,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
                         )}
                         {r.processedDate && (
                           <div className="text-[10px] text-stone-500">
-                            Disbursed: {new Date(r.processedDate).toLocaleDateString()}
+                            Payout recorded: {new Date(r.processedDate).toLocaleDateString()}
                           </div>
                         )}
                       </td>
@@ -609,7 +609,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
                             className="px-3 py-1.5 rounded-lg bg-[#0A6C74] hover:bg-[#08565d] text-white text-[11px] font-medium transition-colors shadow-xs cursor-pointer inline-flex items-center space-x-1"
                           >
                             <DollarSign className="w-3 h-3" />
-                            <span>Disburse</span>
+                            <span>Record payout</span>
                           </button>
                         )}
                         {isProcessed && (
@@ -639,7 +639,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
                   <span>Request Controlled Return / Refund</span>
                 </h3>
                 <p className="text-xs text-stone-400 mt-0.5">
-                  Submits a refund request for manager review. Balances are only adjusted when disbursed.
+                  Submits a refund request for manager review. Balances are adjusted only after a verified external payout is recorded.
                 </p>
               </div>
               <button
@@ -700,7 +700,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-medium text-stone-300 mb-1">Disbursement Channel</label>
+                  <label className="block font-medium text-stone-300 mb-1">Payout method (manual)</label>
                   <select
                     value={refundMethod}
                     onChange={(e) => setRefundMethod(e.target.value as any)}
@@ -792,7 +792,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
 
             <form onSubmit={handleSubmitApprove} className="space-y-4">
               <div>
-                <label className="block text-stone-300 font-medium mb-1">Approved Payout Amount (€)</label>
+                <label className="block text-stone-300 font-medium mb-1">Approved payout amount ({approvingRefund.currency})</label>
                 <input
                   type="number"
                   step="0.01"
@@ -881,7 +881,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
               </div>
 
               <div>
-                <label className="block text-stone-300 font-medium mb-1">Treasury Officer</label>
+                <label className="block text-stone-300 font-medium mb-1">Recorded by</label>
                 <input
                   type="text"
                   value={processedByInput}
