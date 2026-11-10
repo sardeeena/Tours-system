@@ -68,7 +68,6 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
   // Provider Settings Modal
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [tempEmailProvider, setTempEmailProvider] = useState<'resend' | 'none'>('resend');
-  const [tempApiKey, setTempApiKey] = useState('');
   const [tempFromEmail, setTempFromEmail] = useState('dispatch@redseavoyages.com');
   const [tempFromName, setTempFromName] = useState('Red Sea Voyages Dispatch');
 
@@ -199,7 +198,6 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
 
   const openSettingsModal = () => {
     setTempEmailProvider(providerConfig.email.provider === 'resend' ? 'resend' : 'none');
-    setTempApiKey(providerConfig.email.apiKey || '');
     setTempFromEmail(providerConfig.email.fromEmail || 'dispatch@redseavoyages.com');
     setTempFromName(providerConfig.email.fromName || 'Red Sea Voyages Dispatch');
     setIsSettingsOpen(true);
@@ -210,14 +208,13 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
       ...providerConfig,
       email: {
         provider: tempEmailProvider,
-        apiKey: tempApiKey.trim(),
+        apiKey: '',
         fromEmail: tempFromEmail.trim(),
         fromName: tempFromName.trim(),
         isConfigured: false,
       },
     };
     saveProviderConfig(newConfig);
-    setTempApiKey('');
     const updatedConfig = await refreshProviderConfigFromServer();
     setProviderConfig(updatedConfig);
     setIsSettingsOpen(false);
@@ -676,7 +673,7 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
             </div>
 
             <p className="text-xs text-stone-400">
-              Email delivery uses the server-side Resend adapter. API keys entered below are discarded and never saved in the browser; configure RESEND_API_KEY and RESEND_FROM_EMAIL in Hostinger environment variables.
+              Email delivery uses the server-side Resend adapter. Configure RESEND_API_KEY and RESEND_FROM_EMAIL in Hostinger environment variables; this screen never handles secrets.
             </p>
 
             <div className="space-y-3 text-xs">
@@ -692,26 +689,13 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
                 </select>
               </div>
 
-              <div>
-                <label className="block text-stone-300 font-medium mb-1">
-                  API Key / Secret Token <span className="text-rose-400">*</span>
-                </label>
-                <input
-                  type="password"
-                  placeholder="re_123456789... or SG.xxxx"
-                  value={tempApiKey}
-                  onChange={(e) => setTempApiKey(e.target.value)}
-                  className="w-full bg-stone-950 border border-stone-800 rounded-lg px-3 py-2 text-white font-mono placeholder-stone-600 focus:outline-none focus:border-teal-500"
-                />
-              </div>
-
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <label className="block text-stone-300 font-medium mb-1">From Email Address</label>
                   <input
                     type="email"
                     value={tempFromEmail}
-                    onChange={(e) => setTempFromEmail(e.target.value)}
+                    readOnly
                     className="w-full bg-stone-950 border border-stone-800 rounded-lg px-3 py-2 text-white placeholder-stone-600 focus:outline-none focus:border-teal-500"
                   />
                 </div>
@@ -720,7 +704,7 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
                   <input
                     type="text"
                     value={tempFromName}
-                    onChange={(e) => setTempFromName(e.target.value)}
+                    readOnly
                     className="w-full bg-stone-950 border border-stone-800 rounded-lg px-3 py-2 text-white placeholder-stone-600 focus:outline-none focus:border-teal-500"
                   />
                 </div>
