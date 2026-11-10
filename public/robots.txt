@@ -14,4 +14,4 @@ Disallow: /admin/*
 Disallow: /api/
 
 # Sitemap location
-Sitemap: https://awesomeadventure.tours/sitemap.xml
+Sitemap: https://kemetspirit.com/sitemap.xml
