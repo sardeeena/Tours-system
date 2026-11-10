@@ -965,25 +965,30 @@ export async function logCommunicationMessage(msg: CommunicationMessage): Promis
 
   // Log on customer activity timeline if customerId, bookingReference, leadId, inquiryId, or taskId is present
   if (msg.customerId || msg.bookingReference || msg.leadId) {
-    await logActivity({
-      customerId: msg.customerId || null,
-      bookingId: msg.bookingId || null,
-      leadId: msg.leadId || null,
-      eventType: 'communication',
-      title: `${msg.channel} [${msg.status}]: ${msg.subject || msg.templateKey || 'Direct message'}`,
-      description: msg.content.substring(0, 160) + (msg.content.length > 160 ? '...' : ''),
-      actor: msg.staffName,
-      metadata: {
-        channel: msg.channel,
-        status: msg.status,
-        recipient: msg.recipientAddress,
-        provider: msg.providerName,
-        providerMessageId: msg.providerMessageId,
-        failureReason: msg.failureReason,
-        inquiryId: msg.inquiryId,
-        taskId: msg.taskId,
-      },
-    });
+    try {
+      await logActivity({
+        customerId: msg.customerId || null,
+        bookingId: msg.bookingId || null,
+        leadId: msg.leadId || null,
+        eventType: 'communication',
+        title: `${msg.channel} [${msg.status}]: ${msg.subject || msg.templateKey || 'Direct message'}`,
+        description: msg.content.substring(0, 160) + (msg.content.length > 160 ? '...' : ''),
+        actor: msg.staffName,
+        metadata: {
+          channel: msg.channel,
+          status: msg.status,
+          recipient: msg.recipientAddress,
+          provider: msg.providerName,
+          providerMessageId: msg.providerMessageId,
+          failureReason: msg.failureReason,
+          inquiryId: msg.inquiryId,
+          taskId: msg.taskId,
+        },
+      });
+    } catch (error) {
+      // Activity timeline failures must not change the actual provider delivery result.
+      console.warn('Communication activity logging failed:', error);
+    }
   }
 
   if (isSupabaseConfigured()) {
