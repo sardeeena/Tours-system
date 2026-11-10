@@ -585,10 +585,15 @@ SELECT ok(
 );
 
 SELECT ok(
-  (SELECT booked_count = 1 FROM public.tour_availability
-   WHERE tour_id = (SELECT id FROM public.tours WHERE slug = 'pgtap-booking-test')
-     AND date = CURRENT_DATE + 31),
-  'customer cancellation request through RLS does not release capacity'
+  (
+    SELECT booked_count = 1
+    FROM public.get_tour_availability_schedule(
+      'pgtap-booking-test',
+      CURRENT_DATE + 31,
+      CURRENT_DATE + 31
+    )
+  ),
+  'customer cancellation request through RLS does not release capacity via the public availability RPC'
 );
 
 RESET ROLE;
