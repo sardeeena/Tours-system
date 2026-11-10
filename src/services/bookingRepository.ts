@@ -214,6 +214,10 @@ class SupabaseBookingRepository implements IBookingRepository {
         }
         if (res.subtotalEur !== undefined && res.subtotalEur !== null) {
           booking.pricing.subtotalEur = Number(res.subtotalEur);
+          booking.pricing.formattedSubtotal = `€${Number(res.subtotalEur).toFixed(2)}`;
+        }
+        if (res.extrasTotalEur !== undefined && res.extrasTotalEur !== null) {
+          booking.pricing.extrasSubtotalEur = Number(res.extrasTotalEur);
         }
 
         // Only commit to local state cache after authoritative database transaction succeeds
