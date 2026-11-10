@@ -579,6 +579,7 @@ class SupabaseBookingRepository implements IBookingRepository {
     const existing = await this.getBooking(bookingReference);
     if (!existing) return null;
 
+    let resolvedStatus = decision === 'approve' ? 'cancelled' : (existing.status === 'cancellation_requested' ? 'confirmed' : existing.status);
     if (isSupabaseConfigured()) {
       const { data, error } = await supabase.rpc('admin_resolve_booking_cancellation', {
         p_reference: bookingReference.trim().toUpperCase(),
@@ -589,9 +590,8 @@ class SupabaseBookingRepository implements IBookingRepository {
       if (!data || (data as any).success !== true) {
         throw new Error((data as any)?.error || 'The cancellation decision could not be processed.');
       }
+      resolvedStatus = (data as any).status || resolvedStatus;
     }
-
-    const resolvedStatus = (data as any)?.status || (decision === 'approve' ? 'cancelled' : (existing.status === 'cancellation_requested' ? 'confirmed' : existing.status));
     const updated: Booking = {
       ...existing,
       status: resolvedStatus,
