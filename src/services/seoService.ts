@@ -113,6 +113,9 @@ export async function getStoredSeoMetadata(
     if (data.og_title) metadata.ogTitle = data.og_title;
     if (data.og_description) metadata.ogDescription = data.og_description;
     if (data.og_image) metadata.ogImage = data.og_image;
+    if (Array.isArray(data.seo_keywords) && data.seo_keywords.length > 0) {
+      metadata.keywords = data.seo_keywords;
+    }
     if (data.robots_index !== null && data.robots_index !== undefined) {
       metadata.robotsIndex = data.robots_index;
     }
@@ -150,6 +153,8 @@ export const seoService = {
     // 3. Keywords
     if (meta.keywords && meta.keywords.length > 0) {
       setMetaTag('name', 'keywords', meta.keywords.join(', '));
+    } else {
+      document.head.querySelector('meta[name="keywords"]')?.remove();
     }
 
     // 4. Canonical URL
