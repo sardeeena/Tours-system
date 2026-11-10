@@ -493,6 +493,25 @@ BEGIN
     RETURN NEW;
   END IF;
 
+  -- A customer-owned booking may transition once into cancellation review. This
+  -- transition never releases inventory; only the admin approval RPC can do that.
+  IF NEW.status = 'cancellation_requested'
+     AND OLD.status IN ('pending', 'confirmed')
+     AND NEW.cancellation_previous_status = OLD.status
+     AND NEW.cancellation_requested_at IS NOT NULL
+     AND (TO_JSONB(NEW) - ARRAY[
+       'status', 'cancellation_previous_status', 'cancellation_requested_at',
+       'cancellation_reason', 'pickup_hotel_name', 'pickup_room_number',
+       'special_requests', 'updated_at'
+     ]) IS NOT DISTINCT FROM
+     (TO_JSONB(OLD) - ARRAY[
+       'status', 'cancellation_previous_status', 'cancellation_requested_at',
+       'cancellation_reason', 'pickup_hotel_name', 'pickup_room_number',
+       'special_requests', 'updated_at'
+     ]) THEN
+    RETURN NEW;
+  END IF;
+
   IF auth.uid() IS NULL OR OLD.user_id IS DISTINCT FROM auth.uid() THEN
     RAISE EXCEPTION 'You are not authorized to update this reservation.'
       USING ERRCODE = '42501';
