@@ -704,8 +704,7 @@ export async function generateInvoiceForBooking(bookingReference: string): Promi
 
   if (!inserted?.id) throw new Error('The database did not confirm invoice creation.');
   newInvoice.id = inserted.id;
-  const current = await listInvoices();
-  setLocal(LOCAL_INVOICES_KEY, [newInvoice, ...current]);
+  await listInvoices(); // Refresh the local development cache from the committed database row.
   return newInvoice;
 }
 
