@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(25);
+SELECT plan(29);
 
 SELECT ok(
   to_regprocedure('public.record_payment_atomic(text,numeric,text,text,text,text,text,text,text,text)') IS NOT NULL,
