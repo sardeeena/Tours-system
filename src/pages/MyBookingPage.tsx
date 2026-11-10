@@ -121,7 +121,8 @@ export const MyBookingPage: React.FC<MyBookingPageProps> = ({
       const sanitizedReason = sanitizeString(cancelReason) || 'Customer requested cancellation via portal';
       const updated = await bookingRepository.cancelBooking(
         booking.bookingReference,
-        sanitizedReason
+        sanitizedReason,
+        emailOrPhone
       );
 
       if (updated) {
@@ -129,7 +130,7 @@ export const MyBookingPage: React.FC<MyBookingPageProps> = ({
         await notificationService.sendCancellationNotification(updated);
         setShowCancelModal(false);
         setCancelSuccessMsg(
-          'Your booking has been cancelled. Because this was done more than 24 hours before your tour, there are no cancellation fees.'
+          'Your cancellation request has been submitted for staff review. Your reservation remains active until the team approves the request.'
         );
       }
     } catch (err) {
