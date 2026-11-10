@@ -102,7 +102,12 @@ BEGIN
   IF p_amount IS NULL OR p_amount <= 0 OR p_amount > 99999999.99 OR p_amount <> round(p_amount, 2) THEN
     RAISE EXCEPTION 'Payment amount must be positive, have at most two decimal places, and be within supported limits' USING ERRCODE = '22023';
   END IF;
-  IF v_currency IS NULL OR v_currency !~ '^[A-Z]{3}
+  IF v_currency IS NULL OR v_currency !~ '^[A-Z]{3}$' THEN
+    RAISE EXCEPTION 'Invalid payment currency' USING ERRCODE = '22023';
+  END IF;
+  IF v_method IS NULL OR v_method NOT IN ('Cash', 'Card', 'Bank Transfer', 'Other') THEN
+    RAISE EXCEPTION 'Unsupported payment method. Online gateway payments must be completed through a connected gateway.' USING ERRCODE = '22023';
+  END IF;
   IF p_status IS NULL OR p_status NOT IN ('Pending', 'Paid', 'Partially Paid', 'Failed', 'pending', 'paid', 'partially_paid', 'failed') THEN
     RAISE EXCEPTION 'Unsupported payment status' USING ERRCODE = '22023';
   END IF;
