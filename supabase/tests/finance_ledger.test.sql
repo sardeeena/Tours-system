@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(43);
+SELECT plan(45);
 
 SELECT ok(
   to_regprocedure('public.record_payment_atomic(text,numeric,text,text,text,text,text,text,text,text)') IS NOT NULL,
@@ -159,6 +159,20 @@ SELECT 'refund_request', public.request_refund_atomic(
 
 SELECT ok((SELECT (value->>'success')::boolean FROM finance_test_state WHERE key='refund_request'),
   'atomic refund request is persisted for approval');
+
+INSERT INTO finance_test_state (key, value)
+SELECT 'refund_request_replay', public.request_refund_atomic(
+  (SELECT value->>'bookingReference' FROM finance_test_state WHERE key='booking'),
+  ((SELECT value->'payment'->>'id' FROM finance_test_state WHERE key='payment_one'))::uuid,
+  40.00, 'EUR', 'pgTAP refund test', 'Cash Return', 'pgTAP', NULL,
+  'idem_pgtap_fin_refund_0001'
+);
+
+SELECT is((SELECT (value->>'duplicate')::boolean FROM finance_test_state WHERE key='refund_request_replay'),
+  TRUE, 'retrying a refund request returns the existing request without creating another');
+SELECT is((SELECT value->'refund'->>'id' FROM finance_test_state WHERE key='refund_request_replay'),
+  (SELECT value->'refund'->>'id' FROM finance_test_state WHERE key='refund_request'),
+  'refund idempotent replay returns the original refund record');
 
 INSERT INTO finance_test_state (key, value)
 SELECT 'refund_approved', public.transition_refund_atomic(
