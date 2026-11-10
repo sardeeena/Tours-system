@@ -35,6 +35,3 @@ enabled = false
 
 [edge_runtime]
 enabled = false
-
-[functions]
-enabled = false
