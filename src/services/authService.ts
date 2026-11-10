@@ -404,18 +404,9 @@ export async function resendConfirmationEmail(
     }
   }
 
-  // Local fallback
-  const localUsers = getStoredLocalUsers();
-  const matched = localUsers.find((u) => u.user.email.toLowerCase() === cleanEmail);
-  if (matched) {
-    matched.confirmationToken = Math.floor(100000 + Math.random() * 900000).toString();
-    matched.confirmationSentAt = new Date().toISOString();
-    saveStoredLocalUsers(localUsers);
-  }
-
   return {
-    success: true,
-    message: `A fresh confirmation link has been sent to ${cleanEmail}. Check your inbox.`,
+    success: false,
+    error: 'Email confirmation requires a configured Supabase Auth connection.',
   };
 }
 
@@ -431,57 +422,55 @@ export async function confirmUserEmail(
     return { success: false, error: 'Email address is required.' };
   }
 
-  let confirmedInSupabase = false;
+  if (!isSupabaseConfigured()) {
+    return { success: false, error: 'Email confirmation requires a configured Supabase Auth connection.' };
+  }
 
-  // 1. If using Supabase and a token was provided
-  if (isSupabaseConfigured() && token) {
-    try {
+  try {
+    let confirmedUserId: string;
+
+    if (token) {
       const { data, error } = await supabase.auth.verifyOtp({
         email: cleanEmail,
         token: token.trim(),
         type: 'signup',
       });
 
-      if (!error && data?.user) {
-        confirmedInSupabase = true;
-        try {
-          await supabase.from('profiles').update({ is_confirmed: true }).eq('id', data.user.id);
-        } catch {
-          // ignore
-        }
+      if (error || !data.user) {
+        return { success: false, error: error ? formatSupabaseError(error) : 'Supabase did not confirm this account.' };
       }
-    } catch (err) {
-      console.warn('Supabase verifyOtp notice:', err);
+      confirmedUserId = data.user.id;
+    } else {
+      // A redirect without an OTP is accepted only when Supabase has already
+      // established a session for this exact, email-confirmed account.
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data.user) {
+        return { success: false, error: 'The confirmation session is missing or expired. Please use the latest email link.' };
+      }
+      if (data.user.email?.trim().toLowerCase() !== cleanEmail || !data.user.email_confirmed_at) {
+        return { success: false, error: 'This Supabase session does not confirm the requested email address.' };
+      }
+      confirmedUserId = data.user.id;
     }
-  }
 
-  // 2. If using Supabase without token (e.g. user clicked confirmation link or confirmed=true in URL)
-  if (isSupabaseConfigured() && !token) {
-    try {
-      await supabase.from('profiles').update({ is_confirmed: true }).eq('email', cleanEmail);
-    } catch {
-      // ignore
-    }
-  }
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .update({ is_confirmed: true })
+      .eq('id', confirmedUserId)
+      .select('id')
+      .maybeSingle();
 
-  // 3. Always update local fallback registry so local storage stays confirmed
-  const localUsers = getStoredLocalUsers();
-  const matched = localUsers.find((u) => u.user.email.toLowerCase() === cleanEmail);
-  if (matched) {
-    // If token was provided and doesn't match local token AND wasn't confirmed in Supabase:
-    if (token && matched.confirmationToken && matched.confirmationToken !== token.trim() && !confirmedInSupabase) {
-      return { 
-        success: false, 
-        error: 'Invalid confirmation code. Please check the email sent from Supabase.' 
+    if (profileError || !profile) {
+      return {
+        success: false,
+        error: profileError ? formatSupabaseError(profileError) : 'The account was confirmed, but its profile could not be synchronized.',
       };
     }
-    matched.isConfirmed = true;
-    matched.user.isConfirmed = true;
-    saveStoredLocalUsers(localUsers);
-    return { success: true };
-  }
 
-  return { success: true };
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: formatSupabaseError(err) };
+  }
 }
 
 /**
