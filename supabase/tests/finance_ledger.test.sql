@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(45);
+SELECT plan(48);
 
 SELECT ok(
   to_regprocedure('public.record_payment_atomic(text,numeric,text,text,text,text,text,text,text,text)') IS NOT NULL,
@@ -77,6 +77,10 @@ SELECT ok(EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname='public' AND indexna
 
 SELECT ok(EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname='public' AND indexname='refund_records_processed_reference_uidx'),
   'processed refund payout references are unique');
+
+SELECT ok(POSITION('Refund exceeds the remaining refundable amount for the selected payment' IN
+  pg_get_functiondef('public.request_refund_atomic(text,uuid,numeric,text,text,text,text,text,text)'::regprocedure)) > 0,
+  'refund amount is capped by the remaining amount on the selected payment');
 SELECT is((SELECT name FROM public.payment_providers WHERE id='bank_transfer'),
   'Bank transfer (manual)', 'unverified bank-provider branding is replaced with neutral manual reconciliation wording');
 
@@ -184,6 +188,14 @@ SELECT is((SELECT value->'refund'->>'status' FROM finance_test_state WHERE key='
   'approved', 'refund approval is recorded through the controlled transition RPC');
 
 INSERT INTO finance_test_state (key, value)
+SELECT 'refund_approved_replay', public.transition_refund_atomic(
+  ((SELECT value->'refund'->>'id' FROM finance_test_state WHERE key='refund_request'))::uuid,
+  'approve', 30.00, 'pgTAP approver', NULL, NULL
+);
+SELECT is((SELECT (value->>'duplicate')::boolean FROM finance_test_state WHERE key='refund_approved_replay'),
+  TRUE, 'retrying an identical refund approval is idempotent');
+
+INSERT INTO finance_test_state (key, value)
 SELECT 'refund_processed', public.transition_refund_atomic(
   ((SELECT value->'refund'->>'id' FROM finance_test_state WHERE key='refund_request'))::uuid,
   'process', NULL, 'pgTAP cashier', NULL, 'PGTAP-FIN-REFUND-001'
@@ -191,6 +203,14 @@ SELECT 'refund_processed', public.transition_refund_atomic(
 
 SELECT is((SELECT value->'refund'->>'status' FROM finance_test_state WHERE key='refund_processed'),
   'processed', 'only an approved refund can be marked processed');
+
+INSERT INTO finance_test_state (key, value)
+SELECT 'refund_processed_replay', public.transition_refund_atomic(
+  ((SELECT value->'refund'->>'id' FROM finance_test_state WHERE key='refund_request'))::uuid,
+  'process', NULL, 'pgTAP cashier', NULL, 'PGTAP-FIN-REFUND-001'
+);
+SELECT is((SELECT (value->>'duplicate')::boolean FROM finance_test_state WHERE key='refund_processed_replay'),
+  TRUE, 'retrying the same payout reference does not process a refund twice');
 SELECT is((SELECT payment_status FROM public.bookings
   WHERE booking_reference=(SELECT value->>'bookingReference' FROM finance_test_state WHERE key='booking')),
   'partially_paid', 'processed refund recalculates the booking net payment status');
