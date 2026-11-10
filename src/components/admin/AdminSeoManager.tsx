@@ -145,7 +145,7 @@ export const AdminSeoManager: React.FC = () => {
       if (dest) {
         defaultTitle = `${dest.name} Excursions & Boat Trips | Red Sea Voyages`;
         defaultDesc = dest.description?.slice(0, 155) || `Discover premier boat trips, island cruises, and marine tours departing from ${dest.name}, Egypt.`;
-        defaultCanonical = `https://redseaexcursions.com/excursions?destination=${encodeURIComponent(dest.name)}`;
+        defaultCanonical = `https://kemetspirit.com/excursions?destination=${encodeURIComponent(dest.name)}`;
         defaultOgImage = dest.main_image || defaultOgImage;
         defaultSchema = {
           '@context': 'https://schema.org',
@@ -159,7 +159,7 @@ export const AdminSeoManager: React.FC = () => {
       if (cat) {
         defaultTitle = `${cat.name} in Hurghada & Red Sea | Book Direct`;
         defaultDesc = cat.description?.slice(0, 155) || `Browse our official ${cat.name} trips across the Red Sea with verified captains and hotel transfers.`;
-        defaultCanonical = `https://redseaexcursions.com/excursions?category=${encodeURIComponent(cat.slug)}`;
+        defaultCanonical = `https://kemetspirit.com/excursions?category=${encodeURIComponent(cat.slug)}`;
         defaultOgImage = cat.image || defaultOgImage;
       }
     } else if (currentScope === 'pages') {
@@ -167,7 +167,7 @@ export const AdminSeoManager: React.FC = () => {
       if (page) {
         defaultTitle = `${page.name} | Red Sea Excursions & Voyages`;
         defaultDesc = `Official ${page.name} guidelines, maritime safety standards, and traveler support for Red Sea excursions.`;
-        defaultCanonical = `https://redseaexcursions.com${page.path}`;
+        defaultCanonical = `https://kemetspirit.com${page.path}`;
       }
     }
 
