@@ -69,16 +69,23 @@ async function handleFailure(
   client: SupabaseClient,
   message: QueueMessage,
   eventId: string,
-  error: unknown,
-  communicationMessageId?: string
+  error: unknown
 ): Promise<void> {
   const reason = error instanceof Error ? error.message : 'Unknown notification delivery failure';
 
-  if (communicationMessageId) {
-    await client
+  const { data: logRow } = await client
+    .from('communication_messages')
+    .select('id')
+    .eq('automation_event_id', eventId)
+    .eq('channel', 'Email')
+    .maybeSingle();
+
+  if (logRow?.id) {
+    const { error: logError } = await client
       .from('communication_messages')
       .update({ status: 'failed', failure_reason: reason })
-      .eq('id', communicationMessageId);
+      .eq('id', logRow.id);
+    if (logError) throw logError;
   }
 
   await updateEvent(client, eventId, { error_message: reason });
