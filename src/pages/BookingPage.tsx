@@ -81,6 +81,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
   const [selectedExtraIds, setSelectedExtraIds] = useState<string[]>(initialDraft.selectedExtraIds || []);
   const [customer, setCustomer] = useState<CustomerInfo>(initialDraft.customer);
   const [paymentMethod, setPaymentMethod] = useState<'pay_at_pickup' | 'pay_online'>(initialDraft.paymentMethod || 'pay_at_pickup');
+  const [couponCode, setCouponCode] = useState<string>('');
   const [termsAccepted, setTermsAccepted] = useState<boolean>(initialDraft.termsAccepted || false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
@@ -236,7 +237,8 @@ export const BookingPage: React.FC<BookingPageProps> = ({
       const newBooking: Booking = {
         bookingId: `b-${Date.now()}`,
         bookingReference: ref,
-        idempotencyKey: `idem_${ref}_${currentTour.id}_${date}_${customer.email.trim().toLowerCase()}`,
+        idempotencyKey: `idem_${ref}`,
+        couponCode: couponCode.trim() || undefined,
         tourId: currentTour.id,
         tourSlug: currentTour.slug,
         tourTitle: currentTour.title,
@@ -461,6 +463,8 @@ export const BookingPage: React.FC<BookingPageProps> = ({
                 {currentStep === 6 && (
                   <StepPayment
                     pricing={pricing}
+                    couponCode={couponCode}
+                    onCouponCodeChange={setCouponCode}
                     currency={currency}
                     paymentMethod={paymentMethod}
                     onPaymentMethodChange={setPaymentMethod}
