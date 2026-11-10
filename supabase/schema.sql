@@ -208,6 +208,7 @@ CREATE TRIGGER trigger_tours_updated_at
 CREATE TABLE IF NOT EXISTS public.tour_categories (
     tour_id UUID NOT NULL REFERENCES public.tours(id) ON DELETE CASCADE,
     category_id UUID NOT NULL REFERENCES public.categories(id) ON DELETE CASCADE,
+    sort_order INT NOT NULL DEFAULT 0,
     PRIMARY KEY (tour_id, category_id)
 );
 
