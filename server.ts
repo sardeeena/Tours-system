@@ -609,7 +609,7 @@ app.get('/api/tours', async (req: Request, res: Response) => {
 // ------------------------------------------------------------------------------
 // 5. Booking Creation & Authoritative Database Persistence
 // ------------------------------------------------------------------------------
-app.post('/api/bookings/create', async (req: AuthenticatedRequest, res: Response) => {
+app.post('/api/bookings/create', rateLimit(10, 60_000), async (req: AuthenticatedRequest, res: Response) => {
   const {
     tourSlug,
     date,
@@ -667,9 +667,9 @@ app.post('/api/bookings/create', async (req: AuthenticatedRequest, res: Response
   }
 
   const idempotencyKey = String(
-    req.get('Idempotency-Key') || req.body?.idempotencyKey || randomUUID()
+    req.get('Idempotency-Key') || req.body?.idempotencyKey || ''
   ).trim();
-  if (!idempotencyKey || idempotencyKey.length > 200) {
+  if (idempotencyKey.length < 16 || idempotencyKey.length > 200) {
     return res.status(400).json({ success: false, error: 'Invalid idempotency key.' });
   }
 
@@ -1322,101 +1322,92 @@ app.all('/api/db/query', rateLimit(60, 60_000), async (req: AuthenticatedRequest
 
     case 'lookup_booking': {
       const reference = typeof body.reference === 'string' ? body.reference.trim().toUpperCase() : '';
-      const verification = typeof body.contactVerification === 'string' ? body.contactVerification.trim().toLowerCase() : '';
+      const verification = typeof body.contactVerification === 'string' ? body.contactVerification.trim() : '';
 
-      if (!reference || !/^RST-\d{4}-[A-Z0-9]+$/.test(reference)) {
-        return res.status(400).json({ success: false, error: 'Valid booking reference (RST-YYYY-XXXX) is required.' });
+      if (!reference || !/^RST-\\d{4}-[A-Z0-9]+$/.test(reference)) {
+        return res.status(400).json({ success: false, error: 'A valid booking reference is required.' });
       }
 
-      const isStaff = req.user && ['admin', 'super_admin', 'manager', 'staff'].includes(req.user.role);
-
-      if (!isStaff && !verification) {
-        return res.status(400).json({
-          success: false,
-          error: 'Two-factor contact verification (email or phone) is required for guest booking lookup.',
-        });
+      if (!serverSupabase) {
+        return res.status(503).json({ success: false, error: 'The reservation lookup service is temporarily unavailable.' });
       }
 
-      if (serverSupabase) {
-        try {
-          if (verification) {
-            const { data: rpcRes, error: rpcErr } = await serverSupabase.rpc('lookup_booking_secure', {
-              p_reference: reference,
-              p_verification: verification,
-            });
+      const isStaff = Boolean(req.user && ['admin', 'super_admin', 'manager', 'staff'].includes(req.user.role));
 
-            const rawBooking = (rpcRes && typeof rpcRes === 'object')
-              ? ((rpcRes as any).booking || ((rpcRes as any).bookingReference ? rpcRes : null))
-              : null;
-
-            if (!rpcErr && rawBooking && rawBooking.bookingReference) {
-              return res.json({
-                success: true,
-                booking: {
-                  bookingReference: rawBooking.bookingReference,
-                  status: rawBooking.status,
-                  paymentStatus: rawBooking.paymentStatus,
-                  paymentMethod: rawBooking.paymentMethod,
-                  bookingDate: rawBooking.bookingDate,
-                  createdAt: rawBooking.createdAt,
-                  guests: rawBooking.guests,
-                  tour: rawBooking.tour,
-                  pickup: rawBooking.pickup,
-                  pricing: rawBooking.pricing,
-                  customer: {
-                    firstName: rawBooking.customer?.firstName,
-                    lastName: rawBooking.customer?.lastName,
-                    emailMasked: rawBooking.customer?.emailMasked,
-                    phoneMasked: rawBooking.customer?.phoneMasked,
-                    country: rawBooking.customer?.country,
-                  },
-                  extras: rawBooking.extras,
-                  specialRequests: rawBooking.specialRequests,
-                },
-              });
-            }
-          }
-
-          const { data: b, error } = await serverSupabase
+      try {
+        // Staff may retrieve the full record only after the server has verified their JWT and DB role.
+        if (isStaff) {
+          const { data: staffBooking, error: staffError } = await serverSupabase
             .from('bookings')
-            .select('id, booking_reference, booking_date, status, payment_status, total, currency, customers(*), tours(*)')
+            .select('id, booking_reference, booking_date, status, payment_status, payment_method, total, currency, customers(*), tours(*)')
             .eq('booking_reference', reference)
             .maybeSingle();
 
-          if (!error && b) {
-            if (isStaff) {
-              return res.json({ success: true, booking: b });
-            }
-
-            const custRecord: any = Array.isArray((b as any).customers) ? (b as any).customers[0] : (b as any).customers;
-            const custEmail = (custRecord?.email || '').toLowerCase();
-            const custPhone = (custRecord?.phone || '').replace(/\s+/g, '');
-            const cleanVer = verification.replace(/\s+/g, '');
-
-            if (custEmail === verification || (custPhone.length >= 6 && custPhone.includes(cleanVer))) {
-              const maskedEmail = custEmail.replace(/^(.)(.*)(@.*)$/, (_: string, a: string, _b: string, c: string) => `${a}***${c}`);
-              return res.json({
-                success: true,
-                booking: {
-                  ...b,
-                  customers: {
-                    ...custRecord,
-                    email: maskedEmail,
-                    phone: '*** Protected ***',
-                  },
-                },
-              });
-            }
+          if (staffError) {
+            console.error('Staff booking lookup failed:', staffError.message);
+            return res.status(503).json({ success: false, error: 'The reservation lookup service is temporarily unavailable.' });
           }
-        } catch (err) {
-          console.warn('Database error in lookup_booking:', err);
+          if (!staffBooking) {
+            return res.status(404).json({ success: false, error: 'Booking not found or verification failed.' });
+          }
+          return res.json({ success: true, booking: staffBooking });
         }
-      }
 
-      return res.status(404).json({
-        success: false,
-        error: `Booking "${reference}" not found or contact verification did not match.`,
-      });
+        if (!verification) {
+          return res.status(400).json({
+            success: false,
+            error: 'The email address or full phone number used during booking is required.',
+          });
+        }
+
+        // Guest lookup has one path only: the narrowly scoped, rate-limited SECURITY DEFINER RPC.
+        // Never fall back to a service-role table query when verification fails or the RPC errors.
+        const { data: rpcResult, error: rpcError } = await serverSupabase.rpc('lookup_booking_secure', {
+          p_reference: reference,
+          p_verification: verification,
+        });
+
+        if (rpcError) {
+          console.error('Secure booking lookup RPC failed:', rpcError.message);
+          if (rpcError.message?.toLowerCase().includes('too many')) {
+            return res.status(429).json({ success: false, error: 'Too many verification attempts. Please wait before trying again.' });
+          }
+          return res.status(503).json({ success: false, error: 'The reservation lookup service is temporarily unavailable.' });
+        }
+
+        const rawBooking = rpcResult && typeof rpcResult === 'object' ? (rpcResult as any) : null;
+        if (!rawBooking?.found || !rawBooking.bookingReference) {
+          return res.status(404).json({ success: false, error: 'Booking not found or verification failed.' });
+        }
+
+        return res.json({
+          success: true,
+          booking: {
+            bookingReference: rawBooking.bookingReference,
+            status: rawBooking.status,
+            paymentStatus: rawBooking.paymentStatus,
+            paymentMethod: rawBooking.paymentMethod,
+            bookingDate: rawBooking.bookingDate,
+            createdAt: rawBooking.createdAt,
+            guests: rawBooking.guests,
+            tour: rawBooking.tour,
+            pickup: rawBooking.pickup,
+            pricing: rawBooking.pricing,
+            customer: {
+              firstName: rawBooking.customer?.firstName,
+              lastName: rawBooking.customer?.lastName,
+              emailMasked: rawBooking.customer?.emailMasked,
+              phoneMasked: rawBooking.customer?.phoneMasked,
+              country: rawBooking.customer?.country,
+            },
+            extras: rawBooking.extras,
+            specialRequests: rawBooking.specialRequests,
+          },
+        });
+      } catch (err) {
+        console.error('Secure booking lookup exception:', err);
+        return res.status(503).json({ success: false, error: 'The reservation lookup service is temporarily unavailable.' });
+      }
     }
 
     case 'get_admin_overview': {
