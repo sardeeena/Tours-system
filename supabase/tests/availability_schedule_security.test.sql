@@ -12,6 +12,9 @@ VALUES
 INSERT INTO public.tour_availability (tour_id, date, status, max_capacity, booked_count, notes)
 VALUES ('a9000000-0000-0000-0000-000000000001', CURRENT_DATE, 'available', 12, 0, 'Internal operations note must not be public');
 
+SELECT set_config('request.jwt.claim.sub', '', TRUE);
+SELECT set_config('request.jwt.claims', '{}', TRUE);
+
 SELECT ok(
   to_regprocedure('public.get_tour_availability_schedule(text,date,date)') IS NOT NULL,
   'bounded tour availability RPC exists'
