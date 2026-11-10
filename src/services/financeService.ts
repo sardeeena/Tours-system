@@ -14,7 +14,6 @@ import {
   CurrencyBreakdownItem,
 } from '../types/finance';
 import { bookingRepository } from './bookingRepository';
-import { Booking } from '../types/booking';
 import { recordActivity } from './crmService';
 import { publishAutomationEvent } from './communicationService';
 
@@ -24,48 +23,50 @@ const LOCAL_REFUNDS_KEY = 'rse_fin_refunds';
 const LOCAL_PROVIDERS_KEY = 'rse_fin_providers';
 
 export const COMPANY_DETAILS: CompanyBillingDetails = {
-  name: 'Red Sea Voyages S.A.E.',
-  tagline: 'Premier Marine Excursions & Desert Expeditions',
-  address: 'Hurghada Marina Boulevard, Pier 3, Unit 14B',
-  city: 'Hurghada, Red Sea Governorate',
-  country: 'Arab Republic of Egypt',
-  phone: '+20 100 456 7890',
-  email: 'finance@awesomeadventure.tours',
-  website: 'awesomeadventure.tours',
-  taxRegistrationNumber: 'EG-TAX-489-102-881',
-  commercialRegistryNumber: 'CR-92841-HUR',
-  bankName: 'Commercial International Bank (CIB Egypt) - Hurghada Marina Branch',
-  iban: 'EG4200100014000001099238472',
-  swiftBic: 'CIBEEGCX',
+  // Brand identity only. Legal entity, tax, address, phone and bank details must be
+  // entered by an authorized administrator before issuing legally complete invoices.
+  name: 'Kemet Spirit',
+  tagline: 'Tours and experiences',
+  address: '',
+  city: '',
+  country: '',
+  phone: '',
+  email: '',
+  website: 'kemetspirit.com',
+  taxRegistrationNumber: '',
+  commercialRegistryNumber: '',
+  bankName: '',
+  iban: '',
+  swiftBic: '',
 };
 
 export const DEFAULT_PROVIDERS: PaymentProvider[] = [
   {
     id: 'cash',
-    name: 'Marina Office Cash Desk',
+    name: 'Cash payment',
     providerType: 'manual',
     isConnected: true,
     isManual: true,
     supportedCurrencies: ['EUR', 'USD', 'GBP', 'EGP'],
-    description: 'In-person physical cash collection at Hurghada Marina pier or hotel pickup.',
+    description: 'Manual cash collection, recorded by authorized staff.',
   },
   {
     id: 'pos_terminal',
-    name: 'Pier Mobile POS Terminal',
+    name: 'Physical POS terminal',
     providerType: 'manual',
     isConnected: true,
     isManual: true,
     supportedCurrencies: ['EUR', 'USD', 'GBP', 'EGP'],
-    description: 'Physical chip & PIN / contactless terminal managed by pier desk supervisor.',
+    description: 'Manual card-terminal settlement, verified by authorized staff.',
   },
   {
     id: 'bank_transfer',
-    name: 'CIB Bank Official Wire',
+    name: 'Bank transfer',
     providerType: 'bank_transfer',
     isConnected: true,
     isManual: true,
     supportedCurrencies: ['EUR', 'USD', 'GBP', 'EGP'],
-    description: 'Direct wire transfer to Commercial International Bank (Egypt) account.',
+    description: 'Manual bank-transfer reconciliation by authorized staff.',
   },
   {
     id: 'stripe',
@@ -74,7 +75,7 @@ export const DEFAULT_PROVIDERS: PaymentProvider[] = [
     isConnected: false,
     isManual: false,
     supportedCurrencies: ['EUR', 'USD', 'GBP'],
-    description: 'Online card processing. Currently disconnected (No server-side Stripe secret key configured).',
+    description: 'Online card processing is not configured.',
   },
   {
     id: 'paypal',
@@ -83,7 +84,7 @@ export const DEFAULT_PROVIDERS: PaymentProvider[] = [
     isConnected: false,
     isManual: false,
     supportedCurrencies: ['EUR', 'USD', 'GBP'],
-    description: 'Digital wallet gateway. Currently disconnected (PayPal client ID not configured).',
+    description: 'Online wallet processing is not configured.',
   },
 ];
 
@@ -116,105 +117,114 @@ function setLocal<T>(key: string, data: T): void {
   memoryStore.set(key, JSON.stringify(data));
 }
 
+const isDevelopmentBuild = Boolean(import.meta.env.DEV);
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function requireFinanceBackend(): boolean {
+  if (isSupabaseConfigured()) return true;
+  if (isDevelopmentBuild) return false;
+  throw new Error('Finance services are not configured. Financial records are unavailable until the production Supabase connection is configured.');
+}
+
+function mapDbPayment(row: any): FinancePayment {
+  return {
+    id: row.id,
+    bookingId: row.booking_id,
+    bookingReference: row.booking_reference || '',
+    customerId: row.customer_id || null,
+    customerName: row.customer_name || 'Guest',
+    customerEmail: row.customer_email || '',
+    customerPhone: row.customer_phone || null,
+    amount: Number(row.amount),
+    currency: row.currency || 'EUR',
+    paymentMethod: row.payment_method as FinancePaymentMethod,
+    provider: row.provider || 'unknown',
+    isManual: row.is_manual ?? true,
+    paymentStatus: row.status as FinancePaymentStatus,
+    paymentDate: row.payment_date,
+    transactionReference: row.transaction_reference || '',
+    notes: row.notes || null,
+    recordedBy: row.recorded_by || 'Staff',
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function isSettledPayment(payment: FinancePayment): boolean {
+  return ['paid', 'partially paid', 'partially_paid'].includes(String(payment.paymentStatus).toLowerCase());
+}
+
+function mapDbRefund(row: any): FinanceRefund {
+  const methodMap: Record<string, FinanceRefund['refundMethod']> = {
+    'Credit Card': 'Card Reversal',
+    Cash: 'Cash Return',
+    'Credit Voucher': 'Store Credit / Voucher',
+    'Original Payment Method': 'Other',
+    'Card Reversal': 'Card Reversal',
+    'Cash Return': 'Cash Return',
+    'Bank Wire': 'Bank Wire',
+    'Store Credit / Voucher': 'Store Credit / Voucher',
+    Other: 'Other',
+  };
+  return {
+    id: row.id,
+    bookingId: row.booking_id,
+    bookingReference: row.booking_reference || '',
+    paymentId: row.payment_id || null,
+    customerId: row.customer_id || null,
+    customerName: row.customer_name || 'Guest',
+    customerEmail: row.customer_email || '',
+    amount: Number(row.amount),
+    requestedAmount: Number(row.requested_amount ?? row.amount),
+    approvedAmount: row.approved_amount != null ? Number(row.approved_amount) : null,
+    currency: row.currency || 'EUR',
+    reason: row.reason || '',
+    status: (row.status || 'requested') as RefundStatus,
+    requestedBy: row.requested_by || 'Staff',
+    approvedBy: row.approved_by || null,
+    processedDate: row.processed_date || null,
+    refundMethod: methodMap[row.refund_method] || 'Other',
+    transactionReference: row.transaction_reference || '',
+    processedBy: row.processed_by || '',
+    notes: row.notes || null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
 // ------------------------------------------------------------------------------
 // PAYMENT PROVIDERS (Honest Integration Registry)
 // ------------------------------------------------------------------------------
 
 export async function listPaymentProviders(): Promise<PaymentProvider[]> {
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('payment_providers')
-        .select('*')
-        .order('is_connected', { ascending: false });
-
-      if (!error && data && data.length > 0) {
-        const mapped: PaymentProvider[] = data.map((d: any) => ({
-          id: d.id,
-          name: d.name,
-          providerType: d.provider_type,
-          isConnected: d.is_connected,
-          isManual: d.is_manual,
-          supportedCurrencies: d.supported_currencies || ['EUR', 'USD', 'GBP', 'EGP'],
-          description: d.description || '',
-        }));
-        setLocal(LOCAL_PROVIDERS_KEY, mapped);
-        return mapped;
-      }
-    } catch {
-      // ignore
-    }
+  if (!requireFinanceBackend()) {
+    return getLocal<PaymentProvider[]>(LOCAL_PROVIDERS_KEY, DEFAULT_PROVIDERS);
   }
 
-  return getLocal<PaymentProvider[]>(LOCAL_PROVIDERS_KEY, DEFAULT_PROVIDERS);
+  const { data, error } = await supabase
+    .from('payment_providers')
+    .select('id,name,provider_type,is_connected,is_manual,supported_currencies,description')
+    .order('is_connected', { ascending: false });
+
+  if (error) throw new Error(formatSupabaseError(error));
+
+  const providers: PaymentProvider[] = (data || []).map((row: any) => ({
+    id: row.id,
+    name: row.name,
+    providerType: row.provider_type,
+    isConnected: Boolean(row.is_connected),
+    isManual: Boolean(row.is_manual),
+    supportedCurrencies: row.supported_currencies || [],
+    description: row.description || '',
+  }));
+
+  setLocal(LOCAL_PROVIDERS_KEY, providers);
+  return providers;
 }
 
 // ------------------------------------------------------------------------------
 // 1. PAYMENTS LEDGER
 // ------------------------------------------------------------------------------
-
-async function ensureSeedPayments(): Promise<FinancePayment[]> {
-  const current = getLocal<FinancePayment[]>(LOCAL_PAYMENTS_KEY, []);
-  if (current.length > 0) return current;
-
-  const bookings = await bookingRepository.listBookings();
-  const generated: FinancePayment[] = [];
-
-  bookings.forEach((b) => {
-    const total = b.pricing?.totalEur || 0;
-    if (b.paymentStatus === 'paid') {
-      generated.push({
-        id: `pay-${b.bookingReference}-01`,
-        bookingId: b.bookingId || b.bookingReference,
-        bookingReference: b.bookingReference,
-        customerId: (b as any).customerId || null,
-        customerName: `${b.customer.firstName} ${b.customer.lastName}`,
-        customerEmail: b.customer.email,
-        customerPhone: b.customer.phoneNumber
-          ? `${b.customer.countryCode || ''} ${b.customer.phoneNumber}`
-          : null,
-        amount: total,
-        currency: 'EUR',
-        paymentMethod: b.paymentMethod === 'pay_online' ? 'Online Payment' : 'Cash',
-        provider: b.paymentMethod === 'pay_online' ? 'pos_terminal' : 'cash',
-        isManual: true,
-        paymentStatus: 'Paid',
-        paymentDate: b.createdAt || new Date().toISOString(),
-        transactionReference: `TXN-${b.bookingReference.replace(/[^a-zA-Z0-9]/g, '')}`,
-        notes: 'Full payment confirmed at reservation booking.',
-        recordedBy: 'Booking Gateway',
-        createdAt: b.createdAt || new Date().toISOString(),
-      });
-    } else if (b.paymentStatus === 'partially_paid') {
-      const partialAmount = Math.round(total * 0.5);
-      generated.push({
-        id: `pay-${b.bookingReference}-01`,
-        bookingId: b.bookingId || b.bookingReference,
-        bookingReference: b.bookingReference,
-        customerId: (b as any).customerId || null,
-        customerName: `${b.customer.firstName} ${b.customer.lastName}`,
-        customerEmail: b.customer.email,
-        customerPhone: b.customer.phoneNumber
-          ? `${b.customer.countryCode || ''} ${b.customer.phoneNumber}`
-          : null,
-        amount: partialAmount,
-        currency: 'EUR',
-        paymentMethod: 'Card',
-        provider: 'pos_terminal',
-        isManual: true,
-        paymentStatus: 'Partially Paid',
-        paymentDate: b.createdAt || new Date().toISOString(),
-        transactionReference: `DEP-${b.bookingReference.replace(/[^a-zA-Z0-9]/g, '')}`,
-        notes: 'Deposit received. Outstanding balance due at hotel pickup.',
-        recordedBy: 'Pier Desk Staff',
-        createdAt: b.createdAt || new Date().toISOString(),
-      });
-    }
-  });
-
-  setLocal(LOCAL_PAYMENTS_KEY, generated);
-  return generated;
-}
 
 export async function listPayments(filter?: {
   bookingId?: string;
@@ -225,69 +235,36 @@ export async function listPayments(filter?: {
   currency?: string;
   search?: string;
 }): Promise<FinancePayment[]> {
-  let payments = await ensureSeedPayments();
+  let payments: FinancePayment[];
 
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('payment_transactions')
-        .select('*')
-        .order('payment_date', { ascending: false });
+  if (!requireFinanceBackend()) {
+    payments = getLocal<FinancePayment[]>(LOCAL_PAYMENTS_KEY, []);
+  } else {
+    const { data, error } = await supabase
+      .from('payment_transactions')
+      .select('*')
+      .order('payment_date', { ascending: false });
 
-      if (!error && data) {
-        const dbPayments: FinancePayment[] = data.map((d: any) => ({
-          id: d.id,
-          bookingId: d.booking_id,
-          bookingReference: d.booking_reference || d.booking_id,
-          customerId: d.customer_id,
-          customerName: d.customer_name || 'Guest',
-          customerEmail: d.customer_email || '',
-          customerPhone: d.customer_phone || null,
-          amount: Number(d.amount),
-          currency: d.currency || 'EUR',
-          paymentMethod: d.payment_method as FinancePaymentMethod,
-          provider: d.provider || 'cash',
-          isManual: d.is_manual ?? true,
-          paymentStatus: d.status as FinancePaymentStatus,
-          paymentDate: d.payment_date,
-          transactionReference: d.transaction_reference || `TXN-${d.id.substring(0, 8)}`,
-          notes: d.notes,
-          recordedBy: d.recorded_by || 'Staff',
-          createdAt: d.created_at,
-          updatedAt: d.updated_at,
-        }));
-        const dbTxRefs = new Set(dbPayments.map((p) => p.transactionReference?.toLowerCase()));
-        const dbIds = new Set(dbPayments.map((p) => p.id));
-        const unsynced = payments.filter(
-          (p) => !dbIds.has(p.id) && (!p.transactionReference || !dbTxRefs.has(p.transactionReference.toLowerCase()))
-        );
-        payments = [...dbPayments, ...unsynced];
-        setLocal(LOCAL_PAYMENTS_KEY, payments);
-      }
-    } catch {
-      // ignore
-    }
+    if (error) throw new Error(formatSupabaseError(error));
+    payments = (data || []).map(mapDbPayment);
+    setLocal(LOCAL_PAYMENTS_KEY, payments);
   }
 
-  return payments.filter((p) => {
-    if (filter?.bookingId && p.bookingId !== filter.bookingId && p.bookingReference !== filter.bookingId) return false;
-    if (filter?.customerId && p.customerId !== filter.customerId) return false;
-    if (filter?.status && filter.status !== 'all') {
-      const pNorm = p.paymentStatus.toLowerCase();
-      const fNorm = filter.status.toLowerCase();
-      if (pNorm !== fNorm) return false;
-    }
-    if (filter?.method && filter.method !== 'all' && p.paymentMethod !== filter.method) return false;
-    if (filter?.provider && filter.provider !== 'all' && p.provider !== filter.provider) return false;
-    if (filter?.currency && filter.currency !== 'all' && p.currency !== filter.currency) return false;
+  return payments.filter((payment) => {
+    if (filter?.bookingId && payment.bookingId !== filter.bookingId && payment.bookingReference !== filter.bookingId) return false;
+    if (filter?.customerId && payment.customerId !== filter.customerId) return false;
+    if (filter?.status && filter.status !== 'all' && payment.paymentStatus.toLowerCase() !== filter.status.toLowerCase()) return false;
+    if (filter?.method && filter.method !== 'all' && payment.paymentMethod !== filter.method) return false;
+    if (filter?.provider && filter.provider !== 'all' && payment.provider !== filter.provider) return false;
+    if (filter?.currency && filter.currency !== 'all' && payment.currency !== filter.currency) return false;
     if (filter?.search?.trim()) {
-      const q = filter.search.toLowerCase();
+      const query = filter.search.toLowerCase();
       return (
-        p.bookingReference.toLowerCase().includes(q) ||
-        p.customerName.toLowerCase().includes(q) ||
-        p.customerEmail.toLowerCase().includes(q) ||
-        p.transactionReference.toLowerCase().includes(q) ||
-        (p.notes && p.notes.toLowerCase().includes(q))
+        payment.bookingReference.toLowerCase().includes(query) ||
+        payment.customerName.toLowerCase().includes(query) ||
+        payment.customerEmail.toLowerCase().includes(query) ||
+        payment.transactionReference.toLowerCase().includes(query) ||
+        (payment.notes || '').toLowerCase().includes(query)
       );
     }
     return true;
@@ -308,233 +285,99 @@ export async function recordPayment(paymentData: {
   isManual?: boolean;
   paymentStatus: FinancePaymentStatus;
   paymentDate?: string;
-  transactionReference?: string;
+  transactionReference: string;
   notes?: string | null;
   recordedBy?: string;
 }): Promise<FinancePayment> {
-  // Provider Validation: Do NOT pretend provider is connected
-  const providers = await listPaymentProviders();
+  if (!Number.isFinite(paymentData.amount) || paymentData.amount <= 0) {
+    throw new Error('Payment amount must be a valid number greater than zero.');
+  }
+
+  const transactionReference = paymentData.transactionReference?.trim();
+  if (!transactionReference || transactionReference.length < 3 || transactionReference.length > 160) {
+    throw new Error('A valid transaction reference is required.');
+  }
+
   const selectedProviderId = paymentData.provider || (paymentData.paymentMethod === 'Cash' ? 'cash' : 'pos_terminal');
-  const providerDef = providers.find((p) => p.id === selectedProviderId);
-
-  if (providerDef && !providerDef.isConnected && !providerDef.isManual) {
-    throw new Error(
-      `Payment provider "${providerDef.name}" is currently disconnected. Live API keys are not provisioned. Please record this payment using an active manual provider (Cash Office, Pier POS, or Bank Wire).`
-    );
+  const providers = await listPaymentProviders();
+  const provider = providers.find((item) => item.id === selectedProviderId);
+  if (!provider || !provider.isConnected) {
+    throw new Error('The selected payment provider is unavailable or disconnected.');
+  }
+  if (!provider.isManual) {
+    throw new Error('Online payment gateway processing is not configured. Do not record a gateway payment manually.');
   }
 
-  if (paymentData.amount <= 0) {
-    throw new Error('Payment amount must be greater than zero.');
+  if (!requireFinanceBackend()) {
+    const localPayment: FinancePayment = {
+      id: `dev-pay-${crypto.randomUUID()}`,
+      bookingId: paymentData.bookingId,
+      bookingReference: paymentData.bookingReference,
+      customerId: paymentData.customerId || null,
+      customerName: paymentData.customerName,
+      customerEmail: paymentData.customerEmail,
+      customerPhone: paymentData.customerPhone || null,
+      amount: Number(paymentData.amount),
+      currency: paymentData.currency.toUpperCase(),
+      paymentMethod: paymentData.paymentMethod,
+      provider: selectedProviderId,
+      isManual: true,
+      paymentStatus: paymentData.paymentStatus,
+      paymentDate: paymentData.paymentDate || new Date().toISOString(),
+      transactionReference,
+      notes: paymentData.notes || null,
+      recordedBy: paymentData.recordedBy || 'Staff',
+      createdAt: new Date().toISOString(),
+    };
+    const current = getLocal<FinancePayment[]>(LOCAL_PAYMENTS_KEY, []);
+    setLocal(LOCAL_PAYMENTS_KEY, [localPayment, ...current]);
+    return localPayment;
   }
 
-  const allPayments = await listPayments();
-  const paymentDate = paymentData.paymentDate || new Date().toISOString();
+  const idempotencyKey = `payment:${selectedProviderId}:${transactionReference.toLowerCase()}`;
+  const { data, error } = await supabase.rpc('record_payment_atomic', {
+    p_booking_reference: paymentData.bookingReference,
+    p_amount: Number(paymentData.amount),
+    p_currency: paymentData.currency.toUpperCase(),
+    p_payment_method: paymentData.paymentMethod,
+    p_provider: selectedProviderId,
+    p_status: String(paymentData.paymentStatus),
+    p_transaction_reference: transactionReference,
+    p_notes: paymentData.notes || null,
+    p_recorded_by: paymentData.recordedBy || 'Staff',
+    p_idempotency_key: idempotencyKey,
+  });
 
-  if (paymentData.transactionReference?.trim()) {
-    const existingTx = allPayments.find(
-      (p) => p.transactionReference?.trim().toLowerCase() === paymentData.transactionReference?.trim().toLowerCase()
-    );
-    if (existingTx) {
-      throw new Error(`Duplicate transaction reference: Transaction "${paymentData.transactionReference.trim()}" has already been recorded.`);
-    }
+  if (error) throw new Error(formatSupabaseError(error));
+  const result = data as any;
+  if (!result?.success || !result?.payment?.id) {
+    throw new Error('The database did not confirm that the payment was recorded.');
   }
 
-  const txRef =
-    paymentData.transactionReference?.trim() ||
-    `TXN-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
-
-  const newPayment: FinancePayment = {
-    id: `pay-${Date.now().toString(36)}`,
-    bookingId: paymentData.bookingId,
-    bookingReference: paymentData.bookingReference,
-    customerId: paymentData.customerId || null,
-    customerName: paymentData.customerName,
-    customerEmail: paymentData.customerEmail,
-    customerPhone: paymentData.customerPhone || null,
-    amount: Number(paymentData.amount),
-    currency: paymentData.currency || 'EUR',
-    paymentMethod: paymentData.paymentMethod,
-    provider: selectedProviderId,
-    isManual: providerDef ? providerDef.isManual : true,
-    paymentStatus: paymentData.paymentStatus,
-    paymentDate,
-    transactionReference: txRef,
-    notes: paymentData.notes || null,
-    recordedBy: paymentData.recordedBy || 'Finance Staff',
-    createdAt: new Date().toISOString(),
-  };
-
-  // Sync with Supabase if configured (Authoritative Database First)
-  if (isSupabaseConfigured()) {
-    try {
-      let resolvedBookingUuid = newPayment.bookingId;
-      let resolvedCustomerUuid = newPayment.customerId;
-
-      // If bookingId is not a UUID, resolve it from bookings table by booking_reference
-      if (!resolvedBookingUuid?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-        const { data: bRow } = await supabase
-          .from('bookings')
-          .select('id, customer_id')
-          .eq('booking_reference', newPayment.bookingReference)
-          .maybeSingle();
-
-        if (bRow) {
-          resolvedBookingUuid = bRow.id;
-          if (!resolvedCustomerUuid && bRow.customer_id) {
-            resolvedCustomerUuid = bRow.customer_id;
-          }
-        }
-      }
-
-      if (resolvedBookingUuid?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-        const paymentPayload: Record<string, any> = {
-          booking_id: resolvedBookingUuid,
-          amount: newPayment.amount,
-          currency: newPayment.currency || 'EUR',
-          payment_method: newPayment.paymentMethod,
-          status: newPayment.paymentStatus,
-          transaction_reference: newPayment.transactionReference,
-          notes: newPayment.notes,
-          recorded_by: newPayment.recordedBy,
-          payment_date: newPayment.paymentDate,
-        };
-
-        if (resolvedCustomerUuid?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-          paymentPayload.customer_id = resolvedCustomerUuid;
-        }
-
-        const { data: inserted, error: payError } = await supabase
-          .from('payment_transactions')
-          .insert(paymentPayload)
-          .select('id')
-          .maybeSingle();
-
-        if (payError) {
-          throw new Error(formatSupabaseError(payError));
-        }
-
-        if (inserted?.id) {
-          newPayment.id = inserted.id;
-        }
-      }
-    } catch (err: any) {
-      console.error('Error inserting payment transaction in Supabase:', err);
-      throw err;
-    }
-  }
-
-  // Only commit to local state after authoritative write succeeds
-  const updatedPayments = [newPayment, ...allPayments];
-  setLocal(LOCAL_PAYMENTS_KEY, updatedPayments);
-
-  // Recalculate booking payment status server/service side
-  try {
-    const allBookings = await bookingRepository.listBookings();
-    const targetBooking = allBookings.find(
-      (b) => b.bookingReference === paymentData.bookingReference || b.bookingId === paymentData.bookingId
-    );
-
-    if (targetBooking) {
-      const bookingPayments = updatedPayments.filter(
-        (p) =>
-          (p.bookingReference === targetBooking.bookingReference || p.bookingId === targetBooking.bookingId) &&
-          (p.paymentStatus === 'Paid' || p.paymentStatus === 'paid')
-      );
-      const totalPaid = bookingPayments.reduce((sum, p) => sum + p.amount, 0);
-
-      // Subtract processed refunds
-      const allRefunds = await listRefunds();
-      const processedRefunds = allRefunds.filter(
-        (r) =>
-          (r.bookingReference === targetBooking.bookingReference || r.bookingId === targetBooking.bookingId) &&
-          r.status === 'processed'
-      );
-      const totalRefunded = processedRefunds.reduce((sum, r) => sum + (r.approvedAmount || r.amount), 0);
-      const netPaid = Math.max(0, totalPaid - totalRefunded);
-      const bookingTotal = targetBooking.pricing?.totalEur || 0;
-
-      let nextStatus: any = 'pending';
-      if (netPaid >= bookingTotal) {
-        nextStatus = 'paid';
-      } else if (netPaid > 0) {
-        nextStatus = 'partially_paid';
-      }
-
-      await bookingRepository.updateBooking({
-        ...targetBooking,
-        paymentStatus: nextStatus,
-        updatedAt: new Date().toISOString(),
-      });
-    }
-  } catch (err) {
-    console.warn('Failed to update booking status after payment:', err);
-  }
-
-  // CRM Activity Timeline Event
+  const savedPayment = mapDbPayment(result.payment);
   try {
     await recordActivity({
-      customerId: newPayment.customerId || undefined,
-      bookingId: newPayment.bookingId || newPayment.bookingReference,
+      customerId: savedPayment.customerId || undefined,
+      bookingId: savedPayment.bookingId,
       eventType: 'payment_recorded',
-      title: `Payment Received: €${newPayment.amount.toFixed(2)}`,
-      description: `Payment settled via ${newPayment.paymentMethod} (Provider: ${newPayment.provider}). Reference: ${newPayment.transactionReference}.`,
-      actor: newPayment.recordedBy || 'Finance Desk',
+      title: `Payment Received: ${savedPayment.currency} ${savedPayment.amount.toFixed(2)}`,
+      description: `Payment recorded via ${savedPayment.paymentMethod} (${savedPayment.provider}). Reference: ${savedPayment.transactionReference}.`,
+      actor: savedPayment.recordedBy,
       metadata: {
-        paymentId: newPayment.id,
-        amount: newPayment.amount,
-        currency: newPayment.currency,
-        bookingReference: newPayment.bookingReference,
-        transactionReference: newPayment.transactionReference,
+        paymentId: savedPayment.id,
+        amount: savedPayment.amount,
+        currency: savedPayment.currency,
+        bookingReference: savedPayment.bookingReference,
+        transactionReference: savedPayment.transactionReference,
       },
     });
-  } catch {}
+  } catch {
+    // The immutable database audit log is written by record_payment_atomic.
+  }
 
-  // Staff Notification
-  try {
-    const notifsRaw = localStorage.getItem('rse_staff_notifications') || '[]';
-    const notifs = JSON.parse(notifsRaw);
-    notifs.unshift({
-      id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-      category: 'new_payment',
-      dedupKey: `new_payment_${newPayment.id}`,
-      title: `New Payment: €${newPayment.amount.toFixed(2)} (${newPayment.currency || 'EUR'})`,
-      message: `Received ${newPayment.paymentMethod} from ${newPayment.customerName} for ${newPayment.bookingReference || 'Direct Payment'}.`,
-      severity: 'success',
-      entityType: 'payment',
-      entityId: newPayment.id,
-      linkTab: 'fin_payments',
-      isRead: false,
-      createdAt: newPayment.paymentDate || new Date().toISOString(),
-    });
-    localStorage.setItem('rse_staff_notifications', JSON.stringify(notifs.slice(0, 100)));
-  } catch {}
-
-  // Automation & Communications Event: payment.received
-  try {
-    await publishAutomationEvent(
-      'payment.received',
-      {
-        paymentId: newPayment.id,
-        bookingReference: newPayment.bookingReference,
-        bookingId: newPayment.bookingId,
-        customerId: newPayment.customerId,
-        customerName: newPayment.customerName,
-        customerEmail: newPayment.customerEmail,
-        amount: newPayment.amount,
-        currency: newPayment.currency,
-        paymentMethod: newPayment.paymentMethod,
-        transactionReference: newPayment.transactionReference,
-        provider: newPayment.provider,
-      },
-      'payment',
-      newPayment.id
-    );
-  } catch {}
-
-  return newPayment;
+  return savedPayment;
 }
 
-// ------------------------------------------------------------------------------
 // 2. INVOICE GENERATION & MANAGEMENT
 // ------------------------------------------------------------------------------
 
@@ -543,166 +386,103 @@ export async function listInvoices(filter?: {
   status?: string;
   search?: string;
 }): Promise<FinanceInvoice[]> {
-  let invoices = getLocal<FinanceInvoice[]>(LOCAL_INVOICES_KEY, []);
+  let invoices: FinanceInvoice[];
 
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('invoices')
-        .select('*')
-        .order('issue_date', { ascending: false });
+  if (!requireFinanceBackend()) {
+    invoices = getLocal<FinanceInvoice[]>(LOCAL_INVOICES_KEY, []);
+  } else {
+    const { data, error } = await supabase
+      .from('invoices')
+      .select('*')
+      .order('issue_date', { ascending: false });
 
-      if (!error && data && data.length > 0) {
-        invoices = data.map((d: any) => ({
-          id: d.id,
-          invoiceNumber: d.invoice_number,
-          bookingId: d.booking_id,
-          bookingReference: d.booking_reference || d.booking_id,
-          customerId: d.customer_id,
-          issueDate: d.issue_date,
-          dueDate: d.due_date,
-          customer: {
-            name: d.customer_name || 'Guest',
-            email: d.customer_email || '',
-            phone: d.customer_phone || null,
-          },
-          tourTitle: d.tour_title || 'Excursion',
-          tourDate: d.tour_date || d.issue_date,
-          guests: { adults: 1, children: 0, infants: 0 },
-          lineItems: (d.line_items as InvoiceLineItem[]) || [],
-          subtotal: Number(d.subtotal),
-          discount: Number(d.discount),
-          taxRatePercent: 0,
-          taxAmount: Number(d.tax_amount),
-          total: Number(d.total),
-          paid: Number(d.paid),
-          balance: Number(d.balance),
-          currency: d.currency || 'EUR',
-          status: d.status,
-          companyDetails: (d.company_details as CompanyBillingDetails) || COMPANY_DETAILS,
-          notes: d.notes,
-          createdAt: d.created_at,
-          updatedAt: d.updated_at,
-        }));
-        setLocal(LOCAL_INVOICES_KEY, invoices);
+    if (error) throw new Error(formatSupabaseError(error));
+
+    const bookingIds = Array.from(new Set((data || []).map((row: any) => row.booking_id).filter(Boolean)));
+    const bookingDetails = new Map<string, {
+      adults: number;
+      children: number;
+      infants: number;
+      bookingReference: string;
+      bookingDate: string;
+      tourId: string;
+    }>();
+    const tourTitles = new Map<string, string>();
+
+    if (bookingIds.length > 0) {
+      const { data: bookingRows, error: bookingError } = await supabase
+        .from('bookings')
+        .select('id,booking_reference,booking_date,adult_count,child_count,infant_count,tour_id')
+        .in('id', bookingIds);
+
+      if (bookingError) throw new Error(formatSupabaseError(bookingError));
+      (bookingRows || []).forEach((booking: any) => {
+        bookingDetails.set(booking.id, {
+          adults: Number(booking.adult_count || 0),
+          children: Number(booking.child_count || 0),
+          infants: Number(booking.infant_count || 0),
+          bookingReference: booking.booking_reference || booking.id,
+          bookingDate: booking.booking_date || '',
+          tourId: booking.tour_id || '',
+        });
+      });
+
+      const tourIds = Array.from(new Set((bookingRows || []).map((booking: any) => booking.tour_id).filter(Boolean)));
+      if (tourIds.length > 0) {
+        const { data: tours, error: toursError } = await supabase
+          .from('tours')
+          .select('id,title')
+          .in('id', tourIds);
+        if (toursError) throw new Error(formatSupabaseError(toursError));
+        (tours || []).forEach((tour: any) => tourTitles.set(tour.id, tour.title || ''));
       }
-    } catch {
-      // ignore
     }
-  }
 
-  // If no invoices exist, generate invoices from bookings
-  if (invoices.length === 0) {
-    const bookings = await bookingRepository.listBookings();
-    const payments = await listPayments();
-
-    invoices = bookings.map((b, idx) => {
-      const bookingPayments = payments.filter(
-        (p) =>
-          (p.bookingReference === b.bookingReference || p.bookingId === b.bookingId) &&
-          (p.paymentStatus === 'Paid' || p.paymentStatus === 'paid')
-      );
-      const paidAmount = bookingPayments.reduce((sum, p) => sum + p.amount, 0);
-      const total = b.pricing?.totalEur || 0;
-      const subtotal = b.pricing?.subtotalEur || total;
-      const discount = b.pricing?.discountEur || 0;
-      const balance = Math.max(0, total - paidAmount);
-
-      let invoiceStatus: FinanceInvoice['status'] = 'issued';
-      if (balance <= 0) invoiceStatus = 'paid';
-      else if (paidAmount > 0) invoiceStatus = 'partially_paid';
-
-      const lineItems: InvoiceLineItem[] = [
-        {
-          id: `line-${b.bookingReference}-01`,
-          description: `${b.tourTitle} - Excursion Package (${b.guests.adults} Adults${
-            b.guests.children > 0 ? `, ${b.guests.children} Children` : ''
-          })`,
-          quantity: 1,
-          unitPrice: subtotal,
-          total: subtotal,
-          type: 'tour',
-        },
-      ];
-
-      if (b.pickup.feeEur > 0) {
-        lineItems.push({
-          id: `line-${b.bookingReference}-pickup`,
-          description: `Hotel Pickup Transfer (${b.pickup.hotelName || b.pickup.locationName || 'Hurghada'})`,
-          quantity: (b.guests.adults || 1) + (b.guests.children || 0),
-          unitPrice: b.pickup.feeEur,
-          total: b.pricing?.pickupSubtotalEur || b.pickup.feeEur,
-          type: 'pickup',
-        });
-      }
-
-      if (b.extras && b.extras.length > 0) {
-        b.extras.forEach((e, eIdx) => {
-          lineItems.push({
-            id: `line-${b.bookingReference}-ext-${eIdx}`,
-            description: `Extra: ${e.name}`,
-            quantity: e.quantity || 1,
-            unitPrice: e.priceEur,
-            total: e.amountEur || e.priceEur,
-            type: 'extra',
-          });
-        });
-      }
-
-      return {
-        id: `inv-${b.bookingReference}`,
-        invoiceNumber: `INV-${new Date().getFullYear()}-${String(idx + 1).padStart(4, '0')}`,
-        bookingId: b.bookingId || b.bookingReference,
-        bookingReference: b.bookingReference,
-        customerId: (b as any).customerId || null,
-        issueDate: b.createdAt ? b.createdAt.split('T')[0] : new Date().toISOString().split('T')[0],
-        dueDate: b.date ? b.date.split('T')[0] : new Date().toISOString().split('T')[0],
-        customer: {
-          name: `${b.customer.firstName} ${b.customer.lastName}`,
-          email: b.customer.email,
-          phone: b.customer.phoneNumber,
-          hotel: b.pickup.hotelName,
-          roomNumber: b.pickup.roomNumber,
-          country: (b.customer as any).nationality || b.customer.countryCode,
-        },
-        tourTitle: b.tourTitle,
-        tourDate: b.date,
-        guests: b.guests,
-        lineItems,
-        subtotal,
-        discount,
-        taxRatePercent: 0,
-        taxAmount: 0,
-        total,
-        paid: paidAmount,
-        balance,
-        currency: 'EUR',
-        status: invoiceStatus,
-        companyDetails: COMPANY_DETAILS,
-        notes: 'Commercial Invoice issued for maritime tour services.',
-        createdAt: b.createdAt || new Date().toISOString(),
-        updatedAt: b.createdAt || new Date().toISOString(),
-      };
-    });
-
+    invoices = (data || []).map((row: any) => ({
+      id: row.id,
+      invoiceNumber: row.invoice_number,
+      bookingId: row.booking_id,
+      bookingReference: row.booking_reference || bookingDetails.get(row.booking_id)?.bookingReference || row.booking_id,
+      customerId: row.customer_id || null,
+      issueDate: row.issue_date,
+      dueDate: row.due_date,
+      customer: {
+        name: row.customer_name || 'Guest',
+        email: row.customer_email || '',
+        phone: row.customer_phone || null,
+      },
+      tourTitle: row.tour_title || tourTitles.get(bookingDetails.get(row.booking_id)?.tourId || '') || '',
+      tourDate: row.tour_date || bookingDetails.get(row.booking_id)?.bookingDate || '',
+      guests: bookingDetails.get(row.booking_id) || { adults: 0, children: 0, infants: 0, bookingReference: row.booking_id, bookingDate: '', tourId: '' },
+      lineItems: (row.line_items as InvoiceLineItem[]) || [],
+      subtotal: Number(row.subtotal || 0),
+      discount: Number(row.discount || 0),
+      taxRatePercent: Number(row.subtotal) > 0 ? (Number(row.tax_amount || 0) / Number(row.subtotal)) * 100 : 0,
+      taxAmount: Number(row.tax_amount || 0),
+      total: Number(row.total || 0),
+      paid: Number(row.paid || 0),
+      balance: Number(row.balance || 0),
+      currency: row.currency || 'EUR',
+      status: row.status,
+      companyDetails: (row.company_details as CompanyBillingDetails) || COMPANY_DETAILS,
+      notes: row.notes || null,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
     setLocal(LOCAL_INVOICES_KEY, invoices);
   }
 
-  return invoices.filter((inv) => {
-    if (filter?.bookingId && inv.bookingId !== filter.bookingId && inv.bookingReference !== filter.bookingId) {
-      return false;
-    }
-    if (filter?.status && filter.status !== 'all' && inv.status !== filter.status) {
-      return false;
-    }
+  return invoices.filter((invoice) => {
+    if (filter?.bookingId && invoice.bookingId !== filter.bookingId && invoice.bookingReference !== filter.bookingId) return false;
+    if (filter?.status && filter.status !== 'all' && invoice.status !== filter.status) return false;
     if (filter?.search?.trim()) {
-      const q = filter.search.toLowerCase();
+      const query = filter.search.toLowerCase();
       return (
-        inv.invoiceNumber.toLowerCase().includes(q) ||
-        inv.bookingReference.toLowerCase().includes(q) ||
-        inv.customer.name.toLowerCase().includes(q) ||
-        inv.customer.email.toLowerCase().includes(q) ||
-        inv.tourTitle.toLowerCase().includes(q)
+        invoice.invoiceNumber.toLowerCase().includes(query) ||
+        invoice.bookingReference.toLowerCase().includes(query) ||
+        invoice.customer.name.toLowerCase().includes(query) ||
+        invoice.customer.email.toLowerCase().includes(query) ||
+        invoice.tourTitle.toLowerCase().includes(query)
       );
     }
     return true;
@@ -711,71 +491,151 @@ export async function listInvoices(filter?: {
 
 export async function generateInvoiceForBooking(bookingReference: string): Promise<FinanceInvoice | null> {
   const bookings = await bookingRepository.listBookings();
-  const b = bookings.find((item) => item.bookingReference === bookingReference);
-  if (!b) return null;
+  const booking = bookings.find((item) => item.bookingReference === bookingReference);
+  if (!booking) return null;
 
-  const existingInvoices = await listInvoices();
-  const alreadyExisting = existingInvoices.find(
-    (inv) => inv.bookingReference === bookingReference || inv.bookingId === b.bookingId
-  );
-  if (alreadyExisting) return alreadyExisting;
+  if (!requireFinanceBackend()) {
+    const existing = getLocal<FinanceInvoice[]>(LOCAL_INVOICES_KEY, []);
+    const duplicate = existing.find((invoice) => invoice.bookingReference === bookingReference);
+    if (duplicate) return duplicate;
 
+    const devInvoice: FinanceInvoice = {
+      id: `dev-inv-${crypto.randomUUID()}`,
+      invoiceNumber: `INV-DEV-${Date.now().toString(36).toUpperCase()}`,
+      bookingId: booking.bookingId || booking.bookingReference,
+      bookingReference,
+      customerId: (booking as any).customerId || null,
+      issueDate: new Date().toISOString().slice(0, 10),
+      dueDate: booking.date ? booking.date.split('T')[0] : new Date().toISOString().slice(0, 10),
+      customer: {
+        name: `${booking.customer.firstName} ${booking.customer.lastName}`,
+        email: booking.customer.email,
+        phone: booking.customer.phoneNumber || null,
+      },
+      tourTitle: booking.tourTitle,
+      tourDate: booking.date,
+      guests: booking.guests,
+      lineItems: [],
+      subtotal: booking.pricing?.subtotalEur || booking.pricing?.totalEur || 0,
+      discount: booking.pricing?.discountEur || 0,
+      taxRatePercent: 0,
+      taxAmount: 0,
+      total: booking.pricing?.totalEur || 0,
+      paid: 0,
+      balance: booking.pricing?.totalEur || 0,
+      currency: 'EUR',
+      status: 'draft',
+      companyDetails: COMPANY_DETAILS,
+      notes: 'Development preview only. Not a valid tax invoice.',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setLocal(LOCAL_INVOICES_KEY, [devInvoice, ...existing]);
+    return devInvoice;
+  }
+
+  if (!UUID_PATTERN.test(booking.bookingId || '')) {
+    throw new Error('The selected booking does not have a valid database identifier. Invoice generation was stopped.');
+  }
+
+  const { data: bookingRow, error: bookingError } = await supabase
+    .from('bookings')
+    .select('id,booking_reference,customer_id,booking_date,adult_count,child_count,infant_count,subtotal,extras_total,discount,total,currency')
+    .eq('id', booking.bookingId)
+    .single();
+
+  if (bookingError || !bookingRow) {
+    throw new Error(bookingError ? formatSupabaseError(bookingError) : 'Booking record could not be verified.');
+  }
+
+  const { data: existingRow, error: existingError } = await supabase
+    .from('invoices')
+    .select('*')
+    .eq('booking_id', bookingRow.id)
+    .maybeSingle();
+
+  if (existingError) throw new Error(formatSupabaseError(existingError));
+  if (existingRow) {
+    const all = await listInvoices();
+    return all.find((invoice) => invoice.id === existingRow.id) || null;
+  }
+
+  const currency = String(bookingRow.currency || 'EUR').toUpperCase();
   const payments = await listPayments({ bookingId: bookingReference });
   const paidAmount = payments
-    .filter((p) => p.paymentStatus === 'Paid' || p.paymentStatus === 'paid')
-    .reduce((sum, p) => sum + p.amount, 0);
+    .filter((payment) => payment.currency === currency && isSettledPayment(payment))
+    .reduce((sum, payment) => sum + payment.amount, 0);
 
-  const total = b.pricing?.totalEur || 0;
-  const subtotal = b.pricing?.subtotalEur || total;
-  const discount = b.pricing?.discountEur || 0;
+  const subtotal = Number(bookingRow.subtotal || 0);
+  const extrasTotal = Number(bookingRow.extras_total || 0);
+  const discount = Number(bookingRow.discount || 0);
+  const total = Number(bookingRow.total || 0);
   const balance = Math.max(0, total - paidAmount);
+  const lineItems: InvoiceLineItem[] = [];
 
-  const seq = existingInvoices.length + 1;
-  const invNumber = `INV-${new Date().getFullYear()}-${String(seq).padStart(4, '0')}`;
-
-  const lineItems: InvoiceLineItem[] = [
-    {
-      id: `line-${b.bookingReference}-01`,
-      description: `${b.tourTitle} - Excursion Package (${b.guests.adults} Adults${
-        b.guests.children > 0 ? `, ${b.guests.children} Children` : ''
-      })`,
+  if (subtotal > 0) {
+    lineItems.push({
+      id: `line-${bookingReference}-tour`,
+      description: `${booking.tourTitle} - tour services`,
       quantity: 1,
       unitPrice: subtotal,
       total: subtotal,
       type: 'tour',
-    },
-  ];
-
-  if (b.pickup.feeEur > 0) {
+    });
+  }
+  if (extrasTotal > 0) {
     lineItems.push({
-      id: `line-${b.bookingReference}-pickup`,
-      description: `Hotel Pickup Transfer (${b.pickup.hotelName || b.pickup.locationName || 'Hurghada'})`,
-      quantity: (b.guests.adults || 1) + (b.guests.children || 0),
-      unitPrice: b.pickup.feeEur,
-      total: b.pricing?.pickupSubtotalEur || b.pickup.feeEur,
-      type: 'pickup',
+      id: `line-${bookingReference}-extras`,
+      description: 'Selected extras and add-ons',
+      quantity: 1,
+      unitPrice: extrasTotal,
+      total: extrasTotal,
+      type: 'extra',
+    });
+  }
+  if (discount > 0) {
+    lineItems.push({
+      id: `line-${bookingReference}-discount`,
+      description: 'Booking discount',
+      quantity: 1,
+      unitPrice: -discount,
+      total: -discount,
+      type: 'discount',
     });
   }
 
+  const { data: invoiceNumber, error: numberError } = await supabase.rpc('next_invoice_number');
+  if (numberError || !invoiceNumber) {
+    throw new Error(numberError ? formatSupabaseError(numberError) : 'The database did not allocate an invoice number.');
+  }
+
+  const billingDetailsComplete = Boolean(
+    COMPANY_DETAILS.name.trim() &&
+    COMPANY_DETAILS.address.trim() &&
+    COMPANY_DETAILS.country.trim() &&
+    COMPANY_DETAILS.taxRegistrationNumber.trim()
+  );
+
   const newInvoice: FinanceInvoice = {
-    id: `inv-${b.bookingReference}`,
-    invoiceNumber: invNumber,
-    bookingId: b.bookingId || b.bookingReference,
-    bookingReference: b.bookingReference,
-    customerId: (b as any).customerId || null,
-    issueDate: new Date().toISOString().split('T')[0],
-    dueDate: b.date ? b.date.split('T')[0] : new Date().toISOString().split('T')[0],
+    id: '',
+    invoiceNumber: String(invoiceNumber),
+    bookingId: bookingRow.id,
+    bookingReference,
+    customerId: bookingRow.customer_id || null,
+    issueDate: new Date().toISOString().slice(0, 10),
+    dueDate: bookingRow.booking_date || new Date().toISOString().slice(0, 10),
     customer: {
-      name: `${b.customer.firstName} ${b.customer.lastName}`,
-      email: b.customer.email,
-      phone: b.customer.phoneNumber,
-      hotel: b.pickup.hotelName,
-      roomNumber: b.pickup.roomNumber,
-      country: (b.customer as any).nationality || b.customer.countryCode,
+      name: `${booking.customer.firstName} ${booking.customer.lastName}`,
+      email: booking.customer.email,
+      phone: booking.customer.phoneNumber || null,
     },
-    tourTitle: b.tourTitle,
-    tourDate: b.date,
-    guests: b.guests,
+    tourTitle: booking.tourTitle,
+    tourDate: bookingRow.booking_date || '',
+    guests: {
+      adults: Number(bookingRow.adult_count || 0),
+      children: Number(bookingRow.child_count || 0),
+      infants: Number(bookingRow.infant_count || 0),
+    },
     lineItems,
     subtotal,
     discount,
@@ -784,102 +644,69 @@ export async function generateInvoiceForBooking(bookingReference: string): Promi
     total,
     paid: paidAmount,
     balance,
-    currency: 'EUR',
-    status: balance <= 0 ? 'paid' : paidAmount > 0 ? 'partially_paid' : 'issued',
+    currency,
+    status: billingDetailsComplete
+      ? (balance <= 0 ? 'paid' : paidAmount > 0 ? 'partially_paid' : 'issued')
+      : 'draft',
     companyDetails: COMPANY_DETAILS,
-    notes: 'Official Commercial Invoice. All activities governed by Egyptian Red Sea Maritime Safety Regulations.',
+    notes: billingDetailsComplete
+      ? null
+      : 'Draft only. Configure the legal entity name, registered address, country and tax registration details before issuing this invoice.',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
 
-  if (isSupabaseConfigured()) {
-    try {
-      // Check if invoice already exists in database
-      const { data: dbExisting } = await supabase
+  const { data: inserted, error: insertError } = await supabase
+    .from('invoices')
+    .insert({
+      invoice_number: newInvoice.invoiceNumber,
+      booking_id: newInvoice.bookingId,
+      customer_id: newInvoice.customerId,
+      customer_name: newInvoice.customer.name,
+      customer_email: newInvoice.customer.email,
+      customer_phone: newInvoice.customer.phone,
+      tour_title: newInvoice.tourTitle,
+      tour_date: newInvoice.tourDate || null,
+      issue_date: newInvoice.issueDate,
+      due_date: newInvoice.dueDate,
+      subtotal: newInvoice.subtotal,
+      discount: newInvoice.discount,
+      tax_amount: newInvoice.taxAmount,
+      total: newInvoice.total,
+      paid: newInvoice.paid,
+      balance: newInvoice.balance,
+      currency: newInvoice.currency,
+      status: newInvoice.status,
+      line_items: newInvoice.lineItems,
+      company_details: newInvoice.companyDetails,
+      notes: newInvoice.notes,
+    })
+    .select('*')
+    .single();
+
+  if (insertError) {
+    // A concurrent request may have won the one-invoice-per-booking race.
+    if (insertError.code === '23505') {
+      const { data: winner, error: winnerError } = await supabase
         .from('invoices')
         .select('*')
-        .or(`booking_id.eq.${b.bookingId},invoice_number.eq.${newInvoice.invoiceNumber}`)
+        .eq('booking_id', bookingRow.id)
         .maybeSingle();
-
-      if (dbExisting) {
-        return {
-          id: dbExisting.id,
-          invoiceNumber: dbExisting.invoice_number,
-          bookingId: dbExisting.booking_id,
-          bookingReference: b.bookingReference,
-          customerId: dbExisting.customer_id,
-          issueDate: dbExisting.issue_date,
-          dueDate: dbExisting.due_date,
-          customer: newInvoice.customer,
-          tourTitle: dbExisting.tour_title || newInvoice.tourTitle,
-          tourDate: dbExisting.tour_date || newInvoice.tourDate,
-          guests: newInvoice.guests,
-          lineItems: (dbExisting.line_items as InvoiceLineItem[]) || newInvoice.lineItems,
-          subtotal: Number(dbExisting.subtotal),
-          discount: Number(dbExisting.discount),
-          taxRatePercent: 0,
-          taxAmount: Number(dbExisting.tax_amount),
-          total: Number(dbExisting.total),
-          paid: Number(dbExisting.paid),
-          balance: Number(dbExisting.balance),
-          currency: dbExisting.currency || 'EUR',
-          status: dbExisting.status as any,
-          companyDetails: (dbExisting.company_details as any) || COMPANY_DETAILS,
-          notes: dbExisting.notes,
-          createdAt: dbExisting.created_at,
-          updatedAt: dbExisting.updated_at,
-        };
+      if (winnerError) throw new Error(formatSupabaseError(winnerError));
+      if (winner) {
+        const all = await listInvoices();
+        return all.find((invoice) => invoice.id === winner.id) || null;
       }
-
-      const { data: inserted, error: invError } = await supabase
-        .from('invoices')
-        .insert({
-          invoice_number: newInvoice.invoiceNumber,
-          booking_id: newInvoice.bookingId,
-          customer_id: newInvoice.customerId,
-          customer_name: newInvoice.customer.name,
-          customer_email: newInvoice.customer.email,
-          customer_phone: newInvoice.customer.phone,
-          tour_title: newInvoice.tourTitle,
-          tour_date: newInvoice.tourDate ? newInvoice.tourDate.split('T')[0] : undefined,
-          issue_date: newInvoice.issueDate,
-          due_date: newInvoice.dueDate,
-          subtotal: newInvoice.subtotal,
-          discount: newInvoice.discount,
-          tax_amount: newInvoice.taxAmount,
-          total: newInvoice.total,
-          paid: newInvoice.paid,
-          balance: newInvoice.balance,
-          currency: newInvoice.currency,
-          status: newInvoice.status,
-          line_items: newInvoice.lineItems,
-          company_details: newInvoice.companyDetails,
-          notes: newInvoice.notes,
-        })
-        .select('*')
-        .single();
-
-      if (invError) {
-        throw new Error(`Failed to persist invoice to database: ${formatSupabaseError(invError)}`);
-      }
-
-      if (inserted?.id) {
-        newInvoice.id = inserted.id;
-      }
-    } catch (err: any) {
-      console.error('Invoice persistence error:', err);
-      throw err;
     }
+    throw new Error(formatSupabaseError(insertError));
   }
 
-  // Only commit to local state cache after authoritative database insert succeeds
-  const updated = [newInvoice, ...existingInvoices];
-  setLocal(LOCAL_INVOICES_KEY, updated);
-
+  if (!inserted?.id) throw new Error('The database did not confirm invoice creation.');
+  newInvoice.id = inserted.id;
+  await listInvoices(); // Refresh the local development cache from the committed database row.
   return newInvoice;
 }
 
-// ------------------------------------------------------------------------------
 // 3. CONTROLLED REFUND MANAGEMENT (Immutable Audit Trail)
 // ------------------------------------------------------------------------------
 
@@ -888,72 +715,37 @@ export async function listRefunds(filter?: {
   status?: string;
   search?: string;
 }): Promise<FinanceRefund[]> {
-  let refunds = getLocal<FinanceRefund[]>(LOCAL_REFUNDS_KEY, []);
+  let refunds: FinanceRefund[];
 
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('refund_records')
-        .select('*')
-        .order('created_at', { ascending: false });
+  if (!requireFinanceBackend()) {
+    refunds = getLocal<FinanceRefund[]>(LOCAL_REFUNDS_KEY, []);
+  } else {
+    const { data, error } = await supabase
+      .from('refund_records')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-      if (!error && data) {
-        const dbRefunds: FinanceRefund[] = data.map((d: any) => ({
-          id: d.id,
-          bookingId: d.booking_id,
-          bookingReference: d.booking_reference || d.booking_id,
-          paymentId: d.payment_id,
-          customerId: d.customer_id,
-          customerName: d.customer_name || 'Guest',
-          customerEmail: d.customer_email || '',
-          amount: Number(d.amount),
-          requestedAmount: Number(d.requested_amount || d.amount),
-          approvedAmount: d.approved_amount != null ? Number(d.approved_amount) : null,
-          currency: d.currency || 'EUR',
-          reason: d.reason,
-          status: (d.status || 'processed') as RefundStatus,
-          requestedBy: d.requested_by || 'Staff',
-          approvedBy: d.approved_by || null,
-          processedDate: d.processed_date || null,
-          refundMethod: d.refund_method as any,
-          transactionReference: d.transaction_reference || `REF-${d.id.substring(0, 8)}`,
-          processedBy: d.processed_by || 'Staff',
-          notes: d.notes,
-          createdAt: d.created_at,
-          updatedAt: d.updated_at,
-        }));
-        const dbIds = new Set(dbRefunds.map((r) => r.id));
-        const dbTxRefs = new Set(dbRefunds.map((r) => r.transactionReference?.toLowerCase()));
-        const unsynced = refunds.filter(
-          (r) => !dbIds.has(r.id) && (!r.transactionReference || !dbTxRefs.has(r.transactionReference.toLowerCase()))
-        );
-        refunds = [...dbRefunds, ...unsynced];
-        setLocal(LOCAL_REFUNDS_KEY, refunds);
-      }
-    } catch {
-      // ignore
-    }
+    if (error) throw new Error(formatSupabaseError(error));
+    refunds = (data || []).map(mapDbRefund);
+    setLocal(LOCAL_REFUNDS_KEY, refunds);
   }
 
-  return refunds.filter((r) => {
-    if (filter?.bookingId && r.bookingId !== filter.bookingId && r.bookingReference !== filter.bookingId) return false;
-    if (filter?.status && filter.status !== 'all' && r.status !== filter.status) return false;
+  return refunds.filter((refund) => {
+    if (filter?.bookingId && refund.bookingId !== filter.bookingId && refund.bookingReference !== filter.bookingId) return false;
+    if (filter?.status && filter.status !== 'all' && refund.status !== filter.status) return false;
     if (filter?.search?.trim()) {
-      const q = filter.search.toLowerCase();
+      const query = filter.search.toLowerCase();
       return (
-        r.bookingReference.toLowerCase().includes(q) ||
-        r.customerName.toLowerCase().includes(q) ||
-        r.reason.toLowerCase().includes(q) ||
-        r.transactionReference.toLowerCase().includes(q)
+        refund.bookingReference.toLowerCase().includes(query) ||
+        refund.customerName.toLowerCase().includes(query) ||
+        refund.reason.toLowerCase().includes(query) ||
+        refund.transactionReference.toLowerCase().includes(query)
       );
     }
     return true;
   });
 }
 
-/**
- * Step 1: Request a Refund (Creates a record pending approval)
- */
 export async function requestRefund(refundData: {
   bookingId: string;
   bookingReference: string;
@@ -968,337 +760,231 @@ export async function requestRefund(refundData: {
   requestedBy: string;
   notes?: string | null;
 }): Promise<{ success: boolean; error?: string; refund?: FinanceRefund }> {
-  // Audit Check: Verify requested amount does not exceed net paid amount for this booking
-  const payments = await listPayments({ bookingId: refundData.bookingReference });
-  const totalPaid = payments
-    .filter((p) => p.paymentStatus === 'Paid' || p.paymentStatus === 'paid')
-    .reduce((sum, p) => sum + p.amount, 0);
-
-  const existingRefunds = await listRefunds({ bookingId: refundData.bookingReference });
-
-  // Prevent duplicate concurrent requests with identical parameters
-  const duplicatePending = existingRefunds.find(
-    (r) =>
-      r.status === 'pending_approval' &&
-      r.bookingReference === refundData.bookingReference &&
-      Math.abs(r.requestedAmount - refundData.requestedAmount) < 0.01 &&
-      r.reason === refundData.reason.trim()
-  );
-  if (duplicatePending) {
-    return {
-      success: false,
-      error: `A duplicate refund request for €${refundData.requestedAmount} is already pending approval (Ref: ${duplicatePending.transactionReference}).`,
-    };
+  if (!Number.isFinite(refundData.requestedAmount) || refundData.requestedAmount <= 0) {
+    return { success: false, error: 'Refund amount must be a valid number greater than zero.' };
+  }
+  if (!refundData.bookingReference?.trim() || !refundData.reason?.trim()) {
+    return { success: false, error: 'A booking reference and refund reason are required.' };
   }
 
-  // Audit Check: Count all committed refunds (processed, approved, pending) so in-flight requests cannot exceed net balance
-  const activeRefunds = existingRefunds.filter(
-    (r) => r.status === 'processed' || r.status === 'approved' || r.status === 'pending_approval'
-  );
-  const totalCommittedRefunds = activeRefunds.reduce(
-    (sum, r) => sum + (r.approvedAmount || r.requestedAmount || r.amount),
-    0
-  );
-  const maxAvailableToRefund = Math.max(0, totalPaid - totalCommittedRefunds);
-
-  if (refundData.requestedAmount <= 0) {
-    return { success: false, error: 'Refund requested amount must be greater than zero.' };
-  }
-
-  if (refundData.requestedAmount > maxAvailableToRefund) {
-    return {
-      success: false,
-      error: `Cannot request €${refundData.requestedAmount}. Maximum refundable balance is €${maxAvailableToRefund.toFixed(2)} (€${totalPaid.toFixed(2)} paid minus €${totalCommittedRefunds.toFixed(2)} committed/processed refunds).`,
-    };
-  }
-
-  const txRef = `REQ-REF-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
-
-  const newRefund: FinanceRefund = {
-    id: `ref-${Date.now().toString(36)}`,
-    bookingId: refundData.bookingId,
-    bookingReference: refundData.bookingReference,
-    paymentId: refundData.paymentId || null,
-    customerId: refundData.customerId || null,
-    customerName: refundData.customerName,
-    customerEmail: refundData.customerEmail,
-    amount: refundData.requestedAmount,
-    requestedAmount: Number(refundData.requestedAmount),
-    approvedAmount: null,
-    currency: refundData.currency || 'EUR',
-    reason: refundData.reason.trim(),
-    status: 'pending_approval',
-    requestedBy: refundData.requestedBy || 'Staff',
-    approvedBy: null,
-    processedDate: null,
-    refundMethod: refundData.refundMethod,
-    transactionReference: txRef,
-    processedBy: 'Pending Audit',
-    notes: refundData.notes || null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-
-  // Authoritative Database Sync First
-  if (isSupabaseConfigured()) {
-    try {
-      let resolvedBookingUuid = newRefund.bookingId;
-      let resolvedCustomerUuid = newRefund.customerId;
-
-      if (!resolvedBookingUuid?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-        const { data: bRow } = await supabase
-          .from('bookings')
-          .select('id, customer_id')
-          .eq('booking_reference', newRefund.bookingReference)
-          .maybeSingle();
-
-        if (bRow) {
-          resolvedBookingUuid = bRow.id;
-          if (!resolvedCustomerUuid && bRow.customer_id) {
-            resolvedCustomerUuid = bRow.customer_id;
-          }
-        }
-      }
-
-      if (resolvedBookingUuid?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-        // Map UI method to DB CHECK constraint: ('Original Payment Method', 'Cash', 'Credit Card', 'Bank Wire', 'Credit Voucher')
-        const dbMethod =
-          newRefund.refundMethod === 'Card Reversal'
-            ? 'Credit Card'
-            : newRefund.refundMethod === 'Cash Return'
-            ? 'Cash'
-            : newRefund.refundMethod === 'Bank Wire'
-            ? 'Bank Wire'
-            : newRefund.refundMethod === 'Store Credit / Voucher'
-            ? 'Credit Voucher'
-            : 'Original Payment Method';
-
-        const refundPayload: Record<string, any> = {
-          booking_id: resolvedBookingUuid,
-          booking_reference: newRefund.bookingReference,
-          payment_id: newRefund.paymentId && newRefund.paymentId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i) ? newRefund.paymentId : null,
-          customer_name: newRefund.customerName,
-          customer_email: newRefund.customerEmail,
-          amount: newRefund.amount,
-          requested_amount: newRefund.requestedAmount,
-          currency: newRefund.currency || 'EUR',
-          reason: newRefund.reason,
-          status: newRefund.status,
-          requested_by: newRefund.requestedBy,
-          refund_method: dbMethod,
-          transaction_reference: newRefund.transactionReference,
-          processed_by: newRefund.processedBy,
-          notes: newRefund.notes,
-        };
-
-        if (resolvedCustomerUuid?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-          refundPayload.customer_id = resolvedCustomerUuid;
-        }
-
-        const { data: insRefund, error: refError } = await supabase
-          .from('refund_records')
-          .insert(refundPayload)
-          .select('id')
-          .maybeSingle();
-
-        if (refError) {
-          console.error('Supabase refund insert error:', refError);
-          return { success: false, error: formatSupabaseError(refError) };
-        }
-
-        if (insRefund?.id) {
-          newRefund.id = insRefund.id;
-        }
-      }
-    } catch (err: any) {
-      console.error('Error inserting refund record in Supabase:', err);
-      return { success: false, error: err.message || 'Database error recording refund.' };
+  if (!requireFinanceBackend()) {
+    const payments = await listPayments({ bookingId: refundData.bookingReference });
+    const totalPaid = payments.filter(isSettledPayment).reduce((sum, payment) => sum + payment.amount, 0);
+    const existingRefunds = await listRefunds({ bookingId: refundData.bookingReference });
+    const committed = existingRefunds
+      .filter((refund) => ['pending_approval', 'approved', 'processed'].includes(refund.status))
+      .reduce((sum, refund) => sum + (refund.approvedAmount || refund.requestedAmount || refund.amount), 0);
+    if (refundData.requestedAmount > Math.max(0, totalPaid - committed)) {
+      return { success: false, error: 'Refund exceeds the remaining refundable balance.' };
     }
+    const now = new Date().toISOString();
+    const localRefund: FinanceRefund = {
+      id: `dev-ref-${crypto.randomUUID()}`,
+      bookingId: refundData.bookingId,
+      bookingReference: refundData.bookingReference,
+      paymentId: refundData.paymentId || null,
+      customerId: refundData.customerId || null,
+      customerName: refundData.customerName,
+      customerEmail: refundData.customerEmail,
+      amount: refundData.requestedAmount,
+      requestedAmount: refundData.requestedAmount,
+      approvedAmount: null,
+      currency: refundData.currency,
+      reason: refundData.reason.trim(),
+      status: 'pending_approval',
+      requestedBy: refundData.requestedBy,
+      approvedBy: null,
+      processedDate: null,
+      refundMethod: refundData.refundMethod,
+      transactionReference: `DEV-REF-${crypto.randomUUID()}`,
+      processedBy: '',
+      notes: refundData.notes || null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    const current = getLocal<FinanceRefund[]>(LOCAL_REFUNDS_KEY, []);
+    setLocal(LOCAL_REFUNDS_KEY, [localRefund, ...current]);
+    return { success: true, refund: localRefund };
   }
 
-  // Only commit to local state after authoritative database operation succeeds
-  const allRefunds = await listRefunds();
-  setLocal(LOCAL_REFUNDS_KEY, [newRefund, ...allRefunds]);
+  const idempotencyPayload = [
+    refundData.bookingReference.trim().toUpperCase(),
+    refundData.requestedAmount.toFixed(2),
+    refundData.currency.toUpperCase(),
+    refundData.reason.trim().toLowerCase(),
+    refundData.refundMethod,
+  ].join('|');
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(idempotencyPayload));
+  const idempotencyHash = Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('');
+  const idempotencyKey = `refund:${idempotencyHash}`;
+  const { data, error } = await supabase.rpc('request_refund_atomic', {
+    p_booking_reference: refundData.bookingReference,
+    p_payment_id: refundData.paymentId && UUID_PATTERN.test(refundData.paymentId) ? refundData.paymentId : null,
+    p_requested_amount: Number(refundData.requestedAmount),
+    p_currency: refundData.currency.toUpperCase(),
+    p_reason: refundData.reason.trim(),
+    p_refund_method: refundData.refundMethod,
+    p_requested_by: refundData.requestedBy || 'Staff',
+    p_notes: refundData.notes || null,
+    p_idempotency_key: idempotencyKey,
+  });
 
-  return { success: true, refund: newRefund };
+  if (error) return { success: false, error: formatSupabaseError(error) };
+  const result = data as any;
+  if (!result?.success || !result?.refund?.id) {
+    return { success: false, error: 'The database did not confirm the refund request.' };
+  }
+  const savedRefund = mapDbRefund(result.refund);
+  if (result.duplicate) {
+    return {
+      success: false,
+      error: `A refund request with these details already exists (current status: ${savedRefund.status}).`,
+      refund: savedRefund,
+    };
+  }
+  return { success: true, refund: savedRefund };
 }
 
-/**
- * Step 2: Approve a Refund (Authorized finance auditor/admin approves the amount)
- */
 export async function approveRefund(
   refundId: string,
   approvedAmount: number,
   approvedBy: string = 'Finance Manager'
 ): Promise<{ success: boolean; error?: string; refund?: FinanceRefund }> {
-  const allRefunds = await listRefunds();
-  const target = allRefunds.find((r) => r.id === refundId);
-  if (!target) return { success: false, error: 'Refund record not found.' };
-
-  if (approvedAmount <= 0) {
+  if (!Number.isFinite(approvedAmount) || approvedAmount <= 0) {
     return { success: false, error: 'Approved amount must be greater than zero.' };
   }
 
-  if (isSupabaseConfigured() && refundId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-    try {
-      const { error: updErr } = await supabase
-        .from('refund_records')
-        .update({
-          approved_amount: approvedAmount,
-          amount: approvedAmount,
-          status: 'approved',
-          approved_by: approvedBy,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', refundId);
-
-      if (updErr) {
-        return { success: false, error: formatSupabaseError(updErr) };
-      }
-    } catch (err: any) {
-      return { success: false, error: err.message || 'Database error approving refund.' };
-    }
+  const current = await listRefunds();
+  const target = current.find((refund) => refund.id === refundId);
+  if (!target) return { success: false, error: 'Refund record not found.' };
+  if (target.status !== 'pending_approval') {
+    return { success: false, error: 'Only pending refund requests can be approved.' };
+  }
+  if (approvedAmount > target.requestedAmount) {
+    return { success: false, error: 'Approved amount cannot exceed the requested amount.' };
   }
 
-  target.approvedAmount = approvedAmount;
-  target.amount = approvedAmount;
-  target.status = 'approved';
-  target.approvedBy = approvedBy;
-  target.updatedAt = new Date().toISOString();
+  if (!requireFinanceBackend()) {
+    const updated = {
+      ...target,
+      approvedAmount,
+      amount: approvedAmount,
+      status: 'approved' as RefundStatus,
+      approvedBy,
+      updatedAt: new Date().toISOString(),
+    };
+    setLocal(LOCAL_REFUNDS_KEY, current.map((refund) => refund.id === refundId ? updated : refund));
+    return { success: true, refund: updated };
+  }
 
-  setLocal(LOCAL_REFUNDS_KEY, [...allRefunds]);
-  return { success: true, refund: target };
+  if (!UUID_PATTERN.test(refundId)) return { success: false, error: 'Invalid refund database identifier.' };
+  const { data, error } = await supabase.rpc('transition_refund_atomic', {
+    p_refund_id: refundId,
+    p_action: 'approve',
+    p_amount: approvedAmount,
+    p_actor: approvedBy,
+    p_reason: null,
+    p_transaction_reference: null,
+  });
+  if (error) return { success: false, error: formatSupabaseError(error) };
+  const result = data as any;
+  if (!result?.success || !result?.refund?.id) {
+    return { success: false, error: 'The database did not confirm refund approval.' };
+  }
+  return { success: true, refund: mapDbRefund(result.refund) };
 }
 
-/**
- * Step 3: Process / Disburse Refund (Never mark a refund completed unless operation actually occurred)
- */
 export async function processRefund(
   refundId: string,
   processedBy: string = 'Finance Auditor',
   transactionReference?: string
 ): Promise<{ success: boolean; error?: string; refund?: FinanceRefund }> {
-  const allRefunds = await listRefunds();
-  const target = allRefunds.find((r) => r.id === refundId);
+  const current = await listRefunds();
+  const target = current.find((refund) => refund.id === refundId);
   if (!target) return { success: false, error: 'Refund record not found.' };
-
-  const finalAmount = target.approvedAmount || target.requestedAmount;
-  const processedDate = new Date().toISOString();
-  const txRef = transactionReference?.trim() || target.transactionReference;
-
-  if (isSupabaseConfigured() && refundId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-    try {
-      const { error: procErr } = await supabase
-        .from('refund_records')
-        .update({
-          status: 'processed',
-          processed_date: processedDate,
-          processed_by: processedBy,
-          transaction_reference: txRef,
-          amount: finalAmount,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', refundId);
-
-      if (procErr) {
-        return { success: false, error: formatSupabaseError(procErr) };
-      }
-    } catch (err: any) {
-      return { success: false, error: err.message || 'Database error processing refund.' };
-    }
+  if (target.status !== 'approved') {
+    return { success: false, error: 'Only an approved refund can be disbursed.' };
   }
 
-  target.status = 'processed';
-  target.processedDate = processedDate;
-  target.processedBy = processedBy;
-  target.amount = finalAmount;
-  target.transactionReference = txRef;
-  target.updatedAt = new Date().toISOString();
-
-  setLocal(LOCAL_REFUNDS_KEY, [...allRefunds]);
-
-  // Update booking payment status based on real net balance
-  try {
-    const allBookings = await bookingRepository.listBookings();
-    const targetBooking = allBookings.find(
-      (b) => b.bookingReference === target.bookingReference || b.bookingId === target.bookingId
-    );
-
-    if (targetBooking) {
-      const payments = await listPayments({ bookingId: target.bookingReference });
-      const totalPaid = payments
-        .filter((p) => p.paymentStatus === 'Paid' || p.paymentStatus === 'paid')
-        .reduce((sum, p) => sum + p.amount, 0);
-
-      const processedRefunds = allRefunds.filter(
-        (r) =>
-          (r.bookingReference === target.bookingReference || r.bookingId === target.bookingId) &&
-          r.status === 'processed'
-      );
-      const totalRefunded = processedRefunds.reduce((sum, r) => sum + (r.approvedAmount || r.amount), 0);
-
-      const isFullRefund = totalRefunded >= totalPaid;
-
-      await bookingRepository.updateBooking({
-        ...targetBooking,
-        paymentStatus: isFullRefund ? 'refunded' : 'partially_paid',
-        status: isFullRefund ? 'cancelled' : targetBooking.status,
-        cancellationReason: isFullRefund ? `Refunded in full: ${target.reason}` : targetBooking.cancellationReason,
-        updatedAt: new Date().toISOString(),
-      });
-    }
-  } catch (err) {
-    console.warn('Failed to update booking status after refund processing:', err);
+  const txRef = transactionReference?.trim();
+  if (!txRef || txRef.length < 3 || txRef.length > 160) {
+    return { success: false, error: 'A valid payout transaction reference is required.' };
   }
 
-  return { success: true, refund: target };
+  if (!requireFinanceBackend()) {
+    const updated = {
+      ...target,
+      status: 'processed' as RefundStatus,
+      processedDate: new Date().toISOString(),
+      processedBy,
+      amount: target.approvedAmount || target.requestedAmount,
+      transactionReference: txRef,
+      updatedAt: new Date().toISOString(),
+    };
+    setLocal(LOCAL_REFUNDS_KEY, current.map((refund) => refund.id === refundId ? updated : refund));
+    return { success: true, refund: updated };
+  }
+
+  if (!UUID_PATTERN.test(refundId)) return { success: false, error: 'Invalid refund database identifier.' };
+  const { data, error } = await supabase.rpc('transition_refund_atomic', {
+    p_refund_id: refundId,
+    p_action: 'process',
+    p_amount: null,
+    p_actor: processedBy,
+    p_reason: null,
+    p_transaction_reference: txRef,
+  });
+  if (error) return { success: false, error: formatSupabaseError(error) };
+  const result = data as any;
+  if (!result?.success || !result?.refund?.id) {
+    return { success: false, error: 'The database did not confirm refund disbursement.' };
+  }
+  return { success: true, refund: mapDbRefund(result.refund) };
 }
 
-/**
- * Step 4: Reject a Refund
- */
 export async function rejectRefund(
   refundId: string,
   rejectedBy: string = 'Finance Manager',
   reason?: string
 ): Promise<{ success: boolean; error?: string; refund?: FinanceRefund }> {
-  const allRefunds = await listRefunds();
-  const target = allRefunds.find((r) => r.id === refundId);
+  const current = await listRefunds();
+  const target = current.find((refund) => refund.id === refundId);
   if (!target) return { success: false, error: 'Refund record not found.' };
+  if (target.status !== 'pending_approval') {
+    return { success: false, error: 'Only pending refund requests can be rejected.' };
+  }
+  if (!reason?.trim()) return { success: false, error: 'A rejection reason is required.' };
 
-  const updatedNotes = `${target.notes || ''} [Rejected by ${rejectedBy}: ${reason || 'Not eligible'}]`.trim();
-  const nowIso = new Date().toISOString();
-
-  if (isSupabaseConfigured() && refundId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-    try {
-      const { error: updErr } = await supabase
-        .from('refund_records')
-        .update({
-          status: 'rejected',
-          notes: updatedNotes,
-          updated_at: nowIso,
-        })
-        .eq('id', refundId);
-
-      if (updErr) {
-        return { success: false, error: formatSupabaseError(updErr) };
-      }
-    } catch (err: any) {
-      return { success: false, error: err.message || 'Database error rejecting refund.' };
-    }
+  if (!requireFinanceBackend()) {
+    const updated = {
+      ...target,
+      status: 'rejected' as RefundStatus,
+      notes: [target.notes, `Rejected by ${rejectedBy}: ${reason.trim()}`].filter(Boolean).join('\n'),
+      updatedAt: new Date().toISOString(),
+    };
+    setLocal(LOCAL_REFUNDS_KEY, current.map((refund) => refund.id === refundId ? updated : refund));
+    return { success: true, refund: updated };
   }
 
-  target.status = 'rejected';
-  target.notes = updatedNotes;
-  target.updatedAt = nowIso;
-
-  // Only commit to local state cache after authoritative database write succeeds
-  setLocal(LOCAL_REFUNDS_KEY, [...allRefunds]);
-
-  return { success: true, refund: target };
+  if (!UUID_PATTERN.test(refundId)) return { success: false, error: 'Invalid refund database identifier.' };
+  const { data, error } = await supabase.rpc('transition_refund_atomic', {
+    p_refund_id: refundId,
+    p_action: 'reject',
+    p_amount: null,
+    p_actor: rejectedBy,
+    p_reason: reason.trim(),
+    p_transaction_reference: null,
+  });
+  if (error) return { success: false, error: formatSupabaseError(error) };
+  const result = data as any;
+  if (!result?.success || !result?.refund?.id) {
+    return { success: false, error: 'The database did not confirm refund rejection.' };
+  }
+  return { success: true, refund: mapDbRefund(result.refund) };
 }
 
-// ------------------------------------------------------------------------------
 // 4. OUTSTANDING BALANCES TRACKING (Real Calculations, Never Trust Frontend)
 // ------------------------------------------------------------------------------
 
@@ -1311,67 +997,63 @@ export async function getOutstandingBalances(filter?: {
   const payments = await listPayments();
   const refunds = await listRefunds();
   const todayStr = new Date().toISOString().split('T')[0];
-
   const items: OutstandingBalanceItem[] = [];
 
-  bookings.forEach((b) => {
-    const bookingTotal = b.pricing?.totalEur || 0;
+  bookings.forEach((booking) => {
+    // Cancelled bookings are not trade receivables. Any refund due is tracked separately.
+    if (booking.status === 'cancelled') return;
 
+    const bookingTotal = Number(booking.pricing?.totalEur || 0);
+    const currency = String(booking.pricing?.currency || 'EUR').toUpperCase();
     const bookingPayments = payments.filter(
-      (p) =>
-        (p.bookingReference === b.bookingReference || p.bookingId === b.bookingId) &&
-        (p.paymentStatus === 'Paid' || p.paymentStatus === 'paid')
+      (payment) =>
+        payment.currency === currency &&
+        (payment.bookingReference === booking.bookingReference || payment.bookingId === booking.bookingId) &&
+        isSettledPayment(payment)
     );
-    const paidAmount = bookingPayments.reduce((sum, p) => sum + p.amount, 0);
+    const paidAmount = bookingPayments.reduce((sum, payment) => sum + payment.amount, 0);
 
     const bookingRefunds = refunds.filter(
-      (r) =>
-        (r.bookingReference === b.bookingReference || r.bookingId === b.bookingId) &&
-        r.status === 'processed'
+      (refund) =>
+        refund.currency === currency &&
+        (refund.bookingReference === booking.bookingReference || refund.bookingId === booking.bookingId) &&
+        refund.status === 'processed'
     );
-    const refundAmount = bookingRefunds.reduce((sum, r) => sum + (r.approvedAmount || r.amount), 0);
-
+    const refundAmount = bookingRefunds.reduce((sum, refund) => sum + (refund.approvedAmount || refund.amount), 0);
     const netPaid = Math.max(0, paidAmount - refundAmount);
     const balanceAmount = Math.max(0, bookingTotal - netPaid);
 
-    // If booking was cancelled and has 0 net paid, no balance is due
-    if (b.status === 'cancelled' && netPaid === 0) return;
+    if (balanceAmount <= 0) return;
 
-    if (balanceAmount > 0) {
-      const tourDate = b.date ? b.date.split('T')[0] : '';
-      let status: OutstandingBalanceItem['status'] = 'upcoming';
+    const tourDate = booking.date ? booking.date.split('T')[0] : '';
+    let status: OutstandingBalanceItem['status'] = 'upcoming';
+    if (tourDate && tourDate < todayStr) status = 'overdue';
+    else if (tourDate === todayStr) status = 'due_today';
 
-      if (tourDate < todayStr) {
-        status = 'overdue';
-      } else if (tourDate === todayStr) {
-        status = 'due_today';
-      }
-
-      items.push({
-        bookingId: b.bookingId || b.bookingReference,
-        bookingReference: b.bookingReference,
-        customerId: (b as any).customerId || null,
-        customerName: `${b.customer.firstName} ${b.customer.lastName}`,
-        customerEmail: b.customer.email,
-        customerPhone: b.customer.phoneNumber
-          ? `${b.customer.countryCode || ''} ${b.customer.phoneNumber}`
-          : null,
-        hotel: b.pickup.hotelName || b.customer.hotelName || 'Direct Marina',
-        tourTitle: b.tourTitle,
-        tourDate: b.date,
-        totalAmount: bookingTotal,
-        bookingTotal,
-        paidAmount,
-        amountPaid: paidAmount,
-        refundAmount,
-        balanceAmount,
-        amountDue: balanceAmount,
-        currency: 'EUR',
-        dueDate: b.date,
-        status,
-        paymentStatus: paidAmount > 0 ? 'Partially Paid' : 'Pending',
-      });
-    }
+    items.push({
+      bookingId: booking.bookingId || booking.bookingReference,
+      bookingReference: booking.bookingReference,
+      customerId: booking.customerId || null,
+      customerName: `${booking.customer.firstName} ${booking.customer.lastName}`,
+      customerEmail: booking.customer.email,
+      customerPhone: booking.customer.phoneNumber
+        ? `${booking.customer.countryCode || ''} ${booking.customer.phoneNumber}`
+        : null,
+      hotel: booking.pickup.hotelName || booking.customer.hotelName || 'Direct Arrival',
+      tourTitle: booking.tourTitle,
+      tourDate: booking.date,
+      totalAmount: bookingTotal,
+      bookingTotal,
+      paidAmount,
+      amountPaid: paidAmount,
+      refundAmount,
+      balanceAmount,
+      amountDue: balanceAmount,
+      currency,
+      dueDate: booking.date,
+      status,
+      paymentStatus: netPaid >= bookingTotal ? 'Paid' : netPaid > 0 ? 'Partially Paid' : 'Pending',
+    });
   });
 
   return items
@@ -1379,13 +1061,13 @@ export async function getOutstandingBalances(filter?: {
       if (filter?.status && filter.status !== 'all' && item.status !== filter.status) return false;
       if (filter?.currency && filter.currency !== 'all' && item.currency !== filter.currency) return false;
       if (filter?.search?.trim()) {
-        const q = filter.search.toLowerCase();
+        const query = filter.search.toLowerCase();
         return (
-          item.bookingReference.toLowerCase().includes(q) ||
-          item.customerName.toLowerCase().includes(q) ||
-          item.customerEmail.toLowerCase().includes(q) ||
-          item.tourTitle.toLowerCase().includes(q) ||
-          (item.hotel && item.hotel.toLowerCase().includes(q))
+          item.bookingReference.toLowerCase().includes(query) ||
+          item.customerName.toLowerCase().includes(query) ||
+          item.customerEmail.toLowerCase().includes(query) ||
+          item.tourTitle.toLowerCase().includes(query) ||
+          (item.hotel && item.hotel.toLowerCase().includes(query))
         );
       }
       return true;
@@ -1393,7 +1075,6 @@ export async function getOutstandingBalances(filter?: {
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
 }
 
-// ------------------------------------------------------------------------------
 // 5. FINANCIAL REPORTS & REVENUE ANALYTICS (Real Database Aggregation)
 // ------------------------------------------------------------------------------
 
@@ -1407,8 +1088,8 @@ export async function getFinancialReports(
 
   // Filter bookings strictly matching targetCurrency
   const currencyBookings = bookings.filter((b) => {
-    const cur = 'EUR'; // Standard catalog base currency
-    if (cur !== targetCurrency) return false;
+    const cur = String(b.pricing?.currency || 'EUR').toUpperCase();
+    if (cur !== targetCurrency.toUpperCase()) return false;
     if (b.status === 'cancelled') return false;
     const bDate = b.date ? b.date.split('T')[0] : '';
     if (dateRange?.start && bDate < dateRange.start) return false;
@@ -1417,8 +1098,8 @@ export async function getFinancialReports(
   });
 
   const currencyPayments = payments.filter((p) => {
-    if (p.currency !== targetCurrency) return false;
-    if (p.paymentStatus !== 'Paid' && p.paymentStatus !== 'paid') return false;
+    if (p.currency !== targetCurrency.toUpperCase()) return false;
+    if (!isSettledPayment(p)) return false;
     const pDate = p.paymentDate.split('T')[0];
     if (dateRange?.start && pDate < dateRange.start) return false;
     if (dateRange?.end && pDate > dateRange.end) return false;
@@ -1439,7 +1120,20 @@ export async function getFinancialReports(
   const totalPaid = currencyPayments.reduce((sum, p) => sum + p.amount, 0);
   const totalRefunded = currencyRefunds.reduce((sum, r) => sum + (r.approvedAmount || r.amount), 0);
   const totalDiscounts = currencyBookings.reduce((sum, b) => sum + (b.pricing?.discountEur || 0), 0);
-  const totalOutstanding = Math.max(0, totalRevenue - totalPaid);
+  const totalOutstanding = currencyBookings.reduce((sum, booking) => {
+    const bookingPayments = currencyPayments.filter(
+      (payment) => payment.bookingReference === booking.bookingReference || payment.bookingId === booking.bookingId
+    );
+    const bookingRefunds = currencyRefunds.filter(
+      (refund) => refund.bookingReference === booking.bookingReference || refund.bookingId === booking.bookingId
+    );
+    const netPaid = Math.max(
+      0,
+      bookingPayments.reduce((paid, payment) => paid + payment.amount, 0) -
+        bookingRefunds.reduce((refunded, refund) => refunded + (refund.approvedAmount || refund.amount), 0)
+    );
+    return sum + Math.max(0, (booking.pricing?.totalEur || 0) - netPaid);
+  }, 0);
 
   // Revenue by Date
   const dateMap = new Map<string, { amount: number; bookingsCount: number }>();
@@ -1526,15 +1220,25 @@ export async function getFinancialReports(
   // Full Multi-Currency Breakdown
   const supportedCurrencies = ['EUR', 'USD', 'GBP', 'EGP'];
   const currencyBreakdown: CurrencyBreakdownItem[] = supportedCurrencies.map((cur) => {
-    const cBookings = bookings.filter((b) => cur === 'EUR' && b.status !== 'cancelled');
-    const cPayments = payments.filter((p) => p.currency === cur && (p.paymentStatus === 'Paid' || p.paymentStatus === 'paid'));
-    const cRefunds = refunds.filter((r) => r.currency === cur && r.status === 'processed');
+    const cBookings = bookings.filter(
+      (booking) => String(booking.pricing?.currency || 'EUR').toUpperCase() === cur && booking.status !== 'cancelled'
+    );
+    const cPayments = payments.filter((payment) => payment.currency === cur && isSettledPayment(payment));
+    const cRefunds = refunds.filter((refund) => refund.currency === cur && refund.status === 'processed');
 
-    const gross = cBookings.reduce((sum, b) => sum + (b.pricing?.totalEur || 0), 0);
-    const collected = cPayments.reduce((sum, p) => sum + p.amount, 0);
-    const ref = cRefunds.reduce((sum, r) => sum + (r.approvedAmount || r.amount), 0);
+    const gross = cBookings.reduce((sum, booking) => sum + (booking.pricing?.totalEur || 0), 0);
+    const collected = cPayments.reduce((sum, payment) => sum + payment.amount, 0);
+    const ref = cRefunds.reduce((sum, refund) => sum + (refund.approvedAmount || refund.amount), 0);
     const net = Math.max(0, collected - ref);
-    const out = Math.max(0, gross - collected);
+    const out = cBookings.reduce((sum, booking) => {
+      const bookingPaid = cPayments
+        .filter((payment) => payment.bookingReference === booking.bookingReference || payment.bookingId === booking.bookingId)
+        .reduce((paid, payment) => paid + payment.amount, 0);
+      const bookingRefunded = cRefunds
+        .filter((refund) => refund.bookingReference === booking.bookingReference || refund.bookingId === booking.bookingId)
+        .reduce((refunded, refund) => refunded + (refund.approvedAmount || refund.amount), 0);
+      return sum + Math.max(0, (booking.pricing?.totalEur || 0) - Math.max(0, bookingPaid - bookingRefunded));
+    }, 0);
 
     return {
       currency: cur,

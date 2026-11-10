@@ -52,12 +52,10 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
   const [selectedBookingRef, setSelectedBookingRef] = useState<string>('');
   const [requestedAmount, setRequestedAmount] = useState<number>(0);
   const [refundCurrency, setRefundCurrency] = useState<string>('EUR');
-  const [refundReason, setRefundReason] = useState<string>(
-    'Marine weather advisory - Coast Guard harbour closure'
-  );
+  const [refundReason, setRefundReason] = useState<string>('');
   const [refundMethod, setRefundMethod] = useState<FinanceRefund['refundMethod']>('Card Reversal');
-  const [refundNotes, setRefundNotes] = useState<string>('Authorized by harbor operations supervisor.');
-  const [requestedBy, setRequestedBy] = useState<string>('Operations Desk');
+  const [refundNotes, setRefundNotes] = useState<string>('');
+  const [requestedBy, setRequestedBy] = useState<string>('Staff');
   const [requesting, setRequesting] = useState(false);
 
   // Approve Modal
@@ -69,12 +67,12 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
   // Process / Disburse Modal
   const [processingRefund, setProcessingRefund] = useState<FinanceRefund | null>(null);
   const [disburseTxnRef, setDisburseTxnRef] = useState<string>('');
-  const [processedByInput, setProcessedByInput] = useState<string>('Senior Treasury Auditor');
+  const [processedByInput, setProcessedByInput] = useState<string>('Staff');
   const [processingAction, setProcessingAction] = useState(false);
 
   // Reject Modal
   const [rejectingRefund, setRejectingRefund] = useState<FinanceRefund | null>(null);
-  const [rejectReason, setRejectReason] = useState<string>('Non-refundable policy under 24 hours');
+  const [rejectReason, setRejectReason] = useState<string>('');
   const [rejectingAction, setRejectingAction] = useState(false);
 
   const loadData = async () => {
@@ -105,15 +103,15 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
       const bPayments = payments.filter(
         (p) =>
           (p.bookingReference === b.bookingReference || p.bookingId === b.bookingId) &&
-          (p.paymentStatus === 'Paid' || p.paymentStatus === 'paid')
+          ['paid', 'partially paid', 'partially_paid'].includes(String(p.paymentStatus).toLowerCase())
       );
       const totalPaid = bPayments.reduce((s, p) => s + p.amount, 0);
       const bRefunds = refunds.filter(
         (r) =>
           (r.bookingReference === b.bookingReference || r.bookingId === b.bookingId) &&
-          r.status === 'processed'
+          ['pending_approval', 'approved', 'processed'].includes(r.status)
       );
-      const totalRefunded = bRefunds.reduce((s, r) => s + (r.approvedAmount || r.amount), 0);
+      const totalRefunded = bRefunds.reduce((s, r) => s + (r.approvedAmount || r.requestedAmount || r.amount), 0);
       return totalPaid - totalRefunded > 0;
     });
   }, [bookings, payments, refunds]);
@@ -126,15 +124,15 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
       const bPayments = payments.filter(
         (p) =>
           (p.bookingReference === first.bookingReference || p.bookingId === first.bookingId) &&
-          (p.paymentStatus === 'Paid' || p.paymentStatus === 'paid')
+          ['paid', 'partially paid', 'partially_paid'].includes(String(p.paymentStatus).toLowerCase())
       );
       const totalPaid = bPayments.reduce((s, p) => s + p.amount, 0);
       const bRefunds = refunds.filter(
         (r) =>
           (r.bookingReference === first.bookingReference || r.bookingId === first.bookingId) &&
-          r.status === 'processed'
+          ['pending_approval', 'approved', 'processed'].includes(r.status)
       );
-      const totalRefunded = bRefunds.reduce((s, r) => s + (r.approvedAmount || r.amount), 0);
+      const totalRefunded = bRefunds.reduce((s, r) => s + (r.approvedAmount || r.requestedAmount || r.amount), 0);
       setRequestedAmount(Math.max(0, totalPaid - totalRefunded));
       setRefundCurrency((first.pricing as any)?.currency || 'EUR');
     }
@@ -148,15 +146,15 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
       const bPayments = payments.filter(
         (p) =>
           (p.bookingReference === ref || p.bookingId === b.bookingId) &&
-          (p.paymentStatus === 'Paid' || p.paymentStatus === 'paid')
+          ['paid', 'partially paid', 'partially_paid'].includes(String(p.paymentStatus).toLowerCase())
       );
       const totalPaid = bPayments.reduce((s, p) => s + p.amount, 0);
       const bRefunds = refunds.filter(
         (r) =>
           (r.bookingReference === ref || r.bookingId === b.bookingId) &&
-          r.status === 'processed'
+          ['pending_approval', 'approved', 'processed'].includes(r.status)
       );
-      const totalRefunded = bRefunds.reduce((s, r) => s + (r.approvedAmount || r.amount), 0);
+      const totalRefunded = bRefunds.reduce((s, r) => s + (r.approvedAmount || r.requestedAmount || r.amount), 0);
       setRequestedAmount(Math.max(0, totalPaid - totalRefunded));
       setRefundCurrency((b.pricing as any)?.currency || 'EUR');
     }
@@ -185,7 +183,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
       });
 
       if (res.success) {
-        showToast(`Refund request logged: €${requestedAmount}. Pending manager approval.`, 'success');
+        showToast(`Refund request logged: ${refundCurrency} ${requestedAmount.toFixed(2)}. Pending approval.`, 'success');
         setIsRequestModalOpen(false);
         await loadData();
       } else {
@@ -211,7 +209,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
     try {
       const res = await approveRefund(approvingRefund.id, approvedAmountInput, approvedByInput);
       if (res.success) {
-        showToast(`Refund approved for €${approvedAmountInput}. Ready for disbursement.`, 'success');
+        showToast(`Refund approved for ${approvingRefund.currency} ${approvedAmountInput.toFixed(2)}. Ready for external payout.`, 'success');
         setApprovingRefund(null);
         await loadData();
       } else {
@@ -226,8 +224,8 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
 
   const handleOpenProcess = (r: FinanceRefund) => {
     setProcessingRefund(r);
-    setDisburseTxnRef(`PAYOUT-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`);
-    setProcessedByInput('Treasury Cashier');
+    setDisburseTxnRef('');
+    setProcessedByInput('Staff');
   };
 
   const handleSubmitProcess = async (e: React.FormEvent) => {
@@ -238,16 +236,16 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
       const res = await processRefund(processingRefund.id, processedByInput, disburseTxnRef);
       if (res.success) {
         showToast(
-          `Refund disbursed successfully. Ledger balance and booking status updated.`,
+          `Payout reference recorded for ${processingRefund.currency} ${processingRefund.approvedAmount || processingRefund.requestedAmount}. The app did not transfer funds.`,
           'success'
         );
         setProcessingRefund(null);
         await loadData();
       } else {
-        showToast(res.error || 'Failed to disburse refund', 'error');
+        showToast(res.error || 'Failed to record payout', 'error');
       }
     } catch (err: any) {
-      showToast(err.message || 'Error executing refund disbursement', 'error');
+      showToast(err.message || 'Error recording refund payout', 'error');
     } finally {
       setProcessingAction(false);
     }
@@ -255,7 +253,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
 
   const handleOpenReject = (r: FinanceRefund) => {
     setRejectingRefund(r);
-    setRejectReason('Non-refundable cancellation past cutoff window.');
+    setRejectReason('');
   };
 
   const handleSubmitReject = async (e: React.FormEvent) => {
@@ -265,7 +263,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
     try {
       const res = await rejectRefund(rejectingRefund.id, 'Finance Manager', rejectReason);
       if (res.success) {
-        showToast('Refund request rejected and recorded in audit log.', 'info');
+        showToast('Refund request rejected and recorded.', 'info');
         setRejectingRefund(null);
         await loadData();
       } else {
@@ -313,7 +311,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
       'ID',
       'Booking Ref',
       'Customer',
-      'Requested Amount',
+      'Requested amount',
       'Approved Amount',
       'Currency',
       'Status',
@@ -364,7 +362,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
             <span>Refunds & Financial Returns</span>
           </h1>
           <p className="text-xs text-stone-400 mt-1">
-            Controlled refund approval and disbursement lifecycle. Only executed transactions impact ledger totals.
+            Controlled refund workflow. Only externally completed payouts with a verified reference are recorded in ledger totals.
           </p>
         </div>
 
@@ -404,7 +402,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
             <RotateCcw className="w-5 h-5 text-rose-400" />
           </div>
           <div>
-            <span className="text-[10px] uppercase font-bold tracking-wider text-stone-400">Total Disbursed</span>
+            <span className="text-[10px] uppercase font-bold tracking-wider text-stone-400">Total payouts recorded</span>
             <div className="text-xl font-bold font-mono text-white">€{metrics.processedTotal.toLocaleString()}</div>
           </div>
         </div>
@@ -511,7 +509,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
               </thead>
               <tbody className="divide-y divide-stone-800/60 text-stone-300">
                 {filteredRefunds.map((r) => {
-                  const isProcessed = r.status === 'processed';
+                  const isProcessed = ['pending_approval', 'approved', 'processed'].includes(r.status);
                   const isPending = r.status === 'pending_approval' || r.status === 'requested';
                   const isApproved = r.status === 'approved';
                   const isRejected = r.status === 'rejected';
@@ -557,16 +555,16 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
                             {r.status === 'pending_approval'
                               ? 'Pending Approval'
                               : r.status === 'approved'
-                              ? 'Approved (Unpaid)'
+                              ? 'Approved (Awaiting Payout)'
                               : r.status === 'processed'
-                              ? 'Disbursed'
+                              ? 'Payout recorded'
                               : 'Rejected'}
                           </span>
                         </span>
                       </td>
                       <td className="py-3.5 px-4 font-mono">
                         <div className="font-bold text-white text-sm">
-                          €{(r.approvedAmount || r.amount).toLocaleString()}
+                          €{(r.approvedAmount || r.requestedAmount || r.amount).toLocaleString()}
                         </div>
                         {r.approvedAmount && r.approvedAmount !== r.requestedAmount && (
                           <div className="text-[10px] text-stone-500 line-through">
@@ -581,7 +579,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
                         )}
                         {r.processedDate && (
                           <div className="text-[10px] text-stone-500">
-                            Disbursed: {new Date(r.processedDate).toLocaleDateString()}
+                            Payout recorded: {new Date(r.processedDate).toLocaleDateString()}
                           </div>
                         )}
                       </td>
@@ -611,7 +609,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
                             className="px-3 py-1.5 rounded-lg bg-[#0A6C74] hover:bg-[#08565d] text-white text-[11px] font-medium transition-colors shadow-xs cursor-pointer inline-flex items-center space-x-1"
                           >
                             <DollarSign className="w-3 h-3" />
-                            <span>Disburse</span>
+                            <span>Record payout</span>
                           </button>
                         )}
                         {isProcessed && (
@@ -641,7 +639,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
                   <span>Request Controlled Return / Refund</span>
                 </h3>
                 <p className="text-xs text-stone-400 mt-0.5">
-                  Submits a refund request for manager review. Balances are only adjusted when disbursed.
+                  Submits a refund request for manager review. Balances are adjusted only after a verified external payout is recorded.
                 </p>
               </div>
               <button
@@ -686,9 +684,10 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
                   />
                 </div>
                 <div>
-                  <label className="block font-medium text-stone-300 mb-1">Currency</label>
+                  <label className="block font-medium text-stone-300 mb-1">Booking currency (fixed)</label>
                   <select
                     value={refundCurrency}
+                    disabled
                     onChange={(e) => setRefundCurrency(e.target.value)}
                     className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2 text-white focus:outline-hidden focus:border-[#0A6C74]"
                   >
@@ -702,7 +701,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-medium text-stone-300 mb-1">Disbursement Channel</label>
+                  <label className="block font-medium text-stone-300 mb-1">Payout method (manual)</label>
                   <select
                     value={refundMethod}
                     onChange={(e) => setRefundMethod(e.target.value as any)}
@@ -739,7 +738,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
               </div>
 
               <div>
-                <label className="block font-medium text-stone-300 mb-1">Supervisor Notes</label>
+                <label className="block font-medium text-stone-300 mb-1">Notes (optional)</label>
                 <textarea
                   value={refundNotes}
                   onChange={(e) => setRefundNotes(e.target.value)}
@@ -794,7 +793,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
 
             <form onSubmit={handleSubmitApprove} className="space-y-4">
               <div>
-                <label className="block text-stone-300 font-medium mb-1">Approved Payout Amount (€)</label>
+                <label className="block text-stone-300 font-medium mb-1">Approved payout amount ({approvingRefund.currency})</label>
                 <input
                   type="number"
                   step="0.01"
@@ -846,7 +845,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
             <div className="flex items-center justify-between border-b border-stone-800 pb-3">
               <h3 className="text-base font-bold text-white flex items-center space-x-2">
                 <DollarSign className="w-5 h-5 text-[#2dd4bf]" />
-                <span>Execute Payout Disbursement</span>
+                <span>Record external refund payout</span>
               </h3>
               <button
                 type="button"
@@ -858,20 +857,20 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
             </div>
 
             <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-amber-300 text-[11px]">
-              Confirming execution will immediately debit the net ledger revenue and record the timestamped audit log.
+              This records a payout already made outside this app. It does not transfer money. Confirm only after the bank, cash or POS receipt has been verified.
             </div>
 
             <form onSubmit={handleSubmitProcess} className="space-y-4">
               <div>
                 <label className="block text-stone-300 font-medium mb-1">
-                  Disbursed Amount: €{processingRefund.approvedAmount || processingRefund.requestedAmount}
+                  Payout Amount: {processingRefund.currency} {processingRefund.approvedAmount || processingRefund.requestedAmount}
                 </label>
                 <span className="text-stone-400 text-[11px]">Method: {processingRefund.refundMethod}</span>
               </div>
 
               <div>
                 <label className="block text-stone-300 font-medium mb-1">
-                  Bank / POS / Slip Authorization Reference
+                  Verified bank / cash / POS payout reference
                 </label>
                 <input
                   type="text"
@@ -883,7 +882,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
               </div>
 
               <div>
-                <label className="block text-stone-300 font-medium mb-1">Treasury Officer</label>
+                <label className="block text-stone-300 font-medium mb-1">Recorded by</label>
                 <input
                   type="text"
                   value={processedByInput}
@@ -907,7 +906,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
                   className="px-5 py-2 bg-[#0A6C74] hover:bg-[#08565d] text-white font-medium rounded-xl cursor-pointer flex items-center space-x-1"
                 >
                   {processingAction ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-                  <span>Disburse Funds</span>
+                  <span>Confirm payout recorded</span>
                 </button>
               </div>
             </form>

@@ -20,6 +20,7 @@ import {
   SimulationReport,
   SimulationStepResult
 } from '../../services/platformIntegrationSimulator';
+import { isSupabaseConfigured } from '../../services/supabaseClient';
 
 interface PlatformIntegrationModalProps {
   isOpen: boolean;
@@ -33,6 +34,7 @@ export const PlatformIntegrationModal: React.FC<PlatformIntegrationModalProps> =
   const [isRunning, setIsRunning] = useState(false);
   const [report, setReport] = useState<SimulationReport | null>(null);
   const [expandedSteps, setExpandedSteps] = useState<Record<number, boolean>>({});
+  const simulationBlocked = Boolean((import.meta as any).env?.PROD) || isSupabaseConfigured();
 
   if (!isOpen) return null;
 
@@ -128,10 +130,10 @@ export const PlatformIntegrationModal: React.FC<PlatformIntegrationModalProps> =
 
           <button
             type="button"
-            disabled={isRunning}
+            disabled={isRunning || simulationBlocked}
             onClick={handleRunSimulation}
             className={`px-5 py-2.5 rounded-lg text-xs font-bold flex items-center space-x-2 shadow-lg transition-all cursor-pointer ${
-              isRunning
+              isRunning || simulationBlocked
                 ? 'bg-stone-800 text-stone-500 cursor-not-allowed'
                 : 'bg-[#0A6C74] hover:bg-[#08565C] text-white'
             }`}
@@ -144,11 +146,17 @@ export const PlatformIntegrationModal: React.FC<PlatformIntegrationModalProps> =
             ) : (
               <>
                 <Play className="w-4 h-4 fill-white" />
-                <span>{report ? 'Re-run 15-Step Simulation' : 'Run Full Integration Simulation'}</span>
+                <span>{simulationBlocked ? 'Unavailable for connected / production projects' : report ? 'Re-run 15-Step Simulation' : 'Run Local Integration Simulation'}</span>
               </>
             )}
           </button>
         </div>
+
+        {simulationBlocked && (
+          <div className="mx-4 mt-4 rounded-lg border border-amber-700/50 bg-amber-950/30 p-3 text-[11px] text-amber-200">
+            This simulator creates test inquiries, leads, bookings and payment rows. It is disabled for production builds and connected Supabase projects to prevent test data from entering real customer and finance records.
+          </div>
+        )}
 
         {/* Content Body */}
         <div className="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
