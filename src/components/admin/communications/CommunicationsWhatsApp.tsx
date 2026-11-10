@@ -230,7 +230,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
   };
 
   const openSettingsModal = () => {
-    setTempWaProvider(providerConfig.whatsapp.provider as any);
+    setTempWaProvider(providerConfig.whatsapp.provider === 'meta_cloud' ? 'meta_cloud' : 'none');
     setTempApiKey(providerConfig.whatsapp.apiKey || '');
     setTempPhoneNumberId(providerConfig.whatsapp.phoneNumberId || '');
     setTempBusinessAccountId(providerConfig.whatsapp.businessAccountId || '');
