@@ -574,6 +574,13 @@ BEGIN
   IF v_hits > p_max_hits THEN
     RAISE EXCEPTION '%', p_error_message USING ERRCODE = 'P0001';
   END IF;
+
+  -- The same helper is used by lookup/cancellation RPCs, not only table triggers;
+  -- clean stale buckets here so those public endpoints cannot grow the table forever.
+  IF random() < 0.01 THEN
+    DELETE FROM public.rate_limit_buckets
+    WHERE bucket_window < (NOW() - INTERVAL '2 hours');
+  END IF;
 END;
 $rate_limit$;
 
