@@ -296,8 +296,8 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
   // Aggregate metrics
   const metrics = useMemo(() => {
     const processedTotal = refunds
-      .filter((r) => ['pending_approval', 'approved', 'processed'].includes(r.status))
-      .reduce((sum, r) => sum + (r.approvedAmount || r.requestedAmount || r.amount), 0);
+      .filter((r) => r.status === 'processed')
+      .reduce((sum, r) => sum + (r.approvedAmount || r.amount), 0);
 
     const pendingCount = refunds.filter((r) => r.status === 'pending_approval' || r.status === 'requested').length;
     const approvedCount = refunds.filter((r) => r.status === 'approved').length;
@@ -555,8 +555,8 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
                             {r.status === 'pending_approval'
                               ? 'Pending Approval'
                               : r.status === 'approved'
-                              ? 'Approved (Unpaid)'
-                              : ['pending_approval', 'approved', 'processed'].includes(r.status)
+                              ? 'Approved (Awaiting Payout)'
+                              : r.status === 'processed'
                               ? 'Payout recorded'
                               : 'Rejected'}
                           </span>
