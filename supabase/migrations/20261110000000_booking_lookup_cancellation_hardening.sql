@@ -483,6 +483,7 @@ GRANT EXECUTE ON FUNCTION public.admin_resolve_booking_cancellation(TEXT, TEXT, 
 -- Guest creation is exclusively through create_booking_atomic; customer updates are limited
 -- to non-financial pickup/contact-note fields. Staff changes remain server-authorized by RLS.
 DROP POLICY IF EXISTS "Controlled booking creation" ON public.bookings;
+DROP POLICY IF EXISTS "Public can insert booking" ON public.bookings;
 REVOKE INSERT, DELETE ON public.bookings FROM PUBLIC, anon, authenticated;
 
 CREATE OR REPLACE FUNCTION public.protect_booking_customer_updates()
@@ -831,6 +832,7 @@ DROP POLICY IF EXISTS "Anyone authenticated can view payment providers" ON publi
 -- (or trusted staff). Inserts are made inside create_booking_atomic, not directly.
 DROP POLICY IF EXISTS "Public insert booking extras" ON public.booking_extras;
 DROP POLICY IF EXISTS "Public view booking extras" ON public.booking_extras;
+DROP POLICY IF EXISTS "Customers can view their own booking extras" ON public.booking_extras;
 CREATE POLICY "Customers can view their own booking extras"
   ON public.booking_extras
   FOR SELECT
@@ -853,6 +855,7 @@ CREATE POLICY "Customers can view their own booking extras"
 
 DROP POLICY IF EXISTS "Public insert booking passengers" ON public.booking_passengers;
 DROP POLICY IF EXISTS "Users can view linked booking passengers" ON public.booking_passengers;
+DROP POLICY IF EXISTS "Customers can view their own booking passengers" ON public.booking_passengers;
 CREATE POLICY "Customers can view their own booking passengers"
   ON public.booking_passengers
   FOR SELECT
