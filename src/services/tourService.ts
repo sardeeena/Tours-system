@@ -72,6 +72,14 @@ export function mapDbTourToFrontendTour(
     .sort((a, b) => a.sort_order - b.sort_order)
     .map((e) => e.item);
 
+  const sortedFaqs = [...(relations.faqs || [])].sort((a, b) => a.sort_order - b.sort_order);
+  const whatToBring = sortedFaqs
+    .filter((faq) => faq.section === 'what_to_bring')
+    .map((faq) => faq.answer);
+  const importantInformation = sortedFaqs
+    .filter((faq) => faq.section === 'important_information')
+    .map((faq) => faq.answer);
+
   const cats = relations.categories && relations.categories.length > 0 ? relations.categories : [];
 
   return {
@@ -99,8 +107,8 @@ export function mapDbTourToFrontendTour(
     itinerary: sortedItinerary,
     included: sortedInclusions,
     excluded: sortedExclusions,
-    whatToBring: [],
-    importantInformation: [],
+    whatToBring,
+    importantInformation,
     languages: dbTour.languages && dbTour.languages.length > 0 ? dbTour.languages : ['English'],
     maxGuests: dbTour.max_guests || 0,
     pickupInfo: dbTour.pickup_info || (dbTour.pickup_available ? 'Hotel pickup available.' : 'Pickup not included.'),
