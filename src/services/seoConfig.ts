@@ -10,7 +10,7 @@ export const SEO_DEFAULTS = {
   LEGAL_NAME: 'Awesome Adventure Tours S.A.E.',
   DEFAULT_TITLE: 'Awesome Adventure Tours | Excursions, Boat Trips & Safaris',
   DEFAULT_DESCRIPTION:
-    'Direct booking for premium Red Sea boat trips, coral reef snorkeling, scuba diving, and desert quad safaris in Hurghada, El Gouna, and Sharm El-Sheikh. Hotel pickup included with free 24-hour cancellation.',
+    'Direct booking for Red Sea boat trips, coral reef snorkeling, scuba diving, and desert safaris. Pickup arrangements, inclusions, and cancellation terms are listed for each excursion.',
   DEFAULT_OG_IMAGE: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80',
   DEFAULT_LOCALE: 'en_US',
   PRICE_RANGE: '€€',
@@ -46,9 +46,9 @@ export const SEO_DEFAULTS = {
  */
 export const HOMEPAGE_FAQS = [
   {
-    question: 'Are hotel lobby pickups and drop-offs included with every excursion?',
+    question: 'How do I check pickup availability and transfer fees?',
     answer:
-      'Yes, all Red Sea excursions include door-to-door return transfers from your hotel lobby across central Hurghada, El Gouna, Makadi Bay, Sahl Hasheesh, and Sharm El-Sheikh in air-conditioned vehicles.',
+      'Pickup areas, meeting points, and any transfer supplements are listed in each excursion’s Pickup & Departure Details. Select your hotel area during booking and review the total before submitting your reservation.',
   },
   {
     question: 'Can I pay upon hotel pickup rather than paying in advance online?',
@@ -58,12 +58,12 @@ export const HOMEPAGE_FAQS = [
   {
     question: 'What is your cancellation and weather refund policy?',
     answer:
-      'We provide free cancellation up to 24 hours prior to departure for a 100% refund. Furthermore, if the Egyptian Coast Guard restricts harbor departures due to high offshore winds, you receive a full refund or free rescheduling guarantee.',
+      'Cancellation windows are shown on each excursion and can differ by tour. If maritime port closures prevent departure, the operations team will contact affected guests about the available refund or rescheduling arrangements.',
   },
   {
     question: 'Are snorkeling gear and buffet lunch included on full-day boat trips?',
     answer:
-      'All full-day island cruises and boat trips provide professional masks, snorkels, fins, flotation life vests, freshly prepared open buffet lunch, and unlimited mineral water, soft drinks, tea, and coffee onboard.',
+      'Inclusions differ by excursion. Check the Included and Not Included lists on the tour page; some trips include masks and fins, while others offer equipment for an additional charge.',
   },
 ];
 
@@ -203,9 +203,6 @@ export function generateTourJsonLd(tour: Tour, origin = getAppOrigin()): Record<
         url: tourUrl,
         price: tour.priceEur,
         priceCurrency: 'EUR',
-        priceValidUntil: `${new Date().getFullYear() + 1}-12-31`,
-        availability: 'https://schema.org/InStock',
-        itemCondition: 'https://schema.org/NewCondition',
         seller: {
           '@type': 'TravelAgency',
           name: SEO_DEFAULTS.SITE_NAME,
@@ -309,7 +306,7 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> =
   '/': (origin) => ({
     title: 'Awesome Adventure Tours | Excursions, Boat Trips & Safaris',
     description:
-      'Book verified Red Sea boat trips to Orange Bay, Giftun Island, Ras Mohammed, and desert safaris. Direct pier rates, hotel pickup included, free cancellation.',
+      'Explore Red Sea boat trips to Orange Bay, Giftun Island, Ras Mohammed, and desert safaris. Compare tour details, pickup arrangements, inclusions, and cancellation terms.',
     keywords: SEO_DEFAULTS.KEYWORDS,
     canonicalUrl: `${origin}/`,
     ogType: 'website',
@@ -396,7 +393,7 @@ export function getPageSeo(
 
     return {
       title: `${tour.title} (${tour.destination}) | Direct Booking & Pickup`,
-      description: `Book ${tour.title} in ${tour.destination}. ${tour.durationLabel}, hotel lobby pickup included, free 24h cancellation guarantee. From ${formattedPrice}/person.`,
+      description: `Book ${tour.title} in ${tour.destination}. ${tour.durationLabel}. Review pickup details, inclusions, and cancellation terms before booking. From ${formattedPrice}/person.`,
       keywords: [
         tour.title,
         tour.destination,
