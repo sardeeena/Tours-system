@@ -21,8 +21,15 @@ CREATE UNIQUE INDEX IF NOT EXISTS refund_records_idempotency_key_uidx
 
 -- Keep reads governed by existing RLS, but prevent clients from bypassing the
 -- transactional RPCs for payment and refund mutations.
-REVOKE INSERT, UPDATE, DELETE ON TABLE public.payment_transactions FROM anon, authenticated;
-REVOKE INSERT, UPDATE, DELETE ON TABLE public.refund_records FROM anon, authenticated;
+REVOKE ALL PRIVILEGES ON TABLE public.payment_transactions FROM anon, authenticated;
+REVOKE ALL PRIVILEGES ON TABLE public.refund_records FROM anon, authenticated;
+GRANT SELECT ON TABLE public.payment_transactions TO authenticated;
+GRANT SELECT ON TABLE public.refund_records TO authenticated;
+
+-- Provider configuration can contain credentials in the future. Expose only safe metadata.
+REVOKE ALL PRIVILEGES ON TABLE public.payment_providers FROM anon, authenticated;
+GRANT SELECT (id, name, provider_type, is_connected, is_manual, supported_currencies, description)
+  ON TABLE public.payment_providers TO authenticated;
 
 CREATE OR REPLACE FUNCTION public.record_payment_atomic(
   p_booking_reference TEXT,
@@ -69,10 +76,10 @@ BEGIN
   IF v_currency !~ '^[A-Z]{3}$' THEN
     RAISE EXCEPTION 'Invalid payment currency' USING ERRCODE = '22023';
   END IF;
-  IF v_method NOT IN ('Cash', 'Card', 'Bank Transfer', 'Online Payment', 'Other') THEN
-    RAISE EXCEPTION 'Unsupported payment method' USING ERRCODE = '22023';
+  IF v_method NOT IN ('Cash', 'Card', 'Bank Transfer', 'Other') THEN
+    RAISE EXCEPTION 'Unsupported payment method. Online gateway payments must be completed through a connected gateway.' USING ERRCODE = '22023';
   END IF;
-  IF p_status NOT IN ('Pending', 'Paid', 'Partially Paid', 'Failed', 'Refunded', 'pending', 'paid', 'partially_paid', 'failed', 'refunded') THEN
+  IF p_status IS NULL OR p_status NOT IN ('Pending', 'Paid', 'Partially Paid', 'Failed', 'pending', 'paid', 'partially_paid', 'failed') THEN
     RAISE EXCEPTION 'Unsupported payment status' USING ERRCODE = '22023';
   END IF;
   v_status := CASE lower(p_status)
@@ -81,7 +88,6 @@ BEGIN
     WHEN 'partially paid' THEN 'Partially Paid'
     WHEN 'partially_paid' THEN 'Partially Paid'
     WHEN 'failed' THEN 'Failed'
-    WHEN 'refunded' THEN 'Refunded'
     ELSE NULL
   END;
   IF p_transaction_reference IS NULL OR length(btrim(p_transaction_reference)) < 3 OR length(p_transaction_reference) > 160 THEN
