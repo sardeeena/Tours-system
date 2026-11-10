@@ -257,15 +257,21 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 app.use((req: Request, res: Response, next: NextFunction) => {
-  const allowedOrigins = [
-    'https://awesomeadventure.tours',
-    'https://www.awesomeadventure.tours',
-    'https://mahmoud-crm-eosin.vercel.app',
+  // Kemet Spirit production origins plus local development origins.
+  // Additional preview origins must be explicitly configured, never wildcarded.
+  const configuredOrigins = (process.env.CORS_ALLOWED_ORIGINS || '')
+    .split(',')
+    .map((value) => value.trim())
+    .filter(Boolean);
+  const allowedOrigins = new Set([
+    'https://kemetspirit.com',
+    'https://www.kemetspirit.com',
     'http://localhost:3000',
     'http://localhost:5173',
-  ];
+    ...configuredOrigins,
+  ]);
   const origin = req.headers.origin as string | undefined;
-  if (origin && allowedOrigins.includes(origin)) {
+  if (origin && allowedOrigins.has(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
@@ -423,13 +429,13 @@ app.get('/api/health', (_req: Request, res: Response) => {
       },
       supabase: {
         status: serverSupabase ? 'configured' : (supabaseConfig.configError ? 'misconfigured' : 'unconfigured'),
-        projectRef: 'cyifhjqqvtiguitrziqs',
+        projectRef: SUPABASE_URL ? new URL(SUPABASE_URL).hostname.split('.')[0] : null,
         urlProvided: Boolean(SUPABASE_URL),
         keyType: SUPABASE_KEY_TYPE,
         serviceRoleKeyConfigured: SUPABASE_KEY_TYPE === 'service_role',
         secretIsolationVerified: true,
       },
-      databaseSchema: { cached: true, ready: true },
+      databaseSchema: { configured: Boolean(serverSupabase), ready: false, verification: 'not_checked' },
     },
     memory: {
       rssMb: Math.round((mem.rss / 1024 / 1024) * 100) / 100,
