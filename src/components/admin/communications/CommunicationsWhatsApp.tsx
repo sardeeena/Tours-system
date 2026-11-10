@@ -29,6 +29,7 @@ import {
   listTemplates,
   getProviderConfig,
   saveProviderConfig,
+  refreshProviderConfigFromServer,
   renderTemplateVariables,
   getWhatsAppDirectUrl,
   ProviderConfigurationError,
@@ -73,7 +74,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
 
   // Provider Settings Modal
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [tempWaProvider, setTempWaProvider] = useState<'meta_cloud' | 'twilio' | 'none'>('meta_cloud');
+  const [tempWaProvider, setTempWaProvider] = useState<'meta_cloud' | 'none'>('meta_cloud');
   const [tempApiKey, setTempApiKey] = useState('');
   const [tempPhoneNumberId, setTempPhoneNumberId] = useState('');
   const [tempBusinessAccountId, setTempBusinessAccountId] = useState('');
@@ -93,7 +94,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
       setMessages(msgs.filter((m) => m.channel === 'WhatsApp'));
       setTemplates(tmpls.filter((t) => t.channel === 'WhatsApp' || t.channel === 'Both'));
       setBookings(bks);
-      setProviderConfig(getProviderConfig());
+      setProviderConfig(await refreshProviderConfigFromServer());
     } catch (err) {
       console.error('Failed to load whatsapp comms data:', err);
     } finally {
@@ -237,7 +238,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
     setIsSettingsOpen(true);
   };
 
-  const saveSettings = () => {
+  const saveSettings = async () => {
     const newConfig: ProviderConfig = {
       ...providerConfig,
       whatsapp: {
@@ -246,17 +247,19 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
         phoneNumberId: tempPhoneNumberId.trim(),
         businessAccountId: tempBusinessAccountId.trim(),
         fromNumber: tempFromNumber.trim(),
-        isConfigured: tempWaProvider !== 'none' && tempApiKey.trim().length > 5,
+        isConfigured: false,
       },
     };
     saveProviderConfig(newConfig);
-    const updatedConfig = getProviderConfig();
-    setProviderConfig(updatedConfig);
     setTempApiKey('');
+    const updatedConfig = await refreshProviderConfigFromServer();
+    setProviderConfig(updatedConfig);
     setIsSettingsOpen(false);
     showToast(
-      'Provider selection saved. API keys are never stored in this browser; sending remains disabled until a server-side WhatsApp provider is configured.',
-      'info'
+      updatedConfig.whatsapp.isConfigured
+        ? 'Server-side Meta Cloud API is configured and ready.'
+        : 'Provider selection saved. Add WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID, and WHATSAPP_GRAPH_API_VERSION in Hostinger environment variables.',
+      updatedConfig.whatsapp.isConfigured ? 'success' : 'info'
     );
   };
 
@@ -780,8 +783,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
             </div>
 
             <p className="text-xs text-stone-400">
-              Connect official WhatsApp Cloud API (Meta Developers) or Twilio WhatsApp. The system never hard-codes
-              fake APIs and strictly checks credentials before confirming send status.
+              Delivery uses the official Meta Cloud API server-side adapter. Tokens are discarded by this form and must be configured as Hostinger environment variables.
             </p>
 
             <div className="space-y-3 text-xs">
@@ -794,7 +796,6 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
                 >
                   <option value="none">None (Disabled / Manual Web Only)</option>
                   <option value="meta_cloud">Meta WhatsApp Cloud API (Official)</option>
-                  <option value="twilio">Twilio Programmable WhatsApp</option>
                 </select>
               </div>
 
