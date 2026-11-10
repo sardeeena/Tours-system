@@ -772,7 +772,7 @@ app.all(['/api/bookings/lookup', '/api/booking/lookup'], rateLimit(10, 60_000), 
   }
 
   const cleanRef = reference.trim().toUpperCase();
-  if (!/^RST-\\d{4}-[A-Z0-9]{4,24}$/.test(cleanRef)) {
+  if (!/^RST-\d{4}-[A-Z0-9]{4,24}$/.test(cleanRef)) {
     return res.status(400).json({ success: false, found: false, error: 'Invalid booking reference format.' });
   }
 
