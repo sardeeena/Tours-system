@@ -71,7 +71,7 @@ CREATE OR REPLACE FUNCTION public.create_booking_atomic(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public, auth, pg_temp
+SET search_path = ''
 AS $$
 DECLARE
     v_tour RECORD;
