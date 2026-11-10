@@ -105,19 +105,25 @@ export async function getStoredSeoMetadata(
     if (!data) return null;
 
     const schema = data.structured_data;
-    return {
-      title: data.seo_title || undefined,
-      description: data.meta_description || undefined,
-      canonicalUrl: data.canonical_url || undefined,
-      ogTitle: data.og_title || undefined,
-      ogDescription: data.og_description || undefined,
-      ogImage: data.og_image || undefined,
-      robotsIndex: data.robots_index ?? undefined,
-      robotsFollow: data.robots_follow ?? undefined,
-      schemaJsonLd: schema && typeof schema === 'object' && !Array.isArray(schema)
-        ? schema as Record<string, unknown>
-        : undefined,
-    };
+    const metadata: Partial<SeoMetadata> = {};
+
+    if (data.seo_title) metadata.title = data.seo_title;
+    if (data.meta_description) metadata.description = data.meta_description;
+    if (data.canonical_url) metadata.canonicalUrl = data.canonical_url;
+    if (data.og_title) metadata.ogTitle = data.og_title;
+    if (data.og_description) metadata.ogDescription = data.og_description;
+    if (data.og_image) metadata.ogImage = data.og_image;
+    if (data.robots_index !== null && data.robots_index !== undefined) {
+      metadata.robotsIndex = data.robots_index;
+    }
+    if (data.robots_follow !== null && data.robots_follow !== undefined) {
+      metadata.robotsFollow = data.robots_follow;
+    }
+    if (schema && typeof schema === 'object' && !Array.isArray(schema)) {
+      metadata.schemaJsonLd = schema as Record<string, unknown>;
+    }
+
+    return metadata;
   } catch (err) {
     console.warn('Saved SEO metadata lookup failed:', err);
     return null;
