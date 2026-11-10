@@ -948,67 +948,63 @@ export async function getOutstandingBalances(filter?: {
   const payments = await listPayments();
   const refunds = await listRefunds();
   const todayStr = new Date().toISOString().split('T')[0];
-
   const items: OutstandingBalanceItem[] = [];
 
-  bookings.forEach((b) => {
-    const bookingTotal = b.pricing?.totalEur || 0;
+  bookings.forEach((booking) => {
+    // Cancelled bookings are not trade receivables. Any refund due is tracked separately.
+    if (booking.status === 'cancelled') return;
 
+    const bookingTotal = Number(booking.pricing?.totalEur || 0);
+    const currency = String(booking.pricing?.currency || 'EUR').toUpperCase();
     const bookingPayments = payments.filter(
-      (p) =>
-        (p.bookingReference === b.bookingReference || p.bookingId === b.bookingId) &&
-        (p.paymentStatus === 'Paid' || p.paymentStatus === 'paid')
+      (payment) =>
+        payment.currency === currency &&
+        (payment.bookingReference === booking.bookingReference || payment.bookingId === booking.bookingId) &&
+        isSettledPayment(payment)
     );
-    const paidAmount = bookingPayments.reduce((sum, p) => sum + p.amount, 0);
+    const paidAmount = bookingPayments.reduce((sum, payment) => sum + payment.amount, 0);
 
     const bookingRefunds = refunds.filter(
-      (r) =>
-        (r.bookingReference === b.bookingReference || r.bookingId === b.bookingId) &&
-        r.status === 'processed'
+      (refund) =>
+        refund.currency === currency &&
+        (refund.bookingReference === booking.bookingReference || refund.bookingId === booking.bookingId) &&
+        refund.status === 'processed'
     );
-    const refundAmount = bookingRefunds.reduce((sum, r) => sum + (r.approvedAmount || r.amount), 0);
-
+    const refundAmount = bookingRefunds.reduce((sum, refund) => sum + (refund.approvedAmount || refund.amount), 0);
     const netPaid = Math.max(0, paidAmount - refundAmount);
     const balanceAmount = Math.max(0, bookingTotal - netPaid);
 
-    // If booking was cancelled and has 0 net paid, no balance is due
-    if (b.status === 'cancelled' && netPaid === 0) return;
+    if (balanceAmount <= 0) return;
 
-    if (balanceAmount > 0) {
-      const tourDate = b.date ? b.date.split('T')[0] : '';
-      let status: OutstandingBalanceItem['status'] = 'upcoming';
+    const tourDate = booking.date ? booking.date.split('T')[0] : '';
+    let status: OutstandingBalanceItem['status'] = 'upcoming';
+    if (tourDate && tourDate < todayStr) status = 'overdue';
+    else if (tourDate === todayStr) status = 'due_today';
 
-      if (tourDate < todayStr) {
-        status = 'overdue';
-      } else if (tourDate === todayStr) {
-        status = 'due_today';
-      }
-
-      items.push({
-        bookingId: b.bookingId || b.bookingReference,
-        bookingReference: b.bookingReference,
-        customerId: (b as any).customerId || null,
-        customerName: `${b.customer.firstName} ${b.customer.lastName}`,
-        customerEmail: b.customer.email,
-        customerPhone: b.customer.phoneNumber
-          ? `${b.customer.countryCode || ''} ${b.customer.phoneNumber}`
-          : null,
-        hotel: b.pickup.hotelName || b.customer.hotelName || 'Direct Marina',
-        tourTitle: b.tourTitle,
-        tourDate: b.date,
-        totalAmount: bookingTotal,
-        bookingTotal,
-        paidAmount,
-        amountPaid: paidAmount,
-        refundAmount,
-        balanceAmount,
-        amountDue: balanceAmount,
-        currency: 'EUR',
-        dueDate: b.date,
-        status,
-        paymentStatus: paidAmount > 0 ? 'Partially Paid' : 'Pending',
-      });
-    }
+    items.push({
+      bookingId: booking.bookingId || booking.bookingReference,
+      bookingReference: booking.bookingReference,
+      customerId: booking.customerId || null,
+      customerName: `${booking.customer.firstName} ${booking.customer.lastName}`,
+      customerEmail: booking.customer.email,
+      customerPhone: booking.customer.phoneNumber
+        ? `${booking.customer.countryCode || ''} ${booking.customer.phoneNumber}`
+        : null,
+      hotel: booking.pickup.hotelName || booking.customer.hotelName || 'Direct Arrival',
+      tourTitle: booking.tourTitle,
+      tourDate: booking.date,
+      totalAmount: bookingTotal,
+      bookingTotal,
+      paidAmount,
+      amountPaid: paidAmount,
+      refundAmount,
+      balanceAmount,
+      amountDue: balanceAmount,
+      currency,
+      dueDate: booking.date,
+      status,
+      paymentStatus: netPaid >= bookingTotal ? 'Paid' : netPaid > 0 ? 'Partially Paid' : 'Pending',
+    });
   });
 
   return items
@@ -1016,13 +1012,13 @@ export async function getOutstandingBalances(filter?: {
       if (filter?.status && filter.status !== 'all' && item.status !== filter.status) return false;
       if (filter?.currency && filter.currency !== 'all' && item.currency !== filter.currency) return false;
       if (filter?.search?.trim()) {
-        const q = filter.search.toLowerCase();
+        const query = filter.search.toLowerCase();
         return (
-          item.bookingReference.toLowerCase().includes(q) ||
-          item.customerName.toLowerCase().includes(q) ||
-          item.customerEmail.toLowerCase().includes(q) ||
-          item.tourTitle.toLowerCase().includes(q) ||
-          (item.hotel && item.hotel.toLowerCase().includes(q))
+          item.bookingReference.toLowerCase().includes(query) ||
+          item.customerName.toLowerCase().includes(query) ||
+          item.customerEmail.toLowerCase().includes(query) ||
+          item.tourTitle.toLowerCase().includes(query) ||
+          (item.hotel && item.hotel.toLowerCase().includes(query))
         );
       }
       return true;
@@ -1030,7 +1026,6 @@ export async function getOutstandingBalances(filter?: {
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
 }
 
-// ------------------------------------------------------------------------------
 // 5. FINANCIAL REPORTS & REVENUE ANALYTICS (Real Database Aggregation)
 // ------------------------------------------------------------------------------
 
