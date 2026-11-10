@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(42);
+SELECT plan(43);
 
 SELECT ok(
   to_regprocedure('public.record_payment_atomic(text,numeric,text,text,text,text,text,text,text,text)') IS NOT NULL,
@@ -109,6 +109,9 @@ SELECT 'booking', public.create_booking_atomic(
 );
 
 SELECT set_config('request.jwt.claims', '{"role":"service_role"}', TRUE);
+
+SELECT ok(public.next_invoice_number() ~ '^INV-[0-9]{4}-[0-9]{6}$',
+  'invoice sequence allocates a unique year-prefixed invoice number');
 
 INSERT INTO finance_test_state (key, value)
 SELECT 'payment_one', public.record_payment_atomic(
