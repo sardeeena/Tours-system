@@ -255,6 +255,7 @@ DECLARE
   v_currency TEXT := upper(btrim(p_currency));
   v_paid NUMERIC(10,2) := 0;
   v_committed NUMERIC(10,2) := 0;
+  v_payment_refunded NUMERIC(10,2) := 0;
 BEGIN
   IF NOT (
     auth.role() = 'service_role'
@@ -305,6 +306,18 @@ BEGIN
     FOR SHARE;
     IF NOT FOUND THEN
       RAISE EXCEPTION 'Selected payment does not belong to this booking or is not settled' USING ERRCODE = '22023';
+    END IF;
+  END IF;
+
+  IF p_payment_id IS NOT NULL THEN
+    SELECT coalesce(sum(coalesce(approved_amount, requested_amount, amount)), 0)
+    INTO v_payment_refunded
+    FROM public.refund_records
+    WHERE payment_id = p_payment_id
+      AND status IN ('pending_approval', 'approved', 'processed');
+
+    IF p_requested_amount > greatest(0, v_payment.amount - v_payment_refunded) THEN
+      RAISE EXCEPTION 'Refund exceeds the remaining refundable amount for the selected payment' USING ERRCODE = '22023';
     END IF;
   END IF;
 
@@ -392,6 +405,16 @@ BEGIN
   FOR UPDATE;
   IF NOT FOUND THEN
     RAISE EXCEPTION 'Refund booking not found' USING ERRCODE = 'P0002';
+  END IF;
+
+  IF p_action = 'approve' AND v_refund.status = 'approved'
+     AND v_refund.approved_amount = p_amount THEN
+    RETURN jsonb_build_object('success', true, 'duplicate', true, 'refund', to_jsonb(v_refund));
+  ELSIF p_action = 'process' AND v_refund.status = 'processed'
+     AND lower(coalesce(v_refund.transaction_reference, '')) = lower(btrim(coalesce(p_transaction_reference, ''))) THEN
+    RETURN jsonb_build_object('success', true, 'duplicate', true, 'refund', to_jsonb(v_refund));
+  ELSIF p_action = 'reject' AND v_refund.status = 'rejected' THEN
+    RETURN jsonb_build_object('success', true, 'duplicate', true, 'refund', to_jsonb(v_refund));
   END IF;
 
   IF p_action = 'approve' THEN
