@@ -27,7 +27,7 @@ CREATE OR REPLACE FUNCTION public.protect_profile_role()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public, auth, pg_temp
+SET search_path = ''
 AS $$
 DECLARE
     active_nonce text;
@@ -57,7 +57,10 @@ BEGIN
     END IF;
     RETURN NEW;
 END;
-$$;
+$;
+
+-- Trigger-only function; do not expose it as an RPC.
+REVOKE ALL ON FUNCTION public.protect_profile_role() FROM PUBLIC, anon, authenticated;
 
 -- Ensure trigger is active on public.profiles
 DROP TRIGGER IF EXISTS trigger_protect_profile_role ON public.profiles;
