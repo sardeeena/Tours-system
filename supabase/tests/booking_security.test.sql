@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(16);
+SELECT plan(21);
 
 SELECT ok(
   EXISTS (
@@ -107,6 +107,37 @@ SELECT ok(
       AND NOT tgisinternal
   ),
   'customer updates are protected by a database trigger'
+);
+
+
+SELECT ok(
+  POSITION('idempotency_payload IS DISTINCT FROM v_idempotency_payload' IN
+    PG_GET_FUNCTIONDEF(to_regprocedure('public.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text'))) > 0,
+  'atomic booking rejects reuse of an idempotency key for different request data'
+);
+
+SELECT ok(
+  POSITION('FOR UPDATE' IN
+    PG_GET_FUNCTIONDEF(to_regprocedure('public.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text'))) > 0,
+  'coupon and availability checks use database row locks'
+);
+
+SELECT ok(
+  POSITION('times_used = times_used + 1' IN
+    PG_GET_FUNCTIONDEF(to_regprocedure('public.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text'))) > 0,
+  'coupon redemption usage is incremented in the booking transaction'
+);
+
+SELECT ok(
+  POSITION('booked_count = ta.booked_count - v_guest_count' IN
+    PG_GET_FUNCTIONDEF(to_regprocedure('public.admin_resolve_booking_cancellation(text,text,text)'))) > 0,
+  'capacity is released only inside the admin cancellation approval RPC'
+);
+
+SELECT ok(
+  POSITION('TO_JSONB(NEW)' IN
+    PG_GET_FUNCTIONDEF(to_regprocedure('public.protect_booking_customer_updates()'))) > 0,
+  'customer update trigger rejects changes to protected booking columns'
 );
 
 SELECT * FROM finish();
