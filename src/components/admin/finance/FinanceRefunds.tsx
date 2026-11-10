@@ -684,9 +684,10 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
                   />
                 </div>
                 <div>
-                  <label className="block font-medium text-stone-300 mb-1">Currency</label>
+                  <label className="block font-medium text-stone-300 mb-1">Booking currency (fixed)</label>
                   <select
                     value={refundCurrency}
+                    disabled
                     onChange={(e) => setRefundCurrency(e.target.value)}
                     className="w-full bg-stone-950 border border-stone-800 rounded-xl px-3 py-2 text-white focus:outline-hidden focus:border-[#0A6C74]"
                   >
