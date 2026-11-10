@@ -10,6 +10,7 @@ The SQL file `supabase/seed/kemet_spirit_catalogue.sql` imports the 13 excursion
 - Legacy category aliases (`Boat Trip`, `Island`, `Island Visits`, `Private Tour`, and `Quad`) are normalized to the six canonical categories, and each tour/category link is inserted once with the primary category first.
 - All 13 tours are published to preserve the existing public catalogue. Six destinations with active tours and all six categories are published; Makadi Bay remains a draft destination because no current tour is assigned to it.
 - Tour ratings and review counts are zero. No reviews or bookings are inserted.
+- The scuba experience's minimum age restriction is retained. Departure labels are normalized to valid 12-hour times (for example, `02:00 PM`, not `14:00 PM`).
 - The current tour-specific optional extras are inserted and assigned. The four pre-existing generic extras are preserved. The separate legacy `GLOBAL_BOOKING_EXTRAS` list is intentionally not imported because its prices differ from the tour-specific options currently shown on the live tour pages.
 - Stock images are marked as illustrative in their alt text and captions; replace them with operator-approved photography when available.
 - Pickup-location fee records are inserted inactive. Tour-level pickup instructions are preserved, but global area surcharges are not activated because the current tour pages contain exceptions that need an operator fee review.
