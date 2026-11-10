@@ -13,6 +13,8 @@ export interface BookingDraftState {
   customer: CustomerInfo;
   paymentMethod: 'pay_at_pickup' | 'pay_online';
   termsAccepted: boolean;
+  idempotencyKey: string;
+  couponCode: string;
 }
 
 export const INITIAL_DRAFT_STATE: BookingDraftState = {
@@ -42,6 +44,8 @@ export const INITIAL_DRAFT_STATE: BookingDraftState = {
   },
   paymentMethod: 'pay_at_pickup',
   termsAccepted: false,
+  idempotencyKey: '',
+  couponCode: '',
 };
 
 export function loadBookingDraft(tourSlug?: string): BookingDraftState {
