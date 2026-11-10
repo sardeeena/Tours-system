@@ -17,6 +17,27 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_idempotency_key
 ON public.bookings(idempotency_key) 
 WHERE idempotency_key IS NOT NULL;
 
+-- 1A. CANONICAL SCHEMA COMPATIBILITY
+-- Add every field consumed by this migration but absent from complete_schema.sql.
+ALTER TABLE public.booking_extras
+    ADD COLUMN IF NOT EXISTS description TEXT;
+
+ALTER TABLE public.tour_extras
+    ADD COLUMN IF NOT EXISTS min_quantity INTEGER,
+    ADD COLUMN IF NOT EXISTS max_quantity INTEGER;
+
+ALTER TABLE public.tour_assigned_extras
+    ADD COLUMN IF NOT EXISTS custom_price_eur NUMERIC(10,2),
+    ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0;
+
+ALTER TABLE public.tour_extras
+    DROP CONSTRAINT IF EXISTS tour_extras_pricing_type_check;
+
+ALTER TABLE public.tour_extras
+    ADD CONSTRAINT tour_extras_pricing_type_check
+    CHECK (pricing_type IN ('per_person', 'per_adult', 'per_child', 'per_vehicle', 'per_item', 'per_booking'));
+
 -- 2. REPLACEMENT CREATE_BOOKING_ATOMIC WITH STRICT VALIDATION & GENUINE IDEMPOTENCY
 -- Safely retire legacy 17-parameter overload to prevent function overload ambiguity (SQLSTATE 42725)
 DROP FUNCTION IF EXISTS public.create_booking_atomic(
