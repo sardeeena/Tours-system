@@ -480,6 +480,12 @@ SELECT 'authenticated_booking', public.create_booking_atomic(
   'pay_at_pickup', NULL, 'idem_pgtap_authenticated_booking_0001'
 );
 
+SELECT set_config(
+  'pgtap.auth_booking_ref',
+  (SELECT result->>'bookingReference' FROM pg_temp.pgtap_booking_results WHERE case_name = 'authenticated_booking'),
+  TRUE
+);
+
 SELECT ok(
   (SELECT (result->>'success')::boolean FROM pg_temp.pgtap_booking_results WHERE case_name = 'authenticated_booking'),
   'authenticated customer can create a booking through the atomic RPC'
@@ -490,12 +496,6 @@ SELECT ok(
    FROM public.bookings
    WHERE booking_reference = (current_setting('pgtap.auth_booking_ref', TRUE))),
   'atomic booking binds the authenticated user id to the reservation'
-);
-
-SELECT set_config(
-  'pgtap.auth_booking_ref',
-  (current_setting('pgtap.auth_booking_ref', TRUE)),
-  TRUE
 );
 
 SET LOCAL ROLE authenticated;
@@ -509,11 +509,7 @@ SELECT throws_ok(
 
 UPDATE public.bookings
 SET pickup_room_number = '501'
-WHERE booking_reference = (
-  SELECT result->>'bookingReference'
-  FROM pg_temp.pgtap_booking_results
-  WHERE case_name = 'authenticated_booking'
-);
+WHERE booking_reference = current_setting('pgtap.auth_booking_ref', TRUE);
 
 SELECT ok(
   (SELECT pickup_room_number = '501' FROM public.bookings
@@ -527,11 +523,7 @@ SET
   cancellation_previous_status = 'pending',
   cancellation_requested_at = NOW(),
   cancellation_reason = 'Customer requested cancellation'
-WHERE booking_reference = (
-  SELECT result->>'bookingReference'
-  FROM pg_temp.pgtap_booking_results
-  WHERE case_name = 'authenticated_booking'
-);
+WHERE booking_reference = current_setting('pgtap.auth_booking_ref', TRUE);
 
 SELECT ok(
   (SELECT status = 'cancellation_requested' FROM public.bookings
