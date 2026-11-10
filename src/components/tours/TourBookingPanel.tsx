@@ -251,7 +251,7 @@ export const TourBookingPanel: React.FC<TourBookingPanelProps> = ({
         {/* Free cancellation guarantee badge */}
         <div className="flex items-center text-[11px] text-emerald-800 bg-emerald-50 p-2.5 rounded border border-emerald-200">
           <ShieldCheck className="w-4 h-4 text-emerald-600 mr-2 shrink-0" />
-          <span>Free cancellation up to 24 hours prior to departure.</span>
+          <span>{tour.cancellationPolicy || 'Cancellation terms are shown on your booking voucher.'}</span>
         </div>
 
         {/* Large CTA button */}
