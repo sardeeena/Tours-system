@@ -103,7 +103,7 @@ export const FinancePayments: React.FC<FinancePaymentsProps> = ({ onNavigateTab 
       const bPayments = payments.filter(
         (p) =>
           (p.bookingReference === ref || p.bookingId === b.bookingId) &&
-          (p.paymentStatus === 'Paid' || p.paymentStatus === 'paid')
+          ['paid', 'partially paid', 'partially_paid'].includes(String(p.paymentStatus).toLowerCase())
       );
       const paidSoFar = bPayments.reduce((sum, p) => sum + p.amount, 0);
       const total = b.pricing?.totalEur || 0;
