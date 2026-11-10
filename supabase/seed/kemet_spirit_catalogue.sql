@@ -32,8 +32,58 @@ BEGIN
   ) THEN
     RAISE EXCEPTION 'Catalogue seed aborted: a category slug already exists with a different ID';
   END IF;
+  IF EXISTS (
+    SELECT 1 FROM public.tours t
+    JOIN (VALUES
+      ('10000000-0000-0000-0000-000000000001'::uuid, 'orange-bay-island-snorkeling'),
+      ('10000000-0000-0000-0000-000000000002'::uuid, 'paradise-island-snorkeling-trip'),
+      ('10000000-0000-0000-0000-000000000003'::uuid, 'dolphin-house-snorkeling'),
+      ('10000000-0000-0000-0000-000000000004'::uuid, 'giftun-island-boat-trip'),
+      ('10000000-0000-0000-0000-000000000005'::uuid, 'desert-quad-safari'),
+      ('10000000-0000-0000-0000-000000000006'::uuid, 'desert-safari-bedouin-experience'),
+      ('10000000-0000-0000-0000-000000000007'::uuid, 'private-red-sea-yacht'),
+      ('10000000-0000-0000-0000-000000000008'::uuid, 'el-gouna-private-boat-trip'),
+      ('10000000-0000-0000-0000-000000000009'::uuid, 'introductory-scuba-diving-experience'),
+      ('10000000-0000-0000-0000-000000000010'::uuid, 'marsa-alam-dolphin-house'),
+      ('10000000-0000-0000-0000-000000000011'::uuid, 'sharm-el-naga-beach-reef-day'),
+      ('10000000-0000-0000-0000-000000000012'::uuid, 'sahl-hasheesh-glass-bottom-boat'),
+      ('10000000-0000-0000-0000-000000000013'::uuid, 'ras-mohammed-white-island-cruise')
+    ) AS seed(id, slug) ON seed.id = t.id
+    WHERE t.slug <> seed.slug
+  ) THEN
+    RAISE EXCEPTION 'Catalogue seed aborted: a deterministic tour ID already belongs to a different slug';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM public.destinations d
+    JOIN (VALUES
+      ('a1000000-0000-0000-0000-000000000001'::uuid, 'hurghada'),
+      ('a1000000-0000-0000-0000-000000000002'::uuid, 'el-gouna'),
+      ('a1000000-0000-0000-0000-000000000003'::uuid, 'makadi-bay'),
+      ('a1000000-0000-0000-0000-000000000004'::uuid, 'sahl-hasheesh'),
+      ('a1000000-0000-0000-0000-000000000005'::uuid, 'safaga'),
+      ('a1000000-0000-0000-0000-000000000006'::uuid, 'sharm-el-sheikh'),
+      ('a1000000-0000-0000-0000-000000000007'::uuid, 'marsa-alam')
+    ) AS seed(id, slug) ON seed.id = d.id
+    WHERE d.slug <> seed.slug
+  ) THEN
+    RAISE EXCEPTION 'Catalogue seed aborted: a deterministic destination ID already belongs to a different slug';
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM public.categories c
+    JOIN (VALUES
+      ('c1000000-0000-0000-0000-000000000001'::uuid, 'boat-trips'),
+      ('c1000000-0000-0000-0000-000000000002'::uuid, 'snorkeling'),
+      ('c1000000-0000-0000-0000-000000000003'::uuid, 'diving'),
+      ('c1000000-0000-0000-0000-000000000004'::uuid, 'safari'),
+      ('c1000000-0000-0000-0000-000000000005'::uuid, 'private-tours'),
+      ('c1000000-0000-0000-0000-000000000006'::uuid, 'water-sports')
+    ) AS seed(id, slug) ON seed.id = c.id
+    WHERE c.slug <> seed.slug
+  ) THEN
+    RAISE EXCEPTION 'Catalogue seed aborted: a deterministic category ID already belongs to a different slug';
+  END IF;
 END;
-$$;
+$;
 
 INSERT INTO public.destinations (id,name,slug,tagline,description,main_image,gallery,distance_from_airport,seo_title,seo_description,seo_keywords,status,sort_order)
 VALUES
@@ -88,18 +138,13 @@ INSERT INTO public.tour_categories (tour_id,category_id,sort_order)
 VALUES
 ('10000000-0000-0000-0000-000000000001'::uuid, 'c1000000-0000-0000-0000-000000000001'::uuid, 1),
 ('10000000-0000-0000-0000-000000000001'::uuid, 'c1000000-0000-0000-0000-000000000002'::uuid, 2),
-('10000000-0000-0000-0000-000000000001'::uuid, 'c1000000-0000-0000-0000-000000000001'::uuid, 3),
 ('10000000-0000-0000-0000-000000000002'::uuid, 'c1000000-0000-0000-0000-000000000001'::uuid, 1),
 ('10000000-0000-0000-0000-000000000002'::uuid, 'c1000000-0000-0000-0000-000000000002'::uuid, 2),
-('10000000-0000-0000-0000-000000000002'::uuid, 'c1000000-0000-0000-0000-000000000001'::uuid, 3),
 ('10000000-0000-0000-0000-000000000003'::uuid, 'c1000000-0000-0000-0000-000000000002'::uuid, 1),
 ('10000000-0000-0000-0000-000000000003'::uuid, 'c1000000-0000-0000-0000-000000000001'::uuid, 2),
 ('10000000-0000-0000-0000-000000000004'::uuid, 'c1000000-0000-0000-0000-000000000001'::uuid, 1),
-('10000000-0000-0000-0000-000000000004'::uuid, 'c1000000-0000-0000-0000-000000000001'::uuid, 2),
 ('10000000-0000-0000-0000-000000000005'::uuid, 'c1000000-0000-0000-0000-000000000004'::uuid, 1),
-('10000000-0000-0000-0000-000000000005'::uuid, 'c1000000-0000-0000-0000-000000000004'::uuid, 2),
 ('10000000-0000-0000-0000-000000000006'::uuid, 'c1000000-0000-0000-0000-000000000004'::uuid, 1),
-('10000000-0000-0000-0000-000000000006'::uuid, 'c1000000-0000-0000-0000-000000000004'::uuid, 2),
 ('10000000-0000-0000-0000-000000000007'::uuid, 'c1000000-0000-0000-0000-000000000005'::uuid, 1),
 ('10000000-0000-0000-0000-000000000007'::uuid, 'c1000000-0000-0000-0000-000000000001'::uuid, 2),
 ('10000000-0000-0000-0000-000000000008'::uuid, 'c1000000-0000-0000-0000-000000000005'::uuid, 1),
@@ -113,8 +158,7 @@ VALUES
 ('10000000-0000-0000-0000-000000000012'::uuid, 'c1000000-0000-0000-0000-000000000006'::uuid, 1),
 ('10000000-0000-0000-0000-000000000012'::uuid, 'c1000000-0000-0000-0000-000000000001'::uuid, 2),
 ('10000000-0000-0000-0000-000000000013'::uuid, 'c1000000-0000-0000-0000-000000000001'::uuid, 1),
-('10000000-0000-0000-0000-000000000013'::uuid, 'c1000000-0000-0000-0000-000000000002'::uuid, 2),
-('10000000-0000-0000-0000-000000000013'::uuid, 'c1000000-0000-0000-0000-000000000001'::uuid, 3)
+('10000000-0000-0000-0000-000000000013'::uuid, 'c1000000-0000-0000-0000-000000000002'::uuid, 2)
 ON CONFLICT DO NOTHING;
 
 INSERT INTO public.tour_images (id,tour_id,image_url,alt_text,caption,is_primary,sort_order) VALUES
