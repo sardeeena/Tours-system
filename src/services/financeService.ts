@@ -223,69 +223,6 @@ export async function listPaymentProviders(): Promise<PaymentProvider[]> {
 // 1. PAYMENTS LEDGER
 // ------------------------------------------------------------------------------
 
-async function ensureSeedPayments(): Promise<FinancePayment[]> {
-  const current = getLocal<FinancePayment[]>(LOCAL_PAYMENTS_KEY, []);
-  if (current.length > 0) return current;
-
-  const bookings = await bookingRepository.listBookings();
-  const generated: FinancePayment[] = [];
-
-  bookings.forEach((b) => {
-    const total = b.pricing?.totalEur || 0;
-    if (b.paymentStatus === 'paid') {
-      generated.push({
-        id: `pay-${b.bookingReference}-01`,
-        bookingId: b.bookingId || b.bookingReference,
-        bookingReference: b.bookingReference,
-        customerId: (b as any).customerId || null,
-        customerName: `${b.customer.firstName} ${b.customer.lastName}`,
-        customerEmail: b.customer.email,
-        customerPhone: b.customer.phoneNumber
-          ? `${b.customer.countryCode || ''} ${b.customer.phoneNumber}`
-          : null,
-        amount: total,
-        currency: 'EUR',
-        paymentMethod: b.paymentMethod === 'pay_online' ? 'Online Payment' : 'Cash',
-        provider: b.paymentMethod === 'pay_online' ? 'pos_terminal' : 'cash',
-        isManual: true,
-        paymentStatus: 'Paid',
-        paymentDate: b.createdAt || new Date().toISOString(),
-        transactionReference: `TXN-${b.bookingReference.replace(/[^a-zA-Z0-9]/g, '')}`,
-        notes: 'Full payment confirmed at reservation booking.',
-        recordedBy: 'Booking Gateway',
-        createdAt: b.createdAt || new Date().toISOString(),
-      });
-    } else if (b.paymentStatus === 'partially_paid') {
-      const partialAmount = Math.round(total * 0.5);
-      generated.push({
-        id: `pay-${b.bookingReference}-01`,
-        bookingId: b.bookingId || b.bookingReference,
-        bookingReference: b.bookingReference,
-        customerId: (b as any).customerId || null,
-        customerName: `${b.customer.firstName} ${b.customer.lastName}`,
-        customerEmail: b.customer.email,
-        customerPhone: b.customer.phoneNumber
-          ? `${b.customer.countryCode || ''} ${b.customer.phoneNumber}`
-          : null,
-        amount: partialAmount,
-        currency: 'EUR',
-        paymentMethod: 'Card',
-        provider: 'pos_terminal',
-        isManual: true,
-        paymentStatus: 'Partially Paid',
-        paymentDate: b.createdAt || new Date().toISOString(),
-        transactionReference: `DEP-${b.bookingReference.replace(/[^a-zA-Z0-9]/g, '')}`,
-        notes: 'Deposit received. Outstanding balance due at hotel pickup.',
-        recordedBy: 'Pier Desk Staff',
-        createdAt: b.createdAt || new Date().toISOString(),
-      });
-    }
-  });
-
-  setLocal(LOCAL_PAYMENTS_KEY, generated);
-  return generated;
-}
-
 export async function listPayments(filter?: {
   bookingId?: string;
   customerId?: string;
@@ -295,69 +232,36 @@ export async function listPayments(filter?: {
   currency?: string;
   search?: string;
 }): Promise<FinancePayment[]> {
-  let payments = await ensureSeedPayments();
+  let payments: FinancePayment[];
 
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('payment_transactions')
-        .select('*')
-        .order('payment_date', { ascending: false });
+  if (!requireFinanceBackend()) {
+    payments = getLocal<FinancePayment[]>(LOCAL_PAYMENTS_KEY, []);
+  } else {
+    const { data, error } = await supabase
+      .from('payment_transactions')
+      .select('*')
+      .order('payment_date', { ascending: false });
 
-      if (!error && data) {
-        const dbPayments: FinancePayment[] = data.map((d: any) => ({
-          id: d.id,
-          bookingId: d.booking_id,
-          bookingReference: d.booking_reference || d.booking_id,
-          customerId: d.customer_id,
-          customerName: d.customer_name || 'Guest',
-          customerEmail: d.customer_email || '',
-          customerPhone: d.customer_phone || null,
-          amount: Number(d.amount),
-          currency: d.currency || 'EUR',
-          paymentMethod: d.payment_method as FinancePaymentMethod,
-          provider: d.provider || 'cash',
-          isManual: d.is_manual ?? true,
-          paymentStatus: d.status as FinancePaymentStatus,
-          paymentDate: d.payment_date,
-          transactionReference: d.transaction_reference || `TXN-${d.id.substring(0, 8)}`,
-          notes: d.notes,
-          recordedBy: d.recorded_by || 'Staff',
-          createdAt: d.created_at,
-          updatedAt: d.updated_at,
-        }));
-        const dbTxRefs = new Set(dbPayments.map((p) => p.transactionReference?.toLowerCase()));
-        const dbIds = new Set(dbPayments.map((p) => p.id));
-        const unsynced = payments.filter(
-          (p) => !dbIds.has(p.id) && (!p.transactionReference || !dbTxRefs.has(p.transactionReference.toLowerCase()))
-        );
-        payments = [...dbPayments, ...unsynced];
-        setLocal(LOCAL_PAYMENTS_KEY, payments);
-      }
-    } catch {
-      // ignore
-    }
+    if (error) throw new Error(formatSupabaseError(error));
+    payments = (data || []).map(mapDbPayment);
+    setLocal(LOCAL_PAYMENTS_KEY, payments);
   }
 
-  return payments.filter((p) => {
-    if (filter?.bookingId && p.bookingId !== filter.bookingId && p.bookingReference !== filter.bookingId) return false;
-    if (filter?.customerId && p.customerId !== filter.customerId) return false;
-    if (filter?.status && filter.status !== 'all') {
-      const pNorm = p.paymentStatus.toLowerCase();
-      const fNorm = filter.status.toLowerCase();
-      if (pNorm !== fNorm) return false;
-    }
-    if (filter?.method && filter.method !== 'all' && p.paymentMethod !== filter.method) return false;
-    if (filter?.provider && filter.provider !== 'all' && p.provider !== filter.provider) return false;
-    if (filter?.currency && filter.currency !== 'all' && p.currency !== filter.currency) return false;
+  return payments.filter((payment) => {
+    if (filter?.bookingId && payment.bookingId !== filter.bookingId && payment.bookingReference !== filter.bookingId) return false;
+    if (filter?.customerId && payment.customerId !== filter.customerId) return false;
+    if (filter?.status && filter.status !== 'all' && payment.paymentStatus.toLowerCase() !== filter.status.toLowerCase()) return false;
+    if (filter?.method && filter.method !== 'all' && payment.paymentMethod !== filter.method) return false;
+    if (filter?.provider && filter.provider !== 'all' && payment.provider !== filter.provider) return false;
+    if (filter?.currency && filter.currency !== 'all' && payment.currency !== filter.currency) return false;
     if (filter?.search?.trim()) {
-      const q = filter.search.toLowerCase();
+      const query = filter.search.toLowerCase();
       return (
-        p.bookingReference.toLowerCase().includes(q) ||
-        p.customerName.toLowerCase().includes(q) ||
-        p.customerEmail.toLowerCase().includes(q) ||
-        p.transactionReference.toLowerCase().includes(q) ||
-        (p.notes && p.notes.toLowerCase().includes(q))
+        payment.bookingReference.toLowerCase().includes(query) ||
+        payment.customerName.toLowerCase().includes(query) ||
+        payment.customerEmail.toLowerCase().includes(query) ||
+        payment.transactionReference.toLowerCase().includes(query) ||
+        (payment.notes || '').toLowerCase().includes(query)
       );
     }
     return true;
