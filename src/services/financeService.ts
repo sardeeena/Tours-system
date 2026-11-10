@@ -24,48 +24,50 @@ const LOCAL_REFUNDS_KEY = 'rse_fin_refunds';
 const LOCAL_PROVIDERS_KEY = 'rse_fin_providers';
 
 export const COMPANY_DETAILS: CompanyBillingDetails = {
-  name: 'Red Sea Voyages S.A.E.',
-  tagline: 'Premier Marine Excursions & Desert Expeditions',
-  address: 'Hurghada Marina Boulevard, Pier 3, Unit 14B',
-  city: 'Hurghada, Red Sea Governorate',
-  country: 'Arab Republic of Egypt',
-  phone: '+20 100 456 7890',
-  email: 'finance@awesomeadventure.tours',
-  website: 'awesomeadventure.tours',
-  taxRegistrationNumber: 'EG-TAX-489-102-881',
-  commercialRegistryNumber: 'CR-92841-HUR',
-  bankName: 'Commercial International Bank (CIB Egypt) - Hurghada Marina Branch',
-  iban: 'EG4200100014000001099238472',
-  swiftBic: 'CIBEEGCX',
+  // Brand identity only. Legal entity, tax, address, phone and bank details must be
+  // entered by an authorized administrator before issuing legally complete invoices.
+  name: 'Kemet Spirit',
+  tagline: 'Tours and experiences',
+  address: '',
+  city: '',
+  country: '',
+  phone: '',
+  email: '',
+  website: 'kemetspirit.com',
+  taxRegistrationNumber: '',
+  commercialRegistryNumber: '',
+  bankName: '',
+  iban: '',
+  swiftBic: '',
 };
 
 export const DEFAULT_PROVIDERS: PaymentProvider[] = [
   {
     id: 'cash',
-    name: 'Marina Office Cash Desk',
+    name: 'Cash payment',
     providerType: 'manual',
     isConnected: true,
     isManual: true,
     supportedCurrencies: ['EUR', 'USD', 'GBP', 'EGP'],
-    description: 'In-person physical cash collection at Hurghada Marina pier or hotel pickup.',
+    description: 'Manual cash collection, recorded by authorized staff.',
   },
   {
     id: 'pos_terminal',
-    name: 'Pier Mobile POS Terminal',
+    name: 'Physical POS terminal',
     providerType: 'manual',
     isConnected: true,
     isManual: true,
     supportedCurrencies: ['EUR', 'USD', 'GBP', 'EGP'],
-    description: 'Physical chip & PIN / contactless terminal managed by pier desk supervisor.',
+    description: 'Manual card-terminal settlement, verified by authorized staff.',
   },
   {
     id: 'bank_transfer',
-    name: 'CIB Bank Official Wire',
+    name: 'Bank transfer',
     providerType: 'bank_transfer',
     isConnected: true,
     isManual: true,
     supportedCurrencies: ['EUR', 'USD', 'GBP', 'EGP'],
-    description: 'Direct wire transfer to Commercial International Bank (Egypt) account.',
+    description: 'Manual bank-transfer reconciliation by authorized staff.',
   },
   {
     id: 'stripe',
@@ -74,7 +76,7 @@ export const DEFAULT_PROVIDERS: PaymentProvider[] = [
     isConnected: false,
     isManual: false,
     supportedCurrencies: ['EUR', 'USD', 'GBP'],
-    description: 'Online card processing. Currently disconnected (No server-side Stripe secret key configured).',
+    description: 'Online card processing is not configured.',
   },
   {
     id: 'paypal',
@@ -83,7 +85,7 @@ export const DEFAULT_PROVIDERS: PaymentProvider[] = [
     isConnected: false,
     isManual: false,
     supportedCurrencies: ['EUR', 'USD', 'GBP'],
-    description: 'Digital wallet gateway. Currently disconnected (PayPal client ID not configured).',
+    description: 'Online wallet processing is not configured.',
   },
 ];
 
