@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { Calendar, Users, MapPin, Clock, AlertCircle, CheckCircle2, ShieldAlert, Plus, Minus, ArrowRight } from 'lucide-react';
 import { Tour, CurrencyConfig } from '../../types';
 import { GuestCounts, Availability } from '../../types/booking';
-import { getEarliestSelectableDate, getTourAvailability } from '../../services/availabilityService';
+import { getEarliestSelectableDate, getTourAvailability, getTourAvailabilityFromServer } from '../../services/availabilityService';
 import { formatCurrencyAmount } from '../../services/pricingService';
 
 interface StepDateGuestsProps {
@@ -33,8 +33,42 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
     }
   }, [date, earliestDate, onDateChange]);
 
-  const availability: Availability = useMemo(() => {
-    return getTourAvailability(tour, date || earliestDate);
+  const [availability, setAvailability] = React.useState<Availability>(() =>
+    getTourAvailability(tour, date || earliestDate)
+  );
+  const [availabilityLoading, setAvailabilityLoading] = React.useState(true);
+  const [availabilityError, setAvailabilityError] = React.useState(false);
+
+  React.useEffect(() => {
+    let active = true;
+    const selectedDate = date || earliestDate;
+
+    setAvailabilityLoading(true);
+    setAvailabilityError(false);
+
+    getTourAvailabilityFromServer(tour, selectedDate)
+      .then((result) => {
+        if (active) setAvailability(result);
+      })
+      .catch((error) => {
+        console.warn('Could not load authoritative tour availability:', error);
+        if (active) {
+          setAvailability({
+            ...getTourAvailability(tour, selectedDate),
+            isAvailable: false,
+            isSoldOut: false,
+            remaining: 0,
+          });
+          setAvailabilityError(true);
+        }
+      })
+      .finally(() => {
+        if (active) setAvailabilityLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, [tour, date, earliestDate]);
 
   const handleAdultsChange = (delta: number) => {
@@ -54,7 +88,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
 
   const totalPartySize = guests.adults + guests.children + guests.infants;
   const exceedsCapacity = availability.isAvailable && totalPartySize > availability.remaining;
-  const isFormValid = date && availability.isAvailable && !availability.isSoldOut && !exceedsCapacity;
+  const isFormValid = Boolean(date && !availabilityLoading && !availabilityError && availability.isAvailable && !availability.isSoldOut && !exceedsCapacity);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -122,13 +156,25 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
 
           {/* Availability Status Notification */}
           <div className="pt-1">
-            {availability.isSoldOut ? (
+            {availabilityLoading ? (
+              <div className="p-3 bg-stone-50 border border-stone-200 rounded text-xs text-stone-600">
+                Checking live departure availability…
+              </div>
+            ) : availabilityError ? (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-900">
+                Live availability is temporarily unavailable. Please try again in a moment.
+              </div>
+            ) : availability.isSoldOut ? (
               <div className="p-3 bg-red-50 border border-red-200 rounded text-xs text-red-800 flex items-center space-x-2">
                 <ShieldAlert className="w-4 h-4 text-red-600 shrink-0" />
                 <div>
                   <span className="font-bold block">Sold Out for this date</span>
                   <span>All passenger seats are fully booked. Please select another date.</span>
                 </div>
+              </div>
+            ) : !availability.isAvailable ? (
+              <div className="p-3 bg-stone-50 border border-stone-200 rounded text-xs text-stone-700">
+                This departure is currently closed. Please choose another date.
               </div>
             ) : exceedsCapacity ? (
               <div className="p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-900 flex items-center space-x-2">

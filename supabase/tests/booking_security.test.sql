@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(84);
+SELECT plan(90);
 
 SELECT ok(
   EXISTS (
@@ -74,15 +74,10 @@ SELECT ok(
   'guest role can submit a verified cancellation request'
 );
 
-SET LOCAL ROLE anon;
-SELECT set_config('request.jwt.claims', '{"role":"anon"}', TRUE);
-SELECT throws_ok(
-  'SELECT public.admin_resolve_booking_cancellation(''RST-2026-TEST1234'', ''approve'', NULL)',
-  '42501',
-  'Administrator authorization is required to resolve cancellation requests.',
-  'anonymous users cannot approve or reject cancellations'
+SELECT ok(
+  NOT has_function_privilege('anon', 'public.admin_resolve_booking_cancellation(text,text,text)', 'EXECUTE'),
+  'anonymous users cannot execute the administrative cancellation resolver'
 );
-RESET ROLE;
 
 SELECT ok(
   has_function_privilege('authenticated', 'public.admin_resolve_booking_cancellation(text,text,text)', 'EXECUTE'),
@@ -205,6 +200,31 @@ SELECT ok(
   (SELECT times_used = 1 FROM public.coupons WHERE code = 'PGTAPONCE'),
   'successful booking redeems the coupon exactly once'
 );
+
+INSERT INTO public.tour_availability (tour_id, date, max_capacity, booked_count, status)
+SELECT id, CURRENT_DATE + 30, 1, 0, 'available'
+FROM public.tours WHERE slug = 'pgtap-booking-test'
+ON CONFLICT (tour_id, date) DO UPDATE
+SET max_capacity = 1, booked_count = 0, status = 'available';
+
+SELECT ok(
+  EXISTS (
+    SELECT 1
+    FROM public.get_tour_availability_schedule(
+      'pgtap-booking-test', CURRENT_DATE + 30, CURRENT_DATE + 30
+    ) AS availability
+    WHERE availability.status = 'sold_out'
+      AND availability.booked_count = 1
+      AND availability.remaining_capacity = 0
+      AND availability.is_available = FALSE
+  ),
+  'availability schedule counts live bookings even when the cached booked_count is stale'
+);
+
+UPDATE public.tour_availability
+SET max_capacity = 10, booked_count = 1, status = 'available'
+WHERE tour_id = (SELECT id FROM public.tours WHERE slug = 'pgtap-booking-test')
+  AND date = CURRENT_DATE + 30;
 
 INSERT INTO pg_temp.pgtap_booking_results (case_name, result)
 SELECT 'duplicate_booking', public.create_booking_atomic(
@@ -645,6 +665,59 @@ SELECT ok(
     AND COALESCE(array_to_string(proconfig, ','),'') LIKE '%search_path=""%'),
   'auth-confirmation trigger SECURITY DEFINER function pins an empty search_path'
 );
+
+SELECT ok(
+  EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename = 'objects'
+      AND policyname = 'Users can upload own avatar'
+      AND roles @> ARRAY['authenticated']::name[]
+      AND COALESCE(with_check, '') ILIKE '%foldername%'
+      AND COALESCE(with_check, '') ILIKE '%auth.uid%'
+  ),
+  'avatar uploads are restricted to the authenticated user folder'
+);
+
+SELECT ok(
+  EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename = 'objects'
+      AND policyname = 'Users can update own avatar'
+      AND roles @> ARRAY['authenticated']::name[]
+      AND COALESCE(qual, '') ILIKE '%foldername%'
+      AND COALESCE(with_check, '') ILIKE '%foldername%'
+  ),
+  'avatar updates cannot target another user folder or move objects outside the owner folder'
+);
+
+SELECT ok(
+  EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename = 'objects'
+      AND policyname = 'Users can delete own avatar'
+      AND roles @> ARRAY['authenticated']::name[]
+      AND COALESCE(qual, '') ILIKE '%foldername%'
+  ),
+  'avatar deletion is restricted to the authenticated user folder'
+);
+
+SELECT ok(
+  to_regprocedure('public.get_tour_availability_schedule(text,date,date)') IS NOT NULL,
+  'authoritative public departure availability RPC is installed'
+);
+
+SELECT ok(
+  EXISTS (
+    SELECT 1 FROM pg_proc
+    WHERE oid = 'public.get_tour_availability_schedule(text,date,date)'::regprocedure
+      AND COALESCE(array_to_string(proconfig, ','), '') LIKE '%search_path=""%'
+  ),
+  'availability SECURITY DEFINER RPC pins an empty search_path'
+);
+
 SELECT * FROM finish();
 
 ROLLBACK;

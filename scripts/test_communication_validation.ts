@@ -199,66 +199,62 @@ async function runTests() {
   } catch {
     passWhatsApp = false;
   }
-  // Test 11: sendWhatsAppMessage surfacing specific missing phoneNumberId on Meta Cloud
-  console.log('\nTest 11: sendWhatsAppMessage Surfacing Meta Cloud Missing phoneNumberId');
+  // Test 11: Browser configuration never persists email or WhatsApp API secrets
+  console.log('\\nTest 11: Provider Secrets Are Never Stored In Browser Configuration');
   saveProviderConfig({
-    ...DEFAULT_PROVIDER_CONFIG,
+    email: {
+      provider: 'resend',
+      apiKey: 're_test_secret_must_not_persist',
+      fromEmail: 'concierge@example.test',
+      fromName: 'Test Sender',
+      isConfigured: true,
+    },
     whatsapp: {
       provider: 'meta_cloud',
-      apiKey: 'EAABwz1234567890abcdef',
-      phoneNumberId: '',
-      isConfigured: false,
+      apiKey: 'EAAB_test_secret_must_not_persist',
+      phoneNumberId: '123456789012345',
+      businessAccountId: '123456789012345',
+      fromNumber: '+201000000000',
+      isConfigured: true,
     },
   });
-  let err11: any = null;
-  try {
-    await sendWhatsAppMessage({
-      recipientPhone: '+201004567890',
-      customerName: 'Guest Tester',
-      content: 'Test WhatsApp message for Meta Cloud',
-    });
-  } catch (err: any) {
-    err11 = err;
-  }
-  assert(err11 instanceof ProviderConfigurationError, 'Throws ProviderConfigurationError for Meta Cloud missing phoneNumberId');
-  assert(
-    Array.isArray(err11?.missingFields) && err11.missingFields.some((f: string) => f.includes('phoneNumberId')),
-    `missingFields array contains phoneNumberId: "${err11?.missingFields?.join(', ')}"`
-  );
-  assert(
-    err11?.message.includes('phoneNumberId'),
-    `Error message explicitly specifies missing phoneNumberId: "${err11?.message}"`
-  );
+  const safeConfig = getProviderConfig();
+  assert(safeConfig.email.apiKey === '', 'Email API key is removed before browser persistence');
+  assert(safeConfig.whatsapp.apiKey === '', 'WhatsApp access token is removed before browser persistence');
+  assert(safeConfig.email.isConfigured === false && safeConfig.whatsapp.isConfigured === false, 'Browser-side values can never mark server providers as connected');
 
-  // Test 12: sendWhatsAppMessage surfacing specific missing fromNumber on Twilio
-  console.log('\nTest 12: sendWhatsAppMessage Surfacing Twilio Missing fromNumber');
-  saveProviderConfig({
-    ...DEFAULT_PROVIDER_CONFIG,
-    whatsapp: {
-      provider: 'twilio',
-      apiKey: 'AC1234567890abcdef12345',
-      fromNumber: '',
-      isConfigured: false,
-    },
-  });
+  // Test 12: Sending requires server-side configuration and never trusts browser credentials
+  console.log('\\nTest 12: Server-Only Provider Configuration Enforcement');
   let err12: any = null;
   try {
     await sendWhatsAppMessage({
       recipientPhone: '+201004567890',
       customerName: 'Guest Tester',
-      content: 'Test WhatsApp message for Twilio',
+      content: 'Test WhatsApp message',
     });
   } catch (err: any) {
     err12 = err;
   }
-  assert(err12 instanceof ProviderConfigurationError, 'Throws ProviderConfigurationError for Twilio missing fromNumber');
+  assert(err12 instanceof ProviderConfigurationError, 'WhatsApp dispatch rejects when server-side provider status is unavailable');
   assert(
-    Array.isArray(err12?.missingFields) && err12.missingFields.some((f: string) => f.includes('fromNumber')),
-    `missingFields array contains fromNumber: "${err12?.missingFields?.join(', ')}"`
+    Array.isArray(err12?.missingFields) && err12.missingFields.includes('WHATSAPP_ACCESS_TOKEN'),
+    'WhatsApp dispatch identifies the required server-side secret'
   );
+  let err12Email: any = null;
+  try {
+    await sendEmailMessage({
+      recipientEmail: 'guest@example.test',
+      customerName: 'Guest Tester',
+      subject: 'Test Subject',
+      content: 'Test message body',
+    });
+  } catch (err: any) {
+    err12Email = err;
+  }
+  assert(err12Email instanceof ProviderConfigurationError, 'Email dispatch rejects when server-side provider status is unavailable');
   assert(
-    err12?.message.includes('fromNumber'),
-    `Error message explicitly specifies missing fromNumber: "${err12?.message}"`
+    Array.isArray(err12Email?.missingFields) && err12Email.missingFields.includes('RESEND_API_KEY'),
+    'Email dispatch identifies the required server-side secret'
   );
 
   // Reset provider config back to default

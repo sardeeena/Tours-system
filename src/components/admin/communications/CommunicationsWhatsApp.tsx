@@ -29,6 +29,7 @@ import {
   listTemplates,
   getProviderConfig,
   saveProviderConfig,
+  refreshProviderConfigFromServer,
   renderTemplateVariables,
   getWhatsAppDirectUrl,
   ProviderConfigurationError,
@@ -73,8 +74,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
 
   // Provider Settings Modal
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [tempWaProvider, setTempWaProvider] = useState<'meta_cloud' | 'twilio' | 'none'>('meta_cloud');
-  const [tempApiKey, setTempApiKey] = useState('');
+  const [tempWaProvider, setTempWaProvider] = useState<'meta_cloud' | 'none'>('meta_cloud');
   const [tempPhoneNumberId, setTempPhoneNumberId] = useState('');
   const [tempBusinessAccountId, setTempBusinessAccountId] = useState('');
   const [tempFromNumber, setTempFromNumber] = useState('+20 100 456 7890');
@@ -93,7 +93,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
       setMessages(msgs.filter((m) => m.channel === 'WhatsApp'));
       setTemplates(tmpls.filter((t) => t.channel === 'WhatsApp' || t.channel === 'Both'));
       setBookings(bks);
-      setProviderConfig(getProviderConfig());
+      setProviderConfig(await refreshProviderConfigFromServer());
     } catch (err) {
       console.error('Failed to load whatsapp comms data:', err);
     } finally {
@@ -229,34 +229,33 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
   };
 
   const openSettingsModal = () => {
-    setTempWaProvider(providerConfig.whatsapp.provider as any);
-    setTempApiKey(providerConfig.whatsapp.apiKey || '');
+    setTempWaProvider(providerConfig.whatsapp.provider === 'meta_cloud' ? 'meta_cloud' : 'none');
     setTempPhoneNumberId(providerConfig.whatsapp.phoneNumberId || '');
     setTempBusinessAccountId(providerConfig.whatsapp.businessAccountId || '');
     setTempFromNumber(providerConfig.whatsapp.fromNumber || '+20 100 456 7890');
     setIsSettingsOpen(true);
   };
 
-  const saveSettings = () => {
+  const saveSettings = async () => {
     const newConfig: ProviderConfig = {
       ...providerConfig,
       whatsapp: {
         provider: tempWaProvider,
-        apiKey: tempApiKey.trim(),
+        apiKey: '',
         phoneNumberId: tempPhoneNumberId.trim(),
         businessAccountId: tempBusinessAccountId.trim(),
         fromNumber: tempFromNumber.trim(),
-        isConfigured: tempWaProvider !== 'none' && tempApiKey.trim().length > 5,
+        isConfigured: false,
       },
     };
     saveProviderConfig(newConfig);
-    const updatedConfig = getProviderConfig();
+    const updatedConfig = await refreshProviderConfigFromServer();
     setProviderConfig(updatedConfig);
     setIsSettingsOpen(false);
     showToast(
       updatedConfig.whatsapp.isConfigured
-        ? `WhatsApp provider connected (${updatedConfig.whatsapp.provider})`
-        : 'WhatsApp provider set to unconfigured / incomplete credentials',
+        ? 'Server-side Meta Cloud API is configured and ready.'
+        : 'Provider selection saved. Add WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID, and WHATSAPP_GRAPH_API_VERSION in Hostinger environment variables.',
       updatedConfig.whatsapp.isConfigured ? 'success' : 'info'
     );
   };
@@ -781,8 +780,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
             </div>
 
             <p className="text-xs text-stone-400">
-              Connect official WhatsApp Cloud API (Meta Developers) or Twilio WhatsApp. The system never hard-codes
-              fake APIs and strictly checks credentials before confirming send status.
+              Delivery uses the official Meta Cloud API server-side adapter. Configure the access token, phone number ID, and Graph API version in Hostinger environment variables; this screen never handles secrets.
             </p>
 
             <div className="space-y-3 text-xs">
@@ -795,21 +793,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
                 >
                   <option value="none">None (Disabled / Manual Web Only)</option>
                   <option value="meta_cloud">Meta WhatsApp Cloud API (Official)</option>
-                  <option value="twilio">Twilio Programmable WhatsApp</option>
                 </select>
-              </div>
-
-              <div>
-                <label className="block text-stone-300 font-medium mb-1">
-                  API Token / Secret Key <span className="text-rose-400">*</span>
-                </label>
-                <input
-                  type="password"
-                  placeholder="EAAxxx... (Permanent System User Token)"
-                  value={tempApiKey}
-                  onChange={(e) => setTempApiKey(e.target.value)}
-                  className="w-full bg-stone-950 border border-stone-800 rounded-lg px-3 py-2 text-white font-mono placeholder-stone-600 focus:outline-none focus:border-emerald-500"
-                />
               </div>
 
               {tempWaProvider === 'meta_cloud' && (
@@ -820,7 +804,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
                       type="text"
                       placeholder="e.g. 104829104810294"
                       value={tempPhoneNumberId}
-                      onChange={(e) => setTempPhoneNumberId(e.target.value)}
+                      readOnly
                       className="w-full bg-stone-950 border border-stone-800 rounded-lg px-3 py-2 text-white font-mono placeholder-stone-600 focus:outline-none focus:border-emerald-500"
                     />
                   </div>
@@ -830,7 +814,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
                       type="text"
                       placeholder="e.g. 984719284719283"
                       value={tempBusinessAccountId}
-                      onChange={(e) => setTempBusinessAccountId(e.target.value)}
+                      readOnly
                       className="w-full bg-stone-950 border border-stone-800 rounded-lg px-3 py-2 text-white font-mono placeholder-stone-600 focus:outline-none focus:border-emerald-500"
                     />
                   </div>

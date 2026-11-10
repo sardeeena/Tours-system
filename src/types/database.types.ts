@@ -1509,6 +1509,25 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
+      get_tour_availability_schedule: {
+        Args: {
+          p_tour_identifier: string;
+          p_start_date: string;
+          p_end_date: string;
+        };
+        Returns: {
+          tour_id: string;
+          date: string;
+          status: string;
+          max_capacity: number;
+          booked_count: number;
+          remaining_capacity: number;
+          is_available: boolean;
+          is_blackout: boolean;
+          departure_time: string;
+          notes: string | null;
+        }[];
+      };
       is_admin: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;

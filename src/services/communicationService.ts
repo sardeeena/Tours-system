@@ -519,42 +519,129 @@ export const DEFAULT_PROVIDER_CONFIG: ProviderConfig = {
   },
 };
 
+/**
+ * Provider credentials are server secrets and must never be persisted in browser storage.
+ * This migration also scrubs API keys written by older versions from existing localStorage data.
+ */
 export function getProviderConfig(): ProviderConfig {
-  const cfg = getLocal<ProviderConfig>(LOCAL_PROVIDER_CONFIG_KEY, DEFAULT_PROVIDER_CONFIG);
-  try {
-    validateEmailProviderCredentials(cfg.email);
-    cfg.email.isConfigured = true;
-  } catch {
-    cfg.email.isConfigured = false;
-  }
-  try {
-    validateWhatsAppProviderCredentials(cfg.whatsapp);
-    cfg.whatsapp.isConfigured = true;
-  } catch {
-    cfg.whatsapp.isConfigured = false;
-  }
-  return cfg;
+  const stored = getLocal<ProviderConfig>(LOCAL_PROVIDER_CONFIG_KEY, DEFAULT_PROVIDER_CONFIG);
+  const safeConfig: ProviderConfig = {
+    email: {
+      ...DEFAULT_PROVIDER_CONFIG.email,
+      ...(stored?.email || {}),
+      apiKey: '',
+      isConfigured: false,
+    },
+    whatsapp: {
+      ...DEFAULT_PROVIDER_CONFIG.whatsapp,
+      ...(stored?.whatsapp || {}),
+      apiKey: '',
+      isConfigured: false,
+    },
+  };
+
+  setLocal(LOCAL_PROVIDER_CONFIG_KEY, safeConfig);
+  return safeConfig;
 }
 
 export function saveProviderConfig(config: ProviderConfig): void {
-  try {
-    validateEmailProviderCredentials(config.email);
-    config.email.isConfigured = true;
-  } catch {
-    config.email.isConfigured = false;
-  }
-  try {
-    validateWhatsAppProviderCredentials(config.whatsapp);
-    config.whatsapp.isConfigured = true;
-  } catch {
-    config.whatsapp.isConfigured = false;
-  }
-  setLocal(LOCAL_PROVIDER_CONFIG_KEY, config);
+  const safeConfig: ProviderConfig = {
+    email: {
+      ...config.email,
+      apiKey: '',
+      isConfigured: false,
+    },
+    whatsapp: {
+      ...config.whatsapp,
+      apiKey: '',
+      isConfigured: false,
+    },
+  };
+
+  setLocal(LOCAL_PROVIDER_CONFIG_KEY, safeConfig);
 }
 
 // ------------------------------------------------------------------------------
 // 3. SENDING COMMUNICATIONS (No Fake Success!)
 // ------------------------------------------------------------------------------
+
+type ServerCommunicationStatus = {
+  email?: { configured?: boolean; provider?: string; fromEmail?: string; fromName?: string };
+  whatsapp?: {
+    configured?: boolean;
+    provider?: string;
+    phoneNumberId?: string;
+    businessAccountId?: string;
+    fromNumber?: string;
+  };
+};
+
+/** Reads provider readiness from the authenticated server; secrets never reach the browser. */
+export async function refreshProviderConfigFromServer(): Promise<ProviderConfig> {
+  const config = getProviderConfig();
+  if (!isSupabaseConfigured()) return config;
+
+  try {
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError || !session) return config;
+
+    const response = await fetch('/api/communications/status', {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    if (!response.ok) return config;
+
+    const status = await response.json() as ServerCommunicationStatus;
+    config.email.provider = status.email?.configured ? 'resend' : 'none';
+    config.email.isConfigured = status.email?.configured === true;
+    if (status.email?.fromEmail) config.email.fromEmail = status.email.fromEmail;
+    if (status.email?.fromName) config.email.fromName = status.email.fromName;
+
+    config.whatsapp.provider = status.whatsapp?.configured ? 'meta_cloud' : 'none';
+    config.whatsapp.isConfigured = status.whatsapp?.configured === true;
+    config.whatsapp.phoneNumberId = status.whatsapp?.phoneNumberId || '';
+    config.whatsapp.businessAccountId = status.whatsapp?.businessAccountId || '';
+    config.whatsapp.fromNumber = status.whatsapp?.fromNumber || config.whatsapp.fromNumber;
+  } catch {
+    // Status remains unconfigured when the authenticated server cannot be reached.
+  }
+
+  return config;
+}
+
+async function dispatchServerCommunication(
+  path: string,
+  payload: Record<string, string>,
+  idempotencyKey: string
+): Promise<{ providerName: string; providerMessageId: string }> {
+  if (!isSupabaseConfigured()) {
+    throw new Error('A configured Supabase Auth session is required for staff communications.');
+  }
+
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError || !session) {
+    throw new Error('Sign in with an authorized staff account before sending communications.');
+  }
+
+  const response = await fetch(path, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${session.access_token}`,
+      'Idempotency-Key': idempotencyKey,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const result = await response.json().catch(() => ({} as any));
+  if (!response.ok || result?.success !== true || typeof result?.providerMessageId !== 'string') {
+    throw new Error(typeof result?.error === 'string' ? result.error : `Communication provider request failed (HTTP ${response.status}).`);
+  }
+
+  return {
+    providerName: typeof result.providerName === 'string' ? result.providerName : 'Server provider',
+    providerMessageId: result.providerMessageId,
+  };
+}
 
 export async function sendEmailMessage(params: {
   recipientEmail: string;
@@ -578,20 +665,18 @@ export async function sendEmailMessage(params: {
   error?: string;
   messageId: string;
 }> {
-  const providerConfig = getProviderConfig();
-  const messageId = `msg-em-${Date.now().toString(36)}`;
+  const messageId = `msg-em-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const now = new Date().toISOString();
+  const config = await refreshProviderConfigFromServer();
 
-  // STRICT VALIDATION LAYER: Check required provider credentials before attempting dispatch
-  try {
-    validateEmailProviderCredentials(providerConfig.email);
-  } catch (validationErr: any) {
-    const descriptiveError =
-      validationErr instanceof Error
-        ? validationErr.message
-        : 'Incomplete or missing email provider credentials.';
-
-    const failedMsg: CommunicationMessage = {
+  if (!config.email.isConfigured) {
+    const error = new ProviderConfigurationError(
+      'Email',
+      'none',
+      ['RESEND_API_KEY', 'RESEND_FROM_EMAIL'],
+      'Email provider is not configured on the server. Set RESEND_API_KEY and RESEND_FROM_EMAIL in Hostinger environment variables.'
+    );
+    const failed: CommunicationMessage = {
       id: messageId,
       channel: 'Email',
       customerId: params.customerId || null,
@@ -606,25 +691,23 @@ export async function sendEmailMessage(params: {
       subject: params.subject,
       content: params.content,
       status: 'failed',
-      providerName: providerConfig.email.provider || 'Not configured',
-      providerMessageId: null,
-      failureReason: descriptiveError,
+      providerName: 'Not configured',
+      failureReason: error.message,
       staffName: params.staffName || 'System Dispatcher',
       createdAt: now,
     };
-
-    await logCommunicationMessage(failedMsg);
-
-    // Strict validation layer throws descriptive error
-    throw validationErr;
+    await logCommunicationMessage(failed);
+    throw error;
   }
 
-  // Provider IS configured -> Send request
   try {
-    const providerMsgId = `res_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 8)}`;
-    
-    // Status is strictly 'sent' (Never 'delivered' merely on send request!)
-    const sentMsg: CommunicationMessage = {
+    const delivered = await dispatchServerCommunication('/api/communications/email', {
+      to: params.recipientEmail,
+      subject: params.subject,
+      text: params.content,
+    }, messageId);
+
+    const sent: CommunicationMessage = {
       id: messageId,
       channel: 'Email',
       customerId: params.customerId || null,
@@ -638,27 +721,27 @@ export async function sendEmailMessage(params: {
       templateKey: params.templateKey || null,
       subject: params.subject,
       content: params.content,
-      status: 'sent', // Provider accepted for delivery
-      providerName: providerConfig.email.provider,
-      providerMessageId: providerMsgId,
+      status: 'sent',
+      providerName: delivered.providerName,
+      providerMessageId: delivered.providerMessageId,
       sentAt: now,
-      deliveredAt: null, // Will only be set when webhook delivery receipt arrives
+      deliveredAt: null,
       openedAt: null,
       staffName: params.staffName || 'System Dispatcher',
       createdAt: now,
     };
-
-    await logCommunicationMessage(sentMsg);
+    await logCommunicationMessage(sent);
 
     return {
       success: true,
       status: 'sent',
-      providerName: providerConfig.email.provider,
-      providerMessageId: providerMsgId,
+      providerName: delivered.providerName,
+      providerMessageId: delivered.providerMessageId,
       messageId,
     };
   } catch (err: any) {
-    const errorMsg: CommunicationMessage = {
+    const failureReason = err?.message || 'Server-side email delivery failed.';
+    const failed: CommunicationMessage = {
       id: messageId,
       channel: 'Email',
       customerId: params.customerId || null,
@@ -673,20 +756,19 @@ export async function sendEmailMessage(params: {
       subject: params.subject,
       content: params.content,
       status: 'failed',
-      providerName: providerConfig.email.provider,
-      failureReason: err?.message || 'SMTP delivery rejected by host',
+      providerName: 'Resend',
+      failureReason,
       staffName: params.staffName || 'System Dispatcher',
       createdAt: now,
     };
-
-    await logCommunicationMessage(errorMsg);
+    await logCommunicationMessage(failed);
 
     return {
       success: false,
       status: 'failed',
-      providerName: providerConfig.email.provider,
-      failureReason: errorMsg.failureReason,
-      error: errorMsg.failureReason || 'Failed to dispatch email',
+      providerName: 'Resend',
+      failureReason,
+      error: failureReason,
       messageId,
     };
   }
@@ -713,20 +795,18 @@ export async function sendWhatsAppMessage(params: {
   error?: string;
   messageId: string;
 }> {
-  const providerConfig = getProviderConfig();
-  const messageId = `msg-wa-${Date.now().toString(36)}`;
+  const messageId = `msg-wa-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const now = new Date().toISOString();
+  const config = await refreshProviderConfigFromServer();
 
-  // STRICT VALIDATION LAYER: Check required provider credentials before attempting dispatch
-  try {
-    validateWhatsAppProviderCredentials(providerConfig.whatsapp);
-  } catch (validationErr: any) {
-    const descriptiveError =
-      validationErr instanceof Error
-        ? validationErr.message
-        : 'Incomplete or missing WhatsApp provider credentials.';
-
-    const failedMsg: CommunicationMessage = {
+  if (!config.whatsapp.isConfigured) {
+    const error = new ProviderConfigurationError(
+      'WhatsApp',
+      'none',
+      ['WHATSAPP_ACCESS_TOKEN', 'WHATSAPP_PHONE_NUMBER_ID', 'WHATSAPP_GRAPH_API_VERSION'],
+      'WhatsApp provider is not configured on the server. Set the Meta Cloud API environment variables in Hostinger.'
+    );
+    const failed: CommunicationMessage = {
       id: messageId,
       channel: 'WhatsApp',
       customerId: params.customerId || null,
@@ -741,25 +821,22 @@ export async function sendWhatsAppMessage(params: {
       subject: null,
       content: params.content,
       status: 'failed',
-      providerName: providerConfig.whatsapp.provider || 'Not configured',
-      providerMessageId: null,
-      failureReason: descriptiveError,
+      providerName: 'Not configured',
+      failureReason: error.message,
       staffName: params.staffName || 'System Dispatcher',
       createdAt: now,
     };
-
-    await logCommunicationMessage(failedMsg);
-
-    // Strict validation layer throws descriptive error
-    throw validationErr;
+    await logCommunicationMessage(failed);
+    throw error;
   }
 
-  // Provider IS configured -> Send request
   try {
-    const providerMsgId = `wamid.HB_${Date.now().toString(36)}_${Math.random().toString(36).substring(2, 8)}`;
-    
-    // Status is strictly 'sent' (Never 'delivered' merely on send request!)
-    const sentMsg: CommunicationMessage = {
+    const delivered = await dispatchServerCommunication('/api/communications/whatsapp', {
+      phone: params.recipientPhone,
+      text: params.content,
+    }, messageId);
+
+    const sent: CommunicationMessage = {
       id: messageId,
       channel: 'WhatsApp',
       customerId: params.customerId || null,
@@ -774,26 +851,26 @@ export async function sendWhatsAppMessage(params: {
       subject: null,
       content: params.content,
       status: 'sent',
-      providerName: providerConfig.whatsapp.provider,
-      providerMessageId: providerMsgId,
+      providerName: delivered.providerName,
+      providerMessageId: delivered.providerMessageId,
       sentAt: now,
       deliveredAt: null,
       openedAt: null,
       staffName: params.staffName || 'System Dispatcher',
       createdAt: now,
     };
-
-    await logCommunicationMessage(sentMsg);
+    await logCommunicationMessage(sent);
 
     return {
       success: true,
       status: 'sent',
-      providerName: providerConfig.whatsapp.provider,
-      providerMessageId: providerMsgId,
+      providerName: delivered.providerName,
+      providerMessageId: delivered.providerMessageId,
       messageId,
     };
   } catch (err: any) {
-    const errorMsg: CommunicationMessage = {
+    const failureReason = err?.message || 'Server-side WhatsApp delivery failed.';
+    const failed: CommunicationMessage = {
       id: messageId,
       channel: 'WhatsApp',
       customerId: params.customerId || null,
@@ -808,28 +885,24 @@ export async function sendWhatsAppMessage(params: {
       subject: null,
       content: params.content,
       status: 'failed',
-      providerName: providerConfig.whatsapp.provider,
-      failureReason: err?.message || 'Meta Cloud API rejected phone number format',
+      providerName: 'Meta Cloud API',
+      failureReason,
       staffName: params.staffName || 'System Dispatcher',
       createdAt: now,
     };
-
-    await logCommunicationMessage(errorMsg);
+    await logCommunicationMessage(failed);
 
     return {
       success: false,
       status: 'failed',
-      providerName: providerConfig.whatsapp.provider,
-      failureReason: errorMsg.failureReason,
-      error: errorMsg.failureReason || 'Failed to dispatch WhatsApp message',
+      providerName: 'Meta Cloud API',
+      failureReason,
+      error: failureReason,
       messageId,
     };
   }
 }
 
-/**
- * Returns a direct WhatsApp Web / App link for manual staff dispatch
- */
 export function getWhatsAppDirectUrl(phoneNumber: string, text: string): string {
   const cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
   const encoded = encodeURIComponent(text);
@@ -892,25 +965,30 @@ export async function logCommunicationMessage(msg: CommunicationMessage): Promis
 
   // Log on customer activity timeline if customerId, bookingReference, leadId, inquiryId, or taskId is present
   if (msg.customerId || msg.bookingReference || msg.leadId) {
-    await logActivity({
-      customerId: msg.customerId || null,
-      bookingId: msg.bookingId || null,
-      leadId: msg.leadId || null,
-      eventType: 'communication',
-      title: `${msg.channel} [${msg.status}]: ${msg.subject || msg.templateKey || 'Direct message'}`,
-      description: msg.content.substring(0, 160) + (msg.content.length > 160 ? '...' : ''),
-      actor: msg.staffName,
-      metadata: {
-        channel: msg.channel,
-        status: msg.status,
-        recipient: msg.recipientAddress,
-        provider: msg.providerName,
-        providerMessageId: msg.providerMessageId,
-        failureReason: msg.failureReason,
-        inquiryId: msg.inquiryId,
-        taskId: msg.taskId,
-      },
-    });
+    try {
+      await logActivity({
+        customerId: msg.customerId || null,
+        bookingId: msg.bookingId || null,
+        leadId: msg.leadId || null,
+        eventType: 'communication',
+        title: `${msg.channel} [${msg.status}]: ${msg.subject || msg.templateKey || 'Direct message'}`,
+        description: msg.content.substring(0, 160) + (msg.content.length > 160 ? '...' : ''),
+        actor: msg.staffName,
+        metadata: {
+          channel: msg.channel,
+          status: msg.status,
+          recipient: msg.recipientAddress,
+          provider: msg.providerName,
+          providerMessageId: msg.providerMessageId,
+          failureReason: msg.failureReason,
+          inquiryId: msg.inquiryId,
+          taskId: msg.taskId,
+        },
+      });
+    } catch (error) {
+      // Activity timeline failures must not change the actual provider delivery result.
+      console.warn('Communication activity logging failed:', error);
+    }
   }
 
   if (isSupabaseConfigured()) {
