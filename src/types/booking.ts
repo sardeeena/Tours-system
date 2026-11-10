@@ -98,6 +98,7 @@ export interface Booking {
   bookingId: string;
   bookingReference: string; // e.g. RST-2026-AB4821
   idempotencyKey?: string; // Request idempotency token for duplicate & retry protection
+  couponCode?: string; // Validated and redeemed atomically by the database
   tourId: string;
   tourSlug: string;
   tourTitle: string;
