@@ -120,7 +120,8 @@ export const AdminAvailabilityManager: React.FC = () => {
       tour_id: selectedTourId,
       date: dateStr,
       max_capacity: current?.max_capacity || defaultCapacity,
-      booked_count: nextStatus === 'sold_out' ? (current?.max_capacity || defaultCapacity) : 0,
+      // Availability controls must never rewrite the authoritative booking count.
+      booked_count: current?.booked_count ?? 0,
       status: nextStatus,
       notes: null,
       created_at: current?.created_at || new Date().toISOString(),
@@ -135,15 +136,21 @@ export const AdminAvailabilityManager: React.FC = () => {
   // Change capacity for a date
   const handleCapacityChange = (dateStr: string, newCap: number) => {
     const current = availabilityMap[dateStr];
-    const cap = Math.max(1, newCap);
+    const cap = Math.max(1, current?.booked_count || 0, newCap);
+    const bookedCount = current?.booked_count ?? 0;
+    const nextStatus = current?.status === 'unavailable'
+      ? 'unavailable'
+      : bookedCount >= cap
+        ? 'sold_out'
+        : 'available';
 
     const updatedSlot: DbTourAvailability = {
       id: current?.id || `avail-${selectedTourId}-${dateStr}`,
       tour_id: selectedTourId,
       date: dateStr,
       max_capacity: cap,
-      booked_count: current?.booked_count || 0,
-      status: current?.status || 'available',
+      booked_count: bookedCount,
+      status: nextStatus,
       notes: null,
       created_at: current?.created_at || new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -168,43 +175,54 @@ export const AdminAvailabilityManager: React.FC = () => {
       notes: slot.notes,
     }));
 
-    if (isSupabaseConfigured() && records.length > 0) {
-      try {
-        const { error } = await supabase
-          .from('tour_availability')
-          .upsert(records, { onConflict: 'tour_id,date' });
-
-        if (error) {
-          throw error;
-        }
-        showToast('Availability slots synchronized with Supabase database.', 'success');
-      } catch (err: any) {
-        console.warn('Failed to upsert tour availability in Supabase:', err);
-        showToast(formatSupabaseError(err), 'error');
-      }
-    } else {
-      showToast('Availability slots saved in local storage cache.', 'info');
+    if (!isSupabaseConfigured()) {
+      showToast('Supabase is not configured. These changes have not been saved to the database.', 'error');
+      setSaving(false);
+      return;
     }
 
-    setSaving(false);
-    setActionMessage('Availability slots and daily capacities synchronized successfully.');
-    notifyCatalogueDataChanged('tours');
-    setTimeout(() => setActionMessage(null), 3500);
+    if (records.length === 0) {
+      showToast('There are no availability changes to save.', 'info');
+      setSaving(false);
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('tour_availability')
+        .upsert(records, { onConflict: 'tour_id,date' });
+
+      if (error) throw error;
+
+      showToast('Availability slots synchronized with Supabase database.', 'success');
+      setActionMessage('Availability slots and daily capacities synchronized successfully.');
+      notifyCatalogueDataChanged('tours');
+      window.setTimeout(() => setActionMessage(null), 3500);
+    } catch (err: any) {
+      console.warn('Failed to upsert tour availability in Supabase:', err);
+      showToast(formatSupabaseError(err), 'error');
+    } finally {
+      setSaving(false);
+    }
   };
 
   // Quick set all to available
   const handleSetAllAvailable = () => {
     const newMap = { ...availabilityMap };
     dates.forEach((d) => {
+      const current = newMap[d];
+      const maxCapacity = current?.max_capacity || defaultCapacity;
+      const bookedCount = current?.booked_count ?? 0;
       newMap[d] = {
-        id: `avail-${selectedTourId}-${d}`,
+        id: current?.id || `avail-${selectedTourId}-${d}`,
         tour_id: selectedTourId,
         date: d,
-        max_capacity: defaultCapacity,
-        booked_count: 0,
-        status: 'available',
-        notes: null,
-        created_at: new Date().toISOString(),
+        max_capacity: maxCapacity,
+        // "Mark available" must not erase existing reservations or reopen a full slot.
+        booked_count: bookedCount,
+        status: bookedCount >= maxCapacity ? 'sold_out' : 'available',
+        notes: current?.notes ?? null,
+        created_at: current?.created_at || new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
     });
