@@ -706,7 +706,8 @@ class SupabaseBookingRepository implements IBookingRepository {
         discountEur: Number(data.discount) || 0,
         subtotalEur: Number(data.subtotal) || 0,
         totalEur: Number(data.total) || 0,
-        formattedTotal: `€${Number(data.total).toFixed(2)}`,
+        currency: data.currency || 'EUR',
+        formattedTotal: `${data.currency || 'EUR'} ${Number(data.total).toFixed(2)}`,
         formattedSubtotal: `€${Number(data.subtotal).toFixed(2)}`,
       },
       customer: {
