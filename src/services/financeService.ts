@@ -194,32 +194,29 @@ function mapDbRefund(row: any): FinanceRefund {
 // ------------------------------------------------------------------------------
 
 export async function listPaymentProviders(): Promise<PaymentProvider[]> {
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('payment_providers')
-        .select('*')
-        .order('is_connected', { ascending: false });
-
-      if (!error && data && data.length > 0) {
-        const mapped: PaymentProvider[] = data.map((d: any) => ({
-          id: d.id,
-          name: d.name,
-          providerType: d.provider_type,
-          isConnected: d.is_connected,
-          isManual: d.is_manual,
-          supportedCurrencies: d.supported_currencies || ['EUR', 'USD', 'GBP', 'EGP'],
-          description: d.description || '',
-        }));
-        setLocal(LOCAL_PROVIDERS_KEY, mapped);
-        return mapped;
-      }
-    } catch {
-      // ignore
-    }
+  if (!requireFinanceBackend()) {
+    return getLocal<PaymentProvider[]>(LOCAL_PROVIDERS_KEY, DEFAULT_PROVIDERS);
   }
 
-  return getLocal<PaymentProvider[]>(LOCAL_PROVIDERS_KEY, DEFAULT_PROVIDERS);
+  const { data, error } = await supabase
+    .from('payment_providers')
+    .select('id,name,provider_type,is_connected,is_manual,supported_currencies,description')
+    .order('is_connected', { ascending: false });
+
+  if (error) throw new Error(formatSupabaseError(error));
+
+  const providers: PaymentProvider[] = (data || []).map((row: any) => ({
+    id: row.id,
+    name: row.name,
+    providerType: row.provider_type,
+    isConnected: Boolean(row.is_connected),
+    isManual: Boolean(row.is_manual),
+    supportedCurrencies: row.supported_currencies || [],
+    description: row.description || '',
+  }));
+
+  setLocal(LOCAL_PROVIDERS_KEY, providers);
+  return providers;
 }
 
 // ------------------------------------------------------------------------------
