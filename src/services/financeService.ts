@@ -685,72 +685,37 @@ export async function listRefunds(filter?: {
   status?: string;
   search?: string;
 }): Promise<FinanceRefund[]> {
-  let refunds = getLocal<FinanceRefund[]>(LOCAL_REFUNDS_KEY, []);
+  let refunds: FinanceRefund[];
 
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('refund_records')
-        .select('*')
-        .order('created_at', { ascending: false });
+  if (!requireFinanceBackend()) {
+    refunds = getLocal<FinanceRefund[]>(LOCAL_REFUNDS_KEY, []);
+  } else {
+    const { data, error } = await supabase
+      .from('refund_records')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-      if (!error && data) {
-        const dbRefunds: FinanceRefund[] = data.map((d: any) => ({
-          id: d.id,
-          bookingId: d.booking_id,
-          bookingReference: d.booking_reference || d.booking_id,
-          paymentId: d.payment_id,
-          customerId: d.customer_id,
-          customerName: d.customer_name || 'Guest',
-          customerEmail: d.customer_email || '',
-          amount: Number(d.amount),
-          requestedAmount: Number(d.requested_amount || d.amount),
-          approvedAmount: d.approved_amount != null ? Number(d.approved_amount) : null,
-          currency: d.currency || 'EUR',
-          reason: d.reason,
-          status: (d.status || 'processed') as RefundStatus,
-          requestedBy: d.requested_by || 'Staff',
-          approvedBy: d.approved_by || null,
-          processedDate: d.processed_date || null,
-          refundMethod: d.refund_method as any,
-          transactionReference: d.transaction_reference || `REF-${d.id.substring(0, 8)}`,
-          processedBy: d.processed_by || 'Staff',
-          notes: d.notes,
-          createdAt: d.created_at,
-          updatedAt: d.updated_at,
-        }));
-        const dbIds = new Set(dbRefunds.map((r) => r.id));
-        const dbTxRefs = new Set(dbRefunds.map((r) => r.transactionReference?.toLowerCase()));
-        const unsynced = refunds.filter(
-          (r) => !dbIds.has(r.id) && (!r.transactionReference || !dbTxRefs.has(r.transactionReference.toLowerCase()))
-        );
-        refunds = [...dbRefunds, ...unsynced];
-        setLocal(LOCAL_REFUNDS_KEY, refunds);
-      }
-    } catch {
-      // ignore
-    }
+    if (error) throw new Error(formatSupabaseError(error));
+    refunds = (data || []).map(mapDbRefund);
+    setLocal(LOCAL_REFUNDS_KEY, refunds);
   }
 
-  return refunds.filter((r) => {
-    if (filter?.bookingId && r.bookingId !== filter.bookingId && r.bookingReference !== filter.bookingId) return false;
-    if (filter?.status && filter.status !== 'all' && r.status !== filter.status) return false;
+  return refunds.filter((refund) => {
+    if (filter?.bookingId && refund.bookingId !== filter.bookingId && refund.bookingReference !== filter.bookingId) return false;
+    if (filter?.status && filter.status !== 'all' && refund.status !== filter.status) return false;
     if (filter?.search?.trim()) {
-      const q = filter.search.toLowerCase();
+      const query = filter.search.toLowerCase();
       return (
-        r.bookingReference.toLowerCase().includes(q) ||
-        r.customerName.toLowerCase().includes(q) ||
-        r.reason.toLowerCase().includes(q) ||
-        r.transactionReference.toLowerCase().includes(q)
+        refund.bookingReference.toLowerCase().includes(query) ||
+        refund.customerName.toLowerCase().includes(query) ||
+        refund.reason.toLowerCase().includes(query) ||
+        refund.transactionReference.toLowerCase().includes(query)
       );
     }
     return true;
   });
 }
 
-/**
- * Step 1: Request a Refund (Creates a record pending approval)
- */
 export async function requestRefund(refundData: {
   bookingId: string;
   bookingReference: string;
