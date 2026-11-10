@@ -16,6 +16,16 @@ ALTER TABLE public.profiles
     ADD CONSTRAINT profiles_role_check
     CHECK (role IN ('customer', 'staff', 'manager', 'admin', 'super_admin'));
 
+-- The platform-installed event trigger must remain enabled, but its trigger
+-- function must not be callable through the public Data API.
+DO $
+BEGIN
+    IF to_regprocedure('public.rls_auto_enable()') IS NOT NULL THEN
+        REVOKE ALL ON FUNCTION public.rls_auto_enable() FROM PUBLIC, anon, authenticated;
+    END IF;
+END;
+$;
+
 
 -- ------------------------------------------------------------------------------
 -- 1. INDEXING FOR HIGH-PERFORMANCE INTEGRATED QUERIES
