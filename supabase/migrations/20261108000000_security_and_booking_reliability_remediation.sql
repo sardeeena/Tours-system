@@ -437,7 +437,7 @@ BEGIN
     END IF;
 
     -- 10. Generate Authoritative Unpredictable Booking Reference
-    v_booking_ref := 'RST-' || TO_CHAR(CURRENT_DATE, 'YYYY') || '-' || UPPER(ENCODE(gen_random_bytes(10), 'hex'));
+    v_booking_ref := 'RST-' || TO_CHAR(CURRENT_DATE, 'YYYY') || '-' || UPPER(REPLACE(gen_random_uuid()::text, '-', ''));
 
     -- 11. Insert Authoritative Booking Record with Idempotency Key & Concurrency Protection
     BEGIN
