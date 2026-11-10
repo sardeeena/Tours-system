@@ -314,11 +314,7 @@ class SupabaseBookingRepository implements IBookingRepository {
           // Normalized phone comparison: require at least 8 digits and exact match
           const custDigits = (data.customers?.phone || '').replace(/\D/g, '');
           const queryDigits = cleanContact.replace(/\D/g, '');
-          const phoneMatch = queryDigits.length >= 8 && (
-            custDigits === queryDigits ||
-            custDigits.endsWith(queryDigits) ||
-            queryDigits.endsWith(custDigits)
-          );
+          const phoneMatch = queryDigits.length >= 8 && custDigits.length >= 8 && custDigits === queryDigits;
 
           if (!emailMatch && !phoneMatch) {
             return null;
@@ -347,11 +343,7 @@ class SupabaseBookingRepository implements IBookingRepository {
     const emailMatch = b.customer.email.trim().toLowerCase() === queryLower;
     const custDigits = (b.customer.phoneNumber || '').replace(/\D/g, '');
     const queryDigits = cleanContact.replace(/\D/g, '');
-    const phoneMatch = queryDigits.length >= 8 && (
-      custDigits === queryDigits ||
-      custDigits.endsWith(queryDigits) ||
-      queryDigits.endsWith(custDigits)
-    );
+    const phoneMatch = queryDigits.length >= 8 && custDigits.length >= 8 && custDigits === queryDigits;
 
     if (emailMatch || phoneMatch) {
       return b;
@@ -525,29 +517,8 @@ class SupabaseBookingRepository implements IBookingRepository {
           throw new Error(formatSupabaseError(cancelError));
         }
 
-        // Revert capacity in tour_availability
-        if (existing.tourId && existing.date) {
-          const dStr = existing.date.split('T')[0];
-          const partySize = (existing.guests?.adults || 1) + (existing.guests?.children || 0) + (existing.guests?.infants || 0);
-          const { data: curAvail } = await supabase
-            .from('tour_availability')
-            .select('*')
-            .eq('tour_id', existing.tourId)
-            .eq('date', dStr)
-            .maybeSingle();
-
-          if (curAvail) {
-            const newCount = Math.max(0, (curAvail.booked_count || 0) - partySize);
-            await supabase
-              .from('tour_availability')
-              .update({
-                booked_count: newCount,
-                status: 'available',
-                updated_at: new Date().toISOString(),
-              })
-              .eq('id', curAvail.id);
-          }
-        }
+        // A cancellation request does not release inventory. Capacity is restored only
+        // after an authorized cancellation approval is processed server-side.
       } catch (err) {
         console.error('Cancel booking in Supabase error:', err);
         throw err;
