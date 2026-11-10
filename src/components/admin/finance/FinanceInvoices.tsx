@@ -77,7 +77,12 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
     try {
       const inv = await generateInvoiceForBooking(selectedBookingRef);
       if (inv) {
-        showToast(`Invoice ${inv.invoiceNumber} generated successfully.`, 'success');
+        showToast(
+          inv.status === 'draft'
+            ? `Draft invoice ${inv.invoiceNumber} created. Add the legal billing details before issuing it.`
+            : `Invoice ${inv.invoiceNumber} generated successfully.`,
+          inv.status === 'draft' ? 'info' : 'success'
+        );
         setIsGenerateModalOpen(false);
         await loadData();
         setSelectedInvoice(inv);
