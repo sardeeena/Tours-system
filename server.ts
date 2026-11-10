@@ -479,7 +479,7 @@ app.get('/api/communications/status', rateLimit(60, 60_000), (req: Authenticated
   const whatsappConfigured = Boolean(
     process.env.WHATSAPP_ACCESS_TOKEN?.trim()
     && process.env.WHATSAPP_PHONE_NUMBER_ID?.trim()
-    && /^v\\d+\\.\\d+$/.test(process.env.WHATSAPP_GRAPH_API_VERSION || '')
+    && /^v\d+\.\d+$/.test(process.env.WHATSAPP_GRAPH_API_VERSION || '')
   );
 
   res.json({
@@ -576,7 +576,7 @@ app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: Auth
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID?.trim();
   const graphVersion = process.env.WHATSAPP_GRAPH_API_VERSION?.trim();
 
-  if (!accessToken || !phoneNumberId || !/^\\d{5,30}$/.test(phoneNumberId) || !/^v\\d+\\.\\d+$/.test(graphVersion || '')) {
+  if (!accessToken || !phoneNumberId || !/^\d{5,30}$/.test(phoneNumberId) || !/^v\d+\.\d+$/.test(graphVersion || '')) {
     return res.status(503).json({ success: false, error: 'Server-side WhatsApp delivery is not configured. Set WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID, and WHATSAPP_GRAPH_API_VERSION in Hostinger environment variables.' });
   }
 
