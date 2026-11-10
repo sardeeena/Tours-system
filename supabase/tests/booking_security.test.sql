@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(84);
+SELECT plan(87);
 
 SELECT ok(
   EXISTS (
@@ -640,6 +640,45 @@ SELECT ok(
     AND COALESCE(array_to_string(proconfig, ','),'') LIKE '%search_path=""%'),
   'auth-confirmation trigger SECURITY DEFINER function pins an empty search_path'
 );
+
+SELECT ok(
+  EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename = 'objects'
+      AND policyname = 'Users can upload own avatar'
+      AND roles @> ARRAY['authenticated']::name[]
+      AND COALESCE(with_check, '') ILIKE '%foldername%'
+      AND COALESCE(with_check, '') ILIKE '%auth.uid%'
+  ),
+  'avatar uploads are restricted to the authenticated user folder'
+);
+
+SELECT ok(
+  EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename = 'objects'
+      AND policyname = 'Users can update own avatar'
+      AND roles @> ARRAY['authenticated']::name[]
+      AND COALESCE(qual, '') ILIKE '%foldername%'
+      AND COALESCE(with_check, '') ILIKE '%foldername%'
+  ),
+  'avatar updates cannot target another user folder or move objects outside the owner folder'
+);
+
+SELECT ok(
+  EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'storage'
+      AND tablename = 'objects'
+      AND policyname = 'Users can delete own avatar'
+      AND roles @> ARRAY['authenticated']::name[]
+      AND COALESCE(qual, '') ILIKE '%foldername%'
+  ),
+  'avatar deletion is restricted to the authenticated user folder'
+);
+
 SELECT * FROM finish();
 
 ROLLBACK;
