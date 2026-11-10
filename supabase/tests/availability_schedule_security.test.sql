@@ -1,7 +1,7 @@
 BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(15);
+SELECT plan(17);
 
 INSERT INTO public.tours (id, title, slug, status, max_guests)
 VALUES
@@ -103,6 +103,21 @@ SELECT throws_ok(
   '22023',
   'Availability start and end dates are required',
   'availability RPC rejects missing date bounds'
+);
+
+SET LOCAL request.jwt.claim.role = 'service_role';
+SET LOCAL request.jwt.claims = '{"role":"service_role"}';
+
+SELECT is(
+  (SELECT count(*)::int FROM public.get_tour_availability_schedule('pgtap-availability-draft', (now() AT TIME ZONE 'Africa/Cairo')::date, (now() AT TIME ZONE 'Africa/Cairo')::date)),
+  1,
+  'trusted service-role callers retain access to draft tour schedules'
+);
+
+SELECT is(
+  (SELECT notes FROM public.get_tour_availability_schedule('pgtap-availability-published', (now() AT TIME ZONE 'Africa/Cairo')::date, (now() AT TIME ZONE 'Africa/Cairo')::date)),
+  'Internal operations note must not be public',
+  'trusted service-role callers can read internal availability notes'
 );
 
 SELECT * FROM finish();
