@@ -166,26 +166,36 @@ export async function fetchExecutiveReport(interval: DateRangeInterval): Promise
       });
       if (!error && data && typeof data === 'object') {
         const d = data as any;
+        const revenue = d.revenue && typeof d.revenue === 'object' ? d.revenue : {};
+        const bookings = d.bookings && typeof d.bookings === 'object' ? d.bookings : {};
+        const passengers = d.passengers && typeof d.passengers === 'object' ? d.passengers : {};
+        const customers = d.customers && typeof d.customers === 'object' ? d.customers : {};
+        const leads = d.leads && typeof d.leads === 'object' ? d.leads : {};
+
+        const totalRevenueEur = Number(revenue.total ?? d.totalRevenueEur ?? d.revenueEur ?? 0);
+        const collectedRevenueEur = Number(revenue.collected ?? d.collectedRevenueEur ?? 0);
+        const outstandingRevenueEur = Number(revenue.outstanding ?? d.outstandingRevenueEur ?? 0);
+
         return {
-          totalRevenueEur: Number(d.totalRevenueEur || 0),
-          revenueEur: Number(d.totalRevenueEur || 0),
-          collectedRevenueEur: Number(d.collectedRevenueEur || 0),
-          outstandingRevenueEur: Number(d.outstandingRevenueEur || 0),
-          outstandingBalancesEur: Number(d.outstandingRevenueEur || 0),
-          bookingsCount: Number(d.bookingsCount || 0),
-          confirmedBookingsCount: Number(d.confirmedBookingsCount || 0),
-          cancellationsCount: Number(d.cancellationsCount || 0),
-          passengersCount: Number(d.passengersCount || 0),
-          adultsCount: Number(d.adultsCount || 0),
-          childrenCount: Number(d.childrenCount || 0),
-          infantsCount: Number(d.infantsCount || 0),
-          totalCustomersCount: Number(d.totalCustomersCount || 0),
-          newCustomersCount: Number(d.newCustomersCount || 0),
-          repeatCustomersCount: Number(d.repeatCustomersCount || 0),
-          leadsCount: Number(d.leadsCount || 0),
-          conversionRate: Number(d.conversionRate || 0),
-          cancellationRate: Number(d.cancellationRate || 0),
-          averageBookingValueEur: Number(d.averageBookingValueEur || 0),
+          totalRevenueEur,
+          revenueEur: totalRevenueEur,
+          collectedRevenueEur,
+          outstandingRevenueEur,
+          outstandingBalancesEur: outstandingRevenueEur,
+          bookingsCount: Number(bookings.total ?? d.bookingsCount ?? 0),
+          confirmedBookingsCount: Number(bookings.confirmed ?? d.confirmedBookingsCount ?? 0),
+          cancellationsCount: Number(bookings.cancelled ?? d.cancellationsCount ?? 0),
+          passengersCount: Number(passengers.total ?? d.passengersCount ?? 0),
+          adultsCount: Number(passengers.adults ?? d.adultsCount ?? 0),
+          childrenCount: Number(passengers.children ?? d.childrenCount ?? 0),
+          infantsCount: Number(passengers.infants ?? d.infantsCount ?? 0),
+          totalCustomersCount: Number(customers.totalActive ?? d.totalCustomersCount ?? 0),
+          newCustomersCount: Number(customers.new ?? d.newCustomersCount ?? 0),
+          repeatCustomersCount: Number(customers.repeat ?? d.repeatCustomersCount ?? 0),
+          leadsCount: Number(leads.total ?? d.leadsCount ?? 0),
+          conversionRate: Number(bookings.conversionRatePercent ?? d.conversionRate ?? 0),
+          cancellationRate: Number(bookings.cancellationRatePercent ?? d.cancellationRate ?? 0),
+          averageBookingValueEur: Number(revenue.averageBookingValue ?? d.averageBookingValueEur ?? 0),
         };
       }
     } catch {
