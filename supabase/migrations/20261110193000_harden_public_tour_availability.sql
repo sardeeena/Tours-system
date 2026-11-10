@@ -27,6 +27,7 @@ DECLARE
   v_tour RECORD;
   v_tour_identifier TEXT := NULLIF(BTRIM(p_tour_identifier), '');
   v_is_admin BOOLEAN := public.is_admin();
+  v_today DATE := (now() AT TIME ZONE 'Africa/Cairo')::date;
 BEGIN
   IF v_tour_identifier IS NULL THEN
     RAISE EXCEPTION USING
@@ -52,7 +53,7 @@ BEGIN
       MESSAGE = 'Availability date range cannot exceed 366 days';
   END IF;
 
-  IF NOT v_is_admin AND p_start_date < CURRENT_DATE THEN
+  IF NOT v_is_admin AND p_start_date < v_today THEN
     RAISE EXCEPTION USING
       ERRCODE = '22023',
       MESSAGE = 'Public availability lookup cannot include past dates';
@@ -109,7 +110,7 @@ BEGIN
     )::int AS remaining_capacity,
     CASE
       WHEN ta.status IN ('unavailable', 'sold_out') THEN FALSE
-      WHEN ds.calendar_date < CURRENT_DATE THEN FALSE
+      WHEN ds.calendar_date < v_today THEN FALSE
       WHEN GREATEST(COALESCE(ta.booked_count, 0), COALESCE(lb.reserved_count, 0))
         >= COALESCE(ta.max_capacity, v_tour.max_guests, 30) THEN FALSE
       ELSE TRUE
