@@ -116,6 +116,42 @@ async function runTestSuite() {
   assert(ALL_TOURS.length === 13, `Source contains exact 13 authoritative tours (found ${ALL_TOURS.length})`);
   assert(POPULAR_DESTINATIONS.length === 7, `Source contains exact 7 destinations (found ${POPULAR_DESTINATIONS.length})`);
   assert(TOUR_CATEGORIES.length === 6, `Source contains exact 6 categories (found ${TOUR_CATEGORIES.length})`);
+  assert(REVIEWS_DATA.length === 0, 'No fabricated static guest reviews are shipped');
+
+  assert(
+    ALL_TOURS.every((tour) => tour.rating === 0 && tour.reviewCount === 0 && (!tour.reviews || tour.reviews.length === 0)),
+    'Tours do not ship unsupported ratings, review counts, or embedded testimonials'
+  );
+
+  assert(
+    POPULAR_DESTINATIONS.every((destination) =>
+      destination.tourCount === ALL_TOURS.filter((tour) => tour.destination === destination.name).length
+    ),
+    'Destination excursion counts are derived from the actual catalogue'
+  );
+
+  const categoryAliases: Record<string, string[]> = {
+    'Boat Trips': ['Boat Trip', 'Boat Trips', 'Island', 'Island Visits'],
+    'Private Tours': ['Private Tour', 'Private Tours'],
+    Safari: ['Safari', 'Quad'],
+  };
+  assert(
+    TOUR_CATEGORIES.every((category) => {
+      const aliases = categoryAliases[category.name] || [category.name];
+      const count = ALL_TOURS.filter((tour) =>
+        aliases.some((alias) => tour.category === alias || tour.categories.includes(alias))
+      ).length;
+      return category.tourCount === count;
+    }),
+    'Category excursion counts are derived from the actual catalogue'
+  );
+
+  const tourServiceSource = fs.readFileSync(path.resolve('src/services/tourService.ts'), 'utf8');
+  assert(
+    !tourServiceSource.includes('recommendationRate: 98') && !tourServiceSource.includes('REVIEWS_DATA.filter'),
+    'Unconfigured frontend never substitutes invented review totals or testimonials'
+  );
+
   assert(STANDARD_PICKUP_LOCATIONS.length === 7, `Source contains exact 7 pickup zones (found ${STANDARD_PICKUP_LOCATIONS.length})`);
   assert(GLOBAL_BOOKING_EXTRAS.length === 6, `Source contains exact 6 booking extras (found ${GLOBAL_BOOKING_EXTRAS.length})`);
 
