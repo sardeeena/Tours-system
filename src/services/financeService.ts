@@ -151,6 +151,10 @@ function mapDbPayment(row: any): FinancePayment {
   };
 }
 
+function isSettledPayment(payment: FinancePayment): boolean {
+  return ['paid', 'partially paid', 'partially_paid'].includes(String(payment.paymentStatus).toLowerCase());
+}
+
 function mapDbRefund(row: any): FinanceRefund {
   const methodMap: Record<string, FinanceRefund['refundMethod']> = {
     'Credit Card': 'Card Reversal',
