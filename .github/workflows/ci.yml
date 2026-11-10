@@ -48,6 +48,9 @@ jobs:
       - name: Validate catalogue source and read-only import safety
         run: npm run test:catalogue
 
+      - name: Verify Supabase project isolation
+        run: npm run test:supabase-project
+
   database:
     name: Supabase migrations and RLS tests
     runs-on: ubuntu-latest
@@ -57,9 +60,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Supabase CLI
-        uses: supabase/setup-cli@v1
+        id: setup-supabase-cli
+        uses: supabase/setup-cli@v3
         with:
-          version: latest
+          version: 3.1.0
 
       - name: Start isolated local Supabase stack
         run: supabase start
@@ -71,5 +75,5 @@ jobs:
         run: supabase test db
 
       - name: Stop local Supabase stack
-        if: always()
+        if: always() && steps.setup-supabase-cli.outcome == 'success'
         run: supabase stop --no-backup
