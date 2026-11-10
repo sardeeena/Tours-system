@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(78);
+SELECT plan(84);
 
 SELECT ok(
   EXISTS (
@@ -500,6 +500,32 @@ SELECT ok(
 
 SET LOCAL ROLE authenticated;
 
+
+SELECT throws_ok(
+  'SELECT public.replace_extra_tour_assignments_atomic(''aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa''::uuid, ''[]''::jsonb)',
+  '42501',
+  'Access denied: Administrator privileges required to manage tour assignments.',
+  'ordinary authenticated customers cannot change add-on assignments'
+);
+SELECT throws_ok(
+  'SELECT public.replace_tour_extra_assignments_atomic(''aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa''::uuid, ''[]''::jsonb)',
+  '42501',
+  'Access denied: Administrator privileges required to manage tour assignments.',
+  'ordinary authenticated customers cannot change tour add-on assignments'
+);
+SELECT throws_ok(
+  'SELECT public.get_executive_bi_metrics(CURRENT_DATE - 1, CURRENT_DATE)',
+  '42501',
+  'Access Denied: Executive BI metrics are restricted to authorized administrators.',
+  'ordinary authenticated customers cannot read executive BI metrics'
+);
+SELECT throws_ok(
+  'SELECT public.query_custom_bi_report(''{}''::jsonb)',
+  '42501',
+  'Access Denied: BI reports are restricted to authorized administrators.',
+  'ordinary authenticated customers cannot run custom BI reports'
+);
+
 SELECT throws_ok(
   'SELECT public.recalculate_customer_stats(''aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa''::uuid)',
   '42501',
@@ -608,6 +634,17 @@ SELECT ok(
   'custom BI SECURITY DEFINER function pins an empty search_path'
 );
 
+
+SELECT ok(
+  EXISTS (SELECT 1 FROM pg_proc WHERE oid='public.handle_updated_at()'::regprocedure
+    AND COALESCE(array_to_string(proconfig, ','),'') LIKE '%search_path=""%'),
+  'timestamp trigger SECURITY DEFINER function pins an empty search_path'
+);
+SELECT ok(
+  EXISTS (SELECT 1 FROM pg_proc WHERE oid='public.handle_user_confirmed()'::regprocedure
+    AND COALESCE(array_to_string(proconfig, ','),'') LIKE '%search_path=""%'),
+  'auth-confirmation trigger SECURITY DEFINER function pins an empty search_path'
+);
 SELECT * FROM finish();
 
 ROLLBACK;
