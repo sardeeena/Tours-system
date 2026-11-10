@@ -395,7 +395,10 @@ BEGIN
     RETURN JSONB_BUILD_OBJECT('success', FALSE, 'error', 'This booking cannot be cancelled in its current state.');
   END IF;
 
-  v_previous_status := COALESCE(v_booking.cancellation_previous_status, v_booking.status);
+  v_previous_status := COALESCE(
+    v_booking.cancellation_previous_status,
+    CASE WHEN v_booking.status = 'cancellation_requested' THEN 'confirmed' ELSE v_booking.status END
+  );
 
   IF p_decision = 'reject' THEN
     UPDATE public.bookings
