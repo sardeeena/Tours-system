@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(21);
+SELECT plan(51);
 
 SELECT ok(
   EXISTS (
@@ -138,6 +138,288 @@ SELECT ok(
   POSITION('TO_JSONB(NEW)' IN
     PG_GET_FUNCTIONDEF(to_regprocedure('public.protect_booking_customer_updates()'))) > 0,
   'customer update trigger rejects changes to protected booking columns'
+);
+
+
+-- End-to-end transactional booking, coupon, lookup, and cancellation lifecycle checks.
+INSERT INTO public.tours (title, slug, status, price, max_guests)
+VALUES ('pgTAP Booking Test Tour', 'pgtap-booking-test', 'published', 100.00, 10);
+
+INSERT INTO public.coupons (
+  code, description, discount_type, discount_value, min_spend,
+  valid_from, usage_limit, times_used, is_active
+)
+VALUES (
+  'PGTAPONCE', 'Single-use pgTAP coupon', 'percentage', 10.00, 0,
+  NOW() - INTERVAL '1 minute', 1, 0, TRUE
+);
+
+CREATE TEMP TABLE pgtap_booking_results (
+  case_name TEXT PRIMARY KEY,
+  result JSONB NOT NULL
+) ON COMMIT DROP;
+
+INSERT INTO pg_temp.pgtap_booking_results (case_name, result)
+SELECT 'first_booking', public.create_booking_atomic(
+  'pgtap-booking-test', CURRENT_DATE + 30, 1, 0, 0,
+  'PgTAP', 'Guest', 'pgtap-booking@example.test', '+201000000001', 'Egypt',
+  'Test Hotel', NULL, NULL, '[]'::jsonb, 'PGTAPONCE',
+  'pay_at_pickup', NULL, 'idem_pgtap_coupon_booking_0001'
+);
+
+SELECT ok(
+  (SELECT (result->>'success')::boolean FROM pg_temp.pgtap_booking_results WHERE case_name = 'first_booking'),
+  'a valid booking with a valid coupon is created'
+);
+
+SELECT ok(
+  (SELECT (result->>'discountEur')::numeric = 10.00 AND (result->>'totalEur')::numeric = 90.00
+   FROM pg_temp.pgtap_booking_results WHERE case_name = 'first_booking'),
+  'coupon discount and final total are calculated by the database'
+);
+
+SELECT ok(
+  (SELECT times_used = 1 FROM public.coupons WHERE code = 'PGTAPONCE'),
+  'successful booking redeems the coupon exactly once'
+);
+
+INSERT INTO pg_temp.pgtap_booking_results (case_name, result)
+SELECT 'duplicate_booking', public.create_booking_atomic(
+  'pgtap-booking-test', CURRENT_DATE + 30, 1, 0, 0,
+  'PgTAP', 'Guest', 'pgtap-booking@example.test', '+201000000001', 'Egypt',
+  'Test Hotel', NULL, NULL, '[]'::jsonb, 'PGTAPONCE',
+  'pay_at_pickup', NULL, 'idem_pgtap_coupon_booking_0001'
+);
+
+SELECT ok(
+  (SELECT (result->>'isDuplicate')::boolean FROM pg_temp.pgtap_booking_results WHERE case_name = 'duplicate_booking'),
+  'retrying the identical request returns the original booking'
+);
+
+SELECT ok(
+  (SELECT result->>'bookingReference' FROM pg_temp.pgtap_booking_results WHERE case_name = 'duplicate_booking')
+  =
+  (SELECT result->>'bookingReference' FROM pg_temp.pgtap_booking_results WHERE case_name = 'first_booking'),
+  'idempotent replay returns the original booking reference'
+);
+
+INSERT INTO pg_temp.pgtap_booking_results (case_name, result)
+SELECT 'changed_payload', public.create_booking_atomic(
+  'pgtap-booking-test', CURRENT_DATE + 30, 2, 0, 0,
+  'PgTAP', 'Guest', 'pgtap-booking@example.test', '+201000000001', 'Egypt',
+  'Test Hotel', NULL, NULL, '[]'::jsonb, 'PGTAPONCE',
+  'pay_at_pickup', NULL, 'idem_pgtap_coupon_booking_0001'
+);
+
+SELECT ok(
+  COALESCE((SELECT (result->>'success')::boolean FROM pg_temp.pgtap_booking_results WHERE case_name = 'changed_payload'), FALSE) = FALSE,
+  'reusing an idempotency key with changed booking details is rejected'
+);
+
+INSERT INTO pg_temp.pgtap_booking_results (case_name, result)
+SELECT 'exhausted_coupon', public.create_booking_atomic(
+  'pgtap-booking-test', CURRENT_DATE + 30, 1, 0, 0,
+  'PgTAP', 'Guest', 'pgtap-booking@example.test', '+201000000001', 'Egypt',
+  'Test Hotel', NULL, NULL, '[]'::jsonb, 'PGTAPONCE',
+  'pay_at_pickup', NULL, 'idem_pgtap_coupon_booking_0002'
+);
+
+SELECT ok(
+  COALESCE((SELECT (result->>'success')::boolean FROM pg_temp.pgtap_booking_results WHERE case_name = 'exhausted_coupon'), TRUE) = FALSE,
+  'a coupon at its usage limit cannot be redeemed again'
+);
+
+SELECT ok(
+  (SELECT times_used = 1 FROM public.coupons WHERE code = 'PGTAPONCE'),
+  'rejected coupon attempts do not increment redemption count'
+);
+
+SELECT ok(
+  (SELECT COUNT(*) = 1 FROM public.bookings WHERE idempotency_key = 'idem_pgtap_coupon_booking_0001'),
+  'idempotent retries do not create duplicate booking rows'
+);
+
+INSERT INTO pg_temp.pgtap_booking_results (case_name, result)
+SELECT 'lookup_email', public.lookup_booking_secure(
+  (SELECT result->>'bookingReference' FROM pg_temp.pgtap_booking_results WHERE case_name = 'first_booking'),
+  'pgtap-booking@example.test'
+);
+
+SELECT ok(
+  (SELECT (result->>'found')::boolean FROM pg_temp.pgtap_booking_results WHERE case_name = 'lookup_email'),
+  'secure lookup verifies the exact booking email'
+);
+
+SELECT ok(
+  (SELECT result->'customer'->>'emailMasked' IS NOT NULL
+   AND result->'customer'->>'phoneMasked' IS NOT NULL
+   AND result->'tour'->>'id' IS NOT NULL
+   FROM pg_temp.pgtap_booking_results WHERE case_name = 'lookup_email'),
+  'secure lookup returns masked contact data and the tour identifier'
+);
+
+INSERT INTO pg_temp.pgtap_booking_results (case_name, result)
+SELECT 'lookup_wrong_contact', public.lookup_booking_secure(
+  (SELECT result->>'bookingReference' FROM pg_temp.pgtap_booking_results WHERE case_name = 'first_booking'),
+  'not-the-customer@example.test'
+);
+
+SELECT ok(
+  (SELECT result IS NULL FROM pg_temp.pgtap_booking_results WHERE case_name = 'lookup_wrong_contact'),
+  'secure lookup rejects a mismatched contact address'
+);
+
+INSERT INTO pg_temp.pgtap_booking_results (case_name, result)
+SELECT 'lookup_egypt_phone', public.lookup_booking_secure(
+  (SELECT result->>'bookingReference' FROM pg_temp.pgtap_booking_results WHERE case_name = 'first_booking'),
+  '01000000001'
+);
+
+SELECT ok(
+  (SELECT (result->>'found')::boolean FROM pg_temp.pgtap_booking_results WHERE case_name = 'lookup_egypt_phone'),
+  'secure lookup exactly matches Egyptian domestic and +20 phone formats'
+);
+
+INSERT INTO pg_temp.pgtap_booking_results (case_name, result)
+SELECT 'cancel_request', public.request_booking_cancellation_secure(
+  (SELECT result->>'bookingReference' FROM pg_temp.pgtap_booking_results WHERE case_name = 'first_booking'),
+  'pgtap-booking@example.test', 'pgTAP cancellation request'
+);
+
+SELECT ok(
+  (SELECT (result->>'success')::boolean FROM pg_temp.pgtap_booking_results WHERE case_name = 'cancel_request'),
+  'verified customer can request cancellation'
+);
+
+INSERT INTO pg_temp.pgtap_booking_results (case_name, result)
+SELECT 'cancel_request_repeat', public.request_booking_cancellation_secure(
+  (SELECT result->>'bookingReference' FROM pg_temp.pgtap_booking_results WHERE case_name = 'first_booking'),
+  'pgtap-booking@example.test', 'duplicate pgTAP cancellation request'
+);
+
+SELECT ok(
+  (SELECT (result->>'alreadyRequested')::boolean FROM pg_temp.pgtap_booking_results WHERE case_name = 'cancel_request_repeat'),
+  'repeated cancellation request is idempotent'
+);
+
+SELECT ok(
+  (SELECT status = 'cancellation_requested' FROM public.bookings
+   WHERE booking_reference = (SELECT result->>'bookingReference' FROM pg_temp.pgtap_booking_results WHERE case_name = 'first_booking')),
+  'customer cancellation request moves booking into review state'
+);
+
+SELECT ok(
+  (SELECT booked_count = 1 FROM public.tour_availability
+   WHERE tour_id = (SELECT id FROM public.tours WHERE slug = 'pgtap-booking-test')
+     AND date = CURRENT_DATE + 30),
+  'capacity remains reserved while cancellation awaits approval'
+);
+
+SELECT set_config('request.jwt.claims', '{"role":"service_role"}', TRUE);
+
+INSERT INTO pg_temp.pgtap_booking_results (case_name, result)
+SELECT 'cancel_approved', public.admin_resolve_booking_cancellation(
+  (SELECT result->>'bookingReference' FROM pg_temp.pgtap_booking_results WHERE case_name = 'first_booking'),
+  'approve', 'pgTAP approval'
+);
+
+SELECT ok(
+  (SELECT (result->>'success')::boolean FROM pg_temp.pgtap_booking_results WHERE case_name = 'cancel_approved'),
+  'authorized admin cancellation approval succeeds'
+);
+
+SELECT ok(
+  (SELECT status = 'cancelled' FROM public.bookings
+   WHERE booking_reference = (SELECT result->>'bookingReference' FROM pg_temp.pgtap_booking_results WHERE case_name = 'first_booking')),
+  'approved cancellation marks the booking cancelled'
+);
+
+SELECT ok(
+  (SELECT booked_count = 0 AND status = 'available' FROM public.tour_availability
+   WHERE tour_id = (SELECT id FROM public.tours WHERE slug = 'pgtap-booking-test')
+     AND date = CURRENT_DATE + 30),
+  'approved cancellation releases inventory atomically'
+);
+
+INSERT INTO pg_temp.pgtap_booking_results (case_name, result)
+SELECT 'cancel_approved_repeat', public.admin_resolve_booking_cancellation(
+  (SELECT result->>'bookingReference' FROM pg_temp.pgtap_booking_results WHERE case_name = 'first_booking'),
+  'approve', 'repeat pgTAP approval'
+);
+
+SELECT ok(
+  (SELECT (result->>'alreadyResolved')::boolean FROM pg_temp.pgtap_booking_results WHERE case_name = 'cancel_approved_repeat'),
+  'repeated approval is idempotent'
+);
+
+SELECT ok(
+  (SELECT booked_count = 0 FROM public.tour_availability
+   WHERE tour_id = (SELECT id FROM public.tours WHERE slug = 'pgtap-booking-test')
+     AND date = CURRENT_DATE + 30),
+  'repeated approval does not release capacity twice'
+);
+
+INSERT INTO pg_temp.pgtap_booking_results (case_name, result)
+SELECT 'second_booking', public.create_booking_atomic(
+  'pgtap-booking-test', CURRENT_DATE + 30, 1, 0, 0,
+  'PgTAP', 'Second', 'pgtap-second@example.test', '+201000000002', 'Egypt',
+  'Test Hotel', NULL, NULL, '[]'::jsonb, NULL,
+  'pay_at_pickup', NULL, 'idem_pgtap_second_booking_0001'
+);
+
+SELECT ok(
+  (SELECT (result->>'success')::boolean FROM pg_temp.pgtap_booking_results WHERE case_name = 'second_booking'),
+  'a new booking can use capacity released by an approved cancellation'
+);
+
+INSERT INTO pg_temp.pgtap_booking_results (case_name, result)
+SELECT 'second_cancel_request', public.request_booking_cancellation_secure(
+  (SELECT result->>'bookingReference' FROM pg_temp.pgtap_booking_results WHERE case_name = 'second_booking'),
+  'pgtap-second@example.test', 'pgTAP rejection test'
+);
+
+SELECT ok(
+  (SELECT (result->>'success')::boolean FROM pg_temp.pgtap_booking_results WHERE case_name = 'second_cancel_request'),
+  'second booking can enter cancellation review'
+);
+
+INSERT INTO pg_temp.pgtap_booking_results (case_name, result)
+SELECT 'cancel_rejected', public.admin_resolve_booking_cancellation(
+  (SELECT result->>'bookingReference' FROM pg_temp.pgtap_booking_results WHERE case_name = 'second_booking'),
+  'reject', 'pgTAP rejection'
+);
+
+SELECT ok(
+  (SELECT (result->>'status') = 'pending' FROM pg_temp.pgtap_booking_results WHERE case_name = 'cancel_rejected'),
+  'rejected cancellation restores the booking prior status'
+);
+
+SELECT ok(
+  (SELECT status = 'pending' FROM public.bookings
+   WHERE booking_reference = (SELECT result->>'bookingReference' FROM pg_temp.pgtap_booking_results WHERE case_name = 'second_booking')),
+  'rejected cancellation leaves the booking active'
+);
+
+SELECT ok(
+  (SELECT booked_count = 1 FROM public.tour_availability
+   WHERE tour_id = (SELECT id FROM public.tours WHERE slug = 'pgtap-booking-test')
+     AND date = CURRENT_DATE + 30),
+  'rejected cancellation does not release reserved capacity'
+);
+
+SELECT ok(
+  (SELECT COUNT(*) = 2 FROM public.automation_events WHERE event_name = 'booking.cancellation_requested'),
+  'cancellation request events are persisted transactionally'
+);
+
+SELECT ok(
+  (SELECT COUNT(*) = 1 FROM public.automation_events WHERE event_name = 'booking.cancelled'),
+  'approved cancellation publishes one completed-cancellation event'
+);
+
+SELECT ok(
+  (SELECT COUNT(*) = 1 FROM public.automation_events WHERE event_name = 'booking.updated'),
+  'rejected cancellation publishes a booking-updated event'
 );
 
 SELECT * FROM finish();
