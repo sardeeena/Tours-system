@@ -28,7 +28,7 @@ RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = ''
-AS $$
+AS $protect$
 DECLARE
     active_nonce text;
     active_target text;
@@ -57,7 +57,7 @@ BEGIN
     END IF;
     RETURN NEW;
 END;
-$;
+$protect$;
 
 -- Trigger-only function; do not expose it as an RPC.
 REVOKE ALL ON FUNCTION public.protect_profile_role() FROM PUBLIC, anon, authenticated;
@@ -73,7 +73,7 @@ CREATE OR REPLACE FUNCTION public.set_admin_role_by_email(target_email text)
 RETURNS text
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public, auth, pg_temp
+SET search_path = ''
 AS $$
 DECLARE
     clean_email text;
