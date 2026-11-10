@@ -555,14 +555,7 @@ class SupabaseBookingRepository implements IBookingRepository {
       });
     } catch {}
 
-    try {
-      await publishAutomationEvent(
-        'booking.cancellation_requested',
-        { bookingReference, reason, tourTitle: existing.tourTitle, tourDate: existing.date },
-        'booking',
-        existing.bookingId || bookingReference
-      );
-    } catch {}
+
 
     return updated;
   }
