@@ -118,6 +118,77 @@ function setLocal<T>(key: string, data: T): void {
   memoryStore.set(key, JSON.stringify(data));
 }
 
+const isDevelopmentBuild = Boolean(import.meta.env.DEV);
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function requireFinanceBackend(): boolean {
+  if (isSupabaseConfigured()) return true;
+  if (isDevelopmentBuild) return false;
+  throw new Error('Finance services are not configured. Financial records are unavailable until the production Supabase connection is configured.');
+}
+
+function mapDbPayment(row: any): FinancePayment {
+  return {
+    id: row.id,
+    bookingId: row.booking_id,
+    bookingReference: row.booking_reference || '',
+    customerId: row.customer_id || null,
+    customerName: row.customer_name || 'Guest',
+    customerEmail: row.customer_email || '',
+    customerPhone: row.customer_phone || null,
+    amount: Number(row.amount),
+    currency: row.currency || 'EUR',
+    paymentMethod: row.payment_method as FinancePaymentMethod,
+    provider: row.provider || 'unknown',
+    isManual: row.is_manual ?? true,
+    paymentStatus: row.status as FinancePaymentStatus,
+    paymentDate: row.payment_date,
+    transactionReference: row.transaction_reference || '',
+    notes: row.notes || null,
+    recordedBy: row.recorded_by || 'Staff',
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function mapDbRefund(row: any): FinanceRefund {
+  const methodMap: Record<string, FinanceRefund['refundMethod']> = {
+    'Credit Card': 'Card Reversal',
+    Cash: 'Cash Return',
+    'Credit Voucher': 'Store Credit / Voucher',
+    'Original Payment Method': 'Other',
+    'Card Reversal': 'Card Reversal',
+    'Cash Return': 'Cash Return',
+    'Bank Wire': 'Bank Wire',
+    'Store Credit / Voucher': 'Store Credit / Voucher',
+    Other: 'Other',
+  };
+  return {
+    id: row.id,
+    bookingId: row.booking_id,
+    bookingReference: row.booking_reference || '',
+    paymentId: row.payment_id || null,
+    customerId: row.customer_id || null,
+    customerName: row.customer_name || 'Guest',
+    customerEmail: row.customer_email || '',
+    amount: Number(row.amount),
+    requestedAmount: Number(row.requested_amount ?? row.amount),
+    approvedAmount: row.approved_amount != null ? Number(row.approved_amount) : null,
+    currency: row.currency || 'EUR',
+    reason: row.reason || '',
+    status: (row.status || 'requested') as RefundStatus,
+    requestedBy: row.requested_by || 'Staff',
+    approvedBy: row.approved_by || null,
+    processedDate: row.processed_date || null,
+    refundMethod: methodMap[row.refund_method] || 'Other',
+    transactionReference: row.transaction_reference || '',
+    processedBy: row.processed_by || '',
+    notes: row.notes || null,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
 // ------------------------------------------------------------------------------
 // PAYMENT PROVIDERS (Honest Integration Registry)
 // ------------------------------------------------------------------------------
