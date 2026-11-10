@@ -187,6 +187,9 @@ BEGIN
             'status', v_existing_dup.status,
             'paymentStatus', v_existing_dup.payment_status,
             'totalEur', v_existing_dup.total,
+            'subtotalEur', v_existing_dup.subtotal,
+            'extrasTotalEur', v_existing_dup.extras_total,
+            'discountEur', v_existing_dup.discount,
             'bookingDate', v_existing_dup.booking_date,
             'isDuplicate', true,
             'message', 'Idempotent replay: original booking returned.'
@@ -229,6 +232,9 @@ BEGIN
             'status', v_existing_dup.status,
             'paymentStatus', v_existing_dup.payment_status,
             'totalEur', v_existing_dup.total,
+            'subtotalEur', v_existing_dup.subtotal,
+            'extrasTotalEur', v_existing_dup.extras_total,
+            'discountEur', v_existing_dup.discount,
             'bookingDate', v_existing_dup.booking_date,
             'isDuplicate', true,
             'message', 'Idempotent replay: original booking returned.'
