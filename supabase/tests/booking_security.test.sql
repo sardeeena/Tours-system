@@ -74,15 +74,10 @@ SELECT ok(
   'guest role can submit a verified cancellation request'
 );
 
-SET LOCAL ROLE anon;
-SELECT set_config('request.jwt.claims', '{"role":"anon"}', TRUE);
-SELECT throws_ok(
-  'SELECT public.admin_resolve_booking_cancellation(''RST-2026-TEST1234'', ''approve'', NULL)',
-  '42501',
-  'Administrator authorization is required to resolve cancellation requests.',
-  'anonymous users cannot approve or reject cancellations'
+SELECT ok(
+  NOT has_function_privilege('anon', 'public.admin_resolve_booking_cancellation(text,text,text)', 'EXECUTE'),
+  'anonymous users cannot execute the administrative cancellation resolver'
 );
-RESET ROLE;
 
 SELECT ok(
   has_function_privilege('authenticated', 'public.admin_resolve_booking_cancellation(text,text,text)', 'EXECUTE'),
