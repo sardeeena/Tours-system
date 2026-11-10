@@ -1,5 +1,4 @@
 import { Booking } from '../types/booking';
-import { APP_CONFIG } from '../config/appConfig';
 
 export interface INotificationService {
   sendBookingConfirmation(booking: Booking): Promise<{ success: boolean; channel: string }>;
@@ -7,33 +6,18 @@ export interface INotificationService {
 }
 
 /**
- * Notification Service
- * Dispatches confirmation emails and SMS vouchers to booked customers.
+ * Booking notifications are intentionally fail-closed.
+ * The public booking flow does not hold a staff session and must not call a privileged
+ * communications endpoint or claim delivery without a configured server-side dispatcher.
+ * A future server-side booking event worker will deliver these messages asynchronously.
  */
 class NotificationService implements INotificationService {
-  async sendBookingConfirmation(booking: Booking): Promise<{ success: boolean; channel: string }> {
-    console.info('[NotificationService] Booking Confirmation Dispatched:', {
-      recipientEmail: booking.customer.email,
-      recipientPhone: `${booking.customer.countryCode}${booking.customer.phoneNumber}`,
-      bookingReference: booking.bookingReference,
-      tour: booking.tourTitle,
-      date: booking.date,
-      total: booking.pricing.formattedTotal,
-      paymentStatus: booking.paymentStatus,
-    });
-
-    return { success: true, channel: 'email-sms' };
+  async sendBookingConfirmation(_booking: Booking): Promise<{ success: boolean; channel: string }> {
+    return { success: false, channel: 'not-configured' };
   }
 
-  async sendCancellationNotification(booking: Booking): Promise<{ success: boolean; channel: string }> {
-    console.info('[NotificationService] Cancellation Notification Dispatched:', {
-      recipientEmail: booking.customer.email,
-      bookingReference: booking.bookingReference,
-      reason: booking.cancellationReason,
-      requestedAt: booking.cancellationRequestedAt,
-    });
-
-    return { success: true, channel: 'email-sms' };
+  async sendCancellationNotification(_booking: Booking): Promise<{ success: boolean; channel: string }> {
+    return { success: false, channel: 'not-configured' };
   }
 }
 
