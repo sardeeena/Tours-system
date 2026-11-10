@@ -122,8 +122,9 @@ export const AdminBookingsList: React.FC = () => {
     if (!bookingToCancel) return;
     const ref = bookingToCancel.bookingReference;
     try {
-      await bookingRepository.cancelBooking(ref, cancelReason);
-      showToast(`Booking ${ref} cancelled.`, 'info');
+      const resolved = await bookingRepository.resolveBookingCancellation(ref, 'approve', cancelReason);
+      if (!resolved) throw new Error('Booking not found.');
+      showToast(`Booking ${ref} cancelled and capacity released.`, 'info');
       if (selectedBooking?.bookingReference === ref) {
         setSelectedBooking({
           ...bookingToCancel,
