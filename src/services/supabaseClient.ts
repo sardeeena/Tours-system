@@ -188,6 +188,9 @@ export const updateSupabaseCredentials = (url: string, anonKey: string): boolean
   const cleanKey = anonKey.trim();
 
   if (hasAnySupabaseEnv) {
+    if (sanitizeSupabaseUrl(cleanUrl) === envUrl && cleanKey === (envAnonKey || '')) {
+      return true;
+    }
     throw new Error(
       'Supabase connection settings are controlled by deployment environment variables. Configure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Hostinger instead of overriding them in browser storage.'
     );
