@@ -383,166 +383,82 @@ export async function listInvoices(filter?: {
   status?: string;
   search?: string;
 }): Promise<FinanceInvoice[]> {
-  let invoices = getLocal<FinanceInvoice[]>(LOCAL_INVOICES_KEY, []);
+  let invoices: FinanceInvoice[];
 
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('invoices')
-        .select('*')
-        .order('issue_date', { ascending: false });
+  if (!requireFinanceBackend()) {
+    invoices = getLocal<FinanceInvoice[]>(LOCAL_INVOICES_KEY, []);
+  } else {
+    const { data, error } = await supabase
+      .from('invoices')
+      .select('*')
+      .order('issue_date', { ascending: false });
 
-      if (!error && data && data.length > 0) {
-        invoices = data.map((d: any) => ({
-          id: d.id,
-          invoiceNumber: d.invoice_number,
-          bookingId: d.booking_id,
-          bookingReference: d.booking_reference || d.booking_id,
-          customerId: d.customer_id,
-          issueDate: d.issue_date,
-          dueDate: d.due_date,
-          customer: {
-            name: d.customer_name || 'Guest',
-            email: d.customer_email || '',
-            phone: d.customer_phone || null,
-          },
-          tourTitle: d.tour_title || 'Excursion',
-          tourDate: d.tour_date || d.issue_date,
-          guests: { adults: 1, children: 0, infants: 0 },
-          lineItems: (d.line_items as InvoiceLineItem[]) || [],
-          subtotal: Number(d.subtotal),
-          discount: Number(d.discount),
-          taxRatePercent: 0,
-          taxAmount: Number(d.tax_amount),
-          total: Number(d.total),
-          paid: Number(d.paid),
-          balance: Number(d.balance),
-          currency: d.currency || 'EUR',
-          status: d.status,
-          companyDetails: (d.company_details as CompanyBillingDetails) || COMPANY_DETAILS,
-          notes: d.notes,
-          createdAt: d.created_at,
-          updatedAt: d.updated_at,
-        }));
-        setLocal(LOCAL_INVOICES_KEY, invoices);
-      }
-    } catch {
-      // ignore
+    if (error) throw new Error(formatSupabaseError(error));
+
+    const bookingIds = Array.from(new Set((data || []).map((row: any) => row.booking_id).filter(Boolean)));
+    const guestCounts = new Map<string, { adults: number; children: number; infants: number }>();
+
+    if (bookingIds.length > 0) {
+      const { data: bookingRows, error: bookingError } = await supabase
+        .from('bookings')
+        .select('id,adult_count,child_count,infant_count')
+        .in('id', bookingIds);
+
+      if (bookingError) throw new Error(formatSupabaseError(bookingError));
+      (bookingRows || []).forEach((booking: any) => {
+        guestCounts.set(booking.id, {
+          adults: Number(booking.adult_count || 0),
+          children: Number(booking.child_count || 0),
+          infants: Number(booking.infant_count || 0),
+        });
+      });
     }
-  }
 
-  // If no invoices exist, generate invoices from bookings
-  if (invoices.length === 0) {
-    const bookings = await bookingRepository.listBookings();
-    const payments = await listPayments();
-
-    invoices = bookings.map((b, idx) => {
-      const bookingPayments = payments.filter(
-        (p) =>
-          (p.bookingReference === b.bookingReference || p.bookingId === b.bookingId) &&
-          (p.paymentStatus === 'Paid' || p.paymentStatus === 'paid')
-      );
-      const paidAmount = bookingPayments.reduce((sum, p) => sum + p.amount, 0);
-      const total = b.pricing?.totalEur || 0;
-      const subtotal = b.pricing?.subtotalEur || total;
-      const discount = b.pricing?.discountEur || 0;
-      const balance = Math.max(0, total - paidAmount);
-
-      let invoiceStatus: FinanceInvoice['status'] = 'issued';
-      if (balance <= 0) invoiceStatus = 'paid';
-      else if (paidAmount > 0) invoiceStatus = 'partially_paid';
-
-      const lineItems: InvoiceLineItem[] = [
-        {
-          id: `line-${b.bookingReference}-01`,
-          description: `${b.tourTitle} - Excursion Package (${b.guests.adults} Adults${
-            b.guests.children > 0 ? `, ${b.guests.children} Children` : ''
-          })`,
-          quantity: 1,
-          unitPrice: subtotal,
-          total: subtotal,
-          type: 'tour',
-        },
-      ];
-
-      if (b.pickup.feeEur > 0) {
-        lineItems.push({
-          id: `line-${b.bookingReference}-pickup`,
-          description: `Hotel Pickup Transfer (${b.pickup.hotelName || b.pickup.locationName || 'Hurghada'})`,
-          quantity: (b.guests.adults || 1) + (b.guests.children || 0),
-          unitPrice: b.pickup.feeEur,
-          total: b.pricing?.pickupSubtotalEur || b.pickup.feeEur,
-          type: 'pickup',
-        });
-      }
-
-      if (b.extras && b.extras.length > 0) {
-        b.extras.forEach((e, eIdx) => {
-          lineItems.push({
-            id: `line-${b.bookingReference}-ext-${eIdx}`,
-            description: `Extra: ${e.name}`,
-            quantity: e.quantity || 1,
-            unitPrice: e.priceEur,
-            total: e.amountEur || e.priceEur,
-            type: 'extra',
-          });
-        });
-      }
-
-      return {
-        id: `inv-${b.bookingReference}`,
-        invoiceNumber: `INV-${new Date().getFullYear()}-${String(idx + 1).padStart(4, '0')}`,
-        bookingId: b.bookingId || b.bookingReference,
-        bookingReference: b.bookingReference,
-        customerId: (b as any).customerId || null,
-        issueDate: b.createdAt ? b.createdAt.split('T')[0] : new Date().toISOString().split('T')[0],
-        dueDate: b.date ? b.date.split('T')[0] : new Date().toISOString().split('T')[0],
-        customer: {
-          name: `${b.customer.firstName} ${b.customer.lastName}`,
-          email: b.customer.email,
-          phone: b.customer.phoneNumber,
-          hotel: b.pickup.hotelName,
-          roomNumber: b.pickup.roomNumber,
-          country: (b.customer as any).nationality || b.customer.countryCode,
-        },
-        tourTitle: b.tourTitle,
-        tourDate: b.date,
-        guests: b.guests,
-        lineItems,
-        subtotal,
-        discount,
-        taxRatePercent: 0,
-        taxAmount: 0,
-        total,
-        paid: paidAmount,
-        balance,
-        currency: 'EUR',
-        status: invoiceStatus,
-        companyDetails: COMPANY_DETAILS,
-        notes: 'Commercial Invoice issued for maritime tour services.',
-        createdAt: b.createdAt || new Date().toISOString(),
-        updatedAt: b.createdAt || new Date().toISOString(),
-      };
-    });
-
+    invoices = (data || []).map((row: any) => ({
+      id: row.id,
+      invoiceNumber: row.invoice_number,
+      bookingId: row.booking_id,
+      bookingReference: row.booking_reference || row.booking_id,
+      customerId: row.customer_id || null,
+      issueDate: row.issue_date,
+      dueDate: row.due_date,
+      customer: {
+        name: row.customer_name || 'Guest',
+        email: row.customer_email || '',
+        phone: row.customer_phone || null,
+      },
+      tourTitle: row.tour_title || '',
+      tourDate: row.tour_date || '',
+      guests: guestCounts.get(row.booking_id) || { adults: 0, children: 0, infants: 0 },
+      lineItems: (row.line_items as InvoiceLineItem[]) || [],
+      subtotal: Number(row.subtotal || 0),
+      discount: Number(row.discount || 0),
+      taxRatePercent: Number(row.subtotal) > 0 ? (Number(row.tax_amount || 0) / Number(row.subtotal)) * 100 : 0,
+      taxAmount: Number(row.tax_amount || 0),
+      total: Number(row.total || 0),
+      paid: Number(row.paid || 0),
+      balance: Number(row.balance || 0),
+      currency: row.currency || 'EUR',
+      status: row.status,
+      companyDetails: (row.company_details as CompanyBillingDetails) || COMPANY_DETAILS,
+      notes: row.notes || null,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    }));
     setLocal(LOCAL_INVOICES_KEY, invoices);
   }
 
-  return invoices.filter((inv) => {
-    if (filter?.bookingId && inv.bookingId !== filter.bookingId && inv.bookingReference !== filter.bookingId) {
-      return false;
-    }
-    if (filter?.status && filter.status !== 'all' && inv.status !== filter.status) {
-      return false;
-    }
+  return invoices.filter((invoice) => {
+    if (filter?.bookingId && invoice.bookingId !== filter.bookingId && invoice.bookingReference !== filter.bookingId) return false;
+    if (filter?.status && filter.status !== 'all' && invoice.status !== filter.status) return false;
     if (filter?.search?.trim()) {
-      const q = filter.search.toLowerCase();
+      const query = filter.search.toLowerCase();
       return (
-        inv.invoiceNumber.toLowerCase().includes(q) ||
-        inv.bookingReference.toLowerCase().includes(q) ||
-        inv.customer.name.toLowerCase().includes(q) ||
-        inv.customer.email.toLowerCase().includes(q) ||
-        inv.tourTitle.toLowerCase().includes(q)
+        invoice.invoiceNumber.toLowerCase().includes(query) ||
+        invoice.bookingReference.toLowerCase().includes(query) ||
+        invoice.customer.name.toLowerCase().includes(query) ||
+        invoice.customer.email.toLowerCase().includes(query) ||
+        invoice.tourTitle.toLowerCase().includes(query)
       );
     }
     return true;
