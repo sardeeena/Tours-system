@@ -730,164 +730,74 @@ export async function requestRefund(refundData: {
   requestedBy: string;
   notes?: string | null;
 }): Promise<{ success: boolean; error?: string; refund?: FinanceRefund }> {
-  // Audit Check: Verify requested amount does not exceed net paid amount for this booking
-  const payments = await listPayments({ bookingId: refundData.bookingReference });
-  const totalPaid = payments
-    .filter((p) => p.paymentStatus === 'Paid' || p.paymentStatus === 'paid')
-    .reduce((sum, p) => sum + p.amount, 0);
-
-  const existingRefunds = await listRefunds({ bookingId: refundData.bookingReference });
-
-  // Prevent duplicate concurrent requests with identical parameters
-  const duplicatePending = existingRefunds.find(
-    (r) =>
-      r.status === 'pending_approval' &&
-      r.bookingReference === refundData.bookingReference &&
-      Math.abs(r.requestedAmount - refundData.requestedAmount) < 0.01 &&
-      r.reason === refundData.reason.trim()
-  );
-  if (duplicatePending) {
-    return {
-      success: false,
-      error: `A duplicate refund request for €${refundData.requestedAmount} is already pending approval (Ref: ${duplicatePending.transactionReference}).`,
-    };
+  if (!Number.isFinite(refundData.requestedAmount) || refundData.requestedAmount <= 0) {
+    return { success: false, error: 'Refund amount must be a valid number greater than zero.' };
+  }
+  if (!refundData.bookingReference?.trim() || !refundData.reason?.trim()) {
+    return { success: false, error: 'A booking reference and refund reason are required.' };
   }
 
-  // Audit Check: Count all committed refunds (processed, approved, pending) so in-flight requests cannot exceed net balance
-  const activeRefunds = existingRefunds.filter(
-    (r) => r.status === 'processed' || r.status === 'approved' || r.status === 'pending_approval'
-  );
-  const totalCommittedRefunds = activeRefunds.reduce(
-    (sum, r) => sum + (r.approvedAmount || r.requestedAmount || r.amount),
-    0
-  );
-  const maxAvailableToRefund = Math.max(0, totalPaid - totalCommittedRefunds);
-
-  if (refundData.requestedAmount <= 0) {
-    return { success: false, error: 'Refund requested amount must be greater than zero.' };
-  }
-
-  if (refundData.requestedAmount > maxAvailableToRefund) {
-    return {
-      success: false,
-      error: `Cannot request €${refundData.requestedAmount}. Maximum refundable balance is €${maxAvailableToRefund.toFixed(2)} (€${totalPaid.toFixed(2)} paid minus €${totalCommittedRefunds.toFixed(2)} committed/processed refunds).`,
-    };
-  }
-
-  const txRef = `REQ-REF-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
-
-  const newRefund: FinanceRefund = {
-    id: `ref-${Date.now().toString(36)}`,
-    bookingId: refundData.bookingId,
-    bookingReference: refundData.bookingReference,
-    paymentId: refundData.paymentId || null,
-    customerId: refundData.customerId || null,
-    customerName: refundData.customerName,
-    customerEmail: refundData.customerEmail,
-    amount: refundData.requestedAmount,
-    requestedAmount: Number(refundData.requestedAmount),
-    approvedAmount: null,
-    currency: refundData.currency || 'EUR',
-    reason: refundData.reason.trim(),
-    status: 'pending_approval',
-    requestedBy: refundData.requestedBy || 'Staff',
-    approvedBy: null,
-    processedDate: null,
-    refundMethod: refundData.refundMethod,
-    transactionReference: txRef,
-    processedBy: 'Pending Audit',
-    notes: refundData.notes || null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-
-  // Authoritative Database Sync First
-  if (isSupabaseConfigured()) {
-    try {
-      let resolvedBookingUuid = newRefund.bookingId;
-      let resolvedCustomerUuid = newRefund.customerId;
-
-      if (!resolvedBookingUuid?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-        const { data: bRow } = await supabase
-          .from('bookings')
-          .select('id, customer_id')
-          .eq('booking_reference', newRefund.bookingReference)
-          .maybeSingle();
-
-        if (bRow) {
-          resolvedBookingUuid = bRow.id;
-          if (!resolvedCustomerUuid && bRow.customer_id) {
-            resolvedCustomerUuid = bRow.customer_id;
-          }
-        }
-      }
-
-      if (resolvedBookingUuid?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-        // Map UI method to DB CHECK constraint: ('Original Payment Method', 'Cash', 'Credit Card', 'Bank Wire', 'Credit Voucher')
-        const dbMethod =
-          newRefund.refundMethod === 'Card Reversal'
-            ? 'Credit Card'
-            : newRefund.refundMethod === 'Cash Return'
-            ? 'Cash'
-            : newRefund.refundMethod === 'Bank Wire'
-            ? 'Bank Wire'
-            : newRefund.refundMethod === 'Store Credit / Voucher'
-            ? 'Credit Voucher'
-            : 'Original Payment Method';
-
-        const refundPayload: Record<string, any> = {
-          booking_id: resolvedBookingUuid,
-          booking_reference: newRefund.bookingReference,
-          payment_id: newRefund.paymentId && newRefund.paymentId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i) ? newRefund.paymentId : null,
-          customer_name: newRefund.customerName,
-          customer_email: newRefund.customerEmail,
-          amount: newRefund.amount,
-          requested_amount: newRefund.requestedAmount,
-          currency: newRefund.currency || 'EUR',
-          reason: newRefund.reason,
-          status: newRefund.status,
-          requested_by: newRefund.requestedBy,
-          refund_method: dbMethod,
-          transaction_reference: newRefund.transactionReference,
-          processed_by: newRefund.processedBy,
-          notes: newRefund.notes,
-        };
-
-        if (resolvedCustomerUuid?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-          refundPayload.customer_id = resolvedCustomerUuid;
-        }
-
-        const { data: insRefund, error: refError } = await supabase
-          .from('refund_records')
-          .insert(refundPayload)
-          .select('id')
-          .maybeSingle();
-
-        if (refError) {
-          console.error('Supabase refund insert error:', refError);
-          return { success: false, error: formatSupabaseError(refError) };
-        }
-
-        if (insRefund?.id) {
-          newRefund.id = insRefund.id;
-        }
-      }
-    } catch (err: any) {
-      console.error('Error inserting refund record in Supabase:', err);
-      return { success: false, error: err.message || 'Database error recording refund.' };
+  if (!requireFinanceBackend()) {
+    const payments = await listPayments({ bookingId: refundData.bookingReference });
+    const totalPaid = payments.filter(isSettledPayment).reduce((sum, payment) => sum + payment.amount, 0);
+    const existingRefunds = await listRefunds({ bookingId: refundData.bookingReference });
+    const committed = existingRefunds
+      .filter((refund) => ['pending_approval', 'approved', 'processed'].includes(refund.status))
+      .reduce((sum, refund) => sum + (refund.approvedAmount || refund.requestedAmount || refund.amount), 0);
+    if (refundData.requestedAmount > Math.max(0, totalPaid - committed)) {
+      return { success: false, error: 'Refund exceeds the remaining refundable balance.' };
     }
+    const now = new Date().toISOString();
+    const localRefund: FinanceRefund = {
+      id: `dev-ref-${crypto.randomUUID()}`,
+      bookingId: refundData.bookingId,
+      bookingReference: refundData.bookingReference,
+      paymentId: refundData.paymentId || null,
+      customerId: refundData.customerId || null,
+      customerName: refundData.customerName,
+      customerEmail: refundData.customerEmail,
+      amount: refundData.requestedAmount,
+      requestedAmount: refundData.requestedAmount,
+      approvedAmount: null,
+      currency: refundData.currency,
+      reason: refundData.reason.trim(),
+      status: 'pending_approval',
+      requestedBy: refundData.requestedBy,
+      approvedBy: null,
+      processedDate: null,
+      refundMethod: refundData.refundMethod,
+      transactionReference: `DEV-REF-${crypto.randomUUID()}`,
+      processedBy: '',
+      notes: refundData.notes || null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    const current = getLocal<FinanceRefund[]>(LOCAL_REFUNDS_KEY, []);
+    setLocal(LOCAL_REFUNDS_KEY, [localRefund, ...current]);
+    return { success: true, refund: localRefund };
   }
 
-  // Only commit to local state after authoritative database operation succeeds
-  const allRefunds = await listRefunds();
-  setLocal(LOCAL_REFUNDS_KEY, [newRefund, ...allRefunds]);
+  const idempotencyKey = `refund:${refundData.bookingReference.trim().toUpperCase()}:${refundData.requestedAmount.toFixed(2)}:${refundData.reason.trim().toLowerCase().slice(0, 90)}`;
+  const { data, error } = await supabase.rpc('request_refund_atomic', {
+    p_booking_reference: refundData.bookingReference,
+    p_payment_id: refundData.paymentId && UUID_PATTERN.test(refundData.paymentId) ? refundData.paymentId : null,
+    p_requested_amount: Number(refundData.requestedAmount),
+    p_currency: refundData.currency.toUpperCase(),
+    p_reason: refundData.reason.trim(),
+    p_refund_method: refundData.refundMethod,
+    p_requested_by: refundData.requestedBy || 'Staff',
+    p_notes: refundData.notes || null,
+    p_idempotency_key: idempotencyKey,
+  });
 
-  return { success: true, refund: newRefund };
+  if (error) return { success: false, error: formatSupabaseError(error) };
+  const result = data as any;
+  if (!result?.success || !result?.refund?.id) {
+    return { success: false, error: 'The database did not confirm the refund request.' };
+  }
+  return { success: true, refund: mapDbRefund(result.refund) };
 }
 
-/**
- * Step 2: Approve a Refund (Authorized finance auditor/admin approves the amount)
- */
 export async function approveRefund(
   refundId: string,
   approvedAmount: number,
