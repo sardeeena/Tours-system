@@ -170,7 +170,7 @@ export const AdminAvailabilityManager: React.FC = () => {
       tour_id: slot.tour_id,
       date: slot.date,
       max_capacity: slot.max_capacity,
-      booked_count: slot.booked_count,
+      // Never overwrite the live counter from a stale admin-screen snapshot.
       status: slot.status,
       notes: slot.notes,
     }));
@@ -220,7 +220,8 @@ export const AdminAvailabilityManager: React.FC = () => {
         max_capacity: maxCapacity,
         // "Mark available" must not erase existing reservations or reopen a full slot.
         booked_count: bookedCount,
-        status: bookedCount >= maxCapacity ? 'sold_out' : 'available',
+        // The schedule RPC independently reports sold-out when live capacity is full.
+        status: 'available',
         notes: current?.notes ?? null,
         created_at: current?.created_at || new Date().toISOString(),
         updated_at: new Date().toISOString(),
