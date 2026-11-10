@@ -525,7 +525,7 @@ export async function generateInvoiceForBooking(bookingReference: string): Promi
       paid: 0,
       balance: booking.pricing?.totalEur || 0,
       currency: 'EUR',
-      status: 'issued',
+      status: 'draft',
       companyDetails: COMPANY_DETAILS,
       notes: 'Development preview only. Not a valid tax invoice.',
       createdAt: new Date().toISOString(),
@@ -610,6 +610,13 @@ export async function generateInvoiceForBooking(bookingReference: string): Promi
     throw new Error(numberError ? formatSupabaseError(numberError) : 'The database did not allocate an invoice number.');
   }
 
+  const billingDetailsComplete = Boolean(
+    COMPANY_DETAILS.name.trim() &&
+    COMPANY_DETAILS.address.trim() &&
+    COMPANY_DETAILS.country.trim() &&
+    COMPANY_DETAILS.taxRegistrationNumber.trim()
+  );
+
   const newInvoice: FinanceInvoice = {
     id: '',
     invoiceNumber: String(invoiceNumber),
@@ -639,9 +646,13 @@ export async function generateInvoiceForBooking(bookingReference: string): Promi
     paid: paidAmount,
     balance,
     currency,
-    status: balance <= 0 ? 'paid' : paidAmount > 0 ? 'partially_paid' : 'issued',
+    status: billingDetailsComplete
+      ? (balance <= 0 ? 'paid' : paidAmount > 0 ? 'partially_paid' : 'issued')
+      : 'draft',
     companyDetails: COMPANY_DETAILS,
-    notes: null,
+    notes: billingDetailsComplete
+      ? null
+      : 'Draft only. Configure the legal entity name, registered address, country and tax registration details before issuing this invoice.',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
