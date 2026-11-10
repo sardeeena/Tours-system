@@ -26,7 +26,7 @@ import {
   DbSeoMetadata,
 } from '../types/database';
 import { PickupLocation, BookingExtra } from '../types/booking';
-import { ALL_TOURS, POPULAR_DESTINATIONS, TOUR_CATEGORIES, REVIEWS_DATA } from '../data/toursData';
+import { ALL_TOURS, POPULAR_DESTINATIONS, TOUR_CATEGORIES } from '../data/toursData';
 
 /**
  * Transforms database tour record with related collections into the frontend Tour structure
@@ -1967,21 +1967,7 @@ export async function getPublishedReviews(tourSlug?: string): Promise<PublishedR
   };
 
   if (!isSupabaseConfigured() || isSchemaMissing()) {
-    const filtered = tourSlug ? REVIEWS_DATA.filter((r) => r.tourSlug === tourSlug) : REVIEWS_DATA;
-    const avg = filtered.length > 0 ? filtered.reduce((s, r) => s + r.rating, 0) / filtered.length : 5.0;
-    return {
-      reviews: filtered,
-      averageRating: Math.round(avg * 10) / 10,
-      totalCount: filtered.length,
-      recommendationRate: 98,
-      breakdown: {
-        5: filtered.filter((r) => r.rating === 5).length,
-        4: filtered.filter((r) => r.rating === 4).length,
-        3: 0,
-        2: 0,
-        1: 0,
-      },
-    };
+    return emptyResult;
   }
 
   try {

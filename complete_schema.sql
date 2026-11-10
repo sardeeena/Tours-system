@@ -615,7 +615,7 @@ CREATE TABLE IF NOT EXISTS public.tours (
     difficulty TEXT NOT NULL DEFAULT 'Easy' CHECK (difficulty IN ('Easy', 'Moderate', 'Challenging', 'Demanding')),
     age_restrictions TEXT DEFAULT 'Suitable for all ages',
     badge TEXT,
-    rating NUMERIC(3,2) DEFAULT 5.00,
+    rating NUMERIC(3,2) DEFAULT 0.00,
     review_count INT NOT NULL DEFAULT 0,
     sort_order INT NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

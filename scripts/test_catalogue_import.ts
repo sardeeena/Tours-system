@@ -116,6 +116,67 @@ async function runTestSuite() {
   assert(ALL_TOURS.length === 13, `Source contains exact 13 authoritative tours (found ${ALL_TOURS.length})`);
   assert(POPULAR_DESTINATIONS.length === 7, `Source contains exact 7 destinations (found ${POPULAR_DESTINATIONS.length})`);
   assert(TOUR_CATEGORIES.length === 6, `Source contains exact 6 categories (found ${TOUR_CATEGORIES.length})`);
+  assert(REVIEWS_DATA.length === 0, 'No fabricated static guest reviews are shipped');
+
+  assert(
+    ALL_TOURS.every((tour) => tour.rating === 0 && tour.reviewCount === 0 && (!tour.reviews || tour.reviews.length === 0)),
+    'Tours do not ship unsupported ratings, review counts, or embedded testimonials'
+  );
+
+  assert(
+    POPULAR_DESTINATIONS.every((destination) =>
+      destination.tourCount === ALL_TOURS.filter((tour) => tour.destination === destination.name).length
+    ),
+    'Destination excursion counts are derived from the actual catalogue'
+  );
+
+  const categoryAliases: Record<string, string[]> = {
+    'Boat Trips': ['Boat Trip', 'Boat Trips', 'Island', 'Island Visits'],
+    'Private Tours': ['Private Tour', 'Private Tours'],
+    Safari: ['Safari', 'Quad'],
+  };
+  assert(
+    TOUR_CATEGORIES.every((category) => {
+      const aliases = categoryAliases[category.name] || [category.name];
+      const count = ALL_TOURS.filter((tour) =>
+        aliases.some((alias) => tour.category === alias || tour.categories.includes(alias))
+      ).length;
+      return category.tourCount === count;
+    }),
+    'Category excursion counts are derived from the actual catalogue'
+  );
+
+  const tourServiceSource = fs.readFileSync(path.resolve('src/services/tourService.ts'), 'utf8');
+  assert(
+    !tourServiceSource.includes('recommendationRate: 98') && !tourServiceSource.includes('REVIEWS_DATA.filter'),
+    'Unconfigured frontend never substitutes invented review totals or testimonials'
+  );
+
+  const seoConfigSource = fs.readFileSync(path.resolve('src/services/seoConfig.ts'), 'utf8');
+  const seoServiceSource = fs.readFileSync(path.resolve('src/services/seoService.ts'), 'utf8');
+  const tourBookingPanelSource = fs.readFileSync(path.resolve('src/components/tours/TourBookingPanel.tsx'), 'utf8');
+  const tourCardSource = fs.readFileSync(path.resolve('src/components/tours/TourCard.tsx'), 'utf8');
+  assert(
+    !seoConfigSource.includes('reviewCount: \'1240\'') &&
+      !seoConfigSource.includes('Yes, all Red Sea excursions include door-to-door'),
+    'Homepage SEO contains no fabricated aggregate reviews or universal pickup claim'
+  );
+  assert(
+    !seoConfigSource.includes('All full-day island cruises and boat trips provide professional masks') &&
+      !seoConfigSource.includes('We provide free cancellation up to 24 hours prior to departure'),
+    'Homepage FAQs do not promise universal equipment or cancellation terms'
+  );
+  assert(
+    tourBookingPanelSource.includes('{tour.cancellationPolicy ||') &&
+      !tourBookingPanelSource.includes('Free cancellation up to 24 hours prior to departure.'),
+    'Booking panel displays the selected tour cancellation policy'
+  );
+  assert(
+    !tourCardSource.includes('Free 24h Cancellation') &&
+      !seoServiceSource.includes('hotel lobby pickup included, free 24h cancellation'),
+    'Tour cards and SEO do not imply a universal 24-hour cancellation window'
+  );
+
   assert(STANDARD_PICKUP_LOCATIONS.length === 7, `Source contains exact 7 pickup zones (found ${STANDARD_PICKUP_LOCATIONS.length})`);
   assert(GLOBAL_BOOKING_EXTRAS.length === 6, `Source contains exact 6 booking extras (found ${GLOBAL_BOOKING_EXTRAS.length})`);
 

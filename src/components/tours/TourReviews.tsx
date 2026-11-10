@@ -109,7 +109,7 @@ export const TourReviews: React.FC<TourReviewsProps> = ({ tour }) => {
           </h3>
           <p className="text-xs text-stone-500 dark:text-slate-400">
             {totalReviews > 0
-              ? `Verified impressions for ${tour.title}`
+              ? `Published guest feedback for ${tour.title}`
               : `Share the first review for ${tour.title}`}
           </p>
         </div>
@@ -152,7 +152,7 @@ export const TourReviews: React.FC<TourReviewsProps> = ({ tour }) => {
               Based on {totalReviews} {totalReviews === 1 ? 'traveler rating' : 'traveler ratings'}
             </span>
             <span className="text-[10px] text-stone-400 dark:text-slate-500 mt-1">
-              (Verified guest ratings)
+              (Published guest ratings)
             </span>
           </div>
 

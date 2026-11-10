@@ -104,7 +104,7 @@ export const TourCard: React.FC<TourCardProps> = ({
         {/* Free Cancellation Tag */}
         <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-md text-emerald-900 text-[10px] font-semibold px-2.5 py-0.5 rounded-full shadow-sm flex items-center border border-emerald-200/50">
           <CheckCircle2 className="w-3 h-3 mr-1 text-emerald-600 shrink-0" />
-          <span>Free 24h Cancellation</span>
+          <span>Free Cancellation</span>
         </div>
       </div>
 

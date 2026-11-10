@@ -183,7 +183,7 @@ CREATE TABLE IF NOT EXISTS public.tours (
     difficulty TEXT DEFAULT 'Easy' CHECK (difficulty IN ('Easy', 'Moderate', 'Adventurous')),
     age_restrictions TEXT DEFAULT 'Suitable for all ages. Children under 2 join free.',
     badge TEXT,
-    rating NUMERIC(2,1) NOT NULL DEFAULT 4.9,
+    rating NUMERIC(2,1) NOT NULL DEFAULT 0.0,
     review_count INT NOT NULL DEFAULT 0,
     sort_order INT NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

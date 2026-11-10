@@ -58,7 +58,7 @@ export const ReviewsSection: React.FC = () => {
               What Travelers Say
             </h2>
             <p className="text-stone-600 dark:text-slate-300 text-sm sm:text-base mt-2 max-w-xl leading-relaxed">
-              Verified feedback from guests following excursion completion across Hurghada, El Gouna, and Makadi Bay.
+              Guest feedback shared after completed excursions across our Red Sea destinations.
             </p>
           </div>
 
@@ -90,7 +90,7 @@ export const ReviewsSection: React.FC = () => {
               <div className="h-10 w-px bg-stone-200 dark:bg-slate-700" />
               <div>
                 <span className="text-xs font-bold text-stone-900 dark:text-white block">
-                  {data.totalCount} Verified {data.totalCount === 1 ? 'Review' : 'Reviews'}
+                  {data.totalCount} Published {data.totalCount === 1 ? 'Review' : 'Reviews'}
                 </span>
                 {data.recommendationRate > 0 && (
                   <span className="text-[11px] text-stone-500 dark:text-slate-400">

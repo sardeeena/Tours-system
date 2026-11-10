@@ -12,7 +12,7 @@ export interface SeoMetadata {
   schemaJsonLd?: Record<string, unknown>;
 }
 
-const DEFAULT_TITLE = 'Awesome Adventure Tours | Verified Excursions, Boat Trips & Safaris';
+const DEFAULT_TITLE = 'Awesome Adventure Tours | Excursions, Boat Trips & Safaris';
 const DEFAULT_DESCRIPTION = 'Awesome Adventure Tours - Professional tour operator and excursion booking platform specializing in boat trips, coral snorkeling, diving, and desert safaris.';
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80';
 const SITE_NAME = 'Awesome Adventure Tours';
@@ -124,12 +124,12 @@ export const seoService = {
    * Generates tailored SEO metadata for an Excursion Detail Page
    */
   generateTourSeo(tour: Tour): SeoMetadata {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://awesomeadventure.tours';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kemetspirit.com';
     const tourUrl = `${origin}/excursions/${tour.slug}`;
     const formattedPrice = `€${tour.priceEur}`;
 
     const title = `${tour.title} (${tour.destination}) | Direct Booking`;
-    const description = `Book ${tour.title} in ${tour.destination}. ${tour.durationLabel}, hotel lobby pickup included, free 24h cancellation. Starting from ${formattedPrice}/person.`;
+    const description = `Book ${tour.title} in ${tour.destination}. ${tour.durationLabel}. Check this excursion's pickup details, inclusions, and cancellation terms before booking. From ${formattedPrice}/person.`;
 
     const schemaJsonLd: Record<string, unknown> = {
       '@context': 'https://schema.org',
@@ -142,21 +142,12 @@ export const seoService = {
         '@type': 'Offer',
         price: tour.priceEur,
         priceCurrency: 'EUR',
-        availability: 'https://schema.org/InStock',
-        validFrom: new Date().toISOString().split('T')[0],
         url: tourUrl,
         seller: {
           '@type': 'TravelAgency',
           name: SITE_NAME,
           telephone: '+201515212741',
         },
-      },
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: tour.rating.toFixed(1),
-        reviewCount: tour.reviewCount,
-        bestRating: '5',
-        worstRating: '1',
       },
       provider: {
         '@type': 'TravelAgency',
@@ -175,6 +166,16 @@ export const seoService = {
       },
     };
 
+    if (tour.reviewCount > 0 && tour.rating > 0) {
+      schemaJsonLd.aggregateRating = {
+        '@type': 'AggregateRating',
+        ratingValue: tour.rating.toFixed(1),
+        reviewCount: tour.reviewCount,
+        bestRating: '5',
+        worstRating: '1',
+      };
+    }
+
     return {
       title,
       description,
@@ -184,7 +185,6 @@ export const seoService = {
         tour.category,
         'Red Sea excursion',
         'Hurghada boat trip',
-        'hotel pickup included',
       ],
       canonicalUrl: tourUrl,
       ogType: 'product',
@@ -199,16 +199,16 @@ export const seoService = {
    * Generates tailored SEO metadata for Category & Filter Views
    */
   generateCategorySeo(categoryName: string, tourCount: number, matchingTours: Tour[] = []): SeoMetadata {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://awesomeadventure.tours';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kemetspirit.com';
     const isAll = categoryName === 'All' || !categoryName;
 
     const title = isAll
       ? 'All Red Sea Excursions & Boat Trips | Hurghada, El Gouna & Sinai'
-      : `${categoryName} Excursions in Red Sea | Verified Boat Trips & Safaris`;
+      : `${categoryName} Excursions in Red Sea | Boat Trips & Safaris`;
 
     const description = isAll
-      ? `Compare ${tourCount} verified Red Sea boat trips, island cruises, snorkeling reefs, and desert safaris. Direct local operator with free cancellation and hotel pickup.`
-      : `Explore ${tourCount} top-rated ${categoryName.toLowerCase()} in Hurghada and the Red Sea. Direct harbor departures, snorkeling equipment, and door-to-door hotel transfers included.`;
+      ? `Compare ${tourCount} Red Sea boat trips, island cruises, snorkeling reefs, and desert safaris. Review pickup details, inclusions, and cancellation terms for each excursion.`
+      : `Explore ${tourCount} ${categoryName.toLowerCase()} in Hurghada and the Red Sea. Compare departure details, inclusions, and pickup arrangements for each excursion.`;
 
     const schemaJsonLd: Record<string, unknown> = {
       '@context': 'https://schema.org',
@@ -248,9 +248,9 @@ export const seoService = {
    * Generates tailored SEO metadata for Destination Views
    */
   generateDestinationSeo(destinationName: string, tourCount: number): SeoMetadata {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://awesomeadventure.tours';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kemetspirit.com';
     const title = `${destinationName} Excursions & Boat Tours | Red Sea Direct Booking`;
-    const description = `Discover ${tourCount} verified excursions departing directly from ${destinationName}. Island cruises, coral reef snorkeling, PADI diving, and desert quad safaris.`;
+    const description = `Discover ${tourCount} excursions departing directly from ${destinationName}. Island cruises, coral reef snorkeling, PADI diving, and desert quad safaris.`;
 
     return {
       title,
@@ -267,7 +267,7 @@ export const seoService = {
    * Default Homepage SEO & Organization Schema
    */
   generateDefaultSeo(): SeoMetadata {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://awesomeadventure.tours';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kemetspirit.com';
 
     const schemaJsonLd: Record<string, unknown> = {
       '@context': 'https://schema.org',
