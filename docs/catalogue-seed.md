@@ -22,6 +22,14 @@ Run this file only after applying all migrations on the target project. Review t
 
 For a production run, use the Supabase SQL Editor or an authenticated database session with migration-owner privileges. Do not place the service-role key in source control or in a client-side environment variable.
 
+## Existing live catalogue
+
+The live Kemet Spirit project already contains the 13 deterministic tour records, seven destinations, six categories, relational tour content, and five assigned per-tour extras. The live audit confirms 23 unique tour/category links, 31 tour images with one primary image per tour, 79 itinerary steps, 62 highlights, 64 inclusions, 25 exclusions, 47 what-to-bring items, 16 important-information items, and 13 tour SEO rows. Ratings and reviews remain zero. All seven pickup-location fee records are inactive.
+
+The original live records still contain three malformed departure labels, the scuba tour's minimum age is null, and Makadi Bay is draft despite appearing in the public destination directory with zero tours. Re-running the insert-only seed will not change these existing rows because it uses `ON CONFLICT DO NOTHING`.
+
+A separate, guarded correction file is available at `supabase/seed/kemet_spirit_catalogue_live_corrections.sql`. It targets only the five exact records/old values described above and does not delete anything. **It is not automatic and must not be run against production until the operator explicitly approves the data changes.**
+
 ## Verification
 
 The final query reports tour, destination, category, pickup, add-on, image, itinerary, inclusion/exclusion, preparation-detail, SEO, and rating/review counts. Expected core counts are 13 published tours, 7 published destinations, 6 published categories, 5 per-tour add-ons assigned, 0 rated tours, and 0 reviews.
