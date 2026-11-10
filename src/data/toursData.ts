@@ -898,73 +898,7 @@ export const TOUR_CATEGORIES: Category[] = [
   }
 ];
 
-export const REVIEWS_DATA: Review[] = []; = [
-  {
-    id: 'rev-1',
-    authorName: 'Markus & Elena Weber',
-    country: 'Germany',
-    countryCode: 'DE',
-    rating: 5,
-    date: '14 September 2026',
-    tourTitle: 'Orange Bay Island & Snorkeling',
-    tourSlug: 'orange-bay-island-snorkeling',
-    comment: 'The organization from hotel pickup at our resort to the return was completely seamless. The boat was clean, lunch was fresh, and Orange Bay was stunning.',
-    travelerType: 'Couple',
-    verifiedBooking: true,
-  },
-  {
-    id: 'rev-2',
-    authorName: 'David Thompson',
-    country: 'United Kingdom',
-    countryCode: 'GB',
-    rating: 5,
-    date: '02 September 2026',
-    tourTitle: 'Desert Quad Safari',
-    tourSlug: 'desert-quad-safari',
-    comment: 'We booked this online before arriving in Hurghada. The quad ride was long and properly guided—not a slow convoy. The sunset over the desert mountains was unbelievable.',
-    travelerType: 'Friends',
-    verifiedBooking: true,
-  },
-  {
-    id: 'rev-3',
-    authorName: 'Sophie van der Meer',
-    country: 'Netherlands',
-    countryCode: 'NL',
-    rating: 5,
-    date: '28 August 2026',
-    tourTitle: 'Dolphin House Snorkeling',
-    tourSlug: 'dolphin-house-snorkeling',
-    comment: 'We saw a pod of dolphins playing around the reef in the morning. The marine guides are respectful of the animals. The lunch served on board was warm and fresh.',
-    travelerType: 'Family',
-    verifiedBooking: true,
-  },
-  {
-    id: 'rev-4',
-    authorName: 'Jean-Luc Moreau',
-    country: 'France',
-    countryCode: 'FR',
-    rating: 5,
-    date: '19 August 2026',
-    tourTitle: 'Private Red Sea Yacht',
-    tourSlug: 'private-red-sea-yacht',
-    comment: 'Having the boat to ourselves with private chef was worth every euro. Captain accommodated our exact schedule and found a quiet bay.',
-    travelerType: 'Couple',
-    verifiedBooking: true,
-  },
-  {
-    id: 'rev-5',
-    authorName: 'Chiara Rossi',
-    country: 'Italy',
-    countryCode: 'IT',
-    rating: 5,
-    date: '11 August 2026',
-    tourTitle: 'Introductory Scuba Diving Experience',
-    tourSlug: 'introductory-scuba-diving-experience',
-    comment: 'First time breathing underwater! The instructor held my hand during the entire dive and kept me calm. Saw a moray eel and clownfish.',
-    travelerType: 'Solo',
-    verifiedBooking: true,
-  }
-];
+export const REVIEWS_DATA: Review[] = [];;
 
 export const RECENT_REVIEWS = REVIEWS_DATA;
 
