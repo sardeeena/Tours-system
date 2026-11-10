@@ -561,16 +561,10 @@ export async function generateInvoiceForBooking(bookingReference: string): Promi
   }
 
   const currency = String(bookingRow.currency || 'EUR').toUpperCase();
-  const payments = await listPayments({ bookingId: bookingReference });
-  const paidAmount = payments
-    .filter((payment) => payment.currency === currency && isSettledPayment(payment))
-    .reduce((sum, payment) => sum + payment.amount, 0);
-
   const subtotal = Number(bookingRow.subtotal || 0);
   const extrasTotal = Number(bookingRow.extras_total || 0);
   const discount = Number(bookingRow.discount || 0);
   const total = Number(bookingRow.total || 0);
-  const balance = Math.max(0, total - paidAmount);
   const lineItems: InvoiceLineItem[] = [];
 
   if (subtotal > 0) {
@@ -642,12 +636,11 @@ export async function generateInvoiceForBooking(bookingReference: string): Promi
     taxRatePercent: 0,
     taxAmount: 0,
     total,
-    paid: paidAmount,
-    balance,
+    // Payment totals and lifecycle status are computed by the database trigger.
+    paid: 0,
+    balance: total,
     currency,
-    status: billingDetailsComplete
-      ? (balance <= 0 ? 'paid' : paidAmount > 0 ? 'partially_paid' : 'issued')
-      : 'draft',
+    status: billingDetailsComplete ? 'issued' : 'draft',
     companyDetails: COMPANY_DETAILS,
     notes: billingDetailsComplete
       ? null
@@ -702,9 +695,13 @@ export async function generateInvoiceForBooking(bookingReference: string): Promi
   }
 
   if (!inserted?.id) throw new Error('The database did not confirm invoice creation.');
-  newInvoice.id = inserted.id;
-  await listInvoices(); // Refresh the local development cache from the committed database row.
-  return newInvoice;
+  // AFTER triggers reconcile paid/balance/status from committed payment and refund rows.
+  // Read the row back instead of returning client-calculated placeholders.
+  const refreshedInvoices = await listInvoices();
+  return refreshedInvoices.find((invoice) => invoice.id === inserted.id) || {
+    ...newInvoice,
+    id: inserted.id,
+  };
 }
 
 // 3. CONTROLLED REFUND MANAGEMENT (Immutable Audit Trail)
