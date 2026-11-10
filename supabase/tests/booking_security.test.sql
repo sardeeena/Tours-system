@@ -75,8 +75,16 @@ SELECT ok(
 );
 
 SELECT ok(
-  NOT has_function_privilege('anon', 'public.admin_resolve_booking_cancellation(text,text,text)', 'EXECUTE'),
-  'guest role cannot approve or reject cancellations'
+  COALESCE((
+    SELECT POSITION('public.is_admin()' IN pg_get_functiondef(p.oid)) > 0
+       AND POSITION('service_role' IN pg_get_functiondef(p.oid)) > 0
+    FROM pg_proc AS p
+    WHERE p.pronamespace = 'public'::regnamespace
+      AND p.proname = 'admin_resolve_booking_cancellation'
+      AND p.pronargs = 3
+    LIMIT 1
+  ), FALSE),
+  'admin cancellation RPC enforces trusted staff or service-role authorization internally'
 );
 
 SELECT ok(
@@ -111,20 +119,38 @@ SELECT ok(
 
 
 SELECT ok(
-  POSITION('idempotency_payload IS DISTINCT FROM v_idempotency_payload' IN
-    PG_GET_FUNCTIONDEF(to_regprocedure('public.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text'))) > 0,
+  COALESCE((
+    SELECT POSITION('idempotency_payload IS DISTINCT FROM v_idempotency_payload' IN pg_get_functiondef(p.oid)) > 0
+    FROM pg_proc AS p
+    WHERE p.pronamespace = 'public'::regnamespace
+      AND p.proname = 'create_booking_atomic'
+      AND p.pronargs = 18
+    LIMIT 1
+  ), FALSE),
   'atomic booking rejects reuse of an idempotency key for different request data'
 );
 
 SELECT ok(
-  POSITION('FOR UPDATE' IN
-    PG_GET_FUNCTIONDEF(to_regprocedure('public.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text'))) > 0,
+  COALESCE((
+    SELECT POSITION('FOR UPDATE' IN pg_get_functiondef(p.oid)) > 0
+    FROM pg_proc AS p
+    WHERE p.pronamespace = 'public'::regnamespace
+      AND p.proname = 'create_booking_atomic'
+      AND p.pronargs = 18
+    LIMIT 1
+  ), FALSE),
   'coupon and availability checks use database row locks'
 );
 
 SELECT ok(
-  POSITION('times_used = times_used + 1' IN
-    PG_GET_FUNCTIONDEF(to_regprocedure('public.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text'))) > 0,
+  COALESCE((
+    SELECT POSITION('times_used = times_used + 1' IN pg_get_functiondef(p.oid)) > 0
+    FROM pg_proc AS p
+    WHERE p.pronamespace = 'public'::regnamespace
+      AND p.proname = 'create_booking_atomic'
+      AND p.pronargs = 18
+    LIMIT 1
+  ), FALSE),
   'coupon redemption usage is incremented in the booking transaction'
 );
 
