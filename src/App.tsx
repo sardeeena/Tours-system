@@ -168,7 +168,7 @@ function MainApp() {
   }, [refreshStaticPages]);
 
   const staticPageSlug = useMemo(
-    () => currentPath.replace(/^\\/+|\\/+$/g, ''),
+    () => currentPath.replace(/^\/+|\/+$/g, ''),
     [currentPath]
   );
   const staticPage = useMemo(
