@@ -198,7 +198,7 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
   };
 
   const openSettingsModal = () => {
-    setTempEmailProvider(providerConfig.email.provider);
+    setTempEmailProvider(providerConfig.email.provider === 'resend' ? 'resend' : 'none');
     setTempApiKey(providerConfig.email.apiKey || '');
     setTempFromEmail(providerConfig.email.fromEmail || 'dispatch@redseavoyages.com');
     setTempFromName(providerConfig.email.fromName || 'Red Sea Voyages Dispatch');
