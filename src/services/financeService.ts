@@ -471,71 +471,144 @@ export async function listInvoices(filter?: {
 
 export async function generateInvoiceForBooking(bookingReference: string): Promise<FinanceInvoice | null> {
   const bookings = await bookingRepository.listBookings();
-  const b = bookings.find((item) => item.bookingReference === bookingReference);
-  if (!b) return null;
+  const booking = bookings.find((item) => item.bookingReference === bookingReference);
+  if (!booking) return null;
 
-  const existingInvoices = await listInvoices();
-  const alreadyExisting = existingInvoices.find(
-    (inv) => inv.bookingReference === bookingReference || inv.bookingId === b.bookingId
-  );
-  if (alreadyExisting) return alreadyExisting;
+  if (!requireFinanceBackend()) {
+    const existing = getLocal<FinanceInvoice[]>(LOCAL_INVOICES_KEY, []);
+    const duplicate = existing.find((invoice) => invoice.bookingReference === bookingReference);
+    if (duplicate) return duplicate;
 
+    const devInvoice: FinanceInvoice = {
+      id: `dev-inv-${crypto.randomUUID()}`,
+      invoiceNumber: `INV-DEV-${Date.now().toString(36).toUpperCase()}`,
+      bookingId: booking.bookingId || booking.bookingReference,
+      bookingReference,
+      customerId: (booking as any).customerId || null,
+      issueDate: new Date().toISOString().slice(0, 10),
+      dueDate: booking.date ? booking.date.split('T')[0] : new Date().toISOString().slice(0, 10),
+      customer: {
+        name: `${booking.customer.firstName} ${booking.customer.lastName}`,
+        email: booking.customer.email,
+        phone: booking.customer.phoneNumber || null,
+      },
+      tourTitle: booking.tourTitle,
+      tourDate: booking.date,
+      guests: booking.guests,
+      lineItems: [],
+      subtotal: booking.pricing?.subtotalEur || booking.pricing?.totalEur || 0,
+      discount: booking.pricing?.discountEur || 0,
+      taxRatePercent: 0,
+      taxAmount: 0,
+      total: booking.pricing?.totalEur || 0,
+      paid: 0,
+      balance: booking.pricing?.totalEur || 0,
+      currency: 'EUR',
+      status: 'issued',
+      companyDetails: COMPANY_DETAILS,
+      notes: 'Development preview only. Not a valid tax invoice.',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    setLocal(LOCAL_INVOICES_KEY, [devInvoice, ...existing]);
+    return devInvoice;
+  }
+
+  if (!UUID_PATTERN.test(booking.bookingId || '')) {
+    throw new Error('The selected booking does not have a valid database identifier. Invoice generation was stopped.');
+  }
+
+  const { data: bookingRow, error: bookingError } = await supabase
+    .from('bookings')
+    .select('id,booking_reference,customer_id,booking_date,adult_count,child_count,infant_count,subtotal,extras_total,discount,total,currency')
+    .eq('id', booking.bookingId)
+    .single();
+
+  if (bookingError || !bookingRow) {
+    throw new Error(bookingError ? formatSupabaseError(bookingError) : 'Booking record could not be verified.');
+  }
+
+  const { data: existingRow, error: existingError } = await supabase
+    .from('invoices')
+    .select('*')
+    .eq('booking_id', bookingRow.id)
+    .maybeSingle();
+
+  if (existingError) throw new Error(formatSupabaseError(existingError));
+  if (existingRow) {
+    const all = await listInvoices();
+    return all.find((invoice) => invoice.id === existingRow.id) || null;
+  }
+
+  const currency = String(bookingRow.currency || 'EUR').toUpperCase();
   const payments = await listPayments({ bookingId: bookingReference });
   const paidAmount = payments
-    .filter((p) => p.paymentStatus === 'Paid' || p.paymentStatus === 'paid')
-    .reduce((sum, p) => sum + p.amount, 0);
+    .filter((payment) => payment.currency === currency && isSettledPayment(payment))
+    .reduce((sum, payment) => sum + payment.amount, 0);
 
-  const total = b.pricing?.totalEur || 0;
-  const subtotal = b.pricing?.subtotalEur || total;
-  const discount = b.pricing?.discountEur || 0;
+  const subtotal = Number(bookingRow.subtotal || 0);
+  const extrasTotal = Number(bookingRow.extras_total || 0);
+  const discount = Number(bookingRow.discount || 0);
+  const total = Number(bookingRow.total || 0);
   const balance = Math.max(0, total - paidAmount);
+  const lineItems: InvoiceLineItem[] = [];
 
-  const seq = existingInvoices.length + 1;
-  const invNumber = `INV-${new Date().getFullYear()}-${String(seq).padStart(4, '0')}`;
-
-  const lineItems: InvoiceLineItem[] = [
-    {
-      id: `line-${b.bookingReference}-01`,
-      description: `${b.tourTitle} - Excursion Package (${b.guests.adults} Adults${
-        b.guests.children > 0 ? `, ${b.guests.children} Children` : ''
-      })`,
+  if (subtotal > 0) {
+    lineItems.push({
+      id: `line-${bookingReference}-tour`,
+      description: `${booking.tourTitle} - tour services`,
       quantity: 1,
       unitPrice: subtotal,
       total: subtotal,
       type: 'tour',
-    },
-  ];
-
-  if (b.pickup.feeEur > 0) {
+    });
+  }
+  if (extrasTotal > 0) {
     lineItems.push({
-      id: `line-${b.bookingReference}-pickup`,
-      description: `Hotel Pickup Transfer (${b.pickup.hotelName || b.pickup.locationName || 'Hurghada'})`,
-      quantity: (b.guests.adults || 1) + (b.guests.children || 0),
-      unitPrice: b.pickup.feeEur,
-      total: b.pricing?.pickupSubtotalEur || b.pickup.feeEur,
-      type: 'pickup',
+      id: `line-${bookingReference}-extras`,
+      description: 'Selected extras and add-ons',
+      quantity: 1,
+      unitPrice: extrasTotal,
+      total: extrasTotal,
+      type: 'extra',
+    });
+  }
+  if (discount > 0) {
+    lineItems.push({
+      id: `line-${bookingReference}-discount`,
+      description: 'Booking discount',
+      quantity: 1,
+      unitPrice: -discount,
+      total: -discount,
+      type: 'discount',
     });
   }
 
+  const { data: invoiceNumber, error: numberError } = await supabase.rpc('next_invoice_number');
+  if (numberError || !invoiceNumber) {
+    throw new Error(numberError ? formatSupabaseError(numberError) : 'The database did not allocate an invoice number.');
+  }
+
   const newInvoice: FinanceInvoice = {
-    id: `inv-${b.bookingReference}`,
-    invoiceNumber: invNumber,
-    bookingId: b.bookingId || b.bookingReference,
-    bookingReference: b.bookingReference,
-    customerId: (b as any).customerId || null,
-    issueDate: new Date().toISOString().split('T')[0],
-    dueDate: b.date ? b.date.split('T')[0] : new Date().toISOString().split('T')[0],
+    id: '',
+    invoiceNumber: String(invoiceNumber),
+    bookingId: bookingRow.id,
+    bookingReference,
+    customerId: bookingRow.customer_id || null,
+    issueDate: new Date().toISOString().slice(0, 10),
+    dueDate: bookingRow.booking_date || new Date().toISOString().slice(0, 10),
     customer: {
-      name: `${b.customer.firstName} ${b.customer.lastName}`,
-      email: b.customer.email,
-      phone: b.customer.phoneNumber,
-      hotel: b.pickup.hotelName,
-      roomNumber: b.pickup.roomNumber,
-      country: (b.customer as any).nationality || b.customer.countryCode,
+      name: `${booking.customer.firstName} ${booking.customer.lastName}`,
+      email: booking.customer.email,
+      phone: booking.customer.phoneNumber || null,
     },
-    tourTitle: b.tourTitle,
-    tourDate: b.date,
-    guests: b.guests,
+    tourTitle: booking.tourTitle,
+    tourDate: bookingRow.booking_date || '',
+    guests: {
+      adults: Number(bookingRow.adult_count || 0),
+      children: Number(bookingRow.child_count || 0),
+      infants: Number(bookingRow.infant_count || 0),
+    },
     lineItems,
     subtotal,
     discount,
@@ -544,102 +617,66 @@ export async function generateInvoiceForBooking(bookingReference: string): Promi
     total,
     paid: paidAmount,
     balance,
-    currency: 'EUR',
+    currency,
     status: balance <= 0 ? 'paid' : paidAmount > 0 ? 'partially_paid' : 'issued',
     companyDetails: COMPANY_DETAILS,
-    notes: 'Official Commercial Invoice. All activities governed by Egyptian Red Sea Maritime Safety Regulations.',
+    notes: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
 
-  if (isSupabaseConfigured()) {
-    try {
-      // Check if invoice already exists in database
-      const { data: dbExisting } = await supabase
+  const { data: inserted, error: insertError } = await supabase
+    .from('invoices')
+    .insert({
+      invoice_number: newInvoice.invoiceNumber,
+      booking_id: newInvoice.bookingId,
+      customer_id: newInvoice.customerId,
+      customer_name: newInvoice.customer.name,
+      customer_email: newInvoice.customer.email,
+      customer_phone: newInvoice.customer.phone,
+      tour_title: newInvoice.tourTitle,
+      tour_date: newInvoice.tourDate || null,
+      issue_date: newInvoice.issueDate,
+      due_date: newInvoice.dueDate,
+      subtotal: newInvoice.subtotal,
+      discount: newInvoice.discount,
+      tax_amount: newInvoice.taxAmount,
+      total: newInvoice.total,
+      paid: newInvoice.paid,
+      balance: newInvoice.balance,
+      currency: newInvoice.currency,
+      status: newInvoice.status,
+      line_items: newInvoice.lineItems,
+      company_details: newInvoice.companyDetails,
+      notes: newInvoice.notes,
+    })
+    .select('*')
+    .single();
+
+  if (insertError) {
+    // A concurrent request may have won the one-invoice-per-booking race.
+    if (insertError.code === '23505') {
+      const { data: winner, error: winnerError } = await supabase
         .from('invoices')
         .select('*')
-        .or(`booking_id.eq.${b.bookingId},invoice_number.eq.${newInvoice.invoiceNumber}`)
+        .eq('booking_id', bookingRow.id)
         .maybeSingle();
-
-      if (dbExisting) {
-        return {
-          id: dbExisting.id,
-          invoiceNumber: dbExisting.invoice_number,
-          bookingId: dbExisting.booking_id,
-          bookingReference: b.bookingReference,
-          customerId: dbExisting.customer_id,
-          issueDate: dbExisting.issue_date,
-          dueDate: dbExisting.due_date,
-          customer: newInvoice.customer,
-          tourTitle: dbExisting.tour_title || newInvoice.tourTitle,
-          tourDate: dbExisting.tour_date || newInvoice.tourDate,
-          guests: newInvoice.guests,
-          lineItems: (dbExisting.line_items as InvoiceLineItem[]) || newInvoice.lineItems,
-          subtotal: Number(dbExisting.subtotal),
-          discount: Number(dbExisting.discount),
-          taxRatePercent: 0,
-          taxAmount: Number(dbExisting.tax_amount),
-          total: Number(dbExisting.total),
-          paid: Number(dbExisting.paid),
-          balance: Number(dbExisting.balance),
-          currency: dbExisting.currency || 'EUR',
-          status: dbExisting.status as any,
-          companyDetails: (dbExisting.company_details as any) || COMPANY_DETAILS,
-          notes: dbExisting.notes,
-          createdAt: dbExisting.created_at,
-          updatedAt: dbExisting.updated_at,
-        };
+      if (winnerError) throw new Error(formatSupabaseError(winnerError));
+      if (winner) {
+        const all = await listInvoices();
+        return all.find((invoice) => invoice.id === winner.id) || null;
       }
-
-      const { data: inserted, error: invError } = await supabase
-        .from('invoices')
-        .insert({
-          invoice_number: newInvoice.invoiceNumber,
-          booking_id: newInvoice.bookingId,
-          customer_id: newInvoice.customerId,
-          customer_name: newInvoice.customer.name,
-          customer_email: newInvoice.customer.email,
-          customer_phone: newInvoice.customer.phone,
-          tour_title: newInvoice.tourTitle,
-          tour_date: newInvoice.tourDate ? newInvoice.tourDate.split('T')[0] : undefined,
-          issue_date: newInvoice.issueDate,
-          due_date: newInvoice.dueDate,
-          subtotal: newInvoice.subtotal,
-          discount: newInvoice.discount,
-          tax_amount: newInvoice.taxAmount,
-          total: newInvoice.total,
-          paid: newInvoice.paid,
-          balance: newInvoice.balance,
-          currency: newInvoice.currency,
-          status: newInvoice.status,
-          line_items: newInvoice.lineItems,
-          company_details: newInvoice.companyDetails,
-          notes: newInvoice.notes,
-        })
-        .select('*')
-        .single();
-
-      if (invError) {
-        throw new Error(`Failed to persist invoice to database: ${formatSupabaseError(invError)}`);
-      }
-
-      if (inserted?.id) {
-        newInvoice.id = inserted.id;
-      }
-    } catch (err: any) {
-      console.error('Invoice persistence error:', err);
-      throw err;
     }
+    throw new Error(formatSupabaseError(insertError));
   }
 
-  // Only commit to local state cache after authoritative database insert succeeds
-  const updated = [newInvoice, ...existingInvoices];
-  setLocal(LOCAL_INVOICES_KEY, updated);
-
+  if (!inserted?.id) throw new Error('The database did not confirm invoice creation.');
+  newInvoice.id = inserted.id;
+  const current = await listInvoices();
+  setLocal(LOCAL_INVOICES_KEY, [newInvoice, ...current]);
   return newInvoice;
 }
 
-// ------------------------------------------------------------------------------
 // 3. CONTROLLED REFUND MANAGEMENT (Immutable Audit Trail)
 // ------------------------------------------------------------------------------
 
