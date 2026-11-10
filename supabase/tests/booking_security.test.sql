@@ -156,7 +156,7 @@ VALUES (
 
 CREATE TEMP TABLE pgtap_booking_results (
   case_name TEXT PRIMARY KEY,
-  result JSONB NOT NULL
+  result JSONB
 ) ON COMMIT DROP;
 
 INSERT INTO pg_temp.pgtap_booking_results (case_name, result)
