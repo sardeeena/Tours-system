@@ -9,6 +9,14 @@
 -- Ensure uuid-ossp or pgcrypto extension is active
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+-- Keep the database role constraint aligned with the application's UserRole union.
+-- super_admin is the canonical spelling; the legacy superadmin spelling is not accepted.
+ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_role_check;
+ALTER TABLE public.profiles
+    ADD CONSTRAINT profiles_role_check
+    CHECK (role IN ('customer', 'staff', 'manager', 'admin', 'super_admin'));
+
+
 -- ------------------------------------------------------------------------------
 -- 1. INDEXING FOR HIGH-PERFORMANCE INTEGRATED QUERIES
 -- ------------------------------------------------------------------------------
@@ -45,27 +53,35 @@ ALTER TABLE IF EXISTS public.communication_messages ENABLE ROW LEVEL SECURITY;
 
 -- Helper function: is_admin
 CREATE OR REPLACE FUNCTION public.is_admin()
-RETURNS BOOLEAN AS $$
-BEGIN
-    RETURN (
-        SELECT COALESCE(
-            (auth.jwt() ->> 'role' = 'service_role') OR
-            EXISTS (
-                SELECT 1 FROM public.profiles
-                WHERE id = auth.uid() AND role IN ('admin', 'staff', 'superadmin', 'manager')
-            ),
-            FALSE
-        )
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $
+    SELECT COALESCE(
+        (auth.jwt() ->> 'role' = 'service_role')
+        OR EXISTS (
+            SELECT 1
+            FROM public.profiles
+            WHERE id = auth.uid()
+              AND role IN ('admin', 'staff', 'super_admin', 'manager')
+        ),
+        FALSE
     );
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$;
+
+-- This helper is intentionally callable by the roles whose RLS policies use it.
+-- It returns only a boolean and derives authorization from the protected profiles table.
+REVOKE ALL ON FUNCTION public.is_admin() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.is_admin() TO anon, authenticated, service_role;
 
 -- Hardened handle_new_user: Ordinary signups ALWAYS receive exclusively 'customer' role
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public, pg_temp
+SET search_path = ''
 AS $$
 BEGIN
     INSERT INTO public.profiles (
@@ -73,7 +89,7 @@ BEGIN
         email,
         full_name,
         role,
-        is_email_verified,
+        is_confirmed,
         created_at,
         updated_at
     )
@@ -94,12 +110,14 @@ BEGIN
     SET
         email = EXCLUDED.email,
         full_name = COALESCE(NULLIF(EXCLUDED.full_name, ''), public.profiles.full_name),
-        is_email_verified = (NEW.email_confirmed_at IS NOT NULL),
+        is_confirmed = (NEW.email_confirmed_at IS NOT NULL),
         updated_at = NOW();
 
     RETURN NEW;
 END;
 $$;
+
+REVOKE ALL ON FUNCTION public.handle_new_user() FROM PUBLIC, anon, authenticated;
 
 -- ------------------------------------------------------------------------------
 -- A. CUSTOMERS TABLE POLICIES
