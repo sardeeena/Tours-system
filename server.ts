@@ -13,6 +13,10 @@ import { EXPECTED_KEMET_SUPABASE_PROJECT_REF, isExpectedKemetSupabaseUrl } from 
 dotenv.config();
 
 const app = express();
+// Hostinger serves this Node process behind one trusted reverse-proxy hop.
+// Let Express resolve req.ip from the forwarded client address so per-IP API
+// limits are not accidentally shared by every visitor behind the proxy.
+app.set('trust proxy', 1);
 const PORT = process.env.PORT || 3000;
 const SERVER_START_TIME = Date.now();
 
