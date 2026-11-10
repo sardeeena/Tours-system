@@ -22,8 +22,8 @@ export const ALL_TOURS: Tour[] = [
     priceEur: 35,
     childPriceEur: 18,
     privatePriceEur: 260,
-    rating: 4.8,
-    reviewCount: 126,
+    rating: 0,
+    reviewCount: 0,
     badge: 'Popular',
     primaryImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
     galleryImages: [
@@ -89,35 +89,6 @@ export const ALL_TOURS: Tour[] = [
     availableDays: ['Daily'],
     departureTime: '08:00 AM',
     difficulty: 'Easy',
-    ratingBreakdown: { 5: 98, 4: 20, 3: 6, 2: 1, 1: 1 },
-    reviews: [
-      {
-        id: 'r1',
-        authorName: 'Sophie B.',
-        country: 'United Kingdom',
-        countryCode: 'GB',
-        rating: 5,
-        date: '12 Sep 2026',
-        tourTitle: 'Orange Bay Island & Snorkeling',
-        tourSlug: 'orange-bay-island-snorkeling',
-        comment: 'The water at Orange Bay looks exactly like the photos. Snorkeling guides were attentive and the crew made sure everyone was comfortable.',
-        travelerType: 'Couple',
-        verifiedBooking: true
-      },
-      {
-        id: 'r2',
-        authorName: 'Lukas M.',
-        country: 'Germany',
-        countryCode: 'DE',
-        rating: 4,
-        date: '04 Sep 2026',
-        tourTitle: 'Orange Bay Island & Snorkeling',
-        tourSlug: 'orange-bay-island-snorkeling',
-        comment: 'Great value day trip. The boat was clean, lunch was tasty, and we saw plenty of colorful fish on the second reef stop.',
-        travelerType: 'Family',
-        verifiedBooking: true
-      }
-    ]
   },
   {
     id: 'tour-2',
@@ -133,8 +104,8 @@ export const ALL_TOURS: Tour[] = [
     priceEur: 32,
     childPriceEur: 16,
     privatePriceEur: 240,
-    rating: 4.7,
-    reviewCount: 98,
+    rating: 0,
+    reviewCount: 0,
     badge: 'Great Value',
     primaryImage: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80',
     galleryImages: [
@@ -185,7 +156,6 @@ export const ALL_TOURS: Tour[] = [
     availableDays: ['Daily'],
     departureTime: '08:30 AM',
     difficulty: 'Easy',
-    ratingBreakdown: { 5: 72, 4: 20, 3: 4, 2: 1, 1: 1 }
   },
   {
     id: 'tour-3',
@@ -201,9 +171,8 @@ export const ALL_TOURS: Tour[] = [
     priceEur: 40,
     childPriceEur: 20,
     privatePriceEur: 310,
-    rating: 4.9,
-    reviewCount: 154,
-    badge: 'Top Rated',
+    rating: 0,
+    reviewCount: 0,
     primaryImage: 'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=1200&q=80',
     galleryImages: [
       'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=1200&q=80',
@@ -250,7 +219,6 @@ export const ALL_TOURS: Tour[] = [
     availableDays: ['Daily'],
     departureTime: '08:00 AM',
     difficulty: 'Easy',
-    ratingBreakdown: { 5: 138, 4: 12, 3: 3, 2: 1, 1: 0 }
   },
   {
     id: 'tour-4',
@@ -266,8 +234,8 @@ export const ALL_TOURS: Tour[] = [
     priceEur: 30,
     childPriceEur: 15,
     privatePriceEur: 230,
-    rating: 4.7,
-    reviewCount: 87,
+    rating: 0,
+    reviewCount: 0,
     badge: 'Classic',
     primaryImage: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80',
     galleryImages: [
@@ -302,7 +270,6 @@ export const ALL_TOURS: Tour[] = [
     availableDays: ['Daily'],
     departureTime: '08:30 AM',
     difficulty: 'Easy',
-    ratingBreakdown: { 5: 64, 4: 18, 3: 4, 2: 1, 1: 0 }
   },
   {
     id: 'tour-5',
@@ -318,8 +285,8 @@ export const ALL_TOURS: Tour[] = [
     priceEur: 28,
     childPriceEur: 15,
     privatePriceEur: 160,
-    rating: 4.8,
-    reviewCount: 112,
+    rating: 0,
+    reviewCount: 0,
     badge: 'Adventure',
     primaryImage: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80',
     galleryImages: [
@@ -354,7 +321,6 @@ export const ALL_TOURS: Tour[] = [
     availableDays: ['Daily'],
     departureTime: '08:00 AM or 14:00 PM',
     difficulty: 'Adventurous',
-    ratingBreakdown: { 5: 90, 4: 18, 3: 3, 2: 1, 1: 0 }
   },
   {
     id: 'tour-6',
@@ -370,8 +336,8 @@ export const ALL_TOURS: Tour[] = [
     priceEur: 35,
     childPriceEur: 18,
     privatePriceEur: 210,
-    rating: 4.8,
-    reviewCount: 91,
+    rating: 0,
+    reviewCount: 0,
     badge: 'Sunset Special',
     primaryImage: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80',
     galleryImages: [
@@ -407,7 +373,6 @@ export const ALL_TOURS: Tour[] = [
     availableDays: ['Daily'],
     departureTime: '13:30 PM',
     difficulty: 'Adventurous',
-    ratingBreakdown: { 5: 75, 4: 12, 3: 3, 2: 1, 1: 0 }
   },
   {
     id: 'tour-7',
@@ -423,8 +388,8 @@ export const ALL_TOURS: Tour[] = [
     priceEur: 250,
     childPriceEur: 0,
     privatePriceEur: 250,
-    rating: 5.0,
-    reviewCount: 24,
+    rating: 0,
+    reviewCount: 0,
     badge: 'VIP Private',
     primaryImage: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d17?auto=format&fit=crop&w=1200&q=80',
     galleryImages: [
@@ -460,7 +425,6 @@ export const ALL_TOURS: Tour[] = [
     availableDays: ['Daily'],
     departureTime: '09:00 AM (Flexible)',
     difficulty: 'Easy',
-    ratingBreakdown: { 5: 24, 4: 0, 3: 0, 2: 0, 1: 0 }
   },
   {
     id: 'tour-8',
@@ -476,8 +440,8 @@ export const ALL_TOURS: Tour[] = [
     priceEur: 220,
     childPriceEur: 0,
     privatePriceEur: 220,
-    rating: 4.9,
-    reviewCount: 31,
+    rating: 0,
+    reviewCount: 0,
     badge: 'Boutique',
     primaryImage: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80',
     galleryImages: [
@@ -513,7 +477,6 @@ export const ALL_TOURS: Tour[] = [
     availableDays: ['Daily'],
     departureTime: '09:30 AM',
     difficulty: 'Easy',
-    ratingBreakdown: { 5: 28, 4: 3, 3: 0, 2: 0, 1: 0 }
   },
   {
     id: 'tour-9',
@@ -529,8 +492,8 @@ export const ALL_TOURS: Tour[] = [
     priceEur: 65,
     childPriceEur: 45,
     privatePriceEur: 340,
-    rating: 4.9,
-    reviewCount: 143,
+    rating: 0,
+    reviewCount: 0,
     badge: 'Instructor Led',
     primaryImage: 'https://images.unsplash.com/photo-1544551763-92ab472cad5d?auto=format&fit=crop&w=1200&q=80',
     galleryImages: [
@@ -567,7 +530,6 @@ export const ALL_TOURS: Tour[] = [
     departureTime: '08:00 AM',
     difficulty: 'Moderate',
     ageRestrictions: 'Minimum age 10 years',
-    ratingBreakdown: { 5: 130, 4: 11, 3: 2, 2: 0, 1: 0 }
   },
   {
     id: 'tour-10',
@@ -583,8 +545,8 @@ export const ALL_TOURS: Tour[] = [
     priceEur: 55,
     childPriceEur: 28,
     privatePriceEur: 380,
-    rating: 4.8,
-    reviewCount: 76,
+    rating: 0,
+    reviewCount: 0,
     badge: 'Marine Reserve',
     primaryImage: 'https://images.unsplash.com/photo-1682687220063-4742bd7fd538?auto=format&fit=crop&w=1200&q=80',
     galleryImages: [
@@ -620,7 +582,6 @@ export const ALL_TOURS: Tour[] = [
     availableDays: ['Daily'],
     departureTime: '07:30 AM',
     difficulty: 'Easy',
-    ratingBreakdown: { 5: 64, 4: 10, 3: 2, 2: 0, 1: 0 }
   },
   {
     id: 'tour-11',
@@ -636,8 +597,8 @@ export const ALL_TOURS: Tour[] = [
     priceEur: 38,
     childPriceEur: 20,
     privatePriceEur: 220,
-    rating: 4.8,
-    reviewCount: 62,
+    rating: 0,
+    reviewCount: 0,
     badge: 'Shore Entry',
     primaryImage: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
     galleryImages: [
@@ -672,7 +633,6 @@ export const ALL_TOURS: Tour[] = [
     availableDays: ['Daily'],
     departureTime: '08:30 AM',
     difficulty: 'Easy',
-    ratingBreakdown: { 5: 50, 4: 10, 3: 2, 2: 0, 1: 0 }
   },
   {
     id: 'tour-12',
@@ -688,8 +648,8 @@ export const ALL_TOURS: Tour[] = [
     priceEur: 25,
     childPriceEur: 12,
     privatePriceEur: 140,
-    rating: 4.7,
-    reviewCount: 45,
+    rating: 0,
+    reviewCount: 0,
     badge: 'Family Favorite',
     primaryImage: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80',
     galleryImages: [
@@ -721,7 +681,6 @@ export const ALL_TOURS: Tour[] = [
     availableDays: ['Daily'],
     departureTime: '10:00 AM or 14:00 PM',
     difficulty: 'Easy',
-    ratingBreakdown: { 5: 34, 4: 9, 3: 2, 2: 0, 1: 0 }
   },
   {
     id: 'ras-mohammed-white-island-cruise',
@@ -737,9 +696,8 @@ export const ALL_TOURS: Tour[] = [
     priceEur: 45,
     childPriceEur: 25,
     privatePriceEur: 380,
-    rating: 4.9,
-    reviewCount: 168,
-    badge: 'Best in Sharm',
+    rating: 0,
+    reviewCount: 0,
     primaryImage: 'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=1200&q=80',
     galleryImages: [
       'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80',
@@ -788,9 +746,20 @@ export const ALL_TOURS: Tour[] = [
     availableDays: ['Daily'],
     departureTime: '08:00 AM',
     difficulty: 'Easy',
-    ratingBreakdown: { 5: 142, 4: 21, 3: 5, 2: 0, 1: 0 }
   }
 ];
+
+function countToursForCategory(categoryName: string): number {
+  const aliases: Record<string, string[]> = {
+    'Boat Trips': ['Boat Trip', 'Boat Trips', 'Island', 'Island Visits'],
+    'Private Tours': ['Private Tour', 'Private Tours'],
+    Safari: ['Safari', 'Quad'],
+  };
+  const names = aliases[categoryName] || [categoryName];
+  return ALL_TOURS.filter((tour) =>
+    names.some((name) => tour.category === name || tour.categories.includes(name))
+  ).length;
+}
 
 export const POPULAR_DESTINATIONS: Destination[] = [
   {
@@ -799,7 +768,7 @@ export const POPULAR_DESTINATIONS: Destination[] = [
     slug: 'hurghada',
     image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80',
     tagline: 'Main departure hub for boat trips and coral reefs',
-    tourCount: 24,
+    tourCount: ALL_TOURS.filter((tour) => tour.destination === 'Hurghada').length,
     description: 'The main resort city on the Red Sea with direct boat trips to Giftun Island, Orange Bay, and desert safari centers.',
     highlights: ['Giftun Island Marine Reserve', 'Orange Bay & Paradise Beach', 'Direct marina departures'],
     distanceFromAirport: '15 mins from Hurghada Airport (HRG)',
@@ -810,7 +779,7 @@ export const POPULAR_DESTINATIONS: Destination[] = [
     slug: 'el-gouna',
     image: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=800&q=80',
     tagline: 'Quiet lagoon town with marinas and private boat charters',
-    tourCount: 16,
+    tourCount: ALL_TOURS.filter((tour) => tour.destination === 'El Gouna').length,
     description: 'A quiet resort town 30 minutes north of Hurghada, connected by lagoons, with private yacht charters from Abu Tig Marina.',
     highlights: ['Abu Tig Marina departures', 'Lagoon boat tours', 'Private yacht charters'],
     distanceFromAirport: '30 mins north of Hurghada (HRG)',
@@ -821,7 +790,7 @@ export const POPULAR_DESTINATIONS: Destination[] = [
     slug: 'makadi-bay',
     image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
     tagline: 'Calm bay with house reefs right off the beach',
-    tourCount: 14,
+    tourCount: ALL_TOURS.filter((tour) => tour.destination === 'Makadi Bay').length,
     description: 'Located south of Hurghada with house reefs right in front of the hotels, great for snorkeling from the shore and desert tours.',
     highlights: ['Shore snorkeling from piers', 'Desert quad trail access', 'Calm waters for families'],
     distanceFromAirport: '25 mins south of Hurghada (HRG)',
@@ -832,7 +801,7 @@ export const POPULAR_DESTINATIONS: Destination[] = [
     slug: 'sahl-hasheesh',
     image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
     tagline: 'Relaxed resort bay with walking promenade and glass bottom boats',
-    tourCount: 8,
+    tourCount: ALL_TOURS.filter((tour) => tour.destination === 'Sahl Hasheesh').length,
     description: 'A relaxed bay with a pedestrian promenade, calm waters, sunken pharaonic pillars, and glass-bottom boat trips.',
     highlights: ['Sunken columns', 'Quiet coral reefs', 'Promenade pier'],
     distanceFromAirport: '20 mins south of Hurghada (HRG)',
@@ -843,7 +812,7 @@ export const POPULAR_DESTINATIONS: Destination[] = [
     slug: 'safaga',
     image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
     tagline: 'Wide bays and Sharm El Naga beach nature reserve',
-    tourCount: 9,
+    tourCount: ALL_TOURS.filter((tour) => tour.destination === 'Safaga').length,
     description: 'A quieter coastal area south of Hurghada, home to the protected Sharm El Naga marine bay where you snorkel right from the sand.',
     highlights: ['Sharm El Naga protected bay', 'Sandy beaches', 'Quiet boat trips'],
     distanceFromAirport: '45 mins south of Hurghada (HRG)',
@@ -854,7 +823,7 @@ export const POPULAR_DESTINATIONS: Destination[] = [
     slug: 'marsa-alam',
     image: 'https://images.unsplash.com/photo-1682687220063-4742bd7fd538?auto=format&fit=crop&w=800&q=80',
     tagline: 'Protected marine bays with sea turtles and wild dolphins',
-    tourCount: 11,
+    tourCount: ALL_TOURS.filter((tour) => tour.destination === 'Marsa Alam').length,
     description: 'Egypt’s southern marine destination where wild spinner dolphins, sea turtles, and untouched reefs thrive.',
     highlights: ['Abu Dabbab turtle bay', 'Sataya dolphin reef', 'Samadai dolphin house'],
     distanceFromAirport: '10-45 mins from Marsa Alam Airport (RMF)',
@@ -865,7 +834,7 @@ export const POPULAR_DESTINATIONS: Destination[] = [
     slug: 'sharm-el-sheikh',
     image: 'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=800&q=80',
     tagline: 'Sinai marine jewel with Ras Mohammed drop-offs & White Island',
-    tourCount: 12,
+    tourCount: ALL_TOURS.filter((tour) => tour.destination === 'Sharm El-Sheikh').length,
     description: 'The premier resort of the southern Sinai peninsula, famed for dramatic drop-off reef walls at Ras Mohammed National Park, the crystal waters of White Island, and the straits of Tiran.',
     highlights: ['Ras Mohammed National Park', 'White Island sandbar cruise', 'Straits of Tiran reefs', 'Naama Bay marina departures'],
     distanceFromAirport: '15 mins from Sharm El-Sheikh Airport (SSH)',
@@ -879,7 +848,7 @@ export const TOUR_CATEGORIES: Category[] = [
     slug: 'boat-trips',
     iconName: 'Ship',
     image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600&q=80',
-    tourCount: 18,
+    tourCount: countToursForCategory('Boat Trips'),
     description: 'Full-day motor yachts, catamarans, and island-hopping trips with sun decks and open buffet lunches.',
   },
   {
@@ -888,7 +857,7 @@ export const TOUR_CATEGORIES: Category[] = [
     slug: 'snorkeling',
     iconName: 'Waves',
     image: 'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=600&q=80',
-    tourCount: 15,
+    tourCount: countToursForCategory('Snorkeling'),
     description: 'Guided encounters with clownfish, rays, and sea turtles over vibrant shallow coral gardens.',
   },
   {
@@ -897,7 +866,7 @@ export const TOUR_CATEGORIES: Category[] = [
     slug: 'diving',
     iconName: 'Compass',
     image: 'https://images.unsplash.com/photo-1544551763-92ab472cad5d?auto=format&fit=crop&w=600&q=80',
-    tourCount: 8,
+    tourCount: countToursForCategory('Diving'),
     description: 'Certified 2-tank boat dives and beginner intro discovery dives led by PADI divemasters.',
   },
   {
@@ -906,7 +875,7 @@ export const TOUR_CATEGORIES: Category[] = [
     slug: 'safari',
     iconName: 'Sun',
     image: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=600&q=80',
-    tourCount: 12,
+    tourCount: countToursForCategory('Safari'),
     description: 'ATV quad biking through Red Sea mountain canyons, Bedouin camp visits, camel rides & stargazing.',
   },
   {
@@ -915,7 +884,7 @@ export const TOUR_CATEGORIES: Category[] = [
     slug: 'private-tours',
     iconName: 'Anchor',
     image: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d17?auto=format&fit=crop&w=600&q=80',
-    tourCount: 7,
+    tourCount: countToursForCategory('Private Tours'),
     description: 'Tailored private yachts and high-speed RIBs for couples, families, and custom itineraries.',
   },
   {
@@ -924,12 +893,12 @@ export const TOUR_CATEGORIES: Category[] = [
     slug: 'water-sports',
     iconName: 'Waves',
     image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80',
-    tourCount: 6,
+    tourCount: countToursForCategory('Water Sports'),
     description: 'Parasailing, glass-bottom boats, and banana boat adventures for the entire family.',
   }
 ];
 
-export const REVIEWS_DATA: Review[] = [
+export const REVIEWS_DATA: Review[] = []; = [
   {
     id: 'rev-1',
     authorName: 'Markus & Elena Weber',
