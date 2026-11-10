@@ -41,7 +41,7 @@ export const StaticContentPage: React.FC<StaticContentPageProps> = ({ page }) =>
         {sections.length > 0 ? (
           <div className="space-y-10">
             {sections.map((section, index) => (
-              <section key={section.title || index}>
+              <section key={`${index}-${section.title}`}>
                 <h3 className="font-display text-lg sm:text-xl font-semibold text-stone-900 dark:text-white mb-3">
                   {section.title}
                 </h3>
