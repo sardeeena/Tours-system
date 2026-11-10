@@ -469,6 +469,9 @@ BEGIN
                     'status', v_existing_dup.status,
                     'paymentStatus', v_existing_dup.payment_status,
                     'totalEur', v_existing_dup.total,
+                    'subtotalEur', v_existing_dup.subtotal,
+                    'extrasTotalEur', v_existing_dup.extras_total,
+                    'discountEur', v_existing_dup.discount,
                     'bookingDate', v_existing_dup.booking_date,
                     'isDuplicate', true,
                     'message', 'Idempotent replay: concurrent request resolved.'
@@ -604,6 +607,7 @@ BEGIN
         'totalEur', v_final_total,
         'subtotalEur', v_subtotal,
         'extrasTotalEur', v_extras_total,
+        'discountEur', v_discount,
         'bookingDate', p_booking_date,
         'isDuplicate', false
     );
