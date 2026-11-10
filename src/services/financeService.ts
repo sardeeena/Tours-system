@@ -837,7 +837,15 @@ export async function requestRefund(refundData: {
   if (!result?.success || !result?.refund?.id) {
     return { success: false, error: 'The database did not confirm the refund request.' };
   }
-  return { success: true, refund: mapDbRefund(result.refund) };
+  const savedRefund = mapDbRefund(result.refund);
+  if (result.duplicate) {
+    return {
+      success: false,
+      error: `A refund request with these details already exists (current status: ${savedRefund.status}).`,
+      refund: savedRefund,
+    };
+  }
+  return { success: true, refund: savedRefund };
 }
 
 export async function approveRefund(
