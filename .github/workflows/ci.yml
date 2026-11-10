@@ -50,6 +50,8 @@ jobs:
 
       - name: Verify Supabase project isolation
         run: npm run test:supabase-project
+      - name: Verify admin authentication and role provisioning security
+        run: npm run test:security
 
   database:
     name: Supabase migrations and RLS tests
