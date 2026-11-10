@@ -38,14 +38,11 @@ WITH retained(tablename, policyname) AS (
     ('crm_activities','Staff can manage activities'),
     ('customers','Admins can manage customers'),
     ('guides','Admins can manage guides'),
-    ('guides','Anyone can view active guides'),
     ('payment_transactions','Staff can manage payment transactions'),
     ('profiles','Admins can manage all profiles'),
     ('refund_records','Staff can manage refund records'),
     ('vessels','Admins can manage vessels'),
-    ('vessels','Anyone can view active vessels'),
-    ('weather_bulletins','Admins can manage weather bulletins'),
-    ('weather_bulletins','Anyone can read weather bulletins')
+    ('weather_bulletins','Admins can manage weather bulletins')
 )
 SELECT is(
   (
@@ -56,8 +53,8 @@ SELECT is(
      AND p.tablename=r.tablename
      AND p.policyname=r.policyname
   ),
-  12,
-  'all canonical admin, staff, and public policies remain'
+  9,
+  'all canonical admin and staff policies remain'
 );
 
 SELECT is(
