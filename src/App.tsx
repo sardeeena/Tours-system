@@ -22,6 +22,7 @@ import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { AccountPage } from './pages/AccountPage';
+import { StaticContentPage } from './pages/StaticContentPage';
 import { ALL_TOURS, CURRENCY_CONFIGS } from './data/toursData';
 import { Tour, CurrencyConfig, Destination, Category } from './types';
 import { Booking } from './types/booking';
@@ -29,6 +30,8 @@ import { bookingRepository } from './services/bookingRepository';
 import { saveBookingDraft, loadBookingDraft } from './services/draftStorage';
 import { getPublishedTours, getTourBySlug, getPublishedDestinations, getPublishedCategories } from './services/tourService';
 import { isSupabaseConfigured } from './services/supabaseClient';
+import { getStaticPages, INITIAL_STATIC_PAGES } from './services/siteSettingsService';
+import type { StaticPageContent } from './services/siteSettingsService';
 import { seoService } from './services/seoService';
 import { getPageSeo } from './services/seoConfig';
 import { sanitizeRedirectUrl } from './lib/security';
@@ -146,6 +149,32 @@ function MainApp() {
   const [searchParams, setSearchParams] = useState<URLSearchParams>(() => {
     return new URLSearchParams(window.location.search);
   });
+
+  // Public CMS pages are loaded from the same saved content managed in Admin > Pages.
+  const [staticPages, setStaticPages] = useState<StaticPageContent[]>(INITIAL_STATIC_PAGES);
+  const refreshStaticPages = useCallback(async () => {
+    try {
+      const pages = await getStaticPages();
+      setStaticPages(Array.isArray(pages) ? pages : INITIAL_STATIC_PAGES);
+    } catch (err) {
+      console.warn('Failed to load public static pages:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    void refreshStaticPages();
+    window.addEventListener('rse_pages_updated', refreshStaticPages);
+    return () => window.removeEventListener('rse_pages_updated', refreshStaticPages);
+  }, [refreshStaticPages]);
+
+  const staticPageSlug = useMemo(
+    () => currentPath.replace(/^\\/+|\\/+$/g, ''),
+    [currentPath]
+  );
+  const staticPage = useMemo(
+    () => staticPages.find((page) => page.slug === staticPageSlug) || null,
+    [staticPages, staticPageSlug]
+  );
 
   // Active confirmed booking object for immediate view
   const [confirmedBooking, setConfirmedBooking] = useState<Booking | null>(null);
@@ -395,13 +424,24 @@ function MainApp() {
       return;
     }
 
+    if (staticPage) {
+      seoService.apply({
+        title: staticPage.seoTitle || `${staticPage.title} | Awesome Adventure Tours`,
+        description: staticPage.seoDescription || staticPage.heroSubtitle,
+        canonicalUrl: typeof window !== 'undefined'
+          ? `${window.location.origin}/${staticPage.slug}`
+          : undefined,
+      });
+      return;
+    }
+
     // Apply centralized SEO metadata & rich Schema.org JSON-LD
     const seoMetadata = getPageSeo(currentPath, {
       tour: currentTourDetail,
       tours: liveTours,
     });
     seoService.apply(seoMetadata);
-  }, [currentPath, confirmationReference, currentTourDetail, liveTours]);
+  }, [currentPath, confirmationReference, currentTourDetail, liveTours, staticPage]);
 
   // Handlers from Homepage
   const handleHeroSearch = (filters: { destination: string; category: string; date: string; guests: number }) => {
@@ -1051,8 +1091,14 @@ function MainApp() {
       );
     }
 
+    // Public CMS pages must be resolved before the booking route so /booking-conditions
+    // is not mistaken for the multi-step booking application.
+    if (staticPage) {
+      return <StaticContentPage page={staticPage} />;
+    }
+
     // 2. Booking Multi-Step Experience: /booking or /booking?tour=:slug
-    if (currentPath.startsWith('/booking')) {
+    if (currentPath === '/booking' || currentPath.startsWith('/booking/')) {
       if (loadingTours && liveTours.length === 0) {
         return <BookingPageSkeleton />;
       }
