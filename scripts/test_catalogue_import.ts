@@ -152,6 +152,18 @@ async function runTestSuite() {
     'Unconfigured frontend never substitutes invented review totals or testimonials'
   );
 
+  assert(
+    tourServiceSource.includes("faq.section === 'what_to_bring'") &&
+      tourServiceSource.includes("faq.section === 'important_information'"),
+    'Database tour mapping restores what-to-bring and important-information sections'
+  );
+  assert(
+    tourServiceSource.includes(".eq('section', 'faq')") &&
+      tourServiceSource.includes(".eq('section', 'what_to_bring')") &&
+      tourServiceSource.includes(".eq('section', 'important_information')"),
+    'Admin FAQ edits preserve unrelated tour preparation sections'
+  );
+
   const seoConfigSource = fs.readFileSync(path.resolve('src/services/seoConfig.ts'), 'utf8');
   const seoServiceSource = fs.readFileSync(path.resolve('src/services/seoService.ts'), 'utf8');
   const tourBookingPanelSource = fs.readFileSync(path.resolve('src/components/tours/TourBookingPanel.tsx'), 'utf8');
