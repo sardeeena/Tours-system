@@ -144,9 +144,17 @@ class SupabaseBookingRepository implements IBookingRepository {
     const bookingDateStr = booking.date ? booking.date.split('T')[0] : '';
 
     if (!isSupabaseConfigured()) {
+      // Never report a production reservation as successful when no authoritative
+      // database is configured. Browser-only bookings are permitted only in local
+      // development, where they are explicitly non-production test data.
+      if (!import.meta.env.DEV) {
+        SupabaseBookingRepository.inFlightRefs.delete(idempotencyKey);
+        throw new Error('The reservation service is temporarily unavailable. Please try again later or contact our booking team.');
+      }
+
       const newBooking: Booking = {
         ...booking,
-        bookingId: booking.bookingId || `bk_${Date.now()}`,
+        bookingId: booking.bookingId || `dev_bk_${Date.now()}`,
         status: booking.status || 'pending',
         paymentStatus: booking.paymentStatus || 'pending',
         createdAt: new Date().toISOString(),
