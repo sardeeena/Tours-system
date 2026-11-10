@@ -152,7 +152,7 @@ export const StepPayment: React.FC<StepPaymentProps> = ({
             id="booking-coupon-code"
             type="text"
             value={couponCode}
-            onChange={(e) => onCouponCodeChange(e.target.value.toUpperCase().replace(/\\s/g, ''))}
+            onChange={(e) => onCouponCodeChange(e.target.value.toUpperCase().replace(/\s/g, ''))}
             maxLength={64}
             autoComplete="off"
             placeholder="Enter your promo code"
