@@ -321,6 +321,11 @@ async function processMessage(
 }
 
 export function startBookingNotificationWorker(client: SupabaseClient): () => void {
+  if (process.env.BOOKING_NOTIFICATION_WORKER_ENABLED?.trim().toLowerCase() !== 'true') {
+    console.info('[Booking Notification Worker] Not started: BOOKING_NOTIFICATION_WORKER_ENABLED is not true.');
+    return () => undefined;
+  }
+
   const apiKey = process.env.RESEND_API_KEY?.trim() || '';
   const fromEmail = process.env.RESEND_FROM_EMAIL?.trim() || '';
   const fromName = process.env.RESEND_FROM_NAME?.trim() || 'Kemet Spirit';
