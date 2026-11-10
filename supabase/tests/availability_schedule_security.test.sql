@@ -1,13 +1,16 @@
 BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(13);
+SELECT plan(14);
 
 INSERT INTO public.tours (id, title, slug, status, max_guests)
 VALUES
   ('a9000000-0000-0000-0000-000000000001', 'Published availability test', 'pgtap-availability-published', 'published', 12),
   ('a9000000-0000-0000-0000-000000000002', 'Draft availability test', 'pgtap-availability-draft', 'draft', 12),
   ('a9000000-0000-0000-0000-000000000003', 'Archived availability test', 'pgtap-availability-archived', 'archived', 12);
+
+INSERT INTO public.tour_availability (tour_id, date, status, max_capacity, booked_count, notes)
+VALUES ('a9000000-0000-0000-0000-000000000001', CURRENT_DATE, 'available', 12, 0, 'Internal operations note must not be public');
 
 SELECT ok(
   to_regprocedure('public.get_tour_availability_schedule(text,date,date)') IS NOT NULL,
@@ -50,6 +53,12 @@ SELECT is(
   (SELECT count(*)::int FROM public.get_tour_availability_schedule('pgtap-availability-archived', CURRENT_DATE, CURRENT_DATE)),
   0,
   'anonymous availability lookup hides archived tours'
+);
+
+SELECT is(
+  (SELECT notes FROM public.get_tour_availability_schedule('pgtap-availability-published', CURRENT_DATE, CURRENT_DATE)),
+  NULL::text,
+  'anonymous availability lookup never exposes internal operational notes'
 );
 
 SELECT is(
