@@ -156,6 +156,18 @@ BEGIN
     WHERE id = v_avail.id
     FOR UPDATE;
 
+    IF v_avail.status IN ('unavailable', 'sold_out') THEN
+        RETURN jsonb_build_object(
+            'success', false,
+            'error', 'This departure is not available for online booking.'
+        );
+    END IF;
+
+    IF v_avail.booked_count < 0 OR v_avail.max_capacity < 1 THEN
+        RAISE EXCEPTION 'Invalid availability capacity state for tour % on %.', v_tour.id, p_booking_date
+            USING ERRCODE = '23514';
+    END IF;
+
     IF (v_avail.booked_count + v_total_guests) > v_avail.max_capacity THEN
         RETURN jsonb_build_object(
             'success', false,
@@ -164,7 +176,7 @@ BEGIN
     END IF;
 
     -- 5. Calculate Base Tour Price (Adults & Children)
-    v_subtotal := (p_adult_count * v_tour.price_eur) + (COALESCE(p_child_count, 0) * (v_tour.price_eur * 0.50));
+    v_subtotal := (p_adult_count * v_tour.price) + (COALESCE(p_child_count, 0) * (v_tour.price * 0.50));
 
     -- 6. Pickup Location Fees
     IF p_pickup_location_id IS NOT NULL AND TRIM(p_pickup_location_id) != '' THEN
@@ -265,34 +277,56 @@ BEGIN
 
     -- 8. Coupon Code Validation (Server-Side)
     IF p_coupon_code IS NOT NULL AND TRIM(p_coupon_code) != '' THEN
+        -- Lock the coupon row so concurrent bookings cannot exceed its usage limit.
         SELECT * INTO v_coupon
         FROM public.coupons
         WHERE code = UPPER(TRIM(p_coupon_code))
           AND is_active = TRUE
-          AND (valid_until IS NULL OR valid_until >= CURRENT_DATE);
+          AND valid_from <= CURRENT_DATE
+          AND (valid_until IS NULL OR valid_until >= CURRENT_DATE)
+          AND (usage_limit IS NULL OR times_used < usage_limit)
+        FOR UPDATE;
 
-        IF FOUND THEN
-            IF v_coupon.discount_percent > 0 THEN
-                v_discount := (v_subtotal * (v_coupon.discount_percent / 100.00));
-            ELSIF v_coupon.discount_amount > 0 THEN
-                v_discount := LEAST(v_subtotal, v_coupon.discount_amount);
-            END IF;
+        IF NOT FOUND THEN
+            RETURN jsonb_build_object('success', false, 'error', 'The coupon is invalid, expired, or has reached its usage limit.');
         END IF;
+
+        IF (v_subtotal + v_extras_total) < COALESCE(v_coupon.min_spend, 0) THEN
+            RETURN jsonb_build_object('success', false, 'error', 'The booking does not meet the minimum spend for this coupon.');
+        END IF;
+
+        IF v_coupon.discount_type = 'percentage' THEN
+            v_discount := (v_subtotal + v_extras_total) * (v_coupon.discount_value / 100.00);
+        ELSIF v_coupon.discount_type = 'fixed' THEN
+            v_discount := LEAST(v_subtotal + v_extras_total, v_coupon.discount_value);
+        END IF;
+
+        IF v_coupon.max_discount IS NOT NULL THEN
+            v_discount := LEAST(v_discount, v_coupon.max_discount);
+        END IF;
+        v_discount := LEAST(v_discount, v_subtotal + v_extras_total);
     END IF;
 
     v_final_total := GREATEST(0.00, (v_subtotal + v_extras_total) - v_discount);
 
     -- 9. Authoritative Customer Record Association & Hotel Persistence
-    SELECT id INTO v_customer_id
-    FROM public.customers
-    WHERE LOWER(TRIM(email)) = LOWER(TRIM(p_customer_email))
-    LIMIT 1;
+    -- Only reuse a customer record already linked to this authenticated account.
+    -- Guest checkouts get a separate customer row rather than modifying another guest's CRM record by email.
+    IF v_current_user_id IS NOT NULL THEN
+        SELECT id INTO v_customer_id
+        FROM public.customers
+        WHERE user_id = v_current_user_id
+          AND LOWER(TRIM(email)) = LOWER(TRIM(p_customer_email))
+        ORDER BY created_at DESC
+        LIMIT 1;
+    END IF;
 
     IF v_customer_id IS NULL THEN
         INSERT INTO public.customers (
-            first_name, last_name, email, phone, country, hotel, source
+            user_id, first_name, last_name, email, phone, country, hotel, source
         )
         VALUES (
+            v_current_user_id,
             TRIM(p_customer_first_name),
             TRIM(p_customer_last_name),
             LOWER(TRIM(p_customer_email)),
@@ -314,7 +348,7 @@ BEGIN
     END IF;
 
     -- 10. Generate Authoritative Unpredictable Booking Reference
-    v_booking_ref := 'RST-' || TO_CHAR(CURRENT_DATE, 'YYYY') || '-' || UPPER(SUBSTRING(MD5(gen_random_uuid()::TEXT) FROM 1 FOR 6));
+    v_booking_ref := 'RST-' || TO_CHAR(CURRENT_DATE, 'YYYY') || '-' || UPPER(ENCODE(gen_random_bytes(10), 'hex'));
 
     -- 11. Insert Authoritative Booking Record with Idempotency Key & Concurrency Protection
     BEGIN
@@ -394,11 +428,11 @@ BEGIN
                 END IF;
 
                 INSERT INTO public.booking_extras (
-                    booking_id, extra_id, name, description, quantity, unit_price_eur, total_price_eur, currency
+                    booking_id, extra_id, name, description, quantity, unit_price, total_price, pricing_type, currency
                 )
                 VALUES (
                     v_booking_id, v_extra_record.id, v_extra_record.name,
-                    v_extra_record.description, v_extra_qty, v_extra_unit_price, v_extra_line_total, 'EUR'
+                    v_extra_record.description, v_extra_qty, v_extra_unit_price, v_extra_line_total, v_extra_record.pricing_type, 'EUR'
                 );
             END IF;
         END LOOP;
@@ -435,6 +469,14 @@ BEGIN
             INSERT INTO public.booking_passengers (booking_id, full_name, passenger_type, is_lead_passenger, is_lead)
             VALUES (v_booking_id, 'Infant Guest ' || i || ' (' || TRIM(p_customer_last_name) || ')', 'infant', FALSE, FALSE);
         END LOOP;
+    END IF;
+
+    -- Consume one coupon use only after the booking and its child records exist.
+    IF p_coupon_code IS NOT NULL AND TRIM(p_coupon_code) <> '' THEN
+        UPDATE public.coupons
+        SET times_used = times_used + 1,
+            updated_at = NOW()
+        WHERE id = v_coupon.id;
     END IF;
 
     -- 14. Increment Availability Count Atomically
@@ -501,7 +543,7 @@ DECLARE
     v_is_authorized BOOLEAN := FALSE;
 BEGIN
     -- Authorization check: Requires admin privileges
-    IF auth.role() = 'service_role' THEN
+    IF (auth.jwt() ->> 'role') = 'service_role' THEN
         v_is_authorized := TRUE;
     ELSE
         BEGIN
@@ -600,7 +642,7 @@ DECLARE
     v_sort_order INT;
     v_is_authorized BOOLEAN := FALSE;
 BEGIN
-    IF auth.role() = 'service_role' THEN
+    IF (auth.jwt() ->> 'role') = 'service_role' THEN
         v_is_authorized := TRUE;
     ELSE
         BEGIN
