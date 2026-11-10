@@ -319,6 +319,7 @@ CREATE TABLE IF NOT EXISTS public.tour_faqs (
     tour_id UUID NOT NULL REFERENCES public.tours(id) ON DELETE CASCADE,
     question TEXT NOT NULL,
     answer TEXT NOT NULL,
+    section TEXT NOT NULL DEFAULT 'faq' CHECK (section IN ('faq', 'what_to_bring', 'important_information')),
     sort_order INT NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
