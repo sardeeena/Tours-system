@@ -652,7 +652,7 @@ export async function getCurrentAdminUser(): Promise<AppUser | null> {
       }
 
       // Administrators are never blocked by missing confirmation flags
-      const hasAdminRole = userRole === 'admin' || userRole === 'manager' || userRole === 'staff';
+      const hasAdminRole = userRole === 'admin' || userRole === 'super_admin' || userRole === 'manager' || userRole === 'staff';
       if (!isProfileConfirmed && !hasAdminRole) {
         return null;
       }
@@ -723,10 +723,10 @@ export async function verifyAdminAccess(): Promise<boolean> {
     if (profileError || !profile) {
       // Only server-signed app_metadata can be trusted; user_metadata is client-editable
       const appRole = user.app_metadata?.role as string | undefined;
-      return appRole === 'admin' || appRole === 'manager' || appRole === 'staff';
+      return appRole === 'admin' || appRole === 'super_admin' || appRole === 'manager' || appRole === 'staff';
     }
 
-    return profile.role === 'admin' || profile.role === 'manager' || profile.role === 'staff';
+    return profile.role === 'admin' || profile.role === 'super_admin' || profile.role === 'manager' || profile.role === 'staff';
   } catch (err) {
     console.error('Error verifying admin access against profiles table:', err);
     return false;
