@@ -40,20 +40,14 @@ export const MyBookingModal: React.FC<MyBookingModalProps> = ({ isOpen, onClose,
     const cleanRef = sanitizeString(bookingRef).toUpperCase();
     const cleanContact = sanitizeString(emailOrPhone);
 
-    if (!cleanRef) {
-      setErrorMessage('Please enter your booking reference code (e.g. RST-2026-AB4821).');
+    if (!cleanRef || !cleanContact) {
+      setErrorMessage('Please enter both your booking reference and the email address or full phone number used during booking.');
       setIsLoading(false);
       return;
     }
 
     try {
-      let result: Booking | null = null;
-      if (cleanContact) {
-        result = await bookingRepository.findBooking(cleanRef, cleanContact);
-      }
-      if (!result) {
-        result = await bookingRepository.getBooking(cleanRef);
-      }
+      const result = await bookingRepository.findBooking(cleanRef, cleanContact);
 
       if (result) {
         setBooking(result);
@@ -135,10 +129,11 @@ export const MyBookingModal: React.FC<MyBookingModalProps> = ({ isOpen, onClose,
 
               <div>
                 <label className="block text-xs font-semibold text-stone-700 mb-1">
-                  Email Address or WhatsApp Phone (Optional)
+                  Email Address or WhatsApp Phone *
                 </label>
                 <input
                   type="text"
+                  required
                   value={emailOrPhone}
                   onChange={(e) => setEmailOrPhone(e.target.value)}
                   placeholder="name@domain.com or +20 151 5212741"

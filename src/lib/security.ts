@@ -53,12 +53,12 @@ export function isValidPhoneNumber(phone: string): boolean {
 
 /**
  * Validates Red Sea Excursions booking reference format
- * Accepts RST-YYYY-XXXX (where XXXX is letters+digits) or RSE-XXXXX
+ * Accepts RST-YYYY-XXXX (4–32 alphanumeric characters) or RSE-XXXXX
  */
 export function isValidBookingReference(ref: string): boolean {
   if (!ref) return false;
   const clean = ref.trim().toUpperCase();
-  const format1 = /^RST-\d{4}-[A-Z0-9]{4,6}$/;
+  const format1 = /^RST-\d{4}-[A-Z0-9]{4,32}$/;
   const format2 = /^RSE-\d{4,8}$/;
   return format1.test(clean) || format2.test(clean);
 }

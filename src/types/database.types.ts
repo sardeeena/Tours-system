@@ -825,7 +825,10 @@ export interface Database {
           currency: string;
           special_requests: string | null;
           cancellation_reason: string | null;
+          cancellation_previous_status: string | null;
+          cancellation_requested_at: string | null;
           idempotency_key: string | null;
+          idempotency_payload: Json | null;
           created_at: string;
           updated_at: string;
         };
@@ -851,7 +854,10 @@ export interface Database {
           currency?: string;
           special_requests?: string | null;
           cancellation_reason?: string | null;
+          cancellation_previous_status?: string | null;
+          cancellation_requested_at?: string | null;
           idempotency_key?: string | null;
+          idempotency_payload?: Json | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -877,7 +883,10 @@ export interface Database {
           currency?: string;
           special_requests?: string | null;
           cancellation_reason?: string | null;
+          cancellation_previous_status?: string | null;
+          cancellation_requested_at?: string | null;
           idempotency_key?: string | null;
+          idempotency_payload?: Json | null;
           created_at?: string;
           updated_at?: string;
         };

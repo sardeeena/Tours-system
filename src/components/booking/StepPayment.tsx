@@ -18,6 +18,8 @@ import { BOOKING_LEGAL_TERMS } from '../../data/bookingData';
 
 interface StepPaymentProps {
   pricing: BookingPricing;
+  couponCode: string;
+  onCouponCodeChange: (code: string) => void;
   currency: CurrencyConfig;
   paymentMethod: PaymentMethod;
   onPaymentMethodChange: (method: PaymentMethod) => void;
@@ -30,6 +32,8 @@ interface StepPaymentProps {
 
 export const StepPayment: React.FC<StepPaymentProps> = ({
   pricing,
+  couponCode,
+  onCouponCodeChange,
   currency,
   paymentMethod,
   onPaymentMethodChange,
@@ -137,6 +141,26 @@ export const StepPayment: React.FC<StepPaymentProps> = ({
             </div>
           </div>
 
+        </div>
+
+        {/* Optional discount code; the database validates and redeems it atomically. */}
+        <div className="pt-3 border-t border-stone-200 space-y-2">
+          <label htmlFor="booking-coupon-code" className="block text-xs font-semibold text-stone-800">
+            Discount code (optional)
+          </label>
+          <input
+            id="booking-coupon-code"
+            type="text"
+            value={couponCode}
+            onChange={(e) => onCouponCodeChange(e.target.value.toUpperCase().replace(/\s/g, ''))}
+            maxLength={64}
+            autoComplete="off"
+            placeholder="Enter your promo code"
+            className="w-full px-3 py-2 border border-stone-300 rounded-sm text-xs uppercase tracking-wider focus:outline-none focus:ring-1 focus:ring-[#0A6C74]"
+          />
+          <p className="text-[11px] text-stone-500">
+            Your code is checked when you submit the reservation. Invalid, expired, or exhausted codes will not create a booking.
+          </p>
         </div>
 
         {/* Free cancellation recap */}

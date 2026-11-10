@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Tour, CurrencyConfig } from '../types';
 import { GuestCounts, BookingExtra, CustomerInfo, Booking, PickupLocation } from '../types/booking';
@@ -81,6 +81,11 @@ export const BookingPage: React.FC<BookingPageProps> = ({
   const [selectedExtraIds, setSelectedExtraIds] = useState<string[]>(initialDraft.selectedExtraIds || []);
   const [customer, setCustomer] = useState<CustomerInfo>(initialDraft.customer);
   const [paymentMethod, setPaymentMethod] = useState<'pay_at_pickup' | 'pay_online'>(initialDraft.paymentMethod || 'pay_at_pickup');
+  const [couponCode, setCouponCode] = useState<string>(initialDraft.couponCode || '');
+  const [checkoutIdempotencyKey, setCheckoutIdempotencyKey] = useState<string>(
+    initialDraft.idempotencyKey || `idem_${crypto.randomUUID()}`
+  );
+  const lastDraftFingerprint = useRef<string | null>(null);
   const [termsAccepted, setTermsAccepted] = useState<boolean>(initialDraft.termsAccepted || false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
@@ -127,6 +132,31 @@ export const BookingPage: React.FC<BookingPageProps> = ({
     };
   }, [currentTour?.slug, currentTour?.id, currentTour?.destination]);
 
+  const draftFingerprint = useMemo(() => JSON.stringify({
+    tourSlug: currentTour?.slug,
+    date,
+    guests,
+    pickupLocationId,
+    hotelName,
+    roomNumber,
+    selectedExtraIds,
+    extraQuantities,
+    customer,
+    paymentMethod,
+    couponCode,
+  }), [currentTour?.slug, date, guests, pickupLocationId, hotelName, roomNumber, selectedExtraIds, extraQuantities, customer, paymentMethod, couponCode]);
+
+  useEffect(() => {
+    if (lastDraftFingerprint.current === null) {
+      lastDraftFingerprint.current = draftFingerprint;
+      return;
+    }
+    if (lastDraftFingerprint.current !== draftFingerprint) {
+      lastDraftFingerprint.current = draftFingerprint;
+      setCheckoutIdempotencyKey(`idem_${crypto.randomUUID()}`);
+    }
+  }, [draftFingerprint]);
+
   // Synchronize draft to sessionStorage
   useEffect(() => {
     if (!currentTour) return;
@@ -146,6 +176,8 @@ export const BookingPage: React.FC<BookingPageProps> = ({
       },
       paymentMethod,
       termsAccepted,
+      idempotencyKey: checkoutIdempotencyKey,
+      couponCode,
     };
     saveBookingDraft(draft);
   }, [
@@ -160,6 +192,8 @@ export const BookingPage: React.FC<BookingPageProps> = ({
     customer,
     paymentMethod,
     termsAccepted,
+    checkoutIdempotencyKey,
+    couponCode,
   ]);
 
   // Selected pickup object
@@ -236,7 +270,8 @@ export const BookingPage: React.FC<BookingPageProps> = ({
       const newBooking: Booking = {
         bookingId: `b-${Date.now()}`,
         bookingReference: ref,
-        idempotencyKey: `idem_${ref}_${currentTour.id}_${date}_${customer.email.trim().toLowerCase()}`,
+        idempotencyKey: checkoutIdempotencyKey,
+        couponCode: couponCode.trim() || undefined,
         tourId: currentTour.id,
         tourSlug: currentTour.slug,
         tourTitle: currentTour.title,
@@ -461,6 +496,8 @@ export const BookingPage: React.FC<BookingPageProps> = ({
                 {currentStep === 6 && (
                   <StepPayment
                     pricing={pricing}
+                    couponCode={couponCode}
+                    onCouponCodeChange={setCouponCode}
                     currency={currency}
                     paymentMethod={paymentMethod}
                     onPaymentMethodChange={setPaymentMethod}

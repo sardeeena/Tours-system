@@ -20,7 +20,8 @@ export interface IBookingRepository {
   findBooking(bookingReference: string, emailOrPhone: string): Promise<Booking | null>;
   getBookingsByEmail(email: string): Promise<Booking[]>;
   updateBooking(booking: Booking): Promise<Booking>;
-  cancelBooking(bookingReference: string, reason: string): Promise<Booking | null>;
+  cancelBooking(bookingReference: string, reason: string, verification: string): Promise<Booking | null>;
+  resolveBookingCancellation(bookingReference: string, decision: 'approve' | 'reject', reason?: string): Promise<Booking | null>;
   listBookings(filters?: { status?: string; limit?: number }): Promise<Booking[]>;
 }
 
@@ -125,8 +126,7 @@ class SupabaseBookingRepository implements IBookingRepository {
     }
 
     // Genuine request idempotency token: unique per booking submission intent
-    const idempotencyKey = booking.idempotencyKey || 
-      `req_${booking.bookingReference || ''}_${booking.tourId}_${booking.date}_${booking.customer.email.toLowerCase()}`;
+    const idempotencyKey = booking.idempotencyKey || `idem_${booking.bookingReference}`;
     booking.idempotencyKey = idempotencyKey;
     const dedupeKey = idempotencyKey;
 
@@ -144,9 +144,17 @@ class SupabaseBookingRepository implements IBookingRepository {
     const bookingDateStr = booking.date ? booking.date.split('T')[0] : '';
 
     if (!isSupabaseConfigured()) {
+      // Never report a production reservation as successful when no authoritative
+      // database is configured. Browser-only bookings are permitted only in local
+      // development, where they are explicitly non-production test data.
+      if (!import.meta.env.DEV) {
+        SupabaseBookingRepository.inFlightRefs.delete(idempotencyKey);
+        throw new Error('The reservation service is temporarily unavailable. Please try again later or contact our booking team.');
+      }
+
       const newBooking: Booking = {
         ...booking,
-        bookingId: booking.bookingId || `bk_${Date.now()}`,
+        bookingId: booking.bookingId || `dev_bk_${Date.now()}`,
         status: booking.status || 'pending',
         paymentStatus: booking.paymentStatus || 'pending',
         createdAt: new Date().toISOString(),
@@ -175,6 +183,7 @@ class SupabaseBookingRepository implements IBookingRepository {
         p_customer_hotel: booking.customer.hotelName || booking.pickup.hotelName || null,
         p_pickup_location_id: booking.pickup.locationId || null,
         p_pickup_room_number: booking.pickup.roomNumber || null,
+        p_coupon_code: booking.couponCode?.trim() || null,
         p_extras: (booking.extras || []).map((e: any) => ({
           id: e.id || e.extraId || '',
           name: e.name,
@@ -199,6 +208,16 @@ class SupabaseBookingRepository implements IBookingRepository {
         if (res.totalEur !== undefined && res.totalEur !== null) {
           booking.pricing.totalEur = Number(res.totalEur);
           booking.pricing.formattedTotal = `€${Number(res.totalEur).toFixed(2)}`;
+        }
+        if (res.discountEur !== undefined && res.discountEur !== null) {
+          booking.pricing.discountEur = Number(res.discountEur);
+        }
+        if (res.subtotalEur !== undefined && res.subtotalEur !== null) {
+          booking.pricing.subtotalEur = Number(res.subtotalEur);
+          booking.pricing.formattedSubtotal = `€${Number(res.subtotalEur).toFixed(2)}`;
+        }
+        if (res.extrasTotalEur !== undefined && res.extrasTotalEur !== null) {
+          booking.pricing.extrasSubtotalEur = Number(res.extrasTotalEur);
         }
 
         // Only commit to local state cache after authoritative database transaction succeeds
@@ -419,6 +438,9 @@ class SupabaseBookingRepository implements IBookingRepository {
   }
 
   async updateBooking(booking: Booking): Promise<Booking> {
+    if (booking.status === 'cancelled') {
+      throw new Error('Bookings must be cancelled through the authorized cancellation approval workflow.');
+    }
     const local = this.getLocalBookings().map((item) => (item.bookingReference === booking.bookingReference ? booking : item));
     this.saveLocalBookings(local);
 
@@ -481,13 +503,34 @@ class SupabaseBookingRepository implements IBookingRepository {
     return booking;
   }
 
-  async cancelBooking(bookingReference: string, reason: string): Promise<Booking | null> {
-    const existing = await this.getBooking(bookingReference);
+  async cancelBooking(bookingReference: string, reason: string, verification: string): Promise<Booking | null> {
+    if (!verification?.trim()) {
+      throw new Error('The booking email address or full phone number is required to verify a cancellation request.');
+    }
+
+    const existing = await this.findBooking(bookingReference, verification);
     if (!existing) return null;
+
+    if (isSupabaseConfigured()) {
+      const { data, error } = await supabase.rpc('request_booking_cancellation_secure', {
+        p_reference: bookingReference.trim().toUpperCase(),
+        p_verification: verification.trim(),
+        p_reason: reason.trim().slice(0, 500),
+      });
+      if (error) throw new Error(formatSupabaseError(error));
+      if (!data || (data as any).success !== true) {
+        throw new Error((data as any)?.error || 'The cancellation request could not be verified.');
+      }
+    } else if (!import.meta.env.DEV) {
+      throw new Error('The cancellation service is temporarily unavailable.');
+    }
 
     const updated: Booking = {
       ...existing,
       status: 'cancellation_requested',
+      cancellationReason: reason,
+      cancellationRequestedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       timeline: [
         ...(existing.timeline || []),
         {
@@ -498,88 +541,67 @@ class SupabaseBookingRepository implements IBookingRepository {
           type: 'cancellation',
         },
       ],
-      cancellationReason: reason,
-      updatedAt: new Date().toISOString(),
     };
 
-    if (isSupabaseConfigured()) {
-      try {
-        const { error: cancelError } = await supabase
-          .from('bookings')
-          .update({
-            status: 'cancellation_requested',
-            cancellation_reason: reason,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('booking_reference', bookingReference);
+    const local = this.getLocalBookings().map((item) =>
+      item.bookingReference === bookingReference ? updated : item
+    );
+    this.saveLocalBookings(local);
 
-        if (cancelError) {
-          throw new Error(formatSupabaseError(cancelError));
-        }
-
-        // A cancellation request does not release inventory. Capacity is restored only
-        // after an authorized cancellation approval is processed server-side.
-      } catch (err) {
-        console.error('Cancel booking in Supabase error:', err);
-        throw err;
-      }
-    }
-
-    // CRM Activity Timeline
     try {
       await recordActivity({
         customerId: existing.customerId,
         bookingId: existing.bookingId || existing.bookingReference,
         eventType: 'cancellation',
-        title: `Cancellation: ${bookingReference}`,
+        title: `Cancellation Request: ${bookingReference}`,
         description: reason || 'Customer requested reservation cancellation.',
         actor: 'Customer Support',
-        metadata: {
-          bookingReference,
-          reason,
-          tourTitle: existing.tourTitle,
-        },
+        metadata: { bookingReference, reason, tourTitle: existing.tourTitle },
       });
     } catch {}
 
-    // Internal Staff Notification
-    try {
-      const notifsRaw = localStorage.getItem('rse_staff_notifications') || '[]';
-      const notifs = JSON.parse(notifsRaw);
-      notifs.unshift({
-        id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-        category: 'new_booking',
-        dedupKey: `cancel_${bookingReference}`,
-        title: `Cancellation: ${bookingReference}`,
-        message: `Booking ${bookingReference} (${existing.tourTitle}) requested cancellation: ${reason}`,
-        severity: 'warning',
-        entityType: 'booking',
-        entityId: bookingReference,
-        linkTab: 'bookings',
-        isRead: false,
-        createdAt: new Date().toISOString(),
+
+
+    return updated;
+  }
+
+  async resolveBookingCancellation(
+    bookingReference: string,
+    decision: 'approve' | 'reject',
+    reason?: string
+  ): Promise<Booking | null> {
+    if (!isSupabaseConfigured() && !import.meta.env.DEV) {
+      throw new Error('The cancellation service is temporarily unavailable.');
+    }
+
+    const existing = await this.getBooking(bookingReference);
+    if (!existing) return null;
+
+    let resolvedStatus = decision === 'approve' ? 'cancelled' : (existing.status === 'cancellation_requested' ? 'confirmed' : existing.status);
+    if (isSupabaseConfigured()) {
+      const { data, error } = await supabase.rpc('admin_resolve_booking_cancellation', {
+        p_reference: bookingReference.trim().toUpperCase(),
+        p_decision: decision,
+        p_reason: reason?.trim().slice(0, 500) || null,
       });
-      localStorage.setItem('rse_staff_notifications', JSON.stringify(notifs.slice(0, 100)));
-    } catch {}
-
-    // Automation Event
-    try {
-      await publishAutomationEvent(
-        'booking.cancelled',
-        {
-          bookingReference,
-          reason,
-          tourTitle: existing.tourTitle,
-          tourDate: existing.date,
-          customerName: `${existing.customer.firstName} ${existing.customer.lastName}`,
-          customerEmail: existing.customer.email,
-        },
-        'booking',
-        existing.bookingId || bookingReference
-      );
-    } catch {}
-
-    return this.updateBooking(updated);
+      if (error) throw new Error(formatSupabaseError(error));
+      if (!data || (data as any).success !== true) {
+        throw new Error((data as any)?.error || 'The cancellation decision could not be processed.');
+      }
+      resolvedStatus = (data as any).status || resolvedStatus;
+    }
+    const updated: Booking = {
+      ...existing,
+      status: resolvedStatus,
+      cancellationReason: reason || existing.cancellationReason,
+      cancellationRequestedAt: undefined,
+      updatedAt: new Date().toISOString(),
+    };
+    const local = this.getLocalBookings().map((item) =>
+      item.bookingReference === bookingReference ? updated : item
+    );
+    this.saveLocalBookings(local);
+    return updated;
   }
 
   async listBookings(filters?: { status?: string; limit?: number }): Promise<Booking[]> {
@@ -733,7 +755,7 @@ class SupabaseBookingRepository implements IBookingRepository {
       tourSlug: tour.slug || 'orange-bay-island-snorkeling',
       tourTitle: tour.title || 'Red Sea Excursion',
       tourImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
-      tourDestination: 'Hurghada',
+      tourDestination: tour.destination || 'Hurghada',
       tourDuration: tour.duration || 'Full Day (approx. 7 hours)',
       date: sec.bookingDate,
       guests: {
@@ -753,7 +775,7 @@ class SupabaseBookingRepository implements IBookingRepository {
         extraId: `extra-${idx}`,
         name: ex.name,
         priceEur: Number(ex.unitPrice) || 0,
-        pricingType: 'per_person' as any,
+        pricingType: (ex.pricingType || 'per_booking') as any,
         quantity: ex.quantity || 1,
         amountEur: Number(ex.totalPrice) || 0,
       })),
@@ -770,7 +792,7 @@ class SupabaseBookingRepository implements IBookingRepository {
           extraId: `extra-${idx}`,
           name: ex.name,
           amountEur: Number(ex.totalPrice) || 0,
-          pricingType: 'per_person' as any,
+          pricingType: (ex.pricingType || 'per_booking') as any,
           quantity: ex.quantity || 1,
         })),
         discountEur: Number(pricing.discount) || 0,
@@ -783,7 +805,7 @@ class SupabaseBookingRepository implements IBookingRepository {
         firstName: customer.firstName || 'Guest',
         lastName: customer.lastName || '',
         email: customer.emailMasked || '',
-        countryCode: '+49',
+        countryCode: '',
         phoneNumber: customer.phoneMasked || '',
         country: customer.country || 'International',
         whatsappNumber: customer.phoneMasked || '',

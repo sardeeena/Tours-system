@@ -12,6 +12,7 @@
 
 -- 1. IDEMPOTENCY KEY ON BOOKINGS
 ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS idempotency_key TEXT;
+ALTER TABLE public.bookings ADD COLUMN IF NOT EXISTS idempotency_payload JSONB;
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_idempotency_key 
 ON public.bookings(idempotency_key) 
@@ -70,7 +71,7 @@ CREATE OR REPLACE FUNCTION public.create_booking_atomic(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = public, auth, pg_temp
+SET search_path = ''
 AS $$
 DECLARE
     v_tour RECORD;
@@ -95,6 +96,7 @@ DECLARE
     v_initial_payment_status TEXT := 'pending';
     v_default_capacity INT;
     v_existing_dup RECORD;
+    v_idempotency_payload JSONB;
 BEGIN
     -- 1. Input Sanitization & Strict Passenger Count Validation
     IF p_tour_identifier IS NULL OR TRIM(p_tour_identifier) = '' THEN
@@ -126,6 +128,14 @@ BEGIN
 
     v_total_guests := p_adult_count + COALESCE(p_child_count, 0) + COALESCE(p_infant_count, 0);
 
+    IF p_idempotency_key IS NULL OR LENGTH(TRIM(p_idempotency_key)) < 16 OR LENGTH(TRIM(p_idempotency_key)) > 200 THEN
+        RETURN jsonb_build_object('success', false, 'error', 'A valid idempotency key is required for this reservation.');
+    END IF;
+
+    IF p_extras IS NOT NULL AND jsonb_typeof(p_extras) <> 'array' THEN
+        RETURN jsonb_build_object('success', false, 'error', 'Invalid add-on selection.');
+    END IF;
+
     -- 2. Resolve Tour
     IF p_tour_identifier ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' THEN
         SELECT * INTO v_tour FROM public.tours WHERE id = p_tour_identifier::UUID AND status = 'published';
@@ -137,26 +147,53 @@ BEGIN
         RETURN jsonb_build_object('success', false, 'error', 'The requested excursion is either unavailable or unpublished.');
     END IF;
 
-    -- 3. Genuine Request Idempotency Check
-    IF p_idempotency_key IS NOT NULL AND TRIM(p_idempotency_key) <> '' THEN
-        SELECT * INTO v_existing_dup
-        FROM public.bookings
-        WHERE idempotency_key = TRIM(p_idempotency_key)
-        LIMIT 1;
+    -- 3. Bind the idempotency token to the complete normalized request.
+    -- Reusing a token with different customer, date, party, pickup, extras, coupon,
+    -- payment method, or account data is rejected rather than returning another booking.
+    v_idempotency_payload := jsonb_build_object(
+        'user_id', v_current_user_id,
+        'tour_id', v_tour.id,
+        'booking_date', p_booking_date,
+        'adult_count', p_adult_count,
+        'child_count', COALESCE(p_child_count, 0),
+        'infant_count', COALESCE(p_infant_count, 0),
+        'customer_first_name', LOWER(TRIM(p_customer_first_name)),
+        'customer_last_name', LOWER(TRIM(p_customer_last_name)),
+        'customer_email', LOWER(TRIM(p_customer_email)),
+        'customer_phone', REGEXP_REPLACE(COALESCE(p_customer_phone, ''), '\s+', ' ', 'g'),
+        'customer_country', LOWER(TRIM(COALESCE(p_customer_country, 'International'))),
+        'customer_hotel', LOWER(TRIM(COALESCE(p_customer_hotel, ''))),
+        'pickup_location_id', COALESCE(p_pickup_location_id, ''),
+        'pickup_room_number', COALESCE(p_pickup_room_number, ''),
+        'extras', COALESCE(p_extras, '[]'::jsonb),
+        'coupon_code', UPPER(TRIM(COALESCE(p_coupon_code, ''))),
+        'payment_method', p_payment_method,
+        'special_requests', COALESCE(TRIM(p_special_requests), '')
+    );
 
-        IF FOUND THEN
-            RETURN jsonb_build_object(
-                'success', true,
-                'bookingId', v_existing_dup.id,
-                'bookingReference', v_existing_dup.booking_reference,
-                'status', v_existing_dup.status,
-                'paymentStatus', v_existing_dup.payment_status,
-                'totalEur', v_existing_dup.total,
-                'bookingDate', v_existing_dup.booking_date,
-                'isDuplicate', true,
-                'message', 'Idempotent replay: original booking returned.'
-            );
+    SELECT * INTO v_existing_dup
+    FROM public.bookings
+    WHERE idempotency_key = TRIM(p_idempotency_key)
+    LIMIT 1;
+
+    IF FOUND THEN
+        IF v_existing_dup.idempotency_payload IS DISTINCT FROM v_idempotency_payload THEN
+            RETURN jsonb_build_object('success', false, 'error', 'This reservation request key has already been used for different booking details.');
         END IF;
+        RETURN jsonb_build_object(
+            'success', true,
+            'bookingId', v_existing_dup.id,
+            'bookingReference', v_existing_dup.booking_reference,
+            'status', v_existing_dup.status,
+            'paymentStatus', v_existing_dup.payment_status,
+            'totalEur', v_existing_dup.total,
+            'subtotalEur', v_existing_dup.subtotal,
+            'extrasTotalEur', v_existing_dup.extras_total,
+            'discountEur', v_existing_dup.discount,
+            'bookingDate', v_existing_dup.booking_date,
+            'isDuplicate', true,
+            'message', 'Idempotent replay: original booking returned.'
+        );
     END IF;
 
     -- 4. Atomic Capacity & Concurrency Lock
@@ -176,6 +213,33 @@ BEGIN
     FROM public.tour_availability
     WHERE id = v_avail.id
     FOR UPDATE;
+
+    -- Recheck after acquiring the capacity lock: a concurrent request with the same
+    -- key may have committed while this transaction waited for the availability row.
+    SELECT * INTO v_existing_dup
+    FROM public.bookings
+    WHERE idempotency_key = TRIM(p_idempotency_key)
+    LIMIT 1;
+
+    IF FOUND THEN
+        IF v_existing_dup.idempotency_payload IS DISTINCT FROM v_idempotency_payload THEN
+            RETURN jsonb_build_object('success', false, 'error', 'This reservation request key has already been used for different booking details.');
+        END IF;
+        RETURN jsonb_build_object(
+            'success', true,
+            'bookingId', v_existing_dup.id,
+            'bookingReference', v_existing_dup.booking_reference,
+            'status', v_existing_dup.status,
+            'paymentStatus', v_existing_dup.payment_status,
+            'totalEur', v_existing_dup.total,
+            'subtotalEur', v_existing_dup.subtotal,
+            'extrasTotalEur', v_existing_dup.extras_total,
+            'discountEur', v_existing_dup.discount,
+            'bookingDate', v_existing_dup.booking_date,
+            'isDuplicate', true,
+            'message', 'Idempotent replay: original booking returned.'
+        );
+    END IF;
 
     IF v_avail.status IN ('unavailable', 'sold_out') THEN
         RETURN jsonb_build_object(
@@ -303,9 +367,13 @@ BEGIN
         FROM public.coupons
         WHERE code = UPPER(TRIM(p_coupon_code))
           AND is_active = TRUE
-          AND valid_from <= CURRENT_DATE
-          AND (valid_until IS NULL OR valid_until >= CURRENT_DATE)
+          AND valid_from <= NOW()
+          AND (valid_until IS NULL OR valid_until >= NOW())
           AND (usage_limit IS NULL OR times_used < usage_limit)
+          AND discount_value > 0
+          AND min_spend >= 0
+          AND (max_discount IS NULL OR max_discount >= 0)
+          AND (discount_type <> 'percentage' OR discount_value <= 100)
         FOR UPDATE;
 
         IF NOT FOUND THEN
@@ -369,7 +437,7 @@ BEGIN
     END IF;
 
     -- 10. Generate Authoritative Unpredictable Booking Reference
-    v_booking_ref := 'RST-' || TO_CHAR(CURRENT_DATE, 'YYYY') || '-' || UPPER(ENCODE(gen_random_bytes(10), 'hex'));
+    v_booking_ref := 'RST-' || TO_CHAR(CURRENT_DATE, 'YYYY') || '-' || UPPER(REPLACE(gen_random_uuid()::text, '-', ''));
 
     -- 11. Insert Authoritative Booking Record with Idempotency Key & Concurrency Protection
     BEGIN
@@ -377,7 +445,7 @@ BEGIN
             booking_reference, user_id, tour_id, customer_id, booking_date, status, payment_status,
             payment_method, adult_count, child_count, infant_count, pickup_location_id,
             pickup_hotel_name, pickup_room_number, subtotal, extras_total, discount, total,
-            currency, special_requests, idempotency_key
+            currency, special_requests, idempotency_key, idempotency_payload
         )
         VALUES (
             v_booking_ref, v_current_user_id, v_tour.id, v_customer_id, p_booking_date, v_initial_status,
@@ -385,7 +453,7 @@ BEGIN
             COALESCE(p_child_count, 0), COALESCE(p_infant_count, 0),
             (CASE WHEN p_pickup_location_id IS NOT NULL AND p_pickup_location_id ~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' THEN p_pickup_location_id::UUID ELSE NULL END),
             p_customer_hotel, p_pickup_room_number, v_subtotal, v_extras_total, v_discount, v_final_total,
-            'EUR', p_special_requests, NULLIF(TRIM(p_idempotency_key), '')
+            'EUR', p_special_requests, TRIM(p_idempotency_key), v_idempotency_payload
         )
         RETURNING id INTO v_booking_id;
     EXCEPTION WHEN unique_violation THEN
@@ -397,6 +465,9 @@ BEGIN
             LIMIT 1;
 
             IF FOUND THEN
+                IF v_existing_dup.idempotency_payload IS DISTINCT FROM v_idempotency_payload THEN
+                    RETURN jsonb_build_object('success', false, 'error', 'This reservation request key has already been used for different booking details.');
+                END IF;
                 RETURN jsonb_build_object(
                     'success', true,
                     'bookingId', v_existing_dup.id,
@@ -404,6 +475,9 @@ BEGIN
                     'status', v_existing_dup.status,
                     'paymentStatus', v_existing_dup.payment_status,
                     'totalEur', v_existing_dup.total,
+                    'subtotalEur', v_existing_dup.subtotal,
+                    'extrasTotalEur', v_existing_dup.extras_total,
+                    'discountEur', v_existing_dup.discount,
                     'bookingDate', v_existing_dup.booking_date,
                     'isDuplicate', true,
                     'message', 'Idempotent replay: concurrent request resolved.'
@@ -539,6 +613,7 @@ BEGIN
         'totalEur', v_final_total,
         'subtotalEur', v_subtotal,
         'extrasTotalEur', v_extras_total,
+        'discountEur', v_discount,
         'bookingDate', p_booking_date,
         'isDuplicate', false
     );
