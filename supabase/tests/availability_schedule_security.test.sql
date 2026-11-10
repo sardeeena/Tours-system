@@ -71,14 +71,14 @@ SELECT is(
 );
 
 SELECT throws_ok(
-  $SELECT * FROM public.get_tour_availability_schedule('pgtap-availability-published', (now() AT TIME ZONE 'Africa/Cairo')::date, (now() AT TIME ZONE 'Africa/Cairo')::date + 366)$,
+  $query$SELECT * FROM public.get_tour_availability_schedule('pgtap-availability-published', (now() AT TIME ZONE 'Africa/Cairo')::date, (now() AT TIME ZONE 'Africa/Cairo')::date + 366)$query$,
   '22023',
   'Availability date range cannot exceed 366 days',
   'availability RPC rejects date ranges longer than 366 days'
 );
 
 SELECT throws_ok(
-  $SELECT * FROM public.get_tour_availability_schedule('pgtap-availability-published', (now() AT TIME ZONE 'Africa/Cairo')::date - 1, (now() AT TIME ZONE 'Africa/Cairo')::date - 1)$,
+  $query$SELECT * FROM public.get_tour_availability_schedule('pgtap-availability-published', (now() AT TIME ZONE 'Africa/Cairo')::date - 1, (now() AT TIME ZONE 'Africa/Cairo')::date - 1)$query$,
   '22023',
   'Public availability lookup cannot include past dates',
   'anonymous availability lookup cannot disclose historical booking capacity'
