@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(29);
+SELECT plan(34);
 
 SELECT ok(
   to_regprocedure('public.record_payment_atomic(text,numeric,text,text,text,text,text,text,text,text)') IS NOT NULL,
@@ -61,6 +61,18 @@ SELECT ok(EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname='public' AND indexna
   'payment transaction references are unique per provider');
 SELECT ok(EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname='public' AND indexname='refund_records_idempotency_key_uidx'),
   'refund idempotency keys are unique');
+
+SELECT ok(to_regprocedure('public.next_invoice_number()') IS NOT NULL,
+  'server-side invoice number allocator exists');
+SELECT ok((SELECT COALESCE(array_to_string(proconfig, ','), '') LIKE '%search_path=""%'
+  FROM pg_proc WHERE oid='public.next_invoice_number()'::regprocedure),
+  'invoice number allocator pins an empty search_path');
+SELECT ok(NOT has_function_privilege('anon', 'public.next_invoice_number()', 'EXECUTE'),
+  'anonymous role cannot allocate invoice numbers');
+SELECT ok(has_function_privilege('authenticated', 'public.next_invoice_number()', 'EXECUTE'),
+  'authenticated role can allocate invoice numbers subject to internal admin authorization');
+SELECT ok(EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname='public' AND indexname='invoices_booking_id_uidx'),
+  'a booking cannot receive duplicate invoices');
 
 INSERT INTO public.tours (title, slug, status, price, max_guests)
 VALUES ('pgTAP Finance Test Tour', 'pgtap-finance-test', 'published', 100.00, 10);
