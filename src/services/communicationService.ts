@@ -519,37 +519,46 @@ export const DEFAULT_PROVIDER_CONFIG: ProviderConfig = {
   },
 };
 
+/**
+ * Provider credentials are server secrets and must never be persisted in browser storage.
+ * This migration also scrubs API keys written by older versions from existing localStorage data.
+ */
 export function getProviderConfig(): ProviderConfig {
-  const cfg = getLocal<ProviderConfig>(LOCAL_PROVIDER_CONFIG_KEY, DEFAULT_PROVIDER_CONFIG);
-  try {
-    validateEmailProviderCredentials(cfg.email);
-    cfg.email.isConfigured = true;
-  } catch {
-    cfg.email.isConfigured = false;
-  }
-  try {
-    validateWhatsAppProviderCredentials(cfg.whatsapp);
-    cfg.whatsapp.isConfigured = true;
-  } catch {
-    cfg.whatsapp.isConfigured = false;
-  }
-  return cfg;
+  const stored = getLocal<ProviderConfig>(LOCAL_PROVIDER_CONFIG_KEY, DEFAULT_PROVIDER_CONFIG);
+  const safeConfig: ProviderConfig = {
+    email: {
+      ...DEFAULT_PROVIDER_CONFIG.email,
+      ...(stored?.email || {}),
+      apiKey: '',
+      isConfigured: false,
+    },
+    whatsapp: {
+      ...DEFAULT_PROVIDER_CONFIG.whatsapp,
+      ...(stored?.whatsapp || {}),
+      apiKey: '',
+      isConfigured: false,
+    },
+  };
+
+  setLocal(LOCAL_PROVIDER_CONFIG_KEY, safeConfig);
+  return safeConfig;
 }
 
 export function saveProviderConfig(config: ProviderConfig): void {
-  try {
-    validateEmailProviderCredentials(config.email);
-    config.email.isConfigured = true;
-  } catch {
-    config.email.isConfigured = false;
-  }
-  try {
-    validateWhatsAppProviderCredentials(config.whatsapp);
-    config.whatsapp.isConfigured = true;
-  } catch {
-    config.whatsapp.isConfigured = false;
-  }
-  setLocal(LOCAL_PROVIDER_CONFIG_KEY, config);
+  const safeConfig: ProviderConfig = {
+    email: {
+      ...config.email,
+      apiKey: '',
+      isConfigured: false,
+    },
+    whatsapp: {
+      ...config.whatsapp,
+      apiKey: '',
+      isConfigured: false,
+    },
+  };
+
+  setLocal(LOCAL_PROVIDER_CONFIG_KEY, safeConfig);
 }
 
 // ------------------------------------------------------------------------------
