@@ -898,7 +898,7 @@ export const TOUR_CATEGORIES: Category[] = [
   }
 ];
 
-export const REVIEWS_DATA: Review[] = [];;
+export const REVIEWS_DATA: Review[] = [];
 
 export const RECENT_REVIEWS = REVIEWS_DATA;
 
