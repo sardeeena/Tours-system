@@ -7,6 +7,7 @@ import fs from 'fs';
 import dotenv from 'dotenv';
 import { CONCIERGE_SYSTEM_PROMPT, TOUR_CATALOG_SUMMARY } from './src/data/chatKnowledge';
 import { STANDARD_PICKUP_LOCATIONS, GLOBAL_BOOKING_EXTRAS } from './src/data/bookingData';
+import { startBookingNotificationWorker } from './src/server/bookingNotificationWorker';
 
 dotenv.config();
 
