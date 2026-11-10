@@ -118,6 +118,17 @@ async function runTestSuite() {
   assert(TOUR_CATEGORIES.length === 6, `Source contains exact 6 categories (found ${TOUR_CATEGORIES.length})`);
   assert(REVIEWS_DATA.length === 0, 'No fabricated static guest reviews are shipped');
 
+  const departureTimesAreValid = ALL_TOURS.every((tour) => {
+    const matches = [...tour.departureTime.matchAll(/\b(\d{1,2}):(\d{2})\s*(AM|PM)\b/g)];
+    return matches.length > 0 && matches.every((match) => {
+      const hour = Number(match[1]);
+      const minute = Number(match[2]);
+      return hour >= 1 && hour <= 12 && minute >= 0 && minute <= 59;
+    });
+  });
+  assert(departureTimesAreValid, 'Every tour departure time uses valid 12-hour clock notation');
+
+
   assert(
     ALL_TOURS.every((tour) => tour.rating === 0 && tour.reviewCount === 0 && (!tour.reviews || tour.reviews.length === 0)),
     'Tours do not ship unsupported ratings, review counts, or embedded testimonials'
@@ -148,14 +159,68 @@ async function runTestSuite() {
 
   const catalogueSeedSql = fs.readFileSync(path.resolve('supabase/seed/kemet_spirit_catalogue.sql'), 'utf8');
   assert(
-    !/\\b(DELETE|UPDATE|TRUNCATE|DROP)\\s+/i.test(catalogueSeedSql),
+    !/\b(DELETE|UPDATE|TRUNCATE|DROP)\s+/i.test(catalogueSeedSql),
     'Catalogue seed never deletes, updates, truncates, or drops existing production records'
+  );
+  const categoryInsertStart = catalogueSeedSql.indexOf('INSERT INTO public.tour_categories');
+  const categoryInsertEnd = catalogueSeedSql.indexOf('INSERT INTO public.tour_images', categoryInsertStart);
+  const categoryInsertSql = catalogueSeedSql.slice(categoryInsertStart, categoryInsertEnd);
+  const seededCategoryPairs = new Set(
+    [...categoryInsertSql.matchAll(/\('([0-9a-f-]{36})'::uuid,\s*'([0-9a-f-]{36})'::uuid,\s*\d+\)/g)]
+      .map((match) => `${match[1]}:${match[2]}`)
+  );
+  const expectedCategoryPairs = new Set(
+    ALL_TOURS.flatMap((tour) =>
+      [...new Set([tour.category, ...tour.categories].map((name) => CATEGORY_UUIDS[name]).filter(Boolean))]
+        .map((categoryId) => `${TOUR_UUIDS[tour.slug]}:${categoryId}`)
+    )
+  );
+  assert(
+    seededCategoryPairs.size === expectedCategoryPairs.size &&
+      [...expectedCategoryPairs].every((pair) => seededCategoryPairs.has(pair)),
+    'Catalogue seed maps every tour category alias to one unique canonical category relationship'
+  );
+  assert(
+    catalogueSeedSql.includes('a deterministic tour ID already belongs to a different slug') &&
+      catalogueSeedSql.includes('a deterministic destination ID already belongs to a different slug') &&
+      catalogueSeedSql.includes('a deterministic category ID already belongs to a different slug'),
+    'Catalogue seed aborts on deterministic ID collisions as well as slug collisions'
   );
   assert(
     catalogueSeedSql.includes("'published'") &&
       catalogueSeedSql.includes("'what_to_bring'") &&
       catalogueSeedSql.includes("'important_information'"),
     'Catalogue seed imports published tour records and preserves preparation sections'
+  );
+  const destinationInsertStart = catalogueSeedSql.indexOf('INSERT INTO public.destinations');
+  const destinationInsertEnd = catalogueSeedSql.indexOf('INSERT INTO public.categories', destinationInsertStart);
+  const destinationInsertSql = catalogueSeedSql.slice(destinationInsertStart, destinationInsertEnd);
+  assert(
+    (destinationInsertSql.match(/'published'/g) || []).length === POPULAR_DESTINATIONS.length &&
+      !destinationInsertSql.includes("'draft'"),
+    'All seven public destinations remain published, including Makadi Bay with zero tours'
+  );
+  assert(
+    catalogueSeedSql.includes("'08:00 AM or 02:00 PM'") &&
+      catalogueSeedSql.includes("'01:30 PM'") &&
+      catalogueSeedSql.includes("'10:00 AM or 02:00 PM'"),
+    'Catalogue seed uses normalized departure time labels'
+  );
+  assert(
+    catalogueSeedSql.includes("'Minimum age 10 years'") &&
+      catalogueSeedSql.includes('difficulty,age_restrictions,badge'),
+    'Catalogue seed preserves the scuba experience minimum age restriction'
+  );
+  const tourInsertStart = catalogueSeedSql.indexOf('INSERT INTO public.tours');
+  const tourInsertEnd = catalogueSeedSql.indexOf('INSERT INTO public.tour_categories', tourInsertStart);
+  const tourInsertSql = catalogueSeedSql.slice(tourInsertStart, tourInsertEnd);
+  assert(
+    ALL_TOURS.every((tour) =>
+      tourInsertSql.includes(`'${tour.slug}'`) &&
+      tourInsertSql.includes(`'${tour.title.replace(/'/g, "''")}'`) &&
+      tourInsertSql.includes(`, ${tour.priceEur}, ${tour.childPriceEur},`)
+    ),
+    'Catalogue seed carries every source tour title, slug, and adult/child starting price'
   );
   assert(
     catalogueSeedSql.includes("'Illustrative stock photo") &&

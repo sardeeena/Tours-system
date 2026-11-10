@@ -319,7 +319,7 @@ export const ALL_TOURS: Tour[] = [
     pickupInfo: 'Morning or afternoon departure options available.',
     cancellationPolicy: 'Free cancellation up to 24 hours prior to departure.',
     availableDays: ['Daily'],
-    departureTime: '08:00 AM or 14:00 PM',
+    departureTime: '08:00 AM or 02:00 PM',
     difficulty: 'Adventurous',
   },
   {
@@ -371,7 +371,7 @@ export const ALL_TOURS: Tour[] = [
     pickupInfo: 'Afternoon pickup directly from hotel.',
     cancellationPolicy: 'Free cancellation up to 24 hours before tour.',
     availableDays: ['Daily'],
-    departureTime: '13:30 PM',
+    departureTime: '01:30 PM',
     difficulty: 'Adventurous',
   },
   {
@@ -679,7 +679,7 @@ export const ALL_TOURS: Tour[] = [
     pickupInfo: 'Pickup from Sahl Hasheesh, Makadi Bay, and Hurghada.',
     cancellationPolicy: 'Free cancellation up to 24 hours prior to departure.',
     availableDays: ['Daily'],
-    departureTime: '10:00 AM or 14:00 PM',
+    departureTime: '10:00 AM or 02:00 PM',
     difficulty: 'Easy',
   },
   {
