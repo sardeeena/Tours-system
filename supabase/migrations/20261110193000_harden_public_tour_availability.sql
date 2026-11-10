@@ -26,6 +26,7 @@ AS $availability$
 DECLARE
   v_tour RECORD;
   v_tour_identifier TEXT := NULLIF(BTRIM(p_tour_identifier), '');
+  v_is_admin BOOLEAN := public.is_admin();
 BEGIN
   IF v_tour_identifier IS NULL THEN
     RAISE EXCEPTION USING
@@ -63,7 +64,7 @@ BEGIN
 
   -- Public booking pages may query only published tours. Internal staff keep
   -- access to draft/archived tours through the existing administrator helper.
-  IF v_tour.status <> 'published' AND NOT public.is_admin() THEN
+  IF v_tour.status <> 'published' AND NOT v_is_admin THEN
     RETURN;
   END IF;
 
@@ -109,7 +110,7 @@ BEGIN
     END AS is_available,
     (COALESCE(ta.status, '') = 'unavailable') AS is_blackout,
     COALESCE(v_tour.departure_time, '08:30 AM') AS departure_time,
-    ta.notes
+    CASE WHEN v_is_admin THEN ta.notes ELSE NULL END AS notes
   FROM date_series AS ds
   LEFT JOIN public.tour_availability AS ta
     ON ta.tour_id = v_tour.id AND ta.date = ds.calendar_date
