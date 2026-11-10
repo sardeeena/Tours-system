@@ -144,6 +144,7 @@ export type AutomationEventType =
   | 'payment.received'
   | 'payment.failed'
   | 'booking.cancelled'
+  | 'booking.cancellation_requested'
   | 'departure.tomorrow'
   | 'followup.due';
 
