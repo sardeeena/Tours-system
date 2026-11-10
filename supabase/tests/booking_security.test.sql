@@ -77,7 +77,7 @@ SELECT ok(
 SET LOCAL ROLE anon;
 SELECT set_config('request.jwt.claims', '{"role":"anon"}', TRUE);
 SELECT throws_ok(
-  $ SELECT public.admin_resolve_booking_cancellation('RST-2026-TEST1234', 'approve', NULL); $,
+  'SELECT public.admin_resolve_booking_cancellation(''RST-2026-TEST1234'', ''approve'', NULL)',
   '42501',
   'anonymous users cannot approve or reject cancellations'
 );
