@@ -319,11 +319,13 @@ export async function signUpUser(data: {
         };
       }
     } catch (err) {
-      console.warn('Supabase signup notice, saving locally:', err);
+      return { user: null, error: formatSupabaseError(err) };
     }
+  } else if (!import.meta.env.DEV) {
+    return { user: null, error: 'Registration is unavailable because Supabase is not configured.' };
   }
 
-  // 2. Save to local registry with isConfirmed = false
+  // 2. Save to local registry with isConfirmed = false (development only)
   // CRITICAL: Notice we do NOT set localStorage.setItem(LOCAL_ACTIVE_USER_KEY)
   // because user MUST confirm email first.
   const existingIdx = localUsers.findIndex((u) => u.user.email.toLowerCase() === cleanEmail);
@@ -511,8 +513,8 @@ export async function resetPasswordRequest(
   }
 
   return {
-    success: true,
-    message: `If an account exists for ${cleanEmail}, a password recovery link has been sent. Please check your inbox and spam folder.`,
+    success: false,
+    error: 'Password recovery is unavailable because Supabase is not configured.',
   };
 }
 
@@ -542,18 +544,8 @@ export async function updateUserPassword(
     }
   }
 
-  // Local cache update without storing passwords
-  if (email) {
-    const cleanEmail = email.trim().toLowerCase();
-    const localUsers = getStoredLocalUsers();
-    const matched = localUsers.find((u) => u.user.email.toLowerCase() === cleanEmail);
-    if (matched) {
-      saveStoredLocalUsers(localUsers);
-      return { success: true };
-    }
-  }
-
-  return { success: true };
+  // Never report a password change as successful without Supabase Auth.
+  return { success: false, error: 'Password updates require a configured Supabase Auth connection.' };
 }
 
 /**
@@ -678,17 +670,9 @@ export async function getCurrentAdminUser(): Promise<AppUser | null> {
     }
   }
 
-  // 2. Fallback: Check active user in local storage (sandbox mode)
-  const activeUserRaw = localStorage.getItem(LOCAL_ACTIVE_USER_KEY);
-  if (activeUserRaw) {
-    try {
-      const user = JSON.parse(activeUserRaw) as AppUser;
-      return user;
-    } catch {
-      localStorage.removeItem(LOCAL_ACTIVE_USER_KEY);
-    }
-  }
-
+  // Never treat browser storage as an authentication or authorization source.
+  // If Supabase is not configured, fail closed rather than trusting a client-editable role.
+  localStorage.removeItem(LOCAL_ACTIVE_USER_KEY);
   return null;
 }
 
@@ -698,14 +682,8 @@ export async function getCurrentAdminUser(): Promise<AppUser | null> {
  */
 export async function verifyAdminAccess(): Promise<boolean> {
   if (!isSupabaseConfigured()) {
-    const activeUserRaw = localStorage.getItem(LOCAL_ACTIVE_USER_KEY);
-    if (!activeUserRaw) return false;
-    try {
-      const u = JSON.parse(activeUserRaw) as AppUser;
-      return isUserAdmin(u);
-    } catch {
-      return false;
-    }
+    // A role stored in localStorage is user-editable and must never grant admin access.
+    return false;
   }
 
   try {
