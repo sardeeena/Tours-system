@@ -1538,6 +1538,50 @@ export interface Database {
         };
         Returns: string;
       };
+      record_payment_atomic: {
+        Args: {
+          p_booking_reference: string;
+          p_amount: number;
+          p_currency: string;
+          p_payment_method: string;
+          p_provider: string;
+          p_status: string;
+          p_transaction_reference: string;
+          p_notes: string | null;
+          p_recorded_by: string;
+          p_idempotency_key: string;
+        };
+        Returns: Json;
+      };
+      request_refund_atomic: {
+        Args: {
+          p_booking_reference: string;
+          p_payment_id: string | null;
+          p_requested_amount: number;
+          p_currency: string;
+          p_reason: string;
+          p_refund_method: string;
+          p_requested_by: string;
+          p_notes: string | null;
+          p_idempotency_key: string;
+        };
+        Returns: Json;
+      };
+      transition_refund_atomic: {
+        Args: {
+          p_refund_id: string;
+          p_action: string;
+          p_amount: number | null;
+          p_actor: string | null;
+          p_reason: string | null;
+          p_transaction_reference: string | null;
+        };
+        Returns: Json;
+      };
+      next_invoice_number: {
+        Args: Record<PropertyKey, never>;
+        Returns: string;
+      };
     };
     Enums: {
       [_ in never]: never;
