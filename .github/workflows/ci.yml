@@ -48,6 +48,9 @@ jobs:
       - name: Validate catalogue source and read-only import safety
         run: npm run test:catalogue
 
+      - name: Verify Supabase project isolation
+        run: npm run test:supabase-project
+
   database:
     name: Supabase migrations and RLS tests
     runs-on: ubuntu-latest
