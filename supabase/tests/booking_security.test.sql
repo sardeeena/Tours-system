@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(51);
+SELECT plan(57);
 
 SELECT ok(
   EXISTS (
@@ -444,6 +444,103 @@ SELECT ok(
   (SELECT COUNT(*) = 1 FROM public.automation_events WHERE event_name = 'booking.updated'),
   'rejected cancellation publishes a booking-updated event'
 );
+
+
+-- Exercise customer-level RLS and the BEFORE UPDATE protection trigger using a real
+-- Auth user/profile and a booking owned by that user.
+INSERT INTO auth.users (
+  id, instance_id, aud, role, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at, is_sso_user, is_anonymous
+)
+VALUES (
+  'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+  '00000000-0000-0000-0000-000000000000',
+  'authenticated', 'authenticated', 'pgtap-auth@example.test', 'test-only',
+  NOW(), '{}'::jsonb, '{"full_name":"pgTAP Auth User"}'::jsonb, NOW(), NOW(), FALSE, FALSE
+)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.profiles (id, email, role)
+VALUES ('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', 'pgtap-auth@example.test', 'customer')
+ON CONFLICT (id) DO UPDATE SET role = 'customer';
+
+SELECT set_config(
+  'request.jwt.claims',
+  '{"sub":"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa","role":"authenticated","email":"pgtap-auth@example.test"}',
+  TRUE
+);
+SELECT set_config('request.jwt.claim.sub', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', TRUE);
+SELECT set_config('request.jwt.claim.role', 'authenticated', TRUE);
+
+INSERT INTO pg_temp.pgtap_booking_results (case_name, result)
+SELECT 'authenticated_booking', public.create_booking_atomic(
+  'pgtap-booking-test', CURRENT_DATE + 31, 1, 0, 0,
+  'pgTAP', 'Auth', 'pgtap-auth@example.test', '+201000000003', 'Egypt',
+  'Test Hotel', NULL, NULL, '[]'::jsonb, NULL,
+  'pay_at_pickup', NULL, 'idem_pgtap_authenticated_booking_0001'
+);
+
+SELECT ok(
+  (SELECT (result->>'success')::boolean FROM pg_temp.pgtap_booking_results WHERE case_name = 'authenticated_booking'),
+  'authenticated customer can create a booking through the atomic RPC'
+);
+
+SELECT ok(
+  (SELECT user_id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid
+   FROM public.bookings
+   WHERE booking_reference = (SELECT result->>'bookingReference' FROM pg_temp.pgtap_booking_results WHERE case_name = 'authenticated_booking')),
+  'atomic booking binds the authenticated user id to the reservation'
+);
+
+SET LOCAL ROLE authenticated;
+
+SELECT throws_ok(
+  'UPDATE public.bookings SET status = ''cancelled'' WHERE booking_reference = (SELECT result->>''bookingReference'' FROM pg_temp.pgtap_booking_results WHERE case_name = ''authenticated_booking'')',
+  '42501',
+  'Customers may only update pickup details and special requests. Booking status, payment, price, guest counts, and inventory are protected.',
+  'customer cannot change booking status directly through the Data API'
+);
+
+UPDATE public.bookings
+SET pickup_room_number = '501'
+WHERE booking_reference = (
+  SELECT result->>'bookingReference'
+  FROM pg_temp.pgtap_booking_results
+  WHERE case_name = 'authenticated_booking'
+);
+
+SELECT ok(
+  (SELECT pickup_room_number = '501' FROM public.bookings
+   WHERE booking_reference = (SELECT result->>'bookingReference' FROM pg_temp.pgtap_booking_results WHERE case_name = 'authenticated_booking')),
+  'customer can update permitted pickup details'
+);
+
+UPDATE public.bookings
+SET
+  status = 'cancellation_requested',
+  cancellation_previous_status = 'pending',
+  cancellation_requested_at = NOW(),
+  cancellation_reason = 'Customer requested cancellation'
+WHERE booking_reference = (
+  SELECT result->>'bookingReference'
+  FROM pg_temp.pgtap_booking_results
+  WHERE case_name = 'authenticated_booking'
+);
+
+SELECT ok(
+  (SELECT status = 'cancellation_requested' FROM public.bookings
+   WHERE booking_reference = (SELECT result->>'bookingReference' FROM pg_temp.pgtap_booking_results WHERE case_name = 'authenticated_booking')),
+  'authenticated customer may request cancellation without cancelling the booking'
+);
+
+SELECT ok(
+  (SELECT booked_count = 1 FROM public.tour_availability
+   WHERE tour_id = (SELECT id FROM public.tours WHERE slug = 'pgtap-booking-test')
+     AND date = CURRENT_DATE + 31),
+  'customer cancellation request through RLS does not release capacity'
+);
+
+RESET ROLE;
 
 SELECT * FROM finish();
 
