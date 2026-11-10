@@ -803,174 +803,139 @@ export async function approveRefund(
   approvedAmount: number,
   approvedBy: string = 'Finance Manager'
 ): Promise<{ success: boolean; error?: string; refund?: FinanceRefund }> {
-  const allRefunds = await listRefunds();
-  const target = allRefunds.find((r) => r.id === refundId);
-  if (!target) return { success: false, error: 'Refund record not found.' };
-
-  if (approvedAmount <= 0) {
+  if (!Number.isFinite(approvedAmount) || approvedAmount <= 0) {
     return { success: false, error: 'Approved amount must be greater than zero.' };
   }
 
-  if (isSupabaseConfigured() && refundId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-    try {
-      const { error: updErr } = await supabase
-        .from('refund_records')
-        .update({
-          approved_amount: approvedAmount,
-          amount: approvedAmount,
-          status: 'approved',
-          approved_by: approvedBy,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', refundId);
-
-      if (updErr) {
-        return { success: false, error: formatSupabaseError(updErr) };
-      }
-    } catch (err: any) {
-      return { success: false, error: err.message || 'Database error approving refund.' };
-    }
+  const current = await listRefunds();
+  const target = current.find((refund) => refund.id === refundId);
+  if (!target) return { success: false, error: 'Refund record not found.' };
+  if (target.status !== 'pending_approval') {
+    return { success: false, error: 'Only pending refund requests can be approved.' };
+  }
+  if (approvedAmount > target.requestedAmount) {
+    return { success: false, error: 'Approved amount cannot exceed the requested amount.' };
   }
 
-  target.approvedAmount = approvedAmount;
-  target.amount = approvedAmount;
-  target.status = 'approved';
-  target.approvedBy = approvedBy;
-  target.updatedAt = new Date().toISOString();
+  if (!requireFinanceBackend()) {
+    const updated = {
+      ...target,
+      approvedAmount,
+      amount: approvedAmount,
+      status: 'approved' as RefundStatus,
+      approvedBy,
+      updatedAt: new Date().toISOString(),
+    };
+    setLocal(LOCAL_REFUNDS_KEY, current.map((refund) => refund.id === refundId ? updated : refund));
+    return { success: true, refund: updated };
+  }
 
-  setLocal(LOCAL_REFUNDS_KEY, [...allRefunds]);
-  return { success: true, refund: target };
+  if (!UUID_PATTERN.test(refundId)) return { success: false, error: 'Invalid refund database identifier.' };
+  const { data, error } = await supabase.rpc('transition_refund_atomic', {
+    p_refund_id: refundId,
+    p_action: 'approve',
+    p_amount: approvedAmount,
+    p_actor: approvedBy,
+    p_reason: null,
+    p_transaction_reference: null,
+  });
+  if (error) return { success: false, error: formatSupabaseError(error) };
+  const result = data as any;
+  if (!result?.success || !result?.refund?.id) {
+    return { success: false, error: 'The database did not confirm refund approval.' };
+  }
+  return { success: true, refund: mapDbRefund(result.refund) };
 }
 
-/**
- * Step 3: Process / Disburse Refund (Never mark a refund completed unless operation actually occurred)
- */
 export async function processRefund(
   refundId: string,
   processedBy: string = 'Finance Auditor',
   transactionReference?: string
 ): Promise<{ success: boolean; error?: string; refund?: FinanceRefund }> {
-  const allRefunds = await listRefunds();
-  const target = allRefunds.find((r) => r.id === refundId);
+  const current = await listRefunds();
+  const target = current.find((refund) => refund.id === refundId);
   if (!target) return { success: false, error: 'Refund record not found.' };
-
-  const finalAmount = target.approvedAmount || target.requestedAmount;
-  const processedDate = new Date().toISOString();
-  const txRef = transactionReference?.trim() || target.transactionReference;
-
-  if (isSupabaseConfigured() && refundId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-    try {
-      const { error: procErr } = await supabase
-        .from('refund_records')
-        .update({
-          status: 'processed',
-          processed_date: processedDate,
-          processed_by: processedBy,
-          transaction_reference: txRef,
-          amount: finalAmount,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', refundId);
-
-      if (procErr) {
-        return { success: false, error: formatSupabaseError(procErr) };
-      }
-    } catch (err: any) {
-      return { success: false, error: err.message || 'Database error processing refund.' };
-    }
+  if (target.status !== 'approved') {
+    return { success: false, error: 'Only an approved refund can be disbursed.' };
   }
 
-  target.status = 'processed';
-  target.processedDate = processedDate;
-  target.processedBy = processedBy;
-  target.amount = finalAmount;
-  target.transactionReference = txRef;
-  target.updatedAt = new Date().toISOString();
-
-  setLocal(LOCAL_REFUNDS_KEY, [...allRefunds]);
-
-  // Update booking payment status based on real net balance
-  try {
-    const allBookings = await bookingRepository.listBookings();
-    const targetBooking = allBookings.find(
-      (b) => b.bookingReference === target.bookingReference || b.bookingId === target.bookingId
-    );
-
-    if (targetBooking) {
-      const payments = await listPayments({ bookingId: target.bookingReference });
-      const totalPaid = payments
-        .filter((p) => p.paymentStatus === 'Paid' || p.paymentStatus === 'paid')
-        .reduce((sum, p) => sum + p.amount, 0);
-
-      const processedRefunds = allRefunds.filter(
-        (r) =>
-          (r.bookingReference === target.bookingReference || r.bookingId === target.bookingId) &&
-          r.status === 'processed'
-      );
-      const totalRefunded = processedRefunds.reduce((sum, r) => sum + (r.approvedAmount || r.amount), 0);
-
-      const isFullRefund = totalRefunded >= totalPaid;
-
-      await bookingRepository.updateBooking({
-        ...targetBooking,
-        paymentStatus: isFullRefund ? 'refunded' : 'partially_paid',
-        status: isFullRefund ? 'cancelled' : targetBooking.status,
-        cancellationReason: isFullRefund ? `Refunded in full: ${target.reason}` : targetBooking.cancellationReason,
-        updatedAt: new Date().toISOString(),
-      });
-    }
-  } catch (err) {
-    console.warn('Failed to update booking status after refund processing:', err);
+  const txRef = transactionReference?.trim();
+  if (!txRef || txRef.length < 3 || txRef.length > 160) {
+    return { success: false, error: 'A valid payout transaction reference is required.' };
   }
 
-  return { success: true, refund: target };
+  if (!requireFinanceBackend()) {
+    const updated = {
+      ...target,
+      status: 'processed' as RefundStatus,
+      processedDate: new Date().toISOString(),
+      processedBy,
+      amount: target.approvedAmount || target.requestedAmount,
+      transactionReference: txRef,
+      updatedAt: new Date().toISOString(),
+    };
+    setLocal(LOCAL_REFUNDS_KEY, current.map((refund) => refund.id === refundId ? updated : refund));
+    return { success: true, refund: updated };
+  }
+
+  if (!UUID_PATTERN.test(refundId)) return { success: false, error: 'Invalid refund database identifier.' };
+  const { data, error } = await supabase.rpc('transition_refund_atomic', {
+    p_refund_id: refundId,
+    p_action: 'process',
+    p_amount: null,
+    p_actor: processedBy,
+    p_reason: null,
+    p_transaction_reference: txRef,
+  });
+  if (error) return { success: false, error: formatSupabaseError(error) };
+  const result = data as any;
+  if (!result?.success || !result?.refund?.id) {
+    return { success: false, error: 'The database did not confirm refund disbursement.' };
+  }
+  return { success: true, refund: mapDbRefund(result.refund) };
 }
 
-/**
- * Step 4: Reject a Refund
- */
 export async function rejectRefund(
   refundId: string,
   rejectedBy: string = 'Finance Manager',
   reason?: string
 ): Promise<{ success: boolean; error?: string; refund?: FinanceRefund }> {
-  const allRefunds = await listRefunds();
-  const target = allRefunds.find((r) => r.id === refundId);
+  const current = await listRefunds();
+  const target = current.find((refund) => refund.id === refundId);
   if (!target) return { success: false, error: 'Refund record not found.' };
+  if (target.status !== 'pending_approval') {
+    return { success: false, error: 'Only pending refund requests can be rejected.' };
+  }
+  if (!reason?.trim()) return { success: false, error: 'A rejection reason is required.' };
 
-  const updatedNotes = `${target.notes || ''} [Rejected by ${rejectedBy}: ${reason || 'Not eligible'}]`.trim();
-  const nowIso = new Date().toISOString();
-
-  if (isSupabaseConfigured() && refundId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-    try {
-      const { error: updErr } = await supabase
-        .from('refund_records')
-        .update({
-          status: 'rejected',
-          notes: updatedNotes,
-          updated_at: nowIso,
-        })
-        .eq('id', refundId);
-
-      if (updErr) {
-        return { success: false, error: formatSupabaseError(updErr) };
-      }
-    } catch (err: any) {
-      return { success: false, error: err.message || 'Database error rejecting refund.' };
-    }
+  if (!requireFinanceBackend()) {
+    const updated = {
+      ...target,
+      status: 'rejected' as RefundStatus,
+      notes: [target.notes, `Rejected by ${rejectedBy}: ${reason.trim()}`].filter(Boolean).join('\n'),
+      updatedAt: new Date().toISOString(),
+    };
+    setLocal(LOCAL_REFUNDS_KEY, current.map((refund) => refund.id === refundId ? updated : refund));
+    return { success: true, refund: updated };
   }
 
-  target.status = 'rejected';
-  target.notes = updatedNotes;
-  target.updatedAt = nowIso;
-
-  // Only commit to local state cache after authoritative database write succeeds
-  setLocal(LOCAL_REFUNDS_KEY, [...allRefunds]);
-
-  return { success: true, refund: target };
+  if (!UUID_PATTERN.test(refundId)) return { success: false, error: 'Invalid refund database identifier.' };
+  const { data, error } = await supabase.rpc('transition_refund_atomic', {
+    p_refund_id: refundId,
+    p_action: 'reject',
+    p_amount: null,
+    p_actor: rejectedBy,
+    p_reason: reason.trim(),
+    p_transaction_reference: null,
+  });
+  if (error) return { success: false, error: formatSupabaseError(error) };
+  const result = data as any;
+  if (!result?.success || !result?.refund?.id) {
+    return { success: false, error: 'The database did not confirm refund rejection.' };
+  }
+  return { success: true, refund: mapDbRefund(result.refund) };
 }
 
-// ------------------------------------------------------------------------------
 // 4. OUTSTANDING BALANCES TRACKING (Real Calculations, Never Trust Frontend)
 // ------------------------------------------------------------------------------
 
