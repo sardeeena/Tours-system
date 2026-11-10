@@ -483,8 +483,19 @@ app.get('/api/communications/status', rateLimit(60, 60_000), (req: Authenticated
   );
 
   res.json({
-    email: { configured: emailConfigured, provider: 'Resend' },
-    whatsapp: { configured: whatsappConfigured, provider: 'Meta Cloud API' },
+    email: {
+      configured: emailConfigured,
+      provider: 'Resend',
+      fromEmail: process.env.RESEND_FROM_EMAIL?.trim() || '',
+      fromName: process.env.RESEND_FROM_NAME?.trim() || 'Kemet Spirit',
+    },
+    whatsapp: {
+      configured: whatsappConfigured,
+      provider: 'Meta Cloud API',
+      phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID?.trim() || '',
+      businessAccountId: process.env.WHATSAPP_BUSINESS_ACCOUNT_ID?.trim() || '',
+      fromNumber: process.env.WHATSAPP_FROM_NUMBER?.trim() || '',
+    },
   });
 });
 
