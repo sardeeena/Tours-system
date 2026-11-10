@@ -1324,7 +1324,7 @@ app.all('/api/db/query', rateLimit(60, 60_000), async (req: AuthenticatedRequest
       const reference = typeof body.reference === 'string' ? body.reference.trim().toUpperCase() : '';
       const verification = typeof body.contactVerification === 'string' ? body.contactVerification.trim() : '';
 
-      if (!reference || !/^RST-\\d{4}-[A-Z0-9]+$/.test(reference)) {
+      if (!reference || !/^RST-\d{4}-[A-Z0-9]+$/.test(reference)) {
         return res.status(400).json({ success: false, error: 'A valid booking reference is required.' });
       }
 
