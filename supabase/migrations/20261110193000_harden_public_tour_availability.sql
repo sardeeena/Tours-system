@@ -26,7 +26,7 @@ AS $availability$
 DECLARE
   v_tour RECORD;
   v_tour_identifier TEXT := NULLIF(BTRIM(p_tour_identifier), '');
-  v_is_admin BOOLEAN := public.is_admin();
+  v_is_admin BOOLEAN := COALESCE(auth.jwt() ->> 'role' = 'service_role', FALSE) OR public.is_admin();
   v_today DATE := (now() AT TIME ZONE 'Africa/Cairo')::date;
 BEGIN
   IF v_tour_identifier IS NULL THEN
