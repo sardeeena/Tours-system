@@ -33,16 +33,37 @@
 
   <url>
     <loc>https://kemetspirit.com/privacy</loc>
-    <lastmod>2026-10-05</lastmod>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
   </url>
 
   <url>
-    <loc>https://kemetspirit.com/terms</loc>
-    <lastmod>2026-10-05</lastmod>
+    <loc>https://kemetspirit.com/about</loc>
+    <lastmod>2026-10-01</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://kemetspirit.com/why-us</loc>
+    <lastmod>2026-10-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://kemetspirit.com/booking-conditions</loc>
+    <lastmod>2026-10-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+
+  <url>
+    <loc>https://kemetspirit.com/marine-safety</loc>
+    <lastmod>2026-10-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
   </url>
 
   <!-- Individual Excursion Product Pages -->
