@@ -1,4 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { isExpectedKemetSupabaseUrl } from '../lib/supabaseProjectGuard';
+
+const isDevelopmentBuild = Boolean((import.meta as any).env?.DEV);
 
 // Safely validate candidate URL
 function sanitizeSupabaseUrl(url?: string): string | undefined {
@@ -75,29 +78,34 @@ const envAnonKey = (rawAnonKeyCandidate && !isSupabaseSecretKey(rawAnonKeyCandid
   ? rawAnonKeyCandidate
   : undefined;
 
+// If either deployment credential is supplied, browser storage must not override it.
+const hasAnySupabaseEnv = Boolean(envUrl || envAnonKey);
+
 // Safe retrieval from Admin Settings in browser storage (STRICTLY rejecting service_role keys)
 const getStoredUrl = () => {
+  if (hasAnySupabaseEnv) return envUrl || '';
   try {
-    return localStorage.getItem('rse_supabase_url') || envUrl || '';
+    return localStorage.getItem('rse_supabase_url') || '';
   } catch {
-    return envUrl || '';
+    return '';
   }
 };
 
 const getStoredKey = () => {
+  if (hasAnySupabaseEnv) return envAnonKey || '';
   try {
     const stored = localStorage.getItem('rse_supabase_anon_key');
     if (stored) {
       if (isSecretOrServiceRoleKey(stored)) {
         console.error('CRITICAL SECURITY: Blocked secret / service_role key found in browser storage. Purging immediately.');
         localStorage.removeItem('rse_supabase_anon_key');
-        return envAnonKey || '';
+        return '';
       }
       return stored;
     }
-    return envAnonKey || '';
+    return '';
   } catch {
-    return envAnonKey || '';
+    return '';
   }
 };
 
@@ -145,8 +153,7 @@ export const isSupabaseConfigured = (): boolean => {
   return Boolean(
     activeUrl &&
     activeKey &&
-    activeUrl.startsWith('https://') &&
-    activeUrl.includes('.supabase.co') &&
+    isExpectedKemetSupabaseUrl(activeUrl, isDevelopmentBuild) &&
     activeKey.length > 20 &&
     !isSupabaseSecretKey(activeKey)
   );
@@ -179,6 +186,18 @@ export let supabase: SupabaseClient = createSafeClient();
 export const updateSupabaseCredentials = (url: string, anonKey: string): boolean => {
   const cleanUrl = url.trim();
   const cleanKey = anonKey.trim();
+
+  if (hasAnySupabaseEnv) {
+    throw new Error(
+      'Supabase connection settings are controlled by deployment environment variables. Configure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in Hostinger instead of overriding them in browser storage.'
+    );
+  }
+
+  if (!isExpectedKemetSupabaseUrl(cleanUrl, isDevelopmentBuild)) {
+    throw new Error(
+      'This production Kemet Spirit app can connect only to its assigned Supabase project. Use a separate development build for other projects.'
+    );
+  }
 
   if (isSecretOrServiceRoleKey(cleanKey)) {
     throw new Error(
