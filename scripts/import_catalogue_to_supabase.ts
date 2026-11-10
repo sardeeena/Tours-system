@@ -558,7 +558,7 @@ export async function runCatalogueDryRun(options?: {
   console.log('4. POSTGRESQL SCHEMA CONSTRAINT COMPLIANCE');
   console.log('----------------------------------------------------------------');
   console.log(`  • duration_type constraint:  CHECK (duration_type IN ('Half Day', 'Full Day', 'Multi Day'))`);
-  console.log(`    Status: ALL 12 tours mapped strictly to 'Half Day' or 'Full Day'. Zero raw 'hours' strings.`);
+  console.log(`    Status: ALL 13 tours mapped strictly to 'Half Day' or 'Full Day'. Zero raw 'hours' strings.`);
   console.log(`  • tour_type constraint:      CHECK (tour_type IN ('Shared', 'Private'))`);
   console.log(`    Status: ALL 13 tours mapped strictly to 'Shared' or 'Private'. Zero lowercased 'shared' values.`);
   console.log(`  • difficulty constraint:     CHECK (difficulty IN ('Easy', 'Moderate', 'Adventurous'))`);
