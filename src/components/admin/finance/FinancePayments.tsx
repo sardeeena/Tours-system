@@ -618,7 +618,7 @@ export const FinancePayments: React.FC<FinancePaymentsProps> = ({ onNavigateTab 
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-stone-300 mb-1">Operating Booking currency (fixed)</label>
+                  <label className="block text-xs font-medium text-stone-300 mb-1">Booking currency (fixed)</label>
                   <select
                     value={currencyInput}
                     onChange={(e) => setCurrencyInput(e.target.value)}
