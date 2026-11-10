@@ -12,7 +12,7 @@ export interface SeoMetadata {
   schemaJsonLd?: Record<string, unknown>;
 }
 
-const DEFAULT_TITLE = 'Awesome Adventure Tours | Verified Excursions, Boat Trips & Safaris';
+const DEFAULT_TITLE = 'Awesome Adventure Tours | Excursions, Boat Trips & Safaris';
 const DEFAULT_DESCRIPTION = 'Awesome Adventure Tours - Professional tour operator and excursion booking platform specializing in boat trips, coral snorkeling, diving, and desert safaris.';
 const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80';
 const SITE_NAME = 'Awesome Adventure Tours';
@@ -151,13 +151,6 @@ export const seoService = {
           telephone: '+201515212741',
         },
       },
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: tour.rating.toFixed(1),
-        reviewCount: tour.reviewCount,
-        bestRating: '5',
-        worstRating: '1',
-      },
       provider: {
         '@type': 'TravelAgency',
         name: SITE_NAME,
@@ -174,6 +167,16 @@ export const seoService = {
         })),
       },
     };
+
+    if (tour.reviewCount > 0 && tour.rating > 0) {
+      schemaJsonLd.aggregateRating = {
+        '@type': 'AggregateRating',
+        ratingValue: tour.rating.toFixed(1),
+        reviewCount: tour.reviewCount,
+        bestRating: '5',
+        worstRating: '1',
+      };
+    }
 
     return {
       title,
@@ -204,11 +207,11 @@ export const seoService = {
 
     const title = isAll
       ? 'All Red Sea Excursions & Boat Trips | Hurghada, El Gouna & Sinai'
-      : `${categoryName} Excursions in Red Sea | Verified Boat Trips & Safaris`;
+      : `${categoryName} Excursions in Red Sea | Boat Trips & Safaris`;
 
     const description = isAll
-      ? `Compare ${tourCount} verified Red Sea boat trips, island cruises, snorkeling reefs, and desert safaris. Direct local operator with free cancellation and hotel pickup.`
-      : `Explore ${tourCount} top-rated ${categoryName.toLowerCase()} in Hurghada and the Red Sea. Direct harbor departures, snorkeling equipment, and door-to-door hotel transfers included.`;
+      ? `Compare ${tourCount} Red Sea boat trips, island cruises, snorkeling reefs, and desert safaris. Direct local operator with free cancellation and hotel pickup.`
+      : `Explore ${tourCount} ${categoryName.toLowerCase()} in Hurghada and the Red Sea. Direct harbor departures, snorkeling equipment, and door-to-door hotel transfers included.`;
 
     const schemaJsonLd: Record<string, unknown> = {
       '@context': 'https://schema.org',
@@ -250,7 +253,7 @@ export const seoService = {
   generateDestinationSeo(destinationName: string, tourCount: number): SeoMetadata {
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://awesomeadventure.tours';
     const title = `${destinationName} Excursions & Boat Tours | Red Sea Direct Booking`;
-    const description = `Discover ${tourCount} verified excursions departing directly from ${destinationName}. Island cruises, coral reef snorkeling, PADI diving, and desert quad safaris.`;
+    const description = `Discover ${tourCount} excursions departing directly from ${destinationName}. Island cruises, coral reef snorkeling, PADI diving, and desert quad safaris.`;
 
     return {
       title,
