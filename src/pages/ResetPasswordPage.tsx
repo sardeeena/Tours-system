@@ -39,9 +39,16 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
   // Initialize and inspect URL for recovery tokens / sessions
   useEffect(() => {
     let isMounted = true;
+    let recoveryEventReceived = false;
+    let recoveryTimeout: number | null = null;
+    let authSubscription: { unsubscribe: () => void } | null = null;
 
-    // 1. Check for error parameters in query string or URL hash
-    // e.g. ?error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired
+    const cleanup = () => {
+      isMounted = false;
+      if (recoveryTimeout !== null) window.clearTimeout(recoveryTimeout);
+      authSubscription?.unsubscribe();
+    };
+
     const searchParams = new URLSearchParams(window.location.search);
     const hashString = window.location.hash.startsWith('#')
       ? window.location.hash.substring(1)
@@ -53,10 +60,15 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
 
     if (errorParam || errorDesc) {
       const rawMsg = errorDesc || errorParam || 'Password recovery link is invalid or has expired.';
-      const cleanMsg = decodeURIComponent(rawMsg.replace(/\+/g, ' '));
+      let cleanMsg = rawMsg.replace(/\\+/g, ' ');
+      try {
+        cleanMsg = decodeURIComponent(cleanMsg);
+      } catch {
+        // Keep the readable raw message if the provider returned malformed encoding.
+      }
       setErrorMessage(cleanMsg);
       setStep('invalid_link');
-      return;
+      return cleanup;
     }
 
     const code = searchParams.get('code');
@@ -64,12 +76,11 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
     const otpType = searchParams.get('type') || hashParams.get('type');
     const hasHashRecovery = hashParams.get('type') === 'recovery' || hashParams.has('access_token');
 
-    // 2. Setup auth state change listener for PASSWORD_RECOVERY event
-    let authSubscription: { unsubscribe: () => void } | null = null;
     if (isSupabaseConfigured()) {
-      const { data } = supabase.auth.onAuthStateChange(async (event) => {
+      const { data } = supabase.auth.onAuthStateChange((event) => {
         if (!isMounted) return;
         if (event === 'PASSWORD_RECOVERY') {
+          recoveryEventReceived = true;
           setStep('update');
           setErrorMessage(null);
         }
@@ -77,10 +88,14 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
       authSubscription = data.subscription;
     }
 
-    // 3. Process PKCE exchange if `code` is present
-    if (code && isSupabaseConfigured()) {
-      supabase.auth
-        .exchangeCodeForSession(code)
+    if (code) {
+      if (!isSupabaseConfigured()) {
+        setErrorMessage('Password recovery is unavailable because Supabase is not configured.');
+        setStep('invalid_link');
+        return cleanup;
+      }
+
+      supabase.auth.exchangeCodeForSession(code)
         .then(({ data, error: exchangeErr }) => {
           if (!isMounted) return;
           if (exchangeErr) {
@@ -89,7 +104,6 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
           } else if (data?.session) {
             setStep('update');
             setErrorMessage(null);
-            // Clean the code from URL to prevent duplicate exchange on page refresh
             window.history.replaceState({}, '', window.location.pathname);
           } else {
             setStep('invalid_link');
@@ -100,16 +114,20 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
           setErrorMessage(formatSupabaseError(err));
           setStep('invalid_link');
         });
-      return;
+      return cleanup;
     }
 
-    // 4. Process token_hash if present
-    if (tokenHash && isSupabaseConfigured()) {
-      supabase.auth
-        .verifyOtp({
-          token_hash: tokenHash,
-          type: (otpType as any) || 'recovery',
-        })
+    if (tokenHash) {
+      if (!isSupabaseConfigured()) {
+        setErrorMessage('Password recovery is unavailable because Supabase is not configured.');
+        setStep('invalid_link');
+        return cleanup;
+      }
+
+      supabase.auth.verifyOtp({
+        token_hash: tokenHash,
+        type: (otpType as any) || 'recovery',
+      })
         .then(({ data, error: otpErr }) => {
           if (!isMounted) return;
           if (otpErr) {
@@ -128,13 +146,17 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
           setErrorMessage(formatSupabaseError(err));
           setStep('invalid_link');
         });
-      return;
+      return cleanup;
     }
 
-    // 5. Process implicit hash recovery if present
-    if (hasHashRecovery && isSupabaseConfigured()) {
-      supabase.auth
-        .getSession()
+    if (hasHashRecovery) {
+      if (!isSupabaseConfigured()) {
+        setErrorMessage('Password recovery is unavailable because Supabase is not configured.');
+        setStep('invalid_link');
+        return cleanup;
+      }
+
+      supabase.auth.getSession()
         .then(({ data: { session }, error: sessErr }) => {
           if (!isMounted) return;
           if (session) {
@@ -144,9 +166,8 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
             setErrorMessage(formatSupabaseError(sessErr));
             setStep('invalid_link');
           } else {
-            // Wait briefly for onAuthStateChange to fire from detectSessionInUrl
-            setTimeout(() => {
-              if (isMounted && step === 'loading') {
+            recoveryTimeout = window.setTimeout(() => {
+              if (isMounted && !recoveryEventReceived) {
                 setStep('invalid_link');
               }
             }, 1500);
@@ -155,18 +176,11 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
         .catch(() => {
           if (isMounted) setStep('invalid_link');
         });
-      return;
+      return cleanup;
     }
 
-    // 6. Direct normal visit without recovery tokens -> show request form
     setStep('request');
-
-    return () => {
-      isMounted = false;
-      if (authSubscription) {
-        authSubscription.unsubscribe();
-      }
-    };
+    return cleanup;
   }, []);
 
   // Request password reset email
