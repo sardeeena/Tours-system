@@ -110,6 +110,7 @@ export const TOUR_UUIDS: Record<string, string> = {
   'marsa-alam-dolphin-house': '10000000-0000-0000-0000-000000000010',
   'sharm-el-naga-beach-reef-day': '10000000-0000-0000-0000-000000000011',
   'sahl-hasheesh-glass-bottom-boat': '10000000-0000-0000-0000-000000000012',
+  'ras-mohammed-white-island-cruise': '10000000-0000-0000-0000-000000000013',
 };
 
 // ------------------------------------------------------------------------------
