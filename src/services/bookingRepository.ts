@@ -15,7 +15,7 @@ import { recordActivity } from './crmService';
 import { publishAutomationEvent } from './communicationService';
 import { resolveBookingTourIdentifier, shouldUseLocalBookingCache } from '../lib/bookingIdentifiers';
 
-const isDevelopmentBuild = Boolean(import.meta.env.DEV);
+const isDevelopmentBuild = Boolean((import.meta as any).env?.DEV);
 
 export interface IBookingRepository {
   createBooking(booking: Booking): Promise<Booking>;
