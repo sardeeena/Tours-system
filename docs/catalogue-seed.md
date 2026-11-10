@@ -10,7 +10,7 @@ The SQL file `supabase/seed/kemet_spirit_catalogue.sql` imports the 13 excursion
 - Tour ratings and review counts are zero. No reviews or bookings are inserted.
 - The current tour-specific optional extras are inserted and assigned. The four pre-existing generic extras are preserved. The separate legacy `GLOBAL_BOOKING_EXTRAS` list is intentionally not imported because its prices differ from the tour-specific options currently shown on the live tour pages.
 - Stock images are marked as illustrative in their alt text and captions; replace them with operator-approved photography when available.
-- Pickup-location fee records are inserted inactive. Tour-level pickup instructions are preserved, but global area surcharges are not activated because the current tour pages contain exceptions that need an operator fee review.
+- The seven pickup-location fee records are active and match the current public booking defaults. The booking RPC validates that the selected location is active, calculates the fee server-side, and stores the resolved pickup-location ID. No per-tour pickup assignments are present yet, so the existing destination-based filtering remains in use. The El Gouna private-boat page's 'pickup included' wording should be reviewed against the global El Gouna €5/person supplement.
 - No customer, auth user, staff, or availability-date records are created. The booking schedule continues to derive from each tour's published days and departure time.
 
 ## Execution
