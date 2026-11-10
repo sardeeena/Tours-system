@@ -74,18 +74,14 @@ SELECT ok(
   'guest role can submit a verified cancellation request'
 );
 
-SELECT ok(
-  COALESCE((
-    SELECT POSITION('public.is_admin()' IN pg_get_functiondef(p.oid)) > 0
-       AND POSITION('service_role' IN pg_get_functiondef(p.oid)) > 0
-    FROM pg_proc AS p
-    WHERE p.pronamespace = 'public'::regnamespace
-      AND p.proname = 'admin_resolve_booking_cancellation'
-      AND p.pronargs = 3
-    LIMIT 1
-  ), FALSE),
-  'admin cancellation RPC enforces trusted staff or service-role authorization internally'
+SET LOCAL ROLE anon;
+SELECT set_config('request.jwt.claims', '{"role":"anon"}', TRUE);
+SELECT throws_ok(
+  $ SELECT public.admin_resolve_booking_cancellation('RST-2026-TEST1234', 'approve', NULL); $,
+  '42501',
+  'anonymous users cannot approve or reject cancellations'
 );
+RESET ROLE;
 
 SELECT ok(
   has_function_privilege('authenticated', 'public.admin_resolve_booking_cancellation(text,text,text)', 'EXECUTE'),
