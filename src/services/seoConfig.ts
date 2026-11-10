@@ -8,7 +8,7 @@ import { APP_CONFIG } from '../config/appConfig';
 export const SEO_DEFAULTS = {
   SITE_NAME: 'Awesome Adventure Tours',
   LEGAL_NAME: 'Awesome Adventure Tours S.A.E.',
-  DEFAULT_TITLE: 'Awesome Adventure Tours | Verified Excursions, Boat Trips & Safaris',
+  DEFAULT_TITLE: 'Awesome Adventure Tours | Excursions, Boat Trips & Safaris',
   DEFAULT_DESCRIPTION:
     'Direct booking for premium Red Sea boat trips, coral reef snorkeling, scuba diving, and desert quad safaris in Hurghada, El Gouna, and Sharm El-Sheikh. Hotel pickup included with free 24-hour cancellation.',
   DEFAULT_OG_IMAGE: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80',
@@ -37,7 +37,6 @@ export const SEO_DEFAULTS = {
     'Makadi Bay quad safari',
     'Dolphin House Hurghada',
     'Beginner scuba diving Red Sea',
-    'Egyptian Coast Guard verified tours',
     'Pay at hotel pickup tours',
   ],
 };
@@ -75,7 +74,7 @@ export function getAppOrigin(): string {
   if (typeof window !== 'undefined' && window.location?.origin) {
     return window.location.origin;
   }
-  return 'https://awesomeadventure.tours';
+  return 'https://kemetspirit.com';
 }
 
 /**
@@ -136,18 +135,6 @@ export function generateHomeJsonLd(origin = getAppOrigin()): Record<string, unkn
             closes: '22:00',
           },
         ],
-        sameAs: [
-          'https://www.facebook.com/redseaexcursions',
-          'https://www.instagram.com/redseaexcursions',
-          'https://www.tripadvisor.com',
-        ],
-        aggregateRating: {
-          '@type': 'AggregateRating',
-          ratingValue: '4.9',
-          reviewCount: '1240',
-          bestRating: '5',
-          worstRating: '1',
-        },
       },
 
       // 2. WebSite with SearchAction (Sitelinks Searchbox)
@@ -226,13 +213,17 @@ export function generateTourJsonLd(tour: Tour, origin = getAppOrigin()): Record<
           url: origin,
         },
       },
-      aggregateRating: {
-        '@type': 'AggregateRating',
-        ratingValue: tour.rating.toFixed(1),
-        reviewCount: tour.reviewCount || 1,
-        bestRating: '5',
-        worstRating: '1',
-      },
+      ...(tour.reviewCount > 0 && tour.rating > 0
+        ? {
+            aggregateRating: {
+              '@type': 'AggregateRating',
+              ratingValue: tour.rating.toFixed(1),
+              reviewCount: tour.reviewCount,
+              bestRating: '5',
+              worstRating: '1',
+            },
+          }
+        : {}),
     },
     provider: {
       '@type': 'TravelAgency',
