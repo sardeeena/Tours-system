@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(34);
+SELECT plan(40);
 
 SELECT ok(
   to_regprocedure('public.record_payment_atomic(text,numeric,text,text,text,text,text,text,text,text)') IS NOT NULL,
@@ -54,6 +54,19 @@ SELECT ok(NOT has_table_privilege('authenticated', 'public.refund_records', 'INS
   'authenticated clients cannot bypass refund RPC with direct inserts');
 SELECT ok(NOT has_table_privilege('authenticated', 'public.refund_records', 'UPDATE'),
   'authenticated clients cannot directly mutate refund workflow rows');
+
+SELECT ok(NOT has_table_privilege('authenticated', 'public.payment_transactions', 'TRUNCATE'),
+  'authenticated clients cannot truncate the payment ledger');
+SELECT ok(NOT has_table_privilege('authenticated', 'public.refund_records', 'TRUNCATE'),
+  'authenticated clients cannot truncate refund records');
+SELECT ok(NOT has_table_privilege('anon', 'public.payment_transactions', 'SELECT'),
+  'anonymous clients cannot read payment transaction records');
+SELECT ok(NOT has_table_privilege('anon', 'public.payment_providers', 'SELECT'),
+  'anonymous clients cannot read payment provider metadata');
+SELECT ok(has_column_privilege('authenticated', 'public.payment_providers', 'id', 'SELECT'),
+  'authenticated staff can read safe payment provider identifiers');
+SELECT ok(NOT has_column_privilege('authenticated', 'public.payment_providers', 'config', 'SELECT'),
+  'authenticated clients cannot read provider configuration or future credentials');
 
 SELECT ok(EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname='public' AND indexname='payment_transactions_idempotency_key_uidx'),
   'payment idempotency keys are unique');
