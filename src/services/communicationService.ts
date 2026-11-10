@@ -566,8 +566,14 @@ export function saveProviderConfig(config: ProviderConfig): void {
 // ------------------------------------------------------------------------------
 
 type ServerCommunicationStatus = {
-  email?: { configured?: boolean; provider?: string };
-  whatsapp?: { configured?: boolean; provider?: string };
+  email?: { configured?: boolean; provider?: string; fromEmail?: string; fromName?: string };
+  whatsapp?: {
+    configured?: boolean;
+    provider?: string;
+    phoneNumberId?: string;
+    businessAccountId?: string;
+    fromNumber?: string;
+  };
 };
 
 /** Reads provider readiness from the authenticated server; secrets never reach the browser. */
@@ -587,8 +593,14 @@ export async function refreshProviderConfigFromServer(): Promise<ProviderConfig>
     const status = await response.json() as ServerCommunicationStatus;
     config.email.provider = status.email?.configured ? 'resend' : 'none';
     config.email.isConfigured = status.email?.configured === true;
+    if (status.email?.fromEmail) config.email.fromEmail = status.email.fromEmail;
+    if (status.email?.fromName) config.email.fromName = status.email.fromName;
+
     config.whatsapp.provider = status.whatsapp?.configured ? 'meta_cloud' : 'none';
     config.whatsapp.isConfigured = status.whatsapp?.configured === true;
+    config.whatsapp.phoneNumberId = status.whatsapp?.phoneNumberId || '';
+    config.whatsapp.businessAccountId = status.whatsapp?.businessAccountId || '';
+    config.whatsapp.fromNumber = status.whatsapp?.fromNumber || config.whatsapp.fromNumber;
   } catch {
     // Status remains unconfigured when the authenticated server cannot be reached.
   }
