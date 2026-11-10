@@ -156,6 +156,7 @@ export interface DbTourFaq {
   tour_id: string;
   question: string;
   answer: string;
+  section: 'faq' | 'what_to_bring' | 'important_information';
   sort_order: number;
   created_at: string;
 }
