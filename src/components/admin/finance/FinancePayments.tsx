@@ -209,7 +209,7 @@ export const FinancePayments: React.FC<FinancePaymentsProps> = ({ onNavigateTab 
   // Aggregate Metrics
   const metrics = useMemo(() => {
     const totalCollected = filteredPayments
-      .filter((p) => p.paymentStatus === 'Paid' || p.paymentStatus === 'paid')
+      .filter((p) => ['paid', 'partially paid', 'partially_paid'].includes(String(p.paymentStatus).toLowerCase()))
       .reduce((sum, p) => sum + p.amount, 0);
 
     const pendingCount = filteredPayments.filter(
