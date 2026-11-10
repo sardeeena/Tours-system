@@ -284,6 +284,7 @@ export interface DbSeoMetadata {
   og_description: string | null;
   og_image: string | null;
   social_image: string | null;
+  structured_data: Record<string, unknown> | null;
   robots_index: boolean;
   robots_follow: boolean;
   created_at: string;
