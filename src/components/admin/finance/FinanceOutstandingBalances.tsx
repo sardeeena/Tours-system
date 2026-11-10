@@ -64,8 +64,8 @@ export const FinanceOutstandingBalances: React.FC<FinanceOutstandingBalancesProp
   const handleOpenCollect = (item: OutstandingBalanceItem) => {
     setCollectingItem(item);
     setCollectAmount(item.balanceAmount);
-    setCollectTxRef(`PIER-CASH-${item.bookingReference.replace(/[^a-zA-Z0-9]/g, '')}`);
-    setCollectNotes(`Pier settlement received from ${item.customerName} at hotel pickup / marina.`);
+    setCollectTxRef(`KS-MANUAL-${crypto.randomUUID()}`);
+    setCollectNotes('');
   };
 
   const handleSaveCollect = async (e: React.FormEvent) => {
@@ -87,10 +87,10 @@ export const FinanceOutstandingBalances: React.FC<FinanceOutstandingBalancesProp
         paymentStatus: collectAmount >= collectingItem.balanceAmount ? 'Paid' : 'Partially Paid',
         transactionReference: collectTxRef.trim(),
         notes: collectNotes.trim(),
-        recordedBy: 'Pier Cashier',
+        recordedBy: 'Staff',
       });
 
-      showToast(`Settled €${collectAmount} for ${collectingItem.bookingReference}.`, 'success');
+      showToast(`Recorded ${collectingItem.currency} ${collectAmount.toFixed(2)} for ${collectingItem.bookingReference}.`, 'success');
       setCollectingItem(null);
       await loadData();
     } catch (err: any) {
@@ -204,7 +204,7 @@ export const FinanceOutstandingBalances: React.FC<FinanceOutstandingBalancesProp
 
         <div className="bg-stone-950 border border-stone-800/80 rounded-xl p-4">
           <span className="text-[10px] uppercase text-stone-500 font-bold block mb-1">
-            Departing Today (Collect at Pier)
+            Departing Today
           </span>
           <div className="font-mono font-bold text-2xl text-[#2dd4bf]">
             {dueTodayCount} Bookings
@@ -418,15 +418,15 @@ export const FinanceOutstandingBalances: React.FC<FinanceOutstandingBalancesProp
                     onChange={(e) => setCollectMethod(e.target.value as any)}
                     className="w-full bg-stone-900 border border-stone-800 rounded-lg p-2.5 text-white text-xs focus:outline-none"
                   >
-                    <option value="Cash">Cash (Pier Handover)</option>
-                    <option value="Card">Card (POS Terminal)</option>
+                    <option value="Cash">Cash (manual receipt)</option>
+                    <option value="Card">Card (verified terminal receipt)</option>
                   </select>
                 </div>
               </div>
 
               <div>
                 <label className="block text-[11px] font-semibold text-stone-400 mb-1">
-                  Receipt / Transaction Ref
+                  Internal receipt / external transaction reference
                 </label>
                 <input
                   type="text"
