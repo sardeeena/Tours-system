@@ -32,7 +32,7 @@ import { getPublishedTours, getTourBySlug, getPublishedDestinations, getPublishe
 import { isSupabaseConfigured } from './services/supabaseClient';
 import { getStaticPages, INITIAL_STATIC_PAGES } from './services/siteSettingsService';
 import type { StaticPageContent } from './services/siteSettingsService';
-import { seoService } from './services/seoService';
+import { getStoredSeoMetadata, seoService } from './services/seoService';
 import { getPageSeo } from './services/seoConfig';
 import { sanitizeRedirectUrl } from './lib/security';
 import { TourDetailSkeleton } from './components/tours/TourDetailSkeleton';
@@ -424,24 +424,72 @@ function MainApp() {
       return;
     }
 
+    // Apply the route's safe defaults first, then overlay metadata saved in Admin > SEO.
+    const baseSeoMetadata = staticPage
+      ? {
+          title: staticPage.seoTitle || `${staticPage.title} | Awesome Adventure Tours`,
+          description: staticPage.seoDescription || staticPage.heroSubtitle,
+          canonicalUrl: typeof window !== 'undefined'
+            ? `${window.location.origin}/${staticPage.slug}`
+            : undefined,
+          ogType: 'article' as const,
+        }
+      : getPageSeo(currentPath, {
+          tour: currentTourDetail,
+          tours: liveTours,
+        });
+
+    seoService.apply(baseSeoMetadata);
+
+    let seoEntity: { type: string; identifier: string; pageSlug: boolean } | null = null;
+
     if (staticPage) {
-      seoService.apply({
-        title: staticPage.seoTitle || `${staticPage.title} | Awesome Adventure Tours`,
-        description: staticPage.seoDescription || staticPage.heroSubtitle,
-        canonicalUrl: typeof window !== 'undefined'
-          ? `${window.location.origin}/${staticPage.slug}`
-          : undefined,
-      });
-      return;
+      seoEntity = { type: 'page', identifier: staticPage.slug, pageSlug: true };
+    } else if (currentPath === '/') {
+      seoEntity = { type: 'page', identifier: 'home', pageSlug: true };
+    } else if (tourDetailSlug && currentTourDetail) {
+      seoEntity = { type: 'tour', identifier: currentTourDetail.id, pageSlug: false };
+    } else if (currentPath === '/excursions' && searchParams.get('destination')) {
+      const selectedDestination = liveDestinations.find((destination) =>
+        destination.slug === searchParams.get('destination') ||
+        destination.name === searchParams.get('destination')
+      );
+      if (selectedDestination) {
+        seoEntity = { type: 'destination', identifier: selectedDestination.id, pageSlug: false };
+      }
+    } else if (currentPath === '/excursions' && searchParams.get('category')) {
+      const selectedCategory = liveCategories.find((category) =>
+        category.slug === searchParams.get('category') ||
+        category.name === searchParams.get('category')
+      );
+      if (selectedCategory) {
+        seoEntity = { type: 'category', identifier: selectedCategory.id, pageSlug: false };
+      }
     }
 
-    // Apply centralized SEO metadata & rich Schema.org JSON-LD
-    const seoMetadata = getPageSeo(currentPath, {
-      tour: currentTourDetail,
-      tours: liveTours,
+    if (!seoEntity) return;
+
+    let cancelled = false;
+    void getStoredSeoMetadata(seoEntity.type, seoEntity.identifier, seoEntity.pageSlug).then((savedMetadata) => {
+      if (!cancelled && savedMetadata) {
+        seoService.apply({ ...baseSeoMetadata, ...savedMetadata });
+      }
     });
-    seoService.apply(seoMetadata);
-  }, [currentPath, confirmationReference, currentTourDetail, liveTours, staticPage]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    currentPath,
+    confirmationReference,
+    currentTourDetail,
+    liveTours,
+    liveDestinations,
+    liveCategories,
+    staticPage,
+    searchParams,
+    tourDetailSlug,
+  ]);
 
   // Handlers from Homepage
   const handleHeroSearch = (filters: { destination: string; category: string; date: string; guests: number }) => {
