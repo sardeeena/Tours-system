@@ -24,6 +24,7 @@ import {
   Mail,
   Tag,
   FileText,
+  BookOpen,
   Ship,
   Anchor,
   CloudSun,
@@ -74,6 +75,7 @@ export type AdminTab =
   | 'media'
   | 'seo'
   | 'pages'
+  | 'blog'
   | 'settings'
   | 'access_control'
   | 'crm_dashboard'
@@ -250,6 +252,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'reviews', label: 'Traveler Reviews', icon: Star },
     { id: 'seo', label: 'SEO & Meta Tags', icon: Globe },
     { id: 'pages', label: 'Pages & Content', icon: FileText },
+    { id: 'blog', label: 'Blog & Journal', icon: BookOpen },
     { id: 'newsletter', label: 'Newsletter', icon: Mail },
     { id: 'settings', label: 'Site Settings', icon: Settings },
 
@@ -272,7 +275,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     if (id === 'customers') return 'customers.read';
     if (id.startsWith('crm_') || id === 'inquiries') return 'crm.read';
     if (id.startsWith('comm_')) return 'communications.read';
-    if (['destinations','categories','newsletter','extras','faqs','reviews','media','seo','pages'].includes(id)) return 'content.read';
+    if (['destinations','categories','newsletter','extras','faqs','reviews','media','seo','pages','blog'].includes(id)) return 'content.read';
     if (id === 'coupons') return 'bookings.read';
     if (id === 'settings') return 'settings.manage';
     return null;
