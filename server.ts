@@ -379,7 +379,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.use('/api', rateLimit(300, 60_000));
 
 // Authenticate caller tokens for all API routes
-app.use(authenticateToken as any);
+app.use('/api', authenticateToken as any);
 
 // Initialize Google Gen AI client with required User-Agent
 let ai: GoogleGenAI | null = null;
