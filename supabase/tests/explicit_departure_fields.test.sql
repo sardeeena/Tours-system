@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(8);
+SELECT plan(10);
 
 SELECT ok(
   (SELECT column_default IS NULL FROM information_schema.columns
@@ -50,6 +50,19 @@ SELECT ok(
   (SELECT column_default IS NULL FROM information_schema.columns
    WHERE table_schema='public' AND table_name='tours' AND column_name='max_guests'),
   'new tours require an explicit group-size limit'
+);
+
+
+SELECT ok(
+  (SELECT column_default IS NULL FROM information_schema.columns
+   WHERE table_schema='public' AND table_name='weather_bulletins' AND column_name='visibility_meters'),
+  'weather bulletins require an actual visibility measurement'
+);
+
+SELECT ok(
+  (SELECT column_default IS NULL FROM information_schema.columns
+   WHERE table_schema='public' AND table_name='weather_bulletins' AND column_name='coast_guard_cleared'),
+  'weather bulletins require an explicit operator-recorded clearance decision'
 );
 
 SELECT * FROM finish();
