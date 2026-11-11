@@ -276,7 +276,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     if (id === 'customers') return 'customers.read';
     if (id.startsWith('crm_') || id === 'inquiries') return 'crm.read';
     if (id.startsWith('comm_')) return 'communications.read';
-    if (['destinations','categories','newsletter','extras','faqs','reviews','media','seo','pages','blog'].includes(id)) return 'content.read';
+    if (['destinations','categories','newsletter','extras','faqs','reviews','media','seo','pages'].includes(id)) return 'content.read';
     if (id === 'coupons') return 'bookings.read';
     if (id === 'settings') return 'settings.manage';
     return null;
