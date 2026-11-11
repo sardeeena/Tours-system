@@ -187,6 +187,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    */
   const checkAdminAccess = useCallback(async (): Promise<boolean> => {
     if (!isSupabaseConfigured()) {
+      // Browser storage is user-editable and can never authorize staff access.
       localStorage.removeItem(LOCAL_ACTIVE_USER_KEY);
       setUser(null);
       setPendingMfaFactorId(null);
