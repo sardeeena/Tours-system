@@ -431,7 +431,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               {t('nav.guestReviews')}
             </button>
-            <a href="/blog" className="text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1">Journal</a>
+            <a href="/blog" aria-label="Visit the Kemet Spirit blog" className="inline-flex items-center rounded-full border border-[#0A6C74]/30 bg-[#E8F3F4] px-3.5 py-1.5 text-sm font-bold text-[#0A6C74] shadow-xs transition-colors hover:bg-[#D7EBEC] dark:border-teal-400/30 dark:bg-teal-950/50 dark:text-teal-300 dark:hover:bg-teal-900/60">Blog</a>
           </nav>
 
         {/* Action Controls */}
@@ -679,6 +679,14 @@ export const Header: React.FC<HeaderProps> = ({
             <CalendarCheck className="w-4 h-4" />
           </button>
 
+          <a
+            href="/blog"
+            aria-label="Visit the Kemet Spirit blog"
+            className="inline-flex items-center justify-center rounded-lg border border-[#0A6C74]/30 bg-[#E8F3F4] px-3 py-2 text-xs font-bold text-[#0A6C74] dark:border-teal-400/30 dark:bg-teal-950/50 dark:text-teal-300"
+          >
+            Blog
+          </a>
+
           <button
             type="button"
             id="mobile-menu-toggle-btn"
@@ -916,7 +924,7 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 {t('mobile.reviews')}
               </button>
-              <a href="/blog" onClick={() => setMobileMenuOpen(false)} className="text-left py-2 px-3 rounded hover:bg-stone-100 font-semibold text-[#0A6C74] dark:text-teal-300">Travel Journal</a>
+              <a href="/blog" onClick={() => setMobileMenuOpen(false)} className="text-left py-2 px-3 rounded hover:bg-stone-100 font-semibold text-[#0A6C74] dark:text-teal-300">Blog &amp; Travel Journal</a>
 
               <div className="pt-3 border-t border-stone-200 flex flex-col space-y-2">
                 <button
