@@ -694,10 +694,10 @@ app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: Auth
 // ------------------------------------------------------------------------------
 app.get('/api/config', rateLimit(120, 60_000), (_req: Request, res: Response) => {
   res.json({
-    brandName: 'Red Sea Excursions & Voyages',
-    hotline: '+20 102 345 6789',
-    whatsappUrl: 'https://wa.me/201023456789',
-    operatingHours: '06:00 - 23:00 EEST (Daily)',
+    brandName: 'Kemet Spirit',
+    hotline: '+20 151 5212741',
+    whatsappUrl: 'https://wa.me/201515212741',
+    operatingHours: '06:00 - 22:00 EET (Daily)',
     currencyDefault: 'EUR',
     supportedCurrencies: ['EUR', 'USD', 'GBP', 'EGP'],
     supportedLanguages: ['en', 'de', 'ru', 'fr', 'ar', 'it', 'pl', 'nl'],
