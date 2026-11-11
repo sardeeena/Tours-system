@@ -127,6 +127,20 @@ $move_rpc_implementations$;
 -- Admins already pass public.has_permission() for every permission. Remove
 -- the legacy is_admin-only policy layer; action-level RBAC policies remain
 -- authoritative for admins and non-admin staff alike.
+-- profiles previously used one ALL policy plus a SELECT policy. Split the
+-- manage policy into write actions before consolidating legacy own-profile rules.
+DROP POLICY IF EXISTS rbac_profiles_manage ON public.profiles;
+CREATE POLICY rbac_profiles_create ON public.profiles
+  FOR INSERT TO authenticated
+  WITH CHECK (public.has_permission('users.manage'));
+CREATE POLICY rbac_profiles_update ON public.profiles
+  FOR UPDATE TO authenticated
+  USING (public.has_permission('users.manage'))
+  WITH CHECK (public.has_permission('users.manage'));
+CREATE POLICY rbac_profiles_delete ON public.profiles
+  FOR DELETE TO authenticated
+  USING (public.has_permission('users.manage'));
+
 DO $dedupe_policies$
 DECLARE
   old_policy record;
@@ -154,11 +168,28 @@ BEGIN
       ELSE NULL
     END;
 
-    is_admin_only :=
-      lower(regexp_replace(COALESCE(old_policy.qual, ''), '[[:space:]()]', '', 'g'))
-        IN ('is_admin', 'selectis_adminasis_admin')
-      AND lower(regexp_replace(COALESCE(old_policy.with_check, ''), '[[:space:]()]', '', 'g'))
-        IN ('is_admin', 'selectis_adminasis_admin');
+    is_admin_only := CASE old_policy.cmd
+      WHEN 'SELECT' THEN
+        lower(regexp_replace(COALESCE(old_policy.qual, ''), '[[:space:]()]', '', 'g'))
+          IN ('is_admin', 'selectis_adminasis_admin')
+      WHEN 'DELETE' THEN
+        lower(regexp_replace(COALESCE(old_policy.qual, ''), '[[:space:]()]', '', 'g'))
+          IN ('is_admin', 'selectis_adminasis_admin')
+      WHEN 'INSERT' THEN
+        lower(regexp_replace(COALESCE(old_policy.with_check, ''), '[[:space:]()]', '', 'g'))
+          IN ('is_admin', 'selectis_adminasis_admin')
+      WHEN 'UPDATE' THEN
+        lower(regexp_replace(COALESCE(old_policy.qual, ''), '[[:space:]()]', '', 'g'))
+          IN ('is_admin', 'selectis_adminasis_admin')
+        AND lower(regexp_replace(COALESCE(old_policy.with_check, ''), '[[:space:]()]', '', 'g'))
+          IN ('is_admin', 'selectis_adminasis_admin')
+      WHEN 'ALL' THEN
+        lower(regexp_replace(COALESCE(old_policy.qual, ''), '[[:space:]()]', '', 'g'))
+          IN ('is_admin', 'selectis_adminasis_admin')
+        AND lower(regexp_replace(COALESCE(old_policy.with_check, ''), '[[:space:]()]', '', 'g'))
+          IN ('is_admin', 'selectis_adminasis_admin')
+      ELSE false
+    END;
 
     IF old_policy.cmd = 'ALL' AND is_admin_only THEN
       has_target := EXISTS (
