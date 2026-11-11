@@ -266,7 +266,7 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> =
   '/excursions': (origin) => ({
     title: 'Red Sea Excursions & Boat Trips | Kemet Spirit',
     description:
-      'Explore our full catalog of daily boat trips, coral snorkeling safaris, private yacht charters, and desert adventures across the Egyptian Red Sea.',
+      'Browse published Red Sea excursions in Egypt. Compare boat trips, island experiences, snorkeling activities, trip durations and prices.',
     keywords: [
       'Red Sea excursions catalog',
       'boat trips Hurghada',
@@ -291,7 +291,7 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> =
   '/my-booking': (origin) => ({
     title: 'Manage Your Booking & Download Voucher | Kemet Spirit',
     description:
-      'Lookup your excursion reservation, download PDF vouchers, verify hotel pickup timings, or request free cancellation online.',
+      'Retrieve your reservation details and voucher using the booking reference provided at confirmation.',
     canonicalUrl: `${origin}/my-booking`,
     ogType: 'website',
     ogImage: SEO_DEFAULTS.DEFAULT_OG_IMAGE,
@@ -301,7 +301,7 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> =
   '/login': (origin) => ({
     title: 'Sign In | Kemet Spirit Guest Portal',
     description:
-      'Sign in to access your upcoming excursion reservations, saved wishlists, and exclusive member discounts.',
+      'Sign in to view your excursion reservations and saved wishlist.',
     canonicalUrl: `${origin}/login`,
     ogType: 'website',
     ogImage: SEO_DEFAULTS.DEFAULT_OG_IMAGE,
@@ -311,7 +311,7 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> =
   '/register': (origin) => ({
     title: 'Create an Account | Kemet Spirit',
     description:
-      'Create your free traveler profile to manage bookings, track pickup status, and unlock special Red Sea excursion discounts.',
+      'Create a traveler account to manage your excursion bookings and saved wishlist.',
     canonicalUrl: `${origin}/register`,
     ogType: 'website',
     ogImage: SEO_DEFAULTS.DEFAULT_OG_IMAGE,
@@ -340,14 +340,13 @@ export function getPageSeo(
 
     return {
       title: `${tour.title} (${tour.destination}) | Direct Booking & Pickup`,
-      description: `Book ${tour.title} in ${tour.destination}. ${tour.durationLabel}. Review pickup details, inclusions, and cancellation terms before booking. From ${formattedPrice}/person.`,
+      description: `Book ${tour.title} in ${tour.destination}. ${tour.durationLabel}. Review pickup details, inclusions, and cancellation terms before booking. From ${formattedPrice}.`,
       keywords: [
         tour.title,
         tour.destination,
         tour.category,
         'Red Sea excursion',
-        'free cancellation',
-        ...(tour.categories || []),
+                ...(tour.categories || []),
       ],
       canonicalUrl: tourUrl,
       ogType: 'product',
@@ -374,6 +373,8 @@ export function getPageSeo(
       ogImage: destination.image || SEO_DEFAULTS.DEFAULT_OG_IMAGE,
       ogImageAlt: `${destination.name} on Egypt’s Red Sea coast`,
       twitterCard: 'summary_large_image',
+      robotsIndex: destination.tourCount >= 2 || `${destination.description || ''} ${destination.tagline || ''}`.trim().length >= 300,
+      robotsFollow: true,
       schemaJsonLd: generateDestinationJsonLd(destination, destinationTours, origin),
     };
   }
