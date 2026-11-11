@@ -45,12 +45,12 @@ assert.notEqual(availabilityEnd, -1, 'availability route has a clear boundary');
 const availabilityRoute = serverSource.slice(availabilityStart, availabilityEnd);
 assert.match(
   availabilityRoute,
-  /publicSupabase\\.rpc\\('get_tour_availability_schedule'/,
+  /publicSupabase\.rpc\('get_tour_availability_schedule'/,
   'legacy availability endpoint must use the authoritative Supabase schedule'
 );
 assert.doesNotMatch(
   availabilityRoute,
-  /availableSeats:\\s*\\d+|maxCapacity:\\s*\\d+\\s*,\\s*status:\\s*'available'/,
+  /availableSeats:\s*\d+|maxCapacity:\s*\d+/,
   'legacy availability endpoint must not return fabricated fixed capacity'
 );
 
