@@ -1591,10 +1591,12 @@ export async function getMaritimeWeather(dateTarget?: string): Promise<WeatherIn
     const lon = 33.8116;
     const [weatherResult, marineResult] = await Promise.allSettled([
       fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,wind_direction_10m&wind_speed_unit=kn&timezone=Africa/Cairo`
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,wind_direction_10m&wind_speed_unit=kn&timezone=Africa/Cairo`,
+        { signal: AbortSignal.timeout(5000) }
       ),
       fetch(
-        `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&current=wave_height&timezone=Africa/Cairo`
+        `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&current=wave_height&timezone=Africa/Cairo`,
+        { signal: AbortSignal.timeout(5000) }
       ),
     ]);
 
@@ -1698,6 +1700,20 @@ export async function createWeatherBulletin(
   if (typeof bulletin.coast_guard_cleared !== 'boolean') {
     throw new Error('Select the port authority clearance status explicitly. It cannot be inferred from weather data.');
   }
+
+  const waterTemperature = Number(bulletin.water_temperature_c);
+  const airTemperature = Number(bulletin.air_temperature_c);
+  const swellHeight = Number(bulletin.swell_height_m);
+  const windSpeed = Number(bulletin.wind_speed_knots);
+  const visibility = Number(bulletin.visibility_meters);
+  if (waterTemperature < 0 || waterTemperature > 40 ||
+      airTemperature < -20 || airTemperature > 60 ||
+      swellHeight < 0 || swellHeight > 20 ||
+      windSpeed < 0 || windSpeed > 100 ||
+      visibility <= 0 || visibility > 100000) {
+    throw new Error('One or more weather measurements are outside the accepted physical range. Check the units and values.');
+  }
+
   if (!isSupabaseConfigured()) {
     throw new Error('Supabase is not configured; the harbor bulletin was not saved.');
   }
