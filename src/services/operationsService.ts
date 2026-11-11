@@ -1563,156 +1563,113 @@ export async function setBlackoutDate(
  *  If a weather provider is not connected: show 'Weather unavailable'."
  */
 export async function getMaritimeWeather(dateTarget?: string): Promise<WeatherInfo> {
-  const date = dateTarget || new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const date = dateTarget || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
-  // 1. Try real-time Open-Meteo Marine API (free, open, authoritative for Red Sea coordinates)
+  let bulletin: DbWeatherBulletin | null = null;
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase
+      .from('weather_bulletins')
+      .select('*')
+      .order('bulletin_date', { ascending: false })
+      .limit(30);
+
+    if (error) {
+      console.warn('Unable to load operator weather bulletins:', error);
+    } else {
+      bulletin = (data || []).find((item: any) => String(item.bulletin_date || '').split('T')[0] === date) || null;
+    }
+  }
+
+  let airTemperatureC: number | null = null;
+  let liveWindKnots: number | null = null;
+  let liveWindDirection: string | null = null;
+  let liveSwellHeightM: number | null = null;
+
   try {
     const lat = 27.2579;
     const lon = 33.8116;
-
-    const [weatherRes, marineRes] = await Promise.allSettled([
+    const [weatherResult, marineResult] = await Promise.allSettled([
       fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,wind_direction_10m,weather_code&wind_speed_unit=kn&timezone=Africa/Cairo`,
-        { signal: AbortSignal.timeout(3500) }
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,wind_direction_10m&wind_speed_unit=kn&timezone=Africa/Cairo`
       ),
       fetch(
-        `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&current=wave_height,wave_direction,wave_period&timezone=Africa/Cairo`,
-        { signal: AbortSignal.timeout(3500) }
+        `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&current=wave_height&timezone=Africa/Cairo`
       ),
     ]);
 
-    let airTemp: number | null = null;
-    let windKnots: number | null = null;
-    let windDeg: number | null = null;
-    let swellM: number | null = null;
-
-    if (weatherRes.status === 'fulfilled' && weatherRes.value.ok) {
-      const data = await weatherRes.value.json();
-      if (data.current) {
-        airTemp = Math.round(data.current.temperature_2m * 10) / 10;
-        windKnots = Math.round(data.current.wind_speed_10m * 10) / 10;
-        windDeg = data.current.wind_direction_10m;
+    if (weatherResult.status === 'fulfilled' && weatherResult.value.ok) {
+      const data = await weatherResult.value.json();
+      const current = data.current || {};
+      if (current.temperature_2m !== null && current.temperature_2m !== undefined) {
+        airTemperatureC = Number(current.temperature_2m);
+      }
+      if (current.wind_speed_10m !== null && current.wind_speed_10m !== undefined) {
+        liveWindKnots = Number(current.wind_speed_10m);
+      }
+      if (current.wind_direction_10m !== null && current.wind_direction_10m !== undefined) {
+        const direction = Number(current.wind_direction_10m);
+        const labels = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+        liveWindDirection = labels[Math.round(direction / 45) % 8];
       }
     }
 
-    if (marineRes.status === 'fulfilled' && marineRes.value.ok) {
-      const mData = await marineRes.value.json();
-      if (mData.current) {
-        swellM = Math.round(mData.current.wave_height * 100) / 100;
-      }
+    if (marineResult.status === 'fulfilled' && marineResult.value.ok) {
+      const data = await marineResult.value.json();
+      const height = data.current?.wave_height;
+      if (height !== null && height !== undefined) liveSwellHeightM = Number(height);
     }
-
-    if (airTemp !== null || windKnots !== null) {
-      const windDirStr =
-        windDeg !== null
-          ? windDeg >= 337.5 || windDeg < 22.5
-            ? 'N'
-            : windDeg < 67.5
-            ? 'NE'
-            : windDeg < 112.5
-            ? 'E'
-            : windDeg < 157.5
-            ? 'SE'
-            : windDeg < 202.5
-            ? 'S'
-            : windDeg < 247.5
-            ? 'SW'
-            : windDeg < 292.5
-            ? 'W'
-            : 'NW'
-          : 'NNW';
-
-      const isSafe = (windKnots || 0) < 22 && (swellM || 0) < 1.8;
-
-      return {
-        connected: true,
-        provider: 'Open-Meteo Marine Telemetry',
-        isAvailable: true,
-        harborLocation: 'Hurghada Marina & Giftun Marine Reserve',
-        airTemperatureC: airTemp,
-        waterTemperatureC: airTemp ? Math.round((airTemp - 3.5) * 10) / 10 : 26.0,
-        swellHeightM: swellM || 0.4,
-        windSpeedKnots: windKnots,
-        windDirection: windDirStr,
-        visibilityMeters: 35,
-        coastGuardCleared: isSafe,
-        advisoryNotes: isSafe
-          ? 'Live Marine Feed: Coast Guard green flag active. Optimal conditions for island crossings and coral snorkeling.'
-          : 'Caution: Wind velocity approaching harbor advisory threshold.',
-        bulletinDate: date,
-      };
-    }
-  } catch {
-    // network or timeout
+  } catch (error) {
+    console.warn('Live marine forecast unavailable:', error);
   }
 
-  // 2. Check Supabase weather_bulletins table
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('weather_bulletins')
-        .select('*')
-        .order('bulletin_date', { ascending: false })
-        .limit(1);
+  const bulletinAvailable = Boolean(bulletin);
+  const liveAvailable =
+    airTemperatureC !== null ||
+    liveWindKnots !== null ||
+    liveSwellHeightM !== null;
 
-      if (!error && data && data.length > 0) {
-        const b = data[0];
-        return {
-          connected: true,
-          provider: 'Port Authority Harbor Log',
-          isAvailable: true,
-          harborLocation: b.harbor_location || 'Hurghada Marina',
-          waterTemperatureC: b.water_temperature_c,
-          airTemperatureC: b.air_temperature_c,
-          swellHeightM: b.swell_height_m,
-          windSpeedKnots: b.wind_speed_knots,
-          windDirection: b.wind_direction,
-          visibilityMeters: b.visibility_meters,
-          coastGuardCleared: b.coast_guard_cleared ?? true,
-          advisoryNotes: b.advisory_notes || 'Harbor master bulletin active.',
-          bulletinDate: b.bulletin_date || date,
-        };
-      }
-    } catch {
-      // ignore
-    }
-  }
+  const isAvailable = bulletinAvailable || liveAvailable;
+  const windSpeedKnots = liveWindKnots ?? (bulletin ? Number(bulletin.wind_speed_knots) : null);
+  const swellHeightM = liveSwellHeightM ?? (bulletin ? Number(bulletin.swell_height_m) : null);
 
-  // 3. Fallback: Provider not connected
-  // Rule: Do not invent weather. If a weather provider is not connected: show "Weather unavailable".
   return {
-    connected: false,
-    provider: 'None',
-    isAvailable: false,
-    harborLocation: 'Hurghada Marina',
-    waterTemperatureC: null,
-    airTemperatureC: null,
-    swellHeightM: null,
-    windSpeedKnots: null,
-    windDirection: null,
-    visibilityMeters: null,
-    coastGuardCleared: false,
-    advisoryNotes: 'Weather unavailable. No active telemetry provider or marine bulletin connected.',
-    bulletinDate: date,
-    message: 'Weather unavailable',
+    connected: isAvailable,
+    provider: liveAvailable && bulletinAvailable
+      ? 'Open-Meteo + operator bulletin'
+      : liveAvailable
+        ? 'Open-Meteo forecast'
+        : bulletinAvailable
+          ? 'Operator-recorded bulletin'
+          : 'Unavailable',
+    isAvailable,
+    harborLocation: bulletin?.harbor_location || 'Hurghada Marina & Giftun Marine Reserve',
+    waterTemperatureC: bulletin ? Number(bulletin.water_temperature_c) : null,
+    airTemperatureC: airTemperatureC ?? (bulletin ? Number(bulletin.air_temperature_c) : null),
+    swellHeightM,
+    windSpeedKnots,
+    windDirection: liveWindDirection ?? bulletin?.wind_direction ?? null,
+    visibilityMeters: bulletin ? Number(bulletin.visibility_meters) : null,
+    // Forecast data cannot establish official harbor or Coast Guard clearance.
+    coastGuardCleared: bulletin?.coast_guard_cleared ?? null,
+    advisoryNotes: bulletin?.advisory_notes || (
+      liveAvailable
+        ? 'Live forecast measurements only. Official port clearance has not been verified; confirm sailing permission with the harbor authority.'
+        : 'No live weather measurements or operator-recorded port bulletin are available for this date.'
+    ),
+    bulletinDate: bulletin ? String(bulletin.bulletin_date).split('T')[0] : date,
+    message: isAvailable ? undefined : 'Weather feed and operator-recorded harbor bulletin are unavailable.',
   };
 }
 
 export async function listWeatherBulletins(): Promise<DbWeatherBulletin[]> {
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('weather_bulletins')
-        .select('*')
-        .order('bulletin_date', { ascending: false });
-      if (!error && data) {
-        return data as DbWeatherBulletin[];
-      }
-    } catch {
-      // ignore
-    }
-  }
-  return [];
+  if (!isSupabaseConfigured()) return [];
+  const { data, error } = await supabase
+    .from('weather_bulletins')
+    .select('*')
+    .order('bulletin_date', { ascending: false });
+  if (error) throw new Error(formatSupabaseError(error));
+  return (data || []) as DbWeatherBulletin[];
 }
 
 export async function getLatestWeatherBulletin(): Promise<DbWeatherBulletin | null> {
@@ -1723,30 +1680,52 @@ export async function getLatestWeatherBulletin(): Promise<DbWeatherBulletin | nu
 export async function createWeatherBulletin(
   bulletin: Partial<DbWeatherBulletin>
 ): Promise<DbWeatherBulletin> {
-  const newBulletin: DbWeatherBulletin = {
-    id: `wea-${Date.now().toString(36)}`,
-    harbor_location: bulletin.harbor_location || 'Hurghada Marina',
-    water_temperature_c: bulletin.water_temperature_c || 26.0,
-    air_temperature_c: bulletin.air_temperature_c || 30.0,
-    swell_height_m: bulletin.swell_height_m || 0.4,
-    wind_speed_knots: bulletin.wind_speed_knots || 8.0,
-    wind_direction: bulletin.wind_direction || 'NNW',
-    visibility_meters: bulletin.visibility_meters || 30,
-    coast_guard_cleared: bulletin.coast_guard_cleared !== undefined ? bulletin.coast_guard_cleared : true,
-    advisory_notes: bulletin.advisory_notes || 'Coast Guard cleared all maritime departures.',
-    bulletin_date: bulletin.bulletin_date || new Date().toISOString().split('T')[0],
-    created_at: new Date().toISOString(),
-  };
+  const requiredText = [bulletin.harbor_location, bulletin.wind_direction, bulletin.advisory_notes];
+  const requiredNumbers = [
+    bulletin.water_temperature_c,
+    bulletin.air_temperature_c,
+    bulletin.swell_height_m,
+    bulletin.wind_speed_knots,
+    bulletin.visibility_meters,
+  ];
 
-  if (isSupabaseConfigured()) {
-    try {
-      await supabase.from('weather_bulletins').insert(newBulletin);
-    } catch {
-      // ignore
-    }
+  if (!bulletin.bulletin_date || requiredText.some((value) => !String(value || '').trim())) {
+    throw new Error('Harbor, wind direction, bulletin date, and advisory notes are required.');
+  }
+  if (requiredNumbers.some((value) => value === null || value === undefined || !Number.isFinite(Number(value)))) {
+    throw new Error('Enter actual measured values for water temperature, air temperature, swell, wind speed, and visibility.');
+  }
+  if (typeof bulletin.coast_guard_cleared !== 'boolean') {
+    throw new Error('Select the port authority clearance status explicitly. It cannot be inferred from weather data.');
+  }
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase is not configured; the harbor bulletin was not saved.');
   }
 
-  return newBulletin;
+  const payload = {
+    harbor_location: String(bulletin.harbor_location).trim(),
+    water_temperature_c: Number(bulletin.water_temperature_c),
+    air_temperature_c: Number(bulletin.air_temperature_c),
+    swell_height_m: Number(bulletin.swell_height_m),
+    wind_speed_knots: Number(bulletin.wind_speed_knots),
+    wind_direction: String(bulletin.wind_direction).trim(),
+    visibility_meters: Math.floor(Number(bulletin.visibility_meters)),
+    coast_guard_cleared: bulletin.coast_guard_cleared,
+    advisory_notes: String(bulletin.advisory_notes).trim(),
+    bulletin_date: bulletin.bulletin_date,
+    provider: 'operator_manual',
+    is_available: true,
+  };
+
+  const { data, error } = await supabase
+    .from('weather_bulletins')
+    .insert(payload)
+    .select()
+    .single();
+
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data) throw new Error('The weather bulletin was not returned after saving.');
+  return data as DbWeatherBulletin;
 }
 
 // ------------------------------------------------------------------------------
