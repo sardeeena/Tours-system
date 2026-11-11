@@ -280,6 +280,41 @@ async function runSecurityTests() {
     serverSource.includes("rateLimit(3, 10 * 60_000)"),
     'Global API, booking/chat, inquiry, and newsletter request ceilings are present'
   );
+
+
+  assert(
+    'Admin Auth lifecycle endpoints require Super Admin and AAL2',
+    serverSource.includes('function requireSuperAdminAal2') &&
+    serverSource.includes("req.user.role !== 'super_admin'") &&
+    serverSource.includes("claims?.aal !== 'aal2'") &&
+    serverSource.includes("SUPABASE_KEY_TYPE !== 'service_role'"),
+    'Account lifecycle APIs reject non-super-admin, non-AAL2, and non-secret server configurations'
+  );
+  assert(
+    'Account lifecycle operations are server-side and rate limited',
+    serverSource.includes("app.post('/api/admin/users/invite'") &&
+    serverSource.includes("app.get('/api/admin/users/:userId/status'") &&
+    serverSource.includes("app.post('/api/admin/users/:userId/status'") &&
+    serverSource.includes("app.post('/api/admin/users/:userId/password-reset'") &&
+    serverSource.includes('inviteUserByEmail') &&
+    serverSource.includes('resetPasswordForEmail'),
+    'Invite, status, and password-reset actions use authenticated server routes and Supabase Auth'
+  );
+  assert(
+    'Suspension removes elevated RBAC and preserves assignments for reactivation',
+    serverSource.includes('suspended_roles: savedRoles') &&
+    serverSource.includes("p_role_slugs: ['customer']") &&
+    serverSource.includes('p_role_slugs: restoreRoles') &&
+    serverSource.includes("ban_duration: '876000h'") &&
+    serverSource.includes("ban_duration: 'none'"),
+    'Suspended accounts are downgraded to Customer in canonical RBAC and restore saved roles on reactivation'
+  );
+  assert(
+    'Browser UI never contains a Supabase service-role credential',
+    !authContextSource.includes('service_role') &&
+    !fs.readFileSync('src/components/admin/AdminAccessControl.tsx', 'utf8').includes('SUPABASE_SERVICE_ROLE_KEY'),
+    'The frontend calls protected server endpoints and does not contain privileged Supabase keys'
+  );
   assert(
     'Rate limiter uses Express-resolved client IP and bounded storage',
     serverSource.includes('req.ip || req.socket.remoteAddress') &&
