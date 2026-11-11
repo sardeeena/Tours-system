@@ -98,7 +98,6 @@ export const SuperAdminMfaPanel: React.FC<SuperAdminMfaPanelProps> = ({ compact 
       setHasUnverifiedFactor(false);
       await refreshUser();
       showToast('Authenticator MFA is now enabled for this super administrator.', 'success');
-      await loadFactors();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'The authenticator code could not be verified.');
     } finally {
