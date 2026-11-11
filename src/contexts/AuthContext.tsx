@@ -303,7 +303,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           unconfirmedEmail: result.unconfirmedEmail,
         };
       }
-      const mfaState = await getSuperAdminMfaState(verifiedUser);
+      let mfaState: { factorId: string | null; requiresEnrollment: boolean };
+      try {
+        mfaState = await getSuperAdminMfaState(verifiedUser);
+      } catch {
+        await signOutAdmin();
+        setUser(null);
+        setPendingMfaFactorId(null);
+        setRequiresMfaEnrollment(false);
+        setLoading(false);
+        return {
+          success: false,
+          user: null,
+          error: 'We could not verify your multi-factor security status. Please try again.',
+        };
+      }
       if (mfaState.requiresEnrollment) {
         setUser(null);
         setPendingMfaFactorId(null);
