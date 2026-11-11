@@ -1835,6 +1835,35 @@ function seoPlainText(value: unknown, maxLength = 4000): string {
     .trim().slice(0, maxLength);
 }
 
+function seoSafeImage(value: unknown): string {
+  if (typeof value !== 'string' || !value.trim()) return '';
+  try {
+    const candidate = new URL(value.trim(), 'https://kemetspirit.com');
+    return candidate.protocol === 'https:' && !candidate.username && !candidate.password ? candidate.toString() : '';
+  } catch {
+    return '';
+  }
+}
+
+async function loadKemetSeoOverride(entityType: string, identifier: string, isPageSlug: boolean): Promise<any | null> {
+  if (!serverSupabase || !identifier) return null;
+  try {
+    let query = serverSupabase.from('seo_metadata')
+      .select('seo_title,meta_description,og_image,robots_index')
+      .eq('entity_type', entityType);
+    query = isPageSlug ? query.eq('page_slug', identifier) : query.eq('entity_id', identifier);
+    const { data, error } = await query.maybeSingle();
+    if (error) {
+      console.warn('[SEO render] Metadata override unavailable:', error.message);
+      return null;
+    }
+    return data || null;
+  } catch (error) {
+    console.warn('[SEO render] Metadata override query failed:', error);
+    return null;
+  }
+}
+
 function seoPrice(priceValue: unknown, currencyValue: unknown): string {
   const price = Number(priceValue);
   if (!Number.isFinite(price) || price <= 0) return '';
@@ -1932,6 +1961,9 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
   let currentExclusions: any[] = [];
   let currentItinerary: any[] = [];
   let pageImage = `${origin}/logo.webp`;
+  let seoEntityType = 'page';
+  let seoIdentifier = 'home';
+  let seoIdentifierIsPageSlug = true;
 
   if (path === '/' || path === '/excursions') tours = await loadKemetTours();
 
@@ -1966,19 +1998,26 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
     }
     if (currentTour) {
       pageKind = 'tour';
+      seoEntityType = 'tour';
+      seoIdentifier = String(currentTour.id);
+      seoIdentifierIsPageSlug = false;
       title = `${seoPlainText(currentTour.title, 160)} | Kemet Spirit`;
       const summary = seoPlainText(currentTour.short_description || currentTour.description, 300);
       description = summary || `Review details and booking information for ${seoPlainText(currentTour.title, 160)}.`;
       const relationQueries = await Promise.all([
+        serverSupabase!.from('tour_images').select('image_url,alt_text,is_primary').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
         serverSupabase!.from('tour_highlights').select('item').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
         serverSupabase!.from('tour_inclusions').select('item').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
         serverSupabase!.from('tour_exclusions').select('item').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
         serverSupabase!.from('tour_itinerary').select('time,title,description').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
       ]);
-      currentHighlights = relationQueries[0].error ? [] : relationQueries[0].data || [];
-      currentInclusions = relationQueries[1].error ? [] : relationQueries[1].data || [];
-      currentExclusions = relationQueries[2].error ? [] : relationQueries[2].data || [];
-      currentItinerary = relationQueries[3].error ? [] : relationQueries[3].data || [];
+      const tourImages = relationQueries[0].error ? [] : relationQueries[0].data || [];
+      const primaryImage = tourImages.find((image: any) => image.is_primary) || tourImages[0];
+      pageImage = seoSafeImage(primaryImage?.image_url) || pageImage;
+      currentHighlights = relationQueries[1].error ? [] : relationQueries[1].data || [];
+      currentInclusions = relationQueries[2].error ? [] : relationQueries[2].data || [];
+      currentExclusions = relationQueries[3].error ? [] : relationQueries[3].data || [];
+      currentItinerary = relationQueries[4].error ? [] : relationQueries[4].data || [];
 
       const price = seoPrice(currentTour.price, currentTour.currency);
       const duration = seoPlainText(currentTour.duration, 100);
@@ -1990,6 +2029,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
         : '';
       body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / <a href="/excursions">Excursions</a></nav><article>
         <h1>${seoHtmlEscape(seoPlainText(currentTour.title, 160))}</h1>
+        ${pageImage !== `${origin}/logo.webp` ? `<figure><img src="${seoHtmlEscape(pageImage)}" alt="${seoHtmlEscape(seoPlainText(currentTour.title, 160))}" loading="eager" style="width:100%;max-height:420px;object-fit:cover;border-radius:14px" /></figure>` : ''}
         ${summary ? `<p>${seoHtmlEscape(summary)}</p>` : ''}
         ${price ? `<p><strong>Starting price: ${seoHtmlEscape(price)}</strong></p>` : ''}
         ${duration ? `<p>Duration: ${seoHtmlEscape(duration)}</p>` : ''}
@@ -2005,6 +2045,8 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
     const page = pages.find((item: any) => item && item.slug === path.slice(1));
     if (page) {
       pageKind = 'static';
+      seoIdentifier = String(page.slug);
+      seoIdentifierIsPageSlug = true;
       title = seoPlainText(page.seoTitle, 180) || `${seoPlainText(page.title, 160)} | Kemet Spirit`;
       description = seoPlainText(page.seoDescription, 300) || seoPlainText(page.heroSubtitle, 300);
       noindex = page.seoIndexable === false;
@@ -2025,6 +2067,14 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
     title = 'Page Not Found | Kemet Spirit';
     description = 'The requested page could not be found.';
     body = `<main id="seo-initial-content"><h1>Page not found</h1><p>The requested page is not available.</p><p><a href="/">Return to the homepage</a> or <a href="/excursions">browse excursions</a>.</p></main>`;
+  }
+
+  if (pageKind !== 'not-found') {
+    const override = await loadKemetSeoOverride(seoEntityType, seoIdentifier, seoIdentifierIsPageSlug);
+    if (override?.seo_title) title = seoPlainText(override.seo_title, 180);
+    if (override?.meta_description) description = seoPlainText(override.meta_description, 300);
+    if (override?.og_image) pageImage = seoSafeImage(override.og_image) || pageImage;
+    if (override?.robots_index === false) noindex = true;
   }
 
   const canonical = `${origin}${path === '/' ? '/' : path}`;
@@ -2049,6 +2099,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
       name: seoPlainText(currentTour.title, 160),
       description,
       url: canonical,
+      image: pageImage !== `${origin}/logo.webp` ? [pageImage] : undefined,
       provider: { '@id': `${origin}/#organization` },
       ...(Number.isFinite(price) && price > 0 ? {
         subjectOf: { '@type': 'Product', name: seoPlainText(currentTour.title, 160),
