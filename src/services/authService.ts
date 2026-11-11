@@ -109,18 +109,23 @@ export async function signInUser(
         }
 
         // Check or update role in profiles table (app_metadata or default customer)
-        let userRole: UserRole = (data.user.app_metadata?.role as UserRole) || 'customer';
+        let userRole: UserRole = 'customer';
         let profileFullName = data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'Voyager';
         let profilePhone = data.user.user_metadata?.phone;
         let profileCountry = data.user.user_metadata?.country;
         let profileAvatar = data.user.user_metadata?.avatar_url;
 
         try {
-          const { data: profile } = await supabase
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
-            .select('*')
+            .select('id, email, full_name, role, phone, country, avatar_url, is_confirmed')
             .eq('id', data.user.id)
             .maybeSingle();
+
+          if (profileError) {
+            await supabase.auth.signOut();
+            return { user: null, error: 'We could not verify your account permissions. Please try signing in again.' };
+          }
 
           if (profile) {
             if (profile.role) userRole = profile.role as UserRole;
@@ -139,7 +144,7 @@ export async function signInUser(
               id: data.user.id,
               email: cleanEmail,
               full_name: profileFullName,
-              role: (data.user.app_metadata?.role as UserRole) || 'customer',
+              role: 'customer',
               phone: profilePhone || null,
               country: profileCountry || null,
               is_confirmed: true,
@@ -155,7 +160,9 @@ export async function signInUser(
             }
           }
         } catch (err) {
-          console.warn('Profile sync notice during signInUser:', err);
+          console.warn('Profile verification failed during signInUser:', err);
+          await supabase.auth.signOut();
+          return { user: null, error: 'We could not verify your account permissions. Please try signing in again.' };
         }
 
         // Sync local registered copy if it exists so local storage reflects confirmed status
@@ -606,12 +613,13 @@ export async function getCurrentAdminUser(): Promise<AppUser | null> {
           if (profile.country) profileCountry = profile.country;
           if (profile.is_confirmed !== undefined) isProfileConfirmed = Boolean(profile.is_confirmed);
         } else {
-          // Self-heal: Backfill missing profile row directly in database
+          // Missing profile rows are repaired as customers only. Privileged roles
+          // must be provisioned through the trusted administrator workflow.
           const newProfile = {
             id: user.id,
             email: user.email || '',
             full_name: profileFullName,
-            role: (user.app_metadata?.role as UserRole) || 'customer',
+            role: 'customer' as UserRole,
             phone: profilePhone || null,
             country: profileCountry || null,
             is_confirmed: true,
@@ -627,9 +635,8 @@ export async function getCurrentAdminUser(): Promise<AppUser | null> {
           }
         }
       } catch (profErr) {
-        console.warn('Direct live profiles table query notice:', profErr);
-        // Fallback to server-signed app_metadata (never client-editable user_metadata)
-        userRole = (user.app_metadata?.role as UserRole) || 'customer';
+        console.warn('Direct live profiles table query failed; refusing cached role claims:', profErr);
+        return null;
       }
 
       // Administrators are never blocked by missing confirmation flags
@@ -688,9 +695,8 @@ export async function verifyAdminAccess(): Promise<boolean> {
       .maybeSingle();
 
     if (profileError || !profile) {
-      // Only server-signed app_metadata can be trusted; user_metadata is client-editable
-      const appRole = user.app_metadata?.role as string | undefined;
-      return appRole === 'admin' || appRole === 'super_admin' || appRole === 'manager' || appRole === 'staff';
+      // Never fall back to potentially stale token claims when the live profile cannot be verified.
+      return false;
     }
 
     return profile.role === 'admin' || profile.role === 'super_admin' || profile.role === 'manager' || profile.role === 'staff';
