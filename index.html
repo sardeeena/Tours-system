@@ -68,8 +68,6 @@
               additionalProperties: false
             },
             execute: async function (input) {
-              var params = new URLSearchParams();
-              if (input && typeof input.search === 'string') params.set('search', input.search.slice(0, 120));
               var limit = Number(input && input.limit);
               params.set('limit', String(Number.isInteger(limit) ? Math.max(1, Math.min(20, limit)) : 10));
               var response = await fetch('/mcp', {
