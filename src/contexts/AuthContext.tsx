@@ -36,8 +36,11 @@ interface AuthContextType {
     success: boolean; 
     user?: AppUser | null;
     error?: string; 
-    requiresEmailConfirmation?: boolean; 
-    unconfirmedEmail?: string 
+    requiresEmailConfirmation?: boolean;
+    unconfirmedEmail?: string;
+    requiresMfa?: boolean;
+    requiresMfaEnrollment?: boolean;
+    mfaFactorId?: string;
   }>;
   signUp: (data: {
     email: string;
@@ -65,6 +68,9 @@ interface AuthContextType {
   validatePassword: (password: string) => { isValid: boolean; score: number; feedback: string[] };
   signOut: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  pendingMfaFactorId: string | null;
+  requiresMfaEnrollment: boolean;
+  verifyMfa: (factorId: string, code: string) => Promise<{ success: boolean; error?: string }>;
   verifyAdmin: () => Promise<boolean>;
   checkAdminAccess: () => Promise<boolean>;
 }
@@ -79,6 +85,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [authModalView, setAuthModalView] = useState<AuthModalView | null>(null);
+  const [pendingMfaFactorId, setPendingMfaFactorId] = useState<string | null>(null);
+  const [requiresMfaEnrollment, setRequiresMfaEnrollment] = useState(false);
   const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const permissions = user?.permissions ?? getUserPermissions(user?.role);
@@ -121,16 +129,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return validatePasswordStrength(password);
   }, []);
 
+  const isSuperAdminUser = (candidate: AppUser | null): boolean =>
+    Boolean(candidate && (candidate.role === 'super_admin' || candidate.roles?.includes('super_admin')));
+
+  const getSuperAdminMfaState = useCallback(async (candidate: AppUser | null) => {
+    if (!isSuperAdminUser(candidate)) {
+      return { factorId: null as string | null, requiresEnrollment: false };
+    }
+
+    const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
+    if (factorsError) throw factorsError;
+    const verifiedTotp = factors.totp.find((factor) => factor.status === 'verified');
+    if (!verifiedTotp) {
+      return { factorId: null as string | null, requiresEnrollment: true };
+    }
+
+    const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (assuranceError) throw assuranceError;
+    if (assurance.currentLevel !== 'aal2' && assurance.nextLevel === 'aal2') {
+      return { factorId: verifiedTotp.id, requiresEnrollment: false };
+    }
+
+    return { factorId: null as string | null, requiresEnrollment: false };
+  }, []);
+
   const refreshUser = useCallback(async () => {
     try {
       const current = await getCurrentAdminUser();
+      const mfaState = await getSuperAdminMfaState(current);
+      if (mfaState.requiresEnrollment) {
+        setUser(null);
+        setPendingMfaFactorId(null);
+        setRequiresMfaEnrollment(true);
+        return;
+      }
+      if (mfaState.factorId) {
+        setUser(null);
+        setPendingMfaFactorId(mfaState.factorId);
+        setRequiresMfaEnrollment(false);
+        return;
+      }
+      setPendingMfaFactorId(null);
+      setRequiresMfaEnrollment(false);
       setUser(current);
     } catch {
       setUser(null);
+      setPendingMfaFactorId(null);
+      setRequiresMfaEnrollment(false);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [getSuperAdminMfaState]);
 
   /**
    * Rebuilds the active user from the live profile and database-backed RBAC context.
@@ -138,22 +187,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    */
   const checkAdminAccess = useCallback(async (): Promise<boolean> => {
     if (!isSupabaseConfigured()) {
-      // Browser storage is user-editable and can never authorize staff access.
       localStorage.removeItem(LOCAL_ACTIVE_USER_KEY);
       setUser(null);
+      setPendingMfaFactorId(null);
+      setRequiresMfaEnrollment(false);
       return false;
     }
     const current = await getCurrentAdminUser();
+    const mfaState = await getSuperAdminMfaState(current);
+    if (mfaState.requiresEnrollment) {
+      setUser(null);
+      setPendingMfaFactorId(null);
+      setRequiresMfaEnrollment(true);
+      return false;
+    }
+    if (mfaState.factorId) {
+      setUser(null);
+      setPendingMfaFactorId(mfaState.factorId);
+      setRequiresMfaEnrollment(false);
+      return false;
+    }
+    setPendingMfaFactorId(null);
+    setRequiresMfaEnrollment(false);
     const allowed = isUserAdmin(current);
     setUser(current);
     if (!allowed) localStorage.removeItem(LOCAL_ACTIVE_USER_KEY);
     return allowed;
-  }, []);
+  }, [getSuperAdminMfaState]);
 
   const handleSignOut = useCallback(async (isAutoLogout = false) => {
     setLoading(true);
     await signOutAdmin();
     setUser(null);
+    setPendingMfaFactorId(null);
+    setRequiresMfaEnrollment(false);
     setLoading(false);
 
     if (isAutoLogout) {
@@ -204,6 +271,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }, 0);
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
+          setPendingMfaFactorId(null);
+          setRequiresMfaEnrollment(false);
         }
       });
 
@@ -232,9 +301,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           unconfirmedEmail: result.unconfirmedEmail,
         };
       }
+      const mfaState = await getSuperAdminMfaState(verifiedUser);
+      if (mfaState.requiresEnrollment) {
+        setUser(null);
+        setPendingMfaFactorId(null);
+        setRequiresMfaEnrollment(true);
+        setLoading(false);
+        return {
+          success: false,
+          user: null,
+          requiresMfaEnrollment: true,
+        };
+      }
+      if (mfaState.factorId) {
+        setUser(null);
+        setPendingMfaFactorId(mfaState.factorId);
+        setRequiresMfaEnrollment(false);
+        setLoading(false);
+        return {
+          success: false,
+          user: null,
+          requiresMfa: true,
+          mfaFactorId: mfaState.factorId,
+        };
+      }
+      setPendingMfaFactorId(null);
+      setRequiresMfaEnrollment(false);
       setUser(verifiedUser);
     } else {
       setUser(null);
+      setPendingMfaFactorId(null);
+      setRequiresMfaEnrollment(false);
     }
     setLoading(false);
     return {
@@ -244,6 +341,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       requiresEmailConfirmation: result.requiresEmailConfirmation,
       unconfirmedEmail: result.unconfirmedEmail,
     };
+  };
+
+  const handleVerifyMfa = async (factorId: string, code: string) => {
+    const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({ factorId });
+    if (challengeError) return { success: false, error: challengeError.message };
+
+    const { error: verifyError } = await supabase.auth.mfa.verify({
+      factorId,
+      challengeId: challenge.id,
+      code: code.trim(),
+    });
+    if (verifyError) return { success: false, error: verifyError.message };
+
+    setPendingMfaFactorId(null);
+    setRequiresMfaEnrollment(false);
+    await refreshUser();
+    return { success: true };
   };
 
   const handleSignUp = async (data: {
@@ -317,6 +431,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         validatePassword,
         signOut: () => handleSignOut(false),
         refreshUser,
+        pendingMfaFactorId,
+        requiresMfaEnrollment,
+        verifyMfa: handleVerifyMfa,
         verifyAdmin: verifyAdminAccess,
         checkAdminAccess,
       }}
