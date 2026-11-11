@@ -467,7 +467,7 @@ function MainApp() {
           title: staticPage.seoTitle || `${staticPage.title} | Kemet Spirit`,
           description: staticPage.seoDescription || staticPage.heroSubtitle,
           canonicalUrl: typeof window !== 'undefined'
-            ? `${window.location.origin}/${staticPage.slug}`
+            ? `https://kemetspirit.com/${staticPage.slug}`
             : undefined,
           ogType: 'article' as const,
           robotsIndex: staticPage.seoIndexable !== false,
