@@ -163,4 +163,5 @@ export interface Availability {
   isPastDate: boolean;
   meetsMinimumNotice: boolean;
   minNoticeHours: number;
+  status?: 'available' | 'unavailable' | 'sold_out';
 }
