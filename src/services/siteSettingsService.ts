@@ -60,7 +60,7 @@ const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
 const DEFAULT_BOOKING_POLICIES: BookingPolicySettings = {
   bookingNoticeCutoffHours: 12,
   cancellationNoticeHours: 24,
-  cancellationPolicyText: 'Free 100% cancellation up to 24 hours before trip departure time. Full automatic refund or free rescheduling in case of Coast Guard harbor weather closures.',
+  cancellationPolicyText: 'Cancellation, refund and rescheduling terms depend on the selected excursion. Review the terms shown on the tour page and during checkout before booking.',
   depositRequired: false,
   depositPercent: 0,
   childAgeLimit: 11,
