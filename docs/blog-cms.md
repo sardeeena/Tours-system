@@ -23,6 +23,6 @@ After the migration is applied, verify:
 
 ## Current implementation boundaries
 - Article editor supports a safe Markdown subset (headings, emphasis, lists, quotes, inline code and HTTPS/mailto links) with live preview.
-- Cover images currently use a URL field; the existing Media Library upload workflow is not yet integrated.
+- Cover images can be uploaded to the existing `tour-media` bucket under `blog/`; uploaded files are registered in `media_assets` and the cover URL can also be entered manually.
 - The first version supports one language per post. Translation records and hreflang are future work.
 - Scheduled posts use a future `published_at` timestamp and become public automatically when the timestamp arrives; no background worker or open browser is needed. Public catalogue queries use a stored reading-time value and avoid downloading article bodies.
