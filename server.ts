@@ -1708,7 +1708,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
 
     try {
       const [destinationResult, tourDestinationResult] = await Promise.all([
-        serverSupabase.from('destinations').select('id,slug,updated_at').eq('status', 'published'),
+        serverSupabase.from('destinations').select('id,slug,updated_at,tagline,description').eq('status', 'published'),
         serverSupabase.from('tours').select('destination_id').eq('status', 'published'),
       ]);
       if (destinationResult.error) {
@@ -1716,12 +1716,18 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
       } else if (tourDestinationResult.error) {
         console.warn('[SEO sitemap] Published destination-tours query failed:', tourDestinationResult.error.message);
       } else {
-        const destinationIdsWithTours = new Set(
-          (tourDestinationResult.data || []).map((row: any) => row.destination_id).filter(Boolean).map(String)
-        );
+        const destinationTourCounts = new Map<string, number>();
+        for (const row of tourDestinationResult.data || []) {
+          if (!row.destination_id) continue;
+          const key = String(row.destination_id);
+          destinationTourCounts.set(key, (destinationTourCounts.get(key) || 0) + 1);
+        }
         for (const destination of destinationResult.data || []) {
           const slug = typeof destination.slug === 'string' ? destination.slug.trim() : '';
-          if (!destinationIdsWithTours.has(String(destination.id))) continue;
+          const tourCount = destinationTourCounts.get(String(destination.id)) || 0;
+          const descriptionLength = cleanPublicText(destination.description, 4000).length
+            + cleanPublicText(destination.tagline, 500).length;
+          if (tourCount < 2 && descriptionLength < 300) continue;
           if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
           urls.set(
             `${KEMET_PUBLIC_ORIGIN}/destinations/${encodeURIComponent(slug)}`,
@@ -1797,7 +1803,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
     lines.push('', '## Published destinations');
     try {
       const [destinationResult, tourDestinationResult] = await Promise.all([
-        serverSupabase.from('destinations').select('id,name,slug,description').eq('status', 'published').order('sort_order', { ascending: true }),
+        serverSupabase.from('destinations').select('id,name,slug,description,tagline').eq('status', 'published').order('sort_order', { ascending: true }),
         serverSupabase.from('tours').select('destination_id').eq('status', 'published'),
       ]);
       if (destinationResult.error) {
@@ -1805,13 +1811,19 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
       } else if (tourDestinationResult.error) {
         console.warn('[SEO llms.txt] Destination tour links query failed:', tourDestinationResult.error.message);
       } else {
-        const destinationIdsWithTours = new Set(
-          (tourDestinationResult.data || []).map((row: any) => row.destination_id).filter(Boolean).map(String)
-        );
+        const destinationTourCounts = new Map<string, number>();
+        for (const row of tourDestinationResult.data || []) {
+          if (!row.destination_id) continue;
+          const key = String(row.destination_id);
+          destinationTourCounts.set(key, (destinationTourCounts.get(key) || 0) + 1);
+        }
         for (const destination of destinationResult.data || []) {
           const slug = typeof destination.slug === 'string' ? destination.slug.trim() : '';
           const name = cleanPublicText(destination.name, 120);
-          if (!name || !destinationIdsWithTours.has(String(destination.id))) continue;
+          const tourCount = destinationTourCounts.get(String(destination.id)) || 0;
+          const descriptionLength = cleanPublicText(destination.description, 4000).length
+            + cleanPublicText(destination.tagline, 500).length;
+          if (!name || (tourCount < 2 && descriptionLength < 300)) continue;
           if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
           const description = cleanPublicText(destination.description, 400);
           lines.push(`- [${name}](https://kemetspirit.com/destinations/${encodeURIComponent(slug)}): ${description}`);
@@ -1905,7 +1917,7 @@ async function loadKemetSeoOverride(entityType: string, identifier: string, isPa
   if (!serverSupabase || !identifier) return null;
   try {
     let query = serverSupabase.from('seo_metadata')
-      .select('seo_title,meta_description,og_image,robots_index')
+      .select('seo_title,meta_description,og_image,robots_index,robots_follow')
       .eq('entity_type', entityType);
     query = isPageSlug ? query.eq('page_slug', identifier) : query.eq('entity_id', identifier);
     const { data, error } = await query.maybeSingle();
@@ -2028,13 +2040,14 @@ function seoUpsertMeta(html: string, kind: 'name' | 'property', key: string, val
   return pattern.test(html) ? html.replace(pattern, tag) : html.replace('</head>', `${tag}</head>`);
 }
 
-async function renderKemetPublicHtml(pathname: string, template: string): Promise<{ html: string; statusCode: number; noindex: boolean }> {
+async function renderKemetPublicHtml(pathname: string, template: string): Promise<{ html: string; statusCode: number; noindex: boolean; nofollow: boolean }> {
   const path = pathname.replace(/\/+$/, '') || '/';
   const origin = 'https://kemetspirit.com';
   let title = 'Kemet Spirit | Red Sea Excursions in Egypt';
   let description = 'Explore Red Sea excursions in Egypt, including boat trips, island visits, snorkeling and desert experiences. Review each tour’s details before booking.';
   let body = '';
   let noindex = false;
+  let nofollow = false;
   let statusCode = 200;
   let pageKind: 'home' | 'catalogue' | 'tour' | 'destination' | 'static' | 'not-found' = 'not-found';
   let tours: any[] = [];
@@ -2168,7 +2181,10 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
       seoIdentifierIsPageSlug = false;
       title = seoPlainText(activeDestination.seo_title, 180)
         || `${seoPlainText(activeDestination.name, 120)} Excursions & Activities | Kemet Spirit`;
-      description = seoPlainText(activeDestination.seo_description || activeDestination.description || activeDestination.tagline, 300);
+      const destinationDescription = seoPlainText(activeDestination.description, 4000);
+      const destinationTagline = seoPlainText(activeDestination.tagline, 500);
+      description = seoPlainText(activeDestination.seo_description || destinationDescription || destinationTagline, 300);
+      noindex = destinationTours.length < 2 && (destinationDescription.length + destinationTagline.length) < 300;
       pageImage = seoSafeImage(activeDestination.main_image) || pageImage;
       const cards = destinationTours.map(seoTourCard).filter(Boolean).join('');
       body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / <a href="/excursions">Excursions</a> / ${seoHtmlEscape(seoPlainText(activeDestination.name, 120))}</nav>
@@ -2188,6 +2204,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
       title = seoPlainText(page.seoTitle, 180) || `${seoPlainText(page.title, 160)} | Kemet Spirit`;
       description = seoPlainText(page.seoDescription, 300) || seoPlainText(page.heroSubtitle, 300);
       noindex = page.seoIndexable === false;
+      nofollow = noindex;
       const sections = Array.isArray(page.sections) ? page.sections.map((section: any) => {
         const h = seoPlainText(section?.title, 180);
         const p = seoPlainText(section?.content, 3000);
@@ -2202,6 +2219,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
   if (pageKind === 'not-found') {
     statusCode = 404;
     noindex = true;
+    nofollow = true;
     title = 'Page Not Found | Kemet Spirit';
     description = 'The requested page could not be found.';
     body = `<main id="seo-initial-content"><h1>Page not found</h1><p>The requested page is not available.</p><p><a href="/">Return to the homepage</a> or <a href="/excursions">browse excursions</a>.</p></main>`;
@@ -2213,6 +2231,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
     if (override?.meta_description) description = seoPlainText(override.meta_description, 300);
     if (override?.og_image) pageImage = seoSafeImage(override.og_image) || pageImage;
     if (override?.robots_index === false) noindex = true;
+    if (override?.robots_follow === false) nofollow = true;
   }
 
   const canonical = `${origin}${path === '/' ? '/' : path}`;
@@ -2274,7 +2293,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
   const schema = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }).replace(/</g, '\\u003c');
   let html = template.replace(/<title>[\s\S]*?<\/title>/i, `<title>${seoHtmlEscape(title)}</title>`);
   html = seoUpsertMeta(html, 'name', 'description', description);
-  html = seoUpsertMeta(html, 'name', 'robots', noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large');
+  html = seoUpsertMeta(html, 'name', 'robots', noindex ? `noindex, ${nofollow ? 'nofollow' : 'follow'}` : 'index, follow, max-image-preview:large');
   html = seoUpsertMeta(html, 'property', 'og:title', title);
   html = seoUpsertMeta(html, 'property', 'og:description', description);
   html = seoUpsertMeta(html, 'property', 'og:site_name', 'Kemet Spirit');
@@ -2289,7 +2308,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
   html = html.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '');
   html = html.replace('</head>', `<script type="application/ld+json">${schema}</script>${seoInitialStyles()}</head>`);
   html = html.replace(/<div id="root"><\/div>/i, `<div id="root">${body}</div>`);
-  return { html, statusCode, noindex };
+  return { html, statusCode, noindex, nofollow };
 }
 
 // ------------------------------------------------------------------------------
@@ -2343,7 +2362,9 @@ async function startServer() {
         const rendered = await renderKemetPublicHtml(req.path, indexHtml);
         res.status(rendered.statusCode);
         res.type('html');
-        if (rendered.noindex) res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+        if (rendered.noindex) {
+          res.setHeader('X-Robots-Tag', `noindex, ${rendered.nofollow ? 'nofollow' : 'follow'}`);
+        }
         res.setHeader('Cache-Control', rendered.statusCode === 200
           ? 'public, max-age=30, s-maxage=60, stale-while-revalidate=30'
           : 'no-store');
