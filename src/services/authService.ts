@@ -615,8 +615,7 @@ export async function getCurrentAdminUser(): Promise<AppUser | null> {
     const permissions = Array.isArray(accessContext.permissions)
       ? accessContext.permissions.filter((permission: unknown): permission is string => typeof permission === 'string')
       : [];
-    const hasStaffRole = roles.some((role: string) => role !== 'customer' && role !== 'guide');
-    if (!profile.is_confirmed && !hasStaffRole) return null;
+    if (!profile.is_confirmed && !user.email_confirmed_at) return null;
 
     const authedUser: AppUser = {
       id: user.id,
