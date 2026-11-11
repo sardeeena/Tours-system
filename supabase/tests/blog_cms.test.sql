@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(10);
+SELECT plan(11);
 
 SELECT ok(to_regclass('public.blog_categories') IS NOT NULL, 'blog categories table exists');
 SELECT ok(to_regclass('public.blog_posts') IS NOT NULL, 'blog posts table exists');
