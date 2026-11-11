@@ -31,7 +31,6 @@ import {
 } from '../../../types/operations';
 import { DbVessel, DbGuide } from '../../../types/database';
 import { Tour } from '../../../types';
-import { ALL_TOURS } from '../../../data/toursData';
 import { getPublishedTours } from '../../../services/tourService';
 import { useToast } from '../../../contexts/ToastContext';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -45,14 +44,14 @@ export const OperationsAssignments: React.FC = () => {
   const [assignments, setAssignments] = useState<OperationalAssignment[]>([]);
   const [vessels, setVessels] = useState<DbVessel[]>([]);
   const [guides, setGuides] = useState<DbGuide[]>([]);
-  const [tours, setTours] = useState<Tour[]>(ALL_TOURS);
+  const [tours, setTours] = useState<Tour[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Assignment Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [tourId, setTourId] = useState<string>(ALL_TOURS[0]?.id || '');
-  const [departureTime, setDepartureTime] = useState<string>('08:30');
+  const [tourId, setTourId] = useState<string>('');
+  const [departureTime, setDepartureTime] = useState<string>('');
   const [vesselId, setVesselId] = useState<string>('');
   const [guideId, setGuideId] = useState<string>('');
   const [captainId, setCaptainId] = useState<string>('');
@@ -74,10 +73,8 @@ export const OperationsAssignments: React.FC = () => {
       setAssignments(assigns);
       setVessels(ves);
       setGuides(gui);
-      if (loadedTours && loadedTours.length > 0) {
-        setTours(loadedTours);
-        if (!tourId) setTourId(loadedTours[0].id);
-      }
+      setTours(loadedTours || []);
+      if (!tourId && loadedTours?.length) setTourId(loadedTours[0].id);
     } catch (err) {
       console.warn('Failed to load assignments:', err);
     } finally {
@@ -91,7 +88,7 @@ export const OperationsAssignments: React.FC = () => {
 
   // Real-time pre-save conflict check whenever inputs change in the modal
   useEffect(() => {
-    if (!isModalOpen || !tourId || !selectedDate) {
+    if (!isModalOpen || !tourId || !selectedDate || !departureTime) {
       setPreSaveConflicts([]);
       return;
     }
@@ -102,7 +99,7 @@ export const OperationsAssignments: React.FC = () => {
     const timer = setTimeout(async () => {
       try {
         const found = await detectAssignmentConflicts({
-          departureId: editingId || undefined,
+          departureId: undefined,
           tourId,
           date: selectedDate,
           startTime: departureTime,
@@ -130,8 +127,8 @@ export const OperationsAssignments: React.FC = () => {
   const handleOpenCreate = () => {
     if (!hasPermission('operations.create')) { showToast('Your role does not permit creating assignments.', 'error'); return; }
     setEditingId(null);
-    setTourId(ALL_TOURS[0]?.id || '');
-    setDepartureTime('08:30');
+    setTourId('');
+    setDepartureTime('');
     setVesselId('');
     setGuideId('');
     setCaptainId('');
@@ -146,7 +143,7 @@ export const OperationsAssignments: React.FC = () => {
     if (!hasPermission('operations.update')) { showToast('Your role does not permit editing assignments.', 'error'); return; }
     setEditingId(a.id);
     setTourId(a.tourId);
-    setDepartureTime(a.departureTime || '08:30');
+    setDepartureTime(a.departureTime || '');
     setVesselId(a.vesselId || '');
     setGuideId(a.guideId || '');
     setCaptainId(a.captainId || '');
@@ -160,7 +157,10 @@ export const OperationsAssignments: React.FC = () => {
   const handleSaveAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!hasPermission(editingId ? 'operations.update' : 'operations.create')) { showToast('Your role does not permit saving assignments.', 'error'); return; }
-    if (!tourId || !selectedDate) return;
+    if (!tourId || !selectedDate || !departureTime) {
+      showToast('Select a real tour and date, then enter the actual departure time.', 'error');
+      return;
+    }
 
     const res = await saveAssignment({
       id: editingId || undefined,
