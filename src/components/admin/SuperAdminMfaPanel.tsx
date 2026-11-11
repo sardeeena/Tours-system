@@ -26,7 +26,9 @@ export const SuperAdminMfaPanel: React.FC<SuperAdminMfaPanelProps> = ({ compact 
     try {
       const { data, error: factorsError } = await supabase.auth.mfa.listFactors();
       if (factorsError) throw factorsError;
-      const verifiedTotp = data.totp[0];
+      // listFactors includes factors that may still be unverified; only a
+      // verified TOTP factor satisfies the super-admin MFA requirement.
+      const verifiedTotp = data.totp.find((factor) => factor.status === 'verified');
       setVerified(Boolean(verifiedTotp));
       setFactorId(verifiedTotp?.id || '');
     } catch (err) {
