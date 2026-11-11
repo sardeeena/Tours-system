@@ -128,14 +128,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    */
   const checkAdminAccess = useCallback(async (): Promise<boolean> => {
     if (!isSupabaseConfigured()) {
-      const stored = localStorage.getItem(LOCAL_ACTIVE_USER_KEY);
-      if (!stored) return false;
-      try {
-        const u = JSON.parse(stored) as AppUser;
-        return u.role === 'admin' || u.role === 'super_admin' || u.role === 'manager' || u.role === 'staff';
-      } catch {
-        return false;
-      }
+      // Browser storage is user-editable and can never authorize staff access.
+      localStorage.removeItem(LOCAL_ACTIVE_USER_KEY);
+      return false;
     }
 
     try {
@@ -253,17 +248,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const handleSignIn = async (email: string, pass: string) => {
     setLoading(true);
     const result = await signInUser(email, pass);
+    let verifiedUser: AppUser | null = null;
     if (result.user) {
-      // Re-verify the live profile immediately to guarantee role accuracy from DB
-      const verified = await getCurrentAdminUser();
-      setUser(verified || result.user);
+      // Re-verify the live profile before granting any role in client state.
+      verifiedUser = await getCurrentAdminUser();
+      if (!verifiedUser) {
+        await signOutAdmin();
+        setUser(null);
+        setLoading(false);
+        return {
+          success: false,
+          user: null,
+          error: 'We could not verify your account permissions. Please sign in again.',
+          requiresEmailConfirmation: result.requiresEmailConfirmation,
+          unconfirmedEmail: result.unconfirmedEmail,
+        };
+      }
+      setUser(verifiedUser);
     } else {
       setUser(null);
     }
     setLoading(false);
-    return { 
-      success: !result.error && !!result.user, 
-      user: result.user,
+    return {
+      success: !result.error && !!verifiedUser,
+      user: verifiedUser,
       error: result.error,
       requiresEmailConfirmation: result.requiresEmailConfirmation,
       unconfirmedEmail: result.unconfirmedEmail,

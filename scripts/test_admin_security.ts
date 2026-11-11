@@ -239,7 +239,62 @@ async function runSecurityTests() {
   );
 
   // ----------------------------------------------------------------------------
-  // TEST 7: Live Supabase Database Connection & RLS Policy Tests (if configured)
+  // TEST 7: Server/API authentication, routing, and abuse controls
+  // ----------------------------------------------------------------------------
+  console.log('Running Test 7: Server-side authentication and API abuse controls...');
+  const serverSource = fs.readFileSync('server.ts', 'utf8');
+  const authServiceSource = fs.readFileSync('src/services/authService.ts', 'utf8');
+  const authContextSource = fs.readFileSync('src/contexts/AuthContext.tsx', 'utf8');
+
+  assert(
+    'Server authorization defaults to least-privileged customer role',
+    serverSource.includes("let role = 'customer'") && !serverSource.includes("let role = (user.app_metadata?.role as string) || 'customer'"),
+    'Server role is derived from the live profile and never falls back to token metadata'
+  );
+  assert(
+    'Invalid supplied Bearer tokens are rejected',
+    serverSource.includes("status(401).json({ success: false, error: 'The access token is invalid or expired."),
+    'Invalid or expired Bearer tokens cannot silently become guest requests'
+  );
+  assert(
+    'API-wide and sensitive-route rate limits are installed',
+    serverSource.includes("app.use('/api', rateLimit(300, 60_000))") &&
+    serverSource.includes("app.use('/api', authenticateToken as any)") &&
+    serverSource.includes('/^Bearer\\s+/i') &&
+    serverSource.includes("rateLimit(10, 60_000)") &&
+    serverSource.includes("rateLimit(5, 10 * 60_000)") &&
+    serverSource.includes("rateLimit(3, 10 * 60_000)"),
+    'Global API, booking/chat, inquiry, and newsletter request ceilings are present'
+  );
+  assert(
+    'Rate limiter uses Express-resolved client IP and bounded storage',
+    serverSource.includes('req.ip || req.socket.remoteAddress') &&
+    serverSource.includes('RATE_LIMIT_BUCKET_CAPACITY') &&
+    !serverSource.includes("req.headers['x-forwarded-for'] as string"),
+    'Rate limiter avoids raw forwarded-header trust and caps in-memory bucket growth'
+  );
+  assert(
+    'Public health endpoint does not disclose infrastructure details',
+    serverSource.includes('Public liveness response only') &&
+    !serverSource.includes('serviceRoleKeyConfigured:') &&
+    !serverSource.includes('heapUsedMb:'),
+    'Health response exposes liveness only, not project/key/memory diagnostics'
+  );
+  assert(
+    'Browser-side admin checks fail closed without Supabase',
+    authContextSource.includes('Browser storage is user-editable and can never authorize staff access.') &&
+    !authContextSource.includes("return u.role === 'admin'"),
+    'Local storage cannot grant staff/admin access'
+  );
+  assert(
+    'Admin verification does not fall back to stale app_metadata',
+    authServiceSource.includes('Never fall back to potentially stale token claims') &&
+    !authServiceSource.includes('const appRole = user.app_metadata?.role'),
+    'Live profile lookup failure denies administrator access'
+  );
+
+  // ----------------------------------------------------------------------------
+  // TEST 8: Live Supabase Database Connection & RLS Policy Tests (if configured)
   // ----------------------------------------------------------------------------
   const configuredSupabaseUrl = (process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '').trim();
   if (configuredSupabaseUrl && !isExpectedKemetSupabaseUrl(configuredSupabaseUrl)) {
