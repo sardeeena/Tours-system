@@ -35,6 +35,7 @@ import {
 } from '../../../services/crmService';
 import { LeadStage, LeadSource } from '../../../types/crm';
 import { useToast } from '../../../contexts/ToastContext';
+import { useAuth } from '../../../contexts/AuthContext';
 
 const STAGES: LeadStage[] = [
   'New',
@@ -71,6 +72,7 @@ const STAFF_MEMBERS = [
 
 export const CrmLeadsManager: React.FC = () => {
   const { showToast } = useToast();
+  const { hasPermission } = useAuth();
   const [leads, setLeads] = useState<CrmLead[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
@@ -140,6 +142,7 @@ export const CrmLeadsManager: React.FC = () => {
   }, [leads, stageFilter, sourceFilter, staffFilter, searchQuery]);
 
   const handleStageChange = async (leadId: string, newStage: LeadStage) => {
+    if (!hasPermission('crm.update')) { showToast('Your role does not permit updating CRM stages.', 'error'); return; }
     let lostReason: string | undefined = undefined;
     if (newStage === 'Lost') {
       lostReason = window.prompt('Please enter the reason for marking this lead as Lost (e.g. Price too high, Travel cancelled, Booked elsewhere):') || 'Unspecified';
@@ -154,6 +157,7 @@ export const CrmLeadsManager: React.FC = () => {
 
   const handleSaveLead = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasPermission(selectedLead ? 'crm.update' : 'crm.create')) { showToast('Your role does not permit saving CRM leads.', 'error'); return; }
     if (!formData.name?.trim()) {
       showToast('Lead name is required.', 'error');
       return;
@@ -176,6 +180,7 @@ export const CrmLeadsManager: React.FC = () => {
   };
 
   const handleConvertToCustomer = async (lead: CrmLead) => {
+    if (!hasPermission('crm.update')) { showToast('Your role does not permit converting leads.', 'error'); return; }
     try {
       await convertLeadToCustomer(lead.id);
       showToast(`Lead "${lead.name}" converted into customer record!`, 'success');
@@ -186,6 +191,7 @@ export const CrmLeadsManager: React.FC = () => {
   };
 
   const handleConfirmDelete = async () => {
+    if (!hasPermission('crm.delete')) { showToast('Your role does not permit deleting CRM leads.', 'error'); return; }
     if (!leadToDelete) return;
     await deleteLead(leadToDelete.id);
     setLeads((prev) => prev.filter((l) => l.id !== leadToDelete.id));
@@ -194,6 +200,7 @@ export const CrmLeadsManager: React.FC = () => {
   };
 
   const openEditModal = (lead: CrmLead) => {
+    if (!hasPermission('crm.update')) { showToast('Your role does not permit editing CRM leads.', 'error'); return; }
     setSelectedLead(lead);
     setFormData({
       name: lead.name,
@@ -217,6 +224,7 @@ export const CrmLeadsManager: React.FC = () => {
   };
 
   const openCreateModal = () => {
+    if (!hasPermission('crm.create')) { showToast('Your role does not permit creating CRM leads.', 'error'); return; }
     setSelectedLead(null);
     setFormData({
       name: '',
@@ -295,7 +303,7 @@ export const CrmLeadsManager: React.FC = () => {
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
 
-          <button
+          {hasPermission('crm.create') && <button
             type="button"
             onClick={openCreateModal}
             className="inline-flex items-center space-x-1.5 px-4 py-2 bg-[#0A6C74] hover:bg-[#08565C] text-white rounded text-xs font-semibold shadow transition-colors cursor-pointer"
