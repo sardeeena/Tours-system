@@ -31,13 +31,15 @@ SELECT ok(
 );
 
 SELECT ok(
-  (SELECT prosecdef FROM pg_proc WHERE oid = 'public.get_tour_availability_schedule(text,date,date)'::regprocedure),
-  'availability RPC remains SECURITY DEFINER'
+  (SELECT NOT prosecdef FROM pg_proc WHERE oid = 'public.get_tour_availability_schedule(text,date,date)'::regprocedure)
+  AND (SELECT prosecdef FROM pg_proc WHERE oid = 'private.get_tour_availability_schedule(text,date,date)'::regprocedure),
+  'public availability wrapper is invoker-rights and private implementation is SECURITY DEFINER'
 );
 
 SELECT ok(
-  (SELECT proconfig @> ARRAY['search_path=""'] FROM pg_proc WHERE oid = 'public.get_tour_availability_schedule(text,date,date)'::regprocedure),
-  'availability RPC uses an empty search_path and schema-qualified objects'
+  (SELECT proconfig @> ARRAY['search_path=""'] FROM pg_proc WHERE oid = 'public.get_tour_availability_schedule(text,date,date)'::regprocedure)
+  AND (SELECT proconfig @> ARRAY['search_path=""'] FROM pg_proc WHERE oid = 'private.get_tour_availability_schedule(text,date,date)'::regprocedure),
+  'public wrapper and private implementation both pin an empty search_path'
 );
 
 SELECT is(
