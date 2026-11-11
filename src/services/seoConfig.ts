@@ -202,7 +202,7 @@ export function generateDestinationJsonLd(
   tours: Tour[] = [],
   origin = getAppOrigin()
 ): Record<string, unknown> {
-  const destUrl = `${origin}/excursions?destination=${encodeURIComponent(destination.slug)}`;
+  const destUrl = `${origin}/destinations/${encodeURIComponent(destination.slug)}`;
   const destTours = tours.filter(
     (t) => t.destination.toLowerCase() === destination.name.toLowerCase()
   );
@@ -340,13 +340,33 @@ export function getPageSeo(
     };
   }
 
-  // 2. Static defined routes
+  // 2. Destination landing pages: /destinations/:slug
+  if (context?.destination) {
+    const destination = context.destination;
+    const destinationUrl = `${origin}/destinations/${encodeURIComponent(destination.slug)}`;
+    const destinationTours = (context.tours || []).filter(
+      (tour) => tour.destination.toLowerCase() === destination.name.toLowerCase()
+    );
+    return {
+      title: destination.seoTitle || `${destination.name} Excursions & Activities | Kemet Spirit`,
+      description: destination.seoDescription || destination.description,
+      keywords: [destination.name, 'Egypt Red Sea excursions', 'activities', 'boat trips'],
+      canonicalUrl: destinationUrl,
+      ogType: 'website',
+      ogImage: destination.image || SEO_DEFAULTS.DEFAULT_OG_IMAGE,
+      ogImageAlt: `${destination.name} on Egypt’s Red Sea coast`,
+      twitterCard: 'summary_large_image',
+      schemaJsonLd: generateDestinationJsonLd(destination, destinationTours, origin),
+    };
+  }
+
+  // 3. Static defined routes
   const cleanPath = path.split('?')[0].replace(/\/$/, '') || '/';
   if (STATIC_ROUTE_SEO[cleanPath]) {
     return STATIC_ROUTE_SEO[cleanPath](origin);
   }
 
-  // 3. Fallback default
+  // 4. Fallback default
   return {
     title: SEO_DEFAULTS.DEFAULT_TITLE,
     description: SEO_DEFAULTS.DEFAULT_DESCRIPTION,
