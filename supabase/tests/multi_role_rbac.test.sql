@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(14);
+SELECT plan(16);
 
 SELECT ok(to_regclass('public.access_roles') IS NOT NULL,'access role catalog exists');
 SELECT ok(to_regclass('public.access_permissions') IS NOT NULL,'permission catalog exists');
@@ -54,6 +54,17 @@ SELECT ok(
 SELECT ok(
   EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='user_roles' AND policyname='rbac_deny_direct_user_roles'),
   'direct user role table access is explicitly denied by RLS'
+);
+SELECT ok(
+  EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='storage' AND tablename='objects' AND policyname='RBAC can upload tour media')
+  AND EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='storage' AND tablename='objects' AND policyname='RBAC can update tour media')
+  AND EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='storage' AND tablename='objects' AND policyname='RBAC can delete tour media'),
+  'tour media storage writes are permission-scoped'
+);
+SELECT ok(
+  EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='storage' AND tablename='objects' AND policyname='RBAC finance can view vouchers')
+  AND EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='storage' AND tablename='objects' AND policyname='RBAC finance can upload vouchers'),
+  'finance voucher storage access is permission-scoped'
 );
 
 SELECT * FROM finish();
