@@ -12,7 +12,7 @@ export const BlogPage: React.FC<{ slug?: string; onNavigate:(path:string)=>void 
   const [loading,setLoading] = useState(true);
   const [error,setError] = useState('');
   useEffect(() => {
-    let active=true; setLoading(true); setError('');
+    let active=true; setLoading(true); setError(''); if (slug) setArticle(null);
     const task=slug ? getPublishedBlogPost(slug).then(p=>{if(active)setArticle(p);})
       : getPublishedBlogPosts(30).then(p=>{if(active)setPosts(p);});
     task.catch(()=>{if(active)setError('The journal is temporarily unavailable. Please try again shortly.');})
@@ -25,18 +25,16 @@ export const BlogPage: React.FC<{ slug?: string; onNavigate:(path:string)=>void 
     const title = article.seo_title || `${article.title} | Kemet Spirit Journal`;
     const description = article.seo_description || article.excerpt || 'Travel inspiration and local guides from Kemet Spirit in Hurghada, Egypt.';
     document.title = title;
-    const setMeta = (selector: string, attribute: string, value: string) => {
-      let node = document.head.querySelector(selector) as HTMLMetaElement | null;
-      if (!node) { node = document.createElement('meta'); document.head.appendChild(node); }
-      node.setAttribute(attribute, value);
+    const setMeta = (identityAttribute: 'name' | 'property', identity: string, value: string) => {
+      let node = document.head.querySelector(`meta[${identityAttribute}="${identity}"]`) as HTMLMetaElement | null;
+      if (!node) { node = document.createElement('meta'); node.setAttribute(identityAttribute, identity); document.head.appendChild(node); }
+      node.content = value;
     };
-    setMeta('meta[name="description"]','name','description');
-    const descriptionNode = document.head.querySelector('meta[name="description"]') as HTMLMetaElement;
-    descriptionNode.content = description;
-    setMeta('meta[property="og:title"]','content',title);
-    setMeta('meta[property="og:description"]','content',description);
-    setMeta('meta[property="og:type"]','content','article');
-    if (article.cover_image_url) setMeta('meta[property="og:image"]','content',article.cover_image_url);
+    setMeta('name','description',description);
+    setMeta('property','og:title',title);
+    setMeta('property','og:description',description);
+    setMeta('property','og:type','article');
+    if (article.cover_image_url) setMeta('property','og:image',article.cover_image_url);
     let canonical = document.head.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.appendChild(canonical); }
     canonical.href = `https://kemetspirit.com/blog/${article.slug}`;
