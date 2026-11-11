@@ -265,14 +265,16 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     if (id === 'tours') return 'tours.read';
     if (id === 'tour_new' || id === 'tour_edit') return 'tours.manage';
     if (id === 'bookings') return 'bookings.read';
-    if (id.startsWith('crm_') || id === 'customers' || id === 'inquiries') return 'crm.read';
+    if (id === 'customers') return 'customers.read';
+    if (id.startsWith('crm_') || id === 'inquiries') return 'crm.read';
     if (id.startsWith('comm_')) return 'communications.read';
     if (['destinations','categories','newsletter','pickup','extras','coupons','faqs','reviews','media','seo','pages'].includes(id)) return 'content.read';
     if (id === 'settings') return 'settings.manage';
     return null;
   };
+  const canManageAccess = Boolean(user?.roles?.includes('admin') || user?.roles?.includes('super_admin'));
   const canSeeTab = (id: string) => id === 'access_control'
-    ? hasPermission('users.manage') || hasPermission('roles.manage')
+    ? canManageAccess
     : (() => { const required = requiredPermission(id); return !required || hasPermission(required); })();
 
   const visibleNavItems = navItems.flatMap((item, index) => {
@@ -286,7 +288,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   });
   const activePermission = requiredPermission(activeTab);
   const canAccessActiveTab = activeTab === 'access_control'
-    ? hasPermission('users.manage') || hasPermission('roles.manage')
+    ? canManageAccess
     : !activePermission || hasPermission(activePermission);
 
   return (
