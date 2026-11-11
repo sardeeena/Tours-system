@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(16);
+SELECT plan(18);
 
 SELECT ok(to_regclass('public.access_roles') IS NOT NULL,'access role catalog exists');
 SELECT ok(to_regclass('public.access_permissions') IS NOT NULL,'permission catalog exists');
@@ -65,6 +65,15 @@ SELECT ok(
   EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='storage' AND tablename='objects' AND policyname='RBAC finance can view vouchers')
   AND EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='storage' AND tablename='objects' AND policyname='RBAC finance can upload vouchers'),
   'finance voucher storage access is permission-scoped'
+);
+SELECT ok(
+  position('RBAC_ROLE_CREATED' in pg_get_functiondef('public.admin_upsert_access_role(text,text,text,text[])'::regprocedure))>0
+  AND position('RBAC_ROLE_UPDATED' in pg_get_functiondef('public.admin_upsert_access_role(text,text,text,text[])'::regprocedure))>0,
+  'custom role creation and permission changes are audited'
+);
+SELECT ok(
+  position('RBAC_ROLE_DELETED' in pg_get_functiondef('public.admin_delete_access_role(text)'::regprocedure))>0,
+  'custom role deletion is audited'
 );
 
 SELECT * FROM finish();
