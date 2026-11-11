@@ -16,7 +16,6 @@ export const SuperAdminMfaPanel: React.FC<SuperAdminMfaPanelProps> = ({ compact 
   const [secret, setSecret] = useState('');
   const [code, setCode] = useState('');
   const [verified, setVerified] = useState(false);
-  const [hasUnverifiedFactor, setHasUnverifiedFactor] = useState(false);
   const [loading, setLoading] = useState(true);
   const [working, setWorking] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,11 +26,9 @@ export const SuperAdminMfaPanel: React.FC<SuperAdminMfaPanelProps> = ({ compact 
     try {
       const { data, error: factorsError } = await supabase.auth.mfa.listFactors();
       if (factorsError) throw factorsError;
-      const verifiedTotp = data.totp.find((factor) => factor.status === 'verified');
-      const unverifiedTotp = data.totp.find((factor) => factor.status === 'unverified');
+      const verifiedTotp = data.totp[0];
       setVerified(Boolean(verifiedTotp));
-      setHasUnverifiedFactor(Boolean(unverifiedTotp));
-      setFactorId(unverifiedTotp?.id || '');
+      setFactorId(verifiedTotp?.id || '');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to load authenticator factors.');
     } finally {
@@ -47,11 +44,6 @@ export const SuperAdminMfaPanel: React.FC<SuperAdminMfaPanelProps> = ({ compact 
     setWorking(true);
     setError(null);
     try {
-      if (hasUnverifiedFactor && factorId) {
-        const { error: removeError } = await supabase.auth.mfa.unenroll({ factorId });
-        if (removeError) throw removeError;
-      }
-
       const { data, error: enrollError } = await supabase.auth.mfa.enroll({
         factorType: 'totp',
         friendlyName: 'Kemet Spirit Super Admin',
@@ -95,7 +87,6 @@ export const SuperAdminMfaPanel: React.FC<SuperAdminMfaPanelProps> = ({ compact 
       setSecret('');
       setCode('');
       setVerified(true);
-      setHasUnverifiedFactor(false);
       await refreshUser();
       showToast('Authenticator MFA is now enabled for this super administrator.', 'success');
     } catch (err) {
@@ -191,12 +182,9 @@ export const SuperAdminMfaPanel: React.FC<SuperAdminMfaPanelProps> = ({ compact 
         </div>
       ) : (
         <div className="space-y-3">
-          {hasUnverifiedFactor && (
-            <p className="text-xs text-amber-200">An unfinished authenticator setup was found. Restarting will remove that unverified factor and create a fresh QR code.</p>
-          )}
           <button type="button" onClick={startEnrollment} disabled={working} className="inline-flex items-center gap-2 rounded-lg bg-[#0A6C74] px-4 py-2.5 text-xs font-semibold text-white hover:bg-[#08565C] disabled:opacity-50">
             {working ? <Loader2 className="h-4 w-4 animate-spin" /> : <QrCode className="h-4 w-4" />}
-            {hasUnverifiedFactor ? 'Restart authenticator setup' : 'Set up authenticator MFA'}
+            Set up authenticator MFA
           </button>
         </div>
       )}
