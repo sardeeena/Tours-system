@@ -72,13 +72,27 @@
               if (input && typeof input.search === 'string') params.set('search', input.search.slice(0, 120));
               var limit = Number(input && input.limit);
               params.set('limit', String(Number.isInteger(limit) ? Math.max(1, Math.min(20, limit)) : 10));
-              var response = await fetch('/api/tours?' + params.toString(), {
-                headers: { 'Accept': 'application/json' },
-                credentials: 'same-origin'
+              var response = await fetch('/mcp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                  jsonrpc: '2.0',
+                  id: 'webmcp-search',
+                  method: 'tools/call',
+                  params: {
+                    name: 'search_published_excursions',
+                    arguments: {
+                      query: input && typeof input.search === 'string' ? input.search.slice(0, 120) : '',
+                      limit: Number.isInteger(limit) ? Math.max(1, Math.min(20, limit)) : 10
+                    }
+                  }
+                })
               });
               if (!response.ok) throw new Error('Excursion search is temporarily unavailable.');
               var payload = await response.json();
-              return { content: [{ type: 'text', text: JSON.stringify(payload.tours || []) }] };
+              if (payload.error || !payload.result) throw new Error('Excursion search is temporarily unavailable.');
+              return payload.result;
             }
           });
         } catch (error) {
