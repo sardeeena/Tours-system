@@ -1458,6 +1458,9 @@ export async function updateAvailabilitySlot(
   const bookedCount = Math.max(0, Number(existing?.booked_count) || 0);
   const status = updates.status ?? existing?.status ?? 'unavailable';
 
+  if (maxCapacity < bookedCount) {
+    throw new Error('Capacity cannot be reduced below the number of passengers already booked.');
+  }
   if (status === 'available' && maxCapacity <= bookedCount) {
     throw new Error('A date needs an explicit capacity greater than its booked count before it can be opened.');
   }
