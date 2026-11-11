@@ -18,9 +18,11 @@ import {
 import { bookingRepository } from '../../services/bookingRepository';
 import { Booking, BookingStatus } from '../../types/booking';
 import { useToast } from '../../contexts/ToastContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 export const AdminBookingsList: React.FC = () => {
   const { showToast } = useToast();
+  const { hasPermission } = useAuth();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -47,6 +49,9 @@ export const AdminBookingsList: React.FC = () => {
   }, []);
 
   const handleUpdateStatus = async (ref: string, newStatus: BookingStatus) => {
+    if (!hasPermission(newStatus === 'cancelled' ? 'bookings.approve' : 'bookings.update')) {
+      showToast('Your role does not permit this booking action.', 'error'); return;
+    }
     if (newStatus === 'cancelled') {
       const b = bookings.find((item) => item.bookingReference === ref);
       if (b) {
@@ -87,6 +92,7 @@ export const AdminBookingsList: React.FC = () => {
   };
 
   const handleUpdatePaymentStatus = async (ref: string, newPaymentStatus: 'paid' | 'pending' | 'refunded') => {
+    if (!hasPermission('bookings.update')) { showToast('Your role does not permit booking payment-status changes.', 'error'); return; }
     const existing = bookings.find((b) => b.bookingReference === ref);
     if (!existing) return;
 
@@ -119,6 +125,7 @@ export const AdminBookingsList: React.FC = () => {
   };
 
   const confirmCancelBooking = async () => {
+    if (!hasPermission('bookings.approve')) { showToast('Your role does not permit booking cancellation approval.', 'error'); return; }
     if (!bookingToCancel) return;
     const ref = bookingToCancel.bookingReference;
     try {
@@ -140,6 +147,7 @@ export const AdminBookingsList: React.FC = () => {
   };
 
   const exportBookingsCSV = () => {
+    if (!hasPermission('bookings.export')) { showToast('Your role does not permit exporting bookings.', 'error'); return; }
     const headers = [
       'Booking Reference',
       'Tour Title',
@@ -214,7 +222,7 @@ export const AdminBookingsList: React.FC = () => {
         </div>
 
         <div className="flex items-center space-x-3 text-xs text-stone-400">
-          <button
+          {hasPermission('bookings.export') && <button
             type="button"
             onClick={exportBookingsCSV}
             className="flex items-center space-x-1.5 px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded font-medium border border-stone-700 transition-colors cursor-pointer"
@@ -222,7 +230,7 @@ export const AdminBookingsList: React.FC = () => {
           >
             <Download className="w-3.5 h-3.5 text-[#2dd4bf]" />
             <span>Export CSV ({filtered.length})</span>
-          </button>
+          </button>}
           <span>
             Total: <strong className="text-white font-bold">{bookings.length}</strong>
           </span>
@@ -384,6 +392,7 @@ export const AdminBookingsList: React.FC = () => {
                 </div>
 
                 <div className="flex items-center space-x-1.5">
+                  {hasPermission('bookings.update') && <>
                   <button
                     type="button"
                     onClick={() => handleUpdateStatus(selectedBooking.bookingReference, 'confirmed')}
@@ -405,6 +414,8 @@ export const AdminBookingsList: React.FC = () => {
                   >
                     Cancel
                   </button>
+                  </>}
+                  {hasPermission('bookings.approve') && <button type="button" onClick={() => handleUpdateStatus(selectedBooking.bookingReference, 'cancelled')} className="px-2 py-1 bg-red-600 hover:bg-red-500 text-white rounded font-medium text-[10px]">Cancel</button>}
                 </div>
               </div>
 
@@ -420,7 +431,7 @@ export const AdminBookingsList: React.FC = () => {
                 </div>
 
                 <div className="flex items-center space-x-1.5">
-                  {selectedBooking.paymentStatus !== 'paid' && (
+                  {hasPermission('bookings.update') && selectedBooking.paymentStatus !== 'paid' && (
                     <button
                       type="button"
                       onClick={() => handleUpdatePaymentStatus(selectedBooking.bookingReference, 'paid')}
@@ -429,7 +440,7 @@ export const AdminBookingsList: React.FC = () => {
                       Mark Paid
                     </button>
                   )}
-                  {selectedBooking.paymentStatus === 'paid' && (
+                  {hasPermission('bookings.update') && selectedBooking.paymentStatus === 'paid' && (
                     <button
                       type="button"
                       onClick={() => handleUpdatePaymentStatus(selectedBooking.bookingReference, 'refunded')}
@@ -438,7 +449,7 @@ export const AdminBookingsList: React.FC = () => {
                       Refund
                     </button>
                   )}
-                  {selectedBooking.paymentStatus !== 'pending' && (
+                  {hasPermission('bookings.update') && selectedBooking.paymentStatus !== 'pending' && (
                     <button
                       type="button"
                       onClick={() => handleUpdatePaymentStatus(selectedBooking.bookingReference, 'pending')}
@@ -518,13 +529,13 @@ export const AdminBookingsList: React.FC = () => {
               >
                 Keep Booking
               </button>
-              <button
+              {hasPermission('bookings.approve') && <button
                 type="button"
                 onClick={confirmCancelBooking}
                 className="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded font-semibold cursor-pointer"
               >
                 Confirm Cancellation
-              </button>
+              </button>}
             </div>
           </div>
         </div>
