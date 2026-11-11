@@ -2630,7 +2630,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
       try {
         const { data, error } = await publicSupabase.from('blog_posts')
           .select('title,slug,excerpt,cover_image_url,published_at,blog_categories(name)')
-          .eq('status', 'published').lte('published_at', new Date().toISOString())
+          .in('status', ['published', 'scheduled']).lte('published_at', new Date().toISOString())
           .order('published_at', { ascending: false }).limit(30);
         if (error) console.warn('[SEO render] Blog index query failed:', error.message);
         const posts = data || [];
