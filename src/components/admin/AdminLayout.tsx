@@ -262,6 +262,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   ];
 
   const requiredPermission = (id: string): string | null => {
+    if (id === 'blog') return 'content.manage';
     if (id === 'access_control') return 'users.manage';
     if (id === 'dashboard' || id === 'dash_sales') return 'analytics.read';
     if (id === 'dash_ops' || id.startsWith('ops_') || id === 'availability' || id === 'pickup') return 'operations.read';
