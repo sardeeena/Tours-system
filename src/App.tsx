@@ -23,6 +23,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { AccountPage } from './pages/AccountPage';
 import { StaticContentPage } from './pages/StaticContentPage';
+import { DestinationDetailPage } from './pages/DestinationDetailPage';
 import { ALL_TOURS, CURRENCY_CONFIGS } from './data/toursData';
 import { Tour, CurrencyConfig, Destination, Category } from './types';
 import { Booking } from './types/booking';
@@ -174,6 +175,18 @@ function MainApp() {
   const staticPage = useMemo(
     () => staticPages.find((page) => page.slug === staticPageSlug) || null,
     [staticPages, staticPageSlug]
+  );
+
+  const destinationDetailSlug = useMemo(() => {
+    if (!currentPath.startsWith('/destinations/')) return null;
+    return currentPath.replace('/destinations/', '').replace(/\\/$/, '') || null;
+  }, [currentPath]);
+
+  const currentDestination = useMemo(
+    () => destinationDetailSlug
+      ? liveDestinations.find((destination) => destination.slug === destinationDetailSlug) || null
+      : null,
+    [destinationDetailSlug, liveDestinations]
   );
 
   // Active confirmed booking object for immediate view
@@ -476,6 +489,7 @@ function MainApp() {
       : getPageSeo(currentPath, {
           tour: currentTourDetail,
           tours: liveTours,
+          destination: currentDestination,
         });
 
     seoService.apply(baseSeoMetadata);
@@ -488,6 +502,8 @@ function MainApp() {
       seoEntity = { type: 'page', identifier: 'home', pageSlug: true };
     } else if (tourDetailSlug && currentTourDetail) {
       seoEntity = { type: 'tour', identifier: currentTourDetail.id, pageSlug: false };
+    } else if (currentDestination) {
+      seoEntity = { type: 'destination', identifier: currentDestination.id, pageSlug: false };
     } else if (currentPath === '/excursions' && searchParams.get('destination')) {
       const selectedDestination = liveDestinations.find((destination) =>
         destination.slug === searchParams.get('destination') ||
@@ -528,6 +544,7 @@ function MainApp() {
     staticPage,
     searchParams,
     tourDetailSlug,
+    currentDestination,
   ]);
 
   // Handlers from Homepage
@@ -548,6 +565,13 @@ function MainApp() {
   };
 
   const handleSelectHomeDestination = (destName: string) => {
+    const selectedDestination = liveDestinations.find(
+      (destination) => destination.name === destName || destination.slug === destName
+    );
+    if (selectedDestination && selectedDestination.tourCount > 0) {
+      navigate(`/destinations/${selectedDestination.slug}`);
+      return;
+    }
     setInitialSearchFilter({
       destination: destName,
       category: 'All',
@@ -1176,6 +1200,33 @@ function MainApp() {
           <p className="text-xs text-stone-500 mt-1">Retrieving reference: {confirmationReference}</p>
         </div>
       );
+    }
+
+    // Dedicated destination pages are backed only by published Supabase destinations and tours.
+    if (destinationDetailSlug) {
+      if (currentDestination) {
+        const destinationTours = liveTours.filter(
+          (tour) => tour.destination.toLowerCase() === currentDestination.name.toLowerCase()
+        );
+        return (
+          <DestinationDetailPage
+            destination={currentDestination}
+            tours={destinationTours}
+            currency={currentCurrency}
+            onViewTour={handleViewTour}
+            onBookTour={handleStartBooking}
+            onViewAllExcursions={() => navigate('/excursions')}
+          />
+        );
+      }
+      if (loadingDestinations) {
+        return (
+          <div className="min-h-[50vh] flex items-center justify-center text-stone-600">
+            Loading destination information...
+          </div>
+        );
+      }
+      return <NotFoundPage />;
     }
 
     // Public CMS pages must be resolved before the booking route so /booking-conditions
