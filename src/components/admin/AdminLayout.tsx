@@ -125,7 +125,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const [isIntegrationModalOpen, setIsIntegrationModalOpen] = React.useState(false);
 
   // Sidebar open/close state (default open on desktop, auto-closed on small screens)
-  const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(() => typeof window === 'undefined' || window.innerWidth >= 1024);
 
   // Device mode & screen viewport detection (PC, Tablet, Phone)
   type DeviceMode = 'auto' | 'pc' | 'tablet' | 'phone';
@@ -143,6 +143,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       } else {
         setScreenDevice('pc');
       }
+      // Keep the navigation drawer closed on touch-sized viewports.
+      if (w < 1024) setIsSidebarOpen(false);
     };
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -252,7 +254,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   ];
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] dark:bg-[#0A1118] text-[#111A24] dark:text-[#F1F5F9] flex flex-col antialiased selection:bg-[#0A6C74] selection:text-white">
+    <div className="admin-shell min-h-screen bg-[#FAF8F5] dark:bg-[#0A1118] text-[#111A24] dark:text-[#F1F5F9] flex flex-col antialiased selection:bg-[#0A6C74] selection:text-white">
       {/* Top Warning Banner if Supabase is in local fallback mode */}
       {!supabaseConnected ? (
         <div className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2 text-xs text-amber-700 dark:text-amber-300 flex items-center justify-between">
@@ -612,9 +614,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             <div
               className={`w-full transition-all duration-300 ${
                 deviceMode === 'phone'
-                  ? 'max-w-[390px] bg-white dark:bg-[#111E2E] rounded-3xl border-4 border-[#0A6C74]/30 shadow-2xl p-3 sm:p-4 my-2'
+                  ? 'w-[390px] max-w-full bg-white dark:bg-[#111E2E] rounded-3xl border-4 border-[#0A6C74]/30 shadow-2xl p-3 sm:p-4 my-2'
                   : deviceMode === 'tablet'
-                  ? 'max-w-[768px] bg-white dark:bg-[#111E2E] rounded-2xl border-4 border-[#0A6C74]/30 shadow-2xl p-4 sm:p-6 my-2'
+                  ? 'w-[768px] max-w-full bg-white dark:bg-[#111E2E] rounded-2xl border-4 border-[#0A6C74]/30 shadow-2xl p-4 sm:p-6 my-2'
                   : 'max-w-7xl'
               }`}
             >
