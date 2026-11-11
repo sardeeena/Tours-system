@@ -35,8 +35,8 @@ BEGIN
   END IF;
 
   -- Customer self-service is restricted to contact and preference fields.
-  -- CRM ownership, status, notes, tags, source, revenue, balances, counters,
-  -- booking dates and every future column remain server-controlled by default.
+  -- CRM ownership (user_id), status, notes, tags, source, total_revenue,
+  -- outstanding_amount, booking counters/dates and every future column remain protected.
   IF (TO_JSONB(NEW) - ARRAY[
         'first_name', 'last_name', 'email', 'phone', 'whatsapp',
         'country', 'country_code', 'hotel', 'preferred_currency', 'updated_at'
@@ -102,16 +102,33 @@ BEGIN
   END IF;
 
   IF NOT v_is_service_role AND NOT v_is_verified_manager THEN
-    -- Only ordinary profile fields may be self-edited. Email, role,
-    -- confirmation state/timestamps, identity and creation metadata are protected.
-    IF (TO_JSONB(NEW) - ARRAY[
-          'full_name', 'avatar_url', 'phone', 'country', 'country_code', 'updated_at'
-        ]) IS DISTINCT FROM
-       (TO_JSONB(OLD) - ARRAY[
-          'full_name', 'avatar_url', 'phone', 'country', 'country_code', 'updated_at'
-        ]) THEN
-      RAISE EXCEPTION 'Profile email, role, confirmation and server-managed fields cannot be changed directly.'
-        USING ERRCODE = '42501';
+    IF is_trusted_operator_provisioning THEN
+      -- Trusted provisioning may change role and is_confirmed only for its nonce-bound target.
+      -- Email, confirmation_sent_at, identity, and other server-managed metadata remain protected.
+      IF (TO_JSONB(NEW) - ARRAY[
+            'full_name', 'avatar_url', 'phone', 'country', 'country_code',
+            'updated_at', 'role', 'is_confirmed'
+          ]) IS DISTINCT FROM
+         (TO_JSONB(OLD) - ARRAY[
+            'full_name', 'avatar_url', 'phone', 'country', 'country_code',
+            'updated_at', 'role', 'is_confirmed'
+          ]) THEN
+        RAISE EXCEPTION 'Trusted provisioning cannot change email or unrelated server-managed profile fields.'
+          USING ERRCODE = '42501';
+      END IF;
+    ELSE
+      -- Ordinary self-edits may change only the approved profile fields.
+      -- The JSON diff protects email, role, is_confirmed, confirmation_sent_at,
+      -- identity and creation metadata by default.
+      IF (TO_JSONB(NEW) - ARRAY[
+            'full_name', 'avatar_url', 'phone', 'country', 'country_code', 'updated_at'
+          ]) IS DISTINCT FROM
+         (TO_JSONB(OLD) - ARRAY[
+            'full_name', 'avatar_url', 'phone', 'country', 'country_code', 'updated_at'
+          ]) THEN
+        RAISE EXCEPTION 'Profile email, role, confirmation and server-managed fields cannot be changed directly.'
+          USING ERRCODE = '42501';
+      END IF;
     END IF;
   END IF;
 
