@@ -260,6 +260,7 @@ async function runSecurityTests() {
     'API-wide and sensitive-route rate limits are installed',
     serverSource.includes("app.use('/api', rateLimit(300, 60_000))") &&
     serverSource.includes("app.use('/api', authenticateToken as any)") &&
+    serverSource.includes('/^Bearer\\s+/i') &&
     serverSource.includes("rateLimit(10, 60_000)") &&
     serverSource.includes("rateLimit(5, 10 * 60_000)") &&
     serverSource.includes("rateLimit(3, 10 * 60_000)"),
