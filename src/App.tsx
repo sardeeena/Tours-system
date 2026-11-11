@@ -179,7 +179,7 @@ function MainApp() {
 
   const destinationDetailSlug = useMemo(() => {
     if (!currentPath.startsWith('/destinations/')) return null;
-    return currentPath.replace('/destinations/', '').replace(/\\/$/, '') || null;
+    return currentPath.replace('/destinations/', '').replace(/\/$/, '') || null;
   }, [currentPath]);
 
   const currentDestination = useMemo(
