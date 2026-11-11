@@ -2654,8 +2654,25 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
   }
 
   const canonical = `${origin}${path === '/' ? '/' : path}`;
-  const configuredSameAs = (process.env.KEMET_SAME_AS_URLS || '')
-    .split(',')
+  const cmsSocialProfiles: string[] = [];
+  if (publicSupabase) {
+    try {
+      const { data, error } = await publicSupabase.from('site_settings')
+        .select('value').eq('key', 'social_links').maybeSingle();
+      if (!error && data?.value && typeof data.value === 'object') {
+        const social = data.value as Record<string, unknown>;
+        for (const key of ['facebook', 'instagram', 'youtube', 'tiktok', 'tripadvisor']) {
+          if (typeof social[key] === 'string') cmsSocialProfiles.push(social[key] as string);
+        }
+      }
+    } catch (error) {
+      console.warn('[SEO schema] Social profile settings unavailable:', error);
+    }
+  }
+  const configuredSameAs = [
+    ...(process.env.KEMET_SAME_AS_URLS || '').split(','),
+    ...cmsSocialProfiles,
+  ]
     .map((value) => value.trim())
     .filter((value) => {
       try {
@@ -2663,7 +2680,8 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
         return url.protocol === 'https:' && [
           'facebook.com', 'www.facebook.com', 'instagram.com', 'www.instagram.com',
           'linkedin.com', 'www.linkedin.com', 'youtube.com', 'www.youtube.com',
-          'tiktok.com', 'www.tiktok.com', 'x.com', 'www.x.com',
+          'tiktok.com', 'www.tiktok.com', 'tripadvisor.com', 'www.tripadvisor.com',
+          'x.com', 'www.x.com',
         ].includes(url.hostname.toLowerCase());
       } catch {
         return false;
