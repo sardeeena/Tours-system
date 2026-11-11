@@ -234,7 +234,7 @@ function rateLimit(maxRequests = 60, windowMs = 60_000) {
       res.setHeader('Retry-After', String(retryAfter));
       res.setHeader('RateLimit-Limit', String(maxRequests));
       res.setHeader('RateLimit-Remaining', '0');
-      res.setHeader('RateLimit-Reset', String(Math.ceil(bucket.resetAt / 1000)));
+      res.setHeader('RateLimit-Reset', String(Math.max(0, Math.ceil((bucket.resetAt - now) / 1000))));
       return res.status(429).json({
         success: false,
         error: 'Too many requests. Please wait before trying again.',
@@ -249,7 +249,7 @@ function rateLimit(maxRequests = 60, windowMs = 60_000) {
 
     res.setHeader('RateLimit-Limit', String(maxRequests));
     res.setHeader('RateLimit-Remaining', String(Math.max(0, maxRequests - bucket.count)));
-    res.setHeader('RateLimit-Reset', String(Math.ceil(bucket.resetAt / 1000)));
+    res.setHeader('RateLimit-Reset', String(Math.max(0, Math.ceil((bucket.resetAt - now) / 1000))));
 
     if (rateLimitBuckets.size > RATE_LIMIT_BUCKET_CAPACITY) {
       for (const [entryKey, entry] of rateLimitBuckets) {
