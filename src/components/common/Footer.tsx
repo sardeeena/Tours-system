@@ -101,7 +101,7 @@ export const Footer: React.FC<FooterProps> = ({
             <div className="flex items-center space-x-3 mb-3.5">
               <img 
                 src="/logo.png" 
-                alt="Awesome Adventure Tours Logo" 
+                alt="Kemet Spirit Logo" 
                 width="160"
                 height="48"
                 loading="lazy"
@@ -109,11 +109,11 @@ export const Footer: React.FC<FooterProps> = ({
                 className="h-12 w-auto object-contain shrink-0 drop-shadow-xs"
               />
               <span className="font-display font-semibold text-stone-900 dark:text-white text-lg tracking-wide">
-                AWESOME <span className="text-[#0A6C74] dark:text-[#60C3CC]">ADVENTURES</span>
+                KEMET <span className="text-[#0A6C74] dark:text-[#60C3CC]">SPIRIT</span>
               </span>
             </div>
             <p className="text-xs text-stone-600 dark:text-slate-400 leading-relaxed mb-5 max-w-sm">
-              Local boat tour and safari operator based in Hurghada Marina. Daily snorkeling trips, island visits, and desert safaris with hotel pickup and clear pricing.
+              Explore trusted Red Sea excursions and experiences from Hurghada, Egypt, with local insight, clear trip information and helpful support.
             </p>
             <div className="flex items-center space-x-2 text-[11px] text-stone-700 dark:text-slate-300">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
