@@ -94,7 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     }
     return false;
-  }, [permissions, user?.roles]);
+  }, [permissions, user?.roles, user?.role]);
 
   const openAuthModal = useCallback((view: AuthModalView = 'login') => {
     setAuthModalView(view);
