@@ -277,7 +277,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     if (id === 'settings') return 'settings.manage';
     return null;
   };
-  const canManageAccess = Boolean(user?.roles?.includes('admin') || user?.roles?.includes('super_admin'));
+  const canManageAccess = Boolean(user?.roles?.includes('admin') || user?.roles?.includes('super_admin') || user?.role === 'admin' || user?.role === 'super_admin');
   const canSeeTab = (id: string) => id === 'access_control'
     ? canManageAccess
     : (() => { const required = requiredPermission(id); return !required || hasPermission(required); })();
