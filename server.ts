@@ -276,11 +276,11 @@ setInterval(() => {
 // Authorization roles come from the caller's live database profile, not cached JWT metadata.
 async function authenticateToken(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
-  if (!authHeader || !/^Bearer\\s+/i.test(authHeader)) {
+  if (!authHeader || !/^Bearer\s+/i.test(authHeader)) {
     return next();
   }
 
-  const token = authHeader.replace(/^Bearer\\s+/i, '').trim();
+  const token = authHeader.replace(/^Bearer\s+/i, '').trim();
   if (!token) {
     return res.status(401).json({ success: false, error: 'A valid access token is required.' });
   }
