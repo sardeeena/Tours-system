@@ -84,7 +84,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const permissions = user?.permissions ?? getUserPermissions(user?.role);
   const hasPermission = useCallback((action: string): boolean => {
     const [module, requestedAction] = action.split('.');
-    const fullAdmin = Boolean(user?.roles?.includes('admin') || user?.roles?.includes('super_admin'));
+    const fullAdmin = Boolean(user?.roles?.includes('admin') || user?.roles?.includes('super_admin') || user?.role === 'admin' || user?.role === 'super_admin');
     if (fullAdmin) return true;
     if (permissions.includes(action) || permissions.includes(`${module}.manage`)) return true;
     if (requestedAction === 'read') {
