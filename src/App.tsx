@@ -407,8 +407,21 @@ function MainApp() {
   useEffect(() => {
     if (currentPath.startsWith('/admin')) {
       seoService.apply({
-        title: 'Staff & Admin CMS | Awesome Adventure Tours',
-        description: 'Administrative portal for tour management, booking verification, and fleet operations.',
+        title: 'Staff & Admin Login | Kemet Spirit',
+        description: 'Private Kemet Spirit administration portal.',
+        robotsIndex: false,
+        robotsFollow: false,
+      });
+      return;
+    }
+
+    if (['/login', '/register', '/account', '/profile', '/reset-password'].includes(currentPath)) {
+      seoService.apply({
+        title: `Private Account | Kemet Spirit`,
+        description: 'Private customer account access.',
+        canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
+        robotsIndex: false,
+        robotsFollow: false,
       });
       return;
     }
@@ -416,8 +429,8 @@ function MainApp() {
     if (currentPath.startsWith('/booking/confirmation')) {
       seoService.apply({
         title: confirmationReference
-          ? `Booking Confirmed (${confirmationReference}) | Awesome Adventure Tours`
-          : 'Booking Confirmation | Awesome Adventure Tours',
+          ? `Booking Confirmed (${confirmationReference}) | Kemet Spirit`
+          : 'Booking Confirmation | Kemet Spirit',
         description: 'Your excursion booking voucher and confirmed hotel pickup transfer itinerary.',
         canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
         robotsIndex: false,
@@ -428,7 +441,7 @@ function MainApp() {
 
     if (currentPath === '/my-booking' || currentPath.startsWith('/my-booking/')) {
       seoService.apply({
-        title: 'Manage Your Booking | Awesome Adventure Tours',
+        title: 'Manage Your Booking | Kemet Spirit',
         description: 'Retrieve your booking details and voucher using your secure booking reference.',
         canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
         robotsIndex: false,
@@ -439,7 +452,7 @@ function MainApp() {
 
     if (currentPath === '/booking' || currentPath.startsWith('/booking/')) {
       seoService.apply({
-        title: 'Book Your Excursion | Awesome Adventure Tours',
+        title: 'Book Your Excursion | Kemet Spirit',
         description: 'Complete your secure reservation for a Red Sea excursion.',
         canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
         robotsIndex: false,
@@ -451,7 +464,7 @@ function MainApp() {
     // Apply the route's safe defaults first, then overlay metadata saved in Admin > SEO.
     const baseSeoMetadata = staticPage
       ? {
-          title: staticPage.seoTitle || `${staticPage.title} | Awesome Adventure Tours`,
+          title: staticPage.seoTitle || `${staticPage.title} | Kemet Spirit`,
           description: staticPage.seoDescription || staticPage.heroSubtitle,
           canonicalUrl: typeof window !== 'undefined'
             ? `${window.location.origin}/${staticPage.slug}`
