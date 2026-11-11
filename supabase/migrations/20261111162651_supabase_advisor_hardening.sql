@@ -2,9 +2,7 @@
 -- 1) Keep SECURITY DEFINER implementation functions outside the exposed public API schema.
 --    Public RPC names remain as SECURITY INVOKER wrappers with the original grants.
 -- 2) Consolidate legacy and RBAC RLS policies without changing effective access.
--- 3) Add the missing user_roles.assigned_by foreign-key index.
-BEGIN;
-
+-- 3) Add the missing user_roles.assigned_by foreign-key index. 
 CREATE SCHEMA IF NOT EXISTS private;
 REVOKE ALL ON SCHEMA private FROM PUBLIC;
 GRANT USAGE ON SCHEMA private TO anon, authenticated, service_role;
