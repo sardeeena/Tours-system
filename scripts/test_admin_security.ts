@@ -89,6 +89,7 @@ async function runSecurityTests() {
   const fs = await import('fs');
   const completeSchemaSql = fs.readFileSync('complete_schema.sql', 'utf8');
   const adminSetupSource = fs.readFileSync('scripts/setup-admin.ts', 'utf8');
+  const adminSeedSource = fs.readFileSync('supabase/admin_seed.sql', 'utf8');
   assert(
     'First-admin setup is pinned to the Kemet Spirit Supabase project',
     adminSetupSource.includes('isExpectedKemetSupabaseUrl') &&
@@ -114,6 +115,19 @@ async function runSecurityTests() {
     adminSetupSource.includes("'set_admin_role_by_email'") &&
       adminSetupSource.includes('email_confirmed_at'),
     'Admin setup requires a confirmed Auth user and calls the trusted role provisioning RPC'
+  );
+  assert(
+    'Admin setup preserves an existing super_admin without running the admin-only promotion RPC',
+    adminSetupSource.includes("existingProfile?.role === 'super_admin'") &&
+      adminSetupSource.includes('if (preserveSuperAdmin)') &&
+      adminSetupSource.includes("const expectedRole = preserveSuperAdmin ? 'super_admin' : 'admin'"),
+    'An existing super_admin keeps both its database role and server-controlled app_metadata role'
+  );
+  assert(
+    'Admin seed never downgrades super_admin',
+    adminSeedSource.includes("v_existing_role NOT IN ('admin', 'super_admin')") &&
+      adminSeedSource.includes('Already privileged admin or super_admin'),
+    'The idempotent seed only promotes non-admin profiles and preserves super_admin'
   );
 
 
