@@ -1911,7 +1911,8 @@ function seoInitialStyles(): string {
 }
 
 function seoUpsertMeta(html: string, kind: 'name' | 'property', key: string, value: string): string {
-  const pattern = new RegExp('<meta\\s+' + kind + '="' + key + '"[^>]*>', 'i');  const tag = `<meta ${kind}="${seoHtmlEscape(key)}" content="${seoHtmlEscape(value)}" />`;
+  const pattern = new RegExp('<meta\\s+' + kind + '="' + key + '"[^>]*>', 'i');
+  const tag = `<meta ${kind}="${seoHtmlEscape(key)}" content="${seoHtmlEscape(value)}" />`;
   return pattern.test(html) ? html.replace(pattern, tag) : html.replace('</head>', `${tag}</head>`);
 }
 
