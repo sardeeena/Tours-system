@@ -19,7 +19,7 @@ const MODULE_LABELS:Record<string,string> = {
 
 export const AdminAccessControl:React.FC = () => {
   const { user } = useAuth();
-  const isSuperAdmin = Boolean(user?.roles?.includes('super_admin'));
+  const isSuperAdmin = Boolean(user?.roles?.includes('super_admin') || user?.role === 'super_admin');
   const [data,setData] = useState<AccessData>({users:[],roles:[],permissions:[]});
   const [loading,setLoading] = useState(true);
   const [saving,setSaving] = useState(false);
