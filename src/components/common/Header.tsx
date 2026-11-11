@@ -431,6 +431,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               {t('nav.guestReviews')}
             </button>
+            <a href="/blog" className="text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1">Journal</a>
           </nav>
 
         {/* Action Controls */}
