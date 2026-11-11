@@ -72,21 +72,20 @@ export const AdminAvailabilityManager: React.FC = () => {
           .gte('date', dates[0])
           .lte('date', dates[dates.length - 1]);
 
-        if (!error && data) {
-          const map: Record<string, DbTourAvailability> = {};
-          data.forEach((slot: any) => {
-            map[slot.date] = slot;
-          });
-          setAvailabilityMap(map);
+        if (error) {
+          setAvailabilityMap({});
+          showToast(formatSupabaseError(error), 'error');
           return;
         }
-      }
 
-      if (error) {
-        setAvailabilityMap({});
-        showToast(formatSupabaseError(error), 'error');
+        const map: Record<string, DbTourAvailability> = {};
+        (data || []).forEach((slot: any) => {
+          map[slot.date] = slot;
+        });
+        setAvailabilityMap(map);
         return;
       }
+
       if (import.meta.env.DEV) {
         try {
           const raw = localStorage.getItem(`${LOCAL_AVAIL_KEY}_${selectedTourId}`);
@@ -98,7 +97,11 @@ export const AdminAvailabilityManager: React.FC = () => {
           // Ignore invalid development-only local cache.
         }
       }
+
       setAvailabilityMap({});
+      if (import.meta.env.PROD) {
+        showToast('Supabase is not configured; no schedule data was loaded.', 'error');
+      }
     }
 
     loadSlots();
