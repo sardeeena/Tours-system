@@ -56,12 +56,12 @@ export interface StaticPageContent {
 }
 
 const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
-  companyName: 'Awesome Adventure Tours',
-  email: 'reservations@awesomeadventure.tours',
-  phone: '+20 151 5212741',
-  whatsapp: '+20 151 5212741',
-  whatsappUrl: 'https://wa.me/201515212741',
-  address: 'Hurghada Marina Boulevard, Pier 4 Dispatch Office, Red Sea Governorate, Egypt',
+  companyName: 'Kemet Spirit',
+  email: '',
+  phone: '',
+  whatsapp: '',
+  whatsappUrl: '',
+  address: '',
   operatingHours: '06:00 - 23:00 EEST (Daily Pier Operations)',
   defaultCurrency: 'EUR',
   supportedCurrencies: ['EUR', 'USD', 'GBP', 'EGP'],
@@ -80,17 +80,17 @@ const DEFAULT_BOOKING_POLICIES: BookingPolicySettings = {
 };
 
 const DEFAULT_SOCIAL_LINKS: SocialLinksSettings = {
-  facebook: 'https://facebook.com/AwesomeAdventureTours',
-  instagram: 'https://instagram.com/awesomeadventuretours',
-  youtube: 'https://youtube.com/@awesomeadventuretours',
-  tripadvisor: 'https://tripadvisor.com/Attraction_Review-Hurghada-Red_Sea.html',
+  facebook: '',
+  instagram: '',
+  youtube: '',
+  tripadvisor: '',
 };
 
 const DEFAULT_FOOTER_CONTENT: FooterContentSettings = {
-  copyrightNotice: '© 2026 Awesome Adventure Tours SAE. Registered Tour Operator License #8421.',
-  aboutSnippet: 'Awesome Adventure Tours - professional maritime tour operator based in Hurghada Marina. Certified vessels, private yacht charters, island transfers, and desert safaris.',
-  badges: ['Egyptian Ministry of Tourism Certified', 'PADI Certified Dive Centers', 'Coast Guard Safety Compliant'],
-  paymentIconsText: 'Cash on Pickup • Visa • MasterCard • Bank Transfer',
+  copyrightNotice: `© ${new Date().getFullYear()} Kemet Spirit.`,
+  aboutSnippet: 'Explore excursions and experiences across Egypt’s Red Sea coast. Review each tour’s details, inclusions and booking information before reserving.',
+  badges: [],
+  paymentIconsText: '',
 };
 
 const LOCAL_PREFIX = 'rse_settings_';
