@@ -126,7 +126,7 @@ SELECT ok(
   COALESCE((
     SELECT POSITION('FOR UPDATE' IN pg_get_functiondef(p.oid)) > 0
     FROM pg_proc AS p
-    WHERE p.pronamespace = 'public'::regnamespace
+    WHERE p.pronamespace = 'private'::regnamespace
       AND p.proname = 'create_booking_atomic'
       AND p.pronargs = 18
     LIMIT 1
@@ -138,7 +138,7 @@ SELECT ok(
   COALESCE((
     SELECT POSITION('times_used = times_used + 1' IN pg_get_functiondef(p.oid)) > 0
     FROM pg_proc AS p
-    WHERE p.pronamespace = 'public'::regnamespace
+    WHERE p.pronamespace = 'private'::regnamespace
       AND p.proname = 'create_booking_atomic'
       AND p.pronargs = 18
     LIMIT 1
