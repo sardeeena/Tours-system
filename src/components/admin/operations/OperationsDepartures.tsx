@@ -83,6 +83,7 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
       if (!newTourId && loadedTours?.length) setNewTourId(loadedTours[0].id);
     } catch (err) {
       console.warn('Failed to load departures:', err);
+      showToast(err instanceof Error ? err.message : 'Failed to load live departures.', 'error');
     } finally {
       setLoading(false);
     }
@@ -264,7 +265,7 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
             <p className="text-[11px] text-stone-400 mt-0.5">
               {weather?.isAvailable ? (
                 <>
-                  Air: {weather.airTemperatureC}°C &bull; Water: {weather.waterTemperatureC}°C &bull; Swell: {weather.swellHeightM}m &bull; Wind: {weather.windSpeedKnots} kts {weather.windDirection}
+                  Air: {weather.airTemperatureC ?? '—'}°C &bull; Water: {weather.waterTemperatureC ?? '—'}°C &bull; Swell: {weather.swellHeightM ?? '—'}m &bull; Wind: {weather.windSpeedKnots ?? '—'} kts {weather.windDirection || ''}
                 </>
               ) : (
                 'Live weather telemetry not currently connected for this harbor.'
