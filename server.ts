@@ -2046,6 +2046,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
   let currentExclusions: any[] = [];
   let currentItinerary: any[] = [];
   let pageImage = `${origin}/logo.webp`;
+  let visibleDestinations: any[] = [];
   let seoEntityType = 'page';
   let seoIdentifier = 'home';
   let seoIdentifierIsPageSlug = true;
@@ -2056,7 +2057,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
     const publishedDestinationIds = new Set(
       tours.map((tour) => tour.destination_id).filter(Boolean).map(String)
     );
-    var visibleDestinations = allDestinations.filter((destination) => publishedDestinationIds.has(String(destination.id)));
+    visibleDestinations = allDestinations.filter((destination) => publishedDestinationIds.has(String(destination.id)));
   }
 
   if (path === '/') {
