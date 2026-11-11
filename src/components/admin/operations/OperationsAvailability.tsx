@@ -23,14 +23,13 @@ import {
 } from '../../../services/operationsService';
 import { AvailabilitySlot } from '../../../types/operations';
 import { Tour } from '../../../types';
-import { ALL_TOURS } from '../../../data/toursData';
 import { getPublishedTours } from '../../../services/tourService';
 import { useToast } from '../../../contexts/ToastContext';
 
 export const OperationsAvailability: React.FC = () => {
   const { showToast } = useToast();
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
-  const [tours, setTours] = useState<Tour[]>(ALL_TOURS);
+  const [tours, setTours] = useState<Tour[]>([]);
   const [loading, setLoading] = useState(true);
   const [tourFilter, setTourFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -38,13 +37,13 @@ export const OperationsAvailability: React.FC = () => {
 
   // Edit / Change Capacity Modal
   const [selectedSlot, setSelectedSlot] = useState<AvailabilitySlot | null>(null);
-  const [editCapacity, setEditCapacity] = useState<number>(35);
+  const [editCapacity, setEditCapacity] = useState<number>(0);
   const [editNotes, setEditNotes] = useState<string>('');
   const [savingAction, setSavingAction] = useState(false);
 
   // Blackout Date Modal
   const [isBlackoutModalOpen, setIsBlackoutModalOpen] = useState(false);
-  const [blackoutTourId, setBlackoutTourId] = useState<string>(ALL_TOURS[0]?.id || '');
+  const [blackoutTourId, setBlackoutTourId] = useState<string>('');
   const [blackoutDateVal, setBlackoutDateVal] = useState<string>('');
   const [blackoutNotes, setBlackoutNotes] = useState<string>('Annual vessel drydock & Coast Guard inspection');
 
@@ -56,10 +55,8 @@ export const OperationsAvailability: React.FC = () => {
         getPublishedTours().catch(() => []),
       ]);
       setSlots(data);
-      if (loadedTours && loadedTours.length > 0) {
-        setTours(loadedTours);
-        if (!blackoutTourId) setBlackoutTourId(loadedTours[0].id);
-      }
+      setTours(loadedTours || []);
+      if (!blackoutTourId && loadedTours?.length) setBlackoutTourId(loadedTours[0].id);
     } catch (err) {
       console.warn('Failed to load availability slots:', err);
     } finally {
@@ -89,19 +86,30 @@ export const OperationsAvailability: React.FC = () => {
 
   const handleToggleOpenClose = async (slot: AvailabilitySlot) => {
     const nextStatus = slot.status === 'available' ? 'unavailable' : 'available';
-    const isBlackout = nextStatus === 'unavailable';
-    await updateAvailabilitySlot(slot.id, {
-      status: nextStatus,
-      isBlackout,
-      notes: isBlackout ? 'Closed by operations staff' : null,
-    });
-    setSlots((prev) =>
-      prev.map((s) => (s.id === slot.id ? { ...s, status: nextStatus, isBlackout } : s))
-    );
-    showToast(
-      `Departure on ${slot.date} marked as ${nextStatus === 'available' ? 'OPEN' : 'CLOSED'}.`,
-      'success'
-    );
+    if (nextStatus === 'available' && slot.maxCapacity <= slot.bookedCount) {
+      showToast('Enter an actual capacity greater than the booked count before reopening this date.', 'error');
+      return;
+    }
+
+    try {
+      await updateAvailabilitySlot(slot.tourId, slot.date, {
+        status: nextStatus,
+        notes: nextStatus === 'unavailable'
+          ? 'Manual blackout: closed by operations'
+          : 'Manual override: reopened by operations',
+      });
+      setSlots((prev) =>
+        prev.map((s) => (s.id === slot.id
+          ? { ...s, status: nextStatus, isBlackout: nextStatus === 'unavailable' }
+          : s))
+      );
+      showToast(
+        `Departure on ${slot.date} marked as ${nextStatus === 'available' ? 'OPEN' : 'CLOSED'}.`,
+        'success'
+      );
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to update departure status.', 'error');
+    }
   };
 
   const handleSaveCapacity = async (e: React.FormEvent) => {
@@ -109,9 +117,9 @@ export const OperationsAvailability: React.FC = () => {
     if (!selectedSlot) return;
     setSavingAction(true);
     try {
-      await updateAvailabilitySlot(selectedSlot.id, {
+      await updateAvailabilitySlot(selectedSlot.tourId, selectedSlot.date, {
         maxCapacity: editCapacity,
-        notes: editNotes || null,
+        notes: editNotes ? `Manual override: ${editNotes}` : 'Manual override: capacity updated by operations',
       });
       setSlots((prev) =>
         prev.map((s) =>
@@ -138,10 +146,14 @@ export const OperationsAvailability: React.FC = () => {
     e.preventDefault();
     if (!blackoutTourId || !blackoutDateVal) return;
 
-    await setBlackoutDate(blackoutTourId, blackoutDateVal, true, blackoutNotes);
-    showToast(`Blackout date scheduled on ${blackoutDateVal}. Bookings blocked.`, 'success');
-    setIsBlackoutModalOpen(false);
-    await loadData();
+    try {
+      await setBlackoutDate(blackoutTourId, blackoutDateVal, true, blackoutNotes);
+      showToast(`Blackout date scheduled on ${blackoutDateVal}. Bookings blocked.`, 'success');
+      setIsBlackoutModalOpen(false);
+      await loadData();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to apply blackout date.', 'error');
+    }
   };
 
   return (
@@ -236,7 +248,7 @@ export const OperationsAvailability: React.FC = () => {
         <div className="bg-stone-950 border border-stone-800 rounded-xl p-12 text-center text-stone-400">
           <Calendar className="w-8 h-8 text-stone-600 mx-auto mb-2" />
           <p className="text-sm font-semibold text-stone-300">No availability slots found</p>
-          <p className="text-xs text-stone-500">Try modifying your tour or status filter.</p>
+          <p className="text-xs text-stone-500">No explicit availability records exist yet. Add real dates and capacities before accepting bookings.</p>
         </div>
       ) : (
         <div className="bg-stone-950 border border-stone-800 rounded-xl overflow-hidden shadow-xs">
@@ -276,7 +288,7 @@ export const OperationsAvailability: React.FC = () => {
                       </td>
 
                       <td className="py-3 px-4 text-center font-mono text-stone-300">
-                        {slot.departureTime}
+                        {slot.departureTime || 'Not specified'}
                       </td>
 
                       <td className="py-3 px-4 text-center font-mono font-bold text-white">
@@ -312,7 +324,7 @@ export const OperationsAvailability: React.FC = () => {
                       </td>
 
                       <td className="py-3 px-4 text-stone-400 text-[11px] max-w-xs truncate">
-                        {slot.notes || 'Normal daily departure'}
+                        {slot.notes || 'No operator note recorded.'}
                       </td>
 
                       <td className="py-3 px-4 text-right space-x-1.5 whitespace-nowrap">
@@ -373,7 +385,7 @@ export const OperationsAvailability: React.FC = () => {
                   required
                   min={selectedSlot.bookedCount}
                   value={editCapacity}
-                  onChange={(e) => setEditCapacity(parseInt(e.target.value) || 1)}
+                  onChange={(e) => setEditCapacity(Math.max(0, parseInt(e.target.value) || 0))}
                   className="w-full px-3 py-1.5 bg-stone-950 border border-stone-800 rounded text-white font-mono"
                 />
                 <span className="text-[10px] text-stone-500 mt-1 block">
@@ -474,6 +486,7 @@ export const OperationsAvailability: React.FC = () => {
                 </button>
                 <button
                   type="submit"
+                  disabled={!blackoutTourId || !blackoutDateVal}
                   className="px-4 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded font-semibold cursor-pointer"
                 >
                   Apply Blackout
