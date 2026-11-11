@@ -14,7 +14,7 @@
 
 DO $$
 DECLARE
-    v_admin_email CONSTANT text := 'admin@awesomeadventure.tours';
+    v_admin_email CONSTANT text := 'admin@kemetspirit.com';
     v_user_id uuid;
     v_existing_role text;
 BEGIN
@@ -36,13 +36,13 @@ BEGIN
                 email,
                 full_name,
                 role,
-                is_email_verified,
+                is_confirmed,
                 created_at,
                 updated_at
             ) VALUES (
                 v_user_id,
                 v_admin_email,
-                'Awesome Adventure Administrator',
+                'Kemet Spirit Administrator',
                 'admin',
                 TRUE,
                 NOW(),
@@ -53,14 +53,14 @@ BEGIN
             -- Role mismatch: repair role to admin
             UPDATE public.profiles
             SET role = 'admin',
-                is_email_verified = TRUE,
+                is_confirmed = TRUE,
                 updated_at = NOW()
             WHERE id = v_user_id;
             RAISE NOTICE 'Admin profile role updated to admin for % (UUID: %)', v_admin_email, v_user_id;
         ELSE
             -- Already verified admin
             UPDATE public.profiles
-            SET is_email_verified = TRUE,
+            SET is_confirmed = TRUE,
                 updated_at = NOW()
             WHERE id = v_user_id;
             RAISE NOTICE 'Admin profile already valid with admin role for % (UUID: %)', v_admin_email, v_user_id;
