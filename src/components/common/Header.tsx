@@ -916,6 +916,7 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 {t('mobile.reviews')}
               </button>
+              <a href="/blog" onClick={() => setMobileMenuOpen(false)} className="text-left py-2 px-3 rounded hover:bg-stone-100 font-semibold text-[#0A6C74] dark:text-teal-300">Travel Journal</a>
 
               <div className="pt-3 border-t border-stone-200 flex flex-col space-y-2">
                 <button
