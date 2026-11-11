@@ -1364,6 +1364,141 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
 });
 
 // ------------------------------------------------------------------------------
+// 8.5. Super Admin account lifecycle API
+// All privileged Auth Admin calls stay server-side and require a verified AAL2
+// Super Admin session. No service-role credential is sent to the browser.
+// ------------------------------------------------------------------------------
+function requireSuperAdminAal2(req: AuthenticatedRequest, res: Response): boolean {
+  const token = (req.headers.authorization || '').replace(/^Bearer\\s+/i, '').trim();
+  const claims = token ? parseJwtPayload(token) : null;
+  if (!req.user || req.user.role !== 'super_admin') {
+    res.status(403).json({ success: false, error: 'Super Admin access is required.' });
+    return false;
+  }
+  if (claims?.aal !== 'aal2') {
+    res.status(403).json({ success: false, error: 'A verified AAL2 multi-factor session is required for account administration.' });
+    return false;
+  }
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
+    res.status(503).json({ success: false, error: 'Secure Auth Admin service is not configured. Configure a server-only Supabase secret/service-role key.' });
+    return false;
+  }
+  return true;
+}
+
+function validAuthUserId(value: unknown): value is string {
+  return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+async function writeAccountAudit(actorId: string, action: string, targetId: string, data: Record<string, unknown>) {
+  if (!serverSupabase) return;
+  const { error } = await serverSupabase.from('audit_logs').insert({
+    user_id: actorId, action, entity_type: 'auth_user', entity_id: targetId, new_data: data,
+  });
+  if (error) console.error('[Admin account audit] Could not persist audit event:', error.message);
+}
+
+app.post('/api/admin/users/invite', rateLimit(5, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+  const fullName = typeof req.body?.full_name === 'string' ? req.body.full_name.trim().slice(0, 120) : '';
+  if (!isValidEmail(email)) return res.status(400).json({ success: false, error: 'Enter a valid email address.' });
+
+  try {
+    const { data, error } = await serverSupabase!.auth.admin.inviteUserByEmail(email, {
+      data: fullName ? { full_name: fullName } : {},
+      redirectTo: 'https://kemetspirit.com/',
+    });
+    if (error) {
+      const status = /already|exists|registered/i.test(error.message) ? 409 : 400;
+      return res.status(status).json({ success: false, error: status === 409 ? 'An account with this email already exists.' : 'The invitation could not be sent. Check Supabase Auth email configuration.' });
+    }
+    if (!data.user) return res.status(502).json({ success: false, error: 'Supabase did not return the invited account.' });
+    await writeAccountAudit(req.user!.id, 'AUTH_USER_INVITED', data.user.id, { email, full_name: fullName || null });
+    return res.status(201).json({ success: true, user_id: data.user.id, email, message: 'Invitation email sent.' });
+  } catch (error) {
+    console.error('[Admin account invite] Failed:', error);
+    return res.status(500).json({ success: false, error: 'The invitation service failed. No success was reported.' });
+  }
+});
+
+app.get('/api/admin/users/:userId/status', rateLimit(60, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  if (!validAuthUserId(req.params.userId)) return res.status(400).json({ success: false, error: 'Invalid account identifier.' });
+  try {
+    const { data, error } = await serverSupabase!.auth.admin.getUserById(req.params.userId);
+    if (error || !data.user) return res.status(404).json({ success: false, error: 'Account not found.' });
+    const bannedUntil = data.user.banned_until || null;
+    return res.json({ success: true, is_suspended: Boolean(bannedUntil && Date.parse(bannedUntil) > Date.now()), banned_until: bannedUntil });
+  } catch (error) {
+    console.error('[Admin account status] Failed:', error);
+    return res.status(500).json({ success: false, error: 'Could not retrieve account status.' });
+  }
+});
+
+app.post('/api/admin/users/:userId/status', rateLimit(10, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  const targetId = req.params.userId;
+  const action = req.body?.action;
+  if (!validAuthUserId(targetId) || !['suspend', 'reactivate'].includes(action)) {
+    return res.status(400).json({ success: false, error: 'A valid account and suspend/reactivate action are required.' });
+  }
+  if (targetId === req.user!.id && action === 'suspend') {
+    return res.status(409).json({ success: false, error: 'You cannot suspend your own active administrator session.' });
+  }
+
+  try {
+    const { data: target, error: targetError } = await serverSupabase!.auth.admin.getUserById(targetId);
+    if (targetError || !target.user) return res.status(404).json({ success: false, error: 'Account not found.' });
+    const { data: profile } = await serverSupabase!.from('profiles').select('role').eq('id', targetId).maybeSingle();
+    const { data: roleRows } = await serverSupabase!.from('user_roles').select('access_roles!inner(slug)').eq('user_id', targetId);
+    const assignedRoles = (roleRows || []).flatMap((row: any) => {
+      const roles = row.access_roles;
+      return Array.isArray(roles) ? roles.map((role: any) => role.slug) : roles?.slug ? [roles.slug] : [];
+    });
+    if (profile?.role === 'super_admin' || assignedRoles.includes('super_admin')) {
+      return res.status(409).json({ success: false, error: 'Protected Super Admin accounts cannot be suspended or reactivated here.' });
+    }
+
+    const { data: updated, error } = await serverSupabase!.auth.admin.updateUserById(targetId, {
+      ban_duration: action === 'suspend' ? '876000h' : 'none',
+    });
+    if (error || !updated.user) {
+      console.error('[Admin account status] Auth update failed:', error?.message);
+      return res.status(502).json({ success: false, error: 'Supabase Auth could not update this account.' });
+    }
+    await writeAccountAudit(req.user!.id, action === 'suspend' ? 'AUTH_USER_SUSPENDED' : 'AUTH_USER_REACTIVATED', targetId, { email: target.user.email || null });
+    const bannedUntil = updated.user.banned_until || null;
+    return res.json({ success: true, is_suspended: Boolean(bannedUntil && Date.parse(bannedUntil) > Date.now()), banned_until: bannedUntil });
+  } catch (error) {
+    console.error('[Admin account status] Failed:', error);
+    return res.status(500).json({ success: false, error: 'The account status change failed.' });
+  }
+});
+
+app.post('/api/admin/users/:userId/password-reset', rateLimit(5, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  if (!validAuthUserId(req.params.userId)) return res.status(400).json({ success: false, error: 'Invalid account identifier.' });
+  if (!publicSupabase) return res.status(503).json({ success: false, error: 'Supabase Auth email service is not configured.' });
+  try {
+    const { data, error: lookupError } = await serverSupabase!.auth.admin.getUserById(req.params.userId);
+    if (lookupError || !data.user?.email) return res.status(404).json({ success: false, error: 'Account email was not found.' });
+    const { error } = await publicSupabase.auth.resetPasswordForEmail(data.user.email, {
+      redirectTo: 'https://kemetspirit.com/reset-password',
+    });
+    if (error) {
+      console.error('[Admin password reset] Email request failed:', error.message);
+      return res.status(502).json({ success: false, error: 'Supabase could not send the password-reset email. Verify Auth SMTP and redirect URL settings.' });
+    }
+    await writeAccountAudit(req.user!.id, 'AUTH_USER_PASSWORD_RESET_REQUESTED', req.params.userId, { email: data.user.email });
+    return res.json({ success: true, message: 'Password-reset email requested.' });
+  } catch (error) {
+    console.error('[Admin password reset] Failed:', error);
+    return res.status(500).json({ success: false, error: 'The password-reset request failed.' });
+  }
+});
+
+// ------------------------------------------------------------------------------
 // 9. Session Verification API (/api/auth/verify-session)
 // Server-authoritative session and profile role check
 // ------------------------------------------------------------------------------
