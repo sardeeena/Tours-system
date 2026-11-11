@@ -242,9 +242,9 @@ async function runSecurityTests() {
   // TEST 7: Server/API authentication, routing, and abuse controls
   // ----------------------------------------------------------------------------
   console.log('Running Test 7: Server-side authentication and API abuse controls...');
-  const serverSource = fs.readFileSync(path.resolve('server.ts'), 'utf8');
-  const authServiceSource = fs.readFileSync(path.resolve('src/services/authService.ts'), 'utf8');
-  const authContextSource = fs.readFileSync(path.resolve('src/contexts/AuthContext.tsx'), 'utf8');
+  const serverSource = fs.readFileSync('server.ts', 'utf8');
+  const authServiceSource = fs.readFileSync('src/services/authService.ts', 'utf8');
+  const authContextSource = fs.readFileSync('src/contexts/AuthContext.tsx', 'utf8');
 
   assert(
     'Server authorization defaults to least-privileged customer role',
