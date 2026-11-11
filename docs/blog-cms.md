@@ -11,7 +11,7 @@ The tracked migration is `supabase/migrations/20261112000000_blog_cms.sql`. The 
 The schema uses:
 - `blog_posts` and `blog_categories`
 - RLS for published and due-scheduled public reads
-- `private.has_permission('content.manage')` for editorial write access
+- `public.has_permission('content.manage')` for editorial write access
 - Explicit Data API grants
 
 After the migration is applied, verify:
