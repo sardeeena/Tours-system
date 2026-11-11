@@ -133,8 +133,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   /**
-   * Queries the 'profiles' table directly in Supabase for the user's current role.
-   * Completely replaces cached local state with a live database verification.
+   * Rebuilds the active user from the live profile and database-backed RBAC context.
+   * Browser storage and user-editable metadata never authorize roles or permissions.
    */
   const checkAdminAccess = useCallback(async (): Promise<boolean> => {
     if (!isSupabaseConfigured()) {
