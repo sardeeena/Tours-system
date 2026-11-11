@@ -51,7 +51,7 @@ const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
   whatsapp: '',
   whatsappUrl: '',
   address: '',
-  operatingHours: '06:00 - 23:00 EEST (Daily Pier Operations)',
+  operatingHours: '',
   defaultCurrency: 'EUR',
   supportedCurrencies: ['EUR', 'USD', 'GBP', 'EGP'],
   defaultCountry: 'Egypt',
