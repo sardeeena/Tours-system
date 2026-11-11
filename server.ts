@@ -1119,7 +1119,7 @@ app.all('/api/availability/check', rateLimit(60, 60_000), async (req: Request, r
     });
   }
 
-  const checkDate = new Date(`${date}T00:00:00`);
+  const checkDate = new Date(`${date}T00:00:00.000Z`);
   if (Number.isNaN(checkDate.getTime()) || checkDate.toISOString().slice(0, 10) !== date) {
     return res.status(400).json({ success: false, error: 'The requested date is invalid.' });
   }
@@ -1196,7 +1196,7 @@ app.all('/api/availability/check', rateLimit(60, 60_000), async (req: Request, r
       success: true,
       tourSlug,
       date,
-      dayOfWeek: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][checkDate.getDay()],
+      dayOfWeek: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][checkDate.getUTCDay()],
       isDateAvailable,
       isPastDate: false,
       isNoticeCutoffViolated: false,
