@@ -1,230 +1,313 @@
 # Kemet Spirit — Excursions, Booking & Operations Platform
 
-Kemet Spirit is a full-stack tour and excursion booking platform with a customer portal and an operations/admin CRM. It is built for the Red Sea tourism market and is deployed for the production domain **https://kemetspirit.com**.
+Kemet Spirit is a full-stack tour and excursion booking platform for the Red Sea tourism market. It combines a public discovery website, customer booking experience, customer account area, and a role-protected operations/admin platform.
 
-> **Production note:** This repository contains both a Vite/React frontend and an Express Node.js backend. It is not a static-only website. The production deployment must run the built Node server so that booking, authentication-related server routes, communication endpoints, and other `/api/*` handlers are available.
+- **Production:** https://kemetspirit.com
+- **Repository:** https://github.com/sardeeena/Tours-system
+- **Production branch:** `main`
+- **Hosting:** Hostinger Node.js application
+- **Database/Auth/Storage:** Supabase project `mktrtoctcjyokclpdeui`
 
-## Project status and verified environment
+> **Important architecture note:** this is not a static-only Vite website. Express serves the built frontend and the application's `/api/*` routes. Production must run the Node.js server process.
 
-Last project review: **10 November 2026**.
+## Contents
 
-| Area | Verified information |
-|---|---|
-| Production domain | `https://kemetspirit.com` |
-| Hosting | Hostinger Node.js hosting |
-| Source control | GitHub repository, production branch `main` |
-| Supabase project | `mktrtoctcjyokclpdeui` |
-| Supabase URL | `https://mktrtoctcjyokclpdeui.supabase.co` |
-| Supabase region | Frankfurt (`eu-central-1`) |
-| Database engine | PostgreSQL 17.11 |
-| Runtime | Node.js `>=20 <23` |
-| Frontend | React 19, TypeScript 7, Vite 8 |
-| Backend | Express 4, bundled from `server.ts` to `server.js` |
-| Database/Auth | Supabase PostgreSQL, Auth and RLS |
+- [Capabilities](#capabilities)
+- [Architecture and request flow](#architecture-and-request-flow)
+- [Technology stack](#technology-stack)
+- [Repository layout](#repository-layout)
+- [Requirements](#requirements)
+- [Local development](#local-development)
+- [Environment configuration](#environment-configuration)
+- [Build and run](#build-and-run)
+- [Supabase database, Auth, RLS and migrations](#supabase-database-auth-rls-and-migrations)
+- [Authentication and authorization](#authentication-and-authorization)
+- [External integrations](#external-integrations)
+- [Testing and CI](#testing-and-ci)
+- [Hostinger deployment](#hostinger-deployment)
+- [Production operations and release checklist](#production-operations-and-release-checklist)
+- [Security rules](#security-rules)
+- [Documentation map](#documentation-map)
 
-### Live database and application review
-
-The following are point-in-time observations from the production review, not guarantees that the counts remain unchanged:
-
-- Supabase project health was reported as healthy.
-- The public schema contained **55 tables**, **98 RLS policies**, and **31 public functions** at the time of review.
-- The catalogue contained **13 tours** and **7 destinations**.
-- There were **no bookings, Auth users, or admin profiles** at the time of the review.
-- The `departures` and `tour_availability` tables had no records. Consequently, the public booking flow could not return bookable departure slots.
-- The admin area was protected by its login flow.
-- The booking page displayed a temporary live-availability error during the review.
-- The legacy paths `/tours`, `/destinations`, `/privacy`, and `/terms` returned 404 during that route check. Confirm the current route map before publishing links to these paths.
-
-These observations identify launch tasks; they do not mean the site is fully production-ready. In particular, availability data, a first administrator, email delivery configuration, route cleanup, and a complete end-to-end booking test still need confirmation.
-
-## Main capabilities
+## Capabilities
 
 ### Public website and catalogue
-- Excursion discovery and filtering.
-- Tour detail pages with galleries, itineraries, inclusions, exclusions, FAQs and related content.
-- Destination and category data sourced from Supabase.
-- Responsive customer-facing experience and PWA support.
+- Browse, search and filter excursions, destinations and categories.
+- Tour detail pages with galleries, itinerary, inclusions/exclusions, FAQs and related content.
+- Published catalogue content and approved public settings are read from Supabase.
+- Responsive layouts and PWA support.
 
-### Booking and customer portal
-- Multi-step booking flow with guest and pickup information.
-- Availability and capacity validation against the database.
-- Booking reference and voucher-related customer flows.
-- Customer authentication, account access and booking history.
-- Booking lookup and customer booking pages.
+### Booking and customer experience
+- Multi-step booking with passenger, date, pickup and add-on information.
+- Server/database availability and capacity validation.
+- Booking references, voucher-related flows and customer booking lookup.
+- Customer authentication, account and booking history.
 
-### Admin and operations
-- Protected admin dashboard and role-based access control.
+### Administration and operations
+- Role-based admin access and super-admin security controls.
 - Tour, destination, category and media management.
-- Booking and customer management.
-- Departures, availability, fleet, guides and operations assignments.
+- Booking and customer operations.
+- Departures, availability, fleet, guides and assignments.
 - CRM leads, tasks and customer records.
-- Reviews and promotions management.
-- Finance, payments, invoicing and ledger-related workflows.
+- Reviews, promotions, finance, payments, invoicing and reporting modules.
 
-Feature availability depends on the database being migrated and populated, correct RLS policies, configured server credentials, and production data. Do not treat a visible UI module as proof that its live workflow has passed end-to-end testing.
+A visible screen or menu is not proof that its complete workflow is operational. Production capability depends on valid data, migrations, RLS, provider configuration and end-to-end verification.
 
-## Architecture
+## Architecture and request flow
+
+```text
+Browser
+  ├── Vite-built React application (dist/)
+  └── HTTPS requests to the Express application
+          ├── Public and authenticated /api/* routes
+          ├── Server-side authentication/authorization checks
+          ├── Public Supabase client (publishable key + RLS)
+          ├── Privileged server Supabase client (server-only secret)
+          └── Optional providers: Gemini, Resend, WhatsApp
+
+Supabase
+  ├── PostgreSQL database and incremental migrations
+  ├── Auth (users, sessions, TOTP MFA)
+  ├── Row-Level Security and database authorization
+  └── Storage (public and private buckets)
+```
+
+The browser uses the public/publishable Supabase key. Sensitive operations run on the server and/or through database functions with explicit grants and authorization checks. Public catalogue rendering must not use the service-role/secret client to bypass RLS.
+
+The Express server trusts one reverse-proxy hop for Hostinger's forwarded client address. Its in-process rate limiter is an additional layer; database-side atomic limits protect sensitive operations where implemented.
+
+## Technology stack
 
 | Layer | Technology |
 |---|---|
-| Frontend | React 19, TypeScript 7, Vite 8 |
-| Styling/UI | Tailwind CSS 4, Motion, Lucide |
-| Backend | Node.js, Express 4 |
-| Database | Supabase PostgreSQL |
-| Authentication | Supabase Auth |
-| Authorization | PostgreSQL Row-Level Security and application RBAC |
+| Language | TypeScript 7 |
+| Frontend | React 19, React DOM 19 |
+| Frontend tooling | Vite 8, React Vite plugin |
+| Styling | Tailwind CSS 4 |
+| UI/animation/icons | Motion, Lucide React, Recharts |
+| Backend | Node.js 22, Express 4 |
+| Database | Supabase PostgreSQL (production observed on PostgreSQL 17) |
+| Authentication | Supabase Auth, TOTP MFA |
+| Authorization | PostgreSQL RLS, role-based and action-level permission checks |
 | Storage | Supabase Storage |
-| AI | Google Gemini through a server-side endpoint |
-| Email | Optional Resend integration |
-| WhatsApp | Optional WhatsApp Cloud API integration |
-| Build | Vite frontend build + esbuild backend bundle |
+| AI integration | Google Gemini via `@google/genai` (optional) |
+| Email integration | Resend (optional) |
+| Messaging integration | WhatsApp Cloud API (optional) |
+| Build | Vite + esbuild |
+| Tests | TypeScript scripts via tsx, pg-mem, Supabase CLI/pgTAP |
+| CI | GitHub Actions |
 
-The production server listens on the `PORT` supplied by the hosting platform (or port 3000 locally). The build creates the static frontend in `dist/` and the Node server bundle `server.js`.
+The authoritative package versions and scripts are in [package.json](./package.json). The CI workflow is [ci.yml](./.github/workflows/ci.yml).
 
-## Repository documentation
+## Repository layout
 
-- [`manual.md`](./manual.md) — extended operations and integration guide. Some sections in this legacy guide still refer to the previous brand, Vercel, or old repository names; verify those instructions against this README and the current Hostinger setup before using them.
-- [`setup.md`](./setup.md) — database and administrator setup notes. This guide also contains legacy hosting/branding references that should be treated as historical until updated.
-- [`complete_schema.sql`](./complete_schema.sql) — canonical schema/provisioning reference for a fresh database only.
-- [`supabase/migrations/`](./supabase/migrations/) — incremental database migrations for existing environments.
+```text
+.
+├── .github/
+│   └── workflows/ci.yml       # TypeScript/build/security and isolated DB CI
+├── docs/
+│   ├── README.md              # Documentation index
+│   ├── guides/                # Setup, hosting, Supabase and operator guides
+│   ├── operations/            # Owner action checklist and runbooks
+│   ├── reports/               # Audit, readiness and implementation reports
+│   └── catalogue-seed.md      # Catalogue import notes
+├── public/                    # Static assets served by the frontend
+├── scripts/
+│   ├── README.md              # Script inventory and safe usage
+│   └── *.ts                   # Tests, verification and controlled utilities
+├── src/
+│   ├── components/            # React UI components
+│   ├── contexts/              # Application/auth contexts
+│   ├── data/                  # Typed content and booking constants
+│   ├── lib/                   # Shared clients, guards and utilities
+│   └── server/                # Server-side modules/workers
+├── supabase/
+│   ├── config.toml            # Local Supabase CLI configuration
+│   ├── migrations/            # Ordered incremental SQL migrations
+│   └── tests/                 # Database tests (pgTAP)
+├── .env.example               # Safe environment-variable template
+├── complete_schema.sql        # Fresh-project schema reference; not a live reset
+├── index.html                 # Vite HTML entry point
+├── package.json               # Dependencies, scripts and Node engine
+├── server.ts                  # Express application source
+├── tsconfig.json              # TypeScript compiler configuration
+└── vite.config.ts             # Vite/PWA/dev-server configuration
+```
+
+Some folders contain additional nested modules. Treat the tree above as a map of the major boundaries, not an exhaustive listing.
+
+### Why test scripts remain in `scripts/`
+
+The test and utility entry points are referenced directly by `package.json` and CI. Their paths are intentionally kept stable to avoid breaking test commands or relative imports during a documentation-only reorganization. Their purpose and grouping are catalogued in [scripts/README.md](./scripts/README.md).
 
 ## Requirements
 
-- Node.js **20.x, 21.x or 22.x** (package engine is `>=20.0.0 <23.0.0`).
-- npm.
-- A Supabase project configured with the repository's migrations/schema.
-- Hostinger Node.js hosting or another host that can run the Express server.
+- Node.js **22.x** (the package engine is `>=22.0.0 <23.0.0`).
+- npm compatible with Node.js 22.
+- Git.
+- A Supabase project for database/Auth/Storage development.
+- Docker for running the local Supabase stack and database tests through the Supabase CLI.
+- Hostinger Node.js hosting (or another Node host) for production.
 
-## Local setup
+## Local development
 
-1. Clone the repository and install dependencies:
+1. Clone the repository:
 
    ```bash
    git clone https://github.com/sardeeena/Tours-system.git
    cd Tours-system
+   ```
+
+2. Install dependencies:
+
+   ```bash
    npm install
    ```
 
-2. Create a local environment file:
+3. Create your local environment file:
 
    ```bash
    cp .env.example .env
    ```
 
-3. Fill in the Supabase public/publishable key and server-only secret key as described in [Environment variables](#environment-variables). Do not commit `.env`.
+4. Replace placeholders with credentials from your own development environment. Never copy production secrets into a public client variable or commit a real `.env` file.
 
-4. Start the application in development mode:
+5. Start the Express/Vite development server:
 
    ```bash
    npm run dev
    ```
 
-   The Express/Vite development server uses port 3000 by default.
+6. Open `http://localhost:3000` unless your local configuration specifies another port.
 
-## Environment variables
+The development server is started by `tsx server.ts`; Vite is integrated with the Express development process. Use the package scripts rather than launching a separate static preview when testing API-backed features.
 
-The authoritative starter template is [`.env.example`](./.env.example). Configure variables in the Hostinger Node.js application settings for production; do not upload a secret-bearing `.env` file to a public web root.
+## Environment configuration
 
-| Variable | Required | Purpose / security |
-|---|---:|---|
-| `NODE_ENV` | Production: yes | Set to `production` on the live server. |
-| `PORT` | Host-provided | Hostinger should provide this. Locally the server defaults to 3000. |
-| `SUPABASE_URL` | Yes | Server-side project URL. Production code pins the project to `mktrtoctcjyokclpdeui`. |
-| `VITE_SUPABASE_URL` | Build: yes | Same project URL, embedded into the frontend at build time. |
-| `SUPABASE_SECRET_KEY` | Yes | Server-only Supabase secret key (`sb_secret_...`). Never expose or prefix with `VITE_`. |
-| `SUPABASE_SERVICE_ROLE_KEY` | Legacy fallback only | Legacy service-role JWT fallback. Leave empty when using the modern secret key. |
-| `SUPABASE_ANON_KEY` | Yes | Public/publishable key available to server-side user-scoped requests. |
-| `VITE_SUPABASE_ANON_KEY` | Build: yes | Same public/publishable key embedded in the browser. It is not a secret; RLS must protect the database. |
-| `CORS_ALLOWED_ORIGINS` | Optional | Comma-separated additional allowed origins. The Kemet Spirit production domains are already allowlisted. |
-| `GEMINI_API_KEY` | Optional | Server-side Gemini API access for the AI concierge. |
-| `RESEND_API_KEY` | Optional | Server-side Resend API key for email delivery. |
-| `RESEND_FROM_EMAIL` | Optional | Verified sender address used by email delivery. |
-| `RESEND_FROM_NAME` | Optional | Sender display name; defaults to `Kemet Spirit`. |
-| `BOOKING_NOTIFICATION_WORKER_ENABLED` | Optional | Set to `true` only after Resend is configured; otherwise keep `false`. |
-| `WHATSAPP_ACCESS_TOKEN` | Optional | WhatsApp Cloud API access token; server-only. |
+[.env.example](./.env.example) is the canonical safe template. In production, configure variables in Hostinger's Node.js application environment settings. Do not upload a secret-bearing `.env` file into a public web directory.
+
+| Variable | Required | Scope and purpose |
+|---|---|---|
+| `NODE_ENV` | Yes in production | Set to `production`. Non-production Supabase projects are permitted only in development/test mode by the project guard. |
+| `PORT` | Host-provided | Hostinger normally injects this. Local fallback is 3000. |
+| `SUPABASE_URL` | Yes | Server-side Supabase project URL; production is pinned to the Kemet Spirit project. |
+| `VITE_SUPABASE_URL` | Frontend build | Same Supabase URL embedded in the frontend bundle. |
+| `SUPABASE_ANON_KEY` | Yes | Public/publishable key used for user-scoped server requests. |
+| `VITE_SUPABASE_ANON_KEY` | Frontend build | Public/publishable key embedded in browser code; RLS must protect all data. |
+| `SUPABASE_SECRET_KEY` | Yes for privileged server operations | Server-only modern Supabase secret key. Never expose to browser code. |
+| `SUPABASE_SERVICE_ROLE_KEY` | Legacy fallback only | Legacy service-role JWT fallback; leave empty when using the modern secret key. |
+| `CORS_ALLOWED_ORIGINS` | Optional | Comma-separated additional allowed origins. |
+| `GEMINI_API_KEY` | Optional | Server-side Gemini API key for the AI concierge. |
+| `RESEND_API_KEY` | Optional | Server-side Resend API key. |
+| `RESEND_FROM_EMAIL` | Optional | Verified Resend sender address. |
+| `RESEND_FROM_NAME` | Optional | Sender display name; defaults to Kemet Spirit. |
+| `BOOKING_NOTIFICATION_WORKER_ENABLED` | Optional; default false | Enable only after Resend credentials and delivery tests pass. |
+| `WHATSAPP_ACCESS_TOKEN` | Optional | Server-side WhatsApp Cloud API token. |
 | `WHATSAPP_PHONE_NUMBER_ID` | Optional | WhatsApp Cloud API phone-number ID. |
 | `WHATSAPP_GRAPH_API_VERSION` | Optional | Graph API version in `vNN.N` format. |
-| `WHATSAPP_BUSINESS_ACCOUNT_ID` | Optional | WhatsApp Business Account metadata. |
-| `WHATSAPP_FROM_NUMBER` | Optional | Configured sender-number metadata. |
+| `WHATSAPP_BUSINESS_ACCOUNT_ID` | Optional metadata | WhatsApp Business Account ID. |
+| `WHATSAPP_FROM_NUMBER` | Optional metadata | Configured sender number. |
 
-### Supabase key rules
+### Supabase key handling
 
-- Use the modern Supabase **publishable** key (starts with `sb_publishable_`) for `SUPABASE_ANON_KEY` and `VITE_SUPABASE_ANON_KEY`.
-- Use the modern Supabase **secret** key (starts with `sb_secret_`) for `SUPABASE_SECRET_KEY`.
-- The code also recognizes legacy JWT keys with the expected `anon` and `service_role` roles.
-- Never put a secret/service-role key in a `VITE_*` variable, frontend source, GitHub, or a browser.
-- The frontend publishable key is intentionally public. Security depends on correctly configured RLS and server-side authorization.
+- Prefer the modern `sb_publishable_...` key for public/publishable key variables.
+- Use the modern `sb_secret_...` key only on the server.
+- Legacy JWT keys are accepted only when their decoded roles are the expected `anon` or `service_role`.
+- Never place a secret/service-role key in a `VITE_*` variable, frontend source, GitHub, logs, or browser storage.
+- A publishable key is intentionally public; RLS and server-side authorization are the security boundary.
 
-### Resend and WhatsApp
+### Build-time versus runtime variables
 
-Resend is optional and has intentionally not been configured in this repository documentation with a real credential. Configure it in Hostinger when ready. The durable booking notification worker remains disabled unless `BOOKING_NOTIFICATION_WORKER_ENABLED=true` and valid `RESEND_API_KEY` and `RESEND_FROM_EMAIL` values are present.
+Vite variables prefixed with `VITE_` are embedded during the frontend build. After changing them in Hostinger, rebuild and redeploy. Server-only variables are read by the Node process at runtime; restart/redeploy after changing them.
 
-WhatsApp delivery is optional. Configure the access token, phone-number ID and Graph API version before enabling or testing the WhatsApp sending workflow. Never commit these values.
+## Build and run
 
-## Supabase database and migration safety
+The production build command is:
 
-The production project is already established. **Do not run `complete_schema.sql` against the live database as a reset or as a routine update.** It is a full-schema provisioning reference intended for a fresh project.
+```bash
+npm run build
+```
 
-For the existing production project:
+It performs two steps:
 
-1. Review the migration files in `supabase/migrations/`.
-2. Check which migrations have already been applied to the live project.
-3. Apply only the missing, ordered incremental migrations.
-4. Verify schema parity and security after each migration.
-5. Take/confirm a database backup before any destructive or data-transforming change.
+1. `vite build` compiles the React frontend into `dist/`.
+2. `esbuild` bundles `server.ts` for Node.js as `server.js`, while leaving external packages external.
 
-Never rerun a migration blindly. A migration that has already been applied must not be replayed unless it is explicitly designed to be safely repeatable and the current database state has been checked.
+Start the production application with:
 
-### RLS and privileged functions
+```bash
+npm start
+```
 
-- Keep RLS enabled on application tables that contain customer, booking, finance, or operational data.
-- Review every `SECURITY DEFINER` function for its owner, search path, grants and intended caller roles.
-- Do not grant anonymous or authenticated execution to privileged functions merely to silence an advisor warning.
-- Avoid broad policy changes or dropping indexes solely because an advisor labels them unused; assess query plans and application behavior first.
-- Admin promotion must be performed through the trusted provisioning mechanism documented in the current migration/manual, not by allowing users to edit their own profile role.
+This executes `node server.js`. The Express process serves the built frontend and API routes and listens on the platform-provided `PORT` (or 3000 locally). `npm run preview` is a Vite preview utility; it is not the production server.
 
-## First administrator setup
+## Supabase database, Auth, RLS and migrations
 
-The production review found no Auth users or admin profiles at that time. Create the first administrator only after the production environment is configured:
+The production Supabase project is `mktrtoctcjyokclpdeui` at `https://mktrtoctcjyokclpdeui.supabase.co`. The local Supabase CLI project identifier is configured in [supabase/config.toml](./supabase/config.toml). Local CLI settings do not replace the production dashboard configuration.
 
-1. Register the intended administrator through the website's supported registration flow.
-2. Verify the account exists in Supabase Auth.
-3. Use the trusted database-operator provisioning procedure implemented by the project's current migrations. The legacy guide references `public.set_admin_role_by_email(email)`; first verify that this function exists on the live project and that its execution is restricted to trusted database operators before invoking it.
-4. Sign in at `/admin` and verify that the server and RLS permit the expected admin workflows.
-5. Never expose the provisioning function to `anon` or ordinary `authenticated` users.
+### Migration policy
 
-Do not send passwords, Supabase secret keys, Resend keys, or WhatsApp tokens in chat or commit them to GitHub.
+- Existing production database: apply only reviewed, missing, ordered migrations from `supabase/migrations/`.
+- Check the live migration ledger before applying any migration.
+- Back up before destructive or data-transforming changes.
+- Never replay a migration blindly or reset the production database to repair schema drift.
+- `complete_schema.sql` is a fresh-project schema/provisioning reference; **do not run it against the live project as a reset or routine update**.
+- Run database tests against a clean, isolated local Supabase stack before merging migration changes.
 
-## Hostinger production deployment
+Typical local database workflow (requires Docker and the Supabase CLI):
 
-The production app needs a Node.js runtime because Express serves the API and the built frontend.
+```bash
+supabase start
+supabase db reset
+supabase test db
+supabase stop
+```
 
-1. Connect the GitHub repository and deploy the `main` branch to the Hostinger Node.js application.
-2. Use Node.js 20, 21 or 22.
-3. Install dependencies with `npm install`.
-4. Add the required production environment variables in Hostinger before building.
-5. Build with:
+Use the installed CLI's `--help` output and current Supabase documentation before using new or changed CLI commands. Never use local reset commands against the production project.
 
-   ```bash
-   npm run build
-   ```
+### RLS and privileged database code
 
-6. Set the application start command to:
+- Enable RLS on exposed application tables and write policies for the actual ownership/role model.
+- An authenticated role is not, by itself, authorization to access every row.
+- Keep privileged `SECURITY DEFINER` functions in non-exposed schemas where possible; pin a safe `search_path`, validate callers and explicitly restrict grants.
+- Review views for RLS behavior and use security-invoker views where appropriate.
+- Do not create broad client policies to silence advisor findings.
+- Do not drop unused-index findings without checking query plans, foreign-key coverage and actual workload.
+- Keep the migration history and the live schema in parity.
 
-   ```bash
-   npm start
-   ```
+## Authentication and authorization
 
-   This runs `node server.js`, which is generated by the build step. Do not configure the site as a static-only deployment that serves `dist/` while omitting the Express process.
+- Supabase Auth handles identity, sessions and password recovery.
+- The application reads the authoritative staff role from the database; client-side role state is not the authorization boundary.
+- Database authorization is enforced through RLS and permission functions.
+- Super-admin sensitive operations require an AAL2 session when MFA enforcement applies.
+- TOTP enrollment requires the user to enroll and verify the authenticator factor. An unverified factor must never be displayed as enabled.
+- After enrolling MFA, sign out/in and verify the dashboard and protected actions behave as expected.
+- Password reset and email-confirmation redirect URLs must be configured for the production domain in Supabase Auth.
 
-7. Confirm the application is bound to the platform-provided `PORT`, the health endpoint responds, and API requests reach the Node server.
-8. After deployment, test the homepage, excursion listing/detail pages, booking availability, booking creation, customer portal, admin login, and all required API endpoints.
+Supabase Free-plan limitation noted in the November 2026 review: leaked-password protection is a Pro-plan feature. Do not claim it is enabled or attempt to bypass the plan restriction.
 
-The `VITE_*` variables are read during the Vite build. If they change in Hostinger, rebuild and redeploy the frontend. Server-only variables are read by the Node process at runtime; restart/redeploy after changing them.
+## External integrations
 
-## Tests and quality checks
+### Resend email
 
-The package currently defines these checks:
+Resend is optional. Configure a verified sending domain/address, `RESEND_API_KEY` and `RESEND_FROM_EMAIL` in Hostinger. Test delivery and failure handling before setting `BOOKING_NOTIFICATION_WORKER_ENABLED=true`. Keep it false until verified.
+
+### WhatsApp Cloud API
+
+WhatsApp is optional. Configure the access token, phone-number ID and Graph API version before testing message delivery. Keep credentials server-side and do not enable a sending workflow until templates/permissions and delivery are confirmed.
+
+### Google Gemini
+
+Gemini is optional. Set `GEMINI_API_KEY` in the server environment. Do not expose it through a `VITE_*` variable.
+
+### Payments
+
+Do not advertise or enable online payment methods until the selected provider's server-side payment creation, signed webhook verification, idempotency, reconciliation and refund/cancellation behavior have been implemented and tested. A payment option visible in the UI is not evidence of a live payment integration.
+
+## Testing and CI
+
+Run the checks locally:
 
 ```bash
 npm run lint
@@ -232,18 +315,18 @@ npm run build
 npm run test:all
 ```
 
-Individual test commands:
+Useful individual checks include:
 
-| Command | Coverage |
+| Command | Purpose |
 |---|---|
 | `npm run test:catalogue` | Catalogue import validation/dry-run |
 | `npm run test:parity` | Database schema parity |
-| `npm run test:admin` | Admin dashboard persistence and RLS error handling |
-| `npm run test:security` | Admin RBAC and privilege escalation protections |
+| `npm run test:admin` | Admin persistence and RLS error handling |
+| `npm run test:security` | Admin RBAC and privilege-escalation protections |
 | `npm run test:abuse` | Abuse prevention and rate-limit behavior |
 | `npm run test:routes` | Application route/build checks |
 | `npm run test:recovery` | Password recovery/session behavior |
-| `npm run test:comm` | Communication-provider credential validation |
+| `npm run test:comm` | Communication-provider configuration validation |
 | `npm run test:booking` | Booking identifier resolution |
 | `npm run test:supabase-project` | Production Supabase project guard |
 | `npm run test:experiences-destinations` | Dynamic catalogue/destination behavior |
@@ -252,37 +335,65 @@ Individual test commands:
 | `npm run test:admin-ops-7` | Operations, departures, fleet and staff workflows |
 | `npm run test:phase-8` | Finance and workflow validation |
 
-`npm run test:all` runs the complete sequence. A successful local test suite is necessary but does not replace live production smoke tests. Do not claim production readiness until the live booking, payment/collection, email, admin, and recovery paths have been tested with appropriate test data.
+`npm run test:all` runs the package's full ordered test sequence. GitHub Actions also runs TypeScript/build/security checks and starts an isolated Supabase stack to replay migrations and run pgTAP tests. A green CI run does not replace production smoke tests.
 
-## Production launch checklist
+## Hostinger deployment
 
-- [ ] Hostinger Node.js app is running the current `main` build.
-- [ ] `NODE_ENV=production` is set.
-- [ ] Supabase URL and correct public and server-only keys are configured.
-- [ ] Production Supabase project guard passes.
-- [ ] Required incremental migrations are applied and schema parity passes.
-- [ ] RLS and privileged function grants have been reviewed.
-- [ ] First admin is securely provisioned and can sign in.
-- [ ] At least one valid departure/availability record exists for each bookable tour/date.
-- [ ] A full booking can be created, retrieved, and managed from the admin area.
-- [ ] Email delivery is configured and tested before enabling the notification worker.
-- [ ] WhatsApp is configured and tested only if this channel is required.
-- [ ] Password reset and email confirmation redirect URLs use `https://kemetspirit.com`.
-- [ ] Legacy links that currently return 404 are corrected or redirected.
-- [ ] Sitemap, robots, canonical URLs, metadata, and structured data use the Kemet Spirit domain and brand.
-- [ ] `npm run lint`, `npm run build`, and `npm run test:all` pass.
-- [ ] Production smoke tests pass on desktop and mobile.
+Configure the Hostinger Node.js application for the repository's `main` branch:
 
-## Security and operational rules
+1. Select Node.js **22.x**.
+2. Connect `sardeeena/Tours-system` and deploy `main`.
+3. Configure the required environment variables in Hostinger before building.
+4. Install dependencies with `npm install`.
+5. Build with `npm run build`.
+6. Set the start command to `npm start` (runs `node server.js`).
+7. Ensure the process binds to the Hostinger-provided `PORT`.
+8. Confirm the platform is running the latest intended commit and that the Node process is healthy.
+9. Smoke-test the homepage, catalogue, tour details, availability, booking creation, customer portal, admin login and required API routes.
 
-1. Never commit `.env`, production credentials, personal customer data, or database exports.
-2. Never expose Supabase secret/service-role keys or provider tokens to the browser.
-3. Keep public data access narrow and protected by RLS.
-4. Use incremental migrations for the live database; do not reset production to resolve schema drift.
-5. Back up before destructive database changes and verify data after migrations.
-6. Keep payment gateway credentials disabled until the selected provider's server-side flow and webhook verification are implemented and tested.
-7. Keep email/WhatsApp integrations disabled until credentials and delivery flows are validated.
+Do not deploy this application as static-only hosting of `dist/`: that omits the Express API and server-side functionality. Keep server secrets in Hostinger environment settings, not in the repository.
+
+## Production operations and release checklist
+
+The operator-owned tasks that still require access to dashboards, real data or real devices are maintained in [docs/operations/OWNER_ACTION_CHECKLIST.md](./docs/operations/OWNER_ACTION_CHECKLIST.md). Complete that checklist before declaring the service fully operational.
+
+Release gate:
+
+- [ ] CI passes on the exact commit intended for deployment.
+- [ ] Hostinger is running that exact commit with Node.js 22.
+- [ ] Supabase migration ledger and schema parity are verified.
+- [ ] Auth, MFA, RLS and privileged grants are verified.
+- [ ] Published tours and real departures/availability are correct.
+- [ ] A complete test booking can be created, retrieved and managed.
+- [ ] Email delivery is tested before notification worker activation.
+- [ ] Payment methods are enabled only after provider/webhook verification.
+- [ ] Password recovery and redirects work on the production domain.
+- [ ] Desktop and mobile production smoke tests pass.
+- [ ] Logs show no recurring application errors, unauthorized access or unexpected rate-limit failures.
+
+## Security rules
+
+1. Never commit `.env`, credentials, access tokens, personal customer data or production database exports.
+2. Never expose Supabase secret/service-role keys or provider tokens to browser code.
+3. Keep RLS enabled on exposed application tables and test both allowed and denied access.
+4. Use incremental, reviewed migrations for production.
+5. Back up before destructive data changes.
+6. Restrict privileged functions and validate the caller inside the database.
+7. Keep optional provider workflows disabled until their credentials and delivery paths are verified.
+8. Do not interpret an advisor's informational finding as an instruction to make a potentially destructive change without workload analysis.
+
+## Documentation map
+
+Start at [docs/README.md](./docs/README.md). Important references:
+
+- [Owner action checklist](./docs/operations/OWNER_ACTION_CHECKLIST.md)
+- [Hostinger deployment guide](./docs/guides/HOSTINGER_DEPLOYMENT_GUIDE.md)
+- [Setup guide](./docs/guides/SETUP_GUIDE.md)
+- [Supabase guide](./docs/guides/SUPABASE.md)
+- [Audit and phase reports](./docs/reports/)
+- [Script inventory](./scripts/README.md)
+- [Supabase migrations](./supabase/migrations/)
 
 ## License
 
-See [`LICENSE`](./LICENSE).
+See [LICENSE](./LICENSE).
