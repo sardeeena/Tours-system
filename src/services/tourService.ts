@@ -1270,7 +1270,7 @@ export async function getPublishedDestinations(): Promise<Destination[]> {
     }
   }
 
-  const mapped = dests.map((d: DbDestination) => ({
+  const mapped = dests.map((d) => ({
     id: d.id,
     name: d.name,
     slug: d.slug,
@@ -1357,7 +1357,7 @@ export async function getPublishedCategories(): Promise<Category[]> {
     console.warn('Could not calculate category tour counts:', countErr);
   }
 
-  const mapped = cats.map((c: DbCategory) => ({
+  const mapped = cats.map((c) => ({
     id: c.id,
     name: c.name,
     slug: c.slug,
