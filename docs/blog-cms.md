@@ -6,12 +6,12 @@
 - Admin editor: `/admin/blog` (requires `content.manage`)
 
 ## Database release
-Review `supabase/manual/blog_cms_setup.sql` and convert it into a timestamped migration using the Supabase CLI workflow used by this repository. Do not apply it to production until reviewed and approved.
+The tracked migration is `supabase/migrations/20261112000000_blog_cms.sql`. The migration is included in the normal clean-database CI replay and pgTAP suite.
 
 The schema uses:
 - `blog_posts` and `blog_categories`
-- RLS for published-only public reads
-- `public.has_permission('content.manage')` for editorial write access
+- RLS for published and due-scheduled public reads
+- `private.has_permission('content.manage')` for editorial write access
 - Explicit Data API grants
 
 After the migration is applied, verify:
@@ -22,7 +22,7 @@ After the migration is applied, verify:
 5. Admin and public blog routes work on desktop, tablet and mobile.
 
 ## Current implementation boundaries
-- Article body is plain text with preserved line breaks; a rich-text editor is not included yet.
+- Article editor supports a safe Markdown subset (headings, emphasis, lists, quotes, inline code and HTTPS/mailto links) with live preview.
 - Cover images currently use a URL field; the existing Media Library upload workflow is not yet integrated.
 - The first version supports one language per post. Translation records and hreflang are future work.
-- Scheduling beyond immediate publication is not included; selecting Published publishes immediately.
+- Scheduled posts use a future `published_at` timestamp and become public automatically when the timestamp arrives; no background worker or open browser is needed.
