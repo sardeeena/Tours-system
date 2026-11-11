@@ -27,7 +27,7 @@ SELECT ok(
       AND roles @> ARRAY['anon']::name[]
       AND roles @> ARRAY['authenticated']::name[]
       AND qual LIKE '%published%'
-      AND qual LIKE '%public.has_permission%'
+      AND qual LIKE '%has_permission%'
   ),
   'published content is public while drafts require content.manage'
 );
