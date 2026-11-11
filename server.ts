@@ -1106,87 +1106,129 @@ app.all(['/api/bookings/lookup', '/api/booking/lookup'], rateLimit(10, 60_000), 
 // ------------------------------------------------------------------------------
 // 6. Availability Check API (Supports POST or GET query)
 // ------------------------------------------------------------------------------
-app.all('/api/availability/check', rateLimit(60, 60_000), (req: Request, res: Response) => {
-  const tourSlug = (req.body?.tourSlug || req.query?.tourSlug || req.query?.slug) as string;
-  const date = (req.body?.date || req.query?.date) as string;
-  const adults = parseInt((req.body?.adults || req.query?.adults || '1') as string, 10);
-  const children = parseInt((req.body?.children || req.query?.children || '0') as string, 10);
+app.all('/api/availability/check', rateLimit(60, 60_000), async (req: Request, res: Response) => {
+  const tourSlug = String(req.body?.tourSlug || req.query?.tourSlug || req.query?.slug || '').trim();
+  const date = String(req.body?.date || req.query?.date || '').trim();
+  const adults = Number.parseInt(String(req.body?.adults || req.query?.adults || '1'), 10);
+  const children = Number.parseInt(String(req.body?.children || req.query?.children || '0'), 10);
 
-  if (!tourSlug || !date) {
+  if (!tourSlug || tourSlug.length > 180 || !/^\\d{4}-\\d{2}-\\d{2}$/.test(date)) {
     return res.status(400).json({
       success: false,
-      error: 'tourSlug and date (YYYY-MM-DD) are required',
+      error: 'A valid tourSlug and date (YYYY-MM-DD) are required',
     });
   }
 
-  const tour = TOUR_CATALOG_SUMMARY.find((t) => t.slug === tourSlug);
-  if (!tour) {
-    return res.status(404).json({
-      success: false,
-      error: 'Tour not found in catalog',
-    });
+  const checkDate = new Date(`${date}T00:00:00`);
+  if (Number.isNaN(checkDate.getTime()) || checkDate.toISOString().slice(0, 10) !== date) {
+    return res.status(400).json({ success: false, error: 'The requested date is invalid.' });
   }
 
-  const checkDate = new Date(date);
+  if (!Number.isSafeInteger(adults) || adults < 1 || !Number.isSafeInteger(children) || children < 0 || adults + children > 100) {
+    return res.status(400).json({ success: false, error: 'Guest counts are invalid.' });
+  }
+
+  const formatLocalDate = (value: Date) =>
+    `${value.getFullYear()}-${String(value.getMonth() + 1).padStart(2, '0')}-${String(value.getDate()).padStart(2, '0')}`;
   const now = new Date();
-  const isPast = checkDate.getTime() < new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const minimumNoticeHours = 12;
+  const isPast = date < formatLocalDate(now);
+  const noticeCutoff = new Date(now.getTime() + minimumNoticeHours * 60 * 60 * 1000);
+  const noticeViolated = date < formatLocalDate(noticeCutoff);
 
-  if (isPast) {
+  if (isPast || noticeViolated) {
     return res.json({
       success: true,
       tourSlug,
       date,
       isDateAvailable: false,
-      isPastDate: true,
-      isNoticeCutoffViolated: true,
+      isPastDate: isPast,
+      isNoticeCutoffViolated: noticeViolated,
+      minimumNoticeHours,
       remainingSeatsTotal: 0,
       slots: [],
-      notes: 'Cannot book past dates',
+      notes: isPast ? 'Cannot book past dates.' : 'The selected date does not meet the minimum booking notice.',
     });
   }
 
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const dayName = days[checkDate.getDay()];
+  // This legacy endpoint must use the same authoritative schedule as the
+  // current booking flow. Missing schedules are unavailable; never fabricate
+  // departure times or seat capacity.
+  if (!publicSupabase) {
+    return res.status(503).json({
+      success: false,
+      error: 'Live departure availability is temporarily unavailable.',
+    });
+  }
 
-  // Generate dynamic availability slots
-  const slots = [
-    {
-      slotId: 'morning-0830',
-      time: '08:30 AM',
-      label: 'Morning Departure (Prime Reef Visibility)',
-      availableSeats: 16,
-      maxCapacity: 24,
-      status: 'available',
-      privateAvailable: true,
-    },
-    {
-      slotId: 'midday-1100',
-      time: '11:00 AM',
-      label: 'Midday Cruise',
-      availableSeats: 8,
-      maxCapacity: 20,
-      status: 'available',
-      privateAvailable: true,
-    },
-  ];
+  try {
+    const { data, error } = await publicSupabase.rpc('get_tour_availability_schedule', {
+      p_tour_identifier: tourSlug,
+      p_start_date: date,
+      p_end_date: date,
+    });
 
-  res.json({
-    success: true,
-    tourSlug,
-    date,
-    dayOfWeek: dayName,
-    isDateAvailable: true,
-    isPastDate: false,
-    isNoticeCutoffViolated: false,
-    minimumNoticeHours: 12,
-    remainingSeatsTotal: 24,
-    maxGuestsPerGroup: 30,
-    priceEur: tour.priceEur,
-    slots,
-  });
+    if (error) {
+      console.error('Authoritative availability lookup failed:', error);
+      return res.status(503).json({
+        success: false,
+        error: 'Live departure availability is temporarily unavailable.',
+      });
+    }
+
+    const slot = Array.isArray(data) ? data[0] : null;
+    if (!slot) {
+      return res.status(404).json({ success: false, error: 'Tour or scheduled date was not found.' });
+    }
+
+    const capacity = Math.max(0, Number(slot.max_capacity) || 0);
+    const booked = Math.max(0, Number(slot.booked_count) || 0);
+    const remaining = Math.max(0, Number(slot.remaining_capacity) || 0);
+    const hasScheduledDeparture =
+      slot.status === 'available' &&
+      slot.is_available === true &&
+      capacity > booked &&
+      remaining > 0;
+    const partyFits = remaining >= adults + children;
+    const isDateAvailable = hasScheduledDeparture && partyFits;
+
+    return res.json({
+      success: true,
+      tourSlug,
+      date,
+      dayOfWeek: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][checkDate.getDay()],
+      isDateAvailable,
+      isPastDate: false,
+      isNoticeCutoffViolated: false,
+      minimumNoticeHours,
+      remainingSeatsTotal: remaining,
+      maxGuestsPerGroup: capacity,
+      slots: isDateAvailable
+        ? [{
+            slotId: `departure-${date}`,
+            time: slot.departure_time || 'Scheduled departure',
+            label: 'Scheduled departure',
+            availableSeats: remaining,
+            maxCapacity: capacity,
+            status: 'available',
+            privateAvailable: false,
+          }]
+        : [],
+      notes: isDateAvailable
+        ? undefined
+        : hasScheduledDeparture
+          ? 'The requested party size exceeds the remaining capacity.'
+          : 'No confirmed departure is scheduled for this date.',
+    });
+  } catch (error) {
+    console.error('Authoritative availability endpoint failed:', error);
+    return res.status(503).json({
+      success: false,
+      error: 'Live departure availability is temporarily unavailable.',
+    });
+  }
 });
 
-// ------------------------------------------------------------------------------
 // 7. Inquiries & Concierge Submissions API
 // ------------------------------------------------------------------------------
 app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(5, 10 * 60_000), async (req: Request, res: Response) => {
