@@ -8,7 +8,7 @@
 --    using scripts/setup-admin.ts with ADMIN_EMAIL, ADMIN_PASSWORD, and SUPABASE_SERVICE_ROLE_KEY.
 -- 3. This script is strictly idempotent and safe to rerun repeatedly.
 -- 4. If the auth.users record exists, it validates and synchronizes the public.profiles
---    record, ensuring the role is set to 'admin' and email is verified.
+--    record, ensuring the account has an administrative role and email is verified without downgrading super_admin.
 -- 5. If no auth.users record exists yet, it outputs a helpful notice with instructions.
 -- ==============================================================================
 
@@ -49,8 +49,8 @@ BEGIN
                 NOW()
             );
             RAISE NOTICE 'Admin profile successfully created for % (UUID: %)', v_admin_email, v_user_id;
-        ELSIF v_existing_role <> 'admin' THEN
-            -- Role mismatch: repair role to admin
+        ELSIF v_existing_role NOT IN ('admin', 'super_admin') THEN
+            -- Promote non-administrative profiles to admin; never downgrade super_admin
             UPDATE public.profiles
             SET role = 'admin',
                 is_confirmed = TRUE,
@@ -58,12 +58,12 @@ BEGIN
             WHERE id = v_user_id;
             RAISE NOTICE 'Admin profile role updated to admin for % (UUID: %)', v_admin_email, v_user_id;
         ELSE
-            -- Already verified admin
+            -- Already privileged admin or super_admin
             UPDATE public.profiles
             SET is_confirmed = TRUE,
                 updated_at = NOW()
             WHERE id = v_user_id;
-            RAISE NOTICE 'Admin profile already valid with admin role for % (UUID: %)', v_admin_email, v_user_id;
+            RAISE NOTICE 'Admin profile already valid with role % for % (UUID: %)', v_existing_role, v_admin_email, v_user_id;
         END IF;
     ELSE
         RAISE NOTICE 'Notice: Auth account "%" was not found in auth.users. Please create the user first via "npx tsx scripts/setup-admin.ts" using SUPABASE_SERVICE_ROLE_KEY, then run this script to verify the profile.', v_admin_email;

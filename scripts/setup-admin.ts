@@ -87,13 +87,35 @@ async function main() {
     );
   }
 
-  const { data: promotionResult, error: promotionError } = await supabase.rpc(
-    'set_admin_role_by_email',
-    { target_email: adminEmail }
-  );
+  // Preserve an existing super_admin. The promotion RPC intentionally assigns
+  // the ordinary admin role, so calling it for a super_admin would downgrade
+  // the only highest-privilege account.
+  const { data: existingProfile, error: existingProfileError } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', matchingUser.id)
+    .maybeSingle();
 
-  if (promotionError) {
-    throw new Error(`Trusted admin promotion failed: ${promotionError.message}`);
+  if (existingProfileError) {
+    throw new Error(`Could not inspect the existing profile role: ${existingProfileError.message}`);
+  }
+
+  const preserveSuperAdmin = existingProfile?.role === 'super_admin';
+  let promotionResult: unknown = null;
+
+  if (preserveSuperAdmin) {
+    console.log('Existing super_admin role detected; preserving it without running the admin promotion RPC.');
+  } else {
+    const { data, error } = await supabase.rpc(
+      'set_admin_role_by_email',
+      { target_email: adminEmail }
+    );
+
+    if (error) {
+      throw new Error(`Trusted admin promotion failed: ${error.message}`);
+    }
+
+    promotionResult = data;
   }
 
   const { data: profile, error: profileError } = await supabase
@@ -111,9 +133,14 @@ async function main() {
     throw new Error(`Could not verify Auth app metadata: ${authError?.message || 'Auth user not found'}`);
   }
 
-  if (profile.role !== 'admin' || authUser.user.app_metadata?.role !== 'admin' || !profile.is_confirmed) {
+  const expectedRole = preserveSuperAdmin ? 'super_admin' : 'admin';
+  if (
+    profile.role !== expectedRole ||
+    authUser.user.app_metadata?.role !== expectedRole ||
+    !profile.is_confirmed
+  ) {
     throw new Error(
-      `Promotion verification failed. Profile role=${profile.role}, app_metadata role=${authUser.user.app_metadata?.role}, confirmed=${profile.is_confirmed}.`
+      `Promotion verification failed. Expected role=${expectedRole}, profile role=${profile.role}, app_metadata role=${authUser.user.app_metadata?.role}, confirmed=${profile.is_confirmed}.`
     );
   }
 
