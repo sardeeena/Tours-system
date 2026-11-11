@@ -61,7 +61,7 @@ export const Footer: React.FC<FooterProps> = ({
             </div>
             <div>
               <span className="text-stone-900 dark:text-white font-semibold block text-xs">Phone & Support</span>
-              <span className="text-[11px] text-stone-500 dark:text-slate-400">+20 151 5212741 (Daily 06:00 – 22:00)</span>
+              <a href="tel:+201515212741" className="text-[11px] text-stone-500 dark:text-slate-400 hover:text-[#0A6C74]">+20 151 5212741 (Daily 06:00 – 22:00)</a>
             </div>
           </div>
 
@@ -307,6 +307,12 @@ export const Footer: React.FC<FooterProps> = ({
                   </button>
                 </li>
               )}
+              <li>
+                <a href="/about" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">About Kemet Spirit</a>
+              </li>
+              <li>
+                <a href="/contact" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">Contact</a>
+              </li>
               <li>
                 <a href="/booking-conditions" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">
                   Hotel Pickup Coverage

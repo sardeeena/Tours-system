@@ -179,7 +179,14 @@ export async function saveFooterContent(content: FooterContentSettings): Promise
 
 export async function getStaticPages(): Promise<StaticPageContent[]> {
   const customPages = await getSetting<StaticPageContent[]>('pages_content', INITIAL_STATIC_PAGES);
-  return customPages || INITIAL_STATIC_PAGES;
+  const savedPages = Array.isArray(customPages) ? customPages : [];
+  const savedSlugs = new Set(savedPages.map((page) => page?.slug).filter(Boolean));
+  // Preserve baseline About / Contact / legal pages when the CMS only stores a
+  // partial set. CMS content takes precedence for any matching slug.
+  return [
+    ...savedPages,
+    ...INITIAL_STATIC_PAGES.filter((page) => !savedSlugs.has(page.slug)),
+  ];
 }
 
 export async function saveStaticPages(pages: StaticPageContent[]): Promise<void> {

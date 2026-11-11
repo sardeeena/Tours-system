@@ -694,10 +694,10 @@ app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: Auth
 // ------------------------------------------------------------------------------
 app.get('/api/config', rateLimit(120, 60_000), (_req: Request, res: Response) => {
   res.json({
-    brandName: 'Red Sea Excursions & Voyages',
-    hotline: '+20 102 345 6789',
-    whatsappUrl: 'https://wa.me/201023456789',
-    operatingHours: '06:00 - 23:00 EEST (Daily)',
+    brandName: 'Kemet Spirit',
+    hotline: '+20 151 5212741',
+    whatsappUrl: 'https://wa.me/201515212741',
+    operatingHours: '06:00 - 22:00 EET (Daily)',
     currencyDefault: 'EUR',
     supportedCurrencies: ['EUR', 'USD', 'GBP', 'EGP'],
     supportedLanguages: ['en', 'de', 'ru', 'fr', 'ar', 'it', 'pl', 'nl'],
@@ -2116,6 +2116,149 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
   return res.send(lines.join('\n'));
 });
 
+
+const KEMET_MCP_TOOLS = [
+  {
+    name: 'search_published_excursions',
+    description: 'Search published Kemet Spirit excursions by words in the title or description. Returns public catalogue information only.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Optional search phrase, up to 120 characters.' },
+        limit: { type: 'integer', minimum: 1, maximum: 20, default: 10 },
+      },
+      additionalProperties: false,
+    },
+  },
+  {
+    name: 'get_published_excursion',
+    description: 'Get public details for one published Kemet Spirit excursion using its slug.',
+    inputSchema: {
+      type: 'object',
+      properties: { slug: { type: 'string', minLength: 1, maxLength: 180 } },
+      required: ['slug'],
+      additionalProperties: false,
+    },
+  },
+];
+
+app.get('/.well-known/mcp/server-card.json', (_req: Request, res: Response) => {
+  res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
+  res.type('application/json');
+  return res.json({
+    '$schema': 'https://static.modelcontextprotocol.io/schemas/mcp-server-card/v1.json',
+    version: '1.0',
+    protocolVersion: '2025-06-18',
+    serverInfo: {
+      name: 'com.kemetspirit/public-excursions',
+      title: 'Kemet Spirit Public Excursions',
+      version: '1.0.0',
+    },
+    description: 'Read-only discovery and lookup of Kemet Spirit published Red Sea excursions in Egypt. No booking, customer data, payments or administrative actions are exposed.',
+    transport: { type: 'streamable-http', endpoint: '/mcp' },
+    capabilities: { tools: { listChanged: false } },
+    authentication: { required: false, schemes: [] },
+    instructions: 'Only published public excursion catalogue data is available. Confirm current prices and availability on the linked live excursion page before making travel decisions.',
+    tools: KEMET_MCP_TOOLS,
+  });
+});
+
+app.post('/mcp', rateLimit(60, 60_000), async (req: Request, res: Response) => {
+  const request = req.body;
+  if (!request || typeof request !== 'object' || Array.isArray(request)
+    || request.jsonrpc !== '2.0' || typeof request.method !== 'string') {
+    return res.status(400).json({ jsonrpc: '2.0', id: request?.id ?? null, error: { code: -32600, message: 'Invalid JSON-RPC request.' } });
+  }
+
+  const id = Object.prototype.hasOwnProperty.call(request, 'id') ? request.id : null;
+  const reply = (result: unknown) => res.status(200).type('application/json').json({ jsonrpc: '2.0', id, result });
+  const fail = (code: number, message: string) => res.status(200).type('application/json').json({ jsonrpc: '2.0', id, error: { code, message } });
+
+  if (request.method === 'notifications/initialized' || request.method.startsWith('notifications/')) {
+    return res.status(202).end();
+  }
+
+  if (request.method === 'initialize') {
+    const requestedVersion = typeof request.params?.protocolVersion === 'string'
+      ? request.params.protocolVersion : '2025-06-18';
+    const supported = ['2025-06-18', '2025-03-26'];
+    return reply({
+      protocolVersion: supported.includes(requestedVersion) ? requestedVersion : '2025-06-18',
+      capabilities: { tools: { listChanged: false } },
+      serverInfo: { name: 'com.kemetspirit/public-excursions', title: 'Kemet Spirit Public Excursions', version: '1.0.0' },
+      instructions: 'Read-only public excursion catalogue. No bookings, personal data, payments or admin actions.',
+    });
+  }
+
+  if (request.method === 'ping') return reply({});
+  if (request.method === 'tools/list') return reply({ tools: KEMET_MCP_TOOLS });
+  if (request.method !== 'tools/call') return fail(-32601, 'Method not found.');
+
+  const toolName = request.params?.name;
+  const args = request.params?.arguments && typeof request.params.arguments === 'object'
+    ? request.params.arguments : {};
+  if (!publicSupabase) {
+    return reply({ content: [{ type: 'text', text: 'The public excursion catalogue is temporarily unavailable.' }], isError: true });
+  }
+
+  try {
+    if (toolName === 'search_published_excursions') {
+      const queryText = typeof args.query === 'string' ? args.query.trim().slice(0, 120) : '';
+      const limit = Number.isInteger(args.limit) ? Math.max(1, Math.min(20, args.limit)) : 10;
+      let query = publicSupabase.from('tours')
+        .select('title,slug,short_description,price,currency,duration')
+        .eq('status', 'published')
+        .order('sort_order', { ascending: true })
+        .limit(limit);
+      if (queryText) query = query.ilike('title', `%${queryText.replace(/[%_]/g, '')}%`);
+      const { data, error } = await query;
+      if (error) throw error;
+      const tours = (data || []).map((tour: any) => ({
+        title: cleanPublicText(tour.title, 160),
+        slug: cleanPublicText(tour.slug, 180),
+        description: cleanPublicText(tour.short_description, 400),
+        price: Number.isFinite(Number(tour.price)) ? Number(tour.price) : null,
+        currency: typeof tour.currency === 'string' ? tour.currency : 'EUR',
+        duration: cleanPublicText(tour.duration, 100),
+        url: `https://kemetspirit.com/excursions/${encodeURIComponent(String(tour.slug || ''))}`,
+      }));
+      return reply({ content: [{ type: 'text', text: JSON.stringify(tours) }], structuredContent: { tours } });
+    }
+
+    if (toolName === 'get_published_excursion') {
+      const slug = typeof args.slug === 'string' ? args.slug.trim() : '';
+      if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) return fail(-32602, 'A valid excursion slug is required.');
+      const { data, error } = await publicSupabase.from('tours')
+        .select('title,slug,short_description,description,price,currency,duration,pickup_info,cancellation_policy')
+        .eq('slug', slug).eq('status', 'published').maybeSingle();
+      if (error) throw error;
+      if (!data) return reply({ content: [{ type: 'text', text: 'Published excursion not found.' }], isError: true });
+      const tour = {
+        title: cleanPublicText(data.title, 160),
+        slug: cleanPublicText(data.slug, 180),
+        description: cleanPublicText(data.short_description || data.description, 1000),
+        details: cleanPublicText(data.description, 4000),
+        price: Number.isFinite(Number(data.price)) ? Number(data.price) : null,
+        currency: typeof data.currency === 'string' ? data.currency : 'EUR',
+        duration: cleanPublicText(data.duration, 100),
+        pickupInformation: cleanPublicText(data.pickup_info, 1000),
+        cancellationInformation: cleanPublicText(data.cancellation_policy, 1000),
+        url: `https://kemetspirit.com/excursions/${encodeURIComponent(slug)}`,
+      };
+      return reply({ content: [{ type: 'text', text: JSON.stringify(tour) }], structuredContent: { tour } });
+    }
+    return fail(-32602, 'Unknown tool. Use tools/list to discover available tools.');
+  } catch (error) {
+    console.warn('[MCP] Public excursion tool failed:', error);
+    return reply({ content: [{ type: 'text', text: 'The public excursion catalogue is temporarily unavailable.' }], isError: true });
+  }
+});
+
+app.all('/mcp', (_req: Request, res: Response) => {
+  res.setHeader('Allow', 'POST');
+  return res.status(405).json({ error: 'Method not allowed. Use POST with a JSON-RPC request.' });
+});
+
 // Private customer and administration routes must be crawlable so search engines
 // can observe noindex. This header is not an access-control mechanism.
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -2227,14 +2370,15 @@ async function loadKemetTours(): Promise<any[]> {
 }
 
 async function loadKemetPages(): Promise<any[]> {
+  let publishedPages: any[] = [];
   if (publicSupabase) {
     try {
       const { data, error } = await publicSupabase.from('site_settings')
         .select('value').eq('key', 'pages_content').maybeSingle();
       if (!error) {
         const value = data?.value;
-        if (Array.isArray(value) && value.length) return value;
-        if (value && typeof value === 'object' && Array.isArray(value.pages) && value.pages.length) return value.pages;
+        if (Array.isArray(value)) publishedPages = value;
+        else if (value && typeof value === 'object' && Array.isArray(value.pages)) publishedPages = value.pages;
       } else {
         console.warn('[SEO render] CMS pages unavailable; safe defaults used:', error.message);
       }
@@ -2242,7 +2386,15 @@ async function loadKemetPages(): Promise<any[]> {
       console.warn('[SEO render] CMS pages query failed; safe defaults used:', error);
     }
   }
-  return INITIAL_STATIC_PAGES;
+  // Keep baseline public trust pages available even when the CMS contains a
+  // partial page list. Explicit CMS content always wins for matching slugs.
+  const cmsSlugs = new Set(publishedPages
+    .map((page: any) => typeof page?.slug === 'string' ? page.slug : '')
+    .filter(Boolean));
+  return [
+    ...publishedPages,
+    ...INITIAL_STATIC_PAGES.filter((page) => !cmsSlugs.has(page.slug)),
+  ];
 }
 
 async function loadKemetDestinations(): Promise<any[]> {
@@ -2346,7 +2498,9 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
       <h2>Explore destinations</h2>
       <div class="seo-grid">${(visibleDestinations || []).map(seoDestinationCard).filter(Boolean).join('')}</div>
       <h2>Explore published excursions</h2><p><a href="/excursions">Browse all excursions</a></p>
-      <div class="seo-grid">${cards || '<p>Explore the excursions catalogue for currently published experiences and details.</p>'}</div></main>`;
+      <div class="seo-grid">${cards || '<p>Explore the excursions catalogue for currently published experiences and details.</p>'}</div>
+      <h2>About Kemet Spirit</h2><p>Explore our <a href="/about">about page</a>, learn about <a href="/booking-conditions">booking terms and conditions</a>, or <a href="/contact">contact our Hurghada team</a>.</p>
+      <p>Phone: <a href="tel:+201515212741">+20 151 5212741</a></p></main>`;
   } else if (path === '/excursions') {
     pageKind = 'catalogue';
     title = 'Red Sea Excursions & Boat Trips | Kemet Spirit';
@@ -2500,13 +2654,63 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
   }
 
   const canonical = `${origin}${path === '/' ? '/' : path}`;
-  const organization = {
-    '@type': 'TravelAgency',
+  const cmsSocialProfiles: string[] = [];
+  if (publicSupabase) {
+    try {
+      const { data, error } = await publicSupabase.from('site_settings')
+        .select('value').eq('key', 'social_links').maybeSingle();
+      if (!error && data?.value && typeof data.value === 'object') {
+        const social = data.value as Record<string, unknown>;
+        for (const key of ['facebook', 'instagram', 'youtube', 'tiktok', 'tripadvisor']) {
+          if (typeof social[key] === 'string') cmsSocialProfiles.push(social[key] as string);
+        }
+      }
+    } catch (error) {
+      console.warn('[SEO schema] Social profile settings unavailable:', error);
+    }
+  }
+  const configuredSameAs = [
+    ...(process.env.KEMET_SAME_AS_URLS || '').split(','),
+    ...cmsSocialProfiles,
+  ]
+    .map((value) => value.trim())
+    .filter((value) => {
+      try {
+        const url = new URL(value);
+        return url.protocol === 'https:' && [
+          'facebook.com', 'www.facebook.com', 'instagram.com', 'www.instagram.com',
+          'linkedin.com', 'www.linkedin.com', 'youtube.com', 'www.youtube.com',
+          'tiktok.com', 'www.tiktok.com', 'tripadvisor.com', 'www.tripadvisor.com',
+          'x.com', 'www.x.com',
+        ].includes(url.hostname.toLowerCase());
+      } catch {
+        return false;
+      }
+    });
+  const organization: Record<string, any> = {
+    '@type': ['TravelAgency', 'Organization'],
     '@id': `${origin}/#organization`,
     name: 'Kemet Spirit',
     url: origin,
     logo: `${origin}/logo.webp`,
+    description: 'Excursions and experiences along Egypt’s Red Sea coast, based in Hurghada, Egypt.',
+    telephone: '+201515212741',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: 'Hurghada New Marina, Berth B-14',
+      addressLocality: 'Hurghada',
+      addressRegion: 'Red Sea Governorate',
+      addressCountry: 'EG',
+    },
+    contactPoint: [{
+      '@type': 'ContactPoint',
+      telephone: '+201515212741',
+      contactType: 'customer service',
+      availableLanguage: ['English', 'German', 'Russian'],
+      url: `${origin}/contact`,
+    }],
   };
+  if (configuredSameAs.length) organization.sameAs = Array.from(new Set(configuredSameAs));
   const graph: any[] = [
     organization,
     { '@type': 'WebSite', '@id': `${origin}/#website`, url: origin, name: 'Kemet Spirit', publisher: { '@id': `${origin}/#organization` }, inLanguage: 'en' },
@@ -2609,6 +2813,46 @@ async function startServer() {
       })
     );
 
+    app.get('/', async (req: Request, res: Response, next: NextFunction) => {
+      res.setHeader('Link',
+        '<https://kemetspirit.com/llms.txt>; rel="alternate"; type="text/plain"; title="Kemet Spirit LLMs index", <https://kemetspirit.com/sitemap.xml>; rel="sitemap"');
+      const acceptsMarkdown = (req.get('accept') || '').split(',').some((value) => value.trim().toLowerCase().startsWith('text/markdown'));
+      if (!acceptsMarkdown) return next();
+
+      const tours = await loadKemetTours();
+      const lines = [
+        '# Kemet Spirit',
+        '',
+        'Explore published excursions and experiences along Egypt’s Red Sea coast.',
+        '',
+        '## Main pages',
+        '- Homepage: https://kemetspirit.com/',
+        '- Excursions catalogue: https://kemetspirit.com/excursions',
+        '- About: https://kemetspirit.com/about',
+        '- Contact: https://kemetspirit.com/contact',
+        '- Booking terms: https://kemetspirit.com/booking-conditions',
+        '- Full agent index: https://kemetspirit.com/llms.txt',
+        '',
+        '## Contact',
+        '- Phone: +20 151 5212741',
+        '- Office: Hurghada New Marina, Berth B-14, Red Sea, Egypt',
+        '',
+        '## Published excursions',
+      ];
+      for (const tour of tours) {
+        const slug = typeof tour.slug === 'string' ? tour.slug.trim() : '';
+        const title = cleanPublicText(tour.title, 160);
+        if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+        const summary = cleanPublicText(tour.short_description || tour.description, 300);
+        lines.push(`- [${title}](https://kemetspirit.com/excursions/${encodeURIComponent(slug)}): ${summary}`);
+      }
+      res.status(200);
+      res.type('text/markdown; charset=utf-8');
+      res.setHeader('Vary', 'Accept');
+      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=120, stale-while-revalidate=60');
+      return res.send(lines.join('\\n'));
+    });
+
     app.get('*', async (req: Request, res: Response) => {
       if (req.path.startsWith('/api/')) {
         return res.status(404).json({ success: false, error: 'API route not found' });
@@ -2645,7 +2889,7 @@ async function startServer() {
   let stopBookingNotificationWorker: (() => void) | null = null;
 
   const server = app.listen(Number(PORT), '0.0.0.0', () => {
-    console.log(`Awesome Adventure Tours server running on port/socket ${PORT} [${process.env.NODE_ENV || 'development'}]`);
+    console.log(`Kemet Spirit server running on port/socket ${PORT} [${process.env.NODE_ENV || 'development'}]`);
 
     // The durable queue consumer must use a server-only Supabase secret key.
     // It never starts with an anon/publishable key or in local development.
