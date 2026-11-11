@@ -195,23 +195,7 @@ if (SUPABASE_URL && SUPABASE_USER_KEY) {
   }
 }
 
-// Public server-rendered pages use the publishable/anon key so Supabase RLS
-// remains the authority for published catalogue and approved public settings.
-// Never use the server secret/service-role client to render visitor-facing HTML.
-let publicSupabase: SupabaseClient | null = null;
-if (SUPABASE_URL && SUPABASE_USER_KEY) {
-  try {
-    publicSupabase = createClient(SUPABASE_URL, SUPABASE_USER_KEY, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    });
-  } catch (initErr) {
-    console.error('[Public SEO Supabase] Client initialization failure:', initErr);
-    publicSupabase = null;
-  }
-}
+
 
 export interface AuthenticatedUser {
   id: string;
