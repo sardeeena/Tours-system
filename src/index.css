@@ -451,90 +451,143 @@ html.dark .skeleton-card-wave::after,
 
 
 
-/* Kemet Spirit admin design-system compatibility and responsive foundations.
-   Legacy admin modules still contain dark utility classes; normalize those in
-   light mode while preserving semantic status colors and the explicit dark theme. */
-html:not(.dark) .admin-shell .bg-stone-950,
-html:not(.dark) .admin-shell .bg-slate-950 {
-  background-color: #FFFFFF !important;
+/* =============================================================================
+   KEMET SPIRIT ADMIN DESIGN SYSTEM
+   Scoped to the admin shell so the public storefront remains visually unchanged.
+   ============================================================================= */
+.admin-shell {
+  --admin-canvas: #F4F6F9;
+  --admin-surface: #FFFFFF;
+  --admin-surface-subtle: #F8FAFC;
+  --admin-surface-raised: #FFFFFF;
+  --admin-border: #E4E9F0;
+  --admin-border-strong: #D5DDE7;
+  --admin-text: #17212F;
+  --admin-text-secondary: #526174;
+  --admin-text-muted: #738195;
+  --admin-primary: #0A6C74;
+  --admin-primary-hover: #08565C;
+  --admin-primary-soft: #E8F3F4;
+  --admin-shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 8px 24px rgba(16, 24, 40, .035);
+  min-height: 100vh;
+  background: var(--admin-canvas);
+  color: var(--admin-text);
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
 }
-html:not(.dark) .admin-shell .bg-stone-900,
-html:not(.dark) .admin-shell .bg-slate-900 {
-  background-color: #FAF8F5 !important;
+html.dark .admin-shell {
+  --admin-canvas: #0A1118;
+  --admin-surface: #101B28;
+  --admin-surface-subtle: #142233;
+  --admin-surface-raised: #172638;
+  --admin-border: #243447;
+  --admin-border-strong: #33485F;
+  --admin-text: #F1F5F9;
+  --admin-text-secondary: #C1CBD8;
+  --admin-text-muted: #91A0B3;
+  --admin-primary: #2DD4BF;
+  --admin-primary-hover: #5EEAD4;
+  --admin-primary-soft: rgba(45, 212, 191, .12);
+  --admin-shadow: 0 1px 2px rgba(0, 0, 0, .2), 0 10px 30px rgba(0, 0, 0, .14);
+  color-scheme: dark;
 }
-html:not(.dark) .admin-shell .bg-stone-800,
-html:not(.dark) .admin-shell .bg-slate-800 {
-  background-color: #F2EFE9 !important;
-}
-html:not(.dark) .admin-shell .bg-stone-700,
-html:not(.dark) .admin-shell .bg-slate-700 {
-  background-color: #E8E3DA !important;
-}
-html:not(.dark) .admin-shell .border-stone-900,
-html:not(.dark) .admin-shell .border-stone-800,
-html:not(.dark) .admin-shell .border-stone-700,
-html:not(.dark) .admin-shell .border-slate-800,
-html:not(.dark) .admin-shell .divide-stone-800 > :not([hidden]) ~ :not([hidden]) {
-  border-color: #E8E3DA !important;
-}
-html:not(.dark) .admin-shell :is(h1,h2,h3,h4,p).text-white,
-html:not(.dark) .admin-shell .text-stone-100,
-html:not(.dark) .admin-shell .text-stone-200,
-html:not(.dark) .admin-shell .text-slate-100,
-html:not(.dark) .admin-shell .text-slate-200 {
-  color: #111A24 !important;
-}
-html:not(.dark) .admin-shell .text-stone-300,
-html:not(.dark) .admin-shell .text-slate-300 {
-  color: #475569 !important;
-}
-html:not(.dark) .admin-shell .text-stone-400,
-html:not(.dark) .admin-shell .text-slate-400 {
-  color: #64748B !important;
-}
+.admin-shell .admin-main { background: var(--admin-canvas); }
+.admin-shell .admin-topbar { border-color: var(--admin-border); box-shadow: 0 1px 2px rgba(16,24,40,.035); }
+.admin-shell .admin-content { align-items: flex-start; }
+.admin-shell .admin-content > div { min-width: 0; }
+.admin-shell .admin-nav { scrollbar-gutter: stable; }
+.admin-shell .admin-nav button { min-height: 38px; font-size: 13px; line-height: 1.35; }
+.admin-shell .admin-nav button svg { flex: 0 0 auto; }
+.admin-shell :is(h1,h2,h3,h4) { color: var(--admin-text); letter-spacing: -.02em; }
+.admin-shell h1 { font-size: clamp(1.35rem, 1.1rem + .5vw, 1.75rem); line-height: 1.25; font-weight: 700; }
+.admin-shell h2 { font-size: clamp(1.1rem, 1rem + .25vw, 1.35rem); line-height: 1.3; font-weight: 700; }
+.admin-shell h3 { font-size: 1rem; line-height: 1.4; font-weight: 650; }
+.admin-shell p { line-height: 1.55; }
 .admin-shell :is(input,select,textarea) {
   min-width: 0;
   max-width: 100%;
+  border-color: var(--admin-border-strong);
+  border-radius: 10px;
+  font: inherit;
 }
-.admin-shell :is(table,[role="table"]) {
-  max-width: 100%;
+.admin-shell :is(input:not([type="checkbox"]):not([type="radio"]),select) { min-height: 40px; }
+.admin-shell textarea { min-height: 96px; }
+.admin-shell :is(input,select,textarea)::placeholder { color: var(--admin-text-muted); opacity: 1; }
+.admin-shell :is(input,select,textarea):focus-visible {
+  outline: 2px solid var(--admin-primary);
+  outline-offset: 2px;
+  border-color: var(--admin-primary);
 }
+.admin-shell :is(button,a,[role="button"]) { touch-action: manipulation; }
+.admin-shell :is(button,a,[role="button"],input,select,textarea):focus-visible {
+  outline: 2px solid var(--admin-primary);
+  outline-offset: 2px;
+}
+.admin-shell :is(table,[role="table"]) { width: 100%; max-width: 100%; border-collapse: separate; border-spacing: 0; }
+.admin-shell table thead th { color: var(--admin-text-muted); font-size: 11px; font-weight: 700; letter-spacing: .055em; text-transform: uppercase; }
+.admin-shell table :is(th,td) { vertical-align: middle; }
 .admin-shell .overflow-x-auto,
 .admin-shell .overflow-x-scroll {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
   scrollbar-width: thin;
 }
-.admin-shell :is(button,a,[role="button"],input,select,textarea) {
-  touch-action: manipulation;
+.admin-shell :is(.bg-white.rounded-xl.border, .bg-white.rounded-2xl.border, .bg-white.rounded-3xl.border) {
+  border-color: var(--admin-border);
+  box-shadow: var(--admin-shadow);
 }
-.admin-shell :is(button,a,[role="button"]):focus-visible,
-.admin-shell :is(input,select,textarea):focus-visible {
-  outline: 2px solid #0D838C;
-  outline-offset: 2px;
+.admin-shell .shadow-sm { box-shadow: var(--admin-shadow); }
+
+/* Legacy module palette normalization: neutral surfaces only; status colors remain semantic. */
+html:not(.dark) .admin-shell :is(.bg-stone-950,.bg-slate-950) { background-color: var(--admin-surface) !important; }
+html:not(.dark) .admin-shell :is(.bg-stone-900,.bg-slate-900) { background-color: var(--admin-surface-subtle) !important; }
+html:not(.dark) .admin-shell :is(.bg-stone-800,.bg-slate-800) { background-color: #F0F3F7 !important; }
+html:not(.dark) .admin-shell :is(.bg-stone-700,.bg-slate-700) { background-color: #E7ECF2 !important; }
+html:not(.dark) .admin-shell :is(.border-stone-900,.border-stone-800,.border-stone-700,.border-slate-800) { border-color: var(--admin-border) !important; }
+html:not(.dark) .admin-shell :is(h1,h2,h3,h4,p).text-white,
+html:not(.dark) .admin-shell :is(.text-stone-100,.text-stone-200,.text-slate-100,.text-slate-200) { color: var(--admin-text) !important; }
+html:not(.dark) .admin-shell :is(.text-stone-300,.text-slate-300) { color: var(--admin-text-secondary) !important; }
+html:not(.dark) .admin-shell :is(.text-stone-400,.text-slate-400) { color: var(--admin-text-muted) !important; }
+
+/* Dark mode uses the same semantic hierarchy and avoids global status-color overrides. */
+html.dark .admin-shell :is(.bg-stone-950,.bg-slate-950) { background-color: #0D1722 !important; }
+html.dark .admin-shell :is(.bg-stone-900,.bg-slate-900) { background-color: var(--admin-surface) !important; }
+html.dark .admin-shell :is(.bg-stone-800,.bg-slate-800) { background-color: var(--admin-surface-subtle) !important; }
+html.dark .admin-shell :is(.bg-stone-700,.bg-slate-700) { background-color: var(--admin-surface-raised) !important; }
+html.dark .admin-shell :is(.border-stone-900,.border-stone-800,.border-stone-700,.border-slate-800) { border-color: var(--admin-border) !important; }
+html.dark .admin-shell :is(.text-stone-100,.text-stone-200,.text-slate-100,.text-slate-200) { color: var(--admin-text) !important; }
+html.dark .admin-shell :is(.text-stone-300,.text-slate-300) { color: var(--admin-text-secondary) !important; }
+html.dark .admin-shell :is(.text-stone-400,.text-slate-400) { color: var(--admin-text-muted) !important; }
+html.dark .admin-shell :is(input,select,textarea) {
+  color-scheme: dark;
+  background-color: var(--admin-surface-subtle);
+  color: var(--admin-text);
+  border-color: var(--admin-border-strong);
+}
+html.dark .admin-shell :is(input,select,textarea)::placeholder { color: var(--admin-text-muted); }
+
+/* Consistent viewport rhythm and readable controls across form factors. */
+@media (min-width: 1280px) {
+  .admin-shell .admin-content { padding-left: 2rem; padding-right: 2rem; }
+}
+@media (max-width: 1023px) {
+  .admin-shell .admin-topbar { align-items: flex-start; }
+  .admin-shell .admin-content { padding: 1.25rem; }
 }
 @media (max-width: 767px) {
-  .admin-shell main > header {
-    align-items: stretch;
-  }
-  .admin-shell main > header > div {
-    min-width: 0;
-    flex-wrap: wrap;
-  }
-  .admin-shell main > div:last-child {
-    padding: 0.75rem;
-  }
-  .admin-shell :is(input,select,textarea) {
-    font-size: 16px;
-  }
+  .admin-shell .admin-topbar { padding: .75rem 1rem; gap: .75rem; }
+  .admin-shell .admin-topbar > div { min-width: 0; flex-wrap: wrap; }
+  .admin-shell .admin-content { padding: .875rem; }
+  .admin-shell :is(input,select,textarea) { font-size: 16px; }
+  .admin-shell :is(table,[role="table"]) { min-width: 640px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .admin-shell *,
-  .admin-shell *::before,
-  .admin-shell *::after {
+  .admin-shell *, .admin-shell *::before, .admin-shell *::after {
     scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
-    animation-duration: 0.01ms !important;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
     animation-iteration-count: 1 !important;
   }
 }
