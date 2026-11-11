@@ -2159,6 +2159,7 @@ async function startServer() {
 
     app.use(
       express.static(distPath, {
+        index: false,
         maxAge: '1h',
         setHeaders: (res, filePath) => {
           if (filePath.endsWith('sw.js') || filePath.endsWith('manifest.webmanifest')) {
