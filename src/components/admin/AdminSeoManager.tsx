@@ -30,11 +30,11 @@ interface StaticPageItem {
 }
 
 const STATIC_PAGES: StaticPageItem[] = [
-  { id: 'about', name: 'About Us', path: '/about' },
-  { id: 'why-us', name: 'Why Choose Red Sea Voyages', path: '/why-us' },
-  { id: 'booking-conditions', name: 'Booking Conditions', path: '/booking-conditions' },
-  { id: 'marine-safety', name: 'Marine Safety & Port Regulations', path: '/marine-safety' },
-  { id: 'privacy', name: 'Privacy Policy', path: '/privacy' },
+  { id: 'about', name: 'About Kemet Spirit', path: '/about' },
+  { id: 'why-us', name: 'Why Choose Kemet Spirit', path: '/why-us' },
+  { id: 'booking-conditions', name: 'Booking Information', path: '/booking-conditions' },
+  { id: 'marine-safety', name: 'Marine Safety Information', path: '/marine-safety' },
+  { id: 'privacy', name: 'Privacy Information (noindex until verified)', path: '/privacy' },
 ];
 
 const LOCAL_SEO_PREFIX = 'rse_seo_cache_';
@@ -48,6 +48,14 @@ const getSeoEntityType = (scope: SeoScopeType): 'page' | 'tour' | 'destination' 
 
 const isPageSeoScope = (scope: SeoScopeType): boolean =>
   scope === 'homepage' || scope === 'pages';
+
+const isDestinationIndexable = (destination: DbDestination, tours: DbTour[]): boolean => {
+  const publishedTourCount = tours.filter(
+    (tour) => tour.destination_id === destination.id && tour.status === 'published'
+  ).length;
+  const contentLength = `${destination.description || ''} ${destination.tagline || ''}`.trim().length;
+  return publishedTourCount >= 2 || contentLength >= 300;
+};
 
 export const AdminSeoManager: React.FC = () => {
   const { showToast } = useToast();
@@ -77,6 +85,16 @@ export const AdminSeoManager: React.FC = () => {
   const [robotsFollow, setRobotsFollow] = useState(true);
   const [structuredDataJson, setStructuredDataJson] = useState('');
   const [structuredDataError, setStructuredDataError] = useState<string | null>(null);
+  const canonicalHostIsValid = (() => {
+    try {
+      const candidate = new URL(canonicalUrl);
+      return candidate.protocol === 'https:' &&
+        candidate.hostname.toLowerCase() === 'kemetspirit.com' &&
+        !candidate.search && !candidate.hash;
+    } catch {
+      return false;
+    }
+  })();
 
   // Initial load
   useEffect(() => {
@@ -111,28 +129,26 @@ export const AdminSeoManager: React.FC = () => {
     currentCats = categories
   ) => {
     // Generate default baseline
-    let defaultTitle = 'Awesome Adventure Tours | Official Pier Desk';
-    let defaultDesc = 'Awesome Adventure Tours - boat trips, island excursions, and desert safaris in Egypt. Free hotel pickup and 24h free cancellation.';
-    let defaultCanonical = 'https://kemetspirit.com';
-    let defaultOgImage = 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80';
+    let defaultTitle = 'Kemet Spirit | Red Sea Excursions in Egypt';
+    let defaultDesc = 'Explore published Red Sea excursions in Egypt. Review each tour page for its current description, price, duration, inclusions and booking details.';
+    let defaultCanonical = 'https://kemetspirit.com/';
+    let defaultOgImage = 'https://kemetspirit.com/logo.webp';
+    let defaultRobotsIndex = true;
+    let defaultRobotsFollow = true;
+    let forceNoIndex = currentScope === 'pages' && entityId === 'privacy';
     let defaultSchema: any = {
       '@context': 'https://schema.org',
       '@type': 'TravelAgency',
-      name: 'Awesome Adventure Tours',
+      '@id': 'https://kemetspirit.com/#organization',
+      name: 'Kemet Spirit',
       url: 'https://kemetspirit.com',
-      telephone: '+20 151 5212741',
-      address: {
-        '@type': 'PostalAddress',
-        addressLocality: 'Hurghada',
-        addressRegion: 'Red Sea Governorate',
-        addressCountry: 'EG',
-      },
+      logo: 'https://kemetspirit.com/logo.webp',
     };
 
     if (currentScope === 'tours') {
       const tour = currentTours.find((t) => t.id === entityId || t.slug === entityId);
       if (tour) {
-        defaultTitle = `${tour.title} | Awesome Adventure Tours`;
+        defaultTitle = `${tour.title} | Kemet Spirit`;
         defaultDesc = tour.short_description || tour.description?.slice(0, 155) || '';
         defaultCanonical = `https://kemetspirit.com/excursions/${tour.slug}`;
         defaultOgImage = (tour as any).primary_image || defaultOgImage;
@@ -141,43 +157,56 @@ export const AdminSeoManager: React.FC = () => {
           '@type': 'TouristTrip',
           name: tour.title,
           description: tour.short_description,
-          touristType: ['Family', 'Couples', 'Divers'],
-          offers: {
-            '@type': 'Offer',
-            price: tour.price,
-            priceCurrency: 'EUR',
-            availability: 'https://schema.org/InStock',
+          url: defaultCanonical,
+          provider: { '@type': 'TravelAgency', name: 'Kemet Spirit', url: 'https://kemetspirit.com' },
+          subjectOf: {
+            '@type': 'Product',
+            name: tour.title,
+            offers: {
+              '@type': 'Offer',
+              url: defaultCanonical,
+              price: tour.price,
+              priceCurrency: 'EUR',
+            },
           },
         };
       }
     } else if (currentScope === 'destinations') {
       const dest = currentDests.find((d) => d.id === entityId || d.slug === entityId);
       if (dest) {
-        defaultTitle = `${dest.name} Excursions & Boat Trips | Red Sea Voyages`;
-        defaultDesc = dest.description?.slice(0, 155) || `Discover premier boat trips, island cruises, and marine tours departing from ${dest.name}, Egypt.`;
-        defaultCanonical = `https://kemetspirit.com/excursions?destination=${encodeURIComponent(dest.name)}`;
+        defaultTitle = dest.seo_title || `${dest.name} Excursions & Activities | Kemet Spirit`;
+        defaultDesc = dest.seo_description || dest.description?.slice(0, 300) || `Review published excursions and trip details for ${dest.name}, Egypt.`;
+        defaultCanonical = `https://kemetspirit.com/destinations/${dest.slug}`;
         defaultOgImage = dest.main_image || defaultOgImage;
+        forceNoIndex = !isDestinationIndexable(dest, currentTours);
+        defaultRobotsIndex = !forceNoIndex;
         defaultSchema = {
           '@context': 'https://schema.org',
           '@type': 'TouristDestination',
           name: dest.name,
           description: dest.description,
+          url: defaultCanonical,
+          image: defaultOgImage,
         };
       }
     } else if (currentScope === 'categories') {
       const cat = currentCats.find((c) => c.id === entityId || c.slug === entityId);
       if (cat) {
-        defaultTitle = `${cat.name} in Hurghada & Red Sea | Book Direct`;
-        defaultDesc = cat.description?.slice(0, 155) || `Browse our official ${cat.name} trips across the Red Sea with verified captains and hotel transfers.`;
-        defaultCanonical = `https://kemetspirit.com/excursions?category=${encodeURIComponent(cat.slug)}`;
+        defaultTitle = `${cat.name} Excursions | Kemet Spirit`;
+        defaultDesc = cat.description?.slice(0, 155) || `Browse published ${cat.name.toLowerCase()} excursions and review each trip’s details before booking.`;
+        defaultCanonical = 'https://kemetspirit.com/excursions';
         defaultOgImage = cat.image || defaultOgImage;
       }
     } else if (currentScope === 'pages') {
       const page = STATIC_PAGES.find((p) => p.id === entityId);
       if (page) {
-        defaultTitle = `${page.name} | Red Sea Excursions & Voyages`;
-        defaultDesc = `Official ${page.name} guidelines, maritime safety standards, and traveler support for Red Sea excursions.`;
+        defaultTitle = `${page.name} | Kemet Spirit`;
+        defaultDesc = `Information about ${page.name.toLowerCase()} from Kemet Spirit. Check the page for the details currently published.`;
         defaultCanonical = `https://kemetspirit.com${page.path}`;
+        if (page.id === 'privacy') {
+          defaultRobotsIndex = false;
+          defaultRobotsFollow = false;
+        }
       }
     }
 
@@ -204,8 +233,8 @@ export const AdminSeoManager: React.FC = () => {
           setOgTitle(data.og_title || data.seo_title || defaultTitle);
           setOgDescription(data.og_description || data.meta_description || defaultDesc);
           setOgImage(data.og_image || defaultOgImage);
-          setRobotsIndex(data.robots_index ?? true);
-          setRobotsFollow(data.robots_follow ?? true);
+          setRobotsIndex(forceNoIndex ? false : (data.robots_index ?? defaultRobotsIndex));
+          setRobotsFollow(forceNoIndex && currentScope === 'pages' ? false : (data.robots_follow ?? defaultRobotsFollow));
           if (data.structured_data) {
             setStructuredDataJson(JSON.stringify(data.structured_data, null, 2));
           } else {
@@ -230,8 +259,8 @@ export const AdminSeoManager: React.FC = () => {
           setOgTitle(parsed.ogTitle || defaultTitle);
           setOgDescription(parsed.ogDescription || defaultDesc);
           setOgImage(parsed.ogImage || defaultOgImage);
-          setRobotsIndex(parsed.robotsIndex ?? true);
-          setRobotsFollow(parsed.robotsFollow ?? true);
+          setRobotsIndex(forceNoIndex ? false : (parsed.robotsIndex ?? defaultRobotsIndex));
+          setRobotsFollow(forceNoIndex && currentScope === 'pages' ? false : (parsed.robotsFollow ?? defaultRobotsFollow));
           setStructuredDataJson(parsed.structuredDataJson || JSON.stringify(defaultSchema, null, 2));
           return;
         } catch {
@@ -245,8 +274,8 @@ export const AdminSeoManager: React.FC = () => {
       setOgTitle(defaultTitle);
       setOgDescription(defaultDesc);
       setOgImage(defaultOgImage);
-      setRobotsIndex(true);
-      setRobotsFollow(true);
+      setRobotsIndex(defaultRobotsIndex);
+      setRobotsFollow(defaultRobotsFollow);
       setStructuredDataJson(JSON.stringify(defaultSchema, null, 2));
     }
   };
@@ -255,7 +284,10 @@ export const AdminSeoManager: React.FC = () => {
     setScope(newScope);
     let newEntityId = 'home';
     if (newScope === 'tours' && tours.length > 0) newEntityId = tours[0].id;
-    if (newScope === 'destinations' && destinations.length > 0) newEntityId = destinations[0].id;
+    if (newScope === 'destinations') {
+      const firstPublishedDestination = destinations.find((destination) => destination.status === 'published');
+      if (firstPublishedDestination) newEntityId = firstPublishedDestination.id;
+    }
     if (newScope === 'categories' && categories.length > 0) newEntityId = categories[0].id;
     if (newScope === 'pages' && STATIC_PAGES.length > 0) newEntityId = STATIC_PAGES[0].id;
 
@@ -274,12 +306,52 @@ export const AdminSeoManager: React.FC = () => {
     setSaveSuccess(false);
     setStructuredDataError(null);
 
+    try {
+      const canonical = new URL(canonicalUrl);
+      if (
+        canonical.protocol !== 'https:' ||
+        canonical.hostname.toLowerCase() !== 'kemetspirit.com' ||
+        canonical.username ||
+        canonical.password ||
+        canonical.search ||
+        canonical.hash
+      ) {
+        throw new Error('Canonical URLs must be clean HTTPS URLs on kemetspirit.com.');
+      }
+    } catch (error: any) {
+      setSaving(false);
+      showToast(error?.message || 'Enter a valid canonical URL on kemetspirit.com.', 'error');
+      return;
+    }
+
+    const selectedDestination = scope === 'destinations'
+      ? destinations.find((destination) => destination.id === selectedEntityId)
+      : undefined;
+    if (scope === 'pages' && selectedEntityId === 'privacy' && robotsIndex) {
+      setSaving(false);
+      showToast('Privacy Information must remain noindex until the complete privacy policy is verified.', 'error');
+      return;
+    }
+    if (selectedDestination && !isDestinationIndexable(selectedDestination, tours) && robotsIndex) {
+      setSaving(false);
+      showToast('This destination needs more published inventory or richer original content before it can be indexed.', 'error');
+      return;
+    }
+
     let parsedSchema = null;
     if (structuredDataJson.trim()) {
       try {
         parsedSchema = JSON.parse(structuredDataJson);
+        if (
+          !parsedSchema ||
+          typeof parsedSchema !== 'object' ||
+          parsedSchema['@context'] !== 'https://schema.org' ||
+          (!parsedSchema['@type'] && !Array.isArray(parsedSchema['@graph']))
+        ) {
+          throw new Error('Structured data must be a Schema.org JSON-LD object with @context and @type or @graph.');
+        }
       } catch (err: any) {
-        setStructuredDataError('Invalid JSON in structured data field. Please correct syntax.');
+        setStructuredDataError(err?.message || 'Invalid JSON in structured data field. Please correct syntax.');
         setSaving(false);
         return;
       }
@@ -356,11 +428,20 @@ export const AdminSeoManager: React.FC = () => {
       <div>
         <h1 className="text-2xl font-bold font-display text-white tracking-tight flex items-center space-x-2">
           <Globe className="w-6 h-6 text-[#2dd4bf]" />
-          <span>SEO, OpenGraph & Social Metadata</span>
+          <span>SEO & GEO Control Center</span>
         </h1>
         <p className="text-xs text-stone-400 mt-1">
-          Manage Google search snippet titles, descriptions, canonical URLs, robots directives, and Schema.org rich results.
+          Manage search snippets, canonical URLs, indexing directives, social previews and Schema.org JSON-LD for Kemet Spirit.
         </p>
+        <a
+          href="https://search.google.com/search-console?resource_id=sc-domain%3Akemetspirit.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-3 inline-flex items-center gap-2 rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-xs font-semibold text-stone-200 hover:border-[#0A6C74] hover:text-white"
+        >
+          <ExternalLink className="h-3.5 w-3.5" />
+          Open Google Search Console
+        </a>
       </div>
 
       {/* Scope Selector Bar */}
@@ -449,7 +530,7 @@ export const AdminSeoManager: React.FC = () => {
                 </option>
               ))}
             {scope === 'destinations' &&
-              destinations.map((d) => (
+              destinations.filter((destination) => destination.status === 'published').map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.name} ({d.slug})
                 </option>
@@ -469,6 +550,31 @@ export const AdminSeoManager: React.FC = () => {
           </select>
         </div>
       )}
+
+      {/* Live SEO Quality Checks */}
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <div className="rounded-xl border border-stone-800 bg-stone-950 p-4 text-xs">
+          <p className="text-stone-400">Title length</p>
+          <p className={`mt-1 text-sm font-semibold ${seoTitle.trim().length >= 30 && seoTitle.trim().length <= 60 ? 'text-emerald-400' : 'text-amber-400'}`}>
+            {seoTitle.trim().length} / 60 characters
+          </p>
+          <p className="mt-1 text-stone-500">Aim for a clear, unique title of around 30–60 characters.</p>
+        </div>
+        <div className="rounded-xl border border-stone-800 bg-stone-950 p-4 text-xs">
+          <p className="text-stone-400">Description length</p>
+          <p className={`mt-1 text-sm font-semibold ${metaDescription.trim().length >= 120 && metaDescription.trim().length <= 160 ? 'text-emerald-400' : 'text-amber-400'}`}>
+            {metaDescription.trim().length} / 160 characters
+          </p>
+          <p className="mt-1 text-stone-500">Write a useful summary of roughly 120–160 characters.</p>
+        </div>
+        <div className="rounded-xl border border-stone-800 bg-stone-950 p-4 text-xs">
+          <p className="text-stone-400">Canonical host</p>
+          <p className={`mt-1 text-sm font-semibold ${canonicalHostIsValid ? 'text-emerald-400' : 'text-amber-400'}`}>
+            {canonicalHostIsValid ? 'Kemet Spirit domain' : 'Check canonical URL'}
+          </p>
+          <p className="mt-1 text-stone-500">Indexable pages should use their own clean Kemet Spirit URL.</p>
+        </div>
+      </div>
 
       {/* Main SEO Form */}
       <form onSubmit={handleSave} className="space-y-6">
@@ -493,10 +599,10 @@ export const AdminSeoManager: React.FC = () => {
               {canonicalUrl || 'https://kemetspirit.com'}
             </div>
             <div className="text-base font-medium text-sky-400 hover:underline cursor-pointer truncate">
-              {seoTitle || 'Awesome Adventure Tours'}
+              {seoTitle || 'Kemet Spirit'}
             </div>
             <p className="text-xs text-stone-300 line-clamp-2 leading-relaxed">
-              {metaDescription || 'Book official Red Sea excursions with verified captains and free hotel pickup.'}
+              {metaDescription || 'Explore published Red Sea excursions in Egypt and review each tour’s details before booking.'}
             </p>
           </div>
 
