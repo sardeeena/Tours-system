@@ -199,32 +199,50 @@ export function generateBreadcrumbsJsonLd(
  */
 export function generateDestinationJsonLd(
   destination: Destination,
-  tours: Tour[] = [],
+  tours: Tour[],
   origin = getAppOrigin()
 ): Record<string, unknown> {
   const destUrl = `${origin}/destinations/${encodeURIComponent(destination.slug)}`;
   const destTours = tours.filter(
-    (t) => t.destination.toLowerCase() === destination.name.toLowerCase()
+    (tour) => tour.destination.toLowerCase() === destination.name.toLowerCase()
   );
 
   return {
     '@context': 'https://schema.org',
-    '@type': 'TouristDestination',
-    name: destination.name,
-    description: destination.description,
-    url: destUrl,
-    image: destination.image,
-    touristType: ['Holiday travelers', 'Snorkelers', 'Divers', 'Couples'],
-    includesAttraction: (destination.highlights || []).map((h) => ({
-      '@type': 'TouristAttraction',
-      name: h,
-    })),
-    hasPart: destTours.map((t) => ({
-      '@type': 'TouristTrip',
-      name: t.title,
-      url: `${origin}/excursions/${t.slug}`,
-      price: `€${t.priceEur}`,
-    })),
+    '@graph': [
+      {
+        '@type': 'TouristDestination',
+        '@id': `${destUrl}#destination`,
+        name: destination.name,
+        description: destination.description,
+        url: destUrl,
+        image: destination.image,
+        touristType: ['Holiday travelers', 'Snorkelers', 'Divers', 'Couples'],
+        hasPart: destTours.map((tour) => ({
+          '@type': 'TouristTrip',
+          name: tour.title,
+          url: `${origin}/excursions/${encodeURIComponent(tour.slug)}`,
+          subjectOf: {
+            '@type': 'Product',
+            name: tour.title,
+            offers: {
+              '@type': 'Offer',
+              price: tour.priceEur,
+              priceCurrency: 'EUR',
+              url: `${origin}/excursions/${encodeURIComponent(tour.slug)}`,
+            },
+          },
+        })),
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Home', item: origin },
+          { '@type': 'ListItem', position: 2, name: 'Destinations', item: `${origin}/excursions` },
+          { '@type': 'ListItem', position: 3, name: destination.name, item: destUrl },
+        ],
+      },
+    ],
   };
 }
 
