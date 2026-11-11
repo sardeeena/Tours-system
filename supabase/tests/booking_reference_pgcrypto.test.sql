@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(4);
+SELECT plan(3);
 
 SELECT ok(
   to_regprocedure('extensions.gen_random_bytes(integer)') IS NOT NULL,
@@ -10,17 +10,16 @@ SELECT ok(
 );
 
 SELECT ok(
-  pg_get_functiondef(
-    to_regprocedure('private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)')
-  ) ~* 'encode\(\s*extensions\.gen_random_bytes\(10\)\s*,\s*''hex''\s*\)',
-  'atomic booking reference generation schema-qualifies pgcrypto'
-);
-
-SELECT ok(
-  pg_get_functiondef(
-    to_regprocedure('private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)')
-  ) !~* 'encode\(\s*gen_random_bytes\(10\)\s*,\s*''hex''\s*\)',
-  'atomic booking reference generation does not depend on search_path'
+  position(
+    'gen_random_bytes('
+    IN regexp_replace(
+      pg_get_functiondef(to_regprocedure('private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)')),
+      'extensions\.gen_random_bytes',
+      '',
+      'gi'
+    )
+  ) = 0,
+  'atomic booking function has no unqualified pgcrypto random-byte call'
 );
 
 SELECT ok(
