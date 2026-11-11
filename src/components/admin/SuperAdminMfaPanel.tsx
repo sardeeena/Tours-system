@@ -54,7 +54,6 @@ export const SuperAdminMfaPanel: React.FC<SuperAdminMfaPanelProps> = ({ compact 
       setQrCode(data.totp.qr_code);
       setSecret(data.totp.secret);
       setCode('');
-      setHasUnverifiedFactor(true);
       showToast('Scan the QR code with your authenticator app, then verify a code.', 'info');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not start TOTP enrollment.');
