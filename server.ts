@@ -1782,9 +1782,8 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
     '## Main pages',
     '- [Homepage](https://kemetspirit.com/)',
     '- [Excursions](https://kemetspirit.com/excursions)',
-    '- [About](https://kemetspirit.com/about)',
     '',
-    '## Published excursions',
+    '## Published destinations and excursions',
   ];
 
   if (publicSupabase) {
