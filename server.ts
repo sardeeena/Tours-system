@@ -2370,14 +2370,15 @@ async function loadKemetTours(): Promise<any[]> {
 }
 
 async function loadKemetPages(): Promise<any[]> {
+  let publishedPages: any[] = [];
   if (publicSupabase) {
     try {
       const { data, error } = await publicSupabase.from('site_settings')
         .select('value').eq('key', 'pages_content').maybeSingle();
       if (!error) {
         const value = data?.value;
-        if (Array.isArray(value) && value.length) return value;
-        if (value && typeof value === 'object' && Array.isArray(value.pages) && value.pages.length) return value.pages;
+        if (Array.isArray(value)) publishedPages = value;
+        else if (value && typeof value === 'object' && Array.isArray(value.pages)) publishedPages = value.pages;
       } else {
         console.warn('[SEO render] CMS pages unavailable; safe defaults used:', error.message);
       }
@@ -2385,7 +2386,15 @@ async function loadKemetPages(): Promise<any[]> {
       console.warn('[SEO render] CMS pages query failed; safe defaults used:', error);
     }
   }
-  return INITIAL_STATIC_PAGES;
+  // Keep baseline public trust pages available even when the CMS contains a
+  // partial page list. Explicit CMS content always wins for matching slugs.
+  const cmsSlugs = new Set(publishedPages
+    .map((page: any) => typeof page?.slug === 'string' ? page.slug : '')
+    .filter(Boolean));
+  return [
+    ...publishedPages,
+    ...INITIAL_STATIC_PAGES.filter((page) => !cmsSlugs.has(page.slug)),
+  ];
 }
 
 async function loadKemetDestinations(): Promise<any[]> {
