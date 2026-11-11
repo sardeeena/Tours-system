@@ -11,6 +11,10 @@ ALTER TABLE public.departures
 ALTER TABLE public.operational_assignments
   ALTER COLUMN departure_time DROP DEFAULT;
 
+ALTER TABLE public.weather_bulletins
+  ALTER COLUMN visibility_meters DROP DEFAULT,
+  ALTER COLUMN coast_guard_cleared DROP DEFAULT;
+
 ALTER TABLE public.tours
   ALTER COLUMN available_days SET DEFAULT '{}'::text[],
   ALTER COLUMN departure_time DROP DEFAULT,
