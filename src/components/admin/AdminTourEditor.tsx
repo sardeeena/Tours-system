@@ -45,6 +45,7 @@ import {
 } from '../../types/database';
 import { AdminMediaManager } from './AdminMediaManager';
 import { AdminTab } from './AdminLayout';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface AdminTourEditorProps {
   tourId?: string; // If undefined, we are creating a new tour
@@ -74,6 +75,7 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
   onPreviewTour,
 }) => {
   const isEditing = Boolean(tourId);
+  const { hasPermission } = useAuth();
 
   const [activeSubTab, setActiveSubTab] = useState<EditorTab>('general');
   const [loading, setLoading] = useState(isEditing);
@@ -285,6 +287,8 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
 
   // Save handler (draft or published)
   const handleSave = async (overrideStatus?: 'draft' | 'published') => {
+    const requiredPermission = isEditing ? 'tours.update' : 'tours.create';
+    if (!hasPermission(requiredPermission)) { setSaveError('Your role does not permit saving this tour.'); return; }
     setSaving(true);
     setSaveError(null);
     setSaveSuccessMsg(null);
@@ -442,17 +446,17 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
           )}
 
           {/* Save Draft */}
-          <button
+          {hasPermission(isEditing ? 'tours.update' : 'tours.create') && <button
             type="button"
             onClick={() => handleSave('draft')}
             disabled={saving}
             className="px-3 py-2 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded text-xs font-semibold transition-colors disabled:opacity-50"
           >
             Save Draft
-          </button>
+          </button>}
 
           {/* Publish / Save Changes */}
-          <button
+          {hasPermission(isEditing ? 'tours.update' : 'tours.create') && <button
             type="button"
             onClick={() => handleSave(tourData.status === 'published' ? 'published' : 'published')}
             disabled={saving}
@@ -460,7 +464,7 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
           >
             <Save className="w-4 h-4" />
             <span>{saving ? 'Saving...' : tourData.status === 'published' ? 'Save Changes' : 'Publish Tour'}</span>
-          </button>
+          </button>}
         </div>
       </div>
 
