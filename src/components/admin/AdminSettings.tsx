@@ -49,6 +49,8 @@ import completeSchemaSql from '../../../complete_schema.sql?raw';
 import phase4Sql from '../../../supabase/migrations/20260922000000_phase4_schema.sql?raw';
 import fixAdminAuthSql from '../../../supabase/migrations/20260928000000_fix_admin_auth_rls.sql?raw';
 import { useToast } from '../../contexts/ToastContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { SuperAdminMfaPanel } from './SuperAdminMfaPanel';
 
 export interface TableHealthCheck {
   table: string;
@@ -80,7 +82,9 @@ const CMS_TABLES_LIST: Omit<TableHealthCheck, 'status'>[] = [
 
 export const AdminSettings: React.FC = () => {
   const { showToast } = useToast();
-  const [activeTab, setActiveTab] = useState<'company' | 'policies' | 'social_footer' | 'supabase'>('company');
+  const { user } = useAuth();
+  const isSuperAdmin = Boolean(user && (user.role === 'super_admin' || user.roles?.includes('super_admin')));
+  const [activeTab, setActiveTab] = useState<'company' | 'policies' | 'social_footer' | 'supabase' | 'security'>('company');
 
   // Company Settings
   const [company, setCompany] = useState<CompanySettings>({
@@ -397,6 +401,21 @@ export const AdminSettings: React.FC = () => {
           <Database className="w-4 h-4" />
           <span>Database & Supabase Connection</span>
         </button>
+
+        {isSuperAdmin && (
+          <button
+            type="button"
+            onClick={() => setActiveTab('security')}
+            className={`flex items-center space-x-1.5 px-3 py-2 rounded-t-lg font-medium transition-colors border-b-2 cursor-pointer ${
+              activeTab === 'security'
+                ? 'bg-stone-800 text-white border-[#2dd4bf]'
+                : 'text-stone-400 hover:text-white border-transparent hover:bg-stone-900'
+            }`}
+          >
+            <ShieldCheck className="w-4 h-4" />
+            <span>Security & MFA</span>
+          </button>
+        )}
       </div>
 
       {/* Tab 1: Company & Contact */}
@@ -975,6 +994,9 @@ export const AdminSettings: React.FC = () => {
             )}
           </div>
         </div>
+      )}
+      {activeTab === 'security' && isSuperAdmin && (
+        <SuperAdminMfaPanel />
       )}
     </div>
   );
