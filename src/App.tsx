@@ -24,6 +24,7 @@ import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { AccountPage } from './pages/AccountPage';
 import { StaticContentPage } from './pages/StaticContentPage';
 import { DestinationDetailPage } from './pages/DestinationDetailPage';
+const BlogPage = lazy(() => import('./pages/BlogPage').then(m => ({ default: m.BlogPage })));
 import { ALL_TOURS, CURRENCY_CONFIGS } from './data/toursData';
 import { Tour, CurrencyConfig, Destination, Category } from './types';
 import { Booking } from './types/booking';
@@ -71,6 +72,7 @@ const AdminFaqsManager = lazy(() => import('./components/admin/AdminFaqsManager'
 const AdminPagesManager = lazy(() => import('./components/admin/AdminPagesManager').then(m => ({ default: m.AdminPagesManager })));
 const AdminSettings = lazy(() => import('./components/admin/AdminSettings').then(m => ({ default: m.AdminSettings })));
 const AdminAccessControl = lazy(() => import('./components/admin/AdminAccessControl').then(m => ({ default: m.AdminAccessControl })));
+const AdminBlogManager = lazy(() => import('./components/admin/AdminBlogManager').then(m => ({ default: m.AdminBlogManager })));
 const AdminLoginPage = lazy(() => import('./components/admin/AdminLoginPage').then(m => ({ default: m.AdminLoginPage })));
 import { HelpInquiryModal } from './components/common/HelpInquiryModal';
 
@@ -429,6 +431,30 @@ function MainApp() {
       return;
     }
 
+    if (currentPath === '/blog') {
+      seoService.apply({
+        title: 'Kemet Spirit Travel Journal | Red Sea Guides & Egypt Travel Stories',
+        description: 'Discover Red Sea travel guides, local insights and inspiration for exploring Hurghada and Egypt with Kemet Spirit.',
+        canonicalUrl: 'https://kemetspirit.com/blog',
+        ogType: 'website',
+        robotsIndex: true,
+        robotsFollow: true,
+      });
+      return;
+    }
+
+    if (currentPath.startsWith('/blog/')) {
+      seoService.apply({
+        title: 'Travel Story | Kemet Spirit Journal',
+        description: 'Travel inspiration and local guides from the Kemet Spirit team in Hurghada, Egypt.',
+        canonicalUrl: typeof window !== 'undefined' ? `https://kemetspirit.com${currentPath}` : undefined,
+        ogType: 'article',
+        robotsIndex: true,
+        robotsFollow: true,
+      });
+      return;
+    }
+
     if (['/login', '/register', '/account', '/profile', '/reset-password'].includes(currentPath)) {
       seoService.apply({
         title: `Private Account | Kemet Spirit`,
@@ -770,6 +796,8 @@ function MainApp() {
       } else {
         activeAdminTab = 'dashboard';
       }
+    } else if (adminSubRoute?.main === 'blog') {
+      activeAdminTab = 'blog';
     } else if (adminSubRoute?.main === 'access-control' || adminSubRoute?.main === 'access_control') {
       activeAdminTab = 'access_control';
     } else if (adminSubRoute?.main === 'tours') {
@@ -859,6 +887,7 @@ function MainApp() {
       adminSubRoute?.main &&
       [
         'bookings',
+        'blog',
         'inquiries',
         'customers',
         'newsletter',
@@ -993,6 +1022,7 @@ function MainApp() {
           )}
 
           {activeAdminTab === 'bookings' && <AdminBookingsList />}
+          {activeAdminTab === 'blog' && <AdminBlogManager />}
 
           {/* OPERATIONS MODULES */}
           {activeAdminTab === 'ops_departures' && (
@@ -1257,6 +1287,12 @@ function MainApp() {
           onOpenMyBooking={() => navigate('/my-booking')}
         />
       );
+    }
+
+    // Kemet Spirit Journal: /blog and /blog/:slug
+    if (currentPath === '/blog' || currentPath.startsWith('/blog/')) {
+      const blogSlug = currentPath.startsWith('/blog/') ? currentPath.slice('/blog/'.length).replace(/\/$/, '') : undefined;
+      return <BlogPage slug={blogSlug} onNavigate={(path) => navigate(path)} />;
     }
 
     // Public CMS pages must be resolved before the booking route so /booking-conditions

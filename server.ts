@@ -1891,6 +1891,7 @@ const KEMET_PUBLIC_ORIGIN = 'https://kemetspirit.com';
 const KEMET_CORE_PUBLIC_PATHS = [
   '/',
   '/excursions',
+  '/blog',
 ];
 
 function escapeXml(value: string): string {
@@ -2006,6 +2007,29 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
     }
   }
 
+  if (publicSupabase) {
+    try {
+      const { data: posts, error } = await publicSupabase
+        .from('blog_posts')
+        .select('slug, updated_at')
+        .in('status', ['published', 'scheduled'])
+        .lte('published_at', new Date().toISOString())
+        .order('published_at', { ascending: false })
+        .limit(2000);
+      if (error) {
+        console.warn('[SEO sitemap] Published blog query failed:', error.message);
+      } else {
+        for (const post of posts || []) {
+          const slug = typeof post.slug === 'string' ? post.slug.trim() : '';
+          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+          urls.set(`${KEMET_PUBLIC_ORIGIN}/blog/${encodeURIComponent(slug)}`, toSitemapDate(post.updated_at));
+        }
+      }
+    } catch (error) {
+      console.warn('[SEO sitemap] Blog catalogue could not be loaded:', error);
+    }
+  }
+
   const entries = Array.from(urls.entries()).map(([loc, lastmod]) => (
     `  <url><loc>${escapeXml(loc)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}</url>`
   ));
@@ -2096,6 +2120,31 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
       }
     } catch (error) {
       console.warn('[SEO llms.txt] Destination catalogue could not be loaded:', error);
+    }
+  }
+
+  if (publicSupabase) {
+    lines.push('', '## Published travel journal articles');
+    try {
+      const { data: posts, error } = await publicSupabase
+        .from('blog_posts')
+        .select('title,slug,excerpt,published_at')
+        .in('status', ['published', 'scheduled'])
+        .lte('published_at', new Date().toISOString())
+        .order('published_at', { ascending: false })
+        .limit(100);
+      if (error) {
+        console.warn('[SEO llms.txt] Published blog query failed:', error.message);
+      } else {
+        for (const post of posts || []) {
+          const slug = typeof post.slug === 'string' ? post.slug.trim() : '';
+          const title = cleanPublicText(post.title, 160);
+          if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+          lines.push(`- [${title}](https://kemetspirit.com/blog/${encodeURIComponent(slug)}): ${cleanPublicText(post.excerpt, 400)}`);
+        }
+      }
+    } catch (error) {
+      console.warn('[SEO llms.txt] Blog catalogue could not be loaded:', error);
     }
   }
 
@@ -2466,9 +2515,10 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
   let noindex = false;
   let nofollow = false;
   let statusCode = 200;
-  let pageKind: 'home' | 'catalogue' | 'tour' | 'destination' | 'static' | 'not-found' = 'not-found';
+  let pageKind: 'home' | 'catalogue' | 'tour' | 'destination' | 'static' | 'blog-index' | 'blog' | 'not-found' = 'not-found';
   let tours: any[] = [];
   let currentTour: any = null;
+  let currentBlogPost: any = null;
   let activeDestination: any = null;
   let destinationTours: any[] = [];
   let currentHighlights: any[] = [];
@@ -2568,6 +2618,94 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
         ${currentTour.cancellation_policy ? `<section><h2>Cancellation information</h2><p>${seoHtmlEscape(seoPlainText(currentTour.cancellation_policy, 1000))}</p></section>` : ''}
         <p><a href="/booking?tour=${encodeURIComponent(slug)}">Continue to booking</a></p>
       </article></main>`;
+    }
+  } else if (path === '/blog') {
+    pageKind = 'blog-index';
+    seoEntityType = 'page';
+    seoIdentifier = 'blog';
+    seoIdentifierIsPageSlug = true;
+    title = 'Kemet Spirit Travel Journal | Red Sea Guides & Egypt Travel Stories';
+    description = 'Discover Red Sea travel guides, local insights and inspiration for exploring Hurghada and Egypt with Kemet Spirit.';
+    if (publicSupabase) {
+      try {
+        const { data, error } = await publicSupabase.from('blog_posts')
+          .select('title,slug,excerpt,cover_image_url,published_at,blog_categories(name)')
+          .in('status', ['published', 'scheduled']).lte('published_at', new Date().toISOString())
+          .order('published_at', { ascending: false }).limit(30);
+        if (error) console.warn('[SEO render] Blog index query failed:', error.message);
+        const posts = data || [];
+        const cards = posts.map((post: any) => {
+          const slug = typeof post.slug === 'string' ? post.slug.trim() : '';
+          const postTitle = seoPlainText(post.title, 160);
+          if (!postTitle || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) return '';
+          const excerpt = seoPlainText(post.excerpt, 400);
+          const image = seoSafeImage(post.cover_image_url);
+          if (!pageImage || pageImage === `${origin}/logo.webp`) pageImage = image || pageImage;
+          return `<article class="seo-tour-card">${image ? `<img src="${seoHtmlEscape(image)}" alt="${seoHtmlEscape(postTitle)}" loading="lazy" style="width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:10px;margin-bottom:12px" />` : ''}<p class="seo-muted">${seoHtmlEscape(seoPlainText(post.blog_categories?.name, 80) || 'Travel guide')}</p><h2><a href="/blog/${encodeURIComponent(slug)}">${seoHtmlEscape(postTitle)}</a></h2>${excerpt ? `<p>${seoHtmlEscape(excerpt)}</p>` : ''}<p><a href="/blog/${encodeURIComponent(slug)}">Read story</a></p></article>`;
+        }).filter(Boolean).join('');
+        body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / Travel Journal</nav><h1>The Kemet Spirit Travel Journal</h1><p>${seoHtmlEscape(description)}</p><div class="seo-grid">${cards || '<p>New travel guides and local stories are on their way.</p>'}</div></main>`;
+      } catch (error) {
+        console.warn('[SEO render] Blog index render failed:', error);
+      }
+    }
+  } else if (path.startsWith('/blog/')) {
+    let slug = '';
+    try { slug = decodeURIComponent(path.slice('/blog/'.length)); } catch { slug = ''; }
+    if (publicSupabase && /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) {
+      try {
+        const { data, error } = await publicSupabase.from('blog_posts')
+          .select('title,slug,excerpt,content,cover_image_url,author_name,seo_title,seo_description,published_at,updated_at,blog_categories(name)')
+          .eq('slug', slug).in('status', ['published', 'scheduled'])
+          .lte('published_at', new Date().toISOString()).maybeSingle();
+        if (error) console.warn('[SEO render] Blog article lookup failed:', error.message);
+        currentBlogPost = data || null;
+      } catch (error) {
+        console.warn('[SEO render] Blog article query failed:', error);
+      }
+    }
+    if (currentBlogPost) {
+      pageKind = 'blog';
+      seoEntityType = 'page';
+      seoIdentifier = String(currentBlogPost.slug);
+      seoIdentifierIsPageSlug = true;
+      title = seoPlainText(currentBlogPost.seo_title, 180) || `${seoPlainText(currentBlogPost.title, 160)} | Kemet Spirit Journal`;
+      description = seoPlainText(currentBlogPost.seo_description || currentBlogPost.excerpt, 300)
+        || 'Travel inspiration and local guides from Kemet Spirit in Hurghada, Egypt.';
+      pageImage = seoSafeImage(currentBlogPost.cover_image_url) || pageImage;
+      const contentLines = String(currentBlogPost.content || '').split(/\r?\n/);
+      const blocks: string[] = [];
+      let paragraph: string[] = [];
+      let listItems: string[] = [];
+      const flushParagraph = () => {
+        if (paragraph.length) {
+          blocks.push(`<p>${paragraph.map(line => seoHtmlEscape(seoPlainText(line, 2000))).join(' ')}</p>`);
+          paragraph = [];
+        }
+      };
+      const flushList = () => {
+        if (listItems.length) {
+          blocks.push(`<ul class="seo-list">${listItems.map(item => `<li>${seoHtmlEscape(seoPlainText(item, 500))}</li>`).join('')}</ul>`);
+          listItems = [];
+        }
+      };
+      for (const rawLine of contentLines) {
+        const line = rawLine.trim();
+        if (!line) { flushParagraph(); flushList(); continue; }
+        const heading = line.match(/^#{1,3}\s+(.+)$/);
+        const bullet = line.match(/^[-*]\s+(.+)$/);
+        if (heading) {
+          flushParagraph(); flushList();
+          blocks.push(`<h2>${seoHtmlEscape(seoPlainText(heading[1], 180))}</h2>`);
+        } else if (bullet) {
+          flushParagraph();
+          listItems.push(bullet[1]);
+        } else {
+          flushList();
+          paragraph.push(line);
+        }
+      }
+      flushParagraph(); flushList();
+      body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / <a href="/blog">Travel Journal</a> / ${seoHtmlEscape(seoPlainText(currentBlogPost.title, 160))}</nav><article><h1>${seoHtmlEscape(seoPlainText(currentBlogPost.title, 160))}</h1>${pageImage !== `${origin}/logo.webp` ? `<figure><img src="${seoHtmlEscape(pageImage)}" alt="${seoHtmlEscape(seoPlainText(currentBlogPost.title, 160))}" loading="eager" style="width:100%;max-height:520px;object-fit:cover;border-radius:14px" /></figure>` : ''}<p class="seo-muted">${seoHtmlEscape(seoPlainText(currentBlogPost.blog_categories?.name, 80) || 'Kemet Spirit Journal')} · ${seoHtmlEscape(seoPlainText(currentBlogPost.author_name, 120) || 'Kemet Spirit Editorial Team')}</p>${currentBlogPost.excerpt ? `<p><strong>${seoHtmlEscape(seoPlainText(currentBlogPost.excerpt, 600))}</strong></p>` : ''}${blocks.join('')}<p><a href="/excursions">Explore Kemet Spirit excursions</a></p></article></main>`;
     }
   } else if (path.startsWith('/destinations/')) {
     let slug = '';
@@ -2732,6 +2870,21 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
           offers: { '@type': 'Offer', url: canonical, price, priceCurrency: currency, seller: { '@id': `${origin}/#organization` } } },
       } : {}),
     });
+  } else if (pageKind === 'blog' && currentBlogPost) {
+    graph.push({
+      '@type': 'BlogPosting',
+      '@id': `${canonical}#blogposting`,
+      headline: seoPlainText(currentBlogPost.title, 160),
+      description,
+      url: canonical,
+      image: pageImage !== `${origin}/logo.webp` ? [pageImage] : undefined,
+      datePublished: currentBlogPost.published_at,
+      dateModified: currentBlogPost.updated_at || currentBlogPost.published_at,
+      author: { '@type': 'Organization', name: seoPlainText(currentBlogPost.author_name, 120) || 'Kemet Spirit Editorial Team' },
+      publisher: { '@id': `${origin}/#organization` },
+      mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
+      isPartOf: { '@id': `${origin}/#website` },
+    });
   } else if (pageKind === 'destination' && activeDestination) {
     const destinationItems = destinationTours.map((tour, index) => ({
       '@type': 'ListItem',
@@ -2750,7 +2903,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
     });
   } else {
     graph.push({
-      '@type': pageKind === 'catalogue' || pageKind === 'home' ? 'CollectionPage' : 'WebPage',
+      '@type': pageKind === 'catalogue' || pageKind === 'home' || pageKind === 'blog-index' ? 'CollectionPage' : 'WebPage',
       '@id': `${canonical}#webpage`,
       url: canonical,
       name: title,
@@ -2766,7 +2919,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
   html = seoUpsertMeta(html, 'property', 'og:title', title);
   html = seoUpsertMeta(html, 'property', 'og:description', description);
   html = seoUpsertMeta(html, 'property', 'og:site_name', 'Kemet Spirit');
-  html = seoUpsertMeta(html, 'property', 'og:type', pageKind === 'tour' ? 'product' : 'website');
+  html = seoUpsertMeta(html, 'property', 'og:type', pageKind === 'tour' ? 'product' : pageKind === 'blog' ? 'article' : 'website');
   html = seoUpsertMeta(html, 'property', 'og:url', canonical);
   html = seoUpsertMeta(html, 'property', 'og:image', pageImage);
   html = seoUpsertMeta(html, 'name', 'twitter:card', 'summary_large_image');
