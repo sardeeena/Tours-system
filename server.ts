@@ -1112,7 +1112,7 @@ app.all('/api/availability/check', rateLimit(60, 60_000), async (req: Request, r
   const adults = Number.parseInt(String(req.body?.adults || req.query?.adults || '1'), 10);
   const children = Number.parseInt(String(req.body?.children || req.query?.children || '0'), 10);
 
-  if (!tourSlug || tourSlug.length > 180 || !/^\\d{4}-\\d{2}-\\d{2}$/.test(date)) {
+  if (!tourSlug || tourSlug.length > 180 || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return res.status(400).json({
       success: false,
       error: 'A valid tourSlug and date (YYYY-MM-DD) are required',
