@@ -18,6 +18,8 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { MfaChallenge } from '../components/auth/MfaChallenge';
+import { SuperAdminMfaPanel } from '../components/admin/SuperAdminMfaPanel';
 import { useToast } from '../contexts/ToastContext';
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
 import { sanitizeString, isValidEmail, sanitizeRedirectUrl, authRateLimiter } from '../lib/security';
@@ -28,7 +30,7 @@ interface LoginPageProps {
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ redirectUrl, onNavigate }) => {
-  const { user, signIn, resendConfirmation, confirmEmail } = useAuth();
+  const { user, signIn, signOut, resendConfirmation, confirmEmail, pendingMfaFactorId, requiresMfaEnrollment } = useAuth();
   const { showToast } = useToast();
 
   const [email, setEmail] = useState('');
@@ -197,6 +199,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ redirectUrl, onNavigate })
     setIsSubmitting(true);
     try {
       const result = await signIn(cleanEmail, password);
+      if (result.requiresMfa || result.requiresMfaEnrollment) {
+        authRateLimiter.reset();
+        setErrorMessage(null);
+        showToast(result.requiresMfa ? 'Enter your authenticator code to continue.' : 'Set up an authenticator to secure the super-admin account.', 'info');
+        return;
+      }
       if (result.success) {
         authRateLimiter.reset();
         showToast('Welcome back! You have successfully signed in.', 'success');
@@ -471,7 +479,19 @@ export const LoginPage: React.FC<LoginPageProps> = ({ redirectUrl, onNavigate })
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {pendingMfaFactorId ? (
+            <MfaChallenge
+              factorId={pendingMfaFactorId}
+              onCancel={async () => {
+                await signOut();
+                setPassword('');
+                setErrorMessage(null);
+              }}
+            />
+          ) : requiresMfaEnrollment ? (
+            <SuperAdminMfaPanel compact />
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="login-email" className="block text-xs font-bold text-stone-700 mb-1">
                 Email Address
@@ -545,6 +565,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ redirectUrl, onNavigate })
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
+          )}
 
           {/* Footer Navigation */}
           <div className="pt-2 text-center text-xs text-stone-600 space-y-2">
