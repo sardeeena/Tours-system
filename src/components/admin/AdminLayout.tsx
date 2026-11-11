@@ -297,7 +297,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     : !activePermission || hasPermission(activePermission);
 
   return (
-    <div className="admin-shell min-h-screen bg-[#FAF8F5] dark:bg-[#0A1118] text-[#111A24] dark:text-[#F1F5F9] flex flex-col antialiased selection:bg-[#0A6C74] selection:text-white">
+    <div className="admin-shell min-h-screen flex flex-col antialiased selection:bg-[#0A6C74] selection:text-white">
       {/* Top Warning Banner if Supabase is in local fallback mode */}
       {!supabaseConnected ? (
         <div className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2 text-xs text-amber-700 dark:text-amber-300 flex items-center justify-between">
@@ -354,9 +354,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         {/* Sidebar */}
         <aside
           className={`
-            fixed inset-y-0 left-0 z-50 w-64 max-w-[85vw] bg-white dark:bg-[#0E1B2A] border-r border-[#E8E3DA] dark:border-[#1F3854] flex flex-col justify-between shrink-0 transition-all duration-300 ease-in-out shadow-sm
+            fixed inset-y-0 left-0 z-50 w-72 max-w-[88vw] bg-white dark:bg-[#101B28] border-r border-[#E5EAF0] dark:border-[#243447] flex flex-col justify-between shrink-0 transition-all duration-300 ease-in-out shadow-lg
             lg:static lg:z-10
-            ${isSidebarOpen ? 'translate-x-0 lg:w-64' : '-translate-x-full lg:w-0 lg:overflow-hidden lg:border-r-0'}
+            ${isSidebarOpen ? 'translate-x-0 lg:w-72' : '-translate-x-full lg:w-0 lg:overflow-hidden lg:border-r-0'}
           `}
         >
           <div>
@@ -404,7 +404,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             </div>}
 
             {/* Navigation links */}
-            <nav className="p-3 space-y-1 text-xs overflow-y-auto max-h-[calc(100vh-210px)] scrollbar-thin scrollbar-thumb-stone-200 dark:scrollbar-thumb-stone-800">
+            <nav className="admin-nav p-3.5 space-y-1.5 text-[13px] overflow-y-auto max-h-[calc(100vh-220px)] scrollbar-thin scrollbar-thumb-stone-200 dark:scrollbar-thumb-stone-800">
               {visibleNavItems.map((item) => {
                 if (item.isHeader) {
                   return (
@@ -512,9 +512,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto bg-[#FAF8F5] dark:bg-[#0A1118] flex flex-col min-w-0">
+        <main className="admin-main flex-1 overflow-y-auto flex flex-col min-w-0">
           {/* Top Admin Bar with Sidebar Open/Close Button & Device Controls */}
-          <header className="sticky top-0 z-20 bg-white/95 dark:bg-[#0E1B2A]/95 backdrop-blur-md border-b border-[#E8E3DA] dark:border-[#1F3854] px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 shrink-0 shadow-2xs">
+          <header className="admin-topbar sticky top-0 z-20 bg-white/95 dark:bg-[#101B28]/95 backdrop-blur-md border-b border-[#E5EAF0] dark:border-[#243447] px-4 sm:px-6 xl:px-8 py-3.5 flex flex-wrap items-center justify-between gap-3.5 shrink-0">
             {/* Left: Open/Close Sidebar button & Active Tab */}
             <div className="flex items-center space-x-3">
               <button
@@ -652,14 +652,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           )}
 
           {/* Main View Container with device container sizing */}
-          <div className="flex-1 p-3 sm:p-5 md:p-8 overflow-x-auto flex justify-center">
+          <div className="admin-content flex-1 w-full min-w-0 p-4 sm:p-6 xl:p-8 overflow-x-auto flex justify-center">
             <div
               className={`w-full transition-all duration-300 ${
                 deviceMode === 'phone'
                   ? 'w-[390px] max-w-full bg-white dark:bg-[#111E2E] rounded-3xl border-4 border-[#0A6C74]/30 shadow-2xl p-3 sm:p-4 my-2'
                   : deviceMode === 'tablet'
                   ? 'w-[768px] max-w-full bg-white dark:bg-[#111E2E] rounded-2xl border-4 border-[#0A6C74]/30 shadow-2xl p-4 sm:p-6 my-2'
-                  : 'max-w-7xl'
+                  : 'max-w-[1600px]'
               }`}
             >
               {canAccessActiveTab ? children : (
