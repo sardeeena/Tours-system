@@ -8,6 +8,7 @@ import dotenv from 'dotenv';
 import { CONCIERGE_SYSTEM_PROMPT, TOUR_CATALOG_SUMMARY } from './src/data/chatKnowledge';
 import { STANDARD_PICKUP_LOCATIONS, GLOBAL_BOOKING_EXTRAS } from './src/data/bookingData';
 import { startBookingNotificationWorker } from './src/server/bookingNotificationWorker';
+import { INITIAL_STATIC_PAGES } from './src/data/staticPages';
 import { EXPECTED_KEMET_SUPABASE_PROJECT_REF, isExpectedKemetSupabaseUrl } from './src/lib/supabaseProjectGuard';
 
 dotenv.config();
@@ -1612,6 +1613,244 @@ app.all('/api/db/query', rateLimit(60, 60_000), async (req: AuthenticatedRequest
 });
 
 // ------------------------------------------------------------------------------
+// Search discovery endpoints: generated from published database records.
+// These endpoints never publish admin-only data or draft catalogue entries.
+// ------------------------------------------------------------------------------
+
+const KEMET_PUBLIC_ORIGIN = 'https://kemetspirit.com';
+const KEMET_CORE_PUBLIC_PATHS = [
+  '/',
+  '/excursions',
+  '/about',
+  '/why-us',
+  '/booking-conditions',
+  '/marine-safety',
+];
+
+function escapeXml(value: string): string {
+  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+}
+
+function toSitemapDate(value: unknown): string | undefined {
+  if (typeof value !== 'string' || !value.trim()) return undefined;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString().slice(0, 10);
+}
+
+function cleanPublicText(value: unknown, maxLength = 500): string {
+  return typeof value === 'string'
+    ? value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, maxLength)
+    : '';
+}
+
+app.get('/sitemap.xml', async (_req: Request, res: Response) => {
+  const urls = new Map<string, string | undefined>();
+  for (const route of KEMET_CORE_PUBLIC_PATHS) {
+    urls.set(`${KEMET_PUBLIC_ORIGIN}${route === '/' ? '/' : route}`, undefined);
+  }
+
+  if (serverSupabase) {
+    try {
+      const { data: tours, error: toursError } = await serverSupabase
+        .from('tours')
+        .select('slug, updated_at')
+        .eq('status', 'published')
+        .order('updated_at', { ascending: false })
+        .limit(5000);
+
+      if (toursError) {
+        console.warn('[SEO sitemap] Published tour query failed:', toursError.message);
+      } else {
+        for (const tour of tours || []) {
+          const slug = typeof tour.slug === 'string' ? tour.slug.trim() : '';
+          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+          urls.set(
+            `${KEMET_PUBLIC_ORIGIN}/excursions/${encodeURIComponent(slug)}`,
+            toSitemapDate(tour.updated_at)
+          );
+        }
+      }
+    } catch (error) {
+      console.warn('[SEO sitemap] Tour catalogue could not be loaded:', error);
+    }
+
+    try {
+      const { data: pageSetting, error: pagesError } = await serverSupabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'pages_content')
+        .maybeSingle();
+
+      if (pagesError) {
+        console.warn('[SEO sitemap] CMS page query failed:', pagesError.message);
+      } else {
+        const rawPages = pageSetting?.value;
+        const pages = Array.isArray(rawPages)
+          ? rawPages
+          : rawPages && typeof rawPages === 'object' && Array.isArray((rawPages as any).pages)
+            ? (rawPages as any).pages
+            : [];
+
+        for (const page of pages) {
+          const slug = typeof page?.slug === 'string' ? page.slug.trim() : '';
+          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+          if (page?.published === false || page?.status === 'draft' || page?.status === 'unpublished' || page?.seoIndexable === false) continue;
+          urls.set(
+            `${KEMET_PUBLIC_ORIGIN}/${encodeURIComponent(slug)}`,
+            toSitemapDate(page?.updated_at || page?.lastUpdated)
+          );
+        }
+      }
+    } catch (error) {
+      console.warn('[SEO sitemap] CMS pages could not be loaded:', error);
+    }
+
+    try {
+      const [destinationResult, tourDestinationResult] = await Promise.all([
+        serverSupabase.from('destinations').select('id,slug,updated_at').eq('status', 'published'),
+        serverSupabase.from('tours').select('destination_id').eq('status', 'published'),
+      ]);
+      if (destinationResult.error) {
+        console.warn('[SEO sitemap] Published destinations query failed:', destinationResult.error.message);
+      } else if (tourDestinationResult.error) {
+        console.warn('[SEO sitemap] Published destination-tours query failed:', tourDestinationResult.error.message);
+      } else {
+        const destinationIdsWithTours = new Set(
+          (tourDestinationResult.data || []).map((row: any) => row.destination_id).filter(Boolean).map(String)
+        );
+        for (const destination of destinationResult.data || []) {
+          const slug = typeof destination.slug === 'string' ? destination.slug.trim() : '';
+          if (!destinationIdsWithTours.has(String(destination.id))) continue;
+          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+          urls.set(
+            `${KEMET_PUBLIC_ORIGIN}/destinations/${encodeURIComponent(slug)}`,
+            toSitemapDate(destination.updated_at)
+          );
+        }
+      }
+    } catch (error) {
+      console.warn('[SEO sitemap] Destination pages could not be loaded:', error);
+    }
+  }
+
+  const entries = Array.from(urls.entries()).map(([loc, lastmod]) => (
+    `  <url><loc>${escapeXml(loc)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}</url>`
+  ));
+
+  const xml = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ...entries,
+    '</urlset>',
+  ].join('\n');
+
+  res.status(200);
+  res.type('application/xml');
+  res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
+  return res.send(xml);
+});
+
+app.get('/llms.txt', async (_req: Request, res: Response) => {
+  const lines = [
+    '# Kemet Spirit',
+    '',
+    '> Explore excursions and experiences across Egypt’s Red Sea coast. Tour pages provide current published descriptions, inclusions, pricing and booking details.',
+    '',
+    '## Main pages',
+    '- [Homepage](https://kemetspirit.com/)',
+    '- [Excursions](https://kemetspirit.com/excursions)',
+    '- [About](https://kemetspirit.com/about)',
+    '',
+    '## Published excursions',
+  ];
+
+  if (serverSupabase) {
+    try {
+      const { data: tours, error } = await serverSupabase
+        .from('tours')
+        .select('title, slug, short_description, price, currency')
+        .eq('status', 'published')
+        .order('sort_order', { ascending: true })
+        .limit(500);
+
+      if (error) {
+        console.warn('[SEO llms.txt] Published tour query failed:', error.message);
+      } else {
+        for (const tour of tours || []) {
+          const slug = typeof tour.slug === 'string' ? tour.slug.trim() : '';
+          const title = cleanPublicText(tour.title, 160);
+          if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+          const description = cleanPublicText(tour.short_description, 400);
+          const price = Number(tour.price);
+          const currency = typeof tour.currency === 'string' && /^[A-Z]{3}$/i.test(tour.currency) ? tour.currency.toUpperCase() : 'EUR';
+          const priceText = Number.isFinite(price) && price > 0 ? ` Starting price: ${price} ${currency}.` : '';
+          lines.push(`- [${title}](https://kemetspirit.com/excursions/${encodeURIComponent(slug)}): ${description}${priceText}`);
+        }
+      }
+    } catch (error) {
+      console.warn('[SEO llms.txt] Tour catalogue could not be loaded:', error);
+    }
+  }
+
+  if (serverSupabase) {
+    lines.push('', '## Published destinations');
+    try {
+      const [destinationResult, tourDestinationResult] = await Promise.all([
+        serverSupabase.from('destinations').select('id,name,slug,description').eq('status', 'published').order('sort_order', { ascending: true }),
+        serverSupabase.from('tours').select('destination_id').eq('status', 'published'),
+      ]);
+      if (destinationResult.error) {
+        console.warn('[SEO llms.txt] Published destinations query failed:', destinationResult.error.message);
+      } else if (tourDestinationResult.error) {
+        console.warn('[SEO llms.txt] Destination tour links query failed:', tourDestinationResult.error.message);
+      } else {
+        const destinationIdsWithTours = new Set(
+          (tourDestinationResult.data || []).map((row: any) => row.destination_id).filter(Boolean).map(String)
+        );
+        for (const destination of destinationResult.data || []) {
+          const slug = typeof destination.slug === 'string' ? destination.slug.trim() : '';
+          const name = cleanPublicText(destination.name, 120);
+          if (!name || !destinationIdsWithTours.has(String(destination.id))) continue;
+          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+          const description = cleanPublicText(destination.description, 400);
+          lines.push(`- [${name}](https://kemetspirit.com/destinations/${encodeURIComponent(slug)}): ${description}`);
+        }
+      }
+    } catch (error) {
+      console.warn('[SEO llms.txt] Destination catalogue could not be loaded:', error);
+    }
+  }
+
+  lines.push(
+    '',
+    '## Booking information',
+    '- Check each published excursion page for its current price, availability, duration, pickup information, inclusions and cancellation terms.',
+    '- Booking and availability details can change. Use the live website as the source of truth.',
+    '',
+    '## Sitemap',
+    '- https://kemetspirit.com/sitemap.xml',
+    ''
+  );
+
+  res.status(200);
+  res.type('text/plain; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
+  return res.send(lines.join('\n'));
+});
+
+// Private customer and administration routes must be crawlable so search engines
+// can observe noindex. This header is not an access-control mechanism.
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const privateRoute = /^\/(?:admin(?:\/|$)|booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$))/i;
+  if ((req.method === 'GET' || req.method === 'HEAD') && privateRoute.test(req.path)) {
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+    res.setHeader('Cache-Control', 'private, no-store, max-age=0');
+  }
+  next();
+});
+
+// ------------------------------------------------------------------------------
 // API 404 Handler
 // ------------------------------------------------------------------------------
 app.use('/api/*', (_req: Request, res: Response) => {
@@ -1635,6 +1874,425 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
 });
 
 // ------------------------------------------------------------------------------
+// Public route HTML rendering. The current React SPA remains interactive; this
+// server output supplies meaningful, route-specific HTML before JavaScript runs.
+// ------------------------------------------------------------------------------
+
+function seoHtmlEscape(value: unknown): string {
+  return String(value ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function seoPlainText(value: unknown, maxLength = 4000): string {
+  if (typeof value !== 'string') return '';
+  return value.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/\s+/g, ' ')
+    .trim().slice(0, maxLength);
+}
+
+function seoSafeImage(value: unknown): string {
+  if (typeof value !== 'string' || !value.trim()) return '';
+  try {
+    const candidate = new URL(value.trim(), 'https://kemetspirit.com');
+    return candidate.protocol === 'https:' && !candidate.username && !candidate.password ? candidate.toString() : '';
+  } catch {
+    return '';
+  }
+}
+
+async function loadKemetSeoOverride(entityType: string, identifier: string, isPageSlug: boolean): Promise<any | null> {
+  if (!serverSupabase || !identifier) return null;
+  try {
+    let query = serverSupabase.from('seo_metadata')
+      .select('seo_title,meta_description,og_image,robots_index')
+      .eq('entity_type', entityType);
+    query = isPageSlug ? query.eq('page_slug', identifier) : query.eq('entity_id', identifier);
+    const { data, error } = await query.maybeSingle();
+    if (error) {
+      console.warn('[SEO render] Metadata override unavailable:', error.message);
+      return null;
+    }
+    return data || null;
+  } catch (error) {
+    console.warn('[SEO render] Metadata override query failed:', error);
+    return null;
+  }
+}
+
+function seoPrice(priceValue: unknown, currencyValue: unknown): string {
+  const price = Number(priceValue);
+  if (!Number.isFinite(price) || price <= 0) return '';
+  const currency = typeof currencyValue === 'string' && /^[A-Z]{3}$/i.test(currencyValue)
+    ? currencyValue.toUpperCase() : 'EUR';
+  try {
+    return new Intl.NumberFormat('en', { style: 'currency', currency, maximumFractionDigits: 2 }).format(price);
+  } catch {
+    return `${price} ${currency}`;
+  }
+}
+
+async function loadKemetTours(): Promise<any[]> {
+  if (!serverSupabase) return [];
+  try {
+    const { data, error } = await serverSupabase.from('tours')
+      .select('id,slug,title,short_description,description,price,currency,duration,duration_hours,destination_id,pickup_info,cancellation_policy,departure_time,updated_at,sort_order')
+      .eq('status', 'published').order('sort_order', { ascending: true }).limit(500);
+    if (error) {
+      console.warn('[SEO render] Published tours unavailable:', error.message);
+      return [];
+    }
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.warn('[SEO render] Published tours query failed:', error);
+    return [];
+  }
+}
+
+async function loadKemetPages(): Promise<any[]> {
+  if (serverSupabase) {
+    try {
+      const { data, error } = await serverSupabase.from('site_settings')
+        .select('value').eq('key', 'pages_content').maybeSingle();
+      if (!error) {
+        const value = data?.value;
+        if (Array.isArray(value) && value.length) return value;
+        if (value && typeof value === 'object' && Array.isArray(value.pages) && value.pages.length) return value.pages;
+      } else {
+        console.warn('[SEO render] CMS pages unavailable; safe defaults used:', error.message);
+      }
+    } catch (error) {
+      console.warn('[SEO render] CMS pages query failed; safe defaults used:', error);
+    }
+  }
+  return INITIAL_STATIC_PAGES;
+}
+
+async function loadKemetDestinations(): Promise<any[]> {
+  if (!serverSupabase) return [];
+  try {
+    const { data, error } = await serverSupabase.from('destinations')
+      .select('id,name,slug,tagline,description,main_image,seo_title,seo_description,updated_at')
+      .eq('status', 'published').order('sort_order', { ascending: true }).limit(100);
+    if (error) {
+      console.warn('[SEO render] Published destinations unavailable:', error.message);
+      return [];
+    }
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.warn('[SEO render] Published destinations query failed:', error);
+    return [];
+  }
+}
+
+function seoDestinationCard(destination: any): string {
+  const slug = typeof destination?.slug === 'string' ? destination.slug.trim() : '';
+  const name = seoPlainText(destination?.name, 120);
+  if (!name || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) return '';
+  const description = seoPlainText(destination?.seo_description || destination?.description || destination?.tagline, 400);
+  return `<article class="seo-tour-card"><h2><a href="/destinations/${encodeURIComponent(slug)}">${seoHtmlEscape(name)}</a></h2>
+    ${description ? `<p>${seoHtmlEscape(description)}</p>` : ''}
+    <p><a href="/destinations/${encodeURIComponent(slug)}">Explore ${seoHtmlEscape(name)}</a></p></article>`;
+}
+
+function seoTourCard(tour: any): string {
+  const slug = typeof tour?.slug === 'string' ? tour.slug.trim() : '';
+  const title = seoPlainText(tour?.title, 160);
+  if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) return '';
+  const description = seoPlainText(tour?.short_description || tour?.description, 400);
+  const duration = seoPlainText(tour?.duration, 80);
+  const price = seoPrice(tour?.price, tour?.currency);
+  return `<article class="seo-tour-card"><h2><a href="/excursions/${encodeURIComponent(slug)}">${seoHtmlEscape(title)}</a></h2>
+    ${description ? `<p>${seoHtmlEscape(description)}</p>` : ''}
+    ${duration ? `<p>Duration: ${seoHtmlEscape(duration)}</p>` : ''}
+    ${price ? `<p><strong>From ${seoHtmlEscape(price)}</strong></p>` : ''}
+    <p><a href="/excursions/${encodeURIComponent(slug)}">View excursion details</a></p></article>`;
+}
+
+function seoInitialStyles(): string {
+  return `<style id="seo-initial-style">
+  #seo-initial-content{max-width:1180px;margin:0 auto;padding:32px 20px 56px;color:#18212b;font-family:Arial,sans-serif;line-height:1.65}
+  #seo-initial-content h1{font-size:clamp(2rem,4vw,3rem);line-height:1.15;margin:0 0 16px}
+  #seo-initial-content h2{font-size:1.35rem;margin:22px 0 8px}
+  #seo-initial-content a{color:#08757d;text-decoration:underline}
+  #seo-initial-content .seo-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;margin-top:24px}
+  #seo-initial-content .seo-tour-card{background:#fff;border:1px solid #e6e7e8;border-radius:14px;padding:16px}
+  #seo-initial-content .seo-muted{color:#58636f}
+  #seo-initial-content .seo-list{padding-left:22px}
+  </style>`;
+}
+
+function seoUpsertMeta(html: string, kind: 'name' | 'property', key: string, value: string): string {
+  const pattern = new RegExp('<meta\\s+' + kind + '="' + key + '"[^>]*>', 'i');
+  const tag = `<meta ${kind}="${seoHtmlEscape(key)}" content="${seoHtmlEscape(value)}" />`;
+  return pattern.test(html) ? html.replace(pattern, tag) : html.replace('</head>', `${tag}</head>`);
+}
+
+async function renderKemetPublicHtml(pathname: string, template: string): Promise<{ html: string; statusCode: number; noindex: boolean }> {
+  const path = pathname.replace(/\/+$/, '') || '/';
+  const origin = 'https://kemetspirit.com';
+  let title = 'Kemet Spirit | Red Sea Excursions in Egypt';
+  let description = 'Explore Red Sea excursions in Egypt, including boat trips, island visits, snorkeling and desert experiences. Review each tour’s details before booking.';
+  let body = '';
+  let noindex = false;
+  let statusCode = 200;
+  let pageKind: 'home' | 'catalogue' | 'tour' | 'destination' | 'static' | 'not-found' = 'not-found';
+  let tours: any[] = [];
+  let currentTour: any = null;
+  let activeDestination: any = null;
+  let destinationTours: any[] = [];
+  let currentHighlights: any[] = [];
+  let currentInclusions: any[] = [];
+  let currentExclusions: any[] = [];
+  let currentItinerary: any[] = [];
+  let pageImage = `${origin}/logo.webp`;
+  let visibleDestinations: any[] = [];
+  let seoEntityType = 'page';
+  let seoIdentifier = 'home';
+  let seoIdentifierIsPageSlug = true;
+
+  if (path === '/' || path === '/excursions') {
+    tours = await loadKemetTours();
+    const allDestinations = await loadKemetDestinations();
+    const publishedDestinationIds = new Set(
+      tours.map((tour) => tour.destination_id).filter(Boolean).map(String)
+    );
+    visibleDestinations = allDestinations.filter((destination) => publishedDestinationIds.has(String(destination.id)));
+  }
+
+  if (path === '/') {
+    pageKind = 'home';
+    const cards = tours.slice(0, 6).map(seoTourCard).filter(Boolean).join('');
+    body = `<main id="seo-initial-content"><h1>Explore Red Sea Excursions in Egypt</h1>
+      <p>Discover the excursions currently published on Kemet Spirit. Compare available boat trips, island experiences, snorkeling activities and other Red Sea tours using the individual excursion details.</p>
+      <h2>Explore destinations</h2>
+      <div class="seo-grid">${(visibleDestinations || []).map(seoDestinationCard).filter(Boolean).join('')}</div>
+      <h2>Explore published excursions</h2><p><a href="/excursions">Browse all excursions</a></p>
+      <div class="seo-grid">${cards || '<p>Explore the excursions catalogue for currently published experiences and details.</p>'}</div></main>`;
+  } else if (path === '/excursions') {
+    pageKind = 'catalogue';
+    title = 'Red Sea Excursions & Boat Trips | Kemet Spirit';
+    description = 'Browse published Red Sea excursions in Egypt. Compare boat trips, island experiences, snorkeling activities, trip durations and prices.';
+    const cards = tours.map(seoTourCard).filter(Boolean).join('');
+    body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / Excursions</nav>
+      <h1>Red Sea Excursions & Boat Trips</h1>
+      <p>Browse the excursions currently published on Kemet Spirit. Review each tour’s description, duration, price and booking details.</p>
+      <div class="seo-grid">${cards || '<p>There are currently no published excursions to display.</p>'}</div>
+      <h2>Explore by destination</h2>
+      <div class="seo-grid">${(visibleDestinations || []).map(seoDestinationCard).filter(Boolean).join('')}</div></main>`;
+  } else if (path.startsWith('/excursions/')) {
+    let slug = '';
+    try { slug = decodeURIComponent(path.slice('/excursions/'.length)); } catch { slug = ''; }
+    if (serverSupabase && /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) {
+      try {
+        const { data, error } = await serverSupabase.from('tours').select('*')
+          .eq('slug', slug).eq('status', 'published').maybeSingle();
+        if (error) console.warn('[SEO render] Tour detail unavailable:', error.message);
+        currentTour = data || null;
+      } catch (error) {
+        console.warn('[SEO render] Tour detail query failed:', error);
+      }
+    }
+    if (currentTour) {
+      pageKind = 'tour';
+      seoEntityType = 'tour';
+      seoIdentifier = String(currentTour.id);
+      seoIdentifierIsPageSlug = false;
+      title = `${seoPlainText(currentTour.title, 160)} | Kemet Spirit`;
+      const summary = seoPlainText(currentTour.short_description || currentTour.description, 300);
+      description = summary || `Review details and booking information for ${seoPlainText(currentTour.title, 160)}.`;
+      const relationQueries = await Promise.all([
+        serverSupabase!.from('tour_images').select('image_url,alt_text,is_primary').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
+        serverSupabase!.from('tour_highlights').select('item').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
+        serverSupabase!.from('tour_inclusions').select('item').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
+        serverSupabase!.from('tour_exclusions').select('item').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
+        serverSupabase!.from('tour_itinerary').select('time,title,description').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
+      ]);
+      const tourImages = relationQueries[0].error ? [] : relationQueries[0].data || [];
+      const primaryImage = tourImages.find((image: any) => image.is_primary) || tourImages[0];
+      pageImage = seoSafeImage(primaryImage?.image_url) || pageImage;
+      currentHighlights = relationQueries[1].error ? [] : relationQueries[1].data || [];
+      currentInclusions = relationQueries[2].error ? [] : relationQueries[2].data || [];
+      currentExclusions = relationQueries[3].error ? [] : relationQueries[3].data || [];
+      currentItinerary = relationQueries[4].error ? [] : relationQueries[4].data || [];
+
+      const price = seoPrice(currentTour.price, currentTour.currency);
+      const duration = seoPlainText(currentTour.duration, 100);
+      const list = (heading: string, rows: any[]) => rows.length
+        ? `<section><h2>${heading}</h2><ul class="seo-list">${rows.map(row => `<li>${seoHtmlEscape(seoPlainText(row.item || row.title, 400))}</li>`).join('')}</ul></section>`
+        : '';
+      const itinerary = currentItinerary.length
+        ? `<section><h2>Itinerary</h2><ol class="seo-list">${currentItinerary.map(row => `<li><strong>${seoHtmlEscape(seoPlainText(row.time, 40))} ${seoHtmlEscape(seoPlainText(row.title, 180))}</strong> ${seoHtmlEscape(seoPlainText(row.description, 400))}</li>`).join('')}</ol></section>`
+        : '';
+      body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / <a href="/excursions">Excursions</a></nav><article>
+        <h1>${seoHtmlEscape(seoPlainText(currentTour.title, 160))}</h1>
+        ${pageImage !== `${origin}/logo.webp` ? `<figure><img src="${seoHtmlEscape(pageImage)}" alt="${seoHtmlEscape(seoPlainText(currentTour.title, 160))}" loading="eager" style="width:100%;max-height:420px;object-fit:cover;border-radius:14px" /></figure>` : ''}
+        ${summary ? `<p>${seoHtmlEscape(summary)}</p>` : ''}
+        ${price ? `<p><strong>Starting price: ${seoHtmlEscape(price)}</strong></p>` : ''}
+        ${duration ? `<p>Duration: ${seoHtmlEscape(duration)}</p>` : ''}
+        ${currentTour.description ? `<section><h2>About this excursion</h2><p>${seoHtmlEscape(seoPlainText(currentTour.description, 4000))}</p></section>` : ''}
+        ${list('Highlights', currentHighlights)}${itinerary}${list('Included', currentInclusions)}${list('Not included', currentExclusions)}
+        ${currentTour.pickup_info ? `<section><h2>Pickup and departure</h2><p>${seoHtmlEscape(seoPlainText(currentTour.pickup_info, 1000))}</p></section>` : ''}
+        ${currentTour.cancellation_policy ? `<section><h2>Cancellation information</h2><p>${seoHtmlEscape(seoPlainText(currentTour.cancellation_policy, 1000))}</p></section>` : ''}
+        <p><a href="/booking?tour=${encodeURIComponent(slug)}">Continue to booking</a></p>
+      </article></main>`;
+    }
+  } else if (path.startsWith('/destinations/')) {
+    let slug = '';
+    try { slug = decodeURIComponent(path.slice('/destinations/'.length)); } catch { slug = ''; }
+    if (serverSupabase && /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) {
+      try {
+        const { data, error } = await serverSupabase.from('destinations').select('*')
+          .eq('slug', slug).eq('status', 'published').maybeSingle();
+        if (error) console.warn('[SEO render] Destination lookup failed:', error.message);
+        activeDestination = data || null;
+      } catch (error) {
+        console.warn('[SEO render] Destination query failed:', error);
+      }
+    }
+    if (activeDestination && serverSupabase) {
+      try {
+        const { data, error } = await serverSupabase.from('tours').select('*')
+          .eq('destination_id', activeDestination.id).eq('status', 'published')
+          .order('sort_order', { ascending: true }).limit(100);
+        if (error) console.warn('[SEO render] Destination tours query failed:', error.message);
+        destinationTours = Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.warn('[SEO render] Destination tours query exception:', error);
+      }
+    }
+    if (activeDestination && destinationTours.length > 0) {
+      pageKind = 'destination';
+      seoEntityType = 'destination';
+      seoIdentifier = String(activeDestination.id);
+      seoIdentifierIsPageSlug = false;
+      title = seoPlainText(activeDestination.seo_title, 180)
+        || `${seoPlainText(activeDestination.name, 120)} Excursions & Activities | Kemet Spirit`;
+      description = seoPlainText(activeDestination.seo_description || activeDestination.description || activeDestination.tagline, 300);
+      pageImage = seoSafeImage(activeDestination.main_image) || pageImage;
+      const cards = destinationTours.map(seoTourCard).filter(Boolean).join('');
+      body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / <a href="/excursions">Excursions</a> / ${seoHtmlEscape(seoPlainText(activeDestination.name, 120))}</nav>
+        <article><h1>Excursions in ${seoHtmlEscape(seoPlainText(activeDestination.name, 120))}</h1>
+        ${activeDestination.tagline ? `<p><strong>${seoHtmlEscape(seoPlainText(activeDestination.tagline, 300))}</strong></p>` : ''}
+        ${description ? `<p>${seoHtmlEscape(description)}</p>` : ''}
+        <h2>Published excursions in ${seoHtmlEscape(seoPlainText(activeDestination.name, 120))}</h2>
+        <div class="seo-grid">${cards}</div></article></main>`;
+    }
+  } else {
+    const pages = await loadKemetPages();
+    const page = pages.find((item: any) => item && item.slug === path.slice(1));
+    if (page) {
+      pageKind = 'static';
+      seoIdentifier = String(page.slug);
+      seoIdentifierIsPageSlug = true;
+      title = seoPlainText(page.seoTitle, 180) || `${seoPlainText(page.title, 160)} | Kemet Spirit`;
+      description = seoPlainText(page.seoDescription, 300) || seoPlainText(page.heroSubtitle, 300);
+      noindex = page.seoIndexable === false;
+      const sections = Array.isArray(page.sections) ? page.sections.map((section: any) => {
+        const h = seoPlainText(section?.title, 180);
+        const p = seoPlainText(section?.content, 3000);
+        return `<section>${h ? `<h2>${seoHtmlEscape(h)}</h2>` : ''}${p ? `<p>${seoHtmlEscape(p)}</p>` : ''}</section>`;
+      }).join('') : '';
+      body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / ${seoHtmlEscape(seoPlainText(page.title, 160))}</nav>
+        <article><h1>${seoHtmlEscape(seoPlainText(page.heroHeadline, 240) || seoPlainText(page.title, 160))}</h1>
+        ${page.heroSubtitle ? `<p>${seoHtmlEscape(seoPlainText(page.heroSubtitle, 1000))}</p>` : ''}${sections}</article></main>`;
+    }
+  }
+
+  if (pageKind === 'not-found') {
+    statusCode = 404;
+    noindex = true;
+    title = 'Page Not Found | Kemet Spirit';
+    description = 'The requested page could not be found.';
+    body = `<main id="seo-initial-content"><h1>Page not found</h1><p>The requested page is not available.</p><p><a href="/">Return to the homepage</a> or <a href="/excursions">browse excursions</a>.</p></main>`;
+  }
+
+  if (pageKind !== 'not-found') {
+    const override = await loadKemetSeoOverride(seoEntityType, seoIdentifier, seoIdentifierIsPageSlug);
+    if (override?.seo_title) title = seoPlainText(override.seo_title, 180);
+    if (override?.meta_description) description = seoPlainText(override.meta_description, 300);
+    if (override?.og_image) pageImage = seoSafeImage(override.og_image) || pageImage;
+    if (override?.robots_index === false) noindex = true;
+  }
+
+  const canonical = `${origin}${path === '/' ? '/' : path}`;
+  const organization = {
+    '@type': 'TravelAgency',
+    '@id': `${origin}/#organization`,
+    name: 'Kemet Spirit',
+    url: origin,
+    logo: `${origin}/logo.webp`,
+  };
+  const graph: any[] = [
+    organization,
+    { '@type': 'WebSite', '@id': `${origin}/#website`, url: origin, name: 'Kemet Spirit', publisher: { '@id': `${origin}/#organization` }, inLanguage: 'en' },
+  ];
+  if (pageKind === 'tour' && currentTour) {
+    const price = Number(currentTour.price);
+    const currency = typeof currentTour.currency === 'string' && /^[A-Z]{3}$/i.test(currentTour.currency)
+      ? currentTour.currency.toUpperCase() : 'EUR';
+    graph.push({
+      '@type': 'TouristTrip',
+      '@id': `${canonical}#touristtrip`,
+      name: seoPlainText(currentTour.title, 160),
+      description,
+      url: canonical,
+      image: pageImage !== `${origin}/logo.webp` ? [pageImage] : undefined,
+      provider: { '@id': `${origin}/#organization` },
+      ...(Number.isFinite(price) && price > 0 ? {
+        subjectOf: { '@type': 'Product', name: seoPlainText(currentTour.title, 160),
+          offers: { '@type': 'Offer', url: canonical, price, priceCurrency: currency, seller: { '@id': `${origin}/#organization` } } },
+      } : {}),
+    });
+  } else if (pageKind === 'destination' && activeDestination) {
+    const destinationItems = destinationTours.map((tour, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: seoPlainText(tour.title, 160),
+      url: `${origin}/excursions/${encodeURIComponent(String(tour.slug || ''))}`,
+    })).filter((item) => item.name && /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(item.url.split('/').pop() || ''));
+    graph.push({
+      '@type': 'TouristDestination',
+      '@id': `${canonical}#destination`,
+      name: seoPlainText(activeDestination.name, 120),
+      description,
+      url: canonical,
+      image: pageImage !== `${origin}/logo.webp` ? pageImage : undefined,
+      subjectOf: { '@type': 'ItemList', itemListElement: destinationItems },
+    });
+  } else {
+    graph.push({
+      '@type': pageKind === 'catalogue' || pageKind === 'home' ? 'CollectionPage' : 'WebPage',
+      '@id': `${canonical}#webpage`,
+      url: canonical,
+      name: title,
+      description,
+      isPartOf: { '@id': `${origin}/#website` },
+    });
+  }
+
+  const schema = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }).replace(/</g, '\\u003c');
+  let html = template.replace(/<title>[\s\S]*?<\/title>/i, `<title>${seoHtmlEscape(title)}</title>`);
+  html = seoUpsertMeta(html, 'name', 'description', description);
+  html = seoUpsertMeta(html, 'name', 'robots', noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large');
+  html = seoUpsertMeta(html, 'property', 'og:title', title);
+  html = seoUpsertMeta(html, 'property', 'og:description', description);
+  html = seoUpsertMeta(html, 'property', 'og:site_name', 'Kemet Spirit');
+  html = seoUpsertMeta(html, 'property', 'og:type', pageKind === 'tour' ? 'product' : 'website');
+  html = seoUpsertMeta(html, 'property', 'og:url', canonical);
+  html = seoUpsertMeta(html, 'property', 'og:image', pageImage);
+  html = seoUpsertMeta(html, 'name', 'twitter:card', 'summary_large_image');
+  html = seoUpsertMeta(html, 'name', 'twitter:title', title);
+  html = seoUpsertMeta(html, 'name', 'twitter:description', description);
+  html = seoUpsertMeta(html, 'name', 'twitter:image', pageImage);
+  html = html.replace(/<link\s+rel="canonical"[^>]*>/i, `<link rel="canonical" href="${seoHtmlEscape(canonical)}" />`);
+  html = html.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '');
+  html = html.replace('</head>', `<script type="application/ld+json">${schema}</script>${seoInitialStyles()}</head>`);
+  html = html.replace(/<div id="root"><\/div>/i, `<div id="root">${body}</div>`);
+  return { html, statusCode, noindex };
+}
+
+// ------------------------------------------------------------------------------
 // Server Lifecycle
 // ------------------------------------------------------------------------------
 async function startServer() {
@@ -1655,6 +2313,7 @@ async function startServer() {
 
     app.use(
       express.static(distPath, {
+        index: false,
         maxAge: '1h',
         setHeaders: (res, filePath) => {
           if (filePath.endsWith('sw.js') || filePath.endsWith('manifest.webmanifest')) {
@@ -1666,14 +2325,33 @@ async function startServer() {
       })
     );
 
-    app.get('*', (req: Request, res: Response) => {
+    app.get('*', async (req: Request, res: Response) => {
       if (req.path.startsWith('/api/')) {
         return res.status(404).json({ success: false, error: 'API route not found' });
       }
-      if (fs.existsSync(indexHtmlPath)) {
-        res.sendFile(indexHtmlPath);
-      } else {
-        res.status(503).send('Awesome Adventure Tours is compiling production assets. Please wait a moment and refresh.');
+      if (!fs.existsSync(indexHtmlPath)) {
+        return res.status(503).send('Kemet Spirit production assets are not available.');
+      }
+
+      const privateRoute = /^\/(?:admin(?:\/|$)|booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$))/i;
+      if (privateRoute.test(req.path)) {
+        return res.sendFile(indexHtmlPath);
+      }
+
+      try {
+        const indexHtml = fs.readFileSync(indexHtmlPath, 'utf8');
+        const rendered = await renderKemetPublicHtml(req.path, indexHtml);
+        res.status(rendered.statusCode);
+        res.type('html');
+        if (rendered.noindex) res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+        res.setHeader('Cache-Control', rendered.statusCode === 200
+          ? 'public, max-age=30, s-maxage=60, stale-while-revalidate=30'
+          : 'no-store');
+        return res.send(rendered.html);
+      } catch (error) {
+        console.error('[Public SEO render] Failed to render route:', req.path, error);
+        res.setHeader('Cache-Control', 'no-store');
+        return res.sendFile(indexHtmlPath);
       }
     });
   }

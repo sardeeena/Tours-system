@@ -14,9 +14,9 @@ export default defineConfig(() => {
         includeAssets: ['favicon.png', 'apple-touch-icon.png', 'icon.svg', 'logo.png', 'logo-transparent.png'],
         manifest: {
           id: '/',
-          name: 'Red Sea Excursions & Tours',
-          short_name: 'RedSeaTours',
-          description: 'Official Red Sea boat trips, island cruises, snorkeling excursions, and desert safaris in Hurghada and El Gouna.',
+          name: 'Kemet Spirit',
+          short_name: 'Kemet Spirit',
+          description: 'Explore Red Sea excursions in Egypt, including boat trips, island visits, snorkeling and desert experiences.',
           theme_color: '#0A6C74',
           background_color: '#FAF8F5',
           display: 'standalone',

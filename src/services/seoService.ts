@@ -17,10 +17,10 @@ export interface SeoMetadata {
   schemaJsonLd?: Record<string, unknown>;
 }
 
-const DEFAULT_TITLE = 'Awesome Adventure Tours | Excursions, Boat Trips & Safaris';
-const DEFAULT_DESCRIPTION = 'Awesome Adventure Tours - Professional tour operator and excursion booking platform specializing in boat trips, coral snorkeling, diving, and desert safaris.';
-const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80';
-const SITE_NAME = 'Awesome Adventure Tours';
+const DEFAULT_TITLE = 'Kemet Spirit | Red Sea Excursions in Egypt';
+const DEFAULT_DESCRIPTION = 'Explore Red Sea excursions in Egypt, including boat trips, island visits, snorkeling and desert experiences. Review each tour\'s details before booking.';
+const DEFAULT_IMAGE = 'https://kemetspirit.com/logo.webp';
+const SITE_NAME = 'Kemet Spirit';
 
 /**
  * Updates or creates a <meta> element in the document head
@@ -109,7 +109,16 @@ export async function getStoredSeoMetadata(
 
     if (data.seo_title) metadata.title = data.seo_title;
     if (data.meta_description) metadata.description = data.meta_description;
-    if (data.canonical_url) metadata.canonicalUrl = data.canonical_url;
+    if (data.canonical_url) {
+      try {
+        const candidate = new URL(data.canonical_url, 'https://kemetspirit.com');
+        if (candidate.protocol === 'https:' && candidate.hostname.toLowerCase() === 'kemetspirit.com') {
+          metadata.canonicalUrl = candidate.toString();
+        }
+      } catch {
+        // Ignore invalid or off-domain canonical overrides; the route self-canonical remains.
+      }
+    }
     if (data.og_title) metadata.ogTitle = data.og_title;
     if (data.og_description) metadata.ogDescription = data.og_description;
     if (data.og_image) metadata.ogImage = data.og_image;
@@ -158,7 +167,11 @@ export const seoService = {
     }
 
     // 4. Canonical URL
-    const canonical = meta.canonicalUrl || `${window.location.origin}${window.location.pathname}`;
+    const hostname = window.location.hostname.toLowerCase();
+    const canonicalOrigin = hostname === 'kemetspirit.com' || hostname === 'www.kemetspirit.com'
+      ? 'https://kemetspirit.com'
+      : window.location.origin;
+    const canonical = meta.canonicalUrl || `${canonicalOrigin}${window.location.pathname}`;
     setCanonicalUrl(canonical);
 
     // 5. Robots directives

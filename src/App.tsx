@@ -23,6 +23,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { ResetPasswordPage } from './pages/ResetPasswordPage';
 import { AccountPage } from './pages/AccountPage';
 import { StaticContentPage } from './pages/StaticContentPage';
+import { DestinationDetailPage } from './pages/DestinationDetailPage';
 import { ALL_TOURS, CURRENCY_CONFIGS } from './data/toursData';
 import { Tour, CurrencyConfig, Destination, Category } from './types';
 import { Booking } from './types/booking';
@@ -174,6 +175,18 @@ function MainApp() {
   const staticPage = useMemo(
     () => staticPages.find((page) => page.slug === staticPageSlug) || null,
     [staticPages, staticPageSlug]
+  );
+
+  const destinationDetailSlug = useMemo(() => {
+    if (!currentPath.startsWith('/destinations/')) return null;
+    return currentPath.replace('/destinations/', '').replace(/\/$/, '') || null;
+  }, [currentPath]);
+
+  const currentDestination = useMemo(
+    () => destinationDetailSlug
+      ? liveDestinations.find((destination) => destination.slug === destinationDetailSlug) || null
+      : null,
+    [destinationDetailSlug, liveDestinations]
   );
 
   // Active confirmed booking object for immediate view
@@ -407,8 +420,21 @@ function MainApp() {
   useEffect(() => {
     if (currentPath.startsWith('/admin')) {
       seoService.apply({
-        title: 'Staff & Admin CMS | Awesome Adventure Tours',
-        description: 'Administrative portal for tour management, booking verification, and fleet operations.',
+        title: 'Staff & Admin Login | Kemet Spirit',
+        description: 'Private Kemet Spirit administration portal.',
+        robotsIndex: false,
+        robotsFollow: false,
+      });
+      return;
+    }
+
+    if (['/login', '/register', '/account', '/profile', '/reset-password'].includes(currentPath)) {
+      seoService.apply({
+        title: `Private Account | Kemet Spirit`,
+        description: 'Private customer account access.',
+        canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
+        robotsIndex: false,
+        robotsFollow: false,
       });
       return;
     }
@@ -416,8 +442,8 @@ function MainApp() {
     if (currentPath.startsWith('/booking/confirmation')) {
       seoService.apply({
         title: confirmationReference
-          ? `Booking Confirmed (${confirmationReference}) | Awesome Adventure Tours`
-          : 'Booking Confirmation | Awesome Adventure Tours',
+          ? `Booking Confirmed (${confirmationReference}) | Kemet Spirit`
+          : 'Booking Confirmation | Kemet Spirit',
         description: 'Your excursion booking voucher and confirmed hotel pickup transfer itinerary.',
         canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
         robotsIndex: false,
@@ -428,7 +454,7 @@ function MainApp() {
 
     if (currentPath === '/my-booking' || currentPath.startsWith('/my-booking/')) {
       seoService.apply({
-        title: 'Manage Your Booking | Awesome Adventure Tours',
+        title: 'Manage Your Booking | Kemet Spirit',
         description: 'Retrieve your booking details and voucher using your secure booking reference.',
         canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
         robotsIndex: false,
@@ -439,7 +465,7 @@ function MainApp() {
 
     if (currentPath === '/booking' || currentPath.startsWith('/booking/')) {
       seoService.apply({
-        title: 'Book Your Excursion | Awesome Adventure Tours',
+        title: 'Book Your Excursion | Kemet Spirit',
         description: 'Complete your secure reservation for a Red Sea excursion.',
         canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
         robotsIndex: false,
@@ -451,16 +477,19 @@ function MainApp() {
     // Apply the route's safe defaults first, then overlay metadata saved in Admin > SEO.
     const baseSeoMetadata = staticPage
       ? {
-          title: staticPage.seoTitle || `${staticPage.title} | Awesome Adventure Tours`,
+          title: staticPage.seoTitle || `${staticPage.title} | Kemet Spirit`,
           description: staticPage.seoDescription || staticPage.heroSubtitle,
           canonicalUrl: typeof window !== 'undefined'
-            ? `${window.location.origin}/${staticPage.slug}`
+            ? `https://kemetspirit.com/${staticPage.slug}`
             : undefined,
           ogType: 'article' as const,
+          robotsIndex: staticPage.seoIndexable !== false,
+          robotsFollow: true,
         }
       : getPageSeo(currentPath, {
           tour: currentTourDetail,
           tours: liveTours,
+          destination: currentDestination,
         });
 
     seoService.apply(baseSeoMetadata);
@@ -473,6 +502,8 @@ function MainApp() {
       seoEntity = { type: 'page', identifier: 'home', pageSlug: true };
     } else if (tourDetailSlug && currentTourDetail) {
       seoEntity = { type: 'tour', identifier: currentTourDetail.id, pageSlug: false };
+    } else if (currentDestination) {
+      seoEntity = { type: 'destination', identifier: currentDestination.id, pageSlug: false };
     } else if (currentPath === '/excursions' && searchParams.get('destination')) {
       const selectedDestination = liveDestinations.find((destination) =>
         destination.slug === searchParams.get('destination') ||
@@ -513,6 +544,7 @@ function MainApp() {
     staticPage,
     searchParams,
     tourDetailSlug,
+    currentDestination,
   ]);
 
   // Handlers from Homepage
@@ -533,6 +565,13 @@ function MainApp() {
   };
 
   const handleSelectHomeDestination = (destName: string) => {
+    const selectedDestination = liveDestinations.find(
+      (destination) => destination.name === destName || destination.slug === destName
+    );
+    if (selectedDestination && selectedDestination.tourCount > 0) {
+      navigate(`/destinations/${selectedDestination.slug}`);
+      return;
+    }
     setInitialSearchFilter({
       destination: destName,
       category: 'All',
@@ -1161,6 +1200,33 @@ function MainApp() {
           <p className="text-xs text-stone-500 mt-1">Retrieving reference: {confirmationReference}</p>
         </div>
       );
+    }
+
+    // Dedicated destination pages are backed only by published Supabase destinations and tours.
+    if (destinationDetailSlug) {
+      if (currentDestination) {
+        const destinationTours = liveTours.filter(
+          (tour) => tour.destination.toLowerCase() === currentDestination.name.toLowerCase()
+        );
+        return (
+          <DestinationDetailPage
+            destination={currentDestination}
+            tours={destinationTours}
+            currency={currentCurrency}
+            onViewTour={handleViewTour}
+            onBookTour={handleStartBooking}
+            onViewAllExcursions={() => navigate('/excursions')}
+          />
+        );
+      }
+      if (loadingDestinations) {
+        return (
+          <div className="min-h-[50vh] flex items-center justify-center text-stone-600">
+            Loading destination information...
+          </div>
+        );
+      }
+      return <NotFoundPage />;
     }
 
     // Public CMS pages must be resolved before the booking route so /booking-conditions

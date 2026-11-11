@@ -1,20 +1,9 @@
-# Robots.txt for Red Sea Excursions & Tours
+# Kemet Spirit crawler policy
 User-agent: *
 Allow: /
-Allow: /excursions
-Allow: /excursions/*
-Allow: /booking
-Allow: /my-booking
-Allow: /privacy
-Allow: /about
-Allow: /why-us
-Allow: /booking-conditions
-Allow: /marine-safety
-
-# Disallow admin back-office and private API endpoints
-Disallow: /admin/
-Disallow: /admin/*
 Disallow: /api/
 
-# Sitemap location
+# Keep private application routes crawlable so crawlers can observe their noindex response headers.
+# Access control is enforced by the application, not by robots.txt.
+
 Sitemap: https://kemetspirit.com/sitemap.xml

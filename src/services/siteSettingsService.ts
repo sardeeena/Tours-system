@@ -40,29 +40,18 @@ export interface FooterContentSettings {
   paymentIconsText: string;
 }
 
-export interface StaticPageContent {
-  id: string;
-  title: string;
-  slug: string;
-  heroHeadline: string;
-  heroSubtitle: string;
-  lastUpdated: string;
-  sections: Array<{
-    title: string;
-    content: string;
-  }>;
-  seoTitle?: string;
-  seoDescription?: string;
-}
+import { INITIAL_STATIC_PAGES, StaticPageContent } from '../data/staticPages';
+export { INITIAL_STATIC_PAGES };
+export type { StaticPageContent };
 
 const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
-  companyName: 'Awesome Adventure Tours',
-  email: 'reservations@awesomeadventure.tours',
-  phone: '+20 151 5212741',
-  whatsapp: '+20 151 5212741',
-  whatsappUrl: 'https://wa.me/201515212741',
-  address: 'Hurghada Marina Boulevard, Pier 4 Dispatch Office, Red Sea Governorate, Egypt',
-  operatingHours: '06:00 - 23:00 EEST (Daily Pier Operations)',
+  companyName: 'Kemet Spirit',
+  email: '',
+  phone: '',
+  whatsapp: '',
+  whatsappUrl: '',
+  address: '',
+  operatingHours: '',
   defaultCurrency: 'EUR',
   supportedCurrencies: ['EUR', 'USD', 'GBP', 'EGP'],
   defaultCountry: 'Egypt',
@@ -71,7 +60,7 @@ const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
 const DEFAULT_BOOKING_POLICIES: BookingPolicySettings = {
   bookingNoticeCutoffHours: 12,
   cancellationNoticeHours: 24,
-  cancellationPolicyText: 'Free 100% cancellation up to 24 hours before trip departure time. Full automatic refund or free rescheduling in case of Coast Guard harbor weather closures.',
+  cancellationPolicyText: 'Cancellation, refund and rescheduling terms depend on the selected excursion. Review the terms shown on the tour page and during checkout before booking.',
   depositRequired: false,
   depositPercent: 0,
   childAgeLimit: 11,
@@ -80,17 +69,17 @@ const DEFAULT_BOOKING_POLICIES: BookingPolicySettings = {
 };
 
 const DEFAULT_SOCIAL_LINKS: SocialLinksSettings = {
-  facebook: 'https://facebook.com/AwesomeAdventureTours',
-  instagram: 'https://instagram.com/awesomeadventuretours',
-  youtube: 'https://youtube.com/@awesomeadventuretours',
-  tripadvisor: 'https://tripadvisor.com/Attraction_Review-Hurghada-Red_Sea.html',
+  facebook: '',
+  instagram: '',
+  youtube: '',
+  tripadvisor: '',
 };
 
 const DEFAULT_FOOTER_CONTENT: FooterContentSettings = {
-  copyrightNotice: '© 2026 Awesome Adventure Tours SAE. Registered Tour Operator License #8421.',
-  aboutSnippet: 'Awesome Adventure Tours - professional maritime tour operator based in Hurghada Marina. Certified vessels, private yacht charters, island transfers, and desert safaris.',
-  badges: ['Egyptian Ministry of Tourism Certified', 'PADI Certified Dive Centers', 'Coast Guard Safety Compliant'],
-  paymentIconsText: 'Cash on Pickup • Visa • MasterCard • Bank Transfer',
+  copyrightNotice: `© ${new Date().getFullYear()} Kemet Spirit.`,
+  aboutSnippet: 'Explore excursions and experiences across Egypt’s Red Sea coast. Review each tour’s details, inclusions and booking information before reserving.',
+  badges: [],
+  paymentIconsText: '',
 };
 
 const LOCAL_PREFIX = 'rse_settings_';
@@ -187,99 +176,6 @@ export async function getFooterContent(): Promise<FooterContentSettings> {
 export async function saveFooterContent(content: FooterContentSettings): Promise<void> {
   return saveSetting<FooterContentSettings>('footer_content', content, 'Footer copy, copyright, and compliance badges');
 }
-
-export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
-  {
-    id: 'about',
-    title: 'About Red Sea Excursions & Voyages',
-    slug: 'about',
-    heroHeadline: 'Pioneering Maritime Tourism & Desert Expeditions Across Egypt',
-    heroSubtitle: 'From private luxury catamarans to desert safari bivouacs, we craft authentic experiences backed by strict Coast Guard maritime safety compliance.',
-    lastUpdated: '2026-10-01',
-    sections: [
-      {
-        title: 'Our Heritage & Fleet',
-        content: 'Founded in Hurghada in 2014, Red Sea Excursions operates a modern fleet of 8 vessels registered with the Egyptian Maritime Safety Authority (EMSA). Every yacht is inspected biannually and staffed by licensed marine captains and emergency first response certified divemasters.',
-      },
-      {
-        title: 'Direct Tour Operator Commitment',
-        content: 'Unlike booking aggregators or third-party resellers, we own and manage our vessels, quad bike centers, and private transfer vehicles. When you reserve through Red Sea Excursions, you speak directly with the pier dispatchers who launch your trip.',
-      },
-    ],
-  },
-  {
-    id: 'why-us',
-    title: 'Why Choose Red Sea Voyages',
-    slug: 'why-us',
-    heroHeadline: 'Excellence In Every Departure: Verified Reliability & Transparent Service',
-    heroSubtitle: 'No hidden marina surcharges, transparent pickup scheduling, and certified safety gear on every excursion.',
-    lastUpdated: '2026-10-01',
-    sections: [
-      {
-        title: 'Guaranteed 24-Hour Free Cancellation',
-        content: 'Plans change when traveling. Enjoy complete flexibility with our unconditional 24-hour notice cancellation policy and immediate refunds.',
-      },
-      {
-        title: 'Official Coast Guard Weather Protection',
-        content: 'Safety is paramount. If the Red Sea Port Authority restricts nautical departures due to winds or swells, you are rebooked automatically or issued an instant 100% refund.',
-      },
-    ],
-  },
-  {
-    id: 'marine-safety',
-    title: 'Marine Safety & Coast Guard Compliance',
-    slug: 'marine-safety',
-    heroHeadline: 'Naval Port Clearance & Maritime Safety Standards',
-    heroSubtitle: 'Operating strictly in accordance with Egyptian Coast Guard regulations and international maritime safety protocols.',
-    lastUpdated: '2026-10-01',
-    sections: [
-      {
-        title: 'Passenger Manifest Protocols',
-        content: 'In accordance with Red Sea Naval Port Authority regulations, all vessels submit passenger manifests with passenger names and nationalities prior to harbor departure. Our dispatch software automates this compliance to eliminate dock delays.',
-      },
-      {
-        title: 'Onboard Life Support & Rescue Equipment',
-        content: 'Every yacht carries automated SOLAS-approved inflatable liferafts, hydrostatic release units, satellite EPIRB beacons, marine VHF radios, and commercial oxygen kits for certified dive safety.',
-      },
-    ],
-  },
-  {
-    id: 'booking-conditions',
-    title: 'Booking Terms & Conditions',
-    slug: 'booking-conditions',
-    heroHeadline: 'Official Reservation Terms & Pier Desk Policies',
-    heroSubtitle: 'Clear, traveler-friendly policies designed for seamless Red Sea experiences.',
-    lastUpdated: '2026-10-01',
-    sections: [
-      {
-        title: 'Reservations & Confirmation',
-        content: 'Upon completing your booking online, an instant reference number (RST-YYYY-XXXX) is issued alongside a digital voucher. No paper printing is necessary—simply present your smartphone confirmation to your transfer driver.',
-      },
-      {
-        title: 'Hotel Pickup & Logistics',
-        content: 'Complimentary lobby pickup is provided from all central Hurghada resorts. Drivers arrive within the stated pickup window and hold a Red Sea Voyages passenger name card.',
-      },
-    ],
-  },
-  {
-    id: 'privacy',
-    title: 'Privacy Policy',
-    slug: 'privacy',
-    heroHeadline: 'Data Protection & Traveler Privacy Commitment',
-    heroSubtitle: 'How we collect, protect, and process your travel and booking information.',
-    lastUpdated: '2026-10-01',
-    sections: [
-      {
-        title: 'Data Collection & Port Compliance',
-        content: 'We only collect necessary travel information (name, contact email, phone number, hotel pickup location) required to fulfill your reservation and submit legal passenger manifests to the Egyptian Maritime Safety Authority.',
-      },
-      {
-        title: 'Secure Payment Processing',
-        content: 'We never store sensitive credit card credentials on our servers. All digital transactions are processed through PCI-DSS Level 1 compliant payment gateways.',
-      },
-    ],
-  },
-];
 
 export async function getStaticPages(): Promise<StaticPageContent[]> {
   const customPages = await getSetting<StaticPageContent[]>('pages_content', INITIAL_STATIC_PAGES);
