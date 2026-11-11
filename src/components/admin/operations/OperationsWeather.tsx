@@ -195,9 +195,11 @@ export const OperationsWeather: React.FC = () => {
           {/* Clearance Status Card */}
           <div
             className={`border rounded-2xl p-6 relative overflow-hidden ${
-              weatherInfo.coastGuardCleared
+              weatherInfo.coastGuardCleared === true
                 ? 'bg-emerald-950/20 border-emerald-500/30'
-                : 'bg-red-950/20 border-red-500/30'
+                : weatherInfo.coastGuardCleared === false
+                  ? 'bg-red-950/20 border-red-500/30'
+                  : 'bg-amber-950/20 border-amber-500/30'
             }`}
           >
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
