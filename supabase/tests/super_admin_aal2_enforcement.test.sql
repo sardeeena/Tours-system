@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(9);
+SELECT plan(11);
 
 INSERT INTO auth.users (
   id, aud, role, email, encrypted_password, email_confirmed_at,
@@ -27,16 +27,25 @@ WHERE id = 'f9000000-0000-0000-0000-000000000004';
 SELECT set_config('app.admin_provisioning_nonce', '', true);
 SELECT set_config('app.admin_provisioning_active_user', '', true);
 
+-- Model a legacy super-admin that also has an admin role assignment.
+INSERT INTO public.user_roles (user_id, role_id)
+SELECT 'f9000000-0000-0000-0000-000000000003', id
+FROM public.access_roles
+WHERE slug = 'admin'
+ON CONFLICT (user_id, role_id) DO NOTHING;
+
 SET LOCAL request.jwt.claims = '{"sub":"f9000000-0000-0000-0000-000000000003","role":"authenticated","aal":"aal1"}';
 SET LOCAL request.jwt.claim.sub = 'f9000000-0000-0000-0000-000000000003';
 SET LOCAL ROLE authenticated;
 
 SELECT is(private.has_role('super_admin'), false, 'super_admin role is denied at AAL1');
+SELECT is(private.has_role('admin'), false, 'super_admin cannot use an additional admin role at AAL1');
 SELECT is(private.has_permission('customers.update'), false, 'super_admin permissions are denied at AAL1');
 SELECT is(private.is_admin(), false, 'super_admin admin checks are denied at AAL1');
 
 SET LOCAL request.jwt.claims = '{"sub":"f9000000-0000-0000-0000-000000000003","role":"authenticated","aal":"aal2"}';
 SELECT is(private.has_role('super_admin'), true, 'super_admin role is granted at AAL2');
+SELECT is(private.has_role('admin'), true, 'super_admin additional admin role is granted at AAL2');
 SELECT is(private.has_permission('customers.update'), true, 'super_admin permissions are granted at AAL2');
 SELECT is(private.is_admin(), true, 'super_admin admin checks are granted at AAL2');
 
