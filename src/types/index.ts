@@ -75,6 +75,8 @@ export interface Destination {
   description: string;
   highlights: string[];
   distanceFromAirport: string;
+  seoTitle?: string;
+  seoDescription?: string;
 }
 
 export interface Category {
