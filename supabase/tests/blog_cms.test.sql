@@ -10,8 +10,8 @@ SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid='public.blog_posts'::re
 
 SELECT is(
   (SELECT count(*)::integer FROM pg_policies WHERE schemaname='public' AND tablename='blog_posts' AND cmd='SELECT'),
-  1,
-  'blog posts use one combined public/editor SELECT policy'
+  2,
+  'blog posts have separate anonymous and authenticated SELECT policies'
 );
 SELECT is(
   (SELECT count(*)::integer FROM pg_policies WHERE schemaname='public' AND tablename='blog_categories' AND cmd='SELECT'),
@@ -23,13 +23,22 @@ SELECT ok(
   EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname='public' AND tablename='blog_posts'
-      AND policyname='blog_posts_public_and_editor_read'
+      AND policyname='blog_posts_anon_read'
       AND roles @> ARRAY['anon']::name[]
+      AND NOT (roles @> ARRAY['authenticated']::name[])
+      AND qual LIKE '%published%'
+      AND qual NOT LIKE '%has_permission%'
+  )
+  AND EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname='public' AND tablename='blog_posts'
+      AND policyname='blog_posts_authenticated_read'
       AND roles @> ARRAY['authenticated']::name[]
+      AND NOT (roles @> ARRAY['anon']::name[])
       AND qual LIKE '%published%'
       AND qual LIKE '%has_permission%'
   ),
-  'published content is public while drafts require content.manage'
+  'anonymous reads avoid staff RBAC execution and authenticated drafts require content.manage'
 );
 
 SELECT ok(
@@ -38,11 +47,6 @@ SELECT ok(
   AND EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='blog_posts' AND cmd='DELETE' AND qual LIKE '%has_permission%'),
   'all editorial mutations require content.manage'
 );
-
-SELECT diag((
-  SELECT string_agg(format('%s cmd=%s roles=%s qual=%s with_check=%s', policyname, cmd, roles, coalesce(qual,'<null>'), coalesce(with_check,'<null>')), E'\\n')
-  FROM pg_policies WHERE schemaname='public' AND tablename='blog_categories'
-));
 
 SELECT ok(
   EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='blog_categories' AND cmd='INSERT' AND with_check LIKE '%has_permission%')
