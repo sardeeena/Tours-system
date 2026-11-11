@@ -1891,6 +1891,7 @@ const KEMET_PUBLIC_ORIGIN = 'https://kemetspirit.com';
 const KEMET_CORE_PUBLIC_PATHS = [
   '/',
   '/excursions',
+  '/blog',
 ];
 
 function escapeXml(value: string): string {
@@ -2006,6 +2007,29 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
     }
   }
 
+  if (publicSupabase) {
+    try {
+      const { data: posts, error } = await publicSupabase
+        .from('blog_posts')
+        .select('slug, updated_at')
+        .eq('status', 'published')
+        .lte('published_at', new Date().toISOString())
+        .order('published_at', { ascending: false })
+        .limit(2000);
+      if (error) {
+        console.warn('[SEO sitemap] Published blog query failed:', error.message);
+      } else {
+        for (const post of posts || []) {
+          const slug = typeof post.slug === 'string' ? post.slug.trim() : '';
+          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+          urls.set(`${KEMET_PUBLIC_ORIGIN}/blog/${encodeURIComponent(slug)}`, toSitemapDate(post.updated_at));
+        }
+      }
+    } catch (error) {
+      console.warn('[SEO sitemap] Blog catalogue could not be loaded:', error);
+    }
+  }
+
   const entries = Array.from(urls.entries()).map(([loc, lastmod]) => (
     `  <url><loc>${escapeXml(loc)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}</url>`
   ));
@@ -2096,6 +2120,31 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
       }
     } catch (error) {
       console.warn('[SEO llms.txt] Destination catalogue could not be loaded:', error);
+    }
+  }
+
+  if (publicSupabase) {
+    lines.push('', '## Published travel journal articles');
+    try {
+      const { data: posts, error } = await publicSupabase
+        .from('blog_posts')
+        .select('title,slug,excerpt,published_at')
+        .eq('status', 'published')
+        .lte('published_at', new Date().toISOString())
+        .order('published_at', { ascending: false })
+        .limit(100);
+      if (error) {
+        console.warn('[SEO llms.txt] Published blog query failed:', error.message);
+      } else {
+        for (const post of posts || []) {
+          const slug = typeof post.slug === 'string' ? post.slug.trim() : '';
+          const title = cleanPublicText(post.title, 160);
+          if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+          lines.push(`- [${title}](https://kemetspirit.com/blog/${encodeURIComponent(slug)}): ${cleanPublicText(post.excerpt, 400)}`);
+        }
+      }
+    } catch (error) {
+      console.warn('[SEO llms.txt] Blog catalogue could not be loaded:', error);
     }
   }
 
