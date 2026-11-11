@@ -50,6 +50,43 @@
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MZVP38WC" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
+    <script>
+      // WebMCP is experimental and feature-detected; browsers without the API are unaffected.
+      (function () {
+        var modelContext = navigator.modelContext;
+        if (!modelContext || typeof modelContext.registerTool !== 'function') return;
+        try {
+          modelContext.registerTool({
+            name: 'search_kemet_spirit_excursions',
+            description: 'Search Kemet Spirit published Red Sea excursions. Read-only; returns published tour titles, summaries, prices and detail URLs.',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                search: { type: 'string', description: 'Optional words to match against published excursion titles and descriptions.' },
+                limit: { type: 'integer', minimum: 1, maximum: 20, default: 10 }
+              },
+              additionalProperties: false
+            },
+            execute: async function (input) {
+              var params = new URLSearchParams();
+              if (input && typeof input.search === 'string') params.set('search', input.search.slice(0, 120));
+              var limit = Number(input && input.limit);
+              params.set('limit', String(Number.isInteger(limit) ? Math.max(1, Math.min(20, limit)) : 10));
+              var response = await fetch('/api/tours?' + params.toString(), {
+                headers: { 'Accept': 'application/json' },
+                credentials: 'same-origin'
+              });
+              if (!response.ok) throw new Error('Excursion search is temporarily unavailable.');
+              var payload = await response.json();
+              return { content: [{ type: 'text', text: JSON.stringify(payload.tours || []) }] };
+            }
+          });
+        } catch (error) {
+          console.warn('[WebMCP] Tool registration unavailable:', error);
+        }
+      })();
+    </script>
+
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
