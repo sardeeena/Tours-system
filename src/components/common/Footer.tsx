@@ -359,7 +359,7 @@ export const Footer: React.FC<FooterProps> = ({
         {/* Payment Methods & Bottom Bar */}
         <div className="mt-12 pt-6 border-t border-[#E8E3DA] dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-stone-500 dark:text-slate-500">
           <div className="flex items-center space-x-3">
-            <span>© {new Date().getFullYear()} Awesome Adventure Tours S.A.E.</span>
+            <span>© {new Date().getFullYear()} Kemet Spirit. All rights reserved.</span>
             <span className="text-stone-300 dark:text-slate-700">|</span>
             {/* Footer Theme Toggle */}
             <button
