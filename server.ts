@@ -1641,10 +1641,6 @@ const KEMET_PUBLIC_ORIGIN = 'https://kemetspirit.com';
 const KEMET_CORE_PUBLIC_PATHS = [
   '/',
   '/excursions',
-  '/about',
-  '/why-us',
-  '/booking-conditions',
-  '/marine-safety',
 ];
 
 function escapeXml(value: string): string {
