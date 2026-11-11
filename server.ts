@@ -2012,7 +2012,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
       const { data: posts, error } = await publicSupabase
         .from('blog_posts')
         .select('slug, updated_at')
-        .eq('status', 'published')
+        .in('status', ['published', 'scheduled'])
         .lte('published_at', new Date().toISOString())
         .order('published_at', { ascending: false })
         .limit(2000);
@@ -2655,7 +2655,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
       try {
         const { data, error } = await publicSupabase.from('blog_posts')
           .select('title,slug,excerpt,content,cover_image_url,author_name,seo_title,seo_description,published_at,updated_at,blog_categories(name)')
-          .eq('slug', slug).eq('status', 'published')
+          .eq('slug', slug).in('status', ['published', 'scheduled'])
           .lte('published_at', new Date().toISOString()).maybeSingle();
         if (error) console.warn('[SEO render] Blog article lookup failed:', error.message);
         currentBlogPost = data || null;
