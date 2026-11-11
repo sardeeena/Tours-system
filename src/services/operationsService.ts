@@ -800,80 +800,112 @@ export async function saveAssignment(assignment: Partial<OperationalAssignment>)
   assignment?: OperationalAssignment;
   conflicts?: AssignmentConflict[];
 }> {
-  if (!assignment.tourId || !assignment.date) {
-    return { success: false, error: 'Tour and date are required for assignment.' };
+  if (!assignment.tourId || !assignment.date || !assignment.departureTime) {
+    return { success: false, error: 'Tour, date, and an explicit departure time are required.' };
+  }
+  if (!isSupabaseConfigured()) {
+    return { success: false, error: 'Supabase is not configured; operational assignments were not saved.' };
   }
 
-  // Run conflict detection
-  const conflicts = await detectAssignmentConflicts({
-    departureId: assignment.id,
-    tourId: assignment.tourId,
-    date: assignment.date,
-    startTime: assignment.departureTime || '08:30',
-    vesselId: assignment.vesselId,
-    guideId: assignment.guideId,
-    captainId: assignment.captainId,
-    driverId: assignment.driverId,
-  });
+  const departureTime = normalizeDepartureTime(assignment.departureTime);
+  const { data: candidates, error: lookupError } = await supabase
+    .from('departures')
+    .select('id,start_time,end_time,capacity')
+    .eq('tour_id', assignment.tourId)
+    .eq('date', assignment.date);
 
-  if (conflicts.length > 0) {
+  if (lookupError) return { success: false, error: formatSupabaseError(lookupError) };
+
+  const departure = (candidates || []).find(
+    (item: any) => normalizeDepartureTime(item.start_time) === departureTime
+  );
+
+  if (!departure || !departure.end_time || Number(departure.capacity) <= 0) {
     return {
       success: false,
-      error: conflicts[0].message,
-      conflicts,
+      error: 'Create a departure with an actual start time, end time, and capacity before assigning staff or a vessel.',
     };
   }
 
-  // Persist to database
-  const savedAssignment: OperationalAssignment = {
-    id: assignment.id || `assign-${Date.now().toString(36)}`,
+  const conflicts = await detectAssignmentConflicts({
+    departureId: departure.id,
     tourId: assignment.tourId,
     date: assignment.date,
-    departureTime: assignment.departureTime || '08:30',
+    startTime: departureTime,
     vesselId: assignment.vesselId || null,
     guideId: assignment.guideId || null,
     captainId: assignment.captainId || null,
     driverId: assignment.driverId || null,
-    crewIds: assignment.crewIds || [],
-    status: assignment.status || 'Scheduled',
-    notes: assignment.notes || null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+  });
+
+  if (conflicts.length > 0) {
+    return { success: false, error: conflicts[0].message, conflicts };
+  }
+
+  const now = new Date().toISOString();
+  const operationalStatus = assignment.status || 'Scheduled';
+  const statusMap: Record<string, DepartureStatus> = {
+    Scheduled: 'scheduled',
+    Preparing: 'confirmed',
+    Ready: 'boarding',
+    Departed: 'in_progress',
+    Completed: 'completed',
+    Cancelled: 'cancelled',
   };
 
-  if (isSupabaseConfigured()) {
-    try {
-      const { error: assignError } = await supabase.from('operational_assignments').upsert({
-        id: savedAssignment.id.startsWith('assign-') ? undefined : savedAssignment.id,
-        tour_id: savedAssignment.tourId,
-        date: savedAssignment.date,
-        departure_time: savedAssignment.departureTime,
-        vessel_id: savedAssignment.vesselId,
-        guide_id: savedAssignment.guideId,
-        status: savedAssignment.status,
-        notes: savedAssignment.notes,
-      });
+  const { error: departureUpdateError } = await supabase
+    .from('departures')
+    .update({
+      vessel_id: assignment.vesselId || null,
+      guide_id: assignment.guideId || null,
+      captain_id: assignment.captainId || null,
+      driver_id: assignment.driverId || null,
+      crew_ids: assignment.crewIds || [],
+      status: statusMap[operationalStatus] || 'scheduled',
+      notes: assignment.notes || null,
+      updated_at: now,
+    })
+    .eq('id', departure.id);
 
-      if (assignError) {
-        return { success: false, error: formatSupabaseError(assignError) };
-      }
-
-      // Also sync to departures table
-      await supabase.from('departures').upsert({
-        tour_id: savedAssignment.tourId,
-        date: savedAssignment.date,
-        start_time: savedAssignment.departureTime,
-        vessel_id: savedAssignment.vesselId,
-        guide_id: savedAssignment.guideId,
-        captain_id: savedAssignment.captainId,
-        driver_id: savedAssignment.driverId,
-        status: (savedAssignment.status || 'scheduled').toLowerCase(),
-        notes: savedAssignment.notes,
-      });
-    } catch (err: any) {
-      return { success: false, error: formatSupabaseError(err) };
-    }
+  if (departureUpdateError) {
+    return { success: false, error: formatSupabaseError(departureUpdateError) };
   }
+
+  const { data: saved, error: assignError } = await supabase
+    .from('operational_assignments')
+    .upsert({
+      tour_id: assignment.tourId,
+      date: assignment.date,
+      departure_time: departureTime,
+      vessel_id: assignment.vesselId || null,
+      guide_id: assignment.guideId || null,
+      status: operationalStatus,
+      notes: assignment.notes || null,
+      updated_at: now,
+    }, { onConflict: 'tour_id,date,departure_time' })
+    .select()
+    .single();
+
+  if (assignError || !saved) {
+    return {
+      success: false,
+      error: assignError ? formatSupabaseError(assignError) : 'Assignment was not returned after saving.',
+    };
+  }
+
+  const savedAssignment: OperationalAssignment = {
+    ...assignment,
+    id: saved.id,
+    tourId: assignment.tourId,
+    date: assignment.date,
+    departureTime,
+    vesselId: assignment.vesselId || null,
+    guideId: assignment.guideId || null,
+    status: operationalStatus as OperationalAssignment['status'],
+    notes: assignment.notes || null,
+    createdAt: saved.created_at,
+    updatedAt: saved.updated_at,
+  };
 
   return { success: true, assignment: savedAssignment };
 }
