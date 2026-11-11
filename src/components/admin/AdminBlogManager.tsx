@@ -1,0 +1,42 @@
+import React,{useEffect,useState} from 'react';
+import { BookOpen, Plus, Save, Trash2, Eye, FileText } from 'lucide-react';
+import { BlogPost, BlogCategory, getAdminBlogPosts, getBlogCategories, saveBlogCategory, saveBlogPost, deleteBlogPost } from '../../services/blogService';
+import { useToast } from '../../contexts/ToastContext';
+
+const emptyPost = {title:'',slug:'',excerpt:'',content:'',cover_image_url:'',status:'draft' as const,category_id:'',author_name:'Kemet Spirit Editorial Team',seo_title:'',seo_description:''};
+const makeSlug=(s:string)=>s.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+export const AdminBlogManager:React.FC=()=>{
+ const {showToast}=useToast(); const [posts,setPosts]=useState<BlogPost[]>([]); const [categories,setCategories]=useState<BlogCategory[]>([]);
+ const [form,setForm]=useState<any>(emptyPost); const [editing,setEditing]=useState<string|null>(null); const [busy,setBusy]=useState(false); const [categoryName,setCategoryName]=useState('');
+ const refresh=async()=>{const [p,c]=await Promise.all([getAdminBlogPosts(),getBlogCategories()]);setPosts(p);setCategories(c);};
+ useEffect(()=>{refresh().catch(e=>showToast(e.message||'Could not load blog data','error'));},[]);
+ const change=(key:string,value:string)=>setForm((p:any)=>({...p,[key]:value,...(key==='title'&&!editing?{slug:makeSlug(value)}:{})}));
+ const edit=(p:BlogPost)=>{setEditing(p.id);setForm({...p,category_id:p.category_id||''});};
+ const reset=()=>{setEditing(null);setForm(emptyPost);};
+ const save=async()=>{if(!form.title.trim()||!form.slug.trim()||!form.content.trim()){showToast('Title, URL slug and article content are required.','error');return;}setBusy(true);try{await saveBlogPost({...form,id:editing||undefined});await refresh();reset();showToast('Article saved.','success');}catch(e:any){showToast(e.message||'Could not save article.','error');}finally{setBusy(false);}};
+ const remove=async(id:string)=>{if(!window.confirm('Permanently delete this article?'))return;try{await deleteBlogPost(id);await refresh();if(editing===id)reset();showToast('Article deleted.','success');}catch(e:any){showToast(e.message||'Could not delete article.','error');}};
+ const field='w-full rounded-xl border border-[#E8E3DA] dark:border-[#243447] bg-white dark:bg-[#111E2E] px-3.5 py-3 text-sm outline-none focus:ring-2 focus:ring-[#0A6C74]';
+ return <div className="space-y-6">
+  <div className="flex flex-wrap items-center justify-between gap-4"><div><p className="text-xs uppercase tracking-widest text-[#0A6C74] font-bold">CONTENT STUDIO</p><h1 className="font-display text-3xl font-bold text-stone-900 dark:text-white">Blog management</h1><p className="text-sm text-stone-500 mt-1">Create, edit and publish Kemet Spirit journal stories.</p></div><span className="rounded-full px-3 py-1.5 bg-[#E8F3F4] text-[#0A6C74] text-xs font-bold">{posts.length} articles</span></div>
+  <div className="grid sm:grid-cols-3 gap-3">{[{label:'Total articles',value:posts.length},{label:'Published',value:posts.filter(p=>p.status==='published').length},{label:'Drafts',value:posts.filter(p=>p.status==='draft').length}].map(x=><div key={x.label} className="rounded-2xl p-5 bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#243447]"><p className="text-xs text-stone-500">{x.label}</p><p className="font-display text-3xl font-bold mt-2">{x.value}</p></div>)}</div>
+  <div className="grid xl:grid-cols-[minmax(0,1.4fr)_minmax(300px,1fr)] gap-6">
+   <section className="rounded-2xl bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#243447] p-5 sm:p-6"><div className="flex justify-between items-center mb-5"><h2 className="font-display text-xl font-bold">Articles</h2><button onClick={reset} className="inline-flex items-center gap-2 rounded-xl bg-[#0A6C74] text-white px-3 py-2 text-xs font-bold"><Plus size={15}/> New article</button></div>
+    <div className="space-y-2">{posts.map(p=><div key={p.id} className="flex items-center gap-3 p-3 rounded-xl border border-stone-100 dark:border-slate-700"><FileText className="text-[#0A6C74] shrink-0" size={18}/><button onClick={()=>edit(p)} className="flex-1 min-w-0 text-left"><span className="block font-semibold text-sm truncate">{p.title}</span><span className="text-xs text-stone-500">{p.status} · {p.slug}</span></button><button title="Preview" onClick={()=>window.open('/blog/'+p.slug,'_blank','noopener,noreferrer')} className="p-2 text-stone-500"><Eye size={16}/></button><button title="Delete" onClick={()=>remove(p.id)} className="p-2 text-rose-500"><Trash2 size={16}/></button></div>)}{!posts.length&&<p className="text-sm text-stone-500 py-8 text-center">No articles yet. Create your first story.</p>}</div>
+   </section>
+   <section className="rounded-2xl bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#243447] p-5 sm:p-6 space-y-4"><div><h2 className="font-display text-xl font-bold">{editing?'Edit article':'Create article'}</h2><p className="text-xs text-stone-500 mt-1">Drafts stay private until published.</p></div>
+    <label className="block text-xs font-semibold">Title<input className={field+' mt-1'} value={form.title} onChange={e=>change('title',e.target.value)} /></label>
+    <label className="block text-xs font-semibold">URL slug<input className={field+' mt-1'} value={form.slug} onChange={e=>change('slug',e.target.value)} /></label>
+    <label className="block text-xs font-semibold">Excerpt<textarea rows={3} className={field+' mt-1'} value={form.excerpt||''} onChange={e=>change('excerpt',e.target.value)}/></label>
+    <label className="block text-xs font-semibold">Article content<textarea rows={12} className={field+' mt-1'} value={form.content} onChange={e=>change('content',e.target.value)} placeholder="Write your article. Use clear headings and paragraphs."/></label>
+    <label className="block text-xs font-semibold">Cover image URL<input className={field+' mt-1'} value={form.cover_image_url||''} onChange={e=>change('cover_image_url',e.target.value)}/></label>
+    <label className="block text-xs font-semibold">Category<select className={field+' mt-1'} value={form.category_id||''} onChange={e=>change('category_id',e.target.value)}><option value="">Uncategorized</option>{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
+    <label className="block text-xs font-semibold">Author<input className={field+' mt-1'} value={form.author_name||''} onChange={e=>change('author_name',e.target.value)}/></label>
+    <label className="block text-xs font-semibold">SEO title<input className={field+' mt-1'} value={form.seo_title||''} onChange={e=>change('seo_title',e.target.value)}/></label>
+    <label className="block text-xs font-semibold">SEO description<textarea rows={2} className={field+' mt-1'} value={form.seo_description||''} onChange={e=>change('seo_description',e.target.value)}/></label>
+    <label className="block text-xs font-semibold">Publication status<select className={field+' mt-1'} value={form.status} onChange={e=>change('status',e.target.value)}><option value="draft">Draft</option><option value="published">Published</option><option value="archived">Archived</option></select></label>
+    <div className="flex flex-wrap gap-2"><button disabled={busy} onClick={save} className="inline-flex items-center gap-2 rounded-xl bg-[#0A6C74] text-white px-5 py-3 text-sm font-bold disabled:opacity-50"><Save size={16}/>{busy?'Saving…':'Save article'}</button><button onClick={reset} className="rounded-xl border border-stone-200 dark:border-slate-700 px-4 py-3 text-sm">Clear</button></div>
+   </section>
+  </div>
+  <section className="rounded-2xl bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#243447] p-5"><h2 className="font-display font-bold mb-3">Categories</h2><div className="flex flex-wrap gap-2">{categories.map(c=><span key={c.id} className="rounded-full bg-[#E8F3F4] text-[#0A6C74] px-3 py-1 text-xs">{c.name}</span>)}</div><div className="flex gap-2 mt-4 max-w-md"><input className={field} value={categoryName} onChange={e=>setCategoryName(e.target.value)} placeholder="New category name"/><button onClick={async()=>{if(!categoryName.trim())return;try{await saveBlogCategory(categoryName);setCategoryName('');await refresh();}catch(e:any){showToast(e.message||'Could not save category','error');}}} className="rounded-xl bg-[#0A6C74] text-white px-4 text-sm font-bold">Add</button></div></section>
+ </div>;
+};
