@@ -569,7 +569,7 @@ export function isUserAdmin(user: AppUser | null | undefined): boolean {
   if (!user) return false;
   return (
     user.role === 'admin' || user.role === 'super_admin' || user.role === 'manager' || user.role === 'staff' ||
-    Boolean(user.roles?.some((role) => role !== 'customer'))
+    Boolean(user.roles?.some((role) => role !== 'customer' && role !== 'guide'))
   );
 }
 
@@ -615,7 +615,7 @@ export async function getCurrentAdminUser(): Promise<AppUser | null> {
     const permissions = Array.isArray(accessContext.permissions)
       ? accessContext.permissions.filter((permission: unknown): permission is string => typeof permission === 'string')
       : [];
-    const hasStaffRole = roles.some((role: string) => role !== 'customer');
+    const hasStaffRole = roles.some((role: string) => role !== 'customer' && role !== 'guide');
     if (!profile.is_confirmed && !hasStaffRole) return null;
 
     const authedUser: AppUser = {
