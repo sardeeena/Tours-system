@@ -68,7 +68,7 @@ SELECT ok(
 );
 SELECT ok(
   position('RBAC_ROLE_CREATED' in pg_get_functiondef('private.admin_upsert_access_role(text,text,text,text[])'::regprocedure))>0
-  AND position('RBAC_ROLE_UPDATED' in pg_get_functiondef('public.admin_upsert_access_role(text,text,text,text[])'::regprocedure))>0,
+  AND position('RBAC_ROLE_UPDATED' in pg_get_functiondef('private.admin_upsert_access_role(text,text,text,text[])'::regprocedure))>0,
   'custom role creation and permission changes are audited'
 );
 SELECT ok(
