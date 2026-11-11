@@ -1232,14 +1232,23 @@ function MainApp() {
           />
         );
       }
-      if (loadingDestinations) {
+      if (loadingDestinations || loadingTours) {
         return (
           <div className="min-h-[50vh] flex items-center justify-center text-stone-600">
             Loading destination information...
           </div>
         );
       }
-      return <NotFoundPage />;
+      return (
+        <NotFoundPage
+          popularTours={liveTours}
+          currency={currentCurrency}
+          onNavigateHome={() => navigate('/')}
+          onNavigateExcursions={() => navigate('/excursions')}
+          onSelectTour={handleViewTour}
+          onOpenMyBooking={() => navigate('/my-booking')}
+        />
+      );
     }
 
     // Public CMS pages must be resolved before the booking route so /booking-conditions
