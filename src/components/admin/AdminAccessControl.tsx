@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Search, ShieldCheck, Users, Layers3, Plus, Save, Trash2, RefreshCw, LockKeyhole, Check } from 'lucide-react';
+import { Search, ShieldCheck, Users, Layers3, Plus, Save, Trash2, RefreshCw, LockKeyhole, Check, Mail, UserCheck, UserX, KeyRound } from 'lucide-react';
 import { supabase } from '../../services/supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -38,6 +38,10 @@ export const AdminAccessControl:React.FC = () => {
   const [permissionSearch,setPermissionSearch] = useState('');
   const [hasLoaded,setHasLoaded] = useState(false);
   const [lastLoadedAt,setLastLoadedAt] = useState<string|null>(null);
+  const [inviteEmail,setInviteEmail] = useState('');
+  const [inviteName,setInviteName] = useState('');
+  const [accountSuspended,setAccountSuspended] = useState<boolean|null>(null);
+  const [accountBusy,setAccountBusy] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -86,6 +90,52 @@ export const AdminAccessControl:React.FC = () => {
 
   const toggleRole=(slug:string)=>setSelectedRoles(current=>current.includes(slug)?current.filter(x=>x!==slug):[...current,slug]);
   const togglePermission=(key:string)=>setRolePermissions(current=>current.includes(key)?current.filter(x=>x!==key):[...current,key]);
+  const callAdminApi=async(path:string,method='GET',body?:Record<string,unknown>)=>{
+    const {data:{session},error:sessionError}=await supabase.auth.getSession();
+    if(sessionError||!session?.access_token)throw new Error('Your administrator session has expired. Sign in again.');
+    const response=await fetch(path,{method,headers:{Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok||!result.success)throw new Error(result.error||'The account-management request failed.');
+    return result;
+  };
+
+  useEffect(()=>{
+    let active=true;
+    setAccountSuspended(null);
+    if(isSuperAdmin&&selectedUserId){
+      void callAdminApi('/api/admin/users/'+encodeURIComponent(selectedUserId)+'/status')
+        .then(result=>{if(active)setAccountSuspended(Boolean(result.is_suspended));})
+        .catch(err=>{if(active){setAccountSuspended(null);console.warn('[AdminAccessControl] Could not load Auth status:',err);}});
+    }
+    return ()=>{active=false;};
+  },[selectedUserId,isSuperAdmin]);
+
+  const inviteAccount=async()=>{
+    setAccountBusy('invite');setError('');setNotice('');
+    try{
+      const result=await callAdminApi('/api/admin/users/invite','POST',{email:inviteEmail,full_name:inviteName});
+      setInviteEmail('');setInviteName('');
+      setNotice(result.message||'Invitation sent.');
+      await load();
+    }catch(err:any){setError(err?.message||'Could not invite this account.');}
+    finally{setAccountBusy('');}
+  };
+
+  const manageAccount=async(action:'suspend'|'reactivate'|'password-reset')=>{
+    if(!selectedUser)return;
+    if(action==='suspend'&&!window.confirm('Suspend '+selectedUser.email+'? They will lose access until reactivated.'))return;
+    setAccountBusy(action);setError('');setNotice('');
+    try{
+      const result=await callAdminApi(
+        action==='password-reset'?'/api/admin/users/'+encodeURIComponent(selectedUser.id)+'/password-reset':'/api/admin/users/'+encodeURIComponent(selectedUser.id)+'/status',
+        'POST',
+        action==='password-reset'?{}:{action}
+      );
+      if(action!=='password-reset')setAccountSuspended(Boolean(result.is_suspended));
+      setNotice(result.message||(action==='suspend'?'Account suspended.':action==='reactivate'?'Account reactivated.':'Password-reset email requested.'));
+    }catch(err:any){setError(err?.message||'The account action failed.');}
+    finally{setAccountBusy('');}
+  };
 
   const saveUserRoles=async()=>{
     if(!selectedUser)return;
@@ -181,6 +231,15 @@ export const AdminAccessControl:React.FC = () => {
     </div>
 
     {section==='users'?<div className="grid grid-cols-1 xl:grid-cols-[minmax(260px,0.9fr)_minmax(0,1.5fr)] gap-5">
+      <div className="xl:col-span-2 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
+        <div className="flex items-center gap-2"><Mail className="w-4 h-4 text-[#0A6C74]"/><h3 className="font-bold text-sm">Invite a new account</h3></div>
+        {isSuperAdmin?<div className="mt-3 grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-2">
+          <input type="text" value={inviteName} onChange={e=>setInviteName(e.target.value)} placeholder="Full name (optional)" maxLength={120} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-3 py-2 text-sm"/>
+          <input type="email" value={inviteEmail} onChange={e=>setInviteEmail(e.target.value)} placeholder="name@example.com" maxLength={254} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-3 py-2 text-sm"/>
+          <button type="button" onClick={()=>void inviteAccount()} disabled={Boolean(accountBusy)||!inviteEmail.trim()} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0A6C74] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50"><Mail className="w-4 h-4"/>{accountBusy==='invite'?'Sending…':'Send invitation'}</button>
+        </div>:<p className="mt-2 text-xs text-slate-500">Inviting accounts requires a Super Admin session with verified multi-factor authentication.</p>}
+        <p className="mt-2 text-xs text-slate-500">Invitations are sent by Supabase Auth. New accounts receive the Customer role until an administrator assigns staff access.</p>
+      </div>
       <section className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
         <div className="p-4 border-b border-slate-200 dark:border-slate-700"><h3 className="font-bold">Registered users <span className="text-slate-400 font-normal">({data.users.length})</span></h3>
           <div className="relative mt-3"><Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search name, email or role…" className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent pl-9 pr-3 py-2 text-sm"/></div>
@@ -196,6 +255,16 @@ export const AdminAccessControl:React.FC = () => {
 
       <section className="rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
         {selectedUser?<><div className="flex flex-wrap justify-between gap-3"><div><h3 className="text-lg font-bold">{selectedUser.full_name||'User account'}</h3><p className="text-sm text-slate-500">{selectedUser.email}</p></div><span className="text-xs text-slate-500">{selectedUser.is_confirmed?'Email confirmed':'Email not confirmed'}</span></div>
+          {isSuperAdmin&&<div className="mt-4 rounded-xl border border-slate-200 dark:border-slate-700 p-3">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div><div className="text-sm font-semibold">Authentication status</div><div className="text-xs text-slate-500 mt-1">{accountSuspended===null?'Checking secure Auth status…':accountSuspended?'Suspended in Supabase Auth':'Active in Supabase Auth'}</div></div>
+              <div className="flex flex-wrap gap-2">
+                <button type="button" onClick={()=>void manageAccount(accountSuspended?'reactivate':'suspend')} disabled={Boolean(accountBusy)||accountSuspended===null||selectedUser.id===user?.id||protectedSuperAdmin} className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">{accountSuspended?<UserCheck className="w-4 h-4"/>:<UserX className="w-4 h-4"/>}{accountBusy==='suspend'?'Suspending…':accountBusy==='reactivate'?'Reactivating…':accountSuspended?'Reactivate account':'Suspend account'}</button>
+                <button type="button" onClick={()=>void manageAccount('password-reset')} disabled={Boolean(accountBusy)||protectedSuperAdmin} className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50"><KeyRound className="w-4 h-4"/>{accountBusy==='password-reset'?'Sending…':'Send password reset'}</button>
+              </div>
+            </div>
+            {(protectedSuperAdmin||selectedUser.id===user?.id)&&<p className="text-xs text-amber-700 dark:text-amber-300 mt-2">Self-suspension and actions against protected Super Admin accounts are disabled.</p>}
+          </div>}
           <div className="mt-5 flex items-center justify-between gap-3"><div><h4 className="font-semibold text-sm">Assigned roles</h4><p className="text-xs text-slate-500 mt-1">Permissions from all selected roles are combined.</p></div><span className="text-xs rounded-lg bg-teal-50 text-teal-800 dark:bg-teal-950/40 dark:text-teal-200 px-2 py-1">{selectedRoles.length} selected</span></div>
           {protectedSuperAdmin ? <p className="mt-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 p-3 text-sm text-amber-800 dark:text-amber-200">This account has protected Super Admin access. Only a Super Admin can modify its assignments.</p> : <div className="grid sm:grid-cols-2 gap-2 mt-3">
             {data.roles.filter(r=>r.is_active&&(isSuperAdmin||r.slug!=='super_admin')).map(role=><label key={role.slug} className="flex gap-3 items-start rounded-xl border border-slate-200 dark:border-slate-700 p-3 cursor-pointer hover:border-teal-500">
