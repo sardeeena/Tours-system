@@ -163,6 +163,11 @@ SELECT ok(
 INSERT INTO public.tours (title, slug, status, price, max_guests)
 VALUES ('pgTAP Booking Test Tour', 'pgtap-booking-test', 'published', 100.00, 10);
 
+-- The booking RPC now requires an explicitly configured departure date.
+INSERT INTO public.tour_availability (tour_id, date, max_capacity, booked_count, status)
+SELECT id, CURRENT_DATE + 30, 10, 0, 'available'
+FROM public.tours WHERE slug = 'pgtap-booking-test';
+
 INSERT INTO public.coupons (
   code, description, discount_type, discount_value, min_spend,
   valid_from, usage_limit, times_used, is_active
@@ -468,6 +473,10 @@ SELECT ok(
 
 -- Exercise customer-level RLS and the BEFORE UPDATE protection trigger using a real
 -- Auth user/profile and a booking owned by that user.
+INSERT INTO public.tour_availability (tour_id, date, max_capacity, booked_count, status)
+SELECT id, CURRENT_DATE + 31, 10, 0, 'available'
+FROM public.tours WHERE slug = 'pgtap-booking-test';
+
 INSERT INTO auth.users (
   id, instance_id, aud, role, email, encrypted_password, email_confirmed_at,
   raw_app_meta_data, raw_user_meta_data, created_at, updated_at, is_sso_user, is_anonymous
