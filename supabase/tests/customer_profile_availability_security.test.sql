@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(14);
+SELECT plan(20);
 
 SELECT ok(
   EXISTS (
@@ -117,6 +117,32 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
+INSERT INTO auth.users (
+  id, aud, role, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+)
+VALUES (
+  'f9000000-0000-0000-0000-000000000002',
+  'authenticated', 'authenticated', 'pgtap-admin@example.test', '',
+  now(), '{}'::jsonb, '{}'::jsonb, now(), now()
+)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.profiles (id, email, full_name, role, is_confirmed)
+VALUES (
+  'f9000000-0000-0000-0000-000000000002',
+  'pgtap-admin@example.test', 'PgTAP Admin', 'customer', false
+)
+ON CONFLICT (id) DO NOTHING;
+
+SELECT set_config('app.admin_provisioning_nonce', 'pgtap-authorized-admin-seed', true);
+SELECT set_config('app.admin_provisioning_active_user', 'f9000000-0000-0000-0000-000000000002', true);
+UPDATE public.profiles
+SET role = 'admin', is_confirmed = TRUE
+WHERE id = 'f9000000-0000-0000-0000-000000000002';
+SELECT set_config('app.admin_provisioning_nonce', '', true);
+SELECT set_config('app.admin_provisioning_active_user', '', true);
+
 INSERT INTO public.customers (
   id, user_id, first_name, last_name, email, phone, country, total_revenue, outstanding_amount
 )
@@ -149,10 +175,17 @@ SELECT throws_ok(
 );
 
 SELECT throws_ok(
-  $$UPDATE public.customers SET user_id = 'f9000000-0000-0000-0000-000000000002' WHERE id = 'f9000000-0000-0000-0000-000000000101'$$,
+  $UPDATE public.customers SET user_id = 'f9000000-0000-0000-0000-000000000002' WHERE id = 'f9000000-0000-0000-0000-000000000101'$,
   '42501',
   'Customers may only update their contact details and preferences. CRM and booking-derived fields are protected.',
   'customer cannot reassign customer record ownership'
+);
+
+SELECT throws_ok(
+  $UPDATE public.customers SET status = 'vip', notes = 'forged', total_bookings_count = 99 WHERE id = 'f9000000-0000-0000-0000-000000000101'$,
+  '42501',
+  'Customers may only update their contact details and preferences. CRM and booking-derived fields are protected.',
+  'customer cannot alter CRM status, notes or booking counters'
 );
 
 UPDATE public.profiles
@@ -187,6 +220,36 @@ SELECT is(
   (SELECT role FROM public.profiles WHERE id = 'f9000000-0000-0000-0000-000000000001'),
   'customer',
   'customer cannot promote their own profile to super_admin'
+);
+
+RESET ROLE;
+SET LOCAL request.jwt.claims = '{"sub":"f9000000-0000-0000-0000-000000000002","role":"authenticated","aud":"authenticated"}';
+SET LOCAL request.jwt.claim.sub = 'f9000000-0000-0000-0000-000000000002';
+SET LOCAL ROLE authenticated;
+
+UPDATE public.customers
+SET total_revenue = 123.45
+WHERE id = 'f9000000-0000-0000-0000-000000000101';
+
+SELECT is(
+  (SELECT total_revenue FROM public.customers WHERE id = 'f9000000-0000-0000-0000-000000000101'),
+  123.45::numeric,
+  'verified administrator retains CRM metric management'
+);
+
+RESET ROLE;
+SET LOCAL request.jwt.claims = '{"role":"service_role"}';
+SET LOCAL request.jwt.claim.role = 'service_role';
+SET LOCAL ROLE service_role;
+
+UPDATE public.customers
+SET outstanding_amount = 55.00
+WHERE id = 'f9000000-0000-0000-0000-000000000101';
+
+SELECT is(
+  (SELECT outstanding_amount FROM public.customers WHERE id = 'f9000000-0000-0000-0000-000000000101'),
+  55.00::numeric,
+  'service_role retains trusted CRM management'
 );
 
 SELECT * FROM finish();
