@@ -273,21 +273,6 @@ BEGIN
 END;
 $dedupe_policies$;
 
--- profiles previously used one ALL policy plus a SELECT policy. Split the
--- manage policy into write actions so SELECT is evaluated by one consolidated
--- read policy (which includes own-profile access).
-DROP POLICY IF EXISTS rbac_profiles_manage ON public.profiles;
-CREATE POLICY rbac_profiles_create ON public.profiles
-  FOR INSERT TO authenticated
-  WITH CHECK (public.has_permission('users.manage'));
-CREATE POLICY rbac_profiles_update ON public.profiles
-  FOR UPDATE TO authenticated
-  USING (public.has_permission('users.manage'))
-  WITH CHECK (public.has_permission('users.manage'));
-CREATE POLICY rbac_profiles_delete ON public.profiles
-  FOR DELETE TO authenticated
-  USING (public.has_permission('users.manage'));
-
 CREATE INDEX IF NOT EXISTS idx_user_roles_assigned_by
   ON public.user_roles (assigned_by);
 
