@@ -75,6 +75,9 @@ interface AuthContextType {
   checkAdminAccess: () => Promise<boolean>;
 }
 
+const isSuperAdminUser = (candidate: AppUser | null): boolean =>
+  Boolean(candidate && (candidate.role === 'super_admin' || candidate.roles?.includes('super_admin')));
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // 30 minutes of idle time before automatic session logout for terminal security
@@ -129,10 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return validatePasswordStrength(password);
   }, []);
 
-  const isSuperAdminUser = (candidate: AppUser | null): boolean =>
-    Boolean(candidate && (candidate.role === 'super_admin' || candidate.roles?.includes('super_admin')));
-
-  const getSuperAdminMfaState = useCallback(async (candidate: AppUser | null) => {
+    const getSuperAdminMfaState = useCallback(async (candidate: AppUser | null) => {
     if (!isSuperAdminUser(candidate)) {
       return { factorId: null as string | null, requiresEnrollment: false };
     }
