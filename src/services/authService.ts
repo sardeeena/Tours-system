@@ -604,6 +604,11 @@ export async function getCurrentAdminUser(): Promise<AppUser | null> {
           .eq('id', user.id)
           .maybeSingle();
 
+        if (profErr) {
+          console.warn('Live profile role verification failed; refusing cached role claims:', profErr);
+          return null;
+        }
+
         if (profile) {
           // Direct verified role from public.profiles table
           if (profile.role) userRole = profile.role as UserRole;
