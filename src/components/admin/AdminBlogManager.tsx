@@ -1,6 +1,6 @@
 import React,{useEffect,useState} from 'react';
 import { BookOpen, Plus, Save, Trash2, Eye, FileText, ImagePlus } from 'lucide-react';
-import { BlogPost, BlogCategory, getAdminBlogPosts, getBlogCategories, saveBlogCategory, saveBlogPost, deleteBlogPost } from '../../services/blogService';
+import { BlogPost, BlogCategory, getAdminBlogPosts, getAdminBlogPost, getBlogCategories, saveBlogCategory, saveBlogPost, deleteBlogPost } from '../../services/blogService';
 import { useToast } from '../../contexts/ToastContext';
 import { uploadTourMedia } from '../../services/storageService';
 import { BlogContent } from '../blog/BlogContent';
@@ -13,7 +13,7 @@ export const AdminBlogManager:React.FC=()=>{
  const refresh=async()=>{const [p,c]=await Promise.all([getAdminBlogPosts(),getBlogCategories()]);setPosts(p);setCategories(c);};
  useEffect(()=>{refresh().catch(e=>showToast(e.message||'Could not load blog data','error'));},[]);
  const change=(key:string,value:string)=>setForm((p:any)=>({...p,[key]:value,...(key==='title'&&!editing?{slug:makeSlug(value)}:{}),...(key==='status'&&value==='published'?{published_at:new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16)}:{})}));
- const edit=(p:BlogPost)=>{setEditing(p.id);setShowPreview(false);setForm({...p,category_id:p.category_id||'',published_at:p.published_at?new Date(new Date(p.published_at).getTime()-new Date(p.published_at).getTimezoneOffset()*60000).toISOString().slice(0,16):''});};
+ const edit=async(p:BlogPost)=>{setEditing(p.id);setBusy(true);setShowPreview(false);try{const full=await getAdminBlogPost(p.id);setForm({...full,category_id:full.category_id||'',published_at:full.published_at?new Date(new Date(full.published_at).getTime()-new Date(full.published_at).getTimezoneOffset()*60000).toISOString().slice(0,16):''});}catch(e:any){showToast(e.message||'Could not load article content.','error');}finally{setBusy(false);}};
  const reset=()=>{setEditing(null);setShowPreview(false);setForm(emptyPost);};
  const save=async()=>{if(!form.title.trim()||!form.slug.trim()||!form.content.trim()){showToast('Title, URL slug and article content are required.','error');return;}if(form.status==='scheduled'&&!form.published_at){showToast('Choose a publication date and time for a scheduled article.','error');return;}setBusy(true);try{await saveBlogPost({...form,id:editing||undefined});await refresh();reset();showToast('Article saved.','success');}catch(e:any){showToast(e.message||'Could not save article.','error');}finally{setBusy(false);}};
  const remove=async(id:string)=>{if(!window.confirm('Permanently delete this article?'))return;try{await deleteBlogPost(id);await refresh();if(editing===id)reset();showToast('Article deleted.','success');}catch(e:any){showToast(e.message||'Could not delete article.','error');}};
