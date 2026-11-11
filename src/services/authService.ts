@@ -663,12 +663,18 @@ export async function verifyAdminAccess(): Promise<boolean> {
       return false;
     }
 
-    if (profile.role === 'super_admin') {
+    const { data: accessContext, error: accessError } = await (supabase as any).rpc('get_my_access_context');
+    if (accessError || !accessContext) return false;
+    const roles = Array.isArray(accessContext.roles) ? accessContext.roles : [];
+    const isSuperAdmin = profile.role === 'super_admin' || roles.includes('super_admin');
+
+    if (isSuperAdmin) {
       const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
       return !assuranceError && assurance.currentLevel === 'aal2';
     }
 
-    return profile.role === 'admin' || profile.role === 'manager' || profile.role === 'staff';
+    return profile.role === 'admin' || profile.role === 'manager' || profile.role === 'staff'
+      || roles.some((role: unknown) => typeof role === 'string' && role !== 'customer' && role !== 'guide');
   } catch (err) {
     console.error('Error verifying admin access against profiles table:', err);
     return false;
