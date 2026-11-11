@@ -222,10 +222,10 @@ BEGIN
 
     IF v_client_ip IS NOT NULL THEN
       v_client_ip := LEFT(BTRIM(v_client_ip), 64);
-      -- Hash the address before storing it in the shared rate-limit bucket table.
+      -- Match the existing public booking RPCs: key the atomic bucket by client IP.
       PERFORM public.check_atomic_rate_limit(
         'tour_availability_ip',
-        MD5(v_client_ip),
+        v_client_ip,
         INTERVAL '1 minute',
         60,
         'Too many public availability requests. Please wait a moment and try again.'
