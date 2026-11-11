@@ -102,7 +102,7 @@ export interface OperationalDeparture {
     totalEur: number;
     outstandingEur: number;
   };
-  weatherCleared: boolean;
+  weatherCleared: boolean | null;
   notes: string | null;
 }
 
@@ -243,7 +243,7 @@ export interface WeatherInfo {
   windSpeedKnots: number | null;
   windDirection: string | null;
   visibilityMeters: number | null;
-  coastGuardCleared: boolean;
+  coastGuardCleared: boolean | null;
   advisoryNotes: string;
   bulletinDate: string;
   message?: string;

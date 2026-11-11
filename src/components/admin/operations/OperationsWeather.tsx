@@ -37,16 +37,29 @@ export const OperationsWeather: React.FC = () => {
 
   // New bulletin modal
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState<Partial<DbWeatherBulletin>>({
+  type WeatherBulletinDraft = Omit<
+    Partial<DbWeatherBulletin>,
+    'water_temperature_c' | 'air_temperature_c' | 'swell_height_m' |
+    'wind_speed_knots' | 'visibility_meters' | 'coast_guard_cleared'
+  > & {
+    water_temperature_c?: number | null;
+    air_temperature_c?: number | null;
+    swell_height_m?: number | null;
+    wind_speed_knots?: number | null;
+    visibility_meters?: number | null;
+    coast_guard_cleared?: boolean | null;
+  };
+
+  const [formData, setFormData] = useState<WeatherBulletinDraft>({
     harbor_location: 'Hurghada Marina',
-    water_temperature_c: 26.5,
-    air_temperature_c: 31.0,
-    swell_height_m: 0.45,
-    wind_speed_knots: 8.5,
-    wind_direction: 'NNW (Gentle Marine Breeze)',
-    visibility_meters: 35,
-    coast_guard_cleared: true,
-    advisory_notes: 'Optimal marine conditions for Giftun Island crossings and coral reef snorkeling. Coast Guard green flag active.',
+    water_temperature_c: null,
+    air_temperature_c: null,
+    swell_height_m: null,
+    wind_speed_knots: null,
+    wind_direction: '',
+    visibility_meters: null,
+    coast_guard_cleared: null,
+    advisory_notes: '',
     bulletin_date: new Date().toISOString().split('T')[0],
   });
 
@@ -63,6 +76,7 @@ export const OperationsWeather: React.FC = () => {
       setDepartures(deps);
     } catch (err) {
       console.warn('Failed to load weather data:', err);
+      showToast(err instanceof Error ? err.message : 'Failed to load weather data.', 'error');
     } finally {
       setLoading(false);
     }
@@ -75,15 +89,12 @@ export const OperationsWeather: React.FC = () => {
   const handleCreateBulletin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createWeatherBulletin({
-        ...formData,
-        bulletin_date: selectedDate,
-      });
+      await createWeatherBulletin({ ...formData, bulletin_date: selectedDate } as Partial<DbWeatherBulletin>);
       showToast('Maritime weather bulletin published.', 'success');
       setIsModalOpen(false);
       await loadData();
-    } catch {
-      showToast('Error publishing weather bulletin', 'error');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Error publishing weather bulletin.', 'error');
     }
   };
 
@@ -100,7 +111,7 @@ export const OperationsWeather: React.FC = () => {
             <span>Maritime Weather & Harbor Clearance</span>
           </h1>
           <p className="text-xs text-stone-400 mt-1">
-            Real-time Red Sea marine telemetry, swell dynamics, wind velocity, and official Coast Guard port clearance.
+            Live weather forecasts are informational. Port clearance appears only when an operator records a current harbor-authority bulletin.
           </p>
         </div>
 
@@ -184,9 +195,11 @@ export const OperationsWeather: React.FC = () => {
           {/* Clearance Status Card */}
           <div
             className={`border rounded-2xl p-6 relative overflow-hidden ${
-              weatherInfo.coastGuardCleared
+              weatherInfo.coastGuardCleared === true
                 ? 'bg-emerald-950/20 border-emerald-500/30'
-                : 'bg-red-950/20 border-red-500/30'
+                : weatherInfo.coastGuardCleared === false
+                  ? 'bg-red-950/20 border-red-500/30'
+                  : 'bg-amber-950/20 border-amber-500/30'
             }`}
           >
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -194,19 +207,23 @@ export const OperationsWeather: React.FC = () => {
                 <div className="flex items-center space-x-2">
                   <span
                     className={`w-3 h-3 rounded-full ${
-                      weatherInfo.coastGuardCleared
-                        ? 'bg-emerald-400 animate-pulse'
-                        : 'bg-red-400'
+                      weatherInfo.coastGuardCleared === true
+                        ? 'bg-emerald-400'
+                        : weatherInfo.coastGuardCleared === false
+                          ? 'bg-red-400'
+                          : 'bg-amber-400'
                     }`}
                   />
                   <span className="text-[11px] font-bold uppercase tracking-wider text-stone-400">
-                    Official Port Authority Clearance
+                    Operator-Recorded Port Clearance
                   </span>
                 </div>
                 <h2 className="text-2xl font-bold font-display text-white">
-                  {weatherInfo.coastGuardCleared
-                    ? 'GREEN FLAG — PORT CLEARED FOR ALL MARITIME TRIPS'
-                    : 'RED FLAG — ADVISORY SWELL / WIND WARNING'}
+                  {weatherInfo.coastGuardCleared === true
+                    ? 'RECORDED CLEARANCE: CLEARED'
+                    : weatherInfo.coastGuardCleared === false
+                      ? 'RECORDED CLEARANCE: NOT CLEARED'
+                      : 'PORT CLEARANCE NOT VERIFIED'}
                 </h2>
                 <p className="text-xs text-stone-300 max-w-2xl">
                   {weatherInfo.advisoryNotes}
@@ -234,7 +251,7 @@ export const OperationsWeather: React.FC = () => {
               <div className="text-2xl font-bold font-mono text-white">
                 {weatherInfo.airTemperatureC !== null ? `${weatherInfo.airTemperatureC}°C` : '—'}
               </div>
-              <p className="text-[10px] text-stone-500">Hurghada Coastal Sensor</p>
+              <p className="text-[10px] text-stone-500">Forecast or operator measurement</p>
             </div>
 
             {/* Water Temperature */}
@@ -246,7 +263,7 @@ export const OperationsWeather: React.FC = () => {
               <div className="text-2xl font-bold font-mono text-white">
                 {weatherInfo.waterTemperatureC !== null ? `${weatherInfo.waterTemperatureC}°C` : '—'}
               </div>
-              <p className="text-[10px] text-stone-500">Surface Reef Depth (1m)</p>
+              <p className="text-[10px] text-stone-500">Operator-recorded measurement</p>
             </div>
 
             {/* Wind Velocity */}
@@ -259,7 +276,7 @@ export const OperationsWeather: React.FC = () => {
                 {weatherInfo.windSpeedKnots !== null ? `${weatherInfo.windSpeedKnots} kts` : '—'}
               </div>
               <p className="text-[10px] text-stone-500">
-                Direction: {weatherInfo.windDirection || 'NNW'}
+                Direction: {weatherInfo.windDirection || 'Not recorded'}
               </p>
             </div>
 
@@ -273,7 +290,7 @@ export const OperationsWeather: React.FC = () => {
                 {weatherInfo.swellHeightM !== null ? `${weatherInfo.swellHeightM} m` : '—'}
               </div>
               <p className="text-[10px] text-stone-500">
-                {weatherInfo.swellHeightM && weatherInfo.swellHeightM < 1.0 ? 'Calm (Optimal)' : 'Moderate'}
+                Measured forecast; not a sailing clearance
               </p>
             </div>
           </div>
@@ -284,11 +301,11 @@ export const OperationsWeather: React.FC = () => {
       <div className="bg-stone-950 border border-stone-800 rounded-xl p-5 space-y-3">
         <h3 className="font-bold text-white text-sm flex items-center space-x-2">
           <Anchor className="w-4 h-4 text-[#2dd4bf]" />
-          <span>Official Coast Guard Log Archives ({bulletins.length})</span>
+          <span>Operator-Recorded Harbor Bulletin Archive ({bulletins.length})</span>
         </h3>
 
         {bulletins.length === 0 ? (
-          <p className="text-xs text-stone-500 italic py-4">No manual log overrides registered.</p>
+          <p className="text-xs text-stone-500 italic py-4">No operator-recorded bulletin for this date.</p>
         ) : (
           <div className="divide-y divide-stone-800/80">
             {bulletins.map((b) => (
@@ -300,12 +317,12 @@ export const OperationsWeather: React.FC = () => {
                     <span>{b.harbor_location}</span>
                     <span
                       className={`px-2 py-0.2 rounded text-[10px] font-bold ${
-                        b.coast_guard_cleared
+                        b.coast_guard_cleared === true
                           ? 'bg-emerald-500/20 text-emerald-300'
                           : 'bg-red-500/20 text-red-300'
                       }`}
                     >
-                      {b.coast_guard_cleared ? 'CLEARED' : 'WARNING'}
+                      {b.coast_guard_cleared ? 'CLEARED (RECORDED)' : 'NOT CLEARED'}
                     </span>
                   </div>
                   <p className="text-stone-400 text-[11px] mt-1">{b.advisory_notes}</p>
@@ -324,7 +341,7 @@ export const OperationsWeather: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
           <div className="bg-stone-900 border border-stone-800 rounded-xl p-6 w-full max-w-lg space-y-4 shadow-xl">
             <div className="flex items-center justify-between border-b border-stone-800 pb-3">
-              <h3 className="font-bold text-white text-base">Publish Official Harbor Weather Log</h3>
+              <h3 className="font-bold text-white text-base">Record Harbor Authority Bulletin</h3>
               <button
                 type="button"
                 onClick={() => setIsModalOpen(false)}
@@ -353,10 +370,10 @@ export const OperationsWeather: React.FC = () => {
                   <input
                     type="number"
                     step="0.1"
-                    value={formData.air_temperature_c || 30.0}
-                    onChange={(e) =>
-                      setFormData({ ...formData, air_temperature_c: parseFloat(e.target.value) || 30.0 })
+                    value={formData.air_temperature_c ?? ''}
+                    onChange={(e) => setFormData({ ...formData, air_temperature_c: e.target.value === '' ? null : Number(e.target.value) })
                     }
+                    required
                     className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded text-stone-200 font-mono"
                   />
                 </div>
@@ -365,10 +382,10 @@ export const OperationsWeather: React.FC = () => {
                   <input
                     type="number"
                     step="0.1"
-                    value={formData.water_temperature_c || 26.0}
-                    onChange={(e) =>
-                      setFormData({ ...formData, water_temperature_c: parseFloat(e.target.value) || 26.0 })
+                    value={formData.water_temperature_c ?? ''}
+                    onChange={(e) => setFormData({ ...formData, water_temperature_c: e.target.value === '' ? null : Number(e.target.value) })
                     }
+                    required
                     className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded text-stone-200 font-mono"
                   />
                 </div>
@@ -380,10 +397,10 @@ export const OperationsWeather: React.FC = () => {
                   <input
                     type="number"
                     step="0.1"
-                    value={formData.wind_speed_knots || 8.0}
-                    onChange={(e) =>
-                      setFormData({ ...formData, wind_speed_knots: parseFloat(e.target.value) || 8.0 })
+                    value={formData.wind_speed_knots ?? ''}
+                    onChange={(e) => setFormData({ ...formData, wind_speed_knots: e.target.value === '' ? null : Number(e.target.value) })
                     }
+                    required
                     className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded text-stone-200 font-mono"
                   />
                 </div>
@@ -392,26 +409,52 @@ export const OperationsWeather: React.FC = () => {
                   <input
                     type="number"
                     step="0.05"
-                    value={formData.swell_height_m || 0.4}
-                    onChange={(e) =>
-                      setFormData({ ...formData, swell_height_m: parseFloat(e.target.value) || 0.4 })
+                    value={formData.swell_height_m ?? ''}
+                    onChange={(e) => setFormData({ ...formData, swell_height_m: e.target.value === '' ? null : Number(e.target.value) })
                     }
+                    required
                     className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded text-stone-200 font-mono"
                   />
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">Wind Direction</label>
+                  <input
+                    type="text"
+                    value={formData.wind_direction || ''}
+                    onChange={(e) => setFormData({ ...formData, wind_direction: e.target.value })}
+                    placeholder="e.g. NNW"
+                    className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded text-stone-200"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">Visibility (meters)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={formData.visibility_meters ?? ''}
+                    onChange={(e) => setFormData({ ...formData, visibility_meters: e.target.value === '' ? null : Number(e.target.value) })}
+                    className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded text-stone-200 font-mono"
+                    required
+                  />
+                </div>
+              </div>
+
               <div>
-                <label className="block text-stone-300 font-semibold mb-1">Coast Guard Clearance</label>
+                <label className="block text-stone-300 font-semibold mb-1">Port Authority Status (operator-recorded)</label>
                 <select
-                  value={formData.coast_guard_cleared ? 'true' : 'false'}
-                  onChange={(e) =>
-                    setFormData({ ...formData, coast_guard_cleared: e.target.value === 'true' })
-                  }
+                  value={formData.coast_guard_cleared === true ? 'true' : formData.coast_guard_cleared === false ? 'false' : ''}
+                  onChange={(e) => setFormData({ ...formData, coast_guard_cleared: e.target.value === '' ? null : e.target.value === 'true' })}
+                  required
                   className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded text-stone-200"
                 >
-                  <option value="true">GREEN FLAG (Cleared for all excursions)</option>
-                  <option value="false">RED FLAG / WARNING (Harbor advisory active)</option>
+                  <option value="">Select the recorded authority status</option>
+                  <option value="true">Harbor authority confirmed clearance</option>
+                  <option value="false">Harbor authority did not clear departures</option>
                 </select>
               </div>
 
@@ -420,7 +463,8 @@ export const OperationsWeather: React.FC = () => {
                 <textarea
                   value={formData.advisory_notes || ''}
                   onChange={(e) => setFormData({ ...formData, advisory_notes: e.target.value })}
-                  placeholder="Coast Guard instructions, marine reserve wind notices..."
+                  placeholder="Record the issuing authority, instructions, restrictions, and verification details..."
+                  required
                   rows={3}
                   className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded text-stone-200"
                 />

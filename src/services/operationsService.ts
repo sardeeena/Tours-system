@@ -28,7 +28,6 @@ const LOCAL_GUIDES_KEY = 'rse_ops_guides';
 const LOCAL_WEATHER_KEY = 'rse_ops_weather';
 const LOCAL_DEPARTURES_KEY = 'rse_ops_departures';
 const LOCAL_PICKUPS_KEY = 'rse_ops_pickups';
-const LOCAL_AVAILABILITY_KEY = 'rse_ops_availability';
 
 // Initial maritime fleet (fallback seed)
 const INITIAL_VESSELS: DbVessel[] = [
@@ -255,213 +254,152 @@ function setLocal<T>(key: string, data: T): void {
  * List all departures for a specific date or date range.
  * Merges real database `departures` records with active bookings.
  */
-export async function getTodayDepartures(dateTarget?: string): Promise<OperationalDeparture[]> {
-  const date = dateTarget || new Date().toISOString().split('T')[0];
+function normalizeDepartureTime(value: unknown): string {
+  const raw = String(value ?? '').trim();
+  if (!raw) return '';
+  const match = raw.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?$/i);
+  if (!match) return raw;
+  let hour = Number(match[1]);
+  const minute = match[2];
+  const meridiem = match[3]?.toUpperCase();
+  if (meridiem === 'PM' && hour < 12) hour += 12;
+  if (meridiem === 'AM' && hour === 12) hour = 0;
+  return `${String(hour).padStart(2, '0')}:${minute}`;
+}
 
-  const [allBookings, vessels, guides, dynamicTours] = await Promise.all([
+/**
+ * Lists only explicit database departures for the selected date.
+ * Bookings are attached to real departure rows; bookings never synthesize
+ * departures, capacities, times, vessels, or weather clearance.
+ */
+export async function getTodayDepartures(dateTarget?: string): Promise<OperationalDeparture[]> {
+  const now = new Date();
+  const localToday = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const date = dateTarget || localToday;
+
+  if (!isSupabaseConfigured()) {
+    if (import.meta.env.DEV) {
+      return getLocal<OperationalDeparture[]>(LOCAL_DEPARTURES_KEY, []).filter((departure) => departure.date === date);
+    }
+    throw new Error('Supabase is not configured; live departures cannot be loaded.');
+  }
+
+  const [{ data: dbDepartures, error: departuresError }, allBookings, vessels, guides, dynamicTours] = await Promise.all([
+    supabase.from('departures').select('*').eq('date', date),
     bookingRepository.listBookings(),
     listVessels(),
     listGuides(),
-    getPublishedTours().catch(() => ALL_TOURS),
+    getPublishedTours().catch(() => []),
   ]);
 
-  // Try fetching departures directly from database
-  let dbDepartures: any[] = [];
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('departures')
-        .select('*')
-        .eq('date', date);
-      if (!error && data) {
-        dbDepartures = data;
-      }
-    } catch {
-      // table might not be migrated yet or offline
-    }
-  }
+  if (departuresError) throw new Error(formatSupabaseError(departuresError));
 
-  // Also read cached departures if DB query was empty
-  if (dbDepartures.length === 0) {
-    const cached = getLocal<any[]>(LOCAL_DEPARTURES_KEY, []);
-    dbDepartures = cached.filter((d) => d.date === date);
-  }
-
-  // Find confirmed bookings for the target date
-  const dayBookings = allBookings.filter((b) => {
-    const bDate = b.date ? b.date.split('T')[0] : '';
-    return bDate === date && b.status !== 'cancelled';
+  const dayBookings = allBookings.filter((booking) => {
+    const bookingDate = booking.date ? booking.date.split('T')[0] : '';
+    return bookingDate === date && booking.status !== 'cancelled';
   });
 
-  // Group bookings by tourId and departureTime
   const groupedBookings = new Map<string, typeof dayBookings>();
-  dayBookings.forEach((b) => {
-    const depTime = (b as any).departureTime || '08:30';
-    const key = `${b.tourId}_${depTime}`;
-    const list = groupedBookings.get(key) || [];
-    list.push(b);
-    groupedBookings.set(key, list);
+  dayBookings.forEach((booking) => {
+    const time = normalizeDepartureTime((booking as any).departureTime);
+    const key = `${booking.tourId}_${time}`;
+    const group = groupedBookings.get(key) || [];
+    group.push(booking);
+    groupedBookings.set(key, group);
   });
 
-  const departures: OperationalDeparture[] = [];
-  const processedKeys = new Set<string>();
-
-  // 1. Convert DB departures
-  dbDepartures.forEach((dbDep) => {
-    const key = `${dbDep.tour_id}_${dbDep.start_time || '08:30'}`;
-    processedKeys.add(key);
-
+  const departures: OperationalDeparture[] = (dbDepartures || []).map((dbDep: any) => {
+    const startTime = normalizeDepartureTime(dbDep.start_time);
+    const key = `${dbDep.tour_id}_${startTime}`;
     const bookingsForDep = groupedBookings.get(key) || [];
+    const tour = dynamicTours.find((item) => item.id === dbDep.tour_id);
+    const vessel = vessels.find((item) => item.id === dbDep.vessel_id);
+    const guide = guides.find((item) => item.id === dbDep.guide_id);
+    const captain = guides.find((item) => item.id === dbDep.captain_id);
+    const driver = guides.find((item) => item.id === dbDep.driver_id);
 
-    const tour = (dynamicTours && dynamicTours.find((t) => t.id === dbDep.tour_id)) || ALL_TOURS.find((t) => t.id === dbDep.tour_id) || {
-      id: dbDep.tour_id,
-      title: bookingsForDep[0]?.tourTitle || 'Red Sea Excursion',
-      slug: 'red-sea-tour',
-    };
-    const paxCount = bookingsForDep.reduce(
-      (sum, b) => sum + (b.guests.adults || 1) + (b.guests.children || 0) + (b.guests.infants || 0),
+    const adultCount = bookingsForDep.reduce((sum, booking) => sum + (Number(booking.guests.adults) || 0), 0);
+    const childCount = bookingsForDep.reduce((sum, booking) => sum + (Number(booking.guests.children) || 0), 0);
+    const infantCount = bookingsForDep.reduce((sum, booking) => sum + (Number(booking.guests.infants) || 0), 0);
+    const passengerCount = adultCount + childCount + infantCount;
+    const effectivePassengers = Math.max(passengerCount, Number(dbDep.booked_passengers) || 0);
+    const capacity = Math.max(0, Number(dbDep.capacity) || 0);
+
+    const totalEur = bookingsForDep.reduce(
+      (sum, booking) => sum + (Number(booking.pricing?.totalEur) || Number((booking as any).totalPrice) || 0),
       0
     );
-    const adultCount = bookingsForDep.reduce((sum, b) => sum + (b.guests.adults || 1), 0);
-    const childCount = bookingsForDep.reduce((sum, b) => sum + (b.guests.children || 0), 0);
-    const infantCount = bookingsForDep.reduce((sum, b) => sum + (b.guests.infants || 0), 0);
-
-    const vessel = vessels.find((v) => v.id === dbDep.vessel_id);
-    const guide = guides.find((g) => g.id === dbDep.guide_id);
-    const captain = guides.find((g) => g.id === dbDep.captain_id);
-    const driver = guides.find((g) => g.id === dbDep.driver_id);
-
-    const totalEur = bookingsForDep.reduce((sum, b) => sum + (b.pricing?.totalEur || (b as any).totalPrice || 0), 0);
     const paidEur = bookingsForDep.reduce(
-      (sum, b) => sum + ((b as any).paymentStatus === 'paid' ? (b.pricing?.totalEur || (b as any).totalPrice || 0) : 0),
+      (sum, booking) => sum + ((booking as any).paymentStatus === 'paid'
+        ? (Number(booking.pricing?.totalEur) || Number((booking as any).totalPrice) || 0)
+        : 0),
       0
     );
 
-    const depStatusNormalized = (dbDep.status || 'scheduled').toLowerCase();
+    const pickupMap = new Map<string, { name: string; time: string; passengerCount: number; hotelName?: string }>();
+    bookingsForDep.forEach((booking) => {
+      const hotelName = (booking as any).pickup?.hotelName || (booking as any).customer?.hotelName || '';
+      const name = hotelName || 'Pickup not specified';
+      const pickupTime = String((booking as any).pickupTime || '');
+      const pickupKey = `${name}_${pickupTime}`;
+      const existing = pickupMap.get(pickupKey);
+      const guests =
+        (Number(booking.guests.adults) || 0) +
+        (Number(booking.guests.children) || 0) +
+        (Number(booking.guests.infants) || 0);
+      if (existing) existing.passengerCount += guests;
+      else pickupMap.set(pickupKey, { name, time: pickupTime, passengerCount: guests, hotelName: hotelName || undefined });
+    });
+
+    const status = (dbDep.status || 'scheduled') as DepartureStatus;
     const legacyStatus: OperationalStatus =
-      depStatusNormalized === 'boarding'
-        ? 'Ready'
-        : depStatusNormalized === 'in_progress'
-        ? 'Departed'
-        : depStatusNormalized === 'completed'
-        ? 'Completed'
-        : depStatusNormalized === 'cancelled'
-        ? 'Cancelled'
-        : depStatusNormalized === 'confirmed'
-        ? 'Preparing'
-        : 'Scheduled';
+      status === 'boarding' ? 'Ready' :
+      status === 'in_progress' ? 'Departed' :
+      status === 'completed' ? 'Completed' :
+      status === 'cancelled' ? 'Cancelled' :
+      status === 'confirmed' ? 'Preparing' : 'Scheduled';
 
-    const capacity = dbDep.capacity || (vessel ? vessel.passenger_capacity : 35);
-    const effectivePax = Math.max(paxCount, dbDep.booked_passengers || 0);
-
-    departures.push({
+    return {
       id: dbDep.id,
       tourId: dbDep.tour_id,
-      tourTitle: tour.title,
-      tourSlug: tour.slug || 'tour',
+      tourTitle: tour?.title || 'Tour record unavailable',
+      tourSlug: tour?.slug || '',
       date,
-      departureTime: dbDep.start_time || '08:30',
-      startTime: dbDep.start_time || '08:30',
-      endTime: dbDep.end_time || '16:30',
+      departureTime: startTime,
+      startTime,
+      endTime: normalizeDepartureTime(dbDep.end_time),
       capacity,
-      remainingCapacity: Math.max(0, capacity - effectivePax),
+      remainingCapacity: Math.max(0, capacity - effectivePassengers),
       bookingsCount: bookingsForDep.length,
-      passengerCount: effectivePax,
+      passengerCount: effectivePassengers,
       adultCount,
       childCount,
       infantCount,
-      pickupLocations: bookingsForDep.map((b) => ({
-        name: b.pickup.hotelName || b.customer.hotelName || 'Direct Arrival',
-        time: (b as any).pickupTime || '07:30',
-        passengerCount: (b.guests.adults || 1) + (b.guests.children || 0),
-        hotelName: b.pickup.hotelName || b.customer.hotelName,
-      })),
-      vesselId: dbDep.vessel_id,
-      vesselName: vessel ? vessel.name : null,
-      vesselType: vessel ? vessel.vessel_type : null,
-      vesselCapacity: vessel ? vessel.passenger_capacity : null,
-      guideId: dbDep.guide_id,
-      guideName: guide ? guide.full_name : null,
-      guideRole: guide ? guide.role : null,
-      captainId: dbDep.captain_id,
-      captainName: captain ? captain.full_name : null,
-      driverId: dbDep.driver_id,
-      driverName: dbDep.driver_name || (driver ? driver.full_name : null),
-      vehicleName: dbDep.vehicle_name,
+      pickupLocations: Array.from(pickupMap.values()),
+      vesselId: dbDep.vessel_id || null,
+      vesselName: vessel?.name || null,
+      vesselType: vessel?.vessel_type || null,
+      vesselCapacity: vessel ? Number(vessel.passenger_capacity) || null : null,
+      guideId: dbDep.guide_id || null,
+      guideName: guide?.full_name || null,
+      guideRole: guide?.role || null,
+      captainId: dbDep.captain_id || null,
+      captainName: captain?.full_name || null,
+      driverId: dbDep.driver_id || null,
+      driverName: dbDep.driver_name || driver?.full_name || null,
+      vehicleName: dbDep.vehicle_name || null,
       crewIds: dbDep.crew_ids || [],
       operationalStatus: legacyStatus,
-      status: (dbDep.status as DepartureStatus) || 'scheduled',
+      status,
       paymentSummary: {
-        paidCount: bookingsForDep.filter((b) => (b as any).paymentStatus === 'paid').length,
-        pendingCount: bookingsForDep.filter((b) => (b as any).paymentStatus !== 'paid').length,
+        paidCount: bookingsForDep.filter((booking) => (booking as any).paymentStatus === 'paid').length,
+        pendingCount: bookingsForDep.filter((booking) => (booking as any).paymentStatus !== 'paid').length,
         totalEur,
         outstandingEur: Math.max(0, totalEur - paidEur),
       },
-      weatherCleared: true,
+      weatherCleared: null,
       notes: dbDep.notes || null,
-    });
-  });
-
-  // 2. Synthesize departures for bookings that don't have an explicit DB departure record yet
-  groupedBookings.forEach((bookings, key) => {
-    if (processedKeys.has(key)) return;
-
-    const [tId, depTime] = key.split('_');
-    const tour = (dynamicTours && dynamicTours.find((t) => t.id === tId)) || ALL_TOURS.find((t) => t.id === tId) || {
-      id: tId,
-      title: bookings[0]?.tourTitle || 'Red Sea Excursion',
-      slug: 'red-sea-tour',
     };
-
-    const paxCount = bookings.reduce(
-      (sum, b) => sum + (b.guests.adults || 1) + (b.guests.children || 0) + (b.guests.infants || 0),
-      0
-    );
-    const adultCount = bookings.reduce((sum, b) => sum + (b.guests.adults || 1), 0);
-    const childCount = bookings.reduce((sum, b) => sum + (b.guests.children || 0), 0);
-    const infantCount = bookings.reduce((sum, b) => sum + (b.guests.infants || 0), 0);
-    const totalEur = bookings.reduce((sum, b) => sum + (b.pricing?.totalEur || (b as any).totalPrice || 0), 0);
-
-    departures.push({
-      id: `dep-${tId}-${date}-${depTime.replace(':', '')}`,
-      tourId: tId,
-      tourTitle: tour.title,
-      tourSlug: tour.slug || 'tour',
-      date,
-      departureTime: depTime || '08:30',
-      startTime: depTime || '08:30',
-      endTime: '16:30',
-      capacity: 35,
-      remainingCapacity: Math.max(0, 35 - paxCount),
-      bookingsCount: bookings.length,
-      passengerCount: paxCount,
-      adultCount,
-      childCount,
-      infantCount,
-      pickupLocations: bookings.map((b) => ({
-        name: b.pickup.hotelName || b.customer.hotelName || 'Direct Arrival',
-        time: (b as any).pickupTime || '07:30',
-        passengerCount: (b.guests.adults || 1) + (b.guests.children || 0),
-        hotelName: b.pickup.hotelName || b.customer.hotelName,
-      })),
-      vesselId: null,
-      vesselName: null,
-      vesselType: null,
-      vesselCapacity: 35,
-      guideId: null,
-      guideName: null,
-      guideRole: null,
-      operationalStatus: 'Scheduled',
-      status: 'scheduled',
-      paymentSummary: {
-        paidCount: bookings.filter((b) => (b as any).paymentStatus === 'paid').length,
-        pendingCount: bookings.filter((b) => (b as any).paymentStatus !== 'paid').length,
-        totalEur,
-        outstandingEur: totalEur,
-      },
-      weatherCleared: true,
-      notes: null,
-    });
   });
 
   return departures.sort((a, b) => a.departureTime.localeCompare(b.departureTime));
@@ -475,21 +413,32 @@ export async function createDeparture(data: Partial<DepartureEntity>): Promise<{
   departure?: DepartureEntity;
   error?: string;
 }> {
-  if (!data.tour_id || !data.date) {
-    return { success: false, error: 'Tour and date are required.' };
+  const capacity = Math.floor(Number(data.capacity) || 0);
+  const bookedPassengers = Math.max(0, Math.floor(Number(data.booked_passengers) || 0));
+  const startTime = String(data.start_time || '').trim();
+  const endTime = String(data.end_time || '').trim();
+
+  if (!data.tour_id || !data.date || !startTime || !endTime || capacity <= 0) {
+    return { success: false, error: 'Tour, date, actual start time, end time, and positive capacity are required.' };
+  }
+  if (endTime <= startTime) {
+    return { success: false, error: 'End time must be later than the start time.' };
+  }
+  if (bookedPassengers > capacity) {
+    return { success: false, error: 'Booked passengers cannot exceed the configured departure capacity.' };
   }
 
   const newDeparture: DepartureEntity = {
-    id: data.id || `dep-${Date.now().toString(36)}`,
+    id: data.id || '',
     tour_id: data.tour_id,
-    tour_title: data.tour_title || 'Scheduled Departure',
-    tour_slug: data.tour_slug || 'tour',
+    tour_title: data.tour_title || '',
+    tour_slug: data.tour_slug || '',
     date: data.date,
-    start_time: data.start_time || '08:30',
-    end_time: data.end_time || '16:30',
-    capacity: data.capacity || 35,
-    booked_passengers: data.booked_passengers || 0,
-    remaining_capacity: Math.max(0, (data.capacity || 35) - (data.booked_passengers || 0)),
+    start_time: startTime,
+    end_time: endTime,
+    capacity,
+    booked_passengers: bookedPassengers,
+    remaining_capacity: capacity - bookedPassengers,
     status: data.status || 'scheduled',
     guide_id: data.guide_id || null,
     vessel_id: data.vessel_id || null,
@@ -503,99 +452,103 @@ export async function createDeparture(data: Partial<DepartureEntity>): Promise<{
     updated_at: new Date().toISOString(),
   };
 
-  // Pre-save validation: Check inactive vessel
   if (newDeparture.vessel_id) {
     const vessels = await listVessels();
-    const v = vessels.find((ves) => ves.id === newDeparture.vessel_id);
-    if (v && (!v.is_active || v.status === 'maintenance' || v.status === 'dry_dock' || v.status === 'inactive')) {
-      return {
-        success: false,
-        error: `Cannot assign vessel "${v.name}": Vessel is currently inactive or under maintenance (${v.status || 'inactive'}).`,
-      };
+    const vessel = vessels.find((item) => item.id === newDeparture.vessel_id);
+    if (!vessel) return { success: false, error: 'The selected vessel does not exist in the live fleet records.' };
+    if (!vessel.is_active || ['maintenance', 'dry_dock', 'inactive'].includes(vessel.status)) {
+      return { success: false, error: `Cannot assign vessel "${vessel.name}": it is inactive or under maintenance.` };
     }
-    if (v && newDeparture.booked_passengers > v.passenger_capacity) {
-      return {
-        success: false,
-        error: `Vessel capacity exceeded: "${v.name}" max capacity is ${v.passenger_capacity}, but departure has ${newDeparture.booked_passengers} booked passengers.`,
-      };
+    if (bookedPassengers > vessel.passenger_capacity) {
+      return { success: false, error: `Vessel capacity exceeded: "${vessel.name}" supports ${vessel.passenger_capacity} passengers.` };
     }
   }
 
-  if (isSupabaseConfigured()) {
-    try {
-      const { data: inserted, error } = await supabase
-        .from('departures')
-        .upsert({
-          id: newDeparture.id.startsWith('dep-') ? undefined : newDeparture.id,
-          tour_id: newDeparture.tour_id,
-          date: newDeparture.date,
-          start_time: newDeparture.start_time,
-          end_time: newDeparture.end_time,
-          capacity: newDeparture.capacity,
-          booked_passengers: newDeparture.booked_passengers,
-          remaining_capacity: newDeparture.remaining_capacity,
-          status: newDeparture.status,
-          guide_id: newDeparture.guide_id,
-          vessel_id: newDeparture.vessel_id,
-          captain_id: newDeparture.captain_id,
-          driver_id: newDeparture.driver_id,
-          driver_name: newDeparture.driver_name,
-          vehicle_name: newDeparture.vehicle_name,
-          crew_ids: newDeparture.crew_ids,
-          notes: newDeparture.notes,
-        })
-        .select()
-        .single();
-
-      if (!error && inserted) {
-        newDeparture.id = inserted.id;
-      }
-    } catch {
-      // offline fallback
+  if (!isSupabaseConfigured()) {
+    if (import.meta.env.DEV) {
+      const cached = getLocal<DepartureEntity[]>(LOCAL_DEPARTURES_KEY, []);
+      newDeparture.id = `local-departure-${Date.now()}`;
+      setLocal(LOCAL_DEPARTURES_KEY, [newDeparture, ...cached]);
+      return { success: true, departure: newDeparture };
     }
+    return { success: false, error: 'Supabase is not configured; the departure was not saved.' };
   }
 
-  // Update cache
-  const cached = getLocal<DepartureEntity[]>(LOCAL_DEPARTURES_KEY, []);
-  const updated = [newDeparture, ...cached.filter((d) => d.id !== newDeparture.id)];
-  setLocal(LOCAL_DEPARTURES_KEY, updated);
+  const payload = {
+    tour_id: newDeparture.tour_id,
+    date: newDeparture.date,
+    start_time: newDeparture.start_time,
+    end_time: newDeparture.end_time,
+    capacity: newDeparture.capacity,
+    booked_passengers: newDeparture.booked_passengers,
+    remaining_capacity: newDeparture.remaining_capacity,
+    status: newDeparture.status,
+    guide_id: newDeparture.guide_id,
+    vessel_id: newDeparture.vessel_id,
+    captain_id: newDeparture.captain_id,
+    driver_id: newDeparture.driver_id,
+    driver_name: newDeparture.driver_name,
+    vehicle_name: newDeparture.vehicle_name,
+    crew_ids: newDeparture.crew_ids,
+    notes: newDeparture.notes,
+  };
 
+  const result = data.id
+    ? await supabase.from('departures').update(payload).eq('id', data.id).select().single()
+    : await supabase.from('departures').insert(payload).select().single();
+
+  if (result.error || !result.data) {
+    return { success: false, error: result.error ? formatSupabaseError(result.error) : 'The departure was not returned after saving.' };
+  }
+
+  newDeparture.id = result.data.id;
   return { success: true, departure: newDeparture };
 }
 
 /**
- * Update departure status across all 6 statuses
+ * Update departure status and synchronize the operational status of bookings
+ * assigned to that tour/date. Database errors are surfaced to the caller.
  */
 export async function updateDepartureStatus(
   departureId: string,
   newStatus: DepartureStatus | OperationalStatus
 ): Promise<boolean> {
-  const normalized = (newStatus || 'scheduled').toLowerCase() as DepartureStatus;
+  const normalized = String(newStatus || 'scheduled').toLowerCase() as DepartureStatus;
 
-  if (isSupabaseConfigured()) {
-    try {
-      await supabase
-        .from('departures')
-        .update({ status: normalized, updated_at: new Date().toISOString() })
-        .eq('id', departureId);
-
-      // Also sync bookings assigned to this departure date/tour if applicable
-      await supabase
-        .from('bookings')
-        .update({ operational_status: newStatus })
-        .eq('operational_status', departureId);
-    } catch {
-      // ignore
-    }
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) return false;
+    const cached = getLocal<DepartureEntity[]>(LOCAL_DEPARTURES_KEY, []);
+    setLocal(LOCAL_DEPARTURES_KEY, cached.map((departure) =>
+      departure.id === departureId
+        ? { ...departure, status: normalized, updated_at: new Date().toISOString() }
+        : departure
+    ));
+    return true;
   }
 
-  // Update local cache
-  const cached = getLocal<DepartureEntity[]>(LOCAL_DEPARTURES_KEY, []);
-  const updated = cached.map((d) =>
-    d.id === departureId ? { ...d, status: normalized, updated_at: new Date().toISOString() } : d
-  );
-  setLocal(LOCAL_DEPARTURES_KEY, updated);
+  const { data: departure, error: lookupError } = await supabase
+    .from('departures')
+    .select('id,tour_id,date')
+    .eq('id', departureId)
+    .maybeSingle();
 
+  if (lookupError || !departure) return false;
+
+  const { error: departureError } = await supabase
+    .from('departures')
+    .update({ status: normalized, updated_at: new Date().toISOString() })
+    .eq('id', departureId);
+
+  if (departureError) return false;
+
+  const { error: bookingError } = await supabase
+    .from('bookings')
+    .update({ operational_status: normalized })
+    .eq('tour_id', departure.tour_id)
+    .eq('booking_date', departure.date)
+    .neq('status', 'cancelled');
+
+  if (bookingError) return false;
   return true;
 }
 
@@ -846,80 +799,112 @@ export async function saveAssignment(assignment: Partial<OperationalAssignment>)
   assignment?: OperationalAssignment;
   conflicts?: AssignmentConflict[];
 }> {
-  if (!assignment.tourId || !assignment.date) {
-    return { success: false, error: 'Tour and date are required for assignment.' };
+  if (!assignment.tourId || !assignment.date || !assignment.departureTime) {
+    return { success: false, error: 'Tour, date, and an explicit departure time are required.' };
+  }
+  if (!isSupabaseConfigured()) {
+    return { success: false, error: 'Supabase is not configured; operational assignments were not saved.' };
   }
 
-  // Run conflict detection
-  const conflicts = await detectAssignmentConflicts({
-    departureId: assignment.id,
-    tourId: assignment.tourId,
-    date: assignment.date,
-    startTime: assignment.departureTime || '08:30',
-    vesselId: assignment.vesselId,
-    guideId: assignment.guideId,
-    captainId: assignment.captainId,
-    driverId: assignment.driverId,
-  });
+  const departureTime = normalizeDepartureTime(assignment.departureTime);
+  const { data: candidates, error: lookupError } = await supabase
+    .from('departures')
+    .select('id,start_time,end_time,capacity')
+    .eq('tour_id', assignment.tourId)
+    .eq('date', assignment.date);
 
-  if (conflicts.length > 0) {
+  if (lookupError) return { success: false, error: formatSupabaseError(lookupError) };
+
+  const departure = (candidates || []).find(
+    (item: any) => normalizeDepartureTime(item.start_time) === departureTime
+  );
+
+  if (!departure || !departure.end_time || Number(departure.capacity) <= 0) {
     return {
       success: false,
-      error: conflicts[0].message,
-      conflicts,
+      error: 'Create a departure with an actual start time, end time, and capacity before assigning staff or a vessel.',
     };
   }
 
-  // Persist to database
-  const savedAssignment: OperationalAssignment = {
-    id: assignment.id || `assign-${Date.now().toString(36)}`,
+  const conflicts = await detectAssignmentConflicts({
+    departureId: departure.id,
     tourId: assignment.tourId,
     date: assignment.date,
-    departureTime: assignment.departureTime || '08:30',
+    startTime: departureTime,
     vesselId: assignment.vesselId || null,
     guideId: assignment.guideId || null,
     captainId: assignment.captainId || null,
     driverId: assignment.driverId || null,
-    crewIds: assignment.crewIds || [],
-    status: assignment.status || 'Scheduled',
-    notes: assignment.notes || null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+  });
+
+  if (conflicts.length > 0) {
+    return { success: false, error: conflicts[0].message, conflicts };
+  }
+
+  const now = new Date().toISOString();
+  const operationalStatus = assignment.status || 'Scheduled';
+  const statusMap: Record<string, DepartureStatus> = {
+    Scheduled: 'scheduled',
+    Preparing: 'confirmed',
+    Ready: 'boarding',
+    Departed: 'in_progress',
+    Completed: 'completed',
+    Cancelled: 'cancelled',
   };
 
-  if (isSupabaseConfigured()) {
-    try {
-      const { error: assignError } = await supabase.from('operational_assignments').upsert({
-        id: savedAssignment.id.startsWith('assign-') ? undefined : savedAssignment.id,
-        tour_id: savedAssignment.tourId,
-        date: savedAssignment.date,
-        departure_time: savedAssignment.departureTime,
-        vessel_id: savedAssignment.vesselId,
-        guide_id: savedAssignment.guideId,
-        status: savedAssignment.status,
-        notes: savedAssignment.notes,
-      });
+  const { error: departureUpdateError } = await supabase
+    .from('departures')
+    .update({
+      vessel_id: assignment.vesselId || null,
+      guide_id: assignment.guideId || null,
+      captain_id: assignment.captainId || null,
+      driver_id: assignment.driverId || null,
+      crew_ids: assignment.crewIds || [],
+      status: statusMap[operationalStatus] || 'scheduled',
+      notes: assignment.notes || null,
+      updated_at: now,
+    })
+    .eq('id', departure.id);
 
-      if (assignError) {
-        return { success: false, error: formatSupabaseError(assignError) };
-      }
-
-      // Also sync to departures table
-      await supabase.from('departures').upsert({
-        tour_id: savedAssignment.tourId,
-        date: savedAssignment.date,
-        start_time: savedAssignment.departureTime,
-        vessel_id: savedAssignment.vesselId,
-        guide_id: savedAssignment.guideId,
-        captain_id: savedAssignment.captainId,
-        driver_id: savedAssignment.driverId,
-        status: (savedAssignment.status || 'scheduled').toLowerCase(),
-        notes: savedAssignment.notes,
-      });
-    } catch (err: any) {
-      return { success: false, error: formatSupabaseError(err) };
-    }
+  if (departureUpdateError) {
+    return { success: false, error: formatSupabaseError(departureUpdateError) };
   }
+
+  const { data: saved, error: assignError } = await supabase
+    .from('operational_assignments')
+    .upsert({
+      tour_id: assignment.tourId,
+      date: assignment.date,
+      departure_time: departureTime,
+      vessel_id: assignment.vesselId || null,
+      guide_id: assignment.guideId || null,
+      status: operationalStatus,
+      notes: assignment.notes || null,
+      updated_at: now,
+    }, { onConflict: 'tour_id,date,departure_time' })
+    .select()
+    .single();
+
+  if (assignError || !saved) {
+    return {
+      success: false,
+      error: assignError ? formatSupabaseError(assignError) : 'Assignment was not returned after saving.',
+    };
+  }
+
+  const savedAssignment: OperationalAssignment = {
+    ...assignment,
+    id: saved.id,
+    tourId: assignment.tourId,
+    date: assignment.date,
+    departureTime,
+    vesselId: assignment.vesselId || null,
+    guideId: assignment.guideId || null,
+    status: operationalStatus as OperationalAssignment['status'],
+    notes: assignment.notes || null,
+    createdAt: saved.created_at,
+    updatedAt: saved.updated_at,
+  };
 
   return { success: true, assignment: savedAssignment };
 }
@@ -1409,67 +1394,119 @@ export async function deleteGuide(id: string): Promise<boolean> {
 // ==============================================================================
 
 export async function listAvailabilitySlots(): Promise<AvailabilitySlot[]> {
-  const allBookings = await bookingRepository.listBookings();
+  if (!isSupabaseConfigured()) {
+    if (import.meta.env.DEV) return [];
+    throw new Error('Supabase is not configured; live availability cannot be loaded.');
+  }
 
-  // Aggregate bookings per tour and date
-  const slotMap = new Map<string, AvailabilitySlot>();
+  const { data: rows, error } = await supabase
+    .from('tour_availability')
+    .select('id,tour_id,date,max_capacity,booked_count,status,notes')
+    .order('date', { ascending: true });
 
-  allBookings.forEach((b) => {
-    if (b.status === 'cancelled') return;
-    const dateStr = b.date ? b.date.split('T')[0] : '';
-    if (!dateStr) return;
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!rows?.length) return [];
 
-    const key = `${b.tourId}_${dateStr}`;
-    const pax = (b.guests.adults || 1) + (b.guests.children || 0) + (b.guests.infants || 0);
+  const tourIds = [...new Set(rows.map((row: any) => row.tour_id).filter(Boolean))];
+  const [{ data: tours, error: toursError }, allBookings] = await Promise.all([
+    supabase.from('tours').select('id,title,slug,departure_time').in('id', tourIds),
+    bookingRepository.listBookings(),
+  ]);
 
-    const existing = slotMap.get(key);
-    if (existing) {
-      existing.bookedCount += pax;
-      existing.remainingCapacity = Math.max(0, existing.maxCapacity - existing.bookedCount);
-      if (existing.remainingCapacity === 0) existing.status = 'sold_out';
-    } else {
-      slotMap.set(key, {
-        id: `slot-${key}`,
-        tourId: b.tourId,
-        tourTitle: b.tourTitle,
-        date: dateStr,
-        maxCapacity: 35,
-        bookedCount: pax,
-        remainingCapacity: Math.max(0, 35 - pax),
-        status: pax >= 35 ? 'sold_out' : 'available',
-        departureTime: (b as any).departureTime || '08:30',
-        notes: null,
-        isBlackout: false,
-      });
-    }
+  if (toursError) throw new Error(formatSupabaseError(toursError));
+
+  const tourMap = new Map((tours || []).map((tour: any) => [tour.id, tour]));
+  const bookedByDate = new Map<string, number>();
+
+  allBookings.forEach((booking) => {
+    if (booking.status === 'cancelled') return;
+    const date = booking.date?.split('T')[0];
+    if (!date) return;
+    const key = `${booking.tourId}_${date}`;
+    const passengers =
+      (booking.guests.adults || 0) +
+      (booking.guests.children || 0) +
+      (booking.guests.infants || 0);
+    bookedByDate.set(key, (bookedByDate.get(key) || 0) + passengers);
   });
 
-  return Array.from(slotMap.values());
+  return rows.map((row: any) => {
+    const tour = tourMap.get(row.tour_id);
+    const maxCapacity = Math.max(0, Number(row.max_capacity) || 0);
+    const bookedCount = Math.max(
+      0,
+      Number(row.booked_count) || 0,
+      bookedByDate.get(`${row.tour_id}_${row.date}`) || 0
+    );
+    const remainingCapacity = Math.max(0, maxCapacity - bookedCount);
+    const status: AvailabilitySlot['status'] =
+      row.status === 'unavailable'
+        ? 'unavailable'
+        : row.status === 'sold_out' || (row.status === 'available' && remainingCapacity === 0)
+          ? 'sold_out'
+          : row.status === 'available'
+            ? 'available'
+            : 'unavailable';
+
+    return {
+      id: row.id,
+      tourId: row.tour_id,
+      tourTitle: tour?.title || 'Tour record unavailable',
+      date: row.date,
+      maxCapacity,
+      bookedCount,
+      remainingCapacity,
+      status,
+      departureTime: tour?.departure_time || '',
+      notes: row.notes || null,
+      isBlackout: status === 'unavailable',
+    };
+  });
 }
 
 export async function updateAvailabilitySlot(
-  slotId: string,
+  tourId: string,
+  date: string,
   updates: Partial<AvailabilitySlot>
 ): Promise<boolean> {
-  if (isSupabaseConfigured()) {
-    try {
-      if (updates.maxCapacity !== undefined) {
-        // Upsert into tour_availability
-        const [_, tourId, date] = slotId.split('-');
-        if (tourId && date) {
-          await supabase.from('tour_availability').upsert({
-            tour_id: tourId,
-            date,
-            total_capacity: updates.maxCapacity,
-            status: updates.status || 'available',
-            notes: updates.notes,
-          });
-        }
-      }
-    } catch {
-      // ignore
-    }
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase is not configured; availability changes were not saved.');
   }
+
+  const { data: existing, error: readError } = await supabase
+    .from('tour_availability')
+    .select('max_capacity,booked_count,status,notes')
+    .eq('tour_id', tourId)
+    .eq('date', date)
+    .maybeSingle();
+
+  if (readError) throw new Error(formatSupabaseError(readError));
+
+  const maxCapacity = Math.max(
+    0,
+    Number(updates.maxCapacity ?? existing?.max_capacity) || 0
+  );
+  const bookedCount = Math.max(0, Number(existing?.booked_count) || 0);
+  const status = updates.status ?? existing?.status ?? 'unavailable';
+
+  if (maxCapacity < bookedCount) {
+    throw new Error('Capacity cannot be reduced below the number of passengers already booked.');
+  }
+  if (status === 'available' && maxCapacity <= bookedCount) {
+    throw new Error('A date needs an explicit capacity greater than its booked count before it can be opened.');
+  }
+
+  const { error } = await supabase
+    .from('tour_availability')
+    .upsert({
+      tour_id: tourId,
+      date,
+      max_capacity: maxCapacity,
+      status,
+      notes: updates.notes ?? existing?.notes ?? 'Manual override: updated by operations',
+    }, { onConflict: 'tour_id,date' });
+
+  if (error) throw new Error(formatSupabaseError(error));
   return true;
 }
 
@@ -1479,19 +1516,38 @@ export async function setBlackoutDate(
   isBlackout: boolean,
   notes?: string
 ): Promise<boolean> {
-  if (isSupabaseConfigured()) {
-    try {
-      await supabase.from('tour_availability').upsert({
-        tour_id: tourId,
-        date,
-        total_capacity: 0,
-        status: isBlackout ? 'unavailable' : 'available',
-        notes: notes || 'Blackout date applied',
-      });
-    } catch {
-      // ignore
-    }
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase is not configured; blackout changes were not saved.');
   }
+
+  const { data: existing, error: readError } = await supabase
+    .from('tour_availability')
+    .select('max_capacity,booked_count')
+    .eq('tour_id', tourId)
+    .eq('date', date)
+    .maybeSingle();
+
+  if (readError) throw new Error(formatSupabaseError(readError));
+
+  const maxCapacity = Math.max(0, Number(existing?.max_capacity) || 0);
+  const bookedCount = Math.max(0, Number(existing?.booked_count) || 0);
+  if (!isBlackout && maxCapacity <= bookedCount) {
+    throw new Error('This date cannot be reopened until an actual capacity greater than its booked count is configured.');
+  }
+
+  const { error } = await supabase
+    .from('tour_availability')
+    .upsert({
+      tour_id: tourId,
+      date,
+      max_capacity: maxCapacity,
+      status: isBlackout ? 'unavailable' : 'available',
+      notes: isBlackout
+        ? `Manual blackout: ${notes || 'Closed by operations'}`
+        : `Manual override: ${notes || 'Reopened by operations'}`,
+    }, { onConflict: 'tour_id,date' });
+
+  if (error) throw new Error(formatSupabaseError(error));
   return true;
 }
 
@@ -1506,156 +1562,115 @@ export async function setBlackoutDate(
  *  If a weather provider is not connected: show 'Weather unavailable'."
  */
 export async function getMaritimeWeather(dateTarget?: string): Promise<WeatherInfo> {
-  const date = dateTarget || new Date().toISOString().split('T')[0];
+  const now = new Date();
+  const date = dateTarget || `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
-  // 1. Try real-time Open-Meteo Marine API (free, open, authoritative for Red Sea coordinates)
+  let bulletin: DbWeatherBulletin | null = null;
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase
+      .from('weather_bulletins')
+      .select('*')
+      .order('bulletin_date', { ascending: false })
+      .limit(30);
+
+    if (error) {
+      console.warn('Unable to load operator weather bulletins:', error);
+    } else {
+      bulletin = (data || []).find((item: any) => String(item.bulletin_date || '').split('T')[0] === date) || null;
+    }
+  }
+
+  let airTemperatureC: number | null = null;
+  let liveWindKnots: number | null = null;
+  let liveWindDirection: string | null = null;
+  let liveSwellHeightM: number | null = null;
+
   try {
     const lat = 27.2579;
     const lon = 33.8116;
-
-    const [weatherRes, marineRes] = await Promise.allSettled([
+    const [weatherResult, marineResult] = await Promise.allSettled([
       fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,wind_direction_10m,weather_code&wind_speed_unit=kn&timezone=Africa/Cairo`,
-        { signal: AbortSignal.timeout(3500) }
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,wind_direction_10m&wind_speed_unit=kn&timezone=Africa/Cairo`,
+        { signal: AbortSignal.timeout(5000) }
       ),
       fetch(
-        `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&current=wave_height,wave_direction,wave_period&timezone=Africa/Cairo`,
-        { signal: AbortSignal.timeout(3500) }
+        `https://marine-api.open-meteo.com/v1/marine?latitude=${lat}&longitude=${lon}&current=wave_height&timezone=Africa/Cairo`,
+        { signal: AbortSignal.timeout(5000) }
       ),
     ]);
 
-    let airTemp: number | null = null;
-    let windKnots: number | null = null;
-    let windDeg: number | null = null;
-    let swellM: number | null = null;
-
-    if (weatherRes.status === 'fulfilled' && weatherRes.value.ok) {
-      const data = await weatherRes.value.json();
-      if (data.current) {
-        airTemp = Math.round(data.current.temperature_2m * 10) / 10;
-        windKnots = Math.round(data.current.wind_speed_10m * 10) / 10;
-        windDeg = data.current.wind_direction_10m;
+    if (weatherResult.status === 'fulfilled' && weatherResult.value.ok) {
+      const data = await weatherResult.value.json();
+      const current = data.current || {};
+      if (current.temperature_2m !== null && current.temperature_2m !== undefined) {
+        airTemperatureC = Number(current.temperature_2m);
+      }
+      if (current.wind_speed_10m !== null && current.wind_speed_10m !== undefined) {
+        liveWindKnots = Number(current.wind_speed_10m);
+      }
+      if (current.wind_direction_10m !== null && current.wind_direction_10m !== undefined) {
+        const direction = Number(current.wind_direction_10m);
+        const labels = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+        liveWindDirection = labels[Math.round(direction / 45) % 8];
       }
     }
 
-    if (marineRes.status === 'fulfilled' && marineRes.value.ok) {
-      const mData = await marineRes.value.json();
-      if (mData.current) {
-        swellM = Math.round(mData.current.wave_height * 100) / 100;
-      }
+    if (marineResult.status === 'fulfilled' && marineResult.value.ok) {
+      const data = await marineResult.value.json();
+      const height = data.current?.wave_height;
+      if (height !== null && height !== undefined) liveSwellHeightM = Number(height);
     }
-
-    if (airTemp !== null || windKnots !== null) {
-      const windDirStr =
-        windDeg !== null
-          ? windDeg >= 337.5 || windDeg < 22.5
-            ? 'N'
-            : windDeg < 67.5
-            ? 'NE'
-            : windDeg < 112.5
-            ? 'E'
-            : windDeg < 157.5
-            ? 'SE'
-            : windDeg < 202.5
-            ? 'S'
-            : windDeg < 247.5
-            ? 'SW'
-            : windDeg < 292.5
-            ? 'W'
-            : 'NW'
-          : 'NNW';
-
-      const isSafe = (windKnots || 0) < 22 && (swellM || 0) < 1.8;
-
-      return {
-        connected: true,
-        provider: 'Open-Meteo Marine Telemetry',
-        isAvailable: true,
-        harborLocation: 'Hurghada Marina & Giftun Marine Reserve',
-        airTemperatureC: airTemp,
-        waterTemperatureC: airTemp ? Math.round((airTemp - 3.5) * 10) / 10 : 26.0,
-        swellHeightM: swellM || 0.4,
-        windSpeedKnots: windKnots,
-        windDirection: windDirStr,
-        visibilityMeters: 35,
-        coastGuardCleared: isSafe,
-        advisoryNotes: isSafe
-          ? 'Live Marine Feed: Coast Guard green flag active. Optimal conditions for island crossings and coral snorkeling.'
-          : 'Caution: Wind velocity approaching harbor advisory threshold.',
-        bulletinDate: date,
-      };
-    }
-  } catch {
-    // network or timeout
+  } catch (error) {
+    console.warn('Live marine forecast unavailable:', error);
   }
 
-  // 2. Check Supabase weather_bulletins table
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('weather_bulletins')
-        .select('*')
-        .order('bulletin_date', { ascending: false })
-        .limit(1);
+  const bulletinAvailable = Boolean(bulletin);
+  const liveAvailable =
+    airTemperatureC !== null ||
+    liveWindKnots !== null ||
+    liveSwellHeightM !== null;
 
-      if (!error && data && data.length > 0) {
-        const b = data[0];
-        return {
-          connected: true,
-          provider: 'Port Authority Harbor Log',
-          isAvailable: true,
-          harborLocation: b.harbor_location || 'Hurghada Marina',
-          waterTemperatureC: b.water_temperature_c,
-          airTemperatureC: b.air_temperature_c,
-          swellHeightM: b.swell_height_m,
-          windSpeedKnots: b.wind_speed_knots,
-          windDirection: b.wind_direction,
-          visibilityMeters: b.visibility_meters,
-          coastGuardCleared: b.coast_guard_cleared ?? true,
-          advisoryNotes: b.advisory_notes || 'Harbor master bulletin active.',
-          bulletinDate: b.bulletin_date || date,
-        };
-      }
-    } catch {
-      // ignore
-    }
-  }
+  const isAvailable = bulletinAvailable || liveAvailable;
+  const windSpeedKnots = liveWindKnots ?? (bulletin ? Number(bulletin.wind_speed_knots) : null);
+  const swellHeightM = liveSwellHeightM ?? (bulletin ? Number(bulletin.swell_height_m) : null);
 
-  // 3. Fallback: Provider not connected
-  // Rule: Do not invent weather. If a weather provider is not connected: show "Weather unavailable".
   return {
-    connected: false,
-    provider: 'None',
-    isAvailable: false,
-    harborLocation: 'Hurghada Marina',
-    waterTemperatureC: null,
-    airTemperatureC: null,
-    swellHeightM: null,
-    windSpeedKnots: null,
-    windDirection: null,
-    visibilityMeters: null,
-    coastGuardCleared: false,
-    advisoryNotes: 'Weather unavailable. No active telemetry provider or marine bulletin connected.',
-    bulletinDate: date,
-    message: 'Weather unavailable',
+    connected: isAvailable,
+    provider: liveAvailable && bulletinAvailable
+      ? 'Open-Meteo + operator bulletin'
+      : liveAvailable
+        ? 'Open-Meteo forecast'
+        : bulletinAvailable
+          ? 'Operator-recorded bulletin'
+          : 'Unavailable',
+    isAvailable,
+    harborLocation: bulletin?.harbor_location || 'Hurghada Marina & Giftun Marine Reserve',
+    waterTemperatureC: bulletin ? Number(bulletin.water_temperature_c) : null,
+    airTemperatureC: airTemperatureC ?? (bulletin ? Number(bulletin.air_temperature_c) : null),
+    swellHeightM,
+    windSpeedKnots,
+    windDirection: liveWindDirection ?? bulletin?.wind_direction ?? null,
+    visibilityMeters: bulletin ? Number(bulletin.visibility_meters) : null,
+    // Forecast data cannot establish official harbor or Coast Guard clearance.
+    coastGuardCleared: bulletin?.coast_guard_cleared ?? null,
+    advisoryNotes: bulletin?.advisory_notes || (
+      liveAvailable
+        ? 'Live forecast measurements only. Official port clearance has not been verified; confirm sailing permission with the harbor authority.'
+        : 'No live weather measurements or operator-recorded port bulletin are available for this date.'
+    ),
+    bulletinDate: bulletin ? String(bulletin.bulletin_date).split('T')[0] : date,
+    message: isAvailable ? undefined : 'Weather feed and operator-recorded harbor bulletin are unavailable.',
   };
 }
 
 export async function listWeatherBulletins(): Promise<DbWeatherBulletin[]> {
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('weather_bulletins')
-        .select('*')
-        .order('bulletin_date', { ascending: false });
-      if (!error && data) {
-        return data as DbWeatherBulletin[];
-      }
-    } catch {
-      // ignore
-    }
-  }
-  return [];
+  if (!isSupabaseConfigured()) return [];
+  const { data, error } = await supabase
+    .from('weather_bulletins')
+    .select('*')
+    .order('bulletin_date', { ascending: false });
+  if (error) throw new Error(formatSupabaseError(error));
+  return (data || []) as DbWeatherBulletin[];
 }
 
 export async function getLatestWeatherBulletin(): Promise<DbWeatherBulletin | null> {
@@ -1666,30 +1681,66 @@ export async function getLatestWeatherBulletin(): Promise<DbWeatherBulletin | nu
 export async function createWeatherBulletin(
   bulletin: Partial<DbWeatherBulletin>
 ): Promise<DbWeatherBulletin> {
-  const newBulletin: DbWeatherBulletin = {
-    id: `wea-${Date.now().toString(36)}`,
-    harbor_location: bulletin.harbor_location || 'Hurghada Marina',
-    water_temperature_c: bulletin.water_temperature_c || 26.0,
-    air_temperature_c: bulletin.air_temperature_c || 30.0,
-    swell_height_m: bulletin.swell_height_m || 0.4,
-    wind_speed_knots: bulletin.wind_speed_knots || 8.0,
-    wind_direction: bulletin.wind_direction || 'NNW',
-    visibility_meters: bulletin.visibility_meters || 30,
-    coast_guard_cleared: bulletin.coast_guard_cleared !== undefined ? bulletin.coast_guard_cleared : true,
-    advisory_notes: bulletin.advisory_notes || 'Coast Guard cleared all maritime departures.',
-    bulletin_date: bulletin.bulletin_date || new Date().toISOString().split('T')[0],
-    created_at: new Date().toISOString(),
-  };
+  const requiredText = [bulletin.harbor_location, bulletin.wind_direction, bulletin.advisory_notes];
+  const requiredNumbers = [
+    bulletin.water_temperature_c,
+    bulletin.air_temperature_c,
+    bulletin.swell_height_m,
+    bulletin.wind_speed_knots,
+    bulletin.visibility_meters,
+  ];
 
-  if (isSupabaseConfigured()) {
-    try {
-      await supabase.from('weather_bulletins').insert(newBulletin);
-    } catch {
-      // ignore
-    }
+  if (!bulletin.bulletin_date || requiredText.some((value) => !String(value || '').trim())) {
+    throw new Error('Harbor, wind direction, bulletin date, and advisory notes are required.');
+  }
+  if (requiredNumbers.some((value) => value === null || value === undefined || !Number.isFinite(Number(value)))) {
+    throw new Error('Enter actual measured values for water temperature, air temperature, swell, wind speed, and visibility.');
+  }
+  if (typeof bulletin.coast_guard_cleared !== 'boolean') {
+    throw new Error('Select the port authority clearance status explicitly. It cannot be inferred from weather data.');
   }
 
-  return newBulletin;
+  const waterTemperature = Number(bulletin.water_temperature_c);
+  const airTemperature = Number(bulletin.air_temperature_c);
+  const swellHeight = Number(bulletin.swell_height_m);
+  const windSpeed = Number(bulletin.wind_speed_knots);
+  const visibility = Number(bulletin.visibility_meters);
+  if (waterTemperature < 0 || waterTemperature > 40 ||
+      airTemperature < -20 || airTemperature > 60 ||
+      swellHeight < 0 || swellHeight > 20 ||
+      windSpeed < 0 || windSpeed > 100 ||
+      visibility <= 0 || visibility > 100000) {
+    throw new Error('One or more weather measurements are outside the accepted physical range. Check the units and values.');
+  }
+
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase is not configured; the harbor bulletin was not saved.');
+  }
+
+  const payload = {
+    harbor_location: String(bulletin.harbor_location).trim(),
+    water_temperature_c: Number(bulletin.water_temperature_c),
+    air_temperature_c: Number(bulletin.air_temperature_c),
+    swell_height_m: Number(bulletin.swell_height_m),
+    wind_speed_knots: Number(bulletin.wind_speed_knots),
+    wind_direction: String(bulletin.wind_direction).trim(),
+    visibility_meters: Math.floor(Number(bulletin.visibility_meters)),
+    coast_guard_cleared: bulletin.coast_guard_cleared,
+    advisory_notes: String(bulletin.advisory_notes).trim(),
+    bulletin_date: bulletin.bulletin_date,
+    provider: 'operator_manual',
+    is_available: true,
+  };
+
+  const { data, error } = await supabase
+    .from('weather_bulletins')
+    .insert(payload)
+    .select()
+    .single();
+
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data) throw new Error('The weather bulletin was not returned after saving.');
+  return data as DbWeatherBulletin;
 }
 
 // ------------------------------------------------------------------------------
