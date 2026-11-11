@@ -31,7 +31,6 @@ import {
 } from '../../../types/operations';
 import { DbVessel, DbGuide } from '../../../types/database';
 import { Tour } from '../../../types';
-import { ALL_TOURS } from '../../../data/toursData';
 import { getPublishedTours } from '../../../services/tourService';
 import { useToast } from '../../../contexts/ToastContext';
 import { useAuth } from '../../../contexts/AuthContext';
@@ -50,15 +49,15 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
   const [weather, setWeather] = useState<WeatherInfo | null>(null);
   const [vessels, setVessels] = useState<DbVessel[]>([]);
   const [guides, setGuides] = useState<DbGuide[]>([]);
-  const [tours, setTours] = useState<Tour[]>(ALL_TOURS);
+  const [tours, setTours] = useState<Tour[]>([]);
   const [loading, setLoading] = useState(true);
 
   // New Departure Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newTourId, setNewTourId] = useState(ALL_TOURS[0]?.id || '');
-  const [newStartTime, setNewStartTime] = useState('08:30');
-  const [newEndTime, setNewEndTime] = useState('16:30');
-  const [newCapacity, setNewCapacity] = useState(35);
+  const [newTourId, setNewTourId] = useState('');
+  const [newStartTime, setNewStartTime] = useState('');
+  const [newEndTime, setNewEndTime] = useState('');
+  const [newCapacity, setNewCapacity] = useState(0);
   const [newVesselId, setNewVesselId] = useState('');
   const [newGuideId, setNewGuideId] = useState('');
   const [newDriverId, setNewDriverId] = useState('');
@@ -80,10 +79,8 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
       setWeather(wea);
       setVessels(ves);
       setGuides(gui);
-      if (loadedTours && loadedTours.length > 0) {
-        setTours(loadedTours);
-        if (!newTourId) setNewTourId(loadedTours[0].id);
-      }
+      setTours(loadedTours || []);
+      if (!newTourId && loadedTours?.length) setNewTourId(loadedTours[0].id);
     } catch (err) {
       console.warn('Failed to load departures:', err);
     } finally {
@@ -97,24 +94,44 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
 
   const handleStatusChange = async (dep: OperationalDeparture, nextStatus: DepartureStatus) => {
     if (!hasPermission('operations.update')) { showToast('Your role does not permit changing departure status.', 'error'); return; }
-    await updateDepartureStatus(dep.id, nextStatus);
-    setDepartures((prev) =>
-      prev.map((d) => (d.id === dep.id ? { ...d, status: nextStatus } : d))
-    );
-    showToast(`Departure status for "${dep.tourTitle}" updated to ${nextStatus}.`, 'success');
+    try {
+      const saved = await updateDepartureStatus(dep.id, nextStatus);
+      if (!saved) {
+        showToast('The departure status could not be saved. Refresh and check the database record.', 'error');
+        return;
+      }
+      setDepartures((prev) =>
+        prev.map((d) => (d.id === dep.id ? { ...d, status: nextStatus } : d))
+      );
+      showToast(`Departure status for "${dep.tourTitle}" updated to ${nextStatus}.`, 'success');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to update departure status.', 'error');
+    }
   };
 
   const handleCreateDeparture = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!hasPermission('operations.create')) { showToast('Your role does not permit creating departures.', 'error'); return; }
-    if (!newTourId || !selectedDate) return;
+    if (!newTourId || !selectedDate || !newStartTime || !newEndTime || newCapacity <= 0) {
+      showToast('Select a real tour and date, then enter the actual start time, end time, and positive capacity.', 'error');
+      return;
+    }
+    if (newEndTime <= newStartTime) {
+      showToast('End time must be later than start time.', 'error');
+      return;
+    }
+
+    const selectedTour = tours.find((tour) => tour.id === newTourId);
+    if (!selectedTour) {
+      showToast('The selected tour is not available in the live database.', 'error');
+      return;
+    }
 
     setSubmitting(true);
-    const selectedTour = tours.find((t) => t.id === newTourId) || ALL_TOURS.find((t) => t.id === newTourId);
-
     const res = await createDeparture({
       tour_id: newTourId,
-      tour_title: selectedTour?.title || 'Tour Departure',
+      tour_title: selectedTour.title,
+      tour_slug: selectedTour.slug,
       date: selectedDate,
       start_time: newStartTime,
       end_time: newEndTime,
@@ -125,7 +142,6 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
       driver_id: newDriverId || null,
       notes: newNotes.trim() || null,
     });
-
     setSubmitting(false);
 
     if (!res.success) {
@@ -134,6 +150,10 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
     }
 
     showToast('Scheduled departure created successfully.', 'success');
+    setNewStartTime('');
+    setNewEndTime('');
+    setNewCapacity(0);
+    setNewNotes('');
     setIsModalOpen(false);
     await loadData();
   };
@@ -215,9 +235,11 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
             className={`w-3.5 h-3.5 rounded-full shrink-0 ${
               !weather?.isAvailable
                 ? 'bg-stone-500'
-                : weather.coastGuardCleared
-                ? 'bg-emerald-500 animate-pulse'
-                : 'bg-red-500'
+                : weather.coastGuardCleared === true
+                  ? 'bg-emerald-500'
+                  : weather.coastGuardCleared === false
+                    ? 'bg-red-500'
+                    : 'bg-amber-500'
             }`}
           />
           <div>
@@ -225,10 +247,12 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
               <strong className="text-white text-sm">
                 {!weather?.isAvailable ? (
                   <span className="text-stone-400">Weather unavailable</span>
-                ) : weather.coastGuardCleared ? (
-                  'Coast Guard Maritime Clearance: GREEN FLAG (CLEARED)'
+                ) : weather.coastGuardCleared === true ? (
+                  'Operator-recorded port clearance: CLEARED'
+                ) : weather.coastGuardCleared === false ? (
+                  'Operator-recorded port clearance: NOT CLEARED'
                 ) : (
-                  'Coast Guard Maritime Clearance: ADVISORY WARNING'
+                  'Official port clearance: NOT VERIFIED'
                 )}
               </strong>
               {weather?.isAvailable && (
@@ -492,7 +516,7 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
                     min="1"
                     max="150"
                     value={newCapacity}
-                    onChange={(e) => setNewCapacity(parseInt(e.target.value) || 35)}
+                    onChange={(e) => setNewCapacity(Math.max(0, parseInt(e.target.value) || 0))}
                     className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded text-stone-200"
                     required
                   />
