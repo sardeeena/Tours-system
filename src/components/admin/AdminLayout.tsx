@@ -266,7 +266,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     if (id === 'dash_finance' || id.startsWith('fin_')) return 'finance.read';
     if (id === 'dash_builder') return 'analytics.manage';
     if (id === 'tours') return 'tours.read';
-    if (id === 'tour_new' || id === 'tour_edit') return 'tours.manage';
+    if (id === 'tour_new') return 'tours.create';
+    if (id === 'tour_edit') return 'tours.update';
     if (id === 'bookings') return 'bookings.read';
     if (id === 'customers') return 'customers.read';
     if (id.startsWith('crm_') || id === 'inquiries') return 'crm.read';
