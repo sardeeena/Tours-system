@@ -19,6 +19,42 @@ export const BlogPage: React.FC<{ slug?: string; onNavigate:(path:string)=>void 
       .finally(()=>{if(active)setLoading(false);});
     return ()=>{active=false;};
   },[slug]);
+
+  useEffect(() => {
+    if (!slug || !article || typeof document === 'undefined') return;
+    const title = article.seo_title || `${article.title} | Kemet Spirit Journal`;
+    const description = article.seo_description || article.excerpt || 'Travel inspiration and local guides from Kemet Spirit in Hurghada, Egypt.';
+    document.title = title;
+    const setMeta = (selector: string, attribute: string, value: string) => {
+      let node = document.head.querySelector(selector) as HTMLMetaElement | null;
+      if (!node) { node = document.createElement('meta'); document.head.appendChild(node); }
+      node.setAttribute(attribute, value);
+    };
+    setMeta('meta[name="description"]','name','description');
+    const descriptionNode = document.head.querySelector('meta[name="description"]') as HTMLMetaElement;
+    descriptionNode.content = description;
+    setMeta('meta[property="og:title"]','content',title);
+    setMeta('meta[property="og:description"]','content',description);
+    setMeta('meta[property="og:type"]','content','article');
+    if (article.cover_image_url) setMeta('meta[property="og:image"]','content',article.cover_image_url);
+    let canonical = document.head.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.appendChild(canonical); }
+    canonical.href = `https://kemetspirit.com/blog/${article.slug}`;
+    const existing = document.getElementById('kemet-blogposting-jsonld');
+    existing?.remove();
+    const schema = document.createElement('script');
+    schema.id = 'kemet-blogposting-jsonld';
+    schema.type = 'application/ld+json';
+    schema.textContent = JSON.stringify({
+      '@context':'https://schema.org','@type':'BlogPosting',headline:article.title,
+      description,image:article.cover_image_url || undefined,datePublished:article.published_at,
+      dateModified:article.updated_at,author:{'@type':'Organization',name:article.author_name},
+      publisher:{'@type':'Organization',name:'Kemet Spirit',url:'https://kemetspirit.com'},
+      mainEntityOfPage:`https://kemetspirit.com/blog/${article.slug}`
+    });
+    document.head.appendChild(schema);
+    return () => { document.getElementById('kemet-blogposting-jsonld')?.remove(); };
+  },[slug,article]);
   const filtered=posts.filter(p=>[p.title,p.excerpt||'',p.category?.name||''].join(' ').toLowerCase().includes(query.toLowerCase()));
   const shell='bg-[#FAF8F5] text-[#111A24] dark:bg-[#0A1118] dark:text-slate-100';
   if (slug) return <main className={shell+' min-h-screen'}>
