@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(11);
+SELECT plan(13);
 
 SELECT ok(to_regclass('public.access_roles') IS NOT NULL,'access role catalog exists');
 SELECT ok(to_regclass('public.access_permissions') IS NOT NULL,'permission catalog exists');
@@ -37,6 +37,15 @@ SELECT ok(
 SELECT ok(
   EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='payment_transactions' AND policyname='rbac_payment_transactions_manage'),
   'payment mutations have a finance permission-based RLS policy'
+);
+SELECT ok(
+  NOT has_function_privilege('anon','public.sync_legacy_profile_role_to_user_roles()','EXECUTE')
+  AND NOT has_function_privilege('authenticated','public.sync_legacy_profile_role_to_user_roles()','EXECUTE'),
+  'profile role synchronization trigger cannot be invoked through the Data API'
+);
+SELECT ok(
+  EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='user_roles' AND policyname='rbac_deny_direct_user_roles'),
+  'direct user role table access is explicitly denied by RLS'
 );
 
 SELECT * FROM finish();
