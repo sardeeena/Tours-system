@@ -258,9 +258,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const requiredPermission = (id: string): string | null => {
     if (id === 'access_control') return 'users.manage';
     if (id === 'dashboard' || id === 'dash_sales') return 'analytics.read';
-    if (id === 'dash_ops' || id.startsWith('ops_')) return id === 'dash_ops' || id === 'ops_departures' ? 'operations.read' : 'operations.manage';
+    if (id === 'dash_ops' || id.startsWith('ops_') || id === 'availability' || id === 'pickup') return 'operations.read';
     if (id === 'dash_customers') return 'customers.read';
-    if (id === 'dash_finance' || id.startsWith('fin_')) return id === 'dash_finance' || id === 'fin_reports' ? 'finance.read' : 'finance.manage';
+    if (id === 'dash_finance' || id.startsWith('fin_')) return 'finance.read';
     if (id === 'dash_builder') return 'analytics.manage';
     if (id === 'tours') return 'tours.read';
     if (id === 'tour_new' || id === 'tour_edit') return 'tours.manage';
@@ -268,7 +268,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     if (id === 'customers') return 'customers.read';
     if (id.startsWith('crm_') || id === 'inquiries') return 'crm.read';
     if (id.startsWith('comm_')) return 'communications.read';
-    if (['destinations','categories','newsletter','pickup','extras','coupons','faqs','reviews','media','seo','pages'].includes(id)) return 'content.read';
+    if (['destinations','categories','newsletter','extras','faqs','reviews','media','seo','pages'].includes(id)) return 'content.read';
+    if (id === 'coupons') return 'bookings.read';
     if (id === 'settings') return 'settings.manage';
     return null;
   };
@@ -419,7 +420,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   <div key={item.id} className="space-y-0.5">
                     <button
                       type="button"
-                      onClick={() => handleNavSelect(item.id as AdminTab)}
+                      onClick={() => handleNavSelect((canSeeTab(item.id) ? item.id : (item.children?.[0]?.id || item.id)) as AdminTab)}
                       className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all cursor-pointer ${
                         isCurrent
                           ? 'bg-[#0A6C74] text-white font-semibold shadow-xs'
