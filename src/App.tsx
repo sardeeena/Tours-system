@@ -484,7 +484,7 @@ function MainApp() {
             : undefined,
           ogType: 'article' as const,
           robotsIndex: staticPage.seoIndexable !== false,
-          robotsFollow: true,
+          robotsFollow: staticPage.seoIndexable !== false,
         }
       : getPageSeo(currentPath, {
           tour: currentTourDetail,
@@ -527,7 +527,20 @@ function MainApp() {
     let cancelled = false;
     void getStoredSeoMetadata(seoEntity.type, seoEntity.identifier, seoEntity.pageSlug).then((savedMetadata) => {
       if (!cancelled && savedMetadata) {
-        seoService.apply({ ...baseSeoMetadata, ...savedMetadata });
+        const mergedMetadata = { ...baseSeoMetadata, ...savedMetadata };
+        // The privacy placeholder must stay noindex even if an older saved SEO row says otherwise.
+        if (staticPage?.seoIndexable === false) {
+          mergedMetadata.robotsIndex = false;
+          mergedMetadata.robotsFollow = false;
+        }
+        const destinationContentLength = currentDestination
+          ? `${currentDestination.description || ''} ${currentDestination.tagline || ''}`.trim().length
+          : 0;
+        if (currentDestination && currentDestination.tourCount < 2 && destinationContentLength < 300) {
+          mergedMetadata.robotsIndex = false;
+          mergedMetadata.robotsFollow = true;
+        }
+        seoService.apply(mergedMetadata);
       }
     });
 
@@ -1219,14 +1232,23 @@ function MainApp() {
           />
         );
       }
-      if (loadingDestinations) {
+      if (loadingDestinations || loadingTours) {
         return (
           <div className="min-h-[50vh] flex items-center justify-center text-stone-600">
             Loading destination information...
           </div>
         );
       }
-      return <NotFoundPage />;
+      return (
+        <NotFoundPage
+          popularTours={liveTours}
+          currency={currentCurrency}
+          onNavigateHome={() => navigate('/')}
+          onNavigateExcursions={() => navigate('/excursions')}
+          onSelectTour={handleViewTour}
+          onOpenMyBooking={() => navigate('/my-booking')}
+        />
+      );
     }
 
     // Public CMS pages must be resolved before the booking route so /booking-conditions
