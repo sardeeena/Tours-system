@@ -1369,7 +1369,7 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
 // Super Admin session. No service-role credential is sent to the browser.
 // ------------------------------------------------------------------------------
 function requireSuperAdminAal2(req: AuthenticatedRequest, res: Response): boolean {
-  const token = (req.headers.authorization || '').replace(/^Bearer\\s+/i, '').trim();
+  const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '').trim();
   const claims = token ? parseJwtPayload(token) : null;
   if (!req.user || req.user.role !== 'super_admin') {
     res.status(403).json({ success: false, error: 'Super Admin access is required.' });
@@ -1463,7 +1463,7 @@ app.post('/api/admin/users/:userId/status', rateLimit(10, 60_000), async (req: A
     if (!SUPABASE_URL || !SUPABASE_USER_KEY) {
       return res.status(503).json({ success: false, error: 'A publishable Supabase key is required for secure role synchronization.' });
     }
-    const callerToken = (req.headers.authorization || '').replace(/^Bearer\\s+/i, '').trim();
+    const callerToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '').trim();
     const callerSupabase = createClient(SUPABASE_URL, SUPABASE_USER_KEY, {
       global: { headers: { Authorization: 'Bearer ' + callerToken } },
       auth: { persistSession: false, autoRefreshToken: false },
