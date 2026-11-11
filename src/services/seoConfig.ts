@@ -7,26 +7,11 @@ import { APP_CONFIG } from '../config/appConfig';
  */
 export const SEO_DEFAULTS = {
   SITE_NAME: 'Kemet Spirit',
-  LEGAL_NAME: '',
   DEFAULT_TITLE: 'Kemet Spirit | Red Sea Excursions in Egypt',
   DEFAULT_DESCRIPTION:
     'Explore Red Sea excursions in Egypt, including boat trips, island visits, snorkeling and desert experiences. Review each tour\'s details before booking.',
   DEFAULT_OG_IMAGE: 'https://kemetspirit.com/logo.webp',
   DEFAULT_LOCALE: 'en_US',
-  PRICE_RANGE: '€€',
-  CURRENCY: 'EUR',
-  FOUNDING_DATE: '2016',
-  CONTACT_PHONE: '',
-  CONTACT_EMAIL: '',
-  HEADQUARTERS: {
-    streetAddress: 'Berth B-14, Hurghada Marina Boulevard',
-    addressLocality: 'Hurghada',
-    addressRegion: 'Red Sea Governorate',
-    postalCode: '84511',
-    addressCountry: 'EG',
-    latitude: 27.2289,
-    longitude: 33.8447,
-  },
   KEYWORDS: [
     'Red Sea excursions',
     'Hurghada boat trips',
