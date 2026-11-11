@@ -197,14 +197,14 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
 
-          <button
+          {hasPermission('operations.create') && <button
             type="button"
             onClick={() => setIsModalOpen(true)}
             className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-[#0A6C74] hover:bg-[#08565C] text-white rounded text-xs font-semibold shadow transition-colors cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Schedule Departure</span>
-          </button>
+          </button>}
         </div>
       </div>
 
