@@ -2210,7 +2210,7 @@ app.post('/mcp', rateLimit(60, 60_000), async (req: Request, res: Response) => {
         .eq('status', 'published')
         .order('sort_order', { ascending: true })
         .limit(limit);
-      if (queryText) query = query.or(`title.ilike.%${queryText.replace(/[,%()]/g, ' ')}%,short_description.ilike.%${queryText.replace(/[,%()]/g, ' ')}%`);
+      if (queryText) query = query.ilike('title', `%${queryText.replace(/[%_]/g, '')}%`);
       const { data, error } = await query;
       if (error) throw error;
       const tours = (data || []).map((tour: any) => ({
