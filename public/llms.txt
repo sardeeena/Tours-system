@@ -5,8 +5,6 @@
 ## Main pages
 - [Homepage](https://kemetspirit.com/)
 - [Excursions](https://kemetspirit.com/excursions)
-- [About Kemet Spirit](https://kemetspirit.com/about)
-- [Booking Information](https://kemetspirit.com/booking-conditions)
 - [Marine Safety Information](https://kemetspirit.com/marine-safety)
 
 ## Published destinations
