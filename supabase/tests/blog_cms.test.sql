@@ -1,9 +1,10 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(11);
+SELECT plan(12);
 
 SELECT ok(to_regclass('public.blog_categories') IS NOT NULL, 'blog categories table exists');
 SELECT ok(to_regclass('public.blog_posts') IS NOT NULL, 'blog posts table exists');
+SELECT ok((SELECT count(*)=1 FROM information_schema.columns WHERE table_schema='public' AND table_name='blog_posts' AND column_name='reading_time_minutes'), 'blog posts persist reading time for lightweight catalogue reads');
 SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid='public.blog_categories'::regclass), 'blog categories have RLS enabled');
 SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid='public.blog_posts'::regclass), 'blog posts have RLS enabled');
 
