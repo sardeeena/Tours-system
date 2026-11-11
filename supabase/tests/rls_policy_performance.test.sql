@@ -16,7 +16,7 @@ SELECT ok(
   EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname='public' AND tablename='bookings'
-      AND policyname='Users can view linked bookings'
+      AND policyname='rbac_bookings_read'
       AND qual ILIKE '%SELECT auth.uid()%'
   ),
   'linked-bookings policy uses statement-scoped auth.uid'
@@ -35,7 +35,7 @@ SELECT ok(
   EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname='public' AND tablename='customers'
-      AND policyname='Users can view own customer record'
+      AND policyname='rbac_customers_read'
       AND qual ILIKE '%SELECT auth.uid()%'
   ),
   'customer ownership policy remains and uses statement-scoped auth.uid'
@@ -54,7 +54,7 @@ SELECT ok(
   EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname='public' AND tablename='payment_transactions'
-      AND policyname='Customers can view their own payment transactions'
+      AND policyname='rbac_payment_transactions_read'
       AND qual ILIKE '%SELECT auth.uid()%'
   ),
   'customer payment access remains through the retained optimized policy'
@@ -64,7 +64,7 @@ SELECT ok(
   EXISTS (
     SELECT 1 FROM pg_policies
     WHERE schemaname='public' AND tablename='refund_records'
-      AND policyname='Customers can view their own refund records'
+      AND policyname='rbac_refund_records_read'
       AND qual ILIKE '%SELECT auth.uid()%'
   ),
   'customer refund access remains with statement-scoped auth.uid'
