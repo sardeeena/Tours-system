@@ -156,7 +156,7 @@ export const CustomerProfilePage: React.FC<CustomerProfilePageProps> = ({
                       : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                   }`}
                 >
-                  {user.role}
+                  {user.roles?.filter((role) => role !== 'customer').join(' · ') || user.role}
                 </span>
               </div>
               <p className="text-xs text-stone-500 mt-1 flex items-center">
