@@ -35,9 +35,9 @@ SELECT ok(
   'booking mutations have a permission-based RLS policy'
 );
 SELECT ok(
-  EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='finance' AND policyname='rbac_finance_manage'),
-  'finance permissions are not exposed through a broad admin-only policy'
-) IS TRUE;
+  EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='payment_transactions' AND policyname='rbac_payment_transactions_manage'),
+  'payment mutations have a finance permission-based RLS policy'
+);
 
 SELECT * FROM finish();
 ROLLBACK;
