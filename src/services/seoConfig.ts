@@ -6,18 +6,18 @@ import { APP_CONFIG } from '../config/appConfig';
  * Global Site-Wide SEO Constants & Branding Identifiers
  */
 export const SEO_DEFAULTS = {
-  SITE_NAME: 'Awesome Adventure Tours',
-  LEGAL_NAME: 'Awesome Adventure Tours S.A.E.',
-  DEFAULT_TITLE: 'Awesome Adventure Tours | Excursions, Boat Trips & Safaris',
+  SITE_NAME: 'Kemet Spirit',
+  LEGAL_NAME: '',
+  DEFAULT_TITLE: 'Kemet Spirit | Red Sea Excursions in Egypt',
   DEFAULT_DESCRIPTION:
-    'Direct booking for Red Sea boat trips, coral reef snorkeling, scuba diving, and desert safaris. Pickup arrangements, inclusions, and cancellation terms are listed for each excursion.',
-  DEFAULT_OG_IMAGE: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80',
+    'Explore Red Sea excursions in Egypt, including boat trips, island visits, snorkeling and desert experiences. Review each tour\'s details before booking.',
+  DEFAULT_OG_IMAGE: 'https://kemetspirit.com/logo.webp',
   DEFAULT_LOCALE: 'en_US',
   PRICE_RANGE: '€€',
   CURRENCY: 'EUR',
   FOUNDING_DATE: '2016',
-  CONTACT_PHONE: '+20 151 5212741',
-  CONTACT_EMAIL: 'reservations@awesomeadventure.tours',
+  CONTACT_PHONE: '',
+  CONTACT_EMAIL: '',
   HEADQUARTERS: {
     streetAddress: 'Berth B-14, Hurghada Marina Boulevard',
     addressLocality: 'Hurghada',
@@ -82,106 +82,49 @@ export function getAppOrigin(): string {
  * Combines TravelAgency Organization, WebSite with SearchAction, and FAQPage schemas
  */
 export function generateHomeJsonLd(origin = getAppOrigin()): Record<string, unknown> {
+  const organization = {
+    '@type': 'TravelAgency',
+    '@id': `${origin}/#organization`,
+    name: SEO_DEFAULTS.SITE_NAME,
+    url: origin,
+    logo: {
+      '@type': 'ImageObject',
+      url: `${origin}/logo.webp`,
+    },
+    image: SEO_DEFAULTS.DEFAULT_OG_IMAGE,
+    description: SEO_DEFAULTS.DEFAULT_DESCRIPTION,
+  };
+
+  const website = {
+    '@type': 'WebSite',
+    '@id': `${origin}/#website`,
+    url: origin,
+    name: SEO_DEFAULTS.SITE_NAME,
+    description: SEO_DEFAULTS.DEFAULT_DESCRIPTION,
+    publisher: { '@id': `${origin}/#organization` },
+    inLanguage: 'en',
+  };
+
   return {
     '@context': 'https://schema.org',
-    '@graph': [
-      // 1. Organization / TravelAgency Entity
-      {
-        '@type': 'TravelAgency',
-        '@id': `${origin}/#organization`,
-        name: SEO_DEFAULTS.SITE_NAME,
-        legalName: SEO_DEFAULTS.LEGAL_NAME,
-        url: origin,
-        logo: {
-          '@type': 'ImageObject',
-          url: `${origin}/icon.svg`,
-          width: 512,
-          height: 512,
-        },
-        image: SEO_DEFAULTS.DEFAULT_OG_IMAGE,
-        description: SEO_DEFAULTS.DEFAULT_DESCRIPTION,
-        telephone: SEO_DEFAULTS.CONTACT_PHONE,
-        email: SEO_DEFAULTS.CONTACT_EMAIL,
-        foundingDate: SEO_DEFAULTS.FOUNDING_DATE,
-        priceRange: SEO_DEFAULTS.PRICE_RANGE,
-        currenciesAccepted: 'EUR, USD, GBP, EGP',
-        paymentAccepted: 'Cash, Credit Card, Pay at Hotel Pickup',
-        address: {
-          '@type': 'PostalAddress',
-          streetAddress: SEO_DEFAULTS.HEADQUARTERS.streetAddress,
-          addressLocality: SEO_DEFAULTS.HEADQUARTERS.addressLocality,
-          addressRegion: SEO_DEFAULTS.HEADQUARTERS.addressRegion,
-          postalCode: SEO_DEFAULTS.HEADQUARTERS.postalCode,
-          addressCountry: SEO_DEFAULTS.HEADQUARTERS.addressCountry,
-        },
-        geo: {
-          '@type': 'GeoCoordinates',
-          latitude: SEO_DEFAULTS.HEADQUARTERS.latitude,
-          longitude: SEO_DEFAULTS.HEADQUARTERS.longitude,
-        },
-        openingHoursSpecification: [
-          {
-            '@type': 'OpeningHoursSpecification',
-            dayOfWeek: [
-              'Monday',
-              'Tuesday',
-              'Wednesday',
-              'Thursday',
-              'Friday',
-              'Saturday',
-              'Sunday',
-            ],
-            opens: '07:00',
-            closes: '22:00',
-          },
-        ],
-      },
-
-      // 2. WebSite with SearchAction (Sitelinks Searchbox)
-      {
-        '@type': 'WebSite',
-        '@id': `${origin}/#website`,
-        url: origin,
-        name: SEO_DEFAULTS.SITE_NAME,
-        description: SEO_DEFAULTS.DEFAULT_DESCRIPTION,
-        publisher: {
-          '@id': `${origin}/#organization`,
-        },
-        inLanguage: 'en-US',
-        potentialAction: {
-          '@type': 'SearchAction',
-          target: {
-            '@type': 'EntryPoint',
-            urlTemplate: `${origin}/excursions?q={search_term_string}`,
-          },
-          'query-input': 'required name=search_term_string',
-        },
-      },
-
-      // 3. FAQPage Schema for Rich Search Snippets
-      {
-        '@type': 'FAQPage',
-        '@id': `${origin}/#faq`,
-        mainEntity: HOMEPAGE_FAQS.map((faq) => ({
-          '@type': 'Question',
-          name: faq.question,
-          acceptedAnswer: {
-            '@type': 'Answer',
-            text: faq.answer,
-          },
-        })),
-      },
-    ],
+    '@graph': [organization, website],
   };
 }
 
 /**
+ * Generates rich Schema.org structured data for an individual excursion detail page/**
  * Generates rich Schema.org structured data for an individual excursion detail page
  * Combines TouristTrip, Product, Offer, AggregateRating, and Itinerary ItemList
  */
 export function generateTourJsonLd(tour: Tour, origin = getAppOrigin()): Record<string, unknown> {
-  const tourUrl = `${origin}/excursions/${tour.slug}`;
+  const tourUrl = `${origin}/excursions/${encodeURIComponent(tour.slug)}`;
   const images = [tour.primaryImage, ...(tour.galleryImages || [])].filter(Boolean);
+  const verifiedReviews = (tour.reviews || []).filter(
+    (review) => review.verifiedBooking && Number.isFinite(review.rating) && review.rating >= 1 && review.rating <= 5
+  );
+  const verifiedAverage = verifiedReviews.length
+    ? verifiedReviews.reduce((total, review) => total + review.rating, 0) / verifiedReviews.length
+    : null;
 
   return {
     '@context': 'https://schema.org',
@@ -197,7 +140,7 @@ export function generateTourJsonLd(tour: Tour, origin = getAppOrigin()): Record<
       name: tour.title,
       image: images,
       description: tour.shortDescription,
-      sku: `RSE-${tour.id}`,
+      sku: `KEMET-${tour.id}`,
       offers: {
         '@type': 'Offer',
         url: tourUrl,
@@ -206,18 +149,17 @@ export function generateTourJsonLd(tour: Tour, origin = getAppOrigin()): Record<
         seller: {
           '@type': 'TravelAgency',
           name: SEO_DEFAULTS.SITE_NAME,
-          telephone: SEO_DEFAULTS.CONTACT_PHONE,
           url: origin,
         },
       },
-      ...(tour.reviewCount > 0 && tour.rating > 0
+      ...(verifiedReviews.length > 0 && verifiedAverage !== null
         ? {
             aggregateRating: {
               '@type': 'AggregateRating',
-              ratingValue: tour.rating.toFixed(1),
-              reviewCount: tour.reviewCount,
-              bestRating: '5',
-              worstRating: '1',
+              ratingValue: verifiedAverage.toFixed(1),
+              reviewCount: verifiedReviews.length,
+              bestRating: 5,
+              worstRating: 1,
             },
           }
         : {}),
@@ -225,7 +167,6 @@ export function generateTourJsonLd(tour: Tour, origin = getAppOrigin()): Record<
     provider: {
       '@type': 'TravelAgency',
       name: SEO_DEFAULTS.SITE_NAME,
-      telephone: SEO_DEFAULTS.CONTACT_PHONE,
       url: origin,
     },
     itinerary: {
@@ -247,6 +188,7 @@ export function generateTourJsonLd(tour: Tour, origin = getAppOrigin()): Record<
 }
 
 /**
+ * Generates Schema.org BreadcrumbList structured data for any route/**
  * Generates Schema.org BreadcrumbList structured data for any route
  */
 export function generateBreadcrumbsJsonLd(
@@ -273,7 +215,7 @@ export function generateDestinationJsonLd(
   tours: Tour[] = [],
   origin = getAppOrigin()
 ): Record<string, unknown> {
-  const destUrl = `${origin}/excursions?dest=${encodeURIComponent(destination.name)}`;
+  const destUrl = `${origin}/excursions?destination=${encodeURIComponent(destination.slug)}`;
   const destTours = tours.filter(
     (t) => t.destination.toLowerCase() === destination.name.toLowerCase()
   );
@@ -304,7 +246,7 @@ export function generateDestinationJsonLd(
  */
 export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> = {
   '/': (origin) => ({
-    title: 'Awesome Adventure Tours | Excursions, Boat Trips & Safaris',
+    title: 'Kemet Spirit | Red Sea Excursions in Egypt',
     description:
       'Explore Red Sea boat trips to Orange Bay, Giftun Island, Ras Mohammed, and desert safaris. Compare tour details, pickup arrangements, inclusions, and cancellation terms.',
     keywords: SEO_DEFAULTS.KEYWORDS,
@@ -317,7 +259,7 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> =
   }),
 
   '/excursions': (origin) => ({
-    title: 'All Excursions & Boat Trips | Awesome Adventure Tours',
+    title: 'Red Sea Excursions & Boat Trips | Kemet Spirit',
     description:
       'Explore our full catalog of daily boat trips, coral snorkeling safaris, private yacht charters, and desert adventures across the Egyptian Red Sea.',
     keywords: [
@@ -342,7 +284,7 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> =
   }),
 
   '/my-booking': (origin) => ({
-    title: 'Manage Your Booking & Download Voucher | Awesome Adventure Tours',
+    title: 'Manage Your Booking & Download Voucher | Kemet Spirit',
     description:
       'Lookup your excursion reservation, download PDF vouchers, verify hotel pickup timings, or request free cancellation online.',
     canonicalUrl: `${origin}/my-booking`,
@@ -352,7 +294,7 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> =
   }),
 
   '/login': (origin) => ({
-    title: 'Sign In | Awesome Adventure Tours Guest Portal',
+    title: 'Sign In | Kemet Spirit Guest Portal',
     description:
       'Sign in to access your upcoming excursion reservations, saved wishlists, and exclusive member discounts.',
     canonicalUrl: `${origin}/login`,
@@ -362,7 +304,7 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> =
   }),
 
   '/register': (origin) => ({
-    title: 'Create an Account | Awesome Adventure Tours',
+    title: 'Create an Account | Kemet Spirit',
     description:
       'Create your free traveler profile to manage bookings, track pickup status, and unlock special Red Sea excursion discounts.',
     canonicalUrl: `${origin}/register`,
