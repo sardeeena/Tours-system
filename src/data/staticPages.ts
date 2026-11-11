@@ -27,6 +27,7 @@ export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
     heroHeadline: 'Explore Egypt’s Red Sea Coast with Kemet Spirit',
     heroSubtitle: 'Discover the excursions and experiences currently listed on Kemet Spirit. Each tour page provides its own description and booking information.',
     lastUpdated: '2026-11-11',
+    seoIndexable: false,
     sections: [
       {
         title: 'Explore the available experiences',
@@ -45,6 +46,7 @@ export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
     heroHeadline: 'Plan Your Red Sea Experience',
     heroSubtitle: 'Use the published tour information to compare available experiences and choose the trip that suits your plans.',
     lastUpdated: '2026-11-11',
+    seoIndexable: false,
     sections: [
       {
         title: 'Tour information in one place',
@@ -63,6 +65,7 @@ export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
     heroHeadline: 'Safety and Departure Information',
     heroSubtitle: 'Marine excursions can be affected by weather, sea conditions and operational restrictions. Review the information provided for your selected trip.',
     lastUpdated: '2026-11-11',
+    seoIndexable: false,
     sections: [
       {
         title: 'Before departure',
@@ -81,6 +84,7 @@ export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
     heroHeadline: 'Booking Information',
     heroSubtitle: 'Review the details and conditions that apply to your selected excursion before completing a reservation.',
     lastUpdated: '2026-11-11',
+    seoIndexable: false,
     sections: [
       {
         title: 'Reservations and confirmation',
