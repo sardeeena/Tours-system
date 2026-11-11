@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   resolveBookingTourIdentifier,
   shouldUseLocalBookingCache,
@@ -35,8 +36,6 @@ assert.equal(shouldUseLocalBookingCache(false, true, true), false);
 
 console.log('Booking identifier and production fallback checks passed.');
 
-
-import { readFileSync } from 'node:fs';
 
 const serverSource = readFileSync(new URL('../server.ts', import.meta.url), 'utf8');
 const availabilityStart = serverSource.indexOf("app.all('/api/availability/check'");
