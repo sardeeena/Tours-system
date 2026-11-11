@@ -135,8 +135,7 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
-SET LOCAL request.jwt.claims = '{"role":"service_role"}';
-SET LOCAL request.jwt.claim.role = 'service_role';
+-- The test connection is postgres, so the explicit target-bound nonce is required.
 SELECT set_config('app.admin_provisioning_nonce', 'pgtap-authorized-admin-seed', true);
 SELECT set_config('app.admin_provisioning_active_user', 'f9000000-0000-0000-0000-000000000002', true);
 UPDATE public.profiles
