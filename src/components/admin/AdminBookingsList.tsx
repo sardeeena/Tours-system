@@ -407,13 +407,6 @@ export const AdminBookingsList: React.FC = () => {
                   >
                     Complete
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => handleUpdateStatus(selectedBooking.bookingReference, 'cancelled')}
-                    className="px-2 py-1 bg-red-600 hover:bg-red-500 text-white rounded font-medium text-[10px]"
-                  >
-                    Cancel
-                  </button>
                   </>}
                   {hasPermission('bookings.approve') && <button type="button" onClick={() => handleUpdateStatus(selectedBooking.bookingReference, 'cancelled')} className="px-2 py-1 bg-red-600 hover:bg-red-500 text-white rounded font-medium text-[10px]">Cancel</button>}
                 </div>
