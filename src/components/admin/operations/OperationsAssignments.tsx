@@ -77,6 +77,7 @@ export const OperationsAssignments: React.FC = () => {
       if (!tourId && loadedTours?.length) setTourId(loadedTours[0].id);
     } catch (err) {
       console.warn('Failed to load assignments:', err);
+      showToast(err instanceof Error ? err.message : 'Failed to load live assignments.', 'error');
     } finally {
       setLoading(false);
     }
@@ -276,7 +277,7 @@ export const OperationsAssignments: React.FC = () => {
                   return (
                     <tr key={a.id} className="hover:bg-stone-900/50 transition-colors">
                       <td className="py-2.5 px-3 font-mono font-bold text-[#2dd4bf]">
-                        {a.departureTime || '08:30'}
+                        {a.departureTime || 'Not set'}
                       </td>
 
                       <td className="py-2.5 px-3">
@@ -440,6 +441,9 @@ export const OperationsAssignments: React.FC = () => {
                     className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded text-stone-200 font-mono"
                     required
                   />
+                  <p className="mt-1 text-[10px] text-stone-500">
+                    Assignments attach to an existing departure. Create its real date, start/end time, and capacity in Tour Departures first.
+                  </p>
                 </div>
               </div>
 
