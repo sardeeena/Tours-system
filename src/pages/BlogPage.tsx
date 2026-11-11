@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowRight, CalendarDays, Clock3, BookOpen, Search } from 'lucide-react';
 import { BlogPost, getPublishedBlogPost, getPublishedBlogPosts } from '../services/blogService';
+import { BlogContent } from '../components/blog/BlogContent';
 
 const dateLabel = (value?: string | null) => value ? new Date(value).toLocaleDateString('en',{month:'long',day:'numeric',year:'numeric'}) : '';
 const readingTime = (content: string) => Math.max(1,Math.ceil(content.trim().split(/\s+/).length/220));
@@ -64,7 +65,7 @@ export const BlogPage: React.FC<{ slug?: string; onNavigate:(path:string)=>void 
         <h1 className="font-display text-4xl sm:text-6xl leading-tight font-bold mb-6">{article.title}</h1>
         <div className="flex flex-wrap gap-5 text-sm text-stone-500 dark:text-slate-400 mb-10"><span>{article.author_name}</span><span>{dateLabel(article.published_at)}</span><span>{readingTime(article.content)} min read</span></div>
         {article.excerpt && <p className="text-xl leading-relaxed text-stone-600 dark:text-slate-300 border-l-4 border-[#C28D32] pl-5 mb-10">{article.excerpt}</p>}
-        <article className="prose prose-lg max-w-none dark:prose-invert prose-headings:font-display prose-a:text-[#0A6C74] prose-img:rounded-2xl whitespace-pre-wrap leading-8">{article.content}</article>
+        <article className="max-w-none"><BlogContent content={article.content} className="text-lg"/></article>
         <div className="mt-14 p-8 rounded-3xl bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#243447]"><p className="text-xs uppercase tracking-widest text-[#C28D32] font-bold mb-2">Explore the Red Sea</p><h2 className="font-display text-2xl font-bold mb-3">Make your next story an adventure.</h2><button onClick={()=>onNavigate('/excursions')} className="inline-flex items-center gap-2 rounded-xl bg-[#0A6C74] text-white px-5 py-3 font-semibold">Explore excursions <ArrowRight size={16}/></button></div>
       </> : <div className="py-24 text-center"><h1 className="font-display text-3xl font-bold">Article not found</h1><button onClick={()=>onNavigate('/blog')} className="mt-5 text-[#0A6C74]">Return to journal</button></div>}
       {error && <p className="text-rose-600 mt-5">{error}</p>}
