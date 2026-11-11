@@ -381,11 +381,11 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={handleLogoClick}
             className="flex items-center group focus:outline-hidden"
             id="brand-logo-link"
-            aria-label="Awesome Adventure Tours Home"
+            aria-label="Kemet Spirit Home"
           >
             <img 
               src="/logo.png" 
-              alt="Awesome Adventure Tours" 
+              alt="Kemet Spirit" 
               width="240"
               height="80"
               fetchPriority="high"
