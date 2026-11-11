@@ -1398,6 +1398,36 @@ async function writeAccountAudit(actorId: string, action: string, targetId: stri
   if (error) console.error('[Admin account audit] Could not persist audit event:', error.message);
 }
 
+app.get('/api/admin/users', rateLimit(20, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  // Personal account data is restricted to a verified Super Admin + AAL2 session.
+  if (!requireSuperAdminAal2(req, res)) return;
+  try {
+    const users: Array<{ id: string; email: string; full_name: string; created_at: string; last_sign_in_at: string | null; is_confirmed: boolean; is_suspended: boolean }> = [];
+    let truncated = false;
+    for (let page = 1; page <= 20; page += 1) {
+      const { data, error } = await serverSupabase!.auth.admin.listUsers({ page, perPage: 100 });
+      if (error) throw error;
+      const batch = data?.users || [];
+      users.push(...batch.map((account: any) => {
+        const bannedUntil = account.banned_until || null;
+        return {
+          id: account.id, email: account.email || '',
+          full_name: account.user_metadata?.full_name || account.user_metadata?.name || '',
+          created_at: account.created_at, last_sign_in_at: account.last_sign_in_at || null,
+          is_confirmed: Boolean(account.email_confirmed_at || account.confirmed_at),
+          is_suspended: Boolean(bannedUntil && Date.parse(bannedUntil) > Date.now()),
+        };
+      }));
+      if (batch.length < 100) break;
+      if (page === 20) truncated = true;
+    }
+    return res.json({ success: true, users, truncated });
+  } catch (error) {
+    console.error('[Admin Auth directory] Could not list Auth users:', error);
+    return res.status(502).json({ success: false, error: 'Could not load the secure Auth directory. Please retry.' });
+  }
+});
+
 app.post('/api/admin/users/invite', rateLimit(5, 60_000), async (req: AuthenticatedRequest, res: Response) => {
   if (!requireSuperAdminAal2(req, res)) return;
   const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';

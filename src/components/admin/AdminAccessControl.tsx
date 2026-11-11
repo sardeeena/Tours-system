@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Search, ShieldCheck, Users, Layers3, Plus, Save, Trash2, RefreshCw, LockKeyhole, Check, Mail, UserCheck, UserX, KeyRound } from 'lucide-react';
 import { supabase } from '../../services/supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
+import { AdminAuthDirectory } from './AdminAuthDirectory';
 
 type AccessUser = { id:string; email:string; full_name:string|null; legacy_role:string; is_confirmed:boolean; created_at:string; roles:string[] };
 type AccessRole = { slug:string; name:string; description:string|null; is_system:boolean; is_active:boolean; permissions:string[] };
@@ -240,7 +241,8 @@ export const AdminAccessControl:React.FC = () => {
         </div>:<p className="mt-2 text-xs text-slate-500">Inviting accounts requires a Super Admin session with verified multi-factor authentication.</p>}
         <p className="mt-2 text-xs text-slate-500">Invitations are sent by Supabase Auth. New accounts receive the Customer role until an administrator assigns staff access.</p>
       </div>
-      <section className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <div className="xl:col-span-2"><AdminAuthDirectory isSuperAdmin={isSuperAdmin}/></div>
+       <section className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
         <div className="p-4 border-b border-slate-200 dark:border-slate-700"><h3 className="font-bold">Registered users <span className="text-slate-400 font-normal">({data.users.length})</span></h3>
           <div className="relative mt-3"><Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search name, email or role…" className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent pl-9 pr-3 py-2 text-sm"/></div>
         </div>
