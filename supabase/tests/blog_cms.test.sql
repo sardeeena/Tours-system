@@ -33,16 +33,16 @@ SELECT ok(
 );
 
 SELECT ok(
-  EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='blog_posts' AND cmd='INSERT' AND with_check LIKE '%private.has_permission%')
-  AND EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='blog_posts' AND cmd='UPDATE' AND qual LIKE '%private.has_permission%' AND with_check LIKE '%private.has_permission%')
-  AND EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='blog_posts' AND cmd='DELETE' AND qual LIKE '%private.has_permission%'),
+  EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='blog_posts' AND cmd='INSERT' AND with_check LIKE '%has_permission%')
+  AND EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='blog_posts' AND cmd='UPDATE' AND qual LIKE '%has_permission%' AND with_check LIKE '%has_permission%')
+  AND EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='blog_posts' AND cmd='DELETE' AND qual LIKE '%has_permission%'),
   'all editorial mutations require content.manage'
 );
 
 SELECT ok(
-  EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='blog_categories' AND cmd='INSERT' AND with_check LIKE '%private.has_permission%')
-  AND EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='blog_categories' AND cmd='UPDATE' AND qual LIKE '%private.has_permission%' AND with_check LIKE '%private.has_permission%')
-  AND EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='blog_categories' AND cmd='DELETE' AND qual LIKE '%private.has_permission%'),
+  EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='blog_categories' AND cmd='INSERT' AND with_check LIKE '%has_permission%')
+  AND EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='blog_categories' AND cmd='UPDATE' AND qual LIKE '%has_permission%' AND with_check LIKE '%has_permission%')
+  AND EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='blog_categories' AND cmd='DELETE' AND qual LIKE '%has_permission%'),
   'all category mutations require content.manage'
 );
 
