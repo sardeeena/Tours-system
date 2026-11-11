@@ -45,8 +45,8 @@ SELECT is(
       AND qual LIKE '%is_admin%'
       AND with_check LIKE '%is_admin%'
   ),
-  8,
-  'authorized staff retain full admin policies on every restricted operational table'
+  0,
+  'legacy broad admin policies are removed in favor of action-level RBAC policies'
 );
 
 SELECT ok(
@@ -57,7 +57,19 @@ SELECT ok(
       AND tablename = 'site_settings'
       AND policyname = 'Public can read approved site settings'
       AND cmd = 'SELECT'
-      AND roles @> ARRAY['public']::name[]
+      AND roles @> ARRAY['anon']::name[]
+      AND qual LIKE '%company_info%'
+      AND qual LIKE '%booking_policies%'
+      AND qual LIKE '%social_links%'
+      AND qual LIKE '%footer_content%'
+      AND qual LIKE '%pages_content%'
+  )
+  AND EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'site_settings'
+      AND policyname = 'rbac_site_settings_read'
+      AND roles @> ARRAY['authenticated']::name[]
       AND qual LIKE '%company_info%'
       AND qual LIKE '%booking_policies%'
       AND qual LIKE '%social_links%'

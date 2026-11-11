@@ -32,7 +32,7 @@ SELECT is(
   'all 13 verified duplicate policies are removed'
 );
 
-WITH retained(tablename, policyname) AS (
+WITH legacy_admin(tablename, policyname) AS (
   VALUES
     ('bookings','Admins manage bookings'),
     ('crm_activities','Staff can manage activities'),
@@ -43,33 +43,62 @@ WITH retained(tablename, policyname) AS (
     ('refund_records','Staff can manage refund records'),
     ('vessels','Admins can manage vessels'),
     ('weather_bulletins','Admins can manage weather bulletins')
+),
+rbac(tablename, policyname) AS (
+  VALUES
+    ('bookings','rbac_bookings_read'),
+    ('crm_activities','rbac_crm_activities_read'),
+    ('customers','rbac_customers_read'),
+    ('guides','rbac_guides_read'),
+    ('payment_transactions','rbac_payment_transactions_read'),
+    ('profiles','rbac_profiles_read'),
+    ('refund_records','rbac_refund_records_read'),
+    ('vessels','rbac_vessels_read'),
+    ('weather_bulletins','rbac_weather_bulletins_read')
 )
-SELECT is(
-  (
-    SELECT count(*)::integer
-    FROM retained r
+SELECT ok(
+  NOT EXISTS (
+    SELECT 1 FROM legacy_admin l
+    JOIN pg_policies p
+      ON p.schemaname='public'
+     AND p.tablename=l.tablename
+     AND p.policyname=l.policyname
+  )
+  AND (
+    SELECT count(*) = 9
+    FROM rbac r
     JOIN pg_policies p
       ON p.schemaname='public'
      AND p.tablename=r.tablename
      AND p.policyname=r.policyname
   ),
-  9,
-  'all canonical admin and staff policies remain'
+  'legacy admin policies are replaced by the nine canonical RBAC read policies'
 );
 
-SELECT is(
+SELECT ok(
   (
-    SELECT count(*)::integer
+    SELECT count(*) = 3
+    FROM pg_proc p
+    WHERE p.oid IN (
+      'private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)'::regprocedure,
+      'private.replace_extra_tour_assignments_atomic(uuid,jsonb)'::regprocedure,
+      'private.replace_tour_extra_assignments_atomic(uuid,jsonb)'::regprocedure
+    )
+    AND p.prosecdef
+    AND p.proconfig @> ARRAY['search_path=""']::text[]
+  )
+  AND (
+    SELECT count(*) = 3
     FROM pg_proc p
     WHERE p.oid IN (
       'public.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)'::regprocedure,
       'public.replace_extra_tour_assignments_atomic(uuid,jsonb)'::regprocedure,
       'public.replace_tour_extra_assignments_atomic(uuid,jsonb)'::regprocedure
     )
+    AND NOT p.prosecdef
     AND p.proconfig @> ARRAY['search_path=""']::text[]
   ),
-  3,
-  'all exposed SECURITY DEFINER functions use an empty search_path'
+  'private SECURITY DEFINER implementations use empty search_path behind invoker-rights public wrappers'
 );
 
 SELECT * FROM finish();

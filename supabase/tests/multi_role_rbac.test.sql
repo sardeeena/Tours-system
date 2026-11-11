@@ -67,12 +67,12 @@ SELECT ok(
   'finance voucher storage access is permission-scoped'
 );
 SELECT ok(
-  position('RBAC_ROLE_CREATED' in pg_get_functiondef('public.admin_upsert_access_role(text,text,text,text[])'::regprocedure))>0
-  AND position('RBAC_ROLE_UPDATED' in pg_get_functiondef('public.admin_upsert_access_role(text,text,text,text[])'::regprocedure))>0,
+  position('RBAC_ROLE_CREATED' in pg_get_functiondef('private.admin_upsert_access_role(text,text,text,text[])'::regprocedure))>0
+  AND position('RBAC_ROLE_UPDATED' in pg_get_functiondef('private.admin_upsert_access_role(text,text,text,text[])'::regprocedure))>0,
   'custom role creation and permission changes are audited'
 );
 SELECT ok(
-  position('RBAC_ROLE_DELETED' in pg_get_functiondef('public.admin_delete_access_role(text)'::regprocedure))>0,
+  position('RBAC_ROLE_DELETED' in pg_get_functiondef('private.admin_delete_access_role(text)'::regprocedure))>0,
   'custom role deletion is audited'
 );
 

@@ -79,7 +79,7 @@ SELECT ok(EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname='public' AND indexna
   'processed refund payout references are unique');
 
 SELECT ok(POSITION('Refund exceeds the remaining refundable amount for the selected payment' IN
-  pg_get_functiondef('public.request_refund_atomic(text,uuid,numeric,text,text,text,text,text,text)'::regprocedure)) > 0,
+  pg_get_functiondef('private.request_refund_atomic(text,uuid,numeric,text,text,text,text,text,text)'::regprocedure)) > 0,
   'refund amount is capped by the remaining amount on the selected payment');
 SELECT is((SELECT name FROM public.payment_providers WHERE id='bank_transfer'),
   'Bank transfer (manual)', 'unverified bank-provider branding is replaced with neutral manual reconciliation wording');
