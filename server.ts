@@ -1623,7 +1623,6 @@ const KEMET_CORE_PUBLIC_PATHS = [
   '/excursions',
   '/about',
   '/why-us',
-  '/privacy',
   '/booking-conditions',
   '/marine-safety',
 ];
@@ -1696,7 +1695,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
         for (const page of pages) {
           const slug = typeof page?.slug === 'string' ? page.slug.trim() : '';
           if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
-          if (page?.published === false || page?.status === 'draft' || page?.status === 'unpublished') continue;
+          if (page?.published === false || page?.status === 'draft' || page?.status === 'unpublished' || page?.seoIndexable === false) continue;
           urls.set(
             `${KEMET_PUBLIC_ORIGIN}/${encodeURIComponent(slug)}`,
             toSitemapDate(page?.updated_at || page?.lastUpdated)
@@ -1743,7 +1742,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
     try {
       const { data: tours, error } = await serverSupabase
         .from('tours')
-        .select('title, slug, short_description, price')
+        .select('title, slug, short_description, price, currency')
         .eq('status', 'published')
         .order('sort_order', { ascending: true })
         .limit(500);
@@ -1757,7 +1756,8 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
           if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
           const description = cleanPublicText(tour.short_description, 400);
           const price = Number(tour.price);
-          const priceText = Number.isFinite(price) && price > 0 ? ` Starting price: €${price}.` : '';
+          const currency = typeof tour.currency === 'string' && /^[A-Z]{3}$/i.test(tour.currency) ? tour.currency.toUpperCase() : 'EUR';
+          const priceText = Number.isFinite(price) && price > 0 ? ` Starting price: ${price} ${currency}.` : '';
           lines.push(`- [${title}](https://kemetspirit.com/excursions/${encodeURIComponent(slug)}): ${description}${priceText}`);
         }
       }
