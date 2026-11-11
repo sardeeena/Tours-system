@@ -6,7 +6,7 @@
 - Admin editor: `/admin/blog` (requires `content.manage`)
 
 ## Database release
-The tracked migration is `supabase/migrations/20261112000000_blog_cms.sql`. The migration is included in the normal clean-database CI replay and pgTAP suite.
+The tracked migration is `supabase/migrations/20261111232052_blog_cms.sql`. The migration is included in the normal clean-database CI replay and pgTAP suite.
 
 The schema uses:
 - `blog_posts` and `blog_categories`
