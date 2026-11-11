@@ -307,6 +307,7 @@ export const Footer: React.FC<FooterProps> = ({
                   </button>
                 </li>
               )}
+              <li><a href="/blog" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">Travel Journal</a></li>
               <li>
                 <a href="/about" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">About Kemet Spirit</a>
               </li>
