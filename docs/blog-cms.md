@@ -6,11 +6,11 @@
 - Admin editor: `/admin/blog` (requires `content.manage`)
 
 ## Database release
-The tracked migration is `supabase/migrations/20261111232052_blog_cms.sql`. The migration is included in the normal clean-database CI replay and pgTAP suite.
+The tracked migration is `supabase/migrations/20261111232052_blog_cms.sql` plus `supabase/migrations/20261111232257_blog_anon_rls_guard.sql`. The migration is included in the normal clean-database CI replay and pgTAP suite.
 
 The schema uses:
 - `blog_posts` and `blog_categories`
-- RLS for published and due-scheduled public reads
+- RLS separates anonymous published reads from authenticated editorial draft reads
 - `public.has_permission('content.manage')` for editorial write access
 - Explicit Data API grants
 
