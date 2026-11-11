@@ -19,8 +19,10 @@ SELECT ok(
 );
 
 SELECT ok(
-  (SELECT prosecdef FROM pg_proc WHERE oid = 'public.is_admin()'::regprocedure),
-  'administrator predicate remains SECURITY DEFINER to avoid profiles RLS recursion'
+  (SELECT NOT prosecdef FROM pg_proc WHERE oid = 'public.is_admin()'::regprocedure)
+  AND (SELECT prosecdef AND proconfig @> ARRAY['search_path=""']::text[]
+       FROM pg_proc WHERE oid = 'private.is_admin()'::regprocedure),
+  'public administrator predicate is invoker-rights and private implementation remains SECURITY DEFINER to avoid profiles RLS recursion'
 );
 
 SELECT * FROM finish();
