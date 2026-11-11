@@ -1912,6 +1912,33 @@ async function loadKemetPages(): Promise<any[]> {
   return INITIAL_STATIC_PAGES;
 }
 
+async function loadKemetDestinations(): Promise<any[]> {
+  if (!serverSupabase) return [];
+  try {
+    const { data, error } = await serverSupabase.from('destinations')
+      .select('id,name,slug,tagline,description,main_image,seo_title,seo_description,updated_at')
+      .eq('status', 'published').order('sort_order', { ascending: true }).limit(100);
+    if (error) {
+      console.warn('[SEO render] Published destinations unavailable:', error.message);
+      return [];
+    }
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.warn('[SEO render] Published destinations query failed:', error);
+    return [];
+  }
+}
+
+function seoDestinationCard(destination: any): string {
+  const slug = typeof destination?.slug === 'string' ? destination.slug.trim() : '';
+  const name = seoPlainText(destination?.name, 120);
+  if (!name || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) return '';
+  const description = seoPlainText(destination?.seo_description || destination?.description || destination?.tagline, 400);
+  return `<article class="seo-tour-card"><h2><a href="/destinations/${encodeURIComponent(slug)}">${seoHtmlEscape(name)}</a></h2>
+    ${description ? `<p>${seoHtmlEscape(description)}</p>` : ''}
+    <p><a href="/destinations/${encodeURIComponent(slug)}">Explore ${seoHtmlEscape(name)}</a></p></article>`;
+}
+
 function seoTourCard(tour: any): string {
   const slug = typeof tour?.slug === 'string' ? tour.slug.trim() : '';
   const title = seoPlainText(tour?.title, 160);
@@ -1953,9 +1980,11 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
   let body = '';
   let noindex = false;
   let statusCode = 200;
-  let pageKind: 'home' | 'catalogue' | 'tour' | 'static' | 'not-found' = 'not-found';
+  let pageKind: 'home' | 'catalogue' | 'tour' | 'destination' | 'static' | 'not-found' = 'not-found';
   let tours: any[] = [];
   let currentTour: any = null;
+  let activeDestination: any = null;
+  let destinationTours: any[] = [];
   let currentHighlights: any[] = [];
   let currentInclusions: any[] = [];
   let currentExclusions: any[] = [];
@@ -1965,13 +1994,22 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
   let seoIdentifier = 'home';
   let seoIdentifierIsPageSlug = true;
 
-  if (path === '/' || path === '/excursions') tours = await loadKemetTours();
+  if (path === '/' || path === '/excursions') {
+    tours = await loadKemetTours();
+    const allDestinations = await loadKemetDestinations();
+    const publishedDestinationIds = new Set(
+      tours.map((tour) => tour.destination_id).filter(Boolean).map(String)
+    );
+    var visibleDestinations = allDestinations.filter((destination) => publishedDestinationIds.has(String(destination.id)));
+  }
 
   if (path === '/') {
     pageKind = 'home';
     const cards = tours.slice(0, 6).map(seoTourCard).filter(Boolean).join('');
     body = `<main id="seo-initial-content"><h1>Explore Red Sea Excursions in Egypt</h1>
       <p>Discover the excursions currently published on Kemet Spirit. Compare available boat trips, island experiences, snorkeling activities and other Red Sea tours using the individual excursion details.</p>
+      <h2>Explore destinations</h2>
+      <div class="seo-grid">${(visibleDestinations || []).map(seoDestinationCard).filter(Boolean).join('')}</div>
       <h2>Explore published excursions</h2><p><a href="/excursions">Browse all excursions</a></p>
       <div class="seo-grid">${cards || '<p>Explore the excursions catalogue for currently published experiences and details.</p>'}</div></main>`;
   } else if (path === '/excursions') {
@@ -1982,7 +2020,9 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
     body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / Excursions</nav>
       <h1>Red Sea Excursions & Boat Trips</h1>
       <p>Browse the excursions currently published on Kemet Spirit. Review each tour’s description, duration, price and booking details.</p>
-      <div class="seo-grid">${cards || '<p>There are currently no published excursions to display.</p>'}</div></main>`;
+      <div class="seo-grid">${cards || '<p>There are currently no published excursions to display.</p>'}</div>
+      <h2>Explore by destination</h2>
+      <div class="seo-grid">${(visibleDestinations || []).map(seoDestinationCard).filter(Boolean).join('')}</div></main>`;
   } else if (path.startsWith('/excursions/')) {
     let slug = '';
     try { slug = decodeURIComponent(path.slice('/excursions/'.length)); } catch { slug = ''; }
@@ -2039,6 +2079,47 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
         ${currentTour.cancellation_policy ? `<section><h2>Cancellation information</h2><p>${seoHtmlEscape(seoPlainText(currentTour.cancellation_policy, 1000))}</p></section>` : ''}
         <p><a href="/booking?tour=${encodeURIComponent(slug)}">Continue to booking</a></p>
       </article></main>`;
+    }
+  } else if (path.startsWith('/destinations/')) {
+    let slug = '';
+    try { slug = decodeURIComponent(path.slice('/destinations/'.length)); } catch { slug = ''; }
+    if (serverSupabase && /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) {
+      try {
+        const { data, error } = await serverSupabase.from('destinations').select('*')
+          .eq('slug', slug).eq('status', 'published').maybeSingle();
+        if (error) console.warn('[SEO render] Destination lookup failed:', error.message);
+        activeDestination = data || null;
+      } catch (error) {
+        console.warn('[SEO render] Destination query failed:', error);
+      }
+    }
+    if (activeDestination && serverSupabase) {
+      try {
+        const { data, error } = await serverSupabase.from('tours').select('*')
+          .eq('destination_id', activeDestination.id).eq('status', 'published')
+          .order('sort_order', { ascending: true }).limit(100);
+        if (error) console.warn('[SEO render] Destination tours query failed:', error.message);
+        destinationTours = Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.warn('[SEO render] Destination tours query exception:', error);
+      }
+    }
+    if (activeDestination && destinationTours.length > 0) {
+      pageKind = 'destination';
+      seoEntityType = 'destination';
+      seoIdentifier = String(activeDestination.id);
+      seoIdentifierIsPageSlug = false;
+      title = seoPlainText(activeDestination.seo_title, 180)
+        || `${seoPlainText(activeDestination.name, 120)} Excursions & Activities | Kemet Spirit`;
+      description = seoPlainText(activeDestination.seo_description || activeDestination.description || activeDestination.tagline, 300);
+      pageImage = seoSafeImage(activeDestination.main_image) || pageImage;
+      const cards = destinationTours.map(seoTourCard).filter(Boolean).join('');
+      body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / <a href="/excursions">Excursions</a> / ${seoHtmlEscape(seoPlainText(activeDestination.name, 120))}</nav>
+        <article><h1>Excursions in ${seoHtmlEscape(seoPlainText(activeDestination.name, 120))}</h1>
+        ${activeDestination.tagline ? `<p><strong>${seoHtmlEscape(seoPlainText(activeDestination.tagline, 300))}</strong></p>` : ''}
+        ${description ? `<p>${seoHtmlEscape(description)}</p>` : ''}
+        <h2>Published excursions in ${seoHtmlEscape(seoPlainText(activeDestination.name, 120))}</h2>
+        <div class="seo-grid">${cards}</div></article></main>`;
     }
   } else {
     const pages = await loadKemetPages();
@@ -2105,6 +2186,22 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
         subjectOf: { '@type': 'Product', name: seoPlainText(currentTour.title, 160),
           offers: { '@type': 'Offer', url: canonical, price, priceCurrency: currency, seller: { '@id': `${origin}/#organization` } } },
       } : {}),
+    });
+  } else if (pageKind === 'destination' && activeDestination) {
+    const destinationItems = destinationTours.map((tour, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: seoPlainText(tour.title, 160),
+      url: `${origin}/excursions/${encodeURIComponent(String(tour.slug || ''))}`,
+    })).filter((item) => item.name && /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(item.url.split('/').pop() || ''));
+    graph.push({
+      '@type': 'TouristDestination',
+      '@id': `${canonical}#destination`,
+      name: seoPlainText(activeDestination.name, 120),
+      description,
+      url: canonical,
+      image: pageImage !== `${origin}/logo.webp` ? pageImage : undefined,
+      subjectOf: { '@type': 'ItemList', itemListElement: destinationItems },
     });
   } else {
     graph.push({
