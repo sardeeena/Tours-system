@@ -57,6 +57,10 @@ export const HOMEPAGE_FAQS = [
  */
 export function getAppOrigin(): string {
   if (typeof window !== 'undefined' && window.location?.origin) {
+    const hostname = window.location.hostname.toLowerCase();
+    if (hostname === 'kemetspirit.com' || hostname === 'www.kemetspirit.com') {
+      return 'https://kemetspirit.com';
+    }
     return window.location.origin;
   }
   return 'https://kemetspirit.com';
@@ -97,7 +101,6 @@ export function generateHomeJsonLd(origin = getAppOrigin()): Record<string, unkn
 }
 
 /**
- * Generates rich Schema.org structured data for an individual excursion detail page/**
  * Generates rich Schema.org structured data for an individual excursion detail page
  * Combines TouristTrip, Product, Offer, AggregateRating, and Itinerary ItemList
  */
@@ -173,7 +176,6 @@ export function generateTourJsonLd(tour: Tour, origin = getAppOrigin()): Record<
 }
 
 /**
- * Generates Schema.org BreadcrumbList structured data for any route/**
  * Generates Schema.org BreadcrumbList structured data for any route
  */
 export function generateBreadcrumbsJsonLd(
