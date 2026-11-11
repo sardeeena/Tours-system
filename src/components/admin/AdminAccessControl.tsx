@@ -42,7 +42,6 @@ export const AdminAccessControl:React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true);
     setError('');
-    setNotice('');
     try {
       const {data:result,error:rpcError}=await rpc('admin_list_access_control');
       if (rpcError) throw rpcError;
