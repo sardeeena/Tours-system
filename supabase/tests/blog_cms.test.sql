@@ -39,6 +39,11 @@ SELECT ok(
   'all editorial mutations require content.manage'
 );
 
+SELECT diag((
+  SELECT string_agg(format('%s cmd=%s roles=%s qual=%s with_check=%s', policyname, cmd, roles, coalesce(qual,'<null>'), coalesce(with_check,'<null>')), E'\\n')
+  FROM pg_policies WHERE schemaname='public' AND tablename='blog_categories'
+));
+
 SELECT ok(
   EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='blog_categories' AND cmd='INSERT' AND with_check LIKE '%has_permission%')
   AND EXISTS (SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='blog_categories' AND cmd='UPDATE' AND qual LIKE '%has_permission%' AND with_check LIKE '%has_permission%')
