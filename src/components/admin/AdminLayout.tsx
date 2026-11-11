@@ -252,6 +252,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'pages', label: 'Pages & Content', icon: FileText },
     { id: 'newsletter', label: 'Newsletter', icon: Mail },
     { id: 'settings', label: 'Site Settings', icon: Settings },
+
+    // SECURITY & ACCESS CONTROL
+    { id: 'header_security', label: 'SECURITY & ACCESS', isHeader: true },
     { id: 'access_control', label: 'Users, Roles & Permissions', icon: ShieldCheck },
   ];
 
