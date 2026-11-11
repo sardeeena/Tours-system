@@ -75,6 +75,7 @@ export type AdminTab =
   | 'seo'
   | 'pages'
   | 'settings'
+  | 'access_control'
   | 'crm_dashboard'
   | 'crm_leads'
   | 'crm_customers'
@@ -119,7 +120,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   onNavigateSite,
   children,
 }) => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, hasPermission } = useAuth();
   const supabaseConnected = isSupabaseConfigured();
   const [schemaMissing, setSchemaMissingState] = React.useState(isSchemaMissing());
   const [isIntegrationModalOpen, setIsIntegrationModalOpen] = React.useState(false);
@@ -251,7 +252,42 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'pages', label: 'Pages & Content', icon: FileText },
     { id: 'newsletter', label: 'Newsletter', icon: Mail },
     { id: 'settings', label: 'Site Settings', icon: Settings },
+    { id: 'access_control', label: 'Users, Roles & Permissions', icon: ShieldCheck },
   ];
+
+  const requiredPermission = (id: string): string | null => {
+    if (id === 'access_control') return 'users.manage';
+    if (id === 'dashboard' || id === 'dash_sales') return 'analytics.read';
+    if (id === 'dash_ops' || id.startsWith('ops_')) return id === 'dash_ops' || id === 'ops_departures' ? 'operations.read' : 'operations.manage';
+    if (id === 'dash_customers') return 'customers.read';
+    if (id === 'dash_finance' || id.startsWith('fin_')) return id === 'dash_finance' || id === 'fin_reports' ? 'finance.read' : 'finance.manage';
+    if (id === 'dash_builder') return 'analytics.manage';
+    if (id === 'tours') return 'tours.read';
+    if (id === 'tour_new' || id === 'tour_edit') return 'tours.manage';
+    if (id === 'bookings') return 'bookings.read';
+    if (id.startsWith('crm_') || id === 'customers' || id === 'inquiries') return 'crm.read';
+    if (id.startsWith('comm_')) return 'communications.read';
+    if (['destinations','categories','newsletter','pickup','extras','coupons','faqs','reviews','media','seo','pages'].includes(id)) return 'content.read';
+    if (id === 'settings') return 'settings.manage';
+    return null;
+  };
+  const canSeeTab = (id: string) => id === 'access_control'
+    ? hasPermission('users.manage') || hasPermission('roles.manage')
+    : (() => { const required = requiredPermission(id); return !required || hasPermission(required); })();
+
+  const visibleNavItems = navItems.flatMap((item, index) => {
+    if (item.isHeader) {
+      const laterItems = navItems.slice(index + 1);
+      const nextSection = laterItems.slice(0, laterItems.findIndex((entry) => entry.isHeader) < 0 ? laterItems.length : laterItems.findIndex((entry) => entry.isHeader));
+      return nextSection.some((entry) => canSeeTab(entry.id) || entry.children?.some((child) => canSeeTab(child.id))) ? [item] : [];
+    }
+    const children = item.children?.filter((child) => canSeeTab(child.id));
+    return canSeeTab(item.id) || Boolean(children?.length) ? [{ ...item, children }] : [];
+  });
+  const activePermission = requiredPermission(activeTab);
+  const canAccessActiveTab = activeTab === 'access_control'
+    ? hasPermission('users.manage') || hasPermission('roles.manage')
+    : !activePermission || hasPermission(activePermission);
 
   return (
     <div className="admin-shell min-h-screen bg-[#FAF8F5] dark:bg-[#0A1118] text-[#111A24] dark:text-[#F1F5F9] flex flex-col antialiased selection:bg-[#0A6C74] selection:text-white">
@@ -349,8 +385,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             </div>
 
             {/* Quick Action: New Tour */}
-            {/* Quick Action: New Tour */}
-            <div className="p-3">
+            {hasPermission('tours.manage') && <div className="p-3">
               <button
                 type="button"
                 onClick={() => handleNavSelect('tour_new')}
@@ -359,11 +394,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                 <Plus className="w-4 h-4" />
                 <span>Create New Tour</span>
               </button>
-            </div>
+            </div>}
 
             {/* Navigation links */}
             <nav className="p-3 space-y-1 text-xs overflow-y-auto max-h-[calc(100vh-210px)] scrollbar-thin scrollbar-thumb-stone-200 dark:scrollbar-thumb-stone-800">
-              {navItems.map((item) => {
+              {visibleNavItems.map((item) => {
                 if (item.isHeader) {
                   return (
                     <div
@@ -432,7 +467,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                 <p className="text-[10px] text-stone-500 dark:text-stone-400 truncate">{user?.email || 'admin@kemetspirit.com'}</p>
               </div>
               <span className="text-[9px] px-1.5 py-0.5 uppercase tracking-wide bg-[#E8F3F4] text-[#0A6C74] dark:bg-[#0A6C74]/20 dark:text-[#2DD4BF] rounded-md font-semibold">
-                {user?.role || 'admin'}
+                {user?.roles?.filter((role) => role !== 'customer').join(' · ') || user?.role || 'admin'}
               </span>
             </div>
 
@@ -620,7 +655,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   : 'max-w-7xl'
               }`}
             >
-              {children}
+              {canAccessActiveTab ? children : (
+                <div className="max-w-xl mx-auto my-12 rounded-2xl border border-amber-300/70 bg-amber-50 dark:bg-amber-950/20 p-6 text-center">
+                  <ShieldCheck className="w-8 h-8 mx-auto text-amber-600 dark:text-amber-300 mb-3" />
+                  <h2 className="font-bold text-lg">Access restricted</h2>
+                  <p className="text-sm text-stone-600 dark:text-stone-300 mt-2">Your assigned roles do not grant permission to open this section. Contact a system administrator if you need access.</p>
+                </div>
+              )}
             </div>
           </div>
         </main>
