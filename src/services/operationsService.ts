@@ -28,7 +28,6 @@ const LOCAL_GUIDES_KEY = 'rse_ops_guides';
 const LOCAL_WEATHER_KEY = 'rse_ops_weather';
 const LOCAL_DEPARTURES_KEY = 'rse_ops_departures';
 const LOCAL_PICKUPS_KEY = 'rse_ops_pickups';
-const LOCAL_AVAILABILITY_KEY = 'rse_ops_availability';
 
 // Initial maritime fleet (fallback seed)
 const INITIAL_VESSELS: DbVessel[] = [
