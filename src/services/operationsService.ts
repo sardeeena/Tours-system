@@ -255,213 +255,152 @@ function setLocal<T>(key: string, data: T): void {
  * List all departures for a specific date or date range.
  * Merges real database `departures` records with active bookings.
  */
-export async function getTodayDepartures(dateTarget?: string): Promise<OperationalDeparture[]> {
-  const date = dateTarget || new Date().toISOString().split('T')[0];
+function normalizeDepartureTime(value: unknown): string {
+  const raw = String(value ?? '').trim();
+  if (!raw) return '';
+  const match = raw.match(/^(\\d{1,2}):(\\d{2})(?::\\d{2})?\\s*(AM|PM)?$/i);
+  if (!match) return raw;
+  let hour = Number(match[1]);
+  const minute = match[2];
+  const meridiem = match[3]?.toUpperCase();
+  if (meridiem === 'PM' && hour < 12) hour += 12;
+  if (meridiem === 'AM' && hour === 12) hour = 0;
+  return `${String(hour).padStart(2, '0')}:${minute}`;
+}
 
-  const [allBookings, vessels, guides, dynamicTours] = await Promise.all([
+/**
+ * Lists only explicit database departures for the selected date.
+ * Bookings are attached to real departure rows; bookings never synthesize
+ * departures, capacities, times, vessels, or weather clearance.
+ */
+export async function getTodayDepartures(dateTarget?: string): Promise<OperationalDeparture[]> {
+  const now = new Date();
+  const localToday = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const date = dateTarget || localToday;
+
+  if (!isSupabaseConfigured()) {
+    if (import.meta.env.DEV) {
+      return getLocal<OperationalDeparture[]>(LOCAL_DEPARTURES_KEY, []).filter((departure) => departure.date === date);
+    }
+    throw new Error('Supabase is not configured; live departures cannot be loaded.');
+  }
+
+  const [{ data: dbDepartures, error: departuresError }, allBookings, vessels, guides, dynamicTours] = await Promise.all([
+    supabase.from('departures').select('*').eq('date', date),
     bookingRepository.listBookings(),
     listVessels(),
     listGuides(),
-    getPublishedTours().catch(() => ALL_TOURS),
+    getPublishedTours().catch(() => []),
   ]);
 
-  // Try fetching departures directly from database
-  let dbDepartures: any[] = [];
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('departures')
-        .select('*')
-        .eq('date', date);
-      if (!error && data) {
-        dbDepartures = data;
-      }
-    } catch {
-      // table might not be migrated yet or offline
-    }
-  }
+  if (departuresError) throw new Error(formatSupabaseError(departuresError));
 
-  // Also read cached departures if DB query was empty
-  if (dbDepartures.length === 0) {
-    const cached = getLocal<any[]>(LOCAL_DEPARTURES_KEY, []);
-    dbDepartures = cached.filter((d) => d.date === date);
-  }
-
-  // Find confirmed bookings for the target date
-  const dayBookings = allBookings.filter((b) => {
-    const bDate = b.date ? b.date.split('T')[0] : '';
-    return bDate === date && b.status !== 'cancelled';
+  const dayBookings = allBookings.filter((booking) => {
+    const bookingDate = booking.date ? booking.date.split('T')[0] : '';
+    return bookingDate === date && booking.status !== 'cancelled';
   });
 
-  // Group bookings by tourId and departureTime
   const groupedBookings = new Map<string, typeof dayBookings>();
-  dayBookings.forEach((b) => {
-    const depTime = (b as any).departureTime || '08:30';
-    const key = `${b.tourId}_${depTime}`;
-    const list = groupedBookings.get(key) || [];
-    list.push(b);
-    groupedBookings.set(key, list);
+  dayBookings.forEach((booking) => {
+    const time = normalizeDepartureTime((booking as any).departureTime);
+    const key = `${booking.tourId}_${time}`;
+    const group = groupedBookings.get(key) || [];
+    group.push(booking);
+    groupedBookings.set(key, group);
   });
 
-  const departures: OperationalDeparture[] = [];
-  const processedKeys = new Set<string>();
-
-  // 1. Convert DB departures
-  dbDepartures.forEach((dbDep) => {
-    const key = `${dbDep.tour_id}_${dbDep.start_time || '08:30'}`;
-    processedKeys.add(key);
-
+  const departures: OperationalDeparture[] = (dbDepartures || []).map((dbDep: any) => {
+    const startTime = normalizeDepartureTime(dbDep.start_time);
+    const key = `${dbDep.tour_id}_${startTime}`;
     const bookingsForDep = groupedBookings.get(key) || [];
+    const tour = dynamicTours.find((item) => item.id === dbDep.tour_id);
+    const vessel = vessels.find((item) => item.id === dbDep.vessel_id);
+    const guide = guides.find((item) => item.id === dbDep.guide_id);
+    const captain = guides.find((item) => item.id === dbDep.captain_id);
+    const driver = guides.find((item) => item.id === dbDep.driver_id);
 
-    const tour = (dynamicTours && dynamicTours.find((t) => t.id === dbDep.tour_id)) || ALL_TOURS.find((t) => t.id === dbDep.tour_id) || {
-      id: dbDep.tour_id,
-      title: bookingsForDep[0]?.tourTitle || 'Red Sea Excursion',
-      slug: 'red-sea-tour',
-    };
-    const paxCount = bookingsForDep.reduce(
-      (sum, b) => sum + (b.guests.adults || 1) + (b.guests.children || 0) + (b.guests.infants || 0),
+    const adultCount = bookingsForDep.reduce((sum, booking) => sum + (Number(booking.guests.adults) || 0), 0);
+    const childCount = bookingsForDep.reduce((sum, booking) => sum + (Number(booking.guests.children) || 0), 0);
+    const infantCount = bookingsForDep.reduce((sum, booking) => sum + (Number(booking.guests.infants) || 0), 0);
+    const passengerCount = adultCount + childCount + infantCount;
+    const effectivePassengers = Math.max(passengerCount, Number(dbDep.booked_passengers) || 0);
+    const capacity = Math.max(0, Number(dbDep.capacity) || 0);
+
+    const totalEur = bookingsForDep.reduce(
+      (sum, booking) => sum + (Number(booking.pricing?.totalEur) || Number((booking as any).totalPrice) || 0),
       0
     );
-    const adultCount = bookingsForDep.reduce((sum, b) => sum + (b.guests.adults || 1), 0);
-    const childCount = bookingsForDep.reduce((sum, b) => sum + (b.guests.children || 0), 0);
-    const infantCount = bookingsForDep.reduce((sum, b) => sum + (b.guests.infants || 0), 0);
-
-    const vessel = vessels.find((v) => v.id === dbDep.vessel_id);
-    const guide = guides.find((g) => g.id === dbDep.guide_id);
-    const captain = guides.find((g) => g.id === dbDep.captain_id);
-    const driver = guides.find((g) => g.id === dbDep.driver_id);
-
-    const totalEur = bookingsForDep.reduce((sum, b) => sum + (b.pricing?.totalEur || (b as any).totalPrice || 0), 0);
     const paidEur = bookingsForDep.reduce(
-      (sum, b) => sum + ((b as any).paymentStatus === 'paid' ? (b.pricing?.totalEur || (b as any).totalPrice || 0) : 0),
+      (sum, booking) => sum + ((booking as any).paymentStatus === 'paid'
+        ? (Number(booking.pricing?.totalEur) || Number((booking as any).totalPrice) || 0)
+        : 0),
       0
     );
 
-    const depStatusNormalized = (dbDep.status || 'scheduled').toLowerCase();
+    const pickupMap = new Map<string, { name: string; time: string; passengerCount: number; hotelName?: string }>();
+    bookingsForDep.forEach((booking) => {
+      const hotelName = (booking as any).pickup?.hotelName || (booking as any).customer?.hotelName || '';
+      const name = hotelName || 'Pickup not specified';
+      const pickupTime = String((booking as any).pickupTime || '');
+      const pickupKey = `${name}_${pickupTime}`;
+      const existing = pickupMap.get(pickupKey);
+      const guests =
+        (Number(booking.guests.adults) || 0) +
+        (Number(booking.guests.children) || 0) +
+        (Number(booking.guests.infants) || 0);
+      if (existing) existing.passengerCount += guests;
+      else pickupMap.set(pickupKey, { name, time: pickupTime, passengerCount: guests, hotelName: hotelName || undefined });
+    });
+
+    const status = (dbDep.status || 'scheduled') as DepartureStatus;
     const legacyStatus: OperationalStatus =
-      depStatusNormalized === 'boarding'
-        ? 'Ready'
-        : depStatusNormalized === 'in_progress'
-        ? 'Departed'
-        : depStatusNormalized === 'completed'
-        ? 'Completed'
-        : depStatusNormalized === 'cancelled'
-        ? 'Cancelled'
-        : depStatusNormalized === 'confirmed'
-        ? 'Preparing'
-        : 'Scheduled';
+      status === 'boarding' ? 'Ready' :
+      status === 'in_progress' ? 'Departed' :
+      status === 'completed' ? 'Completed' :
+      status === 'cancelled' ? 'Cancelled' :
+      status === 'confirmed' ? 'Preparing' : 'Scheduled';
 
-    const capacity = dbDep.capacity || (vessel ? vessel.passenger_capacity : 35);
-    const effectivePax = Math.max(paxCount, dbDep.booked_passengers || 0);
-
-    departures.push({
+    return {
       id: dbDep.id,
       tourId: dbDep.tour_id,
-      tourTitle: tour.title,
-      tourSlug: tour.slug || 'tour',
+      tourTitle: tour?.title || 'Tour record unavailable',
+      tourSlug: tour?.slug || '',
       date,
-      departureTime: dbDep.start_time || '08:30',
-      startTime: dbDep.start_time || '08:30',
-      endTime: dbDep.end_time || '16:30',
+      departureTime: startTime,
+      startTime,
+      endTime: normalizeDepartureTime(dbDep.end_time),
       capacity,
-      remainingCapacity: Math.max(0, capacity - effectivePax),
+      remainingCapacity: Math.max(0, capacity - effectivePassengers),
       bookingsCount: bookingsForDep.length,
-      passengerCount: effectivePax,
+      passengerCount: effectivePassengers,
       adultCount,
       childCount,
       infantCount,
-      pickupLocations: bookingsForDep.map((b) => ({
-        name: b.pickup.hotelName || b.customer.hotelName || 'Direct Arrival',
-        time: (b as any).pickupTime || '07:30',
-        passengerCount: (b.guests.adults || 1) + (b.guests.children || 0),
-        hotelName: b.pickup.hotelName || b.customer.hotelName,
-      })),
-      vesselId: dbDep.vessel_id,
-      vesselName: vessel ? vessel.name : null,
-      vesselType: vessel ? vessel.vessel_type : null,
-      vesselCapacity: vessel ? vessel.passenger_capacity : null,
-      guideId: dbDep.guide_id,
-      guideName: guide ? guide.full_name : null,
-      guideRole: guide ? guide.role : null,
-      captainId: dbDep.captain_id,
-      captainName: captain ? captain.full_name : null,
-      driverId: dbDep.driver_id,
-      driverName: dbDep.driver_name || (driver ? driver.full_name : null),
-      vehicleName: dbDep.vehicle_name,
+      pickupLocations: Array.from(pickupMap.values()),
+      vesselId: dbDep.vessel_id || null,
+      vesselName: vessel?.name || null,
+      vesselType: vessel?.vessel_type || null,
+      vesselCapacity: vessel ? Number(vessel.passenger_capacity) || null : null,
+      guideId: dbDep.guide_id || null,
+      guideName: guide?.full_name || null,
+      guideRole: guide?.role || null,
+      captainId: dbDep.captain_id || null,
+      captainName: captain?.full_name || null,
+      driverId: dbDep.driver_id || null,
+      driverName: dbDep.driver_name || driver?.full_name || null,
+      vehicleName: dbDep.vehicle_name || null,
       crewIds: dbDep.crew_ids || [],
       operationalStatus: legacyStatus,
-      status: (dbDep.status as DepartureStatus) || 'scheduled',
+      status,
       paymentSummary: {
-        paidCount: bookingsForDep.filter((b) => (b as any).paymentStatus === 'paid').length,
-        pendingCount: bookingsForDep.filter((b) => (b as any).paymentStatus !== 'paid').length,
+        paidCount: bookingsForDep.filter((booking) => (booking as any).paymentStatus === 'paid').length,
+        pendingCount: bookingsForDep.filter((booking) => (booking as any).paymentStatus !== 'paid').length,
         totalEur,
         outstandingEur: Math.max(0, totalEur - paidEur),
       },
-      weatherCleared: true,
+      weatherCleared: null,
       notes: dbDep.notes || null,
-    });
-  });
-
-  // 2. Synthesize departures for bookings that don't have an explicit DB departure record yet
-  groupedBookings.forEach((bookings, key) => {
-    if (processedKeys.has(key)) return;
-
-    const [tId, depTime] = key.split('_');
-    const tour = (dynamicTours && dynamicTours.find((t) => t.id === tId)) || ALL_TOURS.find((t) => t.id === tId) || {
-      id: tId,
-      title: bookings[0]?.tourTitle || 'Red Sea Excursion',
-      slug: 'red-sea-tour',
     };
-
-    const paxCount = bookings.reduce(
-      (sum, b) => sum + (b.guests.adults || 1) + (b.guests.children || 0) + (b.guests.infants || 0),
-      0
-    );
-    const adultCount = bookings.reduce((sum, b) => sum + (b.guests.adults || 1), 0);
-    const childCount = bookings.reduce((sum, b) => sum + (b.guests.children || 0), 0);
-    const infantCount = bookings.reduce((sum, b) => sum + (b.guests.infants || 0), 0);
-    const totalEur = bookings.reduce((sum, b) => sum + (b.pricing?.totalEur || (b as any).totalPrice || 0), 0);
-
-    departures.push({
-      id: `dep-${tId}-${date}-${depTime.replace(':', '')}`,
-      tourId: tId,
-      tourTitle: tour.title,
-      tourSlug: tour.slug || 'tour',
-      date,
-      departureTime: depTime || '08:30',
-      startTime: depTime || '08:30',
-      endTime: '16:30',
-      capacity: 35,
-      remainingCapacity: Math.max(0, 35 - paxCount),
-      bookingsCount: bookings.length,
-      passengerCount: paxCount,
-      adultCount,
-      childCount,
-      infantCount,
-      pickupLocations: bookings.map((b) => ({
-        name: b.pickup.hotelName || b.customer.hotelName || 'Direct Arrival',
-        time: (b as any).pickupTime || '07:30',
-        passengerCount: (b.guests.adults || 1) + (b.guests.children || 0),
-        hotelName: b.pickup.hotelName || b.customer.hotelName,
-      })),
-      vesselId: null,
-      vesselName: null,
-      vesselType: null,
-      vesselCapacity: 35,
-      guideId: null,
-      guideName: null,
-      guideRole: null,
-      operationalStatus: 'Scheduled',
-      status: 'scheduled',
-      paymentSummary: {
-        paidCount: bookings.filter((b) => (b as any).paymentStatus === 'paid').length,
-        pendingCount: bookings.filter((b) => (b as any).paymentStatus !== 'paid').length,
-        totalEur,
-        outstandingEur: totalEur,
-      },
-      weatherCleared: true,
-      notes: null,
-    });
   });
 
   return departures.sort((a, b) => a.departureTime.localeCompare(b.departureTime));
