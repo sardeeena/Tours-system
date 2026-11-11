@@ -456,7 +456,7 @@ export async function createDeparture(data: Partial<DepartureEntity>): Promise<{
     const vessels = await listVessels();
     const vessel = vessels.find((item) => item.id === newDeparture.vessel_id);
     if (!vessel) return { success: false, error: 'The selected vessel does not exist in the live fleet records.' };
-    if (!vessel.is_active || ['maintenance', 'dry_dock', 'inactive'].includes(vessel.status)) {
+    if (!vessel.is_active || ['maintenance', 'dry_dock', 'inactive'].includes(vessel.status ?? '')) {
       return { success: false, error: `Cannot assign vessel "${vessel.name}": it is inactive or under maintenance.` };
     }
     if (bookedPassengers > vessel.passenger_capacity) {
