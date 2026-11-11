@@ -106,7 +106,7 @@ INSERT INTO auth.users (
 VALUES (
   'f9000000-0000-0000-0000-000000000001',
   'authenticated', 'authenticated', 'pgtap-customer@example.test', '',
-  now(), '{}'::jsonb, '{}'::jsonb, now(), now()
+  NULL, '{}'::jsonb, '{}'::jsonb, now(), now()
 )
 ON CONFLICT (id) DO NOTHING;
 
@@ -124,7 +124,7 @@ INSERT INTO auth.users (
 VALUES (
   'f9000000-0000-0000-0000-000000000002',
   'authenticated', 'authenticated', 'pgtap-admin@example.test', '',
-  now(), '{}'::jsonb, '{}'::jsonb, now(), now()
+  NULL, '{}'::jsonb, '{}'::jsonb, now(), now()
 )
 ON CONFLICT (id) DO NOTHING;
 
