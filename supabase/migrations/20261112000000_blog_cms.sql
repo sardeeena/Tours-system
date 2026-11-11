@@ -53,7 +53,7 @@ CREATE POLICY blog_categories_public_read
 DROP POLICY IF EXISTS blog_categories_editor_insert ON public.blog_categories;
 CREATE POLICY blog_categories_editor_insert
   ON public.blog_categories FOR INSERT TO authenticated
-  WITH CHECK ((SELECT private.has_permission('content.manage')));
+  WITH CHECK ((SELECT public.has_permission('content.manage')));
 
 DROP POLICY IF EXISTS blog_categories_editor_update ON public.blog_categories;
 CREATE POLICY blog_categories_editor_update
@@ -95,7 +95,11 @@ CREATE POLICY blog_posts_editor_delete
   ON public.blog_posts FOR DELETE TO authenticated
   USING ((SELECT private.has_permission('content.manage')));
 
+-- Supabase projects can have broad default grants. Reset these tables to a
+-- least-privilege baseline before granting only the operations required below.
+REVOKE ALL PRIVILEGES ON TABLE public.blog_categories, public.blog_posts FROM PUBLIC, anon, authenticated;
 GRANT SELECT ON public.blog_categories, public.blog_posts TO anon, authenticated;
 GRANT INSERT, UPDATE, DELETE ON public.blog_categories, public.blog_posts TO authenticated;
+GRANT ALL PRIVILEGES ON TABLE public.blog_categories, public.blog_posts TO service_role;
 
 COMMIT;
