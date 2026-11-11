@@ -208,94 +208,119 @@ export interface AuthenticatedRequest extends Request {
 }
 
 /**
- * In-Memory Sliding-Window Rate Limiter (Zero external runtime dependencies)
- * 
- * ARCHITECTURAL CONSTRAINTS & HOSTINGER DEPLOYMENT CHARACTERISTICS:
- * 1. Process Scope: Rate limiting counters are stored in a local Node.js Map within the current process.
- * 2. Multi-Worker / PM2: If scaled horizontally across multiple Node worker processes or behind an external
- *    load balancer, request counts are partitioned per process rather than globally coordinated. For multi-node
- *    enterprise clusters, a shared Redis or database token-bucket store is required.
- * 3. Process Restarts: Counters reset gracefully upon application restarts or deployments on Hostinger.
- * 4. Reverse Proxy Header: Reads 'x-forwarded-for' header from Hostinger Nginx / Cloudflare reverse proxies.
+ * Per-process fixed-window limiter. Sensitive writes also have database-side
+ * atomic limits; this layer protects expensive HTTP routes before they reach
+ * Supabase or third-party providers. Hostinger deployments are single-process
+ * by default, but these counters intentionally remain an additional layer,
+ * not the only protection for security-sensitive operations.
  */
 const rateLimitBuckets = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_BUCKET_CAPACITY = 50_000;
+
 function rateLimit(maxRequests = 60, windowMs = 60_000) {
   return (req: Request, res: Response, next: NextFunction) => {
-    const ip = req.ip || (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown';
+    // Express req.ip is derived from the explicitly configured trusted proxy.
+    // Never trust a raw client-supplied X-Forwarded-For value as a fallback.
+    const ip = req.ip || req.socket.remoteAddress || 'unknown';
     const key = `${req.baseUrl || req.path}:${ip}`;
     const now = Date.now();
-    const bucket = rateLimitBuckets.get(key);
+    let bucket = rateLimitBuckets.get(key);
 
-    if (!bucket || now > bucket.resetAt) {
-      rateLimitBuckets.set(key, { count: 1, resetAt: now + windowMs });
-      return next();
-    }
-
-    if (bucket.count >= maxRequests) {
+    if (!bucket || now >= bucket.resetAt) {
+      bucket = { count: 1, resetAt: now + windowMs };
+      rateLimitBuckets.set(key, bucket);
+    } else if (bucket.count >= maxRequests) {
+      const retryAfter = Math.max(1, Math.ceil((bucket.resetAt - now) / 1000));
+      res.setHeader('Retry-After', String(retryAfter));
+      res.setHeader('RateLimit-Limit', String(maxRequests));
+      res.setHeader('RateLimit-Remaining', '0');
+      res.setHeader('RateLimit-Reset', String(Math.ceil(bucket.resetAt / 1000)));
       return res.status(429).json({
         success: false,
-        error: 'Too many requests. Please wait a moment before trying again.',
-        retryAfter: Math.ceil((bucket.resetAt - now) / 1000),
+        error: 'Too many requests. Please wait before trying again.',
+        retryAfter,
       });
+    } else {
+      bucket.count += 1;
+      // Refresh insertion order so capacity eviction removes the least-recently-used key.
+      rateLimitBuckets.delete(key);
+      rateLimitBuckets.set(key, bucket);
     }
 
-    bucket.count += 1;
+    res.setHeader('RateLimit-Limit', String(maxRequests));
+    res.setHeader('RateLimit-Remaining', String(Math.max(0, maxRequests - bucket.count)));
+    res.setHeader('RateLimit-Reset', String(Math.ceil(bucket.resetAt / 1000)));
+
+    if (rateLimitBuckets.size > RATE_LIMIT_BUCKET_CAPACITY) {
+      for (const [entryKey, entry] of rateLimitBuckets) {
+        if (now >= entry.resetAt || rateLimitBuckets.size > RATE_LIMIT_BUCKET_CAPACITY) {
+          rateLimitBuckets.delete(entryKey);
+        }
+      }
+    }
+
     next();
   };
 }
 
-// Clean up stale rate limit entries periodically (every 5 minutes)
+// Periodically remove expired counters so unique client addresses cannot grow the map indefinitely.
 setInterval(() => {
   const now = Date.now();
-  for (const [k, v] of rateLimitBuckets.entries()) {
-    if (now > v.resetAt) rateLimitBuckets.delete(k);
+  for (const [key, value] of rateLimitBuckets) {
+    if (now >= value.resetAt) rateLimitBuckets.delete(key);
   }
-}, 300_000).unref();
+}, 60_000).unref();
 
-// Server-side JWT Bearer token authentication middleware
-async function authenticateToken(req: AuthenticatedRequest, _res: Response, next: NextFunction) {
+// Server-side JWT Bearer token authentication middleware.
+// A supplied but invalid Bearer token is never silently downgraded to a guest request.
+// Authorization roles come from the caller's live database profile, not cached JWT metadata.
+async function authenticateToken(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (!authHeader || !/^Bearer\\s+/i.test(authHeader)) {
     return next();
   }
 
-  const token = authHeader.split(' ')[1];
-  if (!token || !serverSupabase) {
-    return next();
+  const token = authHeader.replace(/^Bearer\\s+/i, '').trim();
+  if (!token) {
+    return res.status(401).json({ success: false, error: 'A valid access token is required.' });
+  }
+  if (!serverSupabase) {
+    return res.status(503).json({ success: false, error: 'Authentication verification is temporarily unavailable.' });
   }
 
   try {
     const { data: { user }, error } = await serverSupabase.auth.getUser(token);
-    if (!error && user) {
-      let role = (user.app_metadata?.role as string) || 'customer';
-      // Query the caller's own profile using their verified JWT so RLS works
-      // even when the server client is configured with a publishable/anon key.
-      if (SUPABASE_URL && SUPABASE_USER_KEY) {
-        const userScopedSupabase = createClient(SUPABASE_URL, SUPABASE_USER_KEY, {
-          global: { headers: { Authorization: `Bearer ${token}` } },
-          auth: { persistSession: false, autoRefreshToken: false },
-        });
-        const { data: profile } = await userScopedSupabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        if (profile?.role) {
-          role = profile.role;
-        }
-      }
-
-      req.user = {
-        id: user.id,
-        email: user.email,
-        role,
-      };
+    if (error || !user) {
+      return res.status(401).json({ success: false, error: 'The access token is invalid or expired. Please sign in again.' });
     }
+
+    let role = 'customer';
+    // Read the authoritative role from the caller's own profile using their verified JWT.
+    // If the lookup is unavailable or the profile is missing, retain the least-privileged role.
+    if (SUPABASE_URL && SUPABASE_USER_KEY) {
+      const userScopedSupabase = createClient(SUPABASE_URL, SUPABASE_USER_KEY, {
+        global: { headers: { Authorization: `Bearer ${token}` } },
+        auth: { persistSession: false, autoRefreshToken: false },
+      });
+      const { data: profile, error: profileError } = await userScopedSupabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (profileError) {
+        console.warn('Server auth profile-role lookup failed; applying customer permissions:', profileError.message);
+      } else if (profile?.role && ['customer', 'staff', 'manager', 'admin', 'super_admin'].includes(profile.role)) {
+        role = profile.role;
+      }
+    }
+
+    req.user = { id: user.id, email: user.email, role };
+    return next();
   } catch (err) {
-    console.warn('Server auth token verification error:', err);
+    console.error('Server auth verification unavailable:', err);
+    return res.status(503).json({ success: false, error: 'Authentication verification is temporarily unavailable.' });
   }
-  next();
 }
 
 // ------------------------------------------------------------------------------
@@ -305,25 +330,34 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 app.use((req: Request, res: Response, next: NextFunction) => {
-  // Kemet Spirit production origins plus local development origins.
-  // Additional preview origins must be explicitly configured, never wildcarded.
+  // Exact-origin allowlist only. Credentialed cross-origin cookies are not used by this API.
+  const isProduction = process.env.NODE_ENV === 'production';
   const configuredOrigins = (process.env.CORS_ALLOWED_ORIGINS || '')
     .split(',')
     .map((value) => value.trim())
-    .filter(Boolean);
+    .filter((value) => {
+      if (!value || value === '*') return false;
+      try {
+        const parsed = new URL(value);
+        return parsed.origin === value &&
+          (parsed.protocol === 'https:' || (!isProduction && parsed.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(parsed.hostname)));
+      } catch {
+        return false;
+      }
+    });
   const allowedOrigins = new Set([
     'https://kemetspirit.com',
     'https://www.kemetspirit.com',
-    'http://localhost:3000',
-    'http://localhost:5173',
+    ...(!isProduction ? ['http://localhost:3000', 'http://localhost:5173'] : []),
     ...configuredOrigins,
   ]);
   const origin = req.headers.origin as string | undefined;
+  res.vary('Origin');
   if (origin && allowedOrigins.has(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Idempotency-Key');
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Max-Age', '600');
   }
 
   if (req.method === 'OPTIONS') {
@@ -333,9 +367,16 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+  if (isProduction) res.setHeader('Strict-Transport-Security', 'max-age=31536000');
+  if (req.path.startsWith('/api/')) res.setHeader('Cache-Control', 'no-store');
   next();
 });
+
+// Apply a conservative per-IP ceiling to every API route before route-specific limits.
+app.use('/api', rateLimit(300, 60_000));
 
 // Authenticate caller tokens for all API routes
 app.use(authenticateToken as any);
@@ -385,27 +426,39 @@ function isValidEmail(email: string): boolean {
 // ------------------------------------------------------------------------------
 // 1. AI Chatbot Endpoint
 // ------------------------------------------------------------------------------
-app.post('/api/chat', async (req: Request, res: Response) => {
-  const { messages, prompt } = req.body;
+app.post('/api/chat', rateLimit(10, 60_000), async (req: Request, res: Response) => {
+  const { messages, prompt } = req.body || {};
+  const cleanPrompt = typeof prompt === 'string' ? prompt.trim() : '';
+  const cleanMessages = Array.isArray(messages) ? messages : [];
 
-  if (!prompt && (!messages || messages.length === 0)) {
+  if ((prompt !== undefined && typeof prompt !== 'string') ||
+      (messages !== undefined && (!Array.isArray(messages) || messages.length > 20)) ||
+      cleanPrompt.length > 2_000 ||
+      cleanMessages.some((message: any) =>
+        !message || !['user', 'assistant'].includes(message.role) ||
+        typeof message.content !== 'string' || message.content.length > 2_000
+      )) {
+    return res.status(400).json({ error: 'Invalid chat payload. Limit each message to 2,000 characters and each conversation to 20 messages.' });
+  }
+
+  if (!cleanPrompt && cleanMessages.length === 0) {
     return res.status(400).json({ error: 'Prompt is required' });
   }
 
   // If Gemini API is available, invoke gemini-3.8-flash
   if (ai) {
     try {
-      // Build conversation contents
-      const conversationHistory = (messages || []).map((m: { role: string; content: string }) => ({
+      // Only user/assistant roles and bounded content are accepted from the browser.
+      const conversationHistory = cleanMessages.map((m: { role: string; content: string }) => ({
         role: m.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: m.content }],
       }));
 
       // Append latest prompt if not already present
-      if (prompt && (!messages || messages[messages.length - 1]?.content !== prompt)) {
+      if (cleanPrompt && (!cleanMessages.length || cleanMessages[cleanMessages.length - 1]?.content !== cleanPrompt)) {
         conversationHistory.push({
           role: 'user',
-          parts: [{ text: prompt }],
+          parts: [{ text: cleanPrompt }],
         });
       }
 
@@ -458,40 +511,15 @@ app.post('/api/chat', async (req: Request, res: Response) => {
 // ------------------------------------------------------------------------------
 // 2. Health & System Diagnostics Endpoint
 // ------------------------------------------------------------------------------
-app.get('/api/health', (_req: Request, res: Response) => {
-  const uptimeSeconds = Math.floor((Date.now() - SERVER_START_TIME) / 1000);
-  const mem = process.memoryUsage();
-
+app.get('/api/health', rateLimit(120, 60_000), (_req: Request, res: Response) => {
+  // Public liveness response only. Do not disclose project identifiers, key types,
+  // provider configuration, process memory, or deployment environment.
   res.json({
     status: 'ok',
     version: '2.4.0',
-    environment: process.env.NODE_ENV || 'development',
-    uptimeSeconds,
+    uptimeSeconds: Math.floor((Date.now() - SERVER_START_TIME) / 1000),
     timestamp: new Date().toISOString(),
-    services: {
-      server: { status: 'healthy', port: PORT },
-      geminiAi: {
-        status: process.env.GEMINI_API_KEY ? 'available' : 'disabled',
-        model: 'gemini-3.8-flash',
-      },
-      supabase: {
-        status: serverSupabase ? 'configured' : (supabaseConfig.configError ? 'misconfigured' : 'unconfigured'),
-        projectRef: SUPABASE_URL ? new URL(SUPABASE_URL).hostname.split('.')[0] : null,
-        urlProvided: Boolean(SUPABASE_URL),
-        keyType: SUPABASE_KEY_TYPE,
-        serviceRoleKeyConfigured: SUPABASE_KEY_TYPE === 'service_role',
-        userScopedPublicKeyConfigured: Boolean(SUPABASE_USER_KEY),
-        secretIsolationVerified: true,
-      },
-      databaseSchema: { configured: Boolean(serverSupabase), ready: false, verification: 'not_checked' },
-    },
-    memory: {
-      rssMb: Math.round((mem.rss / 1024 / 1024) * 100) / 100,
-      heapUsedMb: Math.round((mem.heapUsed / 1024 / 1024) * 100) / 100,
-      heapTotalMb: Math.round((mem.heapTotal / 1024 / 1024) * 100) / 100,
-    },
   });
-
 });
 
 // ------------------------------------------------------------------------------
@@ -664,7 +692,7 @@ app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: Auth
 // ------------------------------------------------------------------------------
 // 3. System Configuration Endpoint
 // ------------------------------------------------------------------------------
-app.get('/api/config', (_req: Request, res: Response) => {
+app.get('/api/config', rateLimit(120, 60_000), (_req: Request, res: Response) => {
   res.json({
     brandName: 'Red Sea Excursions & Voyages',
     hotline: '+20 102 345 6789',
@@ -683,7 +711,7 @@ app.get('/api/config', (_req: Request, res: Response) => {
 // ------------------------------------------------------------------------------
 // 4. Tours Catalog Query API (Truthful Supabase Retrieval)
 // ------------------------------------------------------------------------------
-app.get('/api/tours', async (req: Request, res: Response) => {
+app.get('/api/tours', rateLimit(120, 60_000), async (req: Request, res: Response) => {
   const { destination, category, search, limit } = req.query;
   const maxItems = Math.min(Math.max(1, parseInt(limit as string, 10) || 50), 100);
 
@@ -1078,7 +1106,7 @@ app.all(['/api/bookings/lookup', '/api/booking/lookup'], rateLimit(10, 60_000), 
 // ------------------------------------------------------------------------------
 // 6. Availability Check API (Supports POST or GET query)
 // ------------------------------------------------------------------------------
-app.all('/api/availability/check', (req: Request, res: Response) => {
+app.all('/api/availability/check', rateLimit(60, 60_000), (req: Request, res: Response) => {
   const tourSlug = (req.body?.tourSlug || req.query?.tourSlug || req.query?.slug) as string;
   const date = (req.body?.date || req.query?.date) as string;
   const adults = parseInt((req.body?.adults || req.query?.adults || '1') as string, 10);
@@ -1161,7 +1189,7 @@ app.all('/api/availability/check', (req: Request, res: Response) => {
 // ------------------------------------------------------------------------------
 // 7. Inquiries & Concierge Submissions API
 // ------------------------------------------------------------------------------
-app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], async (req: Request, res: Response) => {
+app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(5, 10 * 60_000), async (req: Request, res: Response) => {
   const { name, email, phone, inquiryType = 'general_question', message, website_url_hp } = req.body;
 
   // Bot honeypot check
@@ -1233,7 +1261,7 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], async (req
 // ------------------------------------------------------------------------------
 // 8. Newsletter Subscription API
 // ------------------------------------------------------------------------------
-app.post(['/api/newsletter', '/api/newsletter/subscribe'], async (req: Request, res: Response) => {
+app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_000), async (req: Request, res: Response) => {
   const { email, preferredLanguage = 'en', website_url_hp } = req.body;
 
   if (website_url_hp && String(website_url_hp).trim() !== '') {
