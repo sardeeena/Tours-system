@@ -34,6 +34,7 @@ import { Tour } from '../../../types';
 import { ALL_TOURS } from '../../../data/toursData';
 import { getPublishedTours } from '../../../services/tourService';
 import { useToast } from '../../../contexts/ToastContext';
+import { useAuth } from '../../../contexts/AuthContext';
 
 interface OperationsDeparturesProps {
   onNavigateTab?: (tabId: string, param?: string) => void;
@@ -41,6 +42,7 @@ interface OperationsDeparturesProps {
 
 export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNavigateTab }) => {
   const { showToast } = useToast();
+  const { hasPermission } = useAuth();
   const [selectedDate, setSelectedDate] = useState<string>(
     () => new Date().toISOString().split('T')[0]
   );
@@ -94,6 +96,7 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
   }, [selectedDate]);
 
   const handleStatusChange = async (dep: OperationalDeparture, nextStatus: DepartureStatus) => {
+    if (!hasPermission('operations.update')) { showToast('Your role does not permit changing departure status.', 'error'); return; }
     await updateDepartureStatus(dep.id, nextStatus);
     setDepartures((prev) =>
       prev.map((d) => (d.id === dep.id ? { ...d, status: nextStatus } : d))
@@ -103,6 +106,7 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
 
   const handleCreateDeparture = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasPermission('operations.create')) { showToast('Your role does not permit creating departures.', 'error'); return; }
     if (!newTourId || !selectedDate) return;
 
     setSubmitting(true);
