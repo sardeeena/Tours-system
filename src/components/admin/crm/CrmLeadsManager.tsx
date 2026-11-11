@@ -310,7 +310,7 @@ export const CrmLeadsManager: React.FC = () => {
           >
             <Plus className="w-4 h-4" />
             <span>Add Lead</span>
-          </button>
+          </button>}
         </div>
       </div>
 
