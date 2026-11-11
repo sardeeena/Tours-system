@@ -2672,7 +2672,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
       description = seoPlainText(currentBlogPost.seo_description || currentBlogPost.excerpt, 300)
         || 'Travel inspiration and local guides from Kemet Spirit in Hurghada, Egypt.';
       pageImage = seoSafeImage(currentBlogPost.cover_image_url) || pageImage;
-      const contentLines = String(currentBlogPost.content || '').split(/\\r?\\n/);
+      const contentLines = String(currentBlogPost.content || '').split(/\r?\n/);
       const blocks: string[] = [];
       let paragraph: string[] = [];
       let listItems: string[] = [];
@@ -2691,8 +2691,8 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
       for (const rawLine of contentLines) {
         const line = rawLine.trim();
         if (!line) { flushParagraph(); flushList(); continue; }
-        const heading = line.match(/^#{1,3}\\s+(.+)$/);
-        const bullet = line.match(/^[-*]\\s+(.+)$/);
+        const heading = line.match(/^#{1,3}\s+(.+)$/);
+        const bullet = line.match(/^[-*]\s+(.+)$/);
         if (heading) {
           flushParagraph(); flushList();
           blocks.push(`<h2>${seoHtmlEscape(seoPlainText(heading[1], 180))}</h2>`);
