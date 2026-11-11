@@ -99,6 +99,10 @@ SELECT ok(EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname='public' AND indexna
 INSERT INTO public.tours (title, slug, status, price, max_guests)
 VALUES ('pgTAP Finance Test Tour', 'pgtap-finance-test', 'published', 100.00, 10);
 
+INSERT INTO public.tour_availability (tour_id, date, max_capacity, booked_count, status)
+SELECT id, CURRENT_DATE + 60, 10, 0, 'available'
+FROM public.tours WHERE slug = 'pgtap-finance-test';
+
 CREATE TEMP TABLE finance_test_state (
   key TEXT PRIMARY KEY,
   value JSONB NOT NULL
