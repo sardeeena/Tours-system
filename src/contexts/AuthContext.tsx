@@ -292,6 +292,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (!verifiedUser) {
         await signOutAdmin();
         setUser(null);
+        setPendingMfaFactorId(null);
+        setRequiresMfaEnrollment(false);
         setLoading(false);
         return {
           success: false,
