@@ -27,7 +27,7 @@ SELECT ok(
 );
 SELECT ok(
   has_function_privilege('authenticated','public.admin_upsert_access_role(text,text,text,text[])','EXECUTE')
-  AND NOT has_function_privilege('anon','public.admin_upsert_access_role(text,text,text[])','EXECUTE'),
+  AND NOT has_function_privilege('anon','public.admin_upsert_access_role(text,text,text,text[])','EXECUTE'),
   'custom role management RPC is unavailable to anonymous users'
 );
 SELECT ok(
