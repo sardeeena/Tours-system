@@ -273,6 +273,74 @@ BEGIN
 END;
 $dedupe_policies$;
 
+-- Remove the remaining legacy admin-only policies when their equivalent
+-- action-level RBAC policies are present. has_permission() explicitly grants
+-- every permission to admin and super_admin, so this does not reduce access.
+DO $drop_redundant_admin_policies$
+DECLARE
+  p record;
+  target_name text;
+  v_using_admin boolean;
+  v_check_admin boolean;
+  v_has_target boolean;
+BEGIN
+  FOR p IN
+    SELECT *
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND policyname NOT LIKE 'rbac\_%' ESCAPE '\'
+      AND roles @> ARRAY['authenticated']::name[]
+    ORDER BY tablename, policyname
+  LOOP
+    v_using_admin := replace(lower(regexp_replace(COALESCE(p.qual,''), '[[:space:]]', '', 'g')), 'public.', '')
+      IN ('is_admin()', '(selectis_admin()asis_admin)');
+    v_check_admin := replace(lower(regexp_replace(COALESCE(p.with_check,''), '[[:space:]]', '', 'g')), 'public.', '')
+      IN ('is_admin()', '(selectis_admin()asis_admin)');
+
+    target_name := CASE p.cmd
+      WHEN 'SELECT' THEN 'rbac_' || p.tablename || '_read'
+      WHEN 'INSERT' THEN 'rbac_' || p.tablename || '_create'
+      WHEN 'UPDATE' THEN 'rbac_' || p.tablename || '_update'
+      WHEN 'DELETE' THEN 'rbac_' || p.tablename || '_delete'
+      ELSE NULL
+    END;
+
+    IF p.cmd = 'ALL' AND v_using_admin AND v_check_admin THEN
+      v_has_target := EXISTS (
+        SELECT 1 FROM pg_policies x
+        WHERE x.schemaname='public' AND x.tablename=p.tablename
+          AND x.policyname='rbac_' || p.tablename || '_manage'
+      ) OR (
+        SELECT count(*)=4 FROM pg_policies x
+        WHERE x.schemaname='public' AND x.tablename=p.tablename
+          AND x.policyname=ANY(ARRAY[
+            'rbac_' || p.tablename || '_read',
+            'rbac_' || p.tablename || '_create',
+            'rbac_' || p.tablename || '_update',
+            'rbac_' || p.tablename || '_delete'
+          ])
+      );
+      IF v_has_target THEN
+        EXECUTE format('DROP POLICY %I ON public.%I',p.policyname,p.tablename);
+      END IF;
+    ELSIF target_name IS NOT NULL THEN
+      v_has_target := EXISTS (
+        SELECT 1 FROM pg_policies x
+        WHERE x.schemaname='public' AND x.tablename=p.tablename
+          AND x.policyname=target_name
+      );
+      IF v_has_target AND (
+        (p.cmd IN ('SELECT','DELETE') AND v_using_admin)
+        OR (p.cmd='INSERT' AND v_check_admin)
+        OR (p.cmd='UPDATE' AND v_using_admin AND v_check_admin)
+      ) THEN
+        EXECUTE format('DROP POLICY %I ON public.%I',p.policyname,p.tablename);
+      END IF;
+    END IF;
+  END LOOP;
+END;
+$drop_redundant_admin_policies$;
+
 CREATE INDEX IF NOT EXISTS idx_user_roles_assigned_by
   ON public.user_roles (assigned_by);
 
