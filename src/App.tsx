@@ -533,6 +533,13 @@ function MainApp() {
           mergedMetadata.robotsIndex = false;
           mergedMetadata.robotsFollow = false;
         }
+        const destinationContentLength = currentDestination
+          ? `${currentDestination.description || ''} ${currentDestination.tagline || ''}`.trim().length
+          : 0;
+        if (currentDestination && currentDestination.tourCount < 2 && destinationContentLength < 300) {
+          mergedMetadata.robotsIndex = false;
+          mergedMetadata.robotsFollow = true;
+        }
         seoService.apply(mergedMetadata);
       }
     });
