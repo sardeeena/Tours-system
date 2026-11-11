@@ -81,10 +81,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [authModalView, setAuthModalView] = useState<AuthModalView | null>(null);
   const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const permissions = getUserPermissions(user?.role);
+  const permissions = user?.permissions ?? getUserPermissions(user?.role);
   const hasPermission = useCallback((action: string): boolean => {
-    return permissions.includes(action) || (user?.role === 'admin');
-  }, [permissions, user?.role]);
+    const [module, requestedAction] = action.split('.');
+    const fullAdmin = Boolean(user?.roles?.includes('admin') || user?.roles?.includes('super_admin') || user?.role === 'admin' || user?.role === 'super_admin');
+    if (fullAdmin) return true;
+    if (permissions.includes(action) || permissions.includes(`${module}.manage`)) return true;
+    if (requestedAction === 'read') {
+      return permissions.some((permission) => {
+        const [permissionModule, permissionAction] = permission.split('.');
+        return permissionModule === module && ['create', 'update', 'delete', 'approve', 'export'].includes(permissionAction);
+      });
+    }
+    return false;
+  }, [permissions, user?.roles, user?.role]);
 
   const openAuthModal = useCallback((view: AuthModalView = 'login') => {
     setAuthModalView(view);
@@ -123,63 +133,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   /**
-   * Queries the 'profiles' table directly in Supabase for the user's current role.
-   * Completely replaces cached local state with a live database verification.
+   * Rebuilds the active user from the live profile and database-backed RBAC context.
+   * Browser storage and user-editable metadata never authorize roles or permissions.
    */
   const checkAdminAccess = useCallback(async (): Promise<boolean> => {
     if (!isSupabaseConfigured()) {
       // Browser storage is user-editable and can never authorize staff access.
       localStorage.removeItem(LOCAL_ACTIVE_USER_KEY);
+      setUser(null);
       return false;
     }
-
-    try {
-      const { data: { user: authUser }, error: userErr } = await supabase.auth.getUser();
-      if (userErr || !authUser) {
-        setUser(null);
-        localStorage.removeItem(LOCAL_ACTIVE_USER_KEY);
-        return false;
-      }
-
-      // Query the 'profiles' table directly for the user's role in PostgreSQL
-      const { data: profile, error: profErr } = await supabase
-        .from('profiles')
-        .select('id, email, full_name, role, phone, country, avatar_url, is_confirmed')
-        .eq('id', authUser.id)
-        .maybeSingle();
-
-      if (profErr || !profile) {
-        console.warn('Admin check: profile not found in profiles table', profErr);
-        return false;
-      }
-
-      const role = profile.role as 'admin' | 'super_admin' | 'manager' | 'staff' | 'customer';
-      const isAllowed = role === 'admin' || role === 'super_admin' || role === 'manager' || role === 'staff';
-
-      if (isAllowed) {
-        // Synchronize the in-memory user state with the live database profile
-        const updatedUser: AppUser = {
-          id: authUser.id,
-          email: authUser.email || profile.email || '',
-          fullName: profile.full_name || authUser.email?.split('@')[0] || 'Voyager',
-          role,
-          avatarUrl: profile.avatar_url,
-          phoneNumber: profile.phone,
-          country: profile.country,
-          isConfirmed: Boolean(profile.is_confirmed),
-        };
-        setUser(updatedUser);
-        localStorage.setItem(LOCAL_ACTIVE_USER_KEY, JSON.stringify(updatedUser));
-        return true;
-      } else {
-        // Not an authorized admin: update role
-        setUser((prev) => (prev ? { ...prev, role } : null));
-        return false;
-      }
-    } catch (err) {
-      console.error('Error querying profiles table for admin role:', err);
-      return false;
-    }
+    const current = await getCurrentAdminUser();
+    const allowed = isUserAdmin(current);
+    setUser(current);
+    if (!allowed) localStorage.removeItem(LOCAL_ACTIVE_USER_KEY);
+    return allowed;
   }, []);
 
   const handleSignOut = useCallback(async (isAutoLogout = false) => {
@@ -199,7 +167,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       clearTimeout(idleTimerRef.current);
     }
 
-    if (user && user.role !== 'customer') {
+    if (isUserAdmin(user)) {
       idleTimerRef.current = setTimeout(() => {
         handleSignOut(true);
       }, IDLE_TIMEOUT_MS);
@@ -208,7 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Activity listeners for idle timeout
   useEffect(() => {
-    if (!user || user.role === 'customer') return;
+    if (!isUserAdmin(user)) return;
 
     const events = ['mousedown', 'mousemove', 'keydown', 'scroll', 'touchstart'];
     const handleActivity = () => resetIdleTimer();
@@ -322,7 +290,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const isAdmin = isUserAdmin(user);
   const isStaff = isAdmin;
-  const isCustomer = Boolean(user && user.role === 'customer');
+  const isCustomer = Boolean(user && !user.roles?.some((role) => role !== 'customer') && user.role === 'customer');
 
   return (
     <AuthContext.Provider

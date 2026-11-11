@@ -28,6 +28,7 @@ import {
 import { DbTour } from '../../types/database';
 import { AdminTab } from './AdminLayout';
 import { useToast } from '../../contexts/ToastContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface AdminTourListProps {
   onNavigateTab: (tab: AdminTab, param?: string) => void;
@@ -39,6 +40,7 @@ export const AdminTourList: React.FC<AdminTourListProps> = ({
   onPreviewTour,
 }) => {
   const { showToast } = useToast();
+  const { hasPermission } = useAuth();
   const [tours, setTours] = useState<DbTour[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -74,6 +76,7 @@ export const AdminTourList: React.FC<AdminTourListProps> = ({
   }, []);
 
   const handleToggleStatus = async (tour: DbTour) => {
+    if (!hasPermission('tours.update')) { showToast('Your role does not permit updating tours.', 'error'); return; }
     const nextStatus = tour.status === 'published' ? 'draft' : 'published';
     try {
       await adminSetTourStatus(tour.id, nextStatus);
@@ -86,6 +89,7 @@ export const AdminTourList: React.FC<AdminTourListProps> = ({
   };
 
   const handleArchive = async (tour: DbTour) => {
+    if (!hasPermission('tours.update')) { showToast('Your role does not permit archiving tours.', 'error'); return; }
     try {
       await adminSetTourStatus(tour.id, 'archived');
       showToast('Tour archived successfully', 'info');
@@ -97,6 +101,7 @@ export const AdminTourList: React.FC<AdminTourListProps> = ({
   };
 
   const handleDuplicate = async (tour: DbTour) => {
+    if (!hasPermission('tours.create')) { showToast('Your role does not permit creating tours.', 'error'); return; }
     try {
       setLoading(true);
       const full = await adminGetTourById(tour.id);
@@ -140,6 +145,7 @@ export const AdminTourList: React.FC<AdminTourListProps> = ({
   };
 
   const confirmDelete = async () => {
+    if (!hasPermission('tours.delete')) { showToast('Your role does not permit deleting tours.', 'error'); return; }
     if (!deleteModalTour) return;
     setIsDeleting(true);
     setDeleteError(null);
@@ -193,14 +199,14 @@ export const AdminTourList: React.FC<AdminTourListProps> = ({
           </p>
         </div>
 
-        <button
+        {hasPermission('tours.create') && <button
           type="button"
           onClick={() => onNavigateTab('tour_new')}
           className="flex items-center space-x-2 px-3.5 py-2 bg-[#0A6C74] hover:bg-[#08565C] text-white rounded text-xs font-semibold shadow transition-colors shrink-0"
         >
           <Plus className="w-4 h-4" />
           <span>Add New Tour</span>
-        </button>
+        </button>}
       </div>
 
       {/* Filter and Search Bar */}
@@ -386,27 +392,27 @@ export const AdminTourList: React.FC<AdminTourListProps> = ({
                         </button>
 
                         {/* Edit CMS */}
-                        <button
+                        {hasPermission('tours.update') && <button
                           type="button"
                           onClick={() => onNavigateTab('tour_edit', tour.id)}
                           className="p-1.5 text-[#2dd4bf] hover:text-white rounded hover:bg-stone-800 transition-colors"
                           title="Edit complete tour content"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
-                        </button>
+                        </button>}
 
                         {/* Duplicate */}
-                        <button
+                        {hasPermission('tours.create') && <button
                           type="button"
                           onClick={() => handleDuplicate(tour)}
                           className="p-1.5 text-stone-400 hover:text-white rounded hover:bg-stone-800 transition-colors"
                           title="Duplicate as new draft"
                         >
                           <Copy className="w-3.5 h-3.5" />
-                        </button>
+                        </button>}
 
                         {/* Publish / Unpublish Toggle */}
-                        <button
+                        {hasPermission('tours.update') && <button
                           type="button"
                           onClick={() => handleToggleStatus(tour)}
                           className={`p-1.5 rounded hover:bg-stone-800 transition-colors ${
@@ -421,27 +427,27 @@ export const AdminTourList: React.FC<AdminTourListProps> = ({
                           ) : (
                             <CheckCircle className="w-3.5 h-3.5" />
                           )}
-                        </button>
+                        </button>}
 
                         {/* Archive */}
-                        <button
+                        {hasPermission('tours.update') && <button
                           type="button"
                           onClick={() => handleArchive(tour)}
                           className="p-1.5 text-stone-400 hover:text-stone-200 rounded hover:bg-stone-800 transition-colors"
                           title="Archive tour"
                         >
                           <Archive className="w-3.5 h-3.5" />
-                        </button>
+                        </button>}
 
                         {/* Delete with safety */}
-                        <button
+                        {hasPermission('tours.delete') && <button
                           type="button"
                           onClick={() => openDeleteModal(tour)}
                           className="p-1.5 text-red-400/80 hover:text-red-300 rounded hover:bg-red-950/40 transition-colors"
                           title="Delete tour (safe check)"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        </button>}
                       </div>
                     </td>
                   </tr>

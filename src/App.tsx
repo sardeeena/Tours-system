@@ -70,6 +70,7 @@ const AdminCouponsList = lazy(() => import('./components/admin/AdminCouponsList'
 const AdminFaqsManager = lazy(() => import('./components/admin/AdminFaqsManager').then(m => ({ default: m.AdminFaqsManager })));
 const AdminPagesManager = lazy(() => import('./components/admin/AdminPagesManager').then(m => ({ default: m.AdminPagesManager })));
 const AdminSettings = lazy(() => import('./components/admin/AdminSettings').then(m => ({ default: m.AdminSettings })));
+const AdminAccessControl = lazy(() => import('./components/admin/AdminAccessControl').then(m => ({ default: m.AdminAccessControl })));
 const AdminLoginPage = lazy(() => import('./components/admin/AdminLoginPage').then(m => ({ default: m.AdminLoginPage })));
 import { HelpInquiryModal } from './components/common/HelpInquiryModal';
 
@@ -667,6 +668,8 @@ function MainApp() {
       navigate('/admin/tours/new');
     } else if (tab === 'tour_edit' && param) {
       navigate(`/admin/tours/${param}/edit`);
+    } else if (tab === 'access_control') {
+      navigate('/admin/access-control');
     } else {
       navigate(`/admin/${tab}`);
     }
@@ -767,6 +770,8 @@ function MainApp() {
       } else {
         activeAdminTab = 'dashboard';
       }
+    } else if (adminSubRoute?.main === 'access-control' || adminSubRoute?.main === 'access_control') {
+      activeAdminTab = 'access_control';
     } else if (adminSubRoute?.main === 'tours') {
       if (adminSubRoute.sub === 'new') {
         activeAdminTab = 'tour_new';
@@ -869,6 +874,7 @@ function MainApp() {
         'seo',
         'pages',
         'settings',
+        'access_control',
         'crm_dashboard',
         'crm_leads',
         'crm_customers',
@@ -1141,6 +1147,8 @@ function MainApp() {
           {activeAdminTab === 'pages' && <AdminPagesManager />}
 
           {activeAdminTab === 'settings' && <AdminSettings />}
+
+          {activeAdminTab === 'access_control' && <AdminAccessControl />}
         </AdminLayout>
       </Suspense>
     );

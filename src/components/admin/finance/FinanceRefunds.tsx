@@ -30,6 +30,7 @@ import { FinanceRefund, FinancePayment, RefundStatus } from '../../../types/fina
 import { bookingRepository } from '../../../services/bookingRepository';
 import { Booking } from '../../../types/booking';
 import { useToast } from '../../../contexts/ToastContext';
+import { useAuth } from '../../../contexts/AuthContext';
 
 interface FinanceRefundsProps {
   onNavigateTab?: (tabId: string, param?: string) => void;
@@ -37,6 +38,7 @@ interface FinanceRefundsProps {
 
 export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab }) => {
   const { showToast } = useToast();
+  const { hasPermission } = useAuth();
   const [refunds, setRefunds] = useState<FinanceRefund[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [payments, setPayments] = useState<FinancePayment[]>([]);
@@ -162,6 +164,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
 
   const handleSubmitRequestRefund = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasPermission('finance.create')) { showToast('Your role does not permit creating refund requests.', 'error'); return; }
     if (!selectedBookingRef) return;
     const b = bookings.find((item) => item.bookingReference === selectedBookingRef);
     if (!b) return;
@@ -204,6 +207,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
 
   const handleSubmitApprove = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasPermission('finance.approve')) { showToast('Your role does not permit approving refunds.', 'error'); return; }
     if (!approvingRefund) return;
     setApprovingAction(true);
     try {
@@ -230,6 +234,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
 
   const handleSubmitProcess = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasPermission('finance.approve')) { showToast('Your role does not permit processing refunds.', 'error'); return; }
     if (!processingRefund) return;
     setProcessingAction(true);
     try {
@@ -258,6 +263,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
 
   const handleSubmitReject = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasPermission('finance.approve')) { showToast('Your role does not permit rejecting refunds.', 'error'); return; }
     if (!rejectingRefund) return;
     setRejectingAction(true);
     try {
@@ -307,6 +313,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
   }, [refunds]);
 
   const handleExportCSV = () => {
+    if (!hasPermission('finance.export')) { showToast('Your role does not permit exporting finance records.', 'error'); return; }
     const headers = [
       'ID',
       'Booking Ref',
@@ -376,22 +383,22 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
           </button>
-          <button
+          {hasPermission('finance.export') && <button
             type="button"
             onClick={handleExportCSV}
             className="px-3 py-2 bg-stone-900 border border-stone-800 rounded-xl text-stone-300 hover:text-white hover:border-stone-700 text-xs font-medium flex items-center space-x-1.5 transition-colors cursor-pointer"
           >
             <Download className="w-3.5 h-3.5 text-stone-400" />
             <span>Export CSV</span>
-          </button>
-          <button
+          </button>}
+          {hasPermission('finance.create') && <button
             type="button"
             onClick={handleOpenRequestRefund}
             className="px-4 py-2 bg-[#0A6C74] hover:bg-[#08565d] text-white font-medium text-xs rounded-xl flex items-center space-x-1.5 transition-colors shadow-xs cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Request Refund</span>
-          </button>
+          </button>}
         </div>
       </div>
 
@@ -584,7 +591,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
                         )}
                       </td>
                       <td className="py-3.5 px-4 text-right space-x-1.5">
-                        {isPending && (
+                        {isPending && hasPermission('finance.approve') && (
                           <>
                             <button
                               type="button"
@@ -602,7 +609,7 @@ export const FinanceRefunds: React.FC<FinanceRefundsProps> = ({ onNavigateTab })
                             </button>
                           </>
                         )}
-                        {isApproved && (
+                        {isApproved && hasPermission('finance.approve') && (
                           <button
                             type="button"
                             onClick={() => handleOpenProcess(r)}

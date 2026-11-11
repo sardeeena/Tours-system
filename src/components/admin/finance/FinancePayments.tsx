@@ -34,6 +34,7 @@ import {
 import { bookingRepository } from '../../../services/bookingRepository';
 import { Booking } from '../../../types/booking';
 import { useToast } from '../../../contexts/ToastContext';
+import { useAuth } from '../../../contexts/AuthContext';
 
 interface FinancePaymentsProps {
   onNavigateTab?: (tabId: string, param?: string) => void;
@@ -41,6 +42,7 @@ interface FinancePaymentsProps {
 
 export const FinancePayments: React.FC<FinancePaymentsProps> = ({ onNavigateTab }) => {
   const { showToast } = useToast();
+  const { hasPermission } = useAuth();
   const [payments, setPayments] = useState<FinancePayment[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [providers, setProviders] = useState<PaymentProvider[]>([]);
@@ -126,6 +128,7 @@ export const FinancePayments: React.FC<FinancePaymentsProps> = ({ onNavigateTab 
 
   const handleSubmitNewPayment = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasPermission('finance.create')) { showToast('Your role does not permit recording payments.', 'error'); return; }
     if (!selectedBookingRef) {
       showToast('Please select a booking reservation.', 'error');
       return;
@@ -222,6 +225,7 @@ export const FinancePayments: React.FC<FinancePaymentsProps> = ({ onNavigateTab 
   }, [filteredPayments]);
 
   const handleExportCSV = () => {
+    if (!hasPermission('finance.export')) { showToast('Your role does not permit exporting finance records.', 'error'); return; }
     const headers = [
       'ID',
       'Booking Ref',
@@ -291,22 +295,22 @@ export const FinancePayments: React.FC<FinancePaymentsProps> = ({ onNavigateTab 
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
           </button>
-          <button
+          {hasPermission('finance.export') && <button
             type="button"
             onClick={handleExportCSV}
             className="px-3 py-2 bg-stone-900 border border-stone-800 rounded-xl text-stone-300 hover:text-white hover:border-stone-700 text-xs font-medium flex items-center space-x-1.5 transition-colors cursor-pointer"
           >
             <Download className="w-3.5 h-3.5 text-stone-400" />
             <span>Export CSV</span>
-          </button>
-          <button
+          </button>}
+          {hasPermission('finance.create') && <button
             type="button"
             onClick={handleOpenNewPayment}
             className="px-4 py-2 bg-[#0A6C74] hover:bg-[#08565d] text-white font-medium text-xs rounded-xl flex items-center space-x-1.5 transition-colors shadow-xs cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Record Payment</span>
-          </button>
+          </button>}
         </div>
       </div>
 

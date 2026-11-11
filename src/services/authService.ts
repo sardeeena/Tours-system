@@ -13,6 +13,8 @@ export interface AppUser {
   country?: string;
   isConfirmed?: boolean;
   createdAt?: string;
+  roles?: string[];
+  permissions?: string[];
 }
 
 export type AdminUser = AppUser;
@@ -566,10 +568,8 @@ export async function signOutAdmin(): Promise<void> {
 export function isUserAdmin(user: AppUser | null | undefined): boolean {
   if (!user) return false;
   return (
-    user.role === 'admin' ||
-    user.role === 'super_admin' ||
-    user.role === 'manager' ||
-    user.role === 'staff'
+    user.role === 'admin' || user.role === 'super_admin' || user.role === 'manager' || user.role === 'staff' ||
+    Boolean(user.roles?.some((role) => role !== 'customer' && role !== 'guide'))
   );
 }
 
@@ -577,110 +577,69 @@ export function isUserAdmin(user: AppUser | null | undefined): boolean {
  * Get currently logged-in user with live Supabase synchronization
  */
 export async function getCurrentAdminUser(): Promise<AppUser | null> {
-  // 1. If Supabase is configured, ALWAYS check live Supabase session and query public.profiles directly
-  // to ensure role updates in SQL Editor or Supabase Auth are immediately detected without relying on local cache.
-  if (isSupabaseConfigured()) {
-    try {
-      const { data: { user }, error: authErr } = await supabase.auth.getUser();
-      if (authErr || !user) {
-        // No active Supabase session - clean up any stale cached local user or demo admin keys
-        localStorage.removeItem(LOCAL_ACTIVE_USER_KEY);
-        localStorage.removeItem('rse_demo_admin');
-        return null;
-      }
-
-      // Query live public.profiles table directly (authoritative source of truth for user role)
-      let userRole: UserRole = 'customer';
-      let profileFullName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Voyager';
-      let profilePhone = user.user_metadata?.phone;
-      let profileCountry = user.user_metadata?.country;
-      let profileAvatar = user.user_metadata?.avatar_url;
-      let isProfileConfirmed = Boolean(user.email_confirmed_at || (user as any)?.confirmed_at);
-
-      try {
-        const { data: profile, error: profErr } = await supabase
-          .from('profiles')
-          .select('id, email, full_name, role, phone, country, country_code, avatar_url, is_confirmed')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        if (profErr) {
-          console.warn('Live profile role verification failed; refusing cached role claims:', profErr);
-          return null;
-        }
-
-        if (profile) {
-          // Direct verified role from public.profiles table
-          if (profile.role) userRole = profile.role as UserRole;
-          if (profile.full_name) profileFullName = profile.full_name;
-          if (profile.phone) profilePhone = profile.phone;
-          if (profile.avatar_url) profileAvatar = profile.avatar_url;
-          if (profile.country) profileCountry = profile.country;
-          if (profile.is_confirmed !== undefined) isProfileConfirmed = Boolean(profile.is_confirmed);
-        } else {
-          // Missing profile rows are repaired as customers only. Privileged roles
-          // must be provisioned through the trusted administrator workflow.
-          const newProfile = {
-            id: user.id,
-            email: user.email || '',
-            full_name: profileFullName,
-            role: 'customer' as UserRole,
-            phone: profilePhone || null,
-            country: profileCountry || null,
-            is_confirmed: true,
-          };
-          const { data: createdProfile } = await supabase
-            .from('profiles')
-            .upsert(newProfile)
-            .select('*')
-            .maybeSingle();
-
-          if (createdProfile?.role) {
-            userRole = createdProfile.role as UserRole;
-          }
-        }
-      } catch (profErr) {
-        console.warn('Direct live profiles table query failed; refusing cached role claims:', profErr);
-        return null;
-      }
-
-      // Administrators are never blocked by missing confirmation flags
-      const hasAdminRole = userRole === 'admin' || userRole === 'super_admin' || userRole === 'manager' || userRole === 'staff';
-      if (!isProfileConfirmed && !hasAdminRole) {
-        return null;
-      }
-
-      const authedUser: AppUser = {
-        id: user.id,
-        email: user.email || '',
-        fullName: profileFullName,
-        role: userRole,
-        avatarUrl: profileAvatar,
-        phoneNumber: profilePhone,
-        country: profileCountry,
-        isConfirmed: true,
-      };
-
-      // Keep local cache aligned with the live database role
-      localStorage.setItem(LOCAL_ACTIVE_USER_KEY, JSON.stringify(authedUser));
-
-      return authedUser;
-    } catch (sbErr) {
-      console.warn('Supabase getUser notice:', sbErr);
-      return null;
-    }
+  if (!isSupabaseConfigured()) {
+    localStorage.removeItem(LOCAL_ACTIVE_USER_KEY);
+    return null;
   }
 
-  // Never treat browser storage as an authentication or authorization source.
-  // If Supabase is not configured, fail closed rather than trusting a client-editable role.
-  localStorage.removeItem(LOCAL_ACTIVE_USER_KEY);
-  return null;
+  try {
+    const { data: { user }, error: authErr } = await supabase.auth.getUser();
+    if (authErr || !user) {
+      localStorage.removeItem(LOCAL_ACTIVE_USER_KEY);
+      localStorage.removeItem('rse_demo_admin');
+      return null;
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, email, full_name, role, phone, country, country_code, avatar_url, is_confirmed')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profileError || !profile) {
+      console.warn('Live profile verification failed; refusing cached role claims:', profileError);
+      return null;
+    }
+
+    // Roles and permissions come from server-controlled database tables through
+    // an auth.uid()-scoped RPC. Never trust user_metadata or browser storage.
+    const { data: accessContext, error: accessError } = await (supabase as any).rpc('get_my_access_context');
+    if (accessError || !accessContext) {
+      console.warn('Live RBAC context could not be verified:', accessError);
+      return null;
+    }
+
+    const roles = Array.isArray(accessContext.roles)
+      ? accessContext.roles.filter((role: unknown): role is string => typeof role === 'string')
+      : [profile.role as UserRole];
+    const permissions = Array.isArray(accessContext.permissions)
+      ? accessContext.permissions.filter((permission: unknown): permission is string => typeof permission === 'string')
+      : [];
+    const hasStaffRole = roles.some((role: string) => role !== 'customer' && role !== 'guide');
+    if (hasStaffRole && !user.email_confirmed_at) return null;
+    if (!profile.is_confirmed && !user.email_confirmed_at) return null;
+
+    const authedUser: AppUser = {
+      id: user.id,
+      email: user.email || profile.email || '',
+      fullName: profile.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Voyager',
+      role: profile.role as UserRole,
+      roles,
+      permissions,
+      avatarUrl: profile.avatar_url || user.user_metadata?.avatar_url,
+      phoneNumber: profile.phone || user.user_metadata?.phone,
+      country: profile.country || user.user_metadata?.country,
+      isConfirmed: Boolean(profile.is_confirmed || user.email_confirmed_at),
+    };
+
+    localStorage.setItem(LOCAL_ACTIVE_USER_KEY, JSON.stringify(authedUser));
+    return authedUser;
+  } catch (error) {
+    console.warn('Supabase getUser / RBAC verification failed:', error);
+    return null;
+  }
 }
 
-/**
- * Directly verifies administrator privileges by querying the public.profiles table in Supabase.
- * Bypasses cached local state so database updates in SQL Editor are immediately detected.
- */
 export async function verifyAdminAccess(): Promise<boolean> {
   if (!isSupabaseConfigured()) {
     // A role stored in localStorage is user-editable and must never grant admin access.

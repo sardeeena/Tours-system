@@ -24,6 +24,7 @@ import { FinanceInvoice } from '../../../types/finance';
 import { bookingRepository } from '../../../services/bookingRepository';
 import { Booking } from '../../../types/booking';
 import { useToast } from '../../../contexts/ToastContext';
+import { useAuth } from '../../../contexts/AuthContext';
 
 interface FinanceInvoicesProps {
   onNavigateTab?: (tabId: string, param?: string) => void;
@@ -31,6 +32,7 @@ interface FinanceInvoicesProps {
 
 export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab }) => {
   const { showToast } = useToast();
+  const { hasPermission } = useAuth();
   const [invoices, setInvoices] = useState<FinanceInvoice[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,6 +74,7 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
 
   const handleGenerateInvoice = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasPermission('finance.create')) { showToast('Your role does not permit creating invoices.', 'error'); return; }
     if (!selectedBookingRef) return;
     setGenerating(true);
     try {
@@ -97,6 +100,7 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
   };
 
   const handlePrint = () => {
+    if (!hasPermission('finance.export')) { showToast('Your role does not permit exporting invoices.', 'error'); return; }
     window.print();
   };
 
@@ -152,14 +156,14 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
         </div>
 
         <div className="flex items-center space-x-2">
-          <button
+          {hasPermission('finance.create') && <button
             type="button"
             onClick={() => setIsGenerateModalOpen(true)}
             className="px-3.5 py-1.5 bg-[#0A6C74] hover:bg-[#08565C] text-white rounded text-xs font-semibold flex items-center space-x-1.5 shadow-xs cursor-pointer transition-colors"
           >
             <Plus className="w-4 h-4" />
             <span>Create Invoice</span>
-          </button>
+          </button>}
         </div>
       </div>
 
@@ -388,14 +392,14 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
               </div>
 
               <div className="flex items-center space-x-2">
-                <button
+                {hasPermission('finance.export') && <button
                   type="button"
                   onClick={handlePrint}
                   className="px-3.5 py-1.5 bg-[#0A6C74] hover:bg-[#08565C] text-white rounded text-xs font-semibold flex items-center space-x-1.5 shadow-xs cursor-pointer"
                 >
                   <Printer className="w-4 h-4" />
                   <span>Print / Save PDF</span>
-                </button>
+                </button>}
 
                 <button
                   type="button"
