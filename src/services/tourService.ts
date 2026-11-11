@@ -148,7 +148,7 @@ interface CacheEntry<T> {
 let cachedPublishedTours: CacheEntry<Tour[]> | null = null;
 let cachedDestinations: CacheEntry<Destination[]> | null = null;
 let cachedCategories: CacheEntry<Category[]> | null = null;
-const CACHE_TTL_MS = 60 * 1000;
+const CACHE_TTL_MS = 2 * 60 * 1000;
 
 export function invalidateCatalogueCache() {
   cachedPublishedTours = null;
@@ -203,18 +203,45 @@ export async function getPublishedTours(options?: TourFilterOptions): Promise<To
   }
 
   try {
+    // Public catalogue payload: only fields consumed by cards and the quick-view modal.
+    // Full itinerary, FAQs, videos and other deep content are fetched on the tour-detail route.
     let query = supabase
       .from('tours')
       .select(`
-        *,
+        id,
+        title,
+        slug,
+        short_description,
+        description,
+        destination_id,
+        duration,
+        duration_type,
+        duration_hours,
+        tour_type,
+        status,
+        featured,
+        price,
+        child_price,
+        private_price,
+        rating,
+        review_count,
+        badge,
+        languages,
+        max_guests,
+        pickup_available,
+        pickup_info,
+        cancellation_policy,
+        available_days,
+        departure_time,
+        difficulty,
+        age_restrictions,
+        sort_order,
         destinations (id, name, slug),
-        tour_categories (categories (id, name, slug)),
-        tour_images (*),
-        tour_itinerary (*),
-        tour_highlights (*),
-        tour_inclusions (*),
-        tour_exclusions (*),
-        tour_faqs (*)
+        tour_categories (sort_order, categories (id, name, slug)),
+        tour_images (image_url, is_primary, sort_order),
+        tour_highlights (item, sort_order),
+        tour_inclusions (item, sort_order),
+        tour_exclusions (item, sort_order)
       `)
       .order('sort_order', { ascending: true });
 
@@ -1211,7 +1238,7 @@ export async function getPublishedDestinations(): Promise<Destination[]> {
   // 1. Fetch published destinations ordered by sort_order
   const { data: dests, error: destError } = await supabase
     .from('destinations')
-    .select('*')
+    .select('id, name, slug, main_image, tagline, description, seo_keywords, distance_from_airport, seo_title, seo_description, sort_order')
     .eq('status', 'published')
     .order('sort_order', { ascending: true });
 
@@ -1243,7 +1270,7 @@ export async function getPublishedDestinations(): Promise<Destination[]> {
     }
   }
 
-  const mapped = dests.map((d: DbDestination) => ({
+  const mapped = dests.map((d) => ({
     id: d.id,
     name: d.name,
     slug: d.slug,
@@ -1280,7 +1307,7 @@ export async function getPublishedCategories(): Promise<Category[]> {
   // 1. Fetch published categories ordered by sort_order
   const { data: cats, error: catError } = await supabase
     .from('categories')
-    .select('*')
+    .select('id, name, slug, icon_name, image, description, sort_order')
     .eq('status', 'published')
     .order('sort_order', { ascending: true });
 
@@ -1299,7 +1326,7 @@ export async function getPublishedCategories(): Promise<Category[]> {
   try {
     const { data: tcData, error: tcError } = await supabase
       .from('tour_categories')
-      .select('category_id, tours!inner(id, status)')
+      .select('category_id, tours!inner(status)')
       .eq('tours.status', 'published');
 
     if (!tcError && tcData) {
@@ -1330,7 +1357,7 @@ export async function getPublishedCategories(): Promise<Category[]> {
     console.warn('Could not calculate category tour counts:', countErr);
   }
 
-  const mapped = cats.map((c: DbCategory) => ({
+  const mapped = cats.map((c) => ({
     id: c.id,
     name: c.name,
     slug: c.slug,
