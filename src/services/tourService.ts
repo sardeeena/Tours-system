@@ -1253,6 +1253,8 @@ export async function getPublishedDestinations(): Promise<Destination[]> {
     description: d.description || '',
     highlights: Array.isArray(d.seo_keywords) ? d.seo_keywords : [],
     distanceFromAirport: d.distance_from_airport || '',
+    seoTitle: d.seo_title || undefined,
+    seoDescription: d.seo_description || undefined,
   }));
 
   cachedDestinations = {
