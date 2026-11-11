@@ -1,8 +1,6 @@
 -- Kemet Spirit Blog CMS schema.
 -- Review and apply through the project's normal migration/release process.
 -- This file is intentionally NOT auto-applied to production.
-create extension if not exists pgcrypto;
-
 create table if not exists public.blog_categories (
   id uuid primary key default gen_random_uuid(),
   name text not null unique,
