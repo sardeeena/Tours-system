@@ -167,7 +167,11 @@ export const seoService = {
     }
 
     // 4. Canonical URL
-    const canonical = meta.canonicalUrl || `${window.location.origin}${window.location.pathname}`;
+    const hostname = window.location.hostname.toLowerCase();
+    const canonicalOrigin = hostname === 'kemetspirit.com' || hostname === 'www.kemetspirit.com'
+      ? 'https://kemetspirit.com'
+      : window.location.origin;
+    const canonical = meta.canonicalUrl || `${canonicalOrigin}${window.location.pathname}`;
     setCanonicalUrl(canonical);
 
     // 5. Robots directives
