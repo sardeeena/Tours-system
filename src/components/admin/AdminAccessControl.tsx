@@ -159,7 +159,7 @@ export const AdminAccessControl:React.FC = () => {
         <h2 className="text-2xl font-bold mt-2 text-slate-900 dark:text-white">Users, Roles & Permissions</h2>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Assign multiple roles to each account and configure permissions for custom roles.</p>
       </div>
-      <button onClick={()=>void load()} className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800"><RefreshCw className="w-4 h-4"/> Refresh</button>
+      <button onClick={()=>void load()} disabled={loading||saving} className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50"><RefreshCw className={`w-4 h-4 ${loading?'animate-spin':''}`}/> Refresh</button>
     </div>
 
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -233,7 +233,7 @@ export const AdminAccessControl:React.FC = () => {
         <div className="flex items-center justify-between gap-2"><div className="flex items-center gap-2"><Plus className="w-5 h-5 text-[#0A6C74]"/><h3 className="text-lg font-bold">{editingRoleSlug?'Edit custom role':'Create a custom role'}</h3></div>{editingRoleSlug&&<button type="button" onClick={cancelRoleEdit} disabled={saving} className="text-xs text-slate-500 underline">Cancel edit</button>}</div>
         <div className="grid sm:grid-cols-2 gap-3 mt-4">
           <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">Role name<input value={roleName} onChange={e=>{setRoleName(e.target.value);if(!roleSlug)setRoleSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,''));}} placeholder="e.g. Reservations Supervisor" className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent p-2.5 text-sm"/></label>
-          <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">Role ID<input value={roleSlug} onChange={e=>setRoleSlug(e.target.value)} placeholder="reservations_supervisor" className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent p-2.5 text-sm"/></label>
+          <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">Role ID<input value={roleSlug} onChange={e=>setRoleSlug(e.target.value)} disabled={saving||Boolean(editingRoleSlug)} title={editingRoleSlug?'Role IDs cannot be changed while editing an existing role.':''} placeholder="reservations_supervisor" className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent p-2.5 text-sm disabled:opacity-60"/></label>
         </div>
         <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mt-3">Description<textarea value={roleDescription} onChange={e=>setRoleDescription(e.target.value)} rows={2} className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent p-2.5 text-sm"/></label>
         <div className="mt-5"><div className="font-semibold text-sm mb-1">Grant permissions</div><p className="text-xs text-slate-500 mb-3">Select only the actions this custom role needs. Changes are saved to the live role_permissions tables through a protected database function.</p>
