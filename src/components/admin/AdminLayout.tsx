@@ -252,18 +252,18 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   ];
 
   return (
-    <div className="min-h-screen bg-stone-900 text-stone-100 flex flex-col antialiased selection:bg-[#0A6C74] selection:text-white">
+    <div className="min-h-screen bg-[#FAF8F5] dark:bg-[#0A1118] text-[#111A24] dark:text-[#F1F5F9] flex flex-col antialiased selection:bg-[#0A6C74] selection:text-white">
       {/* Top Warning Banner if Supabase is in local fallback mode */}
       {!supabaseConnected ? (
-        <div className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2 text-xs text-amber-300 flex items-center justify-between">
+        <div className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2 text-xs text-amber-700 dark:text-amber-300 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
             <span>
               <strong>Supabase Connection:</strong> Currently utilizing local storage fallback. Connect your live Supabase project in{' '}
               <button
                 type="button"
                 onClick={() => onSelectTab('settings')}
-                className="underline font-semibold hover:text-white"
+                className="underline font-semibold hover:text-[#0A6C74] dark:hover:text-white"
               >
                 Settings &gt; Supabase
               </button>{' '}
@@ -273,23 +273,23 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           <button
             type="button"
             onClick={() => onSelectTab('settings')}
-            className="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 rounded font-medium text-[11px] transition-colors"
+            className="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-200 rounded-lg font-medium text-[11px] transition-colors"
           >
             Configure Keys
           </button>
         </div>
       ) : schemaMissing ? (
-        <div className="bg-sky-500/10 border-b border-sky-500/30 px-4 py-2 text-xs text-sky-200 flex items-center justify-between">
+        <div className="bg-sky-500/10 border-b border-sky-500/30 px-4 py-2 text-xs text-sky-800 dark:text-sky-200 flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Database className="w-4 h-4 text-sky-400 shrink-0" />
+            <Database className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0" />
             <span>
-              <strong>Supabase Connected (Migration Pending):</strong> Tables not yet detected in database schema. Run the Phase 4 SQL migration script in your Supabase SQL Editor to enable full table synchronization.
+              <strong>Supabase Connected (Migration Pending):</strong> Tables not yet detected in database schema. Run the SQL migration script in your Supabase SQL Editor to enable full table synchronization.
             </span>
           </div>
           <button
             type="button"
             onClick={() => onSelectTab('settings')}
-            className="px-2.5 py-1 bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 rounded font-medium text-[11px] transition-colors"
+            className="px-2.5 py-1 bg-sky-500/20 hover:bg-sky-500/30 text-sky-800 dark:text-sky-200 rounded-lg font-medium text-[11px] transition-colors"
           >
             View SQL Migration
           </button>
@@ -300,7 +300,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         {/* Mobile/Tablet Backdrop when sidebar is open */}
         {isSidebarOpen && (
           <div
-            className="fixed inset-0 bg-black/70 backdrop-blur-xs z-40 lg:hidden"
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs z-40 lg:hidden"
             onClick={() => setIsSidebarOpen(false)}
             aria-hidden="true"
           />
@@ -309,26 +309,26 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         {/* Sidebar */}
         <aside
           className={`
-            fixed inset-y-0 left-0 z-50 w-64 max-w-[85vw] bg-stone-950 border-r border-stone-800 flex flex-col justify-between shrink-0 transition-all duration-300 ease-in-out
+            fixed inset-y-0 left-0 z-50 w-64 max-w-[85vw] bg-white dark:bg-[#0E1B2A] border-r border-[#E8E3DA] dark:border-[#1F3854] flex flex-col justify-between shrink-0 transition-all duration-300 ease-in-out shadow-sm
             lg:static lg:z-10
             ${isSidebarOpen ? 'translate-x-0 lg:w-64' : '-translate-x-full lg:w-0 lg:overflow-hidden lg:border-r-0'}
           `}
         >
           <div>
             {/* Brand Header with Close/Collapse Button */}
-            <div className="p-4 border-b border-stone-800 flex items-center justify-between gap-2">
+            <div className="p-4 border-b border-[#E8E3DA] dark:border-[#1F3854] flex items-center justify-between gap-2">
               <div className="flex items-center space-x-3 min-w-0">
                 <img 
                   src="/logo.png" 
-                  alt="Awesome Adventure Tours Logo" 
-                  className="h-10 w-auto object-contain shrink-0 drop-shadow-xs"
+                  alt="Kemet Spirit Logo" 
+                  className="h-9 w-auto object-contain shrink-0 drop-shadow-xs"
                 />
                 <div className="min-w-0">
-                  <span className="text-[9px] uppercase tracking-widest text-[#0A6C74] font-bold block">
+                  <span className="text-[10px] uppercase tracking-widest text-[#0A6C74] dark:text-[#2DD4BF] font-bold block">
                     Admin Portal
                   </span>
-                  <h1 className="font-display font-bold text-sm text-white tracking-wide truncate">
-                    Awesome Adventure Tours
+                  <h1 className="font-display font-bold text-sm text-[#0E1B2A] dark:text-white tracking-wide truncate">
+                    Kemet Spirit
                   </h1>
                 </div>
               </div>
@@ -337,7 +337,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               <button
                 type="button"
                 onClick={() => setIsSidebarOpen(false)}
-                className="p-1.5 text-stone-400 hover:text-white hover:bg-stone-800 rounded-lg transition-colors cursor-pointer shrink-0"
+                className="p-1.5 text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-[#16283D] rounded-xl transition-colors cursor-pointer shrink-0"
                 title="Close / Collapse Sidebar"
                 aria-label="Close sidebar"
               >
@@ -347,11 +347,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             </div>
 
             {/* Quick Action: New Tour */}
+            {/* Quick Action: New Tour */}
             <div className="p-3">
               <button
                 type="button"
                 onClick={() => handleNavSelect('tour_new')}
-                className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-[#0A6C74] hover:bg-[#08565C] text-white rounded-md text-xs font-semibold shadow transition-colors cursor-pointer"
+                className="w-full flex items-center justify-center space-x-2 py-2.5 px-3 bg-[#0A6C74] hover:bg-[#08565C] text-white rounded-xl text-xs font-semibold shadow-xs transition-colors cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Create New Tour</span>
@@ -359,13 +360,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             </div>
 
             {/* Navigation links */}
-            <nav className="p-3 space-y-1 text-xs overflow-y-auto max-h-[calc(100vh-190px)] scrollbar-thin scrollbar-thumb-stone-800">
+            <nav className="p-3 space-y-1 text-xs overflow-y-auto max-h-[calc(100vh-210px)] scrollbar-thin scrollbar-thumb-stone-200 dark:scrollbar-thumb-stone-800">
               {navItems.map((item) => {
                 if (item.isHeader) {
                   return (
                     <div
                       key={item.id}
-                      className="pt-3 pb-1 px-3 text-[9px] font-bold uppercase tracking-wider text-stone-500 border-t border-stone-800/80 mt-2 first:mt-0 first:border-0"
+                      className="pt-3 pb-1 px-3 text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500 border-t border-[#E8E3DA]/80 dark:border-[#1F3854]/80 mt-2 first:mt-0 first:border-0"
                     >
                       {item.label}
                     </div>
@@ -380,31 +381,31 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                     <button
                       type="button"
                       onClick={() => handleNavSelect(item.id as AdminTab)}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-md transition-colors cursor-pointer ${
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all cursor-pointer ${
                         isCurrent
-                          ? 'bg-stone-800/90 text-white font-semibold'
-                          : 'text-stone-400 hover:text-stone-200 hover:bg-stone-900'
+                          ? 'bg-[#0A6C74] text-white font-semibold shadow-xs'
+                          : 'text-stone-600 dark:text-stone-300 hover:text-[#0A6C74] dark:hover:text-white hover:bg-[#FAF8F5] dark:hover:bg-[#16283D]'
                       }`}
                     >
                       <div className="flex items-center space-x-2.5">
-                        <Icon className={`w-4 h-4 ${isCurrent ? 'text-[#2dd4bf]' : 'text-stone-400'}`} />
+                        <Icon className={`w-4 h-4 ${isCurrent ? 'text-white' : 'text-stone-400 dark:text-stone-400'}`} />
                         <span>{item.label}</span>
                       </div>
-                      {isCurrent && <ChevronRight className="w-3.5 h-3.5 text-stone-500" />}
+                      {isCurrent && <ChevronRight className="w-3.5 h-3.5 text-white/80" />}
                     </button>
 
                     {/* Sub-items */}
                     {item.children && isCurrent && (
-                      <div className="ml-7 pl-2 border-l border-stone-800 space-y-0.5 py-1">
+                      <div className="ml-7 pl-2 border-l border-[#E8E3DA] dark:border-[#1F3854] space-y-0.5 py-1">
                         {item.children.map((sub) => (
                           <button
                             key={sub.id}
                             type="button"
                             onClick={() => handleNavSelect(sub.id as AdminTab)}
-                            className={`w-full text-left py-1 px-2 rounded text-[11px] transition-colors cursor-pointer ${
+                            className={`w-full text-left py-1.5 px-2.5 rounded-lg text-[11px] transition-colors cursor-pointer ${
                               activeTab === sub.id
-                                ? 'text-[#2dd4bf] font-medium bg-stone-800/40'
-                                : 'text-stone-400 hover:text-stone-200'
+                                ? 'text-[#0A6C74] dark:text-[#2DD4BF] font-semibold bg-[#E8F3F4] dark:bg-[#0A6C74]/20'
+                                : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-[#16283D]'
                             }`}
                           >
                             {sub.label}
@@ -419,16 +420,16 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           </div>
 
           {/* User Profile & Footer */}
-          <div className="p-3 border-t border-stone-800 space-y-2">
-            <div className="flex items-center space-x-2 px-2 py-1.5 rounded bg-stone-900/60">
-              <div className="w-7 h-7 rounded-full bg-[#0A6C74] text-white flex items-center justify-center font-bold text-xs">
-                {user?.fullName?.charAt(0) || 'A'}
+          <div className="p-3 border-t border-[#E8E3DA] dark:border-[#1F3854] space-y-2">
+            <div className="flex items-center space-x-2 px-2.5 py-2 rounded-xl bg-[#FAF8F5] dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854]">
+              <div className="w-8 h-8 rounded-full bg-[#0A6C74] text-white flex items-center justify-center font-bold text-xs shadow-xs">
+                {user?.fullName?.charAt(0) || 'K'}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-stone-200 truncate">{user?.fullName || 'Admin Officer'}</p>
-                <p className="text-[10px] text-stone-400 truncate">{user?.email || 'admin@awesomeadventuretours.com'}</p>
+                <p className="text-xs font-semibold text-[#0E1B2A] dark:text-stone-200 truncate">{user?.fullName || 'Admin Officer'}</p>
+                <p className="text-[10px] text-stone-500 dark:text-stone-400 truncate">{user?.email || 'admin@kemetspirit.com'}</p>
               </div>
-              <span className="text-[9px] px-1.5 py-0.5 uppercase tracking-wide bg-stone-800 text-stone-300 rounded font-semibold">
+              <span className="text-[9px] px-1.5 py-0.5 uppercase tracking-wide bg-[#E8F3F4] text-[#0A6C74] dark:bg-[#0A6C74]/20 dark:text-[#2DD4BF] rounded-md font-semibold">
                 {user?.role || 'admin'}
               </span>
             </div>
@@ -436,17 +437,17 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             <button
               type="button"
               onClick={() => setIsIntegrationModalOpen(true)}
-              className="w-full flex items-center justify-center space-x-1.5 py-1.5 px-2 bg-[#0A6C74]/20 hover:bg-[#0A6C74]/30 text-[#2dd4bf] border border-[#0A6C74]/40 rounded text-[11px] font-semibold transition-colors cursor-pointer"
+              className="w-full flex items-center justify-center space-x-1.5 py-2 px-2 bg-[#E8F3F4] hover:bg-[#d6ebed] dark:bg-[#0A6C74]/20 dark:hover:bg-[#0A6C74]/30 text-[#0A6C74] dark:text-[#2DD4BF] border border-[#0A6C74]/30 rounded-xl text-[11px] font-semibold transition-colors cursor-pointer"
             >
               <Layers className="w-3.5 h-3.5" />
               <span>Integration Simulation Suite</span>
             </button>
 
-            <div className="grid grid-cols-2 gap-1 pt-1">
+            <div className="grid grid-cols-2 gap-1.5 pt-1">
               <button
                 type="button"
                 onClick={onNavigateSite}
-                className="flex items-center justify-center space-x-1 py-1.5 px-2 bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-white rounded text-[11px] transition-colors cursor-pointer"
+                className="flex items-center justify-center space-x-1 py-1.5 px-2 bg-white dark:bg-[#16283D] border border-[#E8E3DA] dark:border-[#1F3854] hover:border-[#0A6C74] text-stone-700 dark:text-stone-300 hover:text-[#0A6C74] rounded-xl text-[11px] font-medium transition-colors cursor-pointer shadow-2xs"
                 title="View Live Website"
               >
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -456,7 +457,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               <button
                 type="button"
                 onClick={() => signOut()}
-                className="flex items-center justify-center space-x-1 py-1.5 px-2 bg-stone-900 hover:bg-red-950/40 text-stone-400 hover:text-red-300 rounded text-[11px] transition-colors cursor-pointer"
+                className="flex items-center justify-center space-x-1 py-1.5 px-2 bg-white dark:bg-[#16283D] border border-[#E8E3DA] dark:border-[#1F3854] hover:bg-rose-50 dark:hover:bg-rose-950/30 hover:border-rose-300 text-stone-700 dark:text-stone-300 hover:text-rose-600 rounded-xl text-[11px] font-medium transition-colors cursor-pointer shadow-2xs"
                 title="Sign out of CMS"
               >
                 <LogOut className="w-3.5 h-3.5" />
@@ -467,35 +468,35 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         </aside>
 
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto bg-stone-900 flex flex-col min-w-0">
+        <main className="flex-1 overflow-y-auto bg-[#FAF8F5] dark:bg-[#0A1118] flex flex-col min-w-0">
           {/* Top Admin Bar with Sidebar Open/Close Button & Device Controls */}
-          <header className="sticky top-0 z-20 bg-stone-950/95 backdrop-blur-md border-b border-stone-800 px-3 sm:px-5 py-2.5 flex flex-wrap items-center justify-between gap-3 shrink-0">
+          <header className="sticky top-0 z-20 bg-white/95 dark:bg-[#0E1B2A]/95 backdrop-blur-md border-b border-[#E8E3DA] dark:border-[#1F3854] px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3 shrink-0 shadow-2xs">
             {/* Left: Open/Close Sidebar button & Active Tab */}
             <div className="flex items-center space-x-3">
               <button
                 type="button"
                 onClick={() => setIsSidebarOpen((prev) => !prev)}
-                className="flex items-center space-x-2 px-2.5 py-1.5 bg-stone-900 hover:bg-stone-800 text-stone-200 hover:text-white rounded-lg text-xs font-medium border border-stone-700/80 transition-colors shadow-2xs cursor-pointer"
+                className="flex items-center space-x-2 px-3 py-1.5 bg-[#FAF8F5] dark:bg-[#16283D] hover:bg-white dark:hover:bg-[#1F3854] text-stone-700 dark:text-stone-200 hover:text-[#0A6C74] dark:hover:text-[#2DD4BF] rounded-xl text-xs font-semibold border border-[#E8E3DA] dark:border-[#1F3854] transition-colors shadow-2xs cursor-pointer"
                 title={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
                 aria-label={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
               >
                 {isSidebarOpen ? (
                   <>
-                    <PanelLeftClose className="w-4 h-4 text-[#2dd4bf]" />
+                    <PanelLeftClose className="w-4 h-4 text-[#0A6C74] dark:text-[#2DD4BF]" />
                     <span className="hidden sm:inline">Close Sidebar</span>
                   </>
                 ) : (
                   <>
-                    <PanelLeftOpen className="w-4 h-4 text-[#2dd4bf]" />
+                    <PanelLeftOpen className="w-4 h-4 text-[#0A6C74] dark:text-[#2DD4BF]" />
                     <span>Open Sidebar</span>
                   </>
                 )}
               </button>
 
-              <div className="hidden sm:flex items-center space-x-1.5 text-xs text-stone-400">
-                <span className="text-stone-500">Awesome Adventure Tours</span>
+              <div className="hidden sm:flex items-center space-x-2 text-xs text-stone-500 dark:text-stone-400">
+                <span className="font-semibold text-[#0A6C74] dark:text-[#2DD4BF]">Kemet Spirit</span>
                 <span>/</span>
-                <span className="text-white font-medium capitalize">
+                <span className="text-[#0E1B2A] dark:text-white font-semibold capitalize font-display">
                   {activeTab.replace(/^(dash_|crm_|ops_|fin_|comm_)/, '').replace(/_/g, ' ')}
                 </span>
               </div>
@@ -505,25 +506,25 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             <div className="flex items-center space-x-2 sm:space-x-3">
               {/* Current Device Live Indicator */}
               <div 
-                className="flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-stone-900 border border-stone-800 text-xs shadow-2xs"
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-[#FAF8F5] dark:bg-[#16283D] border border-[#E8E3DA] dark:border-[#1F3854] text-xs shadow-2xs"
                 title={`Active detected device: ${screenDevice.toUpperCase()}`}
               >
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-stone-400 text-[11px] hidden md:inline">Current Device:</span>
-                <span className="text-stone-200 font-semibold text-[11px] uppercase flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-stone-500 dark:text-stone-400 text-[11px] hidden md:inline">Current Device:</span>
+                <span className="text-[#0E1B2A] dark:text-stone-200 font-semibold text-[11px] uppercase flex items-center gap-1">
                   {screenDevice === 'phone' ? (
                     <>
-                      <Smartphone className="w-3.5 h-3.5 text-sky-400" />
+                      <Smartphone className="w-3.5 h-3.5 text-sky-500" />
                       Phone
                     </>
                   ) : screenDevice === 'tablet' ? (
                     <>
-                      <Tablet className="w-3.5 h-3.5 text-amber-400" />
+                      <Tablet className="w-3.5 h-3.5 text-amber-500" />
                       Tablet
                     </>
                   ) : (
                     <>
-                      <Monitor className="w-3.5 h-3.5 text-emerald-400" />
+                      <Monitor className="w-3.5 h-3.5 text-emerald-500" />
                       PC
                     </>
                   )}
@@ -531,14 +532,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               </div>
 
               {/* Device Viewport Mode Switcher (PC, Tablet, Phone) */}
-              <div className="flex items-center bg-stone-900 rounded-lg p-0.5 border border-stone-800 text-xs shadow-2xs">
+              <div className="flex items-center bg-[#FAF8F5] dark:bg-[#16283D] rounded-xl p-0.5 border border-[#E8E3DA] dark:border-[#1F3854] text-xs shadow-2xs">
                 <button
                   type="button"
                   onClick={() => setDeviceMode('auto')}
-                  className={`px-2 py-1 rounded text-[11px] font-medium transition-colors cursor-pointer ${
+                  className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer ${
                     deviceMode === 'auto'
                       ? 'bg-[#0A6C74] text-white shadow-xs'
-                      : 'text-stone-400 hover:text-stone-200'
+                      : 'text-stone-600 dark:text-stone-300 hover:text-[#0A6C74] dark:hover:text-white'
                   }`}
                   title="Auto responsive mode based on browser window"
                 >
@@ -547,10 +548,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                 <button
                   type="button"
                   onClick={() => setDeviceMode('pc')}
-                  className={`flex items-center space-x-1 px-2 py-1 rounded text-[11px] font-medium transition-colors cursor-pointer ${
+                  className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer ${
                     deviceMode === 'pc'
                       ? 'bg-[#0A6C74] text-white shadow-xs'
-                      : 'text-stone-400 hover:text-stone-200'
+                      : 'text-stone-600 dark:text-stone-300 hover:text-[#0A6C74] dark:hover:text-white'
                   }`}
                   title="Desktop PC mode (Full Width)"
                 >
@@ -560,10 +561,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                 <button
                   type="button"
                   onClick={() => setDeviceMode('tablet')}
-                  className={`flex items-center space-x-1 px-2 py-1 rounded text-[11px] font-medium transition-colors cursor-pointer ${
+                  className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer ${
                     deviceMode === 'tablet'
                       ? 'bg-[#0A6C74] text-white shadow-xs'
-                      : 'text-stone-400 hover:text-stone-200'
+                      : 'text-stone-600 dark:text-stone-300 hover:text-[#0A6C74] dark:hover:text-white'
                   }`}
                   title="Tablet mode (768px layout)"
                 >
@@ -573,10 +574,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                 <button
                   type="button"
                   onClick={() => setDeviceMode('phone')}
-                  className={`flex items-center space-x-1 px-2 py-1 rounded text-[11px] font-medium transition-colors cursor-pointer ${
+                  className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer ${
                     deviceMode === 'phone'
                       ? 'bg-[#0A6C74] text-white shadow-xs'
-                      : 'text-stone-400 hover:text-stone-200'
+                      : 'text-stone-600 dark:text-stone-300 hover:text-[#0A6C74] dark:hover:text-white'
                   }`}
                   title="Phone mode (390px mobile layout)"
                 >
@@ -589,17 +590,17 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
           {/* Active Device Mode Banner when simulated */}
           {deviceMode !== 'auto' && (
-            <div className="bg-[#0A6C74]/15 border-b border-[#0A6C74]/30 px-4 py-1.5 text-xs text-teal-200 flex items-center justify-between">
-              <span className="flex items-center space-x-1.5">
-                <span className="font-semibold uppercase tracking-wider text-[10px] bg-[#0A6C74] text-white px-1.5 py-0.5 rounded">
+            <div className="bg-[#E8F3F4] dark:bg-[#0A6C74]/20 border-b border-[#0A6C74]/30 px-4 py-2 text-xs text-[#0A6C74] dark:text-teal-200 flex items-center justify-between">
+              <span className="flex items-center space-x-2">
+                <span className="font-semibold uppercase tracking-wider text-[10px] bg-[#0A6C74] text-white px-2 py-0.5 rounded-md shadow-2xs">
                   {deviceMode.toUpperCase()} VIEWPORT MODE
                 </span>
-                <span>Inspecting and fixing admin dashboard layout in {deviceMode} viewport.</span>
+                <span>Inspecting and verifying admin dashboard layout in {deviceMode} viewport.</span>
               </span>
               <button
                 type="button"
                 onClick={() => setDeviceMode('auto')}
-                className="text-[11px] underline hover:text-white cursor-pointer"
+                className="text-[11px] font-semibold underline hover:text-[#08565C] dark:hover:text-white cursor-pointer"
               >
                 Reset to Auto
               </button>
@@ -611,9 +612,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             <div
               className={`w-full transition-all duration-300 ${
                 deviceMode === 'phone'
-                  ? 'max-w-[390px] bg-stone-950/80 rounded-3xl border-4 border-stone-700 shadow-2xl p-3 sm:p-4 my-2'
+                  ? 'max-w-[390px] bg-white dark:bg-[#111E2E] rounded-3xl border-4 border-[#0A6C74]/30 shadow-2xl p-3 sm:p-4 my-2'
                   : deviceMode === 'tablet'
-                  ? 'max-w-[768px] bg-stone-950/80 rounded-2xl border-4 border-stone-700 shadow-2xl p-4 sm:p-6 my-2'
+                  ? 'max-w-[768px] bg-white dark:bg-[#111E2E] rounded-2xl border-4 border-[#0A6C74]/30 shadow-2xl p-4 sm:p-6 my-2'
                   : 'max-w-7xl'
               }`}
             >

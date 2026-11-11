@@ -30,92 +30,92 @@ export const SalesDashboardView: React.FC<SalesDashboardViewProps> = ({
       {/* Top Highlights Grid (Leads, Bookings, Revenue, ABV, Conversion) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Leads */}
-        <div className="bg-stone-900 border border-stone-800 rounded-xl p-5 shadow">
-          <span className="text-xs text-stone-400 font-medium">Sales Leads</span>
-          <div className="text-2xl lg:text-3xl font-bold text-amber-400 mt-1 font-mono">
+        <div className="bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854] rounded-2xl p-5 shadow-xs hover:border-amber-500/50 transition-colors">
+          <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">Sales Leads</span>
+          <div className="text-2xl lg:text-3xl font-bold text-amber-600 dark:text-amber-400 mt-1 font-mono">
             {metrics.leadsCount}
           </div>
-          <span className="text-[11px] text-stone-500 mt-1 block">Inquiries &amp; prospects in period</span>
+          <span className="text-[11px] text-stone-500 dark:text-stone-400 mt-1 block">Inquiries &amp; prospects in period</span>
         </div>
 
         {/* Confirmed Bookings */}
-        <div className="bg-stone-900 border border-stone-800 rounded-xl p-5 shadow">
-          <span className="text-xs text-stone-400 font-medium">Bookings Won</span>
-          <div className="text-2xl lg:text-3xl font-bold text-white mt-1 font-mono">
+        <div className="bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854] rounded-2xl p-5 shadow-xs hover:border-[#0A6C74]/50 transition-colors">
+          <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">Bookings Won</span>
+          <div className="text-2xl lg:text-3xl font-bold text-[#0E1B2A] dark:text-white mt-1 font-mono">
             {metrics.totalBookingsCount}
           </div>
-          <span className="text-[11px] text-teal-400 mt-1 block">Confirmed reservations</span>
+          <span className="text-[11px] text-[#0A6C74] dark:text-[#2DD4BF] mt-1 block font-medium">Confirmed reservations</span>
         </div>
 
         {/* Revenue */}
-        <div className="bg-stone-900 border border-stone-800 rounded-xl p-5 shadow">
-          <span className="text-xs text-stone-400 font-medium">Contracted Sales</span>
-          <div className="text-2xl lg:text-3xl font-bold text-white mt-1 font-mono">
+        <div className="bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854] rounded-2xl p-5 shadow-xs hover:border-emerald-500/50 transition-colors">
+          <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">Contracted Sales</span>
+          <div className="text-2xl lg:text-3xl font-bold text-[#0E1B2A] dark:text-white mt-1 font-mono">
             €{metrics.totalRevenueEur.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
-          <span className="text-[11px] text-emerald-400 mt-1 block">Gross booked revenue</span>
+          <span className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-1 block font-medium">Gross booked revenue</span>
         </div>
 
         {/* Average Booking Value */}
-        <div className="bg-stone-900 border border-stone-800 rounded-xl p-5 shadow">
-          <span className="text-xs text-stone-400 font-medium">Avg Booking Value (ABV)</span>
-          <div className="text-2xl lg:text-3xl font-bold text-teal-400 mt-1 font-mono">
+        <div className="bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854] rounded-2xl p-5 shadow-xs hover:border-[#0A6C74]/50 transition-colors">
+          <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">Avg Booking Value (ABV)</span>
+          <div className="text-2xl lg:text-3xl font-bold text-[#0A6C74] dark:text-[#2DD4BF] mt-1 font-mono">
             €{metrics.averageBookingValueEur.toFixed(2)}
           </div>
-          <span className="text-[11px] text-stone-500 mt-1 block">Revenue per reservation</span>
+          <span className="text-[11px] text-stone-500 dark:text-stone-400 mt-1 block">Revenue per reservation</span>
         </div>
 
         {/* Conversion Rate */}
-        <div className="bg-stone-900 border border-stone-800 rounded-xl p-5 shadow">
-          <span className="text-xs text-stone-400 font-medium">Lead Conversion</span>
-          <div className="text-2xl lg:text-3xl font-bold text-sky-400 mt-1 font-mono">
+        <div className="bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854] rounded-2xl p-5 shadow-xs hover:border-sky-500/50 transition-colors">
+          <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">Lead Conversion</span>
+          <div className="text-2xl lg:text-3xl font-bold text-sky-600 dark:text-sky-400 mt-1 font-mono">
             {metrics.conversionRate}%
           </div>
-          <span className="text-[11px] text-stone-500 mt-1 block">Prospect-to-booking efficiency</span>
+          <span className="text-[11px] text-stone-500 dark:text-stone-400 mt-1 block">Prospect-to-booking efficiency</span>
         </div>
       </div>
 
       {/* Staff Performance & Lead Sources Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Sales Performance by Staff */}
-        <div className="bg-stone-900 border border-stone-800 rounded-xl p-5 shadow-lg space-y-4">
-          <div className="flex items-center justify-between border-b border-stone-800 pb-3">
+        <div className="bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854] rounded-2xl p-5 lg:p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between border-b border-[#E8E3DA] dark:border-[#1F3854] pb-3">
             <div className="flex items-center space-x-2">
-              <Award className="w-4 h-4 text-amber-400" />
-              <h3 className="text-sm font-bold text-white">Sales Performance by Staff</h3>
+              <Award className="w-4 h-4 text-amber-500" />
+              <h3 className="text-sm font-bold text-[#0E1B2A] dark:text-white font-display">Sales Performance by Staff</h3>
             </div>
-            <span className="text-[11px] text-stone-400">{metrics.staffPerformance.length} agents tracked</span>
+            <span className="text-[11px] text-stone-500 dark:text-stone-400">{metrics.staffPerformance.length} agents tracked</span>
           </div>
 
           <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1">
             {metrics.staffPerformance.length === 0 ? (
-              <p className="text-stone-500 text-xs py-8 text-center">No staff performance records found.</p>
+              <p className="text-stone-400 text-xs py-8 text-center">No staff performance records found.</p>
             ) : (
               metrics.staffPerformance.map((staff, idx) => (
-                <div key={staff.staffId} className="p-3 bg-stone-950/70 border border-stone-800 rounded-lg space-y-2">
+                <div key={staff.staffId} className="p-3.5 bg-[#FAF8F5] dark:bg-[#0E1B2A] border border-[#E8E3DA] dark:border-[#1F3854] rounded-xl space-y-2">
                   <div className="flex items-center justify-between text-xs">
                     <div className="flex items-center space-x-2">
-                      <span className="w-5 h-5 rounded-full bg-stone-800 text-stone-300 flex items-center justify-center text-[10px] font-bold">
+                      <span className="w-5 h-5 rounded-full bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-[#E8E3DA] dark:border-stone-700 flex items-center justify-center text-[10px] font-bold">
                         {idx + 1}
                       </span>
-                      <span className="font-semibold text-white">{staff.staffName}</span>
-                      <span className="text-[10px] text-stone-500 bg-stone-900 px-1.5 py-0.5 rounded border border-stone-800">
+                      <span className="font-semibold text-[#0E1B2A] dark:text-white">{staff.staffName}</span>
+                      <span className="text-[10px] text-stone-600 dark:text-stone-400 bg-white dark:bg-stone-900 px-1.5 py-0.5 rounded border border-[#E8E3DA] dark:border-stone-800">
                         {staff.role}
                       </span>
                     </div>
-                    <span className="font-mono text-emerald-400 font-bold">
+                    <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">
                       €{staff.revenueEur.toLocaleString()}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-stone-400">
+                  <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
                     <span>
                       {staff.bookingsCount} won / {staff.leadsHandled} leads
                     </span>
-                    <span className="text-teal-400 font-medium">{staff.conversionRate}% conversion</span>
+                    <span className="text-[#0A6C74] dark:text-[#2DD4BF] font-semibold">{staff.conversionRate}% conversion</span>
                   </div>
 
-                  <div className="w-full bg-stone-800 h-1.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-[#E8E3DA] dark:bg-stone-800 h-1.5 rounded-full overflow-hidden">
                     <div
                       className="bg-amber-500 h-full rounded-full transition-all duration-300"
                       style={{ width: `${Math.min(100, staff.conversionRate * 1.5)}%` }}
@@ -128,36 +128,36 @@ export const SalesDashboardView: React.FC<SalesDashboardViewProps> = ({
         </div>
 
         {/* Lead Sources Breakdown */}
-        <div className="bg-stone-900 border border-stone-800 rounded-xl p-5 shadow-lg space-y-4">
-          <div className="flex items-center justify-between border-b border-stone-800 pb-3">
+        <div className="bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854] rounded-2xl p-5 lg:p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between border-b border-[#E8E3DA] dark:border-[#1F3854] pb-3">
             <div className="flex items-center space-x-2">
-              <Share2 className="w-4 h-4 text-sky-400" />
-              <h3 className="text-sm font-bold text-white">Lead Acquisition Sources</h3>
+              <Share2 className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+              <h3 className="text-sm font-bold text-[#0E1B2A] dark:text-white font-display">Lead Acquisition Sources</h3>
             </div>
-            <span className="text-[11px] text-stone-400">{metrics.leadSources.length} channels</span>
+            <span className="text-[11px] text-stone-500 dark:text-stone-400">{metrics.leadSources.length} channels</span>
           </div>
 
           <div className="space-y-3 max-h-[360px] overflow-y-auto pr-1">
             {metrics.leadSources.length === 0 ? (
-              <p className="text-stone-500 text-xs py-8 text-center">No lead sources tracked.</p>
+              <p className="text-stone-400 text-xs py-8 text-center">No lead sources tracked.</p>
             ) : (
               metrics.leadSources.map((ls) => (
-                <div key={ls.source} className="p-3 bg-stone-950/70 border border-stone-800 rounded-lg space-y-2">
+                <div key={ls.source} className="p-3.5 bg-[#FAF8F5] dark:bg-[#0E1B2A] border border-[#E8E3DA] dark:border-[#1F3854] rounded-xl space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-white">{ls.source}</span>
-                    <span className="font-mono text-teal-400 font-bold">
+                    <span className="font-semibold text-[#0E1B2A] dark:text-white">{ls.source}</span>
+                    <span className="font-mono text-[#0A6C74] dark:text-[#2DD4BF] font-bold">
                       €{ls.revenueEur.toLocaleString()}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-stone-400">
+                  <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
                     <span>
                       {ls.count} inquiries · {ls.convertedCount} converted
                     </span>
-                    <span className="text-sky-400">{ls.conversionRate}% conversion rate</span>
+                    <span className="text-sky-600 dark:text-sky-400 font-semibold">{ls.conversionRate}% conversion</span>
                   </div>
 
-                  <div className="w-full bg-stone-800 h-1.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-[#E8E3DA] dark:bg-stone-800 h-1.5 rounded-full overflow-hidden">
                     <div
                       className="bg-sky-500 h-full rounded-full transition-all duration-300"
                       style={{ width: `${Math.min(100, ls.conversionRate * 2)}%` }}
@@ -173,38 +173,38 @@ export const SalesDashboardView: React.FC<SalesDashboardViewProps> = ({
       {/* Main Breakdown Grid: Tour & Destination Performance */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Best-Selling Tours */}
-        <div className="bg-stone-900 border border-stone-800 rounded-xl p-5 shadow-lg space-y-4">
-          <div className="flex items-center justify-between border-b border-stone-800 pb-3">
+        <div className="bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854] rounded-2xl p-5 lg:p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between border-b border-[#E8E3DA] dark:border-[#1F3854] pb-3">
             <div className="flex items-center space-x-2">
-              <Compass className="w-4 h-4 text-teal-400" />
-              <h3 className="text-sm font-bold text-white">Best-Selling Tours &amp; Excursions</h3>
+              <Compass className="w-4 h-4 text-[#0A6C74] dark:text-[#2DD4BF]" />
+              <h3 className="text-sm font-bold text-[#0E1B2A] dark:text-white font-display">Best-Selling Tours &amp; Excursions</h3>
             </div>
-            <span className="text-[11px] text-stone-400">{metrics.bestSellingTours.length} active</span>
+            <span className="text-[11px] text-stone-500 dark:text-stone-400">{metrics.bestSellingTours.length} active</span>
           </div>
 
           <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
             {metrics.bestSellingTours.length === 0 ? (
-              <p className="text-stone-500 text-xs py-8 text-center">No tour bookings recorded in this date range.</p>
+              <p className="text-stone-400 text-xs py-8 text-center">No tour bookings recorded in this date range.</p>
             ) : (
               metrics.bestSellingTours.map((item, idx) => (
-                <div key={item.id} className="p-3 bg-stone-950/70 border border-stone-800 rounded-lg space-y-2">
+                <div key={item.id} className="p-3.5 bg-[#FAF8F5] dark:bg-[#0E1B2A] border border-[#E8E3DA] dark:border-[#1F3854] rounded-xl space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-white truncate max-w-[240px]">
+                    <span className="font-semibold text-[#0E1B2A] dark:text-white truncate max-w-[240px]">
                       {idx + 1}. {item.name}
                     </span>
-                    <span className="font-mono text-teal-400 font-bold">
+                    <span className="font-mono text-[#0A6C74] dark:text-[#2DD4BF] font-bold">
                       €{item.revenueEur.toLocaleString()}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-stone-400">
+                  <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
                     <span>{item.count} bookings ({item.percentage}%)</span>
                     <span>Avg: €{(item.count > 0 ? item.revenueEur / item.count : 0).toFixed(0)} / booking</span>
                   </div>
 
-                  <div className="w-full bg-stone-800 h-1.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-[#E8E3DA] dark:bg-stone-800 h-1.5 rounded-full overflow-hidden">
                     <div
-                      className="bg-teal-500 h-full rounded-full transition-all duration-300"
+                      className="bg-[#0A6C74] h-full rounded-full transition-all duration-300"
                       style={{ width: `${Math.min(100, item.percentage * 2)}%` }}
                     />
                   </div>
@@ -215,34 +215,34 @@ export const SalesDashboardView: React.FC<SalesDashboardViewProps> = ({
         </div>
 
         {/* Best Destinations */}
-        <div className="bg-stone-900 border border-stone-800 rounded-xl p-5 shadow-lg space-y-4">
-          <div className="flex items-center justify-between border-b border-stone-800 pb-3">
+        <div className="bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854] rounded-2xl p-5 lg:p-6 shadow-xs space-y-4">
+          <div className="flex items-center justify-between border-b border-[#E8E3DA] dark:border-[#1F3854] pb-3">
             <div className="flex items-center space-x-2">
-              <MapPin className="w-4 h-4 text-sky-400" />
-              <h3 className="text-sm font-bold text-white">Best Destination Markets</h3>
+              <MapPin className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+              <h3 className="text-sm font-bold text-[#0E1B2A] dark:text-white font-display">Best Destination Markets</h3>
             </div>
-            <span className="text-[11px] text-stone-400">{metrics.bestDestinations.length} destinations</span>
+            <span className="text-[11px] text-stone-500 dark:text-stone-400">{metrics.bestDestinations.length} destinations</span>
           </div>
 
           <div className="space-y-3 max-h-[380px] overflow-y-auto pr-1">
             {metrics.bestDestinations.length === 0 ? (
-              <p className="text-stone-500 text-xs py-8 text-center">No destination bookings recorded.</p>
+              <p className="text-stone-400 text-xs py-8 text-center">No destination bookings recorded.</p>
             ) : (
               metrics.bestDestinations.map((dest) => (
-                <div key={dest.id} className="p-3 bg-stone-950/70 border border-stone-800 rounded-lg space-y-2">
+                <div key={dest.id} className="p-3.5 bg-[#FAF8F5] dark:bg-[#0E1B2A] border border-[#E8E3DA] dark:border-[#1F3854] rounded-xl space-y-2">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-white">{dest.name}</span>
-                    <span className="font-mono text-sky-400 font-bold">
+                    <span className="font-semibold text-[#0E1B2A] dark:text-white">{dest.name}</span>
+                    <span className="font-mono text-sky-600 dark:text-sky-400 font-bold">
                       €{dest.revenueEur.toLocaleString()}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-stone-400">
+                  <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
                     <span>{dest.count} reservations ({dest.percentage}%)</span>
                     <span className="text-stone-500">Destination share</span>
                   </div>
 
-                  <div className="w-full bg-stone-800 h-1.5 rounded-full overflow-hidden">
+                  <div className="w-full bg-[#E8E3DA] dark:bg-stone-800 h-1.5 rounded-full overflow-hidden">
                     <div
                       className="bg-sky-500 h-full rounded-full transition-all duration-300"
                       style={{ width: `${Math.min(100, dest.percentage * 1.5)}%` }}

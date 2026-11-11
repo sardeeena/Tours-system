@@ -232,18 +232,18 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
   return (
     <div className="space-y-6 print:space-y-4 print:text-black print:bg-white">
       {/* Header & Controls Bar */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-stone-900 border border-stone-800 p-5 rounded-xl shadow-lg print:border-none print:shadow-none print:bg-transparent print:p-0">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854] p-5 lg:p-6 rounded-2xl shadow-xs print:border-none print:shadow-none print:bg-transparent print:p-0">
         <div>
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-lg bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 print:hidden">
+          <div className="flex items-center space-x-3.5">
+            <div className="w-11 h-11 rounded-xl bg-[#0A6C74]/10 dark:bg-[#0A6C74]/20 border border-[#0A6C74]/20 flex items-center justify-center text-[#0A6C74] dark:text-[#2DD4BF] print:hidden shadow-2xs">
               <LayoutDashboard className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-xl lg:text-2xl font-bold font-display text-white tracking-tight print:text-black">
+              <h1 className="text-xl lg:text-2xl font-bold font-display text-[#0E1B2A] dark:text-white tracking-tight print:text-black">
                 Management Reporting &amp; Business Intelligence
               </h1>
-              <p className="text-xs text-stone-400 mt-0.5 print:text-stone-700">
-                Audited real-time intelligence querying live Supabase databases · Red Sea Voyages S.A.E.
+              <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 print:text-stone-700">
+                Audited real-time intelligence querying live Supabase databases · Kemet Spirit Operations
               </p>
             </div>
           </div>
@@ -256,10 +256,10 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
               type="button"
               onClick={handleRefresh}
               disabled={isRefreshing}
-              className="flex items-center space-x-1.5 px-3 py-2 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg text-xs font-semibold border border-stone-700 transition-colors"
+              className="flex items-center space-x-1.5 px-3.5 py-2 bg-white dark:bg-[#16283D] hover:bg-[#FAF8F5] dark:hover:bg-[#1F3854] text-stone-700 dark:text-stone-200 rounded-xl text-xs font-semibold border border-[#E8E3DA] dark:border-[#1F3854] shadow-2xs hover:border-[#0A6C74]/40 transition-colors"
               title="Refresh database metrics"
             >
-              <RefreshCw className={`w-3.5 h-3.5 text-teal-400 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 text-[#0A6C74] dark:text-[#2DD4BF] ${isRefreshing ? 'animate-spin' : ''}`} />
               <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
             </button>
           )}
@@ -268,10 +268,10 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
             <button
               type="button"
               onClick={handleExportCsv}
-              className="flex items-center space-x-1.5 px-3 py-2 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg text-xs font-semibold border border-stone-700 transition-colors"
+              className="flex items-center space-x-1.5 px-3.5 py-2 bg-white dark:bg-[#16283D] hover:bg-[#FAF8F5] dark:hover:bg-[#1F3854] text-stone-700 dark:text-stone-200 rounded-xl text-xs font-semibold border border-[#E8E3DA] dark:border-[#1F3854] shadow-2xs hover:border-[#0A6C74]/40 transition-colors"
               title="Download CSV"
             >
-              <Download className="w-3.5 h-3.5 text-stone-400" />
+              <Download className="w-3.5 h-3.5 text-stone-500 dark:text-stone-400" />
               <span>Export CSV</span>
             </button>
           )}
@@ -280,10 +280,10 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
             <button
               type="button"
               onClick={handleExportExcel}
-              className="flex items-center space-x-1.5 px-3 py-2 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg text-xs font-semibold border border-stone-700 transition-colors"
+              className="flex items-center space-x-1.5 px-3.5 py-2 bg-white dark:bg-[#16283D] hover:bg-[#FAF8F5] dark:hover:bg-[#1F3854] text-stone-700 dark:text-stone-200 rounded-xl text-xs font-semibold border border-[#E8E3DA] dark:border-[#1F3854] shadow-2xs hover:border-[#0A6C74]/40 transition-colors"
               title="Download Excel Workbook"
             >
-              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-400" />
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               <span>Excel</span>
             </button>
           )}
@@ -291,17 +291,17 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
           <button
             type="button"
             onClick={handlePrint}
-            className="flex items-center space-x-1.5 px-3 py-2 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-lg text-xs font-semibold border border-stone-700 transition-colors"
+            className="flex items-center space-x-1.5 px-3.5 py-2 bg-white dark:bg-[#16283D] hover:bg-[#FAF8F5] dark:hover:bg-[#1F3854] text-stone-700 dark:text-stone-200 rounded-xl text-xs font-semibold border border-[#E8E3DA] dark:border-[#1F3854] shadow-2xs hover:border-[#0A6C74]/40 transition-colors"
             title="Print Report"
           >
-            <Printer className="w-3.5 h-3.5 text-sky-400" />
+            <Printer className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
             <span>Print PDF</span>
           </button>
         </div>
       </div>
 
       {/* View Switcher Tabs (6 Views including Report Builder) */}
-      <div className="flex items-center space-x-1 overflow-x-auto pb-1 bg-stone-950 p-1.5 rounded-xl border border-stone-800 text-xs print:hidden">
+      <div className="flex items-center space-x-1.5 overflow-x-auto p-1.5 bg-white dark:bg-[#0E1B2A] rounded-2xl border border-[#E8E3DA] dark:border-[#1F3854] text-xs shadow-xs print:hidden">
         {viewTabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeView === tab.id;
@@ -310,13 +310,13 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
               key={tab.id}
               type="button"
               onClick={() => setActiveView(tab.id)}
-              className={`flex items-center space-x-2 px-4 py-2.5 rounded-lg font-semibold transition-all whitespace-nowrap cursor-pointer ${
+              className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl font-semibold transition-all whitespace-nowrap cursor-pointer ${
                 isActive
-                  ? 'bg-teal-600 text-white shadow-md'
-                  : 'text-stone-400 hover:text-stone-200 hover:bg-stone-900/60'
+                  ? 'bg-[#0A6C74] text-white shadow-xs'
+                  : 'text-stone-600 dark:text-stone-300 hover:text-[#0A6C74] hover:bg-[#FAF8F5] dark:hover:bg-[#16283D]'
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-stone-500'}`} />
+              <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-stone-400 dark:text-stone-500'}`} />
               <span>{tab.label}</span>
             </button>
           );
@@ -325,14 +325,14 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
 
       {/* Date Filter Bar (Shown for dashboards) */}
       {activeView !== 'builder' && (
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-stone-900/90 border border-stone-800 p-3.5 rounded-xl text-xs print:hidden">
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854] p-3.5 lg:p-4 rounded-2xl text-xs shadow-xs print:hidden">
           <div className="flex items-center space-x-2">
-            <Calendar className="w-4 h-4 text-teal-400" />
-            <span className="font-semibold text-stone-300">Reporting Interval:</span>
-            <span className="text-stone-400 font-mono">{currentInterval.label}</span>
+            <Calendar className="w-4 h-4 text-[#0A6C74] dark:text-[#2DD4BF]" />
+            <span className="font-semibold text-stone-700 dark:text-stone-200">Reporting Interval:</span>
+            <span className="text-stone-500 dark:text-stone-400 font-mono font-medium">{currentInterval.label}</span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-1.5">
             {(
               [
                 { id: 'today', label: 'Today' },
@@ -348,10 +348,10 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
                 key={opt.id}
                 type="button"
                 onClick={() => setDateRange(opt.id)}
-                className={`px-2.5 py-1.5 rounded-md font-medium transition-colors ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                   dateRange === opt.id
-                    ? 'bg-teal-500/20 text-teal-300 border border-teal-500/30'
-                    : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800'
+                    ? 'bg-[#0A6C74] text-white shadow-2xs font-semibold'
+                    : 'text-stone-600 dark:text-stone-300 hover:text-[#0A6C74] hover:bg-[#FAF8F5] dark:hover:bg-[#16283D]'
                 }`}
               >
                 {opt.label}
@@ -359,19 +359,19 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
             ))}
 
             {dateRange === 'custom' && (
-              <div className="flex items-center space-x-1.5 ml-2 border-l border-stone-800 pl-3">
+              <div className="flex items-center space-x-1.5 ml-2 border-l border-[#E8E3DA] dark:border-[#1F3854] pl-3">
                 <input
                   type="date"
                   value={customStartDate}
                   onChange={(e) => setCustomStartDate(e.target.value)}
-                  className="bg-stone-950 border border-stone-800 rounded px-2 py-1 text-white font-mono text-xs focus:outline-none focus:border-teal-500"
+                  className="bg-[#FAF8F5] dark:bg-[#0A1118] border border-[#E8E3DA] dark:border-[#1F3854] rounded-lg px-2.5 py-1 text-[#0E1B2A] dark:text-white font-mono text-xs focus:outline-none focus:border-[#0A6C74]"
                 />
-                <span className="text-stone-500">to</span>
+                <span className="text-stone-400">to</span>
                 <input
                   type="date"
                   value={customEndDate}
                   onChange={(e) => setCustomEndDate(e.target.value)}
-                  className="bg-stone-950 border border-stone-800 rounded px-2 py-1 text-white font-mono text-xs focus:outline-none focus:border-teal-500"
+                  className="bg-[#FAF8F5] dark:bg-[#0A1118] border border-[#E8E3DA] dark:border-[#1F3854] rounded-lg px-2.5 py-1 text-[#0E1B2A] dark:text-white font-mono text-xs focus:outline-none focus:border-[#0A6C74]"
                 />
               </div>
             )}
@@ -381,10 +381,10 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
 
       {/* Main Content Render */}
       {loading ? (
-        <div className="bg-stone-900 border border-stone-800 rounded-xl p-16 text-center shadow-lg">
-          <RefreshCw className="w-8 h-8 text-teal-400 animate-spin mx-auto mb-3" />
-          <h3 className="text-sm font-semibold text-white">Aggregating Database Records</h3>
-          <p className="text-xs text-stone-400 mt-1">Executing mathematical operations across live bookings &amp; financial ledgers...</p>
+        <div className="bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854] rounded-2xl p-16 text-center shadow-xs">
+          <RefreshCw className="w-8 h-8 text-[#0A6C74] dark:text-[#2DD4BF] animate-spin mx-auto mb-3" />
+          <h3 className="text-sm font-semibold text-[#0E1B2A] dark:text-white font-display">Aggregating Database Records</h3>
+          <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">Executing mathematical operations across live bookings &amp; financial ledgers...</p>
         </div>
       ) : (
         <>
