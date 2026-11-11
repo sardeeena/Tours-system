@@ -49,6 +49,14 @@ const getSeoEntityType = (scope: SeoScopeType): 'page' | 'tour' | 'destination' 
 const isPageSeoScope = (scope: SeoScopeType): boolean =>
   scope === 'homepage' || scope === 'pages';
 
+const isDestinationIndexable = (destination: DbDestination, tours: DbTour[]): boolean => {
+  const publishedTourCount = tours.filter(
+    (tour) => tour.destination_id === destination.id && tour.status === 'published'
+  ).length;
+  const contentLength = `${destination.description || ''} ${destination.tagline || ''}`.trim().length;
+  return publishedTourCount >= 2 || contentLength >= 300;
+};
+
 export const AdminSeoManager: React.FC = () => {
   const { showToast } = useToast();
   const [scope, setScope] = useState<SeoScopeType>('homepage');
@@ -77,6 +85,16 @@ export const AdminSeoManager: React.FC = () => {
   const [robotsFollow, setRobotsFollow] = useState(true);
   const [structuredDataJson, setStructuredDataJson] = useState('');
   const [structuredDataError, setStructuredDataError] = useState<string | null>(null);
+  const canonicalHostIsValid = (() => {
+    try {
+      const candidate = new URL(canonicalUrl);
+      return candidate.protocol === 'https:' &&
+        candidate.hostname.toLowerCase() === 'kemetspirit.com' &&
+        !candidate.search && !candidate.hash;
+    } catch {
+      return false;
+    }
+  })();
 
   // Initial load
   useEffect(() => {
@@ -117,6 +135,7 @@ export const AdminSeoManager: React.FC = () => {
     let defaultOgImage = 'https://kemetspirit.com/logo.webp';
     let defaultRobotsIndex = true;
     let defaultRobotsFollow = true;
+    let forceNoIndex = currentScope === 'pages' && entityId === 'privacy';
     let defaultSchema: any = {
       '@context': 'https://schema.org',
       '@type': 'TravelAgency',
@@ -159,6 +178,8 @@ export const AdminSeoManager: React.FC = () => {
         defaultDesc = dest.seo_description || dest.description?.slice(0, 300) || `Review published excursions and trip details for ${dest.name}, Egypt.`;
         defaultCanonical = `https://kemetspirit.com/destinations/${dest.slug}`;
         defaultOgImage = dest.main_image || defaultOgImage;
+        forceNoIndex = !isDestinationIndexable(dest, currentTours);
+        defaultRobotsIndex = !forceNoIndex;
         defaultSchema = {
           '@context': 'https://schema.org',
           '@type': 'TouristDestination',
@@ -212,9 +233,8 @@ export const AdminSeoManager: React.FC = () => {
           setOgTitle(data.og_title || data.seo_title || defaultTitle);
           setOgDescription(data.og_description || data.meta_description || defaultDesc);
           setOgImage(data.og_image || defaultOgImage);
-          const privacyPage = currentScope === 'pages' && entityId === 'privacy';
-          setRobotsIndex(privacyPage ? false : (data.robots_index ?? defaultRobotsIndex));
-          setRobotsFollow(privacyPage ? false : (data.robots_follow ?? defaultRobotsFollow));
+          setRobotsIndex(forceNoIndex ? false : (data.robots_index ?? defaultRobotsIndex));
+          setRobotsFollow(forceNoIndex && currentScope === 'pages' ? false : (data.robots_follow ?? defaultRobotsFollow));
           if (data.structured_data) {
             setStructuredDataJson(JSON.stringify(data.structured_data, null, 2));
           } else {
@@ -239,9 +259,8 @@ export const AdminSeoManager: React.FC = () => {
           setOgTitle(parsed.ogTitle || defaultTitle);
           setOgDescription(parsed.ogDescription || defaultDesc);
           setOgImage(parsed.ogImage || defaultOgImage);
-          const privacyPage = currentScope === 'pages' && entityId === 'privacy';
-          setRobotsIndex(privacyPage ? false : (parsed.robotsIndex ?? defaultRobotsIndex));
-          setRobotsFollow(privacyPage ? false : (parsed.robotsFollow ?? defaultRobotsFollow));
+          setRobotsIndex(forceNoIndex ? false : (parsed.robotsIndex ?? defaultRobotsIndex));
+          setRobotsFollow(forceNoIndex && currentScope === 'pages' ? false : (parsed.robotsFollow ?? defaultRobotsFollow));
           setStructuredDataJson(parsed.structuredDataJson || JSON.stringify(defaultSchema, null, 2));
           return;
         } catch {
@@ -265,7 +284,10 @@ export const AdminSeoManager: React.FC = () => {
     setScope(newScope);
     let newEntityId = 'home';
     if (newScope === 'tours' && tours.length > 0) newEntityId = tours[0].id;
-    if (newScope === 'destinations' && destinations.length > 0) newEntityId = destinations[0].id;
+    if (newScope === 'destinations') {
+      const firstPublishedDestination = destinations.find((destination) => destination.status === 'published');
+      if (firstPublishedDestination) newEntityId = firstPublishedDestination.id;
+    }
     if (newScope === 'categories' && categories.length > 0) newEntityId = categories[0].id;
     if (newScope === 'pages' && STATIC_PAGES.length > 0) newEntityId = STATIC_PAGES[0].id;
 
@@ -302,9 +324,17 @@ export const AdminSeoManager: React.FC = () => {
       return;
     }
 
+    const selectedDestination = scope === 'destinations'
+      ? destinations.find((destination) => destination.id === selectedEntityId)
+      : undefined;
     if (scope === 'pages' && selectedEntityId === 'privacy' && robotsIndex) {
       setSaving(false);
       showToast('Privacy Information must remain noindex until the complete privacy policy is verified.', 'error');
+      return;
+    }
+    if (selectedDestination && !isDestinationIndexable(selectedDestination, tours) && robotsIndex) {
+      setSaving(false);
+      showToast('This destination needs more published inventory or richer original content before it can be indexed.', 'error');
       return;
     }
 
@@ -500,7 +530,7 @@ export const AdminSeoManager: React.FC = () => {
                 </option>
               ))}
             {scope === 'destinations' &&
-              destinations.map((d) => (
+              destinations.filter((destination) => destination.status === 'published').map((d) => (
                 <option key={d.id} value={d.id}>
                   {d.name} ({d.slug})
                 </option>
@@ -539,8 +569,8 @@ export const AdminSeoManager: React.FC = () => {
         </div>
         <div className="rounded-xl border border-stone-800 bg-stone-950 p-4 text-xs">
           <p className="text-stone-400">Canonical host</p>
-          <p className={`mt-1 text-sm font-semibold ${canonicalUrl.startsWith('https://kemetspirit.com/') ? 'text-emerald-400' : 'text-amber-400'}`}>
-            {canonicalUrl.startsWith('https://kemetspirit.com/') ? 'Kemet Spirit domain' : 'Check canonical URL'}
+          <p className={`mt-1 text-sm font-semibold ${canonicalHostIsValid ? 'text-emerald-400' : 'text-amber-400'}`}>
+            {canonicalHostIsValid ? 'Kemet Spirit domain' : 'Check canonical URL'}
           </p>
           <p className="mt-1 text-stone-500">Indexable pages should use their own clean Kemet Spirit URL.</p>
         </div>
