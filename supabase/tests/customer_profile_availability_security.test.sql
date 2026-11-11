@@ -178,14 +178,14 @@ SELECT throws_ok(
 );
 
 SELECT throws_ok(
-  $UPDATE public.customers SET user_id = 'f9000000-0000-0000-0000-000000000002' WHERE id = 'f9000000-0000-0000-0000-000000000101'$,
+  $sql$UPDATE public.customers SET user_id = 'f9000000-0000-0000-0000-000000000002' WHERE id = 'f9000000-0000-0000-0000-000000000101'$sql$,
   '42501',
   'Customers may only update their contact details and preferences. CRM and booking-derived fields are protected.',
   'customer cannot reassign customer record ownership'
 );
 
 SELECT throws_ok(
-  $UPDATE public.customers SET status = 'vip', notes = 'forged', total_bookings_count = 99 WHERE id = 'f9000000-0000-0000-0000-000000000101'$,
+  $sql$UPDATE public.customers SET status = 'vip', notes = 'forged', total_bookings_count = 99 WHERE id = 'f9000000-0000-0000-0000-000000000101'$sql$,
   '42501',
   'Customers may only update their contact details and preferences. CRM and booking-derived fields are protected.',
   'customer cannot alter CRM status, notes or booking counters'
