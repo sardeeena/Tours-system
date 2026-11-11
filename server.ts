@@ -1460,15 +1460,60 @@ app.post('/api/admin/users/:userId/status', rateLimit(10, 60_000), async (req: A
       return res.status(409).json({ success: false, error: 'Protected Super Admin accounts cannot be suspended or reactivated here.' });
     }
 
-    const { data: updated, error } = await serverSupabase!.auth.admin.updateUserById(targetId, {
-      ban_duration: action === 'suspend' ? '876000h' : 'none',
-    });
-    if (error || !updated.user) {
-      console.error('[Admin account status] Auth update failed:', error?.message);
-      return res.status(502).json({ success: false, error: 'Supabase Auth could not update this account.' });
+    if (!SUPABASE_URL || !SUPABASE_USER_KEY) {
+      return res.status(503).json({ success: false, error: 'A publishable Supabase key is required for secure role synchronization.' });
     }
-    await writeAccountAudit(req.user!.id, action === 'suspend' ? 'AUTH_USER_SUSPENDED' : 'AUTH_USER_REACTIVATED', targetId, { email: target.user.email || null });
-    const bannedUntil = updated.user.banned_until || null;
+    const callerToken = (req.headers.authorization || '').replace(/^Bearer\\s+/i, '').trim();
+    const callerSupabase = createClient(SUPABASE_URL, SUPABASE_USER_KEY, {
+      global: { headers: { Authorization: 'Bearer ' + callerToken } },
+      auth: { persistSession: false, autoRefreshToken: false },
+    });
+
+    if (action === 'suspend') {
+      const savedRoles = assignedRoles.length ? assignedRoles : ['customer'];
+      const nextMetadata = { ...(target.user.app_metadata || {}), suspended_roles: savedRoles };
+      const { error: metadataError } = await serverSupabase!.auth.admin.updateUserById(targetId, { app_metadata: nextMetadata });
+      if (metadataError) return res.status(502).json({ success: false, error: 'Could not securely preserve the account role assignments.' });
+      const { data: roleResult, error: roleError } = await callerSupabase.rpc('admin_assign_user_roles', {
+        p_user_id: targetId, p_role_slugs: ['customer'],
+      });
+      if (roleError || !roleResult?.success) {
+        const rollbackMetadata = { ...(target.user.app_metadata || {}) };
+        delete (rollbackMetadata as any).suspended_roles;
+        await serverSupabase!.auth.admin.updateUserById(targetId, { app_metadata: rollbackMetadata });
+        return res.status(502).json({ success: false, error: 'Could not remove privileged roles; the account was not suspended.' });
+      }
+    } else {
+      const saved = target.user.app_metadata?.suspended_roles;
+      const restoreRoles = Array.isArray(saved) && saved.length ? saved.filter((role: unknown) => typeof role === 'string') : ['customer'];
+      const { data: roleResult, error: roleError } = await callerSupabase.rpc('admin_assign_user_roles', {
+        p_user_id: targetId, p_role_slugs: restoreRoles,
+      });
+      if (roleError || !roleResult?.success) {
+        return res.status(502).json({ success: false, error: 'Could not restore the account role assignments. The account remains suspended.' });
+      }
+      const nextMetadata = { ...(target.user.app_metadata || {}) };
+      delete (nextMetadata as any).suspended_roles;
+      const { error: metadataError } = await serverSupabase!.auth.admin.updateUserById(targetId, {
+        app_metadata: nextMetadata, ban_duration: 'none',
+      });
+      if (metadataError) return res.status(502).json({ success: false, error: 'Roles were restored but Supabase Auth could not reactivate the account. Retry reactivation.' });
+    }
+
+    if (action === 'suspend') {
+      const { data: banned, error: banError } = await serverSupabase!.auth.admin.updateUserById(targetId, { ban_duration: '876000h' });
+      if (banError || !banned.user) {
+        return res.status(502).json({ success: false, error: 'Privileged roles were removed, but Supabase Auth could not apply the account suspension. Retry after checking Auth status.' });
+      }
+      await writeAccountAudit(req.user!.id, 'AUTH_USER_SUSPENDED', targetId, { email: target.user.email || null, previous_roles: assignedRoles });
+      const bannedUntil = banned.user.banned_until || null;
+      return res.json({ success: true, is_suspended: Boolean(bannedUntil && Date.parse(bannedUntil) > Date.now()), banned_until: bannedUntil });
+    }
+
+    await writeAccountAudit(req.user!.id, 'AUTH_USER_REACTIVATED', targetId, { email: target.user.email || null });
+    const { data: active, error: activeError } = await serverSupabase!.auth.admin.getUserById(targetId);
+    if (activeError || !active.user) return res.status(502).json({ success: false, error: 'Roles were restored, but account status could not be verified.' });
+    const bannedUntil = active.user.banned_until || null;
     return res.json({ success: true, is_suspended: Boolean(bannedUntil && Date.parse(bannedUntil) > Date.now()), banned_until: bannedUntil });
   } catch (error) {
     console.error('[Admin account status] Failed:', error);
