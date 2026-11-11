@@ -2129,7 +2129,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
       const { data: posts, error } = await publicSupabase
         .from('blog_posts')
         .select('title,slug,excerpt,published_at')
-        .eq('status', 'published')
+        .in('status', ['published', 'scheduled'])
         .lte('published_at', new Date().toISOString())
         .order('published_at', { ascending: false })
         .limit(100);
