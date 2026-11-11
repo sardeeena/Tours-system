@@ -1612,6 +1612,188 @@ app.all('/api/db/query', rateLimit(60, 60_000), async (req: AuthenticatedRequest
 });
 
 // ------------------------------------------------------------------------------
+// Search discovery endpoints: generated from published database records.
+// These endpoints never publish admin-only data or draft catalogue entries.
+// ------------------------------------------------------------------------------
+
+const KEMET_PUBLIC_ORIGIN = 'https://kemetspirit.com';
+const KEMET_CORE_PUBLIC_PATHS = [
+  '/',
+  '/excursions',
+  '/about',
+  '/why-us',
+  '/privacy',
+  '/booking-conditions',
+  '/marine-safety',
+];
+
+function escapeXml(value: string): string {
+  return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+}
+
+function toSitemapDate(value: unknown): string | undefined {
+  if (typeof value !== 'string' || !value.trim()) return undefined;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString().slice(0, 10);
+}
+
+function cleanPublicText(value: unknown, maxLength = 500): string {
+  return typeof value === 'string'
+    ? value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, maxLength)
+    : '';
+}
+
+app.get('/sitemap.xml', async (_req: Request, res: Response) => {
+  const urls = new Map<string, string | undefined>();
+  for (const route of KEMET_CORE_PUBLIC_PATHS) {
+    urls.set(`${KEMET_PUBLIC_ORIGIN}${route === '/' ? '/' : route}`, undefined);
+  }
+
+  if (serverSupabase) {
+    try {
+      const { data: tours, error: toursError } = await serverSupabase
+        .from('tours')
+        .select('slug, updated_at')
+        .eq('status', 'published')
+        .order('updated_at', { ascending: false })
+        .limit(5000);
+
+      if (toursError) {
+        console.warn('[SEO sitemap] Published tour query failed:', toursError.message);
+      } else {
+        for (const tour of tours || []) {
+          const slug = typeof tour.slug === 'string' ? tour.slug.trim() : '';
+          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+          urls.set(
+            `${KEMET_PUBLIC_ORIGIN}/excursions/${encodeURIComponent(slug)}`,
+            toSitemapDate(tour.updated_at)
+          );
+        }
+      }
+    } catch (error) {
+      console.warn('[SEO sitemap] Tour catalogue could not be loaded:', error);
+    }
+
+    try {
+      const { data: pageSetting, error: pagesError } = await serverSupabase
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'pages_content')
+        .maybeSingle();
+
+      if (pagesError) {
+        console.warn('[SEO sitemap] CMS page query failed:', pagesError.message);
+      } else {
+        const rawPages = pageSetting?.value;
+        const pages = Array.isArray(rawPages)
+          ? rawPages
+          : rawPages && typeof rawPages === 'object' && Array.isArray((rawPages as any).pages)
+            ? (rawPages as any).pages
+            : [];
+
+        for (const page of pages) {
+          const slug = typeof page?.slug === 'string' ? page.slug.trim() : '';
+          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+          if (page?.published === false || page?.status === 'draft' || page?.status === 'unpublished') continue;
+          urls.set(
+            `${KEMET_PUBLIC_ORIGIN}/${encodeURIComponent(slug)}`,
+            toSitemapDate(page?.updated_at || page?.lastUpdated)
+          );
+        }
+      }
+    } catch (error) {
+      console.warn('[SEO sitemap] CMS pages could not be loaded:', error);
+    }
+  }
+
+  const entries = Array.from(urls.entries()).map(([loc, lastmod]) => (
+    `  <url><loc>${escapeXml(loc)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}</url>`
+  ));
+
+  const xml = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ...entries,
+    '</urlset>',
+  ].join('\n');
+
+  res.status(200);
+  res.type('application/xml');
+  res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
+  return res.send(xml);
+});
+
+app.get('/llms.txt', async (_req: Request, res: Response) => {
+  const lines = [
+    '# Kemet Spirit',
+    '',
+    '> Explore excursions and experiences across Egypt’s Red Sea coast. Tour pages provide current published descriptions, inclusions, pricing and booking details.',
+    '',
+    '## Main pages',
+    '- [Homepage](https://kemetspirit.com/)',
+    '- [Excursions](https://kemetspirit.com/excursions)',
+    '- [About](https://kemetspirit.com/about)',
+    '',
+    '## Published excursions',
+  ];
+
+  if (serverSupabase) {
+    try {
+      const { data: tours, error } = await serverSupabase
+        .from('tours')
+        .select('title, slug, short_description, price')
+        .eq('status', 'published')
+        .order('sort_order', { ascending: true })
+        .limit(500);
+
+      if (error) {
+        console.warn('[SEO llms.txt] Published tour query failed:', error.message);
+      } else {
+        for (const tour of tours || []) {
+          const slug = typeof tour.slug === 'string' ? tour.slug.trim() : '';
+          const title = cleanPublicText(tour.title, 160);
+          if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+          const description = cleanPublicText(tour.short_description, 400);
+          const price = Number(tour.price);
+          const priceText = Number.isFinite(price) && price > 0 ? ` Starting price: €${price}.` : '';
+          lines.push(`- [${title}](https://kemetspirit.com/excursions/${encodeURIComponent(slug)}): ${description}${priceText}`);
+        }
+      }
+    } catch (error) {
+      console.warn('[SEO llms.txt] Tour catalogue could not be loaded:', error);
+    }
+  }
+
+  lines.push(
+    '',
+    '## Booking information',
+    '- Check each published excursion page for its current price, availability, duration, pickup information, inclusions and cancellation terms.',
+    '- Booking and availability details can change. Use the live website as the source of truth.',
+    '',
+    '## Sitemap',
+    '- https://kemetspirit.com/sitemap.xml',
+    ''
+  );
+
+  res.status(200);
+  res.type('text/plain; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
+  return res.send(lines.join('\n'));
+});
+
+// Private customer and administration routes must be crawlable so search engines
+// can observe noindex. This header is not an access-control mechanism.
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const privateRoute = /^\/(?:admin(?:\/|$)|booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$))/i;
+  if ((req.method === 'GET' || req.method === 'HEAD') && privateRoute.test(req.path)) {
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+    res.setHeader('Cache-Control', 'private, no-store, max-age=0');
+  }
+  next();
+});
+
+// ------------------------------------------------------------------------------
 // API 404 Handler
 // ------------------------------------------------------------------------------
 app.use('/api/*', (_req: Request, res: Response) => {
@@ -1673,7 +1855,7 @@ async function startServer() {
       if (fs.existsSync(indexHtmlPath)) {
         res.sendFile(indexHtmlPath);
       } else {
-        res.status(503).send('Awesome Adventure Tours is compiling production assets. Please wait a moment and refresh.');
+        res.status(503).send('Kemet Spirit is preparing production assets. Please wait a moment and refresh.');
       }
     });
   }
