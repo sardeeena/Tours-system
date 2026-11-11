@@ -45,6 +45,10 @@ SELECT ok(
 INSERT INTO public.tours (title, slug, status, price, max_guests)
 VALUES ('pgTAP Notification Test Tour', 'pgtap-notification-test', 'published', 100.00, 10);
 
+INSERT INTO public.tour_availability (tour_id, date, max_capacity, booked_count, status)
+SELECT id, CURRENT_DATE + 30, 10, 0, 'available'
+FROM public.tours WHERE slug = 'pgtap-notification-test';
+
 CREATE TEMP TABLE notification_test_state (
   booking JSONB NOT NULL
 ) ON COMMIT DROP;
