@@ -449,3 +449,92 @@ html.dark .skeleton-card-wave::after,
   }
 }
 
+
+
+/* Kemet Spirit admin design-system compatibility and responsive foundations.
+   Legacy admin modules still contain dark utility classes; normalize those in
+   light mode while preserving semantic status colors and the explicit dark theme. */
+html:not(.dark) .admin-shell .bg-stone-950,
+html:not(.dark) .admin-shell .bg-slate-950 {
+  background-color: #FFFFFF !important;
+}
+html:not(.dark) .admin-shell .bg-stone-900,
+html:not(.dark) .admin-shell .bg-slate-900 {
+  background-color: #FAF8F5 !important;
+}
+html:not(.dark) .admin-shell .bg-stone-800,
+html:not(.dark) .admin-shell .bg-slate-800 {
+  background-color: #F2EFE9 !important;
+}
+html:not(.dark) .admin-shell .bg-stone-700,
+html:not(.dark) .admin-shell .bg-slate-700 {
+  background-color: #E8E3DA !important;
+}
+html:not(.dark) .admin-shell .border-stone-900,
+html:not(.dark) .admin-shell .border-stone-800,
+html:not(.dark) .admin-shell .border-stone-700,
+html:not(.dark) .admin-shell .border-slate-800,
+html:not(.dark) .admin-shell .divide-stone-800 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #E8E3DA !important;
+}
+html:not(.dark) .admin-shell :is(h1,h2,h3,h4,p).text-white,
+html:not(.dark) .admin-shell .text-stone-100,
+html:not(.dark) .admin-shell .text-stone-200,
+html:not(.dark) .admin-shell .text-slate-100,
+html:not(.dark) .admin-shell .text-slate-200 {
+  color: #111A24 !important;
+}
+html:not(.dark) .admin-shell .text-stone-300,
+html:not(.dark) .admin-shell .text-slate-300 {
+  color: #475569 !important;
+}
+html:not(.dark) .admin-shell .text-stone-400,
+html:not(.dark) .admin-shell .text-slate-400 {
+  color: #64748B !important;
+}
+.admin-shell :is(input,select,textarea) {
+  min-width: 0;
+  max-width: 100%;
+}
+.admin-shell :is(table,[role="table"]) {
+  max-width: 100%;
+}
+.admin-shell .overflow-x-auto,
+.admin-shell .overflow-x-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+}
+.admin-shell :is(button,a,[role="button"],input,select,textarea) {
+  touch-action: manipulation;
+}
+.admin-shell :is(button,a,[role="button"]):focus-visible,
+.admin-shell :is(input,select,textarea):focus-visible {
+  outline: 2px solid #0D838C;
+  outline-offset: 2px;
+}
+@media (max-width: 767px) {
+  .admin-shell main > header {
+    align-items: stretch;
+  }
+  .admin-shell main > header > div {
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+  .admin-shell main > div:last-child {
+    padding: 0.75rem;
+  }
+  .admin-shell :is(input,select,textarea) {
+    font-size: 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-shell *,
+  .admin-shell *::before,
+  .admin-shell *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
