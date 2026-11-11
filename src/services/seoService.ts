@@ -17,10 +17,10 @@ export interface SeoMetadata {
   schemaJsonLd?: Record<string, unknown>;
 }
 
-const DEFAULT_TITLE = 'Awesome Adventure Tours | Excursions, Boat Trips & Safaris';
-const DEFAULT_DESCRIPTION = 'Awesome Adventure Tours - Professional tour operator and excursion booking platform specializing in boat trips, coral snorkeling, diving, and desert safaris.';
-const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80';
-const SITE_NAME = 'Awesome Adventure Tours';
+const DEFAULT_TITLE = 'Kemet Spirit | Red Sea Excursions in Egypt';
+const DEFAULT_DESCRIPTION = 'Explore Red Sea excursions in Egypt, including boat trips, island visits, snorkeling and desert experiences. Review each tour\'s details before booking.';
+const DEFAULT_IMAGE = 'https://kemetspirit.com/logo.webp';
+const SITE_NAME = 'Kemet Spirit';
 
 /**
  * Updates or creates a <meta> element in the document head
