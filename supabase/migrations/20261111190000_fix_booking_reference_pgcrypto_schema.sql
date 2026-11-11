@@ -6,8 +6,6 @@ DO $migration$
 DECLARE
   v_function_oid oid;
   v_definition text;
-  v_unqualified text := 'ENCODE(gen_random_bytes(10), ''hex'')';
-  v_qualified text := 'ENCODE(extensions.gen_random_bytes(10), ''hex'')';
 BEGIN
   SELECT p.oid
     INTO v_function_oid
@@ -27,10 +25,15 @@ BEGIN
 
   v_definition := pg_get_functiondef(v_function_oid);
 
-  IF position(v_qualified IN v_definition) > 0 THEN
+  IF v_definition ~* 'encode\(\s*extensions\.gen_random_bytes\(10\)\s*,\s*''hex''\s*\)' THEN
     RAISE NOTICE 'Booking-reference generator is already schema-qualified';
-  ELSIF position(v_unqualified IN v_definition) > 0 THEN
-    v_definition := replace(v_definition, v_unqualified, v_qualified);
+  ELSIF v_definition ~* 'encode\(\s*gen_random_bytes\(10\)\s*,\s*''hex''\s*\)' THEN
+    v_definition := regexp_replace(
+      v_definition,
+      'encode\(\s*gen_random_bytes\(10\)\s*,\s*''hex''\s*\)',
+      'encode(extensions.gen_random_bytes(10), ''hex'')',
+      'gi'
+    );
     EXECUTE v_definition;
   ELSE
     RAISE EXCEPTION 'Expected booking-reference expression was not found; refusing to modify the function';
