@@ -4,12 +4,14 @@ CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
 SELECT plan(7);
 
+INSERT INTO public.tours (title, slug, status, price, max_guests)
+VALUES ('pgTAP Fail-Closed Availability Test', 'pgtap-availability-fail-closed', 'published', 100.00, 10)
+ON CONFLICT (slug) DO NOTHING;
+
 CREATE TEMP TABLE booking_availability_test_context AS
 SELECT id AS tour_id, slug, (CURRENT_DATE + 60)::date AS test_date
 FROM public.tours
-WHERE status = 'published'
-ORDER BY sort_order, title
-LIMIT 1;
+WHERE slug = 'pgtap-availability-fail-closed';
 
 DELETE FROM public.tour_availability
 WHERE tour_id = (SELECT tour_id FROM booking_availability_test_context)
