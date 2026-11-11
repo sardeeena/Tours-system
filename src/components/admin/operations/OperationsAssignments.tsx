@@ -159,7 +159,7 @@ export const OperationsAssignments: React.FC = () => {
 
   const handleSaveAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!hasPermission(editingAssignment ? 'operations.update' : 'operations.create')) { showToast('Your role does not permit saving assignments.', 'error'); return; }
+    if (!hasPermission(editingId ? 'operations.update' : 'operations.create')) { showToast('Your role does not permit saving assignments.', 'error'); return; }
     if (!tourId || !selectedDate) return;
 
     const res = await saveAssignment({
@@ -225,14 +225,14 @@ export const OperationsAssignments: React.FC = () => {
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
 
-          <button
+          {hasPermission('operations.create') && <button
             type="button"
             onClick={handleOpenCreate}
             className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-[#0A6C74] hover:bg-[#08565C] text-white rounded text-xs font-semibold shadow transition-colors cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Create Assignment</span>
-          </button>
+          </button>}
         </div>
       </div>
 
@@ -344,14 +344,14 @@ export const OperationsAssignments: React.FC = () => {
                       </td>
 
                       <td className="py-2.5 px-3 text-right">
-                        <button
+                        {hasPermission('operations.update') && <button
                           type="button"
                           onClick={() => handleOpenEdit(a)}
                           className="p-1.5 text-stone-400 hover:text-white rounded hover:bg-stone-800 cursor-pointer"
                           title="Edit Assignment"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
-                        </button>
+                        </button>}
                       </td>
                     </tr>
                   );
