@@ -1705,6 +1705,33 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
     } catch (error) {
       console.warn('[SEO sitemap] CMS pages could not be loaded:', error);
     }
+
+    try {
+      const [destinationResult, tourDestinationResult] = await Promise.all([
+        serverSupabase.from('destinations').select('id,slug,updated_at').eq('status', 'published'),
+        serverSupabase.from('tours').select('destination_id').eq('status', 'published'),
+      ]);
+      if (destinationResult.error) {
+        console.warn('[SEO sitemap] Published destinations query failed:', destinationResult.error.message);
+      } else if (tourDestinationResult.error) {
+        console.warn('[SEO sitemap] Published destination-tours query failed:', tourDestinationResult.error.message);
+      } else {
+        const destinationIdsWithTours = new Set(
+          (tourDestinationResult.data || []).map((row: any) => row.destination_id).filter(Boolean).map(String)
+        );
+        for (const destination of destinationResult.data || []) {
+          const slug = typeof destination.slug === 'string' ? destination.slug.trim() : '';
+          if (!destinationIdsWithTours.has(String(destination.id))) continue;
+          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+          urls.set(
+            `${KEMET_PUBLIC_ORIGIN}/destinations/${encodeURIComponent(slug)}`,
+            toSitemapDate(destination.updated_at)
+          );
+        }
+      }
+    } catch (error) {
+      console.warn('[SEO sitemap] Destination pages could not be loaded:', error);
+    }
   }
 
   const entries = Array.from(urls.entries()).map(([loc, lastmod]) => (
@@ -1763,6 +1790,35 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
       }
     } catch (error) {
       console.warn('[SEO llms.txt] Tour catalogue could not be loaded:', error);
+    }
+  }
+
+  if (serverSupabase) {
+    lines.push('', '## Published destinations');
+    try {
+      const [destinationResult, tourDestinationResult] = await Promise.all([
+        serverSupabase.from('destinations').select('id,name,slug,description').eq('status', 'published').order('sort_order', { ascending: true }),
+        serverSupabase.from('tours').select('destination_id').eq('status', 'published'),
+      ]);
+      if (destinationResult.error) {
+        console.warn('[SEO llms.txt] Published destinations query failed:', destinationResult.error.message);
+      } else if (tourDestinationResult.error) {
+        console.warn('[SEO llms.txt] Destination tour links query failed:', tourDestinationResult.error.message);
+      } else {
+        const destinationIdsWithTours = new Set(
+          (tourDestinationResult.data || []).map((row: any) => row.destination_id).filter(Boolean).map(String)
+        );
+        for (const destination of destinationResult.data || []) {
+          const slug = typeof destination.slug === 'string' ? destination.slug.trim() : '';
+          const name = cleanPublicText(destination.name, 120);
+          if (!name || !destinationIdsWithTours.has(String(destination.id))) continue;
+          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+          const description = cleanPublicText(destination.description, 400);
+          lines.push(`- [${name}](https://kemetspirit.com/destinations/${encodeURIComponent(slug)}): ${description}`);
+        }
+      }
+    } catch (error) {
+      console.warn('[SEO llms.txt] Destination catalogue could not be loaded:', error);
     }
   }
 
