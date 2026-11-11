@@ -27,7 +27,7 @@ export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
     heroHeadline: 'Explore Egypt’s Red Sea Coast with Kemet Spirit',
     heroSubtitle: 'Discover the excursions and experiences currently listed on Kemet Spirit. Each tour page provides its own description and booking information.',
     lastUpdated: '2026-11-11',
-    seoIndexable: false,
+    seoIndexable: true,
     sections: [
       {
         title: 'Explore the available experiences',
@@ -36,6 +36,29 @@ export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
       {
         title: 'Review each tour before booking',
         content: 'Tour pages provide the information available for each experience, including its description, price, duration, inclusions and pickup arrangements where applicable.',
+      },
+    ],
+  },
+  {
+    id: 'contact',
+    title: 'Contact Kemet Spirit',
+    slug: 'contact',
+    heroHeadline: 'Contact Kemet Spirit',
+    heroSubtitle: 'Speak with our Hurghada support team about published excursions, pickup information and reservations.',
+    lastUpdated: '2026-11-12',
+    seoIndexable: true,
+    sections: [
+      {
+        title: 'Phone support',
+        content: '+20 151 5212741',
+      },
+      {
+        title: 'Hurghada office',
+        content: 'Hurghada New Marina, Berth B-14, Red Sea, Egypt.',
+      },
+      {
+        title: 'Before you book',
+        content: 'Check the selected excursion page for its current price, availability, pickup arrangements and booking conditions.',
       },
     ],
   },
