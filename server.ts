@@ -177,6 +177,24 @@ if (SUPABASE_URL && SUPABASE_KEY) {
   }
 }
 
+// Public server-rendered pages use the publishable/anon key so Supabase RLS
+// remains the authority for published catalogue and approved public settings.
+// Never use the server secret/service-role client to render visitor-facing HTML.
+let publicSupabase: SupabaseClient | null = null;
+if (SUPABASE_URL && SUPABASE_USER_KEY) {
+  try {
+    publicSupabase = createClient(SUPABASE_URL, SUPABASE_USER_KEY, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
+  } catch (initErr) {
+    console.error('[Public SEO Supabase] Client initialization failure:', initErr);
+    publicSupabase = null;
+  }
+}
+
 export interface AuthenticatedUser {
   id: string;
   email?: string;
@@ -1650,9 +1668,9 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
     urls.set(`${KEMET_PUBLIC_ORIGIN}${route === '/' ? '/' : route}`, undefined);
   }
 
-  if (serverSupabase) {
+  if (publicSupabase) {
     try {
-      const { data: tours, error: toursError } = await serverSupabase
+      const { data: tours, error: toursError } = await publicSupabase
         .from('tours')
         .select('slug, updated_at')
         .eq('status', 'published')
@@ -1676,7 +1694,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
     }
 
     try {
-      const { data: pageSetting, error: pagesError } = await serverSupabase
+      const { data: pageSetting, error: pagesError } = await publicSupabase
         .from('site_settings')
         .select('value')
         .eq('key', 'pages_content')
@@ -1708,8 +1726,8 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
 
     try {
       const [destinationResult, tourDestinationResult] = await Promise.all([
-        serverSupabase.from('destinations').select('id,slug,updated_at,tagline,description').eq('status', 'published'),
-        serverSupabase.from('tours').select('destination_id').eq('status', 'published'),
+        publicSupabase.from('destinations').select('id,slug,updated_at,tagline,description').eq('status', 'published'),
+        publicSupabase.from('tours').select('destination_id').eq('status', 'published'),
       ]);
       if (destinationResult.error) {
         console.warn('[SEO sitemap] Published destinations query failed:', destinationResult.error.message);
@@ -1771,9 +1789,9 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
     '## Published excursions',
   ];
 
-  if (serverSupabase) {
+  if (publicSupabase) {
     try {
-      const { data: tours, error } = await serverSupabase
+      const { data: tours, error } = await publicSupabase
         .from('tours')
         .select('title, slug, short_description, price, currency')
         .eq('status', 'published')
@@ -1799,12 +1817,12 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
     }
   }
 
-  if (serverSupabase) {
+  if (publicSupabase) {
     lines.push('', '## Published destinations');
     try {
       const [destinationResult, tourDestinationResult] = await Promise.all([
-        serverSupabase.from('destinations').select('id,name,slug,description,tagline').eq('status', 'published').order('sort_order', { ascending: true }),
-        serverSupabase.from('tours').select('destination_id').eq('status', 'published'),
+        publicSupabase.from('destinations').select('id,name,slug,description,tagline').eq('status', 'published').order('sort_order', { ascending: true }),
+        publicSupabase.from('tours').select('destination_id').eq('status', 'published'),
       ]);
       if (destinationResult.error) {
         console.warn('[SEO llms.txt] Published destinations query failed:', destinationResult.error.message);
@@ -1914,9 +1932,9 @@ function seoSafeImage(value: unknown): string {
 }
 
 async function loadKemetSeoOverride(entityType: string, identifier: string, isPageSlug: boolean): Promise<any | null> {
-  if (!serverSupabase || !identifier) return null;
+  if (!publicSupabase || !identifier) return null;
   try {
-    let query = serverSupabase.from('seo_metadata')
+    let query = publicSupabase.from('seo_metadata')
       .select('seo_title,meta_description,og_image,robots_index,robots_follow')
       .eq('entity_type', entityType);
     query = isPageSlug ? query.eq('page_slug', identifier) : query.eq('entity_id', identifier);
@@ -1945,9 +1963,9 @@ function seoPrice(priceValue: unknown, currencyValue: unknown): string {
 }
 
 async function loadKemetTours(): Promise<any[]> {
-  if (!serverSupabase) return [];
+  if (!publicSupabase) return [];
   try {
-    const { data, error } = await serverSupabase.from('tours')
+    const { data, error } = await publicSupabase.from('tours')
       .select('id,slug,title,short_description,description,price,currency,duration,duration_hours,destination_id,pickup_info,cancellation_policy,departure_time,updated_at,sort_order')
       .eq('status', 'published').order('sort_order', { ascending: true }).limit(500);
     if (error) {
@@ -1962,9 +1980,9 @@ async function loadKemetTours(): Promise<any[]> {
 }
 
 async function loadKemetPages(): Promise<any[]> {
-  if (serverSupabase) {
+  if (publicSupabase) {
     try {
-      const { data, error } = await serverSupabase.from('site_settings')
+      const { data, error } = await publicSupabase.from('site_settings')
         .select('value').eq('key', 'pages_content').maybeSingle();
       if (!error) {
         const value = data?.value;
@@ -1981,9 +1999,9 @@ async function loadKemetPages(): Promise<any[]> {
 }
 
 async function loadKemetDestinations(): Promise<any[]> {
-  if (!serverSupabase) return [];
+  if (!publicSupabase) return [];
   try {
-    const { data, error } = await serverSupabase.from('destinations')
+    const { data, error } = await publicSupabase.from('destinations')
       .select('id,name,slug,tagline,description,main_image,seo_title,seo_description,updated_at')
       .eq('status', 'published').order('sort_order', { ascending: true }).limit(100);
     if (error) {
@@ -2096,9 +2114,9 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
   } else if (path.startsWith('/excursions/')) {
     let slug = '';
     try { slug = decodeURIComponent(path.slice('/excursions/'.length)); } catch { slug = ''; }
-    if (serverSupabase && /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) {
+    if (publicSupabase && /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) {
       try {
-        const { data, error } = await serverSupabase.from('tours').select('*')
+        const { data, error } = await publicSupabase.from('tours').select('*')
           .eq('slug', slug).eq('status', 'published').maybeSingle();
         if (error) console.warn('[SEO render] Tour detail unavailable:', error.message);
         currentTour = data || null;
@@ -2115,11 +2133,11 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
       const summary = seoPlainText(currentTour.short_description || currentTour.description, 300);
       description = summary || `Review details and booking information for ${seoPlainText(currentTour.title, 160)}.`;
       const relationQueries = await Promise.all([
-        serverSupabase!.from('tour_images').select('image_url,alt_text,is_primary').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
-        serverSupabase!.from('tour_highlights').select('item').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
-        serverSupabase!.from('tour_inclusions').select('item').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
-        serverSupabase!.from('tour_exclusions').select('item').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
-        serverSupabase!.from('tour_itinerary').select('time,title,description').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
+        publicSupabase!.from('tour_images').select('image_url,alt_text,is_primary').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
+        publicSupabase!.from('tour_highlights').select('item').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
+        publicSupabase!.from('tour_inclusions').select('item').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
+        publicSupabase!.from('tour_exclusions').select('item').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
+        publicSupabase!.from('tour_itinerary').select('time,title,description').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
       ]);
       const tourImages = relationQueries[0].error ? [] : relationQueries[0].data || [];
       const primaryImage = tourImages.find((image: any) => image.is_primary) || tourImages[0];
@@ -2153,9 +2171,9 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
   } else if (path.startsWith('/destinations/')) {
     let slug = '';
     try { slug = decodeURIComponent(path.slice('/destinations/'.length)); } catch { slug = ''; }
-    if (serverSupabase && /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) {
+    if (publicSupabase && /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) {
       try {
-        const { data, error } = await serverSupabase.from('destinations').select('*')
+        const { data, error } = await publicSupabase.from('destinations').select('*')
           .eq('slug', slug).eq('status', 'published').maybeSingle();
         if (error) console.warn('[SEO render] Destination lookup failed:', error.message);
         activeDestination = data || null;
@@ -2163,9 +2181,9 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
         console.warn('[SEO render] Destination query failed:', error);
       }
     }
-    if (activeDestination && serverSupabase) {
+    if (activeDestination && publicSupabase) {
       try {
-        const { data, error } = await serverSupabase.from('tours').select('*')
+        const { data, error } = await publicSupabase.from('tours').select('*')
           .eq('destination_id', activeDestination.id).eq('status', 'published')
           .order('sort_order', { ascending: true }).limit(100);
         if (error) console.warn('[SEO render] Destination tours query failed:', error.message);
