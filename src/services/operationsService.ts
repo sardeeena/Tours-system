@@ -1409,67 +1409,116 @@ export async function deleteGuide(id: string): Promise<boolean> {
 // ==============================================================================
 
 export async function listAvailabilitySlots(): Promise<AvailabilitySlot[]> {
-  const allBookings = await bookingRepository.listBookings();
+  if (!isSupabaseConfigured()) {
+    if (import.meta.env.DEV) return [];
+    throw new Error('Supabase is not configured; live availability cannot be loaded.');
+  }
 
-  // Aggregate bookings per tour and date
-  const slotMap = new Map<string, AvailabilitySlot>();
+  const { data: rows, error } = await supabase
+    .from('tour_availability')
+    .select('id,tour_id,date,max_capacity,booked_count,status,notes')
+    .order('date', { ascending: true });
 
-  allBookings.forEach((b) => {
-    if (b.status === 'cancelled') return;
-    const dateStr = b.date ? b.date.split('T')[0] : '';
-    if (!dateStr) return;
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!rows?.length) return [];
 
-    const key = `${b.tourId}_${dateStr}`;
-    const pax = (b.guests.adults || 1) + (b.guests.children || 0) + (b.guests.infants || 0);
+  const tourIds = [...new Set(rows.map((row: any) => row.tour_id).filter(Boolean))];
+  const [{ data: tours, error: toursError }, allBookings] = await Promise.all([
+    supabase.from('tours').select('id,title,slug,departure_time').in('id', tourIds),
+    bookingRepository.listBookings(),
+  ]);
 
-    const existing = slotMap.get(key);
-    if (existing) {
-      existing.bookedCount += pax;
-      existing.remainingCapacity = Math.max(0, existing.maxCapacity - existing.bookedCount);
-      if (existing.remainingCapacity === 0) existing.status = 'sold_out';
-    } else {
-      slotMap.set(key, {
-        id: `slot-${key}`,
-        tourId: b.tourId,
-        tourTitle: b.tourTitle,
-        date: dateStr,
-        maxCapacity: 35,
-        bookedCount: pax,
-        remainingCapacity: Math.max(0, 35 - pax),
-        status: pax >= 35 ? 'sold_out' : 'available',
-        departureTime: (b as any).departureTime || '08:30',
-        notes: null,
-        isBlackout: false,
-      });
-    }
+  if (toursError) throw new Error(formatSupabaseError(toursError));
+
+  const tourMap = new Map((tours || []).map((tour: any) => [tour.id, tour]));
+  const bookedByDate = new Map<string, number>();
+
+  allBookings.forEach((booking) => {
+    if (booking.status === 'cancelled') return;
+    const date = booking.date?.split('T')[0];
+    if (!date) return;
+    const key = `${booking.tourId}_${date}`;
+    const passengers =
+      (booking.guests.adults || 0) +
+      (booking.guests.children || 0) +
+      (booking.guests.infants || 0);
+    bookedByDate.set(key, (bookedByDate.get(key) || 0) + passengers);
   });
 
-  return Array.from(slotMap.values());
+  return rows.map((row: any) => {
+    const tour = tourMap.get(row.tour_id);
+    const maxCapacity = Math.max(0, Number(row.max_capacity) || 0);
+    const bookedCount = Math.max(
+      0,
+      Number(row.booked_count) || 0,
+      bookedByDate.get(`${row.tour_id}_${row.date}`) || 0
+    );
+    const remainingCapacity = Math.max(0, maxCapacity - bookedCount);
+    const status: AvailabilitySlot['status'] =
+      row.status === 'unavailable'
+        ? 'unavailable'
+        : row.status === 'sold_out' || (row.status === 'available' && remainingCapacity === 0)
+          ? 'sold_out'
+          : row.status === 'available'
+            ? 'available'
+            : 'unavailable';
+
+    return {
+      id: row.id,
+      tourId: row.tour_id,
+      tourTitle: tour?.title || 'Tour record unavailable',
+      date: row.date,
+      maxCapacity,
+      bookedCount,
+      remainingCapacity,
+      status,
+      departureTime: tour?.departure_time || '',
+      notes: row.notes || null,
+      isBlackout: status === 'unavailable',
+    };
+  });
 }
 
 export async function updateAvailabilitySlot(
-  slotId: string,
+  tourId: string,
+  date: string,
   updates: Partial<AvailabilitySlot>
 ): Promise<boolean> {
-  if (isSupabaseConfigured()) {
-    try {
-      if (updates.maxCapacity !== undefined) {
-        // Upsert into tour_availability
-        const [_, tourId, date] = slotId.split('-');
-        if (tourId && date) {
-          await supabase.from('tour_availability').upsert({
-            tour_id: tourId,
-            date,
-            total_capacity: updates.maxCapacity,
-            status: updates.status || 'available',
-            notes: updates.notes,
-          });
-        }
-      }
-    } catch {
-      // ignore
-    }
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase is not configured; availability changes were not saved.');
   }
+
+  const { data: existing, error: readError } = await supabase
+    .from('tour_availability')
+    .select('max_capacity,booked_count,status,notes')
+    .eq('tour_id', tourId)
+    .eq('date', date)
+    .maybeSingle();
+
+  if (readError) throw new Error(formatSupabaseError(readError));
+
+  const maxCapacity = Math.max(
+    0,
+    Number(updates.maxCapacity ?? existing?.max_capacity) || 0
+  );
+  const bookedCount = Math.max(0, Number(existing?.booked_count) || 0);
+  const status = updates.status ?? existing?.status ?? 'unavailable';
+
+  if (status === 'available' && maxCapacity <= bookedCount) {
+    throw new Error('A date needs an explicit capacity greater than its booked count before it can be opened.');
+  }
+
+  const { error } = await supabase
+    .from('tour_availability')
+    .upsert({
+      tour_id: tourId,
+      date,
+      max_capacity: maxCapacity,
+      status,
+      notes: updates.notes ?? existing?.notes ?? 'Manual override: updated by operations',
+    }, { onConflict: 'tour_id,date' });
+
+  if (error) throw new Error(formatSupabaseError(error));
   return true;
 }
 
@@ -1479,19 +1528,38 @@ export async function setBlackoutDate(
   isBlackout: boolean,
   notes?: string
 ): Promise<boolean> {
-  if (isSupabaseConfigured()) {
-    try {
-      await supabase.from('tour_availability').upsert({
-        tour_id: tourId,
-        date,
-        total_capacity: 0,
-        status: isBlackout ? 'unavailable' : 'available',
-        notes: notes || 'Blackout date applied',
-      });
-    } catch {
-      // ignore
-    }
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase is not configured; blackout changes were not saved.');
   }
+
+  const { data: existing, error: readError } = await supabase
+    .from('tour_availability')
+    .select('max_capacity,booked_count')
+    .eq('tour_id', tourId)
+    .eq('date', date)
+    .maybeSingle();
+
+  if (readError) throw new Error(formatSupabaseError(readError));
+
+  const maxCapacity = Math.max(0, Number(existing?.max_capacity) || 0);
+  const bookedCount = Math.max(0, Number(existing?.booked_count) || 0);
+  if (!isBlackout && maxCapacity <= bookedCount) {
+    throw new Error('This date cannot be reopened until an actual capacity greater than its booked count is configured.');
+  }
+
+  const { error } = await supabase
+    .from('tour_availability')
+    .upsert({
+      tour_id: tourId,
+      date,
+      max_capacity: maxCapacity,
+      status: isBlackout ? 'unavailable' : 'available',
+      notes: isBlackout
+        ? `Manual blackout: ${notes || 'Closed by operations'}`
+        : `Manual override: ${notes || 'Reopened by operations'}`,
+    }, { onConflict: 'tour_id,date' });
+
+  if (error) throw new Error(formatSupabaseError(error));
   return true;
 }
 
