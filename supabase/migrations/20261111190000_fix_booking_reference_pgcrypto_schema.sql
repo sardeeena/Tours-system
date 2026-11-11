@@ -1,11 +1,13 @@
 -- Fix booking-reference generation for SECURITY DEFINER functions with an empty search_path.
--- Supabase installs pgcrypto in the extensions schema; the function must qualify it.
+-- Supabase installs pgcrypto in the extensions schema; any direct call must be qualified.
 BEGIN;
 
 DO $migration$
 DECLARE
   v_function_oid oid;
   v_definition text;
+  v_rewritten text;
+  v_unqualified_pattern text := '(^|[^.[:alnum:]_])gen_random_bytes[[:space:]]*\(';
 BEGIN
   SELECT p.oid
     INTO v_function_oid
@@ -25,18 +27,21 @@ BEGIN
 
   v_definition := pg_get_functiondef(v_function_oid);
 
-  IF v_definition ~* 'encode\(\s*extensions\.gen_random_bytes\(10\)\s*,\s*''hex''\s*\)' THEN
-    RAISE NOTICE 'Booking-reference generator is already schema-qualified';
-  ELSIF v_definition ~* 'encode\(\s*gen_random_bytes\(10\)\s*,\s*''hex''\s*\)' THEN
-    v_definition := regexp_replace(
+  IF v_definition ~* v_unqualified_pattern THEN
+    v_rewritten := regexp_replace(
       v_definition,
-      'encode\(\s*gen_random_bytes\(10\)\s*,\s*''hex''\s*\)',
-      'encode(extensions.gen_random_bytes(10), ''hex'')',
+      v_unqualified_pattern,
+      E'\\1extensions.gen_random_bytes(',
       'gi'
     );
-    EXECUTE v_definition;
+
+    IF v_rewritten ~* v_unqualified_pattern THEN
+      RAISE EXCEPTION 'Could not safely qualify every unqualified gen_random_bytes call';
+    END IF;
+
+    EXECUTE v_rewritten;
   ELSE
-    RAISE EXCEPTION 'Expected booking-reference expression was not found; refusing to modify the function';
+    RAISE NOTICE 'No unqualified gen_random_bytes call found; no function rewrite required';
   END IF;
 END
 $migration$;
