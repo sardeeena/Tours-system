@@ -82,9 +82,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const permissions = user?.permissions ?? getUserPermissions(user?.role);
-  const hasPermission = useCallback((action: string): boolean => (
-    permissions.includes(action) || (action.endsWith('.read') && permissions.includes(action.replace('.read', '.manage')))
-  ), [permissions]);
+  const hasPermission = useCallback((action: string): boolean => {
+    const [module, requestedAction] = action.split('.');
+    const fullAdmin = Boolean(user?.roles?.includes('admin') || user?.roles?.includes('super_admin'));
+    if (fullAdmin) return true;
+    if (permissions.includes(action) || permissions.includes(`${module}.manage`)) return true;
+    if (requestedAction === 'read') {
+      return permissions.some((permission) => {
+        const [permissionModule, permissionAction] = permission.split('.');
+        return permissionModule === module && ['create', 'update', 'delete', 'approve', 'export'].includes(permissionAction);
+      });
+    }
+    return false;
+  }, [permissions, user?.roles]);
 
   const openAuthModal = useCallback((view: AuthModalView = 'login') => {
     setAuthModalView(view);
