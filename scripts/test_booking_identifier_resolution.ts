@@ -34,3 +34,25 @@ assert.equal(shouldUseLocalBookingCache(false, false, false), false);
 assert.equal(shouldUseLocalBookingCache(false, true, true), false);
 
 console.log('Booking identifier and production fallback checks passed.');
+
+
+import { readFileSync } from 'node:fs';
+
+const serverSource = readFileSync(new URL('../server.ts', import.meta.url), 'utf8');
+const availabilityStart = serverSource.indexOf("app.all('/api/availability/check'");
+const availabilityEnd = serverSource.indexOf('// 7. Inquiries & Concierge Submissions API', availabilityStart);
+assert.notEqual(availabilityStart, -1, 'legacy availability route remains explicitly defined');
+assert.notEqual(availabilityEnd, -1, 'availability route has a clear boundary');
+const availabilityRoute = serverSource.slice(availabilityStart, availabilityEnd);
+assert.match(
+  availabilityRoute,
+  /publicSupabase\\.rpc\\('get_tour_availability_schedule'/,
+  'legacy availability endpoint must use the authoritative Supabase schedule'
+);
+assert.doesNotMatch(
+  availabilityRoute,
+  /availableSeats:\\s*\\d+|maxCapacity:\\s*\\d+\\s*,\\s*status:\\s*'available'/,
+  'legacy availability endpoint must not return fabricated fixed capacity'
+);
+
+console.log('Legacy availability endpoint uses authoritative database capacity.');
