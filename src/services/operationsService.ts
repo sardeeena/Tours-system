@@ -258,7 +258,7 @@ function setLocal<T>(key: string, data: T): void {
 function normalizeDepartureTime(value: unknown): string {
   const raw = String(value ?? '').trim();
   if (!raw) return '';
-  const match = raw.match(/^(\\d{1,2}):(\\d{2})(?::\\d{2})?\\s*(AM|PM)?$/i);
+  const match = raw.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*(AM|PM)?$/i);
   if (!match) return raw;
   let hour = Number(match[1]);
   const minute = match[2];
