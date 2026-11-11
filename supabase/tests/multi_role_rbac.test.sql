@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(13);
+SELECT plan(14);
 
 SELECT ok(to_regclass('public.access_roles') IS NOT NULL,'access role catalog exists');
 SELECT ok(to_regclass('public.access_permissions') IS NOT NULL,'permission catalog exists');
@@ -31,12 +31,20 @@ SELECT ok(
   'custom role management RPC is unavailable to anonymous users'
 );
 SELECT ok(
-  EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='bookings' AND policyname='rbac_bookings_manage'),
-  'booking mutations have a permission-based RLS policy'
+  EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='bookings' AND policyname='rbac_bookings_create')
+  AND EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='bookings' AND policyname='rbac_bookings_update')
+  AND EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='bookings' AND policyname='rbac_bookings_delete'),
+  'booking create, update and delete are enforced by separate RLS policies'
 );
 SELECT ok(
-  EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='payment_transactions' AND policyname='rbac_payment_transactions_manage'),
-  'payment mutations have a finance permission-based RLS policy'
+  EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='payment_transactions' AND policyname='rbac_payment_transactions_create')
+  AND EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='payment_transactions' AND policyname='rbac_payment_transactions_update')
+  AND EXISTS(SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='payment_transactions' AND policyname='rbac_payment_transactions_delete'),
+  'finance create, update and delete are enforced by separate RLS policies'
+);
+SELECT ok(
+  EXISTS(SELECT 1 FROM public.access_permissions WHERE permission_key IN ('bookings.approve','bookings.export','finance.create','finance.approve','finance.export')),
+  'action-level workflow permissions are registered in the permission catalog'
 );
 SELECT ok(
   NOT has_function_privilege('anon','public.sync_legacy_profile_role_to_user_roles()','EXECUTE')
