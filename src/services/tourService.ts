@@ -199,7 +199,7 @@ export async function getPublishedTours(options?: TourFilterOptions): Promise<To
   }
 
   if (!isSupabaseConfigured() || isSchemaMissing()) {
-    return filterTours(localTours);
+    return import.meta.env.PROD ? [] : filterTours(localTours);
   }
 
   try {
@@ -281,6 +281,7 @@ export async function getPublishedTours(options?: TourFilterOptions): Promise<To
  */
 export async function getTourBySlug(slug: string, allowDraft: boolean = false): Promise<Tour | null> {
   if (!isSupabaseConfigured() || isSchemaMissing()) {
+    if (import.meta.env.PROD) return null;
     const local = localTours.find((t) => t.slug === slug || t.id === slug);
     return local || null;
   }
@@ -1204,7 +1205,7 @@ export async function getPublishedDestinations(): Promise<Destination[]> {
   }
 
   if (!isSupabaseConfigured()) {
-    return POPULAR_DESTINATIONS;
+    return import.meta.env.PROD ? [] : POPULAR_DESTINATIONS;
   }
 
   // 1. Fetch published destinations ordered by sort_order
@@ -1271,7 +1272,7 @@ export async function getPublishedCategories(): Promise<Category[]> {
   }
 
   if (!isSupabaseConfigured()) {
-    return TOUR_CATEGORIES;
+    return import.meta.env.PROD ? [] : TOUR_CATEGORIES;
   }
 
   // 1. Fetch published categories ordered by sort_order
@@ -1350,6 +1351,7 @@ export async function getPublishedCategories(): Promise<Category[]> {
  */
 export async function getDestinations(options?: { publishedOnly?: boolean }): Promise<DbDestination[]> {
   if (!isSupabaseConfigured()) {
+    if (import.meta.env.PROD) return [];
     return POPULAR_DESTINATIONS.map((d, index) => ({
       id: d.id,
       name: d.name,
@@ -1389,6 +1391,7 @@ export async function getDestinations(options?: { publishedOnly?: boolean }): Pr
  */
 export async function getCategories(options?: { publishedOnly?: boolean }): Promise<DbCategory[]> {
   if (!isSupabaseConfigured()) {
+    if (import.meta.env.PROD) return [];
     return TOUR_CATEGORIES.map((c, index) => ({
       id: c.id,
       name: c.name,
