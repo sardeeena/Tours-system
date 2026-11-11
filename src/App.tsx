@@ -431,6 +431,30 @@ function MainApp() {
       return;
     }
 
+    if (currentPath === '/blog') {
+      seoService.apply({
+        title: 'Kemet Spirit Travel Journal | Red Sea Guides & Egypt Travel Stories',
+        description: 'Discover Red Sea travel guides, local insights and inspiration for exploring Hurghada and Egypt with Kemet Spirit.',
+        canonicalUrl: 'https://kemetspirit.com/blog',
+        ogType: 'website',
+        robotsIndex: true,
+        robotsFollow: true,
+      });
+      return;
+    }
+
+    if (currentPath.startsWith('/blog/')) {
+      seoService.apply({
+        title: 'Travel Story | Kemet Spirit Journal',
+        description: 'Travel inspiration and local guides from the Kemet Spirit team in Hurghada, Egypt.',
+        canonicalUrl: typeof window !== 'undefined' ? `https://kemetspirit.com${currentPath}` : undefined,
+        ogType: 'article',
+        robotsIndex: true,
+        robotsFollow: true,
+      });
+      return;
+    }
+
     if (['/login', '/register', '/account', '/profile', '/reset-password'].includes(currentPath)) {
       seoService.apply({
         title: `Private Account | Kemet Spirit`,
