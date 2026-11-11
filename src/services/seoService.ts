@@ -109,7 +109,16 @@ export async function getStoredSeoMetadata(
 
     if (data.seo_title) metadata.title = data.seo_title;
     if (data.meta_description) metadata.description = data.meta_description;
-    if (data.canonical_url) metadata.canonicalUrl = data.canonical_url;
+    if (data.canonical_url) {
+      try {
+        const candidate = new URL(data.canonical_url, 'https://kemetspirit.com');
+        if (candidate.protocol === 'https:' && candidate.hostname.toLowerCase() === 'kemetspirit.com') {
+          metadata.canonicalUrl = candidate.toString();
+        }
+      } catch {
+        // Ignore invalid or off-domain canonical overrides; the route self-canonical remains.
+      }
+    }
     if (data.og_title) metadata.ogTitle = data.og_title;
     if (data.og_description) metadata.ogDescription = data.og_description;
     if (data.og_image) metadata.ogImage = data.og_image;
