@@ -108,7 +108,7 @@ export async function signInUser(
           };
         }
 
-        // Check or update role in profiles table (app_metadata or default customer)
+        // The live profiles row is the only authorization source for application roles.
         let userRole: UserRole = 'customer';
         let profileFullName = data.user.user_metadata?.full_name || data.user.email?.split('@')[0] || 'Voyager';
         let profilePhone = data.user.user_metadata?.phone;
