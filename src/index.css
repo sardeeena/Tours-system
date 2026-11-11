@@ -591,3 +591,190 @@ html.dark .admin-shell :is(input,select,textarea)::placeholder { color: var(--ad
     animation-iteration-count: 1 !important;
   }
 }
+
+
+
+/* =============================================================================
+   KEMET SPIRIT PUBLIC EXPERIENCE SYSTEM
+   Applies to the customer-facing storefront and booking journey only.
+   Admin styles remain isolated under .admin-shell.
+   ============================================================================= */
+.public-site:not(.public-site-admin-route) {
+  --site-canvas: #FAF8F5;
+  --site-surface: #FFFFFF;
+  --site-surface-soft: #F4F1EA;
+  --site-border: #E8E3DA;
+  --site-ink: #111A24;
+  --site-ink-soft: #334155;
+  --site-muted: #64748B;
+  --site-brand: #0A6C74;
+  --site-brand-strong: #08565C;
+  --site-focus: #0D838C;
+  color: var(--site-ink);
+  background: var(--site-canvas);
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  text-rendering: optimizeLegibility;
+}
+
+html.dark .public-site:not(.public-site-admin-route) {
+  --site-canvas: #0A1118;
+  --site-surface: #111E2E;
+  --site-surface-soft: #16283D;
+  --site-border: #274768;
+  --site-ink: #F1F5F9;
+  --site-ink-soft: #E2E8F0;
+  --site-muted: #A7B4C5;
+  --site-brand: #2DD4BF;
+  --site-brand-strong: #5EEAD4;
+  --site-focus: #5EEAD4;
+}
+
+.public-site:not(.public-site-admin-route) :where(h1, h2, h3, h4) {
+  text-wrap: balance;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.public-site:not(.public-site-admin-route) :where(p, li) {
+  text-wrap: pretty;
+}
+
+.public-site:not(.public-site-admin-route) :where(button, a, input, select, textarea) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.public-site:not(.public-site-admin-route) :where(button, a, input, select, textarea):focus-visible {
+  outline: 3px solid var(--site-focus);
+  outline-offset: 3px;
+}
+
+.public-site:not(.public-site-admin-route) :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+  min-height: 44px;
+  border-radius: 10px;
+  border-color: var(--site-border);
+  font: inherit;
+}
+
+.public-site:not(.public-site-admin-route) :where(textarea) {
+  min-height: 112px;
+}
+
+.public-site:not(.public-site-admin-route) :where(button) {
+  touch-action: manipulation;
+}
+
+.public-site:not(.public-site-admin-route) :where(img, video) {
+  max-width: 100%;
+}
+
+.public-site:not(.public-site-admin-route) :where(main, section) {
+  scroll-margin-top: 6rem;
+}
+
+.public-site:not(.public-site-admin-route) :where(.max-w-7xl) {
+  max-width: 82rem;
+}
+
+.public-site:not(.public-site-admin-route) :where(.rounded-sm) {
+  border-radius: 0.75rem;
+}
+
+.public-site:not(.public-site-admin-route) :where(.shadow-xs, .shadow-2xs) {
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.055), 0 8px 24px rgba(15, 23, 42, 0.035);
+}
+
+.public-site:not(.public-site-admin-route) :where(.text-\\[10px\\], .text-\\[11px\\]) {
+  line-height: 1.45;
+}
+
+.public-site:not(.public-site-admin-route) :where(.text-xs) {
+  line-height: 1.55;
+}
+
+.public-site:not(.public-site-admin-route) :where(.border-stone-100, .border-stone-200, .border-\\[\\#E8E3DA\\]) {
+  border-color: var(--site-border);
+}
+
+.public-site:not(.public-site-admin-route) :where(.bg-white) {
+  background-color: var(--site-surface);
+}
+
+.public-site:not(.public-site-admin-route) :where(.text-stone-500, .text-stone-400) {
+  color: var(--site-muted);
+}
+
+.public-site:not(.public-site-admin-route) :where(.text-stone-700, .text-stone-800) {
+  color: var(--site-ink-soft);
+}
+
+.public-site:not(.public-site-admin-route) :where(.text-stone-900, .text-\\[\\#0E1B2A\\], .text-\\[\\#111A24\\]) {
+  color: var(--site-ink);
+}
+
+.public-site:not(.public-site-admin-route) :where(.bg-stone-50, .bg-stone-100) {
+  background-color: var(--site-surface-soft);
+}
+
+.public-site:not(.public-site-admin-route) :where(.bg-\\[\\#FAF8F5\\]) {
+  background-color: var(--site-canvas);
+}
+
+.public-site:not(.public-site-admin-route) :where(.text-\\[\\#0A6C74\\]) {
+  color: var(--site-brand);
+}
+
+.public-site:not(.public-site-admin-route) :where(.border-\\[\\#0A6C74\\]) {
+  border-color: var(--site-brand);
+}
+
+.public-site:not(.public-site-admin-route) :where(.bg-\\[\\#0A6C74\\]) {
+  background-color: var(--site-brand);
+}
+
+.public-site:not(.public-site-admin-route) :where(.hover\\:bg-stone-50:hover, .hover\\:bg-stone-100:hover) {
+  background-color: var(--site-surface-soft);
+}
+
+.public-site:not(.public-site-admin-route) :where(.grid) {
+  min-width: 0;
+}
+
+.public-site:not(.public-site-admin-route) :where(.min-w-0) {
+  min-width: 0;
+}
+
+@media (max-width: 767px) {
+  .public-site:not(.public-site-admin-route) {
+    font-size: 14px;
+  }
+  .public-site:not(.public-site-admin-route) :where(.text-4xl, .text-5xl, .text-6xl) {
+    letter-spacing: -0.035em;
+  }
+  .public-site:not(.public-site-admin-route) :where(.overflow-x-auto) {
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+  }
+  .public-site:not(.public-site-admin-route) :where(.fixed.inset-0) {
+    padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom));
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .public-site:not(.public-site-admin-route) :where(.max-w-7xl) {
+    padding-left: 1.75rem;
+    padding-right: 1.75rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-site:not(.public-site-admin-route) *,
+  .public-site:not(.public-site-admin-route) *::before,
+  .public-site:not(.public-site-admin-route) *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
