@@ -71,6 +71,9 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
   const [customerData, setCustomerData] = useState<CustomerMetrics | null>(null);
   const [operationsData, setOperationsData] = useState<OperationsMetrics | null>(null);
   const [financeData, setFinanceData] = useState<FinanceMetrics | null>(null);
+  // Keep previously loaded metrics visible while the same report/date range refreshes.
+  // This avoids replacing a usable dashboard with a full-page loading state on tab revisits.
+  const loadedReportKeys = React.useRef<Set<string>>(new Set());
 
   const currentInterval: DateRangeInterval = getDateRangeInterval(
     dateRange,
@@ -85,7 +88,8 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
       return;
     }
 
-    setLoading(true);
+    const reportKey = `${activeView}:${currentInterval.startDate}:${currentInterval.endDate}`;
+    setLoading(!loadedReportKeys.current.has(reportKey));
     try {
       if (activeView === 'executive') {
         const data = await fetchExecutiveReport(currentInterval);
@@ -103,6 +107,7 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
         const data = await fetchFinanceReport(currentInterval);
         setFinanceData(data);
       }
+      loadedReportKeys.current.add(reportKey);
     } catch (err) {
       console.error('Failed to query reporting metrics:', err);
       showToast('Could not refresh report data from Supabase', 'error');
