@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS public.blog_posts (
   slug text NOT NULL UNIQUE CHECK (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$' AND length(slug) <= 180),
   excerpt text CHECK (excerpt IS NULL OR length(excerpt) <= 600),
   content text NOT NULL DEFAULT '',
+  reading_time_minutes integer NOT NULL DEFAULT 1 CHECK (reading_time_minutes BETWEEN 1 AND 120),
   cover_image_url text CHECK (cover_image_url IS NULL OR cover_image_url ~* '^https://'),
   status text NOT NULL DEFAULT 'draft'
     CHECK (status IN ('draft', 'published', 'scheduled', 'archived')),
