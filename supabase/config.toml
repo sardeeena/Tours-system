@@ -21,6 +21,12 @@ enabled = false
 [studio]
 enabled = false
 
+[local_smtp]
+enabled = true
+port = 55424
+smtp_port = 55425
+pop3_port = 55426
+
 [storage]
 enabled = true
 

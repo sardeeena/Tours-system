@@ -4,13 +4,14 @@ CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 SELECT plan(9);
 
 -- Isolated test fixtures. All writes are rolled back at the end of this file.
-INSERT INTO public.tours (id, title, slug, status, price)
+INSERT INTO public.tours (id, title, slug, status, price, max_guests)
 VALUES (
   'f1000000-0000-4000-8000-000000000001',
   'Invoice Sync Test Tour',
   'invoice-sync-test-tour',
   'published',
-  100
+  100,
+  12
 );
 
 INSERT INTO public.bookings (
