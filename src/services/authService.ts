@@ -663,7 +663,12 @@ export async function verifyAdminAccess(): Promise<boolean> {
       return false;
     }
 
-    return profile.role === 'admin' || profile.role === 'super_admin' || profile.role === 'manager' || profile.role === 'staff';
+    if (profile.role === 'super_admin') {
+      const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      return !assuranceError && assurance.currentLevel === 'aal2';
+    }
+
+    return profile.role === 'admin' || profile.role === 'manager' || profile.role === 'staff';
   } catch (err) {
     console.error('Error verifying admin access against profiles table:', err);
     return false;
