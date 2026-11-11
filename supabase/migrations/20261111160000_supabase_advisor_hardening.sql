@@ -341,6 +341,65 @@ BEGIN
 END;
 $drop_redundant_admin_policies$;
 
+-- Remove the exact legacy admin-only policies reported as overlapping with RBAC.
+-- Their tables already have the matching action-level rbac_* policies.
+DROP POLICY IF EXISTS "Admins read audit logs" ON public."audit_logs";
+DROP POLICY IF EXISTS "Staff can manage automation events" ON public."automation_events";
+DROP POLICY IF EXISTS "Admins manage booking extras" ON public."booking_extras";
+DROP POLICY IF EXISTS "Admins can manage booking passengers" ON public."booking_passengers";
+DROP POLICY IF EXISTS "Admins manage bookings" ON public."bookings";
+DROP POLICY IF EXISTS "Admins manage categories" ON public."categories";
+DROP POLICY IF EXISTS "Staff can manage communication messages" ON public."communication_messages";
+DROP POLICY IF EXISTS "Staff can manage templates" ON public."communication_templates";
+DROP POLICY IF EXISTS "Admins can manage coupons" ON public."coupons";
+DROP POLICY IF EXISTS "Staff can manage activities" ON public."crm_activities";
+DROP POLICY IF EXISTS "Staff can manage crm communications" ON public."crm_communications";
+DROP POLICY IF EXISTS "Staff can manage crm_conversations" ON public."crm_conversations";
+DROP POLICY IF EXISTS "Staff can manage crm_lead_stages" ON public."crm_lead_stages";
+DROP POLICY IF EXISTS "Staff can manage crm notes" ON public."crm_notes";
+DROP POLICY IF EXISTS "Staff can manage crm_segments" ON public."crm_segments";
+DROP POLICY IF EXISTS "Staff can manage crm_tags" ON public."crm_tags";
+DROP POLICY IF EXISTS "Staff can manage crm tasks" ON public."crm_tasks";
+DROP POLICY IF EXISTS "Admins can manage customers" ON public."customers";
+DROP POLICY IF EXISTS "Staff can manage departures" ON public."departures";
+DROP POLICY IF EXISTS "Admins manage destinations" ON public."destinations";
+DROP POLICY IF EXISTS "Admins can manage faqs" ON public."faqs";
+DROP POLICY IF EXISTS "Admins can manage guides" ON public."guides";
+DROP POLICY IF EXISTS "Admins can manage inquiries" ON public."inquiries";
+DROP POLICY IF EXISTS "Staff can manage invoices" ON public."invoices";
+DROP POLICY IF EXISTS "Staff can manage leads" ON public."leads";
+DROP POLICY IF EXISTS "Admins can manage media assets" ON public."media_assets";
+DROP POLICY IF EXISTS "Admins can manage newsletter subscriptions" ON public."newsletter_subscriptions";
+DROP POLICY IF EXISTS "Staff can manage operational assignments" ON public."operational_assignments";
+DROP POLICY IF EXISTS "Admins can manage payment providers" ON public."payment_providers";
+DROP POLICY IF EXISTS "Staff can manage payment transactions" ON public."payment_transactions";
+DROP POLICY IF EXISTS "Admins manage pickup locations" ON public."pickup_locations";
+DROP POLICY IF EXISTS "Staff can manage pickup schedules" ON public."pickup_schedules";
+DROP POLICY IF EXISTS "Admins can manage all profiles" ON public."profiles";
+DROP POLICY IF EXISTS "Staff can manage refund records" ON public."refund_records";
+DROP POLICY IF EXISTS "Admins manage reviews" ON public."reviews";
+DROP POLICY IF EXISTS "Admins manage SEO metadata" ON public."seo_metadata";
+DROP POLICY IF EXISTS "Admins manage site settings" ON public."site_settings";
+DROP POLICY IF EXISTS "Staff can manage notifications" ON public."staff_notifications";
+DROP POLICY IF EXISTS "Admins manage tour assigned extras" ON public."tour_assigned_extras";
+DROP POLICY IF EXISTS "Admins manage availability" ON public."tour_availability";
+DROP POLICY IF EXISTS "Admins manage tour categories" ON public."tour_categories";
+DROP POLICY IF EXISTS "Admins manage exclusions" ON public."tour_exclusions";
+DROP POLICY IF EXISTS "Admins manage tour extras" ON public."tour_extras";
+DROP POLICY IF EXISTS "Admins manage faqs" ON public."tour_faqs";
+DROP POLICY IF EXISTS "Admins manage highlights" ON public."tour_highlights";
+DROP POLICY IF EXISTS "Admins manage tour images" ON public."tour_images";
+DROP POLICY IF EXISTS "Admins manage inclusions" ON public."tour_inclusions";
+DROP POLICY IF EXISTS "Admins manage itinerary" ON public."tour_itinerary";
+DROP POLICY IF EXISTS "Admins manage tour pickup links" ON public."tour_pickup_locations";
+DROP POLICY IF EXISTS "Admins can manage tour vessels" ON public."tour_vessels";
+DROP POLICY IF EXISTS "Admins manage tour videos" ON public."tour_videos";
+DROP POLICY IF EXISTS "Admins can delete tours" ON public."tours";
+DROP POLICY IF EXISTS "Admins can insert tours" ON public."tours";
+DROP POLICY IF EXISTS "Admins can update tours" ON public."tours";
+DROP POLICY IF EXISTS "Admins can manage vessels" ON public."vessels";
+DROP POLICY IF EXISTS "Admins can manage weather bulletins" ON public."weather_bulletins";
+
 CREATE INDEX IF NOT EXISTS idx_user_roles_assigned_by
   ON public.user_roles (assigned_by);
 
