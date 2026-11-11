@@ -12,7 +12,24 @@ AS $function$
   SELECT COALESCE(
     (auth.jwt() ->> 'role') = 'service_role'
     OR (
-      (required_role <> 'super_admin' OR auth.jwt() ->> 'aal' = 'aal2')
+      (
+        (
+          NOT EXISTS (
+            SELECT 1 FROM public.profiles p
+            WHERE p.id = auth.uid() AND p.role = 'super_admin'
+          )
+          AND NOT EXISTS (
+            SELECT 1
+            FROM public.user_roles ur
+            JOIN public.access_roles r ON r.id = ur.role_id
+            WHERE ur.user_id = auth.uid()
+              AND r.slug = 'super_admin'
+              AND r.is_active
+          )
+        )
+        OR auth.jwt() ->> 'aal' = 'aal2'
+      )
+      AND (required_role <> 'super_admin' OR auth.jwt() ->> 'aal' = 'aal2')
       AND (
         EXISTS (
           SELECT 1
