@@ -414,21 +414,32 @@ export async function createDeparture(data: Partial<DepartureEntity>): Promise<{
   departure?: DepartureEntity;
   error?: string;
 }> {
-  if (!data.tour_id || !data.date) {
-    return { success: false, error: 'Tour and date are required.' };
+  const capacity = Math.floor(Number(data.capacity) || 0);
+  const bookedPassengers = Math.max(0, Math.floor(Number(data.booked_passengers) || 0));
+  const startTime = String(data.start_time || '').trim();
+  const endTime = String(data.end_time || '').trim();
+
+  if (!data.tour_id || !data.date || !startTime || !endTime || capacity <= 0) {
+    return { success: false, error: 'Tour, date, actual start time, end time, and positive capacity are required.' };
+  }
+  if (endTime <= startTime) {
+    return { success: false, error: 'End time must be later than the start time.' };
+  }
+  if (bookedPassengers > capacity) {
+    return { success: false, error: 'Booked passengers cannot exceed the configured departure capacity.' };
   }
 
   const newDeparture: DepartureEntity = {
-    id: data.id || `dep-${Date.now().toString(36)}`,
+    id: data.id || '',
     tour_id: data.tour_id,
-    tour_title: data.tour_title || 'Scheduled Departure',
-    tour_slug: data.tour_slug || 'tour',
+    tour_title: data.tour_title || '',
+    tour_slug: data.tour_slug || '',
     date: data.date,
-    start_time: data.start_time || '08:30',
-    end_time: data.end_time || '16:30',
-    capacity: data.capacity || 35,
-    booked_passengers: data.booked_passengers || 0,
-    remaining_capacity: Math.max(0, (data.capacity || 35) - (data.booked_passengers || 0)),
+    start_time: startTime,
+    end_time: endTime,
+    capacity,
+    booked_passengers: bookedPassengers,
+    remaining_capacity: capacity - bookedPassengers,
     status: data.status || 'scheduled',
     guide_id: data.guide_id || null,
     vessel_id: data.vessel_id || null,
@@ -442,99 +453,103 @@ export async function createDeparture(data: Partial<DepartureEntity>): Promise<{
     updated_at: new Date().toISOString(),
   };
 
-  // Pre-save validation: Check inactive vessel
   if (newDeparture.vessel_id) {
     const vessels = await listVessels();
-    const v = vessels.find((ves) => ves.id === newDeparture.vessel_id);
-    if (v && (!v.is_active || v.status === 'maintenance' || v.status === 'dry_dock' || v.status === 'inactive')) {
-      return {
-        success: false,
-        error: `Cannot assign vessel "${v.name}": Vessel is currently inactive or under maintenance (${v.status || 'inactive'}).`,
-      };
+    const vessel = vessels.find((item) => item.id === newDeparture.vessel_id);
+    if (!vessel) return { success: false, error: 'The selected vessel does not exist in the live fleet records.' };
+    if (!vessel.is_active || ['maintenance', 'dry_dock', 'inactive'].includes(vessel.status)) {
+      return { success: false, error: `Cannot assign vessel "${vessel.name}": it is inactive or under maintenance.` };
     }
-    if (v && newDeparture.booked_passengers > v.passenger_capacity) {
-      return {
-        success: false,
-        error: `Vessel capacity exceeded: "${v.name}" max capacity is ${v.passenger_capacity}, but departure has ${newDeparture.booked_passengers} booked passengers.`,
-      };
+    if (bookedPassengers > vessel.passenger_capacity) {
+      return { success: false, error: `Vessel capacity exceeded: "${vessel.name}" supports ${vessel.passenger_capacity} passengers.` };
     }
   }
 
-  if (isSupabaseConfigured()) {
-    try {
-      const { data: inserted, error } = await supabase
-        .from('departures')
-        .upsert({
-          id: newDeparture.id.startsWith('dep-') ? undefined : newDeparture.id,
-          tour_id: newDeparture.tour_id,
-          date: newDeparture.date,
-          start_time: newDeparture.start_time,
-          end_time: newDeparture.end_time,
-          capacity: newDeparture.capacity,
-          booked_passengers: newDeparture.booked_passengers,
-          remaining_capacity: newDeparture.remaining_capacity,
-          status: newDeparture.status,
-          guide_id: newDeparture.guide_id,
-          vessel_id: newDeparture.vessel_id,
-          captain_id: newDeparture.captain_id,
-          driver_id: newDeparture.driver_id,
-          driver_name: newDeparture.driver_name,
-          vehicle_name: newDeparture.vehicle_name,
-          crew_ids: newDeparture.crew_ids,
-          notes: newDeparture.notes,
-        })
-        .select()
-        .single();
-
-      if (!error && inserted) {
-        newDeparture.id = inserted.id;
-      }
-    } catch {
-      // offline fallback
+  if (!isSupabaseConfigured()) {
+    if (import.meta.env.DEV) {
+      const cached = getLocal<DepartureEntity[]>(LOCAL_DEPARTURES_KEY, []);
+      newDeparture.id = `local-departure-${Date.now()}`;
+      setLocal(LOCAL_DEPARTURES_KEY, [newDeparture, ...cached]);
+      return { success: true, departure: newDeparture };
     }
+    return { success: false, error: 'Supabase is not configured; the departure was not saved.' };
   }
 
-  // Update cache
-  const cached = getLocal<DepartureEntity[]>(LOCAL_DEPARTURES_KEY, []);
-  const updated = [newDeparture, ...cached.filter((d) => d.id !== newDeparture.id)];
-  setLocal(LOCAL_DEPARTURES_KEY, updated);
+  const payload = {
+    tour_id: newDeparture.tour_id,
+    date: newDeparture.date,
+    start_time: newDeparture.start_time,
+    end_time: newDeparture.end_time,
+    capacity: newDeparture.capacity,
+    booked_passengers: newDeparture.booked_passengers,
+    remaining_capacity: newDeparture.remaining_capacity,
+    status: newDeparture.status,
+    guide_id: newDeparture.guide_id,
+    vessel_id: newDeparture.vessel_id,
+    captain_id: newDeparture.captain_id,
+    driver_id: newDeparture.driver_id,
+    driver_name: newDeparture.driver_name,
+    vehicle_name: newDeparture.vehicle_name,
+    crew_ids: newDeparture.crew_ids,
+    notes: newDeparture.notes,
+  };
 
+  const result = data.id
+    ? await supabase.from('departures').update(payload).eq('id', data.id).select().single()
+    : await supabase.from('departures').insert(payload).select().single();
+
+  if (result.error || !result.data) {
+    return { success: false, error: result.error ? formatSupabaseError(result.error) : 'The departure was not returned after saving.' };
+  }
+
+  newDeparture.id = result.data.id;
   return { success: true, departure: newDeparture };
 }
 
 /**
- * Update departure status across all 6 statuses
+ * Update departure status and synchronize the operational status of bookings
+ * assigned to that tour/date. Database errors are surfaced to the caller.
  */
 export async function updateDepartureStatus(
   departureId: string,
   newStatus: DepartureStatus | OperationalStatus
 ): Promise<boolean> {
-  const normalized = (newStatus || 'scheduled').toLowerCase() as DepartureStatus;
+  const normalized = String(newStatus || 'scheduled').toLowerCase() as DepartureStatus;
 
-  if (isSupabaseConfigured()) {
-    try {
-      await supabase
-        .from('departures')
-        .update({ status: normalized, updated_at: new Date().toISOString() })
-        .eq('id', departureId);
-
-      // Also sync bookings assigned to this departure date/tour if applicable
-      await supabase
-        .from('bookings')
-        .update({ operational_status: newStatus })
-        .eq('operational_status', departureId);
-    } catch {
-      // ignore
-    }
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) return false;
+    const cached = getLocal<DepartureEntity[]>(LOCAL_DEPARTURES_KEY, []);
+    setLocal(LOCAL_DEPARTURES_KEY, cached.map((departure) =>
+      departure.id === departureId
+        ? { ...departure, status: normalized, updated_at: new Date().toISOString() }
+        : departure
+    ));
+    return true;
   }
 
-  // Update local cache
-  const cached = getLocal<DepartureEntity[]>(LOCAL_DEPARTURES_KEY, []);
-  const updated = cached.map((d) =>
-    d.id === departureId ? { ...d, status: normalized, updated_at: new Date().toISOString() } : d
-  );
-  setLocal(LOCAL_DEPARTURES_KEY, updated);
+  const { data: departure, error: lookupError } = await supabase
+    .from('departures')
+    .select('id,tour_id,date')
+    .eq('id', departureId)
+    .maybeSingle();
 
+  if (lookupError || !departure) return false;
+
+  const { error: departureError } = await supabase
+    .from('departures')
+    .update({ status: normalized, updated_at: new Date().toISOString() })
+    .eq('id', departureId);
+
+  if (departureError) return false;
+
+  const { error: bookingError } = await supabase
+    .from('bookings')
+    .update({ operational_status: normalized })
+    .eq('tour_id', departure.tour_id)
+    .eq('booking_date', departure.date)
+    .neq('status', 'cancelled');
+
+  if (bookingError) return false;
   return true;
 }
 
