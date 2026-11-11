@@ -30,9 +30,9 @@ SELECT ok(
 
 SELECT ok(
   POSITION('total_bookings_count' IN pg_get_functiondef('private.get_executive_bi_metrics(date,date)'::regprocedure)) > 0
-  AND POSITION('latest_booking_date' IN pg_get_functiondef('public.get_executive_bi_metrics(date,date)'::regprocedure)) > 0
-  AND POSITION('total_bookings ' IN pg_get_functiondef('public.get_executive_bi_metrics(date,date)'::regprocedure)) = 0
-  AND POSITION('last_booking_date' IN pg_get_functiondef('public.get_executive_bi_metrics(date,date)'::regprocedure)) = 0,
+  AND POSITION('latest_booking_date' IN pg_get_functiondef('private.get_executive_bi_metrics(date,date)'::regprocedure)) > 0
+  AND POSITION('total_bookings ' IN pg_get_functiondef('private.get_executive_bi_metrics(date,date)'::regprocedure)) = 0
+  AND POSITION('last_booking_date' IN pg_get_functiondef('private.get_executive_bi_metrics(date,date)'::regprocedure)) = 0,
   'executive metrics uses the actual customer aggregate columns'
 );
 
