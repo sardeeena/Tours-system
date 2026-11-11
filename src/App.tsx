@@ -470,6 +470,8 @@ function MainApp() {
             ? `${window.location.origin}/${staticPage.slug}`
             : undefined,
           ogType: 'article' as const,
+          robotsIndex: staticPage.seoIndexable !== false,
+          robotsFollow: true,
         }
       : getPageSeo(currentPath, {
           tour: currentTourDetail,
