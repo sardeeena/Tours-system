@@ -9,10 +9,13 @@ SELECT ok(
 );
 
 SELECT ok(
-  (SELECT prosecdef AND proconfig @> ARRAY['search_path=""']::text[]
+  (SELECT NOT prosecdef AND proconfig @> ARRAY['search_path=""']::text[]
    FROM pg_proc
-   WHERE oid = 'public.get_executive_bi_metrics(date,date)'::regprocedure),
-  'executive BI metrics RPC is SECURITY DEFINER with an empty search_path'
+   WHERE oid = 'public.get_executive_bi_metrics(date,date)'::regprocedure)
+  AND (SELECT prosecdef AND proconfig @> ARRAY['search_path=""']::text[]
+   FROM pg_proc
+   WHERE oid = 'private.get_executive_bi_metrics(date,date)'::regprocedure),
+  'executive BI public wrapper is invoker-rights and private implementation is SECURITY DEFINER'
 );
 
 SELECT ok(
@@ -26,7 +29,7 @@ SELECT ok(
 );
 
 SELECT ok(
-  POSITION('total_bookings_count' IN pg_get_functiondef('public.get_executive_bi_metrics(date,date)'::regprocedure)) > 0
+  POSITION('total_bookings_count' IN pg_get_functiondef('private.get_executive_bi_metrics(date,date)'::regprocedure)) > 0
   AND POSITION('latest_booking_date' IN pg_get_functiondef('public.get_executive_bi_metrics(date,date)'::regprocedure)) > 0
   AND POSITION('total_bookings ' IN pg_get_functiondef('public.get_executive_bi_metrics(date,date)'::regprocedure)) = 0
   AND POSITION('last_booking_date' IN pg_get_functiondef('public.get_executive_bi_metrics(date,date)'::regprocedure)) = 0,
