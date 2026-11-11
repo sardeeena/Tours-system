@@ -47,6 +47,7 @@ export const AdminAccessControl:React.FC = () => {
   useEffect(()=>{void load();},[load]);
 
   const selectedUser=data.users.find(u=>u.id===selectedUserId);
+  const protectedSuperAdmin = Boolean(selectedUser?.roles.includes('super_admin') && !isSuperAdmin);
   useEffect(()=>{setSelectedRoles(selectedUser?.roles||[]);},[selectedUserId,selectedUser?.roles?.join('|')]);
 
   const visibleUsers=useMemo(()=>{
@@ -127,20 +128,20 @@ export const AdminAccessControl:React.FC = () => {
       <section className="rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
         {selectedUser?<><div className="flex flex-wrap justify-between gap-3"><div><h3 className="text-lg font-bold">{selectedUser.full_name||'User account'}</h3><p className="text-sm text-slate-500">{selectedUser.email}</p></div><span className="text-xs text-slate-500">{selectedUser.is_confirmed?'Email confirmed':'Email not confirmed'}</span></div>
           <div className="mt-5 flex items-center justify-between gap-3"><div><h4 className="font-semibold text-sm">Assigned roles</h4><p className="text-xs text-slate-500 mt-1">Permissions from all selected roles are combined.</p></div><span className="text-xs rounded-lg bg-teal-50 text-teal-800 dark:bg-teal-950/40 dark:text-teal-200 px-2 py-1">{selectedRoles.length} selected</span></div>
-          <div className="grid sm:grid-cols-2 gap-2 mt-3">
+          {protectedSuperAdmin ? <p className="mt-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 p-3 text-sm text-amber-800 dark:text-amber-200">This account has protected Super Admin access. Only a Super Admin can modify its assignments.</p> : <div className="grid sm:grid-cols-2 gap-2 mt-3">
             {data.roles.filter(r=>r.is_active&&(isSuperAdmin||r.slug!=='super_admin')).map(role=><label key={role.slug} className="flex gap-3 items-start rounded-xl border border-slate-200 dark:border-slate-700 p-3 cursor-pointer hover:border-teal-500">
               <input type="checkbox" checked={selectedRoles.includes(role.slug)} onChange={()=>toggleRole(role.slug)} className="mt-1 accent-[#0A6C74]"/>
               <span className="min-w-0"><span className="block text-sm font-semibold">{role.name}</span><span className="block text-xs text-slate-500 mt-0.5">{role.description||role.slug}</span></span>
             </label>)}
-          </div>
+          </div>}
           {!isSuperAdmin&&<p className="mt-4 text-xs text-amber-700 dark:text-amber-300 flex gap-2"><LockKeyhole className="w-4 h-4 shrink-0"/> Super Admin assignment and changes are restricted to an existing Super Admin.</p>}
-          <div className="mt-5 flex justify-end"><button disabled={saving||!selectedRoles.length} onClick={()=>void saveUserRoles()} className="inline-flex items-center gap-2 rounded-xl bg-[#0A6C74] text-white px-4 py-2.5 text-sm font-semibold disabled:opacity-50"><Save className="w-4 h-4"/>{saving?'Saving…':'Save role assignments'}</button></div>
+          <div className="mt-5 flex justify-end"><button disabled={saving||!selectedRoles.length||protectedSuperAdmin} onClick={()=>void saveUserRoles()} className="inline-flex items-center gap-2 rounded-xl bg-[#0A6C74] text-white px-4 py-2.5 text-sm font-semibold disabled:opacity-50"><Save className="w-4 h-4"/>{saving?'Saving…':'Save role assignments'}</button></div>
         </>:<p className="text-sm text-slate-500">Select a user to manage their roles.</p>}
       </section>
     </div>:<div className="grid grid-cols-1 xl:grid-cols-[minmax(260px,0.9fr)_minmax(0,1.5fr)] gap-5">
       <section className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
         <div className="p-4 border-b border-slate-200 dark:border-slate-700"><h3 className="font-bold">Available roles</h3><p className="text-xs text-slate-500 mt-1">Built-in roles are protected. Create custom roles for your organization.</p></div>
-        <div className="divide-y divide-slate-100 dark:divide-slate-800">{data.roles.map(r=><div key={r.slug} className="p-4 flex justify-between gap-3"><div className="min-w-0"><div className="font-semibold text-sm">{r.name} {r.is_system&&<span className="text-[10px] uppercase text-slate-400 ml-1">System</span>}</div><p className="text-xs text-slate-500 mt-1">{r.description||r.slug}</p><p className="text-[11px] text-slate-400 mt-1">{r.permissions.length} permissions</p></div>{!r.is_system&&<button onClick={()=>void deleteRole(r.slug)} disabled={saving} title="Delete custom role" className="text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg p-2"><Trash2 className="w-4 h-4"/></button>}</div>)}</div>
+        <div className="divide-y divide-slate-100 dark:divide-slate-800">{data.roles.map(r=><div key={r.slug} className="p-4 flex justify-between gap-3"><div className="min-w-0"><div className="font-semibold text-sm">{r.name} {r.is_system&&<span className="text-[10px] uppercase text-slate-400 ml-1">System</span>}</div><p className="text-xs text-slate-500 mt-1">{r.description||r.slug}</p><p className="text-[11px] text-slate-400 mt-1">{r.permissions.length} permissions</p></div>{!r.is_system&&<div className="flex gap-1"><button onClick={()=>{setRoleName(r.name);setRoleSlug(r.slug);setRoleDescription(r.description||'');setRolePermissions(r.permissions);setSection('roles');}} disabled={saving} title="Edit custom role" className="text-[#0A6C74] hover:bg-teal-50 dark:hover:bg-teal-950/30 rounded-lg px-2 py-1 text-xs">Edit</button><button onClick={()=>void deleteRole(r.slug)} disabled={saving} title="Delete custom role" className="text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg p-2"><Trash2 className="w-4 h-4"/></button></div>}</div>)}</div>
       </section>
       <section className="rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
         <div className="flex items-center gap-2"><Plus className="w-5 h-5 text-[#0A6C74]"/><h3 className="text-lg font-bold">Create a custom role</h3></div>
@@ -152,7 +153,7 @@ export const AdminAccessControl:React.FC = () => {
         <div className="mt-5"><div className="font-semibold text-sm mb-3">Grant permissions</div><div className="space-y-4">
           {Object.entries(groupedPermissions).map(([module,items])=><div key={module} className="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><h4 className="text-sm font-semibold mb-2">{MODULE_LABELS[module]||module}</h4><div className="grid sm:grid-cols-2 gap-2">{items.map(p=><label key={p.key} className="flex gap-2 items-start text-xs text-slate-600 dark:text-slate-300"><input type="checkbox" checked={rolePermissions.includes(p.key)} onChange={()=>togglePermission(p.key)} className="mt-0.5 accent-[#0A6C74]"/><span><span className="block font-semibold">{p.action.toUpperCase()}</span><span className="text-slate-400">{p.description}</span></span></label>)}</div></div>)}
         </div></div>
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3"><p className="text-xs text-slate-500">{rolePermissions.length} permissions selected</p><button onClick={()=>void saveCustomRole()} disabled={saving||!roleName.trim()||!roleSlug.trim()} className="inline-flex items-center gap-2 rounded-xl bg-[#0A6C74] text-white px-4 py-2.5 text-sm font-semibold disabled:opacity-50"><Check className="w-4 h-4"/>{saving?'Saving…':'Create custom role'}</button></div>
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3"><p className="text-xs text-slate-500">{rolePermissions.length} permissions selected</p><button onClick={()=>void saveCustomRole()} disabled={saving||!roleName.trim()||!roleSlug.trim()} className="inline-flex items-center gap-2 rounded-xl bg-[#0A6C74] text-white px-4 py-2.5 text-sm font-semibold disabled:opacity-50"><Check className="w-4 h-4"/>{saving?'Saving…':'Save custom role'}</button></div>
       </section>
     </div>}
   </div>;
