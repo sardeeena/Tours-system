@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Lock, Mail, Compass, AlertCircle, ArrowLeft, ShieldCheck, Eye, EyeOff, Clock } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { MfaChallenge } from '../auth/MfaChallenge';
+import { SuperAdminMfaPanel } from './SuperAdminMfaPanel';
 import { isSupabaseConfigured } from '../../services/supabaseClient';
 import { isUserAdmin } from '../../services/authService';
 import { ClientRateLimiter, sanitizeString } from '../../lib/security';
@@ -16,7 +18,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
   onBackToSite,
   redirectUrl,
 }) => {
-  const { user, isAdmin, signOut, signIn } = useAuth();
+  const { user, isAdmin, signOut, signIn, pendingMfaFactorId, requiresMfaEnrollment } = useAuth();
   const [email, setEmail] = useState(() => user?.email || '');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -70,6 +72,12 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
 
     const result = await signIn(cleanEmail, password);
     setLoading(false);
+
+    if (result.requiresMfa || result.requiresMfaEnrollment) {
+      rateLimiter.reset();
+      setErrorMsg(null);
+      return;
+    }
 
     if (result.success) {
       const userRole = result.user?.role;
@@ -191,7 +199,12 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
           )}
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+          {pendingMfaFactorId ? (
+            <MfaChallenge factorId={pendingMfaFactorId} onCancel={handleSwitchAccount} />
+          ) : requiresMfaEnrollment ? (
+            <SuperAdminMfaPanel compact />
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4 text-xs">
             <div>
               <label className="text-stone-700 dark:text-stone-300 font-semibold block mb-1">
                 Admin Email Address
@@ -259,6 +272,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
               )}
             </button>
           </form>
+          )}
         </div>
       </div>
 
