@@ -180,7 +180,7 @@ export const CrmLeadsManager: React.FC = () => {
   };
 
   const handleConvertToCustomer = async (lead: CrmLead) => {
-    if (!hasPermission('crm.update')) { showToast('Your role does not permit converting leads.', 'error'); return; }
+    if (!hasPermission('crm.update') || !hasPermission('customers.create')) { showToast('Your role does not permit converting leads into customer records.', 'error'); return; }
     try {
       await convertLeadToCustomer(lead.id);
       showToast(`Lead "${lead.name}" converted into customer record!`, 'success');
