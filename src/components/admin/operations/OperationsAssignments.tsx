@@ -34,9 +34,11 @@ import { Tour } from '../../../types';
 import { ALL_TOURS } from '../../../data/toursData';
 import { getPublishedTours } from '../../../services/tourService';
 import { useToast } from '../../../contexts/ToastContext';
+import { useAuth } from '../../../contexts/AuthContext';
 
 export const OperationsAssignments: React.FC = () => {
   const { showToast } = useToast();
+  const { hasPermission } = useAuth();
   const [selectedDate, setSelectedDate] = useState<string>(
     () => new Date().toISOString().split('T')[0]
   );
@@ -126,6 +128,7 @@ export const OperationsAssignments: React.FC = () => {
   }, [isModalOpen, tourId, selectedDate, departureTime, vesselId, guideId, captainId, driverId, editingId]);
 
   const handleOpenCreate = () => {
+    if (!hasPermission('operations.create')) { showToast('Your role does not permit creating assignments.', 'error'); return; }
     setEditingId(null);
     setTourId(ALL_TOURS[0]?.id || '');
     setDepartureTime('08:30');
@@ -140,6 +143,7 @@ export const OperationsAssignments: React.FC = () => {
   };
 
   const handleOpenEdit = (a: OperationalAssignment) => {
+    if (!hasPermission('operations.update')) { showToast('Your role does not permit editing assignments.', 'error'); return; }
     setEditingId(a.id);
     setTourId(a.tourId);
     setDepartureTime(a.departureTime || '08:30');
@@ -155,6 +159,7 @@ export const OperationsAssignments: React.FC = () => {
 
   const handleSaveAssignment = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!hasPermission(editingAssignment ? 'operations.update' : 'operations.create')) { showToast('Your role does not permit saving assignments.', 'error'); return; }
     if (!tourId || !selectedDate) return;
 
     const res = await saveAssignment({
