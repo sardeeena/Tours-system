@@ -164,7 +164,7 @@ export async function getTourAvailabilityFromServer(
     isSoldOut: status === 'sold_out',
     isPastDate: false,
     meetsMinimumNotice: true,
-    minNoticeHours,
+    minNoticeHours: APP_CONFIG.DEFAULT_MIN_BOOKING_NOTICE_HOURS,
     status,
   };
 }
