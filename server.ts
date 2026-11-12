@@ -2115,12 +2115,14 @@ app.post('/api/visitor/consent', rateLimit(20, 60_000), async (req: Authenticate
   const analytics = req.body?.analytics === true;
   const marketing = req.body?.marketing === true;
   const sessionId = typeof req.body?.session_id === 'string' && UUID_PATTERN.test(req.body.session_id) ? req.body.session_id : null;
+  const visitorId = typeof req.body?.visitor_id === 'string' && UUID_PATTERN.test(req.body.visitor_id) ? req.body.visitor_id : null;
   const metadata = safeVisitorMetadata(req.body?.metadata);
   try {
-    if (analytics && sessionId) {
+    if (analytics && sessionId && visitorId) {
       const now = new Date().toISOString();
       const { error: sessionError } = await serverSupabase.from('visitor_sessions').upsert({
         id: sessionId,
+        visitor_id: visitorId,
         user_id: req.user?.id || null,
         started_at: now,
         last_seen_at: now,
@@ -2150,6 +2152,7 @@ app.post('/api/visitor/consent', rateLimit(20, 60_000), async (req: Authenticate
     }
     const { error } = await serverSupabase.from('visitor_consent_records').insert({
       visitor_session_id: sessionId,
+      visitor_id: analytics ? visitorId : null,
       user_id: req.user?.id || null,
       necessary: true,
       analytics,
@@ -2207,19 +2210,25 @@ app.get('/api/admin/technical/visitors/overview', rateLimit(30, 60_000), async (
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return res.status(503).json({ success: false, error: 'Visitor analytics are unavailable.' });
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   try {
-    const [sessions, events, guests, users, consents] = await Promise.all([
+    const [sessions, events, guests, users, consents, visitorRows] = await Promise.all([
       serverSupabase.from('visitor_sessions').select('id', { count: 'exact', head: true }).gte('started_at', since).eq('analytics_consent', true),
       serverSupabase.from('visitor_events').select('id', { count: 'exact', head: true }).gte('occurred_at', since),
       serverSupabase.from('visitor_sessions').select('id', { count: 'exact', head: true }).gte('started_at', since).eq('analytics_consent', true).is('user_id', null),
       serverSupabase.from('visitor_sessions').select('id', { count: 'exact', head: true }).gte('started_at', since).eq('analytics_consent', true).not('user_id', 'is', null),
       serverSupabase.from('visitor_consent_records').select('id,analytics,marketing', { count: 'exact' }).gte('recorded_at', since).limit(5000),
+      serverSupabase.from('visitor_sessions').select('visitor_id').gte('started_at', since).eq('analytics_consent', true).limit(10000),
     ]);
-    const error = sessions.error || events.error || guests.error || users.error || consents.error;
+    const error = sessions.error || events.error || guests.error || users.error || consents.error || visitorRows.error;
     if (error) throw error;
     const choices = consents.data || [];
+    const visitorCounts = new Map<string, number>();
+    for (const row of visitorRows.data || []) visitorCounts.set(row.visitor_id, (visitorCounts.get(row.visitor_id) || 0) + 1);
+    const returningVisitors = Array.from(visitorCounts.values()).filter((count) => count > 1).length;
     return res.json({
       periodDays: 30,
       sessions: sessions.count || 0,
+      uniqueVisitors: visitorCounts.size,
+      returningVisitors,
       events: events.count || 0,
       guestSessions: guests.count || 0,
       signedInSessions: users.count || 0,
@@ -2257,7 +2266,7 @@ app.get('/api/admin/technical/visitors/sessions', rateLimit(60, 60_000), async (
   const limit = Math.min(200, Math.max(1, Number.parseInt(String(req.query.limit || '100'), 10) || 100));
   try {
     let query = serverSupabase.from('visitor_sessions')
-      .select('id,user_id,started_at,last_seen_at,ended_at,landing_path,referrer_host,utm_source,utm_medium,utm_campaign,device_type,browser_family,os_family,screen_bucket,language,timezone,country_code,region_code,analytics_consent,marketing_consent')
+      .select('id,visitor_id,user_id,started_at,last_seen_at,ended_at,landing_path,referrer_host,utm_source,utm_medium,utm_campaign,device_type,browser_family,os_family,screen_bucket,language,timezone,country_code,region_code,analytics_consent,marketing_consent')
       .order('last_seen_at', { ascending: false }).limit(limit);
     if (typeof req.query.search === 'string' && UUID_PATTERN.test(req.query.search)) query = query.eq('id', req.query.search);
     const { data, error } = await query;
@@ -2275,7 +2284,7 @@ app.get('/api/admin/technical/visitors/consent', rateLimit(30, 60_000), async (r
   const limit = Math.min(200, Math.max(1, Number.parseInt(String(req.query.limit || '100'), 10) || 100));
   try {
     const { data, error } = await serverSupabase.from('visitor_consent_records')
-      .select('id,visitor_session_id,user_id,necessary,analytics,marketing,consent_version,consent_source,recorded_at')
+      .select('id,visitor_session_id,visitor_id,user_id,necessary,analytics,marketing,consent_version,consent_source,recorded_at')
       .order('recorded_at', { ascending: false }).limit(limit);
     if (error) throw error;
     return res.json({ records: data || [] });
