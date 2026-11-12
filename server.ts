@@ -2620,6 +2620,10 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
     '## Main pages',
     '- [Homepage](https://awesomeadventure.tours/)',
     '- [Excursions](https://awesomeadventure.tours/excursions)',
+    '- [Privacy Policy](https://awesomeadventure.tours/privacy)',
+    '- [Terms & Conditions](https://awesomeadventure.tours/terms)',
+    '- [Cancellation & Refund Policy](https://awesomeadventure.tours/cancellation-policy)',
+    '- [Cookie Policy](https://awesomeadventure.tours/cookie-policy)',
     '',
     '## Published destinations and excursions',
   ];
