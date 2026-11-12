@@ -149,6 +149,7 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
     robots_follow: true,
   });
   const [newKeywordInput, setNewKeywordInput] = useState('');
+  const [languagesInput, setLanguagesInput] = useState('English, German');
 
   // Availability Form State
   const [availabilityMaxCapacity, setAvailabilityMaxCapacity] = useState(35);
@@ -172,6 +173,7 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
           const fullTour = await adminGetTourById(tourId);
           if (fullTour) {
             setTourData(fullTour);
+            setLanguagesInput((fullTour.languages || []).join(', '));
             setSelectedCategoryIds(fullTour.categories?.map((c) => c.id) || []);
             setHighlights(fullTour.highlights?.map((h) => h.item) || []);
             setInclusions(fullTour.inclusions?.map((i) => i.item) || []);
@@ -343,7 +345,8 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
       }
 
       setHasUnsavedChanges(false);
-      setTourData((prev) => ({ ...prev, status: statusToSave }));
+      setTourData((prev) => ({ ...prev, status: statusToSave, languages: configuredLanguages }));
+      setLanguagesInput(configuredLanguages.join(', '));
     } catch (err: any) {
       setSaveError(err.message || 'Failed to save tour.');
     } finally {
@@ -654,8 +657,11 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
             </label>
             <input
               type="text"
-              value={(tourData.languages || []).join(', ')}
-              onChange={(e) => handleFieldChange('languages', Array.from(new Set(e.target.value.split(',').map((language) => language.trim()).filter(Boolean))))}
+              value={languagesInput}
+              onChange={(e) => {
+                setLanguagesInput(e.target.value);
+                handleFieldChange('languages', Array.from(new Set(e.target.value.split(',').map((language) => language.trim()).filter(Boolean))));
+              }}
               placeholder="English, German, French, Arabic"
               className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-xs text-white focus:outline-none focus:border-[#0A6C74]"
             />
