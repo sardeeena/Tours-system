@@ -5,6 +5,7 @@ import { supabase, isSupabaseConfigured } from '../../../services/supabaseClient
 type Overview = {
   periodDays: number; sessions: number; uniqueVisitors: number; returningVisitors: number; events: number; guestSessions: number;
   signedInSessions: number; consentRecords: number; analyticsOptIns: number; marketingOptIns: number;
+  bookingFunnel: { started: number; stepsCompleted: number; submitted: number; confirmed: number; cancellationRequests: number };
 };
 type Session = {
   id: string; visitor_id: string; user_id: string | null; started_at: string; last_seen_at: string; ended_at: string | null;
@@ -92,6 +93,27 @@ export const VisitorAnalyticsPanel: React.FC = () => {
 
   useEffect(() => { void load(); }, [load]);
 
+  const topPages = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const item of events) if (item.event_name === 'page_view' && item.page_path) counts.set(item.page_path, (counts.get(item.page_path) || 0) + 1);
+    return Array.from(counts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  }, [events]);
+
+  const deviceBreakdown = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const item of sessions) {
+      const key = item.device_type || 'unknown';
+      counts.set(key, (counts.get(key) || 0) + 1);
+    }
+    return Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+  }, [sessions]);
+
+  const topCampaigns = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const item of sessions) if (item.utm_campaign) counts.set(item.utm_campaign, (counts.get(item.utm_campaign) || 0) + 1);
+    return Array.from(counts.entries()).sort((a, b) => b[1] - a[1]).slice(0, 6);
+  }, [sessions]);
+
   const visibleSessions = useMemo(() => {
     const term = search.trim().toLowerCase();
     return sessions.filter((item) => !term || [
@@ -175,6 +197,21 @@ export const VisitorAnalyticsPanel: React.FC = () => {
         <Card label="Consent records" value={overview.consentRecords} icon={Cookie} />
         <Card label="Analytics opt-ins" value={overview.analyticsOptIns} icon={Eye} />
         <Card label="Marketing opt-ins" value={overview.marketingOptIns} icon={Cookie} />
+      </div>}
+
+      {overview && <div className="grid gap-3 xl:grid-cols-2">
+        <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+          <h3 className="font-semibold">Booking conversion funnel · 30 days</h3>
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-5">
+            {[['Started', overview.bookingFunnel.started], ['Steps completed', overview.bookingFunnel.stepsCompleted], ['Submitted', overview.bookingFunnel.submitted], ['Confirmed', overview.bookingFunnel.confirmed], ['Cancellation requests', overview.bookingFunnel.cancellationRequests]].map(([label, value]) => <div key={String(label)} className="rounded-lg bg-slate-50 p-3 dark:bg-slate-800"><p className="text-[10px] text-slate-500">{label}</p><p className="mt-1 text-xl font-bold tabular-nums">{Number(value).toLocaleString()}</p></div>)}
+          </div>
+          <p className="mt-2 text-[10px] text-slate-500">Counts include only visitors who accepted analytics tracking.</p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900"><h3 className="font-semibold text-sm">Top pages</h3><div className="mt-2 space-y-2">{topPages.map(([path, count]) => <div key={path} className="flex justify-between gap-2 text-xs"><span className="truncate text-slate-500">{path}</span><strong>{count}</strong></div>)}{!topPages.length && <p className="text-xs text-slate-500">No page views in the loaded events.</p>}</div></div>
+          <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900"><h3 className="font-semibold text-sm">Devices</h3><div className="mt-2 space-y-2">{deviceBreakdown.map(([device, count]) => <div key={device} className="flex justify-between gap-2 text-xs"><span className="capitalize text-slate-500">{device}</span><strong>{count}</strong></div>)}{!deviceBreakdown.length && <p className="text-xs text-slate-500">No sessions in the loaded records.</p>}</div></div>
+          <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900"><h3 className="font-semibold text-sm">Campaigns</h3><div className="mt-2 space-y-2">{topCampaigns.map(([campaign, count]) => <div key={campaign} className="flex justify-between gap-2 text-xs"><span className="truncate text-slate-500">{campaign}</span><strong>{count}</strong></div>)}{!topCampaigns.length && <p className="text-xs text-slate-500">No campaign tags in the loaded sessions.</p>}</div></div>
+        </div>
       </div>}
 
       <div className="grid gap-3 lg:grid-cols-2">
