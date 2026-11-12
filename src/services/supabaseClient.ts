@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { isExpectedKemetSupabaseUrl } from '../lib/supabaseProjectGuard';
+import { isExpectedAwesomeAdventureToursSupabaseUrl } from '../lib/supabaseProjectGuard';
 
 const isDevelopmentBuild = Boolean((import.meta as any).env?.DEV);
 
@@ -153,7 +153,7 @@ export const isSupabaseConfigured = (): boolean => {
   return Boolean(
     activeUrl &&
     activeKey &&
-    isExpectedKemetSupabaseUrl(activeUrl, isDevelopmentBuild) &&
+    isExpectedAwesomeAdventureToursSupabaseUrl(activeUrl, isDevelopmentBuild) &&
     activeKey.length > 20 &&
     !isSupabaseSecretKey(activeKey)
   );
@@ -196,9 +196,9 @@ export const updateSupabaseCredentials = (url: string, anonKey: string): boolean
     );
   }
 
-  if (!isExpectedKemetSupabaseUrl(cleanUrl, isDevelopmentBuild)) {
+  if (!isExpectedAwesomeAdventureToursSupabaseUrl(cleanUrl, isDevelopmentBuild)) {
     throw new Error(
-      'This production Kemet Spirit app can connect only to its assigned Supabase project. Use a separate development build for other projects.'
+      'This production Awesome Adventure Tours app can connect only to its assigned Supabase project. Use a separate development build for other projects.'
     );
   }
 
