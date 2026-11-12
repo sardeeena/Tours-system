@@ -3,7 +3,6 @@ import { Lock, Mail, Compass, AlertCircle, ArrowLeft, ShieldCheck, Eye, EyeOff, 
 import { useAuth } from '../../contexts/AuthContext';
 import { MfaChallenge } from '../auth/MfaChallenge';
 import { SuperAdminMfaPanel } from './SuperAdminMfaPanel';
-import { isSupabaseConfigured } from '../../services/supabaseClient';
 import { isUserAdmin } from '../../services/authService';
 import { ClientRateLimiter, sanitizeString } from '../../lib/security';
 
@@ -80,7 +79,6 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
     }
 
     if (result.success) {
-      const userRole = result.user?.role;
       const hasAdminPrivileges = isUserAdmin(result.user || null);
 
       if (hasAdminPrivileges) {
@@ -88,7 +86,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
         onSuccess(redirectUrl);
       } else {
         setErrorMsg(
-          `Access Denied: Your account (${cleanEmail}) is currently assigned the "${userRole || 'customer'}" role in Supabase. Administrator authorization is required to enter the Admin CMS. To grant admin access, execute the promotion SQL snippet in your Supabase SQL Editor.`
+          'Your account does not have permission to access the administration area. Please contact your administrator.'
         );
       }
     } else {
@@ -96,7 +94,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
       setRateLimitState(updatedLimit);
 
       if (updatedLimit.isLocked) {
-        setErrorMsg(`Too many failed attempts. Terminal temporarily locked for security. Try again in ${updatedLimit.remainingSeconds}s.`);
+        setErrorMsg(`Too many failed attempts. Sign-in is temporarily paused for security. Try again in ${updatedLimit.remainingSeconds}s.`);
       } else {
         const remaining = updatedLimit.maxAttempts - updatedLimit.attempts;
         setErrorMsg(
@@ -131,7 +129,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
         <div className="flex items-center space-x-2">
           <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
           <span className="text-[11px] text-stone-500 dark:text-stone-400 uppercase tracking-widest font-mono">
-            {isSupabaseConfigured() ? 'Supabase Auth Protected' : 'Local Administrator Auth'}
+            Secure administrator sign-in
           </span>
         </div>
       </div>
@@ -228,7 +226,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
                 <label className="text-stone-700 dark:text-stone-300 font-semibold">
                   Password
                 </label>
-                <span className="text-[10px] text-stone-500">Encrypted via Supabase</span>
+                <span className="text-[10px] text-stone-500">Your password is protected</span>
               </div>
               <div className="relative">
                 <Lock className="w-4 h-4 text-stone-400 absolute left-3 top-2.5" />
