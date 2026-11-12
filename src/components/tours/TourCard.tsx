@@ -129,14 +129,14 @@ export const TourCard: React.FC<TourCardProps> = ({
           {/* Tour Title */}
           <h3 
             onClick={() => onViewTour(tour)}
-            className="font-display text-base font-bold text-[#0E1B2A] leading-snug line-clamp-2 hover:text-[#0A6C74] cursor-pointer mb-2 transition-colors"
+            className="font-display text-base font-bold text-[#0E1B2A] dark:text-white leading-snug line-clamp-2 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] cursor-pointer mb-2 transition-colors min-h-[44px]"
             title={tour.title}
           >
             {tour.title}
           </h3>
 
           {/* Short description */}
-          <p className="text-xs text-stone-600 line-clamp-2 leading-relaxed mb-3">
+          <p className="text-xs text-stone-600 dark:text-slate-300 line-clamp-2 leading-relaxed mb-3 min-h-[36px]">
             {tour.shortDescription}
           </p>
 

@@ -190,71 +190,71 @@ export const Header: React.FC<HeaderProps> = ({
             : 'opacity-0 -translate-y-2 pointer-events-none'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-8 py-3.5 flex items-center justify-between bg-[#F7F4ED] dark:bg-[#0E1B2A]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-2.5 flex items-center justify-between bg-[#F7F4ED] dark:bg-[#0E1B2A]">
           {/* Brand Logo */}
           <a 
             href="/" 
             onClick={handleLogoClick}
-            className="flex items-center group focus:outline-hidden"
+            className="flex items-center group focus:outline-hidden shrink-0"
             id="brand-logo-link"
             aria-label="Awesome Adventure Tours Home"
           >
             <img 
               src="/logo.png" 
               alt="Awesome Adventure Tours" 
-              width="240"
-              height="240"
+              width="200"
+              height="48"
               fetchPriority="high"
               decoding="async"
-              className="h-14 sm:h-16 md:h-20 w-auto object-contain drop-shadow-xs group-hover:scale-105 transition-transform duration-300"
+              className="h-9 sm:h-10 md:h-11 w-auto object-contain drop-shadow-xs group-hover:scale-105 transition-transform duration-300"
             />
           </a>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center space-x-4 xl:space-x-5 text-sm font-semibold text-stone-700 dark:text-slate-200" aria-label="Main Navigation">
+          <nav className="hidden lg:flex items-center space-x-3.5 xl:space-x-5 text-sm font-semibold text-stone-700 dark:text-slate-200" aria-label="Main Navigation">
             <button 
               type="button"
               onClick={handleExcursionsClick} 
-              className="text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1 cursor-pointer"
+              className="text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1 cursor-pointer whitespace-nowrap shrink-0"
             >
               {t('nav.allExcursions')}
             </button>
             <button 
               type="button"
               onClick={() => handleNavClick('destinations-section')} 
-              className="text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1 cursor-pointer"
+              className="text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1 cursor-pointer whitespace-nowrap shrink-0"
             >
               {t('nav.destinations')}
             </button>
             <button 
               type="button"
               onClick={() => handleNavClick('categories-section')} 
-              className="text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1 cursor-pointer"
+              className="text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1 cursor-pointer whitespace-nowrap shrink-0"
             >
               {t('nav.experiences')}
             </button>
             <button 
               type="button"
               onClick={() => handleNavClick('why-us-section')} 
-              className="text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1 cursor-pointer"
+              className="text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1 cursor-pointer whitespace-nowrap shrink-0"
             >
               Why Choose Us
             </button>
             <button 
               type="button"
               onClick={() => handleNavClick('reviews-section')} 
-              className="text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1 cursor-pointer"
+              className="text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1 cursor-pointer whitespace-nowrap shrink-0"
             >
               {t('nav.guestReviews')}
             </button>
-            <a href="/blog" aria-label="Visit the Awesome Adventure Tours blog" className="inline-flex items-center rounded-full border border-[#0A6C74]/30 bg-[#E8F3F4] px-3.5 py-1.5 text-sm font-bold text-[#0A6C74] shadow-xs transition-colors hover:bg-[#D7EBEC] dark:border-teal-400/30 dark:bg-teal-950/50 dark:text-teal-300 dark:hover:bg-teal-900/60">Blog</a>
+            <a href="/blog" aria-label="Visit the Awesome Adventure Tours blog" className="inline-flex items-center rounded-full border border-[#0A6C74]/30 bg-[#E8F3F4] px-3.5 py-1 text-sm font-bold text-[#0A6C74] shadow-xs transition-colors hover:bg-[#D7EBEC] dark:border-teal-400/30 dark:bg-teal-950/50 dark:text-teal-300 dark:hover:bg-teal-900/60 whitespace-nowrap shrink-0">Blog</a>
 
             {/* Find My Booking */}
             <button 
               type="button"
               id="my-booking-header-btn"
               onClick={onOpenMyBooking}
-              className="inline-flex items-center space-x-1 text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1 cursor-pointer text-sm font-semibold"
+              className="inline-flex items-center space-x-1 text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1 cursor-pointer text-sm font-semibold whitespace-nowrap shrink-0"
               title={t('nav.findMyBooking')}
             >
               <CalendarCheck className="w-4 h-4 text-[#0A6C74] dark:text-[#2dd4bf]" />
@@ -265,7 +265,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onOpenWishlist}
-              className="relative p-1.5 text-stone-700 dark:text-slate-200 hover:text-rose-500 dark:hover:text-rose-400 transition-colors cursor-pointer rounded-lg hover:bg-stone-200/50 dark:hover:bg-slate-800/60"
+              className="relative p-1.5 text-stone-700 dark:text-slate-200 hover:text-rose-500 dark:hover:text-rose-400 transition-colors cursor-pointer rounded-lg hover:bg-stone-200/50 dark:hover:bg-slate-800/60 whitespace-nowrap shrink-0"
               title="Saved Excursions"
               aria-label={`View ${wishlistCount} saved excursions`}
             >
@@ -282,7 +282,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 type="button"
                 onClick={onOpenCompare}
-                className="relative p-1.5 text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors cursor-pointer rounded-lg hover:bg-stone-200/50 dark:hover:bg-slate-800/60"
+                className="relative p-1.5 text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors cursor-pointer rounded-lg hover:bg-stone-200/50 dark:hover:bg-slate-800/60 whitespace-nowrap shrink-0"
                 title="Compare Excursions"
                 aria-label={`Compare ${comparisonCount} excursions`}
               >
@@ -298,7 +298,7 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               id="theme-toggle-main-nav"
               onClick={toggleTheme}
-              className="p-1.5 text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors cursor-pointer rounded-lg hover:bg-stone-200/50 dark:hover:bg-slate-800/60"
+              className="p-1.5 text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors cursor-pointer rounded-lg hover:bg-stone-200/50 dark:hover:bg-slate-800/60 whitespace-nowrap shrink-0"
               title={isDark ? "Switch to Light Mode (Default)" : "Switch to Dark Mode"}
               aria-label={isDark ? "Switch to Light Mode (Default)" : "Switch to Dark Mode"}
             >
@@ -309,11 +309,11 @@ export const Header: React.FC<HeaderProps> = ({
               )}
             </button>
 
-            <a href="/support" aria-label="Open Awesome Adventure Tours customer support" className="text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1 text-sm font-semibold">Support</a>
+            <a href="/support" aria-label="Open Awesome Adventure Tours customer support" className="text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1 text-sm font-semibold whitespace-nowrap shrink-0">Support</a>
           </nav>
 
         {/* Action Controls */}
-        <div className="hidden sm:flex items-center space-x-2">
+        <div className="hidden lg:flex items-center space-x-2.5 shrink-0">
 
           {/* User Auth Section */}
           {user ? (
@@ -322,10 +322,10 @@ export const Header: React.FC<HeaderProps> = ({
                 type="button"
                 id="user-menu-button"
                 onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                className="inline-flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl border border-stone-300/70 dark:border-slate-700 bg-stone-200/60 dark:bg-slate-800/80 hover:bg-stone-200 dark:hover:bg-slate-700 text-xs font-semibold text-stone-800 dark:text-slate-100 transition-colors cursor-pointer"
+                className="inline-flex items-center space-x-1.5 px-2.5 py-1.5 rounded-xl border border-stone-300/70 dark:border-slate-700 bg-stone-200/60 dark:bg-slate-800/80 hover:bg-stone-200 dark:hover:bg-slate-700 text-xs font-semibold text-stone-800 dark:text-slate-100 transition-colors cursor-pointer whitespace-nowrap shrink-0"
                 aria-expanded={userDropdownOpen}
               >
-                <div className="w-5 h-5 rounded-full bg-[#0A6C74] text-white flex items-center justify-center text-[10px] font-bold overflow-hidden">
+                <div className="w-5 h-5 rounded-full bg-[#0A6C74] text-white flex items-center justify-center text-[10px] font-bold overflow-hidden shrink-0">
                   {user.avatarUrl ? (
                     <img src={user.avatarUrl} alt="" className="w-full h-full object-cover" />
                   ) : (
@@ -413,14 +413,14 @@ export const Header: React.FC<HeaderProps> = ({
               </AnimatePresence>
             </div>
           ) : (
-            <div className="flex items-center space-x-1.5">
+            <div className="flex items-center space-x-1.5 shrink-0">
               <button
                 type="button"
                 id="header-sign-in-btn"
                 onClick={() => {
                   if (onNavigateLogin) onNavigateLogin();
                 }}
-                className="inline-flex items-center px-3 py-2 text-xs font-semibold text-stone-700 hover:text-stone-900 hover:bg-stone-200/60 rounded-xl transition-all cursor-pointer"
+                className="inline-flex items-center px-3 py-2 text-xs font-semibold text-stone-700 hover:text-stone-900 hover:bg-stone-200/60 dark:text-slate-200 dark:hover:bg-slate-800 rounded-xl transition-all cursor-pointer whitespace-nowrap shrink-0"
               >
                 <LogIn className="w-3.5 h-3.5 mr-1 text-[#0A6C74]" />
                 <span>Sign In</span>
@@ -432,7 +432,7 @@ export const Header: React.FC<HeaderProps> = ({
                 onClick={() => {
                   if (onNavigateRegister) onNavigateRegister();
                 }}
-                className="inline-flex items-center px-3 py-2 text-xs font-semibold text-[#0A6C74] hover:text-white hover:bg-[#0A6C74] border border-[#0A6C74]/40 rounded-xl transition-all cursor-pointer font-medium"
+                className="inline-flex items-center px-3 py-2 text-xs font-semibold text-[#0A6C74] hover:text-white hover:bg-[#0A6C74] border border-[#0A6C74]/40 rounded-xl transition-all cursor-pointer font-medium whitespace-nowrap shrink-0"
               >
                 <UserPlus className="w-3.5 h-3.5 mr-1" />
                 <span>Register</span>
@@ -445,7 +445,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={onOpenHelpInquiry}
-              className="hidden md:inline-flex items-center px-3 py-2 text-xs font-semibold text-stone-700 hover:text-stone-900 hover:bg-stone-200/60 rounded-xl transition-all cursor-pointer border border-stone-300/70 bg-stone-200/40"
+              className="hidden 2xl:inline-flex items-center px-3 py-2 text-xs font-semibold text-stone-700 hover:text-stone-900 hover:bg-stone-200/60 rounded-xl transition-all cursor-pointer border border-stone-300/70 bg-stone-200/40 whitespace-nowrap shrink-0"
               title="Require Help, Concierge & Custom Tours"
             >
               <HelpCircle className="w-3.5 h-3.5 mr-1 text-[#0A6C74]" />
@@ -460,18 +460,28 @@ export const Header: React.FC<HeaderProps> = ({
             type="button"
             id="book-excursion-header-btn"
             onClick={handleBookingClick}
-            className="inline-flex items-center px-4 py-2 text-xs font-semibold text-white bg-gradient-to-r from-[#0A6C74] to-[#0D838C] hover:from-[#08565C] hover:to-[#0A6C74] rounded-xl shadow-xs transition-all cursor-pointer"
+            className="inline-flex items-center px-4 py-2 text-xs font-semibold text-white bg-gradient-to-r from-[#0A6C74] to-[#0D838C] hover:from-[#08565C] hover:to-[#0A6C74] rounded-xl shadow-xs transition-all cursor-pointer whitespace-nowrap shrink-0"
           >
             {t('nav.bookExcursion')}
           </motion.button>
         </div>
 
         {/* Mobile menu button & actions */}
-        <div className="flex items-center space-x-2 lg:hidden">
+        <div className="flex items-center space-x-2 lg:hidden shrink-0">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.96 }}
+            type="button"
+            onClick={handleBookingClick}
+            className="hidden sm:inline-flex items-center px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-[#0A6C74] to-[#0D838C] hover:from-[#08565C] hover:to-[#0A6C74] rounded-lg shadow-xs transition-all cursor-pointer whitespace-nowrap"
+          >
+            <span>{t('nav.bookExcursion')}</span>
+          </motion.button>
+
           <a
             href="/blog"
             aria-label="Visit the Awesome Adventure Tours blog"
-            className="inline-flex items-center justify-center rounded-lg border border-[#0A6C74]/30 bg-[#E8F3F4] px-3 py-2 text-xs font-bold text-[#0A6C74] dark:border-teal-400/30 dark:bg-teal-950/50 dark:text-teal-300"
+            className="inline-flex items-center justify-center rounded-lg border border-[#0A6C74]/30 bg-[#E8F3F4] px-2.5 py-1.5 text-xs font-bold text-[#0A6C74] dark:border-teal-400/30 dark:bg-teal-950/50 dark:text-teal-300 whitespace-nowrap"
           >
             Blog
           </a>
@@ -480,7 +490,7 @@ export const Header: React.FC<HeaderProps> = ({
             type="button"
             id="mobile-menu-toggle-btn"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 text-stone-800 dark:text-slate-200 hover:bg-stone-200 dark:hover:bg-slate-800 rounded-lg border border-stone-300/70 dark:border-slate-700 bg-stone-200/60 dark:bg-slate-800/80 cursor-pointer"
+            className="p-2 text-stone-800 dark:text-slate-200 hover:bg-stone-200 dark:hover:bg-slate-800 rounded-lg border border-stone-300/70 dark:border-slate-700 bg-stone-200/60 dark:bg-slate-800/80 cursor-pointer min-w-[38px] min-h-[38px] flex items-center justify-center"
             aria-label="Toggle navigation menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}

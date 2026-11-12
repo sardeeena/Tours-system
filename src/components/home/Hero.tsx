@@ -267,7 +267,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
               </div>
 
               {/* Dynamic Headline */}
-              <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-stone-900 dark:text-white leading-[1.12] mb-3">
+              <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-stone-900 dark:text-white leading-[1.12] mb-3 [text-wrap:balance]">
                 {slide.title1}{' '}
                 <span className={`italic font-serif text-transparent bg-clip-text bg-gradient-to-r ${slide.accentGradient}`}>
                   {slide.title2}
@@ -283,7 +283,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
         </div>
 
         {/* Tour Type Quick Selector Chips for Instant Discovery */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-4 no-scrollbar">
+        <div className="flex items-center gap-2 overflow-x-auto pb-3 mb-5 no-scrollbar scroll-smooth snap-x">
           {CINEMATIC_SLIDES.map((s, idx) => {
             const isActive = idx === currentSlideIndex;
             return (

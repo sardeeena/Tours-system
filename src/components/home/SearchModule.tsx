@@ -338,13 +338,14 @@ export const SearchModule: React.FC<SearchModuleProps> = ({
           </div>
 
           {/* Submit Action Button */}
-          <div className="lg:col-span-1 pt-3 sm:pt-0">
+          <div className="lg:col-span-1 flex flex-col justify-end pt-2 lg:pt-0">
+            <span className="hidden lg:block text-[11px] font-bold uppercase tracking-wider text-transparent mb-1 select-none pointer-events-none" aria-hidden="true">&nbsp;</span>
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.96 }}
               type="submit"
               id="search-submit-btn"
-              className="w-full h-11 bg-gradient-to-r from-[#0A6C74] to-[#0D838C] hover:from-[#08565C] hover:to-[#0A6C74] text-white font-medium rounded-xl flex items-center justify-center shadow-md transition-all group cursor-pointer"
+              className="w-full h-[42px] bg-gradient-to-r from-[#0A6C74] to-[#0D838C] hover:from-[#08565C] hover:to-[#0A6C74] text-white font-medium rounded-xl flex items-center justify-center shadow-md transition-all group cursor-pointer"
               title={t('search.submit')}
             >
               <Search className="w-4 h-4 group-hover:scale-110 transition-transform" />

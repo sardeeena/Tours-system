@@ -44,7 +44,7 @@ export const Footer: React.FC<FooterProps> = ({
       
       {/* Top operational banner */}
       <div className="border-b border-[#E8E3DA] dark:border-slate-800/80 py-8 px-4 sm:px-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="flex items-start space-x-3">
             <div className="p-2 rounded bg-white dark:bg-slate-800/70 border border-stone-200 dark:border-slate-700 text-[#0A6C74] dark:text-[#60C3CC] shadow-2xs">
               <MapPin className="w-4 h-4" />
@@ -343,9 +343,9 @@ export const Footer: React.FC<FooterProps> = ({
 
         {/* Payment Methods & Bottom Bar */}
         <div className="mt-12 pt-6 border-t border-[#E8E3DA] dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-stone-500 dark:text-slate-500">
-          <div className="flex items-center space-x-3">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 sm:gap-3 text-center sm:text-left">
             <span>© {new Date().getFullYear()} Awesome Adventure Tours. All rights reserved.</span>
-            <span className="text-stone-300 dark:text-slate-700">|</span>
+            <span className="hidden sm:inline text-stone-300 dark:text-slate-700">|</span>
             {/* Footer Theme Toggle */}
             <button
               type="button"
@@ -357,19 +357,19 @@ export const Footer: React.FC<FooterProps> = ({
               {isDark ? (
                 <>
                   <Sun className="w-3 h-3 text-amber-300" />
-                  <span>Theme: Dark (Switch to Light)</span>
+                  <span>Theme: Dark</span>
                 </>
               ) : (
                 <>
                   <Moon className="w-3 h-3 text-[#0A6C74]" />
-                  <span>Theme: Light (Switch to Dark)</span>
+                  <span>Theme: Light</span>
                 </>
               )}
             </button>
           </div>
 
-          <div className="flex items-center space-x-3 text-stone-600 dark:text-slate-400 text-[11px]">
-            <span className="text-stone-500 dark:text-slate-500">Accepted payment methods:</span>
+          <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 text-stone-600 dark:text-slate-400 text-[11px]">
+            <span className="text-stone-500 dark:text-slate-500">Accepted:</span>
             <span className="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-stone-200 dark:border-slate-700 text-stone-700 dark:text-slate-300 shadow-2xs">Visa</span>
             <span className="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-stone-200 dark:border-slate-700 text-stone-700 dark:text-slate-300 shadow-2xs">Mastercard</span>
             <span className="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-stone-200 dark:border-slate-700 text-stone-700 dark:text-slate-300 shadow-2xs">Apple Pay</span>
