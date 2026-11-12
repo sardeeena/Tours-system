@@ -21,6 +21,7 @@ import {
   Moon,
 } from 'lucide-react';
 import { CurrencyConfig } from '../../types';
+import { recordVisitorEvent } from '../../services/visitorAnalyticsService';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useComparison } from '../../contexts/ComparisonContext';
@@ -609,6 +610,7 @@ export const Header: React.FC<HeaderProps> = ({
                         type="button"
                         onClick={() => {
                           setLanguage(langItem.code as LanguageCode);
+                          void recordVisitorEvent({ event_name: 'language_changed', page_path: window.location.pathname, event_data: { language: langItem.code } });
                         }}
                         className={`py-1.5 px-2 rounded-md text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all ${
                           isSelected
