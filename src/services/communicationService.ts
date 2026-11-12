@@ -346,6 +346,8 @@ export async function saveTemplate(template: CommunicationTemplate): Promise<voi
     if (error) throw new Error('Template was not saved to the database: ' + error.message);
   }
 
+  await logActivity({ eventType: 'email_template_updated', title: 'Email template updated', description: 'Updated the ' + template.name + ' email template.', actor: 'Communications Admin', metadata: { templateKey: template.templateKey } });
+
   const all = await listTemplates();
   const exists = all.findIndex((item) => item.templateKey === template.templateKey || item.id === template.id);
   const updated = [...all];
@@ -357,11 +359,17 @@ export async function saveTemplate(template: CommunicationTemplate): Promise<voi
 
 export async function deleteTemplate(templateIdOrKey: string): Promise<void> {
   if (isSupabaseConfigured()) {
-    const { error } = await supabase
-      .from('communication_templates')
-      .delete()
-      .or(`id.eq.${templateIdOrKey},template_key.eq.${templateIdOrKey}`);
-    if (error) throw new Error('Template was not deleted from the database: ' + error.message);
+    const all = await listTemplates();
+    const target = all.find((item) => item.id === templateIdOrKey || item.templateKey === templateIdOrKey);
+    if (!target) return;
+    if (DEFAULT_TEMPLATES.some((item) => item.templateKey === target.templateKey)) {
+      const { error } = await supabase.from('communication_templates').update({ is_active: false, updated_at: new Date().toISOString() }).eq('template_key', target.templateKey);
+      if (error) throw new Error('Default template could not be disabled: ' + error.message);
+    } else {
+      const { error } = await supabase.from('communication_templates').delete().eq('template_key', target.templateKey);
+      if (error) throw new Error('Template was not deleted from the database: ' + error.message);
+    }
+    await logActivity({ eventType: 'email_template_deleted', title: 'Email template removed', description: 'Removed or disabled the ' + target.name + ' email template.', actor: 'Communications Admin', metadata: { templateKey: target.templateKey } });
   }
   const all = await listTemplates();
   setLocal(LOCAL_TEMPLATES_KEY, all.filter((item) => item.id !== templateIdOrKey && item.templateKey !== templateIdOrKey));
