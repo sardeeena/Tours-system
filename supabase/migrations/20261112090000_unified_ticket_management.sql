@@ -213,7 +213,8 @@ USING (
 
 -- Restrict columns so callers cannot rewrite ticket ownership or identity.
 REVOKE ALL PRIVILEGES ON public.support_tickets, public.support_ticket_messages, public.support_ticket_events FROM PUBLIC, anon, authenticated;
-GRANT SELECT, INSERT ON public.support_tickets TO authenticated;
+GRANT SELECT ON public.support_tickets TO authenticated;
+GRANT INSERT (requester_id, customer_id, booking_id, subject, description, category, department, priority) ON public.support_tickets TO authenticated;
 GRANT UPDATE (status, priority, department, assigned_to, first_response_at, resolved_at, closed_at, first_response_due_at, resolution_due_at, last_message_at, updated_at)
   ON public.support_tickets TO authenticated;
 GRANT SELECT, INSERT ON public.support_ticket_messages TO authenticated;
@@ -308,5 +309,112 @@ FOR EACH ROW EXECUTE FUNCTION private.record_support_message_event();
 REVOKE ALL ON FUNCTION private.set_support_ticket_updated_at() FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION private.record_support_ticket_event() FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION private.record_support_message_event() FROM PUBLIC, anon, authenticated;
+
+
+-- Associate signed-in requesters with the CRM customer record where one exists.
+CREATE OR REPLACE FUNCTION private.prepare_support_ticket()
+RETURNS trigger LANGUAGE plpgsql SET search_path=''
+AS $function$
+BEGIN
+  IF NEW.customer_id IS NULL THEN
+    SELECT c.id INTO NEW.customer_id
+    FROM public.customers c
+    WHERE c.user_id=NEW.requester_id
+    ORDER BY c.created_at DESC LIMIT 1;
+  END IF;
+  -- Customers may never self-assign, set staff-only queues, or escalate their own priority.
+  IF NOT public.has_permission('tickets.create') THEN
+    NEW.department := 'support';
+    NEW.priority := 'normal';
+    NEW.assigned_to := NULL;
+    NEW.status := 'open';
+  END IF;
+  RETURN NEW;
+END;
+$function$;
+DROP TRIGGER IF EXISTS support_tickets_prepare ON public.support_tickets;
+CREATE TRIGGER support_tickets_prepare BEFORE INSERT ON public.support_tickets
+FOR EACH ROW EXECUTE FUNCTION private.prepare_support_ticket();
+REVOKE ALL ON FUNCTION private.prepare_support_ticket() FROM PUBLIC, anon, authenticated;
+
+-- Private, ticket-scoped attachments. The object path must start with the ticket UUID.
+INSERT INTO storage.buckets(id,name,public,file_size_limit,allowed_mime_types)
+VALUES ('support-ticket-attachments','support-ticket-attachments',false,10485760,
+  ARRAY['application/pdf','image/jpeg','image/png','image/webp','text/plain'])
+ON CONFLICT(id) DO UPDATE SET public=false,file_size_limit=10485760,
+  allowed_mime_types=EXCLUDED.allowed_mime_types;
+
+DROP POLICY IF EXISTS support_ticket_attachments_read ON storage.objects;
+CREATE POLICY support_ticket_attachments_read ON storage.objects
+FOR SELECT TO authenticated
+USING (
+  bucket_id='support-ticket-attachments'
+  AND split_part(name,'/',1) ~* '^[0-9a-f-]{36}
+
+  AND EXISTS (
+    SELECT 1 FROM public.support_tickets t
+    WHERE t.id::text=split_part(storage.objects.name,'/',1)
+      AND (
+        t.requester_id=(SELECT auth.uid())
+        OR (SELECT public.has_permission('tickets.read'))
+        OR (t.assigned_to=(SELECT auth.uid()) AND (SELECT public.has_permission('tickets.read_assigned')))
+      )
+  )
+);
+
+DROP POLICY IF EXISTS support_ticket_attachments_upload ON storage.objects;
+CREATE POLICY support_ticket_attachments_upload ON storage.objects
+FOR INSERT TO authenticated
+WITH CHECK (
+  bucket_id='support-ticket-attachments'
+  AND split_part(name,'/',1) ~* '^[0-9a-f-]{36}
+
+  AND EXISTS (
+    SELECT 1 FROM public.support_tickets t
+    WHERE t.id::text=split_part(storage.objects.name,'/',1)
+      AND (
+        (t.requester_id=(SELECT auth.uid()) AND t.status<>'closed')
+        OR (
+          (SELECT public.has_permission('tickets.reply'))
+          AND (
+            (SELECT public.has_permission('tickets.read'))
+            OR (t.assigned_to=(SELECT auth.uid()) AND (SELECT public.has_permission('tickets.read_assigned')))
+          )
+        )
+      )
+  )
+);
+
+DROP POLICY IF EXISTS support_ticket_attachments_delete ON storage.objects;
+CREATE POLICY support_ticket_attachments_delete ON storage.objects
+FOR DELETE TO authenticated
+USING (
+  bucket_id='support-ticket-attachments'
+  AND split_part(name,'/',1) ~* '^[0-9a-f-]{36}
+
+  AND EXISTS (
+    SELECT 1 FROM public.support_tickets t
+    WHERE t.id::text=split_part(storage.objects.name,'/',1)
+      AND (
+        (t.requester_id=(SELECT auth.uid()) AND t.status<>'closed')
+        OR (SELECT public.has_permission('tickets.manage'))
+      )
+  )
+);
+
+-- Enable realtime updates where the project's publication is available.
+DO $realtime$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_publication WHERE pubname='supabase_realtime') THEN
+    IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname='supabase_realtime' AND schemaname='public' AND tablename='support_tickets') THEN
+      ALTER PUBLICATION supabase_realtime ADD TABLE public.support_tickets;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname='supabase_realtime' AND schemaname='public' AND tablename='support_ticket_messages') THEN
+      ALTER PUBLICATION supabase_realtime ADD TABLE public.support_ticket_messages;
+    END IF;
+  END IF;
+END;
+$realtime$;
+
 
 COMMIT;
