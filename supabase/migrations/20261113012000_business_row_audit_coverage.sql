@@ -11,7 +11,7 @@ CREATE OR REPLACE FUNCTION private.capture_business_audit()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = pg_catalog, public
+SET search_path = ''
 AS $function$
 DECLARE
   v_old jsonb := NULL;
