@@ -1,11 +1,11 @@
-export const EXPECTED_KEMET_SUPABASE_PROJECT_REF = 'mktrtoctcjyokclpdeui';
+export const EXPECTED_AWESOME_ADVENTURE_TOURS_SUPABASE_PROJECT_REF = 'mktrtoctcjyokclpdeui';
 
 /**
  * Production Awesome Adventure Tours clients must connect only to the configured AwesomeAdventureTours
  * Spirit Supabase project. Development may use a separate hosted Supabase
  * project or a local Supabase stack for isolated testing.
  */
-export function isExpectedKemetSupabaseUrl(
+export function isExpectedAwesomeAdventureToursSupabaseUrl(
   url: string | null | undefined,
   allowNonProductionProject = false
 ): boolean {
@@ -23,7 +23,7 @@ export function isExpectedKemetSupabaseUrl(
     }
 
     return parsed.protocol === 'https:' &&
-      parsed.hostname === `${EXPECTED_KEMET_SUPABASE_PROJECT_REF}.supabase.co`;
+      parsed.hostname === `${EXPECTED_AWESOME_ADVENTURE_TOURS_SUPABASE_PROJECT_REF}.supabase.co`;
   } catch {
     return false;
   }
