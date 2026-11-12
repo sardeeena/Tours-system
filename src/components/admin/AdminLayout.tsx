@@ -22,6 +22,7 @@ import {
   AlertTriangle,
   HelpCircle,
   Mail,
+  Send,
   Tag,
   FileText,
   BookOpen,
@@ -280,6 +281,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     if (id === 'tickets') return 'tickets.read';
     if (id === 'customers') return 'customers.read';
     if (id.startsWith('crm_') || id === 'inquiries') return 'crm.read';
+    if (id === 'comm_templates') return 'communications.manage';
     if (id.startsWith('comm_')) return 'communications.read';
     if (['destinations','categories','newsletter','extras','faqs','reviews','media','seo','pages'].includes(id)) return 'content.read';
     if (id === 'coupons') return 'bookings.read';
@@ -382,7 +384,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                     Admin Portal
                   </span>
                   <h1 className="font-display font-bold text-sm text-[#0E1B2A] dark:text-white tracking-wide truncate">
-                    Kemet Spirit
+                    Awesome Adventure Tours
                   </h1>
                 </div>
               </div>
