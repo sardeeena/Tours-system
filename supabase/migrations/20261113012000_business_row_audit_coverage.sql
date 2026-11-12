@@ -72,7 +72,7 @@ ALTER TABLE public.visitor_analytics_settings
 
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.audit_logs FROM PUBLIC, anon, authenticated, service_role;
-GRANT SELECT, INSERT ON TABLE public.audit_logs TO service_role;
+GRANT SELECT, INSERT, DELETE ON TABLE public.audit_logs TO service_role;
 
 DO $block$
 DECLARE
