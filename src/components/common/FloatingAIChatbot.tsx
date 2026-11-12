@@ -83,6 +83,7 @@ Tell me who you're traveling with, your resort area (Hurghada, El Gouna, Makadi 
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     };
 
+    void recordVisitorEvent({ event_name: 'chatbot_interaction', page_path: window.location.pathname, event_data: { interaction: customPrompt ? 'suggested_prompt' : 'message_sent' } });
     setMessages((prev) => [...prev, userMsg]);
     setInput('');
     setIsLoading(true);
