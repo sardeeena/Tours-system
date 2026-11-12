@@ -123,7 +123,7 @@ export const PopularTours: React.FC<PopularToursProps> = ({
         {/* Tours Grid with Motion Animations or Skeleton Loader */}
         {isLoading ? (
           <div 
-            className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 min-w-0 w-full"
             aria-busy="true"
             aria-label="Loading handpicked excursions from Supabase"
           >
@@ -147,7 +147,7 @@ export const PopularTours: React.FC<PopularToursProps> = ({
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 min-w-0 w-full">
             <AnimatePresence mode="popLayout">
               {filteredTours.map((tour, index) => (
                 <motion.div
