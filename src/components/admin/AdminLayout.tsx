@@ -479,14 +479,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               </span>
             </div>
 
-            <button
+            {isSuperAdmin && <button
               type="button"
               onClick={() => setIsIntegrationModalOpen(true)}
               className="w-full flex items-center justify-center space-x-1.5 py-2 px-2 bg-[#E8F3F4] hover:bg-[#d6ebed] dark:bg-[#0A6C74]/20 dark:hover:bg-[#0A6C74]/30 text-[#0A6C74] dark:text-[#2DD4BF] border border-[#0A6C74]/30 rounded-xl text-[11px] font-semibold transition-colors cursor-pointer"
             >
               <Layers className="w-3.5 h-3.5" />
-              <span>Integration Simulation Suite</span>
-            </button>
+              <span>System diagnostics</span>
+            </button>}
 
             <div className="grid grid-cols-2 gap-1.5 pt-1">
               <button
@@ -688,7 +688,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
       {/* Platform Integration Simulation Suite Modal */}
       <PlatformIntegrationModal
-        isOpen={isIntegrationModalOpen}
+        isOpen={isSuperAdmin && isIntegrationModalOpen}
         onClose={() => setIsIntegrationModalOpen(false)}
       />
     </div>
