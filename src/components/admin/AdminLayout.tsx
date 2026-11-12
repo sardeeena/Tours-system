@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   LayoutDashboard,
+  Activity,
   Compass,
   CalendarCheck,
   Users,
@@ -80,6 +81,7 @@ export type AdminTab =
   | 'blog'
   | 'settings'
   | 'access_control'
+  | 'technical'
   | 'crm_dashboard'
   | 'crm_leads'
   | 'crm_customers'
@@ -264,6 +266,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     // SECURITY & ACCESS CONTROL
     { id: 'header_security', label: 'SECURITY & ACCESS', isHeader: true },
     { id: 'access_control', label: 'Users, Roles & Permissions', icon: ShieldCheck },
+    { id: 'technical', label: 'Technical Control Center', icon: Activity },
   ];
 
   const requiredPermission = (id: string): string | null => {
@@ -289,9 +292,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     return null;
   };
   const canManageAccess = Boolean(user?.roles?.includes('admin') || user?.roles?.includes('super_admin') || user?.role === 'admin' || user?.role === 'super_admin');
-  const canSeeTab = (id: string) => id === 'access_control'
-    ? canManageAccess
-    : (() => { const required = requiredPermission(id); return !required || hasPermission(required); })();
+  const isSuperAdmin = Boolean(user?.roles?.includes('super_admin') || user?.role === 'super_admin');
+  const canSeeTab = (id: string) => id === 'technical'
+    ? isSuperAdmin
+    : id === 'access_control'
+      ? canManageAccess
+      : (() => { const required = requiredPermission(id); return !required || hasPermission(required); })();
 
   const visibleNavItems = navItems.flatMap((item, index) => {
     if (item.isHeader) {
@@ -303,9 +309,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     return canSeeTab(item.id) || Boolean(children?.length) ? [{ ...item, children }] : [];
   });
   const activePermission = requiredPermission(activeTab);
-  const canAccessActiveTab = activeTab === 'access_control'
-    ? canManageAccess
-    : !activePermission || hasPermission(activePermission);
+  const canAccessActiveTab = activeTab === 'technical'
+    ? isSuperAdmin
+    : activeTab === 'access_control'
+      ? canManageAccess
+      : !activePermission || hasPermission(activePermission);
 
   return (
     <div className="admin-shell min-h-screen flex flex-col antialiased selection:bg-[#0A6C74] selection:text-white">
