@@ -2034,7 +2034,7 @@ app.get('/api/admin/technical/audit-logs', rateLimit(60, 60_000), async (req: Au
     if (toDate && Number.isFinite(toDate.getTime())) query = query.lte('created_at', toDate.toISOString());
     const { data, error } = await query;
     if (error) throw error;
-    const privateKey = /(email|phone|whatsapp|address|name|message|description|body|content|subject|notes?|password|token|secret|api.?key|authorization|headers|payload|metadata|ip|user.?agent|cookies?|room|hotel|special.?requests?|contact|recipient|sender|customer|guest|user.?id|payment.?details?|card|cvv|ssn|passport|document|birth|dob|attachment|avatar|settings|config|form.?data|custom.?data|preferences|value|text|comment|question|answer|reason|actor.?id|profile.?id|visitor.?id|session.?id|ip_address|(^ip$|_ip$|^ip_))/i;
+    const privateKey = /(email|phone|whatsapp|address|name|message|description|body|content|subject|notes?|password|token|secret|api.?key|authorization|headers|payload|metadata|user.?agent|cookies?|room|hotel|special.?requests?|contact|recipient|sender|customer|guest|user.?id|payment.?details?|card|cvv|ssn|passport|document|birth|dob|attachment|avatar|settings|config|form.?data|custom.?data|preferences|value|text|comment|question|answer|reason|actor.?id|profile.?id|visitor.?id|session.?id|ip_address|(^ip$|_ip$|^ip_))/i;
     const safeSnapshot = (value: unknown) => {
       if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
       return Object.fromEntries(Object.entries(value as Record<string, unknown>).filter(([key, item]) => {
