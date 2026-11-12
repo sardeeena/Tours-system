@@ -2150,6 +2150,7 @@ app.post('/api/visitor/consent', rateLimit(20, 60_000), async (req: Authenticate
         consent_updated_at: new Date().toISOString(),
       }).eq('id', sessionId);
     }
+    if (req.body?.source === 'session_restore') return res.status(200).json({ success: true, restored: true });
     const { error } = await serverSupabase.from('visitor_consent_records').insert({
       visitor_session_id: sessionId,
       visitor_id: analytics ? visitorId : null,
