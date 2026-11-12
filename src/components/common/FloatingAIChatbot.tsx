@@ -17,6 +17,7 @@ import {
 import { Tour, CurrencyConfig } from '../../types';
 import { formatPrice } from '../../data/toursData';
 import { sendChatMessage, ChatMessage } from '../../services/aiChatService';
+import { recordVisitorEvent } from '../../services/visitorAnalyticsService';
 
 interface FloatingAIChatbotProps {
   currency: CurrencyConfig;
