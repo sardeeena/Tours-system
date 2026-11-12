@@ -35,7 +35,7 @@ export const TourCard: React.FC<TourCardProps> = ({
     >
       {/* Photo with smooth zoom and vignette */}
       <div 
-        className="relative aspect-[16/9] sm:aspect-[16/10] overflow-hidden bg-stone-100 cursor-pointer shrink-0"
+        className="tour-card-media relative overflow-hidden bg-stone-100 cursor-pointer shrink-0"
         onClick={() => onViewTour(tour)}
       >
         {tour.primaryImage ? (
@@ -109,17 +109,17 @@ export const TourCard: React.FC<TourCardProps> = ({
       </div>
 
       {/* Content */}
-      <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between space-y-2 sm:space-y-3 min-w-0">
+      <div className="p-2.5 sm:p-5 flex-1 flex flex-col justify-between space-y-2 sm:space-y-3 min-w-0">
         <div>
           {/* Unboxed Metadata Line */}
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] sm:text-[11px] text-stone-500 font-medium mb-1.5">
+          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[9px] sm:text-[11px] text-stone-500 font-medium mb-1.5 min-w-0">
             <span className="flex items-center text-[#0A6C74] font-semibold">
               <MapPin className="w-3 h-3 mr-1 shrink-0" />
               {tour.destination}
             </span>
-            <span aria-hidden="true" className="text-stone-300">·</span>
-            <span className="truncate max-w-[120px] text-stone-600">{tour.category}</span>
-            <span aria-hidden="true" className="text-stone-300">·</span>
+            <span aria-hidden="true" className="text-stone-300 hidden sm:inline">·</span>
+            <span className="truncate max-w-[120px] text-stone-600 hidden sm:inline">{tour.category}</span>
+            <span aria-hidden="true" className="text-stone-300 hidden sm:inline">·</span>
             <span className="flex items-center text-stone-600 shrink-0">
               <Clock className="w-3 h-3 mr-1 text-stone-400 shrink-0" />
               {tour.durationHours}h
@@ -129,14 +129,14 @@ export const TourCard: React.FC<TourCardProps> = ({
           {/* Tour Title */}
           <h3 
             onClick={() => onViewTour(tour)}
-            className="font-display text-sm sm:text-base font-bold text-[#0E1B2A] dark:text-white leading-snug line-clamp-2 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] cursor-pointer mb-2 transition-colors sm:min-h-[44px]"
+            className="font-display text-xs sm:text-base font-bold text-[#0E1B2A] dark:text-white leading-snug line-clamp-3 sm:line-clamp-2 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] cursor-pointer mb-1.5 sm:mb-2 transition-colors sm:min-h-[44px]"
             title={tour.title}
           >
             {tour.title}
           </h3>
 
           {/* Short description */}
-          <p className="text-[11px] sm:text-xs text-stone-600 dark:text-slate-300 line-clamp-2 leading-relaxed mb-2 sm:mb-3 sm:min-h-[36px]">
+          <p className="hidden sm:block text-xs text-stone-600 dark:text-slate-300 line-clamp-2 leading-relaxed mb-2 sm:mb-3 sm:min-h-[36px]">
             {tour.shortDescription}
           </p>
 
@@ -162,16 +162,16 @@ export const TourCard: React.FC<TourCardProps> = ({
           </div>
 
           {/* Pickup info */}
-          <div className="text-[11px] text-stone-500 flex items-center">
+          <div className="hidden sm:flex text-[11px] text-stone-500 items-center">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 shrink-0" />
             <span className="truncate">{tour.pickupInfo}</span>
           </div>
         </div>
 
         {/* Compare Checkbox & Pricing Row */}
-        <div className="pt-2.5 sm:pt-3 border-t border-stone-100 space-y-2 sm:space-y-2.5">
+        <div className="pt-2 sm:pt-3 border-t border-stone-100 space-y-2 sm:space-y-2.5">
           {/* Quick comparison toggle button */}
-          <div className="flex items-center justify-between text-[11px]">
+          <div className="hidden sm:flex items-center justify-between text-[11px]">
             <button
               type="button"
               onClick={() => toggleCompare(tour.slug, tour.title)}
@@ -197,7 +197,7 @@ export const TourCard: React.FC<TourCardProps> = ({
           </div>
 
           {/* Pricing & Primary Action */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <span className="block text-[10px] uppercase font-bold text-stone-400 tracking-wider">From</span>
               <div className="flex items-baseline space-x-1">
@@ -208,11 +208,11 @@ export const TourCard: React.FC<TourCardProps> = ({
               </div>
             </div>
 
-            <div className="flex items-center space-x-1.5">
+            <div className="flex items-center space-x-1.5 w-full sm:w-auto">
               <button
                 type="button"
                 onClick={() => onViewTour(tour)}
-                className="px-2.5 sm:px-3 py-1.5 sm:py-2 text-xs font-semibold text-stone-700 hover:text-stone-900 bg-stone-100 hover:bg-stone-200/80 rounded-xl transition-all cursor-pointer"
+                className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold text-stone-700 hover:text-stone-900 bg-stone-100 hover:bg-stone-200/80 rounded-xl transition-all cursor-pointer"
               >
                 Details
               </button>
@@ -221,7 +221,7 @@ export const TourCard: React.FC<TourCardProps> = ({
                 whileTap={{ scale: 0.96 }}
                 type="button"
                 onClick={() => (onBookNow ? onBookNow(tour) : onViewTour(tour))}
-                className="px-3 sm:px-3.5 py-1.5 sm:py-2 text-xs font-semibold text-white bg-gradient-to-r from-[#0A6C74] to-[#0D838C] hover:from-[#08565C] hover:to-[#0A6C74] rounded-xl transition-all shadow-xs flex items-center space-x-1 group/btn cursor-pointer"
+                className="flex-1 sm:flex-none justify-center px-2 sm:px-3.5 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold text-white bg-gradient-to-r from-[#0A6C74] to-[#0D838C] hover:from-[#08565C] hover:to-[#0A6C74] rounded-xl transition-all shadow-xs flex items-center space-x-1 group/btn cursor-pointer"
               >
                 <span>Book</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
