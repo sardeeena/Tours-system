@@ -1,7 +1,7 @@
 export const EXPECTED_KEMET_SUPABASE_PROJECT_REF = 'mktrtoctcjyokclpdeui';
 
 /**
- * Production Awesome Adventure Tours clients must connect only to the configured Kemet
+ * Production Awesome Adventure Tours clients must connect only to the configured AwesomeAdventureTours
  * Spirit Supabase project. Development may use a separate hosted Supabase
  * project or a local Supabase stack for isolated testing.
  */
