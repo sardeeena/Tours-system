@@ -137,16 +137,20 @@ INSERT INTO auth.users (
 VALUES (
   current_setting('pgtap.language_auth_user_id')::uuid,
   'authenticated', 'authenticated', 'pgtap-language-auth@example.test', '',
-  NOW(), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, NOW(), NOW()
+  NULL, '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, NOW(), NOW()
 );
 
-SET LOCAL request.jwt.claims = jsonb_build_object(
-  'sub', current_setting('pgtap.language_auth_user_id'),
-  'role', 'authenticated',
-  'aud', 'authenticated'
-)::text;
+SELECT set_config(
+  'request.jwt.claims',
+  jsonb_build_object(
+    'sub', current_setting('pgtap.language_auth_user_id'),
+    'role', 'authenticated',
+    'aud', 'authenticated'
+  )::text,
+  TRUE
+);
 SET LOCAL request.jwt.claim.role = 'authenticated';
-SET LOCAL request.jwt.claim.sub = current_setting('pgtap.language_auth_user_id');
+SELECT set_config('request.jwt.claim.sub', current_setting('pgtap.language_auth_user_id'), TRUE);
 SET LOCAL ROLE authenticated;
 
 SELECT set_config(
@@ -177,6 +181,14 @@ SELECT ok(
       AND tour_language = 'English'
   ),
   'authenticated booking stores its selected language in the original booking row and retains account ownership'
+);
+
+
+SELECT ok(
+  (SELECT booked_count = 2 FROM public.tour_availability
+   WHERE tour_id = (SELECT id FROM public.tours WHERE slug = 'pgtap-language-test-tour')
+     AND date = CURRENT_DATE + 40),
+  'both successful checkouts increment departure capacity exactly once'
 );
 
 SELECT * FROM finish();
