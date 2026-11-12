@@ -12,6 +12,11 @@ export const VisitorAnalyticsTracker: React.FC<Props> = ({ path, userId }) => {
   const previous = useRef<{ path: string; startedAt: number } | null>(null);
 
   useEffect(() => {
+    const initialConsent = readVisitorConsent();
+    if (initialConsent) {
+      setEnabled(initialConsent.analytics);
+      void recordVisitorConsent(initialConsent, 'privacy_settings');
+    }
     const refresh = () => {
       const consent = readVisitorConsent();
       setEnabled(Boolean(consent?.analytics));
