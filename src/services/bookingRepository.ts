@@ -284,6 +284,7 @@ class SupabaseBookingRepository implements IBookingRepository {
   }
 
   async findBooking(bookingReference: string, emailOrPhone: string): Promise<Booking | null> {
+    void recordVisitorEvent({ event_name: 'booking_lookup', page_path: '/my-booking' });
     const cleanRef = (bookingReference || '').trim().toUpperCase();
     const cleanContact = (emailOrPhone || '').trim();
 
@@ -548,6 +549,7 @@ class SupabaseBookingRepository implements IBookingRepository {
       throw new Error('The cancellation service is temporarily unavailable.');
     }
 
+    void recordVisitorEvent({ event_name: 'booking_cancellation_requested', page_path: '/my-booking', event_data: { outcome: 'submitted' } });
     const updated: Booking = {
       ...existing,
       status: 'cancellation_requested',
