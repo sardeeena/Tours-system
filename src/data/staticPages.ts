@@ -22,10 +22,10 @@ export interface StaticPageContent {
 export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
   {
     id: 'about',
-    title: 'About Kemet Spirit',
+    title: 'About Awesome Adventure Tours',
     slug: 'about',
-    heroHeadline: 'Explore Egypt’s Red Sea Coast with Kemet Spirit',
-    heroSubtitle: 'Discover the excursions and experiences currently listed on Kemet Spirit. Each tour page provides its own description and booking information.',
+    heroHeadline: 'Explore Egypt’s Red Sea Coast with Awesome Adventure Tours',
+    heroSubtitle: 'Discover the excursions and experiences currently listed on Awesome Adventure Tours. Each tour page provides its own description and booking information.',
     lastUpdated: '2026-11-11',
     seoIndexable: true,
     sections: [
@@ -41,9 +41,9 @@ export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
   },
   {
     id: 'contact',
-    title: 'Contact Kemet Spirit',
+    title: 'Contact Awesome Adventure Tours',
     slug: 'contact',
-    heroHeadline: 'Contact Kemet Spirit',
+    heroHeadline: 'Contact Awesome Adventure Tours',
     heroSubtitle: 'Speak with our Hurghada support team about published excursions, pickup information and reservations.',
     lastUpdated: '2026-11-12',
     seoIndexable: true,
@@ -64,7 +64,7 @@ export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
   },
   {
     id: 'why-us',
-    title: 'Why Choose Kemet Spirit',
+    title: 'Why Choose Awesome Adventure Tours',
     slug: 'why-us',
     heroHeadline: 'Plan Your Red Sea Experience',
     heroSubtitle: 'Use the published tour information to compare available experiences and choose the trip that suits your plans.',
@@ -128,7 +128,7 @@ export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
     title: 'Privacy Information',
     slug: 'privacy',
     heroHeadline: 'Privacy Information',
-    heroSubtitle: 'This page requires confirmation of Kemet Spirit’s actual data handling practices before it can serve as a complete privacy policy.',
+    heroSubtitle: 'This page requires confirmation of Awesome Adventure Tours’s actual data handling practices before it can serve as a complete privacy policy.',
     lastUpdated: '2026-11-11',
     seoIndexable: false,
     sections: [

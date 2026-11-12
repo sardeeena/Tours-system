@@ -1,4 +1,4 @@
-# 🏺 Kemet Spirit — Red Sea Excursions & Operations Platform
+# 🏺 Awesome Adventure Tours — Red Sea Excursions & Operations Platform
 
 > A full-stack tour discovery, excursion booking, customer experience, and operations platform built for the Red Sea tourism market.
 
@@ -12,7 +12,7 @@
 [![PWA](https://img.shields.io/badge/PWA-Supported-orange?logo=pwa)](https://web.dev/progressive-web-apps/)
 
 <p align="center">
-  <strong>🌐 Production:</strong> <a href="https://kemetspirit.com">kemetspirit.com</a>
+  <strong>🌐 Production:</strong> <a href="https://awesomeadventure.tours">awesomeadventure.tours</a>
   &nbsp;•&nbsp;
   <strong>💻 Repository:</strong> <a href="https://github.com/sardeeena/Tours-system">Tours-system</a>
 </p>
@@ -41,17 +41,17 @@
 
 ## 🌟 Project Overview
 
-**Kemet Spirit** is a full-stack tour and excursion booking platform serving the Red Sea tourism market. It combines a public discovery website, a customer booking experience, customer accounts, and a role-protected administration and operations platform.
+**Awesome Adventure Tours** is a full-stack tour and excursion booking platform serving the Red Sea tourism market. It combines a public discovery website, a customer booking experience, customer accounts, and a role-protected administration and operations platform.
 
 The platform is designed to support excursions and experiences around Hurghada and the wider Red Sea region.
 
-- **Production website:** https://kemetspirit.com
+- **Production website:** https://awesomeadventure.tours
 - **GitHub repository:** https://github.com/sardeeena/Tours-system
 - **Production branch:** `main`
 - **Hosting:** Hostinger Node.js application
 - **Database, authentication & storage:** Supabase
 
-> **Architecture note:** Kemet Spirit is not a static-only Vite website. Express serves the built frontend and the application's `/api/*` routes. Production must run the Node.js server process.
+> **Architecture note:** Awesome Adventure Tours is not a static-only Vite website. Express serves the built frontend and the application's `/api/*` routes. Production must run the Node.js server process.
 
 ---
 

@@ -1,8 +1,8 @@
 # Hostinger Business Web Hosting — Production Deployment Guide
-**Application**: Kemet Spirit  
-**Target Canonical Production Domain**: `https://kemetspirit.com`  
+**Application**: Awesome Adventure Tours  
+**Target Canonical Production Domain**: `https://awesomeadventure.tours`  
 **Authoritative Supabase Project**: `mktrtoctcjyokclpdeui` (`https://mktrtoctcjyokclpdeui.supabase.co`)  
-**Production Runtime**: Node.js 20.x+ LTS (ESM Full-Stack Express + Vite SPA)
+**Production Runtime**: Node.js 22.x LTS (ESM Full-Stack Express + Vite SPA)
 
 ---
 
@@ -25,7 +25,7 @@
 
 ### Step 2.1: Create / Select the Node.js Application
 1. Log in to **Hostinger hPanel** (`hpanel.hostinger.com`).
-2. Navigate to **Websites** > select or create domain **`kemetspirit.com`**.
+2. Navigate to **Websites** > select or create domain **`awesomeadventure.tours`**.
 3. Under **Advanced** / **Hosting**, open **Node.js** (or search "Node.js" in the top bar).
 4. Configure the application runtime:
    - **Node.js version**: Select **Node.js 20.x LTS** (or **Node.js 22.x LTS**).
@@ -76,16 +76,16 @@ In Hostinger hPanel > **Node.js** > **Environment Variables** (or create a `.env
 |---|---|---|
 | `NODE_ENV` | `production` | Enables production static asset caching and disables Vite dev middleware |
 | `PORT` | `3000` | Port for Express server (Hostinger sets this dynamically if left blank) |
-| `APP_URL` | `https://kemetspirit.com` | Canonical production domain |
+| `APP_URL` | `https://awesomeadventure.tours` | Canonical production domain |
 | `VITE_SUPABASE_URL` | `https://mktrtoctcjyokclpdeui.supabase.co` | Authoritative production Supabase project URL |
 | `VITE_SUPABASE_ANON_KEY` | *(Your Supabase anon/publishable key)* | Public browser API key (safe to expose only with RLS and least-privilege grants) |
-| `VITE_APP_URL` | `https://kemetspirit.com` | Frontend canonical origin |
+| `VITE_APP_URL` | `https://awesomeadventure.tours` | Frontend canonical origin |
 | `SUPABASE_URL` | `https://mktrtoctcjyokclpdeui.supabase.co` | Server-side Supabase URL |
 | `SUPABASE_ANON_KEY` | *(Same publishable/anon key)* | Server-side key used with verified user JWTs |
 | `SUPABASE_SERVICE_ROLE_KEY` | *(Optional server-only secret key)* | Privileged server operations only; never add a `VITE_` prefix |
 | `RESEND_API_KEY` | *(Resend API key)* | Server-only email delivery secret |
 | `RESEND_FROM_EMAIL` | *(Verified sender address)* | Must be verified in Resend |
-| `RESEND_FROM_NAME` | `Kemet Spirit` | Email sender display name |
+| `RESEND_FROM_NAME` | `Awesome Adventure Tours` | Email sender display name |
 | `WHATSAPP_ACCESS_TOKEN` | *(Meta system-user access token)* | Server-only Meta WhatsApp Cloud API token |
 | `WHATSAPP_PHONE_NUMBER_ID` | *(Meta phone number ID)* | WhatsApp Cloud API sender ID |
 | `WHATSAPP_BUSINESS_ACCOUNT_ID` | *(Meta WABA ID)* | Optional account metadata |
@@ -108,12 +108,12 @@ To ensure seamless Google/email authentication and password reset flows on the n
 2. Go to **Authentication** > **URL Configuration**.
 3. Set **Site URL**:
    ```
-   https://kemetspirit.com
+   https://awesomeadventure.tours
    ```
 4. In **Redirect URLs**, add:
    ```
-   https://kemetspirit.com/**
-   https://www.kemetspirit.com/**
+   https://awesomeadventure.tours/**
+   https://www.awesomeadventure.tours/**
    http://localhost:3000/**
    ```
 5. Click **Save**.
@@ -124,10 +124,10 @@ To ensure seamless Google/email authentication and password reset flows on the n
 
 1. In your domain registrar (Hostinger DNS Zone / Cloudflare / Namecheap):
    - **A Record**: `@` points to your Hostinger server IP address.
-   - **CNAME Record**: `www` points to `kemetspirit.com`.
+   - **CNAME Record**: `www` points to `awesomeadventure.tours`.
 2. In Hostinger hPanel:
    - Go to **Security** > **SSL**.
-   - Issue a free Let's Encrypt SSL certificate for `kemetspirit.com` and `www.kemetspirit.com`.
+   - Issue a free Let's Encrypt SSL certificate for `awesomeadventure.tours` and `www.awesomeadventure.tours`.
    - Enable **Force HTTPS**.
 
 ---
@@ -136,17 +136,17 @@ To ensure seamless Google/email authentication and password reset flows on the n
 
 After starting the server on Hostinger, verify the live deployment:
 
-- [ ] **Health Endpoint**: Visit `https://kemetspirit.com/api/health`  
+- [ ] **Health Endpoint**: Visit `https://awesomeadventure.tours/api/health`  
   *Expected response*: `{"status":"ok","version":"2.4.0","environment":"production",...}`
-- [ ] **Frontend Homepage**: Visit `https://kemetspirit.com/`  
+- [ ] **Frontend Homepage**: Visit `https://awesomeadventure.tours/`  
   *Expected*: Fast load, Hero section, Why Choose Us, Featured Tours, Footer with Egyptian marine licensing details.
-- [ ] **Excursion Catalog**: Visit `https://kemetspirit.com/excursions`  
+- [ ] **Excursion Catalog**: Visit `https://awesomeadventure.tours/excursions`  
   *Expected*: Tour cards display real dynamic prices and destinations.
-- [ ] **Booking Flow**: Visit `https://kemetspirit.com/booking`  
+- [ ] **Booking Flow**: Visit `https://awesomeadventure.tours/booking`  
   *Expected*: Authoritative pricing calculator, guest selector, and pickup selector.
-- [ ] **Voucher Lookup**: Visit `https://kemetspirit.com/my-booking`  
+- [ ] **Voucher Lookup**: Visit `https://awesomeadventure.tours/my-booking`  
   *Expected*: Two-factor booking reference + email verification.
-- [ ] **Admin Portal**: Visit `https://kemetspirit.com/admin`  
+- [ ] **Admin Portal**: Visit `https://awesomeadventure.tours/admin`  
   *Expected*: Secure login screen leading to 15 CRM and Operations back-office modules.
 - [ ] **AI Concierge**: Click the chat widget on the bottom right and ask: *"Recommend a snorkeling trip for families"*.  
   *Expected*: Live streaming advice powered by Gemini with tour cards.

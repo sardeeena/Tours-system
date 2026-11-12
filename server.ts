@@ -106,12 +106,12 @@ function resolveServerSupabaseConfig(): ServerSupabaseConfig {
     }
   }
 
-  // 1A. Pin production to the Kemet Spirit Supabase project. Local/staging
+  // 1A. Pin production to the Awesome Adventure Tours Supabase project. Local/staging
   // projects are permitted only when NODE_ENV explicitly marks development/test.
   if (resolvedUrl) {
     const allowNonProductionProject = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
     if (!isExpectedKemetSupabaseUrl(resolvedUrl, allowNonProductionProject)) {
-      configError = `CONFIGURATION ERROR: This production Kemet Spirit server must use Supabase project ${EXPECTED_KEMET_SUPABASE_PROJECT_REF}.`;
+      configError = `CONFIGURATION ERROR: This production Awesome Adventure Tours server must use Supabase project ${EXPECTED_KEMET_SUPABASE_PROJECT_REF}.`;
       resolvedUrl = null;
     }
   }
@@ -346,6 +346,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
       }
     });
   const allowedOrigins = new Set([
+    'https://awesomeadventure.tours',
+    'https://www.awesomeadventure.tours',
     'https://kemetspirit.com',
     'https://www.kemetspirit.com',
     ...(!isProduction ? ['http://localhost:3000', 'http://localhost:5173'] : []),
@@ -556,7 +558,7 @@ app.get('/api/communications/status', rateLimit(60, 60_000), (req: Authenticated
       configured: emailConfigured,
       provider: 'Resend',
       fromEmail: process.env.RESEND_FROM_EMAIL?.trim() || '',
-      fromName: process.env.RESEND_FROM_NAME?.trim() || 'Kemet Spirit',
+      fromName: process.env.RESEND_FROM_NAME?.trim() || 'Awesome Adventure Tours',
     },
     whatsapp: {
       configured: whatsappConfigured,
@@ -581,7 +583,7 @@ app.post('/api/communications/email', rateLimit(20, 60_000), async (req: Authent
 
   const apiKey = process.env.RESEND_API_KEY?.trim();
   const fromEmail = process.env.RESEND_FROM_EMAIL?.trim();
-  const fromName = (process.env.RESEND_FROM_NAME || 'Kemet Spirit').trim();
+  const fromName = (process.env.RESEND_FROM_NAME || 'Awesome Adventure Tours').trim();
 
   if (!apiKey || !fromEmail || !isValidEmail(fromEmail)) {
     return res.status(503).json({ success: false, error: 'Server-side email delivery is not configured. Set RESEND_API_KEY and RESEND_FROM_EMAIL in Hostinger environment variables.' });
@@ -694,7 +696,7 @@ app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: Auth
 // ------------------------------------------------------------------------------
 app.get('/api/config', rateLimit(120, 60_000), (_req: Request, res: Response) => {
   res.json({
-    brandName: 'Kemet Spirit',
+    brandName: 'Awesome Adventure Tours',
     hotline: '+20 151 5212741',
     whatsappUrl: 'https://wa.me/201515212741',
     operatingHours: '06:00 - 22:00 EET (Daily)',
@@ -1437,7 +1439,7 @@ app.post('/api/admin/users/invite', rateLimit(5, 60_000), async (req: Authentica
   try {
     const { data, error } = await serverSupabase!.auth.admin.inviteUserByEmail(email, {
       data: fullName ? { full_name: fullName } : {},
-      redirectTo: 'https://kemetspirit.com/',
+      redirectTo: 'https://awesomeadventure.tours/',
     });
     if (error) {
       const status = /already|exists|registered/i.test(error.message) ? 409 : 400;
@@ -1559,7 +1561,7 @@ app.post('/api/admin/users/:userId/password-reset', rateLimit(5, 60_000), async 
     const { data, error: lookupError } = await serverSupabase!.auth.admin.getUserById(req.params.userId);
     if (lookupError || !data.user?.email) return res.status(404).json({ success: false, error: 'Account email was not found.' });
     const { error } = await publicSupabase.auth.resetPasswordForEmail(data.user.email, {
-      redirectTo: 'https://kemetspirit.com/reset-password',
+      redirectTo: 'https://awesomeadventure.tours/reset-password',
     });
     if (error) {
       console.error('[Admin password reset] Email request failed:', error.message);
@@ -1917,7 +1919,7 @@ app.all('/api/db/query', rateLimit(60, 60_000), async (req: AuthenticatedRequest
 // These endpoints never publish admin-only data or draft catalogue entries.
 // ------------------------------------------------------------------------------
 
-const KEMET_PUBLIC_ORIGIN = 'https://kemetspirit.com';
+const KEMET_PUBLIC_ORIGIN = 'https://awesomeadventure.tours';
 const KEMET_CORE_PUBLIC_PATHS = [
   '/',
   '/excursions',
@@ -2079,13 +2081,13 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
 
 app.get('/llms.txt', async (_req: Request, res: Response) => {
   const lines = [
-    '# Kemet Spirit',
+    '# Awesome Adventure Tours',
     '',
     '> Explore excursions and experiences across Egypt’s Red Sea coast. Tour pages provide current published descriptions, inclusions, pricing and booking details.',
     '',
     '## Main pages',
-    '- [Homepage](https://kemetspirit.com/)',
-    '- [Excursions](https://kemetspirit.com/excursions)',
+    '- [Homepage](https://awesomeadventure.tours/)',
+    '- [Excursions](https://awesomeadventure.tours/excursions)',
     '',
     '## Published destinations and excursions',
   ];
@@ -2110,7 +2112,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
           const price = Number(tour.price);
           const currency = typeof tour.currency === 'string' && /^[A-Z]{3}$/i.test(tour.currency) ? tour.currency.toUpperCase() : 'EUR';
           const priceText = Number.isFinite(price) && price > 0 ? ` Starting price: ${price} ${currency}.` : '';
-          lines.push(`- [${title}](https://kemetspirit.com/excursions/${encodeURIComponent(slug)}): ${description}${priceText}`);
+          lines.push(`- [${title}](https://awesomeadventure.tours/excursions/${encodeURIComponent(slug)}): ${description}${priceText}`);
         }
       }
     } catch (error) {
@@ -2145,7 +2147,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
           if (!name || (tourCount < 2 && descriptionLength < 300)) continue;
           if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
           const description = cleanPublicText(destination.description, 400);
-          lines.push(`- [${name}](https://kemetspirit.com/destinations/${encodeURIComponent(slug)}): ${description}`);
+          lines.push(`- [${name}](https://awesomeadventure.tours/destinations/${encodeURIComponent(slug)}): ${description}`);
         }
       }
     } catch (error) {
@@ -2170,7 +2172,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
           const slug = typeof post.slug === 'string' ? post.slug.trim() : '';
           const title = cleanPublicText(post.title, 160);
           if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
-          lines.push(`- [${title}](https://kemetspirit.com/blog/${encodeURIComponent(slug)}): ${cleanPublicText(post.excerpt, 400)}`);
+          lines.push(`- [${title}](https://awesomeadventure.tours/blog/${encodeURIComponent(slug)}): ${cleanPublicText(post.excerpt, 400)}`);
         }
       }
     } catch (error) {
@@ -2185,7 +2187,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
     '- Booking and availability details can change. Use the live website as the source of truth.',
     '',
     '## Sitemap',
-    '- https://kemetspirit.com/sitemap.xml',
+    '- https://awesomeadventure.tours/sitemap.xml',
     ''
   );
 
@@ -2199,7 +2201,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
 const KEMET_MCP_TOOLS = [
   {
     name: 'search_published_excursions',
-    description: 'Search published Kemet Spirit excursions by words in the title or description. Returns public catalogue information only.',
+    description: 'Search published Awesome Adventure Tours excursions by words in the title or description. Returns public catalogue information only.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -2211,7 +2213,7 @@ const KEMET_MCP_TOOLS = [
   },
   {
     name: 'get_published_excursion',
-    description: 'Get public details for one published Kemet Spirit excursion using its slug.',
+    description: 'Get public details for one published Awesome Adventure Tours excursion using its slug.',
     inputSchema: {
       type: 'object',
       properties: { slug: { type: 'string', minLength: 1, maxLength: 180 } },
@@ -2229,11 +2231,11 @@ app.get('/.well-known/mcp/server-card.json', (_req: Request, res: Response) => {
     version: '1.0',
     protocolVersion: '2025-06-18',
     serverInfo: {
-      name: 'com.kemetspirit/public-excursions',
-      title: 'Kemet Spirit Public Excursions',
+      name: 'com.awesomeadventuretours/public-excursions',
+      title: 'Awesome Adventure Tours Public Excursions',
       version: '1.0.0',
     },
-    description: 'Read-only discovery and lookup of Kemet Spirit published Red Sea excursions in Egypt. No booking, customer data, payments or administrative actions are exposed.',
+    description: 'Read-only discovery and lookup of Awesome Adventure Tours published Red Sea excursions in Egypt. No booking, customer data, payments or administrative actions are exposed.',
     transport: { type: 'streamable-http', endpoint: '/mcp' },
     capabilities: { tools: { listChanged: false } },
     authentication: { required: false, schemes: [] },
@@ -2264,7 +2266,7 @@ app.post('/mcp', rateLimit(60, 60_000), async (req: Request, res: Response) => {
     return reply({
       protocolVersion: supported.includes(requestedVersion) ? requestedVersion : '2025-06-18',
       capabilities: { tools: { listChanged: false } },
-      serverInfo: { name: 'com.kemetspirit/public-excursions', title: 'Kemet Spirit Public Excursions', version: '1.0.0' },
+      serverInfo: { name: 'com.awesomeadventuretours/public-excursions', title: 'Awesome Adventure Tours Public Excursions', version: '1.0.0' },
       instructions: 'Read-only public excursion catalogue. No bookings, personal data, payments or admin actions.',
     });
   }
@@ -2299,7 +2301,7 @@ app.post('/mcp', rateLimit(60, 60_000), async (req: Request, res: Response) => {
         price: Number.isFinite(Number(tour.price)) ? Number(tour.price) : null,
         currency: typeof tour.currency === 'string' ? tour.currency : 'EUR',
         duration: cleanPublicText(tour.duration, 100),
-        url: `https://kemetspirit.com/excursions/${encodeURIComponent(String(tour.slug || ''))}`,
+        url: `https://awesomeadventure.tours/excursions/${encodeURIComponent(String(tour.slug || ''))}`,
       }));
       return reply({ content: [{ type: 'text', text: JSON.stringify(tours) }], structuredContent: { tours } });
     }
@@ -2322,7 +2324,7 @@ app.post('/mcp', rateLimit(60, 60_000), async (req: Request, res: Response) => {
         duration: cleanPublicText(data.duration, 100),
         pickupInformation: cleanPublicText(data.pickup_info, 1000),
         cancellationInformation: cleanPublicText(data.cancellation_policy, 1000),
-        url: `https://kemetspirit.com/excursions/${encodeURIComponent(slug)}`,
+        url: `https://awesomeadventure.tours/excursions/${encodeURIComponent(slug)}`,
       };
       return reply({ content: [{ type: 'text', text: JSON.stringify(tour) }], structuredContent: { tour } });
     }
@@ -2393,7 +2395,7 @@ function seoPlainText(value: unknown, maxLength = 4000): string {
 function seoSafeImage(value: unknown): string {
   if (typeof value !== 'string' || !value.trim()) return '';
   try {
-    const candidate = new URL(value.trim(), 'https://kemetspirit.com');
+    const candidate = new URL(value.trim(), 'https://awesomeadventure.tours');
     return candidate.protocol === 'https:' && !candidate.username && !candidate.password ? candidate.toString() : '';
   } catch {
     return '';
@@ -2538,8 +2540,8 @@ function seoUpsertMeta(html: string, kind: 'name' | 'property', key: string, val
 
 async function renderKemetPublicHtml(pathname: string, template: string): Promise<{ html: string; statusCode: number; noindex: boolean; nofollow: boolean }> {
   const path = pathname.replace(/\/+$/, '') || '/';
-  const origin = 'https://kemetspirit.com';
-  let title = 'Kemet Spirit | Red Sea Excursions in Egypt';
+  const origin = 'https://awesomeadventure.tours';
+  let title = 'Awesome Adventure Tours | Red Sea Excursions in Egypt';
   let description = 'Explore Red Sea excursions in Egypt, including boat trips, island visits, snorkeling and desert experiences. Review each tour’s details before booking.';
   let body = '';
   let noindex = false;
@@ -2574,21 +2576,21 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
     pageKind = 'home';
     const cards = tours.slice(0, 6).map(seoTourCard).filter(Boolean).join('');
     body = `<main id="seo-initial-content"><h1>Explore Red Sea Excursions in Egypt</h1>
-      <p>Discover the excursions currently published on Kemet Spirit. Compare available boat trips, island experiences, snorkeling activities and other Red Sea tours using the individual excursion details.</p>
+      <p>Discover the excursions currently published on Awesome Adventure Tours. Compare available boat trips, island experiences, snorkeling activities and other Red Sea tours using the individual excursion details.</p>
       <h2>Explore destinations</h2>
       <div class="seo-grid">${(visibleDestinations || []).map(seoDestinationCard).filter(Boolean).join('')}</div>
       <h2>Explore published excursions</h2><p><a href="/excursions">Browse all excursions</a></p>
       <div class="seo-grid">${cards || '<p>Explore the excursions catalogue for currently published experiences and details.</p>'}</div>
-      <h2>About Kemet Spirit</h2><p>Explore our <a href="/about">about page</a>, learn about <a href="/booking-conditions">booking terms and conditions</a>, or <a href="/contact">contact our Hurghada team</a>.</p>
+      <h2>About Awesome Adventure Tours</h2><p>Explore our <a href="/about">about page</a>, learn about <a href="/booking-conditions">booking terms and conditions</a>, or <a href="/contact">contact our Hurghada team</a>.</p>
       <p>Phone: <a href="tel:+201515212741">+20 151 5212741</a></p></main>`;
   } else if (path === '/excursions') {
     pageKind = 'catalogue';
-    title = 'Red Sea Excursions & Boat Trips | Kemet Spirit';
+    title = 'Red Sea Excursions & Boat Trips | Awesome Adventure Tours';
     description = 'Browse published Red Sea excursions in Egypt. Compare boat trips, island experiences, snorkeling activities, trip durations and prices.';
     const cards = tours.map(seoTourCard).filter(Boolean).join('');
     body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / Excursions</nav>
       <h1>Red Sea Excursions & Boat Trips</h1>
-      <p>Browse the excursions currently published on Kemet Spirit. Review each tour’s description, duration, price and booking details.</p>
+      <p>Browse the excursions currently published on Awesome Adventure Tours. Review each tour’s description, duration, price and booking details.</p>
       <div class="seo-grid">${cards || '<p>There are currently no published excursions to display.</p>'}</div>
       <h2>Explore by destination</h2>
       <div class="seo-grid">${(visibleDestinations || []).map(seoDestinationCard).filter(Boolean).join('')}</div></main>`;
@@ -2610,7 +2612,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
       seoEntityType = 'tour';
       seoIdentifier = String(currentTour.id);
       seoIdentifierIsPageSlug = false;
-      title = `${seoPlainText(currentTour.title, 160)} | Kemet Spirit`;
+      title = `${seoPlainText(currentTour.title, 160)} | Awesome Adventure Tours`;
       const summary = seoPlainText(currentTour.short_description || currentTour.description, 300);
       description = summary || `Review details and booking information for ${seoPlainText(currentTour.title, 160)}.`;
       const relationQueries = await Promise.all([
@@ -2654,8 +2656,8 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
     seoEntityType = 'page';
     seoIdentifier = 'blog';
     seoIdentifierIsPageSlug = true;
-    title = 'Kemet Spirit Travel Journal | Red Sea Guides & Egypt Travel Stories';
-    description = 'Discover Red Sea travel guides, local insights and inspiration for exploring Hurghada and Egypt with Kemet Spirit.';
+    title = 'Awesome Adventure Tours Travel Journal | Red Sea Guides & Egypt Travel Stories';
+    description = 'Discover Red Sea travel guides, local insights and inspiration for exploring Hurghada and Egypt with Awesome Adventure Tours.';
     if (publicSupabase) {
       try {
         const { data, error } = await publicSupabase.from('blog_posts')
@@ -2673,7 +2675,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
           if (!pageImage || pageImage === `${origin}/logo.webp`) pageImage = image || pageImage;
           return `<article class="seo-tour-card">${image ? `<img src="${seoHtmlEscape(image)}" alt="${seoHtmlEscape(postTitle)}" loading="lazy" style="width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:10px;margin-bottom:12px" />` : ''}<p class="seo-muted">${seoHtmlEscape(seoPlainText(post.blog_categories?.name, 80) || 'Travel guide')}</p><h2><a href="/blog/${encodeURIComponent(slug)}">${seoHtmlEscape(postTitle)}</a></h2>${excerpt ? `<p>${seoHtmlEscape(excerpt)}</p>` : ''}<p><a href="/blog/${encodeURIComponent(slug)}">Read story</a></p></article>`;
         }).filter(Boolean).join('');
-        body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / Travel Journal</nav><h1>The Kemet Spirit Travel Journal</h1><p>${seoHtmlEscape(description)}</p><div class="seo-grid">${cards || '<p>New travel guides and local stories are on their way.</p>'}</div></main>`;
+        body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / Travel Journal</nav><h1>The Awesome Adventure Tours Travel Journal</h1><p>${seoHtmlEscape(description)}</p><div class="seo-grid">${cards || '<p>New travel guides and local stories are on their way.</p>'}</div></main>`;
       } catch (error) {
         console.warn('[SEO render] Blog index render failed:', error);
       }
@@ -2698,9 +2700,9 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
       seoEntityType = 'page';
       seoIdentifier = String(currentBlogPost.slug);
       seoIdentifierIsPageSlug = true;
-      title = seoPlainText(currentBlogPost.seo_title, 180) || `${seoPlainText(currentBlogPost.title, 160)} | Kemet Spirit Journal`;
+      title = seoPlainText(currentBlogPost.seo_title, 180) || `${seoPlainText(currentBlogPost.title, 160)} | Awesome Adventure Tours Journal`;
       description = seoPlainText(currentBlogPost.seo_description || currentBlogPost.excerpt, 300)
-        || 'Travel inspiration and local guides from Kemet Spirit in Hurghada, Egypt.';
+        || 'Travel inspiration and local guides from Awesome Adventure Tours in Hurghada, Egypt.';
       pageImage = seoSafeImage(currentBlogPost.cover_image_url) || pageImage;
       const contentLines = String(currentBlogPost.content || '').split(/\r?\n/);
       const blocks: string[] = [];
@@ -2735,7 +2737,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
         }
       }
       flushParagraph(); flushList();
-      body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / <a href="/blog">Travel Journal</a> / ${seoHtmlEscape(seoPlainText(currentBlogPost.title, 160))}</nav><article><h1>${seoHtmlEscape(seoPlainText(currentBlogPost.title, 160))}</h1>${pageImage !== `${origin}/logo.webp` ? `<figure><img src="${seoHtmlEscape(pageImage)}" alt="${seoHtmlEscape(seoPlainText(currentBlogPost.title, 160))}" loading="eager" style="width:100%;max-height:520px;object-fit:cover;border-radius:14px" /></figure>` : ''}<p class="seo-muted">${seoHtmlEscape(seoPlainText(currentBlogPost.blog_categories?.name, 80) || 'Kemet Spirit Journal')} · ${seoHtmlEscape(seoPlainText(currentBlogPost.author_name, 120) || 'Kemet Spirit Editorial Team')}</p>${currentBlogPost.excerpt ? `<p><strong>${seoHtmlEscape(seoPlainText(currentBlogPost.excerpt, 600))}</strong></p>` : ''}${blocks.join('')}<p><a href="/excursions">Explore Kemet Spirit excursions</a></p></article></main>`;
+      body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / <a href="/blog">Travel Journal</a> / ${seoHtmlEscape(seoPlainText(currentBlogPost.title, 160))}</nav><article><h1>${seoHtmlEscape(seoPlainText(currentBlogPost.title, 160))}</h1>${pageImage !== `${origin}/logo.webp` ? `<figure><img src="${seoHtmlEscape(pageImage)}" alt="${seoHtmlEscape(seoPlainText(currentBlogPost.title, 160))}" loading="eager" style="width:100%;max-height:520px;object-fit:cover;border-radius:14px" /></figure>` : ''}<p class="seo-muted">${seoHtmlEscape(seoPlainText(currentBlogPost.blog_categories?.name, 80) || 'Awesome Adventure Tours Journal')} · ${seoHtmlEscape(seoPlainText(currentBlogPost.author_name, 120) || 'Awesome Adventure Tours Editorial Team')}</p>${currentBlogPost.excerpt ? `<p><strong>${seoHtmlEscape(seoPlainText(currentBlogPost.excerpt, 600))}</strong></p>` : ''}${blocks.join('')}<p><a href="/excursions">Explore Awesome Adventure Tours excursions</a></p></article></main>`;
     }
   } else if (path.startsWith('/destinations/')) {
     let slug = '';
@@ -2767,7 +2769,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
       seoIdentifier = String(activeDestination.id);
       seoIdentifierIsPageSlug = false;
       title = seoPlainText(activeDestination.seo_title, 180)
-        || `${seoPlainText(activeDestination.name, 120)} Excursions & Activities | Kemet Spirit`;
+        || `${seoPlainText(activeDestination.name, 120)} Excursions & Activities | Awesome Adventure Tours`;
       const destinationDescription = seoPlainText(activeDestination.description, 4000);
       const destinationTagline = seoPlainText(activeDestination.tagline, 500);
       description = seoPlainText(activeDestination.seo_description || destinationDescription || destinationTagline, 300);
@@ -2788,7 +2790,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
       pageKind = 'static';
       seoIdentifier = String(page.slug);
       seoIdentifierIsPageSlug = true;
-      title = seoPlainText(page.seoTitle, 180) || `${seoPlainText(page.title, 160)} | Kemet Spirit`;
+      title = seoPlainText(page.seoTitle, 180) || `${seoPlainText(page.title, 160)} | Awesome Adventure Tours`;
       description = seoPlainText(page.seoDescription, 300) || seoPlainText(page.heroSubtitle, 300);
       noindex = page.seoIndexable === false;
       nofollow = noindex;
@@ -2807,7 +2809,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
     statusCode = 404;
     noindex = true;
     nofollow = true;
-    title = 'Page Not Found | Kemet Spirit';
+    title = 'Page Not Found | Awesome Adventure Tours';
     description = 'The requested page could not be found.';
     body = `<main id="seo-initial-content"><h1>Page not found</h1><p>The requested page is not available.</p><p><a href="/">Return to the homepage</a> or <a href="/excursions">browse excursions</a>.</p></main>`;
   }
@@ -2858,7 +2860,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
   const organization: Record<string, any> = {
     '@type': ['TravelAgency', 'Organization'],
     '@id': `${origin}/#organization`,
-    name: 'Kemet Spirit',
+    name: 'Awesome Adventure Tours',
     url: origin,
     logo: `${origin}/logo.webp`,
     description: 'Excursions and experiences along Egypt’s Red Sea coast, based in Hurghada, Egypt.',
@@ -2881,7 +2883,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
   if (configuredSameAs.length) organization.sameAs = Array.from(new Set(configuredSameAs));
   const graph: any[] = [
     organization,
-    { '@type': 'WebSite', '@id': `${origin}/#website`, url: origin, name: 'Kemet Spirit', publisher: { '@id': `${origin}/#organization` }, inLanguage: 'en' },
+    { '@type': 'WebSite', '@id': `${origin}/#website`, url: origin, name: 'Awesome Adventure Tours', publisher: { '@id': `${origin}/#organization` }, inLanguage: 'en' },
   ];
   if (pageKind === 'tour' && currentTour) {
     const price = Number(currentTour.price);
@@ -2910,7 +2912,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
       image: pageImage !== `${origin}/logo.webp` ? [pageImage] : undefined,
       datePublished: currentBlogPost.published_at,
       dateModified: currentBlogPost.updated_at || currentBlogPost.published_at,
-      author: { '@type': 'Organization', name: seoPlainText(currentBlogPost.author_name, 120) || 'Kemet Spirit Editorial Team' },
+      author: { '@type': 'Organization', name: seoPlainText(currentBlogPost.author_name, 120) || 'Awesome Adventure Tours Editorial Team' },
       publisher: { '@id': `${origin}/#organization` },
       mainEntityOfPage: { '@type': 'WebPage', '@id': canonical },
       isPartOf: { '@id': `${origin}/#website` },
@@ -2948,7 +2950,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
   html = seoUpsertMeta(html, 'name', 'robots', noindex ? `noindex, ${nofollow ? 'nofollow' : 'follow'}` : 'index, follow, max-image-preview:large');
   html = seoUpsertMeta(html, 'property', 'og:title', title);
   html = seoUpsertMeta(html, 'property', 'og:description', description);
-  html = seoUpsertMeta(html, 'property', 'og:site_name', 'Kemet Spirit');
+  html = seoUpsertMeta(html, 'property', 'og:site_name', 'Awesome Adventure Tours');
   html = seoUpsertMeta(html, 'property', 'og:type', pageKind === 'tour' ? 'product' : pageKind === 'blog' ? 'article' : 'website');
   html = seoUpsertMeta(html, 'property', 'og:url', canonical);
   html = seoUpsertMeta(html, 'property', 'og:image', pageImage);
@@ -2998,23 +3000,23 @@ async function startServer() {
 
     app.get('/', async (req: Request, res: Response, next: NextFunction) => {
       res.setHeader('Link',
-        '<https://kemetspirit.com/llms.txt>; rel="alternate"; type="text/plain"; title="Kemet Spirit LLMs index", <https://kemetspirit.com/sitemap.xml>; rel="sitemap"');
+        '<https://awesomeadventure.tours/llms.txt>; rel="alternate"; type="text/plain"; title="Awesome Adventure Tours LLMs index", <https://awesomeadventure.tours/sitemap.xml>; rel="sitemap"');
       const acceptsMarkdown = (req.get('accept') || '').split(',').some((value) => value.trim().toLowerCase().startsWith('text/markdown'));
       if (!acceptsMarkdown) return next();
 
       const tours = await loadKemetTours();
       const lines = [
-        '# Kemet Spirit',
+        '# Awesome Adventure Tours',
         '',
         'Explore published excursions and experiences along Egypt’s Red Sea coast.',
         '',
         '## Main pages',
-        '- Homepage: https://kemetspirit.com/',
-        '- Excursions catalogue: https://kemetspirit.com/excursions',
-        '- About: https://kemetspirit.com/about',
-        '- Contact: https://kemetspirit.com/contact',
-        '- Booking terms: https://kemetspirit.com/booking-conditions',
-        '- Full agent index: https://kemetspirit.com/llms.txt',
+        '- Homepage: https://awesomeadventure.tours/',
+        '- Excursions catalogue: https://awesomeadventure.tours/excursions',
+        '- About: https://awesomeadventure.tours/about',
+        '- Contact: https://awesomeadventure.tours/contact',
+        '- Booking terms: https://awesomeadventure.tours/booking-conditions',
+        '- Full agent index: https://awesomeadventure.tours/llms.txt',
         '',
         '## Contact',
         '- Phone: +20 151 5212741',
@@ -3027,7 +3029,7 @@ async function startServer() {
         const title = cleanPublicText(tour.title, 160);
         if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
         const summary = cleanPublicText(tour.short_description || tour.description, 300);
-        lines.push(`- [${title}](https://kemetspirit.com/excursions/${encodeURIComponent(slug)}): ${summary}`);
+        lines.push(`- [${title}](https://awesomeadventure.tours/excursions/${encodeURIComponent(slug)}): ${summary}`);
       }
       res.status(200);
       res.type('text/markdown; charset=utf-8');
@@ -3041,7 +3043,7 @@ async function startServer() {
         return res.status(404).json({ success: false, error: 'API route not found' });
       }
       if (!fs.existsSync(indexHtmlPath)) {
-        return res.status(503).send('Kemet Spirit production assets are not available.');
+        return res.status(503).send('Awesome Adventure Tours production assets are not available.');
       }
 
       const privateRoute = /^\/(?:admin(?:\/|$)|booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|support(?:\/|$))/i;
@@ -3072,7 +3074,7 @@ async function startServer() {
   let stopBookingNotificationWorker: (() => void) | null = null;
 
   const server = app.listen(Number(PORT), '0.0.0.0', () => {
-    console.log(`Kemet Spirit server running on port/socket ${PORT} [${process.env.NODE_ENV || 'development'}]`);
+    console.log(`Awesome Adventure Tours server running on port/socket ${PORT} [${process.env.NODE_ENV || 'development'}]`);
 
     // The durable queue consumer must use a server-only Supabase secret key.
     // It never starts with an anon/publishable key or in local development.
