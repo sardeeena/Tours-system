@@ -19,8 +19,6 @@ import {
   Sparkles,
   Info,
   ShieldCheck,
-  HardDrive,
-  Database,
   CheckCircle2,
 } from 'lucide-react';
 import {
@@ -33,7 +31,6 @@ import {
   cleanOrphanedStorageFiles,
   StorageFileItem,
   MediaAssetAuditResult,
-  MEDIA_BUCKET,
 } from '../../services/storageService';
 import { supabase, isSupabaseConfigured } from '../../services/supabaseClient';
 import { adminListTours } from '../../services/tourService';
