@@ -25,7 +25,7 @@ type ConsentRecord = {
   consent_source: string; recorded_at: string;
 };
 type Retention = { event_retention_days: number; session_retention_days: number; consent_retention_days: number; technical_event_retention_days: number; audit_log_retention_days: number };
-type AuditRecord = { id: string; created_at: string; action: string; entity_type: string; entity_id: string | null; user_id: string | null };
+type AuditRecord = { id: string; created_at: string; action: string; entity_type: string; entity_id: string | null; user_id: string | null; old_data: Record<string, string | number | boolean> | null; new_data: Record<string, string | number | boolean> | null };
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   if (!isSupabaseConfigured()) throw new Error('Secure administrator sign-in is unavailable.');
@@ -55,6 +55,7 @@ export const VisitorAnalyticsPanel: React.FC = () => {
   const [events, setEvents] = useState<VisitorEvent[]>([]);
   const [consents, setConsents] = useState<ConsentRecord[]>([]);
   const [auditRecords, setAuditRecords] = useState<AuditRecord[]>([]);
+  const [expandedAuditId, setExpandedAuditId] = useState<string | null>(null);
   const [retention, setRetention] = useState<Retention>({ event_retention_days: 90, session_retention_days: 180, consent_retention_days: 730, technical_event_retention_days: 90, audit_log_retention_days: 2555 });
   const [search, setSearch] = useState('');
   const [eventType, setEventType] = useState('');
@@ -218,10 +219,10 @@ export const VisitorAnalyticsPanel: React.FC = () => {
       <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
         <div className="flex flex-wrap items-center justify-between gap-2"><div><h3 className="font-semibold">Website and administration audit trail</h3><p className="mt-1 text-xs text-slate-500">Recorded business and administrator actions, separate from optional visitor analytics.</p></div><span className="text-xs text-slate-500">{auditRecords.length.toLocaleString()} recent records</span></div>
         <div className="mt-3 max-h-[360px] space-y-2 overflow-y-auto">
-          {auditRecords.filter((item) => !search.trim() || [item.action,item.entity_type,item.entity_id,item.user_id].some((value) => String(value || '').toLowerCase().includes(search.trim().toLowerCase()))).map((item) => <div key={item.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 p-3 text-xs dark:border-slate-700"><div className="min-w-0"><p className="font-semibold">{item.action.replace(/_/g, ' ')}</p><p className="mt-1 text-slate-500">{item.entity_type}{item.entity_id ? ` · ${item.entity_id}` : ''}{item.user_id ? ` · User ${item.user_id.slice(0,8)}…` : ' · System action'}</p></div><time className="shrink-0 text-slate-500">{date(item.created_at)}</time></div>)}
+          {auditRecords.filter((item) => !search.trim() || [item.action,item.entity_type,item.entity_id,item.user_id].some((value) => String(value || '').toLowerCase().includes(search.trim().toLowerCase()))).map((item) => <div key={item.id} className="rounded-lg border border-slate-200 p-3 text-xs dark:border-slate-700"><div className="flex flex-wrap items-center justify-between gap-2"><div className="min-w-0"><p className="font-semibold">{item.action.replace(/_/g, ' ')}</p><p className="mt-1 text-slate-500">{item.entity_type}{item.entity_id ? ` · ${item.entity_id}` : ''}{item.user_id ? ` · User ${item.user_id.slice(0,8)}…` : ' · System action'}</p></div><div className="flex items-center gap-3"><time className="shrink-0 text-slate-500">{date(item.created_at)}</time><button type="button" onClick={() => setExpandedAuditId((current) => current === item.id ? null : item.id)} className="font-semibold text-[#9a702b] underline">{expandedAuditId === item.id ? 'Hide changes' : 'View changes'}</button></div></div>{expandedAuditId === item.id && <div className="mt-3 grid gap-2 sm:grid-cols-2"><div className="min-w-0"><p className="mb-1 font-semibold text-slate-500">Before</p><pre className="max-h-40 overflow-auto whitespace-pre-wrap break-all rounded bg-slate-50 p-2 text-[10px] dark:bg-slate-950">{JSON.stringify(item.old_data || {}, null, 2)}</pre></div><div className="min-w-0"><p className="mb-1 font-semibold text-slate-500">After</p><pre className="max-h-40 overflow-auto whitespace-pre-wrap break-all rounded bg-slate-50 p-2 text-[10px] dark:bg-slate-950">{JSON.stringify(item.new_data || {}, null, 2)}</pre></div></div>}</div>)}
           {!auditRecords.length && <p className="py-5 text-center text-xs text-slate-500">No audit records were returned for this period.</p>}
         </div>
-        <p className="mt-2 text-[11px] text-slate-500">Detailed before-and-after records remain protected in the audit store; this view lists action metadata only.</p>
+        <p className="mt-2 text-[11px] text-slate-500">Before-and-after snapshots are redacted server-side; contact details, free text, credentials, cookies, tokens and nested payloads are withheld.</p>
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
