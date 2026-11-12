@@ -8,7 +8,7 @@
 - `communication_messages` is the application message ledger; `email_provider_events` is the provider event ledger. Auth SMTP messages appear in communications history only when a verified Resend event is received. User correlation is not assumed.
 
 ## Branding
-The shared application renderer uses the production logo at `https://awesomeadventure.tours/logo.png`, navy header, gold accents, white body, and a mobile-friendly table layout. Supabase Auth templates in `supabase/templates` use the same visual identity.
+The shared application renderer uses the production logo at `https://awesomeadventure.tours/logo.jpg`, navy header, gold accents, white body, and a mobile-friendly table layout. Supabase Auth templates in `supabase/templates` use the same visual identity.
 
 ## Hosted Supabase Auth templates
 Supabase's hosted Email Templates UI is the production source of truth. The checked-in HTML files and `supabase/config.toml` entries provide version-controlled templates and local-development configuration. Changing `config.toml` alone does not update the hosted project.
