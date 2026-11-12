@@ -131,6 +131,7 @@ WITH CHECK (
           b.user_id = (SELECT auth.uid())
           OR EXISTS (SELECT 1 FROM public.customers c WHERE c.id=b.customer_id AND c.user_id=(SELECT auth.uid()))
           OR (SELECT public.has_permission('tickets.manage'))
+          OR (SELECT public.has_permission('bookings.read'))
         )
     )
   )
@@ -316,14 +317,12 @@ CREATE OR REPLACE FUNCTION private.prepare_support_ticket()
 RETURNS trigger LANGUAGE plpgsql SET search_path=''
 AS $function$
 BEGIN
-  IF NEW.customer_id IS NULL THEN
+  -- Customers can only be associated with their own CRM customer record.
+  IF NOT public.has_permission('tickets.create') THEN
     SELECT c.id INTO NEW.customer_id
     FROM public.customers c
     WHERE c.user_id=NEW.requester_id
     ORDER BY c.created_at DESC LIMIT 1;
-  END IF;
-  -- Customers may never self-assign, set staff-only queues, or escalate their own priority.
-  IF NOT public.has_permission('tickets.create') THEN
     NEW.department := 'support';
     NEW.priority := 'normal';
     NEW.assigned_to := NULL;
