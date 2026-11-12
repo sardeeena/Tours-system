@@ -60,7 +60,7 @@ export const NewsletterSubscribe: React.FC<NewsletterSubscribeProps> = ({
         });
         showToast(
           res.alreadySubscribed ? 'Voucher code ready: REDSEA15' : res.message,
-          res.emailStatus === 'failed' ? 'warning' : 'success',
+          res.emailStatus === 'failed' ? 'info' : 'success',
           5000
         );
       } else {
