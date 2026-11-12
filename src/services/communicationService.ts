@@ -586,7 +586,7 @@ export function saveProviderConfig(config: ProviderConfig): void {
 // ------------------------------------------------------------------------------
 
 type ServerCommunicationStatus = {
-  email?: { configured?: boolean; provider?: string; fromEmail?: string; fromName?: string };
+  email?: { configured?: boolean; provider?: string; fromEmail?: string; fromName?: string; webhookConfigured?: boolean; bookingWorkerEnabled?: boolean };
   whatsapp?: {
     configured?: boolean;
     provider?: string;
@@ -613,6 +613,8 @@ export async function refreshProviderConfigFromServer(): Promise<ProviderConfig>
     const status = await response.json() as ServerCommunicationStatus;
     config.email.provider = status.email?.configured ? 'resend' : 'none';
     config.email.isConfigured = status.email?.configured === true;
+    config.email.webhookConfigured = status.email?.webhookConfigured === true;
+    config.email.bookingWorkerEnabled = status.email?.bookingWorkerEnabled === true;
     if (status.email?.fromEmail) config.email.fromEmail = status.email.fromEmail;
     if (status.email?.fromName) config.email.fromName = status.email.fromName;
 
