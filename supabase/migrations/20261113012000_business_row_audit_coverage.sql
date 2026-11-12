@@ -4,7 +4,8 @@
 BEGIN;
 
 CREATE SCHEMA IF NOT EXISTS private;
-REVOKE ALL ON SCHEMA private FROM PUBLIC, anon, authenticated;
+-- Preserve existing private-schema USAGE grants for existing application routines;
+-- only the new trigger function's direct EXECUTE privilege is revoked below.
 
 CREATE OR REPLACE FUNCTION private.capture_business_audit()
 RETURNS trigger
