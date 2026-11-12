@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Star, MessageSquare, CheckCircle, X, AlertCircle } from 'lucide-react';
 import { Tour, Review } from '../../types';
 import { submitTourReview, getPublishedReviews } from '../../services/tourService';
+import { recordVisitorEvent } from '../../services/visitorAnalyticsService';
 
 interface TourReviewsProps {
   tour: Tour;
@@ -89,6 +90,7 @@ export const TourReviews: React.FC<TourReviewsProps> = ({ tour }) => {
         comment: comment.trim(),
         travelerType,
       });
+      void recordVisitorEvent({ event_name: 'review_submitted', page_path: `/excursions/${tour.slug}`, event_data: { tour_slug: tour.slug, interaction: 'submitted' } });
       setSubmittedMessage(true);
     } catch (err: any) {
       console.error('Failed to submit review:', err);

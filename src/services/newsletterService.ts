@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured, formatSupabaseError } from './supabaseClient';
 import { isValidEmail, newsletterRateLimiter } from '../lib/security';
+import { recordVisitorEvent } from './visitorAnalyticsService';
 
 export interface NewsletterSubscriber {
   id?: string;
@@ -68,6 +69,7 @@ export async function subscribeToNewsletter(
       createdAt: result.createdAt || new Date().toISOString(),
     };
     notifyNewsletterUpdated(subscriber);
+    void recordVisitorEvent({ event_name: 'newsletter_subscribed', page_path: window.location.pathname, event_data: { source: source.slice(0, 40) } });
     return {
       success: true,
       alreadySubscribed: result.alreadySubscribed === true,

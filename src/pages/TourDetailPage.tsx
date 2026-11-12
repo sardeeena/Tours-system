@@ -28,6 +28,7 @@ import { useComparison } from '../contexts/ComparisonContext';
 import { useToast } from '../contexts/ToastContext';
 import { useSeo } from '../hooks/useSeo';
 import { seoService } from '../services/seoService';
+import { recordVisitorEvent } from '../services/visitorAnalyticsService';
 
 interface TourDetailPageProps {
   tour: Tour;
@@ -66,12 +67,16 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({
   // Dynamic SEO meta tags, OpenGraph, and Schema.org JSON-LD
   const seoData = React.useMemo(() => seoService.generateTourSeo(tour), [tour]);
   useSeo(seoData);
+  React.useEffect(() => {
+    void recordVisitorEvent({ event_name: 'tour_view', page_path: `/excursions/${tour.slug}`, event_data: { tour_slug: tour.slug, destination: tour.destination, category: tour.category } });
+  }, [tour.slug, tour.destination, tour.category]);
 
   const favorite = isFavorite(tour.slug);
   const compared = isCompared(tour.slug);
 
   const handleShare = () => {
     navigator.clipboard?.writeText(window.location.href);
+    void recordVisitorEvent({ event_name: 'tour_shared', page_path: `/excursions/${tour.slug}`, event_data: { tour_slug: tour.slug, interaction: 'link_copied' } });
     setCopiedLink(true);
     showToast('Tour link copied to clipboard!', 'success');
     setTimeout(() => setCopiedLink(false), 2000);

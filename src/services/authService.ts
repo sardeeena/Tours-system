@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured, formatSupabaseError } from './supabaseClient';
 import { UserRole } from '../types/database';
+import { recordVisitorEvent } from './visitorAnalyticsService';
 
 export interface AppUser {
   id: string;
@@ -102,6 +103,7 @@ export async function signInUser(
         );
 
         if (!isEmailConfirmed) {
+          void recordVisitorEvent({ event_name: 'auth_sign_in_failed', page_path: '/login', event_data: { outcome: 'email_unconfirmed' } });
           return {
             user: null,
             error: 'Your account has not been confirmed yet. Please check your inbox for the confirmation email from Supabase and click the verification link.',
@@ -208,6 +210,7 @@ export async function signInUser(
         };
       }
 
+      void recordVisitorEvent({ event_name: 'auth_sign_in_failed', page_path: '/login', event_data: { outcome: isNotConfirmed ? 'email_unconfirmed' : 'rejected' } });
       return {
         user: null,
         error: errorMsg || 'Invalid email or password. Please verify your credentials.',
@@ -321,6 +324,7 @@ export async function signUpUser(data: {
 
         // Supabase sends email confirmation link.
         // User is NOT logged in and account is pending confirmation!
+        void recordVisitorEvent({ event_name: 'auth_sign_up', page_path: '/register', event_data: { outcome: 'confirmation_required' } });
         return {
           user: null,
           requiresEmailConfirmation: true,
@@ -404,6 +408,7 @@ export async function resendConfirmationEmail(
         }
         return { success: false, error: errorMsg };
       }
+      void recordVisitorEvent({ event_name: 'confirmation_email_resent', page_path: '/register', event_data: { outcome: 'sent' } });
       return { 
         success: true, 
         message: `A fresh confirmation email has been dispatched by Supabase to ${cleanEmail}.` 
@@ -476,6 +481,7 @@ export async function confirmUserEmail(
       };
     }
 
+    void recordVisitorEvent({ event_name: 'email_confirmed', page_path: '/login' });
     return { success: true };
   } catch (err) {
     return { success: false, error: formatSupabaseError(err) };
@@ -505,6 +511,8 @@ export async function resetPasswordRequest(
       if (error) {
         return { success: false, error: formatSupabaseError(error) };
       }
+      void recordVisitorEvent({ event_name: 'password_reset_requested', page_path: '/reset-password' });
+      return { success: true, message: 'If the account exists, password reset instructions have been sent.' };
     } catch (err) {
       return { success: false, error: formatSupabaseError(err) };
     }
@@ -536,6 +544,7 @@ export async function updateUserPassword(
       if (error) {
         return { success: false, error: formatSupabaseError(error) };
       }
+      void recordVisitorEvent({ event_name: 'password_changed', page_path: '/reset-password' });
       return { success: true };
     } catch (err) {
       return { success: false, error: formatSupabaseError(err) };
@@ -550,6 +559,7 @@ export async function updateUserPassword(
  * Logout
  */
 export async function signOutAdmin(): Promise<void> {
+  void recordVisitorEvent({ event_name: 'auth_sign_out', page_path: typeof window !== 'undefined' ? window.location.pathname : '/' });
   localStorage.removeItem('rse_demo_admin');
   localStorage.removeItem(LOCAL_ACTIVE_USER_KEY);
 
@@ -729,6 +739,7 @@ export async function updateUserProfile(
 
       // 3. Retrieve refreshed user record
       const refreshedUser = await getCurrentAdminUser();
+      void recordVisitorEvent({ event_name: 'profile_updated', page_path: '/account' });
       return { success: true, user: refreshedUser || undefined };
     } catch (err) {
       return { success: false, error: formatSupabaseError(err) };

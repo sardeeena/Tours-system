@@ -3,7 +3,10 @@ import { supabase, isSupabaseConfigured } from './supabaseClient';
 export type VisitorEventName =
   | 'page_view' | 'page_exit' | 'navigation' | 'tour_view' | 'search'
   | 'booking_started' | 'booking_step_completed' | 'booking_submitted'
-  | 'booking_confirmed' | 'booking_cancelled' | 'custom';
+  | 'booking_confirmed' | 'booking_cancelled' | 'custom'
+  | 'booking_step_viewed' | 'review_submitted' | 'tour_shared' | 'language_changed' | 'currency_changed'
+  | 'auth_sign_in' | 'auth_sign_in_failed' | 'auth_sign_up' | 'auth_sign_out' | 'password_reset_requested' | 'password_changed' | 'profile_updated' | 'inquiry_submitted' | 'newsletter_subscribed' | 'booking_lookup' | 'booking_cancellation_requested' | 'support_ticket_created' | 'support_reply_sent' | 'support_ticket_updated' | 'tour_search' | 'tour_filter_applied' | 'wishlist_updated' | 'comparison_updated' | 'chatbot_interaction' | 'contact_request_submitted'
+  | 'confirmation_email_resent' | 'email_confirmed' | 'mfa_verified';
 
 export interface VisitorConsent {
   necessary: true;
@@ -23,6 +26,8 @@ export interface VisitorMetadata {
   utm_source: string | null;
   utm_medium: string | null;
   utm_campaign: string | null;
+  utm_term: string | null;
+  utm_content: string | null;
 }
 
 const SESSION_KEY = 'aat_visitor_session_v1';
@@ -103,12 +108,17 @@ export function visitorMetadata(): VisitorMetadata {
   let referrerHost: string | null = null;
   try { referrerHost = document.referrer ? new URL(document.referrer).hostname.slice(0, 120) : null; } catch { referrerHost = null; }
   const params = new URLSearchParams(window.location.search);
-  const clean = (key: string) => (params.get(key) || '').replace(/[^\w .-]/g, '').slice(0, 120) || null;
+  const clean = (key: string) => {
+    const raw = params.get(key) || '';
+    if (/@/.test(raw) || /\d{7,}/.test(raw)) return null;
+    return raw.replace(/[^\w .-]/g, '').slice(0, 80) || null;
+  };
   return {
     device_type: device, browser_family: browserFamily(ua), os_family: osFamily(ua),
     screen_bucket: screenBucket, language: (navigator.language || 'unknown').slice(0, 24),
     timezone: (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone.slice(0, 64); } catch { return 'unknown'; } })(),
     referrer_host: referrerHost, utm_source: clean('utm_source'), utm_medium: clean('utm_medium'), utm_campaign: clean('utm_campaign'),
+    utm_term: clean('utm_term'), utm_content: clean('utm_content'),
   };
 }
 
@@ -144,7 +154,7 @@ export async function recordVisitorConsent(choices: VisitorConsent, source = 'co
   }
   await post('/api/visitor/consent', {
     session_id: id, visitor_id: choices.analytics ? visitorId() : null, analytics: choices.analytics, marketing: choices.marketing,
-    source, landing_path: window.location.pathname, metadata: visitorMetadata(),
+    source, ...(choices.analytics ? { landing_path: window.location.pathname, metadata: visitorMetadata() } : {}),
   });
   window.dispatchEvent(new CustomEvent('awesome:visitor-consent-saved'));
 }

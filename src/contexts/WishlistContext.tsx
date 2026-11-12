@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useToast } from './ToastContext';
+import { recordVisitorEvent } from '../services/visitorAnalyticsService';
 
 interface WishlistContextType {
   wishlistSlugs: string[];
@@ -38,36 +39,30 @@ export const WishlistProvider: React.FC<{ children: ReactNode }> = ({ children }
     [wishlistSlugs]
   );
 
-  const toggleFavorite = useCallback(
-    (slug: string, tourTitle?: string) => {
-      setWishlistSlugs((prev) => {
-        const exists = prev.includes(slug);
-        if (exists) {
-          showToast(
-            tourTitle ? `Removed "${tourTitle}" from saved excursions` : 'Removed from saved excursions',
-            'info'
-          );
-          return prev.filter((s) => s !== slug);
-        } else {
-          showToast(
-            tourTitle ? `Saved "${tourTitle}" to your wishlist!` : 'Saved to your wishlist!',
-            'success'
-          );
-          return [...prev, slug];
-        }
-      });
-    },
-    [showToast]
-  );
+  const toggleFavorite = useCallback((slug: string, tourTitle?: string) => {
+    const exists = wishlistSlugs.includes(slug);
+    setWishlistSlugs((prev) => exists ? prev.filter((s) => s !== slug) : [...prev, slug]);
+    showToast(
+      exists
+        ? (tourTitle ? `Removed "${tourTitle}" from saved excursions` : 'Removed from saved excursions')
+        : (tourTitle ? `Saved "${tourTitle}" to your wishlist!` : 'Saved to your wishlist!'),
+      exists ? 'info' : 'success'
+    );
+    void recordVisitorEvent({ event_name: 'wishlist_updated', page_path: window.location.pathname, event_data: { tour_slug: slug, interaction: exists ? 'removed' : 'added' } });
+  }, [showToast, wishlistSlugs]);
 
   const removeFromWishlist = useCallback((slug: string) => {
+    if (!wishlistSlugs.includes(slug)) return;
     setWishlistSlugs((prev) => prev.filter((s) => s !== slug));
-  }, []);
+    void recordVisitorEvent({ event_name: 'wishlist_updated', page_path: window.location.pathname, event_data: { tour_slug: slug, interaction: 'removed' } });
+  }, [wishlistSlugs]);
 
   const clearWishlist = useCallback(() => {
+    if (!wishlistSlugs.length) return;
     setWishlistSlugs([]);
     showToast('Wishlist cleared', 'info');
-  }, [showToast]);
+    void recordVisitorEvent({ event_name: 'wishlist_updated', page_path: window.location.pathname, event_data: { interaction: 'cleared' } });
+  }, [showToast, wishlistSlugs]);
 
   return (
     <WishlistContext.Provider

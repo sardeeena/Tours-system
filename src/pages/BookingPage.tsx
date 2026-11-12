@@ -75,12 +75,20 @@ export const BookingPage: React.FC<BookingPageProps> = ({
 
   const [currentStep, setCurrentStep] = useState<number>(initialDraft.currentStep || 1);
   const bookingAnalyticsStarted = useRef(false);
+  const previousBookingStep = useRef<number | null>(null);
   useEffect(() => {
     if (!bookingAnalyticsStarted.current) {
       bookingAnalyticsStarted.current = true;
+      previousBookingStep.current = currentStep;
       void recordVisitorEvent({ event_name: 'booking_started', page_path: '/booking', event_data: { tour_slug: currentTour?.slug || 'unknown' } });
+      void recordVisitorEvent({ event_name: 'booking_step_viewed', page_path: '/booking', event_data: { tour_slug: currentTour?.slug || 'unknown', booking_step: currentStep } });
+      return;
     }
-    void recordVisitorEvent({ event_name: 'booking_step_completed', page_path: '/booking', event_data: { tour_slug: currentTour?.slug || 'unknown', booking_step: currentStep } });
+    if (previousBookingStep.current !== null && previousBookingStep.current !== currentStep) {
+      void recordVisitorEvent({ event_name: 'booking_step_completed', page_path: '/booking', event_data: { tour_slug: currentTour?.slug || 'unknown', booking_step: previousBookingStep.current } });
+      void recordVisitorEvent({ event_name: 'booking_step_viewed', page_path: '/booking', event_data: { tour_slug: currentTour?.slug || 'unknown', booking_step: currentStep } });
+      previousBookingStep.current = currentStep;
+    }
   }, [currentStep, currentTour?.slug]);
 
   const [date, setDate] = useState<string>(initialDraft.date || '');
@@ -340,8 +348,8 @@ export const BookingPage: React.FC<BookingPageProps> = ({
         updatedAt: new Date().toISOString(),
       };
 
-      void recordVisitorEvent({ event_name: 'booking_submitted', page_path: '/booking', event_data: { tour_slug: currentTour?.slug || 'unknown', booking_step: currentStep } });
       await bookingRepository.createBooking(newBooking);
+      void recordVisitorEvent({ event_name: 'booking_submitted', page_path: '/booking', event_data: { tour_slug: currentTour?.slug || 'unknown', booking_step: currentStep } });
       clearBookingDraft();
       notificationService.sendBookingConfirmation(newBooking);
       void recordVisitorEvent({ event_name: 'booking_confirmed', page_path: '/booking', event_data: { tour_slug: currentTour?.slug || 'unknown' } });

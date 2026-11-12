@@ -2015,6 +2015,41 @@ app.get('/api/admin/technical/overview', rateLimit(30, 60_000), async (req: Auth
   }
 });
 
+app.get('/api/admin/technical/audit-logs', rateLimit(60, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return res.status(503).json({ success: false, error: 'Audit history is unavailable.' });
+  const requestedLimit = Number.parseInt(String(req.query.limit || '200'), 10);
+  const limit = Number.isFinite(requestedLimit) ? Math.min(500, Math.max(1, requestedLimit)) : 200;
+  try {
+    let query = serverSupabase.from('audit_logs')
+      .select('id,created_at,action,entity_type,entity_id,user_id,old_data,new_data')
+      .order('created_at', { ascending: false }).limit(limit);
+    if (typeof req.query.action === 'string' && /^[A-Z0-9_]{1,100}$/.test(req.query.action)) query = query.eq('action', req.query.action);
+    if (typeof req.query.entity_type === 'string' && /^[a-zA-Z0-9_-]{1,80}$/.test(req.query.entity_type)) query = query.eq('entity_type', req.query.entity_type);
+    if (typeof req.query.entity_id === 'string' && req.query.entity_id.length <= 120) query = query.eq('entity_id', req.query.entity_id);
+    if (typeof req.query.user_id === 'string' && UUID_PATTERN.test(req.query.user_id)) query = query.eq('user_id', req.query.user_id);
+    const fromDate = typeof req.query.from === 'string' ? new Date(req.query.from) : null;
+    const toDate = typeof req.query.to === 'string' ? new Date(req.query.to) : null;
+    if (fromDate && Number.isFinite(fromDate.getTime())) query = query.gte('created_at', fromDate.toISOString());
+    if (toDate && Number.isFinite(toDate.getTime())) query = query.lte('created_at', toDate.toISOString());
+    const { data, error } = await query;
+    if (error) throw error;
+    const privateKey = /(email|phone|whatsapp|address|name|message|description|body|content|subject|notes?|password|token|secret|api.?key|authorization|headers|payload|metadata|user.?agent|cookies?|room|hotel|special.?requests?|contact|recipient|sender|customer|guest|user.?id|payment.?details?|card|cvv|ssn|passport|document|birth|dob|attachment|avatar|settings|config|form.?data|custom.?data|preferences|value|text|comment|question|answer|reason|details?|context|input|output|form|fields|actor.?id|profile.?id|visitor.?id|session.?id|ip_address|(^ip$|_ip$|^ip_))/i;
+    const safeSnapshot = (value: unknown) => {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+      return Object.fromEntries(Object.entries(value as Record<string, unknown>).filter(([key, item]) => {
+        if (privateKey.test(key) || (item !== null && !['string','number','boolean'].includes(typeof item))) return false;
+        if (typeof item === 'string' && (/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(item) || /\+?\d[\d\s().-]{7,}\d/.test(item))) return false;
+        return true;
+      }).map(([key, item]) => [key, typeof item === 'string' ? item.slice(0, 160) : item]));
+    };
+    return res.json({ records: (data || []).map((record: any) => ({ ...record, old_data: safeSnapshot(record.old_data), new_data: safeSnapshot(record.new_data) })) });
+  } catch (error) {
+    console.error('[Technical Control Center] Audit log query failed:', error instanceof Error ? error.message : 'unknown error');
+    return res.status(503).json({ success: false, error: 'Audit history is temporarily unavailable.' });
+  }
+});
+
 app.get('/api/admin/technical/events', rateLimit(60, 60_000), async (req: AuthenticatedRequest, res: Response) => {
   if (!requireSuperAdminAal2(req, res)) return;
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
@@ -2046,10 +2081,39 @@ const VISITOR_EVENT_NAMES = new Set([
   'page_view','page_exit','navigation','tour_view','search',
   'booking_started','booking_step_completed','booking_submitted',
   'booking_confirmed','booking_cancelled','custom',
+    'auth_sign_in',
+    'auth_sign_in_failed',
+    'auth_sign_up',
+    'auth_sign_out',
+    'password_reset_requested',
+    'password_changed',
+    'profile_updated',
+    'inquiry_submitted',
+    'newsletter_subscribed',
+    'booking_lookup',
+    'booking_cancellation_requested',
+    'support_ticket_created',
+    'support_reply_sent',
+    'support_ticket_updated',
+    'tour_search',
+    'tour_filter_applied',
+    'wishlist_updated',
+    'comparison_updated',
+    'chatbot_interaction',
+    'contact_request_submitted',
+    'booking_step_viewed',
+    'review_submitted',
+    'tour_shared',
+    'language_changed',
+    'currency_changed',
+    'confirmation_email_resent',
+    'email_confirmed',
+    'mfa_verified',
 ]);
 const VISITOR_EVENT_FIELDS = new Set([
   'tour_slug','category','destination','booking_step','result_count',
   'currency','sort_order','filter_count','form_name','interaction',
+  'action','outcome','channel','role','source','ticket_category','priority','status','auth_method','search_type','language',
 ]);
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -2069,8 +2133,11 @@ function safeVisitorMetadata(value: any) {
   const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   const device = ['desktop','mobile','tablet','other'].includes(source.device_type) ? source.device_type : null;
   const screen = typeof source.screen_bucket === 'string' && /^(small|medium|large|xlarge)$/.test(source.screen_bucket) ? source.screen_bucket : null;
-  const country = typeof source.country_code === 'string' && /^[A-Z]{2}$/.test(source.country_code) ? source.country_code : null;
-  const region = typeof source.region_code === 'string' && /^[A-Z0-9-]{1,8}$/.test(source.region_code) ? source.region_code : null;
+  const safeCampaignValue = (input: unknown, max: number) => {
+    const candidate = safeShortText(input, max);
+    if (!candidate || /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(candidate) || /\+?\d[\d\s().-]{7,}\d/.test(candidate)) return null;
+    return candidate;
+  };
   return {
     device_type: device,
     browser_family: safeShortText(source.browser_family, 40),
@@ -2078,12 +2145,14 @@ function safeVisitorMetadata(value: any) {
     screen_bucket: screen,
     language: safeShortText(source.language, 24),
     timezone: safeShortText(source.timezone, 64),
-    country_code: country,
-    region_code: region,
+    country_code: null,
+    region_code: null,
     referrer_host: safeShortText(source.referrer_host, 120),
-    utm_source: safeShortText(source.utm_source, 100),
-    utm_medium: safeShortText(source.utm_medium, 100),
-    utm_campaign: safeShortText(source.utm_campaign, 120),
+    utm_source: safeCampaignValue(source.utm_source, 100),
+    utm_medium: safeCampaignValue(source.utm_medium, 100),
+    utm_campaign: safeCampaignValue(source.utm_campaign, 120),
+    utm_term: safeCampaignValue(source.utm_term, 120),
+    utm_content: safeCampaignValue(source.utm_content, 120),
   };
 }
 
@@ -2211,32 +2280,9 @@ app.get('/api/admin/technical/visitors/overview', rateLimit(30, 60_000), async (
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return res.status(503).json({ success: false, error: 'Visitor analytics are unavailable.' });
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   try {
-    const [sessions, events, guests, users, consents, visitorRows] = await Promise.all([
-      serverSupabase.from('visitor_sessions').select('id', { count: 'exact', head: true }).gte('started_at', since).eq('analytics_consent', true),
-      serverSupabase.from('visitor_events').select('id', { count: 'exact', head: true }).gte('occurred_at', since),
-      serverSupabase.from('visitor_sessions').select('id', { count: 'exact', head: true }).gte('started_at', since).eq('analytics_consent', true).is('user_id', null),
-      serverSupabase.from('visitor_sessions').select('id', { count: 'exact', head: true }).gte('started_at', since).eq('analytics_consent', true).not('user_id', 'is', null),
-      serverSupabase.from('visitor_consent_records').select('id,analytics,marketing', { count: 'exact' }).gte('recorded_at', since).limit(5000),
-      serverSupabase.from('visitor_sessions').select('visitor_id').gte('started_at', since).eq('analytics_consent', true).limit(10000),
-    ]);
-    const error = sessions.error || events.error || guests.error || users.error || consents.error || visitorRows.error;
+    const { data, error } = await serverSupabase.rpc('get_visitor_analytics_overview', { p_since: since });
     if (error) throw error;
-    const choices = consents.data || [];
-    const visitorCounts = new Map<string, number>();
-    for (const row of visitorRows.data || []) visitorCounts.set(row.visitor_id, (visitorCounts.get(row.visitor_id) || 0) + 1);
-    const returningVisitors = Array.from(visitorCounts.values()).filter((count) => count > 1).length;
-    return res.json({
-      periodDays: 30,
-      sessions: sessions.count || 0,
-      uniqueVisitors: visitorCounts.size,
-      returningVisitors,
-      events: events.count || 0,
-      guestSessions: guests.count || 0,
-      signedInSessions: users.count || 0,
-      consentRecords: consents.count || 0,
-      analyticsOptIns: choices.filter((row: any) => row.analytics).length,
-      marketingOptIns: choices.filter((row: any) => row.marketing).length,
-    });
+    return res.json(data || {});
   } catch (error) {
     console.error('[Visitor analytics] Overview failed:', error instanceof Error ? error.message : 'unknown error');
     return res.status(503).json({ success: false, error: 'Visitor analytics summary is temporarily unavailable.' });
@@ -2246,12 +2292,19 @@ app.get('/api/admin/technical/visitors/overview', rateLimit(30, 60_000), async (
 app.get('/api/admin/technical/visitors/events', rateLimit(60, 60_000), async (req: AuthenticatedRequest, res: Response) => {
   if (!requireSuperAdminAal2(req, res)) return;
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return res.status(503).json({ success: false, error: 'Visitor analytics are unavailable.' });
-  const limit = Math.min(200, Math.max(1, Number.parseInt(String(req.query.limit || '100'), 10) || 100));
+  const limit = Math.min(500, Math.max(1, Number.parseInt(String(req.query.limit || '200'), 10) || 200));
   try {
     let query = serverSupabase.from('visitor_events')
       .select('id,occurred_at,session_id,user_id,event_name,page_path,page_title,duration_ms,event_data')
       .order('occurred_at', { ascending: false }).limit(limit);
     if (typeof req.query.event_name === 'string' && VISITOR_EVENT_NAMES.has(req.query.event_name)) query = query.eq('event_name', req.query.event_name);
+    if (typeof req.query.session_id === 'string' && UUID_PATTERN.test(req.query.session_id)) query = query.eq('session_id', req.query.session_id);
+    if (typeof req.query.user_id === 'string' && UUID_PATTERN.test(req.query.user_id)) query = query.eq('user_id', req.query.user_id);
+    if (typeof req.query.page_path === 'string' && req.query.page_path.startsWith('/')) query = query.eq('page_path', safePagePath(req.query.page_path));
+    const fromDate = typeof req.query.from === 'string' ? new Date(req.query.from) : null;
+    const toDate = typeof req.query.to === 'string' ? new Date(req.query.to) : null;
+    if (fromDate && Number.isFinite(fromDate.getTime())) query = query.gte('occurred_at', fromDate.toISOString());
+    if (toDate && Number.isFinite(toDate.getTime())) query = query.lte('occurred_at', toDate.toISOString());
     const { data, error } = await query;
     if (error) throw error;
     return res.json({ events: data || [] });
@@ -2264,12 +2317,19 @@ app.get('/api/admin/technical/visitors/events', rateLimit(60, 60_000), async (re
 app.get('/api/admin/technical/visitors/sessions', rateLimit(60, 60_000), async (req: AuthenticatedRequest, res: Response) => {
   if (!requireSuperAdminAal2(req, res)) return;
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return res.status(503).json({ success: false, error: 'Visitor analytics are unavailable.' });
-  const limit = Math.min(200, Math.max(1, Number.parseInt(String(req.query.limit || '100'), 10) || 100));
+  const limit = Math.min(500, Math.max(1, Number.parseInt(String(req.query.limit || '150'), 10) || 150));
   try {
     let query = serverSupabase.from('visitor_sessions')
-      .select('id,visitor_id,user_id,started_at,last_seen_at,ended_at,landing_path,referrer_host,utm_source,utm_medium,utm_campaign,device_type,browser_family,os_family,screen_bucket,language,timezone,country_code,region_code,analytics_consent,marketing_consent')
+      .select('id,visitor_id,user_id,started_at,last_seen_at,ended_at,landing_path,referrer_host,utm_source,utm_medium,utm_campaign,utm_term,utm_content,device_type,browser_family,os_family,screen_bucket,language,timezone,country_code,region_code,analytics_consent,marketing_consent')
       .order('last_seen_at', { ascending: false }).limit(limit);
-    if (typeof req.query.search === 'string' && UUID_PATTERN.test(req.query.search)) query = query.eq('id', req.query.search);
+    if (typeof req.query.search === 'string' && UUID_PATTERN.test(req.query.search)) query = query.or(`id.eq.${req.query.search},visitor_id.eq.${req.query.search},user_id.eq.${req.query.search}`);
+    if (typeof req.query.device_type === 'string' && ['desktop','mobile','tablet','other'].includes(req.query.device_type)) query = query.eq('device_type', req.query.device_type);
+    if (typeof req.query.user_id === 'string' && UUID_PATTERN.test(req.query.user_id)) query = query.eq('user_id', req.query.user_id);
+    if (typeof req.query.page_path === 'string' && req.query.page_path.startsWith('/')) query = query.eq('landing_path', safePagePath(req.query.page_path));
+    const fromDate = typeof req.query.from === 'string' ? new Date(req.query.from) : null;
+    const toDate = typeof req.query.to === 'string' ? new Date(req.query.to) : null;
+    if (fromDate && Number.isFinite(fromDate.getTime())) query = query.gte('started_at', fromDate.toISOString());
+    if (toDate && Number.isFinite(toDate.getTime())) query = query.lte('last_seen_at', toDate.toISOString());
     const { data, error } = await query;
     if (error) throw error;
     return res.json({ sessions: data || [] });
@@ -2295,6 +2355,26 @@ app.get('/api/admin/technical/visitors/consent', rateLimit(30, 60_000), async (r
   }
 });
 
+app.post('/api/admin/technical/visitors/erase', rateLimit(5, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return res.status(503).json({ success: false, error: 'Visitor data controls are unavailable.' });
+  const identifierType = req.body?.identifier_type;
+  const identifier = typeof req.body?.identifier === 'string' && UUID_PATTERN.test(req.body.identifier) ? req.body.identifier : null;
+  if (!['visitor_id','user_id'].includes(identifierType) || !identifier) return res.status(400).json({ success: false, error: 'Choose a visitor or user ID and enter a valid UUID.' });
+  try {
+    const { data, error } = await serverSupabase.rpc('erase_visitor_analytics', {
+      p_identifier_type: identifierType,
+      p_identifier: identifier,
+      p_actor: req.user!.id,
+    });
+    if (error) throw error;
+    return res.json({ success: true, ...(data || {}) });
+  } catch (error) {
+    console.error('[Visitor privacy] Erasure failed:', error instanceof Error ? error.message : 'unknown error');
+    return res.status(503).json({ success: false, error: 'Visitor analytics could not be erased. No business bookings or payment records were changed.' });
+  }
+});
+
 app.get('/api/admin/technical/visitors/settings', rateLimit(30, 60_000), async (req: AuthenticatedRequest, res: Response) => {
   if (!requireSuperAdminAal2(req, res)) return;
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return res.status(503).json({ success: false, error: 'Retention settings are unavailable.' });
@@ -2309,15 +2389,21 @@ app.post('/api/admin/technical/visitors/settings', rateLimit(10, 60_000), async 
   const eventDays = Number(req.body?.event_retention_days);
   const sessionDays = Number(req.body?.session_retention_days);
   const consentDays = Number(req.body?.consent_retention_days);
+  const technicalDays = Number(req.body?.technical_event_retention_days);
+  const auditDays = Number(req.body?.audit_log_retention_days);
   if (!Number.isInteger(eventDays) || eventDays < 7 || eventDays > 730 ||
       !Number.isInteger(sessionDays) || sessionDays < 7 || sessionDays > 1095 ||
-      !Number.isInteger(consentDays) || consentDays < 90 || consentDays > 3650) {
+      !Number.isInteger(consentDays) || consentDays < 90 || consentDays > 3650 ||
+      !Number.isInteger(technicalDays) || technicalDays < 7 || technicalDays > 730 ||
+      !Number.isInteger(auditDays) || auditDays < 365 || auditDays > 3650) {
     return res.status(400).json({ success: false, error: 'Retention periods are outside the allowed ranges.' });
   }
   const { data, error } = await serverSupabase.from('visitor_analytics_settings').update({
     event_retention_days: eventDays,
     session_retention_days: sessionDays,
     consent_retention_days: consentDays,
+    technical_event_retention_days: technicalDays,
+    audit_log_retention_days: auditDays,
     updated_at: new Date().toISOString(),
     updated_by: req.user!.id,
   }).eq('singleton', true).select('*').single();
@@ -2325,7 +2411,7 @@ app.post('/api/admin/technical/visitors/settings', rateLimit(10, 60_000), async 
   await serverSupabase.from('audit_logs').insert({
     user_id: req.user!.id, action: 'VISITOR_ANALYTICS_RETENTION_UPDATED',
     entity_type: 'visitor_analytics_settings', entity_id: 'default',
-    new_data: { event_retention_days: eventDays, session_retention_days: sessionDays, consent_retention_days: consentDays },
+    new_data: { event_retention_days: eventDays, session_retention_days: sessionDays, consent_retention_days: consentDays, technical_event_retention_days: technicalDays, audit_log_retention_days: auditDays },
   });
   return res.json({ success: true, settings: data });
 });
@@ -2337,19 +2423,23 @@ async function pruneVisitorAnalytics(): Promise<void> {
   try {
     const { data: settings, error: settingsError } = await serverSupabase
       .from('visitor_analytics_settings')
-      .select('event_retention_days,session_retention_days,consent_retention_days')
+      .select('event_retention_days,session_retention_days,consent_retention_days,technical_event_retention_days,audit_log_retention_days')
       .eq('singleton', true).maybeSingle();
     if (settingsError || !settings) return;
     const now = Date.now();
     const eventCutoff = new Date(now - settings.event_retention_days * 86400000).toISOString();
     const sessionCutoff = new Date(now - settings.session_retention_days * 86400000).toISOString();
     const consentCutoff = new Date(now - settings.consent_retention_days * 86400000).toISOString();
-    const [events, sessions, consents] = await Promise.all([
+    const technicalCutoff = new Date(now - settings.technical_event_retention_days * 86400000).toISOString();
+    const auditCutoff = new Date(now - settings.audit_log_retention_days * 86400000).toISOString();
+    const [events, sessions, consents, technical, audit] = await Promise.all([
       serverSupabase.from('visitor_events').delete().lt('occurred_at', eventCutoff),
       serverSupabase.from('visitor_sessions').delete().lt('last_seen_at', sessionCutoff),
       serverSupabase.from('visitor_consent_records').delete().lt('recorded_at', consentCutoff),
+      serverSupabase.from('technical_events').delete().lt('created_at', technicalCutoff),
+      serverSupabase.from('audit_logs').delete().lt('created_at', auditCutoff),
     ]);
-    if (events.error || sessions.error || consents.error) {
+    if (events.error || sessions.error || consents.error || technical.error || audit.error) {
       console.error('[Visitor analytics retention] Cleanup did not fully complete.');
     }
   } catch (error) {

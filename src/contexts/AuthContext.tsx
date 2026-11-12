@@ -18,6 +18,7 @@ import {
 } from '../services/authService';
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
 import { useToast } from './ToastContext';
+import { recordVisitorEvent } from '../services/visitorAnalyticsService';
 
 export type AuthModalView = 'login' | 'register' | 'forgot' | 'forgot_password' | 'verify' | 'staff';
 
@@ -153,7 +154,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { factorId: null as string | null, requiresEnrollment: false };
   }, []);
 
-  const refreshUser = useCallback(async () => {
+  const refreshUser = useCallback(async (trackSignIn = false) => {
     try {
       const current = await getCurrentAdminUser();
       const mfaState = await getSuperAdminMfaState(current);
@@ -172,6 +173,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setPendingMfaFactorId(null);
       setRequiresMfaEnrollment(false);
       setUser(current);
+      if (trackSignIn && current) {
+        void recordVisitorEvent({ event_name: 'auth_sign_in', page_path: typeof window !== 'undefined' ? window.location.pathname : '/login', event_data: { auth_method: 'supabase' } });
+      }
     } catch {
       setUser(null);
       setPendingMfaFactorId(null);
@@ -268,7 +272,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Supabase advises against awaiting client calls inside this callback:
           // it runs while auth state is being processed and can deadlock the auth lock.
           window.setTimeout(() => {
-            void refreshUser();
+            void refreshUser(event === 'SIGNED_IN');
           }, 0);
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
@@ -371,6 +375,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
     if (verifyError) return { success: false, error: verifyError.message };
 
+    void recordVisitorEvent({ event_name: 'mfa_verified', page_path: '/login', event_data: { outcome: 'verified' } });
+    void recordVisitorEvent({ event_name: 'auth_sign_in', page_path: '/login', event_data: { auth_method: 'mfa' } });
     setPendingMfaFactorId(null);
     setRequiresMfaEnrollment(false);
     await refreshUser();

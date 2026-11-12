@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(12);
+SELECT plan(20);
 
 SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.visitor_sessions'::regclass), 'visitor_sessions has RLS enabled');
 SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.visitor_events'::regclass), 'visitor_events has RLS enabled');
@@ -15,6 +15,16 @@ SELECT ok(NOT has_table_privilege('authenticated', 'public.visitor_consent_recor
 
 SELECT ok(has_table_privilege('service_role', 'public.visitor_sessions', 'INSERT'), 'server service role can write visitor sessions');
 SELECT ok(has_table_privilege('service_role', 'public.visitor_events', 'INSERT'), 'server service role can write visitor events');
+
+SELECT ok(NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'visitor_sessions' AND column_name = 'ip_address'), 'visitor sessions do not store raw IP addresses');
+SELECT ok(NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'visitor_sessions' AND column_name = 'cookie_values'), 'visitor sessions do not store cookie values');
+SELECT ok(NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'visitor_events' AND column_name = 'request_body'), 'visitor events do not store request bodies');
+SELECT ok((SELECT pg_get_constraintdef(oid) LIKE '%auth_sign_in%' FROM pg_constraint WHERE conrelid = 'public.visitor_events'::regclass AND conname = 'visitor_events_event_name_check'), 'visitor event allowlist includes authentication audit events');
+
+SELECT ok(EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'visitor_analytics_settings' AND column_name = 'technical_event_retention_days'), 'technical event retention is configurable');
+SELECT ok(EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'visitor_analytics_settings' AND column_name = 'audit_log_retention_days'), 'business audit retention is configurable');
+SELECT ok(EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'visitor_sessions' AND column_name = 'utm_term'), 'UTM search term attribution is available');
+SELECT ok(EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'public' AND table_name = 'visitor_sessions' AND column_name = 'utm_content'), 'UTM content attribution is available');
 
 SELECT * FROM finish();
 ROLLBACK;

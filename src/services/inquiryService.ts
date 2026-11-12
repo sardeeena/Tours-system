@@ -3,6 +3,7 @@ import { DbInquiry } from '../types/database';
 import { sanitizeString, isValidEmail, inquiryRateLimiter } from '../lib/security';
 import { createLead, recordActivity } from './crmService';
 import { publishAutomationEvent } from './communicationService';
+import { recordVisitorEvent } from './visitorAnalyticsService';
 
 export interface CreateInquiryInput {
   customer_name: string;
@@ -261,6 +262,7 @@ export async function createCustomerInquiry(
         }
         console.warn('Notice: Inquiries table insert error (using local state):', error.message);
       } else if (data) {
+        void recordVisitorEvent({ event_name: 'inquiry_submitted', page_path: '/support', event_data: { source: input.source === 'whatsapp' ? 'whatsapp' : 'website' } });
         return { success: true, inquiry: data as DbInquiry };
       }
     } catch (err: any) {
@@ -272,6 +274,7 @@ export async function createCustomerInquiry(
   }
 
   inquiryRateLimiter.recordFailedAttempt();
+  void recordVisitorEvent({ event_name: 'inquiry_submitted', page_path: '/support', event_data: { source: input.source === 'whatsapp' ? 'whatsapp' : 'website' } });
   return { success: true, inquiry: newInquiry };
 }
 
