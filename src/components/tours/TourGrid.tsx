@@ -30,7 +30,7 @@ export const TourGrid: React.FC<TourGridProps> = ({
   if (isLoading) {
     return (
       <div 
-        className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+        className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6"
         aria-busy="true"
         aria-label="Loading excursions from Supabase"
       >
