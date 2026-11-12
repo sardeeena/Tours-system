@@ -2101,7 +2101,7 @@ const VISITOR_EVENT_NAMES = new Set([
 const VISITOR_EVENT_FIELDS = new Set([
   'tour_slug','category','destination','booking_step','result_count',
   'currency','sort_order','filter_count','form_name','interaction',
-  'action','outcome','channel','role','source','ticket_category','priority','status','auth_method','search_type',
+  'action','outcome','channel','role','source','ticket_category','priority','status','auth_method','search_type','language',
 ]);
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
