@@ -815,3 +815,86 @@ html.dark .public-site:not(.public-site-admin-route) {
     max-width: 100%;
   }
 }
+
+
+/* =============================================================================
+   ADMIN ACCESSIBILITY PATCH
+   Normalize legacy utility palettes inside the admin shell only. This fixes
+   white/near-white text on normalized light surfaces and low-contrast status
+   colors without changing the public storefront or semantic status backgrounds.
+   ============================================================================= */
+
+/* Neutral dark utility surfaces are converted to theme surfaces above. Ensure
+   their inherited/explicit light text is converted with them in light mode. */
+html:not(.dark) .admin-shell :is(
+  .bg-stone-950, .bg-stone-900, .bg-stone-800, .bg-stone-700,
+  .bg-slate-950, .bg-slate-900, .bg-slate-800, .bg-slate-700,
+  [class*="bg-stone-950/"], [class*="bg-stone-900/"],
+  [class*="bg-stone-800/"], [class*="bg-stone-700/"],
+  [class*="bg-slate-950/"], [class*="bg-slate-900/"],
+  [class*="bg-slate-800/"], [class*="bg-slate-700/"]
+) {
+  color: var(--admin-text);
+}
+html:not(.dark) .admin-shell :is(
+  .bg-stone-950, .bg-stone-900, .bg-stone-800, .bg-stone-700,
+  .bg-slate-950, .bg-slate-900, .bg-slate-800, .bg-slate-700,
+  [class*="bg-stone-950/"], [class*="bg-stone-900/"],
+  [class*="bg-stone-800/"], [class*="bg-stone-700/"],
+  [class*="bg-slate-950/"], [class*="bg-slate-900/"],
+  [class*="bg-slate-800/"], [class*="bg-slate-700/"]
+) :is(.text-white, .text-stone-100, .text-stone-200, .text-stone-300, .text-slate-100, .text-slate-200, .text-slate-300) {
+  color: var(--admin-text) !important;
+}
+html:not(.dark) .admin-shell :is(
+  .bg-stone-950, .bg-stone-900, .bg-stone-800, .bg-stone-700,
+  .bg-slate-950, .bg-slate-900, .bg-slate-800, .bg-slate-700
+).text-white {
+  color: var(--admin-text) !important;
+}
+
+/* Tailwind's 300/400 semantic accents are designed for dark surfaces. Use
+   their darker accessible counterparts when the admin theme is light. */
+html:not(.dark) .admin-shell :is(.text-emerald-300, .text-emerald-400, .text-green-300, .text-green-400) { color: #047857 !important; }
+html:not(.dark) .admin-shell :is(.text-teal-300, .text-teal-400, .text-cyan-300, .text-cyan-400) { color: #0F766E !important; }
+html:not(.dark) .admin-shell :is(.text-sky-300, .text-sky-400, .text-blue-300, .text-blue-400) { color: #1D4ED8 !important; }
+html:not(.dark) .admin-shell :is(.text-amber-300, .text-amber-400, .text-yellow-300, .text-yellow-400) { color: #A16207 !important; }
+html:not(.dark) .admin-shell :is(.text-rose-300, .text-rose-400, .text-red-300, .text-red-400) { color: #BE123C !important; }
+html:not(.dark) .admin-shell :is(.text-purple-300, .text-purple-400, .text-violet-300, .text-violet-400) { color: #7E22CE !important; }
+html:not(.dark) .admin-shell :is(.text-indigo-300, .text-indigo-400) { color: #4338CA !important; }
+
+/* Improve secondary text contrast in dark mode, including the technical center
+   which uses slate/gray utilities rather than the older stone palette. */
+html.dark .admin-shell :is(.text-slate-500, .text-gray-500, .text-zinc-500, .text-neutral-500) { color: #A7B4C5 !important; }
+html.dark .admin-shell :is(.text-slate-600, .text-gray-600, .text-zinc-600, .text-neutral-600) { color: #C1CBD8 !important; }
+html.dark .admin-shell :is(.text-slate-400, .text-gray-400, .text-zinc-400, .text-neutral-400) { color: #B8C5D4 !important; }
+
+/* Form controls and native option lists must remain readable in either theme. */
+.admin-shell :is(input, select, textarea) {
+  color: var(--admin-text);
+  background-color: var(--admin-surface);
+  border-color: var(--admin-border-strong);
+}
+.admin-shell select option {
+  color: var(--admin-text);
+  background-color: var(--admin-surface);
+}
+.admin-shell :is(input, textarea)::placeholder {
+  color: var(--admin-text-muted);
+  opacity: 1;
+}
+.admin-shell :is(input, select, textarea):disabled {
+  color: var(--admin-text-secondary);
+  opacity: .85;
+}
+.admin-shell :is(input[type="checkbox"], input[type="radio"]) {
+  accent-color: var(--admin-primary);
+}
+
+/* Keep readable table headings, labels, and inline help text consistent. */
+.admin-shell :is(th, label, legend, caption) {
+  color: var(--admin-text-secondary);
+}
+.admin-shell :is(small, .text-xs, .text-\[10px\], .text-\[11px\]) {
+  text-decoration-color: currentColor;
+}
