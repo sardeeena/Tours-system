@@ -9,6 +9,8 @@ interface StepDateGuestsProps {
   tour: Tour;
   date: string;
   onDateChange: (date: string) => void;
+  tourLanguage: string;
+  onTourLanguageChange: (language: string) => void;
   guests: GuestCounts;
   onGuestsChange: (guests: GuestCounts) => void;
   currency: CurrencyConfig;
@@ -19,6 +21,8 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
   tour,
   date,
   onDateChange,
+  tourLanguage,
+  onTourLanguageChange,
   guests,
   onGuestsChange,
   currency,
@@ -86,6 +90,9 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
     onGuestsChange({ ...guests, infants: next });
   };
 
+  const languageOptions = Array.from(new Set((tour.languages || []).map((language) => language.trim()).filter(Boolean)));
+  const availableLanguages = languageOptions.length > 0 ? languageOptions : ['English'];
+
   const totalPartySize = guests.adults + guests.children + guests.infants;
   const exceedsCapacity = availability.isAvailable && totalPartySize > availability.remaining;
   const isFormValid = Boolean(date && !availabilityLoading && !availabilityError && availability.isAvailable && !availability.isSoldOut && !exceedsCapacity);
@@ -129,6 +136,27 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
             <span className="text-xs text-stone-500 font-normal"> / adult</span>
           </span>
         </div>
+      </div>
+
+      {/* Tour Language Selection */}
+      <div className="bg-white border border-[#E8E3DA] rounded-sm p-5 space-y-3">
+        <label htmlFor="booking-tour-language" className="font-bold text-stone-900 text-sm block">
+          Tour language <span className="text-red-500">*</span>
+        </label>
+        {availableLanguages.length > 1 ? (
+          <select
+            id="booking-tour-language"
+            required
+            value={tourLanguage}
+            onChange={(e) => onTourLanguageChange(e.target.value)}
+            className="w-full px-3.5 py-2.5 rounded border border-stone-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A6C74] bg-stone-50/50"
+          >
+            {availableLanguages.map((language) => <option key={language} value={language}>{language}</option>)}
+          </select>
+        ) : (
+          <div className="w-full px-3.5 py-2.5 rounded border border-stone-200 text-sm bg-stone-50 text-stone-800">{availableLanguages[0]}</div>
+        )}
+        <p className="text-[11px] text-stone-500">Choose the language for your tour guide. Your selection will appear on your booking voucher.</p>
       </div>
 
       {/* Date Selection Box */}
