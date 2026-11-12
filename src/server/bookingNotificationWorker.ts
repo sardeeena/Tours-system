@@ -339,7 +339,10 @@ export function startBookingNotificationWorker(client: SupabaseClient): () => vo
   const fromName = process.env.RESEND_FROM_NAME?.trim() || 'Awesome Adventure Tours';
 
   if (!apiKey || !isValidEmail(fromEmail)) {
-    console.warn('[Booking Notification Worker] Not started: RESEND_API_KEY and a valid RESEND_FROM_EMAIL are required.');
+    console.warn('[Booking Notification Worker] Not started: email configuration is incomplete.', {
+      missingApiKey: !apiKey,
+      invalidFromEmail: !isValidEmail(fromEmail),
+    });
     return () => undefined;
   }
 
