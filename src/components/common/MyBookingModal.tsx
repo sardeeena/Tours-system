@@ -147,7 +147,7 @@ export const MyBookingModal: React.FC<MyBookingModalProps> = ({ isOpen, onClose,
                   disabled={isLoading || !bookingRef.trim()}
                   className="w-full py-2.5 bg-[#0A6C74] hover:bg-[#08565C] disabled:bg-stone-300 text-white text-xs font-semibold rounded transition-colors flex items-center justify-center space-x-2 cursor-pointer"
                 >
-                  {isLoading ? <span>Verifying Reservation with Database...</span> : <span>Find My Excursion</span>}
+                  {isLoading ? <span>Checking your booking...</span> : <span>Find My Excursion</span>}
                 </button>
               </div>
 
