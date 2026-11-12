@@ -2015,6 +2015,32 @@ app.get('/api/admin/technical/overview', rateLimit(30, 60_000), async (req: Auth
   }
 });
 
+app.get('/api/admin/technical/audit-logs', rateLimit(60, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return res.status(503).json({ success: false, error: 'Audit history is unavailable.' });
+  const requestedLimit = Number.parseInt(String(req.query.limit || '200'), 10);
+  const limit = Number.isFinite(requestedLimit) ? Math.min(500, Math.max(1, requestedLimit)) : 200;
+  try {
+    let query = serverSupabase.from('audit_logs')
+      .select('id,created_at,action,entity_type,entity_id,user_id')
+      .order('created_at', { ascending: false }).limit(limit);
+    if (typeof req.query.action === 'string' && /^[A-Z0-9_]{1,100}$/.test(req.query.action)) query = query.eq('action', req.query.action);
+    if (typeof req.query.entity_type === 'string' && /^[a-zA-Z0-9_-]{1,80}$/.test(req.query.entity_type)) query = query.eq('entity_type', req.query.entity_type);
+    if (typeof req.query.entity_id === 'string' && req.query.entity_id.length <= 120) query = query.eq('entity_id', req.query.entity_id);
+    if (typeof req.query.user_id === 'string' && UUID_PATTERN.test(req.query.user_id)) query = query.eq('user_id', req.query.user_id);
+    const fromDate = typeof req.query.from === 'string' ? new Date(req.query.from) : null;
+    const toDate = typeof req.query.to === 'string' ? new Date(req.query.to) : null;
+    if (fromDate && Number.isFinite(fromDate.getTime())) query = query.gte('created_at', fromDate.toISOString());
+    if (toDate && Number.isFinite(toDate.getTime())) query = query.lte('created_at', toDate.toISOString());
+    const { data, error } = await query;
+    if (error) throw error;
+    return res.json({ records: data || [] });
+  } catch (error) {
+    console.error('[Technical Control Center] Audit log query failed:', error instanceof Error ? error.message : 'unknown error');
+    return res.status(503).json({ success: false, error: 'Audit history is temporarily unavailable.' });
+  }
+});
+
 app.get('/api/admin/technical/events', rateLimit(60, 60_000), async (req: AuthenticatedRequest, res: Response) => {
   if (!requireSuperAdminAal2(req, res)) return;
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
