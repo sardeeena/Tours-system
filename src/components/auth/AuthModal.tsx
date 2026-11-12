@@ -17,7 +17,6 @@ import {
   RotateCw,
 } from 'lucide-react';
 import { useAuth, AuthModalView } from '../../contexts/AuthContext';
-import { isSupabaseConfigured } from '../../services/supabaseClient';
 import { sanitizeString, isValidEmail, validatePasswordStrength, authRateLimiter } from '../../lib/security';
 
 interface AuthModalProps {
