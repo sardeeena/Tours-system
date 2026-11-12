@@ -31,11 +31,15 @@ BEGIN
     FROM jsonb_each(v_row)
     WHERE key !~* v_sensitive_pattern AND jsonb_typeof(value) NOT IN ('object','array');
     v_row := to_jsonb(NEW);
-    v_new := v_row - v_sensitive_keys;
+    SELECT COALESCE(jsonb_object_agg(key, value), '{}'::jsonb) INTO v_new
+    FROM jsonb_each(v_row)
+    WHERE key !~* v_sensitive_pattern AND jsonb_typeof(value) NOT IN ('object','array');
     v_entity_id := COALESCE(v_row->>'id', v_row->>'booking_reference', v_row->>'ticket_number', v_row->>'key', v_row->>'slug');
   ELSIF TG_OP = 'DELETE' THEN
     v_row := to_jsonb(OLD);
-    v_old := v_row - v_sensitive_keys;
+    SELECT COALESCE(jsonb_object_agg(key, value), '{}'::jsonb) INTO v_old
+    FROM jsonb_each(v_row)
+    WHERE key !~* v_sensitive_pattern AND jsonb_typeof(value) NOT IN ('object','array');
     v_entity_id := COALESCE(v_row->>'id', v_row->>'booking_reference', v_row->>'ticket_number', v_row->>'key', v_row->>'slug');
   END IF;
 
