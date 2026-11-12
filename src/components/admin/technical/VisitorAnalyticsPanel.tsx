@@ -24,6 +24,7 @@ type ConsentRecord = {
   consent_source: string; recorded_at: string;
 };
 type Retention = { event_retention_days: number; session_retention_days: number; consent_retention_days: number };
+type AuditRecord = { id: string; created_at: string; action: string; entity_type: string; entity_id: string | null; user_id: string | null };
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   if (!isSupabaseConfigured()) throw new Error('Secure administrator sign-in is unavailable.');
@@ -52,6 +53,7 @@ export const VisitorAnalyticsPanel: React.FC = () => {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [events, setEvents] = useState<VisitorEvent[]>([]);
   const [consents, setConsents] = useState<ConsentRecord[]>([]);
+  const [auditRecords, setAuditRecords] = useState<AuditRecord[]>([]);
   const [retention, setRetention] = useState<Retention>({ event_retention_days: 90, session_retention_days: 180, consent_retention_days: 730 });
   const [search, setSearch] = useState('');
   const [eventType, setEventType] = useState('');
@@ -67,15 +69,16 @@ export const VisitorAnalyticsPanel: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true); setError(''); setNotice('');
     try {
-      const [summary, sessionRows, eventRows, consentRows, settings] = await Promise.all([
+      const [summary, sessionRows, eventRows, consentRows, settings, auditRows] = await Promise.all([
         api<Overview>('/api/admin/technical/visitors/overview'),
         api<{ sessions: Session[] }>(`/api/admin/technical/visitors/sessions?limit=500${deviceType ? `&device_type=${encodeURIComponent(deviceType)}` : ''}${fromDate ? `&from=${encodeURIComponent(new Date(`${fromDate}T00:00:00`).toISOString())}` : ''}${toDate ? `&to=${encodeURIComponent(new Date(`${toDate}T23:59:59`).toISOString())}` : ''}`),
         api<{ events: VisitorEvent[] }>(`/api/admin/technical/visitors/events?limit=500${eventType ? `&event_name=${encodeURIComponent(eventType)}` : ''}${fromDate ? `&from=${encodeURIComponent(new Date(`${fromDate}T00:00:00`).toISOString())}` : ''}${toDate ? `&to=${encodeURIComponent(new Date(`${toDate}T23:59:59`).toISOString())}` : ''}`),
         api<{ records: ConsentRecord[] }>('/api/admin/technical/visitors/consent?limit=150'),
         api<{ settings: Retention }>('/api/admin/technical/visitors/settings'),
+        api<{ records: AuditRecord[] }>(`/api/admin/technical/audit-logs?limit=500${fromDate ? `&from=${encodeURIComponent(new Date(`${fromDate}T00:00:00`).toISOString())}` : ''}${toDate ? `&to=${encodeURIComponent(new Date(`${toDate}T23:59:59`).toISOString())}` : ''}`),
       ]);
       setOverview(summary); setSessions(sessionRows.sessions || []); setEvents(eventRows.events || []);
-      setConsents(consentRows.records || []); if (settings.settings) setRetention(settings.settings);
+      setConsents(consentRows.records || []); setAuditRecords(auditRows.records || []); if (settings.settings) setRetention(settings.settings);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Visitor analytics could not be loaded.');
     } finally { setLoading(false); }
@@ -185,6 +188,15 @@ export const VisitorAnalyticsPanel: React.FC = () => {
             {!visibleEvents.length && <p className="py-6 text-center text-xs text-slate-500">No activity matches this filter.</p>}
           </div>
         </div>
+      </div>
+
+      <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+        <div className="flex flex-wrap items-center justify-between gap-2"><div><h3 className="font-semibold">Website and administration audit trail</h3><p className="mt-1 text-xs text-slate-500">Recorded business and administrator actions, separate from optional visitor analytics.</p></div><span className="text-xs text-slate-500">{auditRecords.length.toLocaleString()} recent records</span></div>
+        <div className="mt-3 max-h-[360px] space-y-2 overflow-y-auto">
+          {auditRecords.filter((item) => !search.trim() || [item.action,item.entity_type,item.entity_id,item.user_id].some((value) => String(value || '').toLowerCase().includes(search.trim().toLowerCase()))).map((item) => <div key={item.id} className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 p-3 text-xs dark:border-slate-700"><div className="min-w-0"><p className="font-semibold">{item.action.replace(/_/g, ' ')}</p><p className="mt-1 text-slate-500">{item.entity_type}{item.entity_id ? ` · ${item.entity_id}` : ''}{item.user_id ? ` · User ${item.user_id.slice(0,8)}…` : ' · System action'}</p></div><time className="shrink-0 text-slate-500">{date(item.created_at)}</time></div>)}
+          {!auditRecords.length && <p className="py-5 text-center text-xs text-slate-500">No audit records were returned for this period.</p>}
+        </div>
+        <p className="mt-2 text-[11px] text-slate-500">Detailed before-and-after records remain protected in the audit store; this view lists action metadata only.</p>
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
