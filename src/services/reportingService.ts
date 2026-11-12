@@ -184,6 +184,7 @@ export async function fetchExecutiveReport(interval: DateRangeInterval): Promise
           outstandingBalancesEur: outstandingRevenueEur,
           bookingsCount: Number(bookings.total ?? d.bookingsCount ?? 0),
           confirmedBookingsCount: Number(bookings.confirmed ?? d.confirmedBookingsCount ?? 0),
+          completedBookingsCount: Number(bookings.completed ?? d.completedBookingsCount ?? 0),
           cancellationsCount: Number(bookings.cancelled ?? d.cancellationsCount ?? 0),
           passengersCount: Number(passengers.total ?? d.passengersCount ?? 0),
           adultsCount: Number(passengers.adults ?? d.adultsCount ?? 0),
@@ -228,6 +229,7 @@ export async function fetchExecutiveReport(interval: DateRangeInterval): Promise
   const totalRevenueEur = nonCancelledBookings.reduce((sum, b) => sum + (b.pricing?.totalEur || 0), 0);
   const bookingsCount = activeBookings.length;
   const confirmedBookingsCount = nonCancelledBookings.length;
+  const completedBookingsCount = activeBookings.filter((booking) => booking.status === 'completed').length;
   const cancellationsCount = cancelledBookings.length;
 
   let adultsCount = 0;
@@ -245,10 +247,8 @@ export async function fetchExecutiveReport(interval: DateRangeInterval): Promise
   // Real collected payments
   const activeBookingsRefs = new Set(activeBookings.map((b) => b.bookingReference));
   const collectedPayments = payments.filter((p) => {
-    const isPaid = p.paymentStatus === 'Paid' || p.paymentStatus === 'paid';
-    if (!isPaid) return false;
-    const pDate = (p.paymentDate || p.createdAt || '').split('T')[0];
-    return (pDate >= interval.startDate && pDate <= interval.endDate) || activeBookingsRefs.has(p.bookingReference);
+    const isPaid = ['paid', 'partially paid', 'partially_paid'].includes(String(p.paymentStatus).toLowerCase());
+    return isPaid && activeBookingsRefs.has(p.bookingReference);
   });
   const collectedRevenueEur = collectedPayments.reduce((sum, p) => sum + p.amount, 0);
 
@@ -318,6 +318,7 @@ export async function fetchExecutiveReport(interval: DateRangeInterval): Promise
     outstandingBalancesEur: outstandingRevenueEur,
     bookingsCount,
     confirmedBookingsCount,
+    completedBookingsCount,
     cancellationsCount,
     passengersCount,
     adultsCount,
