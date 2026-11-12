@@ -107,14 +107,16 @@ export const AdminMediaLibrary: React.FC = () => {
         const file = files[i];
         const res = await uploadTourMedia(file, 'tours');
         if (res.error) {
-          setUploadError(res.error);
+          console.warn('Media upload failed:', res.error);
+          setUploadError('We could not upload one or more files. Please check the file and try again.');
           break;
         }
       }
-      showToast('Your media has been uploaded.', 'success');
+      if (!uploadError) showToast('Your media has been uploaded.', 'success');
       await fetchMedia();
     } catch (err: any) {
-      setUploadError(err?.message || 'Failed to upload file');
+      console.warn('Media upload failed:', err);
+      setUploadError('We could not upload your media. Please try again.');
     } finally {
       setUploading(false);
       if (fileInputRef.current) {
@@ -260,11 +262,9 @@ export const AdminMediaLibrary: React.FC = () => {
       if (selectedMedia?.id === itemToDelete.id) {
         setSelectedMedia(null);
       }
-      showToast(
-        'Media has been deleted.',
-        'success'
-      );
+      showToast('Media has been deleted.', 'success');
     } else {
+      console.warn('Failed to delete media:', res.error);
       showToast('We could not delete this media. Please try again.', 'error');
     }
     setItemToDelete(null);
