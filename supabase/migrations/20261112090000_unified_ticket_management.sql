@@ -204,7 +204,7 @@ USING (
     SELECT 1 FROM public.support_tickets t
     WHERE t.id=ticket_id
       AND (
-        t.requester_id=(SELECT auth.uid())
+        (t.requester_id=(SELECT auth.uid()) AND event_type<>'internal_note_added')
         OR (SELECT public.has_permission('tickets.read'))
         OR (t.assigned_to=(SELECT auth.uid()) AND (SELECT public.has_permission('tickets.read_assigned')))
       )
@@ -242,6 +242,14 @@ BEGIN
       WHEN 'high' THEN now() + interval '1 day'
       ELSE now() + interval '2 days'
     END;
+  END IF;
+  IF NEW.status IS DISTINCT FROM OLD.status THEN
+    IF NEW.status='resolved' THEN NEW.resolved_at := COALESCE(NEW.resolved_at,now());
+    ELSIF NEW.status IN ('open','assigned','in_progress','reopened') THEN NEW.resolved_at := NULL;
+    END IF;
+    IF NEW.status='closed' THEN NEW.closed_at := COALESCE(NEW.closed_at,now());
+    ELSE NEW.closed_at := NULL;
+    END IF;
   END IF;
   RETURN NEW;
 END;
@@ -290,7 +298,10 @@ CREATE OR REPLACE FUNCTION private.record_support_message_event()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
 AS $function$
 BEGIN
-  UPDATE public.support_tickets SET last_message_at=NEW.created_at, updated_at=now()
+  UPDATE public.support_tickets
+  SET last_message_at=NEW.created_at,
+      updated_at=now(),
+      status=CASE WHEN requester_id=NEW.author_id AND status='resolved' AND NOT NEW.is_internal THEN 'reopened' ELSE status END
   WHERE id=NEW.ticket_id;
   INSERT INTO public.support_ticket_events(ticket_id,actor_id,event_type,details)
   VALUES(NEW.ticket_id,NEW.author_id,CASE WHEN NEW.is_internal THEN 'internal_note_added' ELSE 'reply_added' END,
@@ -317,12 +328,27 @@ CREATE OR REPLACE FUNCTION private.prepare_support_ticket()
 RETURNS trigger LANGUAGE plpgsql SET search_path=''
 AS $function$
 BEGIN
-  -- Customers can only be associated with their own CRM customer record.
-  IF NOT public.has_permission('tickets.create') THEN
+  -- Link the requester's own CRM customer record when one exists.
+  IF NEW.customer_id IS NULL THEN
     SELECT c.id INTO NEW.customer_id
     FROM public.customers c
     WHERE c.user_id=NEW.requester_id
     ORDER BY c.created_at DESC LIMIT 1;
+  END IF;
+  NEW.first_response_due_at := CASE NEW.priority
+    WHEN 'critical' THEN now() + interval '15 minutes'
+    WHEN 'urgent' THEN now() + interval '1 hour'
+    WHEN 'high' THEN now() + interval '2 hours'
+    ELSE now() + interval '4 hours'
+  END;
+  NEW.resolution_due_at := CASE NEW.priority
+    WHEN 'critical' THEN now() + interval '4 hours'
+    WHEN 'urgent' THEN now() + interval '8 hours'
+    WHEN 'high' THEN now() + interval '1 day'
+    ELSE now() + interval '2 days'
+  END;
+  -- Customers may never self-assign, set staff-only queues, or escalate their own priority.
+  IF NOT public.has_permission('tickets.create') THEN
     NEW.department := 'support';
     NEW.priority := 'normal';
     NEW.assigned_to := NULL;
