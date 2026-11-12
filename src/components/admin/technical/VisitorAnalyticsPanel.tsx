@@ -229,7 +229,8 @@ export const VisitorAnalyticsPanel: React.FC = () => {
             {visibleSessions.map((item) => <button type="button" key={item.id} onClick={() => setSelectedSession((current) => current === item.id ? '' : item.id)} className={`w-full rounded-lg border p-3 text-left text-xs transition ${selectedSession === item.id ? 'border-[#b58b3a] bg-amber-50 dark:bg-amber-950/20' : 'border-slate-200 dark:border-slate-700'}`}>
               <div className="flex items-start justify-between gap-2"><span className="font-mono font-semibold">{item.id.slice(0, 8)}…</span><span className="text-slate-500">{item.user_id ? 'Signed in' : 'Guest'}</span></div>
               <p className="mt-1 truncate font-medium">{item.landing_path}</p>
-              <p className="mt-1 font-mono text-slate-500">Visitor {item.visitor_id.slice(0, 8)}…</p>
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-slate-500"><span className="font-mono">Visitor {item.visitor_id.slice(0, 8)}…</span><button type="button" onClick={() => { setEraseType('visitor_id'); setEraseIdentifier(item.visitor_id); }} className="font-semibold text-[#9a702b] underline">Select ID</button></div>
+              {item.user_id && <div className="mt-1 flex flex-wrap items-center gap-2 text-slate-500"><span className="font-mono">User {item.user_id.slice(0, 8)}…</span><button type="button" onClick={() => { setEraseType('user_id'); setEraseIdentifier(item.user_id || ''); }} className="font-semibold text-[#9a702b] underline">Select user</button></div>}
               <p className="mt-1 text-slate-500">{[item.device_type, item.browser_family, item.os_family].filter(Boolean).join(' · ') || 'Device details unavailable'}</p>
               <p className="mt-1 text-slate-500">Last activity: {date(item.last_seen_at)}</p>
               <p className="mt-1 text-slate-500">Referrer: {item.referrer_host || 'Direct'}{item.utm_campaign ? ` · ${item.utm_campaign}` : ''}</p>
