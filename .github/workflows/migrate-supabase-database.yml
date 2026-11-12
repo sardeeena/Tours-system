@@ -23,6 +23,7 @@ jobs:
     env:
       SOURCE_DB_URL: ${{ secrets.SUPABASE_SOURCE_DB_URL }}
       DESTINATION_DB_URL: ${{ secrets.SUPABASE_DESTINATION_DB_URL }}
+      EXPECTED_SOURCE_REF: mktrtoctcjyokclpdeui
       EXPECTED_DESTINATION_REF: uvtbtpxtrrmaublrztgv
     steps:
       - name: Validate protected inputs and destination identity
@@ -34,15 +35,17 @@ jobs:
           python3 - <<'PY'
           import os
           from urllib.parse import urlparse, unquote
-          ref = os.environ["EXPECTED_DESTINATION_REF"]
-          u = urlparse(os.environ["DESTINATION_DB_URL"])
-          user = unquote((u.username or "").replace("%40", "@"))
-          host = u.hostname or ""
-          if ref not in host and not user.endswith("." + ref):
-              raise SystemExit("Destination URL does not identify the approved AwesomeAdventure project ref.")
-          if u.scheme not in ("postgres", "postgresql"):
-              raise SystemExit("Destination URL must be a PostgreSQL connection string.")
-          print("Destination identity check passed.")
+          def verify(name, ref):
+              u = urlparse(os.environ[name])
+              user = unquote(u.username or "")
+              host = u.hostname or ""
+              if u.scheme not in ("postgres", "postgresql"):
+                  raise SystemExit(f"{name} must be a PostgreSQL connection string.")
+              if ref not in host and not user.endswith("." + ref):
+                  raise SystemExit(f"{name} does not identify the approved project ref.")
+          verify("SOURCE_DB_URL", os.environ["EXPECTED_SOURCE_REF"])
+          verify("DESTINATION_DB_URL", os.environ["EXPECTED_DESTINATION_REF"])
+          print("Both source and destination project identities passed.")
           PY
 
       - uses: actions/checkout@v4
@@ -60,8 +63,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          source_ref="$(psql "$SOURCE_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "select coalesce((select value from vault.decrypted_secrets where name = 'project_ref' limit 1), current_user)")"
-          echo "Source connection established (identity token: ${source_ref:0:40})."
+          psql "$SOURCE_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "select current_database(), current_user;"
           target_tables="$(psql "$DESTINATION_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "select count(*) from information_schema.tables where table_schema = 'public' and table_type = 'BASE TABLE'")"
           if [ "$target_tables" != "0" ]; then
             echo "STOP: destination public schema contains $target_tables base tables; refusing to overwrite."
