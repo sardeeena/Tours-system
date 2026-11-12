@@ -2,7 +2,7 @@
 **Application**: Awesome Adventure Tours  
 **Target Canonical Production Domain**: `https://awesomeadventure.tours`  
 **Authoritative Supabase Project**: `mktrtoctcjyokclpdeui` (`https://mktrtoctcjyokclpdeui.supabase.co`)  
-**Production Runtime**: Node.js 20.x+ LTS (ESM Full-Stack Express + Vite SPA)
+**Production Runtime**: Node.js 22.x LTS (ESM Full-Stack Express + Vite SPA)
 
 ---
 
