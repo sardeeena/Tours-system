@@ -45,9 +45,6 @@ import {
   SocialLinksSettings,
   FooterContentSettings,
 } from '../../services/siteSettingsService';
-import completeSchemaSql from '../../../complete_schema.sql?raw';
-import phase4Sql from '../../../supabase/migrations/20260922000000_phase4_schema.sql?raw';
-import fixAdminAuthSql from '../../../supabase/migrations/20260928000000_fix_admin_auth_rls.sql?raw';
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { SuperAdminMfaPanel } from './SuperAdminMfaPanel';
@@ -143,6 +140,7 @@ export const AdminSettings: React.FC = () => {
   const [copiedSql, setCopiedSql] = useState(false);
   const [copiedFixSql, setCopiedFixSql] = useState(false);
   const [showMasterSqlPreview, setShowMasterSqlPreview] = useState(false);
+  const [masterSchemaSql, setMasterSchemaSql] = useState<string | null>(null);
   const [showSqlPreview, setShowSqlPreview] = useState(false);
   const [showFixSqlPreview, setShowFixSqlPreview] = useState(false);
 
@@ -315,25 +313,36 @@ export const AdminSettings: React.FC = () => {
     }
   };
 
-  const copyMasterSql = () => {
-    navigator.clipboard.writeText(completeSchemaSql);
+  const copyMasterSql = async () => {
+    const { default: sql } = await import('../../../complete_schema.sql?raw');
+    await navigator.clipboard.writeText(sql);
     setCopiedMasterSql(true);
     setTimeout(() => setCopiedMasterSql(false), 3000);
     showToast('Consolidated schema SQL copied to clipboard', 'success');
   };
 
-  const copyMigrationSql = () => {
-    navigator.clipboard.writeText(phase4Sql);
+  const copyMigrationSql = async () => {
+    const { default: sql } = await import('../../../supabase/migrations/20260922000000_phase4_schema.sql?raw');
+    await navigator.clipboard.writeText(sql);
     setCopiedSql(true);
     setTimeout(() => setCopiedSql(false), 3000);
     showToast('Phase 4 schema SQL copied to clipboard', 'success');
   };
 
-  const copyFixSql = () => {
-    navigator.clipboard.writeText(fixAdminAuthSql);
+  const copyFixSql = async () => {
+    const { default: sql } = await import('../../../supabase/migrations/20260928000000_fix_admin_auth_rls.sql?raw');
+    await navigator.clipboard.writeText(sql);
     setCopiedFixSql(true);
     setTimeout(() => setCopiedFixSql(false), 3000);
     showToast('Admin RLS migration SQL copied to clipboard', 'success');
+  };
+
+  const toggleMasterSqlPreview = async () => {
+    if (!showMasterSqlPreview && masterSchemaSql === null) {
+      const { default: sql } = await import('../../../complete_schema.sql?raw');
+      setMasterSchemaSql(sql);
+    }
+    setShowMasterSqlPreview((current) => !current);
   };
 
   return (
@@ -969,7 +978,7 @@ export const AdminSettings: React.FC = () => {
               <div className="flex items-center space-x-2">
                 <button
                   type="button"
-                  onClick={() => setShowMasterSqlPreview(!showMasterSqlPreview)}
+                  onClick={toggleMasterSqlPreview}
                   className="px-3 py-1.5 bg-stone-900 hover:bg-stone-800 text-stone-300 rounded border border-stone-700 text-xs font-medium transition-colors cursor-pointer"
                 >
                   {showMasterSqlPreview ? 'Hide Script' : 'Preview SQL Script'}
@@ -988,7 +997,7 @@ export const AdminSettings: React.FC = () => {
             {showMasterSqlPreview && (
               <div className="mt-4 p-4 bg-stone-900 rounded border border-stone-800 space-y-2">
                 <pre className="max-h-64 overflow-y-auto p-3 bg-stone-950 rounded text-[11px] font-mono text-stone-300 leading-relaxed whitespace-pre select-all">
-                  {completeSchemaSql}
+                  {masterSchemaSql ?? 'Loading schema preview...'}
                 </pre>
               </div>
             )}
