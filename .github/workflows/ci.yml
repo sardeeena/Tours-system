@@ -60,6 +60,9 @@ jobs:
 
       - name: Verify Supabase project isolation
         run: npm run test:supabase-project
+      - name: Verify server and SPA route fallback configuration
+        run: npm run test:routes
+
       - name: Verify admin authentication and role provisioning security
         run: npm run test:security
 
