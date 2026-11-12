@@ -2280,44 +2280,9 @@ app.get('/api/admin/technical/visitors/overview', rateLimit(30, 60_000), async (
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return res.status(503).json({ success: false, error: 'Visitor analytics are unavailable.' });
   const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
   try {
-    const [sessions, events, guests, users, consents, visitorRows, bookingStarted, bookingSteps, bookingSubmitted, bookingConfirmed, bookingCancellations] = await Promise.all([
-      serverSupabase.from('visitor_sessions').select('id', { count: 'exact', head: true }).gte('started_at', since).eq('analytics_consent', true),
-      serverSupabase.from('visitor_events').select('id', { count: 'exact', head: true }).gte('occurred_at', since),
-      serverSupabase.from('visitor_sessions').select('id', { count: 'exact', head: true }).gte('started_at', since).eq('analytics_consent', true).is('user_id', null),
-      serverSupabase.from('visitor_sessions').select('id', { count: 'exact', head: true }).gte('started_at', since).eq('analytics_consent', true).not('user_id', 'is', null),
-      serverSupabase.from('visitor_consent_records').select('id,analytics,marketing', { count: 'exact' }).gte('recorded_at', since).limit(5000),
-      serverSupabase.from('visitor_sessions').select('visitor_id').gte('started_at', since).eq('analytics_consent', true).limit(10000),
-      serverSupabase.from('visitor_events').select('id', { count: 'exact', head: true }).gte('occurred_at', since).eq('event_name', 'booking_started'),
-      serverSupabase.from('visitor_events').select('id', { count: 'exact', head: true }).gte('occurred_at', since).eq('event_name', 'booking_step_completed'),
-      serverSupabase.from('visitor_events').select('id', { count: 'exact', head: true }).gte('occurred_at', since).eq('event_name', 'booking_submitted'),
-      serverSupabase.from('visitor_events').select('id', { count: 'exact', head: true }).gte('occurred_at', since).eq('event_name', 'booking_confirmed'),
-      serverSupabase.from('visitor_events').select('id', { count: 'exact', head: true }).gte('occurred_at', since).eq('event_name', 'booking_cancellation_requested'),
-    ]);
-    const error = sessions.error || events.error || guests.error || users.error || consents.error || visitorRows.error || bookingStarted.error || bookingSteps.error || bookingSubmitted.error || bookingConfirmed.error || bookingCancellations.error;
+    const { data, error } = await serverSupabase.rpc('get_visitor_analytics_overview', { p_since: since });
     if (error) throw error;
-    const choices = consents.data || [];
-    const visitorCounts = new Map<string, number>();
-    for (const row of visitorRows.data || []) visitorCounts.set(row.visitor_id, (visitorCounts.get(row.visitor_id) || 0) + 1);
-    const returningVisitors = Array.from(visitorCounts.values()).filter((count) => count > 1).length;
-    return res.json({
-      periodDays: 30,
-      sessions: sessions.count || 0,
-      uniqueVisitors: visitorCounts.size,
-      returningVisitors,
-      events: events.count || 0,
-      guestSessions: guests.count || 0,
-      signedInSessions: users.count || 0,
-      consentRecords: consents.count || 0,
-      analyticsOptIns: choices.filter((row: any) => row.analytics).length,
-      marketingOptIns: choices.filter((row: any) => row.marketing).length,
-      bookingFunnel: {
-        started: bookingStarted.count || 0,
-        stepsCompleted: bookingSteps.count || 0,
-        submitted: bookingSubmitted.count || 0,
-        confirmed: bookingConfirmed.count || 0,
-        cancellationRequests: bookingCancellations.count || 0,
-      },
-    });
+    return res.json(data || {});
   } catch (error) {
     console.error('[Visitor analytics] Overview failed:', error instanceof Error ? error.message : 'unknown error');
     return res.status(503).json({ success: false, error: 'Visitor analytics summary is temporarily unavailable.' });
