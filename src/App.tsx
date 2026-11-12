@@ -559,10 +559,15 @@ function MainApp() {
     void getStoredSeoMetadata(seoEntity.type, seoEntity.identifier, seoEntity.pageSlug).then((savedMetadata) => {
       if (!cancelled && savedMetadata) {
         const mergedMetadata = { ...baseSeoMetadata, ...savedMetadata };
-        // The privacy placeholder must stay noindex even if an older saved SEO row says otherwise.
+        // Respect explicit noindex pages, but keep the four published legal
+        // policy pages indexable even if legacy SEO metadata marked the old
+        // privacy placeholder as noindex.
         if (staticPage?.seoIndexable === false) {
           mergedMetadata.robotsIndex = false;
           mergedMetadata.robotsFollow = false;
+        } else if (staticPage && ['privacy', 'terms', 'cancellation-policy', 'cookie-policy'].includes(staticPage.slug)) {
+          mergedMetadata.robotsIndex = true;
+          mergedMetadata.robotsFollow = true;
         }
         const destinationContentLength = currentDestination
           ? `${currentDestination.description || ''} ${currentDestination.tagline || ''}`.trim().length
