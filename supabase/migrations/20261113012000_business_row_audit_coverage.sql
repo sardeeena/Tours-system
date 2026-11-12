@@ -188,6 +188,42 @@ $function$;
 REVOKE ALL ON FUNCTION public.erase_visitor_analytics(text, uuid, uuid) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.erase_visitor_analytics(text, uuid, uuid) TO service_role;
 
+CREATE OR REPLACE FUNCTION public.get_visitor_analytics_overview(p_since timestamptz)
+RETURNS jsonb
+LANGUAGE sql
+SECURITY INVOKER
+SET search_path = pg_catalog, public
+AS $function$
+  SELECT jsonb_build_object(
+    'periodDays', 30,
+    'sessions', (SELECT count(*) FROM public.visitor_sessions WHERE started_at >= p_since AND analytics_consent = true),
+    'uniqueVisitors', (SELECT count(DISTINCT visitor_id) FROM public.visitor_sessions WHERE started_at >= p_since AND analytics_consent = true),
+    'returningVisitors', (
+      SELECT count(*) FROM (
+        SELECT visitor_id FROM public.visitor_sessions
+        WHERE started_at >= p_since AND analytics_consent = true
+        GROUP BY visitor_id HAVING count(*) > 1
+      ) returning
+    ),
+    'events', (SELECT count(*) FROM public.visitor_events WHERE occurred_at >= p_since),
+    'guestSessions', (SELECT count(*) FROM public.visitor_sessions WHERE started_at >= p_since AND analytics_consent = true AND user_id IS NULL),
+    'signedInSessions', (SELECT count(*) FROM public.visitor_sessions WHERE started_at >= p_since AND analytics_consent = true AND user_id IS NOT NULL),
+    'consentRecords', (SELECT count(*) FROM public.visitor_consent_records WHERE recorded_at >= p_since),
+    'analyticsOptIns', (SELECT count(*) FROM public.visitor_consent_records WHERE recorded_at >= p_since AND analytics = true),
+    'marketingOptIns', (SELECT count(*) FROM public.visitor_consent_records WHERE recorded_at >= p_since AND marketing = true),
+    'bookingFunnel', jsonb_build_object(
+      'started', (SELECT count(*) FROM public.visitor_events WHERE occurred_at >= p_since AND event_name = 'booking_started'),
+      'stepsCompleted', (SELECT count(*) FROM public.visitor_events WHERE occurred_at >= p_since AND event_name = 'booking_step_completed'),
+      'submitted', (SELECT count(*) FROM public.visitor_events WHERE occurred_at >= p_since AND event_name = 'booking_submitted'),
+      'confirmed', (SELECT count(*) FROM public.visitor_events WHERE occurred_at >= p_since AND event_name = 'booking_confirmed'),
+      'cancellationRequests', (SELECT count(*) FROM public.visitor_events WHERE occurred_at >= p_since AND event_name = 'booking_cancellation_requested')
+    )
+  );
+$function$;
+
+REVOKE ALL ON FUNCTION public.get_visitor_analytics_overview(timestamptz) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.get_visitor_analytics_overview(timestamptz) TO service_role;
+
 COMMENT ON FUNCTION private.capture_business_audit() IS
   'Writes redacted business-row change metadata to audit_logs. Excludes contact details, free text, credentials, tokens and arbitrary JSON payloads.';
 
