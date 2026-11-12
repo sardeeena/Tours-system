@@ -2448,7 +2448,14 @@ const AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN = 'https://awesomeadventure.tours';
 const AWESOME_ADVENTURE_TOURS_CORE_PUBLIC_PATHS = [
   '/',
   '/excursions',
+  '/experiences',
   '/blog',
+  '/about',
+  '/contact',
+  '/privacy',
+  '/terms',
+  '/cancellation-policy',
+  '/cookie-policy',
 ];
 
 function escapeXml(value: string): string {
