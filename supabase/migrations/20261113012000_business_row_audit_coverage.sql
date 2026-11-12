@@ -17,23 +17,19 @@ DECLARE
   v_new jsonb := NULL;
   v_row jsonb;
   v_entity_id text;
-  v_sensitive_keys text[] := ARRAY[
-    'email','phone','whatsapp','first_name','last_name','full_name','customer_name',
-    'name','address','hotel','hotel_name','room_number','special_requests',
-    'message','description','body','content','subject','notes','admin_notes',
-    'password','token','secret','api_key','authorization','headers','payload',
-    'raw_payload','metadata','ip_address','user_agent','cookie','cookies',
-    'payment_details','card_number','cvv','access_token','refresh_token',
-    'data','settings','config','value','attachments','avatar_url'
-  ];
+  v_sensitive_pattern text := '(email|phone|whatsapp|address|full.?name|first.?name|last.?name|customer.?name|guest.?name|user.?name|message|description|body|content|subject|notes?|password|token|secret|api.?key|authorization|headers|payload|raw.?payload|metadata|ip.?address|user.?agent|cookies?|room.?number|hotel|special.?requests?|contact|recipient|sender|customer|guest|user.?id|payment.?details?|card.?number|cvv|ssn|passport|document|birth.?date|dob|attachments?|avatar|settings|config|form.?data|custom.?data|preferences|private.?data)';
 BEGIN
   IF TG_OP = 'INSERT' THEN
     v_row := to_jsonb(NEW);
-    v_new := v_row - v_sensitive_keys;
+    SELECT COALESCE(jsonb_object_agg(key, value), '{}'::jsonb) INTO v_new
+    FROM jsonb_each(v_row)
+    WHERE key !~* v_sensitive_pattern AND jsonb_typeof(value) NOT IN ('object','array');
     v_entity_id := COALESCE(v_row->>'id', v_row->>'booking_reference', v_row->>'ticket_number', v_row->>'key', v_row->>'slug');
   ELSIF TG_OP = 'UPDATE' THEN
     v_row := to_jsonb(OLD);
-    v_old := v_row - v_sensitive_keys;
+    SELECT COALESCE(jsonb_object_agg(key, value), '{}'::jsonb) INTO v_old
+    FROM jsonb_each(v_row)
+    WHERE key !~* v_sensitive_pattern AND jsonb_typeof(value) NOT IN ('object','array');
     v_row := to_jsonb(NEW);
     v_new := v_row - v_sensitive_keys;
     v_entity_id := COALESCE(v_row->>'id', v_row->>'booking_reference', v_row->>'ticket_number', v_row->>'key', v_row->>'slug');
@@ -70,34 +66,31 @@ GRANT ALL ON TABLE public.audit_logs TO service_role;
 DO $block$
 DECLARE
   v_table text;
-  v_tables text[] := ARRAY[
-    'profiles','customers','bookings','inquiries','newsletter_subscriptions',
-    'tours','tour_availability','destinations','categories','coupons',
-    'pickup_locations','tour_extras','reviews','faqs','site_settings',
-    'static_pages','blog_posts','blog_categories','support_tickets',
-    'support_ticket_messages','payment_transactions','invoices','refunds',
-    'crm_leads','crm_tasks','communication_templates','communication_messages',
-    'automation_events','operations_assignments','operations_guides',
-    'operations_vessels','operations_departures','booking_extras',
-    'booking_cancellations','customer_notes','customer_tags'
-  ];
 BEGIN
-  FOREACH v_table IN ARRAY v_tables LOOP
-    IF to_regclass(format('public.%I', v_table)) IS NOT NULL THEN
-      EXECUTE format('DROP TRIGGER IF EXISTS trg_capture_business_audit ON public.%I', v_table);
-      IF v_table = 'bookings' THEN
-        -- Booking creation and cancellation already have atomic audit records.
-        -- Capture subsequent edits and deletes without duplicating those inserts.
-        EXECUTE format(
-          'CREATE TRIGGER trg_capture_business_audit AFTER UPDATE OR DELETE ON public.%I FOR EACH ROW EXECUTE FUNCTION private.capture_business_audit()',
-          v_table
-        );
-      ELSE
-        EXECUTE format(
-          'CREATE TRIGGER trg_capture_business_audit AFTER INSERT OR UPDATE OR DELETE ON public.%I FOR EACH ROW EXECUTE FUNCTION private.capture_business_audit()',
-          v_table
-        );
-      END IF;
+  -- Apply to every current public business table. High-volume telemetry and
+  -- rate-limit internals are deliberately excluded from the business audit log.
+  FOR v_table IN
+    SELECT tablename
+    FROM pg_tables
+    WHERE schemaname = 'public'
+      AND tablename NOT IN (
+        'audit_logs','technical_events','visitor_sessions','visitor_events',
+        'visitor_consent_records','visitor_analytics_settings',
+        'rate_limit_events','rate_limit_buckets','request_idempotency',
+        'idempotency_keys','booking_idempotency_keys','schema_migrations'
+      )
+  LOOP
+    EXECUTE format('DROP TRIGGER IF EXISTS trg_capture_business_audit ON public.%I', v_table);
+    IF v_table = 'bookings' THEN
+      EXECUTE format(
+        'CREATE TRIGGER trg_capture_business_audit AFTER UPDATE OR DELETE ON public.%I FOR EACH ROW EXECUTE FUNCTION private.capture_business_audit()',
+        v_table
+      );
+    ELSE
+      EXECUTE format(
+        'CREATE TRIGGER trg_capture_business_audit AFTER INSERT OR UPDATE OR DELETE ON public.%I FOR EACH ROW EXECUTE FUNCTION private.capture_business_audit()',
+        v_table
+      );
     END IF;
   END LOOP;
 END;
