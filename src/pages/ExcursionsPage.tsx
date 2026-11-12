@@ -104,10 +104,6 @@ export const ExcursionsPage: React.FC<ExcursionsPageProps> = ({
     }
   }, [searchQuery]);
 
-  useEffect(() => {
-    const filterCount = [destinationSelect !== 'All', activitySelect !== 'All', date !== '', sidebarFilters.destinations.length > 0, sidebarFilters.activities.length > 0, sidebarFilters.durations.length > 0].filter(Boolean).length;
-    if (filterCount > 0) void recordVisitorEvent({ event_name: 'tour_filter_applied', page_path: '/excursions', event_data: { filter_count: filterCount, result_count: filteredTours.length, sort_order: sortOption } });
-  }, [destinationSelect, activitySelect, date, sidebarFilters, sortOption, filteredTours.length]);
   // Persist sidebar filters to localStorage & sync with URL parameters
   useEffect(() => {
     try {
@@ -319,6 +315,11 @@ export const ExcursionsPage: React.FC<ExcursionsPageProps> = ({
     return seoService.generateCategorySeo(activeLabel, filteredTours.length, filteredTours);
   }, [activeLabel, filteredTours]);
   useSeo(seoData);
+
+  useEffect(() => {
+    const filterCount = [destinationSelect !== 'All', activitySelect !== 'All', date !== '', sidebarFilters.destinations.length > 0, sidebarFilters.activities.length > 0, sidebarFilters.durations.length > 0].filter(Boolean).length;
+    if (filterCount > 0) void recordVisitorEvent({ event_name: 'tour_filter_applied', page_path: '/excursions', event_data: { filter_count: filterCount, result_count: filteredTours.length, sort_order: sortOption } });
+  }, [destinationSelect, activitySelect, date, sidebarFilters, sortOption, filteredTours.length]);
 
   return (
     <div className="w-full min-w-0 max-w-7xl mx-auto overflow-x-clip bg-[#FAF8F5] min-h-screen py-6 px-4 sm:px-6 lg:px-8">
