@@ -129,6 +129,7 @@ async function runRouteTests() {
     { path: '/login', expectedDest: '/index.html', description: 'Customer login page' },
     { path: '/register', expectedDest: '/index.html', description: 'Customer registration' },
     { path: '/excursions', expectedDest: '/index.html', description: 'Excursions catalog' },
+    { path: '/experiences', expectedDest: '/index.html', description: 'Public experiences and categories page' },
     { path: '/excursions/orange-bay-island-snorkeling', expectedDest: '/index.html', description: 'Tour detail deep link' },
     { path: '/booking', expectedDest: '/index.html', description: 'Booking checkout flow' },
     { path: '/booking/confirmation/RST-2026-AB1234', expectedDest: '/index.html', description: 'Voucher confirmation deep link' },
@@ -158,7 +159,15 @@ async function runRouteTests() {
   // Summary
   console.log('\n================================================================');
 
-  console.log('Step 4: Verifying server-side private SPA route allowlist...');
+  console.log('Step 4: Verifying public experiences route across client, server and SEO...');
+  const appSource = fs.readFileSync(path.join(process.cwd(), 'src/App.tsx'), 'utf8');
+  const seoSource = fs.readFileSync(path.join(process.cwd(), 'src/services/seoConfig.ts'), 'utf8');
+  assert('client experiences route', appSource.includes("currentPath === '/experiences'") && appSource.includes('ExperienceCategories'), 'Client router renders the experiences category page');
+  assert('experiences SEO metadata', seoSource.includes("'/experiences'") && seoSource.includes('Awesome Adventure Tours'), 'Experiences route has dedicated Awesome Adventure Tours SEO metadata');
+  const serverSource = fs.readFileSync(path.join(process.cwd(), 'server.ts'), 'utf8');
+  assert('server experiences SEO rendering', serverSource.includes("path === '/experiences'") && serverSource.includes("pageKind = 'experiences'"), 'Server returns indexable route-specific HTML for /experiences');
+
+  console.log('Step 5: Verifying server-side private SPA route allowlist...');
   const serverSource = fs.readFileSync(path.join(process.cwd(), 'server.ts'), 'utf8');
   assert(
     'server private support route fallback',
