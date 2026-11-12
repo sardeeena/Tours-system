@@ -26,6 +26,11 @@ ALTER TABLE public.visitor_events
     'wishlist_updated',
     'comparison_updated',
     'chatbot_interaction',
-    'contact_request_submitted'
+    'contact_request_submitted',
+    'booking_step_viewed',
+    'review_submitted',
+    'tour_shared',
+    'language_changed',
+    'currency_changed'
   ));
 COMMIT;
