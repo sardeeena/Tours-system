@@ -1668,12 +1668,15 @@ app.post('/api/newsletter/unsubscribe', rateLimit(20, 60_000), async (req: Reque
 });
 
 app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_000), async (req: Request, res: Response) => {
-  const { email, preferredLanguage = 'en', website_url_hp } = req.body || {};
+  const { email, preferredLanguage = 'en', website_url_hp, consentAccepted } = req.body || {};
   if (website_url_hp && String(website_url_hp).trim() !== '') {
     return res.json({ success: true, subscribed: true, message: 'Thank you for subscribing.' });
   }
   if (typeof email !== 'string' || !isValidEmail(email.trim())) {
     return res.status(400).json({ success: false, error: 'Please provide a valid email address.' });
+  }
+  if (consentAccepted !== true) {
+    return res.status(400).json({ success: false, error: 'Please confirm that you agree to receive newsletter updates before subscribing.' });
   }
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
     return res.status(503).json({ success: false, error: 'Newsletter database service is not configured. Please try again later.' });
