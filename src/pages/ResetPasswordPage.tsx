@@ -15,7 +15,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { isValidEmail } from '../lib/security';
-import { supabase, isSupabaseConfigured, formatSupabaseError } from '../services/supabaseClient';
+import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
 
 interface ResetPasswordPageProps {
   onNavigate: (page: string, param?: string) => void;
@@ -90,7 +90,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
 
     if (code) {
       if (!isSupabaseConfigured()) {
-        setErrorMessage('Password recovery is unavailable because Supabase is not configured.');
+        setErrorMessage('Password recovery is temporarily unavailable. Please contact our support team.');
         setStep('invalid_link');
         return cleanup;
       }
@@ -99,7 +99,8 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
         .then(({ data, error: exchangeErr }) => {
           if (!isMounted) return;
           if (exchangeErr) {
-            setErrorMessage(formatSupabaseError(exchangeErr));
+            console.warn('Password reset link could not be verified:', exchangeErr);
+            setErrorMessage('This password reset link is invalid or has expired. Please request a new one.');
             setStep('invalid_link');
           } else if (data?.session) {
             setStep('update');
@@ -111,7 +112,8 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
         })
         .catch((err) => {
           if (!isMounted) return;
-          setErrorMessage(formatSupabaseError(err));
+          console.warn('Password recovery failed:', err);
+          setErrorMessage('We could not verify this password reset link. Please request a new one.');
           setStep('invalid_link');
         });
       return cleanup;
@@ -119,7 +121,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
 
     if (tokenHash) {
       if (!isSupabaseConfigured()) {
-        setErrorMessage('Password recovery is unavailable because Supabase is not configured.');
+        setErrorMessage('Password recovery is temporarily unavailable. Please contact our support team.');
         setStep('invalid_link');
         return cleanup;
       }
@@ -131,7 +133,8 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
         .then(({ data, error: otpErr }) => {
           if (!isMounted) return;
           if (otpErr) {
-            setErrorMessage(formatSupabaseError(otpErr));
+            console.warn('Password reset code could not be verified:', otpErr);
+            setErrorMessage('This password reset link is invalid or has expired. Please request a new one.');
             setStep('invalid_link');
           } else if (data?.session) {
             setStep('update');
@@ -151,7 +154,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
 
     if (hasHashRecovery) {
       if (!isSupabaseConfigured()) {
-        setErrorMessage('Password recovery is unavailable because Supabase is not configured.');
+        setErrorMessage('Password recovery is temporarily unavailable. Please contact our support team.');
         setStep('invalid_link');
         return cleanup;
       }
@@ -163,7 +166,8 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
             setStep('update');
             setErrorMessage(null);
           } else if (sessErr) {
-            setErrorMessage(formatSupabaseError(sessErr));
+            console.warn('Password recovery session could not be loaded:', sessErr);
+            setErrorMessage('We could not verify this password reset link. Please request a new one.');
             setStep('invalid_link');
           } else {
             recoveryTimeout = window.setTimeout(() => {
@@ -360,7 +364,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
               <div className="bg-stone-50 border border-stone-200 rounded-lg p-3.5 text-xs text-stone-700 text-left space-y-1.5">
                 <p className="font-semibold text-stone-900">What happens next?</p>
                 <ul className="list-disc list-inside space-y-1 text-stone-600">
-                  <li>Check your inbox for an email from <strong>Supabase / Red Sea Voyages</strong>.</li>
+                  <li>Check your inbox for an email from <strong>Awesome Adventure Tours</strong>.</li>
                   <li>Click the <strong>recovery link</strong> inside the email to set your new password.</li>
                   <li>If you do not see it within a couple minutes, please check your spam folder.</li>
                 </ul>
