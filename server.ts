@@ -2148,6 +2148,8 @@ function safeVisitorMetadata(value: any) {
     utm_source: safeShortText(source.utm_source, 100),
     utm_medium: safeShortText(source.utm_medium, 100),
     utm_campaign: safeShortText(source.utm_campaign, 120),
+    utm_term: safeShortText(source.utm_term, 120),
+    utm_content: safeShortText(source.utm_content, 120),
   };
 }
 
@@ -2350,7 +2352,7 @@ app.get('/api/admin/technical/visitors/sessions', rateLimit(60, 60_000), async (
   const limit = Math.min(500, Math.max(1, Number.parseInt(String(req.query.limit || '150'), 10) || 150));
   try {
     let query = serverSupabase.from('visitor_sessions')
-      .select('id,visitor_id,user_id,started_at,last_seen_at,ended_at,landing_path,referrer_host,utm_source,utm_medium,utm_campaign,device_type,browser_family,os_family,screen_bucket,language,timezone,country_code,region_code,analytics_consent,marketing_consent')
+      .select('id,visitor_id,user_id,started_at,last_seen_at,ended_at,landing_path,referrer_host,utm_source,utm_medium,utm_campaign,utm_term,utm_content,device_type,browser_family,os_family,screen_bucket,language,timezone,country_code,region_code,analytics_consent,marketing_consent')
       .order('last_seen_at', { ascending: false }).limit(limit);
     if (typeof req.query.search === 'string' && UUID_PATTERN.test(req.query.search)) query = query.or(`id.eq.${req.query.search},visitor_id.eq.${req.query.search},user_id.eq.${req.query.search}`);
     if (typeof req.query.device_type === 'string' && ['desktop','mobile','tablet','other'].includes(req.query.device_type)) query = query.eq('device_type', req.query.device_type);
