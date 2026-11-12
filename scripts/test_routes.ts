@@ -157,6 +157,16 @@ async function runRouteTests() {
 
   // Summary
   console.log('\n================================================================');
+
+  console.log('Step 4: Verifying server-side private SPA route allowlist...');
+  const serverSource = fs.readFileSync(path.join(process.cwd(), 'server.ts'), 'utf8');
+  assert(
+    'server private support route fallback',
+    serverSource.split('const privateRoute =').length === 3 &&
+      serverSource.includes(String.raw`support(?:\/|$)`),
+    'Server-side private route handling includes the customer support portal'
+  );
+
   console.log('  Route Verification Test Results');
   console.log('================================================================');
   let allPassed = true;
