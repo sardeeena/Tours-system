@@ -219,9 +219,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ redirectUrl, onNavigate })
         if (result.requiresEmailConfirmation) {
           setRequiresConfirmation(true);
           setUnconfirmedEmail(result.unconfirmedEmail || cleanEmail);
-          setErrorMessage(result.error || 'Your account is pending email confirmation. Please check your inbox.');
+          setErrorMessage('Your account still needs email confirmation. Please check your inbox.');
         } else {
-          setErrorMessage(result.error || 'Invalid email or password. Please verify your credentials.');
+          setErrorMessage('We could not sign you in. Please check your email and password and try again.');
         }
       }
     } catch {
