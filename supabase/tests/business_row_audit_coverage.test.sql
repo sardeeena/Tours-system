@@ -1,10 +1,14 @@
 BEGIN;
-SELECT plan(16);
+SELECT plan(20);
 
 SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.audit_logs'::regclass), 'audit_logs has RLS enabled');
 SELECT ok(NOT has_table_privilege('anon', 'public.audit_logs', 'SELECT'), 'anon cannot read audit logs');
 SELECT ok(NOT has_table_privilege('authenticated', 'public.audit_logs', 'SELECT'), 'authenticated users cannot read audit logs');
 SELECT ok(has_table_privilege('service_role', 'public.audit_logs', 'SELECT'), 'server service role can read audit logs');
+SELECT ok(NOT has_table_privilege('anon', 'public.audit_logs', 'INSERT'), 'anon cannot insert audit logs');
+SELECT ok(NOT has_table_privilege('authenticated', 'public.audit_logs', 'INSERT'), 'authenticated users cannot insert audit logs');
+SELECT ok(NOT has_table_privilege('anon', 'public.audit_logs', 'DELETE'), 'anon cannot delete audit logs');
+SELECT ok(NOT has_table_privilege('authenticated', 'public.audit_logs', 'UPDATE'), 'authenticated users cannot update audit logs');
 
 SELECT ok(EXISTS (
   SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
