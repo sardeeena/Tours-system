@@ -288,6 +288,31 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> =
     ),
   }),
 
+  '/experiences': (origin) => ({
+    title: 'Red Sea Experiences & Excursion Categories | Awesome Adventure Tours',
+    description:
+      'Discover boat trips, island escapes, snorkeling, diving and desert adventures across Egypt’s Red Sea coast.',
+    keywords: [
+      'Red Sea experiences',
+      'Hurghada boat trips',
+      'Giftun Island excursions',
+      'Red Sea snorkeling and diving',
+      'Hurghada desert safari',
+    ],
+    canonicalUrl: `${origin}/experiences`,
+    ogType: 'website',
+    ogImage: SEO_DEFAULTS.DEFAULT_OG_IMAGE,
+    ogImageAlt: 'Red Sea experiences and excursions in Egypt',
+    twitterCard: 'summary_large_image',
+    schemaJsonLd: generateBreadcrumbsJsonLd(
+      [
+        { name: 'Home', path: '/' },
+        { name: 'Experiences', path: '/experiences' },
+      ],
+      origin
+    ),
+  }),
+
   '/my-booking': (origin) => ({
     title: 'Manage Your Booking & Download Voucher | Awesome Adventure Tours',
     description:
