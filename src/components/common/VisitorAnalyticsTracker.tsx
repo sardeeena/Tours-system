@@ -34,6 +34,9 @@ export const VisitorAnalyticsTracker: React.FC<Props> = ({ path, userId }) => {
     }
     const now = Date.now();
     const safePath = path.split(/[?#]/, 1)[0] || '/';
+    if (previous.current && previous.current.path !== safePath) {
+      void recordVisitorEvent({ event_name: 'navigation', page_path: safePath, event_data: { interaction: 'internal_navigation' } });
+    }
     previous.current = { path: safePath, startedAt: now };
     void recordVisitorEvent({
       event_name: 'page_view',
