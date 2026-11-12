@@ -172,7 +172,6 @@ jobs:
             --file=data.sql \
             --file=auth_data.sql \
             --file=storage_buckets.sql \
-            --file=pgmq_data.sql \
             --file=history_data.sql \
             --command='SET session_replication_role = origin' \
             --file=storage_policies.sql
