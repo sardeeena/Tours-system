@@ -39,9 +39,12 @@ import { supabase, isSupabaseConfigured } from '../../services/supabaseClient';
 import { adminListTours } from '../../services/tourService';
 import { DbTour } from '../../types/database';
 import { useToast } from '../../contexts/ToastContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 export const AdminMediaLibrary: React.FC = () => {
   const { showToast } = useToast();
+  const { user } = useAuth();
+  const isSuperAdmin = Boolean(user && (user.role === 'super_admin' || user.roles?.includes('super_admin')));
   const [mediaItems, setMediaItems] = useState<StorageFileItem[]>([]);
   const [tours, setTours] = useState<DbTour[]>([]);
   const [loading, setLoading] = useState(true);
@@ -108,7 +111,7 @@ export const AdminMediaLibrary: React.FC = () => {
           break;
         }
       }
-      showToast('Media uploaded to Supabase Storage & registered in media_assets.', 'success');
+      showToast('Your media has been uploaded.', 'success');
       await fetchMedia();
     } catch (err: any) {
       setUploadError(err?.message || 'Failed to upload file');
@@ -162,9 +165,10 @@ export const AdminMediaLibrary: React.FC = () => {
           : null
       );
 
-      showToast('Metadata updated in media_assets table.', 'success');
+      showToast('Media details have been updated.', 'success');
     } catch (err: any) {
-      showToast(err.message || 'Failed to update metadata', 'error');
+      console.warn('Failed to update media details:', err);
+      showToast('We could not update the media details. Please try again.', 'error');
     } finally {
       setSavingMeta(false);
     }
@@ -257,11 +261,11 @@ export const AdminMediaLibrary: React.FC = () => {
         setSelectedMedia(null);
       }
       showToast(
-        `Media "${itemToDelete.name}" purged from storage bucket and media_assets table.`,
+        'Media has been deleted.',
         'success'
       );
     } else {
-      showToast(`Failed to delete: ${res.error || 'Unknown storage error'}`, 'error');
+      showToast('We could not delete this media. Please try again.', 'error');
     }
     setItemToDelete(null);
     setIsDeleting(false);
@@ -274,12 +278,13 @@ export const AdminMediaLibrary: React.FC = () => {
       setAuditResult(result);
       setShowAuditPanel(true);
       if (result.orphanedInStorage.length === 0) {
-        showToast('Storage audit passed: 0 orphaned files found!', 'success');
+        showToast('Media library check completed. Everything looks good.', 'success');
       } else {
-        showToast(`Audit detected ${result.orphanedInStorage.length} orphaned files in bucket.`, 'info');
+        showToast('The media library needs attention. Review the system check with a Superadmin.', 'info');
       }
     } catch (err: any) {
-      showToast(err.message || 'Audit failed', 'error');
+      console.warn('Media library audit failed:', err);
+      showToast('We could not complete the media library check.', 'error');
     } finally {
       setAuditing(false);
     }
@@ -290,11 +295,12 @@ export const AdminMediaLibrary: React.FC = () => {
     setCleaningOrphans(true);
     try {
       const purged = await cleanOrphanedStorageFiles(auditResult.orphanedInStorage);
-      showToast(`Successfully purged ${purged} orphaned file(s) from Supabase Storage.`, 'success');
+      showToast(`Removed ${purged} unused media file(s).`, 'success');
       await handleRunOrphanAudit();
       await fetchMedia();
     } catch (err: any) {
-      showToast(err.message || 'Cleanup error', 'error');
+      console.warn('Media cleanup failed:', err);
+      showToast('We could not finish cleaning up unused media. Please try again.', 'error');
     } finally {
       setCleaningOrphans(false);
     }
@@ -304,7 +310,7 @@ export const AdminMediaLibrary: React.FC = () => {
     navigator.clipboard.writeText(url);
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
-    showToast('Public CDN URL copied to clipboard!', 'info');
+    showToast('Media link copied.', 'info');
   };
 
   const getFileType = (name: string): string => {
@@ -349,15 +355,15 @@ export const AdminMediaLibrary: React.FC = () => {
         <div>
           <h1 className="text-2xl font-bold font-display text-white tracking-tight flex items-center space-x-2">
             <ImageIcon className="w-6 h-6 text-[#2dd4bf]" />
-            <span>Supabase Media Library & Asset Registry</span>
+            <span>Media Library</span>
           </h1>
           <p className="text-xs text-stone-400 mt-1">
-            Connected to bucket <code className="text-[#2dd4bf] font-mono">{MEDIA_BUCKET}</code> and synchronized with the <code className="text-[#2dd4bf] font-mono">media_assets</code> metadata table to guarantee zero orphaned files.
+            Manage the photos and videos used across your excursions.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <button
+          {isSuperAdmin && <button
             type="button"
             onClick={handleRunOrphanAudit}
             disabled={auditing || !isSupabaseConfigured()}
@@ -365,8 +371,8 @@ export const AdminMediaLibrary: React.FC = () => {
             title="Scan for orphaned storage files"
           >
             <ShieldCheck className={`w-3.5 h-3.5 text-emerald-400 ${auditing ? 'animate-spin' : ''}`} />
-            <span>{auditing ? 'Auditing...' : 'Orphan Audit'}</span>
-          </button>
+            <span>{auditing ? 'Checking...' : 'Media library check'}</span>
+          </button>}
 
           <button
             type="button"
@@ -399,12 +405,12 @@ export const AdminMediaLibrary: React.FC = () => {
       </div>
 
       {/* Orphan Audit Results Banner */}
-      {showAuditPanel && auditResult && (
+      {isSuperAdmin && showAuditPanel && auditResult && (
         <div className="bg-stone-950 border border-stone-800 rounded-xl p-4 text-xs space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2 text-stone-200">
               <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span className="font-bold">Storage Integrity Audit Results</span>
+              <span className="font-bold">Media Library Check</span>
             </div>
             <button
               type="button"
@@ -417,19 +423,19 @@ export const AdminMediaLibrary: React.FC = () => {
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-stone-300">
             <div className="p-2 bg-stone-900/60 rounded border border-stone-800">
-              <span className="text-[10px] text-stone-500 uppercase block font-bold">Bucket Files</span>
+              <span className="text-[10px] text-stone-500 uppercase block font-bold">Media Files</span>
               <span className="font-mono text-sm font-semibold text-white">{auditResult.totalStorageFiles}</span>
             </div>
             <div className="p-2 bg-stone-900/60 rounded border border-stone-800">
-              <span className="text-[10px] text-stone-500 uppercase block font-bold">media_assets Rows</span>
+              <span className="text-[10px] text-stone-500 uppercase block font-bold">Media Details</span>
               <span className="font-mono text-sm font-semibold text-white">{auditResult.totalDbRecords}</span>
             </div>
             <div className="p-2 bg-stone-900/60 rounded border border-stone-800">
-              <span className="text-[10px] text-stone-500 uppercase block font-bold">Synchronized</span>
+              <span className="text-[10px] text-stone-500 uppercase block font-bold">Matched</span>
               <span className="font-mono text-sm font-semibold text-emerald-400">{auditResult.synchronizedCount}</span>
             </div>
             <div className="p-2 bg-stone-900/60 rounded border border-stone-800">
-              <span className="text-[10px] text-stone-500 uppercase block font-bold">Orphaned Files</span>
+              <span className="text-[10px] text-stone-500 uppercase block font-bold">Unused Files</span>
               <span className={`font-mono text-sm font-semibold ${auditResult.orphanedInStorage.length > 0 ? 'text-amber-400' : 'text-stone-400'}`}>
                 {auditResult.orphanedInStorage.length}
               </span>
@@ -439,7 +445,7 @@ export const AdminMediaLibrary: React.FC = () => {
           {auditResult.orphanedInStorage.length > 0 ? (
             <div className="flex items-center justify-between pt-2 border-t border-stone-800">
               <span className="text-amber-400 text-[11px]">
-                {auditResult.orphanedInStorage.length} file(s) in storage have no database reference.
+                {auditResult.orphanedInStorage.length} file(s) are not linked to an excursion.
               </span>
               <button
                 type="button"
@@ -453,7 +459,7 @@ export const AdminMediaLibrary: React.FC = () => {
           ) : (
             <div className="flex items-center space-x-1.5 text-emerald-400 text-[11px]">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Zero orphaned files detected. All bucket assets are cleanly indexed in media_assets.</span>
+              <span>All media files are linked correctly.</span>
             </div>
           )}
         </div>
