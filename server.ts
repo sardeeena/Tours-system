@@ -776,7 +776,8 @@ app.post('/api/webhooks/resend', rateLimit(300, 60_000), async (req: Request, re
     if (nextStatus === 'opened') update.opened_at = occurredAt;
     if (failureReason) update.failure_reason = failureReason;
     const tagList = Array.isArray(data.tags) ? data.tags : [];
-    const taggedCommunicationId = tagList.find((tag: any) => tag?.name === 'communication_id')?.value;
+    const taggedCommunicationId = tagList.find((tag: any) => tag?.name === 'communication_id')?.value
+      || (data.tags && typeof data.tags === 'object' && !Array.isArray(data.tags) ? data.tags.communication_id : null);
     const communicationId = typeof taggedCommunicationId === 'string' && /^[0-9a-f-]{36}$/i.test(taggedCommunicationId)
       ? taggedCommunicationId
       : null;
