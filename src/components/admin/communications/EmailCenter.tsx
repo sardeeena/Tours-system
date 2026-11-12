@@ -78,6 +78,8 @@ export const EmailCenter: React.FC<EmailCenterProps> = ({ onNavigateTab }) => {
             <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">{provider?.email.isConfigured ? 'Configured' : 'Needs configuration'}</span>
           </div>
           <p className="mt-2 break-all text-xs text-slate-500">{provider?.email.fromEmail || 'Sender address is not available'}</p>
+          {provider?.email.configurationIssue === 'invalid_from_email' && <p className="mt-2 text-xs text-amber-700">Sender address failed validation. Check the RESEND_FROM_EMAIL value in Hostinger.</p>}
+          {provider?.email.configurationIssue === 'missing_api_key' && <p className="mt-2 text-xs text-amber-700">Resend API key is missing from the server environment.</p>}
           <div className="mt-3 space-y-1 text-xs text-slate-500">
             <p>Webhook signing secret: <strong className={provider?.email.webhookConfigured ? 'text-emerald-600' : 'text-amber-600'}>{provider?.email.webhookConfigured ? 'Configured' : 'Not configured'}</strong></p>
             <p>Booking notification worker: <strong className={provider?.email.bookingWorkerEnabled ? 'text-emerald-600' : 'text-amber-600'}>{provider?.email.bookingWorkerEnabled ? 'Enabled' : 'Disabled'}</strong></p>
