@@ -101,6 +101,7 @@ export const AdminMediaLibrary: React.FC = () => {
     if (!files || files.length === 0) return;
     setUploading(true);
     setUploadError(null);
+    let uploadFailed = false;
 
     try {
       for (let i = 0; i < files.length; i++) {
@@ -108,11 +109,12 @@ export const AdminMediaLibrary: React.FC = () => {
         const res = await uploadTourMedia(file, 'tours');
         if (res.error) {
           console.warn('Media upload failed:', res.error);
+          uploadFailed = true;
           setUploadError('We could not upload one or more files. Please check the file and try again.');
           break;
         }
       }
-      if (!uploadError) showToast('Your media has been uploaded.', 'success');
+      if (!uploadFailed) showToast('Your media has been uploaded.', 'success');
       await fetchMedia();
     } catch (err: any) {
       console.warn('Media upload failed:', err);
