@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Download, RefreshCw, Search, ShieldCheck, Users, Eye, MousePointerClick, Cookie, Clock3 } from 'lucide-react';
-import { supabase, isSupabaseConfigured } from '../../services/supabaseClient';
+import { supabase, isSupabaseConfigured } from '../../../services/supabaseClient';
 
 type Overview = {
   periodDays: number; sessions: number; events: number; guestSessions: number;
