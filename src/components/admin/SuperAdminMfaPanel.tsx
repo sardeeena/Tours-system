@@ -48,7 +48,7 @@ export const SuperAdminMfaPanel: React.FC<SuperAdminMfaPanelProps> = ({ compact 
     try {
       const { data, error: enrollError } = await supabase.auth.mfa.enroll({
         factorType: 'totp',
-        friendlyName: 'Kemet Spirit Super Admin',
+        friendlyName: 'Awesome Adventure Super Admin',
       });
       if (enrollError) throw enrollError;
 
@@ -145,7 +145,14 @@ export const SuperAdminMfaPanel: React.FC<SuperAdminMfaPanelProps> = ({ compact 
       ) : qrCode ? (
         <div className="grid gap-5 md:grid-cols-[auto_1fr]">
           <div className="rounded-xl bg-white p-3">
-            <img src={`data:image/svg+xml;utf8,${encodeURIComponent(qrCode)}`} alt="Scan this QR code with an authenticator app" className="h-48 w-48" />
+            <img
+              src={qrCode.startsWith('data:image/svg+xml')
+                ? qrCode
+                : `data:image/svg+xml;utf-8,${qrCode}`}
+              alt="Scan this QR code with an authenticator app"
+              className="h-48 w-48 object-contain"
+              decoding="sync"
+            />
           </div>
           <div className="space-y-3 text-xs text-slate-300">
             <div>
