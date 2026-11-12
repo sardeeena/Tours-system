@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(12);
+SELECT plan(13);
 
 SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.audit_logs'::regclass), 'audit_logs has RLS enabled');
 SELECT ok(NOT has_table_privilege('anon', 'public.audit_logs', 'SELECT'), 'anon cannot read audit logs');
@@ -38,6 +38,21 @@ SELECT ok(EXISTS (
 
 SELECT ok(NOT has_function_privilege('anon', 'private.capture_business_audit()', 'EXECUTE'), 'anon cannot invoke the audit trigger function directly');
 SELECT ok(NOT has_function_privilege('authenticated', 'private.capture_business_audit()', 'EXECUTE'), 'authenticated users cannot invoke the audit trigger function directly');
+
+SELECT ok(NOT EXISTS (
+  SELECT 1 FROM pg_tables p
+  WHERE p.schemaname = 'public'
+    AND p.tablename NOT IN (
+      'audit_logs','technical_events','visitor_sessions','visitor_events',
+      'visitor_consent_records','visitor_analytics_settings',
+      'rate_limit_events','rate_limit_buckets','request_idempotency',
+      'idempotency_keys','booking_idempotency_keys','schema_migrations'
+    )
+    AND NOT EXISTS (
+      SELECT 1 FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid
+      WHERE c.relname = p.tablename AND t.tgname = 'trg_capture_business_audit' AND NOT t.tgisinternal
+    )
+), 'all public business tables have row-change audit triggers');
 
 SELECT * FROM finish();
 ROLLBACK;
