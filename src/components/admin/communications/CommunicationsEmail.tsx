@@ -287,14 +287,14 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
             )}
           </div>
 
-          <button
+          {isSuperAdmin && <button
             type="button"
             onClick={openSettingsModal}
             className="flex items-center space-x-2 px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-medium rounded-lg border border-stone-700 transition-colors"
           >
             <Settings className="w-3.5 h-3.5 text-stone-400" />
-            <span>Provider Settings</span>
-          </button>
+            <span>Email settings</span>
+          </button>}
 
           <button
             type="button"
@@ -315,18 +315,17 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
             <div>
               <p className="font-semibold text-amber-100">Email sending is not ready</p>
               <p className="text-amber-300/80 mt-0.5">
-                Email delivery needs to be set up before messages can be sent. Please contact a Superadmin.
-                dispatches will be logged with status <strong>Failed (&ldquo;Not configured&rdquo;)</strong> rather than reporting fake delivery.
+                Email delivery needs attention. Please contact a Superadmin before sending messages.
               </p>
             </div>
           </div>
-          <button
+          {isSuperAdmin && <button
             type="button"
             onClick={openSettingsModal}
             className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/30 font-semibold rounded-lg shrink-0 transition-colors"
           >
-            Connect Provider
-          </button>
+            Email settings
+          </button>}
         </div>
       )}
 
