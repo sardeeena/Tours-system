@@ -1,3 +1,5 @@
+import { supabase, isSupabaseConfigured } from './supabaseClient';
+
 export type VisitorEventName =
   | 'page_view' | 'page_exit' | 'navigation' | 'tour_view' | 'search'
   | 'booking_started' | 'booking_step_completed' | 'booking_submitted'
@@ -99,9 +101,14 @@ export function visitorMetadata(): VisitorMetadata {
 
 async function post(path: string, body: Record<string, unknown>): Promise<void> {
   try {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (isSupabaseConfigured()) {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.access_token) headers.Authorization = `Bearer ${data.session.access_token}`;
+    }
     const response = await fetch(path, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       credentials: 'same-origin',
       keepalive: true,
       body: JSON.stringify(body),
