@@ -190,7 +190,7 @@ jobs:
           WHERE table_schema = '$schema'
             AND table_type = 'BASE TABLE'
             AND NOT ('$schema' = 'auth' AND table_name = 'schema_migrations')
-          ORDER BY table_name;
+          ORDER BY table_name
           \gexec
           SQL
           }
