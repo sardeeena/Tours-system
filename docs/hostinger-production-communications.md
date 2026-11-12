@@ -23,13 +23,29 @@ Do not add these values to Vite/browser variables, source code, GitHub, or chat.
 - Newsletter unsubscribe links require an explicit confirmation POST; automated email link scanners cannot unsubscribe a person by merely previewing the link.
 - Staff-dispatched emails are written to `communication_messages` before dispatch and updated with the provider result.
 - Booking-received emails are processed by the durable Supabase queue worker. Successful, failed, and retried sends are recorded in `communication_messages` and `automation_events`.
-- Delivery, open, click, bounce, and complaint analytics require a verified Resend webhook integration. Until that is configured, the dashboard must not estimate these metrics.
+- Resend delivery, open, click, bounce, complaint, and delayed events are signature-verified and stored in `public.email_provider_events`; matching message statuses are updated in `public.communication_messages`. The Communications & Automation Hub reads the resulting status from the database.
 
 ## Booking notification worker
 
 The worker starts only when `BOOKING_NOTIFICATION_WORKER_ENABLED=true`, the server has a genuine Supabase secret key, and valid Resend credentials are available. Keep the flag disabled until the required values are confirmed. If credentials are missing, the worker leaves queued notifications in Supabase for later processing.
 
 After changing Hostinger environment variables, restart the Node.js application. Check the runtime logs for the explicit `Booking Notification Worker] Started` message and confirm that the missing-credentials warning is gone.
+
+## Supabase Auth email delivery
+
+Supabase Auth sends account confirmation, password recovery, magic-link, invite, and email-change messages independently of the app's Resend API routes. Configure custom SMTP in Supabase Dashboard → Authentication → Emails → SMTP Settings so these messages can reach real customers.
+
+Use the verified Resend sending domain:
+
+- Host: `smtp.resend.com`
+- Port: `465` (SSL/TLS)
+- Username: `resend`
+- Password: your Resend API key (keep it only in Supabase's secure SMTP password field)
+- Sender email: `no-reply@mail.awesomeadventure.tours`
+- Sender name: `Awesome Adventure Tours`
+- Admin/support email: `reservation@awesomeadventure.tours`
+
+Keep the API key out of source code and browser environment variables. Save and use Supabase's built-in SMTP test if available. Review the Auth email templates for confirmation and password recovery links, and ensure the allowed redirect URLs include the production site. Supabase's default SMTP is rate-limited and is not intended for production delivery.
 
 ## WhatsApp
 
@@ -50,3 +66,16 @@ Automated booking WhatsApp delivery is not enabled by the email worker. Business
 - A newsletter signup is not reported as successful unless the database confirms it.
 - A welcome email is never reported as sent unless Resend accepts it and returns a provider message ID.
 - Staff email dispatches are not sent if the audit record cannot first be persisted.
+
+
+## Resend webhook setup
+
+After the webhook receiver is deployed:
+
+1. In Resend, create a webhook endpoint: `https://awesomeadventure.tours/api/webhooks/resend`.
+2. Subscribe to `email.sent`, `email.delivered`, `email.delivery_delayed`, `email.bounced`, `email.complained`, `email.opened`, `email.clicked`, `email.failed`, and `email.suppressed`.
+3. Copy the webhook signing secret (starts with `whsec_`) into Hostinger as `RESEND_WEBHOOK_SECRET`. Never put it in GitHub or browser variables.
+4. Save the webhook and redeploy/restart the Hostinger Node.js application.
+5. Check Resend's webhook delivery logs and the admin Communications & Automation Hub after a real email event.
+
+The receiver verifies the Svix signature against the raw request body, rejects stale/invalid signatures, and stores each event idempotently. Do not disable signature verification.

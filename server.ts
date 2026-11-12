@@ -326,6 +326,8 @@ async function authenticateToken(req: AuthenticatedRequest, res: Response, next:
 // ------------------------------------------------------------------------------
 // Middleware & Security Headers
 // ------------------------------------------------------------------------------
+// Preserve the exact request bytes for Resend Svix signature verification.
+app.use('/api/webhooks/resend', express.raw({ type: 'application/json', limit: '1mb' }));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
@@ -640,6 +642,7 @@ app.post('/api/communications/email', rateLimit(20, 60_000), async (req: Authent
         ...(isValidEmail(process.env.RESEND_REPLY_TO?.trim() || '') ? { reply_to: process.env.RESEND_REPLY_TO!.trim() } : {}),
         subject,
         text: textBody,
+        tags: [{ name: 'communication_id', value: String(audit.id) }],
       }),
       signal: AbortSignal.timeout(15_000),
     });
@@ -656,9 +659,15 @@ app.post('/api/communications/email', rateLimit(20, 60_000), async (req: Authent
     const sentAt = new Date().toISOString();
     const { error: updateError } = await serverSupabase
       .from('communication_messages')
-      .update({ status: 'sent', provider_name: 'Resend', provider_message_id: providerBody.id, sent_at: sentAt, failure_reason: null })
+      .update({ provider_name: 'Resend', provider_message_id: providerBody.id, sent_at: sentAt, failure_reason: null })
       .eq('id', audit.id);
-    if (updateError) console.error('Communication email sent status could not be saved:', updateError.message);
+    if (updateError) console.error('Communication email provider details could not be saved:', updateError.message);
+    const { error: statusError } = await serverSupabase
+      .from('communication_messages')
+      .update({ status: 'sent' })
+      .eq('id', audit.id)
+      .eq('status', 'queued');
+    if (statusError) console.error('Communication email sent status could not be saved:', statusError.message);
 
     return res.status(200).json({
       success: true,
@@ -674,6 +683,150 @@ app.post('/api/communications/email', rateLimit(20, 60_000), async (req: Authent
     await markFailed(message);
     return res.status(502).json({ success: false, error: message, messageLogId: audit.id });
   }
+});
+
+app.post('/api/webhooks/resend', rateLimit(300, 60_000), async (req: Request, res: Response) => {
+  const webhookSecret = process.env.RESEND_WEBHOOK_SECRET?.trim() || '';
+  if (!webhookSecret.startsWith('whsec_')) {
+    return res.status(503).json({ success: false, error: 'Resend webhook verification is not configured.' });
+  }
+
+  const rawBody = Buffer.isBuffer(req.body) ? req.body.toString('utf8') : '';
+  const svixId = req.header('svix-id') || '';
+  const svixTimestamp = req.header('svix-timestamp') || '';
+  const svixSignature = req.header('svix-signature') || '';
+  const timestamp = Number(svixTimestamp);
+
+  if (!rawBody || !svixId || !svixTimestamp || !svixSignature ||
+      !Number.isFinite(timestamp) || Math.abs(Date.now() / 1000 - timestamp) > 300) {
+    return res.status(400).json({ success: false, error: 'Invalid webhook headers or timestamp.' });
+  }
+
+  try {
+    const secretBytes = Buffer.from(webhookSecret.slice('whsec_'.length), 'base64');
+    const expected = createHmac('sha256', secretBytes).update(`${svixId}.${svixTimestamp}.${rawBody}`).digest();
+    const signatureMatches = svixSignature.split(' ').some((entry) => {
+      const [version, encoded] = entry.split(',');
+      if (version !== 'v1' || !encoded) return false;
+      const supplied = Buffer.from(encoded, 'base64');
+      return supplied.length === expected.length && timingSafeEqual(supplied, expected);
+    });
+    if (!signatureMatches) {
+      return res.status(401).json({ success: false, error: 'Webhook signature verification failed.' });
+    }
+  } catch {
+    return res.status(401).json({ success: false, error: 'Webhook signature verification failed.' });
+  }
+
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
+    return res.status(503).json({ success: false, error: 'Secure webhook database storage is unavailable.' });
+  }
+
+  let event: any;
+  try {
+    event = JSON.parse(rawBody);
+  } catch {
+    return res.status(400).json({ success: false, error: 'Invalid webhook JSON.' });
+  }
+
+  const eventId = svixId.slice(0, 200);
+  const eventType = typeof event?.type === 'string' ? event.type.slice(0, 100) : '';
+  const data = event?.data && typeof event.data === 'object' ? event.data : {};
+  if (!eventType || typeof data.email_id !== 'string') {
+    return res.status(400).json({ success: false, error: 'Unsupported or incomplete Resend email event.' });
+  }
+
+  const recipients = Array.isArray(data.to) ? data.to.filter((value: unknown) => typeof value === 'string' && isValidEmail(value)).slice(0, 50) : [];
+  const recipient = recipients[0]?.toLowerCase() || null;
+  const occurredAt = typeof event.created_at === 'string' && !Number.isNaN(Date.parse(event.created_at))
+    ? new Date(event.created_at).toISOString()
+    : new Date().toISOString();
+
+  const { error: eventInsertError } = await serverSupabase
+    .from('email_provider_events')
+    .insert({
+      event_id: eventId,
+      event_type: eventType,
+      provider_message_id: String(data.email_id).slice(0, 200),
+      recipient_address: recipient,
+      occurred_at: occurredAt,
+      payload: event,
+    });
+
+  if (eventInsertError && eventInsertError.code !== '23505') {
+    console.error('Resend webhook event persistence failed:', eventInsertError.message);
+    return res.status(503).json({ success: false, error: 'Webhook event could not be stored.' });
+  }
+  // A duplicate event still runs the idempotent message projection below. This
+  // allows a provider retry to recover if the event row was saved but its
+  // corresponding communications row could not be updated on the first attempt.
+
+  const statusByEvent: Record<string, string> = {
+    'email.sent': 'sent',
+    'email.delivered': 'delivered',
+    'email.opened': 'opened',
+    'email.clicked': 'opened',
+    'email.bounced': 'failed',
+    'email.complained': 'failed',
+    'email.failed': 'failed',
+    'email.delivery_delayed': 'sent',
+    'email.suppressed': 'failed',
+  };
+  const nextStatus = statusByEvent[eventType];
+  if (nextStatus) {
+    const failureReason = ['email.bounced', 'email.complained', 'email.failed', 'email.suppressed'].includes(eventType)
+      ? `Resend event: ${eventType}`
+      : null;
+    const update: Record<string, unknown> = { status: nextStatus, provider_message_id: data.email_id, updated_at: new Date().toISOString() };
+    if (nextStatus === 'delivered') update.delivered_at = occurredAt;
+    if (nextStatus === 'opened') update.opened_at = occurredAt;
+    if (failureReason) update.failure_reason = failureReason;
+    const tagList = Array.isArray(data.tags) ? data.tags : [];
+    const taggedCommunicationId = tagList.find((tag: any) => tag?.name === 'communication_id')?.value
+      || (data.tags && typeof data.tags === 'object' && !Array.isArray(data.tags) ? data.tags.communication_id : null);
+    const communicationId = typeof taggedCommunicationId === 'string' && /^[0-9a-f-]{36}$/i.test(taggedCommunicationId)
+      ? taggedCommunicationId
+      : null;
+    let messageUpdateQuery = serverSupabase.from('communication_messages').update(update);
+    messageUpdateQuery = communicationId
+      ? messageUpdateQuery.eq('id', communicationId)
+      : messageUpdateQuery.eq('provider_message_id', data.email_id);
+    const { data: updatedMessages, error: messageUpdateError } = await messageUpdateQuery.select('id');
+    if (messageUpdateError) {
+      console.error('Resend webhook message status update failed:', messageUpdateError.message);
+      return res.status(503).json({ success: false, error: 'Webhook was stored but the message status could not be updated.' });
+    }
+
+    // Supabase Auth and other Resend SMTP integrations do not originate from
+    // our app dispatcher. Create an audit row so those emails also appear in
+    // the same admin Communications History.
+    if (!updatedMessages?.length) {
+      const fallbackRecipient = recipient || 'unknown-recipient';
+      const { error: externalLogError } = await serverSupabase
+        .from('communication_messages')
+        .insert({
+          channel: 'Email',
+          customer_name: fallbackRecipient,
+          recipient_address: fallbackRecipient,
+          subject: typeof data.subject === 'string' ? data.subject.slice(0, 500) : 'External email',
+          content: `Email event ${eventType} received from Resend. Full provider payload is stored in email_provider_events.`,
+          status: nextStatus,
+          provider_name: 'Resend',
+          provider_message_id: String(data.email_id).slice(0, 200),
+          failure_reason: failureReason,
+          sent_at: eventType === 'email.sent' ? occurredAt : null,
+          delivered_at: eventType === 'email.delivered' ? occurredAt : null,
+          opened_at: ['email.opened', 'email.clicked'].includes(eventType) ? occurredAt : null,
+          staff_name: 'External Email Provider',
+        });
+      if (externalLogError && externalLogError.code !== '23505') {
+        console.error('External Resend email audit insert failed:', externalLogError.message);
+        return res.status(503).json({ success: false, error: 'Webhook was stored but its admin email record could not be created.' });
+      }
+    }
+  }
+
+  return res.status(200).json({ success: true, eventId, eventType });
 });
 
 app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: AuthenticatedRequest, res: Response) => {
@@ -1276,6 +1429,87 @@ app.all('/api/availability/check', rateLimit(60, 60_000), async (req: Request, r
 
 // 7. Inquiries & Concierge Submissions API
 // ------------------------------------------------------------------------------
+async function sendInquiryNotificationEmail(params: {
+  recipientEmail: string;
+  customerName: string;
+  subject: string;
+  content: string;
+  templateKey: string;
+  replyTo?: string;
+}): Promise<void> {
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
+    console.error('Inquiry email was not sent: secure communications audit database is unavailable.');
+    return;
+  }
+
+  const apiKey = process.env.RESEND_API_KEY?.trim() || '';
+  const fromEmail = process.env.RESEND_FROM_EMAIL?.trim() || '';
+  const fromName = (process.env.RESEND_FROM_NAME || 'Awesome Adventure Tours').replace(/[<>\r\n]/g, '').trim() || 'Awesome Adventure Tours';
+  const configured = Boolean(apiKey && isValidEmail(fromEmail));
+  const { data: log, error: logError } = await serverSupabase
+    .from('communication_messages')
+    .insert({
+      channel: 'Email',
+      customer_name: params.customerName,
+      recipient_address: params.recipientEmail,
+      template_key: params.templateKey,
+      subject: params.subject,
+      content: params.content,
+      status: configured ? 'queued' : 'failed',
+      provider_name: configured ? 'Resend' : 'Not configured',
+      failure_reason: configured ? null : 'Resend is not configured: a valid RESEND_API_KEY and RESEND_FROM_EMAIL are required.',
+      staff_name: 'Inquiry Notification Service',
+    })
+    .select('id')
+    .single();
+
+  if (logError || !log?.id) {
+    console.error('Inquiry email audit insert failed:', logError?.message || 'Missing audit ID');
+    return;
+  }
+  if (!configured) return;
+
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json', 'Idempotency-Key': `awesome-adventure-inquiry-${log.id}` },
+      body: JSON.stringify({
+        from: `${fromName} <${fromEmail}>`,
+        to: [params.recipientEmail],
+        ...(params.replyTo && isValidEmail(params.replyTo) ? { reply_to: params.replyTo } : {}),
+        subject: params.subject,
+        text: params.content,
+        tags: [{ name: 'communication_id', value: String(log.id) }],
+      }),
+      signal: AbortSignal.timeout(15_000),
+    });
+    const providerBody = await response.json().catch(() => ({} as any));
+    if (!response.ok || typeof providerBody?.id !== 'string') {
+      throw new Error(typeof providerBody?.message === 'string' ? providerBody.message : `Resend rejected the request (HTTP ${response.status}).`);
+    }
+    const sentAt = new Date().toISOString();
+    const { error } = await serverSupabase
+      .from('communication_messages')
+      .update({ provider_name: 'Resend', provider_message_id: providerBody.id, sent_at: sentAt, failure_reason: null })
+      .eq('id', log.id);
+    if (error) console.error('Inquiry email provider details update failed:', error.message);
+    const { error: statusError } = await serverSupabase
+      .from('communication_messages')
+      .update({ status: 'sent' })
+      .eq('id', log.id)
+      .eq('status', 'queued');
+    if (statusError) console.error('Inquiry email sent status update failed:', statusError.message);
+  } catch (error: any) {
+    const reason = error?.message || 'Resend inquiry email failed.';
+    const { error: updateError } = await serverSupabase
+      .from('communication_messages')
+      .update({ status: 'failed', provider_name: 'Resend', failure_reason: reason })
+      .eq('id', log.id);
+    if (updateError) console.error('Inquiry email failure status update failed:', updateError.message);
+    console.error('Inquiry email dispatch failed:', reason);
+  }
+}
+
 app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(5, 10 * 60_000), async (req: Request, res: Response) => {
   const { name, email, phone, inquiryType = 'general_question', message, website_url_hp } = req.body;
 
@@ -1322,6 +1556,35 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
         .single();
 
       if (!error && data) {
+        const inquirySubject = inquiryType === 'general_question' ? 'General Excursion Question' : String(inquiryType).slice(0, 120);
+        const reservationEmail = process.env.BOOKING_NOTIFICATION_EMAIL?.trim() || 'reservation@awesomeadventure.tours';
+        await Promise.all([
+          sendInquiryNotificationEmail({
+            recipientEmail: reservationEmail,
+            customerName: cleanName,
+            templateKey: 'inquiry_staff_notification',
+            subject: `New website inquiry: ${inquirySubject}`,
+            replyTo: cleanEmail,
+            content: [
+              'A new inquiry was submitted on Awesome Adventure Tours.',
+              `Inquiry ID: ${data.id}`,
+              `Name: ${cleanName}`,
+              `Email: ${cleanEmail}`,
+              `Phone: ${cleanPhone || 'Not provided'}`,
+              `Subject: ${inquirySubject}`,
+              '',
+              'Message:',
+              cleanMessage,
+            ].join('\n'),
+          }),
+          sendInquiryNotificationEmail({
+            recipientEmail: cleanEmail,
+            customerName: cleanName,
+            templateKey: 'inquiry_customer_confirmation',
+            subject: 'We received your message — Awesome Adventure Tours',
+            content: `Hello ${cleanName},\n\nThank you for contacting Awesome Adventure Tours. We have received your inquiry (reference ${data.id}) and our team will respond within 2 hours during Egypt Pier Desk hours.\n\nIf your question is urgent, you can contact our reservations team at reservation@awesomeadventure.tours.\n\nAwesome Adventure Tours`,
+          }),
+        ]);
         return res.status(201).json({
           success: true,
           inquiryId: data.id,
@@ -1405,12 +1668,15 @@ app.post('/api/newsletter/unsubscribe', rateLimit(20, 60_000), async (req: Reque
 });
 
 app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_000), async (req: Request, res: Response) => {
-  const { email, preferredLanguage = 'en', website_url_hp } = req.body || {};
+  const { email, preferredLanguage = 'en', website_url_hp, consentAccepted } = req.body || {};
   if (website_url_hp && String(website_url_hp).trim() !== '') {
     return res.json({ success: true, subscribed: true, message: 'Thank you for subscribing.' });
   }
   if (typeof email !== 'string' || !isValidEmail(email.trim())) {
     return res.status(400).json({ success: false, error: 'Please provide a valid email address.' });
+  }
+  if (consentAccepted !== true) {
+    return res.status(400).json({ success: false, error: 'Please confirm that you agree to receive newsletter updates before subscribing.' });
   }
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
     return res.status(503).json({ success: false, error: 'Newsletter database service is not configured. Please try again later.' });
@@ -1545,6 +1811,7 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
           ...(isValidEmail(process.env.RESEND_REPLY_TO?.trim() || '') ? { reply_to: process.env.RESEND_REPLY_TO!.trim() } : {}),
           subject,
           text: content,
+          tags: [{ name: 'communication_id', value: String(messageLog.id) }],
           html: `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#17212b;max-width:600px;margin:auto"><h1>Welcome aboard!</h1><p>Thank you for subscribing to Awesome Adventure Tours.</p><p>Your 15% voucher code:</p><p style="font-size:28px;font-weight:bold;letter-spacing:2px;color:#0a6c74">REDSEA15</p><p>Use it when enquiring about your next excursion.</p><hr><p style="font-size:12px;color:#64748b">You received this email because you subscribed to updates from Awesome Adventure Tours. <a href="${unsubscribeUrl}">Unsubscribe</a>.</p></div>`,
         }),
         signal: AbortSignal.timeout(15_000),
@@ -1555,11 +1822,18 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
       }
       providerMessageId = providerBody.id;
       emailStatus = 'sent';
+      const sentAt = new Date().toISOString();
       const { error: updateError } = await serverSupabase
         .from('communication_messages')
-        .update({ status: 'sent', provider_name: 'Resend', provider_message_id: providerMessageId, sent_at: new Date().toISOString(), failure_reason: null })
+        .update({ provider_name: 'Resend', provider_message_id: providerMessageId, sent_at: sentAt, failure_reason: null })
         .eq('id', messageLog.id);
-      if (updateError) console.error('Newsletter email audit status update failed:', updateError.message);
+      if (updateError) console.error('Newsletter email provider details update failed:', updateError.message);
+      const { error: statusError } = await serverSupabase
+        .from('communication_messages')
+        .update({ status: 'sent' })
+        .eq('id', messageLog.id)
+        .eq('status', 'queued');
+      if (statusError) console.error('Newsletter email audit status update failed:', statusError.message);
     } catch (error: any) {
       const reason = error?.message || 'Resend email delivery failed.';
       const { error: updateError } = await serverSupabase

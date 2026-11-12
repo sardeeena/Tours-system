@@ -287,6 +287,7 @@ async function processMessage(
       bcc: [process.env.BOOKING_NOTIFICATION_EMAIL?.trim() || 'reservation@awesomeadventure.tours'],
       subject,
       text: content,
+      tags: [{ name: 'communication_id', value: String(logRow!.id) }],
     }),
     signal: AbortSignal.timeout(15_000),
   });
@@ -303,7 +304,6 @@ async function processMessage(
   const { error: updateError } = await client
     .from('communication_messages')
     .update({
-      status: 'sent',
       provider_name: 'Resend',
       provider_message_id: providerBody.id,
       sent_at: sentAt,
@@ -312,6 +312,12 @@ async function processMessage(
     .eq('id', logRow!.id);
 
   if (updateError) throw updateError;
+  const { error: statusError } = await client
+    .from('communication_messages')
+    .update({ status: 'sent' })
+    .eq('id', logRow!.id)
+    .eq('status', 'queued');
+  if (statusError) throw statusError;
 
   await updateEvent(client, eventId, {
     processed: true,

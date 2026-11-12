@@ -19,8 +19,9 @@ function notifyNewsletterUpdated(subscriber?: NewsletterSubscriber) {
 export async function subscribeToNewsletter(
   email: string,
   source = 'footer',
-  honeypot?: string
-): Promise<{ success: boolean; alreadySubscribed?: boolean; discountCode: string; message: string; error?: string }> {
+  honeypot?: string,
+  consentAccepted = false
+): Promise<{ success: boolean; alreadySubscribed?: boolean; emailStatus?: 'sent' | 'failed' | 'not_sent'; discountCode: string; message: string; error?: string }> {
   const discountCode = 'REDSEA15';
   if (honeypot?.trim()) {
     return { success: true, discountCode, message: 'Thank you for subscribing.' };
@@ -45,6 +46,7 @@ export async function subscribeToNewsletter(
         source: source.slice(0, 80),
         preferredLanguage: typeof navigator !== 'undefined' ? navigator.language : 'en',
         website_url_hp: honeypot || '',
+        consentAccepted,
       }),
     });
     const result = await response.json().catch(() => ({}));
@@ -69,6 +71,7 @@ export async function subscribeToNewsletter(
     return {
       success: true,
       alreadySubscribed: result.alreadySubscribed === true,
+      emailStatus: result.emailStatus,
       discountCode: result.discountCode || discountCode,
       message: typeof result.message === 'string' ? result.message : 'Your subscription has been saved.',
     };

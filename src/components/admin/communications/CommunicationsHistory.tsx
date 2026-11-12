@@ -155,20 +155,6 @@ export const CommunicationsHistory: React.FC<CommunicationsHistoryProps> = ({ on
     showToast('Communications audit CSV downloaded', 'success');
   };
 
-  const handleSimulateWebhookDelivery = async (newStatus: MessageDeliveryStatus) => {
-    if (!selectedMessage) return;
-    setUpdatingStatus(true);
-    try {
-      await updateMessageDeliveryStatus(selectedMessage.id, newStatus);
-      showToast(`Provider webhook confirmed: status transitioned to ${newStatus}`, 'success');
-      setSelectedMessage((prev) => prev ? { ...prev, status: newStatus } : null);
-      await loadData();
-    } catch (err: any) {
-      showToast(err?.message || 'Failed to update status', 'error');
-    } finally {
-      setUpdatingStatus(false);
-    }
-  };
 
   const handleEmitTestEvent = async (eventName: AutomationEventType) => {
     setTriggeringEvent(true);
@@ -758,54 +744,8 @@ export const CommunicationsHistory: React.FC<CommunicationsHistoryProps> = ({ on
               </div>
             </div>
 
-            {/* Test Webhook Delivery Transition for Sent Messages */}
-            {selectedMessage.status.toLowerCase() === 'sent' && (
-              <div className="p-3 bg-stone-950 rounded-lg border border-stone-800 space-y-1.5">
-                <div className="text-[11px] font-semibold text-stone-300 flex items-center justify-between">
-                  <span>Webhook Receipt Simulation:</span>
-                  <span className="text-[10px] text-stone-500 font-normal">Test delivery lifecycle</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    type="button"
-                    disabled={updatingStatus}
-                    onClick={() => handleSimulateWebhookDelivery('delivered')}
-                    className="flex-1 py-1 px-2 rounded bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 text-[11px] font-semibold transition-colors cursor-pointer"
-                  >
-                    Simulate &ldquo;Delivered&rdquo; Webhook
-                  </button>
-                  <button
-                    type="button"
-                    disabled={updatingStatus}
-                    onClick={() => handleSimulateWebhookDelivery('opened')}
-                    className="flex-1 py-1 px-2 rounded bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 text-[11px] font-semibold transition-colors cursor-pointer"
-                  >
-                    Simulate &ldquo;Opened&rdquo; Webhook
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <div className="pt-2 flex justify-between items-center">
-              {selectedMessage.customerId && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedMessage(null);
-                    onNavigateTab?.('crm_timeline');
-                  }}
-                  className="text-xs text-teal-400 hover:text-teal-300 font-medium flex items-center gap-1 cursor-pointer"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" /> View on Customer Timeline
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => setSelectedMessage(null)}
-                className="px-4 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs rounded-lg transition-colors ml-auto cursor-pointer"
-              >
-                Close
-              </button>
+            <div className="p-3 bg-stone-950 rounded-lg border border-stone-800 text-xs text-stone-400">
+              Delivery and engagement status is updated only from verified Resend webhook events. Staff cannot manually mark a message as delivered or opened.
             </div>
           </div>
         </div>
