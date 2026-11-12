@@ -3,11 +3,11 @@ import { Download, RefreshCw, Search, ShieldCheck, Users, Eye, MousePointerClick
 import { supabase, isSupabaseConfigured } from '../../../services/supabaseClient';
 
 type Overview = {
-  periodDays: number; sessions: number; events: number; guestSessions: number;
+  periodDays: number; sessions: number; uniqueVisitors: number; returningVisitors: number; events: number; guestSessions: number;
   signedInSessions: number; consentRecords: number; analyticsOptIns: number; marketingOptIns: number;
 };
 type Session = {
-  id: string; user_id: string | null; started_at: string; last_seen_at: string; ended_at: string | null;
+  id: string; visitor_id: string; user_id: string | null; started_at: string; last_seen_at: string; ended_at: string | null;
   landing_path: string; referrer_host: string | null; utm_source: string | null; utm_medium: string | null;
   utm_campaign: string | null; device_type: string | null; browser_family: string | null; os_family: string | null;
   screen_bucket: string | null; language: string | null; timezone: string | null;
@@ -19,7 +19,7 @@ type VisitorEvent = {
   event_data: Record<string, string | number | boolean>;
 };
 type ConsentRecord = {
-  id: string; visitor_session_id: string | null; user_id: string | null;
+  id: string; visitor_session_id: string | null; visitor_id: string | null; user_id: string | null;
   necessary: boolean; analytics: boolean; marketing: boolean; consent_version: string;
   consent_source: string; recorded_at: string;
 };
@@ -135,6 +135,8 @@ export const VisitorAnalyticsPanel: React.FC = () => {
 
       {overview && <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <Card label="Consented sessions · 30d" value={overview.sessions} icon={Users} />
+        <Card label="Unique visitors" value={overview.uniqueVisitors} icon={Eye} />
+        <Card label="Returning visitors" value={overview.returningVisitors} icon={Users} />
         <Card label="Guest sessions" value={overview.guestSessions} icon={Eye} />
         <Card label="Signed-in sessions" value={overview.signedInSessions} icon={ShieldCheck} />
         <Card label="Tracked events" value={overview.events} icon={MousePointerClick} />
@@ -176,7 +178,7 @@ export const VisitorAnalyticsPanel: React.FC = () => {
 
       <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
         <div className="flex items-center gap-2"><Cookie className="h-4 w-4 text-[#b58b3a]" /><h3 className="font-semibold">Consent history</h3></div>
-        <div className="mt-3 overflow-x-auto"><table className="w-full min-w-[600px] text-left text-xs"><thead className="text-slate-500"><tr><th className="pb-2">Recorded</th><th className="pb-2">Visitor / User</th><th className="pb-2">Necessary</th><th className="pb-2">Analytics</th><th className="pb-2">Marketing</th><th className="pb-2">Source</th></tr></thead><tbody className="divide-y divide-slate-100 dark:divide-slate-800">{consents.map((item) => <tr key={item.id}><td className="py-2 pr-3 whitespace-nowrap">{date(item.recorded_at)}</td><td className="py-2 pr-3 font-mono">{(item.visitor_session_id || item.user_id || 'Unknown').slice(0,8)}…</td><td className="py-2 pr-3">{item.necessary ? 'Yes' : 'No'}</td><td className="py-2 pr-3">{item.analytics ? 'Accepted' : 'Declined'}</td><td className="py-2 pr-3">{item.marketing ? 'Accepted' : 'Declined'}</td><td className="py-2 pr-3">{item.consent_source}</td></tr>)}</tbody></table></div>
+        <div className="mt-3 overflow-x-auto"><table className="w-full min-w-[600px] text-left text-xs"><thead className="text-slate-500"><tr><th className="pb-2">Recorded</th><th className="pb-2">Visitor / User</th><th className="pb-2">Necessary</th><th className="pb-2">Analytics</th><th className="pb-2">Marketing</th><th className="pb-2">Source</th></tr></thead><tbody className="divide-y divide-slate-100 dark:divide-slate-800">{consents.map((item) => <tr key={item.id}><td className="py-2 pr-3 whitespace-nowrap">{date(item.recorded_at)}</td><td className="py-2 pr-3 font-mono">{(item.visitor_id || item.visitor_session_id || item.user_id || 'Unknown').slice(0,8)}…</td><td className="py-2 pr-3">{item.necessary ? 'Yes' : 'No'}</td><td className="py-2 pr-3">{item.analytics ? 'Accepted' : 'Declined'}</td><td className="py-2 pr-3">{item.marketing ? 'Accepted' : 'Declined'}</td><td className="py-2 pr-3">{item.consent_source}</td></tr>)}</tbody></table></div>
       </div>
 
       <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
