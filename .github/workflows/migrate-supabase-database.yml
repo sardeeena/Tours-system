@@ -230,6 +230,8 @@ jobs:
           diff -u source_realtime.tsv destination_realtime.tsv
           diff -u source_extensions.tsv destination_extensions.tsv
 
+          psql "$DESTINATION_DB_URL" -X -v ON_ERROR_STOP=1 -c "select (select count(*) from information_schema.tables where table_schema='public' and table_type='BASE TABLE') as public_tables, (select count(*) from public.profiles) as profiles, (select count(*) from public.tours) as tours, (select count(*) from public.blog_posts) as blog_posts, (select count(*) from public.support_tickets) as support_tickets, (select count(*) from auth.users) as auth_users, (select count(*) from auth.identities) as auth_identities, (select count(*) from storage.buckets) as storage_buckets, (select count(*) from storage.objects) as storage_objects;"
+
           echo "All public, Auth and pgmq table row counts match the source."
           echo "Storage policies: $destination_storage_policies; Realtime tables: $destination_realtime_tables."
 
