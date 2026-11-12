@@ -104,7 +104,11 @@ export function visitorMetadata(): VisitorMetadata {
   let referrerHost: string | null = null;
   try { referrerHost = document.referrer ? new URL(document.referrer).hostname.slice(0, 120) : null; } catch { referrerHost = null; }
   const params = new URLSearchParams(window.location.search);
-  const clean = (key: string) => (params.get(key) || '').replace(/[^\w .-]/g, '').slice(0, 120) || null;
+  const clean = (key: string) => {
+    const raw = params.get(key) || '';
+    if (/@/.test(raw) || /\d{7,}/.test(raw)) return null;
+    return raw.replace(/[^\w .-]/g, '').slice(0, 80) || null;
+  };
   return {
     device_type: device, browser_family: browserFamily(ua), os_family: osFamily(ua),
     screen_bucket: screenBucket, language: (navigator.language || 'unknown').slice(0, 24),
