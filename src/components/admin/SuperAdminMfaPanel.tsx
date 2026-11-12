@@ -27,7 +27,7 @@ export const SuperAdminMfaPanel: React.FC<SuperAdminMfaPanelProps> = ({ compact 
       const { data, error: factorsError } = await supabase.auth.mfa.listFactors();
       if (factorsError) throw factorsError;
       // listFactors includes factors that may still be unverified; only a
-      // verified TOTP factor satisfies the super-admin MFA requirement.
+      // verified TOTP factor satisfies the administrator MFA requirement.
       const verifiedTotp = data.totp.find((factor) => factor.status === 'verified');
       setVerified(Boolean(verifiedTotp));
       setFactorId(verifiedTotp?.id || '');
@@ -48,7 +48,7 @@ export const SuperAdminMfaPanel: React.FC<SuperAdminMfaPanelProps> = ({ compact 
     try {
       const { data, error: enrollError } = await supabase.auth.mfa.enroll({
         factorType: 'totp',
-        friendlyName: 'Awesome Adventure Super Admin',
+        friendlyName: 'Awesome Adventure Administrator',
       });
       if (enrollError) throw enrollError;
 
@@ -89,7 +89,7 @@ export const SuperAdminMfaPanel: React.FC<SuperAdminMfaPanelProps> = ({ compact 
       setCode('');
       setVerified(true);
       await refreshUser();
-      showToast('Authenticator MFA is now enabled for this super administrator.', 'success');
+      showToast('Authenticator MFA is now enabled for this administrator.', 'success');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'The authenticator code could not be verified.');
     } finally {
@@ -117,7 +117,7 @@ export const SuperAdminMfaPanel: React.FC<SuperAdminMfaPanelProps> = ({ compact 
           <ShieldCheck className="h-6 w-6 text-emerald-300" />
         </div>
         <div className="flex-1">
-          <h2 className="text-base font-bold">Super Admin authenticator security</h2>
+          <h2 className="text-base font-bold">Administrator authenticator security</h2>
           <p className="mt-1 text-xs text-slate-400">
             Set up a time-based one-time password (TOTP) in an authenticator app. Supabase TOTP MFA is available on the Free plan.
           </p>
@@ -139,7 +139,7 @@ export const SuperAdminMfaPanel: React.FC<SuperAdminMfaPanelProps> = ({ compact 
           <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
           <div>
             <p className="font-semibold">A verified TOTP factor is enrolled.</p>
-            <p className="mt-1 text-emerald-200/80">New sign-ins to the super-admin account will require an authenticator code before admin access is granted.</p>
+            <p className="mt-1 text-emerald-200/80">New sign-ins to the administrator account will require an authenticator code before admin access is granted.</p>
           </div>
         </div>
       ) : qrCode ? (
