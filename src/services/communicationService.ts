@@ -63,17 +63,17 @@ export const DEFAULT_TEMPLATES: CommunicationTemplate[] = [
     subject: 'Booking Confirmation: {{tour_name}} (Ref: {{booking_reference}})',
     bodyText: `Dear {{customer_name}},
 
-Thank you for booking with Red Sea Voyages! Your reservation for {{tour_name}} on {{tour_date}} has been confirmed.
+Thank you for booking with Awesome Adventure Tours! Your reservation for {{tour_name}} on {{tour_date}} has been confirmed.
 
 Booking Reference: {{booking_reference}}
 Total Amount: €{{amount}}
 Balance Due: €{{balance_due}}
 Pickup Time: {{pickup_time}}
 
-Please be ready at your hotel lobby reception 10 minutes prior to pickup. Our representative will meet you with a Red Sea Voyages welcome card.
+Please be ready at your hotel lobby reception 10 minutes prior to pickup. Our representative will meet you with a Awesome Adventure Tours welcome card.
 
 Warm regards,
-Red Sea Voyages Concierge Desk`,
+Awesome Adventure Tours Concierge Desk`,
     variables: ['customer_name', 'booking_reference', 'tour_name', 'tour_date', 'pickup_time', 'amount', 'balance_due'],
     isActive: true,
   },
@@ -94,7 +94,7 @@ Remaining Balance Due: €{{balance_due}}
 If you requested any modifications or if Coast Guard weather adjustments occurred, your itinerary is now refreshed.
 
 Best regards,
-Red Sea Voyages Dispatch Team`,
+Awesome Adventure Tours Dispatch Team`,
     variables: ['customer_name', 'booking_reference', 'tour_name', 'tour_date', 'pickup_time', 'balance_due'],
     isActive: true,
   },
@@ -103,7 +103,7 @@ Red Sea Voyages Dispatch Team`,
     templateKey: 'payment_confirmation',
     name: 'Payment Confirmation',
     channel: 'Both',
-    subject: 'Payment Confirmation: {{booking_reference}} - Red Sea Voyages',
+    subject: 'Payment Confirmation: {{booking_reference}} - Awesome Adventure Tours',
     bodyText: `Dear {{customer_name}},
 
 We have successfully processed your payment of €{{amount}} for booking reference {{booking_reference}} ({{tour_name}}).
@@ -114,7 +114,7 @@ Remaining Balance Due: €{{balance_due}}
 Your digital invoice and confirmation voucher have been updated in your traveler portal.
 
 Thank you,
-Finance Department - Red Sea Voyages`,
+Finance Department - Awesome Adventure Tours`,
     variables: ['customer_name', 'booking_reference', 'tour_name', 'amount', 'balance_due'],
     isActive: true,
   },
@@ -134,7 +134,7 @@ Scheduled Hotel Pickup: {{pickup_time}}
 You may settle this balance online or directly in cash/card with our dispatch team at pier check-in.
 
 Best regards,
-Credit & Pier Control - Red Sea Voyages`,
+Credit & Pier Control - Awesome Adventure Tours`,
     variables: ['customer_name', 'booking_reference', 'tour_name', 'tour_date', 'pickup_time', 'balance_due'],
     isActive: true,
   },
@@ -153,7 +153,7 @@ If an applicable refund is due according to our maritime policy, our finance dep
 We hope to have the opportunity to welcome you aboard in the future.
 
 Warm regards,
-Guest Support - Red Sea Voyages`,
+Guest Support - Awesome Adventure Tours`,
     variables: ['customer_name', 'booking_reference', 'tour_name', 'tour_date'],
     isActive: true,
   },
@@ -162,7 +162,7 @@ Guest Support - Red Sea Voyages`,
     templateKey: 'refund',
     name: 'Refund Notification',
     channel: 'Both',
-    subject: 'Refund Processed: Ref {{booking_reference}} - Red Sea Voyages',
+    subject: 'Refund Processed: Ref {{booking_reference}} - Awesome Adventure Tours',
     bodyText: `Dear {{customer_name}},
 
 A refund has been approved and processed for your booking {{booking_reference}} ({{tour_name}}).
@@ -173,7 +173,7 @@ Original Booking Reference: {{booking_reference}}
 Depending on your financial institution or credit card provider, the credit will appear in your statement within 3 to 7 business days.
 
 Sincerely,
-Finance Department - Red Sea Voyages`,
+Finance Department - Awesome Adventure Tours`,
     variables: ['customer_name', 'booking_reference', 'tour_name', 'amount'],
     isActive: true,
   },
@@ -192,7 +192,7 @@ Booking Reference: {{booking_reference}}
 
 Helpful tip: Please bring swimwear, sun protection, towels, and a valid photo ID/passport for Coast Guard pier clearance.
 
-Red Sea Voyages Operations Desk`,
+Awesome Adventure Tours Operations Desk`,
     variables: ['customer_name', 'booking_reference', 'tour_name', 'pickup_time'],
     isActive: true,
   },
@@ -213,7 +213,7 @@ Remaining Balance Due: €{{balance_due}}
 Our guides and crew are preparing for an unforgettable maritime adventure. See you soon!
 
 Warm regards,
-Red Sea Voyages Dispatch`,
+Awesome Adventure Tours Dispatch`,
     variables: ['customer_name', 'booking_reference', 'tour_name', 'tour_date', 'pickup_time', 'balance_due'],
     isActive: true,
   },
@@ -222,17 +222,17 @@ Red Sea Voyages Dispatch`,
     templateKey: 'inquiry_response',
     name: 'Inquiry Response',
     channel: 'Both',
-    subject: 'Regarding Your Inquiry - Red Sea Voyages Concierge',
+    subject: 'Regarding Your Inquiry - Awesome Adventure Tours Concierge',
     bodyText: `Dear {{customer_name}},
 
-Thank you for your interest in Red Sea Voyages! We have reviewed your inquiry regarding our marine expeditions and tours.
+Thank you for your interest in Awesome Adventure Tours! We have reviewed your inquiry regarding our marine expeditions and tours.
 
 Our operations team is pleased to assist with custom itineraries, private yacht charters, and group diving excursions.
 
 Please reply to this message or contact our direct WhatsApp concierge for immediate assistance.
 
 Best regards,
-Guest Experience Team - Red Sea Voyages`,
+Guest Experience Team - Awesome Adventure Tours`,
     variables: ['customer_name'],
     isActive: true,
   },
@@ -251,26 +251,26 @@ Our concierge team is at your disposal if you would like to arrange private isla
 Feel free to reply directly or contact us on WhatsApp anytime.
 
 Best regards,
-Red Sea Voyages VIP Concierge`,
+Awesome Adventure Tours VIP Concierge`,
     variables: ['customer_name'],
     isActive: true,
   },
   {
     id: 'tmpl-11',
     templateKey: 'welcome',
-    name: 'Welcome to Red Sea Voyages',
+    name: 'Welcome to Awesome Adventure Tours',
     channel: 'Both',
-    subject: 'Welcome to Red Sea Voyages, {{customer_name}}!',
+    subject: 'Welcome to Awesome Adventure Tours, {{customer_name}}!',
     bodyText: `Dear {{customer_name}},
 
-Welcome to Red Sea Voyages! We are delighted to be your trusted marine operator along the Egyptian Red Sea coast.
+Welcome to Awesome Adventure Tours! We are delighted to be your trusted marine operator along the Egyptian Red Sea coast.
 
 Whether you are seeking pristine coral reefs at Ras Mohammed, dolphin encounters in Hurghada, or luxury sunset yacht cruises, our team ensures the highest safety and hospitality standards.
 
 Explore our curated tours: https://awesomeadventure.tours/excursions
 
 Warm regards,
-Red Sea Voyages Guest Relations`,
+Awesome Adventure Tours Guest Relations`,
     variables: ['customer_name'],
     isActive: true,
   },
@@ -289,7 +289,7 @@ Your feedback means the world to our local captains, marine biologists, and crew
 Review Link: https://awesomeadventure.tours/review?ref={{booking_reference}}
 
 Thank you for sailing with us,
-Captain & Crew - Red Sea Voyages`,
+Captain & Crew - Awesome Adventure Tours`,
     variables: ['customer_name', 'tour_name', 'booking_reference'],
     isActive: true,
   },
