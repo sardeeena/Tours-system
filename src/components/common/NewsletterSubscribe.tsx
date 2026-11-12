@@ -215,7 +215,7 @@ export const NewsletterSubscribe: React.FC<NewsletterSubscribeProps> = ({
                     <ShieldCheck className="w-3 h-3 text-stone-400 dark:text-slate-500" />
                     <span>Strictly zero spam. Unsubscribe anytime.</span>
                   </span>
-                  <span className="text-stone-400 dark:text-slate-500">Synced to Supabase</span>
+                  
                 </div>
               </form>
             </div>
