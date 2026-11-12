@@ -1,21 +1,35 @@
-# Kemet Spirit production communication configuration
+# Awesome Adventure Tours production communications configuration
 
-The booking notification worker runs inside the long-lived Hostinger Node.js server process. It consumes the durable `booking_notifications` Supabase Queue and sends booking-received email through Resend.
+The production Node.js server uses Resend for outbound email and Supabase for durable subscriber and communication records. Provider credentials remain server-only in Hostinger.
 
-## Required server-only variables
+## Required Hostinger Node.js environment variables
 
-Set these in Hostinger's Node.js application environment (never in Vite/browser variables):
+Keep the existing Supabase values and set/verify these exact values in Hostinger hPanel:
 
-- `SUPABASE_URL`: the Kemet Spirit Supabase project URL.
-- `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY`: a genuine server-side Supabase secret key. A publishable/anon key is not sufficient for queue consumption.
-- `RESEND_API_KEY`: Resend API key.
-- `RESEND_FROM_EMAIL`: a sender address verified in Resend.
-- `RESEND_FROM_NAME`: optional; defaults to `Kemet Spirit`.
-- `BOOKING_NOTIFICATION_WORKER_ENABLED`: set to `true` only after the live queue migration is applied and the server credentials are confirmed.
+- `SUPABASE_URL`: the Awesome Adventure Tours production Supabase project URL.
+- `SUPABASE_SECRET_KEY` (or the existing `SUPABASE_SERVICE_ROLE_KEY`): a genuine server-side Supabase secret key. Never use a publishable/anon key for server-side queue or audit operations.
+- `RESEND_API_KEY`: a Resend API key with permission to send from the verified sender domain.
+- `RESEND_FROM_EMAIL=no-reply@mail.awesomeadventure.tours`: a sender address on the verified Resend sending domain.
+- `RESEND_FROM_NAME=Awesome Adventure Tours`.
+- `RESEND_REPLY_TO=reservation@awesomeadventure.tours`.
+- `BOOKING_NOTIFICATION_EMAIL=reservation@awesomeadventure.tours`.
+- `BOOKING_NOTIFICATION_WORKER_ENABLED=true`: enable only after the Resend key and sender address have been verified in the running app.
 
-The worker starts only in production when `BOOKING_NOTIFICATION_WORKER_ENABLED=true`, the Node server has a valid Supabase secret key, and valid Resend sender configuration. Keep the flag `false` until the queue migration has been applied to the live Supabase project. If provider credentials are missing, the worker does not consume messages; durable queue messages remain available after configuration is completed.
+Do not add these values to Vite/browser variables, source code, GitHub, or chat. Do not replace the full Hostinger environment-variable set to change one value; preserve every existing key.
 
-After changing Hostinger environment variables, restart/redeploy the Node.js application so the worker can start with the new configuration.
+## Email workflows
+
+- Newsletter signup is persisted in `public.newsletter_subscriptions` through the server-side API. A welcome email with the `REDSEA15` voucher is sent through Resend and recorded in `public.communication_messages`.
+- Newsletter unsubscribe links require an explicit confirmation POST; automated email link scanners cannot unsubscribe a person by merely previewing the link.
+- Staff-dispatched emails are written to `communication_messages` before dispatch and updated with the provider result.
+- Booking-received emails are processed by the durable Supabase queue worker. Successful, failed, and retried sends are recorded in `communication_messages` and `automation_events`.
+- Delivery, open, click, bounce, and complaint analytics require a verified Resend webhook integration. Until that is configured, the dashboard must not estimate these metrics.
+
+## Booking notification worker
+
+The worker starts only when `BOOKING_NOTIFICATION_WORKER_ENABLED=true`, the server has a genuine Supabase secret key, and valid Resend credentials are available. Keep the flag disabled until the required values are confirmed. If credentials are missing, the worker leaves queued notifications in Supabase for later processing.
+
+After changing Hostinger environment variables, restart the Node.js application. Check the runtime logs for the explicit `Booking Notification Worker] Started` message and confirm that the missing-credentials warning is gone.
 
 ## WhatsApp
 
@@ -23,16 +37,16 @@ The existing staff-initiated WhatsApp endpoint uses the Meta Cloud API and reads
 
 - `WHATSAPP_ACCESS_TOKEN`
 - `WHATSAPP_PHONE_NUMBER_ID`
-- `WHATSAPP_GRAPH_API_VERSION` (for example, a supported `vXX.X` version)
+- `WHATSAPP_GRAPH_API_VERSION`
 - `WHATSAPP_BUSINESS_ACCOUNT_ID` (optional metadata)
 - `WHATSAPP_FROM_NUMBER` (optional display metadata)
 
-Automated booking WhatsApp delivery is intentionally not enabled by this worker. Business-initiated WhatsApp messages outside the customer-service window generally require an approved Meta message template; configure and validate the approved template flow before enabling automated WhatsApp sends.
+Automated booking WhatsApp delivery is not enabled by the email worker. Business-initiated WhatsApp messages generally require an approved Meta message template; validate that flow separately before enabling automation.
 
-## Operational behavior
+## Operational safeguards
 
-- Booking creation and queue insertion occur in the same PostgreSQL transaction.
-- The queue is durable and uses a visibility timeout so interrupted work can be retried.
-- Email requests use a stable Resend idempotency key derived from the automation event.
-- Failed deliveries retry with increasing delays and are archived after five attempts.
-- Provider secrets are never stored in browser storage or returned by the communication status endpoint.
+- Email provider credentials are never stored in browser storage or returned by the communications status endpoint.
+- The public newsletter API is rate-limited and rejects invalid addresses.
+- A newsletter signup is not reported as successful unless the database confirms it.
+- A welcome email is never reported as sent unless Resend accepts it and returns a provider message ID.
+- Staff email dispatches are not sent if the audit record cannot first be persisted.
