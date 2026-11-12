@@ -685,7 +685,7 @@ html.dark .public-site:not(.public-site-admin-route) {
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.055), 0 8px 24px rgba(15, 23, 42, 0.035);
 }
 
-.public-site:not(.public-site-admin-route) :where(.text-\\[10px\\], .text-\\[11px\\]) {
+.public-site:not(.public-site-admin-route) :where(.text-\[10px\], .text-\[11px\]) {
   line-height: 1.45;
 }
 
@@ -693,7 +693,7 @@ html.dark .public-site:not(.public-site-admin-route) {
   line-height: 1.55;
 }
 
-.public-site:not(.public-site-admin-route) :where(.border-stone-100, .border-stone-200, .border-\\[\\#E8E3DA\\]) {
+.public-site:not(.public-site-admin-route) :where(.border-stone-100, .border-stone-200, .border-\[\#E8E3DA\]) {
   border-color: var(--site-border);
 }
 
@@ -709,7 +709,7 @@ html.dark .public-site:not(.public-site-admin-route) {
   color: var(--site-ink-soft);
 }
 
-.public-site:not(.public-site-admin-route) :where(.text-stone-900, .text-\\[\\#0E1B2A\\], .text-\\[\\#111A24\\]) {
+.public-site:not(.public-site-admin-route) :where(.text-stone-900, .text-\[\#0E1B2A\], .text-\[\#111A24\]) {
   color: var(--site-ink);
 }
 
@@ -717,23 +717,23 @@ html.dark .public-site:not(.public-site-admin-route) {
   background-color: var(--site-surface-soft);
 }
 
-.public-site:not(.public-site-admin-route) :where(.bg-\\[\\#FAF8F5\\]) {
+.public-site:not(.public-site-admin-route) :where(.bg-\[\#FAF8F5\]) {
   background-color: var(--site-canvas);
 }
 
-.public-site:not(.public-site-admin-route) :where(.text-\\[\\#0A6C74\\]) {
+.public-site:not(.public-site-admin-route) :where(.text-\[\#0A6C74\]) {
   color: var(--site-brand);
 }
 
-.public-site:not(.public-site-admin-route) :where(.border-\\[\\#0A6C74\\]) {
+.public-site:not(.public-site-admin-route) :where(.border-\[\#0A6C74\]) {
   border-color: var(--site-brand);
 }
 
-.public-site:not(.public-site-admin-route) :where(.bg-\\[\\#0A6C74\\]) {
+.public-site:not(.public-site-admin-route) :where(.bg-\[\#0A6C74\]) {
   background-color: var(--site-brand);
 }
 
-.public-site:not(.public-site-admin-route) :where(.hover\\:bg-stone-50:hover, .hover\\:bg-stone-100:hover) {
+.public-site:not(.public-site-admin-route) :where(.hover\:bg-stone-50:hover, .hover\:bg-stone-100:hover) {
   background-color: var(--site-surface-soft);
 }
 
