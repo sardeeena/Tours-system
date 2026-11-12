@@ -571,7 +571,7 @@ app.get('/api/communications/status', rateLimit(60, 60_000), (req: Authenticated
 app.post('/api/communications/email', rateLimit(20, 60_000), async (req: AuthenticatedRequest, res: Response) => {
   if (!requireCommunicationsStaff(req, res)) return;
 
-  const to = typeof req.body?.to === 'string' ? req.body.to.trim() : '';
+  const to = typeof req.body?.to === 'string' ? req.body.to.trim().toLowerCase() : '';
   const subject = typeof req.body?.subject === 'string' ? req.body.subject.trim() : '';
   const textBody = typeof req.body?.text === 'string' ? req.body.text.trim() : '';
 
@@ -579,20 +579,54 @@ app.post('/api/communications/email', rateLimit(20, 60_000), async (req: Authent
     return res.status(400).json({ success: false, error: 'A valid recipient, subject (max 200 characters), and message (max 20,000 characters) are required.' });
   }
 
-  const apiKey = process.env.RESEND_API_KEY?.trim();
-  const fromEmail = process.env.RESEND_FROM_EMAIL?.trim();
-  const fromName = (process.env.RESEND_FROM_NAME || 'Awesome Adventure Tours').trim();
+  // Persist an audit row before dispatch. Never send an app email that cannot be
+  // recorded in the production communications history.
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
+    return res.status(503).json({ success: false, error: 'Secure server-side database logging is unavailable. Email was not sent.' });
+  }
 
-  if (!apiKey || !fromEmail || !isValidEmail(fromEmail)) {
-    return res.status(503).json({ success: false, error: 'Server-side email delivery is not configured. Set RESEND_API_KEY and RESEND_FROM_EMAIL in Hostinger environment variables.' });
+  const apiKey = process.env.RESEND_API_KEY?.trim() || '';
+  const fromEmail = process.env.RESEND_FROM_EMAIL?.trim() || '';
+  const fromName = (process.env.RESEND_FROM_NAME || 'Awesome Adventure Tours').replace(/[<>\r\n]/g, '').trim() || 'Awesome Adventure Tours';
+  const senderReady = Boolean(apiKey && isValidEmail(fromEmail));
+  const idempotencyKey = typeof req.headers['idempotency-key'] === 'string'
+    && /^[a-zA-Z0-9._:-]{8,128}$/.test(req.headers['idempotency-key'])
+    ? req.headers['idempotency-key']
+    : randomUUID();
+
+  const { data: audit, error: auditError } = await serverSupabase
+    .from('communication_messages')
+    .insert({
+      channel: 'Email',
+      recipient_address: to,
+      subject,
+      content: textBody,
+      status: senderReady ? 'queued' : 'failed',
+      provider_name: senderReady ? 'Resend' : 'Not configured',
+      failure_reason: senderReady ? null : 'Resend is not configured: a valid RESEND_API_KEY and RESEND_FROM_EMAIL are required.',
+      staff_name: req.user?.email || 'Staff Dispatcher',
+    })
+    .select('id')
+    .single();
+
+  if (auditError || !audit?.id) {
+    console.error('Communication email audit insert failed:', auditError?.message || 'Missing audit ID');
+    return res.status(503).json({ success: false, error: 'Email was not sent because its audit record could not be stored.' });
+  }
+
+  const markFailed = async (reason: string) => {
+    const { error } = await serverSupabase!
+      .from('communication_messages')
+      .update({ status: 'failed', provider_name: senderReady ? 'Resend' : 'Not configured', failure_reason: reason })
+      .eq('id', audit.id);
+    if (error) console.error('Communication email failure audit update failed:', error.message);
+  };
+
+  if (!senderReady) {
+    return res.status(503).json({ success: false, error: 'Server-side email delivery is not configured. Set RESEND_API_KEY and a valid RESEND_FROM_EMAIL in Hostinger environment variables.', messageLogId: audit.id });
   }
 
   try {
-    const idempotencyKey = typeof req.headers['idempotency-key'] === 'string'
-      && /^[a-zA-Z0-9._:-]{8,128}$/.test(req.headers['idempotency-key'])
-      ? req.headers['idempotency-key']
-      : randomUUID();
-
     const providerResponse = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -603,6 +637,7 @@ app.post('/api/communications/email', rateLimit(20, 60_000), async (req: Authent
       body: JSON.stringify({
         from: `${fromName} <${fromEmail}>`,
         to: [to],
+        ...(isValidEmail(process.env.RESEND_REPLY_TO?.trim() || '') ? { reply_to: process.env.RESEND_REPLY_TO!.trim() } : {}),
         subject,
         text: textBody,
       }),
@@ -614,20 +649,30 @@ app.post('/api/communications/email', rateLimit(20, 60_000), async (req: Authent
       const providerError = typeof providerBody?.message === 'string'
         ? providerBody.message
         : `Email provider rejected the request (HTTP ${providerResponse.status}).`;
-      return res.status(502).json({ success: false, error: providerError });
+      await markFailed(providerError);
+      return res.status(502).json({ success: false, error: providerError, messageLogId: audit.id });
     }
+
+    const sentAt = new Date().toISOString();
+    const { error: updateError } = await serverSupabase
+      .from('communication_messages')
+      .update({ status: 'sent', provider_name: 'Resend', provider_message_id: providerBody.id, sent_at: sentAt, failure_reason: null })
+      .eq('id', audit.id);
+    if (updateError) console.error('Communication email sent status could not be saved:', updateError.message);
 
     return res.status(200).json({
       success: true,
       providerName: 'Resend',
       providerMessageId: providerBody.id,
+      messageLogId: audit.id,
       status: 'sent',
     });
   } catch (error: any) {
     const message = error?.name === 'TimeoutError'
-      ? 'Email provider request timed out. No delivery confirmation was received.'
+      ? 'Email provider request timed out. Delivery could not be confirmed.'
       : 'Email provider request failed. Please retry after checking the server logs.';
-    return res.status(502).json({ success: false, error: message });
+    await markFailed(message);
+    return res.status(502).json({ success: false, error: message, messageLogId: audit.id });
   }
 });
 
