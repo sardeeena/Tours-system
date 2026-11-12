@@ -99,7 +99,7 @@ export const CookieConsent: React.FC = () => {
     }
     setChoices(next);
     applyConsent(next);
-    void recordVisitorConsent(next, 'cookie_banner');
+    void recordVisitorConsent(next, customising ? 'privacy_settings' : 'cookie_banner');
     setVisible(false);
     setCustomising(false);
   };
