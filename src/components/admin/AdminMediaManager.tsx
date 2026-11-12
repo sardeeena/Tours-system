@@ -349,7 +349,7 @@ export const AdminMediaManager: React.FC<AdminMediaManagerProps> = ({
               type="button"
               onClick={() => openLibraryModal()}
               className="flex items-center space-x-2 px-3.5 py-2 bg-[#0A6C74] hover:bg-[#08565C] text-white rounded-lg text-xs font-semibold shadow-sm transition-all cursor-pointer"
-              title="Pick pictures previously uploaded in Media & Storage"
+              title="Pick pictures already uploaded to your media library"
             >
               <FolderOpen className="w-4 h-4 text-[#2dd4bf]" />
               <span>Choose from Media Library</span>
@@ -407,7 +407,7 @@ export const AdminMediaManager: React.FC<AdminMediaManagerProps> = ({
             </div>
             <div>
               <p className="text-xs font-semibold text-white">
-                {isUploading ? 'Uploading to Supabase Storage...' : 'Click to browse device or drag photos here'}
+                {isUploading ? 'Uploading photos...' : 'Click to browse device or drag photos here'}
               </p>
               <p className="text-[11px] text-stone-400 mt-0.5">
                 Recommended: 1600x1060px • JPG/WebP/PNG • Max 10MB per image
@@ -691,7 +691,7 @@ export const AdminMediaManager: React.FC<AdminMediaManagerProps> = ({
                   <p className="text-[11px] text-stone-400">
                     {replaceTargetIndex !== null
                       ? 'Select an existing photo from your library to replace the current image.'
-                      : 'Pick pictures previously uploaded in Media & Storage to attach to this tour.'}
+                      : 'Pick pictures already uploaded to your media library to attach to this tour.'}
                   </p>
                 </div>
               </div>
@@ -806,7 +806,7 @@ export const AdminMediaManager: React.FC<AdminMediaManagerProps> = ({
               {isLoadingLibrary ? (
                 <div className="py-20 text-center text-xs text-stone-400 space-y-2">
                   <div className="w-7 h-7 border-2 border-[#0A6C74] border-t-transparent rounded-full animate-spin mx-auto" />
-                  <p>Loading your pictures from Media & Storage...</p>
+                  <p>Loading your media library...</p>
                 </div>
               ) : filteredLibraryItems.length === 0 ? (
                 <div className="py-16 text-center text-xs text-stone-400 space-y-3">
@@ -818,7 +818,7 @@ export const AdminMediaManager: React.FC<AdminMediaManagerProps> = ({
                     <p className="text-[11px] text-stone-500 max-w-sm mx-auto mt-1">
                       {librarySearch
                         ? `No pictures matched "${librarySearch}". Try another keyword or clear the search.`
-                        : 'Upload photos using the drag-and-drop zone or visit the Media & Storage module to add pictures.'}
+                        : 'Upload photos here or choose existing photos from your media library.'}
                     </p>
                   </div>
                   {librarySearch && (

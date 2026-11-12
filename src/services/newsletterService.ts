@@ -54,7 +54,7 @@ export async function subscribeToNewsletter(
       return {
         success: false,
         discountCode,
-        message: typeof result?.error === 'string' ? result.error : 'We could not save your subscription. Please try again.',
+        message: 'We could not save your subscription. Please try again.',
         error: 'Newsletter service unavailable',
       };
     }
@@ -73,7 +73,7 @@ export async function subscribeToNewsletter(
       alreadySubscribed: result.alreadySubscribed === true,
       emailStatus: result.emailStatus,
       discountCode: result.discountCode || discountCode,
-      message: typeof result.message === 'string' ? result.message : 'Your subscription has been saved.',
+      message: result.emailStatus === 'failed' ? 'Your subscription is saved, but we could not send the confirmation email. Please contact us if you need help.' : 'Your subscription has been saved.',
     };
   } catch {
     return {

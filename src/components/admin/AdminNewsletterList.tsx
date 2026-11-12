@@ -54,7 +54,7 @@ export const AdminNewsletterList: React.FC = () => {
     } catch (err: any) {
       console.error('Failed to load newsletter subscribers:', err);
       setSubscribers([]);
-      showToast(err.message || 'Failed to load newsletter subscribers from database', 'error');
+      showToast('We could not load newsletter subscribers. Please refresh and try again.', 'error');
     } finally {
       setLoading(false);
     }
@@ -92,9 +92,10 @@ export const AdminNewsletterList: React.FC = () => {
       setSubscribers((prev) =>
         prev.map((item) => item.email === s.email ? { ...item, status: newStatus } : item)
       );
-      showToast(`Subscriber ${s.email} marked as ${newStatus}.`, 'success');
+      showToast(`Subscriber ${s.email} has been ${newStatus === 'subscribed' ? 'subscribed' : 'unsubscribed'}.`, 'success');
     } catch (err: any) {
-      showToast(err?.message || 'Failed to update subscriber in the database.', 'error');
+      console.warn('Failed to update newsletter subscriber:', err);
+      showToast('We could not update this subscriber. Please try again.', 'error');
     }
   };
 
@@ -108,7 +109,7 @@ export const AdminNewsletterList: React.FC = () => {
     const success = await deleteSubscriber(subscriberToDelete.id || subscriberToDelete.email);
     if (success) {
       setSubscribers((prev) => prev.filter((item) => item.email !== subscriberToDelete.email));
-      showToast(`Subscriber ${subscriberToDelete.email} removed from database.`, 'info');
+      showToast(`Subscriber ${subscriberToDelete.email} has been removed.`, 'info');
     } else {
       showToast('Failed to remove subscriber.', 'error');
     }
@@ -131,11 +132,11 @@ export const AdminNewsletterList: React.FC = () => {
 
     if (res.success && res.subscriber) {
       setSubscribers((prev) => [res.subscriber!, ...prev.filter((s) => s.email !== res.subscriber!.email)]);
-      showToast(`Subscriber ${res.subscriber.email} added and stored in Supabase.`, 'success');
+      showToast(`Subscriber ${res.subscriber.email} has been added.`, 'success');
       setIsAddModalOpen(false);
       setNewEmail('');
     } else {
-      setModalError(res.error || 'Failed to add subscriber.');
+      setModalError('We could not add this subscriber. Please check the email address and try again.');
     }
   };
 
@@ -310,7 +311,7 @@ export const AdminNewsletterList: React.FC = () => {
         {loading ? (
           <div className="p-12 text-center text-stone-400">
             <RefreshCw className="w-6 h-6 animate-spin mx-auto text-[#0A6C74] mb-2" />
-            <p className="text-xs">Loading subscriber list from database...</p>
+            <p className="text-xs">Loading subscribers...</p>
           </div>
         ) : filteredSubscribers.length === 0 ? (
           <div className="p-12 text-center text-stone-500 space-y-2">
@@ -438,7 +439,7 @@ export const AdminNewsletterList: React.FC = () => {
                   autoFocus
                 />
                 <p className="text-[11px] text-stone-500 mt-1">
-                  The email will be saved directly into Supabase table <code className="text-[#2dd4bf]">newsletter_subscriptions</code> with voucher code <code className="text-amber-400 font-mono">REDSEA15</code>.
+                  The subscriber will receive the REDSEA15 voucher code.
                 </p>
               </div>
 
@@ -472,7 +473,7 @@ export const AdminNewsletterList: React.FC = () => {
               <h3 className="text-sm font-bold text-white">Remove Subscriber</h3>
             </div>
             <p className="text-stone-300 leading-relaxed">
-              Are you sure you want to remove <strong className="text-white font-mono">{subscriberToDelete.email}</strong> from the newsletter database?
+              Are you sure you want to remove <strong className="text-white font-mono">{subscriberToDelete.email}</strong> from your subscriber list?
             </p>
             <div className="flex items-center justify-end space-x-2 pt-2 border-t border-stone-800">
               <button

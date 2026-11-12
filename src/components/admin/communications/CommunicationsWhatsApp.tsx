@@ -42,6 +42,7 @@ import {
 import { bookingRepository } from '../../../services/bookingRepository';
 import { Booking } from '../../../types/booking';
 import { useToast } from '../../../contexts/ToastContext';
+import { useAuth } from '../../../contexts/AuthContext';
 
 interface CommunicationsWhatsAppProps {
   onNavigateTab?: (tabId: string, param?: string) => void;
@@ -49,6 +50,8 @@ interface CommunicationsWhatsAppProps {
 
 export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ onNavigateTab }) => {
   const { showToast } = useToast();
+  const { user } = useAuth();
+  const isSuperAdmin = Boolean(user && (user.role === 'super_admin' || user.roles?.includes('super_admin')));
 
   const [messages, setMessages] = useState<CommunicationMessage[]>([]);
   const [templates, setTemplates] = useState<CommunicationTemplate[]>([]);
@@ -181,13 +184,13 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
       });
 
       if (res.success) {
-        showToast(`WhatsApp dispatched! Status: ${res.status} (Provider: ${res.providerName})`, 'success');
+        showToast('WhatsApp message sent successfully.', 'success');
         setContent('');
         setSelectedBookingRef('');
         setSelectedTemplateKey('');
       } else {
         showToast(
-          res.error || res.failureReason || 'WhatsApp dispatch recorded as Failed. Provider not configured.',
+          'We could not send this WhatsApp message. Please check its status or contact a Superadmin.',
           'error',
           6000
         );
@@ -199,18 +202,11 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
         Array.isArray(err?.missingFields);
 
       if (isConfigError) {
-        const missingFields =
-          Array.isArray(err.missingFields) && err.missingFields.length > 0
-            ? err.missingFields.join(', ')
-            : null;
-
-        const errorToast = missingFields
-          ? `${err.message} (Missing field: ${missingFields})`
-          : err.message || 'WhatsApp provider configuration error. Missing required credentials.';
-
-        showToast(errorToast, 'error', 7000);
+        console.warn('WhatsApp service configuration needs attention:', err);
+        showToast('WhatsApp delivery is not ready yet. Please contact a Superadmin.', 'error', 7000);
       } else {
-        showToast(err?.message || 'Error occurred while sending WhatsApp message', 'error', 5000);
+        console.warn('WhatsApp message failed:', err);
+        showToast('We could not send this WhatsApp message. Please try again.', 'error', 5000);
       }
     } finally {
       await loadData();
@@ -254,8 +250,8 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
     setIsSettingsOpen(false);
     showToast(
       updatedConfig.whatsapp.isConfigured
-        ? 'Server-side Meta Cloud API is configured and ready.'
-        : 'Provider selection saved. Add WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID, and WHATSAPP_GRAPH_API_VERSION in Hostinger environment variables.',
+        ? 'WhatsApp messaging is ready.'
+        : 'WhatsApp settings saved. A Superadmin must finish the service setup before messages can be sent.',
       updatedConfig.whatsapp.isConfigured ? 'success' : 'info'
     );
   };
@@ -288,7 +284,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
             </div>
             <div>
               <h1 className="text-xl font-bold text-white flex items-center gap-2">
-                WhatsApp Dispatch Console
+                WhatsApp Messages
                 <span className="text-xs font-normal px-2.5 py-0.5 rounded-full bg-stone-800 text-stone-300 border border-stone-700">
                   Direct Guest Messaging
                 </span>
@@ -303,11 +299,11 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
         <div className="flex items-center space-x-3">
           {/* Provider status badge */}
           <div className="flex items-center space-x-2 bg-stone-950/70 px-3 py-1.5 rounded-lg border border-stone-800 text-xs">
-            <span className="text-stone-400 font-medium">Gateway:</span>
+            <span className="text-stone-400 font-medium">WhatsApp service:</span>
             {providerConfig.whatsapp.isConfigured ? (
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20">
                 <CheckCircle2 className="w-3 h-3" />
-                {providerConfig.whatsapp.provider === 'meta_cloud' ? 'Meta Cloud API' : 'Twilio'}
+                Connected
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 font-semibold border border-amber-500/20">
@@ -317,14 +313,14 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
             )}
           </div>
 
-          <button
+          {isSuperAdmin && <button
             type="button"
             onClick={openSettingsModal}
             className="flex items-center space-x-2 px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-medium rounded-lg border border-stone-700 transition-colors"
           >
             <Settings className="w-3.5 h-3.5 text-stone-400" />
-            <span>Connect Provider</span>
-          </button>
+            <span>WhatsApp settings</span>
+          </button>}
 
           <button
             type="button"
@@ -343,21 +339,19 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
           <div className="flex items-start space-x-3">
             <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
             <div>
-              <p className="font-semibold text-amber-100">WhatsApp Gateway Status: Not configured</p>
+              <p className="font-semibold text-amber-100">WhatsApp delivery is not ready</p>
               <p className="text-amber-300/80 mt-0.5">
-                No Meta Cloud API or Twilio credentials connected. To prevent fake confirmation logs, automated dispatches
-                will record as <strong>Failed (&ldquo;Not configured&rdquo;)</strong>. You can still use the <em>&ldquo;Open in WhatsApp Web&rdquo;</em> button
-                to send directly via your desktop/phone WhatsApp.
+                WhatsApp delivery needs attention. Please contact a Superadmin before sending automated messages. You can still use the <em>&ldquo;Open in WhatsApp Web&rdquo;</em> option to send directly from your device.
               </p>
             </div>
           </div>
-          <button
+          {isSuperAdmin && <button
             type="button"
             onClick={openSettingsModal}
             className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/30 font-semibold rounded-lg shrink-0 transition-colors"
           >
-            Connect API Keys
-          </button>
+            WhatsApp settings
+          </button>}
         </div>
       )}
 
@@ -611,7 +605,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
               type="button"
               onClick={handleOpenDirectChat}
               className="flex items-center space-x-1.5 px-3 py-2 bg-stone-800 hover:bg-stone-700 text-stone-300 hover:text-white rounded-lg text-xs font-medium border border-stone-700 transition-colors"
-              title="Open directly in WhatsApp Web without API gateway"
+              title="Open directly in WhatsApp Web"
             >
               <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
               <span>Open in WhatsApp Web</span>
@@ -628,7 +622,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
               }`}
             >
               <Send className={`w-3.5 h-3.5 ${sending ? 'animate-pulse' : ''}`} />
-              <span>{sending ? 'Dispatching...' : 'Dispatch via WhatsApp Gateway'}</span>
+              <span>{sending ? 'Dispatching...' : 'Send WhatsApp message'}</span>
             </button>
           </div>
         </div>
@@ -762,7 +756,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
       )}
 
       {/* Provider Configuration Modal */}
-      {isSettingsOpen && (
+      {isSuperAdmin && isSettingsOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-stone-900 border border-stone-800 rounded-xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b border-stone-800 pb-3">
@@ -780,19 +774,19 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
             </div>
 
             <p className="text-xs text-stone-400">
-              Delivery uses the official Meta Cloud API server-side adapter. Configure the access token, phone number ID, and Graph API version in Hostinger environment variables; this screen never handles secrets.
+              WhatsApp delivery settings are managed by a Superadmin. Sensitive account details are not shown here.
             </p>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="block text-stone-300 font-medium mb-1">Provider Platform</label>
+                <label className="block text-stone-300 font-medium mb-1">WhatsApp service</label>
                 <select
                   value={tempWaProvider}
                   onChange={(e) => setTempWaProvider(e.target.value as any)}
                   className="w-full bg-stone-950 border border-stone-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"
                 >
                   <option value="none">None (Disabled / Manual Web Only)</option>
-                  <option value="meta_cloud">Meta WhatsApp Cloud API (Official)</option>
+                  <option value="meta_cloud">WhatsApp Business</option>
                 </select>
               </div>
 

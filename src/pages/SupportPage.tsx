@@ -81,7 +81,8 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
       if (queryError) throw queryError;
       setTickets((data || []) as TicketRow[]);
     } catch (err: any) {
-      setError(err?.message || 'Could not load support tickets.');
+      console.warn('Failed to load support tickets:', err);
+      setError('We could not load your support tickets. Please refresh and try again.');
     } finally {
       setLoading(false);
     }
@@ -105,7 +106,7 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
   },[user]);
   useEffect(() => {
     if (!selected) { setMessages([]); return; }
-    void loadMessages(selected).catch((err: any) => setError(err?.message || 'Could not load conversation.'));
+    void loadMessages(selected).catch((err: any) => { console.warn('Failed to load support conversation:', err); setError('We could not load this conversation. Please try again.'); });
     const channel = supabase.channel('support-ticket-' + selected.id)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'support_ticket_messages', filter: 'ticket_id=eq.' + selected.id }, () => {
         void loadMessages(selected).catch(() => undefined);
@@ -137,7 +138,8 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
       await loadTickets();
       setSelected(data as TicketRow);
     } catch (err: any) {
-      setError(err?.message || 'Could not create your ticket.');
+      console.warn('Failed to create support ticket:', err);
+      setError('We could not create your ticket. Please try again.');
     } finally { setBusy(false); }
   };
 
@@ -167,7 +169,8 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
       await loadMessages(selected); await loadTickets();
     } catch (err: any) {
       if (uploadedPaths.length) await supabase.storage.from('support-ticket-attachments').remove(uploadedPaths);
-      setError(err?.message || 'Could not send your message.');
+      console.warn('Failed to send support reply:', err);
+      setError('We could not send your message. Please try again.');
     } finally { setBusy(false); }
   };
 
@@ -179,7 +182,7 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
         .update(changes).eq('id', selected.id).select('*').single();
       if (updateError) throw updateError;
       setSelected(data as TicketRow); await loadTickets();
-    } catch (err: any) { setError(err?.message || 'Ticket update was not permitted.'); }
+    } catch (err: any) { console.warn('Failed to update support ticket:', err); setError('We could not update this ticket. Please try again.'); }
     finally { setBusy(false); }
   };
 
@@ -274,7 +277,7 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
           </>}
         </section>
       </div>
-      <p className="text-[11px] text-stone-400 flex items-center gap-2"><Shield size={13}/> Conversations are protected by database row-level security. Internal notes are never visible to customers.</p>
+      <p className="text-[11px] text-stone-400 flex items-center gap-2"><Shield size={13}/> Your conversations are private. Internal notes are only visible to our team.</p>
     </div>
   </main>;
 };

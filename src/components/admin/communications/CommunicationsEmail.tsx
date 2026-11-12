@@ -37,6 +37,7 @@ import {
 import { bookingRepository } from '../../../services/bookingRepository';
 import { Booking } from '../../../types/booking';
 import { useToast } from '../../../contexts/ToastContext';
+import { useAuth } from '../../../contexts/AuthContext';
 
 interface CommunicationsEmailProps {
   onNavigateTab?: (tabId: string, param?: string) => void;
@@ -44,6 +45,8 @@ interface CommunicationsEmailProps {
 
 export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavigateTab }) => {
   const { showToast } = useToast();
+  const { user } = useAuth();
+  const isSuperAdmin = Boolean(user && (user.role === 'super_admin' || user.roles?.includes('super_admin')));
 
   const [messages, setMessages] = useState<CommunicationMessage[]>([]);
   const [templates, setTemplates] = useState<CommunicationTemplate[]>([]);
@@ -65,7 +68,7 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
   const [activeTab, setActiveTab] = useState<'composer' | 'preview'>('composer');
   const [sending, setSending] = useState(false);
 
-  // Provider Settings Modal
+  // Email settings Modal
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [tempEmailProvider, setTempEmailProvider] = useState<'resend' | 'none'>('resend');
   const [tempFromEmail, setTempFromEmail] = useState('');
@@ -185,7 +188,8 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
         setSelectedBookingRef('');
         setSelectedTemplateKey('');
       } else {
-        showToast(res.error || 'Email dispatch failed. Provider not configured.', 'error');
+        console.warn('Email dispatch failed:', res.error);
+        showToast('We could not send this email. Please check the delivery status or contact a Superadmin.', 'error');
       }
 
       await loadData();
@@ -221,7 +225,7 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
     showToast(
       updatedConfig.email.isConfigured
         ? 'Server-side Resend is configured and ready.'
-        : 'Provider selection saved. Add RESEND_API_KEY and RESEND_FROM_EMAIL in Hostinger environment variables to enable sending.',
+        : 'Email settings saved. A Superadmin must finish the service setup before messages can be sent.',
       updatedConfig.email.isConfigured ? 'success' : 'info'
     );
   };
@@ -269,11 +273,11 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
         <div className="flex items-center space-x-3">
           {/* Provider status badge */}
           <div className="flex items-center space-x-2 bg-stone-950/70 px-3 py-1.5 rounded-lg border border-stone-800 text-xs">
-            <span className="text-stone-400 font-medium">Provider:</span>
+            <span className="text-stone-400 font-medium">Email service:</span>
             {providerConfig.email.isConfigured ? (
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20">
                 <CheckCircle2 className="w-3 h-3" />
-                {providerConfig.email.provider.toUpperCase()}
+                Connected
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 font-semibold border border-amber-500/20">
@@ -283,14 +287,14 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
             )}
           </div>
 
-          <button
+          {isSuperAdmin && <button
             type="button"
             onClick={openSettingsModal}
             className="flex items-center space-x-2 px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-medium rounded-lg border border-stone-700 transition-colors"
           >
             <Settings className="w-3.5 h-3.5 text-stone-400" />
-            <span>Provider Settings</span>
-          </button>
+            <span>Email settings</span>
+          </button>}
 
           <button
             type="button"
@@ -309,20 +313,19 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
           <div className="flex items-start space-x-3">
             <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
             <div>
-              <p className="font-semibold text-amber-100">Email Gateway Status: Not configured</p>
+              <p className="font-semibold text-amber-100">Email sending is not ready</p>
               <p className="text-amber-300/80 mt-0.5">
-                No outbound API credentials configured (Resend, SendGrid, or SMTP). To maintain operational integrity,
-                dispatches will be logged with status <strong>Failed (&ldquo;Not configured&rdquo;)</strong> rather than reporting fake delivery.
+                Email delivery needs attention. Please contact a Superadmin before sending messages.
               </p>
             </div>
           </div>
-          <button
+          {isSuperAdmin && <button
             type="button"
             onClick={openSettingsModal}
             className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/30 font-semibold rounded-lg shrink-0 transition-colors"
           >
-            Connect Provider
-          </button>
+            Email settings
+          </button>}
         </div>
       )}
 
@@ -508,7 +511,7 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
             <div className="text-[11px] text-stone-400">
               {providerConfig.email.isConfigured ? (
                 <span className="text-emerald-400 flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5" /> Gateway Ready via {providerConfig.email.provider}
+                  <ShieldCheck className="w-3.5 h-3.5" /> Email service ready
                 </span>
               ) : (
                 <span className="text-amber-400 flex items-center gap-1">
@@ -655,13 +658,13 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
       </div>
 
       {/* Provider Configuration Modal */}
-      {isSettingsOpen && (
+      {isSuperAdmin && isSettingsOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-stone-900 border border-stone-800 rounded-xl max-w-md w-full p-6 shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-center justify-between border-b border-stone-800 pb-3">
               <div className="flex items-center space-x-2">
                 <Settings className="w-5 h-5 text-teal-400" />
-                <h3 className="text-base font-bold text-white">Email Provider Credentials</h3>
+                <h3 className="text-base font-bold text-white">Email delivery settings</h3>
               </div>
               <button
                 type="button"
@@ -673,19 +676,19 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
             </div>
 
             <p className="text-xs text-stone-400">
-              Email delivery uses the server-side Resend adapter. Configure RESEND_API_KEY and RESEND_FROM_EMAIL in Hostinger environment variables; this screen never handles secrets.
+              Email delivery is managed by a Superadmin. Sensitive account settings are not shown here.
             </p>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="block text-stone-300 font-medium mb-1">Select Gateway Provider</label>
+                <label className="block text-stone-300 font-medium mb-1">Email service</label>
                 <select
                   value={tempEmailProvider}
                   onChange={(e) => setTempEmailProvider(e.target.value as any)}
                   className="w-full bg-stone-950 border border-stone-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-teal-500"
                 >
                   <option value="none">None (Disabled / Testing Mode)</option>
-                  <option value="resend">Resend (Recommended API)</option>
+                  <option value="resend">Resend</option>
                 </select>
               </div>
 

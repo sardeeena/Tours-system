@@ -321,46 +321,24 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
   return (
     <div className="admin-shell min-h-screen flex flex-col antialiased selection:bg-[#0A6C74] selection:text-white">
-      {/* Top Warning Banner if Supabase is in local fallback mode */}
+      {/* Clear operational warning; implementation details stay in the restricted technical area. */}
       {!supabaseConnected ? (
-        <div className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2 text-xs text-amber-700 dark:text-amber-300 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-            <span>
-              <strong>Supabase Connection:</strong> Currently utilizing local storage fallback. Connect your live Supabase project in{' '}
-              <button
-                type="button"
-                onClick={() => onSelectTab('settings')}
-                className="underline font-semibold hover:text-[#0A6C74] dark:hover:text-white"
-              >
-                Settings &gt; Supabase
-              </button>{' '}
-              to sync tours, bookings, and media with your cloud PostgreSQL database.
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => onSelectTab('settings')}
-            className="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-800 dark:text-amber-200 rounded-lg font-medium text-[11px] transition-colors"
-          >
-            Configure Keys
-          </button>
+        <div role="status" className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2 text-xs text-amber-800 dark:text-amber-200 flex items-center justify-between gap-3">
+          <span>Live information is temporarily unavailable. Some changes may not be saved. Please contact your administrator.</span>
+          {isSuperAdmin && (
+            <button type="button" onClick={() => onSelectTab('technical')} className="shrink-0 underline font-semibold">
+              View system status
+            </button>
+          )}
         </div>
       ) : schemaMissing ? (
-        <div className="bg-sky-500/10 border-b border-sky-500/30 px-4 py-2 text-xs text-sky-800 dark:text-sky-200 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Database className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0" />
-            <span>
-              <strong>Supabase Connected (Migration Pending):</strong> Tables not yet detected in database schema. Run the SQL migration script in your Supabase SQL Editor to enable full table synchronization.
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => onSelectTab('settings')}
-            className="px-2.5 py-1 bg-sky-500/20 hover:bg-sky-500/30 text-sky-800 dark:text-sky-200 rounded-lg font-medium text-[11px] transition-colors"
-          >
-            View SQL Migration
-          </button>
+        <div role="status" className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2 text-xs text-amber-800 dark:text-amber-200 flex items-center justify-between gap-3">
+          <span>Some system features are not ready yet. Please contact your administrator before making changes.</span>
+          {isSuperAdmin && (
+            <button type="button" onClick={() => onSelectTab('technical')} className="shrink-0 underline font-semibold">
+              View system status
+            </button>
+          )}
         </div>
       ) : null}
 
@@ -501,14 +479,14 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               </span>
             </div>
 
-            <button
+            {isSuperAdmin && <button
               type="button"
               onClick={() => setIsIntegrationModalOpen(true)}
               className="w-full flex items-center justify-center space-x-1.5 py-2 px-2 bg-[#E8F3F4] hover:bg-[#d6ebed] dark:bg-[#0A6C74]/20 dark:hover:bg-[#0A6C74]/30 text-[#0A6C74] dark:text-[#2DD4BF] border border-[#0A6C74]/30 rounded-xl text-[11px] font-semibold transition-colors cursor-pointer"
             >
               <Layers className="w-3.5 h-3.5" />
-              <span>Integration Simulation Suite</span>
-            </button>
+              <span>System diagnostics</span>
+            </button>}
 
             <div className="grid grid-cols-2 gap-1.5 pt-1">
               <button
@@ -710,7 +688,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
       {/* Platform Integration Simulation Suite Modal */}
       <PlatformIntegrationModal
-        isOpen={isIntegrationModalOpen}
+        isOpen={isSuperAdmin && isIntegrationModalOpen}
         onClose={() => setIsIntegrationModalOpen(false)}
       />
     </div>

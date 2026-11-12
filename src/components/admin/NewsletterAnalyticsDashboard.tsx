@@ -37,7 +37,7 @@ export const NewsletterAnalyticsDashboard: React.FC<NewsletterAnalyticsDashboard
             <TrendingUp className="w-5 h-5 text-[#2dd4bf]" />
             <h3 className="text-base font-bold text-white">Newsletter audience overview</h3>
           </div>
-          <p className="text-xs text-stone-400 mt-1">Live counts and signup history read from the production subscriber database.</p>
+          <p className="text-xs text-stone-400 mt-1">Track subscriber growth and signup activity.</p>
         </div>
         <div className="flex bg-stone-900 p-1 rounded-lg border border-stone-800 text-xs">
           {(['30d', '90d', '180d', 'all'] as const).map((range) => (
