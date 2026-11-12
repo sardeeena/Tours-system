@@ -353,7 +353,7 @@ export const AdminSettings: React.FC = () => {
           Site Settings & Operational Configurations
         </h1>
         <p className="text-xs text-stone-400 mt-1">
-          Manage brand details, business hours, cancellation rules, currency defaults, and Supabase database infrastructure.
+          Manage company details, booking policies, contact information and website content.
         </p>
       </div>
 
@@ -398,18 +398,20 @@ export const AdminSettings: React.FC = () => {
           <span>Social Media & Footer</span>
         </button>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('supabase')}
-          className={`flex items-center space-x-1.5 px-3 py-2 rounded-t-lg font-medium transition-colors border-b-2 cursor-pointer ${
-            activeTab === 'supabase'
-              ? 'bg-stone-800 text-white border-[#2dd4bf]'
-              : 'text-stone-400 hover:text-white border-transparent hover:bg-stone-900'
-          }`}
-        >
-          <Database className="w-4 h-4" />
-          <span>Database & Supabase Connection</span>
-        </button>
+        {isSuperAdmin && (
+          <button
+            type="button"
+            onClick={() => setActiveTab('supabase')}
+            className={`flex items-center space-x-1.5 px-3 py-2 rounded-t-lg font-medium transition-colors border-b-2 cursor-pointer ${
+              activeTab === 'supabase'
+                ? 'bg-stone-800 text-white border-[#2dd4bf]'
+                : 'text-stone-400 hover:text-white border-transparent hover:bg-stone-900'
+            }`}
+          >
+            <Database className="w-4 h-4" />
+            <span>Database & Supabase Connection</span>
+          </button>
+        )}
 
         {isSuperAdmin && (
           <button
@@ -776,7 +778,7 @@ export const AdminSettings: React.FC = () => {
       )}
 
       {/* Tab 4: Database & Supabase */}
-      {activeTab === 'supabase' && (
+      {activeTab === 'supabase' && isSuperAdmin && (
         <div className="space-y-6">
           {/* Connection Card */}
           <div className="bg-stone-950 border border-stone-800 rounded-xl p-6 space-y-4 text-xs">
