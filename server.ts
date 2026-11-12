@@ -659,9 +659,15 @@ app.post('/api/communications/email', rateLimit(20, 60_000), async (req: Authent
     const sentAt = new Date().toISOString();
     const { error: updateError } = await serverSupabase
       .from('communication_messages')
-      .update({ status: 'sent', provider_name: 'Resend', provider_message_id: providerBody.id, sent_at: sentAt, failure_reason: null })
+      .update({ provider_name: 'Resend', provider_message_id: providerBody.id, sent_at: sentAt, failure_reason: null })
       .eq('id', audit.id);
-    if (updateError) console.error('Communication email sent status could not be saved:', updateError.message);
+    if (updateError) console.error('Communication email provider details could not be saved:', updateError.message);
+    const { error: statusError } = await serverSupabase
+      .from('communication_messages')
+      .update({ status: 'sent' })
+      .eq('id', audit.id)
+      .eq('status', 'queued');
+    if (statusError) console.error('Communication email sent status could not be saved:', statusError.message);
 
     return res.status(200).json({
       success: true,
@@ -763,7 +769,7 @@ app.post('/api/webhooks/resend', rateLimit(300, 60_000), async (req: Request, re
     'email.bounced': 'failed',
     'email.complained': 'failed',
     'email.failed': 'failed',
-    'email.delivery_delayed': 'queued',
+    'email.delivery_delayed': 'sent',
     'email.suppressed': 'failed',
   };
   const nextStatus = statusByEvent[eventType];
@@ -771,7 +777,7 @@ app.post('/api/webhooks/resend', rateLimit(300, 60_000), async (req: Request, re
     const failureReason = ['email.bounced', 'email.complained', 'email.failed', 'email.suppressed'].includes(eventType)
       ? `Resend event: ${eventType}`
       : null;
-    const update: Record<string, unknown> = { status: nextStatus, updated_at: new Date().toISOString() };
+    const update: Record<string, unknown> = { status: nextStatus, provider_message_id: data.email_id, updated_at: new Date().toISOString() };
     if (nextStatus === 'delivered') update.delivered_at = occurredAt;
     if (nextStatus === 'opened') update.opened_at = occurredAt;
     if (failureReason) update.failure_reason = failureReason;
@@ -1806,11 +1812,18 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
       }
       providerMessageId = providerBody.id;
       emailStatus = 'sent';
+      const sentAt = new Date().toISOString();
       const { error: updateError } = await serverSupabase
         .from('communication_messages')
-        .update({ status: 'sent', provider_name: 'Resend', provider_message_id: providerMessageId, sent_at: new Date().toISOString(), failure_reason: null })
+        .update({ provider_name: 'Resend', provider_message_id: providerMessageId, sent_at: sentAt, failure_reason: null })
         .eq('id', messageLog.id);
-      if (updateError) console.error('Newsletter email audit status update failed:', updateError.message);
+      if (updateError) console.error('Newsletter email provider details update failed:', updateError.message);
+      const { error: statusError } = await serverSupabase
+        .from('communication_messages')
+        .update({ status: 'sent' })
+        .eq('id', messageLog.id)
+        .eq('status', 'queued');
+      if (statusError) console.error('Newsletter email audit status update failed:', statusError.message);
     } catch (error: any) {
       const reason = error?.message || 'Resend email delivery failed.';
       const { error: updateError } = await serverSupabase
