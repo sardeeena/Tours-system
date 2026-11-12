@@ -2092,6 +2092,11 @@ const VISITOR_EVENT_NAMES = new Set([
     'comparison_updated',
     'chatbot_interaction',
     'contact_request_submitted',
+    'booking_step_viewed',
+    'review_submitted',
+    'tour_shared',
+    'language_changed',
+    'currency_changed',
 ]);
 const VISITOR_EVENT_FIELDS = new Set([
   'tour_slug','category','destination','booking_step','result_count',
