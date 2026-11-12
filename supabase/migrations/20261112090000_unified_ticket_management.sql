@@ -343,12 +343,14 @@ CREATE OR REPLACE FUNCTION private.prepare_support_ticket()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
 AS $function$
 BEGIN
-  -- Link the requester's own CRM customer record when one exists.
-  IF NEW.customer_id IS NULL THEN
+  -- Customers are always linked only to their own CRM record.
+  IF NOT public.has_permission('tickets.create') THEN
     SELECT c.id INTO NEW.customer_id
     FROM public.customers c
     WHERE c.user_id=NEW.requester_id
     ORDER BY c.created_at DESC LIMIT 1;
+  ELSIF NOT public.has_permission('customers.read') THEN
+    NEW.customer_id := NULL;
   END IF;
   NEW.first_response_due_at := CASE NEW.priority
     WHEN 'critical' THEN now() + interval '15 minutes'
