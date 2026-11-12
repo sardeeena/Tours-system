@@ -67,7 +67,7 @@ export const CommunicationsHistory: React.FC<CommunicationsHistoryProps> = ({ on
     try {
       const [allMsgs, allEvents] = await Promise.all([
         listCommunicationMessages(),
-        listAutomationEvents(),
+        isSuperAdmin ? listAutomationEvents() : Promise.resolve([]),
       ]);
       setMessages(allMsgs);
       setAutomationEvents(allEvents);
@@ -80,7 +80,7 @@ export const CommunicationsHistory: React.FC<CommunicationsHistoryProps> = ({ on
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [isSuperAdmin]);
 
   const filteredMessages = useMemo(() => {
     return messages.filter((m) => {
