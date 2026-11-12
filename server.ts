@@ -2135,7 +2135,7 @@ function safeVisitorMetadata(value: any) {
   const screen = typeof source.screen_bucket === 'string' && /^(small|medium|large|xlarge)$/.test(source.screen_bucket) ? source.screen_bucket : null;
   const safeCampaignValue = (input: unknown, max: number) => {
     const candidate = safeShortText(input, max);
-    if (!candidate || /[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i.test(candidate) || /\\+?\\d[\\d\\s().-]{7,}\\d/.test(candidate)) return null;
+    if (!candidate || /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(candidate) || /\+?\d[\d\s().-]{7,}\d/.test(candidate)) return null;
     return candidate;
   };
   return {
