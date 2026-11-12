@@ -117,10 +117,11 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ redirectUrl, onNavig
         setIsPendingConfirmation(true);
         setConfirmedEmail(cleanEmail);
         setTestToken(result.confirmationToken);
-        showToast('Confirmation email dispatched by Supabase. Please check your inbox.', 'info', 6000);
+        showToast('Confirmation email sent. Please check your inbox.', 'info', 6000);
       } else {
         authRateLimiter.recordFailedAttempt();
-        setErrorMessage(result.error || 'Could not complete registration. Please try again.');
+        console.warn('Registration failed:', result.error);
+        setErrorMessage('We could not complete your registration. Please check your details and try again.');
       }
     } catch {
       authRateLimiter.recordFailedAttempt();
@@ -136,10 +137,10 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ redirectUrl, onNavig
     try {
       const res = await resendConfirmation(confirmedEmail);
       if (res.success) {
-        showToast(res.message || 'Confirmation email resent! Please check your inbox.', 'success');
+        showToast('Confirmation email sent. Please check your inbox.', 'success');
         setResendCooldown(45);
       } else {
-        showToast(res.error || 'Failed to resend confirmation email.', 'error');
+        showToast('We could not resend the confirmation email. Please try again.', 'error');
       }
     } catch {
       showToast('Error resending email. Please try again later.', 'error');
@@ -156,7 +157,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ redirectUrl, onNavig
         showToast('Email verified successfully! You can now sign in.', 'success');
         onNavigate('login', `?confirmed=true&email=${encodeURIComponent(confirmedEmail)}`);
       } else {
-        showToast(res.error || 'Verification failed.', 'error');
+        showToast('We could not verify your email. Please open the latest confirmation link and try again.', 'error');
       }
     } catch {
       showToast('Failed to verify token.', 'error');
@@ -188,7 +189,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ redirectUrl, onNavig
               </h1>
               <p className="text-xs text-stone-600 max-w-sm mx-auto leading-relaxed">
                 We've sent a verification link to{' '}
-                <span className="font-bold text-[#0E1B2A] break-all">{confirmedEmail}</span> from Supabase Auth.
+                <span className="font-bold text-[#0E1B2A] break-all">{confirmedEmail}</span>.
               </p>
             </div>
 
