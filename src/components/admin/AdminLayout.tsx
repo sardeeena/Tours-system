@@ -131,7 +131,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   children,
 }) => {
   const { user, signOut, hasPermission } = useAuth();
-  const isSuperAdmin = Boolean(user && (user.role === 'super_admin' || user.roles?.includes('super_admin')));
   const { theme, toggleTheme } = useTheme();
   const supabaseConnected = isSupabaseConfigured();
   const [schemaMissing, setSchemaMissingState] = React.useState(isSchemaMissing());
