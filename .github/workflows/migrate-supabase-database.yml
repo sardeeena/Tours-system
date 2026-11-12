@@ -1,0 +1,125 @@
+name: Migrate KemetSpirit database to AwesomeAdventure
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_destination:
+        description: "Type MIGRATE_TO_AWESOMEADVENTURE to authorize the one-time restore"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-awesomeadventure-migration
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    if: ${{ inputs.confirm_destination == 'MIGRATE_TO_AWESOMEADVENTURE' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      SOURCE_DB_URL: ${{ secrets.SUPABASE_SOURCE_DB_URL }}
+      DESTINATION_DB_URL: ${{ secrets.SUPABASE_DESTINATION_DB_URL }}
+      EXPECTED_SOURCE_REF: mktrtoctcjyokclpdeui
+      EXPECTED_DESTINATION_REF: uvtbtpxtrrmaublrztgv
+    steps:
+      - name: Validate protected inputs and destination identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$SOURCE_DB_URL" || { echo "Missing SUPABASE_SOURCE_DB_URL"; exit 1; }
+          test -n "$DESTINATION_DB_URL" || { echo "Missing SUPABASE_DESTINATION_DB_URL"; exit 1; }
+          python3 - <<'PY'
+          import os
+          from urllib.parse import urlparse, unquote
+          def verify(name, ref):
+              u = urlparse(os.environ[name])
+              user = unquote(u.username or "")
+              host = u.hostname or ""
+              if u.scheme not in ("postgres", "postgresql"):
+                  raise SystemExit(f"{name} must be a PostgreSQL connection string.")
+              if ref not in host and not user.endswith("." + ref):
+                  raise SystemExit(f"{name} does not identify the approved project ref.")
+          verify("SOURCE_DB_URL", os.environ["EXPECTED_SOURCE_REF"])
+          verify("DESTINATION_DB_URL", os.environ["EXPECTED_DESTINATION_REF"])
+          print("Both source and destination project identities passed.")
+          PY
+
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Confirm source identity and destination is empty
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql "$SOURCE_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "select current_database(), current_user;"
+          target_tables="$(psql "$DESTINATION_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "select count(*) from information_schema.tables where table_schema = 'public' and table_type = 'BASE TABLE'")"
+          if [ "$target_tables" != "0" ]; then
+            echo "STOP: destination public schema contains $target_tables base tables; refusing to overwrite."
+            exit 1
+          fi
+          echo "Destination preflight passed: public schema has zero base tables."
+
+      - name: Dump source roles, schema, data and migration history
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase db dump --remote="$SOURCE_DB_URL" --file=roles.sql --role-only
+          supabase db dump --remote="$SOURCE_DB_URL" --file=schema.sql
+          supabase db dump --remote="$SOURCE_DB_URL" --file=data.sql --data-only --use-copy --exclude=storage.buckets_vectors --exclude=storage.vector_indexes
+          supabase db dump --remote="$SOURCE_DB_URL" --file=history_schema.sql --schema=supabase_migrations
+          supabase db dump --remote="$SOURCE_DB_URL" --file=history_data.sql --schema=supabase_migrations --data-only --use-copy
+          test -s schema.sql
+          test -s data.sql
+          test -s history_schema.sql
+          test -s history_data.sql
+
+      - name: Restore database into AwesomeAdventure only
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Roles are restored separately, as recommended by Supabase.
+          psql "$DESTINATION_DB_URL" -X -v ON_ERROR_STOP=1 --file=roles.sql
+          # A single transaction ensures schema/data/history restore as one unit.
+          psql "$DESTINATION_DB_URL" -X --single-transaction -v ON_ERROR_STOP=1 \
+            --file=schema.sql \
+            --file=history_schema.sql \
+            --command='SET session_replication_role = replica' \
+            --file=data.sql \
+            --file=history_data.sql
+
+      - name: Verify restored public tables and critical records
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql "$DESTINATION_DB_URL" -X -v ON_ERROR_STOP=1 -c "
+            select
+              (select count(*) from information_schema.tables where table_schema='public' and table_type='BASE TABLE') as public_tables,
+              (select count(*) from public.profiles) as profiles,
+              (select count(*) from public.tours) as tours,
+              (select count(*) from public.blog_posts) as blog_posts,
+              (select count(*) from public.support_tickets) as support_tickets;
+          "
+          psql "$DESTINATION_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "
+            select case when
+              (select count(*) from information_schema.tables where table_schema='public' and table_type='BASE TABLE') >= 50
+              and to_regclass('public.tours') is not null
+              and to_regclass('public.user_roles') is not null
+              and to_regclass('public.support_tickets') is not null
+              then 'VERIFICATION_PASSED' else 'VERIFICATION_FAILED' end;
+          " | grep -qx VERIFICATION_PASSED
+
+      - name: Remove temporary SQL dumps
+        if: always()
+        run: rm -f roles.sql schema.sql data.sql history_schema.sql history_data.sql
