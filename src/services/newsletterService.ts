@@ -21,7 +21,7 @@ export async function subscribeToNewsletter(
   source = 'footer',
   honeypot?: string,
   consentAccepted = false
-): Promise<{ success: boolean; alreadySubscribed?: boolean; discountCode: string; message: string; error?: string }> {
+): Promise<{ success: boolean; alreadySubscribed?: boolean; emailStatus?: 'sent' | 'failed' | 'not_sent'; discountCode: string; message: string; error?: string }> {
   const discountCode = 'REDSEA15';
   if (honeypot?.trim()) {
     return { success: true, discountCode, message: 'Thank you for subscribing.' };
@@ -71,6 +71,7 @@ export async function subscribeToNewsletter(
     return {
       success: true,
       alreadySubscribed: result.alreadySubscribed === true,
+      emailStatus: result.emailStatus,
       discountCode: result.discountCode || discountCode,
       message: typeof result.message === 'string' ? result.message : 'Your subscription has been saved.',
     };
