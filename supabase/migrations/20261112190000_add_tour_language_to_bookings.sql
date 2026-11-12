@@ -5,7 +5,7 @@ ALTER TABLE public.bookings
 COMMENT ON COLUMN public.bookings.tour_language IS
   'Language selected by the customer for this booking; snapshot retained if tour language options later change.';
 
-CREATE OR REPLACE FUNCTION public.create_booking_atomic_with_language(
+CREATE OR REPLACE FUNCTION private.create_booking_atomic_with_language(
   p_tour_identifier text,
   p_booking_date date,
   p_adult_count integer,
@@ -110,16 +110,16 @@ BEGIN
 END;
 $function$;
 
-REVOKE ALL ON FUNCTION public.create_booking_atomic_with_language(
+REVOKE ALL ON FUNCTION private.create_booking_atomic_with_language(
   text, date, integer, integer, integer, text, text, text, text, text,
   text, text, text, jsonb, text, text, text, text, text
 ) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.create_booking_atomic_with_language(
+GRANT EXECUTE ON FUNCTION private.create_booking_atomic_with_language(
   text, date, integer, integer, integer, text, text, text, text, text,
   text, text, text, jsonb, text, text, text, text, text
 ) TO anon, authenticated, service_role;
 
-CREATE OR REPLACE FUNCTION public.lookup_booking_secure_with_language(
+CREATE OR REPLACE FUNCTION private.lookup_booking_secure_with_language(
   p_reference text,
   p_verification text
 )
@@ -144,6 +144,65 @@ BEGIN
 
   RETURN v_result || jsonb_build_object('tourLanguage', v_language);
 END;
+$function$;
+
+REVOKE ALL ON FUNCTION private.lookup_booking_secure_with_language(text, text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION private.lookup_booking_secure_with_language(text, text)
+  TO anon, authenticated, service_role;
+
+
+-- Expose invoker-rights PostgREST RPCs; privileged work stays in private implementations.
+CREATE OR REPLACE FUNCTION public.create_booking_atomic_with_language(
+  p_tour_identifier text,
+  p_booking_date date,
+  p_adult_count integer,
+  p_child_count integer,
+  p_infant_count integer,
+  p_customer_first_name text,
+  p_customer_last_name text,
+  p_customer_email text,
+  p_customer_phone text,
+  p_customer_country text,
+  p_customer_hotel text,
+  p_pickup_location_id text,
+  p_pickup_room_number text,
+  p_extras jsonb,
+  p_coupon_code text,
+  p_payment_method text,
+  p_special_requests text,
+  p_idempotency_key text,
+  p_tour_language text
+)
+RETURNS jsonb
+LANGUAGE sql
+SECURITY INVOKER
+SET search_path = ''
+AS $function$
+  SELECT private.create_booking_atomic_with_language(
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+    $11, $12, $13, $14, $15, $16, $17, $18, $19
+  );
+$function$;
+
+REVOKE ALL ON FUNCTION public.create_booking_atomic_with_language(
+  text, date, integer, integer, integer, text, text, text, text, text,
+  text, text, text, jsonb, text, text, text, text, text
+) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.create_booking_atomic_with_language(
+  text, date, integer, integer, integer, text, text, text, text, text,
+  text, text, text, jsonb, text, text, text, text, text
+) TO anon, authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION public.lookup_booking_secure_with_language(
+  p_reference text,
+  p_verification text
+)
+RETURNS jsonb
+LANGUAGE sql
+SECURITY INVOKER
+SET search_path = ''
+AS $function$
+  SELECT private.lookup_booking_secure_with_language($1, $2);
 $function$;
 
 REVOKE ALL ON FUNCTION public.lookup_booking_secure_with_language(text, text) FROM PUBLIC;
