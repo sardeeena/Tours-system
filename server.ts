@@ -1768,8 +1768,23 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
   const fromName = (process.env.RESEND_FROM_NAME || 'Awesome Adventure Tours').replace(/[<>\r\n]/g, '').trim() || 'Awesome Adventure Tours';
   const unsubscribeToken = createNewsletterUnsubscribeToken(subscriber.id, cleanEmail);
   const unsubscribeUrl = `https://awesomeadventure.tours/api/newsletter/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`;
-  const subject = 'Welcome to Awesome Adventure Tours — your 15% voucher';
-  const content = `Thank you for subscribing to Awesome Adventure Tours. Your 15% voucher code is REDSEA15. Use it when enquiring about your next excursion.\n\nYou can unsubscribe at any time: ${unsubscribeUrl}`;
+  const { data: welcomeTemplate, error: welcomeTemplateError } = await serverSupabase
+    .from('communication_templates')
+    .select('subject,body_text,is_active')
+    .eq('template_key', 'newsletter_welcome')
+    .maybeSingle();
+  if (welcomeTemplateError) {
+    console.error('Newsletter welcome template lookup failed:', welcomeTemplateError.message);
+  }
+  const templateVariables: Record<string, string> = {
+    discount_code: 'REDSEA15',
+    unsubscribe_url: unsubscribeUrl,
+  };
+  const renderNewsletterTemplate = (value: string) => value.replace(/\{\{([a-zA-Z0-9_]+)\}\}/g, (match, key) =>
+    Object.prototype.hasOwnProperty.call(templateVariables, key) ? templateVariables[key] : match
+  );
+  const subject = renderNewsletterTemplate(String(welcomeTemplate?.subject || 'Welcome to Awesome Adventure Tours — your 15% voucher'));
+  const content = renderNewsletterTemplate(String(welcomeTemplate?.body_text || 'Thank you for subscribing to Awesome Adventure Tours. Your 15% voucher code is {{discount_code}}. Use it when enquiring about your next excursion.\n\nYou can unsubscribe at any time: {{unsubscribe_url}}.'));
 
   let emailStatus: 'sent' | 'failed' = 'failed';
   let providerMessageId: string | null = null;
