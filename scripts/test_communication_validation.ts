@@ -30,6 +30,8 @@ function assert(condition: boolean, msg: string) {
 }
 
 async function runTests() {
+  assert(DEFAULT_PROVIDER_CONFIG.email.fromEmail === '', 'Default email sender address is blank until configured by the server');
+  assert(DEFAULT_PROVIDER_CONFIG.email.fromName === 'Awesome Adventure Tours', 'Default email sender name matches the site brand');
   console.log('================================================================');
   console.log('  Communication Provider Credential Validation Test Suite');
   console.log('================================================================\n');
