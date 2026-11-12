@@ -145,7 +145,7 @@ export async function recordVisitorConsent(choices: VisitorConsent, source = 'co
   }
   await post('/api/visitor/consent', {
     session_id: id, visitor_id: choices.analytics ? visitorId() : null, analytics: choices.analytics, marketing: choices.marketing,
-    source, landing_path: window.location.pathname, metadata: visitorMetadata(),
+    source, landing_path: window.location.pathname, ...(choices.analytics ? { metadata: visitorMetadata() } : {}),
   });
   window.dispatchEvent(new CustomEvent('awesome:visitor-consent-saved'));
 }
