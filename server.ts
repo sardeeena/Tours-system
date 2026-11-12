@@ -1794,8 +1794,10 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
 
   let emailStatus: 'sent' | 'failed' = 'failed';
   let providerMessageId: string | null = null;
-  const senderReady = Boolean(apiKey && isValidEmail(fromEmail));
-  const failureReason = senderReady ? null : 'Resend is not configured: a valid RESEND_API_KEY and RESEND_FROM_EMAIL are required in Hostinger.';
+  const providerReady = Boolean(apiKey && isValidEmail(fromEmail));
+  const templateEnabled = welcomeTemplate?.is_active !== false;
+  const senderReady = providerReady && templateEnabled;
+  const failureReason = !templateEnabled ? 'Newsletter welcome template is disabled.' : providerReady ? null : 'Resend is not configured: a valid RESEND_API_KEY and RESEND_FROM_EMAIL are required in Hostinger.';
 
   const { data: messageLog, error: logInsertError } = await serverSupabase
     .from('communication_messages')
@@ -1807,7 +1809,7 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
       subject,
       content,
       status: senderReady ? 'queued' : 'failed',
-      provider_name: senderReady ? 'Resend' : 'Not configured',
+      provider_name: providerReady ? 'Resend' : 'Not configured',
       failure_reason: failureReason,
       staff_name: 'Newsletter Subscription Service',
     })
