@@ -31,6 +31,22 @@ The worker starts only when `BOOKING_NOTIFICATION_WORKER_ENABLED=true`, the serv
 
 After changing Hostinger environment variables, restart the Node.js application. Check the runtime logs for the explicit `Booking Notification Worker] Started` message and confirm that the missing-credentials warning is gone.
 
+## Supabase Auth email delivery
+
+Supabase Auth sends account confirmation, password recovery, magic-link, invite, and email-change messages independently of the app's Resend API routes. Configure custom SMTP in Supabase Dashboard → Authentication → Emails → SMTP Settings so these messages can reach real customers.
+
+Use the verified Resend sending domain:
+
+- Host: `smtp.resend.com`
+- Port: `465` (SSL/TLS)
+- Username: `resend`
+- Password: your Resend API key (keep it only in Supabase's secure SMTP password field)
+- Sender email: `no-reply@mail.awesomeadventure.tours`
+- Sender name: `Awesome Adventure Tours`
+- Admin/support email: `reservation@awesomeadventure.tours`
+
+Keep the API key out of source code and browser environment variables. Save and use Supabase's built-in SMTP test if available. Review the Auth email templates for confirmation and password recovery links, and ensure the allowed redirect URLs include the production site. Supabase's default SMTP is rate-limited and is not intended for production delivery.
+
 ## WhatsApp
 
 The existing staff-initiated WhatsApp endpoint uses the Meta Cloud API and reads these server-only variables:
