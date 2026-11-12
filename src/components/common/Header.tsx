@@ -432,6 +432,7 @@ export const Header: React.FC<HeaderProps> = ({
               {t('nav.guestReviews')}
             </button>
             <a href="/blog" aria-label="Visit the Kemet Spirit blog" className="inline-flex items-center rounded-full border border-[#0A6C74]/30 bg-[#E8F3F4] px-3.5 py-1.5 text-sm font-bold text-[#0A6C74] shadow-xs transition-colors hover:bg-[#D7EBEC] dark:border-teal-400/30 dark:bg-teal-950/50 dark:text-teal-300 dark:hover:bg-teal-900/60">Blog</a>
+            <a href="/support" aria-label="Open Kemet Spirit customer support" className="text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1 text-sm font-semibold">Support</a>
           </nav>
 
         {/* Action Controls */}
@@ -925,6 +926,7 @@ export const Header: React.FC<HeaderProps> = ({
                 {t('mobile.reviews')}
               </button>
               <a href="/blog" onClick={() => setMobileMenuOpen(false)} className="text-left py-2 px-3 rounded hover:bg-stone-100 font-semibold text-[#0A6C74] dark:text-teal-300">Blog &amp; Travel Journal</a>
+              <a href="/support" onClick={() => setMobileMenuOpen(false)} className="text-left py-2 px-3 rounded hover:bg-stone-100 font-semibold text-[#0A6C74] dark:text-teal-300">Customer Support &amp; Tickets</a>
 
               <div className="pt-3 border-t border-stone-200 flex flex-col space-y-2">
                 <button

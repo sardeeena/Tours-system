@@ -61,6 +61,7 @@ export type AdminTab =
   | 'tour_new'
   | 'tour_edit'
   | 'bookings'
+  | 'tickets'
   | 'inquiries'
   | 'customers'
   | 'newsletter'
@@ -197,6 +198,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       ],
     },
     { id: 'bookings', label: 'Reservations & Bookings', icon: CalendarCheck },
+    { id: 'tickets', label: 'Support Tickets', icon: MessageSquare },
 
     // OPERATIONS SECTION
     { id: 'header_ops', label: 'OPERATIONS & DISPATCH', isHeader: true },
@@ -273,6 +275,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     if (id === 'tour_new') return 'tours.create';
     if (id === 'tour_edit') return 'tours.update';
     if (id === 'bookings') return 'bookings.read';
+    if (id === 'tickets') return 'tickets.read';
     if (id === 'customers') return 'customers.read';
     if (id.startsWith('crm_') || id === 'inquiries') return 'crm.read';
     if (id.startsWith('comm_')) return 'communications.read';
