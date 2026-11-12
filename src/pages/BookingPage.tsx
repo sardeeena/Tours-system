@@ -74,6 +74,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
 
   const [currentStep, setCurrentStep] = useState<number>(initialDraft.currentStep || 1);
   const [date, setDate] = useState<string>(initialDraft.date || '');
+  const [selectedTourLanguage, setSelectedTourLanguage] = useState<string>(initialDraft.selectedTourLanguage || currentTour?.languages?.[0] || 'English');
   const [guests, setGuests] = useState<GuestCounts>(initialDraft.guests);
   const [pickupLocationId, setPickupLocationId] = useState<string>(initialDraft.pickupLocationId || 'hurghada');
   const [hotelName, setHotelName] = useState<string>(initialDraft.hotelName || '');
@@ -88,6 +89,12 @@ export const BookingPage: React.FC<BookingPageProps> = ({
   const lastDraftFingerprint = useRef<string | null>(null);
   const [termsAccepted, setTermsAccepted] = useState<boolean>(initialDraft.termsAccepted || false);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  useEffect(() => {
+    const options = Array.from(new Set((currentTour?.languages || []).map((language) => language.trim()).filter(Boolean)));
+    const supported = options.length > 0 ? options : ['English'];
+    setSelectedTourLanguage((current) => supported.includes(current) ? current : supported[0]);
+  }, [currentTour?.slug, currentTour?.languages?.join('|')]);
 
   // Dynamic database-backed pickup locations & extras
   const [pickupLocations, setPickupLocations] = useState<PickupLocation[]>(STANDARD_PICKUP_LOCATIONS);
@@ -135,6 +142,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
   const draftFingerprint = useMemo(() => JSON.stringify({
     tourSlug: currentTour?.slug,
     date,
+    selectedTourLanguage,
     guests,
     pickupLocationId,
     hotelName,
@@ -162,6 +170,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
     if (!currentTour) return;
     const draft: BookingDraftState = {
       tourSlug: currentTour.slug,
+      selectedTourLanguage,
       currentStep,
       date,
       guests,
@@ -184,6 +193,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
     currentTour,
     currentStep,
     date,
+    selectedTourLanguage,
     guests,
     pickupLocationId,
     hotelName,
@@ -278,6 +288,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
         tourImage: currentTour.primaryImage,
         tourDestination: currentTour.destination,
         tourDuration: currentTour.durationLabel,
+        tourLanguage: selectedTourLanguage,
         date,
         guests,
         pickup: {
@@ -428,6 +439,8 @@ export const BookingPage: React.FC<BookingPageProps> = ({
                     tour={currentTour}
                     date={date}
                     onDateChange={setDate}
+                    tourLanguage={selectedTourLanguage}
+                    onTourLanguageChange={setSelectedTourLanguage}
                     guests={guests}
                     onGuestsChange={setGuests}
                     currency={currency}
@@ -479,6 +492,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
                   <StepReview
                     tour={currentTour}
                     date={date}
+                    tourLanguage={selectedTourLanguage}
                     guests={guests}
                     pickupLocation={selectedPickup}
                     hotelName={hotelName}
@@ -517,6 +531,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
             <BookingSummary
               tour={currentTour}
               date={date}
+              tourLanguage={selectedTourLanguage}
               guests={guests}
               pickupLocation={selectedPickup}
               hotelName={hotelName}
