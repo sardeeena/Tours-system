@@ -54,6 +54,10 @@ export const VisitorAnalyticsPanel: React.FC = () => {
   const [consents, setConsents] = useState<ConsentRecord[]>([]);
   const [retention, setRetention] = useState<Retention>({ event_retention_days: 90, session_retention_days: 180, consent_retention_days: 730 });
   const [search, setSearch] = useState('');
+  const [eventType, setEventType] = useState('');
+  const [deviceType, setDeviceType] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
   const [selectedSession, setSelectedSession] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -65,8 +69,8 @@ export const VisitorAnalyticsPanel: React.FC = () => {
     try {
       const [summary, sessionRows, eventRows, consentRows, settings] = await Promise.all([
         api<Overview>('/api/admin/technical/visitors/overview'),
-        api<{ sessions: Session[] }>('/api/admin/technical/visitors/sessions?limit=150'),
-        api<{ events: VisitorEvent[] }>('/api/admin/technical/visitors/events?limit=200'),
+        api<{ sessions: Session[] }>(`/api/admin/technical/visitors/sessions?limit=500${deviceType ? `&device_type=${encodeURIComponent(deviceType)}` : ''}${fromDate ? `&from=${encodeURIComponent(new Date(`${fromDate}T00:00:00`).toISOString())}` : ''}${toDate ? `&to=${encodeURIComponent(new Date(`${toDate}T23:59:59`).toISOString())}` : ''}`),
+        api<{ events: VisitorEvent[] }>(`/api/admin/technical/visitors/events?limit=500${eventType ? `&event_name=${encodeURIComponent(eventType)}` : ''}${fromDate ? `&from=${encodeURIComponent(new Date(`${fromDate}T00:00:00`).toISOString())}` : ''}${toDate ? `&to=${encodeURIComponent(new Date(`${toDate}T23:59:59`).toISOString())}` : ''}`),
         api<{ records: ConsentRecord[] }>('/api/admin/technical/visitors/consent?limit=150'),
         api<{ settings: Retention }>('/api/admin/technical/visitors/settings'),
       ]);
@@ -75,7 +79,7 @@ export const VisitorAnalyticsPanel: React.FC = () => {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Visitor analytics could not be loaded.');
     } finally { setLoading(false); }
-  }, []);
+  }, [deviceType, eventType, fromDate, toDate]);
 
   useEffect(() => { void load(); }, [load]);
 
@@ -149,6 +153,12 @@ export const VisitorAnalyticsPanel: React.FC = () => {
         <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
           <h3 className="font-semibold">Visitor sessions</h3>
           <p className="mt-1 text-xs text-slate-500">Select a session to inspect its event timeline.</p>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <select value={deviceType} onChange={(e) => setDeviceType(e.target.value)} className="rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs dark:border-slate-600 dark:bg-slate-800"><option value="">All devices</option><option value="desktop">Desktop</option><option value="mobile">Mobile</option><option value="tablet">Tablet</option><option value="other">Other</option></select>
+            <select value={eventType} onChange={(e) => setEventType(e.target.value)} className="rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs dark:border-slate-600 dark:bg-slate-800"><option value="">All event types</option>{['page_view','navigation','tour_view','tour_search','tour_filter_applied','booking_started','booking_step_completed','booking_submitted','booking_confirmed','booking_lookup','booking_cancellation_requested','auth_sign_in','auth_sign_in_failed','auth_sign_up','auth_sign_out','profile_updated','newsletter_subscribed','inquiry_submitted','support_ticket_created','support_reply_sent','support_ticket_updated','chatbot_interaction','wishlist_updated','comparison_updated'].map((value) => <option key={value} value={value}>{value.replace(/_/g, ' ')}</option>)}</select>
+            <label className="text-[11px] text-slate-500">From<input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs dark:border-slate-600 dark:bg-slate-800" /></label>
+            <label className="text-[11px] text-slate-500">To<input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs dark:border-slate-600 dark:bg-slate-800" /></label>
+          </div>
           <div className="mt-3 flex items-center gap-2"><Search className="h-4 w-4 text-slate-400" /><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search visitor, device, page or campaign" className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800" /></div>
           <div className="mt-3 max-h-[420px] space-y-2 overflow-y-auto">
             {visibleSessions.map((item) => <button type="button" key={item.id} onClick={() => setSelectedSession((current) => current === item.id ? '' : item.id)} className={`w-full rounded-lg border p-3 text-left text-xs transition ${selectedSession === item.id ? 'border-[#b58b3a] bg-amber-50 dark:bg-amber-950/20' : 'border-slate-200 dark:border-slate-700'}`}>
@@ -157,6 +167,7 @@ export const VisitorAnalyticsPanel: React.FC = () => {
               <p className="mt-1 text-slate-500">{[item.device_type, item.browser_family, item.os_family].filter(Boolean).join(' · ') || 'Device details unavailable'}</p>
               <p className="mt-1 text-slate-500">Last activity: {date(item.last_seen_at)}</p>
               <p className="mt-1 text-slate-500">Referrer: {item.referrer_host || 'Direct'}{item.utm_campaign ? ` · ${item.utm_campaign}` : ''}</p>
+              <p className="mt-1 text-slate-500">{[item.language, item.timezone, item.country_code, item.region_code].filter(Boolean).join(' · ')}</p>
             </button>)}
             {!visibleSessions.length && <p className="py-6 text-center text-xs text-slate-500">No matching sessions in the latest records.</p>}
           </div>
