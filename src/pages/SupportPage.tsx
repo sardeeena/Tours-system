@@ -20,7 +20,14 @@ type TicketRow = {
   updated_at: string;
   last_message_at: string;
 };
-type TicketMessage = { id: string; ticket_id: string; author_id: string; body: string; is_internal: boolean; created_at: string };
+type TicketMessage = { id: string; ticket_id: string; author_id: string; body: string; is_internal: boolean; attachments?: Array<{path:string;name:string;content_type?:string}>; created_at: string };
+type BookingOption = { id: string; booking_reference: string };
+const allowedAttachmentTypes = ['application/pdf','image/jpeg','image/png','image/webp','text/plain'];
+const AttachmentLink: React.FC<{attachment:{path:string;name:string}}> = ({attachment}) => {
+  const [url,setUrl] = useState('');
+  useEffect(()=>{let active=true;supabase.storage.from('support-ticket-attachments').createSignedUrl(attachment.path,300).then(({data})=>{if(active&&data?.signedUrl)setUrl(data.signedUrl);});return()=>{active=false;};},[attachment.path]);
+  return url ? <a href={url} target="_blank" rel="noopener noreferrer" className="underline text-[#0A6C74] text-xs">{attachment.name}</a> : <span className="text-xs text-stone-400">Preparing attachment…</span>;
+};
 type TicketMode = 'customer' | 'staff';
 
 const statusLabels: Record<string,string> = {
@@ -51,6 +58,9 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
   const [priority, setPriority] = useState('normal');
   const [reply, setReply] = useState('');
   const [internal, setInternal] = useState(false);
+  const [bookings, setBookings] = useState<BookingOption[]>([]);
+  const [bookingId, setBookingId] = useState('');
+  const [files, setFiles] = useState<File[]>([]);
 
   const canReadAll = hasPermission('tickets.read');
   const canReadAssigned = hasPermission('tickets.read_assigned');
@@ -72,16 +82,12 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
       const { data, error: queryError } = await query;
       if (queryError) throw queryError;
       setTickets((data || []) as TicketRow[]);
-      if (selected) {
-        const fresh = (data || []).find((ticket: TicketRow) => ticket.id === selected.id);
-        if (fresh) setSelected(fresh);
-      }
     } catch (err: any) {
       setError(err?.message || 'Could not load support tickets.');
     } finally {
       setLoading(false);
     }
-  }, [user, filter, selected?.id]);
+  }, [user, filter]);
 
   const loadMessages = useCallback(async (ticket: TicketRow) => {
     const { data, error: queryError } = await (supabase as any)
@@ -91,6 +97,14 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
   }, []);
 
   useEffect(() => { void loadTickets(); }, [loadTickets]);
+  useEffect(() => {
+    if (!user) return;
+    let active = true;
+    (supabase as any).from('bookings').select('id,booking_reference').order('created_at',{ascending:false}).limit(50)
+      .then(({data}:any)=>{if(active)setBookings((data||[]) as BookingOption[]);})
+      .catch(()=>undefined);
+    return ()=>{active=false;};
+  },[user]);
   useEffect(() => {
     if (!selected) { setMessages([]); return; }
     void loadMessages(selected).catch((err: any) => setError(err?.message || 'Could not load conversation.'));
@@ -117,10 +131,10 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
     try {
       const { data, error: insertError } = await (supabase as any).from('support_tickets').insert({
         requester_id: user.id, subject: subject.trim(), description: description.trim(),
-        category, department, priority
+        category, department, priority, booking_id: bookingId || null
       }).select('*').single();
       if (insertError) throw insertError;
-      setSubject(''); setDescription(''); setCategory('general'); setDepartment('support'); setPriority('normal');
+      setSubject(''); setDescription(''); setCategory('general'); setDepartment('support'); setPriority('normal'); setBookingId('');
       setShowNew(false);
       await loadTickets();
       setSelected(data as TicketRow);
@@ -133,14 +147,28 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
     event.preventDefault();
     if (!user || !selected || !reply.trim()) return;
     setBusy(true); setError('');
+    const uploadedPaths: string[] = [];
     try {
+      if (files.length > 5) throw new Error('You can attach up to 5 files per reply.');
+      const attachments: Array<{path:string;name:string;content_type:string}> = [];
+      for (const file of files) {
+        if (!allowedAttachmentTypes.includes(file.type)) throw new Error('Attachments must be PDF, JPG, PNG, WebP or plain text.');
+        if (file.size > 10 * 1024 * 1024) throw new Error('Each attachment must be 10 MB or smaller.');
+        const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0,120) || 'attachment';
+        const path = selected.id + '/' + crypto.randomUUID() + '-' + safeName;
+        const { error: uploadError } = await supabase.storage.from('support-ticket-attachments').upload(path,file,{upsert:false,contentType:file.type});
+        if (uploadError) throw uploadError;
+        uploadedPaths.push(path);
+        attachments.push({path,name:file.name,content_type:file.type});
+      }
       const { error: insertError } = await (supabase as any).from('support_ticket_messages').insert({
-        ticket_id: selected.id, author_id: user.id, body: reply.trim(), is_internal: internal && canInternal
+        ticket_id: selected.id, author_id: user.id, body: reply.trim(), is_internal: internal && canInternal, attachments
       });
       if (insertError) throw insertError;
-      setReply(''); setInternal(false);
+      setReply(''); setInternal(false); setFiles([]);
       await loadMessages(selected); await loadTickets();
     } catch (err: any) {
+      if (uploadedPaths.length) await supabase.storage.from('support-ticket-attachments').remove(uploadedPaths);
       setError(err?.message || 'Could not send your message.');
     } finally { setBusy(false); }
   };
@@ -200,6 +228,7 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
           <label className="text-xs font-semibold space-y-1.5">Category<select className={fieldClass} value={category} onChange={e=>setCategory(e.target.value)}>{[['general','General enquiry'],['booking','Booking'],['payment','Payment'],['refund','Refund'],['tour_operation','Tour / excursion'],['pickup','Pickup'],['technical','Technical issue'],['complaint','Complaint'],['other','Other']].map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>
           {isStaff && <><label className="text-xs font-semibold space-y-1.5">Department<select className={fieldClass} value={department} onChange={e=>setDepartment(e.target.value)}>{['support','booking','operations','finance','sales','technical','management'].map(v=><option key={v} value={v}>{v.replace('_',' ').replace(/^./,x=>x.toUpperCase())}</option>)}</select></label><label className="text-xs font-semibold space-y-1.5">Priority<select className={fieldClass} value={priority} onChange={e=>setPriority(e.target.value)}>{['low','normal','high','urgent','critical'].map(v=><option key={v} value={v}>{v.toUpperCase()}</option>)}</select></label></>}
         </div>
+        <label className="text-xs font-semibold space-y-1.5">Related booking (optional)<select className={fieldClass} value={bookingId} onChange={e=>setBookingId(e.target.value)}><option value="">No booking selected</option>{bookings.map(b=><option key={b.id} value={b.id}>{b.booking_reference}</option>)}</select></label>
         <label className="block text-xs font-semibold space-y-1.5">Describe your request<textarea className={fieldClass+' min-h-32 resize-y'} maxLength={10000} minLength={10} required value={description} onChange={e=>setDescription(e.target.value)} placeholder="Include relevant details so our team can help quickly."/></label>
         <div className="flex justify-end"><button disabled={busy} className="rounded-xl bg-[#0A6C74] text-white px-5 py-3 text-sm font-bold disabled:opacity-50">{busy?'Creating…':'Submit ticket'}</button></div>
       </form>}
@@ -233,11 +262,14 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
             <article className="rounded-xl bg-stone-50 dark:bg-slate-800/60 p-4"><div className="flex items-center gap-2 text-xs font-bold mb-2"><UserRound size={14}/> Requester <span className="ml-auto text-[10px] font-normal text-stone-500">{new Date(selected.created_at).toLocaleString()}</span></div><p className="text-sm whitespace-pre-wrap text-stone-700 dark:text-slate-200">{selected.description}</p></article>
             {messages.map(message=><article key={message.id} className={'rounded-xl p-4 '+(message.is_internal?'bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900':'bg-[#E8F3F4]/70 dark:bg-teal-950/30')}>
               <div className="flex items-center gap-2 text-xs font-bold mb-2">{message.is_internal?<><Shield size={14}/> Internal note</>:<><Users size={14}/> {message.author_id===user.id?'You':'Team reply'}</>}<span className="ml-auto text-[10px] font-normal text-stone-500">{new Date(message.created_at).toLocaleString()}</span></div><p className="text-sm whitespace-pre-wrap">{message.body}</p>
+              {message.attachments?.length ? <div className="mt-3 flex flex-col gap-1.5">{message.attachments.map((attachment,i)=><AttachmentLink key={attachment.path||i} attachment={attachment}/>)}</div> : null}
             </article>)}
           </div>
           {selected.status!=='closed' && <form onSubmit={sendReply} className="p-4 sm:p-5 border-t border-stone-100 dark:border-slate-700 space-y-3">
             {canInternal && <label className="inline-flex items-center gap-2 text-xs font-semibold text-amber-700 dark:text-amber-300"><input type="checkbox" checked={internal} onChange={e=>setInternal(e.target.checked)}/> Add private internal note</label>}
             <textarea className={fieldClass+' min-h-24 resize-y'} value={reply} onChange={e=>setReply(e.target.value)} maxLength={10000} required placeholder={internal?'Write a note visible only to authorized staff…':'Write your reply…'}/>
+            <label className="block text-xs text-stone-500">Attachments (up to 5 files, 10 MB each)<input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,.txt" onChange={e=>setFiles(Array.from(e.target.files||[]).slice(0,5))} className="block mt-2 text-xs max-w-full"/></label>
+            {files.length>0&&<p className="text-xs text-stone-500">{files.map(file=>file.name).join(', ')}</p>}
             <div className="flex items-center justify-between gap-2"><span className="text-[10px] text-stone-500">Never include passwords, payment card details or sensitive credentials.</span><button disabled={busy||!reply.trim()} className="inline-flex items-center gap-2 rounded-xl bg-[#0A6C74] text-white px-4 py-2.5 text-xs font-bold disabled:opacity-50"><Send size={14}/>{busy?'Sending…':internal?'Add note':'Send reply'}</button></div>
           </form>}
           {selected.status==='closed' && <div className="p-5 border-t border-stone-100 dark:border-slate-700 text-xs text-stone-500 flex items-center gap-2"><CheckCircle2 size={16}/> This ticket is closed. Contact support to request reopening.</div>}
