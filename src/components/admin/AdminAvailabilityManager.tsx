@@ -12,7 +12,7 @@ import {
   Ban,
   Check
 } from 'lucide-react';
-import { supabase, isSupabaseConfigured, formatSupabaseError } from '../../services/supabaseClient';
+import { supabase, isSupabaseConfigured } from '../../services/supabaseClient';
 import { adminListTours, notifyCatalogueDataChanged } from '../../services/tourService';
 import { DbTour, DbTourAvailability } from '../../types/database';
 import { useToast } from '../../contexts/ToastContext';
@@ -74,7 +74,8 @@ export const AdminAvailabilityManager: React.FC = () => {
 
         if (error) {
           setAvailabilityMap({});
-          showToast(formatSupabaseError(error), 'error');
+          console.warn('Failed to load excursion availability:', error);
+          showToast('We could not load availability for this excursion. Please refresh and try again.', 'error');
           return;
         }
 
@@ -100,7 +101,7 @@ export const AdminAvailabilityManager: React.FC = () => {
 
       setAvailabilityMap({});
       if (import.meta.env.PROD) {
-        showToast('Supabase is not configured; no schedule data was loaded.', 'error');
+        showToast('Availability is temporarily unavailable. Please contact your administrator.', 'error');
       }
     }
 
@@ -175,7 +176,7 @@ export const AdminAvailabilityManager: React.FC = () => {
     }
   };
 
-  // Save changes to Supabase
+  // Save availability changes
   const handleSaveToSupabase = async () => {
     setSaving(true);
     setActionMessage(null);
@@ -196,7 +197,7 @@ export const AdminAvailabilityManager: React.FC = () => {
     }));
 
     if (!isSupabaseConfigured()) {
-      showToast('Supabase is not configured. These changes have not been saved to the database.', 'error');
+      showToast('Your changes could not be saved. Please contact your administrator.', 'error');
       setSaving(false);
       return;
     }
@@ -214,13 +215,13 @@ export const AdminAvailabilityManager: React.FC = () => {
 
       if (error) throw error;
 
-      showToast('Availability slots synchronized with Supabase database.', 'success');
-      setActionMessage('Availability slots and daily capacities synchronized successfully.');
+      showToast('Availability has been saved.', 'success');
+      setActionMessage('Availability and daily capacities have been saved.');
       notifyCatalogueDataChanged('tours');
       window.setTimeout(() => setActionMessage(null), 3500);
     } catch (err: any) {
       console.warn('Failed to upsert tour availability in Supabase:', err);
-      showToast(formatSupabaseError(err), 'error');
+      showToast('We could not save availability. Please try again. If the problem continues, contact your administrator.', 'error');
     } finally {
       setSaving(false);
     }
