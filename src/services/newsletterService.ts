@@ -19,7 +19,8 @@ function notifyNewsletterUpdated(subscriber?: NewsletterSubscriber) {
 export async function subscribeToNewsletter(
   email: string,
   source = 'footer',
-  honeypot?: string
+  honeypot?: string,
+  consentAccepted = false
 ): Promise<{ success: boolean; alreadySubscribed?: boolean; discountCode: string; message: string; error?: string }> {
   const discountCode = 'REDSEA15';
   if (honeypot?.trim()) {
@@ -45,6 +46,7 @@ export async function subscribeToNewsletter(
         source: source.slice(0, 80),
         preferredLanguage: typeof navigator !== 'undefined' ? navigator.language : 'en',
         website_url_hp: honeypot || '',
+        consentAccepted,
       }),
     });
     const result = await response.json().catch(() => ({}));
