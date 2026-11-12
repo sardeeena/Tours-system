@@ -1,15 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  CartesianGrid,
-} from 'recharts';
-import {
   TrendingUp,
   MousePointerClick,
   MailCheck,
@@ -141,6 +131,120 @@ const PAST_CAMPAIGNS: NewsletterCampaign[] = [
     promoCode: 'REDSEA15',
   },
 ];
+
+type NewsletterChartValue = string | number;
+type NewsletterChartRow = Record<string, NewsletterChartValue>;
+
+interface NewsletterChartSeries {
+  key: string;
+  name: string;
+  color: string;
+  dash?: string;
+  showDots?: boolean;
+}
+
+interface NewsletterLineChartProps {
+  data: NewsletterChartRow[];
+  xKey: string;
+  series: NewsletterChartSeries[];
+  yMax?: number;
+  ySuffix?: string;
+  xTickCount?: number;
+}
+
+const NewsletterLineChart: React.FC<NewsletterLineChartProps> = ({
+  data,
+  xKey,
+  series,
+  yMax,
+  ySuffix = '',
+  xTickCount = 6,
+}) => {
+  const width = 960;
+  const height = 288;
+  const margin = { top: 12, right: 18, bottom: 48, left: 54 };
+  const plotWidth = width - margin.left - margin.right;
+  const plotHeight = height - margin.top - margin.bottom;
+  const observedMax = Math.max(1, ...data.flatMap((row) => series.map((item) => Number(row[item.key]) || 0)));
+  const domainMax = yMax ?? Math.ceil((observedMax * 1.08) / 5) * 5;
+  const x = (index: number) => margin.left + (data.length <= 1 ? plotWidth / 2 : (index / (data.length - 1)) * plotWidth);
+  const y = (value: number) => margin.top + plotHeight - (Math.max(0, value) / domainMax) * plotHeight;
+  const tickValues = Array.from({ length: 5 }, (_, index) => (domainMax * (4 - index)) / 4);
+  const xTickIndexes = Array.from(
+    new Set(Array.from({ length: Math.min(xTickCount, data.length) }, (_, index) =>
+      Math.round((index * (data.length - 1)) / (Math.min(xTickCount, data.length) - 1 || 1))
+    ))
+  );
+
+  return (
+    <svg
+      viewBox={`0 0 ${width} ${height}`}
+      className="w-full h-full overflow-visible"
+      role="img"
+      aria-label="Newsletter performance line chart"
+      preserveAspectRatio="none"
+    >
+      {tickValues.map((tick, index) => (
+        <g key={index}>
+          <line
+            x1={margin.left}
+            x2={width - margin.right}
+            y1={y(tick)}
+            y2={y(tick)}
+            stroke="#292524"
+            strokeDasharray="3 3"
+          />
+          <text x={margin.left - 10} y={y(tick) + 4} textAnchor="end" fill="#a8a29e" fontSize="11">
+            {Math.round(tick).toLocaleString()}{ySuffix}
+          </text>
+        </g>
+      ))}
+      {series.map((item) => {
+        const points = data.map((row, index) => `${x(index)},${y(Number(row[item.key]) || 0)}`).join(' ');
+        return (
+          <g key={item.key}>
+            <polyline
+              points={points}
+              fill="none"
+              stroke={item.color}
+              strokeWidth={item.key === 'cumulativeSubscribers' || item.key === 'ctrRate' ? 2.8 : 2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeDasharray={item.dash}
+            />
+            {data.map((row, index) => (
+              <circle
+                key={`${item.key}-${index}`}
+                cx={x(index)}
+                cy={y(Number(row[item.key]) || 0)}
+                r={item.showDots ? 4 : 2}
+                fill={item.color}
+                opacity={item.showDots ? 1 : 0}
+                stroke={item.color}
+                strokeWidth="1"
+              >
+                <title>{`${String(row[xKey] ?? '')}: ${item.name} — ${Number(row[item.key]) || 0}${ySuffix}`}</title>
+              </circle>
+            ))}
+          </g>
+        );
+      })}
+      {xTickIndexes.map((index) => (
+        <text
+          key={index}
+          x={x(index)}
+          y={height - 12}
+          textAnchor="middle"
+          fill="#a8a29e"
+          fontSize="10"
+          transform={xKey === 'shortName' ? `rotate(-12 ${x(index)} ${height - 12})` : undefined}
+        >
+          {String(data[index]?.[xKey] ?? '')}
+        </text>
+      ))}
+    </svg>
+  );
+};
 
 interface NewsletterAnalyticsDashboardProps {
   subscribers: NewsletterSubscriber[];
@@ -410,60 +514,15 @@ export const NewsletterAnalyticsDashboard: React.FC<NewsletterAnalyticsDashboard
             </div>
 
             <div className="h-72 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={growthData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#292524" vertical={false} />
-                  <XAxis
-                    dataKey="displayDate"
-                    stroke="#78716c"
-                    tick={{ fill: '#a8a29e', fontSize: 11 }}
-                    tickLine={false}
-                    minTickGap={25}
-                  />
-                  <YAxis
-                    stroke="#78716c"
-                    tick={{ fill: '#a8a29e', fontSize: 11 }}
-                    tickLine={false}
-                    axisLine={false}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#1c1917',
-                      borderColor: '#44403c',
-                      borderRadius: '0.5rem',
-                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)',
-                      fontSize: '12px',
-                    }}
-                    labelStyle={{ color: '#ffffff', fontWeight: 600, marginBottom: '4px' }}
-                    formatter={(value: any, name?: any) => {
-                      const label = String(name || '');
-                      if (label === 'Cumulative Subscribers') {
-                        return [`${value} travelers`, label];
-                      }
-                      return [`+${value} new`, label];
-                    }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="cumulativeSubscribers"
-                    name="Cumulative Subscribers"
-                    stroke="#2dd4bf"
-                    strokeWidth={2.5}
-                    dot={false}
-                    activeDot={{ r: 6, fill: '#2dd4bf', stroke: '#0f766e', strokeWidth: 2 }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="newSubscribers"
-                    name="Daily New Signups"
-                    stroke="#38bdf8"
-                    strokeWidth={1.8}
-                    strokeDasharray="4 4"
-                    dot={false}
-                    activeDot={{ r: 5, fill: '#38bdf8' }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              <NewsletterLineChart
+                data={growthData}
+                xKey="displayDate"
+                series={[
+                  { key: 'cumulativeSubscribers', name: 'Cumulative Subscribers', color: '#2dd4bf' },
+                  { key: 'newSubscribers', name: 'Daily New Signups', color: '#38bdf8', dash: '4 4' },
+                ]}
+                xTickCount={6}
+              />
             </div>
           </div>
         )}
@@ -495,63 +554,17 @@ export const NewsletterAnalyticsDashboard: React.FC<NewsletterAnalyticsDashboard
             </div>
 
             <div className="h-72 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={ctrData} margin={{ top: 10, right: 20, left: 0, bottom: 20 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#292524" vertical={false} />
-                  <XAxis
-                    dataKey="shortName"
-                    stroke="#78716c"
-                    tick={{ fill: '#a8a29e', fontSize: 10 }}
-                    tickLine={false}
-                    interval={0}
-                    angle={-15}
-                    textAnchor="end"
-                  />
-                  <YAxis
-                    stroke="#78716c"
-                    tick={{ fill: '#a8a29e', fontSize: 11 }}
-                    tickLine={false}
-                    axisLine={false}
-                    unit="%"
-                    domain={[0, 80]}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#1c1917',
-                      borderColor: '#44403c',
-                      borderRadius: '0.5rem',
-                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.5)',
-                      fontSize: '12px',
-                    }}
-                    labelStyle={{ color: '#ffffff', fontWeight: 600, marginBottom: '6px' }}
-                    formatter={(value: any, name?: any) => {
-                      const label = String(name || '');
-                      if (label === 'Click-Through Rate (CTR %)') {
-                        return [`${value}% (CTR)`, label];
-                      }
-                      return [`${value}%`, label];
-                    }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="ctrRate"
-                    name="Click-Through Rate (CTR %)"
-                    stroke="#f59e0b"
-                    strokeWidth={2.8}
-                    dot={{ r: 5, fill: '#f59e0b', stroke: '#78350f', strokeWidth: 1.5 }}
-                    activeDot={{ r: 7, fill: '#f59e0b', stroke: '#ffffff', strokeWidth: 2 }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="openRate"
-                    name="Open Rate (%)"
-                    stroke="#38bdf8"
-                    strokeWidth={2}
-                    dot={{ r: 4, fill: '#38bdf8' }}
-                    activeDot={{ r: 6, fill: '#38bdf8' }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+              <NewsletterLineChart
+                data={ctrData}
+                xKey="shortName"
+                series={[
+                  { key: 'ctrRate', name: 'Click-Through Rate (CTR %)', color: '#f59e0b', showDots: true },
+                  { key: 'openRate', name: 'Open Rate (%)', color: '#38bdf8', showDots: true },
+                ]}
+                yMax={80}
+                ySuffix="%"
+                xTickCount={7}
+              />
             </div>
           </div>
         )}
