@@ -53,6 +53,7 @@ export const AdminNewsletterList: React.FC = () => {
       setSubscribers(data);
     } catch (err: any) {
       console.error('Failed to load newsletter subscribers:', err);
+      setSubscribers([]);
       showToast(err.message || 'Failed to load newsletter subscribers from database', 'error');
     } finally {
       setLoading(false);
@@ -86,14 +87,14 @@ export const AdminNewsletterList: React.FC = () => {
 
   const handleToggleStatus = async (s: NewsletterSubscriber) => {
     const newStatus = s.status === 'subscribed' ? 'unsubscribed' : 'subscribed';
-    const success = await updateSubscriberStatus(s.id || s.email, newStatus);
-    if (success) {
+    try {
+      await updateSubscriberStatus(s.id || s.email, newStatus);
       setSubscribers((prev) =>
-        prev.map((item) =>
-          item.email === s.email ? { ...item, status: newStatus } : item
-        )
+        prev.map((item) => item.email === s.email ? { ...item, status: newStatus } : item)
       );
       showToast(`Subscriber ${s.email} marked as ${newStatus}.`, 'success');
+    } catch (err: any) {
+      showToast(err?.message || 'Failed to update subscriber in the database.', 'error');
     }
   };
 
