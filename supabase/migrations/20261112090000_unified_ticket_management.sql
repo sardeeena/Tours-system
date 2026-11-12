@@ -389,8 +389,8 @@ CREATE POLICY support_ticket_attachments_read ON storage.objects
 FOR SELECT TO authenticated
 USING (
   bucket_id='support-ticket-attachments'
-  AND split_part(name,'/',1) ~* '^[0-9a-f-]{36}
-
+  AND length(split_part(name,'/',1))=36
+  AND split_part(name,'/',1) ~* '^[0-9a-f-]{36}'
   AND EXISTS (
     SELECT 1 FROM public.support_tickets t
     WHERE t.id::text=split_part(storage.objects.name,'/',1)
@@ -407,8 +407,8 @@ CREATE POLICY support_ticket_attachments_upload ON storage.objects
 FOR INSERT TO authenticated
 WITH CHECK (
   bucket_id='support-ticket-attachments'
-  AND split_part(name,'/',1) ~* '^[0-9a-f-]{36}
-
+  AND length(split_part(name,'/',1))=36
+  AND split_part(name,'/',1) ~* '^[0-9a-f-]{36}'
   AND EXISTS (
     SELECT 1 FROM public.support_tickets t
     WHERE t.id::text=split_part(storage.objects.name,'/',1)
@@ -430,8 +430,8 @@ CREATE POLICY support_ticket_attachments_delete ON storage.objects
 FOR DELETE TO authenticated
 USING (
   bucket_id='support-ticket-attachments'
-  AND split_part(name,'/',1) ~* '^[0-9a-f-]{36}
-
+  AND length(split_part(name,'/',1))=36
+  AND split_part(name,'/',1) ~* '^[0-9a-f-]{36}'
   AND EXISTS (
     SELECT 1 FROM public.support_tickets t
     WHERE t.id::text=split_part(storage.objects.name,'/',1)
