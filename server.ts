@@ -2420,7 +2420,7 @@ app.post('/api/admin/technical/visitors/settings', rateLimit(10, 60_000), async 
   await serverSupabase.from('audit_logs').insert({
     user_id: req.user!.id, action: 'VISITOR_ANALYTICS_RETENTION_UPDATED',
     entity_type: 'visitor_analytics_settings', entity_id: 'default',
-    new_data: { event_retention_days: eventDays, session_retention_days: sessionDays, consent_retention_days: consentDays },
+    new_data: { event_retention_days: eventDays, session_retention_days: sessionDays, consent_retention_days: consentDays, technical_event_retention_days: technicalDays, audit_log_retention_days: auditDays },
   });
   return res.json({ success: true, settings: data });
 });
