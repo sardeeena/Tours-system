@@ -1,4 +1,4 @@
-# Kemet Spirit crawler policy
+# Awesome Adventure Tours crawler policy
 User-agent: *
 Allow: /
 
@@ -9,4 +9,4 @@ Disallow: /api/
 # Keep private application routes crawlable so crawlers can observe their noindex response headers.
 # Access control is enforced by the application, not by robots.txt.
 
-Sitemap: https://kemetspirit.com/sitemap.xml
+Sitemap: https://awesomeadventure.tours/sitemap.xml
