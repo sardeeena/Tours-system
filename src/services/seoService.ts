@@ -17,10 +17,10 @@ export interface SeoMetadata {
   schemaJsonLd?: Record<string, unknown>;
 }
 
-const DEFAULT_TITLE = 'Kemet Spirit | Red Sea Excursions in Egypt';
+const DEFAULT_TITLE = 'Awesome Adventure Tours | Red Sea Excursions in Egypt';
 const DEFAULT_DESCRIPTION = 'Explore Red Sea excursions in Egypt, including boat trips, island visits, snorkeling and desert experiences. Review each tour\'s details before booking.';
-const DEFAULT_IMAGE = 'https://kemetspirit.com/logo.webp';
-const SITE_NAME = 'Kemet Spirit';
+const DEFAULT_IMAGE = 'https://awesomeadventure.tours/logo.webp';
+const SITE_NAME = 'Awesome Adventure Tours';
 
 /**
  * Updates or creates a <meta> element in the document head
@@ -111,8 +111,8 @@ export async function getStoredSeoMetadata(
     if (data.meta_description) metadata.description = data.meta_description;
     if (data.canonical_url) {
       try {
-        const candidate = new URL(data.canonical_url, 'https://kemetspirit.com');
-        if (candidate.protocol === 'https:' && candidate.hostname.toLowerCase() === 'kemetspirit.com') {
+        const candidate = new URL(data.canonical_url, 'https://awesomeadventure.tours');
+        if (candidate.protocol === 'https:' && candidate.hostname.toLowerCase() === 'awesomeadventure.tours') {
           metadata.canonicalUrl = candidate.toString();
         }
       } catch {
@@ -168,8 +168,8 @@ export const seoService = {
 
     // 4. Canonical URL
     const hostname = window.location.hostname.toLowerCase();
-    const canonicalOrigin = hostname === 'kemetspirit.com' || hostname === 'www.kemetspirit.com'
-      ? 'https://kemetspirit.com'
+    const canonicalOrigin = hostname === 'awesomeadventure.tours' || hostname === 'www.awesomeadventure.tours'
+      ? 'https://awesomeadventure.tours'
       : window.location.origin;
     const canonical = meta.canonicalUrl || `${canonicalOrigin}${window.location.pathname}`;
     setCanonicalUrl(canonical);
@@ -207,7 +207,7 @@ export const seoService = {
    * Generates tailored SEO metadata for an Excursion Detail Page
    */
   generateTourSeo(tour: Tour): SeoMetadata {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kemetspirit.com';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://awesomeadventure.tours';
     const tourUrl = `${origin}/excursions/${tour.slug}`;
     const formattedPrice = `€${tour.priceEur}`;
 
@@ -282,7 +282,7 @@ export const seoService = {
    * Generates tailored SEO metadata for Category & Filter Views
    */
   generateCategorySeo(categoryName: string, tourCount: number, matchingTours: Tour[] = []): SeoMetadata {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kemetspirit.com';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://awesomeadventure.tours';
     const isAll = categoryName === 'All' || !categoryName;
 
     const title = isAll
@@ -331,7 +331,7 @@ export const seoService = {
    * Generates tailored SEO metadata for Destination Views
    */
   generateDestinationSeo(destinationName: string, tourCount: number): SeoMetadata {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kemetspirit.com';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://awesomeadventure.tours';
     const title = `${destinationName} Excursions & Boat Tours | Red Sea Direct Booking`;
     const description = `Discover ${tourCount} excursions departing directly from ${destinationName}. Island cruises, coral reef snorkeling, PADI diving, and desert quad safaris.`;
 
@@ -350,7 +350,7 @@ export const seoService = {
    * Default Homepage SEO & Organization Schema
    */
   generateDefaultSeo(): SeoMetadata {
-    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://kemetspirit.com';
+    const origin = typeof window !== 'undefined' ? window.location.origin : 'https://awesomeadventure.tours';
 
     const schemaJsonLd: Record<string, unknown> = {
       '@context': 'https://schema.org',

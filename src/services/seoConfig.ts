@@ -313,6 +313,32 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> =
     ),
   }),
 
+  '/support': (origin) => ({
+    title: 'Customer Support & Tickets | Awesome Adventure Tours',
+    description:
+      'Sign in to create a support request and securely follow your conversations with the Awesome Adventure Tours team.',
+    keywords: [
+      'Awesome Adventure Tours support',
+      'Red Sea excursion assistance',
+      'booking support',
+      'customer service Hurghada',
+    ],
+    canonicalUrl: `${origin}/support`,
+    ogType: 'website',
+    ogImage: SEO_DEFAULTS.DEFAULT_OG_IMAGE,
+    ogImageAlt: 'Awesome Adventure Tours customer support',
+    twitterCard: 'summary',
+    robotsIndex: false,
+    robotsFollow: false,
+    schemaJsonLd: generateBreadcrumbsJsonLd(
+      [
+        { name: 'Home', path: '/' },
+        { name: 'Customer Support', path: '/support' },
+      ],
+      origin
+    ),
+  }),
+
   '/my-booking': (origin) => ({
     title: 'Manage Your Booking & Download Voucher | Awesome Adventure Tours',
     description:
