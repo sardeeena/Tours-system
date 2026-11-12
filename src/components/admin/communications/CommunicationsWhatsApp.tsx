@@ -202,18 +202,11 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
         Array.isArray(err?.missingFields);
 
       if (isConfigError) {
-        const missingFields =
-          Array.isArray(err.missingFields) && err.missingFields.length > 0
-            ? err.missingFields.join(', ')
-            : null;
-
-        const errorToast = missingFields
-          ? `${err.message} (Missing field: ${missingFields})`
-          : err.message || 'WhatsApp provider configuration error. Missing required credentials.';
-
-        showToast(errorToast, 'error', 7000);
+        console.warn('WhatsApp service configuration needs attention:', err);
+        showToast('WhatsApp delivery is not ready yet. Please contact a Superadmin.', 'error', 7000);
       } else {
-        showToast(err?.message || 'Error occurred while sending WhatsApp message', 'error', 5000);
+        console.warn('WhatsApp message failed:', err);
+        showToast('We could not send this WhatsApp message. Please try again.', 'error', 5000);
       }
     } finally {
       await loadData();
@@ -320,14 +313,14 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
             )}
           </div>
 
-          <button
+          {isSuperAdmin && <button
             type="button"
             onClick={openSettingsModal}
             className="flex items-center space-x-2 px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-medium rounded-lg border border-stone-700 transition-colors"
           >
             <Settings className="w-3.5 h-3.5 text-stone-400" />
-            <span>Connect Provider</span>
-          </button>
+            <span>WhatsApp settings</span>
+          </button>}
 
           <button
             type="button"
@@ -348,19 +341,17 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
             <div>
               <p className="font-semibold text-amber-100">WhatsApp Gateway Status: Not configured</p>
               <p className="text-amber-300/80 mt-0.5">
-                WhatsApp delivery needs attention. Please contact a Superadmin before sending automated messages.
-                will record as <strong>Failed (&ldquo;Not configured&rdquo;)</strong>. You can still use the <em>&ldquo;Open in WhatsApp Web&rdquo;</em> button
-                to send directly via your desktop/phone WhatsApp.
+                WhatsApp delivery needs attention. Please contact a Superadmin before sending automated messages. You can still use the <em>&ldquo;Open in WhatsApp Web&rdquo;</em> option to send directly from your device.
               </p>
             </div>
           </div>
-          <button
+          {isSuperAdmin && <button
             type="button"
             onClick={openSettingsModal}
             className="px-3 py-1.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-500/30 font-semibold rounded-lg shrink-0 transition-colors"
           >
             WhatsApp settings
-          </button>
+          </button>}
         </div>
       )}
 
