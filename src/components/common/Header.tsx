@@ -381,11 +381,11 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={handleLogoClick}
             className="flex items-center group focus:outline-hidden"
             id="brand-logo-link"
-            aria-label="Kemet Spirit Home"
+            aria-label="Awesome Adventure Tours Home"
           >
             <img 
               src="/logo.png" 
-              alt="Kemet Spirit" 
+              alt="Awesome Adventure Tours" 
               width="240"
               height="80"
               fetchPriority="high"
@@ -431,8 +431,8 @@ export const Header: React.FC<HeaderProps> = ({
             >
               {t('nav.guestReviews')}
             </button>
-            <a href="/blog" aria-label="Visit the Kemet Spirit blog" className="inline-flex items-center rounded-full border border-[#0A6C74]/30 bg-[#E8F3F4] px-3.5 py-1.5 text-sm font-bold text-[#0A6C74] shadow-xs transition-colors hover:bg-[#D7EBEC] dark:border-teal-400/30 dark:bg-teal-950/50 dark:text-teal-300 dark:hover:bg-teal-900/60">Blog</a>
-            <a href="/support" aria-label="Open Kemet Spirit customer support" className="text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1 text-sm font-semibold">Support</a>
+            <a href="/blog" aria-label="Visit the Awesome Adventure Tours blog" className="inline-flex items-center rounded-full border border-[#0A6C74]/30 bg-[#E8F3F4] px-3.5 py-1.5 text-sm font-bold text-[#0A6C74] shadow-xs transition-colors hover:bg-[#D7EBEC] dark:border-teal-400/30 dark:bg-teal-950/50 dark:text-teal-300 dark:hover:bg-teal-900/60">Blog</a>
+            <a href="/support" aria-label="Open Awesome Adventure Tours customer support" className="text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1 text-sm font-semibold">Support</a>
           </nav>
 
         {/* Action Controls */}
@@ -682,7 +682,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           <a
             href="/blog"
-            aria-label="Visit the Kemet Spirit blog"
+            aria-label="Visit the Awesome Adventure Tours blog"
             className="inline-flex items-center justify-center rounded-lg border border-[#0A6C74]/30 bg-[#E8F3F4] px-3 py-2 text-xs font-bold text-[#0A6C74] dark:border-teal-400/30 dark:bg-teal-950/50 dark:text-teal-300"
           >
             Blog
