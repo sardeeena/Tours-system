@@ -1,6 +1,7 @@
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import {
   CommunicationMessage,
+  EmailProviderEvent,
   CommunicationTemplate,
   MessageDeliveryStatus,
   CommunicationChannel,
