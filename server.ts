@@ -746,11 +746,13 @@ app.post('/api/webhooks/resend', rateLimit(300, 60_000), async (req: Request, re
       payload: event,
     });
 
-  if (eventInsertError) {
-    if (eventInsertError.code === '23505') return res.status(200).json({ success: true, duplicate: true });
+  if (eventInsertError && eventInsertError.code !== '23505') {
     console.error('Resend webhook event persistence failed:', eventInsertError.message);
     return res.status(503).json({ success: false, error: 'Webhook event could not be stored.' });
   }
+  // A duplicate event still runs the idempotent message projection below. This
+  // allows a provider retry to recover if the event row was saved but its
+  // corresponding communications row could not be updated on the first attempt.
 
   const statusByEvent: Record<string, string> = {
     'email.sent': 'sent',
@@ -772,13 +774,42 @@ app.post('/api/webhooks/resend', rateLimit(300, 60_000), async (req: Request, re
     if (nextStatus === 'delivered') update.delivered_at = occurredAt;
     if (nextStatus === 'opened') update.opened_at = occurredAt;
     if (failureReason) update.failure_reason = failureReason;
-    const { error: messageUpdateError } = await serverSupabase
+    const { data: updatedMessages, error: messageUpdateError } = await serverSupabase
       .from('communication_messages')
       .update(update)
-      .eq('provider_message_id', data.email_id);
+      .eq('provider_message_id', data.email_id)
+      .select('id');
     if (messageUpdateError) {
       console.error('Resend webhook message status update failed:', messageUpdateError.message);
       return res.status(503).json({ success: false, error: 'Webhook was stored but the message status could not be updated.' });
+    }
+
+    // Supabase Auth and other Resend SMTP integrations do not originate from
+    // our app dispatcher. Create an audit row so those emails also appear in
+    // the same admin Communications History.
+    if (!updatedMessages?.length) {
+      const fallbackRecipient = recipient || 'unknown-recipient';
+      const { error: externalLogError } = await serverSupabase
+        .from('communication_messages')
+        .insert({
+          channel: 'Email',
+          customer_name: fallbackRecipient,
+          recipient_address: fallbackRecipient,
+          subject: typeof data.subject === 'string' ? data.subject.slice(0, 500) : 'External email',
+          content: `Email event ${eventType} received from Resend. Full provider payload is stored in email_provider_events.`,
+          status: nextStatus,
+          provider_name: 'Resend',
+          provider_message_id: String(data.email_id).slice(0, 200),
+          failure_reason: failureReason,
+          sent_at: eventType === 'email.sent' ? occurredAt : null,
+          delivered_at: eventType === 'email.delivered' ? occurredAt : null,
+          opened_at: ['email.opened', 'email.clicked'].includes(eventType) ? occurredAt : null,
+          staff_name: 'External Email Provider',
+        });
+      if (externalLogError && externalLogError.code !== '23505') {
+        console.error('External Resend email audit insert failed:', externalLogError.message);
+        return res.status(503).json({ success: false, error: 'Webhook was stored but its admin email record could not be created.' });
+      }
     }
   }
 
