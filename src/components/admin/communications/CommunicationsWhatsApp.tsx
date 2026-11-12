@@ -303,7 +303,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
             {providerConfig.whatsapp.isConfigured ? (
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20">
                 <CheckCircle2 className="w-3 h-3" />
-                {providerConfig.whatsapp.provider === 'meta_cloud' ? 'WhatsApp Business' : 'Twilio'}
+                Connected
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 font-semibold border border-amber-500/20">
@@ -339,7 +339,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
           <div className="flex items-start space-x-3">
             <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
             <div>
-              <p className="font-semibold text-amber-100">WhatsApp Gateway Status: Not configured</p>
+              <p className="font-semibold text-amber-100">WhatsApp delivery is not ready</p>
               <p className="text-amber-300/80 mt-0.5">
                 WhatsApp delivery needs attention. Please contact a Superadmin before sending automated messages. You can still use the <em>&ldquo;Open in WhatsApp Web&rdquo;</em> option to send directly from your device.
               </p>
