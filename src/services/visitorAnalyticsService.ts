@@ -21,6 +21,11 @@ export interface VisitorMetadata {
   os_family: string;
   screen_bucket: 'small' | 'medium' | 'large' | 'xlarge';
   language: string;
+  locale: string;
+  language_preferences: string[];
+  platform_family: 'Windows' | 'macOS' | 'Linux' | 'Android' | 'iOS' | 'ChromeOS' | 'Other';
+  is_mobile: boolean;
+  viewport_bucket: 'compact' | 'standard' | 'wide';
   timezone: string;
   referrer_host: string | null;
   utm_source: string | null;
@@ -107,6 +112,18 @@ export function visitorMetadata(): VisitorMetadata {
   const device = /iPad|Tablet/i.test(ua) ? 'tablet' : /Mobi|Android/i.test(ua) ? 'mobile' : /Windows|Macintosh|Linux/i.test(ua) ? 'desktop' : 'other';
   let referrerHost: string | null = null;
   try { referrerHost = document.referrer ? new URL(document.referrer).hostname.slice(0, 120) : null; } catch { referrerHost = null; }
+  const platformSource = `${navigator.platform || ''} ${ua}`;
+  const platformFamily: VisitorMetadata['platform_family'] = /iPhone|iPad|iPod/i.test(platformSource) ? 'iOS'
+    : /Android/i.test(platformSource) ? 'Android'
+    : /Windows/i.test(platformSource) ? 'Windows'
+    : /Mac/i.test(platformSource) ? 'macOS'
+    : /CrOS/i.test(platformSource) ? 'ChromeOS'
+    : /Linux/i.test(platformSource) ? 'Linux' : 'Other';
+  const languagePreferences = Array.from(new Set([navigator.language, ...(navigator.languages || [])]
+    .filter((value): value is string => typeof value === 'string')
+    .map((value) => value.trim())
+    .filter((value) => /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(value))))
+    .slice(0, 8);
   const params = new URLSearchParams(window.location.search);
   const clean = (key: string) => {
     const raw = params.get(key) || '';
@@ -116,6 +133,11 @@ export function visitorMetadata(): VisitorMetadata {
   return {
     device_type: device, browser_family: browserFamily(ua), os_family: osFamily(ua),
     screen_bucket: screenBucket, language: (navigator.language || 'unknown').slice(0, 24),
+    locale: (navigator.language || 'unknown').slice(0, 35),
+    language_preferences: languagePreferences,
+    platform_family: platformFamily,
+    is_mobile: device === 'mobile' || device === 'tablet',
+    viewport_bucket: width < 768 ? 'compact' : width < 1280 ? 'standard' : 'wide',
     timezone: (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone.slice(0, 64); } catch { return 'unknown'; } })(),
     referrer_host: referrerHost, utm_source: clean('utm_source'), utm_medium: clean('utm_medium'), utm_campaign: clean('utm_campaign'),
     utm_term: clean('utm_term'), utm_content: clean('utm_content'),
