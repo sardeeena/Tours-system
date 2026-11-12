@@ -103,14 +103,11 @@ export const Footer: React.FC<FooterProps> = ({
                 src="/logo.png" 
                 alt="Awesome Adventure Tours Logo" 
                 width="160"
-                height="48"
+                height="160"
                 loading="lazy"
                 decoding="async"
-                className="h-12 w-auto object-contain shrink-0 drop-shadow-xs"
+                className="h-16 w-16 object-contain shrink-0 drop-shadow-xs"
               />
-              <span className="font-display font-semibold text-stone-900 dark:text-white text-lg tracking-wide">
-                AWESOME <span className="text-[#0A6C74] dark:text-[#60C3CC]">ADVENTURE TOURS</span>
-              </span>
             </div>
             <p className="text-xs text-stone-600 dark:text-slate-400 leading-relaxed mb-5 max-w-sm">
               Explore trusted Red Sea excursions and experiences from Hurghada, Egypt, with local insight, clear trip information and helpful support.
