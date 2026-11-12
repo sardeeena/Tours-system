@@ -544,7 +544,7 @@ function requireCommunicationsStaff(req: AuthenticatedRequest, res: Response): b
 app.get('/api/communications/status', rateLimit(60, 60_000), (req: AuthenticatedRequest, res: Response) => {
   if (!requireCommunicationsStaff(req, res)) return;
 
-  const emailConfigured = Boolean(process.env.RESEND_API_KEY?.trim() && process.env.RESEND_FROM_EMAIL?.trim());
+  const emailConfigured = Boolean(process.env.RESEND_API_KEY?.trim() && isValidEmail(process.env.RESEND_FROM_EMAIL?.trim() || ''));
   const whatsappConfigured = Boolean(
     process.env.WHATSAPP_ACCESS_TOKEN?.trim()
     && process.env.WHATSAPP_PHONE_NUMBER_ID?.trim()
@@ -1332,23 +1332,30 @@ function verifyNewsletterUnsubscribeToken(token: string): { subscriberId: string
   }
 }
 
-app.get('/api/newsletter/unsubscribe', rateLimit(20, 60_000), async (req: Request, res: Response) => {
+app.get('/api/newsletter/unsubscribe', rateLimit(30, 60_000), (req: Request, res: Response) => {
   const token = typeof req.query.token === 'string' ? req.query.token : '';
   const verified = verifyNewsletterUnsubscribeToken(token);
   if (!verified || !serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
     return res.status(400).type('text').send('This unsubscribe link is invalid or expired. Please contact reservations for assistance.');
   }
+  // GET requests only display confirmation. Mail-security scanners often prefetch links.
+  const action = '/api/newsletter/unsubscribe?token=' + encodeURIComponent(token);
+  return res.status(200).type('html').send('<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Confirm unsubscribe</title><body style="font-family:Arial,sans-serif;max-width:560px;margin:12vh auto;padding:24px;color:#17212b"><h1>Unsubscribe from updates?</h1><p>Confirm below to stop newsletter and promotional emails from Awesome Adventure Tours.</p><form method="post" action="' + action + '"><button type="submit" style="background:#0a6c74;color:white;border:0;border-radius:8px;padding:12px 18px;font-weight:bold">Confirm unsubscribe</button></form><p><a href="https://awesomeadventure.tours/">Return to Awesome Adventure Tours</a></p></body></html>');
+});
 
-  const { error } = await serverSupabase
-    .from('newsletter_subscriptions')
+app.post('/api/newsletter/unsubscribe', rateLimit(20, 60_000), async (req: Request, res: Response) => {
+  const token = typeof req.query.token === 'string' ? req.query.token : '';
+  const verified = verifyNewsletterUnsubscribeToken(token);
+  if (!verified || !serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
+    return res.status(400).type('text').send('This unsubscribe link is invalid or expired. Please contact reservations for assistance.');
+  }
+  const { error } = await serverSupabase.from('newsletter_subscriptions')
     .update({ status: 'unsubscribed', updated_at: new Date().toISOString() })
-    .eq('id', verified.subscriberId)
-    .eq('email', verified.email);
+    .eq('id', verified.subscriberId).eq('email', verified.email);
   if (error) {
     console.error('Newsletter unsubscribe update failed:', error.message);
     return res.status(503).type('text').send('We could not process your request right now. Please try again later.');
   }
-
   return res.status(200).type('html').send('<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Unsubscribed</title><body style="font-family:Arial,sans-serif;max-width:560px;margin:12vh auto;padding:24px;color:#17212b"><h1>You have been unsubscribed</h1><p>You will no longer receive newsletter and promotional emails from Awesome Adventure Tours.</p><p>If this was a mistake, you can subscribe again from our website.</p><a href="https://awesomeadventure.tours/">Return to Awesome Adventure Tours</a></body></html>');
 });
 
