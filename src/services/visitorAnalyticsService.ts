@@ -26,7 +26,9 @@ export interface VisitorMetadata {
 }
 
 const SESSION_KEY = 'aat_visitor_session_v1';
+const VISITOR_KEY = 'aat_visitor_id_v1';
 const SESSION_TTL_MS = 30 * 60 * 1000;
+const VISITOR_TTL_MS = 180 * 24 * 60 * 60 * 1000;
 
 function randomId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
@@ -36,6 +38,17 @@ function randomId(): string {
   bytes[8] = (bytes[8] & 0x3f) | 0x80;
   const hex = Array.from(bytes, (value) => value.toString(16).padStart(2, '0')).join('');
   return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+}
+
+function visitorId(): string {
+  const now = Date.now();
+  try {
+    const saved = JSON.parse(localStorage.getItem(VISITOR_KEY) || 'null') as { id?: string; createdAt?: number } | null;
+    if (saved?.id && saved.createdAt && now - saved.createdAt < VISITOR_TTL_MS) return saved.id;
+    const id = randomId();
+    localStorage.setItem(VISITOR_KEY, JSON.stringify({ id, createdAt: now }));
+    return id;
+  } catch { return randomId(); }
 }
 
 function sessionId(): string {
@@ -127,10 +140,10 @@ export async function recordVisitorConsent(choices: VisitorConsent, source = 'co
     } catch { return null; }
   })();
   if (!choices.analytics) {
-    try { localStorage.removeItem(SESSION_KEY); } catch { /* storage may be unavailable */ }
+    try { localStorage.removeItem(SESSION_KEY); localStorage.removeItem(VISITOR_KEY); } catch { /* storage may be unavailable */ }
   }
   await post('/api/visitor/consent', {
-    session_id: id, analytics: choices.analytics, marketing: choices.marketing,
+    session_id: id, visitor_id: choices.analytics ? visitorId() : null, analytics: choices.analytics, marketing: choices.marketing,
     source, landing_path: window.location.pathname, metadata: visitorMetadata(),
   });
   window.dispatchEvent(new CustomEvent('awesome:visitor-consent-saved'));
