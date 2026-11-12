@@ -2041,6 +2041,322 @@ app.get('/api/admin/technical/events', rateLimit(60, 60_000), async (req: Authen
   }
 });
 
+
+const VISITOR_EVENT_NAMES = new Set([
+  'page_view','page_exit','navigation','tour_view','search',
+  'booking_started','booking_step_completed','booking_submitted',
+  'booking_confirmed','booking_cancelled','custom',
+]);
+const VISITOR_EVENT_FIELDS = new Set([
+  'tour_slug','category','destination','booking_step','result_count',
+  'currency','sort_order','filter_count','form_name','interaction',
+]);
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function safeShortText(value: unknown, max = 120): string | null {
+  if (typeof value !== 'string') return null;
+  const cleaned = value.replace(/[<>\u0000-\u001f]/g, '').trim().slice(0, max);
+  return cleaned || null;
+}
+
+function safePagePath(value: unknown): string {
+  if (typeof value !== 'string' || !value.startsWith('/')) return '/';
+  // Store route paths only; never retain query parameters, fragments, or submitted form values.
+  return value.split(/[?#]/, 1)[0].replace(/[\u0000-\u001f]/g, '').slice(0, 512) || '/';
+}
+
+function safeVisitorMetadata(value: any) {
+  const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const device = ['desktop','mobile','tablet','other'].includes(source.device_type) ? source.device_type : null;
+  const screen = typeof source.screen_bucket === 'string' && /^(small|medium|large|xlarge)$/.test(source.screen_bucket) ? source.screen_bucket : null;
+  const country = typeof source.country_code === 'string' && /^[A-Z]{2}$/.test(source.country_code) ? source.country_code : null;
+  const region = typeof source.region_code === 'string' && /^[A-Z0-9-]{1,8}$/.test(source.region_code) ? source.region_code : null;
+  return {
+    device_type: device,
+    browser_family: safeShortText(source.browser_family, 40),
+    os_family: safeShortText(source.os_family, 40),
+    screen_bucket: screen,
+    language: safeShortText(source.language, 24),
+    timezone: safeShortText(source.timezone, 64),
+    country_code: country,
+    region_code: region,
+    referrer_host: safeShortText(source.referrer_host, 120),
+    utm_source: safeShortText(source.utm_source, 100),
+    utm_medium: safeShortText(source.utm_medium, 100),
+    utm_campaign: safeShortText(source.utm_campaign, 120),
+  };
+}
+
+function safeVisitorEventData(value: any): Record<string, string | number | boolean> {
+  const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+  const result: Record<string, string | number | boolean> = {};
+  for (const key of Object.keys(source)) {
+    if (!VISITOR_EVENT_FIELDS.has(key)) continue;
+    const item = source[key];
+    if (typeof item === 'string') {
+      const safe = safeShortText(item, 120);
+      if (safe) result[key] = safe;
+    } else if (typeof item === 'number' && Number.isFinite(item)) {
+      result[key] = Math.max(-1_000_000, Math.min(1_000_000, item));
+    } else if (typeof item === 'boolean') {
+      result[key] = item;
+    }
+  }
+  return result;
+}
+
+// Public ingestion accepts only explicit consent choices and allowlisted event fields.
+// It deliberately does not record IP addresses, raw cookies, full user-agent strings,
+// URL query strings, form contents, authentication tokens, or payment information.
+app.post('/api/visitor/consent', rateLimit(20, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
+    return res.status(503).json({ success: false, error: 'Privacy settings are temporarily unavailable.' });
+  }
+  const analytics = req.body?.analytics === true;
+  const marketing = req.body?.marketing === true;
+  const sessionId = typeof req.body?.session_id === 'string' && UUID_PATTERN.test(req.body.session_id) ? req.body.session_id : null;
+  const visitorId = typeof req.body?.visitor_id === 'string' && UUID_PATTERN.test(req.body.visitor_id) ? req.body.visitor_id : null;
+  const metadata = safeVisitorMetadata(req.body?.metadata);
+  try {
+    if (analytics && sessionId && visitorId) {
+      const now = new Date().toISOString();
+      const { error: sessionError } = await serverSupabase.from('visitor_sessions').upsert({
+        id: sessionId,
+        visitor_id: visitorId,
+        user_id: req.user?.id || null,
+        started_at: now,
+        last_seen_at: now,
+        landing_path: safePagePath(req.body?.landing_path),
+        ...metadata,
+        analytics_consent: true,
+        marketing_consent: marketing,
+        consent_updated_at: now,
+      }, { onConflict: 'id', ignoreDuplicates: true });
+      if (sessionError) throw sessionError;
+      const { error: updateError } = await serverSupabase.from('visitor_sessions').update({
+        user_id: req.user?.id || null,
+        last_seen_at: now,
+        ...metadata,
+        analytics_consent: true,
+        marketing_consent: marketing,
+        consent_updated_at: now,
+      }).eq('id', sessionId);
+      if (updateError) throw updateError;
+    } else if (sessionId) {
+      await serverSupabase.from('visitor_sessions').update({
+        analytics_consent: false,
+        marketing_consent: false,
+        ended_at: new Date().toISOString(),
+        consent_updated_at: new Date().toISOString(),
+      }).eq('id', sessionId);
+    }
+    if (req.body?.source === 'session_restore') return res.status(200).json({ success: true, restored: true });
+    const { error } = await serverSupabase.from('visitor_consent_records').insert({
+      visitor_session_id: sessionId,
+      visitor_id: analytics ? visitorId : null,
+      user_id: req.user?.id || null,
+      necessary: true,
+      analytics,
+      marketing,
+      consent_version: '1',
+      consent_source: ['cookie_banner','privacy_settings','account_settings'].includes(req.body?.source) ? req.body.source : 'cookie_banner',
+    });
+    if (error) throw error;
+    return res.status(201).json({ success: true });
+  } catch (error) {
+    console.error('[Visitor privacy] Consent record failed:', error instanceof Error ? error.message : 'unknown error');
+    return res.status(503).json({ success: false, error: 'Your privacy choice could not be saved to our records. Your browser choice remains active on this device.' });
+  }
+});
+
+app.post('/api/visitor/events', rateLimit(90, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
+    return res.status(503).json({ success: false, error: 'Visitor analytics are temporarily unavailable.' });
+  }
+  const sessionId = typeof req.body?.session_id === 'string' && UUID_PATTERN.test(req.body.session_id) ? req.body.session_id : null;
+  const eventName = typeof req.body?.event_name === 'string' ? req.body.event_name : '';
+  if (!sessionId || !VISITOR_EVENT_NAMES.has(eventName)) {
+    return res.status(400).json({ success: false, error: 'Invalid visitor event.' });
+  }
+  try {
+    const { data: session, error: sessionError } = await serverSupabase
+      .from('visitor_sessions').select('id,analytics_consent').eq('id', sessionId).maybeSingle();
+    if (sessionError) throw sessionError;
+    if (!session?.analytics_consent) return res.status(204).end();
+    const duration = Number(req.body?.duration_ms);
+    const { error } = await serverSupabase.from('visitor_events').insert({
+      session_id: sessionId,
+      user_id: req.user?.id || null,
+      event_name: eventName,
+      page_path: safePagePath(req.body?.page_path),
+      page_title: safeShortText(req.body?.page_title, 160),
+      duration_ms: Number.isFinite(duration) ? Math.max(0, Math.min(86_400_000, Math.round(duration))) : null,
+      event_data: safeVisitorEventData(req.body?.event_data),
+    });
+    if (error) throw error;
+    await serverSupabase.from('visitor_sessions').update({
+      last_seen_at: new Date().toISOString(),
+      user_id: req.user?.id || null,
+    }).eq('id', sessionId);
+    return res.status(202).json({ success: true });
+  } catch (error) {
+    console.error('[Visitor analytics] Event ingestion failed:', error instanceof Error ? error.message : 'unknown error');
+    return res.status(503).json({ success: false, error: 'Visitor activity could not be recorded.' });
+  }
+});
+
+// Superadmin-only visitor analytics. All reads use the existing verified AAL2 guard.
+app.get('/api/admin/technical/visitors/overview', rateLimit(30, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return res.status(503).json({ success: false, error: 'Visitor analytics are unavailable.' });
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  try {
+    const [sessions, events, guests, users, consents, visitorRows] = await Promise.all([
+      serverSupabase.from('visitor_sessions').select('id', { count: 'exact', head: true }).gte('started_at', since).eq('analytics_consent', true),
+      serverSupabase.from('visitor_events').select('id', { count: 'exact', head: true }).gte('occurred_at', since),
+      serverSupabase.from('visitor_sessions').select('id', { count: 'exact', head: true }).gte('started_at', since).eq('analytics_consent', true).is('user_id', null),
+      serverSupabase.from('visitor_sessions').select('id', { count: 'exact', head: true }).gte('started_at', since).eq('analytics_consent', true).not('user_id', 'is', null),
+      serverSupabase.from('visitor_consent_records').select('id,analytics,marketing', { count: 'exact' }).gte('recorded_at', since).limit(5000),
+      serverSupabase.from('visitor_sessions').select('visitor_id').gte('started_at', since).eq('analytics_consent', true).limit(10000),
+    ]);
+    const error = sessions.error || events.error || guests.error || users.error || consents.error || visitorRows.error;
+    if (error) throw error;
+    const choices = consents.data || [];
+    const visitorCounts = new Map<string, number>();
+    for (const row of visitorRows.data || []) visitorCounts.set(row.visitor_id, (visitorCounts.get(row.visitor_id) || 0) + 1);
+    const returningVisitors = Array.from(visitorCounts.values()).filter((count) => count > 1).length;
+    return res.json({
+      periodDays: 30,
+      sessions: sessions.count || 0,
+      uniqueVisitors: visitorCounts.size,
+      returningVisitors,
+      events: events.count || 0,
+      guestSessions: guests.count || 0,
+      signedInSessions: users.count || 0,
+      consentRecords: consents.count || 0,
+      analyticsOptIns: choices.filter((row: any) => row.analytics).length,
+      marketingOptIns: choices.filter((row: any) => row.marketing).length,
+    });
+  } catch (error) {
+    console.error('[Visitor analytics] Overview failed:', error instanceof Error ? error.message : 'unknown error');
+    return res.status(503).json({ success: false, error: 'Visitor analytics summary is temporarily unavailable.' });
+  }
+});
+
+app.get('/api/admin/technical/visitors/events', rateLimit(60, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return res.status(503).json({ success: false, error: 'Visitor analytics are unavailable.' });
+  const limit = Math.min(200, Math.max(1, Number.parseInt(String(req.query.limit || '100'), 10) || 100));
+  try {
+    let query = serverSupabase.from('visitor_events')
+      .select('id,occurred_at,session_id,user_id,event_name,page_path,page_title,duration_ms,event_data')
+      .order('occurred_at', { ascending: false }).limit(limit);
+    if (typeof req.query.event_name === 'string' && VISITOR_EVENT_NAMES.has(req.query.event_name)) query = query.eq('event_name', req.query.event_name);
+    const { data, error } = await query;
+    if (error) throw error;
+    return res.json({ events: data || [] });
+  } catch (error) {
+    console.error('[Visitor analytics] Events query failed:', error instanceof Error ? error.message : 'unknown error');
+    return res.status(503).json({ success: false, error: 'Visitor activity is temporarily unavailable.' });
+  }
+});
+
+app.get('/api/admin/technical/visitors/sessions', rateLimit(60, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return res.status(503).json({ success: false, error: 'Visitor analytics are unavailable.' });
+  const limit = Math.min(200, Math.max(1, Number.parseInt(String(req.query.limit || '100'), 10) || 100));
+  try {
+    let query = serverSupabase.from('visitor_sessions')
+      .select('id,visitor_id,user_id,started_at,last_seen_at,ended_at,landing_path,referrer_host,utm_source,utm_medium,utm_campaign,device_type,browser_family,os_family,screen_bucket,language,timezone,country_code,region_code,analytics_consent,marketing_consent')
+      .order('last_seen_at', { ascending: false }).limit(limit);
+    if (typeof req.query.search === 'string' && UUID_PATTERN.test(req.query.search)) query = query.eq('id', req.query.search);
+    const { data, error } = await query;
+    if (error) throw error;
+    return res.json({ sessions: data || [] });
+  } catch (error) {
+    console.error('[Visitor analytics] Sessions query failed:', error instanceof Error ? error.message : 'unknown error');
+    return res.status(503).json({ success: false, error: 'Visitor sessions are temporarily unavailable.' });
+  }
+});
+
+app.get('/api/admin/technical/visitors/consent', rateLimit(30, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return res.status(503).json({ success: false, error: 'Consent history is unavailable.' });
+  const limit = Math.min(200, Math.max(1, Number.parseInt(String(req.query.limit || '100'), 10) || 100));
+  try {
+    const { data, error } = await serverSupabase.from('visitor_consent_records')
+      .select('id,visitor_session_id,visitor_id,user_id,necessary,analytics,marketing,consent_version,consent_source,recorded_at')
+      .order('recorded_at', { ascending: false }).limit(limit);
+    if (error) throw error;
+    return res.json({ records: data || [] });
+  } catch (error) {
+    console.error('[Visitor privacy] Consent history query failed:', error instanceof Error ? error.message : 'unknown error');
+    return res.status(503).json({ success: false, error: 'Consent history is temporarily unavailable.' });
+  }
+});
+
+app.get('/api/admin/technical/visitors/settings', rateLimit(30, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return res.status(503).json({ success: false, error: 'Retention settings are unavailable.' });
+  const { data, error } = await serverSupabase.from('visitor_analytics_settings').select('*').eq('singleton', true).maybeSingle();
+  if (error) return res.status(503).json({ success: false, error: 'Retention settings are unavailable.' });
+  return res.json({ settings: data });
+});
+
+app.post('/api/admin/technical/visitors/settings', rateLimit(10, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return res.status(503).json({ success: false, error: 'Retention settings are unavailable.' });
+  const eventDays = Number(req.body?.event_retention_days);
+  const sessionDays = Number(req.body?.session_retention_days);
+  const consentDays = Number(req.body?.consent_retention_days);
+  if (!Number.isInteger(eventDays) || eventDays < 7 || eventDays > 730 ||
+      !Number.isInteger(sessionDays) || sessionDays < 7 || sessionDays > 1095 ||
+      !Number.isInteger(consentDays) || consentDays < 90 || consentDays > 3650) {
+    return res.status(400).json({ success: false, error: 'Retention periods are outside the allowed ranges.' });
+  }
+  const { data, error } = await serverSupabase.from('visitor_analytics_settings').update({
+    event_retention_days: eventDays,
+    session_retention_days: sessionDays,
+    consent_retention_days: consentDays,
+    updated_at: new Date().toISOString(),
+    updated_by: req.user!.id,
+  }).eq('singleton', true).select('*').single();
+  if (error) return res.status(503).json({ success: false, error: 'Retention settings could not be saved.' });
+  await serverSupabase.from('audit_logs').insert({
+    user_id: req.user!.id, action: 'VISITOR_ANALYTICS_RETENTION_UPDATED',
+    entity_type: 'visitor_analytics_settings', entity_id: 'default',
+    new_data: { event_retention_days: eventDays, session_retention_days: sessionDays, consent_retention_days: consentDays },
+  });
+  return res.json({ success: true, settings: data });
+});
+
+
+
+async function pruneVisitorAnalytics(): Promise<void> {
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return;
+  try {
+    const { data: settings, error: settingsError } = await serverSupabase
+      .from('visitor_analytics_settings')
+      .select('event_retention_days,session_retention_days,consent_retention_days')
+      .eq('singleton', true).maybeSingle();
+    if (settingsError || !settings) return;
+    const now = Date.now();
+    const eventCutoff = new Date(now - settings.event_retention_days * 86400000).toISOString();
+    const sessionCutoff = new Date(now - settings.session_retention_days * 86400000).toISOString();
+    const consentCutoff = new Date(now - settings.consent_retention_days * 86400000).toISOString();
+    const [events, sessions, consents] = await Promise.all([
+      serverSupabase.from('visitor_events').delete().lt('occurred_at', eventCutoff),
+      serverSupabase.from('visitor_sessions').delete().lt('last_seen_at', sessionCutoff),
+      serverSupabase.from('visitor_consent_records').delete().lt('recorded_at', consentCutoff),
+    ]);
+    if (events.error || sessions.error || consents.error) {
+      console.error('[Visitor analytics retention] Cleanup did not fully complete.');
+    }
+  } catch (error) {
+    console.error('[Visitor analytics retention] Cleanup failed:', error instanceof Error ? error.message : 'unknown error');
+  }
+}
+
 function validAuthUserId(value: unknown): value is string {
   return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
@@ -3772,6 +4088,11 @@ async function startServer() {
 
   const server = app.listen(Number(PORT), '0.0.0.0', () => {
     console.log(`Awesome Adventure Tours server running on port/socket ${PORT} [${process.env.NODE_ENV || 'development'}]`);
+
+    // Apply configured visitor-data retention once at startup and daily thereafter.
+    void pruneVisitorAnalytics();
+    const visitorRetentionTimer = setInterval(() => { void pruneVisitorAnalytics(); }, 24 * 60 * 60 * 1000);
+    visitorRetentionTimer.unref();
 
     // The durable queue consumer must use a server-only Supabase secret key.
     // It never starts with an anon/publishable key or in local development.

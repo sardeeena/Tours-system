@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { recordVisitorConsent } from '../../services/visitorAnalyticsService';
 
 type ConsentChoices = {
   necessary: true;
@@ -98,6 +99,7 @@ export const CookieConsent: React.FC = () => {
     }
     setChoices(next);
     applyConsent(next);
+    void recordVisitorConsent(next, 'cookie_banner');
     setVisible(false);
     setCustomising(false);
   };

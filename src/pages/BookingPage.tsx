@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { recordVisitorEvent } from '../services/visitorAnalyticsService';
 import { motion, AnimatePresence } from 'motion/react';
 import { Tour, CurrencyConfig } from '../types';
 import { GuestCounts, BookingExtra, CustomerInfo, Booking, PickupLocation } from '../types/booking';
@@ -73,6 +74,15 @@ export const BookingPage: React.FC<BookingPageProps> = ({
   }, [currentTour?.slug]);
 
   const [currentStep, setCurrentStep] = useState<number>(initialDraft.currentStep || 1);
+  const bookingAnalyticsStarted = useRef(false);
+  useEffect(() => {
+    if (!bookingAnalyticsStarted.current) {
+      bookingAnalyticsStarted.current = true;
+      void recordVisitorEvent({ event_name: 'booking_started', page_path: '/booking', event_data: { tour_slug: currentTour?.slug || 'unknown' } });
+    }
+    void recordVisitorEvent({ event_name: 'booking_step_completed', page_path: '/booking', event_data: { tour_slug: currentTour?.slug || 'unknown', booking_step: currentStep } });
+  }, [currentStep, currentTour?.slug]);
+
   const [date, setDate] = useState<string>(initialDraft.date || '');
   const [selectedTourLanguage, setSelectedTourLanguage] = useState<string>(initialDraft.selectedTourLanguage || currentTour?.languages?.[0] || 'English');
   const [guests, setGuests] = useState<GuestCounts>(initialDraft.guests);
@@ -330,9 +340,11 @@ export const BookingPage: React.FC<BookingPageProps> = ({
         updatedAt: new Date().toISOString(),
       };
 
+      void recordVisitorEvent({ event_name: 'booking_submitted', page_path: '/booking', event_data: { tour_slug: currentTour?.slug || 'unknown', booking_step: currentStep } });
       await bookingRepository.createBooking(newBooking);
       clearBookingDraft();
       notificationService.sendBookingConfirmation(newBooking);
+      void recordVisitorEvent({ event_name: 'booking_confirmed', page_path: '/booking', event_data: { tour_slug: currentTour?.slug || 'unknown' } });
       showToast('Reservation submitted successfully!', 'success');
       onBookingSuccess(newBooking);
     } catch (err: any) {

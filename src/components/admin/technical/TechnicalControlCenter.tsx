@@ -4,6 +4,7 @@ import {
   Download, HardDrive, RefreshCw, Server, ShieldCheck, XCircle,
 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
+import { VisitorAnalyticsPanel } from './VisitorAnalyticsPanel';
 import {
   fetchTechnicalEvents, fetchTechnicalOverview,
   type TechnicalEvent, type TechnicalOverview, type TechnicalSeverity,
@@ -137,6 +138,8 @@ export const TechnicalControlCenter: React.FC = () => {
         {!visibleEvents.length && !loading && <div className="p-8 text-center text-sm text-slate-500">No technical events match this filter yet.</div>}
         <div className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500 dark:border-slate-800">Showing up to 150 recent records · Last refreshed {overview ? dateTime(overview.generatedAt) : '—'}</div>
       </section>
+
+      <VisitorAnalyticsPanel />
     </div>
   );
 };
