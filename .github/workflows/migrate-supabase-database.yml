@@ -60,10 +60,10 @@ jobs:
         run: |
           set -euo pipefail
 
-          source_migrations="$(psql "$SOURCE_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "select count(*) || ':' || max(version) from supabase_migrations.schema_migrations")"
-          destination_migrations="$(psql "$DESTINATION_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "select count(*) || ':' || max(version) from supabase_migrations.schema_migrations")"
-          test "$source_migrations" = "$destination_migrations" || {
-            echo "STOP: source and destination migration histories differ: source=$source_migrations destination=$destination_migrations"
+          psql "$SOURCE_DB_URL" -X -A -t -F '|' -v ON_ERROR_STOP=1 -c "select version,name from supabase_migrations.schema_migrations order by version" > source_migrations.txt
+          psql "$DESTINATION_DB_URL" -X -A -t -F '|' -v ON_ERROR_STOP=1 -c "select version,name from supabase_migrations.schema_migrations order by version" > destination_migrations.txt
+          diff -u source_migrations.txt destination_migrations.txt || {
+            echo "STOP: source and destination migration histories differ."
             exit 1
           }
 
@@ -99,7 +99,7 @@ jobs:
           psql "$DESTINATION_DB_URL" -X -A -t -F '|' -v ON_ERROR_STOP=1 -c "select schemaname,tablename from pg_publication_tables where pubname='supabase_realtime' order by schemaname,tablename" > destination_realtime.txt
           diff -u source_realtime.txt destination_realtime.txt
 
-          echo "Preflight passed: destination schema is deployed from the connected repository; target Auth and Storage are empty; bucket, policy and Realtime configuration matches."
+          echo "Preflight passed: destination schema/migration history is identical; target Auth and Storage objects are empty; bucket, policy and Realtime configuration matches."
 
       - name: Dump KemetSpirit application data and Auth records
         shell: bash
@@ -130,6 +130,11 @@ jobs:
           CREATE EXTENSION IF NOT EXISTS hypopg WITH SCHEMA extensions;
           CREATE EXTENSION IF NOT EXISTS index_advisor WITH SCHEMA extensions;
           SQL
+
+          # The two optional advisor extensions exist on source but are not enabled on the new project.
+          source_advisors="$(psql "$SOURCE_DB_URL" -X -A -t -F '|' -v ON_ERROR_STOP=1 -c "select extname,extversion from pg_extension where extname in ('hypopg','index_advisor') order by extname")"
+          destination_advisors="$(psql "$DESTINATION_DB_URL" -X -A -t -F '|' -v ON_ERROR_STOP=1 -c "select extname,extversion from pg_extension where extname in ('hypopg','index_advisor') order by extname")"
+          test "$source_advisors" = "$destination_advisors"
 
           # The target schema/migrations, Storage buckets/policies and Realtime publication
           # already match the source. Replace seeded public rows with the source's exact rows.
