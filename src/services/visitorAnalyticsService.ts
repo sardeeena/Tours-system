@@ -26,6 +26,8 @@ export interface VisitorMetadata {
   utm_source: string | null;
   utm_medium: string | null;
   utm_campaign: string | null;
+  utm_term: string | null;
+  utm_content: string | null;
 }
 
 const SESSION_KEY = 'aat_visitor_session_v1';
@@ -116,6 +118,7 @@ export function visitorMetadata(): VisitorMetadata {
     screen_bucket: screenBucket, language: (navigator.language || 'unknown').slice(0, 24),
     timezone: (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone.slice(0, 64); } catch { return 'unknown'; } })(),
     referrer_host: referrerHost, utm_source: clean('utm_source'), utm_medium: clean('utm_medium'), utm_campaign: clean('utm_campaign'),
+    utm_term: clean('utm_term'), utm_content: clean('utm_content'),
   };
 }
 
