@@ -219,86 +219,10 @@ jobs:
 
           for db in source destination; do
             if [ "$db" = "source" ]; then DB_URL="$SOURCE_DB_URL"; else DB_URL="$DESTINATION_DB_URL"; fi
-            psql "$DB_URL" -X -A -t -F '|' -v ON_ERROR_STOP=1 -c "
-            select
-              (select count(*) from information_schema.tables where table_schema='public' and table_type='BASE TABLE') as public_tables,
-              (select count(*) from public.profiles) as profiles,
-              (select count(*) from public.tours) as tours,
-              (select count(*) from public.blog_posts) as blog_posts,
-              (select count(*) from public.support_tickets) as support_tickets,
-              (select count(*) from auth.users) as auth_users,
-              (select count(*) from auth.identities) as auth_identities,
-              (select count(*) from storage.buckets) as storage_buckets,
-              (select count(*) from storage.objects) as storage_objects;
-          "
-
-          echo "All public, Auth and pgmq table row counts match the source."
-          echo "Storage policies: $destination_storage_policies; Realtime tables: $destination_realtime_tables."
-
-      - name: Remove temporary SQL dumps
-        if: always()
-        run: rm -f roles.sql schema.sql data.sql history_schema.sql history_data.sql auth_data.sql storage_buckets.sql storage_policies.sql realtime_publication.sql source_*.tsv destination_*.tsv source_buckets.tsv destination_buckets.tsv source_storage_policies.tsv destination_storage_policies.tsv source_realtime.tsv destination_realtime.tsv source_extensions.tsv destination_extensions.tsv
-\\t' -v ON_ERROR_STOP=1 -c "select id, name, public, file_size_limit, coalesce(array_to_string(allowed_mime_types, ','), '') from storage.buckets order by id" > "${db}_buckets.tsv"
-            psql "$DB_URL" -X -A -t -F '|' -v ON_ERROR_STOP=1 -c "
-            select
-              (select count(*) from information_schema.tables where table_schema='public' and table_type='BASE TABLE') as public_tables,
-              (select count(*) from public.profiles) as profiles,
-              (select count(*) from public.tours) as tours,
-              (select count(*) from public.blog_posts) as blog_posts,
-              (select count(*) from public.support_tickets) as support_tickets,
-              (select count(*) from auth.users) as auth_users,
-              (select count(*) from auth.identities) as auth_identities,
-              (select count(*) from storage.buckets) as storage_buckets,
-              (select count(*) from storage.objects) as storage_objects;
-          "
-
-          echo "All public, Auth and pgmq table row counts match the source."
-          echo "Storage policies: $destination_storage_policies; Realtime tables: $destination_realtime_tables."
-
-      - name: Remove temporary SQL dumps
-        if: always()
-        run: rm -f roles.sql schema.sql data.sql history_schema.sql history_data.sql auth_data.sql storage_buckets.sql storage_policies.sql realtime_publication.sql source_*.tsv destination_*.tsv source_buckets.tsv destination_buckets.tsv source_storage_policies.tsv destination_storage_policies.tsv source_realtime.tsv destination_realtime.tsv source_extensions.tsv destination_extensions.tsv
-\\t' -v ON_ERROR_STOP=1 -c "select policyname, cmd, roles::text, coalesce(qual,''), coalesce(with_check,'') from pg_policies where schemaname='storage' order by tablename,policyname" > "${db}_storage_policies.tsv"
-            psql "$DB_URL" -X -A -t -F '|' -v ON_ERROR_STOP=1 -c "
-            select
-              (select count(*) from information_schema.tables where table_schema='public' and table_type='BASE TABLE') as public_tables,
-              (select count(*) from public.profiles) as profiles,
-              (select count(*) from public.tours) as tours,
-              (select count(*) from public.blog_posts) as blog_posts,
-              (select count(*) from public.support_tickets) as support_tickets,
-              (select count(*) from auth.users) as auth_users,
-              (select count(*) from auth.identities) as auth_identities,
-              (select count(*) from storage.buckets) as storage_buckets,
-              (select count(*) from storage.objects) as storage_objects;
-          "
-
-          echo "All public, Auth and pgmq table row counts match the source."
-          echo "Storage policies: $destination_storage_policies; Realtime tables: $destination_realtime_tables."
-
-      - name: Remove temporary SQL dumps
-        if: always()
-        run: rm -f roles.sql schema.sql data.sql history_schema.sql history_data.sql auth_data.sql storage_buckets.sql storage_policies.sql realtime_publication.sql source_*.tsv destination_*.tsv source_buckets.tsv destination_buckets.tsv source_storage_policies.tsv destination_storage_policies.tsv source_realtime.tsv destination_realtime.tsv source_extensions.tsv destination_extensions.tsv
-\\t' -v ON_ERROR_STOP=1 -c "select schemaname, tablename from pg_publication_tables where pubname='supabase_realtime' order by schemaname,tablename" > "${db}_realtime.tsv"
-            psql "$DB_URL" -X -A -t -F '|' -v ON_ERROR_STOP=1 -c "
-            select
-              (select count(*) from information_schema.tables where table_schema='public' and table_type='BASE TABLE') as public_tables,
-              (select count(*) from public.profiles) as profiles,
-              (select count(*) from public.tours) as tours,
-              (select count(*) from public.blog_posts) as blog_posts,
-              (select count(*) from public.support_tickets) as support_tickets,
-              (select count(*) from auth.users) as auth_users,
-              (select count(*) from auth.identities) as auth_identities,
-              (select count(*) from storage.buckets) as storage_buckets,
-              (select count(*) from storage.objects) as storage_objects;
-          "
-
-          echo "All public, Auth and pgmq table row counts match the source."
-          echo "Storage policies: $destination_storage_policies; Realtime tables: $destination_realtime_tables."
-
-      - name: Remove temporary SQL dumps
-        if: always()
-        run: rm -f roles.sql schema.sql data.sql history_schema.sql history_data.sql auth_data.sql storage_buckets.sql storage_policies.sql realtime_publication.sql source_*.tsv destination_*.tsv source_buckets.tsv destination_buckets.tsv source_storage_policies.tsv destination_storage_policies.tsv source_realtime.tsv destination_realtime.tsv source_extensions.tsv destination_extensions.tsv
-\\t' -v ON_ERROR_STOP=1 -c "select extname, extversion from pg_extension where extname in ('hypopg','index_advisor','pg_stat_statements','pgcrypto','pgmq','supabase_vault','uuid-ossp') order by extname" > "${db}_extensions.tsv"
+            psql "$DB_URL" -X -A -t -F '|' -v ON_ERROR_STOP=1 -c "select id, name, public, file_size_limit, coalesce(array_to_string(allowed_mime_types, ','), '') from storage.buckets order by id" > "${db}_buckets.tsv"
+            psql "$DB_URL" -X -A -t -F '|' -v ON_ERROR_STOP=1 -c "select policyname, cmd, roles::text, coalesce(qual,''), coalesce(with_check,'') from pg_policies where schemaname='storage' order by tablename,policyname" > "${db}_storage_policies.tsv"
+            psql "$DB_URL" -X -A -t -F '|' -v ON_ERROR_STOP=1 -c "select schemaname, tablename from pg_publication_tables where pubname='supabase_realtime' order by schemaname,tablename" > "${db}_realtime.tsv"
+            psql "$DB_URL" -X -A -t -F '|' -v ON_ERROR_STOP=1 -c "select extname, extversion from pg_extension where extname in ('hypopg','index_advisor','pg_stat_statements','pgcrypto','pgmq','supabase_vault','uuid-ossp') order by extname" > "${db}_extensions.tsv"
           done
 
           diff -u source_buckets.tsv destination_buckets.tsv
@@ -306,22 +230,9 @@ jobs:
           diff -u source_realtime.tsv destination_realtime.tsv
           diff -u source_extensions.tsv destination_extensions.tsv
 
-          psql "$DESTINATION_DB_URL" -X -v ON_ERROR_STOP=1 -c "
-            select
-              (select count(*) from information_schema.tables where table_schema='public' and table_type='BASE TABLE') as public_tables,
-              (select count(*) from public.profiles) as profiles,
-              (select count(*) from public.tours) as tours,
-              (select count(*) from public.blog_posts) as blog_posts,
-              (select count(*) from public.support_tickets) as support_tickets,
-              (select count(*) from auth.users) as auth_users,
-              (select count(*) from auth.identities) as auth_identities,
-              (select count(*) from storage.buckets) as storage_buckets,
-              (select count(*) from storage.objects) as storage_objects;
-          "
-
           echo "All public, Auth and pgmq table row counts match the source."
           echo "Storage policies: $destination_storage_policies; Realtime tables: $destination_realtime_tables."
 
       - name: Remove temporary SQL dumps
         if: always()
-        run: rm -f roles.sql schema.sql data.sql history_schema.sql history_data.sql auth_data.sql storage_buckets.sql storage_policies.sql realtime_publication.sql source_*.tsv destination_*.tsv source_buckets.tsv destination_buckets.tsv source_storage_policies.tsv destination_storage_policies.tsv source_realtime.tsv destination_realtime.tsv source_extensions.tsv destination_extensions.tsv
+        run: rm -f roles.sql schema.sql data.sql history_schema.sql history_data.sql auth_data.sql storage_buckets.sql storage_policies.sql realtime_publication.sql source_*.tsv destination_*.tsv
