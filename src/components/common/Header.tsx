@@ -21,7 +21,6 @@ import {
   Moon,
 } from 'lucide-react';
 import { CurrencyConfig } from '../../types';
-import { CURRENCY_CONFIGS } from '../../data/toursData';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useComparison } from '../../contexts/ComparisonContext';
@@ -183,53 +182,6 @@ export const Header: React.FC<HeaderProps> = ({
           : '-translate-y-full opacity-0 pointer-events-none'
       }`}
     >
-      {/* Desktop utility controls: keep language, currency and direct contact accessible. */}
-      <div className="hidden lg:block bg-[#F4F1EA] dark:bg-[#0E1B2A] text-stone-600 dark:text-slate-300 text-xs py-1.5 px-4 sm:px-8 border-b border-[#E8E3DA] dark:border-slate-800">
-        <div className="max-w-7xl mx-auto flex items-center justify-end gap-3">
-          <a
-            href="https://wa.me/201515212741"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-emerald-700 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors font-medium"
-            aria-label="Contact Awesome Adventure Tours on WhatsApp"
-          >
-            <MessageCircle className="w-3.5 h-3.5" />
-            <span>WhatsApp: +20 151 5212741</span>
-          </a>
-          <span className="h-3 w-px bg-stone-300 dark:bg-slate-700" aria-hidden="true" />
-          <label className="sr-only" htmlFor="desktop-language-selector">Website language</label>
-          <select
-            id="desktop-language-selector"
-            value={language}
-            onChange={(event) => setLanguage(event.target.value as LanguageCode)}
-            className="rounded-md border border-stone-300 dark:border-slate-700 bg-white/70 dark:bg-slate-800 px-2 py-1 text-xs text-stone-700 dark:text-slate-200"
-          >
-            {supportedLanguages.map((item) => (
-              <option key={item.code} value={item.code}>{item.flag} {item.localName}</option>
-            ))}
-          </select>
-          {currentCurrency && onCurrencyChange && (
-            <>
-              <span className="h-3 w-px bg-stone-300 dark:bg-slate-700" aria-hidden="true" />
-              <label className="sr-only" htmlFor="desktop-currency-selector">Display currency</label>
-              <select
-                id="desktop-currency-selector"
-                value={currentCurrency.code}
-                onChange={(event) => {
-                  const selected = Object.values(CURRENCY_CONFIGS).find((item) => item.code === event.target.value);
-                  if (selected) onCurrencyChange(selected);
-                }}
-                className="rounded-md border border-stone-300 dark:border-slate-700 bg-white/70 dark:bg-slate-800 px-2 py-1 text-xs text-stone-700 dark:text-slate-200"
-              >
-                {Object.values(CURRENCY_CONFIGS).map((item) => (
-                  <option key={item.code} value={item.code}>{item.code} ({item.symbol})</option>
-                ))}
-              </select>
-            </>
-          )}
-        </div>
-      </div>
-
       {/* Main Navigation */}
       <div 
         className={`w-full bg-[#F7F4ED] dark:bg-[#0E1B2A] text-stone-800 dark:text-slate-100 border-b border-[#E8E3DA] dark:border-slate-800 shadow-xs transition-all duration-300 ease-in-out ${
@@ -259,7 +211,7 @@ export const Header: React.FC<HeaderProps> = ({
           </a>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center space-x-3.5 xl:space-x-5 text-sm font-semibold text-stone-700 dark:text-slate-200" aria-label="Main Navigation">
+          <nav className="hidden xl:flex items-center space-x-2 2xl:space-x-3 text-xs 2xl:text-sm font-semibold text-stone-700 dark:text-slate-200" aria-label="Main Navigation">
             <button 
               type="button"
               onClick={handleExcursionsClick} 
@@ -361,7 +313,7 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
 
         {/* Action Controls */}
-        <div className="hidden lg:flex items-center space-x-2.5 shrink-0">
+        <div className="hidden xl:flex items-center space-x-1.5 2xl:space-x-2.5 shrink-0">
 
           {/* User Auth Section */}
           {user ? (
@@ -515,7 +467,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Mobile menu button & actions */}
-        <div className="flex items-center space-x-2 lg:hidden shrink-0">
+        <div className="flex items-center space-x-2 xl:hidden shrink-0">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.96 }}
@@ -555,7 +507,7 @@ export const Header: React.FC<HeaderProps> = ({
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.2 }}
-            className="lg:hidden border-t border-[#E8E3DA] bg-[#FAF8F5] px-5 py-5 shadow-lg overflow-hidden"
+            className="xl:hidden border-t border-[#E8E3DA] bg-[#FAF8F5] px-5 py-5 shadow-lg overflow-hidden"
           >
             <nav className="flex flex-col space-y-3.5 text-base font-medium text-[#0E1B2A]">
               {/* Mobile User Profile Section */}
