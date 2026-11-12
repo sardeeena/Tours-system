@@ -505,8 +505,8 @@ export const DEFAULT_PROVIDER_CONFIG: ProviderConfig = {
   email: {
     provider: 'none',
     apiKey: '',
-    fromEmail: 'dispatch@redseavoyages.com',
-    fromName: 'Red Sea Voyages Dispatch',
+    fromEmail: '',
+    fromName: 'Awesome Adventure Tours',
     isConfigured: false,
   },
   whatsapp: {
@@ -539,6 +539,14 @@ export function getProviderConfig(): ProviderConfig {
       isConfigured: false,
     },
   };
+
+  // Remove outdated sender details that may remain in browser storage from an older site identity.
+  if (safeConfig.email.fromEmail?.toLowerCase().endsWith('@redseavoyages.com')) {
+    safeConfig.email.fromEmail = '';
+  }
+  if (safeConfig.email.fromName?.trim().toLowerCase() === 'red sea voyages dispatch') {
+    safeConfig.email.fromName = DEFAULT_PROVIDER_CONFIG.email.fromName;
+  }
 
   setLocal(LOCAL_PROVIDER_CONFIG_KEY, safeConfig);
   return safeConfig;
