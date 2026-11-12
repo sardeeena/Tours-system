@@ -168,7 +168,6 @@ async function runRouteTests() {
   assert('server experiences SEO rendering', serverSource.includes("path === '/experiences'") && serverSource.includes("pageKind = 'experiences'"), 'Server returns indexable route-specific HTML for /experiences');
 
   console.log('Step 5: Verifying server-side private SPA route allowlist...');
-  const serverSource = fs.readFileSync(path.join(process.cwd(), 'server.ts'), 'utf8');
   assert(
     'server private support route fallback',
     serverSource.split('const privateRoute =').length === 3 &&
