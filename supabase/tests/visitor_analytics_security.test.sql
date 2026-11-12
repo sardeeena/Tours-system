@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(18);
+SELECT plan(20);
 
 SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.visitor_sessions'::regclass), 'visitor_sessions has RLS enabled');
 SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.visitor_events'::regclass), 'visitor_events has RLS enabled');
@@ -23,6 +23,8 @@ SELECT ok((SELECT pg_get_constraintdef(oid) LIKE '%auth_sign_in%' FROM pg_constr
 
 SELECT ok(has_column('public', 'visitor_analytics_settings', 'technical_event_retention_days'), 'technical event retention is configurable');
 SELECT ok(has_column('public', 'visitor_analytics_settings', 'audit_log_retention_days'), 'business audit retention is configurable');
+SELECT ok(has_column('public', 'visitor_sessions', 'utm_term'), 'UTM search term attribution is available');
+SELECT ok(has_column('public', 'visitor_sessions', 'utm_content'), 'UTM content attribution is available');
 
 SELECT * FROM finish();
 ROLLBACK;
