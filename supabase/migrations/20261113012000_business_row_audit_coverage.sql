@@ -18,8 +18,12 @@ DECLARE
   v_new jsonb := NULL;
   v_row jsonb;
   v_entity_id text;
-  v_sensitive_pattern text := '(email|phone|whatsapp|address|full.?name|first.?name|last.?name|customer.?name|guest.?name|user.?name|message|description|body|content|subject|notes?|password|token|secret|api.?key|authorization|headers|payload|raw.?payload|metadata|ip.?address|user.?agent|cookies?|room.?number|hotel|special.?requests?|contact|recipient|sender|customer|guest|user.?id|payment.?details?|card.?number|cvv|ssn|passport|document|birth.?date|dob|attachments?|avatar|settings|config|form.?data|custom.?data|preferences|private.?data)';
+  v_sensitive_pattern text := '(email|phone|whatsapp|address|full.?name|first.?name|last.?name|customer.?name|guest.?name|user.?name|message|description|body|content|subject|notes?|password|token|secret|api.?key|authorization|headers|payload|raw.?payload|metadata|ip.?address|user.?agent|cookies?|room.?number|hotel|special.?requests?|contact|recipient|sender|customer|guest|user.?id|payment.?details?|card.?number|cvv|ssn|passport|document|birth.?date|dob|attachments?|avatar|settings|config|form.?data|custom.?data|preferences|private.?data|(^ip$|_ip$|^ip_)|(^text$|_text$|^text_)|comment|question|answer|reason|actor.?id|profile.?id|visitor.?id|session.?id)';
 BEGIN
+  IF TG_OP = 'UPDATE' AND to_jsonb(OLD) = to_jsonb(NEW) THEN
+    RETURN NEW;
+  END IF;
+
   IF TG_OP = 'INSERT' THEN
     v_row := to_jsonb(NEW);
     SELECT COALESCE(jsonb_object_agg(key, value), '{}'::jsonb) INTO v_new
