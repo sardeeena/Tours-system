@@ -9,7 +9,6 @@ import {
   Globe, 
   ChevronDown,
   Compass,
-  Check,
   Heart,
   Scale,
   User,
@@ -22,7 +21,6 @@ import {
   Moon,
 } from 'lucide-react';
 import { CurrencyConfig } from '../../types';
-import { CURRENCY_CONFIGS } from '../../data/toursData';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useComparison } from '../../contexts/ComparisonContext';
@@ -31,8 +29,8 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { LanguageCode } from '../../types/i18n';
 
 interface HeaderProps {
-  currentCurrency: CurrencyConfig;
-  onCurrencyChange: (currency: CurrencyConfig) => void;
+  currentCurrency?: CurrencyConfig;
+  onCurrencyChange?: (currency: CurrencyConfig) => void;
   onOpenMyBooking?: () => void;
   onNavigateSection?: (sectionId: string) => void;
   onNavigateHome?: () => void;
@@ -48,8 +46,8 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  currentCurrency,
-  onCurrencyChange,
+  currentCurrency: _currentCurrency,
+  onCurrencyChange: _onCurrencyChange,
   onOpenMyBooking,
   onNavigateSection,
   onNavigateHome,
@@ -63,23 +61,19 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCompare,
   onOpenHelpInquiry,
 }) => {
-  const { language, setLanguage, currentLanguageConfig, supportedLanguages, t } = useLanguage();
-  const { theme, toggleTheme, isDark } = useTheme();
+  const { language, setLanguage, supportedLanguages, t } = useLanguage();
+  const { theme: _theme, toggleTheme, isDark } = useTheme();
   const { wishlistCount } = useWishlist();
   const { comparisonCount } = useComparison();
   const { user, isAdmin, signOut } = useAuth();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [currencyDropdownOpen, setCurrencyDropdownOpen] = useState(false);
-  const [languageDropdownOpen, setLanguageDropdownOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
-  const currencyRef = useRef<HTMLDivElement>(null);
-  const languageRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [_isScrolled, setIsScrolled] = useState(false);
   const lastScrollY = useRef(0);
 
   // Auto-hide & fade away on scroll down, animate & fade back in on scroll up
@@ -103,7 +97,7 @@ export const Header: React.FC<HeaderProps> = ({
           setIsScrolled(true);
 
           // Keep visible if mobile menu or dropdowns are open
-          if (mobileMenuOpen || currencyDropdownOpen || languageDropdownOpen || userDropdownOpen) {
+          if (mobileMenuOpen || userDropdownOpen) {
             setIsHeaderVisible(true);
             lastScrollY.current = currentScrollY;
             ticking = false;
@@ -127,17 +121,11 @@ export const Header: React.FC<HeaderProps> = ({
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [mobileMenuOpen, currencyDropdownOpen, languageDropdownOpen, userDropdownOpen]);
+  }, [mobileMenuOpen, userDropdownOpen]);
 
   // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (currencyRef.current && !currencyRef.current.contains(event.target as Node)) {
-        setCurrencyDropdownOpen(false);
-      }
-      if (languageRef.current && !languageRef.current.contains(event.target as Node)) {
-        setLanguageDropdownOpen(false);
-      }
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setUserDropdownOpen(false);
       }
@@ -194,179 +182,7 @@ export const Header: React.FC<HeaderProps> = ({
           : '-translate-y-full opacity-0 pointer-events-none'
       }`}
     >
-      {/* Top Utility Bar */}
-      <div className={`bg-[#F4F1EA] text-stone-600 dark:bg-[#0E1B2A] dark:text-slate-300 text-xs py-2 px-4 sm:px-8 border-b border-[#E8E3DA] dark:border-slate-800 transition-all duration-300 ease-in-out ${
-        isHeaderVisible ? 'opacity-100' : 'opacity-0'
-      }`}>
-        <div className="max-w-7xl mx-auto flex items-center justify-end gap-3">
-          <div className="flex items-center space-x-3.5 ml-auto">
-            {/* Direct WhatsApp Hotline */}
-            <a 
-              href="https://wa.me/201515212741" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="flex items-center text-emerald-700 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors text-xs font-medium"
-            >
-              <MessageCircle className="w-3.5 h-3.5 mr-1" />
-              <span className="hidden sm:inline">{t('top.pierDesk')}: </span>+20 151 5212741
-            </a>
-
-            <div className="h-3 w-px bg-stone-300 dark:bg-slate-700"></div>
-
-            {/* Language Selector Dropdown */}
-            <div className="relative" ref={languageRef}>
-              <button
-                type="button"
-                id="language-selector-button"
-                onClick={() => {
-                  setLanguageDropdownOpen(!languageDropdownOpen);
-                  setCurrencyDropdownOpen(false);
-                }}
-                className="flex items-center space-x-1.5 text-stone-700 hover:text-stone-900 dark:text-slate-200 dark:hover:text-white py-0.5 px-2 rounded hover:bg-stone-200/60 dark:hover:bg-slate-800/80 transition-colors"
-                aria-expanded={languageDropdownOpen}
-                aria-haspopup="listbox"
-                aria-label={`Current language: ${currentLanguageConfig.name}. Click to change language.`}
-              >
-                <span className="text-sm leading-none" aria-hidden="true">{currentLanguageConfig.flag}</span>
-                <span className="font-semibold text-xs tracking-wider">{currentLanguageConfig.code.toUpperCase()}</span>
-                <ChevronDown className={`w-3 h-3 text-stone-400 dark:text-slate-400 transition-transform duration-200 ${languageDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              <AnimatePresence>
-                {languageDropdownOpen && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: -4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    transition={{ duration: 0.15 }}
-                    role="listbox"
-                    aria-label="Select website language"
-                    className="absolute right-0 mt-1.5 w-44 bg-white dark:bg-[#16283D] border border-stone-200 dark:border-slate-700 rounded-lg shadow-2xl py-1 z-50 text-xs overflow-hidden"
-                  >
-                    <div className="px-3 py-1.5 text-[10px] uppercase font-bold text-stone-500 dark:text-slate-400 border-b border-stone-200/80 dark:border-slate-700/60 tracking-wider">
-                      {t('top.language')}
-                    </div>
-                    {supportedLanguages.map((langItem) => {
-                      const isSelected = language === langItem.code;
-                      return (
-                        <button
-                          key={langItem.code}
-                          type="button"
-                          role="option"
-                          aria-selected={isSelected}
-                          onClick={() => {
-                            setLanguage(langItem.code as LanguageCode);
-                            setLanguageDropdownOpen(false);
-                          }}
-                          className={`w-full text-left px-3 py-2 flex items-center justify-between transition-colors cursor-pointer ${
-                            isSelected
-                              ? 'bg-[#0A6C74] text-white font-medium'
-                              : 'text-stone-700 hover:bg-stone-100 dark:text-slate-200 dark:hover:bg-slate-700/60'
-                          }`}
-                        >
-                          <div className="flex items-center space-x-2">
-                            <span className="text-base leading-none" aria-hidden="true">{langItem.flag}</span>
-                            <div className="flex flex-col">
-                              <span className="text-xs font-medium text-stone-900 dark:text-white">{langItem.localName}</span>
-                              <span className="text-[10px] text-stone-500 dark:text-slate-400">{langItem.name}</span>
-                            </div>
-                          </div>
-                          {isSelected && (
-                            <Check className="w-3.5 h-3.5 text-white shrink-0 ml-2" />
-                          )}
-                        </button>
-                      );
-                    })}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            <div className="h-3 w-px bg-stone-300 dark:bg-slate-700"></div>
-
-            {/* Currency Selector */}
-            <div className="relative" ref={currencyRef}>
-              <button
-                type="button"
-                id="currency-selector-button"
-                onClick={() => {
-                  setCurrencyDropdownOpen(!currencyDropdownOpen);
-                  setLanguageDropdownOpen(false);
-                }}
-                className="flex items-center space-x-1 text-stone-700 hover:text-stone-900 dark:text-slate-200 dark:hover:text-white py-0.5 px-1.5 rounded hover:bg-stone-200/60 dark:hover:bg-slate-800/80 transition-colors text-xs font-medium cursor-pointer"
-                aria-expanded={currencyDropdownOpen}
-              >
-                <span>{currentCurrency.code} ({currentCurrency.symbol})</span>
-                <ChevronDown className={`w-3 h-3 text-stone-400 dark:text-slate-400 transition-transform duration-200 ${currencyDropdownOpen ? 'rotate-180' : ''}`} />
-              </button>
-
-              <AnimatePresence>
-                {currencyDropdownOpen && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: -4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute right-0 mt-1.5 w-32 bg-white dark:bg-[#16283D] border border-stone-200 dark:border-slate-700 rounded-lg shadow-2xl py-1 z-50 text-xs overflow-hidden"
-                  >
-                    <div className="px-3 py-1.5 text-[10px] uppercase font-bold text-stone-500 dark:text-slate-400 border-b border-stone-200/80 dark:border-slate-700/60 tracking-wider">
-                      {t('top.currency')}
-                    </div>
-                    {Object.keys(CURRENCY_CONFIGS).map((codeKey) => {
-                      const curr = CURRENCY_CONFIGS[codeKey];
-                      const isSelected = currentCurrency.code === curr.code;
-                      return (
-                        <button
-                          key={curr.code}
-                          type="button"
-                          onClick={() => {
-                            onCurrencyChange(curr);
-                            setCurrencyDropdownOpen(false);
-                          }}
-                          className={`w-full text-left px-3 py-1.5 flex items-center justify-between transition-colors cursor-pointer ${
-                            isSelected
-                              ? 'bg-[#0A6C74] text-white font-medium'
-                              : 'text-stone-700 hover:bg-stone-100 dark:text-slate-200 dark:hover:bg-slate-700/60'
-                          }`}
-                        >
-                          <span className="font-medium text-stone-900 dark:text-white">{curr.code}</span>
-                          <span className="text-stone-400 dark:text-slate-400">{curr.symbol}</span>
-                        </button>
-                      );
-                    })}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Theme Mode Toggle (Default: Light, Optional: Dark) */}
-            <div className="h-3 w-px bg-stone-300 dark:bg-slate-700"></div>
-
-            <button
-              type="button"
-              id="theme-toggle-header-top"
-              onClick={toggleTheme}
-              className="flex items-center space-x-1.5 text-stone-700 hover:text-stone-900 dark:text-slate-200 dark:hover:text-white py-0.5 px-2 rounded hover:bg-stone-200/60 dark:hover:bg-slate-800/80 transition-colors text-xs cursor-pointer font-medium"
-              title={isDark ? "Switch to Light Theme (Default)" : "Switch to Dark Theme"}
-              aria-label={isDark ? "Switch to Light Theme (Default)" : "Switch to Dark Theme"}
-            >
-              {isDark ? (
-                <>
-                  <Sun className="w-3.5 h-3.5 text-amber-300 transition-transform duration-300 hover:rotate-45" />
-                  <span className="text-[11px] font-medium hidden sm:inline">Light</span>
-                </>
-              ) : (
-                <>
-                  <Moon className="w-3.5 h-3.5 text-[#0A6C74] transition-transform duration-300 hover:-rotate-12" />
-                  <span className="text-[11px] font-medium hidden sm:inline">Dark</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Navigation (Selected Element: header > div:nth-of-type(2)) */}
+      {/* Main Navigation */}
       <div 
         className={`w-full bg-[#F7F4ED] dark:bg-[#0E1B2A] text-stone-800 dark:text-slate-100 border-b border-[#E8E3DA] dark:border-slate-800 shadow-xs transition-all duration-300 ease-in-out ${
           isHeaderVisible
@@ -395,7 +211,7 @@ export const Header: React.FC<HeaderProps> = ({
           </a>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center space-x-7 text-sm font-semibold text-stone-700 dark:text-slate-200" aria-label="Main Navigation">
+          <nav className="hidden lg:flex items-center space-x-4 xl:space-x-5 text-sm font-semibold text-stone-700 dark:text-slate-200" aria-label="Main Navigation">
             <button 
               type="button"
               onClick={handleExcursionsClick} 
@@ -432,77 +248,72 @@ export const Header: React.FC<HeaderProps> = ({
               {t('nav.guestReviews')}
             </button>
             <a href="/blog" aria-label="Visit the Awesome Adventure Tours blog" className="inline-flex items-center rounded-full border border-[#0A6C74]/30 bg-[#E8F3F4] px-3.5 py-1.5 text-sm font-bold text-[#0A6C74] shadow-xs transition-colors hover:bg-[#D7EBEC] dark:border-teal-400/30 dark:bg-teal-950/50 dark:text-teal-300 dark:hover:bg-teal-900/60">Blog</a>
+
+            {/* Find My Booking */}
+            <button 
+              type="button"
+              id="my-booking-header-btn"
+              onClick={onOpenMyBooking}
+              className="inline-flex items-center space-x-1 text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1 cursor-pointer text-sm font-semibold"
+              title={t('nav.findMyBooking')}
+            >
+              <CalendarCheck className="w-4 h-4 text-[#0A6C74] dark:text-[#2dd4bf]" />
+              <span>{t('nav.findMyBooking')}</span>
+            </button>
+
+            {/* Wishlist Button */}
+            <button
+              type="button"
+              onClick={onOpenWishlist}
+              className="relative p-1.5 text-stone-700 dark:text-slate-200 hover:text-rose-500 dark:hover:text-rose-400 transition-colors cursor-pointer rounded-lg hover:bg-stone-200/50 dark:hover:bg-slate-800/60"
+              title="Saved Excursions"
+              aria-label={`View ${wishlistCount} saved excursions`}
+            >
+              <Heart className={`w-4 h-4 ${wishlistCount > 0 ? 'fill-rose-500 text-rose-500' : ''}`} />
+              {wishlistCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                  {wishlistCount}
+                </span>
+              )}
+            </button>
+
+            {/* Compare Button */}
+            {comparisonCount > 0 && (
+              <button
+                type="button"
+                onClick={onOpenCompare}
+                className="relative p-1.5 text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors cursor-pointer rounded-lg hover:bg-stone-200/50 dark:hover:bg-slate-800/60"
+                title="Compare Excursions"
+                aria-label={`Compare ${comparisonCount} excursions`}
+              >
+                <Scale className="w-4 h-4 text-[#0A6C74] dark:text-[#2dd4bf]" />
+                <span className="absolute -top-1 -right-1 bg-[#0A6C74] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                  {comparisonCount}
+                </span>
+              </button>
+            )}
+
+            {/* Theme Mode Toggle (Default: Light, Optional: Dark) */}
+            <button
+              type="button"
+              id="theme-toggle-main-nav"
+              onClick={toggleTheme}
+              className="p-1.5 text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors cursor-pointer rounded-lg hover:bg-stone-200/50 dark:hover:bg-slate-800/60"
+              title={isDark ? "Switch to Light Mode (Default)" : "Switch to Dark Mode"}
+              aria-label={isDark ? "Switch to Light Mode (Default)" : "Switch to Dark Mode"}
+            >
+              {isDark ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-[#0A6C74]" />
+              )}
+            </button>
+
             <a href="/support" aria-label="Open Awesome Adventure Tours customer support" className="text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1 text-sm font-semibold">Support</a>
           </nav>
 
         {/* Action Controls */}
         <div className="hidden sm:flex items-center space-x-2">
-          {/* Wishlist Button */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.9 }}
-            type="button"
-            onClick={onOpenWishlist}
-            className="relative p-2 text-stone-700 dark:text-slate-200 hover:text-rose-500 bg-stone-200/60 dark:bg-slate-800/80 hover:bg-stone-200 dark:hover:bg-slate-700 border border-stone-300/70 dark:border-slate-700 rounded-xl transition-all cursor-pointer"
-            title="Saved Excursions"
-            aria-label={`View ${wishlistCount} saved excursions`}
-          >
-            <Heart className={`w-4 h-4 ${wishlistCount > 0 ? 'fill-rose-500 text-rose-500' : ''}`} />
-            {wishlistCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
-                {wishlistCount}
-              </span>
-            )}
-          </motion.button>
-
-          {/* Compare Button */}
-          {comparisonCount > 0 && (
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.9 }}
-              type="button"
-              onClick={onOpenCompare}
-              className="relative p-2 text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] bg-stone-200/60 dark:bg-slate-800/80 hover:bg-stone-200 dark:hover:bg-slate-700 border border-stone-300/70 dark:border-slate-700 rounded-xl transition-all cursor-pointer"
-              title="Compare Excursions"
-              aria-label={`Compare ${comparisonCount} excursions`}
-            >
-              <Scale className="w-4 h-4 text-[#0A6C74] dark:text-[#2dd4bf]" />
-              <span className="absolute -top-1 -right-1 bg-[#0A6C74] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
-                {comparisonCount}
-              </span>
-            </motion.button>
-          )}
-
-          {/* Theme Mode Toggle (Default: Light, Optional: Dark) */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.9 }}
-            type="button"
-            id="theme-toggle-main-nav"
-            onClick={toggleTheme}
-            className="p-2 text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] bg-stone-200/60 dark:bg-slate-800/80 hover:bg-stone-200 dark:hover:bg-slate-700 border border-stone-300/70 dark:border-slate-700 rounded-xl transition-all cursor-pointer"
-            title={isDark ? "Switch to Light Mode (Default)" : "Switch to Dark Mode"}
-            aria-label={isDark ? "Switch to Light Mode (Default)" : "Switch to Dark Mode"}
-          >
-            {isDark ? (
-              <Sun className="w-4 h-4 text-amber-400" />
-            ) : (
-              <Moon className="w-4 h-4 text-[#0A6C74]" />
-            )}
-          </motion.button>
-
-          {/* Find My Booking */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            type="button"
-            id="my-booking-header-btn"
-            onClick={onOpenMyBooking}
-            className="inline-flex items-center px-3 py-2 text-xs font-semibold text-stone-800 dark:text-slate-100 bg-stone-200/60 dark:bg-slate-800/80 hover:bg-stone-200 dark:hover:bg-slate-700 border border-stone-300/70 dark:border-slate-700 rounded-xl transition-all cursor-pointer"
-          >
-            <CalendarCheck className="w-3.5 h-3.5 mr-1.5 text-[#0A6C74] dark:text-[#2dd4bf]" />
-            {t('nav.findMyBooking')}
-          </motion.button>
 
           {/* User Auth Section */}
           {user ? (
@@ -655,31 +466,8 @@ export const Header: React.FC<HeaderProps> = ({
           </motion.button>
         </div>
 
-        {/* Mobile menu button & Wishlist icon */}
+        {/* Mobile menu button & actions */}
         <div className="flex items-center space-x-2 lg:hidden">
-          <button
-            type="button"
-            onClick={onOpenWishlist}
-            className="relative p-2 text-stone-700 hover:text-rose-500 rounded-lg border border-stone-300/70 bg-stone-200/60"
-            title="Saved Excursions"
-          >
-            <Heart className={`w-4 h-4 ${wishlistCount > 0 ? 'fill-rose-500 text-rose-500' : ''}`} />
-            {wishlistCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-rose-500 text-white text-[9px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center">
-                {wishlistCount}
-              </span>
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={onOpenMyBooking}
-            className="p-2 text-stone-700 hover:text-[#0A6C74] rounded-lg border border-stone-300/70 bg-stone-200/60"
-            title={t('nav.findMyBooking')}
-          >
-            <CalendarCheck className="w-4 h-4" />
-          </button>
-
           <a
             href="/blog"
             aria-label="Visit the Awesome Adventure Tours blog"
@@ -692,7 +480,7 @@ export const Header: React.FC<HeaderProps> = ({
             type="button"
             id="mobile-menu-toggle-btn"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 text-stone-800 hover:bg-stone-200 rounded-lg border border-stone-300/70 bg-stone-200/60"
+            className="p-2 text-stone-800 dark:text-slate-200 hover:bg-stone-200 dark:hover:bg-slate-800 rounded-lg border border-stone-300/70 dark:border-slate-700 bg-stone-200/60 dark:bg-slate-800/80 cursor-pointer"
             aria-label="Toggle navigation menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -925,8 +713,22 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 {t('mobile.reviews')}
               </button>
-              <a href="/blog" onClick={() => setMobileMenuOpen(false)} className="text-left py-2 px-3 rounded hover:bg-stone-100 font-semibold text-[#0A6C74] dark:text-teal-300">Blog &amp; Travel Journal</a>
-              <a href="/support" onClick={() => setMobileMenuOpen(false)} className="text-left py-2 px-3 rounded hover:bg-stone-100 font-semibold text-[#0A6C74] dark:text-teal-300">Customer Support &amp; Tickets</a>
+              <a href="/blog" onClick={() => setMobileMenuOpen(false)} className="text-left py-2 px-3 rounded hover:bg-stone-100 dark:hover:bg-slate-800/60 font-semibold text-[#0A6C74] dark:text-teal-300 flex items-center justify-between">
+                <span>Blog &amp; Travel Journal</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-[#0A6C74]/10 text-[#0A6C74] px-2 py-0.5 rounded-full">New</span>
+              </a>
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  if (onOpenMyBooking) onOpenMyBooking();
+                }}
+                className="text-left py-2 px-3 rounded hover:bg-stone-100 dark:hover:bg-slate-800/60 font-semibold text-stone-800 dark:text-slate-200 flex items-center space-x-2"
+              >
+                <CalendarCheck className="w-4 h-4 text-[#0A6C74] dark:text-[#2dd4bf]" />
+                <span>{t('nav.findMyBooking')}</span>
+              </button>
+              <a href="/support" onClick={() => setMobileMenuOpen(false)} className="text-left py-2 px-3 rounded hover:bg-stone-100 dark:hover:bg-slate-800/60 font-semibold text-[#0A6C74] dark:text-teal-300">Customer Support &amp; Tickets</a>
 
               <div className="pt-3 border-t border-stone-200 flex flex-col space-y-2">
                 <button

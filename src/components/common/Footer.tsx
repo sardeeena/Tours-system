@@ -336,18 +336,6 @@ export const Footer: React.FC<FooterProps> = ({
                   Privacy Policy
                 </a>
               </li>
-              {onOpenAdmin && (
-                <li className="pt-2 border-t border-stone-200 dark:border-slate-800">
-                  <button
-                    type="button"
-                    onClick={onOpenAdmin}
-                    className="text-stone-500 hover:text-[#0A6C74] dark:text-stone-400 dark:hover:text-white flex items-center space-x-1.5 transition-colors cursor-pointer"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#0A6C74]" />
-                    <span>Admin Dashboard</span>
-                  </button>
-                </li>
-              )}
             </ul>
           </div>
 
