@@ -66,6 +66,9 @@ jobs:
       - name: Verify admin authentication and role provisioning security
         run: npm run test:security
 
+      - name: Verify superadmin technical center security boundaries
+        run: npm run test:technical
+
   database:
     name: Supabase migrations and RLS tests
     runs-on: ubuntu-latest
