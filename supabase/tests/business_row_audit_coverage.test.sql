@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(13);
+SELECT plan(14);
 
 SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.audit_logs'::regclass), 'audit_logs has RLS enabled');
 SELECT ok(NOT has_table_privilege('anon', 'public.audit_logs', 'SELECT'), 'anon cannot read audit logs');
@@ -53,6 +53,20 @@ SELECT ok(NOT EXISTS (
       WHERE c.relname = p.tablename AND t.tgname = 'trg_capture_business_audit' AND NOT t.tgisinternal
     )
 ), 'all public business tables have row-change audit triggers');
+
+CREATE TEMP TABLE audit_redaction_probe (id uuid, email text, status text, metadata jsonb);
+CREATE TRIGGER trg_capture_business_audit_probe
+  AFTER INSERT OR UPDATE OR DELETE ON pg_temp.audit_redaction_probe
+  FOR EACH ROW EXECUTE FUNCTION private.capture_business_audit();
+INSERT INTO pg_temp.audit_redaction_probe (id, email, status, metadata)
+VALUES (gen_random_uuid(), 'private@example.invalid', 'active', '{"private":"do not retain"}'::jsonb);
+SELECT ok(EXISTS (
+  SELECT 1 FROM public.audit_logs
+  WHERE entity_type = 'audit_redaction_probe'
+    AND new_data ? 'status'
+    AND NOT (new_data ? 'email')
+    AND NOT (new_data ? 'metadata')
+), 'audit snapshots retain safe status fields and redact contact and JSON metadata');
 
 SELECT * FROM finish();
 ROLLBACK;
