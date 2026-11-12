@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 import { isUserAdmin, AppUser } from '../src/services/authService';
-import { isExpectedKemetSupabaseUrl } from '../src/lib/supabaseProjectGuard';
+import { isExpectedAwesomeAdventureToursSupabaseUrl } from '../src/lib/supabaseProjectGuard';
 
 dotenv.config();
 
@@ -91,9 +91,9 @@ async function runSecurityTests() {
   const adminSetupSource = fs.readFileSync('scripts/setup-admin.ts', 'utf8');
   const adminSeedSource = fs.readFileSync('supabase/admin_seed.sql', 'utf8');
   assert(
-    'First-admin setup is pinned to the Kemet Spirit Supabase project',
-    adminSetupSource.includes('isExpectedKemetSupabaseUrl') &&
-      adminSetupSource.includes('mktrtoctcjyokclpdeui') &&
+    'First-admin setup is pinned to the Awesome Adventure Tours Supabase project',
+    adminSetupSource.includes('isExpectedAwesomeAdventureToursSupabaseUrl') &&
+      adminSetupSource.includes('uvtbtpxtrrmaublrztgv') &&
       !adminSetupSource.includes('cyifhjqqvtiguitrziqs'),
     'Admin setup fails closed instead of defaulting to the unrelated legacy Supabase project'
   );
@@ -346,8 +346,8 @@ async function runSecurityTests() {
   // TEST 8: Live Supabase Database Connection & RLS Policy Tests (if configured)
   // ----------------------------------------------------------------------------
   const configuredSupabaseUrl = (process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || '').trim();
-  if (configuredSupabaseUrl && !isExpectedKemetSupabaseUrl(configuredSupabaseUrl)) {
-    throw new Error('Refusing to run admin security checks against a Supabase project other than Kemet Spirit.');
+  if (configuredSupabaseUrl && !isExpectedAwesomeAdventureToursSupabaseUrl(configuredSupabaseUrl)) {
+    throw new Error('Refusing to run admin security checks against a Supabase project other than Awesome Adventure Tours.');
   }
   const supabaseUrl = configuredSupabaseUrl || null;
   const anonKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;

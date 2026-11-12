@@ -1,14 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
-import { isExpectedKemetSupabaseUrl } from '../src/lib/supabaseProjectGuard';
+import { isExpectedAwesomeAdventureToursSupabaseUrl } from '../src/lib/supabaseProjectGuard';
 
 dotenv.config();
 
 /**
- * Securely promotes an already-registered, email-confirmed Kemet Spirit user.
+ * Securely promotes an already-registered, email-confirmed Awesome Adventure Tours user.
  *
  * Required environment variables:
- *   SUPABASE_URL or VITE_SUPABASE_URL: the exact Kemet Spirit Supabase project URL
+ *   SUPABASE_URL or VITE_SUPABASE_URL: the exact Awesome Adventure Tours Supabase project URL
  *   SUPABASE_SERVICE_ROLE_KEY: a server-only Supabase secret/service-role key
  *   ADMIN_EMAIL: the exact email address that already registered and confirmed
  *
@@ -17,7 +17,7 @@ dotenv.config();
  * which is executable only by trusted database operators/service_role.
  *
  * Run:
- *   SUPABASE_URL="https://mktrtoctcjyokclpdeui.supabase.co" \
+ *   SUPABASE_URL="https://uvtbtpxtrrmaublrztgv.supabase.co" \
  *   ADMIN_EMAIL="owner@example.com" \
  *   SUPABASE_SERVICE_ROLE_KEY="<server-only-secret>" \
  *   npx tsx scripts/setup-admin.ts
@@ -27,10 +27,10 @@ async function main() {
   const serviceRoleKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
   const adminEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
 
-  if (!supabaseUrl || !isExpectedKemetSupabaseUrl(supabaseUrl)) {
+  if (!supabaseUrl || !isExpectedAwesomeAdventureToursSupabaseUrl(supabaseUrl)) {
     throw new Error(
-      'Refusing to continue: SUPABASE_URL must point to the configured Kemet Spirit project ' +
-      '(mktrtoctcjyokclpdeui.supabase.co). No fallback project is permitted.'
+      'Refusing to continue: SUPABASE_URL must point to the configured Awesome Adventure Tours project ' +
+      '(uvtbtpxtrrmaublrztgv.supabase.co). No fallback project is permitted.'
     );
   }
 
@@ -64,7 +64,7 @@ async function main() {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
-  console.log('Checking for the existing confirmed Kemet Spirit account...');
+  console.log('Checking for the existing confirmed Awesome Adventure Tours account...');
 
   let matchingUser: { id: string; email?: string; email_confirmed_at?: string | null } | null = null;
   for (let page = 1; page <= 100; page += 1) {
@@ -77,7 +77,7 @@ async function main() {
 
   if (!matchingUser) {
     throw new Error(
-      `No Auth user exists for ${adminEmail}. Register through the Kemet Spirit website first; this script never creates accounts.`
+      `No Auth user exists for ${adminEmail}. Register through the Awesome Adventure Tours website first; this script never creates accounts.`
     );
   }
 

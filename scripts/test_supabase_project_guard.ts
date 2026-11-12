@@ -9,6 +9,7 @@ const legacyProjectUrl = 'https://cyifhjqqvtiguitrziqs.supabase.co';
 
 assert.equal(isExpectedAwesomeAdventureToursSupabaseUrl(awesomeAdventureToursUrl), true, 'production accepts the Awesome Adventure Tours project');
 assert.equal(isExpectedAwesomeAdventureToursSupabaseUrl(legacyProjectUrl), false, 'production rejects the unrelated legacy project');
+assert.equal(isExpectedAwesomeAdventureToursSupabaseUrl('https://mktrtoctcjyokclpdeui.supabase.co'), false, 'production rejects the retained KemetSpirit source project after migration');
 assert.equal(isExpectedAwesomeAdventureToursSupabaseUrl('http://mktrtoctcjyokclpdeui.supabase.co'), false, 'production requires HTTPS');
 assert.equal(isExpectedAwesomeAdventureToursSupabaseUrl('https://another-project.supabase.co'), false, 'production rejects other Supabase projects');
 assert.equal(isExpectedAwesomeAdventureToursSupabaseUrl(awesomeAdventureToursUrl, true), true, 'development accepts the Awesome Adventure Tours project');
