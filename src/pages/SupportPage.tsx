@@ -274,7 +274,7 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
           </>}
         </section>
       </div>
-      <p className="text-[11px] text-stone-400 flex items-center gap-2"><Shield size={13}/> Conversations are protected by database row-level security. Internal notes are never visible to customers.</p>
+      <p className="text-[11px] text-stone-400 flex items-center gap-2"><Shield size={13}/> Your conversations are private. Internal notes are only visible to our team.</p>
     </div>
   </main>;
 };
