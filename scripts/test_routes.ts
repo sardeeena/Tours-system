@@ -123,6 +123,7 @@ async function runRouteTests() {
     { path: '/admin', expectedDest: '/index.html', description: 'Admin dashboard entry' },
     { path: '/admin/login', expectedDest: '/index.html', description: 'Admin login page' },
     { path: '/admin/tours', expectedDest: '/index.html', description: 'Admin tour management' },
+    { path: '/admin/tickets', expectedDest: '/index.html', description: 'Admin support ticket workspace' },
     { path: '/admin/crm/leads', expectedDest: '/index.html', description: 'Admin CRM pipeline' },
     { path: '/admin/operations/departures', expectedDest: '/index.html', description: 'Operations departures' },
     { path: '/login', expectedDest: '/index.html', description: 'Customer login page' },
@@ -132,6 +133,7 @@ async function runRouteTests() {
     { path: '/booking', expectedDest: '/index.html', description: 'Booking checkout flow' },
     { path: '/booking/confirmation/RST-2026-AB1234', expectedDest: '/index.html', description: 'Voucher confirmation deep link' },
     { path: '/my-booking/RST-2026-AB1234', expectedDest: '/index.html', description: 'Customer portal deep link' },
+    { path: '/support', expectedDest: '/index.html', description: 'Customer and staff support portal' },
     { path: '/api/chat', expectedDest: '/api/$1', description: 'API endpoint preserves /api/* without returning HTML' },
     { path: '/assets/nonexistent.js', expectedDest: '/assets/$1', description: 'Broken asset preserves /assets/* without returning HTML' },
   ];
