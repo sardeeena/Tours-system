@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(22);
+SELECT plan(24);
 
 SELECT ok(to_regclass('public.support_tickets') IS NOT NULL, 'support tickets table exists');
 SELECT ok(to_regclass('public.support_ticket_messages') IS NOT NULL, 'ticket messages table exists');
