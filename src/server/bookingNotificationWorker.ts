@@ -283,6 +283,7 @@ async function processMessage(
     body: JSON.stringify({
       from: `${fromName} <${fromEmail}>`,
       to: [recipient],
+      reply_to: process.env.RESEND_REPLY_TO?.trim() || 'reservation@awesomeadventure.tours',
       bcc: [process.env.BOOKING_NOTIFICATION_EMAIL?.trim() || 'reservation@awesomeadventure.tours'],
       subject,
       text: content,
