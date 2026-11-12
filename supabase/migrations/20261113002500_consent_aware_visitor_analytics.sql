@@ -5,6 +5,7 @@ BEGIN;
 
 CREATE TABLE IF NOT EXISTS public.visitor_sessions (
   id uuid PRIMARY KEY,
+  visitor_id uuid NOT NULL,
   user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   started_at timestamptz NOT NULL DEFAULT now(),
   last_seen_at timestamptz NOT NULL DEFAULT now(),
@@ -28,6 +29,8 @@ CREATE TABLE IF NOT EXISTS public.visitor_sessions (
   CONSTRAINT visitor_sessions_path_length CHECK (length(landing_path) <= 512)
 );
 
+CREATE INDEX IF NOT EXISTS idx_visitor_sessions_visitor_started
+  ON public.visitor_sessions (visitor_id, started_at DESC);
 CREATE INDEX IF NOT EXISTS idx_visitor_sessions_started_at
   ON public.visitor_sessions (started_at DESC);
 CREATE INDEX IF NOT EXISTS idx_visitor_sessions_user_started
@@ -66,6 +69,7 @@ CREATE INDEX IF NOT EXISTS idx_visitor_events_user_time
 CREATE TABLE IF NOT EXISTS public.visitor_consent_records (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   visitor_session_id uuid REFERENCES public.visitor_sessions(id) ON DELETE SET NULL,
+  visitor_id uuid,
   user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   necessary boolean NOT NULL DEFAULT true CHECK (necessary),
   analytics boolean NOT NULL DEFAULT false,
