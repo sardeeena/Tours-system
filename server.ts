@@ -2356,6 +2356,63 @@ app.get('/api/admin/technical/visitors/consent', rateLimit(30, 60_000), async (r
   }
 });
 
+app.post('/api/admin/technical/visitors/erase', rateLimit(5, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return res.status(503).json({ success: false, error: 'Visitor data controls are unavailable.' });
+  const identifierType = req.body?.identifier_type === 'user_id' ? 'user_id' : 'visitor_id';
+  const identifier = typeof req.body?.identifier === 'string' && UUID_PATTERN.test(req.body.identifier) ? req.body.identifier : null;
+  if (!identifier) return res.status(400).json({ success: false, error: 'Enter a valid visitor or user ID.' });
+  try {
+    let sessionQuery = serverSupabase.from('visitor_sessions').select('id,visitor_id').eq(identifierType, identifier);
+    const { data: sessions, error: sessionReadError } = await sessionQuery;
+    if (sessionReadError) throw sessionReadError;
+    const sessionIds = (sessions || []).map((item: any) => item.id);
+    const visitorIds = Array.from(new Set((sessions || []).map((item: any) => item.visitor_id).filter(Boolean)));
+    let erasedEvents = 0;
+    let erasedSessions = 0;
+    let anonymizedConsents = 0;
+    if (sessionIds.length) {
+      const { data: deletedEvents, error: eventDeleteError } = await serverSupabase
+        .from('visitor_events').delete().in('session_id', sessionIds).select('id');
+      if (eventDeleteError) throw eventDeleteError;
+      erasedEvents = deletedEvents?.length || 0;
+      const { data: deletedSessions, error: sessionDeleteError } = await serverSupabase
+        .from('visitor_sessions').delete().in('id', sessionIds).select('id');
+      if (sessionDeleteError) throw sessionDeleteError;
+      erasedSessions = deletedSessions?.length || 0;
+    }
+    const scrubConsent = async (query: any) => {
+      const { data, error } = await query.update({
+        visitor_session_id: null, visitor_id: null, user_id: null,
+      }).select('id');
+      if (error) throw error;
+      anonymizedConsents += data?.length || 0;
+    };
+    if (identifierType === 'user_id') {
+      await scrubConsent(serverSupabase.from('visitor_consent_records').update({ visitor_session_id: null, visitor_id: null, user_id: null }).eq('user_id', identifier));
+    } else {
+      await scrubConsent(serverSupabase.from('visitor_consent_records').update({ visitor_session_id: null, visitor_id: null, user_id: null }).eq('visitor_id', identifier));
+    }
+    if (sessionIds.length) {
+      await scrubConsent(serverSupabase.from('visitor_consent_records').update({ visitor_session_id: null, visitor_id: null, user_id: null }).in('visitor_session_id', sessionIds));
+    }
+    if (visitorIds.length) {
+      await scrubConsent(serverSupabase.from('visitor_consent_records').update({ visitor_session_id: null, visitor_id: null, user_id: null }).in('visitor_id', visitorIds));
+    }
+    await serverSupabase.from('audit_logs').insert({
+      user_id: req.user!.id,
+      action: 'VISITOR_ANALYTICS_ERASURE',
+      entity_type: 'visitor_analytics',
+      entity_id: null,
+      new_data: { erased_sessions: erasedSessions, erased_events: erasedEvents, anonymized_consent_records: anonymizedConsents, identifier_type: identifierType },
+    });
+    return res.json({ success: true, erasedSessions, erasedEvents, anonymizedConsents });
+  } catch (error) {
+    console.error('[Visitor privacy] Erasure failed:', error instanceof Error ? error.message : 'unknown error');
+    return res.status(503).json({ success: false, error: 'Visitor analytics could not be erased. No business bookings or payment records were changed.' });
+  }
+});
+
 app.get('/api/admin/technical/visitors/settings', rateLimit(30, 60_000), async (req: AuthenticatedRequest, res: Response) => {
   if (!requireSuperAdminAal2(req, res)) return;
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return res.status(503).json({ success: false, error: 'Retention settings are unavailable.' });
