@@ -2370,15 +2370,21 @@ app.post('/api/admin/technical/visitors/settings', rateLimit(10, 60_000), async 
   const eventDays = Number(req.body?.event_retention_days);
   const sessionDays = Number(req.body?.session_retention_days);
   const consentDays = Number(req.body?.consent_retention_days);
+  const technicalDays = Number(req.body?.technical_event_retention_days);
+  const auditDays = Number(req.body?.audit_log_retention_days);
   if (!Number.isInteger(eventDays) || eventDays < 7 || eventDays > 730 ||
       !Number.isInteger(sessionDays) || sessionDays < 7 || sessionDays > 1095 ||
-      !Number.isInteger(consentDays) || consentDays < 90 || consentDays > 3650) {
+      !Number.isInteger(consentDays) || consentDays < 90 || consentDays > 3650 ||
+      !Number.isInteger(technicalDays) || technicalDays < 7 || technicalDays > 730 ||
+      !Number.isInteger(auditDays) || auditDays < 365 || auditDays > 3650) {
     return res.status(400).json({ success: false, error: 'Retention periods are outside the allowed ranges.' });
   }
   const { data, error } = await serverSupabase.from('visitor_analytics_settings').update({
     event_retention_days: eventDays,
     session_retention_days: sessionDays,
     consent_retention_days: consentDays,
+    technical_event_retention_days: technicalDays,
+    audit_log_retention_days: auditDays,
     updated_at: new Date().toISOString(),
     updated_by: req.user!.id,
   }).eq('singleton', true).select('*').single();
@@ -2398,19 +2404,23 @@ async function pruneVisitorAnalytics(): Promise<void> {
   try {
     const { data: settings, error: settingsError } = await serverSupabase
       .from('visitor_analytics_settings')
-      .select('event_retention_days,session_retention_days,consent_retention_days')
+      .select('event_retention_days,session_retention_days,consent_retention_days,technical_event_retention_days,audit_log_retention_days')
       .eq('singleton', true).maybeSingle();
     if (settingsError || !settings) return;
     const now = Date.now();
     const eventCutoff = new Date(now - settings.event_retention_days * 86400000).toISOString();
     const sessionCutoff = new Date(now - settings.session_retention_days * 86400000).toISOString();
     const consentCutoff = new Date(now - settings.consent_retention_days * 86400000).toISOString();
-    const [events, sessions, consents] = await Promise.all([
+    const technicalCutoff = new Date(now - settings.technical_event_retention_days * 86400000).toISOString();
+    const auditCutoff = new Date(now - settings.audit_log_retention_days * 86400000).toISOString();
+    const [events, sessions, consents, technical, audit] = await Promise.all([
       serverSupabase.from('visitor_events').delete().lt('occurred_at', eventCutoff),
       serverSupabase.from('visitor_sessions').delete().lt('last_seen_at', sessionCutoff),
       serverSupabase.from('visitor_consent_records').delete().lt('recorded_at', consentCutoff),
+      serverSupabase.from('technical_events').delete().lt('created_at', technicalCutoff),
+      serverSupabase.from('audit_logs').delete().lt('created_at', auditCutoff),
     ]);
-    if (events.error || sessions.error || consents.error) {
+    if (events.error || sessions.error || consents.error || technical.error || audit.error) {
       console.error('[Visitor analytics retention] Cleanup did not fully complete.');
     }
   } catch (error) {
