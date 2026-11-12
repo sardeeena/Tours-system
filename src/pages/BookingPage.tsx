@@ -348,8 +348,8 @@ export const BookingPage: React.FC<BookingPageProps> = ({
         updatedAt: new Date().toISOString(),
       };
 
-      void recordVisitorEvent({ event_name: 'booking_submitted', page_path: '/booking', event_data: { tour_slug: currentTour?.slug || 'unknown', booking_step: currentStep } });
       await bookingRepository.createBooking(newBooking);
+      void recordVisitorEvent({ event_name: 'booking_submitted', page_path: '/booking', event_data: { tour_slug: currentTour?.slug || 'unknown', booking_step: currentStep } });
       clearBookingDraft();
       notificationService.sendBookingConfirmation(newBooking);
       void recordVisitorEvent({ event_name: 'booking_confirmed', page_path: '/booking', event_data: { tour_slug: currentTour?.slug || 'unknown' } });
