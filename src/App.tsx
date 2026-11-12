@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from
 import { motion, AnimatePresence } from 'motion/react';
 import { Header } from './components/common/Header';
 import { Footer } from './components/common/Footer';
+import { CookieConsent } from './components/common/CookieConsent';
 import { WishlistDrawer } from './components/common/WishlistDrawer';
 import { CompareModal } from './components/common/CompareModal';
 import { CompareFloatingBar } from './components/common/CompareFloatingBar';
@@ -1511,6 +1512,7 @@ function MainApp() {
 
   return (
     <div className={`public-site min-h-screen flex flex-col bg-[#FAF8F5] dark:bg-[#0A1118] text-[#111A24] dark:text-[#F1F5F9] transition-colors duration-200 ${currentPath.startsWith('/admin') ? 'public-site-admin-route' : ''}`}>
+      <CookieConsent />
       {/* Global Header */}
       <Header
         currentCurrency={currentCurrency}
@@ -1530,6 +1532,7 @@ function MainApp() {
           setHelpSelectedTour(null);
           setIsHelpInquiryOpen(true);
         }}
+        onOpenCookieSettings={() => window.dispatchEvent(new Event('awesome:open-cookie-settings'))}
       />
 
       {/* Main View Flow with Smooth Page Entrance */}
