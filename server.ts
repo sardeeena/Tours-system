@@ -2133,8 +2133,11 @@ function safeVisitorMetadata(value: any) {
   const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   const device = ['desktop','mobile','tablet','other'].includes(source.device_type) ? source.device_type : null;
   const screen = typeof source.screen_bucket === 'string' && /^(small|medium|large|xlarge)$/.test(source.screen_bucket) ? source.screen_bucket : null;
-  const country = typeof source.country_code === 'string' && /^[A-Z]{2}$/.test(source.country_code) ? source.country_code : null;
-  const region = typeof source.region_code === 'string' && /^[A-Z0-9-]{1,8}$/.test(source.region_code) ? source.region_code : null;
+  const safeCampaignValue = (input: unknown, max: number) => {
+    const candidate = safeShortText(input, max);
+    if (!candidate || /[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i.test(candidate) || /\\+?\\d[\\d\\s().-]{7,}\\d/.test(candidate)) return null;
+    return candidate;
+  };
   return {
     device_type: device,
     browser_family: safeShortText(source.browser_family, 40),
@@ -2142,14 +2145,14 @@ function safeVisitorMetadata(value: any) {
     screen_bucket: screen,
     language: safeShortText(source.language, 24),
     timezone: safeShortText(source.timezone, 64),
-    country_code: country,
-    region_code: region,
+    country_code: null,
+    region_code: null,
     referrer_host: safeShortText(source.referrer_host, 120),
-    utm_source: safeShortText(source.utm_source, 100),
-    utm_medium: safeShortText(source.utm_medium, 100),
-    utm_campaign: safeShortText(source.utm_campaign, 120),
-    utm_term: safeShortText(source.utm_term, 120),
-    utm_content: safeShortText(source.utm_content, 120),
+    utm_source: safeCampaignValue(source.utm_source, 100),
+    utm_medium: safeCampaignValue(source.utm_medium, 100),
+    utm_campaign: safeCampaignValue(source.utm_campaign, 120),
+    utm_term: safeCampaignValue(source.utm_term, 120),
+    utm_content: safeCampaignValue(source.utm_content, 120),
   };
 }
 
