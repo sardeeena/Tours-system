@@ -10,7 +10,7 @@ type Overview = {
 type Session = {
   id: string; visitor_id: string; user_id: string | null; started_at: string; last_seen_at: string; ended_at: string | null;
   landing_path: string; referrer_host: string | null; utm_source: string | null; utm_medium: string | null;
-  utm_campaign: string | null; device_type: string | null; browser_family: string | null; os_family: string | null;
+  utm_campaign: string | null; utm_term?: string | null; utm_content?: string | null; device_type: string | null; browser_family: string | null; os_family: string | null;
   screen_bucket: string | null; language: string | null; timezone: string | null;
   country_code?: string | null; region_code?: string | null;
   analytics_consent: boolean; marketing_consent: boolean;
@@ -118,7 +118,7 @@ export const VisitorAnalyticsPanel: React.FC = () => {
     const term = search.trim().toLowerCase();
     return sessions.filter((item) => !term || [
       item.id, item.visitor_id, item.user_id, item.landing_path, item.referrer_host, item.utm_source,
-      item.utm_campaign, item.browser_family, item.os_family, item.device_type, item.language, item.timezone, item.country_code, item.region_code,
+      item.utm_campaign, item.utm_term, item.utm_content, item.browser_family, item.os_family, item.device_type, item.language, item.timezone, item.country_code, item.region_code,
     ].some((value) => String(value || '').toLowerCase().includes(term)));
   }, [sessions, search]);
 
@@ -233,7 +233,7 @@ export const VisitorAnalyticsPanel: React.FC = () => {
               {item.user_id && <div className="mt-1 flex flex-wrap items-center gap-2 text-slate-500"><span className="font-mono">User {item.user_id.slice(0, 8)}…</span><button type="button" onClick={() => { setEraseType('user_id'); setEraseIdentifier(item.user_id || ''); }} className="font-semibold text-[#9a702b] underline">Select user</button></div>}
               <p className="mt-1 text-slate-500">{[item.device_type, item.browser_family, item.os_family].filter(Boolean).join(' · ') || 'Device details unavailable'}</p>
               <p className="mt-1 text-slate-500">Last activity: {date(item.last_seen_at)}</p>
-              <p className="mt-1 text-slate-500">Referrer: {item.referrer_host || 'Direct'}{item.utm_campaign ? ` · ${item.utm_campaign}` : ''}</p>
+              <p className="mt-1 text-slate-500">Referrer: {item.referrer_host || 'Direct'}{item.utm_campaign ? ` · ${item.utm_campaign}` : ''}{item.utm_term ? ` · Term: ${item.utm_term}` : ''}{item.utm_content ? ` · Content: ${item.utm_content}` : ''}</p>
               <p className="mt-1 text-slate-500">{[item.language, item.timezone, item.country_code, item.region_code].filter(Boolean).join(' · ')}</p>
             </button>)}
             {!visibleSessions.length && <p className="py-6 text-center text-xs text-slate-500">No matching sessions in the latest records.</p>}
