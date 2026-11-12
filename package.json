@@ -20,7 +20,7 @@
     "test:abuse": "tsx scripts/test_abuse_prevention.ts",
     "test:routes": "tsx scripts/test_routes.ts",
     "test:recovery": "tsx scripts/test_password_recovery.ts",
-    "test:comm": "tsx scripts/test_communication_validation.ts",
+    "test:comm": "tsx scripts/test_communication_validation.ts && tsx scripts/test_email_template_renderer.ts",
     "test:booking": "tsx scripts/test_booking_identifier_resolution.ts",
     "test:supabase-project": "tsx scripts/test_supabase_project_guard.ts",
     "test:experiences-destinations": "tsx scripts/test_dynamic_experiences_destinations.ts",
