@@ -1487,11 +1487,18 @@ async function sendInquiryNotificationEmail(params: {
     if (!response.ok || typeof providerBody?.id !== 'string') {
       throw new Error(typeof providerBody?.message === 'string' ? providerBody.message : `Resend rejected the request (HTTP ${response.status}).`);
     }
+    const sentAt = new Date().toISOString();
     const { error } = await serverSupabase
       .from('communication_messages')
-      .update({ status: 'sent', provider_name: 'Resend', provider_message_id: providerBody.id, sent_at: new Date().toISOString(), failure_reason: null })
+      .update({ provider_name: 'Resend', provider_message_id: providerBody.id, sent_at: sentAt, failure_reason: null })
       .eq('id', log.id);
-    if (error) console.error('Inquiry email sent status update failed:', error.message);
+    if (error) console.error('Inquiry email provider details update failed:', error.message);
+    const { error: statusError } = await serverSupabase
+      .from('communication_messages')
+      .update({ status: 'sent' })
+      .eq('id', log.id)
+      .eq('status', 'queued');
+    if (statusError) console.error('Inquiry email sent status update failed:', statusError.message);
   } catch (error: any) {
     const reason = error?.message || 'Resend inquiry email failed.';
     const { error: updateError } = await serverSupabase
