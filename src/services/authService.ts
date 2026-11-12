@@ -409,6 +409,7 @@ export async function resendConfirmationEmail(
         }
         return { success: false, error: errorMsg };
       }
+      void recordVisitorEvent({ event_name: 'confirmation_email_resent', page_path: '/register', event_data: { outcome: 'sent' } });
       return { 
         success: true, 
         message: `A fresh confirmation email has been dispatched by Supabase to ${cleanEmail}.` 
@@ -481,6 +482,7 @@ export async function confirmUserEmail(
       };
     }
 
+    void recordVisitorEvent({ event_name: 'email_confirmed', page_path: '/login' });
     return { success: true };
   } catch (err) {
     return { success: false, error: formatSupabaseError(err) };
