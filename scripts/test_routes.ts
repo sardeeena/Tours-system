@@ -162,7 +162,7 @@ async function runRouteTests() {
   const serverSource = fs.readFileSync(path.join(process.cwd(), 'server.ts'), 'utf8');
   assert(
     serverSource.split('const privateRoute =').length === 3 &&
-      serverSource.includes(String.raw`support(?:\\/|$)`),
+      serverSource.includes(String.raw`support(?:\/|$)`),
     'Server-side private route handling includes the customer support portal'
   );
 
