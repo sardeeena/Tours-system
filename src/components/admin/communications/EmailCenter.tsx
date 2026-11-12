@@ -82,7 +82,7 @@ export const EmailCenter: React.FC<EmailCenterProps> = ({ onNavigateTab }) => {
           {provider?.email.configurationIssue === 'missing_api_key' && <p className="mt-2 text-xs text-amber-700">Email sending needs attention. Please contact a Superadmin.</p>}
           <div className="mt-3 space-y-1 text-xs text-slate-500">
             <p>Delivery updates: <strong className={provider?.email.webhookConfigured ? 'text-emerald-600' : 'text-amber-600'}>{provider?.email.webhookConfigured ? 'Configured' : 'Not configured'}</strong></p>
-            <p>Booking notification worker: <strong className={provider?.email.bookingWorkerEnabled ? 'text-emerald-600' : 'text-amber-600'}>{provider?.email.bookingWorkerEnabled ? 'Enabled' : 'Disabled'}</strong></p>
+            <p>Automatic booking emails: <strong className={provider?.email.bookingWorkerEnabled ? 'text-emerald-600' : 'text-amber-600'}>{provider?.email.bookingWorkerEnabled ? 'Enabled' : 'Disabled'}</strong></p>
             <p>Sensitive account details are protected.</p>
           </div>
         </div>
@@ -93,9 +93,9 @@ export const EmailCenter: React.FC<EmailCenterProps> = ({ onNavigateTab }) => {
           {eventError && <p className="mt-2 text-xs text-amber-600">{eventError}</p>}
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white"><Clock3 className="h-4 w-4 text-[#b58b3a]" /> Queue snapshot</div>
+          <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white"><Clock3 className="h-4 w-4 text-[#b58b3a]" /> Waiting to send</div>
           <p className="mt-3 text-2xl font-bold text-slate-900 dark:text-white">{loading ? '—' : queued}</p>
-          <p className="mt-1 text-xs text-slate-500">Messages currently recorded as queued</p>
+          <p className="mt-1 text-xs text-slate-500">Messages waiting to send</p>
         </div>
       </section>
 
