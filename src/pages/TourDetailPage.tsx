@@ -28,6 +28,7 @@ import { useComparison } from '../contexts/ComparisonContext';
 import { useToast } from '../contexts/ToastContext';
 import { useSeo } from '../hooks/useSeo';
 import { seoService } from '../services/seoService';
+import { recordVisitorEvent } from '../services/visitorAnalyticsService';
 
 interface TourDetailPageProps {
   tour: Tour;
@@ -66,6 +67,9 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({
   // Dynamic SEO meta tags, OpenGraph, and Schema.org JSON-LD
   const seoData = React.useMemo(() => seoService.generateTourSeo(tour), [tour]);
   useSeo(seoData);
+  React.useEffect(() => {
+    void recordVisitorEvent({ event_name: 'tour_view', page_path: `/excursions/${tour.slug}`, event_data: { tour_slug: tour.slug, destination: tour.destination, category: tour.category } });
+  }, [tour.slug, tour.destination, tour.category]);
 
   const favorite = isFavorite(tour.slug);
   const compared = isCompared(tour.slug);
@@ -109,7 +113,7 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({
           {/* Wishlist Button */}
           <button
             type="button"
-            onClick={() => toggleFavorite(tour.slug, tour.title)}
+            onClick={() => { toggleFavorite(tour.slug, tour.title); void recordVisitorEvent({ event_name: 'wishlist_updated', page_path: `/excursions/${tour.slug}`, event_data: { tour_slug: tour.slug, interaction: favorite ? 'removed' : 'added' } }); }}
             className={`p-2 rounded text-xs flex items-center space-x-1.5 transition-all shadow-2xs border ${
               favorite
                 ? 'bg-rose-50 text-rose-600 border-rose-200 font-semibold'
@@ -126,7 +130,7 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({
           {/* Compare Button */}
           <button
             type="button"
-            onClick={() => toggleCompare(tour.slug, tour.title)}
+            onClick={() => { toggleCompare(tour.slug, tour.title); void recordVisitorEvent({ event_name: 'comparison_updated', page_path: `/excursions/${tour.slug}`, event_data: { tour_slug: tour.slug, interaction: compared ? 'removed' : 'added' } }); }}
             className={`p-2 rounded text-xs flex items-center space-x-1.5 transition-all shadow-2xs border ${
               compared
                 ? 'bg-[#E8F3F4] text-[#0A6C74] border-[#0A6C74]/30 font-semibold'
