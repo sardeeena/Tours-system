@@ -648,7 +648,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           {/* Footer note */}
           <div className="mt-5 pt-4 border-t border-stone-100 flex items-center justify-center space-x-2 text-[11px] text-stone-500">
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Encrypted with TLS 1.3 & Supabase Auth</span>
+            <span>Your account and personal information are protected.</span>
           </div>
         </div>
       </motion.div>
