@@ -697,7 +697,7 @@ class SupabaseBookingRepository implements IBookingRepository {
       tourImage: tourImg || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
       tourDestination: tourDest,
       tourDuration: tour.duration || (tour.duration_hours ? `${tour.duration_hours} Hours` : 'Full Day'),
-      tourLanguage: data.tour_language || tour.languages?.[0] || 'English',
+      tourLanguage: data.tour_language || undefined,
       date: data.booking_date,
       guests: {
         adults: data.adult_count || 1,
@@ -791,7 +791,7 @@ class SupabaseBookingRepository implements IBookingRepository {
       tourImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
       tourDestination: tour.destination || 'Hurghada',
       tourDuration: tour.duration || 'Full Day (approx. 7 hours)',
-      tourLanguage: sec.tourLanguage || 'English',
+      tourLanguage: sec.tourLanguage || undefined,
       date: sec.bookingDate,
       guests: {
         adults: guests.adults || 1,
