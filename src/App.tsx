@@ -1537,7 +1537,6 @@ function MainApp() {
           setHelpSelectedTour(null);
           setIsHelpInquiryOpen(true);
         }}
-        onOpenCookieSettings={() => window.dispatchEvent(new Event('awesome:open-cookie-settings'))}
       />
 
       {/* Main View Flow with Smooth Page Entrance */}
@@ -1573,6 +1572,7 @@ function MainApp() {
           setHelpSelectedTour(null);
           setIsHelpInquiryOpen(true);
         }}
+        onOpenCookieSettings={() => { window.dispatchEvent(new Event('awesome:open-cookie-settings')); }}
       />
 
 
