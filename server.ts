@@ -1822,7 +1822,7 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
           subject,
           text: content,
           tags: [{ name: 'communication_id', value: String(messageLog.id) }],
-          html: `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#17212b;max-width:600px;margin:auto"><h1>Welcome aboard!</h1><p>Thank you for subscribing to Awesome Adventure Tours.</p><p>Your 15% voucher code:</p><p style="font-size:28px;font-weight:bold;letter-spacing:2px;color:#0a6c74">REDSEA15</p><p>Use it when enquiring about your next excursion.</p><hr><p style="font-size:12px;color:#64748b">You received this email because you subscribed to updates from Awesome Adventure Tours. <a href="${unsubscribeUrl}">Unsubscribe</a>.</p></div>`,
+          html: renderBrandedEmailHtml({ heading: 'Welcome aboard!', preheader: subject, bodyText: content, footerNote: 'You received this email because you subscribed to Awesome Adventure Tours. Use the unsubscribe link above if you no longer want updates.' }),
         }),
         signal: AbortSignal.timeout(15_000),
       });
