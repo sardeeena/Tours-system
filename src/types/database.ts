@@ -223,6 +223,7 @@ export interface DbBooking {
   booking_reference: string;
   tour_id: string;
   customer_id: string | null;
+  tour_language: string | null;
   booking_date: string;
   status: 'pending' | 'confirmed' | 'cancellation_requested' | 'cancelled' | 'completed' | 'no_show';
   payment_status: 'pending' | 'paid' | 'partially_paid' | 'refunded' | 'failed';

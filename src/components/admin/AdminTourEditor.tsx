@@ -149,6 +149,7 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
     robots_follow: true,
   });
   const [newKeywordInput, setNewKeywordInput] = useState('');
+  const [languagesInput, setLanguagesInput] = useState('English, German');
 
   // Availability Form State
   const [availabilityMaxCapacity, setAvailabilityMaxCapacity] = useState(35);
@@ -172,6 +173,7 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
           const fullTour = await adminGetTourById(tourId);
           if (fullTour) {
             setTourData(fullTour);
+            setLanguagesInput((fullTour.languages || []).join(', '));
             setSelectedCategoryIds(fullTour.categories?.map((c) => c.id) || []);
             setHighlights(fullTour.highlights?.map((h) => h.item) || []);
             setInclusions(fullTour.inclusions?.map((i) => i.item) || []);
@@ -294,11 +296,16 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
     setSaveSuccessMsg(null);
 
     try {
+      const configuredLanguages = Array.from(new Set((tourData.languages || []).map((language) => String(language).trim()).filter(Boolean)));
+      if (configuredLanguages.length === 0) {
+        throw new Error('Add at least one tour language before saving.');
+      }
       const statusToSave = overrideStatus || tourData.status || 'draft';
 
       const payload = {
         tour: {
           ...tourData,
+          languages: configuredLanguages,
           status: statusToSave,
           price: Number(tourData.price) || 0,
           child_price: Number(tourData.child_price) || 0,
@@ -338,7 +345,8 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
       }
 
       setHasUnsavedChanges(false);
-      setTourData((prev) => ({ ...prev, status: statusToSave }));
+      setTourData((prev) => ({ ...prev, status: statusToSave, languages: configuredLanguages }));
+      setLanguagesInput(configuredLanguages.join(', '));
     } catch (err: any) {
       setSaveError(err.message || 'Failed to save tour.');
     } finally {
@@ -640,6 +648,24 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
                 className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-xs text-white focus:outline-none focus:border-[#0A6C74]"
               />
             </div>
+          </div>
+
+          {/* Tour Languages */}
+          <div className="pt-4 border-t border-stone-800">
+            <label className="text-xs font-semibold text-stone-300 block mb-1">
+              Tour Languages <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="text"
+              value={languagesInput}
+              onChange={(e) => {
+                setLanguagesInput(e.target.value);
+                handleFieldChange('languages', Array.from(new Set(e.target.value.split(',').map((language) => language.trim()).filter(Boolean))));
+              }}
+              placeholder="English, German, French, Arabic"
+              className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-xs text-white focus:outline-none focus:border-[#0A6C74]"
+            />
+            <p className="text-[11px] text-stone-500 mt-1">Separate languages with commas. Customers can choose from this list when booking.</p>
           </div>
 
           {/* Categories Selector */}

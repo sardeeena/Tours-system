@@ -3,6 +3,7 @@ import { APP_CONFIG } from '../config/appConfig';
 
 export interface BookingDraftState {
   tourSlug: string;
+  selectedTourLanguage: string;
   currentStep: number;
   date: string;
   guests: GuestCounts;
@@ -19,6 +20,7 @@ export interface BookingDraftState {
 
 export const INITIAL_DRAFT_STATE: BookingDraftState = {
   tourSlug: '',
+  selectedTourLanguage: '',
   currentStep: 1,
   date: '',
   guests: {

@@ -172,7 +172,7 @@ class SupabaseBookingRepository implements IBookingRepository {
       // 1. Authoritative Primary Path: create_booking_atomic RPC
       // Executes single PostgreSQL transaction with row-level capacity lock, server-side pricing,
       // passenger manifest creation, extras persistence, genuine request idempotency, and audit logging.
-      const { data: atomicRes, error: rpcErr } = await supabase.rpc('create_booking_atomic', {
+      const { data: atomicRes, error: rpcErr } = await supabase.rpc('create_booking_atomic_with_language', {
         p_tour_identifier: resolveBookingTourIdentifier(booking.tourId, booking.tourSlug),
         p_booking_date: bookingDateStr,
         p_adult_count: adults,
@@ -195,6 +195,7 @@ class SupabaseBookingRepository implements IBookingRepository {
         p_payment_method: booking.paymentMethod || 'pay_at_pickup',
         p_special_requests: booking.customer.specialRequests || null,
         p_idempotency_key: idempotencyKey,
+        p_tour_language: booking.tourLanguage || 'English',
       });
 
       if (!rpcErr && atomicRes && typeof atomicRes === 'object') {
@@ -292,7 +293,7 @@ class SupabaseBookingRepository implements IBookingRepository {
       try {
         // 1. If contact verification is supplied, attempt the secure two-factor RPC first
         if (cleanContact) {
-          const { data: rpcRes, error: rpcErr } = await supabase.rpc('lookup_booking_secure', {
+          const { data: rpcRes, error: rpcErr } = await supabase.rpc('lookup_booking_secure_with_language', {
             p_reference: cleanRef,
             p_verification: cleanContact,
           });
@@ -696,6 +697,7 @@ class SupabaseBookingRepository implements IBookingRepository {
       tourImage: tourImg || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
       tourDestination: tourDest,
       tourDuration: tour.duration || (tour.duration_hours ? `${tour.duration_hours} Hours` : 'Full Day'),
+      tourLanguage: data.tour_language || undefined,
       date: data.booking_date,
       guests: {
         adults: data.adult_count || 1,
@@ -789,6 +791,7 @@ class SupabaseBookingRepository implements IBookingRepository {
       tourImage: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
       tourDestination: tour.destination || 'Hurghada',
       tourDuration: tour.duration || 'Full Day (approx. 7 hours)',
+      tourLanguage: sec.tourLanguage || undefined,
       date: sec.bookingDate,
       guests: {
         adults: guests.adults || 1,

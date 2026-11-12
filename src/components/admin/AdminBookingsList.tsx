@@ -151,6 +151,7 @@ export const AdminBookingsList: React.FC = () => {
     const headers = [
       'Booking Reference',
       'Tour Title',
+      'Tour Language',
       'Date',
       'Customer Name',
       'Email',
@@ -168,6 +169,7 @@ export const AdminBookingsList: React.FC = () => {
     const rows = filtered.map((b) => [
       `"${b.bookingReference}"`,
       `"${b.tourTitle.replace(/"/g, '""')}"`,
+      `"${(b.tourLanguage || '').replace(/"/g, '""')}"`,
       `"${b.date}"`,
       `"${b.customer.firstName} ${b.customer.lastName}"`,
       `"${b.customer.email}"`,
@@ -476,6 +478,7 @@ export const AdminBookingsList: React.FC = () => {
                 </h4>
                 <div className="space-y-1.5 text-stone-300">
                   <p><strong>Tour:</strong> {selectedBooking.tourTitle}</p>
+                  <p><strong>Tour Language:</strong> {selectedBooking.tourLanguage || 'Not recorded'}</p>
                   <p><strong>Date:</strong> {selectedBooking.date}</p>
                   <p><strong>Party:</strong> {selectedBooking.guests.adults} Adults, {selectedBooking.guests.children} Children</p>
                   <p><strong>Payment Method:</strong> {selectedBooking.paymentMethod.replace('_', ' ')}</p>
