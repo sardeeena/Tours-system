@@ -106,8 +106,12 @@ jobs:
           # Source has four bucket definitions and no stored objects.
           pg_dump "$SOURCE_DB_URL" --data-only --table=storage.buckets --no-owner --no-privileges --file=storage_buckets.sql
 
-          # Preserve the source pgmq queue metadata and queue state.
-          pg_dump "$SOURCE_DB_URL" --data-only --schema=pgmq --no-owner --no-privileges --file=pgmq_data.sql
+          # The source has one empty pgmq queue. Recreate it through pgmq.create() on target.
+          source_queue_messages="$(psql "$SOURCE_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "select (select count(*) from pgmq.q_booking_notifications) + (select count(*) from pgmq.a_booking_notifications)")"
+          if [ "$source_queue_messages" != "0" ]; then
+            echo "STOP: source pgmq queue contains messages; a message-preserving queue transfer is required."
+            exit 1
+          fi
 
           # Recreate the source Storage RLS policies on the target managed storage.objects table.
           psql "$SOURCE_DB_URL" -X -A -t -v ON_ERROR_STOP=1 > storage_policies.sql <<'SQL'
@@ -135,7 +139,7 @@ jobs:
           ORDER BY schemaname, tablename;
           SQL
 
-          for file in schema.sql data.sql history_schema.sql history_data.sql auth_data.sql storage_buckets.sql pgmq_data.sql storage_policies.sql realtime_publication.sql; do
+          for file in schema.sql data.sql history_schema.sql history_data.sql auth_data.sql storage_buckets.sql storage_policies.sql realtime_publication.sql; do
             test -s "$file" || { echo "Missing or empty migration artifact: $file"; exit 1; }
           done
 
@@ -151,6 +155,7 @@ jobs:
           CREATE EXTENSION IF NOT EXISTS index_advisor WITH SCHEMA extensions;
           CREATE SCHEMA IF NOT EXISTS pgmq;
           CREATE EXTENSION IF NOT EXISTS pgmq WITH SCHEMA pgmq;
+          SELECT pgmq.create('booking_notifications');
           SQL
 
           # Restore cluster roles separately, as recommended by Supabase.
@@ -233,7 +238,7 @@ jobs:
 
       - name: Remove temporary SQL dumps
         if: always()
-        run: rm -f roles.sql schema.sql data.sql history_schema.sql history_data.sql auth_data.sql storage_buckets.sql pgmq_data.sql storage_policies.sql realtime_publication.sql source_*.tsv destination_*.tsv
+        run: rm -f roles.sql schema.sql data.sql history_schema.sql history_data.sql auth_data.sql storage_buckets.sql storage_policies.sql realtime_publication.sql source_*.tsv destination_*.tsv
 \\t' -v ON_ERROR_STOP=1 -c "select id, name, public, file_size_limit, coalesce(array_to_string(allowed_mime_types, ','), '') from storage.buckets order by id" > "${db}_buckets.tsv"
             psql "$DB_URL" -X -A -t -F  -X -v ON_ERROR_STOP=1 -c "
             select
@@ -253,7 +258,7 @@ jobs:
 
       - name: Remove temporary SQL dumps
         if: always()
-        run: rm -f roles.sql schema.sql data.sql history_schema.sql history_data.sql auth_data.sql storage_buckets.sql pgmq_data.sql storage_policies.sql realtime_publication.sql source_*.tsv destination_*.tsv
+        run: rm -f roles.sql schema.sql data.sql history_schema.sql history_data.sql auth_data.sql storage_buckets.sql storage_policies.sql realtime_publication.sql source_*.tsv destination_*.tsv
 \\t' -v ON_ERROR_STOP=1 -c "select policyname, cmd, roles::text, coalesce(qual,''), coalesce(with_check,'') from pg_policies where schemaname='storage' order by tablename,policyname" > "${db}_storage_policies.tsv"
             psql "$DB_URL" -X -A -t -F  -X -v ON_ERROR_STOP=1 -c "
             select
@@ -273,7 +278,7 @@ jobs:
 
       - name: Remove temporary SQL dumps
         if: always()
-        run: rm -f roles.sql schema.sql data.sql history_schema.sql history_data.sql auth_data.sql storage_buckets.sql pgmq_data.sql storage_policies.sql realtime_publication.sql source_*.tsv destination_*.tsv
+        run: rm -f roles.sql schema.sql data.sql history_schema.sql history_data.sql auth_data.sql storage_buckets.sql storage_policies.sql realtime_publication.sql source_*.tsv destination_*.tsv
 \\t' -v ON_ERROR_STOP=1 -c "select schemaname, tablename from pg_publication_tables where pubname='supabase_realtime' order by schemaname,tablename" > "${db}_realtime.tsv"
             psql "$DB_URL" -X -A -t -F  -X -v ON_ERROR_STOP=1 -c "
             select
@@ -293,7 +298,7 @@ jobs:
 
       - name: Remove temporary SQL dumps
         if: always()
-        run: rm -f roles.sql schema.sql data.sql history_schema.sql history_data.sql auth_data.sql storage_buckets.sql pgmq_data.sql storage_policies.sql realtime_publication.sql source_*.tsv destination_*.tsv
+        run: rm -f roles.sql schema.sql data.sql history_schema.sql history_data.sql auth_data.sql storage_buckets.sql storage_policies.sql realtime_publication.sql source_*.tsv destination_*.tsv
 \\t' -v ON_ERROR_STOP=1 -c "select extname, extversion from pg_extension where extname in ('hypopg','index_advisor','pg_stat_statements','pgcrypto','pgmq','supabase_vault','uuid-ossp') order by extname" > "${db}_extensions.tsv"
           done
 
@@ -320,4 +325,4 @@ jobs:
 
       - name: Remove temporary SQL dumps
         if: always()
-        run: rm -f roles.sql schema.sql data.sql history_schema.sql history_data.sql auth_data.sql storage_buckets.sql pgmq_data.sql storage_policies.sql realtime_publication.sql source_*.tsv destination_*.tsv
+        run: rm -f roles.sql schema.sql data.sql history_schema.sql history_data.sql auth_data.sql storage_buckets.sql storage_policies.sql realtime_publication.sql source_*.tsv destination_*.tsv
