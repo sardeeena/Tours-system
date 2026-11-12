@@ -374,7 +374,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ redirectUrl, onNavig
                 <Mail className="w-4 h-4 text-stone-400 absolute left-3 top-2.5" />
               </div>
               <p className="text-[11px] text-stone-500 mt-1">
-                You will receive a confirmation email from Supabase to verify this address before your account is activated.
+                We'll send you a confirmation email. Your account will be ready after you verify your address.
               </p>
             </div>
 
