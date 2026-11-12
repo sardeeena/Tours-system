@@ -31,6 +31,7 @@ import {
   cleanOrphanedStorageFiles,
   StorageFileItem,
   MediaAssetAuditResult,
+  MEDIA_BUCKET,
 } from '../../services/storageService';
 import { supabase, isSupabaseConfigured } from '../../services/supabaseClient';
 import { adminListTours } from '../../services/tourService';
