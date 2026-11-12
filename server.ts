@@ -398,7 +398,7 @@ app.use('/api', (req: AuthenticatedRequest, res: Response, next: NextFunction) =
     if (routePath.startsWith('/api/admin/technical') || routePath === '/api/health') return;
     const durationMs = Math.max(0, Date.now() - startedAt);
     const severity = res.statusCode >= 500 ? 'error' : res.statusCode >= 400 ? 'warning' : 'info';
-    void serverSupabase.from('technical_events').insert({
+    void Promise.resolve(serverSupabase.from('technical_events').insert({
       severity,
       event_type: 'api_request',
       source: 'http',
@@ -409,7 +409,7 @@ app.use('/api', (req: AuthenticatedRequest, res: Response, next: NextFunction) =
       duration_ms: durationMs,
       actor_user_id: req.user?.id || null,
       metadata: { request_id: requestId },
-    }).then(() => undefined).catch(() => undefined);
+    })).catch(() => undefined);
   });
   next();
 });
@@ -1954,10 +1954,12 @@ app.get('/api/admin/technical/overview', rateLimit(30, 60_000), async (req: Auth
   const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
   const dbStartedAt = Date.now();
   try {
+    const requestCount = await serverSupabase.from('technical_events').select('id', { count: 'exact', head: true }).gte('created_at', since);
+    const dbLatencyMs = Date.now() - dbStartedAt;
+    if (requestCount.error) throw requestCount.error;
     const [
-      requestCount, errorCount, warningCount, latencyRows, recentRows, auditRows, bucketResult,
+      errorCount, warningCount, latencyRows, recentRows, auditRows, bucketResult,
     ] = await Promise.all([
-      serverSupabase.from('technical_events').select('id', { count: 'exact', head: true }).gte('created_at', since),
       serverSupabase.from('technical_events').select('id', { count: 'exact', head: true }).gte('created_at', since).eq('severity', 'error'),
       serverSupabase.from('technical_events').select('id', { count: 'exact', head: true }).gte('created_at', since).eq('severity', 'warning'),
       serverSupabase.from('technical_events').select('duration_ms,status_code').gte('created_at', since).not('duration_ms', 'is', null).order('created_at', { ascending: false }).limit(5000),
@@ -1966,7 +1968,7 @@ app.get('/api/admin/technical/overview', rateLimit(30, 60_000), async (req: Auth
       serverSupabase.storage.listBuckets(),
     ]);
 
-    const queryError = requestCount.error || errorCount.error || warningCount.error || latencyRows.error || recentRows.error || auditRows.error;
+    const queryError = errorCount.error || warningCount.error || latencyRows.error || recentRows.error || auditRows.error;
     if (queryError) throw queryError;
 
     const durations = (latencyRows.data || []).map((row: any) => Number(row.duration_ms)).filter((value: number) => Number.isFinite(value)).sort((a: number, b: number) => a - b);
@@ -1989,7 +1991,7 @@ app.get('/api/admin/technical/overview', rateLimit(30, 60_000), async (req: Auth
         appVersion: process.env.npm_package_version || 'unknown',
       },
       services: {
-        database: { status: 'ok', latencyMs: Date.now() - dbStartedAt },
+        database: { status: 'ok', latencyMs: dbLatencyMs },
         storage: { status: bucketResult.error ? 'error' : 'ok', bucketCount: bucketResult.error ? null : (bucketResult.data || []).length },
         email: { configured: emailConfigured, webhookConfigured: (process.env.RESEND_WEBHOOK_SECRET || '').startsWith('whsec_') },
         whatsapp: { configured: whatsappConfigured },
