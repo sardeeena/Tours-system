@@ -425,8 +425,8 @@ function MainApp() {
   useEffect(() => {
     if (currentPath.startsWith('/admin')) {
       seoService.apply({
-        title: 'Staff & Admin Login | Kemet Spirit',
-        description: 'Private Kemet Spirit administration portal.',
+        title: 'Staff & Admin Login | Awesome Adventure Tours',
+        description: 'Private Awesome Adventure Tours administration portal.',
         robotsIndex: false,
         robotsFollow: false,
       });
@@ -435,9 +435,9 @@ function MainApp() {
 
     if (currentPath === '/blog') {
       seoService.apply({
-        title: 'Kemet Spirit Travel Journal | Red Sea Guides & Egypt Travel Stories',
-        description: 'Discover Red Sea travel guides, local insights and inspiration for exploring Hurghada and Egypt with Kemet Spirit.',
-        canonicalUrl: 'https://kemetspirit.com/blog',
+        title: 'Awesome Adventure Tours Travel Journal | Red Sea Guides & Egypt Travel Stories',
+        description: 'Discover Red Sea travel guides, local insights and inspiration for exploring Hurghada and Egypt with Awesome Adventure Tours.',
+        canonicalUrl: 'https://awesomeadventure.tours/blog',
         ogType: 'website',
         robotsIndex: true,
         robotsFollow: true,
@@ -447,9 +447,9 @@ function MainApp() {
 
     if (currentPath.startsWith('/blog/')) {
       seoService.apply({
-        title: 'Travel Story | Kemet Spirit Journal',
-        description: 'Travel inspiration and local guides from the Kemet Spirit team in Hurghada, Egypt.',
-        canonicalUrl: typeof window !== 'undefined' ? `https://kemetspirit.com${currentPath}` : undefined,
+        title: 'Travel Story | Awesome Adventure Tours Journal',
+        description: 'Travel inspiration and local guides from the Awesome Adventure Tours team in Hurghada, Egypt.',
+        canonicalUrl: typeof window !== 'undefined' ? `https://awesomeadventure.tours${currentPath}` : undefined,
         ogType: 'article',
         robotsIndex: true,
         robotsFollow: true,
@@ -459,7 +459,7 @@ function MainApp() {
 
     if (['/login', '/register', '/account', '/profile', '/reset-password'].includes(currentPath)) {
       seoService.apply({
-        title: `Private Account | Kemet Spirit`,
+        title: `Private Account | Awesome Adventure Tours`,
         description: 'Private customer account access.',
         canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
         robotsIndex: false,
@@ -471,8 +471,8 @@ function MainApp() {
     if (currentPath.startsWith('/booking/confirmation')) {
       seoService.apply({
         title: confirmationReference
-          ? `Booking Confirmed (${confirmationReference}) | Kemet Spirit`
-          : 'Booking Confirmation | Kemet Spirit',
+          ? `Booking Confirmed (${confirmationReference}) | Awesome Adventure Tours`
+          : 'Booking Confirmation | Awesome Adventure Tours',
         description: 'Your excursion booking voucher and confirmed hotel pickup transfer itinerary.',
         canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
         robotsIndex: false,
@@ -483,7 +483,7 @@ function MainApp() {
 
     if (currentPath === '/my-booking' || currentPath.startsWith('/my-booking/')) {
       seoService.apply({
-        title: 'Manage Your Booking | Kemet Spirit',
+        title: 'Manage Your Booking | Awesome Adventure Tours',
         description: 'Retrieve your booking details and voucher using your secure booking reference.',
         canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
         robotsIndex: false,
@@ -494,7 +494,7 @@ function MainApp() {
 
     if (currentPath === '/booking' || currentPath.startsWith('/booking/')) {
       seoService.apply({
-        title: 'Book Your Excursion | Kemet Spirit',
+        title: 'Book Your Excursion | Awesome Adventure Tours',
         description: 'Complete your secure reservation for a Red Sea excursion.',
         canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
         robotsIndex: false,
@@ -506,10 +506,10 @@ function MainApp() {
     // Apply the route's safe defaults first, then overlay metadata saved in Admin > SEO.
     const baseSeoMetadata = staticPage
       ? {
-          title: staticPage.seoTitle || `${staticPage.title} | Kemet Spirit`,
+          title: staticPage.seoTitle || `${staticPage.title} | Awesome Adventure Tours`,
           description: staticPage.seoDescription || staticPage.heroSubtitle,
           canonicalUrl: typeof window !== 'undefined'
-            ? `https://kemetspirit.com/${staticPage.slug}`
+            ? `https://awesomeadventure.tours/${staticPage.slug}`
             : undefined,
           ogType: 'article' as const,
           robotsIndex: staticPage.seoIndexable !== false,
@@ -1299,7 +1299,7 @@ function MainApp() {
       return <Suspense fallback={<AdminLoadingFallback />}><SupportPage /></Suspense>;
     }
 
-    // Kemet Spirit Journal: /blog and /blog/:slug
+    // Awesome Adventure Tours Journal: /blog and /blog/:slug
     if (currentPath === '/blog' || currentPath.startsWith('/blog/')) {
       const blogSlug = currentPath.startsWith('/blog/') ? currentPath.slice('/blog/'.length).replace(/\/$/, '') : undefined;
       return <BlogPage slug={blogSlug} onNavigate={(path) => navigate(path)} />;
