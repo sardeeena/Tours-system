@@ -273,11 +273,11 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
         <div className="flex items-center space-x-3">
           {/* Provider status badge */}
           <div className="flex items-center space-x-2 bg-stone-950/70 px-3 py-1.5 rounded-lg border border-stone-800 text-xs">
-            <span className="text-stone-400 font-medium">Provider:</span>
+            <span className="text-stone-400 font-medium">Email service:</span>
             {providerConfig.email.isConfigured ? (
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20">
                 <CheckCircle2 className="w-3 h-3" />
-                {providerConfig.email.provider.toUpperCase()}
+                Connected
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 font-semibold border border-amber-500/20">
