@@ -384,6 +384,36 @@ app.use('/api', rateLimit(300, 60_000));
 // Authenticate caller tokens for all API routes
 app.use('/api', authenticateToken as any);
 
+// Sanitized API telemetry. Never persist request bodies, query strings, headers,
+// access tokens, passwords, email contents or provider responses.
+app.use('/api', (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  const startedAt = Date.now();
+  const requestId = randomUUID();
+  res.setHeader('X-Request-ID', requestId);
+  res.on('finish', () => {
+    if (!serverSupabase) return;
+    const routePath = req.route?.path
+      ? `${req.baseUrl}${String(req.route.path)}`
+      : req.path;
+    if (routePath.startsWith('/api/admin/technical') || routePath === '/api/health') return;
+    const durationMs = Math.max(0, Date.now() - startedAt);
+    const severity = res.statusCode >= 500 ? 'error' : res.statusCode >= 400 ? 'warning' : 'info';
+    void serverSupabase.from('technical_events').insert({
+      severity,
+      event_type: 'api_request',
+      source: 'http',
+      message: `API request completed with status ${res.statusCode}`,
+      request_method: req.method,
+      request_path: routePath,
+      status_code: res.statusCode,
+      duration_ms: durationMs,
+      actor_user_id: req.user?.id || null,
+      metadata: { request_id: requestId },
+    }).then(() => undefined).catch(() => undefined);
+  });
+  next();
+});
+
 // Initialize Google Gen AI client with required User-Agent
 let ai: GoogleGenAI | null = null;
 if (process.env.GEMINI_API_KEY) {
@@ -1912,6 +1942,102 @@ function requireSuperAdminAal2(req: AuthenticatedRequest, res: Response): boolea
   }
   return true;
 }
+
+// Superadmin Technical Control Center APIs. Every request requires a live
+// database-backed super_admin role and a verified AAL2 session.
+app.get('/api/admin/technical/overview', rateLimit(30, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
+    return res.status(503).json({ success: false, error: 'Technical diagnostics require the server-side Supabase secret.' });
+  }
+
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const dbStartedAt = Date.now();
+  try {
+    const [
+      requestCount, errorCount, warningCount, latencyRows, recentRows, auditRows, bucketResult,
+    ] = await Promise.all([
+      serverSupabase.from('technical_events').select('id', { count: 'exact', head: true }).gte('created_at', since),
+      serverSupabase.from('technical_events').select('id', { count: 'exact', head: true }).gte('created_at', since).eq('severity', 'error'),
+      serverSupabase.from('technical_events').select('id', { count: 'exact', head: true }).gte('created_at', since).eq('severity', 'warning'),
+      serverSupabase.from('technical_events').select('duration_ms,status_code').gte('created_at', since).not('duration_ms', 'is', null).order('created_at', { ascending: false }).limit(5000),
+      serverSupabase.from('technical_events').select('id,created_at,severity,event_type,source,message,request_method,request_path,status_code,duration_ms,actor_user_id,metadata').order('created_at', { ascending: false }).limit(100),
+      serverSupabase.from('audit_logs').select('id,created_at,action,entity_type,entity_id,user_id').order('created_at', { ascending: false }).limit(100),
+      serverSupabase.storage.listBuckets(),
+    ]);
+
+    const queryError = requestCount.error || errorCount.error || warningCount.error || latencyRows.error || recentRows.error || auditRows.error;
+    if (queryError) throw queryError;
+
+    const durations = (latencyRows.data || []).map((row: any) => Number(row.duration_ms)).filter((value: number) => Number.isFinite(value)).sort((a: number, b: number) => a - b);
+    const totalRequests = requestCount.count || 0;
+    const totalErrors = errorCount.count || 0;
+    const totalWarnings = warningCount.count || 0;
+    const averageLatencyMs = durations.length ? Math.round(durations.reduce((sum: number, value: number) => sum + value, 0) / durations.length) : null;
+    const p95LatencyMs = durations.length ? durations[Math.min(durations.length - 1, Math.ceil(durations.length * 0.95) - 1)] : null;
+    const normalizedFromEmail = normalizeSenderEmail(process.env.RESEND_FROM_EMAIL || '');
+    const emailConfigured = Boolean(process.env.RESEND_API_KEY?.trim() && isValidEmail(normalizedFromEmail));
+    const whatsappConfigured = Boolean(process.env.WHATSAPP_ACCESS_TOKEN?.trim() && process.env.WHATSAPP_PHONE_NUMBER_ID?.trim() && /^v\d+\.\d+$/.test(process.env.WHATSAPP_GRAPH_API_VERSION || ''));
+
+    return res.json({
+      generatedAt: new Date().toISOString(),
+      runtime: {
+        status: 'ok',
+        nodeVersion: process.version,
+        environment: process.env.NODE_ENV || 'unknown',
+        uptimeSeconds: Math.floor((Date.now() - SERVER_START_TIME) / 1000),
+        appVersion: process.env.npm_package_version || 'unknown',
+      },
+      services: {
+        database: { status: 'ok', latencyMs: Date.now() - dbStartedAt },
+        storage: { status: bucketResult.error ? 'error' : 'ok', bucketCount: bucketResult.error ? null : (bucketResult.data || []).length },
+        email: { configured: emailConfigured, webhookConfigured: (process.env.RESEND_WEBHOOK_SECRET || '').startsWith('whsec_') },
+        whatsapp: { configured: whatsappConfigured },
+        bookingWorker: { enabled: process.env.BOOKING_NOTIFICATION_WORKER_ENABLED?.trim().toLowerCase() === 'true' },
+      },
+      metrics: {
+        requests24h: totalRequests,
+        errors24h: totalErrors,
+        warnings24h: totalWarnings,
+        errorRatePct: totalRequests ? Number(((totalErrors / totalRequests) * 100).toFixed(2)) : 0,
+        averageLatencyMs,
+        p95LatencyMs,
+        latencySampleSize: durations.length,
+      },
+      recentEvents: recentRows.data || [],
+      recentAuditEvents: auditRows.data || [],
+    });
+  } catch (error) {
+    console.error('[Technical Control Center] Overview query failed:', error instanceof Error ? error.message : 'unknown error');
+    return res.status(503).json({ success: false, error: 'Technical diagnostics are temporarily unavailable. Check the telemetry migration and server database connection.' });
+  }
+});
+
+app.get('/api/admin/technical/events', rateLimit(60, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
+    return res.status(503).json({ success: false, error: 'Technical diagnostics require the server-side Supabase secret.' });
+  }
+  const requestedLimit = Number.parseInt(String(req.query.limit || '100'), 10);
+  const limit = Number.isFinite(requestedLimit) ? Math.min(200, Math.max(1, requestedLimit)) : 100;
+  const severity = String(req.query.severity || '');
+  if (severity && !['info', 'warning', 'error'].includes(severity)) {
+    return res.status(400).json({ success: false, error: 'Invalid severity filter.' });
+  }
+  try {
+    let query = serverSupabase.from('technical_events')
+      .select('id,created_at,severity,event_type,source,message,request_method,request_path,status_code,duration_ms,actor_user_id,metadata')
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    if (severity) query = query.eq('severity', severity);
+    const { data, error } = await query;
+    if (error) throw error;
+    return res.json({ events: data || [] });
+  } catch (error) {
+    console.error('[Technical Control Center] Event query failed:', error instanceof Error ? error.message : 'unknown error');
+    return res.status(503).json({ success: false, error: 'Technical event log is temporarily unavailable.' });
+  }
+});
 
 function validAuthUserId(value: unknown): value is string {
   return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
