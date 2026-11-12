@@ -600,8 +600,7 @@ BEGIN
         'isDuplicate', false
     );
 END;
-$function$
-
+$function$;
 
 REVOKE ALL ON FUNCTION private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text,text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text,text) TO anon, authenticated, service_role;
@@ -686,8 +685,7 @@ BEGIN
 
   RETURN v_result;
 END;
-$function$
-
+$function$;
 
 COMMENT ON FUNCTION private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text,text) IS
   'Atomic booking creation including the validated tour-language snapshot in the initial booking INSERT.';
