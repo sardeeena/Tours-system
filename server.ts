@@ -1423,6 +1423,80 @@ app.all('/api/availability/check', rateLimit(60, 60_000), async (req: Request, r
 
 // 7. Inquiries & Concierge Submissions API
 // ------------------------------------------------------------------------------
+async function sendInquiryNotificationEmail(params: {
+  recipientEmail: string;
+  customerName: string;
+  subject: string;
+  content: string;
+  templateKey: string;
+  replyTo?: string;
+}): Promise<void> {
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
+    console.error('Inquiry email was not sent: secure communications audit database is unavailable.');
+    return;
+  }
+
+  const apiKey = process.env.RESEND_API_KEY?.trim() || '';
+  const fromEmail = process.env.RESEND_FROM_EMAIL?.trim() || '';
+  const fromName = (process.env.RESEND_FROM_NAME || 'Awesome Adventure Tours').replace(/[<>\r\n]/g, '').trim() || 'Awesome Adventure Tours';
+  const configured = Boolean(apiKey && isValidEmail(fromEmail));
+  const { data: log, error: logError } = await serverSupabase
+    .from('communication_messages')
+    .insert({
+      channel: 'Email',
+      customer_name: params.customerName,
+      recipient_address: params.recipientEmail,
+      template_key: params.templateKey,
+      subject: params.subject,
+      content: params.content,
+      status: configured ? 'queued' : 'failed',
+      provider_name: configured ? 'Resend' : 'Not configured',
+      failure_reason: configured ? null : 'Resend is not configured: a valid RESEND_API_KEY and RESEND_FROM_EMAIL are required.',
+      staff_name: 'Inquiry Notification Service',
+    })
+    .select('id')
+    .single();
+
+  if (logError || !log?.id) {
+    console.error('Inquiry email audit insert failed:', logError?.message || 'Missing audit ID');
+    return;
+  }
+  if (!configured) return;
+
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json', 'Idempotency-Key': `awesome-adventure-inquiry-${log.id}` },
+      body: JSON.stringify({
+        from: `${fromName} <${fromEmail}>`,
+        to: [params.recipientEmail],
+        ...(params.replyTo && isValidEmail(params.replyTo) ? { reply_to: params.replyTo } : {}),
+        subject: params.subject,
+        text: params.content,
+        tags: [{ name: 'communication_id', value: String(log.id) }],
+      }),
+      signal: AbortSignal.timeout(15_000),
+    });
+    const providerBody = await response.json().catch(() => ({} as any));
+    if (!response.ok || typeof providerBody?.id !== 'string') {
+      throw new Error(typeof providerBody?.message === 'string' ? providerBody.message : `Resend rejected the request (HTTP ${response.status}).`);
+    }
+    const { error } = await serverSupabase
+      .from('communication_messages')
+      .update({ status: 'sent', provider_name: 'Resend', provider_message_id: providerBody.id, sent_at: new Date().toISOString(), failure_reason: null })
+      .eq('id', log.id);
+    if (error) console.error('Inquiry email sent status update failed:', error.message);
+  } catch (error: any) {
+    const reason = error?.message || 'Resend inquiry email failed.';
+    const { error: updateError } = await serverSupabase
+      .from('communication_messages')
+      .update({ status: 'failed', provider_name: 'Resend', failure_reason: reason })
+      .eq('id', log.id);
+    if (updateError) console.error('Inquiry email failure status update failed:', updateError.message);
+    console.error('Inquiry email dispatch failed:', reason);
+  }
+}
+
 app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(5, 10 * 60_000), async (req: Request, res: Response) => {
   const { name, email, phone, inquiryType = 'general_question', message, website_url_hp } = req.body;
 
@@ -1469,6 +1543,35 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
         .single();
 
       if (!error && data) {
+        const inquirySubject = inquiryType === 'general_question' ? 'General Excursion Question' : String(inquiryType).slice(0, 120);
+        const reservationEmail = process.env.BOOKING_NOTIFICATION_EMAIL?.trim() || 'reservation@awesomeadventure.tours';
+        await Promise.all([
+          sendInquiryNotificationEmail({
+            recipientEmail: reservationEmail,
+            customerName: cleanName,
+            templateKey: 'inquiry_staff_notification',
+            subject: `New website inquiry: ${inquirySubject}`,
+            replyTo: cleanEmail,
+            content: [
+              'A new inquiry was submitted on Awesome Adventure Tours.',
+              `Inquiry ID: ${data.id}`,
+              `Name: ${cleanName}`,
+              `Email: ${cleanEmail}`,
+              `Phone: ${cleanPhone || 'Not provided'}`,
+              `Subject: ${inquirySubject}`,
+              '',
+              'Message:',
+              cleanMessage,
+            ].join('\n'),
+          }),
+          sendInquiryNotificationEmail({
+            recipientEmail: cleanEmail,
+            customerName: cleanName,
+            templateKey: 'inquiry_customer_confirmation',
+            subject: 'We received your message — Awesome Adventure Tours',
+            content: `Hello ${cleanName},\n\nThank you for contacting Awesome Adventure Tours. We have received your inquiry (reference ${data.id}) and our team will respond within 2 hours during Egypt Pier Desk hours.\n\nIf your question is urgent, you can contact our reservations team at reservation@awesomeadventure.tours.\n\nAwesome Adventure Tours`,
+          }),
+        ]);
         return res.status(201).json({
           success: true,
           inquiryId: data.id,
