@@ -59,11 +59,9 @@ export const NewsletterSubscribe: React.FC<NewsletterSubscribeProps> = ({
           alreadySubscribed: res.alreadySubscribed,
         });
         showToast(
-          res.alreadySubscribed 
-            ? 'Voucher code ready: REDSEA15' 
-            : 'Subscribed successfully! Use promo code REDSEA15.',
-          'success',
-          4000
+          res.alreadySubscribed ? 'Voucher code ready: REDSEA15' : res.message,
+          res.emailStatus === 'failed' ? 'warning' : 'success',
+          5000
         );
       } else {
         setErrorMsg(res.message || 'Could not subscribe at this time. Please try again.');
