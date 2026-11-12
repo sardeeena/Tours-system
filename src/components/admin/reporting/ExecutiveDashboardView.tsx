@@ -107,7 +107,7 @@ export const ExecutiveDashboardView: React.FC<ExecutiveDashboardViewProps> = ({
       </div>
 
       {/* Bookings & Conversions Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Total Bookings */}
         <div className="bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854] rounded-2xl p-5 shadow-xs hover:border-[#0A6C74]/40 transition-colors">
           <div className="flex items-center justify-between text-xs text-stone-500 dark:text-stone-400">
@@ -139,6 +139,18 @@ export const ExecutiveDashboardView: React.FC<ExecutiveDashboardViewProps> = ({
             {metrics.confirmedBookingsCount}
           </div>
           <span className="text-[11px] text-stone-500 dark:text-stone-400 mt-1 block">Paid or scheduled for departure</span>
+        </div>
+
+        {/* Completed Bookings */}
+        <div className="bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854] rounded-2xl p-5 shadow-xs hover:border-blue-500/40 transition-colors">
+          <div className="flex items-center justify-between text-xs text-stone-500 dark:text-stone-400">
+            <span className="font-medium">Completed Bookings</span>
+            <CheckCircle2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          </div>
+          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-2 font-display">
+            {metrics.completedBookingsCount ?? 0}
+          </div>
+          <span className="text-[11px] text-stone-500 dark:text-stone-400 mt-1 block">Tours marked as completed</span>
         </div>
 
         {/* Cancellations */}

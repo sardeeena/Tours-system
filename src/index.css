@@ -898,3 +898,52 @@ html.dark .admin-shell :is(.text-slate-400, .text-gray-400, .text-zinc-400, .tex
 .admin-shell :is(small, .text-xs, .text-\[10px\], .text-\[11px\]) {
   text-decoration-color: currentColor;
 }
+
+
+/* Comprehensive admin contrast correction: normalize translucent legacy surfaces too. */
+html:not(.dark) .admin-shell :is(
+  [class*="bg-stone-950/"], [class*="bg-stone-900/"], [class*="bg-stone-800/"], [class*="bg-stone-700/"],
+  [class*="bg-slate-950/"], [class*="bg-slate-900/"], [class*="bg-slate-800/"], [class*="bg-slate-700/"]
+) {
+  background-color: #F3F6FA !important;
+}
+html:not(.dark) .admin-shell :is(.bg-stone-950,.bg-stone-900,.bg-stone-800,.bg-stone-700,.bg-slate-950,.bg-slate-900,.bg-slate-800,.bg-slate-700) {
+  color: #172033 !important;
+}
+html:not(.dark) .admin-shell :is(
+  .text-white,.text-stone-100,.text-stone-200,.text-stone-300,.text-stone-400,
+  .text-slate-100,.text-slate-200,.text-slate-300,.text-slate-400,
+  .text-gray-100,.text-gray-200,.text-gray-300,.text-gray-400,
+  .text-zinc-100,.text-zinc-200,.text-zinc-300,.text-zinc-400,
+  .text-neutral-100,.text-neutral-200,.text-neutral-300,.text-neutral-400
+):not(button):not(a):not([role="button"]):not(button *):not(a *):not([role="button"] *) {
+  color: #263449 !important;
+}
+html:not(.dark) .admin-shell :is(input,select,textarea) {
+  color: #172033 !important;
+  background-color: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+  color-scheme: light;
+}
+html:not(.dark) .admin-shell select option {
+  color: #172033 !important;
+  background: #FFFFFF !important;
+}
+html:not(.dark) .admin-shell :is(input,textarea)::placeholder {
+  color: #64748B !important;
+}
+html:not(.dark) .admin-shell :is(th,td,label,legend,small) {
+  text-shadow: none;
+}
+html.dark .admin-shell :is([class*="bg-stone-950/"],[class*="bg-stone-900/"],[class*="bg-stone-800/"],[class*="bg-slate-950/"],[class*="bg-slate-900/"],[class*="bg-slate-800/"]) {
+  background-color: #172536 !important;
+}
+html.dark .admin-shell :is(input,select,textarea) {
+  color: #F1F5F9 !important;
+  background-color: #172536 !important;
+  border-color: #475569 !important;
+}
+html.dark .admin-shell select option {
+  color: #F1F5F9 !important;
+  background: #172536 !important;
+}
