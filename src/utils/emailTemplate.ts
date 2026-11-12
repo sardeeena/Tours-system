@@ -1,4 +1,4 @@
-export const EMAIL_LOGO_URL = 'https://awesomeadventure.tours/logo.png';
+export const EMAIL_LOGO_URL = 'https://awesomeadventure.tours/logo.jpg';
 export const EMAIL_BRAND_NAME = 'Awesome Adventure Tours';
 export const EMAIL_SUPPORT_EMAIL = 'reservation@awesomeadventure.tours';
 
