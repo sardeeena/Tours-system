@@ -2046,10 +2046,31 @@ const VISITOR_EVENT_NAMES = new Set([
   'page_view','page_exit','navigation','tour_view','search',
   'booking_started','booking_step_completed','booking_submitted',
   'booking_confirmed','booking_cancelled','custom',
+    'auth_sign_in',
+    'auth_sign_in_failed',
+    'auth_sign_up',
+    'auth_sign_out',
+    'password_reset_requested',
+    'password_changed',
+    'profile_updated',
+    'inquiry_submitted',
+    'newsletter_subscribed',
+    'booking_lookup',
+    'booking_cancellation_requested',
+    'support_ticket_created',
+    'support_reply_sent',
+    'support_ticket_updated',
+    'tour_search',
+    'tour_filter_applied',
+    'wishlist_updated',
+    'comparison_updated',
+    'chatbot_interaction',
+    'contact_request_submitted',
 ]);
 const VISITOR_EVENT_FIELDS = new Set([
   'tour_slug','category','destination','booking_step','result_count',
   'currency','sort_order','filter_count','form_name','interaction',
+  'action','outcome','channel','role','source','ticket_category','priority','status','auth_method','search_type',
 ]);
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
