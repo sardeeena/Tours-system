@@ -1,0 +1,6 @@
+-- Historical migration version 20261112164341 was applied directly to the
+-- AwesomeAdventure production database before its final, reproducible migration
+-- was committed. Keep this timestamp in the repository so Supabase CLI migration
+-- history can be reconciled. The complete idempotent policy and template changes
+-- are represented by the subsequent 20261112170000_email_center_provider_event_rbac.sql.
+-- This placeholder intentionally performs no SQL; do not remove or rename it.
