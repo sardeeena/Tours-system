@@ -90,6 +90,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
         );
       }
     } else {
+      console.warn('Administrator sign-in failed:', result.error);
       const updatedLimit = rateLimiter.recordFailedAttempt();
       setRateLimitState(updatedLimit);
 
@@ -98,9 +99,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
       } else {
         const remaining = updatedLimit.maxAttempts - updatedLimit.attempts;
         setErrorMsg(
-          result.error
-            ? `${result.error} (${remaining} attempts remaining before temporary lockout)`
-            : `Authentication failed. (${remaining} attempts remaining)`
+          `We could not sign you in. Check your details and try again. (${remaining} attempts remaining)`
         );
       }
     }
