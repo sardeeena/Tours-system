@@ -1,5 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
-import { randomUUID } from 'node:crypto';
+import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import { GoogleGenAI } from '@google/genai';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import path from 'path';
@@ -1303,67 +1303,235 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
 // ------------------------------------------------------------------------------
 // 8. Newsletter Subscription API
 // ------------------------------------------------------------------------------
-app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_000), async (req: Request, res: Response) => {
-  const { email, preferredLanguage = 'en', website_url_hp } = req.body;
+function createNewsletterUnsubscribeToken(subscriberId: string, email: string): string {
+  const secret = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '').trim();
+  if (!secret) throw new Error('Newsletter unsubscribe signing is not configured.');
+  const payload = Buffer.from(`${subscriberId}:${email}`).toString('base64url');
+  const signature = createHmac('sha256', secret).update(payload).digest('base64url');
+  return `${payload}.${signature}`;
+}
 
-  if (website_url_hp && String(website_url_hp).trim() !== '') {
-    return res.json({ success: true, subscribed: true });
+function verifyNewsletterUnsubscribeToken(token: string): { subscriberId: string; email: string } | null {
+  const secret = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SECRET_KEY || '').trim();
+  const [payload, suppliedSignature] = token.split('.');
+  if (!secret || !payload || !suppliedSignature) return null;
+  const expected = createHmac('sha256', secret).update(payload).digest();
+  let supplied: Buffer;
+  try { supplied = Buffer.from(suppliedSignature, 'base64url'); } catch { return null; }
+  if (supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) return null;
+  try {
+    const decoded = Buffer.from(payload, 'base64url').toString('utf8');
+    const separator = decoded.indexOf(':');
+    if (separator <= 0) return null;
+    const subscriberId = decoded.slice(0, separator);
+    const email = decoded.slice(separator + 1).toLowerCase();
+    if (!/^[0-9a-f-]{36}$/i.test(subscriberId) || !isValidEmail(email)) return null;
+    return { subscriberId, email };
+  } catch {
+    return null;
+  }
+}
+
+app.get('/api/newsletter/unsubscribe', rateLimit(20, 60_000), async (req: Request, res: Response) => {
+  const token = typeof req.query.token === 'string' ? req.query.token : '';
+  const verified = verifyNewsletterUnsubscribeToken(token);
+  if (!verified || !serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
+    return res.status(400).type('text').send('This unsubscribe link is invalid or expired. Please contact reservations for assistance.');
   }
 
-  if (!email || !isValidEmail(email)) {
-    return res.status(400).json({
-      success: false,
-      error: 'Please provide a valid email address',
-    });
+  const { error } = await serverSupabase
+    .from('newsletter_subscriptions')
+    .update({ status: 'unsubscribed', updated_at: new Date().toISOString() })
+    .eq('id', verified.subscriberId)
+    .eq('email', verified.email);
+  if (error) {
+    console.error('Newsletter unsubscribe update failed:', error.message);
+    return res.status(503).type('text').send('We could not process your request right now. Please try again later.');
+  }
+
+  return res.status(200).type('html').send('<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Unsubscribed</title><body style="font-family:Arial,sans-serif;max-width:560px;margin:12vh auto;padding:24px;color:#17212b"><h1>You have been unsubscribed</h1><p>You will no longer receive newsletter and promotional emails from Awesome Adventure Tours.</p><p>If this was a mistake, you can subscribe again from our website.</p><a href="https://awesomeadventure.tours/">Return to Awesome Adventure Tours</a></body></html>');
+});
+
+app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_000), async (req: Request, res: Response) => {
+  const { email, preferredLanguage = 'en', website_url_hp } = req.body || {};
+  if (website_url_hp && String(website_url_hp).trim() !== '') {
+    return res.json({ success: true, subscribed: true, message: 'Thank you for subscribing.' });
+  }
+  if (typeof email !== 'string' || !isValidEmail(email.trim())) {
+    return res.status(400).json({ success: false, error: 'Please provide a valid email address.' });
+  }
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
+    return res.status(503).json({ success: false, error: 'Newsletter database service is not configured. Please try again later.' });
   }
 
   const cleanEmail = email.trim().toLowerCase();
+  const source = typeof req.body?.source === 'string' ? req.body.source.trim().slice(0, 80) || 'website' : 'website';
+  let subscriber: { id: string; created_at: string; updated_at: string } | null = null;
+  let shouldSendWelcome = false;
 
-  if (serverSupabase) {
-    try {
+  try {
+    const { data: existing, error: lookupError } = await serverSupabase
+      .from('newsletter_subscriptions')
+      .select('id,email,status,created_at,updated_at')
+      .eq('email', cleanEmail)
+      .maybeSingle();
+    if (lookupError) throw lookupError;
+
+    if (existing?.status === 'subscribed') {
+      return res.json({
+        success: true,
+        subscribed: true,
+        alreadySubscribed: true,
+        subscriberId: existing.id,
+        createdAt: existing.created_at,
+        discountCode: 'REDSEA15',
+        emailStatus: 'not_sent',
+        message: 'You are already subscribed. Your REDSEA15 voucher is ready.',
+      });
+    }
+
+    if (existing) {
+      const { data, error } = await serverSupabase
+        .from('newsletter_subscriptions')
+        .update({
+          status: 'subscribed',
+          source,
+          discount_code: 'REDSEA15',
+          metadata: { preferredLanguage: String(preferredLanguage || 'en').slice(0, 20), reSubscribedAt: new Date().toISOString() },
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existing.id)
+        .select('id,created_at,updated_at')
+        .single();
+      if (error) throw error;
+      subscriber = data;
+    } else {
       const { data, error } = await serverSupabase
         .from('newsletter_subscriptions')
         .insert({
           email: cleanEmail,
-          source: 'website_footer',
+          source,
           status: 'subscribed',
+          discount_code: 'REDSEA15',
+          metadata: { preferredLanguage: String(preferredLanguage || 'en').slice(0, 20), consentSource: source, consentedAt: new Date().toISOString() },
         })
-        .select('id, created_at')
+        .select('id,created_at,updated_at')
         .single();
-
-      if (!error && data) {
-        return res.json({
-          success: true,
-          subscribed: true,
-          email: cleanEmail,
-          message: 'Thank you for subscribing! Your Red Sea VIP seasonal excursion discount will be sent shortly.',
-        });
-      }
-
-      if (error && (error.code === '23505' || error.message?.includes('duplicate'))) {
-        return res.json({
-          success: true,
-          subscribed: true,
-          email: cleanEmail,
-          alreadySubscribed: true,
-          message: 'You are already registered for Red Sea VIP excursion deals and marine updates.',
-        });
-      }
       if (error) {
-        console.error('Supabase newsletter insert error:', error.message);
+        if (error.code === '23505') {
+          return res.json({ success: true, subscribed: true, alreadySubscribed: true, discountCode: 'REDSEA15', emailStatus: 'not_sent', message: 'You are already subscribed. Your REDSEA15 voucher is ready.' });
+        }
+        throw error;
       }
-    } catch (err) {
-      console.warn('Newsletter subscription exception:', err);
+      subscriber = data;
+    }
+    shouldSendWelcome = true;
+  } catch (error: any) {
+    console.error('Supabase newsletter persistence failed:', error?.message || error);
+    return res.status(503).json({ success: false, error: 'We could not save your subscription. Please try again later.' });
+  }
+
+  if (!subscriber || !shouldSendWelcome) {
+    return res.status(500).json({ success: false, error: 'Newsletter subscription could not be confirmed.' });
+  }
+
+  const apiKey = process.env.RESEND_API_KEY?.trim() || '';
+  const fromEmail = process.env.RESEND_FROM_EMAIL?.trim() || '';
+  const fromName = (process.env.RESEND_FROM_NAME || 'Awesome Adventure Tours').replace(/[<>\r\n]/g, '').trim() || 'Awesome Adventure Tours';
+  const unsubscribeToken = createNewsletterUnsubscribeToken(subscriber.id, cleanEmail);
+  const unsubscribeUrl = `https://awesomeadventure.tours/api/newsletter/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`;
+  const subject = 'Welcome to Awesome Adventure Tours — your 15% voucher';
+  const content = `Thank you for subscribing to Awesome Adventure Tours. Your 15% voucher code is REDSEA15. Use it when enquiring about your next excursion.\n\nYou can unsubscribe at any time: ${unsubscribeUrl}`;
+
+  let emailStatus: 'sent' | 'failed' = 'failed';
+  let providerMessageId: string | null = null;
+  const senderReady = Boolean(apiKey && isValidEmail(fromEmail));
+  const failureReason = senderReady ? null : 'Resend is not configured: a valid RESEND_API_KEY and RESEND_FROM_EMAIL are required in Hostinger.';
+
+  const { data: messageLog, error: logInsertError } = await serverSupabase
+    .from('communication_messages')
+    .insert({
+      channel: 'Email',
+      customer_name: cleanEmail,
+      recipient_address: cleanEmail,
+      template_key: 'newsletter_welcome',
+      subject,
+      content,
+      status: senderReady ? 'queued' : 'failed',
+      provider_name: senderReady ? 'Resend' : 'Not configured',
+      failure_reason: failureReason,
+      staff_name: 'Newsletter Subscription Service',
+    })
+    .select('id')
+    .single();
+
+  if (logInsertError || !messageLog?.id) {
+    console.error('Newsletter email audit record could not be created:', logInsertError?.message || 'Missing log ID');
+    return res.json({
+      success: true,
+      subscribed: true,
+      subscriberId: subscriber.id,
+      createdAt: subscriber.created_at,
+      discountCode: 'REDSEA15',
+      emailStatus: 'failed',
+      message: 'Your subscription was saved, but we could not record the welcome email. Please contact reservations for your voucher.',
+    });
+  }
+
+  if (senderReady) {
+    try {
+      const providerResponse = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'Idempotency-Key': `awesome-adventure-newsletter-welcome-${subscriber.id}-${new Date(subscriber.updated_at).getTime()}`,
+        },
+        body: JSON.stringify({
+          from: `${fromName} <${fromEmail}>`,
+          to: [cleanEmail],
+          ...(isValidEmail(process.env.RESEND_REPLY_TO?.trim() || '') ? { reply_to: process.env.RESEND_REPLY_TO!.trim() } : {}),
+          subject,
+          text: content,
+          html: `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#17212b;max-width:600px;margin:auto"><h1>Welcome aboard!</h1><p>Thank you for subscribing to Awesome Adventure Tours.</p><p>Your 15% voucher code:</p><p style="font-size:28px;font-weight:bold;letter-spacing:2px;color:#0a6c74">REDSEA15</p><p>Use it when enquiring about your next excursion.</p><hr><p style="font-size:12px;color:#64748b">You received this email because you subscribed to updates from Awesome Adventure Tours. <a href="${unsubscribeUrl}">Unsubscribe</a>.</p></div>`,
+        }),
+        signal: AbortSignal.timeout(15_000),
+      });
+      const providerBody = await providerResponse.json().catch(() => ({} as any));
+      if (!providerResponse.ok || typeof providerBody?.id !== 'string') {
+        throw new Error(typeof providerBody?.message === 'string' ? providerBody.message : `Resend rejected the request (HTTP ${providerResponse.status}).`);
+      }
+      providerMessageId = providerBody.id;
+      emailStatus = 'sent';
+      const { error: updateError } = await serverSupabase
+        .from('communication_messages')
+        .update({ status: 'sent', provider_name: 'Resend', provider_message_id: providerMessageId, sent_at: new Date().toISOString(), failure_reason: null })
+        .eq('id', messageLog.id);
+      if (updateError) console.error('Newsletter email audit status update failed:', updateError.message);
+    } catch (error: any) {
+      const reason = error?.message || 'Resend email delivery failed.';
+      const { error: updateError } = await serverSupabase
+        .from('communication_messages')
+        .update({ status: 'failed', provider_name: 'Resend', failure_reason: reason })
+        .eq('id', messageLog.id);
+      if (updateError) console.error('Newsletter email failure could not be recorded:', updateError.message);
+      console.error('Newsletter welcome email failed:', reason);
     }
   }
 
-  return res.status(503).json({
-    success: false,
-    error: 'Newsletter subscription service is currently unconfigured or database is unreachable.',
+  return res.json({
+    success: true,
+    subscribed: true,
+    subscriberId: subscriber.id,
+    createdAt: subscriber.created_at,
+    discountCode: 'REDSEA15',
+    emailStatus,
+    message: emailStatus === 'sent'
+      ? 'You are subscribed! Your REDSEA15 voucher has been sent to your email.'
+      : 'Your subscription is saved, but the welcome email could not be sent yet. Please contact reservations for your voucher.',
   });
 });
 
-// ------------------------------------------------------------------------------
 // 8.5. Super Admin account lifecycle API
 // All privileged Auth Admin calls stay server-side and require a verified AAL2
 // Super Admin session. No service-role credential is sent to the browser.
