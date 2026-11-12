@@ -12,7 +12,6 @@ type Session = {
   landing_path: string; referrer_host: string | null; utm_source: string | null; utm_medium: string | null;
   utm_campaign: string | null; utm_term?: string | null; utm_content?: string | null; device_type: string | null; browser_family: string | null; os_family: string | null;
   screen_bucket: string | null; language: string | null; timezone: string | null;
-  country_code?: string | null; region_code?: string | null;
   analytics_consent: boolean; marketing_consent: boolean;
 };
 type VisitorEvent = {
@@ -118,7 +117,7 @@ export const VisitorAnalyticsPanel: React.FC = () => {
     const term = search.trim().toLowerCase();
     return sessions.filter((item) => !term || [
       item.id, item.visitor_id, item.user_id, item.landing_path, item.referrer_host, item.utm_source,
-      item.utm_campaign, item.utm_term, item.utm_content, item.browser_family, item.os_family, item.device_type, item.language, item.timezone, item.country_code, item.region_code,
+      item.utm_campaign, item.utm_term, item.utm_content, item.browser_family, item.os_family, item.device_type, item.language, item.timezone,
     ].some((value) => String(value || '').toLowerCase().includes(term)));
   }, [sessions, search]);
 
@@ -234,7 +233,7 @@ export const VisitorAnalyticsPanel: React.FC = () => {
               <p className="mt-1 text-slate-500">{[item.device_type, item.browser_family, item.os_family].filter(Boolean).join(' · ') || 'Device details unavailable'}</p>
               <p className="mt-1 text-slate-500">Last activity: {date(item.last_seen_at)}</p>
               <p className="mt-1 text-slate-500">Referrer: {item.referrer_host || 'Direct'}{item.utm_campaign ? ` · ${item.utm_campaign}` : ''}{item.utm_term ? ` · Term: ${item.utm_term}` : ''}{item.utm_content ? ` · Content: ${item.utm_content}` : ''}</p>
-              <p className="mt-1 text-slate-500">{[item.language, item.timezone, item.country_code, item.region_code].filter(Boolean).join(' · ')}</p>
+              <p className="mt-1 text-slate-500">{[item.language, item.timezone].filter(Boolean).join(' · ')}</p>
             </button>)}
             {!visibleSessions.length && <p className="py-6 text-center text-xs text-slate-500">No matching sessions in the latest records.</p>}
           </div>
