@@ -89,8 +89,8 @@ export const VisitorAnalyticsPanel: React.FC = () => {
   const visibleSessions = useMemo(() => {
     const term = search.trim().toLowerCase();
     return sessions.filter((item) => !term || [
-      item.id, item.user_id, item.landing_path, item.referrer_host, item.utm_source,
-      item.utm_campaign, item.browser_family, item.os_family, item.device_type,
+      item.id, item.visitor_id, item.user_id, item.landing_path, item.referrer_host, item.utm_source,
+      item.utm_campaign, item.browser_family, item.os_family, item.device_type, item.language, item.timezone, item.country_code, item.region_code,
     ].some((value) => String(value || '').toLowerCase().includes(term)));
   }, [sessions, search]);
 
