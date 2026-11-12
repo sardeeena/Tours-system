@@ -900,50 +900,184 @@ html.dark .admin-shell :is(.text-slate-400, .text-gray-400, .text-zinc-400, .tex
 }
 
 
-/* Comprehensive admin contrast correction: normalize translucent legacy surfaces too. */
-html:not(.dark) .admin-shell :is(
-  [class*="bg-stone-950/"], [class*="bg-stone-900/"], [class*="bg-stone-800/"], [class*="bg-stone-700/"],
-  [class*="bg-slate-950/"], [class*="bg-slate-900/"], [class*="bg-slate-800/"], [class*="bg-slate-700/"]
-) {
-  background-color: #F3F6FA !important;
+/* =============================================================================
+   ADMIN THEME QUALITY PASS — balanced light/dark surfaces, typography and controls
+   Scoped to .admin-shell; customer-facing pages are deliberately unaffected.
+   ============================================================================= */
+
+/* Shared semantic tokens and readable typography */
+.admin-shell {
+  --admin-canvas: #F5F7FA;
+  --admin-surface: #FFFFFF;
+  --admin-surface-subtle: #F8FAFC;
+  --admin-surface-raised: #EEF2F7;
+  --admin-border: #DCE3EC;
+  --admin-border-strong: #C5D0DE;
+  --admin-text: #172334;
+  --admin-text-secondary: #405168;
+  --admin-text-muted: #62748A;
+  --admin-primary: #086B70;
+  --admin-primary-hover: #07565B;
+  --admin-primary-soft: #E4F2F2;
+  --admin-success: #087A55;
+  --admin-warning: #9A5B00;
+  --admin-danger: #B42336;
+  --admin-info: #1759A6;
+  color: var(--admin-text);
+  background: var(--admin-canvas);
+  font-size: 14px;
+  line-height: 1.55;
+  font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
-html:not(.dark) .admin-shell :is(.bg-stone-950,.bg-stone-900,.bg-stone-800,.bg-stone-700,.bg-slate-950,.bg-slate-900,.bg-slate-800,.bg-slate-700) {
-  color: #172033 !important;
+html.dark .admin-shell {
+  --admin-canvas: #0B1420;
+  --admin-surface: #111E2D;
+  --admin-surface-subtle: #162638;
+  --admin-surface-raised: #1B3045;
+  --admin-border: #2B4057;
+  --admin-border-strong: #405A74;
+  --admin-text: #F1F5F9;
+  --admin-text-secondary: #CBD5E1;
+  --admin-text-muted: #A3B2C4;
+  --admin-primary: #42C9BE;
+  --admin-primary-hover: #72DED4;
+  --admin-primary-soft: rgba(66, 201, 190, .14);
+  --admin-success: #6EE7B7;
+  --admin-warning: #FCD34D;
+  --admin-danger: #FDA4AF;
+  --admin-info: #93C5FD;
+  color-scheme: dark;
 }
-html:not(.dark) .admin-shell :is(
-  .text-white,.text-stone-100,.text-stone-200,.text-stone-300,.text-stone-400,
-  .text-slate-100,.text-slate-200,.text-slate-300,.text-slate-400,
-  .text-gray-100,.text-gray-200,.text-gray-300,.text-gray-400,
-  .text-zinc-100,.text-zinc-200,.text-zinc-300,.text-zinc-400,
-  .text-neutral-100,.text-neutral-200,.text-neutral-300,.text-neutral-400
-):not(button):not(a):not([role="button"]):not(button *):not(a *):not([role="button"] *) {
-  color: #263449 !important;
+.admin-shell .admin-main,
+.admin-shell .admin-content { background: var(--admin-canvas); color: var(--admin-text); }
+.admin-shell :is(h1,h2,h3,h4,h5) { color: var(--admin-text); letter-spacing: -.018em; }
+.admin-shell h1 { font-size: clamp(1.35rem, 1.12rem + .55vw, 1.8rem); line-height: 1.25; font-weight: 750; }
+.admin-shell h2 { font-size: clamp(1.12rem, 1rem + .28vw, 1.4rem); line-height: 1.3; font-weight: 700; }
+.admin-shell h3 { font-size: 1rem; line-height: 1.4; font-weight: 700; }
+.admin-shell p { line-height: 1.55; }
+.admin-shell :is(small,.text-xs) { line-height: 1.45; }
+.admin-shell :is(input,select,textarea) {
+  min-width: 0; max-width: 100%; min-height: 40px;
+  border: 1px solid var(--admin-border-strong);
+  border-radius: 10px; font: inherit; color: var(--admin-text);
+  background: var(--admin-surface);
+}
+.admin-shell textarea { min-height: 96px; }
+.admin-shell :is(input,select,textarea)::placeholder { color: var(--admin-text-muted); opacity: 1; }
+.admin-shell :is(input,select,textarea):focus-visible,
+.admin-shell :is(button,a,[role="button"]):focus-visible {
+  outline: 2px solid var(--admin-primary);
+  outline-offset: 2px;
+}
+.admin-shell :is(button,a,[role="button"]) { touch-action: manipulation; }
+.admin-shell :is(button:disabled,input:disabled,select:disabled,textarea:disabled) { cursor: not-allowed; opacity: .65; }
+.admin-shell :is(table,[role="table"]) { width: 100%; max-width: 100%; border-collapse: separate; border-spacing: 0; }
+.admin-shell table thead th { color: var(--admin-text-muted); font-size: 11px; font-weight: 750; letter-spacing: .055em; text-transform: uppercase; }
+.admin-shell table :is(th,td) { vertical-align: middle; }
+.admin-shell table tbody tr:hover { background-color: var(--admin-surface-subtle); }
+.admin-shell .admin-topbar { border-color: var(--admin-border); box-shadow: 0 1px 2px rgba(16,24,40,.035); }
+.admin-shell .admin-nav { scrollbar-gutter: stable; }
+.admin-shell .admin-nav button { min-height: 40px; font-size: 13px; line-height: 1.4; }
+.admin-shell .admin-nav button svg { flex: 0 0 auto; }
+.admin-shell .overflow-x-auto,.admin-shell .overflow-x-scroll {
+  -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; scrollbar-width: thin;
+}
+.admin-shell :is(.bg-white.rounded-xl.border,.bg-white.rounded-2xl.border,.bg-white.rounded-3xl.border) {
+  border-color: var(--admin-border); box-shadow: 0 1px 2px rgba(16,24,40,.045),0 8px 24px rgba(16,24,40,.035);
+}
+
+/* Light theme: neutralize legacy dark utility panels without destroying colored badges/buttons. */
+html:not(.dark) .admin-shell :is(.bg-stone-950,.bg-stone-900,.bg-stone-800,.bg-stone-700,.bg-slate-950,.bg-slate-900,.bg-slate-800,.bg-slate-700,.bg-gray-950,.bg-gray-900,.bg-zinc-950,.bg-zinc-900,.bg-neutral-900) {
+  background-color: var(--admin-surface-subtle) !important;
+  border-color: var(--admin-border) !important;
+}
+html:not(.dark) .admin-shell :is([class*="bg-stone-950/"],[class*="bg-stone-900/"],[class*="bg-stone-800/"],[class*="bg-stone-700/"],[class*="bg-slate-950/"],[class*="bg-slate-900/"],[class*="bg-slate-800/"],[class*="bg-slate-700/"],[class*="bg-gray-900/"],[class*="bg-zinc-900/"],[class*="bg-neutral-900/"]) {
+  background-color: #F1F4F8 !important;
+  border-color: var(--admin-border) !important;
+}
+html:not(.dark) .admin-shell :is(.bg-stone-950,.bg-stone-900,.bg-stone-800,.bg-stone-700,.bg-slate-950,.bg-slate-900,.bg-slate-800,.bg-slate-700,.bg-gray-950,.bg-gray-900,.bg-zinc-950,.bg-zinc-900,.bg-neutral-900) :is(.text-white,.text-stone-100,.text-stone-200,.text-slate-100,.text-slate-200) {
+  color: var(--admin-text) !important;
+}
+html:not(.dark) .admin-shell :is(.text-stone-100,.text-stone-200,.text-slate-100,.text-slate-200,.text-gray-100,.text-gray-200,.text-zinc-100,.text-zinc-200,.text-neutral-100,.text-neutral-200) {
+  color: var(--admin-text) !important;
+}
+html:not(.dark) .admin-shell :is(.text-stone-300,.text-slate-300,.text-gray-300,.text-zinc-300,.text-neutral-300) {
+  color: var(--admin-text-secondary) !important;
+}
+html:not(.dark) .admin-shell :is(.text-stone-400,.text-slate-400,.text-gray-400,.text-zinc-400,.text-neutral-400,.text-stone-500,.text-slate-500,.text-gray-500,.text-zinc-500,.text-neutral-500) {
+  color: var(--admin-text-muted) !important;
 }
 html:not(.dark) .admin-shell :is(input,select,textarea) {
-  color: #172033 !important;
-  background-color: #FFFFFF !important;
-  border-color: #CBD5E1 !important;
-  color-scheme: light;
+  color: var(--admin-text) !important; background: #FFFFFF !important;
+  border-color: var(--admin-border-strong) !important; color-scheme: light;
 }
-html:not(.dark) .admin-shell select option {
-  color: #172033 !important;
-  background: #FFFFFF !important;
+html:not(.dark) .admin-shell select option { color: var(--admin-text); background: #FFFFFF; }
+html:not(.dark) .admin-shell :is(input,textarea)::placeholder { color: var(--admin-text-muted) !important; }
+
+/* Dark theme: layered navy surfaces, clear secondary text and visible controls. */
+html.dark .admin-shell :is(.bg-white,.bg-stone-50,.bg-slate-50,.bg-gray-50,.bg-zinc-50,.bg-neutral-50) {
+  background-color: var(--admin-surface) !important;
 }
-html:not(.dark) .admin-shell :is(input,textarea)::placeholder {
-  color: #64748B !important;
+html.dark .admin-shell :is(.bg-stone-100,.bg-slate-100,.bg-gray-100,.bg-zinc-100,.bg-neutral-100) {
+  background-color: var(--admin-surface-subtle) !important;
 }
-html:not(.dark) .admin-shell :is(th,td,label,legend,small) {
-  text-shadow: none;
+html.dark .admin-shell :is(.bg-stone-200,.bg-slate-200,.bg-gray-200,.bg-zinc-200,.bg-neutral-200) {
+  background-color: var(--admin-surface-raised) !important;
 }
-html.dark .admin-shell :is([class*="bg-stone-950/"],[class*="bg-stone-900/"],[class*="bg-stone-800/"],[class*="bg-slate-950/"],[class*="bg-slate-900/"],[class*="bg-slate-800/"]) {
-  background-color: #172536 !important;
+html.dark .admin-shell :is(.bg-stone-950,.bg-stone-900,.bg-stone-800,.bg-stone-700,.bg-slate-950,.bg-slate-900,.bg-slate-800,.bg-slate-700,.bg-gray-950,.bg-gray-900,.bg-zinc-950,.bg-zinc-900,.bg-neutral-900) {
+  background-color: var(--admin-surface-subtle) !important;
+  border-color: var(--admin-border) !important;
+}
+html.dark .admin-shell :is([class*="bg-stone-950/"],[class*="bg-stone-900/"],[class*="bg-stone-800/"],[class*="bg-stone-700/"],[class*="bg-slate-950/"],[class*="bg-slate-900/"],[class*="bg-slate-800/"],[class*="bg-slate-700/"],[class*="bg-gray-900/"],[class*="bg-zinc-900/"],[class*="bg-neutral-900/"]) {
+  background-color: #182A3D !important; border-color: var(--admin-border) !important;
+}
+html.dark .admin-shell :is(.text-stone-100,.text-stone-200,.text-slate-100,.text-slate-200,.text-gray-100,.text-gray-200,.text-zinc-100,.text-zinc-200,.text-neutral-100,.text-neutral-200) {
+  color: var(--admin-text) !important;
+}
+html.dark .admin-shell :is(.text-stone-300,.text-slate-300,.text-gray-300,.text-zinc-300,.text-neutral-300,.text-stone-400,.text-slate-400,.text-gray-400,.text-zinc-400,.text-neutral-400) {
+  color: var(--admin-text-secondary) !important;
+}
+html.dark .admin-shell :is(.text-stone-500,.text-slate-500,.text-gray-500,.text-zinc-500,.text-neutral-500) {
+  color: var(--admin-text-muted) !important;
 }
 html.dark .admin-shell :is(input,select,textarea) {
-  color: #F1F5F9 !important;
-  background-color: #172536 !important;
-  border-color: #475569 !important;
+  color: var(--admin-text) !important; background: var(--admin-surface-subtle) !important;
+  border-color: var(--admin-border-strong) !important; color-scheme: dark;
 }
-html.dark .admin-shell select option {
-  color: #F1F5F9 !important;
-  background: #172536 !important;
+html.dark .admin-shell select option { color: var(--admin-text); background: var(--admin-surface-subtle); }
+html.dark .admin-shell :is(input,textarea)::placeholder { color: var(--admin-text-muted) !important; }
+
+/* Consistent focus, hover and semantic status colors in both themes. */
+html:not(.dark) .admin-shell :is(.text-emerald-300,.text-emerald-400,.text-green-300,.text-green-400) { color: #087A55 !important; }
+html:not(.dark) .admin-shell :is(.text-amber-300,.text-amber-400,.text-yellow-300,.text-yellow-400) { color: #945500 !important; }
+html:not(.dark) .admin-shell :is(.text-rose-300,.text-rose-400,.text-red-300,.text-red-400) { color: #B42336 !important; }
+html:not(.dark) .admin-shell :is(.text-sky-300,.text-sky-400,.text-blue-300,.text-blue-400) { color: #1759A6 !important; }
+html:not(.dark) .admin-shell :is(.text-purple-300,.text-purple-400,.text-violet-300,.text-violet-400) { color: #6941A5 !important; }
+html.dark .admin-shell :is(.text-emerald-600,.text-emerald-700,.text-emerald-800,.text-green-600,.text-green-700) { color: #6EE7B7 !important; }
+html.dark .admin-shell :is(.text-amber-600,.text-amber-700,.text-amber-800,.text-yellow-600,.text-yellow-700) { color: #FCD34D !important; }
+html.dark .admin-shell :is(.text-rose-600,.text-rose-700,.text-red-600,.text-red-700) { color: #FDA4AF !important; }
+html.dark .admin-shell :is(.text-sky-600,.text-sky-700,.text-blue-600,.text-blue-700) { color: #93C5FD !important; }
+html.dark .admin-shell :is(.text-purple-600,.text-purple-700,.text-violet-600,.text-violet-700) { color: #C4B5FD !important; }
+
+@media (min-width: 1280px) {
+  .admin-shell .admin-content { padding-left: 2rem; padding-right: 2rem; }
+}
+@media (max-width: 1023px) {
+  .admin-shell .admin-topbar { align-items: flex-start; }
+  .admin-shell .admin-content { padding: 1.25rem; }
+}
+@media (max-width: 767px) {
+  .admin-shell .admin-topbar { padding: .75rem 1rem; gap: .75rem; }
+  .admin-shell .admin-topbar > div { min-width: 0; flex-wrap: wrap; }
+  .admin-shell .admin-content { padding: .875rem; }
+  .admin-shell :is(input,select,textarea) { font-size: 16px; }
+  .admin-shell :is(table,[role="table"]) { min-width: 640px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-shell *, .admin-shell *::before, .admin-shell *::after {
+    scroll-behavior: auto !important; transition-duration: .01ms !important;
+    animation-duration: .01ms !important; animation-iteration-count: 1 !important;
+  }
 }

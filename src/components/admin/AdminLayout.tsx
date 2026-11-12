@@ -47,8 +47,11 @@ import {
   Monitor,
   Tablet,
   Smartphone,
+  Moon,
+  Sun,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { isSupabaseConfigured, isSchemaMissing, subscribeSchemaMissing } from '../../services/supabaseClient';
 import { PlatformIntegrationModal } from './PlatformIntegrationModal';
 
@@ -128,6 +131,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   children,
 }) => {
   const { user, signOut, hasPermission } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const supabaseConnected = isSupabaseConfigured();
   const [schemaMissing, setSchemaMissingState] = React.useState(isSchemaMissing());
   const [isIntegrationModalOpen, setIsIntegrationModalOpen] = React.useState(false);
@@ -565,8 +569,19 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               </div>
             </div>
 
-            {/* Right: Device Detection & Viewport Switcher */}
-            <div className="flex items-center space-x-2 sm:space-x-3">
+            {/* Right: Theme and Device Controls */}
+            <div className="flex items-center flex-wrap gap-2 sm:gap-3">
+              <button
+                type="button"
+                onClick={toggleTheme}
+                aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+                title={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+                className="inline-flex items-center gap-2 rounded-xl border border-[#DCE3EC] dark:border-[#405A74] bg-white dark:bg-[#162638] px-3 py-2 text-xs font-semibold text-[#263449] dark:text-[#E2E8F0] hover:bg-[#F1F4F8] dark:hover:bg-[#1B3045] transition-colors"
+              >
+                {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-[#086B70] dark:text-[#42C9BE]" />}
+                <span className="hidden sm:inline">{theme === 'dark' ? 'Light theme' : 'Dark theme'}</span>
+              </button>
+
               {/* Current Device Live Indicator */}
               <div 
                 className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-[#FAF8F5] dark:bg-[#16283D] border border-[#E8E3DA] dark:border-[#1F3854] text-xs shadow-2xs"
