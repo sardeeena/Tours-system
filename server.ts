@@ -642,6 +642,7 @@ app.post('/api/communications/email', rateLimit(20, 60_000), async (req: Authent
         ...(isValidEmail(process.env.RESEND_REPLY_TO?.trim() || '') ? { reply_to: process.env.RESEND_REPLY_TO!.trim() } : {}),
         subject,
         text: textBody,
+        tags: [{ name: 'communication_id', value: String(audit.id) }],
       }),
       signal: AbortSignal.timeout(15_000),
     });
@@ -774,11 +775,16 @@ app.post('/api/webhooks/resend', rateLimit(300, 60_000), async (req: Request, re
     if (nextStatus === 'delivered') update.delivered_at = occurredAt;
     if (nextStatus === 'opened') update.opened_at = occurredAt;
     if (failureReason) update.failure_reason = failureReason;
-    const { data: updatedMessages, error: messageUpdateError } = await serverSupabase
-      .from('communication_messages')
-      .update(update)
-      .eq('provider_message_id', data.email_id)
-      .select('id');
+    const tagList = Array.isArray(data.tags) ? data.tags : [];
+    const taggedCommunicationId = tagList.find((tag: any) => tag?.name === 'communication_id')?.value;
+    const communicationId = typeof taggedCommunicationId === 'string' && /^[0-9a-f-]{36}$/i.test(taggedCommunicationId)
+      ? taggedCommunicationId
+      : null;
+    let messageUpdateQuery = serverSupabase.from('communication_messages').update(update);
+    messageUpdateQuery = communicationId
+      ? messageUpdateQuery.eq('id', communicationId)
+      : messageUpdateQuery.eq('provider_message_id', data.email_id);
+    const { data: updatedMessages, error: messageUpdateError } = await messageUpdateQuery.select('id');
     if (messageUpdateError) {
       console.error('Resend webhook message status update failed:', messageUpdateError.message);
       return res.status(503).json({ success: false, error: 'Webhook was stored but the message status could not be updated.' });
@@ -1685,6 +1691,7 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
           ...(isValidEmail(process.env.RESEND_REPLY_TO?.trim() || '') ? { reply_to: process.env.RESEND_REPLY_TO!.trim() } : {}),
           subject,
           text: content,
+          tags: [{ name: 'communication_id', value: String(messageLog.id) }],
           html: `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#17212b;max-width:600px;margin:auto"><h1>Welcome aboard!</h1><p>Thank you for subscribing to Awesome Adventure Tours.</p><p>Your 15% voucher code:</p><p style="font-size:28px;font-weight:bold;letter-spacing:2px;color:#0a6c74">REDSEA15</p><p>Use it when enquiring about your next excursion.</p><hr><p style="font-size:12px;color:#64748b">You received this email because you subscribed to updates from Awesome Adventure Tours. <a href="${unsubscribeUrl}">Unsubscribe</a>.</p></div>`,
         }),
         signal: AbortSignal.timeout(15_000),
