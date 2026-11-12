@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(14);
+SELECT plan(16);
 
 SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.audit_logs'::regclass), 'audit_logs has RLS enabled');
 SELECT ok(NOT has_table_privilege('anon', 'public.audit_logs', 'SELECT'), 'anon cannot read audit logs');
@@ -67,6 +67,9 @@ SELECT ok(EXISTS (
     AND NOT (new_data ? 'email')
     AND NOT (new_data ? 'metadata')
 ), 'audit snapshots retain safe status fields and redact contact and JSON metadata');
+
+SELECT ok(has_function_privilege('service_role', 'public.erase_visitor_analytics(text,uuid,uuid)', 'EXECUTE'), 'server service role can execute atomic analytics erasure');
+SELECT ok(NOT has_function_privilege('authenticated', 'public.erase_visitor_analytics(text,uuid,uuid)', 'EXECUTE'), 'authenticated users cannot execute analytics erasure directly');
 
 SELECT * FROM finish();
 ROLLBACK;
