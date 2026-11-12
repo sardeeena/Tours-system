@@ -203,7 +203,7 @@ AS $function$
         SELECT visitor_id FROM public.visitor_sessions
         WHERE started_at >= p_since AND analytics_consent = true
         GROUP BY visitor_id HAVING count(*) > 1
-      ) returning
+      ) AS returning_visitors
     ),
     'events', (SELECT count(*) FROM public.visitor_events WHERE occurred_at >= p_since),
     'guestSessions', (SELECT count(*) FROM public.visitor_sessions WHERE started_at >= p_since AND analytics_consent = true AND user_id IS NULL),
