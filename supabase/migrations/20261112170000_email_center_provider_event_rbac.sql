@@ -126,3 +126,12 @@ Our team has replied to your support request ({{ticket_reference}}). Sign in to 
 
 Thank you for joining us for {{tour_name}}. We hope you enjoyed your Red Sea experience and look forward to welcoming you again.', '["customer_name","tour_name"]'::jsonb, false)
 ON CONFLICT (template_key) DO NOTHING;
+
+-- Keep the original shared email/WhatsApp templates available to both channels.
+UPDATE public.communication_templates
+SET channel = 'Both'
+WHERE template_key IN (
+  'booking_confirmation', 'booking_update', 'payment_confirmation',
+  'payment_reminder', 'cancellation', 'refund', 'pickup_reminder',
+  'tour_reminder', 'inquiry_response', 'follow_up', 'welcome', 'review_request'
+);
