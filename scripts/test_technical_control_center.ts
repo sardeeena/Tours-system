@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 
-const migration = fs.readFileSync('supabase/migrations/20261112193000_superadmin_technical_telemetry.sql', 'utf8');
+const migration = fs.readFileSync('supabase/migrations/20261112190420_superadmin_technical_telemetry.sql', 'utf8');
 const server = fs.readFileSync('server.ts', 'utf8');
 const layout = fs.readFileSync('src/components/admin/AdminLayout.tsx', 'utf8');
 const page = fs.readFileSync('src/components/admin/technical/TechnicalControlCenter.tsx', 'utf8');
