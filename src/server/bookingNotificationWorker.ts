@@ -287,6 +287,7 @@ async function processMessage(
       bcc: [process.env.BOOKING_NOTIFICATION_EMAIL?.trim() || 'reservation@awesomeadventure.tours'],
       subject,
       text: content,
+      tags: [{ name: 'communication_id', value: String(logRow!.id) }],
     }),
     signal: AbortSignal.timeout(15_000),
   });
