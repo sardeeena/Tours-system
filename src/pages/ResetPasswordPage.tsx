@@ -205,7 +205,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
         setStep('requested');
         showToast('Password recovery instructions sent! Please check your inbox.', 'info');
       } else {
-        setErrorMessage(res.error || 'Could not send reset instructions. Please try again.');
+        setErrorMessage('We could not send password reset instructions. Please try again.');
       }
     } catch {
       setErrorMessage('A connection error occurred. Please try again.');
@@ -236,7 +236,7 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
         setStep('completed');
         showToast('Password successfully updated!', 'success');
       } else {
-        setErrorMessage(res.error || 'Failed to update password. Please request a new reset link.');
+        setErrorMessage('We could not update your password. Please request a new reset link and try again.');
       }
     } catch {
       setErrorMessage('An unexpected error occurred while updating your password. Please try again.');
