@@ -120,6 +120,7 @@ export interface ProviderConfig {
     isConfigured: boolean;
     webhookConfigured?: boolean;
     bookingWorkerEnabled?: boolean;
+    configurationIssue?: string | null;
   };
   whatsapp: {
     provider: 'meta_cloud' | 'twilio' | 'custom' | 'none';
