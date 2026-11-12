@@ -325,7 +325,7 @@ REVOKE ALL ON FUNCTION private.record_support_message_event() FROM PUBLIC, anon,
 
 -- Associate signed-in requesters with the CRM customer record where one exists.
 CREATE OR REPLACE FUNCTION private.prepare_support_ticket()
-RETURNS trigger LANGUAGE plpgsql SET search_path=''
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=''
 AS $function$
 BEGIN
   -- Link the requester's own CRM customer record when one exists.
