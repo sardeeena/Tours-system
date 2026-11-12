@@ -28,7 +28,6 @@ const AttachmentLink: React.FC<{attachment:{path:string;name:string}}> = ({attac
   useEffect(()=>{let active=true;supabase.storage.from('support-ticket-attachments').createSignedUrl(attachment.path,300).then(({data})=>{if(active&&data?.signedUrl)setUrl(data.signedUrl);});return()=>{active=false;};},[attachment.path]);
   return url ? <a href={url} target="_blank" rel="noopener noreferrer" className="underline text-[#0A6C74] text-xs">{attachment.name}</a> : <span className="text-xs text-stone-400">Preparing attachment…</span>;
 };
-type TicketMode = 'customer' | 'staff';
 
 const statusLabels: Record<string,string> = {
   open:'Open', assigned:'Assigned', in_progress:'In progress', waiting_customer:'Waiting for customer',
@@ -69,7 +68,6 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
   const canAssign = hasPermission('tickets.assign');
   const canInternal = hasPermission('tickets.internal_note');
   const isStaff = staffMode || canReadAll || canReadAssigned || canReply;
-  const mode: TicketMode = isStaff ? 'staff' : 'customer';
 
   const loadTickets = useCallback(async () => {
     if (!user) return;
@@ -254,7 +252,7 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
             <h2 className="font-display text-xl sm:text-2xl font-bold text-stone-900 dark:text-white">{selected.subject}</h2>
             <div className="flex flex-wrap gap-2"><span className="text-[10px] rounded-full px-2.5 py-1 bg-stone-100 dark:bg-slate-800">{statusLabels[selected.status]||selected.status}</span><span className={'text-[10px] rounded-full px-2.5 py-1 font-bold '+(priorityTone[selected.priority]||priorityTone.normal)}>{selected.priority}</span><span className="text-[10px] rounded-full px-2.5 py-1 bg-stone-100 dark:bg-slate-800">{selected.department}</span></div>
             {isStaff && <div className="flex flex-wrap gap-2 items-center">
-              {canUpdate && <><select aria-label="Ticket status" className="text-xs rounded-lg border border-stone-200 dark:border-slate-700 bg-transparent px-2 py-2" value={selected.status} disabled={busy} onChange={e=>void updateTicket({status:e.target.value})}>{Object.entries(statusLabels).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select><select aria-label="Ticket priority" className="text-xs rounded-lg border border-stone-200 dark:border-slate-700 bg-transparent px-2 py-2" value={selected.priority} disabled={busy} onChange={e=>void updateTicket({priority:e.target.value})}>{['low','normal','high','urgent','critical'].map(v=><option key={v} value={v}>{v}</option>)}</select></>}
+              {(canUpdate || (selected.assigned_to===user.id && canReply)) && <><select aria-label="Ticket status" className="text-xs rounded-lg border border-stone-200 dark:border-slate-700 bg-transparent px-2 py-2" value={selected.status} disabled={busy} onChange={e=>void updateTicket({status:e.target.value})}>{Object.entries(statusLabels).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select><select aria-label="Ticket priority" className="text-xs rounded-lg border border-stone-200 dark:border-slate-700 bg-transparent px-2 py-2" value={selected.priority} disabled={busy} onChange={e=>void updateTicket({priority:e.target.value})}>{['low','normal','high','urgent','critical'].map(v=><option key={v} value={v}>{v}</option>)}</select></>}
               {canAssign && <button type="button" disabled={busy} onClick={()=>void updateTicket({assigned_to:user.id,status:selected.status==='open'?'assigned':selected.status})} className="text-xs rounded-lg border border-[#0A6C74]/40 text-[#0A6C74] px-3 py-2 inline-flex items-center gap-1"><UserRound size={13}/> Assign to me</button>}
             </div>}
           </div>
