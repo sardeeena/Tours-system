@@ -661,6 +661,10 @@ function MainApp() {
   };
 
   const handleNavigateSection = (sectionId: string) => {
+    if (sectionId === 'categories-section') {
+      navigate('/experiences');
+      return;
+    }
     if (currentPath !== '/') {
       navigate('/');
       setTimeout(() => {
@@ -1404,6 +1408,28 @@ function MainApp() {
           onViewTour={handleViewTour}
           onBookTour={handleStartBooking}
         />
+      );
+    }
+
+    // Public experience discovery page: /experiences
+    if (currentPath === '/experiences') {
+      return (
+        <main className="flex-1 bg-[#FAF8F5] dark:bg-[#0A1118]">
+          <section className="max-w-7xl mx-auto px-4 sm:px-8 pt-12 sm:pt-16 pb-4">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#0A6C74] dark:text-[#60C3CC] mb-2">Discover the Red Sea</p>
+            <h1 className="font-display text-3xl sm:text-5xl font-semibold text-[#0E1B2A] dark:text-white tracking-tight">Experiences & Adventures</h1>
+            <p className="max-w-3xl text-stone-600 dark:text-slate-300 mt-4 leading-relaxed">
+              Explore published boat trips, island escapes, snorkeling, diving and desert adventures across Egypt’s Red Sea coast. Choose an experience to see matching excursions and booking details.
+            </p>
+          </section>
+          <ExperienceCategories
+            categories={liveCategories}
+            isLoading={loadingCategories}
+            error={categoriesError}
+            onRetry={refreshPublishedCategories}
+            onSelectCategory={handleSelectHomeCategory}
+          />
+        </main>
       );
     }
 
