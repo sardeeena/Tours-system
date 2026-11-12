@@ -843,7 +843,7 @@ html:not(.dark) .admin-shell :is(
   [class*="bg-stone-800/"], [class*="bg-stone-700/"],
   [class*="bg-slate-950/"], [class*="bg-slate-900/"],
   [class*="bg-slate-800/"], [class*="bg-slate-700/"]
-) :is(span, p, div, h1, h2, h3, h4, label, strong, small, td, th).text-white {
+) :is(span, p, div, h1, h2, h3, h4, label, strong, small, td, th).text-white:not(button *):not(a *):not([role="button"] *) {
   color: var(--admin-text) !important;
 }
 html:not(.dark) .admin-shell :is(
