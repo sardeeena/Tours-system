@@ -245,9 +245,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ redirectUrl, onNavigate })
           setRequiresConfirmation(false);
           setErrorMessage(null);
         }
-        showToast(res.message || 'Confirmation email resent! Please check your inbox.', 'success');
+        showToast('Confirmation email sent. Please check your inbox.', 'success');
       } else {
-        showToast(res.error || 'Failed to resend confirmation email.', 'error');
+        showToast('We could not resend the confirmation email. Please try again.', 'error');
       }
     } catch {
       showToast('Error resending confirmation email.', 'error');
@@ -265,7 +265,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ redirectUrl, onNavigate })
     try {
       const confirmation = await confirmEmail(targetEmail);
       if (!confirmation.success) {
-        const message = confirmation.error || 'Supabase could not verify this account yet. Open the latest confirmation email link on this device, then try again.';
+        const message = 'We could not confirm your email yet. Open the latest confirmation link and try again.';
         setErrorMessage(message);
         showToast(message, 'error');
         return;
@@ -404,7 +404,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ redirectUrl, onNavigate })
                 <div>
                   <span className="font-bold text-amber-950 block text-sm">Account Pending Email Confirmation</span>
                   <p className="text-amber-800 mt-1">
-                    We sent a verification link to <strong>{unconfirmedEmail || email}</strong> from Supabase.
+                    We sent a verification link to <strong>{unconfirmedEmail || email}</strong>.
                     If you clicked the link in your email, click <strong>"I've Confirmed"</strong> below to refresh your status immediately.
                   </p>
                 </div>
