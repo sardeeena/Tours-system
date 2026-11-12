@@ -15,12 +15,9 @@ export const VisitorAnalyticsTracker: React.FC<Props> = ({ path, userId }) => {
     const refresh = () => {
       const consent = readVisitorConsent();
       setEnabled(Boolean(consent?.analytics));
-      if (consent) void recordVisitorConsent(consent, 'privacy_settings');
     };
-    window.addEventListener('awesome:consent-updated', refresh);
     window.addEventListener('awesome:visitor-consent-saved', refresh);
     return () => {
-      window.removeEventListener('awesome:consent-updated', refresh);
       window.removeEventListener('awesome:visitor-consent-saved', refresh);
     };
   }, []);
@@ -31,13 +28,6 @@ export const VisitorAnalyticsTracker: React.FC<Props> = ({ path, userId }) => {
       return;
     }
     const now = Date.now();
-    if (previous.current) {
-      void recordVisitorEvent({
-        event_name: 'page_exit',
-        page_path: previous.current.path,
-        duration_ms: Math.max(0, now - previous.current.startedAt),
-      });
-    }
     const safePath = path.split(/[?#]/, 1)[0] || '/';
     previous.current = { path: safePath, startedAt: now };
     void recordVisitorEvent({
