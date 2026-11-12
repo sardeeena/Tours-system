@@ -2321,6 +2321,32 @@ app.post('/api/admin/technical/visitors/settings', rateLimit(10, 60_000), async 
 });
 
 
+
+async function pruneVisitorAnalytics(): Promise<void> {
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return;
+  try {
+    const { data: settings, error: settingsError } = await serverSupabase
+      .from('visitor_analytics_settings')
+      .select('event_retention_days,session_retention_days,consent_retention_days')
+      .eq('singleton', true).maybeSingle();
+    if (settingsError || !settings) return;
+    const now = Date.now();
+    const eventCutoff = new Date(now - settings.event_retention_days * 86400000).toISOString();
+    const sessionCutoff = new Date(now - settings.session_retention_days * 86400000).toISOString();
+    const consentCutoff = new Date(now - settings.consent_retention_days * 86400000).toISOString();
+    const [events, sessions, consents] = await Promise.all([
+      serverSupabase.from('visitor_events').delete().lt('occurred_at', eventCutoff),
+      serverSupabase.from('visitor_sessions').delete().lt('last_seen_at', sessionCutoff),
+      serverSupabase.from('visitor_consent_records').delete().lt('recorded_at', consentCutoff),
+    ]);
+    if (events.error || sessions.error || consents.error) {
+      console.error('[Visitor analytics retention] Cleanup did not fully complete.');
+    }
+  } catch (error) {
+    console.error('[Visitor analytics retention] Cleanup failed:', error instanceof Error ? error.message : 'unknown error');
+  }
+}
+
 function validAuthUserId(value: unknown): value is string {
   return typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
 }
@@ -4052,6 +4078,11 @@ async function startServer() {
 
   const server = app.listen(Number(PORT), '0.0.0.0', () => {
     console.log(`Awesome Adventure Tours server running on port/socket ${PORT} [${process.env.NODE_ENV || 'development'}]`);
+
+    // Apply configured visitor-data retention once at startup and daily thereafter.
+    void pruneVisitorAnalytics();
+    const visitorRetentionTimer = setInterval(() => { void pruneVisitorAnalytics(); }, 24 * 60 * 60 * 1000);
+    visitorRetentionTimer.unref();
 
     // The durable queue consumer must use a server-only Supabase secret key.
     // It never starts with an anon/publishable key or in local development.
