@@ -59,67 +59,172 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y postgresql-client
 
-      - name: Confirm source identity and destination is empty
+      - name: Confirm source identity and destination is completely empty
         shell: bash
         run: |
           set -euo pipefail
           psql "$SOURCE_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "select current_database(), current_user;"
-          target_tables="$(psql "$DESTINATION_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "select count(*) from information_schema.tables where table_schema = 'public' and table_type = 'BASE TABLE'")"
-          if [ "$target_tables" != "0" ]; then
-            echo "STOP: destination public schema contains $target_tables base tables; refusing to overwrite."
+          target_public="$(psql "$DESTINATION_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "select count(*) from information_schema.tables where table_schema = 'public' and table_type = 'BASE TABLE'")"
+          target_auth_users="$(psql "$DESTINATION_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "select count(*) from auth.users")"
+          target_buckets="$(psql "$DESTINATION_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "select count(*) from storage.buckets")"
+          target_objects="$(psql "$DESTINATION_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "select count(*) from storage.objects")"
+          target_storage_policies="$(psql "$DESTINATION_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "select count(*) from pg_policies where schemaname = 'storage'")"
+          if [ "$target_public" != "0" ] || [ "$target_auth_users" != "0" ] || [ "$target_buckets" != "0" ] || [ "$target_objects" != "0" ] || [ "$target_storage_policies" != "0" ]; then
+            echo "STOP: destination is not empty (public=$target_public auth_users=$target_auth_users buckets=$target_buckets objects=$target_objects storage_policies=$target_storage_policies)."
             exit 1
           fi
-          echo "Destination preflight passed: public schema has zero base tables."
 
-      - name: Dump source roles, schema, data and migration history
+          source_objects="$(psql "$SOURCE_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "select count(*) from storage.objects")"
+          source_vault_secrets="$(psql "$SOURCE_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "select count(*) from vault.secrets")"
+          if [ "$source_objects" != "0" ]; then
+            echo "STOP: source contains $source_objects Storage objects. A separate object-file transfer is required; refusing a partial migration."
+            exit 1
+          fi
+          if [ "$source_vault_secrets" != "0" ]; then
+            echo "STOP: source contains Vault secrets. Encryption root-key transfer must be arranged before migration."
+            exit 1
+          fi
+          echo "Preflight passed: destination is empty; source has no Storage objects or Vault secrets."
+
+      - name: Dump application database, Auth data, Storage buckets, queues and migration history
         shell: bash
         run: |
           set -euo pipefail
+
+          # Supabase CLI excludes managed auth/storage schemas and extension-owned schemas.
           supabase db dump --remote="$SOURCE_DB_URL" --file=roles.sql --role-only
           supabase db dump --remote="$SOURCE_DB_URL" --file=schema.sql
           supabase db dump --remote="$SOURCE_DB_URL" --file=data.sql --data-only --use-copy --exclude=storage.buckets_vectors --exclude=storage.vector_indexes
           supabase db dump --remote="$SOURCE_DB_URL" --file=history_schema.sql --schema=supabase_migrations
           supabase db dump --remote="$SOURCE_DB_URL" --file=history_data.sql --schema=supabase_migrations --data-only --use-copy
-          test -s schema.sql
-          test -s data.sql
-          test -s history_schema.sql
-          test -s history_data.sql
+
+          # The source and destination have matching Supabase Auth table layouts.
+          # Preserve user UUIDs, password hashes, identities, MFA records and Auth metadata.
+          # Auth migration history is already initialized identically in the fresh target.
+          pg_dump "$SOURCE_DB_URL" --data-only --schema=auth --exclude-table=auth.schema_migrations --no-owner --no-privileges --file=auth_data.sql
+
+          # Source has four bucket definitions and no stored objects.
+          pg_dump "$SOURCE_DB_URL" --data-only --table=storage.buckets --no-owner --no-privileges --file=storage_buckets.sql
+
+          # Preserve the source pgmq queue metadata and queue state.
+          pg_dump "$SOURCE_DB_URL" --data-only --schema=pgmq --no-owner --no-privileges --file=pgmq_data.sql
+
+          # Recreate the source Storage RLS policies on the target managed storage.objects table.
+          psql "$SOURCE_DB_URL" -X -A -t -v ON_ERROR_STOP=1 > storage_policies.sql <<'SQL'
+          SELECT format(
+            'CREATE POLICY %I ON %I.%I AS %s FOR %s TO %s%s%s;',
+            policyname, schemaname, tablename, lower(permissive), cmd,
+            coalesce(
+              (SELECT string_agg(CASE WHEN r = 'public' THEN 'public' ELSE quote_ident(r) END, ', ' ORDER BY r)
+               FROM unnest(roles) AS r),
+              'public'
+            ),
+            CASE WHEN qual IS NOT NULL THEN ' USING (' || qual || ')' ELSE '' END,
+            CASE WHEN with_check IS NOT NULL THEN ' WITH CHECK (' || with_check || ')' ELSE '' END
+          )
+          FROM pg_policies
+          WHERE schemaname = 'storage'
+          ORDER BY tablename, policyname;
+          SQL
+
+          # Preserve the explicit Realtime publication membership.
+          psql "$SOURCE_DB_URL" -X -A -t -v ON_ERROR_STOP=1 > realtime_publication.sql <<'SQL'
+          SELECT format('ALTER PUBLICATION %I ADD TABLE %I.%I;', pubname, schemaname, tablename)
+          FROM pg_publication_tables
+          WHERE pubname = 'supabase_realtime'
+          ORDER BY schemaname, tablename;
+          SQL
+
+          for file in schema.sql data.sql history_schema.sql history_data.sql auth_data.sql storage_buckets.sql pgmq_data.sql storage_policies.sql realtime_publication.sql; do
+            test -s "$file" || { echo "Missing or empty migration artifact: $file"; exit 1; }
+          done
 
       - name: Restore database into AwesomeAdventure only
         shell: bash
         run: |
           set -euo pipefail
-          # Roles are restored separately, as recommended by Supabase.
+
+          # Install source extensions that are not enabled in the fresh destination.
+          psql "$DESTINATION_DB_URL" -X -v ON_ERROR_STOP=1 <<'SQL'
+          CREATE SCHEMA IF NOT EXISTS extensions;
+          CREATE EXTENSION IF NOT EXISTS hypopg WITH SCHEMA extensions;
+          CREATE EXTENSION IF NOT EXISTS index_advisor WITH SCHEMA extensions;
+          CREATE SCHEMA IF NOT EXISTS pgmq;
+          CREATE EXTENSION IF NOT EXISTS pgmq WITH SCHEMA pgmq;
+          SQL
+
+          # Restore cluster roles separately, as recommended by Supabase.
           psql "$DESTINATION_DB_URL" -X -v ON_ERROR_STOP=1 --file=roles.sql
-          # A single transaction ensures schema/data/history restore as one unit.
+
+          # Avoid inheriting broad target default table grants during logical restore.
+          psql "$DESTINATION_DB_URL" -X -v ON_ERROR_STOP=1 -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES FROM anon, authenticated;"
+
+          # A single transaction ensures schema, data, Auth, Storage metadata and history restore atomically.
           psql "$DESTINATION_DB_URL" -X --single-transaction -v ON_ERROR_STOP=1 \
             --file=schema.sql \
             --file=history_schema.sql \
             --command='SET session_replication_role = replica' \
             --file=data.sql \
-            --file=history_data.sql
+            --file=auth_data.sql \
+            --file=storage_buckets.sql \
+            --file=pgmq_data.sql \
+            --file=history_data.sql \
+            --command='SET session_replication_role = origin' \
+            --file=storage_policies.sql
 
-      - name: Verify restored public tables and critical records
+          # Realtime publication already exists in the new Supabase project.
+          psql "$DESTINATION_DB_URL" -X -v ON_ERROR_STOP=1 --file=realtime_publication.sql
+
+      - name: Verify every public, Auth and pgmq table row count
         shell: bash
         run: |
           set -euo pipefail
+
+          dump_counts() {
+            local db_url="$1"
+            local schema="$2"
+            local output="$3"
+            psql "$db_url" -X -A -t -F $'\t' -v ON_ERROR_STOP=1 > "$output" <<SQL
+          SELECT format('SELECT %L, count(*)::bigint FROM %I.%I;', table_name, table_schema, table_name)
+          FROM information_schema.tables
+          WHERE table_schema = '$schema'
+            AND table_type = 'BASE TABLE'
+            AND NOT ('$schema' = 'auth' AND table_name = 'schema_migrations')
+          ORDER BY table_name;
+          \\gexec
+          SQL
+          }
+
+          for schema in public auth pgmq; do
+            dump_counts "$SOURCE_DB_URL" "$schema" "source_$schema.tsv"
+            dump_counts "$DESTINATION_DB_URL" "$schema" "destination_$schema.tsv"
+            diff -u "source_$schema.tsv" "destination_$schema.tsv"
+          done
+
+          source_storage_policies="$(psql "$SOURCE_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "select count(*) from pg_policies where schemaname='storage'")"
+          destination_storage_policies="$(psql "$DESTINATION_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "select count(*) from pg_policies where schemaname='storage'")"
+          source_realtime_tables="$(psql "$SOURCE_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "select count(*) from pg_publication_tables where pubname='supabase_realtime'")"
+          destination_realtime_tables="$(psql "$DESTINATION_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "select count(*) from pg_publication_tables where pubname='supabase_realtime'")"
+
+          test "$source_storage_policies" = "$destination_storage_policies"
+          test "$source_realtime_tables" = "$destination_realtime_tables"
+
           psql "$DESTINATION_DB_URL" -X -v ON_ERROR_STOP=1 -c "
             select
               (select count(*) from information_schema.tables where table_schema='public' and table_type='BASE TABLE') as public_tables,
               (select count(*) from public.profiles) as profiles,
               (select count(*) from public.tours) as tours,
               (select count(*) from public.blog_posts) as blog_posts,
-              (select count(*) from public.support_tickets) as support_tickets;
+              (select count(*) from public.support_tickets) as support_tickets,
+              (select count(*) from auth.users) as auth_users,
+              (select count(*) from auth.identities) as auth_identities,
+              (select count(*) from storage.buckets) as storage_buckets,
+              (select count(*) from storage.objects) as storage_objects;
           "
-          psql "$DESTINATION_DB_URL" -X -A -t -v ON_ERROR_STOP=1 -c "
-            select case when
-              (select count(*) from information_schema.tables where table_schema='public' and table_type='BASE TABLE') >= 50
-              and to_regclass('public.tours') is not null
-              and to_regclass('public.user_roles') is not null
-              and to_regclass('public.support_tickets') is not null
-              then 'VERIFICATION_PASSED' else 'VERIFICATION_FAILED' end;
-          " | grep -qx VERIFICATION_PASSED
+
+          echo "All public, Auth and pgmq table row counts match the source."
+          echo "Storage policies: $destination_storage_policies; Realtime tables: $destination_realtime_tables."
 
       - name: Remove temporary SQL dumps
         if: always()
-        run: rm -f roles.sql schema.sql data.sql history_schema.sql history_data.sql
+        run: rm -f roles.sql schema.sql data.sql history_schema.sql history_data.sql auth_data.sql storage_buckets.sql pgmq_data.sql storage_policies.sql realtime_publication.sql source_*.tsv destination_*.tsv
