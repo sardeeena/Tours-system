@@ -567,6 +567,8 @@ app.get('/api/communications/status', rateLimit(60, 60_000), (req: Authenticated
       provider: 'Resend',
       fromEmail: normalizeSenderEmail(process.env.RESEND_FROM_EMAIL || ''),
       fromName: process.env.RESEND_FROM_NAME?.trim() || 'Awesome Adventure Tours',
+      webhookConfigured: (process.env.RESEND_WEBHOOK_SECRET?.trim() || '').startsWith('whsec_'),
+      bookingWorkerEnabled: process.env.BOOKING_NOTIFICATION_WORKER_ENABLED?.trim().toLowerCase() === 'true',
     },
     whatsapp: {
       configured: whatsappConfigured,
