@@ -28,14 +28,15 @@
 5. [Admin CMS, Operations, CRM & Finance](#-admin-cms-operations-crm--finance)
 6. [Architecture & Tech Stack](#-architecture--tech-stack)
 7. [Database & Supabase Integration](#-database--supabase-integration)
-8. [Project Structure](#-project-structure)
-9. [Getting Started & Local Development](#-getting-started--local-development)
-10. [Environment Variables](#-environment-variables)
-11. [Automated Testing & Verification](#-automated-testing--verification)
-12. [Production Build & Deployment](#-production-build--deployment)
-13. [Production Readiness & Owner Actions](#-production-readiness--owner-actions)
-14. [Security Guidelines](#-security-guidelines)
-15. [License](#-license)
+8. [Email, Newsletter & Communications](#-email-newsletter--communications)
+9. [Project Structure](#-project-structure)
+10. [Getting Started & Local Development](#-getting-started--local-development)
+11. [Environment Variables](#-environment-variables)
+12. [Automated Testing & Verification](#-automated-testing--verification)
+13. [Production Build & Deployment](#-production-build--deployment)
+14. [Production Readiness & Owner Actions](#-production-readiness--owner-actions)
+15. [Security Guidelines](#-security-guidelines)
+16. [License](#-license)
 
 ---
 
@@ -43,15 +44,13 @@
 
 **Awesome Adventure Tours** is a full-stack tour and excursion booking platform serving the Red Sea tourism market. It combines a public discovery website, a customer booking experience, customer accounts, and a role-protected administration and operations platform.
 
-The platform is designed to support excursions and experiences around Hurghada and the wider Red Sea region.
-
 - **Production website:** https://awesomeadventure.tours
 - **GitHub repository:** https://github.com/sardeeena/Tours-system
 - **Production branch:** `main`
 - **Hosting:** Hostinger Node.js application
 - **Database, authentication & storage:** Supabase
 
-> **Architecture note:** Awesome Adventure Tours is not a static-only Vite website. Express serves the built frontend and the application's `/api/*` routes. Production must run the Node.js server process.
+> **Architecture note:** This is not a static-only Vite website. Express serves the built frontend and the application's `/api/*` routes. Production must run the Node.js server process.
 
 ---
 
@@ -69,16 +68,39 @@ The platform is designed to support excursions and experiences around Hurghada a
 - Kept rate-limit storage backend-only rather than exposing it to browser roles.
 - Retained explicit authorization and Row-Level Security (RLS) checks as core data-access boundaries.
 
-### 📚 3. Documentation and repository organization
+### ✉️ 3. Premium email center and branded communications
+- Added a dedicated, role-protected Email Center at `/admin/communications` with real message counts, recent verified Resend provider events, sender configuration diagnostics, webhook-secret presence and booking-worker status.
+- Added a shared responsive navy-and-gold HTML email renderer using the Awesome Adventure Tours logo for staff-dispatched messages, inquiry notifications, newsletter welcome emails and booking notifications.
+- Normalized sender mailbox parsing and added safe diagnostics that report configuration problems without exposing secrets.
+- Made the Supabase-backed `communication_templates` catalogue the source of truth for business templates; template edits persist to the database and are recorded in CRM activity.
+- Seeded the business email/WhatsApp template catalogue, including newsletter, support-ticket and post-trip template records. Ticket and post-trip templates are inactive until explicitly enabled.
+- Replaced outdated admin branding with Awesome Adventure Tours branding.
+
+### 📬 4. Supabase Auth email templates
+- Added 13 branded HTML templates covering six authentication flows and seven account-security notifications.
+- Added corresponding version-controlled entries to `supabase/config.toml` and setup instructions in [docs/email-system-setup.md](./docs/email-system-setup.md).
+- Security notification templates are disabled by default in the repository configuration and should be enabled only after review.
+- **Hosted-project distinction:** committing `config.toml` or HTML files does not automatically update the hosted Supabase Auth dashboard. Apply the templates under Authentication → Emails → Templates (or use the supported Supabase Management API), and configure SMTP and redirect URLs in the hosted project.
+
+### 📮 5. Newsletter persistence and Resend delivery-event audit
+- Newsletter subscriptions are stored in `public.newsletter_subscriptions`; the admin view reads persisted records.
+- Anonymous visitors can subscribe, while subscription management is protected by confirmation-based unsubscribe handling and consent validation.
+- Added `public.email_provider_events` as an idempotent audit trail for verified Resend webhook events.
+- Webhook endpoint: `/api/webhooks/resend`. Configure the Resend webhook with the event types documented in [docs/email-system-setup.md](./docs/email-system-setup.md) and store its signing secret in the server environment.
+- Provider events update communications delivery history when matching webhook events are received.
+
+### 🗄️ 6. Supabase migration history and CLI reliability
+- Pointed `supabase/config.toml` at the AwesomeAdventure Supabase project reference.
+- Reconciled local migration filenames with the versions already recorded in production, including restoration of the historical `20261112164341` version as a comment-only migration placeholder.
+- The subsequent `20261112170000` migration contains the final provider-event RBAC policy and business-template seed operations.
+- CI starts an isolated local Supabase stack, replays the full migration history and runs pgTAP database tests.
+- Use the Supabase CLI v3 command modes deliberately: local CI reset/test commands run against the local stack; production operations must explicitly specify the remote target and receive a separate review.
+
+### 📚 7. Documentation and continuous integration
 - Organized documentation into guides, operations, audit reports and phase reports.
 - Added a dedicated owner action checklist for tasks requiring account access or real-world verification.
-- Documented the application architecture, setup, configuration, testing and deployment workflows.
-- Preserved script paths referenced by package scripts and CI.
-
-### ✅ 4. Continuous integration
-- GitHub Actions validates the application build and automated checks.
-- CI provisions an isolated Supabase environment for database migration and test verification.
-- A green CI result is necessary, but does not replace production acceptance tests against Hostinger and the live Supabase project.
+- GitHub Actions validates TypeScript, production builds, email renderer and communication checks, project isolation, migration replay and database security tests.
+- A green CI result does not replace end-to-end acceptance tests against Hostinger, the live Supabase project and external email providers.
 
 ---
 
@@ -87,10 +109,11 @@ The platform is designed to support excursions and experiences around Hurghada a
 | Guide | Description |
 |---|---|
 | [📚 Documentation index](./docs/README.md) | Main index of project documentation |
-| [✅ Owner action checklist](./docs/operations/OWNER_ACTION_CHECKLIST.md) | Owner tasks, decisions and production acceptance checks |
+| [✅ Owner action checklist](./docs/operations/OWNER_ACTION_CHECKLIST.md) | Owner tasks and production acceptance checks |
 | [🚀 Hostinger deployment guide](./docs/guides/HOSTINGER_DEPLOYMENT_GUIDE.md) | Production hosting and deployment reference |
 | [⚙️ Setup guide](./docs/guides/SETUP_GUIDE.md) | Local setup and application configuration |
 | [🗄️ Supabase guide](./docs/guides/SUPABASE.md) | Database, Auth, RLS and migration guidance |
+| [✉️ Email system setup](./docs/email-system-setup.md) | Resend, webhook, Auth templates and SMTP setup |
 | [🧪 Script inventory](./scripts/README.md) | Test and utility script purposes and safe usage |
 | [📋 Audit reports](./docs/reports/audits/) | Historical audit and readiness reports |
 | [📋 Phase reports](./docs/reports/phases/) | Historical implementation reports |
@@ -146,6 +169,7 @@ The administration platform contains workflows for the following business areas.
 13. **Coupons & Promotions** — discount and promotion configuration.
 14. **Finance & Invoicing** — finance-related records and workflows.
 15. **Media Library** — asset organization and tour media assignment.
+16. **Communications & Email Center** — business templates, dispatch, message history and provider event visibility.
 
 Role-based access and action-level authorization are enforced through application checks and database policies. Frontend navigation visibility is not an authorization boundary.
 
@@ -167,7 +191,7 @@ Role-based access and action-level authorization are enforced through applicatio
 | **Authorization** | PostgreSQL RLS, role-based and action-level permission checks |
 | **Object storage** | Supabase Storage |
 | **AI integration** | Google Gemini via `@google/genai` (optional) |
-| **Email integration** | Resend (optional) |
+| **Email delivery** | Resend API and Supabase Auth SMTP |
 | **Messaging integration** | WhatsApp Cloud API (optional) |
 | **Build** | Vite + esbuild |
 | **Testing** | TypeScript scripts via tsx, pg-mem, Supabase CLI and pgTAP |
@@ -207,10 +231,11 @@ Supabase
   +-- Row-Level Security and database authorization
   +-- Storage buckets and media objects
 
-Optional external services
-  +-- Google Gemini
-  +-- Resend
-  +-- WhatsApp Cloud API
+External services
+  +-- Resend API for application/business emails
+  +-- Resend SMTP for Supabase Auth messages
+  +-- Optional Google Gemini
+  +-- Optional WhatsApp Cloud API
 ```
 
 The browser uses only public/publishable credentials. Privileged operations must remain server-side or be exposed through narrowly authorized database functions. Never expose a Supabase secret/service-role key to the browser.
@@ -229,6 +254,14 @@ The application uses Supabase for PostgreSQL, authentication and storage.
 - Back up before destructive or data-transforming operations.
 - Never reset or overwrite production data to resolve schema drift.
 
+### Supabase CLI v3 workflow
+- CI uses Supabase CLI v3 to start an isolated local stack, run `supabase db reset`, and execute `supabase test db`.
+- Local migration replay and pgTAP tests must not be confused with production migration operations.
+- Before production deployment, compare local migration versions with the remote migration ledger.
+- Use explicit remote targeting for hosted database commands (for example, `supabase migration list --remote` and reviewed `supabase db push --remote` workflows).
+- Never use `migration repair`, reset, or destructive history edits as a shortcut. Investigate the missing version, restore the correct migration file or reconcile the history through a reviewed change.
+- The migration file `20261112164341_email_center_provider_event_rbac.sql` is intentionally comment-only: it restores a historical version already present in production. The following `20261112170000_email_center_provider_event_rbac.sql` contains the final idempotent policy and template-seed SQL.
+
 ### Access control & database security
 - Keep RLS enabled on exposed application tables.
 - Use explicit grants and least-privilege policies.
@@ -236,6 +269,7 @@ The application uses Supabase for PostgreSQL, authentication and storage.
 - Restrict privileged functions and validate callers inside the database.
 - Keep internal rate-limit storage inaccessible to ordinary browser roles.
 - Require AAL2 for protected super-admin permissions when MFA enforcement applies.
+- The Resend provider-event table is readable only by authenticated staff with the required communications or content permission; provider writes use the server-side privileged path.
 
 ### Supabase API key handling
 - Prefer modern `sb_publishable_...` keys for browser/public use.
@@ -243,17 +277,48 @@ The application uses Supabase for PostgreSQL, authentication and storage.
 - Legacy JWT keys are accepted only when their decoded roles match the expected `anon` or `service_role` role.
 - Never place a secret/service-role key in a `VITE_*` variable, frontend source, GitHub, logs or browser storage.
 
-### Advisor status — last recorded review
+---
 
-The owner checklist records this historical advisor snapshot from **11 November 2026**:
+## ✉️ Email, Newsletter & Communications
 
-| Advisor | Errors | Warnings | Informational |
-|---|---:|---:|---:|
-| Security | 0 | 1 | 1 |
-| Performance | 0 | 0 | 129 |
-| Health | 0 | 0 | 0 |
+### Two separate email paths
 
-The recorded Security warning was `auth_leaked_password_protection` being disabled. The project was on Supabase Free, where this feature was not available. This is a historical snapshot, not a live advisor query; refresh the advisors before a new production release.
+1. **Supabase Auth email:** Supabase owns confirmation, invite, magic-link, recovery, email-change and security-notification tokens and templates. Resend SMTP is the delivery transport.
+2. **Application/business email:** The Express server uses the Resend API for staff dispatches, inquiry acknowledgements, newsletter welcome messages and booking notifications.
+
+Do not implement authentication token generation in application email routes. Do not assume that application communications history automatically contains every Supabase Auth email.
+
+### Branded templates and Email Center
+- Shared HTML renderer: [`src/utils/emailTemplate.ts`](./src/utils/emailTemplate.ts).
+- Supabase Auth HTML files: [`supabase/templates/`](./supabase/templates/).
+- Local Supabase Auth template declarations: [`supabase/config.toml`](./supabase/config.toml).
+- Business templates are stored in `public.communication_templates`; the admin editor persists changes to Supabase.
+- The Email Center is available at `/admin/communications` for staff with the relevant communications permissions.
+- Template edits/deletions are recorded in CRM activity. Factory templates are soft-disabled rather than physically removed.
+
+### Resend webhook and delivery audit
+- Endpoint: `https://awesomeadventure.tours/api/webhooks/resend` (production).
+- The endpoint validates the provider signature against the raw request body and stores verified events idempotently in `public.email_provider_events`.
+- Configure the webhook signing secret as `RESEND_WEBHOOK_SECRET` on the server. A configured-secret indicator is not proof that the secret matches the provider.
+- Subscribe to the supported events: `email.sent`, `email.delivered`, `email.delivery_delayed`, `email.bounced`, `email.complained`, `email.opened`, `email.clicked`, `email.failed` and `email.suppressed`.
+- Delivery-event counts remain zero until actual provider webhook events are received.
+
+### Required operational configuration
+Typical server-side variables include:
+
+```env
+RESEND_API_KEY=<server-side Resend API key>
+RESEND_FROM_EMAIL=no-reply@mail.awesomeadventure.tours
+RESEND_FROM_NAME=Awesome Adventure Tours
+RESEND_REPLY_TO=reservation@awesomeadventure.tours
+BOOKING_NOTIFICATION_EMAIL=reservation@awesomeadventure.tours
+BOOKING_NOTIFICATION_WORKER_ENABLED=false
+RESEND_WEBHOOK_SECRET=<Resend webhook signing secret>
+```
+
+Set `BOOKING_NOTIFICATION_WORKER_ENABLED=true` only after the verified sender, delivery path, failure handling and real booking-notification acceptance test are complete. Use the bare verified sender email address in `RESEND_FROM_EMAIL`; do not include a display name or surrounding quotes.
+
+For Supabase Auth SMTP, configure the Resend SMTP host, port, username and API-key password in the hosted Supabase dashboard. The hosted Auth templates and SMTP settings are configured separately from application environment variables. See [Email System Setup](./docs/email-system-setup.md).
 
 ---
 
@@ -261,28 +326,25 @@ The recorded Security warning was `auth_leaked_password_protection` being disabl
 
 ```text
 .
-├── .github/
-│   └── workflows/              # GitHub Actions CI
+├── .github/workflows/          # GitHub Actions CI
 ├── docs/
-│   ├── README.md               # Documentation index
 │   ├── guides/                 # Setup, Hostinger and Supabase guides
 │   ├── operations/             # Owner checklist and runbooks
-│   └── reports/
-│       ├── audits/             # Audit and readiness reports
-│       └── phases/             # Historical implementation reports
+│   └── reports/                # Historical audit and phase reports
 ├── public/                     # Static frontend assets
-├── scripts/
-│   ├── README.md               # Script inventory
-│   └── *.ts                   # Tests and verification utilities
+├── scripts/                    # Tests and verification utilities
 ├── src/
 │   ├── components/             # React UI components
 │   ├── contexts/               # Application and authentication contexts
 │   ├── data/                   # Typed content and constants
 │   ├── lib/                    # Shared clients, guards and utilities
-│   └── server/                 # Server-side modules and workers
+│   ├── server/                 # Server-side modules and workers
+│   ├── services/               # Application service layer
+│   └── utils/                  # Shared utilities and email renderer
 ├── supabase/
-│   ├── config.toml             # Supabase CLI configuration
+│   ├── config.toml             # Supabase CLI and Auth template configuration
 │   ├── migrations/             # Ordered SQL migrations
+│   ├── templates/              # Branded Supabase Auth/security emails
 │   └── tests/                  # Database tests
 ├── .env.example                # Safe environment template
 ├── complete_schema.sql         # Fresh-project schema reference
@@ -293,9 +355,7 @@ The recorded Security warning was `auth_leaked_password_protection` being disabl
 └── vite.config.ts              # Vite configuration
 ```
 
-This is a map of the main repository boundaries, not an exhaustive listing of every nested file.
-
-**Why scripts remain in `scripts/`:** package scripts and CI reference their current paths. Their locations are intentionally stable; their purposes are catalogued in [scripts/README.md](./scripts/README.md).
+This is a map of the main repository boundaries, not an exhaustive listing of every nested file. Script paths referenced by package scripts and CI are intentionally stable; see [scripts/README.md](./scripts/README.md).
 
 ---
 
@@ -345,7 +405,7 @@ The development command runs `tsx server.ts`. Use this integrated server when te
 
 ## 🔐 Environment Variables
 
-[.env.example](./.env.example) is the canonical safe template. In production, configure secrets through Hostinger's Node.js application environment settings.
+[`.env.example`](./.env.example) is the canonical safe template. In production, configure secrets through Hostinger's Node.js application environment settings.
 
 | Variable | Requirement | Purpose / scope |
 |---|---|---|
@@ -360,8 +420,11 @@ The development command runs `tsx server.ts`. Use this integrated server when te
 | `CORS_ALLOWED_ORIGINS` | Optional | Comma-separated additional allowed origins |
 | `GEMINI_API_KEY` | Optional | Server-side Gemini API key |
 | `RESEND_API_KEY` | Optional | Server-side Resend API key |
-| `RESEND_FROM_EMAIL` | Optional | Verified Resend sender address |
+| `RESEND_FROM_EMAIL` | Optional | Verified, bare Resend sender address |
 | `RESEND_FROM_NAME` | Optional | Sender display name |
+| `RESEND_REPLY_TO` | Optional | Reply-to address for business emails |
+| `RESEND_WEBHOOK_SECRET` | Optional until webhook is configured | Resend webhook signing secret |
+| `BOOKING_NOTIFICATION_EMAIL` | Optional | Operations inbox for booking notifications |
 | `BOOKING_NOTIFICATION_WORKER_ENABLED` | Optional; default false | Enable only after email delivery and failure handling are tested |
 | `WHATSAPP_ACCESS_TOKEN` | Optional | Server-side WhatsApp Cloud API token |
 | `WHATSAPP_PHONE_NUMBER_ID` | Optional | WhatsApp Cloud API phone-number ID |
@@ -381,13 +444,8 @@ The development command runs `tsx server.ts`. Use this integrated server when te
 ### Main verification commands
 
 ```bash
-# TypeScript validation
 npm run lint
-
-# Production frontend and server build
 npm run build
-
-# Run the complete ordered test sequence
 npm run test:all
 ```
 
@@ -402,7 +460,7 @@ npm run test:all
 | `npm run test:abuse` | Abuse prevention and rate-limit behavior |
 | `npm run test:routes` | Application route and build checks |
 | `npm run test:recovery` | Password recovery and session behavior |
-| `npm run test:comm` | Communication-provider configuration validation |
+| `npm run test:comm` | Communication validation and branded email renderer tests |
 | `npm run test:booking` | Booking identifier resolution |
 | `npm run test:supabase-project` | Production Supabase project guard |
 | `npm run test:experiences-destinations` | Dynamic catalogue and destination behavior |
@@ -411,7 +469,9 @@ npm run test:all
 | `npm run test:admin-ops-7` | Operations, departures, fleet and staff workflows |
 | `npm run test:phase-8` | Finance and workflow validation |
 
-GitHub Actions also runs build/security checks and starts an isolated Supabase environment to replay migrations and execute database tests. CI success does not prove that production credentials, live data, provider integrations or Hostinger deployment are correct.
+GitHub Actions also runs dependency auditing, PWA asset validation, TypeScript and production build checks, communication/email renderer tests, project isolation checks, a clean local Supabase migration replay and pgTAP database security tests.
+
+CI success does not prove that production credentials, live data, provider integrations or Hostinger deployment are correct. Complete the production acceptance checklist separately.
 
 ---
 
@@ -462,8 +522,9 @@ The highest-priority items are:
 - [ ] Complete a full test booking and verify customer/admin views, totals, capacity and cancellation.
 - [ ] Test production sign-in, role restrictions, password reset and recovery links.
 - [ ] Verify Hostinger is running the intended `main` commit with Node.js 22.
-- [ ] Configure and test Resend before enabling the booking notification worker.
-- [ ] Configure WhatsApp/Gemini only if those integrations are required.
+- [ ] Verify Supabase Auth confirmation, recovery, invite and email-change messages through the configured SMTP provider.
+- [ ] Verify Resend sender identity, webhook signature, delivery events and booking notification worker before enabling it.
+- [ ] Verify newsletter subscribe, persistence, welcome email and unsubscribe flows.
 - [ ] Re-run Supabase advisors and verify migrations, RLS, permissions and backups.
 - [ ] Complete mobile/desktop, SEO, legal-page and public-route acceptance.
 - [ ] Enable online payments only after provider, webhook, reconciliation and refund flows are verified.
