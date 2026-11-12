@@ -7,6 +7,7 @@ import { TourGrid } from '../components/tours/TourGrid';
 import { Breadcrumbs } from '../components/common/Breadcrumbs';
 import { useSeo } from '../hooks/useSeo';
 import { seoService } from '../services/seoService';
+import { recordVisitorEvent } from '../services/visitorAnalyticsService';
 
 const PERSISTENT_FILTERS_KEY = 'rse_persisted_excursion_filters';
 
@@ -94,6 +95,19 @@ export const ExcursionsPage: React.FC<ExcursionsPageProps> = ({
     }
   }, [initialDestination, initialCategory]);
 
+  useEffect(() => {
+    if (searchQuery.trim().length >= 2) {
+      const timer = window.setTimeout(() => {
+        void recordVisitorEvent({ event_name: 'tour_search', page_path: '/excursions', event_data: { search_type: 'text' } });
+      }, 800);
+      return () => window.clearTimeout(timer);
+    }
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const filterCount = [destinationSelect !== 'All', activitySelect !== 'All', date !== '', sidebarFilters.destinations.length > 0, sidebarFilters.activities.length > 0, sidebarFilters.durations.length > 0].filter(Boolean).length;
+    if (filterCount > 0) void recordVisitorEvent({ event_name: 'tour_filter_applied', page_path: '/excursions', event_data: { filter_count: filterCount, result_count: filteredTours.length, sort_order: sortOption } });
+  }, [destinationSelect, activitySelect, date, sidebarFilters, sortOption, filteredTours.length]);
   // Persist sidebar filters to localStorage & sync with URL parameters
   useEffect(() => {
     try {
