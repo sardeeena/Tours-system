@@ -210,6 +210,11 @@ export const BookingConfirmationPage: React.FC<BookingConfirmationPageProps> = (
             </div>
 
             <div className="p-3.5 bg-stone-50 border border-stone-200 rounded space-y-1">
+              <span className="text-[10px] uppercase font-bold text-stone-400 block">Tour Language</span>
+              <span className="font-bold text-stone-900 text-sm">{booking.tourLanguage || 'To be confirmed'}</span>
+            </div>
+
+            <div className="p-3.5 bg-stone-50 border border-stone-200 rounded space-y-1">
               <span className="text-[10px] uppercase font-bold text-stone-400 block">Payment Terms</span>
               <span className="font-bold text-stone-900 text-sm">
                 {booking.paymentMethod === 'pay_online' ? 'Paid Online' : 'Pay on Hotel Pickup'}
