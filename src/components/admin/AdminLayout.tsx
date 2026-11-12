@@ -104,6 +104,7 @@ export type AdminTab =
   | 'fin_balances'
   | 'fin_revenue'
   | 'fin_reports'
+  | 'comm_center'
   | 'comm_email'
   | 'comm_whatsapp'
   | 'comm_templates'
@@ -224,7 +225,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
     // COMMUNICATIONS SECTION
     { id: 'header_comm', label: 'COMMUNICATIONS & DISPATCH', isHeader: true },
-    { id: 'comm_email', label: 'Email Dispatcher', icon: Mail },
+    { id: 'comm_center', label: 'Email Center', icon: Mail },
+    { id: 'comm_email', label: 'Email Dispatcher', icon: Send },
     { id: 'comm_whatsapp', label: 'WhatsApp Console', icon: MessageSquare },
     { id: 'comm_templates', label: 'Message Templates', icon: FileText },
     { id: 'comm_notifications', label: 'Staff Notifications', icon: Bell },
@@ -372,7 +374,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               <div className="flex items-center space-x-3 min-w-0">
                 <img 
                   src="/logo.png" 
-                  alt="Kemet Spirit Logo" 
+                  alt="Awesome Adventure Tours Logo" 
                   className="h-9 w-auto object-contain shrink-0 drop-shadow-xs"
                 />
                 <div className="min-w-0">
@@ -545,7 +547,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               </button>
 
               <div className="hidden sm:flex items-center space-x-2 text-xs text-stone-500 dark:text-stone-400">
-                <span className="font-semibold text-[#0A6C74] dark:text-[#2DD4BF]">Kemet Spirit</span>
+                <span className="font-semibold text-[#0A6C74] dark:text-[#2DD4BF]">Awesome Adventure Tours</span>
                 <span>/</span>
                 <span className="text-[#0E1B2A] dark:text-white font-semibold capitalize font-display">
                   {activeTab.replace(/^(dash_|crm_|ops_|fin_|comm_)/, '').replace(/_/g, ' ')}
