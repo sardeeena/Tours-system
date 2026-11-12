@@ -191,7 +191,6 @@ export async function signInUser(
         };
 
         localStorage.setItem(LOCAL_ACTIVE_USER_KEY, JSON.stringify(authedUser));
-        void recordVisitorEvent({ event_name: 'auth_sign_in', page_path: '/login', event_data: { auth_method: 'password', role: userRole } });
         return { user: authedUser };
       }
 
