@@ -916,7 +916,7 @@ html:not(.dark) .admin-shell :is(
   .text-gray-100,.text-gray-200,.text-gray-300,.text-gray-400,
   .text-zinc-100,.text-zinc-200,.text-zinc-300,.text-zinc-400,
   .text-neutral-100,.text-neutral-200,.text-neutral-300,.text-neutral-400
-):not(button *):not(a *):not([role="button"] *) {
+):not(button):not(a):not([role="button"]):not(button *):not(a *):not([role="button"] *) {
   color: #263449 !important;
 }
 html:not(.dark) .admin-shell :is(input,select,textarea) {
