@@ -37,6 +37,7 @@ export const TechnicalControlCenter: React.FC = () => {
   const [overview, setOverview] = useState<TechnicalOverview | null>(null);
   const [events, setEvents] = useState<TechnicalEvent[]>([]);
   const [severity, setSeverity] = useState<TechnicalSeverity | 'all'>('all');
+  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
@@ -79,6 +80,12 @@ export const TechnicalControlCenter: React.FC = () => {
     anchor.click();
     URL.revokeObjectURL(url);
   };
+
+  const visibleEvents = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    if (!term) return events;
+    return events.filter((event) => [event.message, event.event_type, event.source, event.request_method, event.request_path, event.status_code, event.actor_user_id].some((value) => String(value ?? '').toLowerCase().includes(term)));
+  }, [events, search]);
 
   const cards = useMemo(() => overview ? [
     { label: 'API requests · 24h', value: overview.metrics.requests24h.toLocaleString(), icon: Activity },
@@ -125,9 +132,9 @@ export const TechnicalControlCenter: React.FC = () => {
       </>}
 
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
-        <div className="flex flex-col gap-3 border-b border-slate-200 p-4 dark:border-slate-700 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-semibold">Technical event log</h2><p className="mt-1 text-xs text-slate-500">Sanitized API request telemetry. Request bodies, query values, credentials and secrets are never recorded.</p></div><select value={severity} onChange={(event) => setSeverity(event.target.value as TechnicalSeverity | 'all')} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800"><option value="all">All severities</option><option value="error">Errors</option><option value="warning">Warnings</option><option value="info">Info</option></select></div>
-        <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-xs"><thead className="bg-slate-50 text-slate-500 dark:bg-slate-800/70"><tr><th className="px-4 py-3">Time</th><th className="px-4 py-3">Severity</th><th className="px-4 py-3">Route</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Duration</th><th className="px-4 py-3">Actor</th></tr></thead><tbody className="divide-y divide-slate-100 dark:divide-slate-800">{events.map((event) => <tr key={event.id} className="align-top"><td className="whitespace-nowrap px-4 py-3 text-slate-500">{dateTime(event.created_at)}</td><td className="px-4 py-3"><span className={`rounded-full px-2 py-1 font-semibold uppercase ${severityClass[event.severity]}`}>{event.severity}</span></td><td className="px-4 py-3"><div className="font-semibold">{event.request_method || event.event_type}</div><div className="mt-1 max-w-[360px] break-all text-slate-500">{event.request_path || event.message}</div></td><td className="px-4 py-3 tabular-nums">{event.status_code ?? '—'}</td><td className="px-4 py-3 tabular-nums">{event.duration_ms === null ? '—' : `${event.duration_ms} ms`}</td><td className="px-4 py-3 font-mono text-slate-500">{event.actor_user_id ? `${event.actor_user_id.slice(0,8)}…` : 'Guest / system'}</td></tr>)}</tbody></table></div>
-        {!events.length && !loading && <div className="p-8 text-center text-sm text-slate-500">No technical events match this filter yet.</div>}
+        <div className="flex flex-col gap-3 border-b border-slate-200 p-4 dark:border-slate-700 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-semibold">Technical event log</h2><p className="mt-1 text-xs text-slate-500">Sanitized API request telemetry. Request bodies, query values, credentials and secrets are never recorded.</p></div><div className="flex flex-col gap-2 sm:flex-row"><input aria-label="Search technical events" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search route, message or actor…" className="min-w-0 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800" /><select value={severity} onChange={(event) => setSeverity(event.target.value as TechnicalSeverity | 'all')} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800"><option value="all">All severities</option><option value="error">Errors</option><option value="warning">Warnings</option><option value="info">Info</option></select></div></div>
+        <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-xs"><thead className="bg-slate-50 text-slate-500 dark:bg-slate-800/70"><tr><th className="px-4 py-3">Time</th><th className="px-4 py-3">Severity</th><th className="px-4 py-3">Route</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Duration</th><th className="px-4 py-3">Actor</th></tr></thead><tbody className="divide-y divide-slate-100 dark:divide-slate-800">{visibleEvents.map((event) => <tr key={event.id} className="align-top"><td className="whitespace-nowrap px-4 py-3 text-slate-500">{dateTime(event.created_at)}</td><td className="px-4 py-3"><span className={`rounded-full px-2 py-1 font-semibold uppercase ${severityClass[event.severity]}`}>{event.severity}</span></td><td className="px-4 py-3"><div className="font-semibold">{event.request_method || event.event_type}</div><div className="mt-1 max-w-[360px] break-all text-slate-500">{event.request_path || event.message}</div></td><td className="px-4 py-3 tabular-nums">{event.status_code ?? '—'}</td><td className="px-4 py-3 tabular-nums">{event.duration_ms === null ? '—' : `${event.duration_ms} ms`}</td><td className="px-4 py-3 font-mono text-slate-500">{event.actor_user_id ? `${event.actor_user_id.slice(0,8)}…` : 'Guest / system'}</td></tr>)}</tbody></table></div>
+        {!visibleEvents.length && !loading && <div className="p-8 text-center text-sm text-slate-500">No technical events match this filter yet.</div>}
         <div className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500 dark:border-slate-800">Showing up to 150 recent records · Last refreshed {overview ? dateTime(overview.generatedAt) : '—'}</div>
       </section>
     </div>
