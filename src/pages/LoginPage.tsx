@@ -445,7 +445,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ redirectUrl, onNavigate })
               {showOtpInput && (
                 <div className="pt-2 border-t border-amber-200/60 mt-2 space-y-2">
                   <span className="text-[11px] font-semibold text-amber-950 block">
-                    Received a 6-digit confirmation code from Supabase?
+                    Did you receive a 6-digit confirmation code?
                   </span>
                   <div className="flex items-center space-x-2">
                     <input
