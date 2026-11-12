@@ -134,7 +134,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       if (onSuccess) onSuccess();
     } else {
       authRateLimiter.recordFailedAttempt();
-      setErrorMsg(result.error || 'Unable to sign in. Please verify your credentials.');
+      console.warn('Customer sign-in failed:', result.error);
+      setErrorMsg('We could not sign you in. Please check your email and password and try again.');
     }
   };
 
@@ -200,7 +201,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       }
     } else {
       authRateLimiter.recordFailedAttempt();
-      setErrorMsg(result.error || 'Registration failed. Please try again.');
+      console.warn('Customer registration failed:', result.error);
+      setErrorMsg('We could not complete your registration. Please check your details and try again.');
     }
   };
 
@@ -230,7 +232,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setSuccessMsg(`We have dispatched password reset instructions to ${cleanEmail}. Please check your inbox and click the recovery link.`);
     } else {
       authRateLimiter.recordFailedAttempt();
-      setErrorMsg(result.error || 'Failed to send reset email. Please try again.');
+      console.warn('Password reset request failed:', result.error);
+      setErrorMsg('We could not send password reset instructions. Please try again.');
     }
   };
 
@@ -243,7 +246,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     if (res.success) {
       setSuccessMsg('A new verification email has been dispatched. Please check your inbox.');
     } else {
-      setErrorMsg(res.error || 'Could not resend verification email.');
+      console.warn('Verification email resend failed:', res.error);
+      setErrorMsg('We could not resend the verification email. Please try again.');
     }
   };
 
