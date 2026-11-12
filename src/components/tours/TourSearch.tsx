@@ -71,11 +71,11 @@ export const TourSearch: React.FC<TourSearchProps> = ({
   return (
     <div className="w-full space-y-4">
       {/* Search Engine Bar */}
-      <div className="bg-white border border-[#E8E3DA] rounded-sm p-3 shadow-xs">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5 items-center text-xs">
+      <div className="w-full min-w-0 bg-white border border-[#E8E3DA] rounded-sm p-3 shadow-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-2.5 items-center text-xs min-w-0">
           
           {/* Keyword Search */}
-          <div className="lg:col-span-4 relative">
+          <div className="lg:col-span-4 relative min-w-0 w-full">
             <label className="block text-[10px] font-bold uppercase tracking-wider text-stone-600 mb-1">
               Search Excursions
             </label>
@@ -101,7 +101,7 @@ export const TourSearch: React.FC<TourSearchProps> = ({
           </div>
 
           {/* Destination */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 min-w-0 w-full">
             <label className="block text-[10px] font-bold uppercase tracking-wider text-stone-600 mb-1">
               Destination
             </label>
@@ -146,7 +146,7 @@ export const TourSearch: React.FC<TourSearchProps> = ({
           </div>
 
           {/* Date Picker */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 min-w-0 w-full">
             <label className="block text-[10px] font-bold uppercase tracking-wider text-stone-600 mb-1">
               Date
             </label>
@@ -165,7 +165,7 @@ export const TourSearch: React.FC<TourSearchProps> = ({
       </div>
 
       {/* Category Navigation Pills */}
-      <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
+      <div className="flex w-full min-w-0 items-center space-x-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
         {categoryTabs.map((tab) => {
           const isActive = activeCategoryTab === tab;
           return (

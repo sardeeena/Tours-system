@@ -778,3 +778,40 @@ html.dark .public-site:not(.public-site-admin-route) {
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* Mobile storefront containment and compact excursion cards */
+.public-site:not(.public-site-admin-route) {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
+}
+.public-site:not(.public-site-admin-route) *,
+.public-site:not(.public-site-admin-route) *::before,
+.public-site:not(.public-site-admin-route) *::after {
+  box-sizing: border-box;
+}
+.tour-card-media {
+  width: 100%;
+  height: clamp(128px, 38vw, 168px);
+  aspect-ratio: 16 / 9;
+}
+@media (min-width: 640px) {
+  .tour-card-media {
+    height: auto;
+    aspect-ratio: 16 / 10;
+  }
+}
+@media (max-width: 639px) {
+  .public-site:not(.public-site-admin-route) .max-w-7xl {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .public-site:not(.public-site-admin-route) input,
+  .public-site:not(.public-site-admin-route) select,
+  .public-site:not(.public-site-admin-route) textarea {
+    min-width: 0;
+    max-width: 100%;
+  }
+}

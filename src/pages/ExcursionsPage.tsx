@@ -307,7 +307,7 @@ export const ExcursionsPage: React.FC<ExcursionsPageProps> = ({
   useSeo(seoData);
 
   return (
-    <div className="bg-[#FAF8F5] min-h-screen py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+    <div className="w-full min-w-0 max-w-7xl mx-auto overflow-x-clip bg-[#FAF8F5] min-h-screen py-6 px-4 sm:px-6 lg:px-8">
       
       {/* Breadcrumbs */}
       <Breadcrumbs
@@ -348,7 +348,7 @@ export const ExcursionsPage: React.FC<ExcursionsPageProps> = ({
       </div>
 
       {/* Desktop Layout: Persistent Left Sidebar + Right Results */}
-      <div className="flex items-start gap-8">
+      <div className="flex min-w-0 w-full items-start gap-8">
         
         {/* Left Persistent Filter Sidebar */}
         <TourFilters
@@ -363,7 +363,7 @@ export const ExcursionsPage: React.FC<ExcursionsPageProps> = ({
         />
 
         {/* Right Results Column */}
-        <div className="flex-1 min-w-0">
+        <div className="w-full flex-1 min-w-0">
           
           {/* Sorting Header */}
           <TourSort
