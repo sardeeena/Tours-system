@@ -26,6 +26,7 @@ export const NewsletterSubscribe: React.FC<NewsletterSubscribeProps> = ({
   const { showToast } = useToast();
   const [email, setEmail] = useState('');
   const [websiteUrlHp, setWebsiteUrlHp] = useState(''); // Anti-bot honeypot
+  const [consentAccepted, setConsentAccepted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successData, setSuccessData] = useState<{
@@ -43,10 +44,14 @@ export const NewsletterSubscribe: React.FC<NewsletterSubscribeProps> = ({
       setErrorMsg('Please enter your email address.');
       return;
     }
+    if (!consentAccepted) {
+      setErrorMsg('Please confirm your consent to receive newsletter emails.');
+      return;
+    }
 
     setIsSubmitting(true);
     try {
-      const res = await subscribeToNewsletter(email, source, websiteUrlHp);
+      const res = await subscribeToNewsletter(email, source, websiteUrlHp, consentAccepted);
       if (res.success) {
         setSuccessData({
           discountCode: res.discountCode,
@@ -84,6 +89,7 @@ export const NewsletterSubscribe: React.FC<NewsletterSubscribeProps> = ({
 
   const handleReset = () => {
     setEmail('');
+    setConsentAccepted(false);
     setSuccessData(null);
     setErrorMsg(null);
     setCopied(false);
@@ -168,6 +174,18 @@ export const NewsletterSubscribe: React.FC<NewsletterSubscribeProps> = ({
                     />
                   </div>
                 </div>
+                <label className="flex items-start gap-2 text-[11px] leading-relaxed text-stone-600 dark:text-slate-300 px-1 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={consentAccepted}
+                    onChange={(e) => {
+                      setConsentAccepted(e.target.checked);
+                      if (errorMsg) setErrorMsg(null);
+                    }}
+                    className="mt-0.5 h-4 w-4 rounded border-stone-300 text-[#0A6C74] focus:ring-[#0A6C74]"
+                  />
+                  <span>I agree to receive occasional travel updates and promotional emails from Awesome Adventure Tours. I can unsubscribe at any time.</span>
+                </label>
 
                 {errorMsg && (
                   <div className="flex items-start space-x-1.5 text-red-500 dark:text-red-400 text-xs py-1">
