@@ -119,12 +119,90 @@ const CommunicationsNotifications = lazy(() => import('./components/admin/commun
 const CommunicationsHistory = lazy(() => import('./components/admin/communications/CommunicationsHistory').then(m => ({ default: m.CommunicationsHistory })));
 const EmailCenter = lazy(() => import('./components/admin/communications/EmailCenter').then(m => ({ default: m.EmailCenter })));
 
+// Contextual loading placeholders keep the shared site header visible and avoid
+// replacing the entire viewport with a blocking spinner during lazy page loads.
+const SkeletonBlock = ({ className = '' }: { className?: string }) => (
+  <div aria-hidden="true" className={`animate-pulse rounded-xl bg-stone-200/80 dark:bg-slate-700/70 ${className}`} />
+);
+
+const PublicPageLoadingFallback = () => (
+  <main role="status" aria-label="Loading page" className="flex-1 w-full bg-[#FAF8F5] dark:bg-[#0A1118] px-4 sm:px-8 py-8 sm:py-12">
+    <div className="mx-auto w-full max-w-7xl space-y-8">
+      <div className="space-y-3 max-w-2xl">
+        <SkeletonBlock className="h-3 w-28 rounded-full" />
+        <SkeletonBlock className="h-9 sm:h-12 w-4/5" />
+        <SkeletonBlock className="h-4 w-full max-w-xl" />
+        <SkeletonBlock className="h-4 w-2/3 max-w-lg" />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <div key={index} className="overflow-hidden rounded-2xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-3 sm:p-4 space-y-4">
+            <SkeletonBlock className="h-40 sm:h-48 w-full rounded-xl" />
+            <SkeletonBlock className="h-4 w-3/4" />
+            <SkeletonBlock className="h-3 w-full" />
+            <SkeletonBlock className="h-3 w-2/3" />
+            <div className="flex items-center justify-between pt-2">
+              <SkeletonBlock className="h-5 w-20" />
+              <SkeletonBlock className="h-9 w-24 rounded-full" />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+    <span className="sr-only">Loading content…</span>
+  </main>
+);
+
 const AdminLoadingFallback = () => (
-  <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6 text-white">
-    <div className="w-12 h-12 border-4 border-[#0A6C74] border-t-transparent rounded-full animate-spin mb-4" />
-    <p className="text-sm font-medium text-slate-200">Loading Management System...</p>
-    <p className="text-xs text-slate-400 mt-1">Initializing secure administrative workspace</p>
-  </div>
+  <section role="status" aria-label="Loading administration workspace" className="flex-1 min-h-[65vh] w-full bg-[#FAF8F5] dark:bg-[#0A1118] px-3 sm:px-6 lg:px-8 py-5 sm:py-8">
+    <div className="mx-auto max-w-[1600px] grid grid-cols-1 lg:grid-cols-[220px_minmax(0,1fr)] gap-5 lg:gap-8">
+      <aside className="hidden lg:block rounded-2xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 space-y-4">
+        <SkeletonBlock className="h-7 w-2/3 mb-6" />
+        {Array.from({ length: 9 }).map((_, index) => (
+          <SkeletonBlock key={index} className="h-9 w-full rounded-lg" />
+        ))}
+      </aside>
+      <div className="min-w-0 space-y-6">
+        <div className="flex items-center justify-between gap-4">
+          <div className="space-y-2 flex-1">
+            <SkeletonBlock className="h-8 w-48 max-w-full" />
+            <SkeletonBlock className="h-3 w-64 max-w-full" />
+          </div>
+          <SkeletonBlock className="h-10 w-28 rounded-lg" />
+        </div>
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <div key={index} className="rounded-xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 space-y-3">
+              <SkeletonBlock className="h-3 w-2/3" />
+              <SkeletonBlock className="h-8 w-1/2" />
+              <SkeletonBlock className="h-3 w-full" />
+            </div>
+          ))}
+        </div>
+        <div className="rounded-2xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-4 sm:p-6 space-y-4">
+          <SkeletonBlock className="h-6 w-44" />
+          {Array.from({ length: 5 }).map((_, index) => (
+            <SkeletonBlock key={index} className="h-11 w-full rounded-lg" />
+          ))}
+        </div>
+      </div>
+    </div>
+    <span className="sr-only">Loading secure workspace…</span>
+  </section>
+);
+
+const AdminLoginLoadingFallback = () => (
+  <main role="status" aria-label="Loading administrator sign in" className="flex-1 min-h-[65vh] flex items-center justify-center bg-[#FAF8F5] dark:bg-[#0A1118] px-4 py-10">
+    <div className="w-full max-w-md rounded-2xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 sm:p-8 space-y-5">
+      <SkeletonBlock className="h-10 w-10 rounded-xl mx-auto" />
+      <SkeletonBlock className="h-7 w-48 mx-auto" />
+      <SkeletonBlock className="h-3 w-64 max-w-full mx-auto" />
+      <SkeletonBlock className="h-11 w-full rounded-lg mt-6" />
+      <SkeletonBlock className="h-11 w-full rounded-lg" />
+      <SkeletonBlock className="h-11 w-full rounded-lg" />
+    </div>
+    <span className="sr-only">Loading sign in…</span>
+  </main>
 );
 
 function MainApp() {
@@ -1320,7 +1398,7 @@ function MainApp() {
     }
 
     if (currentPath === '/support' || currentPath.startsWith('/support/')) {
-      return <Suspense fallback={<AdminLoadingFallback />}><SupportPage /></Suspense>;
+      return <Suspense fallback={<PublicPageLoadingFallback />}><SupportPage /></Suspense>;
     }
 
     // Awesome Adventure Tours Journal: /blog and /blog/:slug
@@ -1555,7 +1633,7 @@ function MainApp() {
           transition={{ duration: 0.2, ease: 'easeOut' }}
           className="flex-1 flex flex-col"
         >
-          <Suspense fallback={<AdminLoadingFallback />}>{renderCurrentView()}</Suspense>
+          <Suspense fallback={<PublicPageLoadingFallback />}>{renderCurrentView()}</Suspense>
         </motion.div>
       </AnimatePresence>
 
