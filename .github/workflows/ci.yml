@@ -38,6 +38,11 @@ jobs:
       - name: Enforce a clean dependency audit
         run: npm audit --audit-level=low
 
+      - name: Validate first-party PWA assets
+        run: |
+          node --check public/sw.js
+          node -e 'JSON.parse(require("fs").readFileSync("public/manifest.webmanifest", "utf8")); console.log("PWA manifest JSON is valid")'
+
       - name: Type-check
         run: npm run lint
 
