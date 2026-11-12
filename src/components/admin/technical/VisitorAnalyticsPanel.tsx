@@ -23,7 +23,7 @@ type ConsentRecord = {
   necessary: boolean; analytics: boolean; marketing: boolean; consent_version: string;
   consent_source: string; recorded_at: string;
 };
-type Retention = { event_retention_days: number; session_retention_days: number; consent_retention_days: number };
+type Retention = { event_retention_days: number; session_retention_days: number; consent_retention_days: number; technical_event_retention_days: number; audit_log_retention_days: number };
 type AuditRecord = { id: string; created_at: string; action: string; entity_type: string; entity_id: string | null; user_id: string | null };
 
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
@@ -54,7 +54,7 @@ export const VisitorAnalyticsPanel: React.FC = () => {
   const [events, setEvents] = useState<VisitorEvent[]>([]);
   const [consents, setConsents] = useState<ConsentRecord[]>([]);
   const [auditRecords, setAuditRecords] = useState<AuditRecord[]>([]);
-  const [retention, setRetention] = useState<Retention>({ event_retention_days: 90, session_retention_days: 180, consent_retention_days: 730 });
+  const [retention, setRetention] = useState<Retention>({ event_retention_days: 90, session_retention_days: 180, consent_retention_days: 730, technical_event_retention_days: 90, audit_log_retention_days: 2555 });
   const [search, setSearch] = useState('');
   const [eventType, setEventType] = useState('');
   const [deviceType, setDeviceType] = useState('');
@@ -207,10 +207,12 @@ export const VisitorAnalyticsPanel: React.FC = () => {
       <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
         <div className="flex items-center gap-2"><Clock3 className="h-4 w-4 text-[#b58b3a]" /><h3 className="font-semibold">Data retention controls</h3></div>
         <p className="mt-1 text-xs text-slate-500">Old visitor events, sessions and consent receipts are automatically deleted daily according to these limits.</p>
-        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+        <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           <label className="text-xs font-medium">Events (7–730 days)<input type="number" min={7} max={730} value={retention.event_retention_days} onChange={(e) => setRetention((v) => ({ ...v, event_retention_days: Number(e.target.value) }))} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800" /></label>
           <label className="text-xs font-medium">Sessions (7–1,095 days)<input type="number" min={7} max={1095} value={retention.session_retention_days} onChange={(e) => setRetention((v) => ({ ...v, session_retention_days: Number(e.target.value) }))} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800" /></label>
           <label className="text-xs font-medium">Consent records (90–3,650 days)<input type="number" min={90} max={3650} value={retention.consent_retention_days} onChange={(e) => setRetention((v) => ({ ...v, consent_retention_days: Number(e.target.value) }))} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800" /></label>
+          <label className="text-xs font-medium">Technical events (7–730 days)<input type="number" min={7} max={730} value={retention.technical_event_retention_days} onChange={(e) => setRetention((v) => ({ ...v, technical_event_retention_days: Number(e.target.value) }))} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800" /></label>
+          <label className="text-xs font-medium">Business audit (1–10 years)<input type="number" min={365} max={3650} value={retention.audit_log_retention_days} onChange={(e) => setRetention((v) => ({ ...v, audit_log_retention_days: Number(e.target.value) }))} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800" /></label>
         </div>
         <button type="button" onClick={() => void saveRetention()} disabled={saving} className="mt-3 rounded-lg bg-[#d6ad5b] px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-50">{saving ? 'Saving…' : 'Save retention settings'}</button>
       </div>
