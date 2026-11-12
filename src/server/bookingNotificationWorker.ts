@@ -272,7 +272,7 @@ async function processMessage(
     logRow = inserted;
   }
 
-  const idempotencyKey = `kemet-booking-${eventId}-email`;
+  const idempotencyKey = `awesome-adventure-booking-${eventId}-email`;
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
@@ -283,6 +283,7 @@ async function processMessage(
     body: JSON.stringify({
       from: `${fromName} <${fromEmail}>`,
       to: [recipient],
+      bcc: [process.env.BOOKING_NOTIFICATION_EMAIL?.trim() || 'reservation@awesomeadventure.tours'],
       subject,
       text: content,
     }),
@@ -328,7 +329,7 @@ export function startBookingNotificationWorker(client: SupabaseClient): () => vo
 
   const apiKey = process.env.RESEND_API_KEY?.trim() || '';
   const fromEmail = process.env.RESEND_FROM_EMAIL?.trim() || '';
-  const fromName = process.env.RESEND_FROM_NAME?.trim() || 'Kemet Spirit';
+  const fromName = process.env.RESEND_FROM_NAME?.trim() || 'Awesome Adventure Tours';
 
   if (!apiKey || !isValidEmail(fromEmail)) {
     console.warn('[Booking Notification Worker] Not started: RESEND_API_KEY and a valid RESEND_FROM_EMAIL are required.');
