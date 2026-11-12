@@ -2267,12 +2267,19 @@ app.get('/api/admin/technical/visitors/overview', rateLimit(30, 60_000), async (
 app.get('/api/admin/technical/visitors/events', rateLimit(60, 60_000), async (req: AuthenticatedRequest, res: Response) => {
   if (!requireSuperAdminAal2(req, res)) return;
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return res.status(503).json({ success: false, error: 'Visitor analytics are unavailable.' });
-  const limit = Math.min(200, Math.max(1, Number.parseInt(String(req.query.limit || '100'), 10) || 100));
+  const limit = Math.min(500, Math.max(1, Number.parseInt(String(req.query.limit || '200'), 10) || 200));
   try {
     let query = serverSupabase.from('visitor_events')
       .select('id,occurred_at,session_id,user_id,event_name,page_path,page_title,duration_ms,event_data')
       .order('occurred_at', { ascending: false }).limit(limit);
     if (typeof req.query.event_name === 'string' && VISITOR_EVENT_NAMES.has(req.query.event_name)) query = query.eq('event_name', req.query.event_name);
+    if (typeof req.query.session_id === 'string' && UUID_PATTERN.test(req.query.session_id)) query = query.eq('session_id', req.query.session_id);
+    if (typeof req.query.user_id === 'string' && UUID_PATTERN.test(req.query.user_id)) query = query.eq('user_id', req.query.user_id);
+    if (typeof req.query.page_path === 'string' && req.query.page_path.startsWith('/')) query = query.eq('page_path', safePagePath(req.query.page_path));
+    const fromDate = typeof req.query.from === 'string' ? new Date(req.query.from) : null;
+    const toDate = typeof req.query.to === 'string' ? new Date(req.query.to) : null;
+    if (fromDate && Number.isFinite(fromDate.getTime())) query = query.gte('occurred_at', fromDate.toISOString());
+    if (toDate && Number.isFinite(toDate.getTime())) query = query.lte('occurred_at', toDate.toISOString());
     const { data, error } = await query;
     if (error) throw error;
     return res.json({ events: data || [] });
@@ -2285,12 +2292,19 @@ app.get('/api/admin/technical/visitors/events', rateLimit(60, 60_000), async (re
 app.get('/api/admin/technical/visitors/sessions', rateLimit(60, 60_000), async (req: AuthenticatedRequest, res: Response) => {
   if (!requireSuperAdminAal2(req, res)) return;
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return res.status(503).json({ success: false, error: 'Visitor analytics are unavailable.' });
-  const limit = Math.min(200, Math.max(1, Number.parseInt(String(req.query.limit || '100'), 10) || 100));
+  const limit = Math.min(500, Math.max(1, Number.parseInt(String(req.query.limit || '150'), 10) || 150));
   try {
     let query = serverSupabase.from('visitor_sessions')
       .select('id,visitor_id,user_id,started_at,last_seen_at,ended_at,landing_path,referrer_host,utm_source,utm_medium,utm_campaign,device_type,browser_family,os_family,screen_bucket,language,timezone,country_code,region_code,analytics_consent,marketing_consent')
       .order('last_seen_at', { ascending: false }).limit(limit);
-    if (typeof req.query.search === 'string' && UUID_PATTERN.test(req.query.search)) query = query.eq('id', req.query.search);
+    if (typeof req.query.search === 'string' && UUID_PATTERN.test(req.query.search)) query = query.or(`id.eq.${req.query.search},visitor_id.eq.${req.query.search},user_id.eq.${req.query.search}`);
+    if (typeof req.query.device_type === 'string' && ['desktop','mobile','tablet','other'].includes(req.query.device_type)) query = query.eq('device_type', req.query.device_type);
+    if (typeof req.query.user_id === 'string' && UUID_PATTERN.test(req.query.user_id)) query = query.eq('user_id', req.query.user_id);
+    if (typeof req.query.page_path === 'string' && req.query.page_path.startsWith('/')) query = query.eq('landing_path', safePagePath(req.query.page_path));
+    const fromDate = typeof req.query.from === 'string' ? new Date(req.query.from) : null;
+    const toDate = typeof req.query.to === 'string' ? new Date(req.query.to) : null;
+    if (fromDate && Number.isFinite(fromDate.getTime())) query = query.gte('started_at', fromDate.toISOString());
+    if (toDate && Number.isFinite(toDate.getTime())) query = query.lte('last_seen_at', toDate.toISOString());
     const { data, error } = await query;
     if (error) throw error;
     return res.json({ sessions: data || [] });
