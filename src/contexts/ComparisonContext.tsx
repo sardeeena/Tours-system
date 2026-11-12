@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { useToast } from './ToastContext';
+import { recordVisitorEvent } from '../services/visitorAnalyticsService';
 
 interface ComparisonContextType {
   comparedSlugs: string[];
@@ -30,6 +31,7 @@ export const ComparisonProvider: React.FC<{ children: ReactNode }> = ({ children
       }
       if (!comparedSlugs.includes(slug)) {
         setComparedSlugs((prev) => [...prev, slug]);
+        void recordVisitorEvent({ event_name: 'comparison_updated', page_path: window.location.pathname, event_data: { tour_slug: slug, interaction: 'added' } });
         showToast(
           tourTitle ? `Added "${tourTitle}" to comparison` : 'Added to excursion comparison',
           'success'
@@ -42,8 +44,10 @@ export const ComparisonProvider: React.FC<{ children: ReactNode }> = ({ children
   );
 
   const removeFromCompare = useCallback((slug: string) => {
+    if (!comparedSlugs.includes(slug)) return;
     setComparedSlugs((prev) => prev.filter((s) => s !== slug));
-  }, []);
+    void recordVisitorEvent({ event_name: 'comparison_updated', page_path: window.location.pathname, event_data: { tour_slug: slug, interaction: 'removed' } });
+  }, [comparedSlugs]);
 
   const toggleCompare = useCallback(
     (slug: string, tourTitle?: string) => {
@@ -58,8 +62,10 @@ export const ComparisonProvider: React.FC<{ children: ReactNode }> = ({ children
   );
 
   const clearComparison = useCallback(() => {
+    if (!comparedSlugs.length) return;
     setComparedSlugs([]);
-  }, []);
+    void recordVisitorEvent({ event_name: 'comparison_updated', page_path: window.location.pathname, event_data: { interaction: 'cleared' } });
+  }, [comparedSlugs]);
 
   return (
     <ComparisonContext.Provider
