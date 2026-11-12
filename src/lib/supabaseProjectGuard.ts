@@ -1,4 +1,4 @@
-export const EXPECTED_AWESOME_ADVENTURE_TOURS_SUPABASE_PROJECT_REF = 'mktrtoctcjyokclpdeui';
+export const EXPECTED_AWESOME_ADVENTURE_TOURS_SUPABASE_PROJECT_REF = 'uvtbtpxtrrmaublrztgv';
 
 /**
  * Production Awesome Adventure Tours clients must connect only to the configured production
