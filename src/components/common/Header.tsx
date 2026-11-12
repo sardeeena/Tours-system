@@ -21,6 +21,7 @@ import {
   Moon,
 } from 'lucide-react';
 import { CurrencyConfig } from '../../types';
+import { CURRENCY_CONFIGS } from '../../data/toursData';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useComparison } from '../../contexts/ComparisonContext';
@@ -46,8 +47,8 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  currentCurrency: _currentCurrency,
-  onCurrencyChange: _onCurrencyChange,
+  currentCurrency,
+  onCurrencyChange,
   onOpenMyBooking,
   onNavigateSection,
   onNavigateHome,
@@ -182,6 +183,53 @@ export const Header: React.FC<HeaderProps> = ({
           : '-translate-y-full opacity-0 pointer-events-none'
       }`}
     >
+      {/* Desktop utility controls: keep language, currency and direct contact accessible. */}
+      <div className="hidden lg:block bg-[#F4F1EA] dark:bg-[#0E1B2A] text-stone-600 dark:text-slate-300 text-xs py-1.5 px-4 sm:px-8 border-b border-[#E8E3DA] dark:border-slate-800">
+        <div className="max-w-7xl mx-auto flex items-center justify-end gap-3">
+          <a
+            href="https://wa.me/201515212741"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-emerald-700 hover:text-emerald-800 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors font-medium"
+            aria-label="Contact Awesome Adventure Tours on WhatsApp"
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+            <span>WhatsApp: +20 151 5212741</span>
+          </a>
+          <span className="h-3 w-px bg-stone-300 dark:bg-slate-700" aria-hidden="true" />
+          <label className="sr-only" htmlFor="desktop-language-selector">Website language</label>
+          <select
+            id="desktop-language-selector"
+            value={language}
+            onChange={(event) => setLanguage(event.target.value as LanguageCode)}
+            className="rounded-md border border-stone-300 dark:border-slate-700 bg-white/70 dark:bg-slate-800 px-2 py-1 text-xs text-stone-700 dark:text-slate-200"
+          >
+            {supportedLanguages.map((item) => (
+              <option key={item.code} value={item.code}>{item.flag} {item.localName}</option>
+            ))}
+          </select>
+          {currentCurrency && onCurrencyChange && (
+            <>
+              <span className="h-3 w-px bg-stone-300 dark:bg-slate-700" aria-hidden="true" />
+              <label className="sr-only" htmlFor="desktop-currency-selector">Display currency</label>
+              <select
+                id="desktop-currency-selector"
+                value={currentCurrency.code}
+                onChange={(event) => {
+                  const selected = Object.values(CURRENCY_CONFIGS).find((item) => item.code === event.target.value);
+                  if (selected) onCurrencyChange(selected);
+                }}
+                className="rounded-md border border-stone-300 dark:border-slate-700 bg-white/70 dark:bg-slate-800 px-2 py-1 text-xs text-stone-700 dark:text-slate-200"
+              >
+                {Object.values(CURRENCY_CONFIGS).map((item) => (
+                  <option key={item.code} value={item.code}>{item.code} ({item.symbol})</option>
+                ))}
+              </select>
+            </>
+          )}
+        </div>
+      </div>
+
       {/* Main Navigation */}
       <div 
         className={`w-full bg-[#F7F4ED] dark:bg-[#0E1B2A] text-stone-800 dark:text-slate-100 border-b border-[#E8E3DA] dark:border-slate-800 shadow-xs transition-all duration-300 ease-in-out ${
