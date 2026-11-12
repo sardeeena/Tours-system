@@ -23,7 +23,7 @@ export const TourCardSkeleton: React.FC<TourCardSkeletonProps> = ({
       aria-label="Loading excursion details"
     >
       {/* Photo Skeleton */}
-      <div className={`relative aspect-[16/10] bg-stone-200/80 dark:bg-slate-800/90 animate-shimmer overflow-hidden ${staggerClass}`}>
+      <div className={`relative aspect-[16/9] sm:aspect-[16/10] bg-stone-200/80 dark:bg-slate-800/90 animate-shimmer overflow-hidden ${staggerClass}`}>
         {/* Badge Placeholder */}
         <div className="absolute top-3 left-3 w-24 h-5 bg-stone-300/80 dark:bg-slate-700/80 rounded-full" />
 
@@ -35,7 +35,7 @@ export const TourCardSkeleton: React.FC<TourCardSkeletonProps> = ({
       </div>
 
       {/* Content Skeleton */}
-      <div className="p-5 flex-1 flex flex-col justify-between space-y-3">
+      <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between space-y-2 sm:space-y-3 min-w-0">
         <div>
           {/* Metadata Row: Destination · Category · Duration */}
           <div className="flex items-center space-x-2 mb-2.5">
