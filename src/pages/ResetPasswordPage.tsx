@@ -146,7 +146,8 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
         })
         .catch((err) => {
           if (!isMounted) return;
-          setErrorMessage(formatSupabaseError(err));
+          console.warn('Password recovery link could not be processed:', err);
+          setErrorMessage('This password reset link is invalid or has expired. Please request a new one.');
           setStep('invalid_link');
         });
       return cleanup;
