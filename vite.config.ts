@@ -29,7 +29,10 @@ export default defineConfig(() => {
               if (id.includes('lucide-react')) {
                 return 'vendor-icons';
               }
-              return 'vendor-libs';
+              // Let Rollup split remaining dependencies according to their actual
+              // static/dynamic import graph instead of forcing every small package
+              // into one oversized vendor-libs chunk.
+              return undefined;
             }
           },
         },
