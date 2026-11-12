@@ -18,6 +18,7 @@ import {
 } from '../services/authService';
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
 import { useToast } from './ToastContext';
+import { recordVisitorEvent } from '../services/visitorAnalyticsService';
 
 export type AuthModalView = 'login' | 'register' | 'forgot' | 'forgot_password' | 'verify' | 'staff';
 
@@ -371,6 +372,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
     if (verifyError) return { success: false, error: verifyError.message };
 
+    void recordVisitorEvent({ event_name: 'mfa_verified', page_path: '/login', event_data: { outcome: 'verified' } });
     setPendingMfaFactorId(null);
     setRequiresMfaEnrollment(false);
     await refreshUser();
