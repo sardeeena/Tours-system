@@ -103,6 +103,7 @@ export async function signInUser(
         );
 
         if (!isEmailConfirmed) {
+          void recordVisitorEvent({ event_name: 'auth_sign_in_failed', page_path: '/login', event_data: { outcome: 'email_unconfirmed' } });
           return {
             user: null,
             error: 'Your account has not been confirmed yet. Please check your inbox for the confirmation email from Supabase and click the verification link.',
