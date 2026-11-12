@@ -11,21 +11,17 @@ const CONSENT_KEY = 'aat_cookie_consent_v1';
 const GTM_ID = 'GTM-MZVP38WC';
 
 function applyConsent(choices: ConsentChoices): void {
-  const browserWindow = window as typeof window & { dataLayer?: unknown[] };
+  const browserWindow = window as typeof window & { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void };
   browserWindow.dataLayer = browserWindow.dataLayer || [];
-  browserWindow.dataLayer.push([
-    'consent',
-    'update',
-    {
-      analytics_storage: choices.analytics ? 'granted' : 'denied',
-      ad_storage: choices.marketing ? 'granted' : 'denied',
-      ad_user_data: choices.marketing ? 'granted' : 'denied',
-      ad_personalization: choices.marketing ? 'granted' : 'denied',
-      personalization_storage: choices.marketing ? 'granted' : 'denied',
-      functionality_storage: 'granted',
-      security_storage: 'granted',
-    },
-  ]);
+  browserWindow.gtag?.('consent', 'update', {
+    analytics_storage: choices.analytics ? 'granted' : 'denied',
+    ad_storage: choices.marketing ? 'granted' : 'denied',
+    ad_user_data: choices.marketing ? 'granted' : 'denied',
+    ad_personalization: choices.marketing ? 'granted' : 'denied',
+    personalization_storage: choices.marketing ? 'granted' : 'denied',
+    functionality_storage: 'granted',
+    security_storage: 'granted',
+  });
 
   // Do not contact Google Tag Manager until the visitor has opted into at
   // least one optional category. Individual GTM tags must still enforce
