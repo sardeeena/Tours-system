@@ -326,7 +326,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ redirectUrl, onNavigate })
           }
         }
       } else {
-        showToast(res.error || 'Invalid code. Please check your email.', 'error');
+        showToast('That code could not be verified. Please check it and try again.', 'error');
       }
     } catch {
       showToast('Failed to verify confirmation code.', 'error');
