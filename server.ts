@@ -2562,8 +2562,13 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
   let seoIdentifierIsPageSlug = true;
 
   if (path === '/' || path === '/excursions') {
-    tours = await loadAwesomeAdventureToursTours();
-    const allDestinations = await loadAwesomeAdventureToursDestinations();
+    // These catalogue reads are independent; run them concurrently so public
+    // HTML rendering is bounded by the slower query rather than their sum.
+    const [publishedTours, allDestinations] = await Promise.all([
+      loadAwesomeAdventureToursTours(),
+      loadAwesomeAdventureToursDestinations(),
+    ]);
+    tours = publishedTours;
     const publishedDestinationIds = new Set(
       tours.map((tour) => tour.destination_id).filter(Boolean).map(String)
     );
