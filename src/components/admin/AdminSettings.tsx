@@ -345,6 +345,16 @@ export const AdminSettings: React.FC = () => {
     setShowMasterSqlPreview((current) => !current);
   };
 
+  if (!isSuperAdmin) {
+    return (
+      <div role="alert" className="max-w-xl mx-auto my-12 rounded-2xl border border-amber-300/70 bg-amber-50 dark:bg-amber-950/20 p-6 text-center">
+        <ShieldAlert className="w-8 h-8 mx-auto text-amber-600 dark:text-amber-300 mb-3" />
+        <h2 className="font-bold text-lg text-stone-900 dark:text-stone-100">Access restricted</h2>
+        <p className="text-sm text-stone-600 dark:text-stone-300 mt-2">Only Superadmins can access Site Settings.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
