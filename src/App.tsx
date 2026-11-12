@@ -55,6 +55,7 @@ import { ComparisonProvider } from './contexts/ComparisonContext';
 import type { AdminTab } from './components/admin/AdminLayout';
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
 const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const TechnicalControlCenter = lazy(() => import('./components/admin/technical/TechnicalControlCenter').then(m => ({ default: m.TechnicalControlCenter })));
 const AdminTourList = lazy(() => import('./components/admin/AdminTourList').then(m => ({ default: m.AdminTourList })));
 const AdminTourEditor = lazy(() => import('./components/admin/AdminTourEditor').then(m => ({ default: m.AdminTourEditor })));
 const AdminBookingsList = lazy(() => import('./components/admin/AdminBookingsList').then(m => ({ default: m.AdminBookingsList })));
@@ -809,6 +810,8 @@ function MainApp() {
       } else {
         activeAdminTab = 'dashboard';
       }
+    } else if (adminSubRoute?.main === 'technical') {
+      activeAdminTab = 'technical';
     } else if (adminSubRoute?.main === 'blog') {
       activeAdminTab = 'blog';
     } else if (adminSubRoute?.main === 'tickets') {
@@ -922,6 +925,7 @@ function MainApp() {
         'pages',
         'settings',
         'access_control',
+        'technical',
         'crm_dashboard',
         'crm_leads',
         'crm_customers',
@@ -1203,6 +1207,8 @@ function MainApp() {
           {activeAdminTab === 'settings' && <AdminSettings />}
 
           {activeAdminTab === 'access_control' && <AdminAccessControl />}
+
+          {activeAdminTab === 'technical' && <TechnicalControlCenter />}
         </AdminLayout>
       </Suspense>
     );
