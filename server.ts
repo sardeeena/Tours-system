@@ -326,6 +326,8 @@ async function authenticateToken(req: AuthenticatedRequest, res: Response, next:
 // ------------------------------------------------------------------------------
 // Middleware & Security Headers
 // ------------------------------------------------------------------------------
+// Preserve the exact request bytes for Resend Svix signature verification.
+app.use('/api/webhooks/resend', express.raw({ type: 'application/json', limit: '1mb' }));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
@@ -674,6 +676,113 @@ app.post('/api/communications/email', rateLimit(20, 60_000), async (req: Authent
     await markFailed(message);
     return res.status(502).json({ success: false, error: message, messageLogId: audit.id });
   }
+});
+
+app.post('/api/webhooks/resend', rateLimit(300, 60_000), async (req: Request, res: Response) => {
+  const webhookSecret = process.env.RESEND_WEBHOOK_SECRET?.trim() || '';
+  if (!webhookSecret.startsWith('whsec_')) {
+    return res.status(503).json({ success: false, error: 'Resend webhook verification is not configured.' });
+  }
+
+  const rawBody = Buffer.isBuffer(req.body) ? req.body.toString('utf8') : '';
+  const svixId = req.header('svix-id') || '';
+  const svixTimestamp = req.header('svix-timestamp') || '';
+  const svixSignature = req.header('svix-signature') || '';
+  const timestamp = Number(svixTimestamp);
+
+  if (!rawBody || !svixId || !svixTimestamp || !svixSignature ||
+      !Number.isFinite(timestamp) || Math.abs(Date.now() / 1000 - timestamp) > 300) {
+    return res.status(400).json({ success: false, error: 'Invalid webhook headers or timestamp.' });
+  }
+
+  try {
+    const secretBytes = Buffer.from(webhookSecret.slice('whsec_'.length), 'base64');
+    const expected = createHmac('sha256', secretBytes).update(`${svixId}.${svixTimestamp}.${rawBody}`).digest();
+    const signatureMatches = svixSignature.split(' ').some((entry) => {
+      const [version, encoded] = entry.split(',');
+      if (version !== 'v1' || !encoded) return false;
+      const supplied = Buffer.from(encoded, 'base64');
+      return supplied.length === expected.length && timingSafeEqual(supplied, expected);
+    });
+    if (!signatureMatches) {
+      return res.status(401).json({ success: false, error: 'Webhook signature verification failed.' });
+    }
+  } catch {
+    return res.status(401).json({ success: false, error: 'Webhook signature verification failed.' });
+  }
+
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
+    return res.status(503).json({ success: false, error: 'Secure webhook database storage is unavailable.' });
+  }
+
+  let event: any;
+  try {
+    event = JSON.parse(rawBody);
+  } catch {
+    return res.status(400).json({ success: false, error: 'Invalid webhook JSON.' });
+  }
+
+  const eventId = svixId.slice(0, 200);
+  const eventType = typeof event?.type === 'string' ? event.type.slice(0, 100) : '';
+  const data = event?.data && typeof event.data === 'object' ? event.data : {};
+  if (!eventType || typeof data.email_id !== 'string') {
+    return res.status(400).json({ success: false, error: 'Unsupported or incomplete Resend email event.' });
+  }
+
+  const recipients = Array.isArray(data.to) ? data.to.filter((value: unknown) => typeof value === 'string' && isValidEmail(value)).slice(0, 50) : [];
+  const recipient = recipients[0]?.toLowerCase() || null;
+  const occurredAt = typeof event.created_at === 'string' && !Number.isNaN(Date.parse(event.created_at))
+    ? new Date(event.created_at).toISOString()
+    : new Date().toISOString();
+
+  const { error: eventInsertError } = await serverSupabase
+    .from('email_provider_events')
+    .insert({
+      event_id: eventId,
+      event_type: eventType,
+      provider_message_id: String(data.email_id).slice(0, 200),
+      recipient_address: recipient,
+      occurred_at: occurredAt,
+      payload: event,
+    });
+
+  if (eventInsertError) {
+    if (eventInsertError.code === '23505') return res.status(200).json({ success: true, duplicate: true });
+    console.error('Resend webhook event persistence failed:', eventInsertError.message);
+    return res.status(503).json({ success: false, error: 'Webhook event could not be stored.' });
+  }
+
+  const statusByEvent: Record<string, string> = {
+    'email.sent': 'sent',
+    'email.delivered': 'delivered',
+    'email.opened': 'opened',
+    'email.clicked': 'opened',
+    'email.bounced': 'failed',
+    'email.complained': 'failed',
+    'email.failed': 'failed',
+    'email.delivery_delayed': 'queued',
+    'email.suppressed': 'failed',
+  };
+  const nextStatus = statusByEvent[eventType];
+  if (nextStatus) {
+    const failureReason = ['email.bounced', 'email.complained', 'email.failed', 'email.suppressed'].includes(eventType)
+      ? `Resend event: ${eventType}`
+      : null;
+    const update: Record<string, unknown> = { status: nextStatus, updated_at: new Date().toISOString() };
+    if (nextStatus === 'delivered') update.delivered_at = occurredAt;
+    if (nextStatus === 'opened') update.opened_at = occurredAt;
+    if (failureReason) update.failure_reason = failureReason;
+    const { error: messageUpdateError } = await serverSupabase
+      .from('communication_messages')
+      .update(update)
+      .eq('provider_message_id', data.email_id);
+    if (messageUpdateError) {
+      console.error('Resend webhook message status update failed:', messageUpdateError.message);
+      return res.status(503).json({ success: false, error: 'Webhook was stored but the message status could not be updated.' });
+    }
+  }
+
+  return res.status(200).json({ success: true, eventId, eventType });
 });
 
 app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: AuthenticatedRequest, res: Response) => {
