@@ -13,17 +13,17 @@ import { WhyChooseUs } from './components/home/WhyChooseUs';
 import { ReviewsSection } from './components/home/ReviewsSection';
 import { FinalCTA } from './components/home/FinalCTA';
 import { NotFoundPage } from './components/common/NotFoundPage';
-import { ExcursionsPage } from './pages/ExcursionsPage';
-import { TourDetailPage } from './pages/TourDetailPage';
-import { BookingPage } from './pages/BookingPage';
-import { BookingConfirmationPage } from './pages/BookingConfirmationPage';
-import { MyBookingPage } from './pages/MyBookingPage';
-import { LoginPage } from './pages/LoginPage';
-import { RegisterPage } from './pages/RegisterPage';
-import { ResetPasswordPage } from './pages/ResetPasswordPage';
-import { AccountPage } from './pages/AccountPage';
-import { StaticContentPage } from './pages/StaticContentPage';
-import { DestinationDetailPage } from './pages/DestinationDetailPage';
+const ExcursionsPage = lazy(() => import('./pages/ExcursionsPage').then(m => ({ default: m.ExcursionsPage })));
+const TourDetailPage = lazy(() => import('./pages/TourDetailPage').then(m => ({ default: m.TourDetailPage })));
+const BookingPage = lazy(() => import('./pages/BookingPage').then(m => ({ default: m.BookingPage })));
+const BookingConfirmationPage = lazy(() => import('./pages/BookingConfirmationPage').then(m => ({ default: m.BookingConfirmationPage })));
+const MyBookingPage = lazy(() => import('./pages/MyBookingPage').then(m => ({ default: m.MyBookingPage })));
+const LoginPage = lazy(() => import('./pages/LoginPage').then(m => ({ default: m.LoginPage })));
+const RegisterPage = lazy(() => import('./pages/RegisterPage').then(m => ({ default: m.RegisterPage })));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage').then(m => ({ default: m.ResetPasswordPage })));
+const AccountPage = lazy(() => import('./pages/AccountPage').then(m => ({ default: m.AccountPage })));
+const StaticContentPage = lazy(() => import('./pages/StaticContentPage').then(m => ({ default: m.StaticContentPage })));
+const DestinationDetailPage = lazy(() => import('./pages/DestinationDetailPage').then(m => ({ default: m.DestinationDetailPage })));
 const BlogPage = lazy(() => import('./pages/BlogPage').then(m => ({ default: m.BlogPage })));
 const SupportPage = lazy(() => import('./pages/SupportPage').then(m => ({ default: m.SupportPage })));
 import { ALL_TOURS, CURRENCY_CONFIGS } from './data/toursData';
@@ -1508,7 +1508,7 @@ function MainApp() {
           transition={{ duration: 0.2, ease: 'easeOut' }}
           className="flex-1 flex flex-col"
         >
-          {renderCurrentView()}
+          <Suspense fallback={<AdminLoadingFallback />}>{renderCurrentView()}</Suspense>
         </motion.div>
       </AnimatePresence>
 
