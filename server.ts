@@ -1,4 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
+import { renderBrandedEmailHtml } from './src/utils/emailTemplate';
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import { GoogleGenAI } from '@google/genai';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
@@ -420,9 +421,16 @@ const serverInquiries: ServerInquiry[] = [];
 const serverNewsletters: ServerNewsletterSubscriber[] = [];
 
 // Helper email validator
+function normalizeSenderEmail(value: string): string {
+  const trimmed = value.trim().replace(/^["']|["']$/g, '');
+  const mailbox = trimmed.match(/<\s*([^<>]+)\s*>/);
+  return (mailbox ? mailbox[1] : trimmed).trim();
+}
+
 function isValidEmail(email: string): boolean {
-  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
-  return emailRegex.test(email) && email.length <= 254;
+  const normalized = normalizeSenderEmail(email);
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+  return emailRegex.test(normalized) && normalized.length <= 254;
 }
 
 // ------------------------------------------------------------------------------
@@ -546,7 +554,7 @@ function requireCommunicationsStaff(req: AuthenticatedRequest, res: Response): b
 app.get('/api/communications/status', rateLimit(60, 60_000), (req: AuthenticatedRequest, res: Response) => {
   if (!requireCommunicationsStaff(req, res)) return;
 
-  const emailConfigured = Boolean(process.env.RESEND_API_KEY?.trim() && isValidEmail(process.env.RESEND_FROM_EMAIL?.trim() || ''));
+  const emailConfigured = Boolean(process.env.RESEND_API_KEY?.trim() && isValidEmail(normalizeSenderEmail(process.env.RESEND_FROM_EMAIL || '')));
   const whatsappConfigured = Boolean(
     process.env.WHATSAPP_ACCESS_TOKEN?.trim()
     && process.env.WHATSAPP_PHONE_NUMBER_ID?.trim()
@@ -557,7 +565,7 @@ app.get('/api/communications/status', rateLimit(60, 60_000), (req: Authenticated
     email: {
       configured: emailConfigured,
       provider: 'Resend',
-      fromEmail: process.env.RESEND_FROM_EMAIL?.trim() || '',
+      fromEmail: normalizeSenderEmail(process.env.RESEND_FROM_EMAIL || ''),
       fromName: process.env.RESEND_FROM_NAME?.trim() || 'Awesome Adventure Tours',
     },
     whatsapp: {
@@ -588,7 +596,7 @@ app.post('/api/communications/email', rateLimit(20, 60_000), async (req: Authent
   }
 
   const apiKey = process.env.RESEND_API_KEY?.trim() || '';
-  const fromEmail = process.env.RESEND_FROM_EMAIL?.trim() || '';
+  const fromEmail = normalizeSenderEmail(process.env.RESEND_FROM_EMAIL || '');
   const fromName = (process.env.RESEND_FROM_NAME || 'Awesome Adventure Tours').replace(/[<>\r\n]/g, '').trim() || 'Awesome Adventure Tours';
   const senderReady = Boolean(apiKey && isValidEmail(fromEmail));
   const idempotencyKey = typeof req.headers['idempotency-key'] === 'string'
@@ -642,6 +650,7 @@ app.post('/api/communications/email', rateLimit(20, 60_000), async (req: Authent
         ...(isValidEmail(process.env.RESEND_REPLY_TO?.trim() || '') ? { reply_to: process.env.RESEND_REPLY_TO!.trim() } : {}),
         subject,
         text: textBody,
+        html: renderBrandedEmailHtml({ heading: subject, preheader: subject, bodyText: textBody }),
         tags: [{ name: 'communication_id', value: String(audit.id) }],
       }),
       signal: AbortSignal.timeout(15_000),
@@ -1443,7 +1452,7 @@ async function sendInquiryNotificationEmail(params: {
   }
 
   const apiKey = process.env.RESEND_API_KEY?.trim() || '';
-  const fromEmail = process.env.RESEND_FROM_EMAIL?.trim() || '';
+  const fromEmail = normalizeSenderEmail(process.env.RESEND_FROM_EMAIL || '');
   const fromName = (process.env.RESEND_FROM_NAME || 'Awesome Adventure Tours').replace(/[<>\r\n]/g, '').trim() || 'Awesome Adventure Tours';
   const configured = Boolean(apiKey && isValidEmail(fromEmail));
   const { data: log, error: logError } = await serverSupabase
@@ -1479,6 +1488,7 @@ async function sendInquiryNotificationEmail(params: {
         ...(params.replyTo && isValidEmail(params.replyTo) ? { reply_to: params.replyTo } : {}),
         subject: params.subject,
         text: params.content,
+        html: renderBrandedEmailHtml({ heading: params.subject, preheader: params.subject, bodyText: params.content }),
         tags: [{ name: 'communication_id', value: String(log.id) }],
       }),
       signal: AbortSignal.timeout(15_000),
@@ -1754,7 +1764,7 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
   }
 
   const apiKey = process.env.RESEND_API_KEY?.trim() || '';
-  const fromEmail = process.env.RESEND_FROM_EMAIL?.trim() || '';
+  const fromEmail = normalizeSenderEmail(process.env.RESEND_FROM_EMAIL || '');
   const fromName = (process.env.RESEND_FROM_NAME || 'Awesome Adventure Tours').replace(/[<>\r\n]/g, '').trim() || 'Awesome Adventure Tours';
   const unsubscribeToken = createNewsletterUnsubscribeToken(subscriber.id, cleanEmail);
   const unsubscribeUrl = `https://awesomeadventure.tours/api/newsletter/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`;
