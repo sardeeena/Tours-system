@@ -676,6 +676,7 @@ export async function sendEmailMessage(params: {
   const messageId = `msg-em-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
   const now = new Date().toISOString();
   const config = await refreshProviderConfigFromServer();
+  let serverDispatchAttempted = false;
 
   if (!config.email.isConfigured) {
     const error = new ProviderConfigurationError(
@@ -704,11 +705,12 @@ export async function sendEmailMessage(params: {
       staffName: params.staffName || 'System Dispatcher',
       createdAt: now,
     };
-    await logCommunicationMessage(failed);
+    await logCommunicationMessage(failed, !serverDispatchAttempted);
     throw error;
   }
 
   try {
+    serverDispatchAttempted = true;
     const delivered = await dispatchServerCommunication('/api/communications/email', {
       to: params.recipientEmail,
       subject: params.subject,
@@ -738,7 +740,7 @@ export async function sendEmailMessage(params: {
       staffName: params.staffName || 'System Dispatcher',
       createdAt: now,
     };
-    await logCommunicationMessage(sent);
+    await logCommunicationMessage(sent, false);
 
     return {
       success: true,
@@ -967,7 +969,7 @@ export async function updateMessageDeliveryStatus(
 // 4. COMMUNICATION HISTORY & AUDIT LOGS (Linked to Customer, Lead, Booking, Inquiry, Task)
 // ------------------------------------------------------------------------------
 
-export async function logCommunicationMessage(msg: CommunicationMessage): Promise<void> {
+export async function logCommunicationMessage(msg: CommunicationMessage, persistToDatabase = true): Promise<void> {
   const all = getLocal<CommunicationMessage[]>(LOCAL_COMM_MSGS_KEY, []);
   setLocal(LOCAL_COMM_MSGS_KEY, [msg, ...all]);
 
@@ -999,9 +1001,9 @@ export async function logCommunicationMessage(msg: CommunicationMessage): Promis
     }
   }
 
-  if (isSupabaseConfigured()) {
+  if (persistToDatabase && isSupabaseConfigured()) {
     try {
-      await supabase.from('communication_messages').insert({
+      const { error } = await supabase.from('communication_messages').insert({
         id: msg.id.startsWith('msg-') ? undefined : msg.id,
         channel: msg.channel,
         customer_id: msg.customerId,
@@ -1024,6 +1026,7 @@ export async function logCommunicationMessage(msg: CommunicationMessage): Promis
         opened_at: msg.openedAt,
         staff_name: msg.staffName,
       });
+      if (error) console.error('Communication message database logging failed:', error.message);
     } catch {
       // ignore
     }
