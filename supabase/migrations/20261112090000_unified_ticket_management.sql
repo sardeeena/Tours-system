@@ -266,6 +266,21 @@ BEGIN
   IF TG_OP='INSERT' THEN
     INSERT INTO public.support_ticket_events(ticket_id,actor_id,event_type,details)
     VALUES(NEW.id,v_actor,'ticket_created',jsonb_build_object('status',NEW.status,'department',NEW.department,'priority',NEW.priority));
+    -- Add a compact system activity to the linked CRM customer timeline; never copy message bodies.
+    IF NEW.customer_id IS NOT NULL THEN
+      INSERT INTO public.crm_activities(
+        customer_id,booking_id,event_type,title,description,actor,metadata,user_id,staff_name,is_system_generated
+      )
+      VALUES(
+        NEW.customer_id,NEW.booking_id,'support_ticket_created','Support ticket created',
+        'Ticket KS-'||lpad(NEW.ticket_number::text,6,'0')||': '||NEW.subject,
+        'system',
+        jsonb_build_object('ticket_id',NEW.id,'ticket_number',NEW.ticket_number,'department',NEW.department,'priority',NEW.priority),
+        v_actor,
+        COALESCE((SELECT p.full_name FROM public.profiles p WHERE p.id=v_actor),'System'),
+        true
+      );
+    END IF;
     RETURN NEW;
   END IF;
   IF NEW.status IS DISTINCT FROM OLD.status THEN
