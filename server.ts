@@ -2341,7 +2341,7 @@ app.all('/mcp', (_req: Request, res: Response) => {
 // Private customer and administration routes must be crawlable so search engines
 // can observe noindex. This header is not an access-control mechanism.
 app.use((req: Request, res: Response, next: NextFunction) => {
-  const privateRoute = /^\/(?:admin(?:\/|$)|booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$))/i;
+  const privateRoute = /^\/(?:admin(?:\/|$)|booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|support(?:\/|$))/i;
   if ((req.method === 'GET' || req.method === 'HEAD') && privateRoute.test(req.path)) {
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
     res.setHeader('Cache-Control', 'private, no-store, max-age=0');
@@ -3044,7 +3044,7 @@ async function startServer() {
         return res.status(503).send('Kemet Spirit production assets are not available.');
       }
 
-      const privateRoute = /^\/(?:admin(?:\/|$)|booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$))/i;
+      const privateRoute = /^\/(?:admin(?:\/|$)|booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|support(?:\/|$))/i;
       if (privateRoute.test(req.path)) {
         return res.sendFile(indexHtmlPath);
       }
