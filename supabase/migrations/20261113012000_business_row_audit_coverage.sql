@@ -64,8 +64,8 @@ REVOKE ALL ON FUNCTION private.capture_business_audit() FROM PUBLIC, anon, authe
 
 -- Audit access is mediated by Superadmin AAL2 server endpoints only.
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON TABLE public.audit_logs FROM PUBLIC, anon, authenticated;
-GRANT ALL ON TABLE public.audit_logs TO service_role;
+REVOKE ALL ON TABLE public.audit_logs FROM PUBLIC, anon, authenticated, service_role;
+GRANT SELECT, INSERT ON TABLE public.audit_logs TO service_role;
 
 DO $block$
 DECLARE
