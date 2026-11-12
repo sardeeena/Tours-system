@@ -31,6 +31,9 @@ ALTER TABLE public.visitor_events
     'review_submitted',
     'tour_shared',
     'language_changed',
-    'currency_changed'
+    'currency_changed',
+    'confirmation_email_resent',
+    'email_confirmed',
+    'mfa_verified'
   ));
 COMMIT;
