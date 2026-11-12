@@ -23,8 +23,8 @@ export const BlogPage: React.FC<{ slug?: string; onNavigate:(path:string)=>void 
 
   useEffect(() => {
     if (!slug || !article || typeof document === 'undefined') return;
-    const title = article.seo_title || `${article.title} | Kemet Spirit Journal`;
-    const description = article.seo_description || article.excerpt || 'Travel inspiration and local guides from Kemet Spirit in Hurghada, Egypt.';
+    const title = article.seo_title || `${article.title} | Awesome Adventure Tours Journal`;
+    const description = article.seo_description || article.excerpt || 'Travel inspiration and local guides from Awesome Adventure Tours in Egypt.';
     document.title = title;
     const setMeta = (identityAttribute: 'name' | 'property', identity: string, value: string) => {
       let node = document.head.querySelector(`meta[${identityAttribute}="${identity}"]`) as HTMLMetaElement | null;
@@ -38,21 +38,21 @@ export const BlogPage: React.FC<{ slug?: string; onNavigate:(path:string)=>void 
     if (article.cover_image_url) setMeta('property','og:image',article.cover_image_url);
     let canonical = document.head.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
     if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.appendChild(canonical); }
-    canonical.href = `https://kemetspirit.com/blog/${article.slug}`;
-    const existing = document.getElementById('kemet-blogposting-jsonld');
+    canonical.href = `https://awesomeadventure.tours/blog/${article.slug}`;
+    const existing = document.getElementById('awesome-adventure-blogposting-jsonld');
     existing?.remove();
     const schema = document.createElement('script');
-    schema.id = 'kemet-blogposting-jsonld';
+    schema.id = 'awesome-adventure-blogposting-jsonld';
     schema.type = 'application/ld+json';
     schema.textContent = JSON.stringify({
       '@context':'https://schema.org','@type':'BlogPosting',headline:article.title,
       description,image:article.cover_image_url || undefined,datePublished:article.published_at,
       dateModified:article.updated_at,author:{'@type':'Organization',name:article.author_name},
-      publisher:{'@type':'Organization',name:'Kemet Spirit',url:'https://kemetspirit.com'},
-      mainEntityOfPage:`https://kemetspirit.com/blog/${article.slug}`
+      publisher:{'@type':'Organization',name:'Awesome Adventure Tours',url:'https://awesomeadventure.tours'},
+      mainEntityOfPage:`https://awesomeadventure.tours/blog/${article.slug}`
     });
     document.head.appendChild(schema);
-    return () => { document.getElementById('kemet-blogposting-jsonld')?.remove(); };
+    return () => { document.getElementById('awesome-adventure-blogposting-jsonld')?.remove(); };
   },[slug,article]);
   const filtered=posts.filter(p=>[p.title,p.excerpt||'',p.category?.name||''].join(' ').toLowerCase().includes(query.toLowerCase()));
   const shell='bg-[#FAF8F5] text-[#111A24] dark:bg-[#0A1118] dark:text-slate-100';
@@ -61,7 +61,7 @@ export const BlogPage: React.FC<{ slug?: string; onNavigate:(path:string)=>void 
       <button onClick={()=>onNavigate('/blog')} className="text-sm font-semibold text-[#0A6C74] dark:text-teal-300 mb-8">← Back to the journal</button>
       {loading ? <div className="animate-pulse h-72 rounded-3xl bg-stone-200 dark:bg-slate-800"/> : article ? <>
         {article.cover_image_url && <img src={article.cover_image_url} alt={article.title} className="w-full max-h-[520px] object-cover rounded-3xl mb-10"/>}
-        <div className="text-xs uppercase tracking-[.2em] text-[#0A6C74] dark:text-teal-300 font-bold mb-4">{article.category?.name||'Kemet Spirit Journal'}</div>
+        <div className="text-xs uppercase tracking-[.2em] text-[#0A6C74] dark:text-teal-300 font-bold mb-4">{article.category?.name||'Awesome Adventure Tours Journal'}</div>
         <h1 className="font-display text-4xl sm:text-6xl leading-tight font-bold mb-6">{article.title}</h1>
         <div className="flex flex-wrap gap-5 text-sm text-stone-500 dark:text-slate-400 mb-10"><span>{article.author_name}</span><span>{dateLabel(article.published_at)}</span><span>{article.reading_time_minutes || 1} min read</span></div>
         {article.excerpt && <p className="text-xl leading-relaxed text-stone-600 dark:text-slate-300 border-l-4 border-[#C28D32] pl-5 mb-10">{article.excerpt}</p>}
@@ -75,7 +75,7 @@ export const BlogPage: React.FC<{ slug?: string; onNavigate:(path:string)=>void 
     <section className="relative overflow-hidden border-b border-[#E8E3DA] dark:border-[#243447]">
       <div className="absolute inset-0 bg-gradient-to-br from-[#E8F3F4] via-[#FAF8F5] to-[#F3EBDD] dark:from-[#102B31] dark:via-[#0A1118] dark:to-[#172638]"/>
       <div className="relative max-w-7xl mx-auto px-5 sm:px-8 py-20 sm:py-28">
-        <p className="text-xs tracking-[.28em] uppercase font-bold text-[#0A6C74] dark:text-teal-300 mb-5">Kemet Spirit · Stories of the Red Sea</p>
+        <p className="text-xs tracking-[.28em] uppercase font-bold text-[#0A6C74] dark:text-teal-300 mb-5">Awesome Adventure Tours · Stories of the Red Sea</p>
         <h1 className="font-display text-5xl sm:text-7xl font-bold max-w-4xl leading-[1.05]">The journal.<br/><span className="text-[#0A6C74] dark:text-teal-300">Discover more.</span></h1>
         <p className="mt-7 max-w-2xl text-lg text-stone-600 dark:text-slate-300 leading-relaxed">Local insight, travel inspiration and thoughtful guides to help you experience Egypt and the Red Sea with confidence.</p>
       </div>
