@@ -808,6 +808,7 @@ export interface Database {
           booking_reference: string;
           tour_id: string;
           customer_id: string | null;
+          tour_language: string | null;
           booking_date: string;
           status: BookingStatus;
           payment_status: PaymentStatus;
@@ -837,6 +838,7 @@ export interface Database {
           booking_reference: string;
           tour_id: string;
           customer_id?: string | null;
+          tour_language?: string | null;
           booking_date: string;
           status?: BookingStatus;
           payment_status?: PaymentStatus;
@@ -866,6 +868,7 @@ export interface Database {
           booking_reference?: string;
           tour_id?: string;
           customer_id?: string | null;
+          tour_language?: string | null;
           booking_date?: string;
           status?: BookingStatus;
           payment_status?: PaymentStatus;
@@ -1509,6 +1512,34 @@ export interface Database {
       [_ in never]: never;
     };
     Functions: {
+      create_booking_atomic_with_language: {
+        Args: {
+          p_tour_identifier: string;
+          p_booking_date: string;
+          p_adult_count: number;
+          p_child_count: number;
+          p_infant_count: number;
+          p_customer_first_name: string;
+          p_customer_last_name: string;
+          p_customer_email: string;
+          p_customer_phone: string;
+          p_customer_country: string;
+          p_customer_hotel: string | null;
+          p_pickup_location_id: string | null;
+          p_pickup_room_number: string | null;
+          p_extras: Json;
+          p_coupon_code: string | null;
+          p_payment_method: string;
+          p_special_requests: string | null;
+          p_idempotency_key: string;
+          p_tour_language: string;
+        };
+        Returns: Json;
+      };
+      lookup_booking_secure_with_language: {
+        Args: { p_reference: string; p_verification: string };
+        Returns: Json;
+      };
       get_tour_availability_schedule: {
         Args: {
           p_tour_identifier: string;
