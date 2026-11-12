@@ -1,633 +1,102 @@
-import React, { useState, useMemo } from 'react';
-import {
-  TrendingUp,
-  MousePointerClick,
-  MailCheck,
-  Award,
-  Calendar,
-  Layers,
-  Sparkles,
-  ArrowUpRight,
-  Send,
-  Eye,
-  CheckCircle2,
-  Users
-} from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { TrendingUp, Users, UserCheck, UserMinus, Mail, Info } from 'lucide-react';
 import { NewsletterSubscriber } from '../../services/newsletterService';
-
-export interface NewsletterCampaign {
-  id: string;
-  name: string;
-  subject: string;
-  sentDate: string;
-  recipientsCount: number;
-  openCount: number;
-  openRatePercent: number;
-  clickCount: number;
-  clickRatePercent: number; // Click-Through Rate (CTR)
-  conversionsCount: number; // Bookings generated
-  revenueEur: number;
-  promoCode: string;
-}
-
-// Historical newsletter dispatch performance metrics
-const PAST_CAMPAIGNS: NewsletterCampaign[] = [
-  {
-    id: 'camp-01',
-    name: 'Spring Coral Season Kickoff',
-    subject: 'Dive into Spring: 15% off Giftop Island & Dolphin Encounters',
-    sentDate: '2026-04-12',
-    recipientsCount: 420,
-    openCount: 228,
-    openRatePercent: 54.3,
-    clickCount: 88,
-    clickRatePercent: 21.0,
-    conversionsCount: 18,
-    revenueEur: 1890,
-    promoCode: 'REDSEA15',
-  },
-  {
-    id: 'camp-02',
-    name: 'VIP Private Speedboat Launch',
-    subject: 'Exclusive Speedboat Charters: Skip the crowds to Orange Bay',
-    sentDate: '2026-05-08',
-    recipientsCount: 495,
-    openCount: 292,
-    openRatePercent: 59.0,
-    clickCount: 121,
-    clickRatePercent: 24.4,
-    conversionsCount: 24,
-    revenueEur: 3600,
-    promoCode: 'REDSEA15',
-  },
-  {
-    id: 'camp-03',
-    name: 'Summer Reef Navigation Special',
-    subject: 'Clear skies & calm waters: Top 5 snorkeling reefs this week',
-    sentDate: '2026-06-15',
-    recipientsCount: 580,
-    openCount: 365,
-    openRatePercent: 62.9,
-    clickCount: 162,
-    clickRatePercent: 27.9,
-    conversionsCount: 38,
-    revenueEur: 4250,
-    promoCode: 'REDSEA15',
-  },
-  {
-    id: 'camp-04',
-    name: 'Desert Safari Sunset Gala',
-    subject: 'Beyond the Sea: Quad ATV & Stargazing Bedouin BBQ Nights',
-    sentDate: '2026-07-22',
-    recipientsCount: 660,
-    openCount: 382,
-    openRatePercent: 57.9,
-    clickCount: 148,
-    clickRatePercent: 22.4,
-    conversionsCount: 29,
-    revenueEur: 2320,
-    promoCode: 'REDSEA15',
-  },
-  {
-    id: 'camp-05',
-    name: 'Autumn Warm Waters Flash Offer',
-    subject: 'Secret reefs & calm seas: Save 15% before high season starts',
-    sentDate: '2026-08-30',
-    recipientsCount: 750,
-    openCount: 476,
-    openRatePercent: 63.5,
-    clickCount: 218,
-    clickRatePercent: 29.1,
-    conversionsCount: 46,
-    revenueEur: 5120,
-    promoCode: 'REDSEA15',
-  },
-  {
-    id: 'camp-06',
-    name: 'Dolphin House Conservation Update',
-    subject: 'Wild dolphin pods spotted in Sataya & Giftun: Reserve your spot',
-    sentDate: '2026-09-20',
-    recipientsCount: 840,
-    openCount: 562,
-    openRatePercent: 66.9,
-    clickCount: 264,
-    clickRatePercent: 31.4,
-    conversionsCount: 58,
-    revenueEur: 6380,
-    promoCode: 'REDSEA15',
-  },
-  {
-    id: 'camp-07',
-    name: 'October Golden Horizon Flash Deal',
-    subject: 'Last minute autumn diving escapes in El Gouna & Hurghada',
-    sentDate: '2026-10-01',
-    recipientsCount: 920,
-    openCount: 605,
-    openRatePercent: 65.8,
-    clickCount: 289,
-    clickRatePercent: 31.4,
-    conversionsCount: 62,
-    revenueEur: 7100,
-    promoCode: 'REDSEA15',
-  },
-];
-
-type NewsletterChartValue = string | number;
-type NewsletterChartRow = Record<string, NewsletterChartValue>;
-
-interface NewsletterChartSeries {
-  key: string;
-  name: string;
-  color: string;
-  dash?: string;
-  showDots?: boolean;
-}
-
-interface NewsletterLineChartProps {
-  data: NewsletterChartRow[];
-  xKey: string;
-  series: NewsletterChartSeries[];
-  yMax?: number;
-  ySuffix?: string;
-  xTickCount?: number;
-}
-
-const NewsletterLineChart: React.FC<NewsletterLineChartProps> = ({
-  data,
-  xKey,
-  series,
-  yMax,
-  ySuffix = '',
-  xTickCount = 6,
-}) => {
-  const width = 960;
-  const height = 288;
-  const margin = { top: 12, right: 18, bottom: 48, left: 54 };
-  const plotWidth = width - margin.left - margin.right;
-  const plotHeight = height - margin.top - margin.bottom;
-  const observedMax = Math.max(1, ...data.flatMap((row) => series.map((item) => Number(row[item.key]) || 0)));
-  const domainMax = yMax ?? Math.ceil((observedMax * 1.08) / 5) * 5;
-  const x = (index: number) => margin.left + (data.length <= 1 ? plotWidth / 2 : (index / (data.length - 1)) * plotWidth);
-  const y = (value: number) => margin.top + plotHeight - (Math.max(0, value) / domainMax) * plotHeight;
-  const tickValues = Array.from({ length: 5 }, (_, index) => (domainMax * (4 - index)) / 4);
-  const xTickIndexes = Array.from(
-    new Set(Array.from({ length: Math.min(xTickCount, data.length) }, (_, index) =>
-      Math.round((index * (data.length - 1)) / (Math.min(xTickCount, data.length) - 1 || 1))
-    ))
-  );
-
-  return (
-    <svg
-      viewBox={`0 0 ${width} ${height}`}
-      className="w-full h-full overflow-visible"
-      role="img"
-      aria-label="Newsletter performance line chart"
-      preserveAspectRatio="none"
-    >
-      {tickValues.map((tick, index) => (
-        <g key={index}>
-          <line
-            x1={margin.left}
-            x2={width - margin.right}
-            y1={y(tick)}
-            y2={y(tick)}
-            stroke="#292524"
-            strokeDasharray="3 3"
-          />
-          <text x={margin.left - 10} y={y(tick) + 4} textAnchor="end" fill="#a8a29e" fontSize="11">
-            {Math.round(tick).toLocaleString()}{ySuffix}
-          </text>
-        </g>
-      ))}
-      {series.map((item) => {
-        const points = data.map((row, index) => `${x(index)},${y(Number(row[item.key]) || 0)}`).join(' ');
-        return (
-          <g key={item.key}>
-            <polyline
-              points={points}
-              fill="none"
-              stroke={item.color}
-              strokeWidth={item.key === 'cumulativeSubscribers' || item.key === 'ctrRate' ? 2.8 : 2}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeDasharray={item.dash}
-            />
-            {data.map((row, index) => (
-              <circle
-                key={`${item.key}-${index}`}
-                cx={x(index)}
-                cy={y(Number(row[item.key]) || 0)}
-                r={item.showDots ? 4 : 2}
-                fill={item.color}
-                opacity={item.showDots ? 1 : 0}
-                stroke={item.color}
-                strokeWidth="1"
-              >
-                <title>{`${String(row[xKey] ?? '')}: ${item.name} — ${Number(row[item.key]) || 0}${ySuffix}`}</title>
-              </circle>
-            ))}
-          </g>
-        );
-      })}
-      {xTickIndexes.map((index) => (
-        <text
-          key={index}
-          x={x(index)}
-          y={height - 12}
-          textAnchor="middle"
-          fill="#a8a29e"
-          fontSize="10"
-          transform={xKey === 'shortName' ? `rotate(-12 ${x(index)} ${height - 12})` : undefined}
-        >
-          {String(data[index]?.[xKey] ?? '')}
-        </text>
-      ))}
-    </svg>
-  );
-};
 
 interface NewsletterAnalyticsDashboardProps {
   subscribers: NewsletterSubscriber[];
 }
 
-export const NewsletterAnalyticsDashboard: React.FC<NewsletterAnalyticsDashboardProps> = ({
-  subscribers,
-}) => {
+export const NewsletterAnalyticsDashboard: React.FC<NewsletterAnalyticsDashboardProps> = ({ subscribers }) => {
   const [timeRange, setTimeRange] = useState<'30d' | '90d' | '180d' | 'all'>('90d');
-  const [activeMetricTab, setActiveMetricTab] = useState<'growth' | 'ctr' | 'both'>('both');
+  const active = subscribers.filter((subscriber) => subscriber.status === 'subscribed').length;
+  const unsubscribed = subscribers.length - active;
 
-  // Compute live subscriber growth trajectory
-  const growthData = useMemo(() => {
-    // Generate dates based on timeframe
-    const totalDays = timeRange === '30d' ? 30 : timeRange === '90d' ? 90 : timeRange === '180d' ? 180 : 365;
-    const now = new Date();
-    const points: Array<{
-      date: string;
-      displayDate: string;
-      newSubscribers: number;
-      cumulativeSubscribers: number;
-    }> = [];
-
-    // Count subscribers per day from real data
-    const countsByDay: Record<string, number> = {};
-    subscribers.forEach((s) => {
-      const d = s.createdAt ? s.createdAt.split('T')[0] : '';
-      if (d) {
-        countsByDay[d] = (countsByDay[d] || 0) + 1;
-      }
+  const growth = useMemo(() => {
+    const days = timeRange === '30d' ? 30 : timeRange === '90d' ? 90 : timeRange === '180d' ? 180 : null;
+    const cutoff = days === null ? 0 : Date.now() - days * 24 * 60 * 60 * 1000;
+    const rows = subscribers.filter((subscriber) => {
+      const timestamp = Date.parse(subscriber.createdAt);
+      return Number.isFinite(timestamp) && timestamp >= cutoff;
     });
-
-    const baseCount = Math.max(12, Math.floor(subscribers.length * 0.45));
-    let runningTotal = baseCount;
-
-    for (let i = totalDays; i >= 0; i--) {
-      const dateObj = new Date(now);
-      dateObj.setDate(now.getDate() - i);
-      const dateKey = dateObj.toISOString().split('T')[0];
-      const monthDay = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-      // Daily increment: actual if recorded, plus synthetic historical smoothing
-      const realCount = countsByDay[dateKey] || 0;
-      // Realistic historical curve simulation matching current subscriber total
-      const seedCycle = Math.sin(i * 0.4) * 2 + Math.cos(i * 0.15) * 3 + 4;
-      const naturalGrowth = Math.max(1, Math.round(seedCycle));
-      const dailyNew = realCount > 0 ? realCount + naturalGrowth : naturalGrowth;
-
-      runningTotal += dailyNew;
-
-      points.push({
-        date: dateKey,
-        displayDate: monthDay,
-        newSubscribers: dailyNew,
-        cumulativeSubscribers: runningTotal,
-      });
-    }
-
-    // Scale final point to match or reflect total subscriber count gracefully
-    if (points.length > 0 && subscribers.length > 0) {
-      const factor = Math.max(subscribers.length, runningTotal);
-      points[points.length - 1].cumulativeSubscribers = factor;
-    }
-
-    return points;
+    const byDate = new Map<string, number>();
+    rows.forEach((subscriber) => {
+      const date = new Date(subscriber.createdAt).toISOString().slice(0, 10);
+      byDate.set(date, (byDate.get(date) || 0) + 1);
+    });
+    return [...byDate.entries()].sort(([a], [b]) => a.localeCompare(b));
   }, [subscribers, timeRange]);
 
-  // Click-Through Rate and Campaign Engagement Data
-  const ctrData = useMemo(() => {
-    return PAST_CAMPAIGNS.map((c) => ({
-      campaign: c.name,
-      shortName: c.name.length > 18 ? `${c.name.substring(0, 16)}...` : c.name,
-      sentDate: c.sentDate,
-      openRate: c.openRatePercent,
-      ctrRate: c.clickRatePercent,
-      conversions: c.conversionsCount,
-      recipients: c.recipientsCount,
-      revenueEur: c.revenueEur,
-    }));
-  }, []);
-
-  // Summary Metrics
-  const avgCtr = useMemo(() => {
-    const total = PAST_CAMPAIGNS.reduce((acc, c) => acc + c.clickRatePercent, 0);
-    return (total / PAST_CAMPAIGNS.length).toFixed(1);
-  }, []);
-
-  const avgOpenRate = useMemo(() => {
-    const total = PAST_CAMPAIGNS.reduce((acc, c) => acc + c.openRatePercent, 0);
-    return (total / PAST_CAMPAIGNS.length).toFixed(1);
-  }, []);
-
-  const totalCampaignRevenue = useMemo(() => {
-    return PAST_CAMPAIGNS.reduce((acc, c) => acc + c.revenueEur, 0);
-  }, []);
-
-  const totalBookingsFromNewsletters = useMemo(() => {
-    return PAST_CAMPAIGNS.reduce((acc, c) => acc + c.conversionsCount, 0);
-  }, []);
+  const recentCount = growth.reduce((sum, [, count]) => sum + count, 0);
+  const maxDaily = Math.max(1, ...growth.map(([, count]) => count));
 
   return (
     <div className="space-y-6">
-      {/* Top Controls & Timeframe Selector */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-stone-950 p-4 rounded-xl border border-stone-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-stone-950 p-4 rounded-xl border border-stone-800">
         <div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-[#2dd4bf]" />
-            <h3 className="text-base font-bold text-white tracking-tight">
-              Newsletter Performance & Audience Growth Analytics
-            </h3>
+            <h3 className="text-base font-bold text-white">Newsletter audience overview</h3>
           </div>
-          <p className="text-xs text-stone-400 mt-1">
-            Tracking subscriber growth velocity, newsletter click-through rates (CTR), and booking conversions.
-          </p>
+          <p className="text-xs text-stone-400 mt-1">Live counts and signup history read from the production subscriber database.</p>
         </div>
+        <div className="flex bg-stone-900 p-1 rounded-lg border border-stone-800 text-xs">
+          {(['30d', '90d', '180d', 'all'] as const).map((range) => (
+            <button key={range} type="button" onClick={() => setTimeRange(range)} className={`px-3 py-1 rounded font-medium uppercase ${timeRange === range ? 'bg-stone-700 text-[#2dd4bf]' : 'text-stone-400 hover:text-white'}`}>
+              {range}
+            </button>
+          ))}
+        </div>
+      </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Metric View Tabs */}
-          <div className="flex bg-stone-900 p-1 rounded-lg border border-stone-800 text-xs">
-            <button
-              type="button"
-              onClick={() => setActiveMetricTab('both')}
-              className={`px-3 py-1 rounded font-medium transition-colors cursor-pointer ${
-                activeMetricTab === 'both' ? 'bg-[#0A6C74] text-white' : 'text-stone-400 hover:text-stone-200'
-              }`}
-            >
-              All Metrics
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveMetricTab('growth')}
-              className={`px-3 py-1 rounded font-medium transition-colors cursor-pointer ${
-                activeMetricTab === 'growth' ? 'bg-[#0A6C74] text-white' : 'text-stone-400 hover:text-stone-200'
-              }`}
-            >
-              Subscriber Growth
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveMetricTab('ctr')}
-              className={`px-3 py-1 rounded font-medium transition-colors cursor-pointer ${
-                activeMetricTab === 'ctr' ? 'bg-[#0A6C74] text-white' : 'text-stone-400 hover:text-stone-200'
-              }`}
-            >
-              Click-Through Rates
-            </button>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-stone-950 border border-stone-800 p-4 rounded-xl">
+          <div className="flex items-center gap-2 text-stone-400 text-xs"><Users className="w-4 h-4" /> Total stored subscribers</div>
+          <p className="text-2xl font-bold text-white mt-2">{subscribers.length.toLocaleString()}</p>
+        </div>
+        <div className="bg-stone-950 border border-emerald-900/40 p-4 rounded-xl">
+          <div className="flex items-center gap-2 text-emerald-400 text-xs"><UserCheck className="w-4 h-4" /> Active subscribers</div>
+          <p className="text-2xl font-bold text-emerald-300 mt-2">{active.toLocaleString()}</p>
+        </div>
+        <div className="bg-stone-950 border border-stone-800 p-4 rounded-xl">
+          <div className="flex items-center gap-2 text-stone-400 text-xs"><UserMinus className="w-4 h-4" /> Unsubscribed</div>
+          <p className="text-2xl font-bold text-stone-300 mt-2">{unsubscribed.toLocaleString()}</p>
+        </div>
+      </div>
+
+      <div className="bg-stone-950 border border-stone-800 rounded-xl p-5 space-y-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h4 className="text-sm font-bold text-white">New subscriptions</h4>
+            <p className="text-xs text-stone-400 mt-1">{recentCount.toLocaleString()} signup(s) in the selected period</p>
           </div>
-
-          {/* Timeframe Selector */}
-          <div className="flex bg-stone-900 p-1 rounded-lg border border-stone-800 text-xs">
-            {(['30d', '90d', '180d', 'all'] as const).map((r) => (
-              <button
-                key={r}
-                type="button"
-                onClick={() => setTimeRange(r)}
-                className={`px-2.5 py-1 rounded font-medium uppercase transition-colors cursor-pointer ${
-                  timeRange === r ? 'bg-stone-800 text-[#2dd4bf] font-bold' : 'text-stone-400 hover:text-stone-200'
-                }`}
-              >
-                {r}
-              </button>
+          <Mail className="w-5 h-5 text-teal-400" />
+        </div>
+        {growth.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-stone-700 p-8 text-center">
+            <Users className="w-7 h-7 mx-auto text-stone-500 mb-2" />
+            <p className="text-sm text-stone-300">No newsletter signups recorded for this period.</p>
+            <p className="text-xs text-stone-500 mt-1">The chart will populate automatically when real subscriptions are saved.</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {growth.slice(-14).map(([date, count]) => (
+              <div key={date} className="grid grid-cols-[92px_1fr_36px] items-center gap-3 text-xs">
+                <span className="text-stone-400">{new Date(`${date}T00:00:00`).toLocaleDateString()}</span>
+                <div className="h-2 rounded-full bg-stone-800 overflow-hidden">
+                  <div className="h-full rounded-full bg-teal-500" style={{ width: `${(count / maxDaily) * 100}%` }} />
+                </div>
+                <span className="text-right font-semibold text-stone-200">{count}</span>
+              </div>
             ))}
           </div>
-        </div>
-      </div>
-
-      {/* KPI Cards Strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Average CTR */}
-        <div className="bg-stone-950 border border-stone-800 p-4 rounded-xl relative overflow-hidden">
-          <div className="flex items-center justify-between text-stone-400 mb-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-amber-300">
-              Avg. Click-Through Rate
-            </span>
-            <MousePointerClick className="w-4 h-4 text-amber-400" />
-          </div>
-          <div className="flex items-baseline space-x-2">
-            <span className="text-2xl font-bold font-display text-white">{avgCtr}%</span>
-            <span className="text-[11px] font-bold text-emerald-400 flex items-center">
-              <ArrowUpRight className="w-3 h-3" /> +4.2%
-            </span>
-          </div>
-          <div className="mt-1 text-[11px] text-stone-400">
-            Industry benchmark: 2.6% (8.4x outperformance)
-          </div>
-        </div>
-
-        {/* Average Open Rate */}
-        <div className="bg-stone-950 border border-stone-800 p-4 rounded-xl">
-          <div className="flex items-center justify-between text-stone-400 mb-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-sky-300">
-              Avg. Email Open Rate
-            </span>
-            <MailCheck className="w-4 h-4 text-sky-400" />
-          </div>
-          <div className="flex items-baseline space-x-2">
-            <span className="text-2xl font-bold font-display text-white">{avgOpenRate}%</span>
-            <span className="text-[11px] font-bold text-emerald-400 flex items-center">
-              <ArrowUpRight className="w-3 h-3" /> +11.8%
-            </span>
-          </div>
-          <div className="mt-1 text-[11px] text-stone-400">
-            High seasonal interest in Giftun & Dolphin Reefs
-          </div>
-        </div>
-
-        {/* Bookings Generated */}
-        <div className="bg-stone-950 border border-stone-800 p-4 rounded-xl">
-          <div className="flex items-center justify-between text-stone-400 mb-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-emerald-400">
-              Bookings Generated
-            </span>
-            <Award className="w-4 h-4 text-emerald-400" />
-          </div>
-          <div className="flex items-baseline space-x-2">
-            <span className="text-2xl font-bold font-display text-white">{totalBookingsFromNewsletters}</span>
-            <span className="text-[11px] text-stone-400">excursion bookings</span>
-          </div>
-          <div className="mt-1 text-[11px] text-stone-400">
-            Attributed to <span className="font-mono text-amber-300">REDSEA15</span> promo
-          </div>
-        </div>
-
-        {/* Newsletter Revenue */}
-        <div className="bg-stone-950 border border-stone-800 p-4 rounded-xl">
-          <div className="flex items-center justify-between text-stone-400 mb-1.5">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-[#2dd4bf]">
-              Attributed Revenue
-            </span>
-            <Sparkles className="w-4 h-4 text-[#2dd4bf]" />
-          </div>
-          <div className="flex items-baseline space-x-2">
-            <span className="text-2xl font-bold font-display text-white">€{totalCampaignRevenue.toLocaleString()}</span>
-          </div>
-          <div className="mt-1 text-[11px] text-stone-400">
-            Direct sales from newsletter dispatches
-          </div>
-        </div>
-      </div>
-
-      {/* Main Charts Area */}
-      <div className="space-y-6">
-        {/* Chart 1: Subscriber Growth Trajectory */}
-        {(activeMetricTab === 'both' || activeMetricTab === 'growth') && (
-          <div className="bg-stone-950 border border-stone-800 rounded-xl p-5 shadow-xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-stone-800/80 gap-2 mb-4">
-              <div>
-                <h4 className="text-sm font-bold text-white flex items-center space-x-2">
-                  <Users className="w-4 h-4 text-[#2dd4bf]" />
-                  <span>Audience Growth Velocity & Trajectory</span>
-                </h4>
-                <p className="text-xs text-stone-400 mt-0.5">
-                  Cumulative active subscriber base over time alongside daily new opt-ins.
-                </p>
-              </div>
-
-              <div className="flex items-center space-x-4 text-xs">
-                <div className="flex items-center space-x-1.5">
-                  <span className="w-3 h-1 bg-[#2dd4bf] rounded-full inline-block" />
-                  <span className="text-stone-300 font-medium">Cumulative Subscribers</span>
-                </div>
-                <div className="flex items-center space-x-1.5">
-                  <span className="w-3 h-1 bg-[#38bdf8] rounded-full inline-block" />
-                  <span className="text-stone-300 font-medium">Daily New Signups</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="h-72 w-full">
-              <NewsletterLineChart
-                data={growthData}
-                xKey="displayDate"
-                series={[
-                  { key: 'cumulativeSubscribers', name: 'Cumulative Subscribers', color: '#2dd4bf' },
-                  { key: 'newSubscribers', name: 'Daily New Signups', color: '#38bdf8', dash: '4 4' },
-                ]}
-                xTickCount={6}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Chart 2: Click-Through Rate (CTR) and Open Rate on Past Newsletters */}
-        {(activeMetricTab === 'both' || activeMetricTab === 'ctr') && (
-          <div className="bg-stone-950 border border-stone-800 rounded-xl p-5 shadow-xl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-stone-800/80 gap-2 mb-4">
-              <div>
-                <h4 className="text-sm font-bold text-white flex items-center space-x-2">
-                  <MousePointerClick className="w-4 h-4 text-amber-400" />
-                  <span>Past Newsletters Click-Through Rates (CTR) & Engagement</span>
-                </h4>
-                <p className="text-xs text-stone-400 mt-0.5">
-                  Percentage of email recipients who opened and clicked tour links in recent email dispatches.
-                </p>
-              </div>
-
-              <div className="flex items-center space-x-4 text-xs">
-                <div className="flex items-center space-x-1.5">
-                  <span className="w-3 h-1 bg-amber-400 rounded-full inline-block" />
-                  <span className="text-stone-300 font-medium">Click-Through Rate (CTR %)</span>
-                </div>
-                <div className="flex items-center space-x-1.5">
-                  <span className="w-3 h-1 bg-sky-400 rounded-full inline-block" />
-                  <span className="text-stone-300 font-medium">Open Rate (%)</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="h-72 w-full">
-              <NewsletterLineChart
-                data={ctrData}
-                xKey="shortName"
-                series={[
-                  { key: 'ctrRate', name: 'Click-Through Rate (CTR %)', color: '#f59e0b', showDots: true },
-                  { key: 'openRate', name: 'Open Rate (%)', color: '#38bdf8', showDots: true },
-                ]}
-                yMax={80}
-                ySuffix="%"
-                xTickCount={7}
-              />
-            </div>
-          </div>
         )}
       </div>
 
-      {/* Historical Campaign Performance Log Table */}
-      <div className="bg-stone-950 border border-stone-800 rounded-xl overflow-hidden shadow-xl">
-        <div className="p-4 border-b border-stone-800 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Send className="w-4 h-4 text-[#2dd4bf]" />
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider">
-              Past Newsletter Dispatches & Conversion Log
-            </h4>
-          </div>
-          <span className="text-[11px] text-stone-400">
-            {PAST_CAMPAIGNS.length} promotional campaigns recorded
-          </span>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-stone-900/80 text-stone-400 border-b border-stone-800">
-              <tr>
-                <th className="py-3 px-4 font-semibold">Campaign & Subject</th>
-                <th className="py-3 px-4 font-semibold">Date Sent</th>
-                <th className="py-3 px-4 font-semibold text-right">Recipients</th>
-                <th className="py-3 px-4 font-semibold text-right">Opens (Rate)</th>
-                <th className="py-3 px-4 font-semibold text-right">Clicks (CTR)</th>
-                <th className="py-3 px-4 font-semibold text-right">Bookings</th>
-                <th className="py-3 px-4 font-semibold text-right">Revenue</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-stone-800/60 text-stone-300">
-              {PAST_CAMPAIGNS.map((c) => (
-                <tr key={c.id} className="hover:bg-stone-900/40 transition-colors">
-                  <td className="py-3 px-4">
-                    <p className="font-semibold text-white">{c.name}</p>
-                    <p className="text-[11px] text-stone-400 truncate max-w-xs">{c.subject}</p>
-                  </td>
-                  <td className="py-3 px-4 whitespace-nowrap text-stone-400 font-mono text-[11px]">
-                    {c.sentDate}
-                  </td>
-                  <td className="py-3 px-4 whitespace-nowrap text-right font-mono text-stone-300">
-                    {c.recipientsCount.toLocaleString()}
-                  </td>
-                  <td className="py-3 px-4 whitespace-nowrap text-right font-mono">
-                    <span className="text-white font-semibold">{c.openCount}</span>
-                    <span className="text-sky-400 ml-1.5">({c.openRatePercent}%)</span>
-                  </td>
-                  <td className="py-3 px-4 whitespace-nowrap text-right font-mono">
-                    <span className="text-white font-semibold">{c.clickCount}</span>
-                    <span className="text-amber-400 ml-1.5 font-bold">({c.clickRatePercent}%)</span>
-                  </td>
-                  <td className="py-3 px-4 whitespace-nowrap text-right font-mono text-emerald-400 font-semibold">
-                    {c.conversionsCount}
-                  </td>
-                  <td className="py-3 px-4 whitespace-nowrap text-right font-mono font-bold text-white">
-                    €{c.revenueEur.toLocaleString()}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <div className="rounded-xl border border-amber-500/20 bg-amber-950/20 p-4 flex gap-3">
+        <Info className="w-5 h-5 text-amber-300 shrink-0" />
+        <div>
+          <p className="text-xs font-semibold text-amber-100">Campaign engagement is not yet connected</p>
+          <p className="text-xs text-amber-200/80 mt-1">Open rates, clicks, campaign-attributed bookings and revenue are intentionally not estimated. They will appear here only after real campaign records and verified email-provider events are stored.</p>
         </div>
       </div>
     </div>
