@@ -63,6 +63,10 @@ export const VisitorAnalyticsPanel: React.FC = () => {
   const [selectedSession, setSelectedSession] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [eraseIdentifier, setEraseIdentifier] = useState('');
+  const [eraseType, setEraseType] = useState<'visitor_id' | 'user_id'>('visitor_id');
+  const [erasing, setErasing] = useState(false);
+  const [eraseResult, setEraseResult] = useState('');
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
 
@@ -111,6 +115,25 @@ export const VisitorAnalyticsPanel: React.FC = () => {
     const anchor = document.createElement('a'); anchor.href = url;
     anchor.download = `awesome-adventure-visitor-events-${new Date().toISOString().slice(0,10)}.csv`;
     anchor.click(); URL.revokeObjectURL(url);
+  };
+
+  const eraseVisitor = async () => {
+    const identifier = eraseIdentifier.trim();
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(identifier)) {
+      setError('Enter a valid visitor or user ID before erasing analytics.');
+      return;
+    }
+    if (!window.confirm('Erase this visitor’s optional analytics and anonymize their consent links? Booking, payment, support and account records will not be changed.')) return;
+    setErasing(true); setError(''); setEraseResult('');
+    try {
+      const result = await api<{ erasedSessions: number; erasedEvents: number; anonymizedConsents: number }>('/api/admin/technical/visitors/erase', {
+        method: 'POST', body: JSON.stringify({ identifier_type: eraseType, identifier }),
+      });
+      setEraseResult(`Erased ${result.erasedEvents} events and ${result.erasedSessions} sessions; anonymized ${result.anonymizedConsents} consent records.`);
+      setEraseIdentifier('');
+      await load();
+    } catch (err) { setError(err instanceof Error ? err.message : 'Visitor analytics could not be erased.'); }
+    finally { setErasing(false); }
   };
 
   const saveRetention = async () => {
@@ -167,6 +190,7 @@ export const VisitorAnalyticsPanel: React.FC = () => {
             {visibleSessions.map((item) => <button type="button" key={item.id} onClick={() => setSelectedSession((current) => current === item.id ? '' : item.id)} className={`w-full rounded-lg border p-3 text-left text-xs transition ${selectedSession === item.id ? 'border-[#b58b3a] bg-amber-50 dark:bg-amber-950/20' : 'border-slate-200 dark:border-slate-700'}`}>
               <div className="flex items-start justify-between gap-2"><span className="font-mono font-semibold">{item.id.slice(0, 8)}…</span><span className="text-slate-500">{item.user_id ? 'Signed in' : 'Guest'}</span></div>
               <p className="mt-1 truncate font-medium">{item.landing_path}</p>
+              <p className="mt-1 font-mono text-slate-500">Visitor {item.visitor_id.slice(0, 8)}…</p>
               <p className="mt-1 text-slate-500">{[item.device_type, item.browser_family, item.os_family].filter(Boolean).join(' · ') || 'Device details unavailable'}</p>
               <p className="mt-1 text-slate-500">Last activity: {date(item.last_seen_at)}</p>
               <p className="mt-1 text-slate-500">Referrer: {item.referrer_host || 'Direct'}{item.utm_campaign ? ` · ${item.utm_campaign}` : ''}</p>
@@ -215,6 +239,17 @@ export const VisitorAnalyticsPanel: React.FC = () => {
           <label className="text-xs font-medium">Business audit (1–10 years)<input type="number" min={365} max={3650} value={retention.audit_log_retention_days} onChange={(e) => setRetention((v) => ({ ...v, audit_log_retention_days: Number(e.target.value) }))} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800" /></label>
         </div>
         <button type="button" onClick={() => void saveRetention()} disabled={saving} className="mt-3 rounded-lg bg-[#d6ad5b] px-4 py-2 text-sm font-semibold text-slate-950 disabled:opacity-50">{saving ? 'Saving…' : 'Save retention settings'}</button>
+      </div>
+
+      <div className="rounded-xl border border-rose-200 bg-white p-4 dark:border-rose-900 dark:bg-slate-900">
+        <h3 className="font-semibold text-rose-700 dark:text-rose-300">Visitor analytics erasure</h3>
+        <p className="mt-1 text-xs text-slate-500">Remove optional analytics events and sessions for a guest visitor or signed-in user. Consent receipts are anonymized so the choices remain auditable. Bookings, payments, support tickets and account records are never touched.</p>
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <select value={eraseType} onChange={(e) => setEraseType(e.target.value as 'visitor_id' | 'user_id')} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs dark:border-slate-600 dark:bg-slate-800"><option value="visitor_id">Visitor ID</option><option value="user_id">User ID</option></select>
+          <input value={eraseIdentifier} onChange={(e) => setEraseIdentifier(e.target.value)} placeholder="Paste visitor or user UUID" className="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs dark:border-slate-600 dark:bg-slate-800" />
+          <button type="button" onClick={() => void eraseVisitor()} disabled={erasing || !eraseIdentifier.trim()} className="rounded-lg border border-rose-300 bg-rose-50 px-4 py-2 text-xs font-semibold text-rose-800 disabled:opacity-50 dark:border-rose-900 dark:bg-rose-950/30 dark:text-rose-200">{erasing ? 'Erasing…' : 'Erase analytics'}</button>
+        </div>
+        {eraseResult && <p role="status" className="mt-2 text-xs text-emerald-700 dark:text-emerald-300">{eraseResult}</p>}
       </div>
 
       <p className="text-[11px] leading-5 text-slate-500">Privacy safeguards: optional tracking starts only after analytics consent. Raw IP addresses, complete browser fingerprints, raw cookies, passwords, session tokens, form contents and payment credentials are not collected by this system. Marketing consent remains separate.</p>
