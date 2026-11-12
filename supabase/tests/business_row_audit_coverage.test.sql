@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(20);
+SELECT plan(22);
 
 SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.audit_logs'::regclass), 'audit_logs has RLS enabled');
 SELECT ok(NOT has_table_privilege('anon', 'public.audit_logs', 'SELECT'), 'anon cannot read audit logs');
@@ -74,6 +74,8 @@ SELECT ok(EXISTS (
 
 SELECT ok(has_function_privilege('service_role', 'public.erase_visitor_analytics(text,uuid,uuid)', 'EXECUTE'), 'server service role can execute atomic analytics erasure');
 SELECT ok(NOT has_function_privilege('authenticated', 'public.erase_visitor_analytics(text,uuid,uuid)', 'EXECUTE'), 'authenticated users cannot execute analytics erasure directly');
+SELECT ok(has_function_privilege('service_role', 'public.get_visitor_analytics_overview(timestamp with time zone)', 'EXECUTE'), 'server service role can execute exact visitor analytics aggregation');
+SELECT ok(NOT has_function_privilege('authenticated', 'public.get_visitor_analytics_overview(timestamp with time zone)', 'EXECUTE'), 'authenticated users cannot execute visitor analytics aggregation');
 
 SELECT * FROM finish();
 ROLLBACK;
