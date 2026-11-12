@@ -11,6 +11,7 @@ type Session = {
   landing_path: string; referrer_host: string | null; utm_source: string | null; utm_medium: string | null;
   utm_campaign: string | null; device_type: string | null; browser_family: string | null; os_family: string | null;
   screen_bucket: string | null; language: string | null; timezone: string | null;
+  country_code?: string | null; region_code?: string | null;
   analytics_consent: boolean; marketing_consent: boolean;
 };
 type VisitorEvent = {
