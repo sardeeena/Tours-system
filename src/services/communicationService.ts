@@ -346,7 +346,7 @@ export async function saveTemplate(template: CommunicationTemplate): Promise<voi
     if (error) throw new Error('Template was not saved to the database: ' + error.message);
   }
 
-  await logActivity({ eventType: 'email_template_updated', title: 'Email template updated', description: 'Updated the ' + template.name + ' email template.', actor: 'Communications Admin', metadata: { templateKey: template.templateKey } });
+  await logActivity({ eventType: 'staff_note', title: 'Email template updated', description: 'Updated the ' + template.name + ' email template.', actor: 'Communications Admin', metadata: { templateKey: template.templateKey } });
 
   const all = await listTemplates();
   const exists = all.findIndex((item) => item.templateKey === template.templateKey || item.id === template.id);
@@ -369,7 +369,7 @@ export async function deleteTemplate(templateIdOrKey: string): Promise<void> {
       const { error } = await supabase.from('communication_templates').delete().eq('template_key', target.templateKey);
       if (error) throw new Error('Template was not deleted from the database: ' + error.message);
     }
-    await logActivity({ eventType: 'email_template_deleted', title: 'Email template removed', description: 'Removed or disabled the ' + target.name + ' email template.', actor: 'Communications Admin', metadata: { templateKey: target.templateKey } });
+    await logActivity({ eventType: 'staff_note', title: 'Email template removed', description: 'Removed or disabled the ' + target.name + ' email template.', actor: 'Communications Admin', metadata: { templateKey: target.templateKey } });
   }
   const all = await listTemplates();
   setLocal(LOCAL_TEMPLATES_KEY, all.filter((item) => item.id !== templateIdOrKey && item.templateKey !== templateIdOrKey));
