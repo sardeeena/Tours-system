@@ -14,6 +14,7 @@ import { findOrCreateAuthoritativeCustomer } from './platformConsistency';
 import { recordActivity } from './crmService';
 import { publishAutomationEvent } from './communicationService';
 import { resolveBookingTourIdentifier, shouldUseLocalBookingCache } from '../lib/bookingIdentifiers';
+import { recordVisitorEvent } from './visitorAnalyticsService';
 
 const isDevelopmentBuild = Boolean((import.meta as any).env?.DEV);
 
