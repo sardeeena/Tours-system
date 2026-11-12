@@ -68,8 +68,8 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
   // Provider Settings Modal
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [tempEmailProvider, setTempEmailProvider] = useState<'resend' | 'none'>('resend');
-  const [tempFromEmail, setTempFromEmail] = useState('dispatch@redseavoyages.com');
-  const [tempFromName, setTempFromName] = useState('Red Sea Voyages Dispatch');
+  const [tempFromEmail, setTempFromEmail] = useState('');
+  const [tempFromName, setTempFromName] = useState('Awesome Adventure Tours');
 
   // Message Detail Drawer
   const [selectedMessage, setSelectedMessage] = useState<CommunicationMessage | null>(null);
@@ -198,8 +198,8 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
 
   const openSettingsModal = () => {
     setTempEmailProvider(providerConfig.email.provider === 'resend' ? 'resend' : 'none');
-    setTempFromEmail(providerConfig.email.fromEmail || 'dispatch@redseavoyages.com');
-    setTempFromName(providerConfig.email.fromName || 'Red Sea Voyages Dispatch');
+    setTempFromEmail(providerConfig.email.fromEmail || '');
+    setTempFromName(providerConfig.email.fromName || 'Awesome Adventure Tours');
     setIsSettingsOpen(true);
   };
 
