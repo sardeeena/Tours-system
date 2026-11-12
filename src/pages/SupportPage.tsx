@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { AlertCircle, ArrowLeft, CheckCircle2, Clock3, Headphones, MessageSquare, Plus, RefreshCw, Send, Shield, Ticket, UserRound, Users } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
+import { recordVisitorEvent } from '../services/visitorAnalyticsService';
 
 type TicketRow = {
   id: string;
@@ -137,6 +138,7 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
       setShowNew(false);
       await loadTickets();
       setSelected(data as TicketRow);
+      void recordVisitorEvent({ event_name: 'support_ticket_created', page_path: '/support', event_data: { ticket_category: category, priority } });
     } catch (err: any) {
       console.warn('Failed to create support ticket:', err);
       setError('We could not create your ticket. Please try again.');
@@ -165,6 +167,7 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
         ticket_id: selected.id, author_id: user.id, body: reply.trim(), is_internal: internal && canInternal, attachments
       });
       if (insertError) throw insertError;
+      void recordVisitorEvent({ event_name: 'support_reply_sent', page_path: '/support', event_data: { interaction: internal && canInternal ? 'internal_note' : 'customer_reply' } });
       setReply(''); setInternal(false); setFiles([]);
       await loadMessages(selected); await loadTickets();
     } catch (err: any) {
