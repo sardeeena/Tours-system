@@ -185,6 +185,7 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
         .update(changes).eq('id', selected.id).select('*').single();
       if (updateError) throw updateError;
       setSelected(data as TicketRow); await loadTickets();
+      void recordVisitorEvent({ event_name: 'support_ticket_updated', page_path: '/support', event_data: { status: typeof changes.status === 'string' ? changes.status : 'updated' } });
     } catch (err: any) { console.warn('Failed to update support ticket:', err); setError('We could not update this ticket. Please try again.'); }
     finally { setBusy(false); }
   };
