@@ -25,6 +25,7 @@ import { AccountPage } from './pages/AccountPage';
 import { StaticContentPage } from './pages/StaticContentPage';
 import { DestinationDetailPage } from './pages/DestinationDetailPage';
 const BlogPage = lazy(() => import('./pages/BlogPage').then(m => ({ default: m.BlogPage })));
+const SupportPage = lazy(() => import('./pages/SupportPage').then(m => ({ default: m.SupportPage })));
 import { ALL_TOURS, CURRENCY_CONFIGS } from './data/toursData';
 import { Tour, CurrencyConfig, Destination, Category } from './types';
 import { Booking } from './types/booking';
@@ -73,6 +74,7 @@ const AdminPagesManager = lazy(() => import('./components/admin/AdminPagesManage
 const AdminSettings = lazy(() => import('./components/admin/AdminSettings').then(m => ({ default: m.AdminSettings })));
 const AdminAccessControl = lazy(() => import('./components/admin/AdminAccessControl').then(m => ({ default: m.AdminAccessControl })));
 const AdminBlogManager = lazy(() => import('./components/admin/AdminBlogManager').then(m => ({ default: m.AdminBlogManager })));
+const AdminTickets = lazy(() => import('./components/admin/AdminTickets').then(m => ({ default: m.AdminTickets })));
 const AdminLoginPage = lazy(() => import('./components/admin/AdminLoginPage').then(m => ({ default: m.AdminLoginPage })));
 import { HelpInquiryModal } from './components/common/HelpInquiryModal';
 
@@ -798,6 +800,8 @@ function MainApp() {
       }
     } else if (adminSubRoute?.main === 'blog') {
       activeAdminTab = 'blog';
+    } else if (adminSubRoute?.main === 'tickets') {
+      activeAdminTab = 'tickets';
     } else if (adminSubRoute?.main === 'access-control' || adminSubRoute?.main === 'access_control') {
       activeAdminTab = 'access_control';
     } else if (adminSubRoute?.main === 'tours') {
@@ -888,6 +892,7 @@ function MainApp() {
       [
         'bookings',
         'blog',
+        'tickets',
         'inquiries',
         'customers',
         'newsletter',
@@ -1023,6 +1028,7 @@ function MainApp() {
 
           {activeAdminTab === 'bookings' && <AdminBookingsList />}
           {activeAdminTab === 'blog' && <AdminBlogManager />}
+          {activeAdminTab === 'tickets' && <AdminTickets />}
 
           {/* OPERATIONS MODULES */}
           {activeAdminTab === 'ops_departures' && (
@@ -1287,6 +1293,10 @@ function MainApp() {
           onOpenMyBooking={() => navigate('/my-booking')}
         />
       );
+    }
+
+    if (currentPath === '/support' || currentPath.startsWith('/support/')) {
+      return <Suspense fallback={<AdminLoadingFallback />}><SupportPage /></Suspense>;
     }
 
     // Kemet Spirit Journal: /blog and /blog/:slug
