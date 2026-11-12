@@ -41,3 +41,63 @@ enabled = false
 
 [edge_runtime]
 enabled = false
+
+
+[auth.email.template.invite]
+subject = "You are invited to Awesome Adventure Tours"
+content_path = "./supabase/templates/invite.html"
+
+[auth.email.template.confirmation]
+subject = "Confirm your Awesome Adventure Tours email address"
+content_path = "./supabase/templates/confirm-signup.html"
+
+[auth.email.template.magic_link]
+subject = "Your Awesome Adventure Tours sign-in link"
+content_path = "./supabase/templates/magic-link.html"
+
+[auth.email.template.recovery]
+subject = "Reset your Awesome Adventure Tours password"
+content_path = "./supabase/templates/recovery.html"
+
+[auth.email.template.email_change]
+subject = "Confirm your new email address"
+content_path = "./supabase/templates/email-change.html"
+
+[auth.email.template.reauthentication]
+subject = "Confirm your identity"
+content_path = "./supabase/templates/reauthentication.html"
+
+[auth.email.notification.password_changed]
+enabled = false
+subject = "Your password was changed"
+content_path = "./supabase/templates/password-changed.html"
+
+[auth.email.notification.email_changed]
+enabled = false
+subject = "Your email address was changed"
+content_path = "./supabase/templates/email-changed.html"
+
+[auth.email.notification.phone_changed]
+enabled = false
+subject = "Your phone number was changed"
+content_path = "./supabase/templates/phone-changed.html"
+
+[auth.email.notification.identity_linked]
+enabled = false
+subject = "A sign-in method was linked"
+content_path = "./supabase/templates/identity-linked.html"
+
+[auth.email.notification.identity_unlinked]
+enabled = false
+subject = "A sign-in method was removed"
+content_path = "./supabase/templates/identity-unlinked.html"
+
+[auth.email.notification.mfa_factor_enrolled]
+enabled = false
+subject = "A verification method was added"
+content_path = "./supabase/templates/verification-added.html"
+
+[auth.email.notification.mfa_factor_unenrolled]
+enabled = false
+subject = "A verification method was removed"
+content_path = "./supabase/templates/verification-removed.html"
