@@ -2097,6 +2097,9 @@ const VISITOR_EVENT_NAMES = new Set([
     'tour_shared',
     'language_changed',
     'currency_changed',
+    'confirmation_email_resent',
+    'email_confirmed',
+    'mfa_verified',
 ]);
 const VISITOR_EVENT_FIELDS = new Set([
   'tour_slug','category','destination','booking_step','result_count',
