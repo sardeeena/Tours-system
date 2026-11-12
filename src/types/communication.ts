@@ -45,6 +45,15 @@ export interface CommunicationTemplate {
   updatedAt?: string;
 }
 
+export interface EmailProviderEvent {
+  id: string;
+  eventType: string;
+  recipientAddress?: string | null;
+  providerMessageId: string;
+  occurredAt?: string | null;
+  receivedAt: string;
+}
+
 export interface CommunicationMessage {
   id: string;
   channel: CommunicationChannel;
