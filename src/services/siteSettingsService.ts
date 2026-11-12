@@ -180,11 +180,23 @@ export async function saveFooterContent(content: FooterContentSettings): Promise
 export async function getStaticPages(): Promise<StaticPageContent[]> {
   const customPages = await getSetting<StaticPageContent[]>('pages_content', INITIAL_STATIC_PAGES);
   const savedPages = Array.isArray(customPages) ? customPages : [];
-  const savedSlugs = new Set(savedPages.map((page) => page?.slug).filter(Boolean));
-  // Preserve baseline About / Contact / legal pages when the CMS only stores a
-  // partial set. CMS content takes precedence for any matching slug.
+  const defaultsBySlug = new Map(INITIAL_STATIC_PAGES.map((page) => [page.slug, page]));
+  const legalPolicySlugs = new Set(['privacy', 'terms', 'cancellation-policy', 'cookie-policy']);
+
+  // Upgrade legacy legal placeholders in the CMS without overwriting a newer
+  // policy that an administrator has deliberately edited and published.
+  const mergedSavedPages = savedPages.map((savedPage) => {
+    const defaultPage = defaultsBySlug.get(savedPage?.slug);
+    if (!defaultPage || !legalPolicySlugs.has(defaultPage.slug)) return savedPage;
+    const savedText = (savedPage.sections || []).map((section) => section.content || '').join(' ');
+    const isPlaceholder = /placeholder|under review|requires confirmation|policy information under review/i.test(savedText);
+    const isOlderThanCurrentPolicy = !savedPage.lastUpdated || savedPage.lastUpdated < defaultPage.lastUpdated;
+    return isPlaceholder || isOlderThanCurrentPolicy ? defaultPage : savedPage;
+  });
+
+  const savedSlugs = new Set(mergedSavedPages.map((page) => page?.slug).filter(Boolean));
   return [
-    ...savedPages,
+    ...mergedSavedPages,
     ...INITIAL_STATIC_PAGES.filter((page) => !savedSlugs.has(page.slug)),
   ];
 }

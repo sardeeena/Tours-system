@@ -19,6 +19,9 @@ export type AppRouteType =
   | 'admin_login'
   | 'privacy'
   | 'terms'
+  | 'cancellation_policy'
+  | 'cookie_policy'
+  | 'booking_conditions'
   | 'not_found';
 
 export interface RouteParams {
@@ -64,6 +67,9 @@ export const APP_ROUTES = {
   ADMIN_TOUR_EDIT: (id: string) => `/admin/tours/${encodeURIComponent(id)}/edit`,
   PRIVACY: '/privacy',
   TERMS: '/terms',
+  CANCELLATION_POLICY: '/cancellation-policy',
+  COOKIE_POLICY: '/cookie-policy',
+  BOOKING_CONDITIONS: '/booking-conditions',
 } as const;
 
 /**
@@ -194,6 +200,18 @@ export function parseAppRoute(pathname: string, search: string = ''): ParsedRout
 
   if (cleanPath === '/terms') {
     return { type: 'terms', path: cleanPath, params: {}, searchParams, isValid: true };
+  }
+
+  if (cleanPath === '/cancellation-policy') {
+    return { type: 'cancellation_policy', path: cleanPath, params: {}, searchParams, isValid: true };
+  }
+
+  if (cleanPath === '/cookie-policy') {
+    return { type: 'cookie_policy', path: cleanPath, params: {}, searchParams, isValid: true };
+  }
+
+  if (cleanPath === '/booking-conditions') {
+    return { type: 'booking_conditions', path: cleanPath, params: {}, searchParams, isValid: true };
   }
 
   return {

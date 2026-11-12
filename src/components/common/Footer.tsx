@@ -25,6 +25,7 @@ interface FooterProps {
   onOpenResetPassword?: () => void;
   onOpenAdmin?: () => void;
   onOpenHelpInquiry?: () => void;
+  onOpenCookieSettings?: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
@@ -36,6 +37,7 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenResetPassword,
   onOpenAdmin,
   onOpenHelpInquiry,
+  onOpenCookieSettings,
 }) => {
   const { toggleTheme, isDark } = useTheme();
 
@@ -312,23 +314,23 @@ export const Footer: React.FC<FooterProps> = ({
                 <a href="/contact" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">Contact</a>
               </li>
               <li>
-                <a href="/booking-conditions" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">
-                  Hotel Pickup Coverage
-                </a>
-              </li>
-              <li>
-                <a href="/why-us" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">
-                  Weather & Refund Policy
-                </a>
-              </li>
-              <li>
                 <a href="/marine-safety" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">
-                  Snorkeling Gear Safety
+                  Safety & Departure Information
                 </a>
               </li>
               <li>
                 <a href="/booking-conditions" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">
+                  Booking Information
+                </a>
+              </li>
+              <li>
+                <a href="/terms" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">
                   Terms & Conditions
+                </a>
+              </li>
+              <li>
+                <a href="/cancellation-policy" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">
+                  Cancellation & Refunds
                 </a>
               </li>
               <li>
@@ -336,6 +338,22 @@ export const Footer: React.FC<FooterProps> = ({
                   Privacy Policy
                 </a>
               </li>
+              <li>
+                <a href="/cookie-policy" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">
+                  Cookie Policy
+                </a>
+              </li>
+              {onOpenCookieSettings && (
+                <li>
+                  <button
+                    type="button"
+                    onClick={onOpenCookieSettings}
+                    className="hover:text-[#0A6C74] dark:hover:text-white transition-colors cursor-pointer"
+                  >
+                    Cookie Settings
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
 
