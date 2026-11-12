@@ -7,7 +7,11 @@ export function escapeEmailHtml(value: string): string {
 }
 
 function renderTextBody(value: string): string {
-  return escapeEmailHtml(value.trim()).split(/\n\s*\n/g).map((paragraph) =>
+  const escaped = escapeEmailHtml(value.trim());
+  const linked = escaped.replace(/https:\/\/[^\s<]+/g, (url) =>
+    '<a href="' + url + '" style="color:#9b7428;text-decoration:underline;">' + url + '</a>'
+  );
+  return linked.split(/\n\s*\n/g).map((paragraph) =>
     '<p style="margin:0 0 16px;color:#273449;font-size:15px;line-height:1.75;white-space:pre-line;">' + paragraph.replace(/\n/g, '<br>') + '</p>'
   ).join('');
 }
