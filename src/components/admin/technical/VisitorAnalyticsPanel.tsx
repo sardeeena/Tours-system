@@ -41,6 +41,12 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
   return payload as T;
 }
 
+const downloadCsv = (filename: string, columns: string[], rows: Array<Array<string | number | boolean | null>>) => {
+  const csv = [columns, ...rows].map((row) => row.map((value) => '"' + String(value ?? '').replace(/"/g, '""') + '"').join(',')).join('\r\n');
+  const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  const anchor = document.createElement('a'); anchor.href = url; anchor.download = filename; anchor.click(); URL.revokeObjectURL(url);
+};
+
 const date = (value: string) => new Date(value).toLocaleString();
 const Card = ({ label, value, icon: Icon }: { label: string; value: number; icon: React.ElementType }) => (
   <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
@@ -130,15 +136,21 @@ export const VisitorAnalyticsPanel: React.FC = () => {
     ].some((value) => String(value || '').toLowerCase().includes(term)));
   }, [events, selectedSession, search]);
 
-  const exportCsv = () => {
-    const columns = ['Occurred at','Event','Session ID','User ID','Page','Duration ms','Event data'];
-    const rows = visibleEvents.map((item) => [item.occurred_at, item.event_name, item.session_id, item.user_id || '', item.page_path || '', item.duration_ms ?? '', JSON.stringify(item.event_data || {})]);
-    const csv = [columns, ...rows].map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(',')).join('\r\n');
-    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-    const anchor = document.createElement('a'); anchor.href = url;
-    anchor.download = `awesome-adventure-visitor-events-${new Date().toISOString().slice(0,10)}.csv`;
-    anchor.click(); URL.revokeObjectURL(url);
-  };
+  const exportCsv = () => downloadCsv('awesome-adventure-visitor-events-' + new Date().toISOString().slice(0,10) + '.csv',
+    ['Occurred at','Event','Session ID','User ID','Page','Duration ms','Event data'],
+    visibleEvents.map((item) => [item.occurred_at, item.event_name, item.session_id, item.user_id || '', item.page_path || '', item.duration_ms ?? '', JSON.stringify(item.event_data || {})]));
+
+  const exportSessionsCsv = () => downloadCsv('awesome-adventure-sessions-' + new Date().toISOString().slice(0,10) + '.csv',
+    ['Session ID','Visitor ID','User ID','Started','Last seen','Landing page','Referrer','UTM source','UTM medium','UTM campaign','UTM term','UTM content','Device','Browser','OS','Screen','Language','Timezone','Analytics consent','Marketing consent'],
+    visibleSessions.map((item) => [item.id,item.visitor_id,item.user_id || '',item.started_at,item.last_seen_at,item.landing_path,item.referrer_host || '',item.utm_source || '',item.utm_medium || '',item.utm_campaign || '',item.utm_term || '',item.utm_content || '',item.device_type || '',item.browser_family || '',item.os_family || '',item.screen_bucket || '',item.language || '',item.timezone || '',item.analytics_consent,item.marketing_consent]));
+
+  const exportConsentCsv = () => downloadCsv('awesome-adventure-consent-history-' + new Date().toISOString().slice(0,10) + '.csv',
+    ['Recorded at','Visitor ID','User ID','Necessary','Analytics','Marketing','Consent version','Source'],
+    consents.map((item) => [item.recorded_at,item.visitor_id || '',item.user_id || '',item.necessary,item.analytics,item.marketing,item.consent_version,item.consent_source]));
+
+  const exportAuditCsv = () => downloadCsv('awesome-adventure-audit-history-' + new Date().toISOString().slice(0,10) + '.csv',
+    ['Created at','Action','Entity type','Entity ID','Actor user ID','Before','After'],
+    auditRecords.map((item) => [item.created_at,item.action,item.entity_type,item.entity_id || '',item.user_id || '',JSON.stringify(item.old_data || {}),JSON.stringify(item.new_data || {})]));
 
   const eraseVisitor = async () => {
     const identifier = eraseIdentifier.trim();
@@ -179,7 +191,12 @@ export const VisitorAnalyticsPanel: React.FC = () => {
         </div>
         <div className="flex gap-2">
           <button type="button" onClick={() => void load()} disabled={loading} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold dark:border-slate-600 dark:bg-slate-900"><RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh</button>
-          <button type="button" onClick={exportCsv} disabled={!visibleEvents.length} className="inline-flex items-center gap-2 rounded-lg bg-[#d6ad5b] px-3 py-2 text-sm font-semibold text-slate-950 disabled:opacity-50"><Download className="h-4 w-4" /> Export</button>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={exportCsv} disabled={!visibleEvents.length} className="inline-flex items-center gap-2 rounded-lg bg-[#d6ad5b] px-3 py-2 text-xs font-semibold text-slate-950 disabled:opacity-50"><Download className="h-4 w-4" /> Events</button>
+            <button type="button" onClick={exportSessionsCsv} disabled={!visibleSessions.length} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold dark:border-slate-600 dark:bg-slate-900 disabled:opacity-50"><Download className="h-4 w-4" /> Sessions</button>
+            <button type="button" onClick={exportConsentCsv} disabled={!consents.length} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold dark:border-slate-600 dark:bg-slate-900 disabled:opacity-50"><Download className="h-4 w-4" /> Consent</button>
+            <button type="button" onClick={exportAuditCsv} disabled={!auditRecords.length} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold dark:border-slate-600 dark:bg-slate-900 disabled:opacity-50"><Download className="h-4 w-4" /> Audit</button>
+          </div>
         </div>
       </div>
 
