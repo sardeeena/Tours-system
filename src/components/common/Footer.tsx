@@ -101,7 +101,7 @@ export const Footer: React.FC<FooterProps> = ({
             <div className="flex items-center space-x-3 mb-3.5">
               <img 
                 src="/logo.png" 
-                alt="Kemet Spirit Logo" 
+                alt="Awesome Adventure Tours Logo" 
                 width="160"
                 height="48"
                 loading="lazy"
@@ -109,7 +109,7 @@ export const Footer: React.FC<FooterProps> = ({
                 className="h-12 w-auto object-contain shrink-0 drop-shadow-xs"
               />
               <span className="font-display font-semibold text-stone-900 dark:text-white text-lg tracking-wide">
-                KEMET <span className="text-[#0A6C74] dark:text-[#60C3CC]">SPIRIT</span>
+                AWESOME <span className="text-[#0A6C74] dark:text-[#60C3CC]">ADVENTURE TOURS</span>
               </span>
             </div>
             <p className="text-xs text-stone-600 dark:text-slate-400 leading-relaxed mb-5 max-w-sm">
@@ -309,7 +309,7 @@ export const Footer: React.FC<FooterProps> = ({
               )}
               <li><a href="/blog" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">Travel Journal</a></li>
               <li>
-                <a href="/about" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">About Kemet Spirit</a>
+                <a href="/about" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">About Awesome Adventure Tours</a>
               </li>
               <li>
                 <a href="/contact" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">Contact</a>
@@ -359,7 +359,7 @@ export const Footer: React.FC<FooterProps> = ({
         {/* Payment Methods & Bottom Bar */}
         <div className="mt-12 pt-6 border-t border-[#E8E3DA] dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-stone-500 dark:text-slate-500">
           <div className="flex items-center space-x-3">
-            <span>© {new Date().getFullYear()} Kemet Spirit. All rights reserved.</span>
+            <span>© {new Date().getFullYear()} Awesome Adventure Tours. All rights reserved.</span>
             <span className="text-stone-300 dark:text-slate-700">|</span>
             {/* Footer Theme Toggle */}
             <button
