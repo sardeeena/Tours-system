@@ -3,7 +3,27 @@
 -- rejected for both guest and authenticated customer checkouts.
 BEGIN;
 
-CREATE OR REPLACE FUNCTION private.create_booking_atomic(p_tour_identifier text, p_booking_date date, p_adult_count integer, p_child_count integer DEFAULT 0, p_infant_count integer DEFAULT 0, p_customer_first_name text DEFAULT ''::text, p_customer_last_name text DEFAULT ''::text, p_customer_email text DEFAULT ''::text, p_customer_phone text DEFAULT ''::text, p_customer_country text DEFAULT 'International'::text, p_customer_hotel text DEFAULT NULL::text, p_pickup_location_id text DEFAULT NULL::text, p_pickup_room_number text DEFAULT NULL::text, p_extras jsonb DEFAULT '[]'::jsonb, p_coupon_code text DEFAULT NULL::text, p_payment_method text DEFAULT 'pay_at_pickup'::text, p_special_requests text DEFAULT NULL::text, p_idempotency_key text DEFAULT NULL::text, p_tour_language text DEFAULT NULL::text)
+CREATE OR REPLACE FUNCTION private.create_booking_atomic(
+    p_tour_identifier text,
+    p_booking_date date,
+    p_adult_count integer,
+    p_child_count integer,
+    p_infant_count integer,
+    p_customer_first_name text,
+    p_customer_last_name text,
+    p_customer_email text,
+    p_customer_phone text,
+    p_customer_country text,
+    p_customer_hotel text,
+    p_pickup_location_id text,
+    p_pickup_room_number text,
+    p_extras jsonb,
+    p_coupon_code text,
+    p_payment_method text,
+    p_special_requests text,
+    p_idempotency_key text,
+    p_tour_language text
+)
  RETURNS jsonb
  LANGUAGE plpgsql
  SECURITY DEFINER
