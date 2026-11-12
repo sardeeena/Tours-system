@@ -9,7 +9,7 @@ import { CONCIERGE_SYSTEM_PROMPT, TOUR_CATALOG_SUMMARY } from './src/data/chatKn
 import { STANDARD_PICKUP_LOCATIONS, GLOBAL_BOOKING_EXTRAS } from './src/data/bookingData';
 import { startBookingNotificationWorker } from './src/server/bookingNotificationWorker';
 import { INITIAL_STATIC_PAGES } from './src/data/staticPages';
-import { EXPECTED_KEMET_SUPABASE_PROJECT_REF, isExpectedKemetSupabaseUrl } from './src/lib/supabaseProjectGuard';
+import { EXPECTED_AWESOME_ADVENTURE_TOURS_SUPABASE_PROJECT_REF, isExpectedAwesomeAdventureToursSupabaseUrl } from './src/lib/supabaseProjectGuard';
 
 dotenv.config();
 
@@ -110,8 +110,8 @@ function resolveServerSupabaseConfig(): ServerSupabaseConfig {
   // projects are permitted only when NODE_ENV explicitly marks development/test.
   if (resolvedUrl) {
     const allowNonProductionProject = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === 'test';
-    if (!isExpectedKemetSupabaseUrl(resolvedUrl, allowNonProductionProject)) {
-      configError = `CONFIGURATION ERROR: This production Awesome Adventure Tours server must use Supabase project ${EXPECTED_KEMET_SUPABASE_PROJECT_REF}.`;
+    if (!isExpectedAwesomeAdventureToursSupabaseUrl(resolvedUrl, allowNonProductionProject)) {
+      configError = `CONFIGURATION ERROR: This production Awesome Adventure Tours server must use Supabase project ${EXPECTED_AWESOME_ADVENTURE_TOURS_SUPABASE_PROJECT_REF}.`;
       resolvedUrl = null;
     }
   }
@@ -1919,8 +1919,8 @@ app.all('/api/db/query', rateLimit(60, 60_000), async (req: AuthenticatedRequest
 // These endpoints never publish admin-only data or draft catalogue entries.
 // ------------------------------------------------------------------------------
 
-const KEMET_PUBLIC_ORIGIN = 'https://awesomeadventure.tours';
-const KEMET_CORE_PUBLIC_PATHS = [
+const AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN = 'https://awesomeadventure.tours';
+const AWESOME_ADVENTURE_TOURS_CORE_PUBLIC_PATHS = [
   '/',
   '/excursions',
   '/blog',
@@ -1945,8 +1945,8 @@ function cleanPublicText(value: unknown, maxLength = 500): string {
 
 app.get('/sitemap.xml', async (_req: Request, res: Response) => {
   const urls = new Map<string, string | undefined>();
-  for (const route of KEMET_CORE_PUBLIC_PATHS) {
-    urls.set(`${KEMET_PUBLIC_ORIGIN}${route === '/' ? '/' : route}`, undefined);
+  for (const route of AWESOME_ADVENTURE_TOURS_CORE_PUBLIC_PATHS) {
+    urls.set(`${AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN}${route === '/' ? '/' : route}`, undefined);
   }
 
   if (publicSupabase) {
@@ -1965,7 +1965,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
           const slug = typeof tour.slug === 'string' ? tour.slug.trim() : '';
           if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
           urls.set(
-            `${KEMET_PUBLIC_ORIGIN}/excursions/${encodeURIComponent(slug)}`,
+            `${AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN}/excursions/${encodeURIComponent(slug)}`,
             toSitemapDate(tour.updated_at)
           );
         }
@@ -1996,7 +1996,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
           if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
           if (page?.published === false || page?.status === 'draft' || page?.status === 'unpublished' || page?.seoIndexable === false) continue;
           urls.set(
-            `${KEMET_PUBLIC_ORIGIN}/${encodeURIComponent(slug)}`,
+            `${AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN}/${encodeURIComponent(slug)}`,
             toSitemapDate(page?.updated_at || page?.lastUpdated)
           );
         }
@@ -2029,7 +2029,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
           if (tourCount < 2 && descriptionLength < 300) continue;
           if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
           urls.set(
-            `${KEMET_PUBLIC_ORIGIN}/destinations/${encodeURIComponent(slug)}`,
+            `${AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN}/destinations/${encodeURIComponent(slug)}`,
             toSitemapDate(destination.updated_at)
           );
         }
@@ -2054,7 +2054,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
         for (const post of posts || []) {
           const slug = typeof post.slug === 'string' ? post.slug.trim() : '';
           if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
-          urls.set(`${KEMET_PUBLIC_ORIGIN}/blog/${encodeURIComponent(slug)}`, toSitemapDate(post.updated_at));
+          urls.set(`${AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN}/blog/${encodeURIComponent(slug)}`, toSitemapDate(post.updated_at));
         }
       }
     } catch (error) {
@@ -2198,7 +2198,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
 });
 
 
-const KEMET_MCP_TOOLS = [
+const AWESOME_ADVENTURE_TOURS_MCP_TOOLS = [
   {
     name: 'search_published_excursions',
     description: 'Search published Awesome Adventure Tours excursions by words in the title or description. Returns public catalogue information only.',
@@ -2240,7 +2240,7 @@ app.get('/.well-known/mcp/server-card.json', (_req: Request, res: Response) => {
     capabilities: { tools: { listChanged: false } },
     authentication: { required: false, schemes: [] },
     instructions: 'Only published public excursion catalogue data is available. Confirm current prices and availability on the linked live excursion page before making travel decisions.',
-    tools: KEMET_MCP_TOOLS,
+    tools: AWESOME_ADVENTURE_TOURS_MCP_TOOLS,
   });
 });
 
@@ -2272,7 +2272,7 @@ app.post('/mcp', rateLimit(60, 60_000), async (req: Request, res: Response) => {
   }
 
   if (request.method === 'ping') return reply({});
-  if (request.method === 'tools/list') return reply({ tools: KEMET_MCP_TOOLS });
+  if (request.method === 'tools/list') return reply({ tools: AWESOME_ADVENTURE_TOURS_MCP_TOOLS });
   if (request.method !== 'tools/call') return fail(-32601, 'Method not found.');
 
   const toolName = request.params?.name;
@@ -2402,7 +2402,7 @@ function seoSafeImage(value: unknown): string {
   }
 }
 
-async function loadKemetSeoOverride(entityType: string, identifier: string, isPageSlug: boolean): Promise<any | null> {
+async function loadAwesomeAdventureToursSeoOverride(entityType: string, identifier: string, isPageSlug: boolean): Promise<any | null> {
   if (!publicSupabase || !identifier) return null;
   try {
     let query = publicSupabase.from('seo_metadata')
@@ -2433,7 +2433,7 @@ function seoPrice(priceValue: unknown, currencyValue: unknown): string {
   }
 }
 
-async function loadKemetTours(): Promise<any[]> {
+async function loadAwesomeAdventureToursTours(): Promise<any[]> {
   if (!publicSupabase) return [];
   try {
     const { data, error } = await publicSupabase.from('tours')
@@ -2450,7 +2450,7 @@ async function loadKemetTours(): Promise<any[]> {
   }
 }
 
-async function loadKemetPages(): Promise<any[]> {
+async function loadAwesomeAdventureToursPages(): Promise<any[]> {
   let publishedPages: any[] = [];
   if (publicSupabase) {
     try {
@@ -2478,7 +2478,7 @@ async function loadKemetPages(): Promise<any[]> {
   ];
 }
 
-async function loadKemetDestinations(): Promise<any[]> {
+async function loadAwesomeAdventureToursDestinations(): Promise<any[]> {
   if (!publicSupabase) return [];
   try {
     const { data, error } = await publicSupabase.from('destinations')
@@ -2538,7 +2538,7 @@ function seoUpsertMeta(html: string, kind: 'name' | 'property', key: string, val
   return pattern.test(html) ? html.replace(pattern, tag) : html.replace('</head>', `${tag}</head>`);
 }
 
-async function renderKemetPublicHtml(pathname: string, template: string): Promise<{ html: string; statusCode: number; noindex: boolean; nofollow: boolean }> {
+async function renderAwesomeAdventureToursPublicHtml(pathname: string, template: string): Promise<{ html: string; statusCode: number; noindex: boolean; nofollow: boolean }> {
   const path = pathname.replace(/\/+$/, '') || '/';
   const origin = 'https://awesomeadventure.tours';
   let title = 'Awesome Adventure Tours | Red Sea Excursions in Egypt';
@@ -2564,8 +2564,8 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
   let seoIdentifierIsPageSlug = true;
 
   if (path === '/' || path === '/excursions') {
-    tours = await loadKemetTours();
-    const allDestinations = await loadKemetDestinations();
+    tours = await loadAwesomeAdventureToursTours();
+    const allDestinations = await loadAwesomeAdventureToursDestinations();
     const publishedDestinationIds = new Set(
       tours.map((tour) => tour.destination_id).filter(Boolean).map(String)
     );
@@ -2784,7 +2784,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
         <div class="seo-grid">${cards}</div></article></main>`;
     }
   } else {
-    const pages = await loadKemetPages();
+    const pages = await loadAwesomeAdventureToursPages();
     const page = pages.find((item: any) => item && item.slug === path.slice(1));
     if (page) {
       pageKind = 'static';
@@ -2815,7 +2815,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
   }
 
   if (pageKind !== 'not-found') {
-    const override = await loadKemetSeoOverride(seoEntityType, seoIdentifier, seoIdentifierIsPageSlug);
+    const override = await loadAwesomeAdventureToursSeoOverride(seoEntityType, seoIdentifier, seoIdentifierIsPageSlug);
     if (override?.seo_title) title = seoPlainText(override.seo_title, 180);
     if (override?.meta_description) description = seoPlainText(override.meta_description, 300);
     if (override?.og_image) pageImage = seoSafeImage(override.og_image) || pageImage;
@@ -2840,7 +2840,7 @@ async function renderKemetPublicHtml(pathname: string, template: string): Promis
     }
   }
   const configuredSameAs = [
-    ...(process.env.KEMET_SAME_AS_URLS || '').split(','),
+    ...((process.env.BRAND_SAME_AS_URLS || process.env.KEMET_SAME_AS_URLS) || '').split(','),
     ...cmsSocialProfiles,
   ]
     .map((value) => value.trim())
@@ -3004,7 +3004,7 @@ async function startServer() {
       const acceptsMarkdown = (req.get('accept') || '').split(',').some((value) => value.trim().toLowerCase().startsWith('text/markdown'));
       if (!acceptsMarkdown) return next();
 
-      const tours = await loadKemetTours();
+      const tours = await loadAwesomeAdventureToursTours();
       const lines = [
         '# Awesome Adventure Tours',
         '',
@@ -3053,7 +3053,7 @@ async function startServer() {
 
       try {
         const indexHtml = fs.readFileSync(indexHtmlPath, 'utf8');
-        const rendered = await renderKemetPublicHtml(req.path, indexHtml);
+        const rendered = await renderAwesomeAdventureToursPublicHtml(req.path, indexHtml);
         res.status(rendered.statusCode);
         res.type('html');
         if (rendered.noindex) {
