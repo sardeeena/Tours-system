@@ -86,6 +86,7 @@ export const AdminMediaLibrary: React.FC = () => {
       setTours(loadedTours);
     } catch (err: any) {
       console.warn('Failed to load media items:', err);
+      setUploadError('We could not load your media library. Please refresh and try again.');
     } finally {
       setLoading(false);
     }
