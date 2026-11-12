@@ -68,6 +68,10 @@ $function$;
 REVOKE ALL ON FUNCTION private.capture_business_audit() FROM PUBLIC, anon, authenticated;
 
 -- Audit access is mediated by Superadmin AAL2 server endpoints only.
+ALTER TABLE public.visitor_sessions
+  ADD COLUMN IF NOT EXISTS utm_term text,
+  ADD COLUMN IF NOT EXISTS utm_content text;
+
 ALTER TABLE public.visitor_analytics_settings
   ADD COLUMN IF NOT EXISTS technical_event_retention_days integer NOT NULL DEFAULT 90
     CHECK (technical_event_retention_days BETWEEN 7 AND 730);
