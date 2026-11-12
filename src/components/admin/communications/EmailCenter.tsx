@@ -72,24 +72,24 @@ export const EmailCenter: React.FC<EmailCenterProps> = ({ onNavigateTab }) => {
 
       <section className="grid gap-4 md:grid-cols-3">
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
-          <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white"><ShieldCheck className="h-4 w-4 text-[#b58b3a]" /> Resend provider</div>
+          <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white"><ShieldCheck className="h-4 w-4 text-[#b58b3a]" /> Email service</div>
           <div className="mt-3 flex items-center gap-2">
             <span className={provider?.email.isConfigured ? 'h-2.5 w-2.5 rounded-full bg-emerald-500' : 'h-2.5 w-2.5 rounded-full bg-amber-500'} />
             <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">{provider?.email.isConfigured ? 'Configured' : 'Needs configuration'}</span>
           </div>
           <p className="mt-2 break-all text-xs text-slate-500">{provider?.email.fromEmail || 'Sender address is not available'}</p>
-          {provider?.email.configurationIssue === 'invalid_from_email' && <p className="mt-2 text-xs text-amber-700">Sender address failed validation. Check the RESEND_FROM_EMAIL value in Hostinger.</p>}
-          {provider?.email.configurationIssue === 'missing_api_key' && <p className="mt-2 text-xs text-amber-700">Resend API key is missing from the server environment.</p>}
+          {provider?.email.configurationIssue === 'invalid_from_email' && <p className="mt-2 text-xs text-amber-700">The sender email address needs attention. Please contact a Superadmin.</p>}
+          {provider?.email.configurationIssue === 'missing_api_key' && <p className="mt-2 text-xs text-amber-700">Email sending needs attention. Please contact a Superadmin.</p>}
           <div className="mt-3 space-y-1 text-xs text-slate-500">
-            <p>Webhook signing secret: <strong className={provider?.email.webhookConfigured ? 'text-emerald-600' : 'text-amber-600'}>{provider?.email.webhookConfigured ? 'Configured' : 'Not configured'}</strong></p>
+            <p>Delivery updates: <strong className={provider?.email.webhookConfigured ? 'text-emerald-600' : 'text-amber-600'}>{provider?.email.webhookConfigured ? 'Configured' : 'Not configured'}</strong></p>
             <p>Booking notification worker: <strong className={provider?.email.bookingWorkerEnabled ? 'text-emerald-600' : 'text-amber-600'}>{provider?.email.bookingWorkerEnabled ? 'Enabled' : 'Disabled'}</strong></p>
-            <p>Secrets are never displayed in this dashboard.</p>
+            <p>Sensitive account details are protected.</p>
           </div>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
           <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white"><Activity className="h-4 w-4 text-[#b58b3a]" /> Delivery activity</div>
           <p className="mt-3 text-2xl font-bold text-slate-900 dark:text-white">{loading ? '—' : events.length}</p>
-          <p className="mt-1 text-xs text-slate-500">Recent verified Resend webhook events</p>
+          <p className="mt-1 text-xs text-slate-500">Recent delivery updates</p>
           {eventError && <p className="mt-2 text-xs text-amber-600">{eventError}</p>}
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900">
