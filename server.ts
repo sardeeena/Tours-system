@@ -554,7 +554,10 @@ function requireCommunicationsStaff(req: AuthenticatedRequest, res: Response): b
 app.get('/api/communications/status', rateLimit(60, 60_000), (req: AuthenticatedRequest, res: Response) => {
   if (!requireCommunicationsStaff(req, res)) return;
 
-  const emailConfigured = Boolean(process.env.RESEND_API_KEY?.trim() && isValidEmail(normalizeSenderEmail(process.env.RESEND_FROM_EMAIL || '')));
+  const normalizedFromEmail = normalizeSenderEmail(process.env.RESEND_FROM_EMAIL || '');
+  const apiKeyPresent = Boolean(process.env.RESEND_API_KEY?.trim());
+  const fromEmailValid = isValidEmail(normalizedFromEmail);
+  const emailConfigured = apiKeyPresent && fromEmailValid;
   const whatsappConfigured = Boolean(
     process.env.WHATSAPP_ACCESS_TOKEN?.trim()
     && process.env.WHATSAPP_PHONE_NUMBER_ID?.trim()
@@ -565,7 +568,8 @@ app.get('/api/communications/status', rateLimit(60, 60_000), (req: Authenticated
     email: {
       configured: emailConfigured,
       provider: 'Resend',
-      fromEmail: normalizeSenderEmail(process.env.RESEND_FROM_EMAIL || ''),
+      fromEmail: normalizedFromEmail,
+      configurationIssue: !apiKeyPresent ? 'missing_api_key' : !fromEmailValid ? 'invalid_from_email' : null,
       fromName: process.env.RESEND_FROM_NAME?.trim() || 'Awesome Adventure Tours',
       webhookConfigured: (process.env.RESEND_WEBHOOK_SECRET?.trim() || '').startsWith('whsec_'),
       bookingWorkerEnabled: process.env.BOOKING_NOTIFICATION_WORKER_ENABLED?.trim().toLowerCase() === 'true',
