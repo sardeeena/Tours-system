@@ -35,6 +35,7 @@ import {
   AutomationEventType,
 } from '../../../types/communication';
 import { useToast } from '../../../contexts/ToastContext';
+import { useAuth } from '../../../contexts/AuthContext';
 
 interface CommunicationsHistoryProps {
   onNavigateTab?: (tabId: string, param?: string) => void;
@@ -42,6 +43,8 @@ interface CommunicationsHistoryProps {
 
 export const CommunicationsHistory: React.FC<CommunicationsHistoryProps> = ({ onNavigateTab }) => {
   const { showToast } = useToast();
+  const { user } = useAuth();
+  const isSuperAdmin = Boolean(user && (user.role === 'super_admin' || user.roles?.includes('super_admin')));
 
   const [activeView, setActiveView] = useState<'messages' | 'automation'>('messages');
   const [messages, setMessages] = useState<CommunicationMessage[]>([]);
@@ -193,13 +196,13 @@ export const CommunicationsHistory: React.FC<CommunicationsHistoryProps> = ({ on
           </div>
           <div>
             <h1 className="text-xl font-bold text-white flex items-center gap-2">
-              Communication &amp; Automation Hub
+              Communication Center
               <span className="text-xs font-normal px-2.5 py-0.5 rounded-full bg-stone-800 text-stone-300 border border-stone-700">
-                {activeView === 'messages' ? `${messages.length} Dispatched Records` : `${automationEvents.length} Automation Events`}
+                {messages.length} Messages
               </span>
             </h1>
             <p className="text-xs text-stone-400">
-              Audit trail for customer communications and event-driven automation bus without background loops
+              Review customer messages and delivery activity.
             </p>
           </div>
         </div>
@@ -216,7 +219,7 @@ export const CommunicationsHistory: React.FC<CommunicationsHistoryProps> = ({ on
             >
               Dispatch Logs
             </button>
-            <button
+            {isSuperAdmin && <button
               type="button"
               onClick={() => setActiveView('automation')}
               className={`px-3 py-1 rounded font-semibold flex items-center space-x-1 transition-colors cursor-pointer ${
@@ -224,8 +227,8 @@ export const CommunicationsHistory: React.FC<CommunicationsHistoryProps> = ({ on
               }`}
             >
               <Zap className="w-3 h-3 text-amber-400" />
-              <span>Event Bus</span>
-            </button>
+              <span>System Events</span>
+            </button>}
           </div>
 
           <button
@@ -250,7 +253,7 @@ export const CommunicationsHistory: React.FC<CommunicationsHistoryProps> = ({ on
         </div>
       </div>
 
-      {activeView === 'messages' ? (
+      {activeView === 'messages' || !isSuperAdmin ? (
         <>
           {/* KPI Metric Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
