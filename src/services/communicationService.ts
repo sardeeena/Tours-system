@@ -1,6 +1,7 @@
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import {
   CommunicationMessage,
+  EmailProviderEvent,
   CommunicationTemplate,
   MessageDeliveryStatus,
   CommunicationChannel,
@@ -295,65 +296,84 @@ Captain & Crew - Awesome Adventure Tours`,
   },
 ];
 
+function mapCommunicationTemplateRow(row: any): CommunicationTemplate {
+  return {
+    id: String(row.id || row.template_key),
+    templateKey: String(row.template_key),
+    name: String(row.name || row.template_key),
+    channel: row.channel === 'Email' || row.channel === 'WhatsApp' ? row.channel : 'Both',
+    subject: typeof row.subject === 'string' ? row.subject : null,
+    bodyText: String(row.body_text || ''),
+    variables: Array.isArray(row.variables) ? row.variables.map(String) : [],
+    isActive: row.is_active !== false,
+    updatedAt: row.updated_at || row.created_at || undefined,
+  };
+}
+
 export async function listTemplates(): Promise<CommunicationTemplate[]> {
-  const current = getLocal<CommunicationTemplate[]>(LOCAL_TEMPLATES_KEY, DEFAULT_TEMPLATES);
-  // Ensure any newly added standard templates are present in local storage
-  const currentKeys = new Set(current.map((t) => t.templateKey));
-  const missing = DEFAULT_TEMPLATES.filter((t) => !currentKeys.has(t.templateKey));
-  if (missing.length > 0) {
-    const merged = [...current, ...missing];
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase
+      .from('communication_templates')
+      .select('id,template_key,name,channel,subject,body_text,variables,is_active,created_at,updated_at')
+      .order('name', { ascending: true });
+    if (error) throw new Error('Unable to load email templates from the database: ' + error.message);
+    const persisted = (data || []).map(mapCommunicationTemplateRow);
+    const persistedKeys = new Set(persisted.map((template) => template.templateKey));
+    const merged = [...persisted, ...DEFAULT_TEMPLATES.filter((template) => !persistedKeys.has(template.templateKey))];
     setLocal(LOCAL_TEMPLATES_KEY, merged);
     return merged;
   }
-  return current;
+
+  const current = getLocal<CommunicationTemplate[]>(LOCAL_TEMPLATES_KEY, DEFAULT_TEMPLATES);
+  const currentKeys = new Set(current.map((template) => template.templateKey));
+  const merged = [...current, ...DEFAULT_TEMPLATES.filter((template) => !currentKeys.has(template.templateKey))];
+  setLocal(LOCAL_TEMPLATES_KEY, merged);
+  return merged;
 }
 
 export async function saveTemplate(template: CommunicationTemplate): Promise<void> {
-  const all = await listTemplates();
-  const exists = all.findIndex((t) => t.id === template.id || t.templateKey === template.templateKey);
-  let updated: CommunicationTemplate[];
-  if (exists >= 0) {
-    updated = [...all];
-    updated[exists] = { ...template, updatedAt: new Date().toISOString() };
-  } else {
-    updated = [template, ...all];
-  }
-  setLocal(LOCAL_TEMPLATES_KEY, updated);
-
   if (isSupabaseConfigured()) {
-    try {
-      await supabase.from('communication_templates').upsert({
-        template_key: template.templateKey,
-        name: template.name,
-        channel: template.channel,
-        subject: template.subject,
-        body_text: template.bodyText,
-        variables: template.variables,
-        is_active: template.isActive,
-      });
-    } catch {
-      // ignore
-    }
+    const { error } = await supabase.from('communication_templates').upsert({
+      template_key: template.templateKey,
+      name: template.name,
+      channel: template.channel,
+      subject: template.subject,
+      body_text: template.bodyText,
+      variables: template.variables,
+      is_active: template.isActive,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'template_key' });
+    if (error) throw new Error('Template was not saved to the database: ' + error.message);
   }
+
+  await logActivity({ eventType: 'staff_note', title: 'Email template updated', description: 'Updated the ' + template.name + ' email template.', actor: 'Communications Admin', metadata: { templateKey: template.templateKey } });
+
+  const all = await listTemplates();
+  const exists = all.findIndex((item) => item.templateKey === template.templateKey || item.id === template.id);
+  const updated = [...all];
+  const normalized = { ...template, updatedAt: new Date().toISOString() };
+  if (exists >= 0) updated[exists] = normalized;
+  else updated.unshift(normalized);
+  setLocal(LOCAL_TEMPLATES_KEY, updated);
 }
 
 export async function deleteTemplate(templateIdOrKey: string): Promise<void> {
-  const all = await listTemplates();
-  const updated = all.filter((t) => t.id !== templateIdOrKey && t.templateKey !== templateIdOrKey);
-  setLocal(LOCAL_TEMPLATES_KEY, updated);
-
   if (isSupabaseConfigured()) {
-    try {
-      await supabase
-        .from('communication_templates')
-        .delete()
-        .or(`id.eq.${templateIdOrKey},template_key.eq.${templateIdOrKey}`);
-    } catch {
-      // ignore
+    const all = await listTemplates();
+    const target = all.find((item) => item.id === templateIdOrKey || item.templateKey === templateIdOrKey);
+    if (!target) return;
+    if (DEFAULT_TEMPLATES.some((item) => item.templateKey === target.templateKey)) {
+      const { error } = await supabase.from('communication_templates').update({ is_active: false, updated_at: new Date().toISOString() }).eq('template_key', target.templateKey);
+      if (error) throw new Error('Default template could not be disabled: ' + error.message);
+    } else {
+      const { error } = await supabase.from('communication_templates').delete().eq('template_key', target.templateKey);
+      if (error) throw new Error('Template was not deleted from the database: ' + error.message);
     }
+    await logActivity({ eventType: 'staff_note', title: 'Email template removed', description: 'Removed or disabled the ' + target.name + ' email template.', actor: 'Communications Admin', metadata: { templateKey: target.templateKey } });
   }
+  const all = await listTemplates();
+  setLocal(LOCAL_TEMPLATES_KEY, all.filter((item) => item.id !== templateIdOrKey && item.templateKey !== templateIdOrKey));
 }
-
 /**
  * Replaces {{variable}} placeholders with real booking, payment, and customer values
  */
@@ -574,7 +594,7 @@ export function saveProviderConfig(config: ProviderConfig): void {
 // ------------------------------------------------------------------------------
 
 type ServerCommunicationStatus = {
-  email?: { configured?: boolean; provider?: string; fromEmail?: string; fromName?: string };
+  email?: { configured?: boolean; provider?: string; fromEmail?: string; fromName?: string; webhookConfigured?: boolean; bookingWorkerEnabled?: boolean; configurationIssue?: string | null };
   whatsapp?: {
     configured?: boolean;
     provider?: string;
@@ -601,6 +621,9 @@ export async function refreshProviderConfigFromServer(): Promise<ProviderConfig>
     const status = await response.json() as ServerCommunicationStatus;
     config.email.provider = status.email?.configured ? 'resend' : 'none';
     config.email.isConfigured = status.email?.configured === true;
+    config.email.webhookConfigured = status.email?.webhookConfigured === true;
+    config.email.bookingWorkerEnabled = status.email?.bookingWorkerEnabled === true;
+    config.email.configurationIssue = status.email?.configurationIssue || null;
     if (status.email?.fromEmail) config.email.fromEmail = status.email.fromEmail;
     if (status.email?.fromName) config.email.fromName = status.email.fromName;
 
@@ -1031,6 +1054,25 @@ export async function logCommunicationMessage(msg: CommunicationMessage, persist
       // ignore
     }
   }
+}
+
+export async function listEmailProviderEvents(limit = 20): Promise<EmailProviderEvent[]> {
+  if (!isSupabaseConfigured()) return [];
+  const safeLimit = Math.min(100, Math.max(1, Math.floor(limit)));
+  const { data, error } = await supabase
+    .from('email_provider_events')
+    .select('id,event_type,recipient_address,provider_message_id,occurred_at,received_at')
+    .order('received_at', { ascending: false })
+    .limit(safeLimit);
+  if (error) throw new Error('Unable to load verified email provider events: ' + error.message);
+  return (data || []).map((row: any) => ({
+    id: String(row.id),
+    eventType: String(row.event_type),
+    recipientAddress: row.recipient_address || null,
+    providerMessageId: String(row.provider_message_id),
+    occurredAt: row.occurred_at || null,
+    receivedAt: String(row.received_at),
+  }));
 }
 
 export async function listCommunicationMessages(filter?: {

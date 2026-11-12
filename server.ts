@@ -1,4 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
+import { renderBrandedEmailHtml } from './src/utils/emailTemplate';
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import { GoogleGenAI } from '@google/genai';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
@@ -420,9 +421,16 @@ const serverInquiries: ServerInquiry[] = [];
 const serverNewsletters: ServerNewsletterSubscriber[] = [];
 
 // Helper email validator
+function normalizeSenderEmail(value: string): string {
+  const trimmed = value.trim().replace(/^["']|["']$/g, '');
+  const mailbox = trimmed.match(/<\s*([^<>]+)\s*>/);
+  return (mailbox ? mailbox[1] : trimmed).trim();
+}
+
 function isValidEmail(email: string): boolean {
-  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
-  return emailRegex.test(email) && email.length <= 254;
+  const normalized = normalizeSenderEmail(email);
+  const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
+  return emailRegex.test(normalized) && normalized.length <= 254;
 }
 
 // ------------------------------------------------------------------------------
@@ -546,7 +554,10 @@ function requireCommunicationsStaff(req: AuthenticatedRequest, res: Response): b
 app.get('/api/communications/status', rateLimit(60, 60_000), (req: AuthenticatedRequest, res: Response) => {
   if (!requireCommunicationsStaff(req, res)) return;
 
-  const emailConfigured = Boolean(process.env.RESEND_API_KEY?.trim() && isValidEmail(process.env.RESEND_FROM_EMAIL?.trim() || ''));
+  const normalizedFromEmail = normalizeSenderEmail(process.env.RESEND_FROM_EMAIL || '');
+  const apiKeyPresent = Boolean(process.env.RESEND_API_KEY?.trim());
+  const fromEmailValid = isValidEmail(normalizedFromEmail);
+  const emailConfigured = apiKeyPresent && fromEmailValid;
   const whatsappConfigured = Boolean(
     process.env.WHATSAPP_ACCESS_TOKEN?.trim()
     && process.env.WHATSAPP_PHONE_NUMBER_ID?.trim()
@@ -557,8 +568,11 @@ app.get('/api/communications/status', rateLimit(60, 60_000), (req: Authenticated
     email: {
       configured: emailConfigured,
       provider: 'Resend',
-      fromEmail: process.env.RESEND_FROM_EMAIL?.trim() || '',
+      fromEmail: normalizedFromEmail,
+      configurationIssue: !apiKeyPresent ? 'missing_api_key' : !fromEmailValid ? 'invalid_from_email' : null,
       fromName: process.env.RESEND_FROM_NAME?.trim() || 'Awesome Adventure Tours',
+      webhookConfigured: (process.env.RESEND_WEBHOOK_SECRET?.trim() || '').startsWith('whsec_'),
+      bookingWorkerEnabled: process.env.BOOKING_NOTIFICATION_WORKER_ENABLED?.trim().toLowerCase() === 'true',
     },
     whatsapp: {
       configured: whatsappConfigured,
@@ -588,7 +602,7 @@ app.post('/api/communications/email', rateLimit(20, 60_000), async (req: Authent
   }
 
   const apiKey = process.env.RESEND_API_KEY?.trim() || '';
-  const fromEmail = process.env.RESEND_FROM_EMAIL?.trim() || '';
+  const fromEmail = normalizeSenderEmail(process.env.RESEND_FROM_EMAIL || '');
   const fromName = (process.env.RESEND_FROM_NAME || 'Awesome Adventure Tours').replace(/[<>\r\n]/g, '').trim() || 'Awesome Adventure Tours';
   const senderReady = Boolean(apiKey && isValidEmail(fromEmail));
   const idempotencyKey = typeof req.headers['idempotency-key'] === 'string'
@@ -642,6 +656,7 @@ app.post('/api/communications/email', rateLimit(20, 60_000), async (req: Authent
         ...(isValidEmail(process.env.RESEND_REPLY_TO?.trim() || '') ? { reply_to: process.env.RESEND_REPLY_TO!.trim() } : {}),
         subject,
         text: textBody,
+        html: renderBrandedEmailHtml({ heading: subject, preheader: subject, bodyText: textBody }),
         tags: [{ name: 'communication_id', value: String(audit.id) }],
       }),
       signal: AbortSignal.timeout(15_000),
@@ -1443,7 +1458,7 @@ async function sendInquiryNotificationEmail(params: {
   }
 
   const apiKey = process.env.RESEND_API_KEY?.trim() || '';
-  const fromEmail = process.env.RESEND_FROM_EMAIL?.trim() || '';
+  const fromEmail = normalizeSenderEmail(process.env.RESEND_FROM_EMAIL || '');
   const fromName = (process.env.RESEND_FROM_NAME || 'Awesome Adventure Tours').replace(/[<>\r\n]/g, '').trim() || 'Awesome Adventure Tours';
   const configured = Boolean(apiKey && isValidEmail(fromEmail));
   const { data: log, error: logError } = await serverSupabase
@@ -1479,6 +1494,7 @@ async function sendInquiryNotificationEmail(params: {
         ...(params.replyTo && isValidEmail(params.replyTo) ? { reply_to: params.replyTo } : {}),
         subject: params.subject,
         text: params.content,
+        html: renderBrandedEmailHtml({ heading: params.subject, preheader: params.subject, bodyText: params.content }),
         tags: [{ name: 'communication_id', value: String(log.id) }],
       }),
       signal: AbortSignal.timeout(15_000),
@@ -1754,17 +1770,34 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
   }
 
   const apiKey = process.env.RESEND_API_KEY?.trim() || '';
-  const fromEmail = process.env.RESEND_FROM_EMAIL?.trim() || '';
+  const fromEmail = normalizeSenderEmail(process.env.RESEND_FROM_EMAIL || '');
   const fromName = (process.env.RESEND_FROM_NAME || 'Awesome Adventure Tours').replace(/[<>\r\n]/g, '').trim() || 'Awesome Adventure Tours';
   const unsubscribeToken = createNewsletterUnsubscribeToken(subscriber.id, cleanEmail);
   const unsubscribeUrl = `https://awesomeadventure.tours/api/newsletter/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`;
-  const subject = 'Welcome to Awesome Adventure Tours — your 15% voucher';
-  const content = `Thank you for subscribing to Awesome Adventure Tours. Your 15% voucher code is REDSEA15. Use it when enquiring about your next excursion.\n\nYou can unsubscribe at any time: ${unsubscribeUrl}`;
+  const { data: welcomeTemplate, error: welcomeTemplateError } = await serverSupabase
+    .from('communication_templates')
+    .select('subject,body_text,is_active')
+    .eq('template_key', 'newsletter_welcome')
+    .maybeSingle();
+  if (welcomeTemplateError) {
+    console.error('Newsletter welcome template lookup failed:', welcomeTemplateError.message);
+  }
+  const templateVariables: Record<string, string> = {
+    discount_code: 'REDSEA15',
+    unsubscribe_url: unsubscribeUrl,
+  };
+  const renderNewsletterTemplate = (value: string) => value.replace(/\{\{([a-zA-Z0-9_]+)\}\}/g, (match, key) =>
+    Object.prototype.hasOwnProperty.call(templateVariables, key) ? templateVariables[key] : match
+  );
+  const subject = renderNewsletterTemplate(String(welcomeTemplate?.subject || 'Welcome to Awesome Adventure Tours — your 15% voucher'));
+  const content = renderNewsletterTemplate(String(welcomeTemplate?.body_text || 'Thank you for subscribing to Awesome Adventure Tours. Your 15% voucher code is {{discount_code}}. Use it when enquiring about your next excursion.\n\nYou can unsubscribe at any time: {{unsubscribe_url}}.'));
 
   let emailStatus: 'sent' | 'failed' = 'failed';
   let providerMessageId: string | null = null;
-  const senderReady = Boolean(apiKey && isValidEmail(fromEmail));
-  const failureReason = senderReady ? null : 'Resend is not configured: a valid RESEND_API_KEY and RESEND_FROM_EMAIL are required in Hostinger.';
+  const providerReady = Boolean(apiKey && isValidEmail(fromEmail));
+  const templateEnabled = welcomeTemplate?.is_active !== false;
+  const senderReady = providerReady && templateEnabled;
+  const failureReason = !templateEnabled ? 'Newsletter welcome template is disabled.' : providerReady ? null : 'Resend is not configured: a valid RESEND_API_KEY and RESEND_FROM_EMAIL are required in Hostinger.';
 
   const { data: messageLog, error: logInsertError } = await serverSupabase
     .from('communication_messages')
@@ -1776,7 +1809,7 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
       subject,
       content,
       status: senderReady ? 'queued' : 'failed',
-      provider_name: senderReady ? 'Resend' : 'Not configured',
+      provider_name: providerReady ? 'Resend' : 'Not configured',
       failure_reason: failureReason,
       staff_name: 'Newsletter Subscription Service',
     })
@@ -1812,7 +1845,7 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
           subject,
           text: content,
           tags: [{ name: 'communication_id', value: String(messageLog.id) }],
-          html: `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#17212b;max-width:600px;margin:auto"><h1>Welcome aboard!</h1><p>Thank you for subscribing to Awesome Adventure Tours.</p><p>Your 15% voucher code:</p><p style="font-size:28px;font-weight:bold;letter-spacing:2px;color:#0a6c74">REDSEA15</p><p>Use it when enquiring about your next excursion.</p><hr><p style="font-size:12px;color:#64748b">You received this email because you subscribed to updates from Awesome Adventure Tours. <a href="${unsubscribeUrl}">Unsubscribe</a>.</p></div>`,
+          html: renderBrandedEmailHtml({ heading: 'Welcome aboard!', preheader: subject, bodyText: content, footerNote: 'You received this email because you subscribed to Awesome Adventure Tours. Use the unsubscribe link above if you no longer want updates.' }),
         }),
         signal: AbortSignal.timeout(15_000),
       });

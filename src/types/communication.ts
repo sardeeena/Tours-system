@@ -45,6 +45,15 @@ export interface CommunicationTemplate {
   updatedAt?: string;
 }
 
+export interface EmailProviderEvent {
+  id: string;
+  eventType: string;
+  recipientAddress?: string | null;
+  providerMessageId: string;
+  occurredAt?: string | null;
+  receivedAt: string;
+}
+
 export interface CommunicationMessage {
   id: string;
   channel: CommunicationChannel;
@@ -109,6 +118,9 @@ export interface ProviderConfig {
     fromEmail?: string;
     fromName?: string;
     isConfigured: boolean;
+    webhookConfigured?: boolean;
+    bookingWorkerEnabled?: boolean;
+    configurationIssue?: string | null;
   };
   whatsapp: {
     provider: 'meta_cloud' | 'twilio' | 'custom' | 'none';

@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { renderBrandedEmailHtml } from '../utils/emailTemplate';
 
 type QueueMessage = {
   msg_id: number;
@@ -25,8 +26,15 @@ type BookingRow = {
 const QUEUE_POLL_INTERVAL_MS = 15_000;
 const MAX_DELIVERY_ATTEMPTS = 5;
 
+function normalizeSenderEmail(value: string): string {
+  const trimmed = value.trim().replace(/^["']|["']$/g, '');
+  const mailbox = trimmed.match(/<\s*([^<>]+)\s*>/);
+  return (mailbox ? mailbox[1] : trimmed).trim();
+}
+
 function isValidEmail(value: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) && value.length <= 254;
+  const normalized = normalizeSenderEmail(value);
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized) && normalized.length <= 254;
 }
 
 function renderTemplate(source: string, values: Record<string, string>): string {
@@ -287,6 +295,7 @@ async function processMessage(
       bcc: [process.env.BOOKING_NOTIFICATION_EMAIL?.trim() || 'reservation@awesomeadventure.tours'],
       subject,
       text: content,
+      html: renderBrandedEmailHtml({ heading: subject, preheader: subject, bodyText: content }),
       tags: [{ name: 'communication_id', value: String(logRow!.id) }],
     }),
     signal: AbortSignal.timeout(15_000),
@@ -335,7 +344,7 @@ export function startBookingNotificationWorker(client: SupabaseClient): () => vo
   }
 
   const apiKey = process.env.RESEND_API_KEY?.trim() || '';
-  const fromEmail = process.env.RESEND_FROM_EMAIL?.trim() || '';
+  const fromEmail = normalizeSenderEmail(process.env.RESEND_FROM_EMAIL || '');
   const fromName = process.env.RESEND_FROM_NAME?.trim() || 'Awesome Adventure Tours';
 
   if (!apiKey || !isValidEmail(fromEmail)) {

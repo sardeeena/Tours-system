@@ -115,6 +115,7 @@ const CommunicationsWhatsApp = lazy(() => import('./components/admin/communicati
 const CommunicationsTemplates = lazy(() => import('./components/admin/communications/CommunicationsTemplates').then(m => ({ default: m.CommunicationsTemplates })));
 const CommunicationsNotifications = lazy(() => import('./components/admin/communications/CommunicationsNotifications').then(m => ({ default: m.CommunicationsNotifications })));
 const CommunicationsHistory = lazy(() => import('./components/admin/communications/CommunicationsHistory').then(m => ({ default: m.CommunicationsHistory })));
+const EmailCenter = lazy(() => import('./components/admin/communications/EmailCenter').then(m => ({ default: m.EmailCenter })));
 
 const AdminLoadingFallback = () => (
   <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6 text-white">
@@ -878,7 +879,9 @@ function MainApp() {
         activeAdminTab = 'fin_payments';
       }
     } else if (adminSubRoute?.main === 'communications' || adminSubRoute?.main === 'comm') {
-      if (adminSubRoute.sub === 'email' || adminSubRoute.sub === 'mail') {
+      if (adminSubRoute.sub === 'center' || adminSubRoute.sub === 'email-center') {
+        activeAdminTab = 'comm_center';
+      } else if (adminSubRoute.sub === 'email' || adminSubRoute.sub === 'mail') {
         activeAdminTab = 'comm_email';
       } else if (adminSubRoute.sub === 'whatsapp' || adminSubRoute.sub === 'wa') {
         activeAdminTab = 'comm_whatsapp';
@@ -889,7 +892,7 @@ function MainApp() {
       } else if (adminSubRoute.sub === 'history' || adminSubRoute.sub === 'log') {
         activeAdminTab = 'comm_history';
       } else {
-        activeAdminTab = 'comm_email';
+        activeAdminTab = 'comm_center';
       }
     } else if (
       adminSubRoute?.main &&
@@ -938,6 +941,7 @@ function MainApp() {
         'fin_balances',
         'fin_revenue',
         'fin_reports',
+        'comm_center',
         'comm_email',
         'comm_whatsapp',
         'comm_templates',
@@ -1101,6 +1105,10 @@ function MainApp() {
           {activeAdminTab === 'fin_reports' && <FinanceReports />}
 
           {/* COMMUNICATIONS MODULES */}
+          {activeAdminTab === 'comm_center' && (
+            <EmailCenter onNavigateTab={(tabId, param) => handleAdminSelectTab(tabId as AdminTab, param)} />
+          )}
+
           {activeAdminTab === 'comm_email' && (
             <CommunicationsEmail
               onNavigateTab={(tabId, param) => handleAdminSelectTab(tabId as AdminTab, param)}

@@ -22,6 +22,7 @@ import {
   AlertTriangle,
   HelpCircle,
   Mail,
+  Send,
   Tag,
   FileText,
   BookOpen,
@@ -104,6 +105,7 @@ export type AdminTab =
   | 'fin_balances'
   | 'fin_revenue'
   | 'fin_reports'
+  | 'comm_center'
   | 'comm_email'
   | 'comm_whatsapp'
   | 'comm_templates'
@@ -224,7 +226,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
     // COMMUNICATIONS SECTION
     { id: 'header_comm', label: 'COMMUNICATIONS & DISPATCH', isHeader: true },
-    { id: 'comm_email', label: 'Email Dispatcher', icon: Mail },
+    { id: 'comm_center', label: 'Email Center', icon: Mail },
+    { id: 'comm_email', label: 'Email Dispatcher', icon: Send },
     { id: 'comm_whatsapp', label: 'WhatsApp Console', icon: MessageSquare },
     { id: 'comm_templates', label: 'Message Templates', icon: FileText },
     { id: 'comm_notifications', label: 'Staff Notifications', icon: Bell },
@@ -278,6 +281,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     if (id === 'tickets') return 'tickets.read';
     if (id === 'customers') return 'customers.read';
     if (id.startsWith('crm_') || id === 'inquiries') return 'crm.read';
+    if (id === 'comm_templates') return 'communications.manage';
     if (id.startsWith('comm_')) return 'communications.read';
     if (['destinations','categories','newsletter','extras','faqs','reviews','media','seo','pages'].includes(id)) return 'content.read';
     if (id === 'coupons') return 'bookings.read';
@@ -372,7 +376,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               <div className="flex items-center space-x-3 min-w-0">
                 <img 
                   src="/logo.png" 
-                  alt="Kemet Spirit Logo" 
+                  alt="Awesome Adventure Tours Logo" 
                   className="h-9 w-auto object-contain shrink-0 drop-shadow-xs"
                 />
                 <div className="min-w-0">
@@ -380,7 +384,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                     Admin Portal
                   </span>
                   <h1 className="font-display font-bold text-sm text-[#0E1B2A] dark:text-white tracking-wide truncate">
-                    Kemet Spirit
+                    Awesome Adventure Tours
                   </h1>
                 </div>
               </div>
@@ -545,7 +549,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               </button>
 
               <div className="hidden sm:flex items-center space-x-2 text-xs text-stone-500 dark:text-stone-400">
-                <span className="font-semibold text-[#0A6C74] dark:text-[#2DD4BF]">Kemet Spirit</span>
+                <span className="font-semibold text-[#0A6C74] dark:text-[#2DD4BF]">Awesome Adventure Tours</span>
                 <span>/</span>
                 <span className="text-[#0E1B2A] dark:text-white font-semibold capitalize font-display">
                   {activeTab.replace(/^(dash_|crm_|ops_|fin_|comm_)/, '').replace(/_/g, ' ')}
