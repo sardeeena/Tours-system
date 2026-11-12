@@ -1,8 +1,8 @@
 export const EXPECTED_AWESOME_ADVENTURE_TOURS_SUPABASE_PROJECT_REF = 'mktrtoctcjyokclpdeui';
 
 /**
- * Production Awesome Adventure Tours clients must connect only to the configured AwesomeAdventureTours
- * Spirit Supabase project. Development may use a separate hosted Supabase
+ * Production Awesome Adventure Tours clients must connect only to the configured production
+ * Supabase project. Development may use a separate hosted Supabase
  * project or a local Supabase stack for isolated testing.
  */
 export function isExpectedAwesomeAdventureToursSupabaseUrl(
