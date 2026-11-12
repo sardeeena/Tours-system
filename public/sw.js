@@ -52,15 +52,17 @@ self.addEventListener('fetch', (event) => {
         const cache = await caches.open(FONT_CACHE);
         const cached = await cache.match(request);
         const network = fetch(request).then((response) =>
-          cacheLimited(FONT_CACHE, request, response, url.hostname === 'fonts.googleapis.com' ? 10 : 20));
-        return cached || network;
+          cacheLimited(FONT_CACHE, request, response, url.hostname === 'fonts.googleapis.com' ? 10 : 20))
+          .catch(() => null);
+        return cached || network.then((response) => response || Response.error());
       })());
     } else if (url.hostname === 'images.unsplash.com') {
       event.respondWith((async () => {
         const cache = await caches.open(IMAGE_CACHE);
         const cached = await cache.match(request);
-        const network = fetch(request).then((response) => cacheLimited(IMAGE_CACHE, request, response, 50));
-        return cached || network;
+        const network = fetch(request).then((response) => cacheLimited(IMAGE_CACHE, request, response, 50))
+          .catch(() => null);
+        return cached || network.then((response) => response || Response.error());
       })());
     }
     return;
