@@ -32,7 +32,7 @@ export interface ExecutiveMetrics {
   bookingsCount: number;
   totalBookings?: number; // alias
   confirmedBookingsCount: number;
-  completedBookingsCount: number;
+  completedBookingsCount?: number;
   confirmedBookings?: number; // alias
   cancellationsCount: number;
   passengersCount: number;
