@@ -107,6 +107,78 @@ BEGIN
 END;
 $block$;
 
+CREATE OR REPLACE FUNCTION public.erase_visitor_analytics(
+  p_identifier_type text,
+  p_identifier uuid,
+  p_actor uuid
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = pg_catalog, public
+AS $function$
+DECLARE
+  v_events integer := 0;
+  v_sessions integer := 0;
+  v_consents integer := 0;
+BEGIN
+  IF p_identifier_type NOT IN ('visitor_id','user_id') OR p_identifier IS NULL OR p_actor IS NULL THEN
+    RAISE EXCEPTION 'A valid visitor/user identifier and actor are required.';
+  END IF;
+
+  UPDATE public.visitor_consent_records c
+  SET visitor_session_id = NULL, visitor_id = NULL, user_id = NULL
+  WHERE
+    (p_identifier_type = 'visitor_id' AND (
+      c.visitor_id = p_identifier OR
+      c.visitor_session_id IN (SELECT s.id FROM public.visitor_sessions s WHERE s.visitor_id = p_identifier)
+    ))
+    OR
+    (p_identifier_type = 'user_id' AND (
+      c.user_id = p_identifier OR
+      c.visitor_id IN (SELECT s.visitor_id FROM public.visitor_sessions s WHERE s.user_id = p_identifier) OR
+      c.visitor_session_id IN (SELECT s.id FROM public.visitor_sessions s WHERE s.user_id = p_identifier)
+    ));
+  GET DIAGNOSTICS v_consents = ROW_COUNT;
+
+  DELETE FROM public.visitor_events e
+  WHERE e.session_id IN (
+    SELECT s.id FROM public.visitor_sessions s
+    WHERE (p_identifier_type = 'visitor_id' AND s.visitor_id = p_identifier)
+       OR (p_identifier_type = 'user_id' AND s.user_id = p_identifier)
+  );
+  GET DIAGNOSTICS v_events = ROW_COUNT;
+
+  DELETE FROM public.visitor_sessions s
+  WHERE (p_identifier_type = 'visitor_id' AND s.visitor_id = p_identifier)
+     OR (p_identifier_type = 'user_id' AND s.user_id = p_identifier);
+  GET DIAGNOSTICS v_sessions = ROW_COUNT;
+
+  INSERT INTO public.audit_logs (user_id, action, entity_type, entity_id, new_data)
+  VALUES (
+    p_actor,
+    'VISITOR_ANALYTICS_ERASURE',
+    'visitor_analytics',
+    NULL,
+    jsonb_build_object(
+      'erased_sessions', v_sessions,
+      'erased_events', v_events,
+      'anonymized_consent_records', v_consents,
+      'identifier_type', p_identifier_type
+    )
+  );
+
+  RETURN jsonb_build_object(
+    'erasedSessions', v_sessions,
+    'erasedEvents', v_events,
+    'anonymizedConsents', v_consents
+  );
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.erase_visitor_analytics(text, uuid, uuid) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.erase_visitor_analytics(text, uuid, uuid) TO service_role;
+
 COMMENT ON FUNCTION private.capture_business_audit() IS
   'Writes redacted business-row change metadata to audit_logs. Excludes contact details, free text, credentials, tokens and arbitrary JSON payloads.';
 
