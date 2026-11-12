@@ -348,8 +348,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   const allowedOrigins = new Set([
     'https://awesomeadventure.tours',
     'https://www.awesomeadventure.tours',
-    'https://kemetspirit.com',
-    'https://www.kemetspirit.com',
     ...(!isProduction ? ['http://localhost:3000', 'http://localhost:5173'] : []),
     ...configuredOrigins,
   ]);
@@ -2547,7 +2545,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
   let noindex = false;
   let nofollow = false;
   let statusCode = 200;
-  let pageKind: 'home' | 'catalogue' | 'tour' | 'destination' | 'static' | 'blog-index' | 'blog' | 'not-found' = 'not-found';
+  let pageKind: 'home' | 'catalogue' | 'experiences' | 'tour' | 'destination' | 'static' | 'blog-index' | 'blog' | 'not-found' = 'not-found';
   let tours: any[] = [];
   let currentTour: any = null;
   let currentBlogPost: any = null;
@@ -2583,6 +2581,34 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       <div class="seo-grid">${cards || '<p>Explore the excursions catalogue for currently published experiences and details.</p>'}</div>
       <h2>About Awesome Adventure Tours</h2><p>Explore our <a href="/about">about page</a>, learn about <a href="/booking-conditions">booking terms and conditions</a>, or <a href="/contact">contact our Hurghada team</a>.</p>
       <p>Phone: <a href="tel:+201515212741">+20 151 5212741</a></p></main>`;
+  } else if (path === '/experiences') {
+    pageKind = 'experiences';
+    seoIdentifier = 'experiences';
+    title = 'Red Sea Experiences & Excursion Categories | Awesome Adventure Tours';
+    description = 'Discover boat trips, island escapes, snorkeling, diving and desert adventures across Egypt’s Red Sea coast.';
+    let categories: any[] = [];
+    if (publicSupabase) {
+      try {
+        const { data, error } = await publicSupabase.from('categories')
+          .select('name,slug,description')
+          .eq('status', 'published')
+          .order('sort_order', { ascending: true });
+        if (error) console.warn('[SEO render] Published experience categories unavailable:', error.message);
+        categories = Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.warn('[SEO render] Experience category query failed:', error);
+      }
+    }
+    const cards = categories.map((category: any) => {
+      const name = seoPlainText(category.name, 120);
+      const summary = seoPlainText(category.description, 400);
+      return name ? `<article class="seo-tour-card"><h2>${seoHtmlEscape(name)}</h2>${summary ? `<p>${seoHtmlEscape(summary)}</p>` : ''}</article>` : '';
+    }).filter(Boolean).join('');
+    body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / Experiences</nav>
+      <h1>Explore Experiences on Egypt’s Red Sea Coast</h1>
+      <p>Choose from published excursion categories, from island and boat trips to snorkeling, diving and desert adventures. Explore current tours and review each itinerary before booking.</p>
+      <div class="seo-grid">${cards || '<p>Experience categories are being updated. Please browse our published excursions.</p>'}</div>
+      <p><a href="/excursions">Browse all excursions</a></p></main>`;
   } else if (path === '/excursions') {
     pageKind = 'catalogue';
     title = 'Red Sea Excursions & Boat Trips | Awesome Adventure Tours';
@@ -2840,7 +2866,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
     }
   }
   const configuredSameAs = [
-    ...((process.env.BRAND_SAME_AS_URLS || process.env.KEMET_SAME_AS_URLS) || '').split(','),
+    ...(process.env.BRAND_SAME_AS_URLS || '').split(','),
     ...cmsSocialProfiles,
   ]
     .map((value) => value.trim())
@@ -2935,7 +2961,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
     });
   } else {
     graph.push({
-      '@type': pageKind === 'catalogue' || pageKind === 'home' || pageKind === 'blog-index' ? 'CollectionPage' : 'WebPage',
+      '@type': pageKind === 'catalogue' || pageKind === 'experiences' || pageKind === 'home' || pageKind === 'blog-index' ? 'CollectionPage' : 'WebPage',
       '@id': `${canonical}#webpage`,
       url: canonical,
       name: title,

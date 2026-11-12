@@ -186,7 +186,7 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
   if (!user) {
     return <main className="flex-1 max-w-xl mx-auto w-full px-4 py-20 text-center">
       <div className={panelClass + ' p-8'}><Headphones className="w-10 h-10 text-[#0A6C74] mx-auto mb-4"/>
-        <h1 className="font-display text-2xl font-bold text-stone-900 dark:text-white">Kemet Spirit Support</h1>
+        <h1 className="font-display text-2xl font-bold text-stone-900 dark:text-white">Awesome Adventure Tours Support</h1>
         <p className="text-sm text-stone-500 mt-2 mb-6">Sign in to create a support request and securely follow your conversations.</p>
         <a href="/login?redirect=%2Fsupport" className="inline-flex rounded-xl bg-[#0A6C74] text-white px-5 py-3 text-sm font-bold">Sign in to continue</a>
       </div>
