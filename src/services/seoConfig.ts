@@ -6,11 +6,11 @@ import { APP_CONFIG } from '../config/appConfig';
  * Global Site-Wide SEO Constants & Branding Identifiers
  */
 export const SEO_DEFAULTS = {
-  SITE_NAME: 'Kemet Spirit',
-  DEFAULT_TITLE: 'Kemet Spirit | Red Sea Excursions in Egypt',
+  SITE_NAME: 'Awesome Adventure Tours',
+  DEFAULT_TITLE: 'Awesome Adventure Tours | Red Sea Excursions in Egypt',
   DEFAULT_DESCRIPTION:
     'Explore Red Sea excursions in Egypt, including boat trips, island visits, snorkeling and desert experiences. Review each tour\'s details before booking.',
-  DEFAULT_OG_IMAGE: 'https://kemetspirit.com/logo.webp',
+  DEFAULT_OG_IMAGE: 'https://awesomeadventure.tours/logo.webp',
   DEFAULT_LOCALE: 'en_US',
   KEYWORDS: [
     'Red Sea excursions',
@@ -58,12 +58,12 @@ export const HOMEPAGE_FAQS = [
 export function getAppOrigin(): string {
   if (typeof window !== 'undefined' && window.location?.origin) {
     const hostname = window.location.hostname.toLowerCase();
-    if (hostname === 'kemetspirit.com' || hostname === 'www.kemetspirit.com') {
-      return 'https://kemetspirit.com';
+    if (hostname === 'awesomeadventure.tours' || hostname === 'www.awesomeadventure.tours') {
+      return 'https://awesomeadventure.tours';
     }
     return window.location.origin;
   }
-  return 'https://kemetspirit.com';
+  return 'https://awesomeadventure.tours';
 }
 
 /**
@@ -128,7 +128,7 @@ export function generateTourJsonLd(tour: Tour, origin = getAppOrigin()): Record<
       name: tour.title,
       image: images,
       description: tour.shortDescription,
-      sku: `KEMET-${tour.id}`,
+      sku: `AAT-${tour.id}`,
       offers: {
         '@type': 'Offer',
         url: tourUrl,
@@ -251,7 +251,7 @@ export function generateDestinationJsonLd(
  */
 export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> = {
   '/': (origin) => ({
-    title: 'Kemet Spirit | Red Sea Excursions in Egypt',
+    title: 'Awesome Adventure Tours | Red Sea Excursions in Egypt',
     description:
       'Explore Red Sea boat trips to Orange Bay, Giftun Island, Ras Mohammed, and desert safaris. Compare tour details, pickup arrangements, inclusions, and cancellation terms.',
     keywords: SEO_DEFAULTS.KEYWORDS,
@@ -264,7 +264,7 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> =
   }),
 
   '/excursions': (origin) => ({
-    title: 'Red Sea Excursions & Boat Trips | Kemet Spirit',
+    title: 'Red Sea Excursions & Boat Trips | Awesome Adventure Tours',
     description:
       'Browse published Red Sea excursions in Egypt. Compare boat trips, island experiences, snorkeling activities, trip durations and prices.',
     keywords: [
@@ -289,7 +289,7 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> =
   }),
 
   '/my-booking': (origin) => ({
-    title: 'Manage Your Booking & Download Voucher | Kemet Spirit',
+    title: 'Manage Your Booking & Download Voucher | Awesome Adventure Tours',
     description:
       'Retrieve your reservation details and voucher using the booking reference provided at confirmation.',
     canonicalUrl: `${origin}/my-booking`,
@@ -299,7 +299,7 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> =
   }),
 
   '/login': (origin) => ({
-    title: 'Sign In | Kemet Spirit Guest Portal',
+    title: 'Sign In | Awesome Adventure Tours Guest Portal',
     description:
       'Sign in to view your excursion reservations and saved wishlist.',
     canonicalUrl: `${origin}/login`,
@@ -309,7 +309,7 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> =
   }),
 
   '/register': (origin) => ({
-    title: 'Create an Account | Kemet Spirit',
+    title: 'Create an Account | Awesome Adventure Tours',
     description:
       'Create a traveler account to manage your excursion bookings and saved wishlist.',
     canonicalUrl: `${origin}/register`,
@@ -365,7 +365,7 @@ export function getPageSeo(
       (tour) => tour.destination.toLowerCase() === destination.name.toLowerCase()
     );
     return {
-      title: destination.seoTitle || `${destination.name} Excursions & Activities | Kemet Spirit`,
+      title: destination.seoTitle || `${destination.name} Excursions & Activities | Awesome Adventure Tours`,
       description: destination.seoDescription || destination.description,
       keywords: [destination.name, 'Egypt Red Sea excursions', 'activities', 'boat trips'],
       canonicalUrl: destinationUrl,
