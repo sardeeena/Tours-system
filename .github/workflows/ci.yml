@@ -34,6 +34,12 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
 
+
+      - name: Report dependency audit findings (non-blocking)
+        run: |
+          npm audit --json > /tmp/npm-audit.json || true
+          node --input-type=commonjs -e 'const fs=require("fs"); const a=JSON.parse(fs.readFileSync("/tmp/npm-audit.json","utf8")); for (const [name,v] of Object.entries(a.vulnerabilities||{})) console.log(JSON.stringify({name,severity:v.severity,range:v.range,via:v.via.map(x=>typeof x === "string" ? x : {title:x.title,url:x.url,range:x.range}),fixAvailable:v.fixAvailable})); console.log("audit_summary",JSON.stringify(a.metadata?.vulnerabilities||{}));'
+
       - name: Type-check
         run: npm run lint
 
