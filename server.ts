@@ -2382,9 +2382,7 @@ app.post('/api/admin/technical/visitors/erase', rateLimit(5, 60_000), async (req
       erasedSessions = deletedSessions?.length || 0;
     }
     const scrubConsent = async (query: any) => {
-      const { data, error } = await query.update({
-        visitor_session_id: null, visitor_id: null, user_id: null,
-      }).select('id');
+      const { data, error } = await query.select('id');
       if (error) throw error;
       anonymizedConsents += data?.length || 0;
     };
