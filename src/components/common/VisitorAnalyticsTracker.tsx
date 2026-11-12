@@ -8,7 +8,7 @@ interface Props {
 
 /** Consent-gated SPA page tracking. No optional identifiers are created before opt-in. */
 export const VisitorAnalyticsTracker: React.FC<Props> = ({ path, userId }) => {
-  const [enabled, setEnabled] = useState(() => Boolean(readVisitorConsent()?.analytics));
+  const [enabled, setEnabled] = useState(false);
   const previous = useRef<{ path: string; startedAt: number } | null>(null);
 
   useEffect(() => {
