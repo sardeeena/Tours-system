@@ -277,7 +277,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <Compass className="w-5 h-5 animate-pulse" />
             </div>
             <span className="text-xs uppercase tracking-widest font-semibold text-stone-300">
-              Red Sea Excursions
+              Egypt Tours & Experiences
             </span>
           </div>
 
