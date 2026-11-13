@@ -581,7 +581,7 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
                   Authorized Accounting Officer
                 </span>
                 <div className="border-b border-stone-400 pb-1">
-                  Finance Controller &bull; Red Sea Voyages
+                  Finance Controller &bull; Awesome Adventure Tours
                 </div>
               </div>
             </div>
