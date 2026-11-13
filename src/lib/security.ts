@@ -12,12 +12,16 @@ import { ValidationResult, RateLimitState } from '../types/security';
  * Sanitizes multiline/free-form text without trimming while the user is typing.
  * This preserves intentional spaces at the end of a word or line.
  */
+/**
+ * Sanitizes free-form text without trimming while the user is typing.
+ * This preserves intentional spaces at the end of a word or line.
+ */
 export function sanitizeTextPreservingWhitespace(input: unknown): string {
   if (typeof input !== 'string') return '';
   return input
-    .replace(/<script\\b[^<]*(?:(?!<\\/script>)[^<]*)*<\\/script>/gi, '')
-    .replace(/<\\/?(?:iframe|object|embed|applet|meta|link|style)[^>]*>/gi, '')
-    .replace(/on\\w+\\s*=\\s*["'][^"']*["']/gi, '')
+    .replace(/<script\b[^<]*(?:(?!<\/script>)[^<]*)*<\/script>/gi, '')
+    .replace(/<\/?(?:iframe|object|embed|applet|meta|link|style)[^>]*>/gi, '')
+    .replace(/on\w+\s*=\s*["'][^"']*["']/gi, '')
     .replace(/javascript:/gi, '');
 }
 
