@@ -40,4 +40,20 @@ assert(blogService.includes('Awesome Adventure Tours Editorial Team') && !blogSe
 assert(!catalogueSeed.includes('kemetspirit.com') && !catalogueSeed.includes('Kemet Spirit'), 'catalogue seed contains no former brand or domain');
 assert(!correctionSeed.includes('Kemet Spirit'), 'catalogue correction seed contains no former brand');
 
+const activeBrandingSources = [
+  appConfig,
+  settings,
+  finance,
+  adminSettings,
+  invoiceUi,
+  seoAdmin,
+  blogAdmin,
+  adminLogin,
+  blogService,
+];
+assert(
+  activeBrandingSources.every((source) => !/Red Sea\\s+Voyages/i.test(source)),
+  'active application, admin, and invoice code contains no Red Sea Voyages branding',
+);
+
 console.log('All company identity checks passed.');
