@@ -234,6 +234,11 @@ UPDATE public.customers
 SET total_revenue = 123.45
 WHERE id = 'f9000000-0000-0000-0000-000000000101';
 
+RESET ROLE;
+SET LOCAL request.jwt.claims = '{"role":"service_role"}';
+SET LOCAL request.jwt.claim.role = 'service_role';
+SET LOCAL ROLE service_role;
+
 SELECT is(
   (SELECT total_revenue FROM public.customers WHERE id = 'f9000000-0000-0000-0000-000000000101'),
   0::numeric,
