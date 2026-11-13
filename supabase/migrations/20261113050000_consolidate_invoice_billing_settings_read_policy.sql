@@ -1,7 +1,7 @@
 -- Keep site_settings SELECT access in one permissive policy per role/action.
--- Finance users may read only the private invoice_billing row; settings managers
--- retain access to all settings. This preserves the RLS policy-deduplication
--- invariant enforced by advisor_hardening.test.sql.
+-- Preserve the five approved public-content keys for authenticated visitors,
+-- while finance roles can read only the private invoice_billing row.
+-- Settings managers retain their existing full settings access.
 BEGIN;
 
 DROP POLICY IF EXISTS rbac_invoice_billing_read ON public.site_settings;
@@ -12,7 +12,14 @@ CREATE POLICY rbac_site_settings_read
   FOR SELECT
   TO authenticated
   USING (
-    public.has_permission('settings.manage')
+    key = ANY (ARRAY[
+      'company_info',
+      'booking_policies',
+      'social_links',
+      'footer_content',
+      'pages_content'
+    ]::text[])
+    OR public.has_permission('settings.manage')
     OR (
       key = 'invoice_billing'
       AND (
