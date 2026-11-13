@@ -214,7 +214,7 @@ export const VisitorAnalyticsPanel: React.FC = () => {
           <p className="mt-1 text-xs text-slate-500">A single workspace for consented visitor activity, business audit history, and data controls.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={() => void load()} disabled={loading} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold dark:border-slate-600 dark:bg-slate-900"><RefreshCw className={\`h-4 w-4 \${loading ? 'animate-spin' : ''}\`} /> Refresh</button>
+          <button type="button" onClick={() => void load()} disabled={loading} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold dark:border-slate-600 dark:bg-slate-900"><RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh</button>
           <button type="button" onClick={exportCsv} disabled={!visibleEvents.length} className="rounded-lg bg-[#d6ad5b] px-3 py-2 text-xs font-semibold text-slate-950 disabled:opacity-50">Export events</button>
           <button type="button" onClick={exportSessionsCsv} disabled={!visibleSessions.length} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold dark:border-slate-600 dark:bg-slate-900 disabled:opacity-50">Export sessions</button>
           <button type="button" onClick={exportConsentCsv} disabled={!consents.length} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold dark:border-slate-600 dark:bg-slate-900 disabled:opacity-50">Export consent</button>
@@ -230,7 +230,7 @@ export const VisitorAnalyticsPanel: React.FC = () => {
           ['privacy','Privacy & retention'],
         ] as const).map(([key,label]) => (
           <button key={key} type="button" onClick={() => setActiveSection(key)} aria-pressed={activeSection === key}
-            className={\`rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold transition-colors \${activeSection === key ? 'bg-[#0A6C74] text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}\`}>
+            className={`rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold transition-colors ${activeSection === key ? 'bg-[#0A6C74] text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
             {label}
           </button>
         ))}
@@ -288,7 +288,7 @@ export const VisitorAnalyticsPanel: React.FC = () => {
           <section className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
             <div className="flex items-center justify-between gap-2"><div><h3 className="font-semibold">Visitor sessions</h3><p className="mt-1 text-xs text-slate-500">{visibleSessions.length} matching sessions · select to filter timeline</p></div>{selectedSession && <button type="button" onClick={() => setSelectedSession('')} className="text-xs font-semibold text-[#9a702b] underline">Clear selection</button>}</div>
             <div className="mt-3 max-h-[520px] space-y-2 overflow-y-auto">
-              {visibleSessions.map((item) => <div key={item.id} className={\`rounded-lg border p-3 text-xs \${selectedSession === item.id ? 'border-[#b58b3a] bg-amber-50 dark:bg-amber-950/20' : 'border-slate-200 dark:border-slate-700'}\`}>
+              {visibleSessions.map((item) => <div key={item.id} className={`rounded-lg border p-3 text-xs ${selectedSession === item.id ? 'border-[#b58b3a] bg-amber-50 dark:bg-amber-950/20' : 'border-slate-200 dark:border-slate-700'}`}>
                 <div className="flex flex-wrap items-center justify-between gap-2"><button type="button" onClick={() => setSelectedSession((current) => current === item.id ? '' : item.id)} className="font-mono font-semibold underline">{item.id.slice(0,8)}… · {item.user_id ? 'Signed in' : 'Guest'}</button><span className="text-slate-500">{date(item.last_seen_at)}</span></div>
                 <p className="mt-2 truncate font-semibold">{item.landing_path}</p>
                 <p className="mt-1 text-slate-500">{[item.device_type,item.browser_family,item.os_family].filter(Boolean).join(' · ') || 'Device unavailable'}</p>
