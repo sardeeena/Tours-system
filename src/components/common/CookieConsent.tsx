@@ -6,10 +6,12 @@ type ConsentChoices = {
   analytics: boolean;
   marketing: boolean;
   updatedAt: string;
+  version: string;
 };
 
 const CONSENT_KEY = 'aat_cookie_consent_v1';
 const GTM_ID = 'GTM-MZVP38WC';
+const CONSENT_VERSION = '2';
 
 function applyConsent(choices: ConsentChoices): void {
   const browserWindow = window as typeof window & { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void };
@@ -42,7 +44,7 @@ function readSavedConsent(): ConsentChoices | null {
     const raw = localStorage.getItem(CONSENT_KEY);
     if (!raw) return null;
     const value = JSON.parse(raw) as Partial<ConsentChoices>;
-    if (value.necessary !== true || typeof value.analytics !== 'boolean' || typeof value.marketing !== 'boolean') {
+    if (value.necessary !== true || typeof value.analytics !== 'boolean' || typeof value.marketing !== 'boolean' || value.version !== CONSENT_VERSION) {
       return null;
     }
     return {
@@ -50,6 +52,7 @@ function readSavedConsent(): ConsentChoices | null {
       analytics: value.analytics,
       marketing: value.marketing,
       updatedAt: typeof value.updatedAt === 'string' ? value.updatedAt : '',
+      version: CONSENT_VERSION,
     };
   } catch {
     return null;
@@ -62,6 +65,7 @@ export const CookieConsent: React.FC = () => {
     analytics: false,
     marketing: false,
     updatedAt: '',
+    version: CONSENT_VERSION,
   });
   const [visible, setVisible] = useState(false);
   const [customising, setCustomising] = useState(false);
@@ -91,6 +95,7 @@ export const CookieConsent: React.FC = () => {
       analytics,
       marketing,
       updatedAt: new Date().toISOString(),
+      version: CONSENT_VERSION,
     };
     try {
       localStorage.setItem(CONSENT_KEY, JSON.stringify(next));
