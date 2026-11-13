@@ -29,7 +29,8 @@
     "test:admin-ops-7": "tsx scripts/test_phase7_admin_operations.ts",
     "test:phase-8": "tsx scripts/test_phase8_financial_and_workflow_validation.ts",
     "test:all": "tsx scripts/test_catalogue_import.ts && tsx scripts/verify_schema_parity.ts && tsx scripts/test_admin_security.ts && tsx scripts/test_abuse_prevention.ts && tsx scripts/test_routes.ts && tsx scripts/test_admin_dashboard_persistence.ts && tsx scripts/test_password_recovery.ts && tsx scripts/test_communication_validation.ts && tsx scripts/test_email_template_renderer.ts && tsx scripts/test_booking_identifier_resolution.ts && tsx scripts/test_supabase_project_guard.ts && tsx scripts/test_dynamic_experiences_destinations.ts && tsx scripts/test_phase6_2_dynamic_audit.ts && tsx scripts/test_phase6_3_staging_verification.ts && tsx scripts/test_phase7_admin_operations.ts && tsx scripts/test_phase8_financial_and_workflow_validation.ts && tsx scripts/test_technical_control_center.ts && tsx scripts/test_company_identity.ts",
-    "test:technical": "tsx scripts/test_technical_control_center.ts"
+    "test:technical": "tsx scripts/test_technical_control_center.ts",
+    "test:company-identity": "tsx scripts/test_company_identity.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
