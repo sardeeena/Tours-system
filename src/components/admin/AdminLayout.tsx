@@ -467,11 +467,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           <div className="p-3 border-t border-[#E8E3DA] dark:border-[#1F3854] space-y-2">
             <div className="flex items-center space-x-2 px-2.5 py-2 rounded-xl bg-[#FAF8F5] dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854]">
               <div className="w-8 h-8 rounded-full bg-[#0A6C74] text-white flex items-center justify-center font-bold text-xs shadow-xs">
-                {user?.fullName?.charAt(0) || 'K'}
+                {user?.fullName?.charAt(0) || 'A'}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-[#0E1B2A] dark:text-stone-200 truncate">{user?.fullName || 'Admin Officer'}</p>
-                <p className="text-[10px] text-stone-500 dark:text-stone-400 truncate">{user?.email || 'admin@kemetspirit.com'}</p>
+                <p className="text-[10px] text-stone-500 dark:text-stone-400 truncate">{user?.email || 'Signed-in staff'}</p>
               </div>
               <span className="text-[9px] px-1.5 py-0.5 uppercase tracking-wide bg-[#E8F3F4] text-[#0A6C74] dark:bg-[#0A6C74]/20 dark:text-[#2DD4BF] rounded-md font-semibold">
                 {user?.roles?.filter((role) => role !== 'customer').join(' · ') || user?.role || 'admin'}
