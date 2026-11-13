@@ -147,8 +147,7 @@ export const TechnicalControlCenter: React.FC = () => {
         <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-xs"><thead className="bg-slate-50 text-slate-500 dark:bg-slate-800/70"><tr><th className="px-4 py-3">Time</th><th className="px-4 py-3">Severity</th><th className="px-4 py-3">Route</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Duration</th><th className="px-4 py-3">Actor</th><th className="px-4 py-3">Details</th></tr></thead><tbody className="divide-y divide-slate-100 dark:divide-slate-800">{visibleEvents.map((event) => <tr key={event.id} className="align-top"><td className="whitespace-nowrap px-4 py-3 text-slate-500">{dateTime(event.created_at)}</td><td className="px-4 py-3"><span className={`rounded-full px-2 py-1 font-semibold uppercase ${severityClass[event.severity]}`}>{event.severity}</span></td><td className="px-4 py-3"><div className="font-semibold">{event.request_method || event.event_type}</div><div className="mt-1 max-w-[360px] break-all text-slate-500">{event.request_path || event.message}</div></td><td className="px-4 py-3 tabular-nums">{event.status_code ?? '—'}</td><td className="px-4 py-3 tabular-nums">{event.duration_ms === null ? '—' : `${event.duration_ms} ms`}</td><td className="px-4 py-3 font-mono text-slate-500">{event.actor_user_id ? `${event.actor_user_id.slice(0,8)}…` : 'Guest / system'}</td><td className="px-4 py-3"><button type="button" onClick={() => setSelectedEvent(event)} className="font-semibold text-[#0A6C74] dark:text-teal-300 underline underline-offset-2">Inspect</button></td></tr>)}</tbody></table></div>
         {!visibleEvents.length && !loading && <div className="p-8 text-center text-sm text-slate-500">No technical events match this filter yet.</div>}
         <div className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500 dark:border-slate-800">Showing up to 150 recent records · Last refreshed {overview ? dateTime(overview.generatedAt) : '—'}</div>
-      </section>
-
+      </section>}
 
       {activeSection === 'events' && selectedEvent && <div role="dialog" aria-modal="true" aria-labelledby="technical-event-title" className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 p-4" onClick={() => setSelectedEvent(null)}>
         <section className="max-h-[85vh] w-full max-w-2xl overflow-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-slate-700 dark:bg-slate-900" onClick={(event) => event.stopPropagation()}>
@@ -160,8 +159,6 @@ export const TechnicalControlCenter: React.FC = () => {
           <div className="mt-4"><h3 className="text-sm font-semibold">Safe metadata</h3><pre className="mt-1 max-h-64 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-slate-50 p-3 text-[11px] text-slate-700 dark:bg-slate-800 dark:text-slate-200">{JSON.stringify(selectedEvent.metadata || {}, null, 2)}</pre></div>
           <p className="mt-3 text-[11px] text-slate-500">Technical records cannot be edited or manually deleted. This preserves the integrity of the system history. Retention settings apply automatically.</p>
         </section>
-}
-
       </div>}
 
       {activeSection === 'visitors' && <VisitorAnalyticsPanel />}
