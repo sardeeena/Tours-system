@@ -18,7 +18,6 @@ import {
 import {
   listInvoices,
   generateInvoiceForBooking,
-  COMPANY_DETAILS,
 } from '../../../services/financeService';
 import { FinanceInvoice } from '../../../types/finance';
 import { bookingRepository } from '../../../services/bookingRepository';
@@ -581,7 +580,7 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
                   Authorized Accounting Officer
                 </span>
                 <div className="border-b border-stone-400 pb-1">
-                  Finance Controller &bull; Red Sea Voyages
+                  Authorized Representative &bull; {selectedInvoice.companyDetails.name}
                 </div>
               </div>
             </div>
