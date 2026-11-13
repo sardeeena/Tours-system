@@ -110,7 +110,7 @@ export const NotFoundPage: React.FC<NotFoundPageProps> = ({
         <div className="w-full text-left pt-10 border-t border-stone-200">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-display text-lg font-bold text-[#0E1B2A]">
-              Popular Red Sea Excursions
+              Popular Egypt Tours & Experiences
             </h3>
             <button
               type="button"
