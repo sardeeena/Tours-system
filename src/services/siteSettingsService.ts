@@ -45,7 +45,7 @@ export { INITIAL_STATIC_PAGES };
 export type { StaticPageContent };
 
 const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
-  companyName: 'Kemet Spirit',
+  companyName: 'Awesome Adventure Tours',
   email: '',
   phone: '',
   whatsapp: '',
@@ -76,7 +76,7 @@ const DEFAULT_SOCIAL_LINKS: SocialLinksSettings = {
 };
 
 const DEFAULT_FOOTER_CONTENT: FooterContentSettings = {
-  copyrightNotice: `© ${new Date().getFullYear()} Kemet Spirit.`,
+  copyrightNotice: `© ${new Date().getFullYear()} Awesome Adventure Tours.`,
   aboutSnippet: 'Explore excursions and experiences across Egypt’s Red Sea coast. Review each tour’s details, inclusions and booking information before reserving.',
   badges: [],
   paymentIconsText: '',
@@ -146,11 +146,12 @@ export async function saveSetting<T>(key: string, value: T, description?: string
 }
 
 export async function getCompanySettings(): Promise<CompanySettings> {
-  return getSetting<CompanySettings>('company_info', DEFAULT_COMPANY_SETTINGS);
+  const settings = await getSetting<CompanySettings>('company_info', DEFAULT_COMPANY_SETTINGS);
+  return { ...settings, companyName: 'Awesome Adventure Tours' };
 }
 
 export async function saveCompanySettings(settings: CompanySettings): Promise<void> {
-  return saveSetting<CompanySettings>('company_info', settings, 'Master company identity and contact details');
+  return saveSetting<CompanySettings>('company_info', { ...settings, companyName: 'Awesome Adventure Tours' }, 'Master company identity and contact details');
 }
 
 export async function getBookingPolicies(): Promise<BookingPolicySettings> {
