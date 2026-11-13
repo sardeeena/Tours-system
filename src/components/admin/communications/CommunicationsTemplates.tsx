@@ -42,7 +42,7 @@ const TEMPLATE_DESCRIPTIONS: Record<string, string> = {
   tour_reminder: 'Pre-tour briefing sent 24-48 hours before excursion detailing what to bring.',
   inquiry_response: 'Standard concierge reply answering traveler inquiries and charter questions.',
   follow_up: 'Post-inquiry check-in offering island charters, quad safaris, or diving packages.',
-  welcome: 'Onboarding greeting welcoming new guests to the Red Sea Voyages network.',
+  welcome: 'Onboarding greeting welcoming new guests to the Awesome Adventure Tours community.',
   review_request: 'Post-tour review invitation with direct Google/TripAdvisor link.',
   // Legacy aliases
   booking_received: 'Triggered upon customer web reservation checkout. Confirms intake.',
