@@ -795,7 +795,10 @@ html.dark .admin-shell :is([class*="bg-stone-950/"],[class*="bg-stone-900/"],[cl
 html:not(.dark) .admin-shell :is(.text-stone-100,.text-stone-200,.text-stone-300,.text-slate-100,.text-slate-200,.text-slate-300,.text-gray-100,.text-gray-200,.text-gray-300,.text-zinc-100,.text-zinc-200,.text-neutral-100,.text-neutral-200) {
   color: var(--admin-text-secondary) !important;
 }
-html:not(.dark) .admin-shell :is(h1,h2,h3,h4,p,span,div,label,small,strong,td,th).text-white:not(button):not(a):not([role="button"]) {
+html:not(.dark) .admin-shell :is(h1,h2,h3,h4,p).text-white:not(button *):not(a *):not([role="button"] *) {
+  color: var(--admin-text) !important;
+}
+html:not(.dark) .admin-shell :is(.bg-stone-950,.bg-stone-900,.bg-stone-800,.bg-stone-700,.bg-slate-950,.bg-slate-900,.bg-slate-800,.bg-slate-700,.bg-gray-950,.bg-gray-900,.bg-zinc-950,.bg-zinc-900,.bg-neutral-900,[class*="bg-stone-950/"],[class*="bg-stone-900/"],[class*="bg-slate-950/"],[class*="bg-slate-900/"]) :is(span,p,div,h1,h2,h3,h4,label,small,strong,td,th).text-white:not(button *):not(a *):not([role="button"] *) {
   color: var(--admin-text) !important;
 }
 html:not(.dark) .admin-shell :is(.text-stone-400,.text-slate-400,.text-gray-400,.text-zinc-400,.text-neutral-400,.text-stone-500,.text-slate-500,.text-gray-500,.text-zinc-500,.text-neutral-500) {
