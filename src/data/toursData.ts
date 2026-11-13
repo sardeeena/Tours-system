@@ -243,7 +243,7 @@ export const ALL_TOURS: Tour[] = [
       'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80'
     ],
     shortDescription: 'The classic Red Sea boat trip featuring sandbar swimming on Giftun Island National Park, relaxing on sun decks, and snorkeling over living coral.',
-    fullDescription: 'Giftun Island is the quintessential Red Sea excursion. Set out from the marina on a spacious double-decker boat, soak up the sun on open decks, and spend over an hour on the island’s sandy shores before heading to two prime snorkeling reefs.',
+    fullDescription: 'Giftun Island is the classic island-and-reef experience. Set out from the marina on a spacious double-decker boat, soak up the sun on open decks, and spend over an hour on the island’s sandy shores before heading to two prime snorkeling reefs.',
     highlights: [
       'Relaxation on Giftun Island National Park sandbars',
       'Two coral snorkeling sessions with guide',
