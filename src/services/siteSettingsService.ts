@@ -13,7 +13,6 @@ export interface CompanySettings {
   defaultCurrency: string;
   supportedCurrencies: string[];
   defaultCountry: string;
-  legalName?: string;
   website?: string;
   invoiceTagline?: string;
   billingAddress?: string;
@@ -58,7 +57,6 @@ export type { StaticPageContent };
 
 const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
   companyName: APP_CONFIG.COMPANY_NAME,
-  legalName: APP_CONFIG.LEGAL_NAME,
   website: 'https://awesomeadventure.tours',
   invoiceTagline: 'Tours & Experiences',
   billingAddress: '',
@@ -180,7 +178,6 @@ export async function getCompanySettings(): Promise<CompanySettings> {
     ...DEFAULT_COMPANY_SETTINGS,
     ...saved,
     companyName: normalizeCompanyText(saved.companyName, APP_CONFIG.COMPANY_NAME),
-    legalName: normalizeCompanyText(saved.legalName, APP_CONFIG.LEGAL_NAME),
     website: normalizeCompanyText(saved.website, 'https://awesomeadventure.tours'),
   };
 }
@@ -189,7 +186,6 @@ export async function saveCompanySettings(settings: CompanySettings): Promise<vo
   const normalized: CompanySettings = {
     ...settings,
     companyName: normalizeCompanyText(settings.companyName, APP_CONFIG.COMPANY_NAME),
-    legalName: normalizeCompanyText(settings.legalName, APP_CONFIG.LEGAL_NAME),
     website: normalizeCompanyText(settings.website, 'https://awesomeadventure.tours'),
   };
   return saveSetting<CompanySettings>('company_info', normalized, 'Master company identity and contact details');
