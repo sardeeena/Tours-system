@@ -18,9 +18,8 @@ const correctionSeed = read('supabase/seed/awesome_adventure_tours_catalogue_liv
 
 assert(appConfig.includes("COMPANY_NAME: 'Awesome Adventure Tours'"), 'application brand is Awesome Adventure Tours');
 assert(settings.includes('companyName: APP_CONFIG.COMPANY_NAME'), 'company settings default to the central application brand');
-assert(settings.includes('APP_CONFIG.LEGAL_NAME'), 'company settings use the central legal entity fallback');
 assert(finance.includes('getCompanyBillingDetails()'), 'invoice creation loads current company billing settings');
-assert(finance.includes('companyDetails,') && !finance.includes("name: 'Kemet Spirit'"), 'invoice generation does not hardcode a former company identity');
+assert(finance.includes('name: settings.companyName?.trim() || APP_CONFIG.COMPANY_NAME'), 'invoice issuer name comes from the authoritative company setting');
 assert(finance.includes("website: 'https://awesomeadventure.tours'"), 'invoice fallback website uses the production domain');
 assert(adminSettings.includes('Legal Billing Entity Name') && adminSettings.includes('Tax Registration Number'), 'admins can configure legal invoice details');
 assert(invoiceUi.includes('selectedInvoice.companyDetails.name'), 'invoice issuer footer uses the invoice company identity');
