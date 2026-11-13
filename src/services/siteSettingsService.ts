@@ -166,6 +166,42 @@ export async function saveSetting<T>(key: string, value: T, description?: string
   }
 }
 
+/**
+ * Restricted settings must never fall back to browser storage: localStorage is shared
+ * by browser users on the same device and is not an authorization boundary.
+ */
+async function getRestrictedSetting<T>(key: string, defaultValue: T): Promise<T> {
+  if (!isSupabaseConfigured()) return defaultValue;
+  try {
+    const { data, error } = await supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', key)
+      .maybeSingle();
+    if (error) {
+      console.warn(`Restricted Supabase setting read error for ${key}:`, error);
+      return defaultValue;
+    }
+    return data?.value ? data.value as unknown as T : defaultValue;
+  } catch (error) {
+    console.warn(`Restricted Supabase setting read error for ${key}:`, error);
+    return defaultValue;
+  }
+}
+
+async function saveRestrictedSetting<T>(key: string, value: T, description?: string): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error('Private invoice billing details require the secure Supabase backend and are never stored in browser storage.');
+  }
+  const { error } = await supabase.from('site_settings').upsert({
+    key,
+    value: value as any,
+    description: description || null,
+    updated_at: new Date().toISOString(),
+  });
+  if (error) throw new Error(formatSupabaseError(error));
+}
+
 function normalizeCompanyText(value: string | undefined, fallback: string): string {
   const text = (value || '').trim();
   if (!text || /kemet\s*spirit|kemetspirit\.com/i.test(text)) return fallback;
@@ -175,7 +211,7 @@ function normalizeCompanyText(value: string | undefined, fallback: string): stri
 export async function getCompanySettings(): Promise<CompanySettings> {
   const [saved, invoiceBilling] = await Promise.all([
     getSetting<Partial<CompanySettings>>('company_info', DEFAULT_COMPANY_SETTINGS),
-    getSetting<Partial<CompanySettings>>('invoice_billing', {}),
+    getRestrictedSetting<Partial<CompanySettings>>('invoice_billing', {}),
   ]);
   return {
     ...DEFAULT_COMPANY_SETTINGS,
@@ -208,7 +244,7 @@ export async function saveCompanySettings(settings: CompanySettings): Promise<vo
 
   // Public contact/brand information remains in the public allowlisted setting.
   // Tax, registry and bank details are stored separately behind finance/settings RLS.
-  await saveSetting('invoice_billing', {
+  await saveRestrictedSetting('invoice_billing', {
     billingAddress,
     billingCity,
     billingCountry,
