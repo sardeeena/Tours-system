@@ -111,7 +111,7 @@ export const NewsletterSubscribe: React.FC<NewsletterSubscribeProps> = ({
               </div>
 
               <h2 className="font-display text-xl sm:text-2xl font-bold text-stone-900 dark:text-white tracking-tight">
-                Get 15% Off Your Next Red Sea Excursion
+                Get 15% Off Your Next Trip
               </h2>
 
               <p className="text-xs sm:text-sm text-stone-600 dark:text-slate-300 leading-relaxed max-w-xl">
