@@ -236,8 +236,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({
             onClick={() => setActiveTab('bookings')}
             className={`px-4 py-3 border-2 border-transparent flex items-center whitespace-nowrap space-x-2 transition-colors cursor-pointer ${
               activeTab === 'bookings'
-                ? 'border-[#0A6C74] text-[#0A6C74] font-bold'
-                : 'border-transparent hover:text-stone-900'
+                ? 'border-[#0A6C74] bg-[#0A6C74] text-white font-bold shadow-sm rounded-xl'
+                : 'border-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl'
             }`}
           >
             <CalendarCheck className="w-4 h-4" />
@@ -249,8 +249,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({
             onClick={() => setActiveTab('profile')}
             className={`pb-3 px-1 border-b-2 flex items-center space-x-2 transition-colors cursor-pointer ${
               activeTab === 'profile'
-                ? 'border-[#0A6C74] text-[#0A6C74] font-bold'
-                : 'border-transparent hover:text-stone-900'
+                ? 'border-[#0A6C74] bg-[#0A6C74] text-white font-bold shadow-sm rounded-xl'
+                : 'border-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl'
             }`}
           >
             <User className="w-4 h-4" />
@@ -262,8 +262,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({
             onClick={() => setActiveTab('security')}
             className={`pb-3 px-1 border-b-2 flex items-center space-x-2 transition-colors cursor-pointer ${
               activeTab === 'security'
-                ? 'border-[#0A6C74] text-[#0A6C74] font-bold'
-                : 'border-transparent hover:text-stone-900'
+                ? 'border-[#0A6C74] bg-[#0A6C74] text-white font-bold shadow-sm rounded-xl'
+                : 'border-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl'
             }`}
           >
             <KeyRound className="w-4 h-4" />
