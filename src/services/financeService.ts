@@ -27,7 +27,7 @@ const LOCAL_PROVIDERS_KEY = 'rse_fin_providers';
 // Safe synchronous fallback for legacy callers. Invoice creation always loads the
 // current authoritative company settings through getCompanyBillingDetails().
 export const COMPANY_DETAILS: CompanyBillingDetails = {
-  name: APP_CONFIG.LEGAL_NAME,
+  name: APP_CONFIG.COMPANY_NAME,
   tagline: 'Tours & Experiences',
   address: '',
   city: '',
@@ -45,7 +45,7 @@ export const COMPANY_DETAILS: CompanyBillingDetails = {
 export async function getCompanyBillingDetails(): Promise<CompanyBillingDetails> {
   const settings = await getCompanySettings();
   return {
-    name: settings.legalName?.trim() || settings.companyName?.trim() || APP_CONFIG.LEGAL_NAME,
+    name: settings.companyName?.trim() || APP_CONFIG.COMPANY_NAME,
     tagline: settings.invoiceTagline?.trim() || 'Tours & Experiences',
     address: settings.billingAddress?.trim() || '',
     city: settings.billingCity?.trim() || '',
