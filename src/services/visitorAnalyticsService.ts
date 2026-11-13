@@ -111,11 +111,14 @@ export function visitorMetadata(): VisitorMetadata {
   const ua = navigator.userAgent || '';
   const width = window.innerWidth;
   const screenBucket = width < 480 ? 'small' : width < 768 ? 'medium' : width < 1280 ? 'large' : 'xlarge';
-  const device = /iPad|Tablet/i.test(ua) ? 'tablet' : /Mobi|Android/i.test(ua) ? 'mobile' : /Windows|Macintosh|Linux/i.test(ua) ? 'desktop' : 'other';
+  const isIPadOS = /iPad/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const device = isIPadOS || /Tablet|Android(?!.*Mobile)/i.test(ua) ? 'tablet'
+    : /Mobi|iPhone|iPod|Android/i.test(ua) ? 'mobile'
+    : /Windows|Macintosh|Linux|Mac OS|CrOS/i.test(ua) ? 'desktop' : 'other';
   let referrerHost: string | null = null;
   try { referrerHost = document.referrer ? new URL(document.referrer).hostname.slice(0, 120) : null; } catch { referrerHost = null; }
   const platformSource = `${navigator.platform || ''} ${ua}`;
-  const platformFamily: VisitorMetadata['platform_family'] = /iPhone|iPad|iPod/i.test(platformSource) ? 'iOS'
+  const platformFamily: VisitorMetadata['platform_family'] = (isIPadOS || /iPhone|iPad|iPod/i.test(platformSource)) ? 'iOS'
     : /Android/i.test(platformSource) ? 'Android'
     : /Windows/i.test(platformSource) ? 'Windows'
     : /Mac/i.test(platformSource) ? 'macOS'
