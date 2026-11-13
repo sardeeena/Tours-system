@@ -18,7 +18,7 @@ export interface SeoMetadata {
 }
 
 const DEFAULT_TITLE = 'Awesome Adventure Tours | Boat Trips, Island Tours & Safaris';
-const DEFAULT_DESCRIPTION = 'Discover boat trips, island experiences, snorkeling, diving and desert safaris across Egypt. Compare details and book with confidence.\'s details before booking.';
+const DEFAULT_DESCRIPTION = 'Discover boat trips, island experiences, snorkeling, diving and desert safaris across Egypt. Compare tour details and book with confidence.';
 const DEFAULT_IMAGE = 'https://awesomeadventure.tours/logo.webp';
 const SITE_NAME = 'Awesome Adventure Tours';
 
