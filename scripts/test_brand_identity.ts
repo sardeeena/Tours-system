@@ -4,6 +4,7 @@ import path from 'node:path';
 const ROOT = process.cwd();
 const SCAN_ROOTS = [
   'src',
+  'server.ts',
   'public',
   'scripts',
   'index.html',

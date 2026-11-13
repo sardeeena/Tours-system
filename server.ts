@@ -3419,7 +3419,7 @@ app.get('/.well-known/mcp/server-card.json', (_req: Request, res: Response) => {
       title: 'Awesome Adventure Tours Public Excursions',
       version: '1.0.0',
     },
-    description: 'Read-only discovery and lookup of Awesome Adventure Tours published Red Sea excursions in Egypt. No booking, customer data, payments or administrative actions are exposed.',
+    description: 'Read-only discovery and lookup of published Awesome Adventure Tours tours and experiences across Egypt. No booking, customer data, payments or administrative actions are exposed.',
     transport: { type: 'streamable-http', endpoint: '/mcp' },
     capabilities: { tools: { listChanged: false } },
     authentication: { required: false, schemes: [] },
@@ -3725,8 +3725,8 @@ function seoUpsertMeta(html: string, kind: 'name' | 'property', key: string, val
 async function renderAwesomeAdventureToursPublicHtml(pathname: string, template: string): Promise<{ html: string; statusCode: number; noindex: boolean; nofollow: boolean }> {
   const path = pathname.replace(/\/+$/, '') || '/';
   const origin = 'https://awesomeadventure.tours';
-  let title = 'Awesome Adventure Tours | Red Sea Excursions in Egypt';
-  let description = 'Explore Red Sea excursions in Egypt, including boat trips, island visits, snorkeling and desert experiences. Review each tour’s details before booking.';
+  let title = 'Awesome Adventure Tours | Boat Trips, Island Tours & Safaris';
+  let description = 'Discover boat trips, island experiences, snorkeling, diving and desert safaris across Egypt. Compare tour details and book with confidence.';
   let body = '';
   let noindex = false;
   let nofollow = false;
@@ -3764,7 +3764,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
   if (path === '/') {
     pageKind = 'home';
     const cards = tours.slice(0, 6).map(seoTourCard).filter(Boolean).join('');
-    body = `<main id="seo-initial-content"><h1>Explore Red Sea Excursions in Egypt</h1>
+    body = `<main id="seo-initial-content"><h1>Explore Egypt’s Boat Trips, Island Tours & Safaris</h1>
       <p>Discover the excursions currently published on Awesome Adventure Tours. Compare available boat trips, island experiences, snorkeling activities and other Red Sea tours using the individual excursion details.</p>
       <h2>Explore destinations</h2>
       <div class="seo-grid">${(visibleDestinations || []).map(seoDestinationCard).filter(Boolean).join('')}</div>
@@ -3802,11 +3802,11 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       <p><a href="/excursions">Browse all excursions</a></p></main>`;
   } else if (path === '/excursions') {
     pageKind = 'catalogue';
-    title = 'Red Sea Excursions & Boat Trips | Awesome Adventure Tours';
-    description = 'Browse published Red Sea excursions in Egypt. Compare boat trips, island experiences, snorkeling activities, trip durations and prices.';
+    title = 'Boat Trips & Island Tours in Egypt | Awesome Adventure Tours';
+    description = 'Browse boat trips, island experiences, snorkeling activities and desert adventures across Egypt. Compare durations, inclusions and prices.';
     const cards = tours.map(seoTourCard).filter(Boolean).join('');
     body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / Excursions</nav>
-      <h1>Red Sea Excursions & Boat Trips</h1>
+      <h1>Boat Trips & Island Tours in Egypt</h1>
       <p>Browse the excursions currently published on Awesome Adventure Tours. Review each tour’s description, duration, price and booking details.</p>
       <div class="seo-grid">${cards || '<p>There are currently no published excursions to display.</p>'}</div>
       <h2>Explore by destination</h2>
