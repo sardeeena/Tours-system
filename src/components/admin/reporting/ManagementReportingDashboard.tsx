@@ -248,7 +248,7 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
                 Management Reporting &amp; Business Intelligence
               </h1>
               <p className="text-xs text-stone-500 dark:text-stone-400 mt-1 print:text-stone-700">
-                Audited real-time intelligence querying live Supabase databases · Awesome Adventure Tours Operations
+                Audited real-time intelligence querying live Supabase databases · Kemet Spirit Operations
               </p>
             </div>
           </div>

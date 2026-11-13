@@ -1,7 +1,7 @@
-# Awesome Adventure Tours — Owner Action Checklist
+# Kemet Spirit — Owner Action Checklist
 
-**Project:** Awesome Adventure Tours  
-**Production URL:** https://awesomeadventure.tours  
+**Project:** Kemet Spirit  
+**Production URL:** https://kemetspirit.com  
 **Repository:** https://github.com/sardeeena/Tours-system  
 **Supabase project:** `mktrtoctcjyokclpdeui`  
 **Last reviewed:** 11 November 2026
@@ -12,7 +12,7 @@ This checklist contains actions that require the project owner's access, choices
 
 ### 1. Enroll and verify super-admin MFA
 
-- [ ] Sign in to https://awesomeadventure.tours using the designated super-admin account.
+- [ ] Sign in to https://kemetspirit.com using the designated super-admin account.
 - [ ] Open the account/security or MFA settings panel.
 - [ ] Start TOTP authenticator enrollment and scan the QR code using an authenticator app (for example, Google Authenticator, Microsoft Authenticator, 1Password or an equivalent).
 - [ ] Enter the current six-digit authenticator code to verify the factor.
@@ -57,7 +57,7 @@ Do not use a real customer's personal information for acceptance testing.
 
 ### 4. Verify account recovery and authentication
 
-- [ ] Confirm Supabase Auth Site URL is `https://awesomeadventure.tours`.
+- [ ] Confirm Supabase Auth Site URL is `https://kemetspirit.com`.
 - [ ] Confirm allowed redirect URLs include only the required production and local development callback URLs.
 - [ ] Test registration/email confirmation if registration is enabled.
 - [ ] Test password reset from request through email link to successful password update.

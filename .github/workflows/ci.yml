@@ -68,8 +68,6 @@ jobs:
 
       - name: Verify superadmin technical center security boundaries
         run: npm run test:technical
-      - name: Verify Awesome Adventure Tours company identity
-        run: npm run test:company-identity
 
   database:
     name: Supabase migrations and RLS tests

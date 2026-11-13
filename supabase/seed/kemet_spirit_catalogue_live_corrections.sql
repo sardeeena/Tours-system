@@ -1,4 +1,4 @@
--- One-time, guarded corrections for the catalogue already present in the live Awesome Adventure Tours project.
+-- One-time, guarded corrections for the catalogue already present in the live Kemet Spirit project.
 -- This is intentionally separate from the insert-only seed. Do not run without operator approval.
 -- Every UPDATE is restricted by both the deterministic record ID and slug, and by the old value.
 

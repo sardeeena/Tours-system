@@ -27,7 +27,7 @@ SELECT lives_ok(
     )
     VALUES (
       'page', NULL, 'pgtap-seo-contract', 'Initial SEO Title',
-      'Initial description', 'https://awesomeadventure.tours/pgtap-seo-contract',
+      'Initial description', 'https://kemetspirit.com/pgtap-seo-contract',
       TRUE, TRUE, '{"@context":"https://schema.org","@type":"WebPage"}'::jsonb
     )
     ON CONFLICT (entity_type, page_slug)
@@ -44,7 +44,7 @@ SELECT lives_ok(
     )
     VALUES (
       'page', NULL, 'pgtap-seo-contract', 'Updated SEO Title',
-      'Updated description', 'https://awesomeadventure.tours/pgtap-seo-contract',
+      'Updated description', 'https://kemetspirit.com/pgtap-seo-contract',
       TRUE, TRUE, '{"@context":"https://schema.org","@type":"WebPage"}'::jsonb
     )
     ON CONFLICT (entity_type, page_slug)
