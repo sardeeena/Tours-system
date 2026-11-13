@@ -33,9 +33,10 @@ function collectFiles(entry: string): string[] {
   });
 }
 
-const files = [...new Set(SCAN_ROOTS.flatMap(collectFiles))].filter((file) =>
-  TEXT_EXTENSIONS.has(path.extname(file).toLowerCase())
-);
+const files = [...new Set(SCAN_ROOTS.flatMap(collectFiles))].filter((file) => {
+  const relative = path.relative(ROOT, file);
+  return TEXT_EXTENSIONS.has(path.extname(file).toLowerCase()) || relative.startsWith('public/assets/aistudio/');
+});
 const violations: string[] = [];
 
 for (const file of files) {
