@@ -55,11 +55,11 @@ export const MfaChallenge: React.FC<MfaChallengeProps> = ({ factorId, onCancel }
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <label className="block text-xs font-semibold text-slate-200" htmlFor="super-admin-totp-code">
+        <label className="block text-xs font-semibold text-slate-200" htmlFor="administrator-totp-code">
           Authenticator code
         </label>
         <input
-          id="super-admin-totp-code"
+          id="administrator-totp-code"
           type="text"
           inputMode="numeric"
           autoComplete="one-time-code"

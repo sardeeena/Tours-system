@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(20);
+SELECT plan(21);
 
 SELECT ok(
   EXISTS (
@@ -226,7 +226,27 @@ SELECT is(
 );
 
 RESET ROLE;
-SET LOCAL request.jwt.claims = '{"sub":"f9000000-0000-0000-0000-000000000002","role":"authenticated","aud":"authenticated"}';
+SET LOCAL request.jwt.claims = '{"sub":"f9000000-0000-0000-0000-000000000002","role":"authenticated","aud":"authenticated","aal":"aal1"}';
+SET LOCAL request.jwt.claim.sub = 'f9000000-0000-0000-0000-000000000002';
+SET LOCAL ROLE authenticated;
+
+UPDATE public.customers
+SET total_revenue = 123.45
+WHERE id = 'f9000000-0000-0000-0000-000000000101';
+
+RESET ROLE;
+SET LOCAL request.jwt.claims = '{"role":"service_role"}';
+SET LOCAL request.jwt.claim.role = 'service_role';
+SET LOCAL ROLE service_role;
+
+SELECT is(
+  (SELECT total_revenue FROM public.customers WHERE id = 'f9000000-0000-0000-0000-000000000101'),
+  0::numeric,
+  'administrator cannot change CRM metrics before completing MFA'
+);
+
+RESET ROLE;
+SET LOCAL request.jwt.claims = '{"sub":"f9000000-0000-0000-0000-000000000002","role":"authenticated","aud":"authenticated","aal":"aal2"}';
 SET LOCAL request.jwt.claim.sub = 'f9000000-0000-0000-0000-000000000002';
 SET LOCAL ROLE authenticated;
 
@@ -237,7 +257,7 @@ WHERE id = 'f9000000-0000-0000-0000-000000000101';
 SELECT is(
   (SELECT total_revenue FROM public.customers WHERE id = 'f9000000-0000-0000-0000-000000000101'),
   123.45::numeric,
-  'verified administrator retains CRM metric management'
+  'verified administrator retains CRM metric management after MFA'
 );
 
 RESET ROLE;

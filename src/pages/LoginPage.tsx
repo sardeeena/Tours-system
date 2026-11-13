@@ -202,7 +202,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ redirectUrl, onNavigate })
       if (result.requiresMfa || result.requiresMfaEnrollment) {
         authRateLimiter.reset();
         setErrorMessage(null);
-        showToast(result.requiresMfa ? 'Enter your authenticator code to continue.' : 'Set up an authenticator to secure the super-admin account.', 'info');
+        showToast(result.requiresMfa ? 'Enter your authenticator code to continue.' : 'Set up an authenticator to secure the administrator account.', 'info');
         return;
       }
       if (result.success) {

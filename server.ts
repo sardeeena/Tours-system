@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import { renderBrandedEmailHtml } from './src/utils/emailTemplate';
-import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
+import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
+import { isIP } from 'node:net';
 import { GoogleGenAI } from '@google/genai';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import path from 'path';
@@ -314,6 +315,13 @@ async function authenticateToken(req: AuthenticatedRequest, res: Response, next:
       } else if (profile?.role && ['customer', 'staff', 'manager', 'admin', 'super_admin'].includes(profile.role)) {
         role = profile.role;
       }
+
+      const { data: accessContext, error: accessError } = await userScopedSupabase.rpc('get_my_access_context');
+      if (!accessError && Array.isArray(accessContext?.roles)) {
+        const assignedRoles = accessContext.roles.filter((item: unknown): item is string => typeof item === 'string');
+        if (assignedRoles.includes('super_admin')) role = 'super_admin';
+        else if (assignedRoles.includes('admin')) role = 'admin';
+      }
     }
 
     req.user = { id: user.id, email: user.email, role };
@@ -383,6 +391,20 @@ app.use('/api', rateLimit(300, 60_000));
 
 // Authenticate caller tokens for all API routes
 app.use('/api', authenticateToken as any);
+
+app.use(['/api/admin', '/api/communications'], (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  if (!req.user || !['admin', 'super_admin'].includes(req.user.role)) return next();
+  const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '').trim();
+  const claims = token ? parseJwtPayload(token) : null;
+  if (claims?.aal !== 'aal2') {
+    return res.status(403).json({
+      success: false,
+      error: 'A verified authenticator code is required before administrator access.',
+      code: 'ADMIN_AAL2_REQUIRED',
+    });
+  }
+  return next();
+});
 
 // Sanitized API telemetry. Never persist request bodies, query strings, headers,
 // access tokens, passwords, email contents or provider responses.
@@ -2117,6 +2139,76 @@ const VISITOR_EVENT_FIELDS = new Set([
 ]);
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+type ApproximateVisitorLocation = {
+  country_code: string | null; country_name: string | null;
+  region_code: string | null; region_name: string | null;
+  city: string | null; location_source: 'ip_approximate';
+};
+const visitorGeoCache = new Map<string, { expiresAt: number; value: ApproximateVisitorLocation | null }>();
+
+function isPrivateOrReservedIp(value: string, family: number): boolean {
+  const ip = value.toLowerCase();
+  if (family === 4) {
+    const octets = ip.split('.').map(Number);
+    if (octets.length !== 4 || octets.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) return true;
+    const [a, b, c] = octets;
+    return a === 0 || a === 10 || a === 127 || a >= 224 ||
+      (a === 100 && b >= 64 && b <= 127) ||
+      (a === 169 && b === 254) ||
+      (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && (b === 168 || (b === 0 && (c === 0 || c === 2)))) ||
+      (a === 198 && (b === 18 || b === 19 || (b === 51 && c === 100))) ||
+      (a === 203 && b === 0 && c === 113);
+  }
+  if (ip.startsWith('::ffff:')) {
+    const mapped = ip.slice(7);
+    return isPrivateOrReservedIp(mapped, isIP(mapped));
+  }
+  return ip === '::' || ip === '::1' || ip.startsWith('fc') || ip.startsWith('fd') ||
+    ip.startsWith('fe80:') || ip.startsWith('ff') || ip.startsWith('2001:db8:');
+}
+
+/** Approximate GeoIP lookup only after analytics consent; never persists the raw IP. */
+async function lookupApproximateVisitorLocation(rawIp?: string | null): Promise<ApproximateVisitorLocation | null> {
+  const suppliedIp = (rawIp || '').trim();
+  const ip = suppliedIp.toLowerCase().startsWith('::ffff:') ? suppliedIp.slice(7) : suppliedIp;
+  const family = isIP(ip);
+  if (!family || isPrivateOrReservedIp(ip, family)) return null;
+  const cacheKey = createHash('sha256').update(ip).digest('hex');
+  const cached = visitorGeoCache.get(cacheKey);
+  if (cached && cached.expiresAt > Date.now()) return cached.value;
+  if (cached) visitorGeoCache.delete(cacheKey);
+
+  let value: ApproximateVisitorLocation | null = null;
+  try {
+    const response = await fetch(`https://ipwho.is/${encodeURIComponent(ip)}?fields=success,country,country_code,region,region_code,city`, {
+      headers: { Accept: 'application/json' },
+      signal: AbortSignal.timeout(2500),
+    });
+    if (response.ok) {
+      const body: any = await response.json().catch(() => null);
+      if (body?.success === true) {
+        const countryCode = typeof body.country_code === 'string' && /^[A-Z]{2}$/.test(body.country_code) ? body.country_code : null;
+        const regionCode = safeShortText(body.region_code, 24);
+        const countryName = safeShortText(body.country, 80);
+        const regionName = safeShortText(body.region, 80);
+        const city = safeShortText(body.city, 80);
+        if (countryCode || countryName || regionName || city) {
+          value = { country_code: countryCode, country_name: countryName, region_code: regionCode, region_name: regionName, city, location_source: 'ip_approximate' };
+        }
+      }
+    }
+  } catch {
+    // Geolocation is best-effort and must never delay or block booking/consent.
+  }
+  visitorGeoCache.set(cacheKey, { expiresAt: Date.now() + (value ? 6 : 1) * 60 * 60 * 1000, value });
+  if (visitorGeoCache.size > 2500) {
+    const oldestKey = visitorGeoCache.keys().next().value;
+    if (oldestKey) visitorGeoCache.delete(oldestKey);
+  }
+  return value;
+}
+
 function safeShortText(value: unknown, max = 120): string | null {
   if (typeof value !== 'string') return null;
   const cleaned = value.replace(/[<>\u0000-\u001f]/g, '').trim().slice(0, max);
@@ -2133,6 +2225,15 @@ function safeVisitorMetadata(value: any) {
   const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   const device = ['desktop','mobile','tablet','other'].includes(source.device_type) ? source.device_type : null;
   const screen = typeof source.screen_bucket === 'string' && /^(small|medium|large|xlarge)$/.test(source.screen_bucket) ? source.screen_bucket : null;
+  const localeCandidate = safeShortText(source.locale, 35);
+  const locale = localeCandidate && /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(localeCandidate) ? localeCandidate : null;
+  const languagePreferences = Array.isArray(source.language_preferences)
+    ? Array.from(new Set(source.language_preferences.slice(0, 8).filter((item: unknown): item is string =>
+        typeof item === 'string' && /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(item)
+      ))).slice(0, 8)
+    : [];
+  const platformFamily = ['Windows','macOS','Linux','Android','iOS','ChromeOS','Other'].includes(source.platform_family) ? source.platform_family : null;
+  const viewportBucket = ['compact','standard','wide'].includes(source.viewport_bucket) ? source.viewport_bucket : null;
   const safeCampaignValue = (input: unknown, max: number) => {
     const candidate = safeShortText(input, max);
     if (!candidate || /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i.test(candidate) || /\+?\d[\d\s().-]{7,}\d/.test(candidate)) return null;
@@ -2144,9 +2245,18 @@ function safeVisitorMetadata(value: any) {
     os_family: safeShortText(source.os_family, 40),
     screen_bucket: screen,
     language: safeShortText(source.language, 24),
+    locale,
+    language_preferences: languagePreferences,
+    platform_family: platformFamily,
+    is_mobile: typeof source.is_mobile === 'boolean' ? source.is_mobile : null,
+    viewport_bucket: viewportBucket,
     timezone: safeShortText(source.timezone, 64),
     country_code: null,
+    country_name: null,
     region_code: null,
+    region_name: null,
+    city: null,
+    location_source: null,
     referrer_host: safeShortText(source.referrer_host, 120),
     utm_source: safeCampaignValue(source.utm_source, 100),
     utm_medium: safeCampaignValue(source.utm_medium, 100),
@@ -2181,12 +2291,15 @@ app.post('/api/visitor/consent', rateLimit(20, 60_000), async (req: Authenticate
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
     return res.status(503).json({ success: false, error: 'Privacy settings are temporarily unavailable.' });
   }
-  const analytics = req.body?.analytics === true;
-  const marketing = req.body?.marketing === true;
+  const consentVersion = req.body?.consent_version === '2' ? '2' : '1';
+  const analytics = consentVersion === '2' && req.body?.analytics === true;
+  const marketing = consentVersion === '2' && req.body?.marketing === true;
   const sessionId = typeof req.body?.session_id === 'string' && UUID_PATTERN.test(req.body.session_id) ? req.body.session_id : null;
   const visitorId = typeof req.body?.visitor_id === 'string' && UUID_PATTERN.test(req.body.visitor_id) ? req.body.visitor_id : null;
   const metadata = safeVisitorMetadata(req.body?.metadata);
   try {
+    const location = analytics && sessionId && visitorId ? await lookupApproximateVisitorLocation(req.ip || null) : null;
+    const sessionMetadata = { ...metadata, ...(location || {}) };
     if (analytics && sessionId && visitorId) {
       const now = new Date().toISOString();
       const { error: sessionError } = await serverSupabase.from('visitor_sessions').upsert({
@@ -2196,7 +2309,7 @@ app.post('/api/visitor/consent', rateLimit(20, 60_000), async (req: Authenticate
         started_at: now,
         last_seen_at: now,
         landing_path: safePagePath(req.body?.landing_path),
-        ...metadata,
+        ...sessionMetadata,
         analytics_consent: true,
         marketing_consent: marketing,
         consent_updated_at: now,
@@ -2205,7 +2318,8 @@ app.post('/api/visitor/consent', rateLimit(20, 60_000), async (req: Authenticate
       const { error: updateError } = await serverSupabase.from('visitor_sessions').update({
         user_id: req.user?.id || null,
         last_seen_at: now,
-        ...metadata,
+        ended_at: null,
+        ...sessionMetadata,
         analytics_consent: true,
         marketing_consent: marketing,
         consent_updated_at: now,
@@ -2227,7 +2341,7 @@ app.post('/api/visitor/consent', rateLimit(20, 60_000), async (req: Authenticate
       necessary: true,
       analytics,
       marketing,
-      consent_version: '1',
+      consent_version: consentVersion,
       consent_source: ['cookie_banner','privacy_settings','account_settings'].includes(req.body?.source) ? req.body.source : 'cookie_banner',
     });
     if (error) throw error;
@@ -2320,7 +2434,7 @@ app.get('/api/admin/technical/visitors/sessions', rateLimit(60, 60_000), async (
   const limit = Math.min(500, Math.max(1, Number.parseInt(String(req.query.limit || '150'), 10) || 150));
   try {
     let query = serverSupabase.from('visitor_sessions')
-      .select('id,visitor_id,user_id,started_at,last_seen_at,ended_at,landing_path,referrer_host,utm_source,utm_medium,utm_campaign,utm_term,utm_content,device_type,browser_family,os_family,screen_bucket,language,timezone,country_code,region_code,analytics_consent,marketing_consent')
+      .select('id,visitor_id,user_id,started_at,last_seen_at,ended_at,landing_path,referrer_host,utm_source,utm_medium,utm_campaign,utm_term,utm_content,device_type,browser_family,os_family,screen_bucket,language,locale,language_preferences,platform_family,is_mobile,viewport_bucket,timezone,country_code,country_name,region_code,region_name,city,location_source,analytics_consent,marketing_consent')
       .order('last_seen_at', { ascending: false }).limit(limit);
     if (typeof req.query.search === 'string' && UUID_PATTERN.test(req.query.search)) query = query.or(`id.eq.${req.query.search},visitor_id.eq.${req.query.search},user_id.eq.${req.query.search}`);
     if (typeof req.query.device_type === 'string' && ['desktop','mobile','tablet','other'].includes(req.query.device_type)) query = query.eq('device_type', req.query.device_type);

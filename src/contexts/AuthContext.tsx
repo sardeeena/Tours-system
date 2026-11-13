@@ -76,8 +76,12 @@ interface AuthContextType {
   checkAdminAccess: () => Promise<boolean>;
 }
 
-const isSuperAdminUser = (candidate: AppUser | null): boolean =>
-  Boolean(candidate && (candidate.role === 'super_admin' || candidate.roles?.includes('super_admin')));
+const requiresAdministratorMfa = (candidate: AppUser | null): boolean =>
+  Boolean(candidate && (
+    candidate.role === 'admin' ||
+    candidate.role === 'super_admin' ||
+    candidate.roles?.some((role) => role === 'admin' || role === 'super_admin')
+  ));
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -133,8 +137,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return validatePasswordStrength(password);
   }, []);
 
-    const getSuperAdminMfaState = useCallback(async (candidate: AppUser | null) => {
-    if (!isSuperAdminUser(candidate)) {
+    const getPrivilegedAdminMfaState = useCallback(async (candidate: AppUser | null) => {
+    if (!requiresAdministratorMfa(candidate)) {
       return { factorId: null as string | null, requiresEnrollment: false };
     }
 
@@ -157,7 +161,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshUser = useCallback(async (trackSignIn = false) => {
     try {
       const current = await getCurrentAdminUser();
-      const mfaState = await getSuperAdminMfaState(current);
+      const mfaState = await getPrivilegedAdminMfaState(current);
       if (mfaState.requiresEnrollment) {
         setUser(null);
         setPendingMfaFactorId(null);
@@ -183,7 +187,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setLoading(false);
     }
-  }, [getSuperAdminMfaState]);
+  }, [getPrivilegedAdminMfaState]);
 
   /**
    * Rebuilds the active user from the live profile and database-backed RBAC context.
@@ -199,7 +203,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return false;
     }
     const current = await getCurrentAdminUser();
-    const mfaState = await getSuperAdminMfaState(current);
+    const mfaState = await getPrivilegedAdminMfaState(current);
     if (mfaState.requiresEnrollment) {
       setUser(null);
       setPendingMfaFactorId(null);
@@ -218,7 +222,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(current);
     if (!allowed) localStorage.removeItem(LOCAL_ACTIVE_USER_KEY);
     return allowed;
-  }, [getSuperAdminMfaState]);
+  }, [getPrivilegedAdminMfaState]);
 
   const handleSignOut = useCallback(async (isAutoLogout = false) => {
     setLoading(true);
@@ -310,7 +314,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       let mfaState: { factorId: string | null; requiresEnrollment: boolean };
       try {
-        mfaState = await getSuperAdminMfaState(verifiedUser);
+        mfaState = await getPrivilegedAdminMfaState(verifiedUser);
       } catch {
         await signOutAdmin();
         setUser(null);

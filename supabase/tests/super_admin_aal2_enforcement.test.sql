@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(11);
+SELECT plan(15);
 
 INSERT INTO auth.users (
   id, aud, role, email, encrypted_password, email_confirmed_at,
@@ -51,8 +51,14 @@ SELECT is(private.is_admin(), true, 'super_admin admin checks are granted at AAL
 
 SET LOCAL request.jwt.claims = '{"sub":"f9000000-0000-0000-0000-000000000004","role":"authenticated","aal":"aal1"}';
 SET LOCAL request.jwt.claim.sub = 'f9000000-0000-0000-0000-000000000004';
-SELECT is(private.has_role('admin'), true, 'ordinary admin role remains available at AAL1');
-SELECT is(private.has_permission('customers.update'), true, 'ordinary admin permissions remain available at AAL1');
+SELECT is(private.has_role('admin'), false, 'ordinary admin role is denied at AAL1');
+SELECT is(private.has_permission('customers.update'), false, 'ordinary admin permissions are denied at AAL1');
+SELECT is(private.is_admin(), false, 'ordinary admin checks are denied at AAL1');
+
+SET LOCAL request.jwt.claims = '{"sub":"f9000000-0000-0000-0000-000000000004","role":"authenticated","aal":"aal2"}';
+SELECT is(private.has_role('admin'), true, 'ordinary admin role is granted at AAL2');
+SELECT is(private.has_permission('customers.update'), true, 'ordinary admin permissions are granted at AAL2');
+SELECT is(private.is_admin(), true, 'ordinary admin checks are granted at AAL2');
 
 SET LOCAL request.jwt.claims = '{"role":"service_role","aal":"aal1"}';
 SET LOCAL request.jwt.claim.role = 'service_role';
