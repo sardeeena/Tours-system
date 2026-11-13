@@ -7,7 +7,7 @@ const INITIAL_FAQS: DbFaq[] = [
   {
     id: 'faq-1',
     category: 'booking',
-    question: 'How far in advance should I book my Red Sea excursion?',
+    question: 'How far in advance should I book my trip?',
     answer: 'We recommend reserving at least 24 to 48 hours in advance, especially during high season (October through May). For private yacht charters and scuba diving packages, early booking ensures boat permit clearances with port authorities.',
     sort_order: 1,
     is_published: true,
