@@ -129,7 +129,7 @@ Both trips include air-conditioned coach transfers, lunch at a local restaurant,
 • **Inclusions:** Captain, fuel, private hotel transfers, snorkeling gear, fresh fruit platter, and soft drinks.`;
   } else if (p.includes('book') || p.includes('reservation') || p.includes('how to') || p.includes('pay') || p.includes('cash') || p.includes('reserve')) {
     tours = ALL_TOURS.slice(0, 2);
-    content = `Booking your Red Sea excursion is fast, simple, and completely risk-free:
+    content = `Booking your tour is fast, simple, and completely risk-free:
 
 • **Direct Booking from Chat:** Simply click the **"Book"** button on any excursion card above or below to start reservation instantly!
 • **Pay on Pickup Option:** Zero upfront card payment needed if you prefer—you can select "Pay at Pickup" and pay in cash (EUR, USD, GBP, EGP) or card upon hotel lobby pickup.
@@ -140,7 +140,7 @@ Which excursion would you like to reserve?`;
   } else {
     // General overview
     tours = ALL_TOURS.slice(0, 3);
-    content = `Welcome to Red Sea Excursions! I am Captain Farouk, your local AI Concierge.
+    content = `Welcome to Awesome Adventure Tours! I am Captain Farouk, your local AI Concierge.
 
 Here are 3 of our most celebrated trips this season:
 1. **Orange Bay Island & Snorkeling** (€35) – The Red Sea's Caribbean sandbar, shallow turquoise water, great for relaxing and families.
