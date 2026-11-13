@@ -44,7 +44,7 @@ export async function saveBlogPost(post: Partial<BlogPost> & { title: string; sl
     title: post.title.trim(), slug: post.slug.trim().toLowerCase(), excerpt: post.excerpt || null,
     content: post.content, reading_time_minutes: Math.max(1,Math.ceil(post.content.trim().split(/\s+/).filter(Boolean).length/220)), cover_image_url: post.cover_image_url || null,
     status: post.status || 'draft', category_id: post.category_id || null,
-    author_name: post.author_name?.trim() || 'Kemet Spirit Editorial Team',
+    author_name: post.author_name?.trim() || 'Awesome Adventure Tours Editorial Team',
     seo_title: post.seo_title || null, seo_description: post.seo_description || null,
     published_at: post.status === 'published' || post.status === 'scheduled'
       ? (post.published_at && !Number.isNaN(new Date(post.published_at).getTime()) ? new Date(post.published_at).toISOString() : new Date().toISOString())

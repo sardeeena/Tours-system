@@ -1,6 +1,6 @@
-# Kemet Spirit catalogue seed
+# Awesome Adventure Tours catalogue seed
 
-The SQL file `supabase/seed/kemet_spirit_catalogue.sql` imports the 13 excursions currently published on `kemetspirit.com` into the relational Supabase catalogue.
+The SQL file `supabase/seed/awesome_adventure_tours_catalogue.sql` imports the 13 excursions currently published on `awesomeadventure.tours` into the relational Supabase catalogue.
 
 ## Safety and scope
 
@@ -24,11 +24,11 @@ For a production run, use the Supabase SQL Editor or an authenticated database s
 
 ## Existing live catalogue
 
-The live Kemet Spirit project already contains the 13 deterministic tour records, seven destinations, six categories, relational tour content, and five assigned per-tour extras. The live audit confirms 23 unique tour/category links, 31 tour images with one primary image per tour, 79 itinerary steps, 62 highlights, 64 inclusions, 25 exclusions, 47 what-to-bring items, 16 important-information items, and 13 tour SEO rows. Ratings and reviews remain zero. All seven pickup-location fee records are inactive.
+The live Awesome Adventure Tours project already contains the 13 deterministic tour records, seven destinations, six categories, relational tour content, and five assigned per-tour extras. The live audit confirms 23 unique tour/category links, 31 tour images with one primary image per tour, 79 itinerary steps, 62 highlights, 64 inclusions, 25 exclusions, 47 what-to-bring items, 16 important-information items, and 13 tour SEO rows. Ratings and reviews remain zero. All seven pickup-location fee records are inactive.
 
 The original live records still contain three malformed departure labels, the scuba tour's minimum age is null, and Makadi Bay is draft despite appearing in the public destination directory with zero tours. Re-running the insert-only seed will not change these existing rows because it uses `ON CONFLICT DO NOTHING`.
 
-A separate, guarded correction file is available at `supabase/seed/kemet_spirit_catalogue_live_corrections.sql`. It targets only the five exact records/old values described above and does not delete anything. **It is not automatic and must not be run against production until the operator explicitly approves the data changes.**
+A separate, guarded correction file is available at `supabase/seed/awesome_adventure_tours_catalogue_live_corrections.sql`. It targets only the five exact records/old values described above and does not delete anything. **It is not automatic and must not be run against production until the operator explicitly approves the data changes.**
 
 ## Verification
 

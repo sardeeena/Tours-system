@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured, formatSupabaseError } from './supabaseClient';
 import { DbSiteSetting } from '../types/database';
+import { APP_CONFIG } from '../config/appConfig';
 
 export interface CompanySettings {
   companyName: string;
@@ -12,6 +13,16 @@ export interface CompanySettings {
   defaultCurrency: string;
   supportedCurrencies: string[];
   defaultCountry: string;
+  website?: string;
+  invoiceTagline?: string;
+  billingAddress?: string;
+  billingCity?: string;
+  billingCountry?: string;
+  taxRegistrationNumber?: string;
+  commercialRegistryNumber?: string;
+  bankName?: string;
+  iban?: string;
+  swiftBic?: string;
 }
 
 export interface BookingPolicySettings {
@@ -45,7 +56,17 @@ export { INITIAL_STATIC_PAGES };
 export type { StaticPageContent };
 
 const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
-  companyName: 'Kemet Spirit',
+  companyName: APP_CONFIG.COMPANY_NAME,
+  website: 'https://awesomeadventure.tours',
+  invoiceTagline: 'Tours & Experiences',
+  billingAddress: '',
+  billingCity: 'Hurghada',
+  billingCountry: 'Egypt',
+  taxRegistrationNumber: '',
+  commercialRegistryNumber: '',
+  bankName: '',
+  iban: '',
+  swiftBic: '',
   email: '',
   phone: '',
   whatsapp: '',
@@ -76,7 +97,7 @@ const DEFAULT_SOCIAL_LINKS: SocialLinksSettings = {
 };
 
 const DEFAULT_FOOTER_CONTENT: FooterContentSettings = {
-  copyrightNotice: `© ${new Date().getFullYear()} Kemet Spirit.`,
+  copyrightNotice: `© ${new Date().getFullYear()} ${APP_CONFIG.COMPANY_NAME}.`,
   aboutSnippet: 'Explore excursions and experiences across Egypt’s Red Sea coast. Review each tour’s details, inclusions and booking information before reserving.',
   badges: [],
   paymentIconsText: '',
@@ -145,12 +166,119 @@ export async function saveSetting<T>(key: string, value: T, description?: string
   }
 }
 
+/**
+ * Restricted settings must never fall back to browser storage: localStorage is shared
+ * by browser users on the same device and is not an authorization boundary.
+ */
+async function getRestrictedSetting<T>(key: string, defaultValue: T): Promise<T> {
+  if (!isSupabaseConfigured()) return defaultValue;
+  try {
+    const { data, error } = await supabase
+      .from('site_settings')
+      .select('value')
+      .eq('key', key)
+      .maybeSingle();
+    if (error) {
+      console.warn(`Restricted Supabase setting read error for ${key}:`, error);
+      return defaultValue;
+    }
+    return data?.value ? data.value as unknown as T : defaultValue;
+  } catch (error) {
+    console.warn(`Restricted Supabase setting read error for ${key}:`, error);
+    return defaultValue;
+  }
+}
+
+async function saveRestrictedSetting<T>(key: string, value: T, description?: string): Promise<void> {
+  if (!isSupabaseConfigured()) {
+    throw new Error('Private invoice billing details require the secure Supabase backend and are never stored in browser storage.');
+  }
+  const { error } = await supabase.from('site_settings').upsert({
+    key,
+    value: value as any,
+    description: description || null,
+    updated_at: new Date().toISOString(),
+  });
+  if (error) throw new Error(formatSupabaseError(error));
+}
+
+function normalizeCompanyText(value: string | undefined, fallback: string): string {
+  const text = (value || '').trim();
+  if (!text || /kemet\s*spirit|kemetspirit\.com/i.test(text)) return fallback;
+  return text.replace(/kemetspirit\.com/gi, 'awesomeadventure.tours');
+}
+
 export async function getCompanySettings(): Promise<CompanySettings> {
-  return getSetting<CompanySettings>('company_info', DEFAULT_COMPANY_SETTINGS);
+  const [saved, invoiceBilling] = await Promise.all([
+    getSetting<Partial<CompanySettings>>('company_info', DEFAULT_COMPANY_SETTINGS),
+    getRestrictedSetting<Partial<CompanySettings>>('invoice_billing', {}),
+  ]);
+  const publicSettings = { ...saved };
+  // Never trust old company_info rows to carry private billing data.
+  delete publicSettings.billingAddress;
+  delete publicSettings.billingCity;
+  delete publicSettings.billingCountry;
+  delete publicSettings.taxRegistrationNumber;
+  delete publicSettings.commercialRegistryNumber;
+  delete publicSettings.bankName;
+  delete publicSettings.iban;
+  delete publicSettings.swiftBic;
+  return {
+    ...DEFAULT_COMPANY_SETTINGS,
+    ...publicSettings,
+    ...invoiceBilling,
+    companyName: normalizeCompanyText(saved.companyName, APP_CONFIG.COMPANY_NAME),
+    email: normalizeCompanyText(saved.email, APP_CONFIG.SUPPORT_EMAIL),
+    website: normalizeCompanyText(saved.website, 'https://awesomeadventure.tours'),
+  };
 }
 
 export async function saveCompanySettings(settings: CompanySettings): Promise<void> {
-  return saveSetting<CompanySettings>('company_info', settings, 'Master company identity and contact details');
+  const normalized: CompanySettings = {
+    ...settings,
+    companyName: normalizeCompanyText(settings.companyName, APP_CONFIG.COMPANY_NAME),
+    email: normalizeCompanyText(settings.email, APP_CONFIG.SUPPORT_EMAIL),
+    website: normalizeCompanyText(settings.website, 'https://awesomeadventure.tours'),
+  };
+  const {
+    billingAddress,
+    billingCity,
+    billingCountry,
+    taxRegistrationNumber,
+    commercialRegistryNumber,
+    bankName,
+    iban,
+    swiftBic,
+    ...publicCompanySettings
+  } = normalized;
+
+  // Public contact/brand information remains in the public allowlisted setting.
+  // Tax, registry and bank details are stored separately behind finance/settings RLS.
+  const privateBillingValues = [
+    billingAddress,
+    billingCity,
+    billingCountry,
+    taxRegistrationNumber,
+    commercialRegistryNumber,
+    bankName,
+    iban,
+    swiftBic,
+  ];
+  if (isSupabaseConfigured()) {
+    await saveRestrictedSetting('invoice_billing', {
+      billingAddress,
+      billingCity,
+      billingCountry,
+      taxRegistrationNumber,
+      commercialRegistryNumber,
+      bankName,
+      iban,
+      swiftBic,
+    }, 'Restricted invoice billing and settlement details');
+  } else if (privateBillingValues.some((value) => Boolean(value?.trim()))) {
+    throw new Error('Private invoice billing details require the secure Supabase backend and are never stored in browser storage.');
+  }
+  await saveSetting<CompanySettings>('company_info', publicCompanySettings, 'Master company identity and contact details');
 }
 
 export async function getBookingPolicies(): Promise<BookingPolicySettings> {
@@ -169,12 +297,30 @@ export async function saveSocialLinks(links: SocialLinksSettings): Promise<void>
   return saveSetting<SocialLinksSettings>('social_links', links, 'Social media profile links');
 }
 
+function normalizeFooterText(value: string): string {
+  return value.replace(/Kemet\s*Spirit/gi, APP_CONFIG.COMPANY_NAME).replace(/kemetspirit\.com/gi, 'awesomeadventure.tours');
+}
+
 export async function getFooterContent(): Promise<FooterContentSettings> {
-  return getSetting<FooterContentSettings>('footer_content', DEFAULT_FOOTER_CONTENT);
+  const saved = await getSetting<FooterContentSettings>('footer_content', DEFAULT_FOOTER_CONTENT);
+  return {
+    ...saved,
+    copyrightNotice: normalizeFooterText(saved.copyrightNotice || DEFAULT_FOOTER_CONTENT.copyrightNotice),
+    aboutSnippet: normalizeFooterText(saved.aboutSnippet || DEFAULT_FOOTER_CONTENT.aboutSnippet),
+    paymentIconsText: normalizeFooterText(saved.paymentIconsText || DEFAULT_FOOTER_CONTENT.paymentIconsText),
+    badges: (saved.badges || []).map(normalizeFooterText),
+  };
 }
 
 export async function saveFooterContent(content: FooterContentSettings): Promise<void> {
-  return saveSetting<FooterContentSettings>('footer_content', content, 'Footer copy, copyright, and compliance badges');
+  const normalized = {
+    ...content,
+    copyrightNotice: normalizeFooterText(content.copyrightNotice),
+    aboutSnippet: normalizeFooterText(content.aboutSnippet),
+    paymentIconsText: normalizeFooterText(content.paymentIconsText),
+    badges: (content.badges || []).map(normalizeFooterText),
+  };
+  return saveSetting<FooterContentSettings>('footer_content', normalized, 'Footer copy, copyright, and compliance badges');
 }
 
 export async function getStaticPages(): Promise<StaticPageContent[]> {

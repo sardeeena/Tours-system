@@ -48,6 +48,7 @@ import {
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { SuperAdminMfaPanel } from './SuperAdminMfaPanel';
+import { APP_CONFIG } from '../../config/appConfig';
 
 export interface TableHealthCheck {
   table: string;
@@ -85,7 +86,17 @@ export const AdminSettings: React.FC = () => {
 
   // Company Settings
   const [company, setCompany] = useState<CompanySettings>({
-    companyName: 'Awesome Adventure Tours',
+    companyName: APP_CONFIG.COMPANY_NAME,
+    website: 'https://awesomeadventure.tours',
+    invoiceTagline: 'Tours & Experiences',
+    billingAddress: '',
+    billingCity: 'Hurghada',
+    billingCountry: 'Egypt',
+    taxRegistrationNumber: '',
+    commercialRegistryNumber: '',
+    bankName: '',
+    iban: '',
+    swiftBic: '',
     email: 'reservations@awesomeadventure.tours',
     phone: '+20 151 5212741',
     whatsapp: '+20 151 5212741',
@@ -508,6 +519,53 @@ export const AdminSettings: React.FC = () => {
                 onChange={(e) => setCompany({ ...company, address: e.target.value })}
                 className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]"
               />
+            </div>
+
+            <div className="pt-4 border-t border-stone-800 space-y-3">
+              <h3 className="text-sm font-bold text-white">Legal & Invoice Identity</h3>
+              <p className="text-[11px] text-stone-400">These details are used by invoice generation and printed financial documents. Leave tax and registry fields blank until verified.</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">Website</label>
+                  <input type="url" value={company.website || ''} onChange={(e) => setCompany({ ...company, website: e.target.value })} className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]" />
+                </div>
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">Invoice Tagline</label>
+                  <input type="text" value={company.invoiceTagline || ''} onChange={(e) => setCompany({ ...company, invoiceTagline: e.target.value })} className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]" />
+                </div>
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">Billing Address</label>
+                  <input type="text" value={company.billingAddress || ''} onChange={(e) => setCompany({ ...company, billingAddress: e.target.value })} className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]" />
+                </div>
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">Billing City</label>
+                  <input type="text" value={company.billingCity || ''} onChange={(e) => setCompany({ ...company, billingCity: e.target.value })} className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]" />
+                </div>
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">Billing Country</label>
+                  <input type="text" value={company.billingCountry || ''} onChange={(e) => setCompany({ ...company, billingCountry: e.target.value })} className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]" />
+                </div>
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">Tax Registration Number</label>
+                  <input type="text" value={company.taxRegistrationNumber || ''} onChange={(e) => setCompany({ ...company, taxRegistrationNumber: e.target.value })} className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]" />
+                </div>
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">Commercial Registry Number</label>
+                  <input type="text" value={company.commercialRegistryNumber || ''} onChange={(e) => setCompany({ ...company, commercialRegistryNumber: e.target.value })} className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]" />
+                </div>
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">Bank Name</label>
+                  <input type="text" value={company.bankName || ''} onChange={(e) => setCompany({ ...company, bankName: e.target.value })} className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]" />
+                </div>
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">IBAN</label>
+                  <input type="text" value={company.iban || ''} onChange={(e) => setCompany({ ...company, iban: e.target.value })} className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]" />
+                </div>
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">SWIFT / BIC</label>
+                  <input type="text" value={company.swiftBic || ''} onChange={(e) => setCompany({ ...company, swiftBic: e.target.value })} className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]" />
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

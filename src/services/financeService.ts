@@ -16,29 +16,50 @@ import {
 import { bookingRepository } from './bookingRepository';
 import { recordActivity } from './crmService';
 import { publishAutomationEvent } from './communicationService';
+import { getCompanySettings } from './siteSettingsService';
+import { APP_CONFIG } from '../config/appConfig';
 
 const LOCAL_PAYMENTS_KEY = 'rse_fin_payments';
 const LOCAL_INVOICES_KEY = 'rse_fin_invoices';
 const LOCAL_REFUNDS_KEY = 'rse_fin_refunds';
 const LOCAL_PROVIDERS_KEY = 'rse_fin_providers';
 
+// Safe synchronous fallback for legacy callers. Invoice creation always loads the
+// current authoritative company settings through getCompanyBillingDetails().
 export const COMPANY_DETAILS: CompanyBillingDetails = {
-  // Brand identity only. Legal entity, tax, address, phone and bank details must be
-  // entered by an authorized administrator before issuing legally complete invoices.
-  name: 'Kemet Spirit',
-  tagline: 'Tours and experiences',
+  name: APP_CONFIG.COMPANY_NAME,
+  tagline: 'Tours & Experiences',
   address: '',
   city: '',
-  country: '',
-  phone: '',
-  email: '',
-  website: 'kemetspirit.com',
+  country: 'Egypt',
+  phone: APP_CONFIG.SUPPORT_PHONE,
+  email: APP_CONFIG.SUPPORT_EMAIL,
+  website: 'https://awesomeadventure.tours',
   taxRegistrationNumber: '',
   commercialRegistryNumber: '',
   bankName: '',
   iban: '',
   swiftBic: '',
 };
+
+export async function getCompanyBillingDetails(): Promise<CompanyBillingDetails> {
+  const settings = await getCompanySettings();
+  return {
+    name: settings.companyName?.trim() || APP_CONFIG.COMPANY_NAME,
+    tagline: settings.invoiceTagline?.trim() || 'Tours & Experiences',
+    address: settings.billingAddress?.trim() || '',
+    city: settings.billingCity?.trim() || '',
+    country: settings.billingCountry?.trim() || settings.defaultCountry?.trim() || 'Egypt',
+    phone: settings.phone?.trim() || APP_CONFIG.SUPPORT_PHONE,
+    email: settings.email?.trim() || APP_CONFIG.SUPPORT_EMAIL,
+    website: settings.website?.trim() || 'https://awesomeadventure.tours',
+    taxRegistrationNumber: settings.taxRegistrationNumber?.trim() || '',
+    commercialRegistryNumber: settings.commercialRegistryNumber?.trim() || '',
+    bankName: settings.bankName?.trim() || '',
+    iban: settings.iban?.trim() || '',
+    swiftBic: settings.swiftBic?.trim() || '',
+  };
+}
 
 export const DEFAULT_PROVIDERS: PaymentProvider[] = [
   {
@@ -390,6 +411,8 @@ export async function listInvoices(filter?: {
 
   if (!requireFinanceBackend()) {
     invoices = getLocal<FinanceInvoice[]>(LOCAL_INVOICES_KEY, []);
+    const currentCompanyDetails = await getCompanyBillingDetails();
+    invoices = invoices.map((invoice) => invoice.status === 'draft' ? { ...invoice, companyDetails: currentCompanyDetails } : invoice);
   } else {
     const { data, error } = await supabase
       .from('invoices')
@@ -438,6 +461,7 @@ export async function listInvoices(filter?: {
       }
     }
 
+    const currentCompanyDetails = await getCompanyBillingDetails();
     invoices = (data || []).map((row: any) => ({
       id: row.id,
       invoiceNumber: row.invoice_number,
@@ -464,7 +488,8 @@ export async function listInvoices(filter?: {
       balance: Number(row.balance || 0),
       currency: row.currency || 'EUR',
       status: row.status,
-      companyDetails: (row.company_details as CompanyBillingDetails) || COMPANY_DETAILS,
+      // Draft invoices follow the current settings; issued/paid invoices retain their immutable snapshot.
+      companyDetails: row.status === 'draft' ? currentCompanyDetails : ((row.company_details as CompanyBillingDetails) || currentCompanyDetails),
       notes: row.notes || null,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
@@ -493,6 +518,7 @@ export async function generateInvoiceForBooking(bookingReference: string): Promi
   const bookings = await bookingRepository.listBookings();
   const booking = bookings.find((item) => item.bookingReference === bookingReference);
   if (!booking) return null;
+  const companyDetails = await getCompanyBillingDetails();
 
   if (!requireFinanceBackend()) {
     const existing = getLocal<FinanceInvoice[]>(LOCAL_INVOICES_KEY, []);
@@ -525,7 +551,7 @@ export async function generateInvoiceForBooking(bookingReference: string): Promi
       balance: booking.pricing?.totalEur || 0,
       currency: 'EUR',
       status: 'draft',
-      companyDetails: COMPANY_DETAILS,
+      companyDetails,
       notes: 'Development preview only. Not a valid tax invoice.',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -604,10 +630,11 @@ export async function generateInvoiceForBooking(bookingReference: string): Promi
   }
 
   const billingDetailsComplete = Boolean(
-    COMPANY_DETAILS.name.trim() &&
-    COMPANY_DETAILS.address.trim() &&
-    COMPANY_DETAILS.country.trim() &&
-    COMPANY_DETAILS.taxRegistrationNumber.trim()
+    companyDetails.name.trim() &&
+    companyDetails.address.trim() &&
+    companyDetails.city.trim() &&
+    companyDetails.country.trim() &&
+    companyDetails.taxRegistrationNumber.trim()
   );
 
   const newInvoice: FinanceInvoice = {
@@ -641,10 +668,10 @@ export async function generateInvoiceForBooking(bookingReference: string): Promi
     balance: total,
     currency,
     status: billingDetailsComplete ? 'issued' : 'draft',
-    companyDetails: COMPANY_DETAILS,
+    companyDetails,
     notes: billingDetailsComplete
       ? null
-      : 'Draft only. Configure the legal entity name, registered address, country and tax registration details before issuing this invoice.',
+      : 'Draft only. Complete the legal billing entity, billing address, city, country and tax registration details in Admin Settings before issuing this invoice.',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
