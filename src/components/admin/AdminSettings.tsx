@@ -87,7 +87,6 @@ export const AdminSettings: React.FC = () => {
   // Company Settings
   const [company, setCompany] = useState<CompanySettings>({
     companyName: APP_CONFIG.COMPANY_NAME,
-    legalName: APP_CONFIG.LEGAL_NAME,
     website: 'https://awesomeadventure.tours',
     invoiceTagline: 'Tours & Experiences',
     billingAddress: '',
@@ -526,10 +525,6 @@ export const AdminSettings: React.FC = () => {
               <h3 className="text-sm font-bold text-white">Legal & Invoice Identity</h3>
               <p className="text-[11px] text-stone-400">These details are used by invoice generation and printed financial documents. Leave tax and registry fields blank until verified.</p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-stone-300 font-semibold mb-1">Legal Billing Entity Name</label>
-                  <input type="text" value={company.legalName || ''} onChange={(e) => setCompany({ ...company, legalName: e.target.value })} className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]" />
-                </div>
                 <div>
                   <label className="block text-stone-300 font-semibold mb-1">Website</label>
                   <input type="url" value={company.website || ''} onChange={(e) => setCompany({ ...company, website: e.target.value })} className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]" />
