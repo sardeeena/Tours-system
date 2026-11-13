@@ -394,7 +394,7 @@ app.use('/api', authenticateToken as any);
 
 app.use(['/api/admin', '/api/communications'], (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   if (!req.user || !['admin', 'super_admin'].includes(req.user.role)) return next();
-  const token = (req.headers.authorization || '').replace(/^Bearer\\s+/i, '').trim();
+  const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '').trim();
   const claims = token ? parseJwtPayload(token) : null;
   if (claims?.aal !== 'aal2') {
     return res.status(403).json({
