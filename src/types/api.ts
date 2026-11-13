@@ -1,5 +1,5 @@
 /**
- * Standardized API Request and Response Types for Red Sea Excursions
+ * Standardized API Request and Response Types for Awesome Adventure Tours
  */
 
 import { Booking, BookingStatus, PaymentStatus } from './booking';
