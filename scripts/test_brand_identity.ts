@@ -14,11 +14,11 @@ const TEXT_EXTENSIONS = new Set([
   '.ts', '.tsx', '.js', '.jsx', '.html', '.css', '.json', '.webmanifest', '.svg', '.txt', '.sql',
 ]);
 const RETIRED_BRANDS = [
-  { label: 'Kemet Spirit', pattern: /Kemet\\s+Spirit/i },
-  { label: 'Kemet Spirit domain', pattern: /kemetspirit\\.com/i },
-  { label: 'Red Sea Voyages', pattern: /Red\\s+Sea\\s+Voyages/i },
-  { label: 'Red Sea Voyages domain', pattern: /redseavoyages\\.com/i },
-  { label: 'Red Sea Excursions brand phrase', pattern: /Red\\s+Sea\\s+Excursions?/i },
+  { label: 'Kemet Spirit', pattern: /Kemet\s+Spirit/i },
+  { label: 'Kemet Spirit domain', pattern: /kemetspirit\.com/i },
+  { label: 'Red Sea Voyages', pattern: /Red\s+Sea\s+Voyages/i },
+  { label: 'Red Sea Voyages domain', pattern: /redseavoyages\.com/i },
+  { label: 'Red Sea Excursions brand phrase', pattern: /Red\s+Sea\s+Excursions?/i },
 ];
 
 function collectFiles(entry: string): string[] {
@@ -41,10 +41,10 @@ const violations: string[] = [];
 for (const file of files) {
   const content = fs.readFileSync(file, 'utf8');
   for (const retired of RETIRED_BRANDS) {
-    const lines = content.split(/\\r?\\n/);
+    const lines = content.split(/\r?\n/);
     lines.forEach((line, index) => {
       if (retired.pattern.test(line)) {
-        violations.push(`${path.relative(ROOT, file)}:${index + 1} contains retired branding (${retired.label})`);
+        violations.push(path.relative(ROOT, file) + ':' + (index + 1) + ' contains retired branding (' + retired.label + ')');
       }
     });
   }
@@ -52,8 +52,8 @@ for (const file of files) {
 
 if (violations.length) {
   console.error('Retired branding found in active website content:');
-  violations.forEach((violation) => console.error(` - ${violation}`));
+  violations.forEach((violation) => console.error(' - ' + violation));
   process.exitCode = 1;
 } else {
-  console.log(`Brand identity check passed across ${files.length} active website and seed files.`);
+  console.log('Brand identity check passed across ' + files.length + ' active website and seed files.');
 }
