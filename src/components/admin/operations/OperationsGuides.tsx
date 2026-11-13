@@ -524,7 +524,7 @@ export const OperationsGuides: React.FC = () => {
                     type="email"
                     value={formData.email || ''}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="staff@redseavoyages.com"
+                    placeholder="name@company-domain.com"
                     className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded text-stone-200"
                   />
                 </div>
