@@ -2291,8 +2291,9 @@ app.post('/api/visitor/consent', rateLimit(20, 60_000), async (req: Authenticate
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
     return res.status(503).json({ success: false, error: 'Privacy settings are temporarily unavailable.' });
   }
-  const analytics = req.body?.analytics === true;
-  const marketing = req.body?.marketing === true;
+  const consentVersion = req.body?.consent_version === '2' ? '2' : '1';
+  const analytics = consentVersion === '2' && req.body?.analytics === true;
+  const marketing = consentVersion === '2' && req.body?.marketing === true;
   const sessionId = typeof req.body?.session_id === 'string' && UUID_PATTERN.test(req.body.session_id) ? req.body.session_id : null;
   const visitorId = typeof req.body?.visitor_id === 'string' && UUID_PATTERN.test(req.body.visitor_id) ? req.body.visitor_id : null;
   const metadata = safeVisitorMetadata(req.body?.metadata);
@@ -2339,7 +2340,7 @@ app.post('/api/visitor/consent', rateLimit(20, 60_000), async (req: Authenticate
       necessary: true,
       analytics,
       marketing,
-      consent_version: '1',
+      consent_version: consentVersion,
       consent_source: ['cookie_banner','privacy_settings','account_settings'].includes(req.body?.source) ? req.body.source : 'cookie_banner',
     });
     if (error) throw error;
