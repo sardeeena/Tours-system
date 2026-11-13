@@ -107,7 +107,7 @@ function browserFamily(ua: string): string {
 
 function osFamily(ua: string): string {
   if (/Android/i.test(ua)) return 'Android';
-  if (/iPhone|iPad|iPod/i.test(ua)) return 'iOS';
+  if (/iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) return 'iOS';
   if (/Windows/i.test(ua)) return 'Windows';
   if (/Mac OS/i.test(ua)) return 'macOS';
   if (/Linux/i.test(ua)) return 'Linux';
