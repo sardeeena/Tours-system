@@ -43,6 +43,9 @@ jobs:
           node --check public/sw.js
           node -e 'JSON.parse(require("fs").readFileSync("public/manifest.webmanifest", "utf8")); console.log("PWA manifest JSON is valid")'
 
+      - name: Enforce canonical website branding
+        run: npm run test:brand-identity
+
       - name: Type-check
         run: npm run lint
 
