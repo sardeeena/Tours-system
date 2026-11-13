@@ -71,7 +71,6 @@ export const AdminAuthDirectory: React.FC<Props> = ({ isSuperAdmin }) => {
               <tr key={account.id}>
                 <td className="px-3 py-3">
                   <div className="font-semibold text-slate-800 dark:text-slate-100">{account.full_name || 'Unnamed account'}</div>
-                  <div className="text-xs text-slate-500 break-all">{account.email || 'No email address'}</div>
                 </td>
                 <td className="px-3 py-3">
                   <div className="flex flex-wrap gap-2">
