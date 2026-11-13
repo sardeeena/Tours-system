@@ -266,7 +266,7 @@ export const seoService = {
         tour.title,
         tour.destination,
         tour.category,
-        'Red Sea excursion',
+        'Egypt coastal tours',
         'Hurghada boat trip',
       ],
       canonicalUrl: tourUrl,
