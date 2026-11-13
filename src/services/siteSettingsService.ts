@@ -172,9 +172,9 @@ export async function saveSocialLinks(links: SocialLinksSettings): Promise<void>
 
 function normalizePublicBrandText(value: string): string {
   return value
-    .replace(/Kemet\\s*Spirit/gi, 'Awesome Adventure Tours')
-    .replace(/Red\\s*Sea\\s+Voyages/gi, 'Awesome Adventure Tours')
-    .replace(/Red\\s*Sea\\s+Excursions?/gi, 'Egypt tours and experiences');
+    .replace(/Kemet\s*Spirit/gi, 'Awesome Adventure Tours')
+    .replace(/Red\s*Sea\s+Voyages/gi, 'Awesome Adventure Tours')
+    .replace(/Red\s*Sea\s+Excursions?/gi, 'Egypt tours and experiences');
 }
 
 export async function getFooterContent(): Promise<FooterContentSettings> {
