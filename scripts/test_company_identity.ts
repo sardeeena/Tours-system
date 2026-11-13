@@ -13,6 +13,10 @@ const settings = read('src/services/siteSettingsService.ts');
 const finance = read('src/services/financeService.ts');
 const adminSettings = read('src/components/admin/AdminSettings.tsx');
 const invoiceUi = read('src/components/admin/finance/FinanceInvoices.tsx');
+const seoAdmin = read('src/components/admin/AdminSeoManager.tsx');
+const blogAdmin = read('src/components/admin/AdminBlogManager.tsx');
+const adminLogin = read('src/components/admin/AdminLoginPage.tsx');
+const blogService = read('src/services/blogService.ts');
 const catalogueSeed = read('supabase/seed/awesome_adventure_tours_catalogue.sql');
 const correctionSeed = read('supabase/seed/awesome_adventure_tours_catalogue_live_corrections.sql');
 const billingPolicy = read('supabase/migrations/20261113020113_private_invoice_billing_settings_read_policy.sql');
@@ -26,6 +30,10 @@ assert(adminSettings.includes('Legal & Invoice Identity') && adminSettings.inclu
 assert(settings.includes("getSetting<Partial<CompanySettings>>('invoice_billing'") && settings.includes("saveSetting('invoice_billing'"), 'private billing details are stored separately from public company settings');
 assert(billingPolicy.includes("public.has_permission('finance.create')") && billingPolicy.includes("key = 'invoice_billing'"), 'private invoice details are readable only by authorized finance/settings roles');
 assert(invoiceUi.includes('selectedInvoice.companyDetails.name'), 'invoice issuer footer uses the invoice company identity');
+assert(seoAdmin.includes('awesomeadventure.tours') && !seoAdmin.includes('kemetspirit.com'), 'SEO manager uses the current canonical domain');
+assert(blogAdmin.includes('Awesome Adventure Tours Editorial Team') && !blogAdmin.includes('Kemet Spirit'), 'blog admin defaults to the current editorial identity');
+assert(adminLogin.includes('Awesome Adventure Tours') && !adminLogin.includes('Kemet Spirit'), 'admin login branding uses the current company name');
+assert(blogService.includes('Awesome Adventure Tours Editorial Team') && !blogService.includes('Kemet Spirit'), 'blog service author fallback uses the current company name');
 assert(!catalogueSeed.includes('kemetspirit.com') && !catalogueSeed.includes('Kemet Spirit'), 'catalogue seed contains no former brand or domain');
 assert(!correctionSeed.includes('Kemet Spirit'), 'catalogue correction seed contains no former brand');
 
