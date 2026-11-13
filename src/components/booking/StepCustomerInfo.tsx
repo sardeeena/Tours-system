@@ -15,7 +15,8 @@ import {
 } from 'lucide-react';
 import { CustomerInfo } from '../../types/booking';
 import { COUNTRY_DIAL_CODES } from '../../data/bookingData';
-import { isValidEmail, isValidPhoneNumber, sanitizeString } from '../../lib/security';
+import { CountrySelect } from '../common/CountrySelect';
+import { isValidEmail, isValidPhoneNumber, sanitizeString, sanitizeTextPreservingWhitespace } from '../../lib/security';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface StepCustomerInfoProps {
@@ -49,7 +50,7 @@ export const StepCustomerInfo: React.FC<StepCustomerInfoProps> = ({
         email: customer.email || user.email,
         phoneNumber: customer.phoneNumber || user.phoneNumber || '',
         countryCode: customer.countryCode || user.countryCode || '+20',
-        country: customer.country || user.country || 'Germany',
+        country: customer.country || user.country || 'Egypt',
       });
     }
   }, [user]);
@@ -79,7 +80,7 @@ export const StepCustomerInfo: React.FC<StepCustomerInfoProps> = ({
   const handleChange = (field: keyof CustomerInfo, value: string) => {
     onCustomerChange({
       ...customer,
-      [field]: sanitizeString(value),
+      [field]: field === 'specialRequests' ? sanitizeTextPreservingWhitespace(value) : sanitizeString(value),
     });
   };
 
@@ -326,18 +327,14 @@ export const StepCustomerInfo: React.FC<StepCustomerInfoProps> = ({
               <Globe className="w-3.5 h-3.5 mr-1 text-[#0A6C74]" />
               Country of Residence <span className="text-red-500 ml-0.5">*</span>
             </label>
-            <input
+            <CountrySelect
               id="country"
-              type="text"
-              required
               value={customer.country}
-              onBlur={() => handleBlur('country')}
-              onChange={(e) => handleChange('country', e.target.value)}
-              placeholder="e.g. Germany, UK, Egypt, etc."
-              className={`w-full px-3.5 py-2.5 rounded border text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-[#0A6C74] ${
-                touched.country && errors.country
-                  ? 'border-red-400 bg-red-50/40'
-                  : 'border-stone-300 bg-stone-50/50'
+              required
+              onChange={(value) => { handleChange('country', value); handleBlur('country'); }}
+              placeholder="Select your country of residence"
+              className={`w-full px-3.5 py-2.5 rounded border text-xs sm:text-sm bg-stone-50/50 focus:outline-none focus:ring-2 focus:ring-[#0A6C74] ${
+                touched.country && errors.country ? 'border-red-400 bg-red-50/40' : 'border-stone-300'
               }`}
             />
             {touched.country && errors.country && (

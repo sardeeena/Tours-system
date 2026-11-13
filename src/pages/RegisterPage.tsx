@@ -22,6 +22,7 @@ import {
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { COUNTRY_DIAL_CODES } from '../data/bookingData';
+import { CountrySelect } from '../components/common/CountrySelect';
 import { isValidEmail, validatePasswordStrength, sanitizeString, authRateLimiter, sanitizeRedirectUrl } from '../lib/security';
 
 interface RegisterPageProps {
@@ -37,7 +38,7 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ redirectUrl, onNavig
   const [email, setEmail] = useState('');
   const [countryCode, setCountryCode] = useState('+20');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [country, setCountry] = useState('Germany');
+  const [country, setCountry] = useState('Egypt');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -414,17 +415,13 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ redirectUrl, onNavig
               <label htmlFor="reg-country" className="block text-xs font-bold text-stone-700 mb-1">
                 Country of Residence
               </label>
-              <div className="relative">
-                <input
-                  id="reg-country"
-                  type="text"
-                  placeholder="e.g. Germany, United Kingdom, Egypt"
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-xs border border-stone-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#0A6C74] focus:border-[#0A6C74] bg-stone-50/50"
-                />
-                <Globe className="w-4 h-4 text-stone-400 absolute left-3 top-2.5" />
-              </div>
+              <CountrySelect
+                id="reg-country"
+                value={country}
+                onChange={setCountry}
+                placeholder="Select your country of residence"
+                className="w-full py-2 px-3 text-xs border border-stone-300 rounded-lg bg-stone-50/50 text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#0A6C74] focus:border-[#0A6C74]"
+              />
             </div>
 
             {/* Password Fields */}

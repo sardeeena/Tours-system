@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Search, ShieldCheck, Users, Layers3, Plus, Save, Trash2, RefreshCw, LockKeyhole, Check, Mail, UserCheck, UserX, KeyRound } from 'lucide-react';
 import { supabase } from '../../services/supabaseClient';
 import { useAuth } from '../../contexts/AuthContext';
-import { AdminAuthDirectory } from './AdminAuthDirectory';
 
 type AccessUser = { id:string; email:string; full_name:string|null; legacy_role:string; is_confirmed:boolean; created_at:string; roles:string[] };
 type AccessRole = { slug:string; name:string; description:string|null; is_system:boolean; is_active:boolean; permissions:string[] };
@@ -238,7 +237,6 @@ export const AdminAccessControl:React.FC = () => {
         </div>:<p className="mt-2 text-xs text-slate-500">Inviting accounts requires a Super Admin session with verified multi-factor authentication.</p>}
         <p className="mt-2 text-xs text-slate-500">An invitation email will be sent. New accounts start with the Customer role until an administrator assigns staff access.</p>
       </div>
-      <div className="xl:col-span-2"><AdminAuthDirectory isSuperAdmin={isSuperAdmin}/></div>
        <section className="min-w-0 overflow-hidden">
         <div className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 dark:border-slate-700 pb-3">
           <div><h3 className="font-bold">Registered accounts <span className="font-normal text-slate-500">({visibleUsers.length} of {data.users.length})</span></h3><p className="text-xs text-slate-500 mt-1">Choose an account to review or change its access.</p></div>

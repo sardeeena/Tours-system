@@ -36,7 +36,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({
   onNavigate,
   onOpenWishlist,
 }) => {
-  const { user, signOut, updatePassword, isAdmin } = useAuth();
+  const { user, signOut, updatePassword, updateProfile, isAdmin } = useAuth();
   const { showToast } = useToast();
 
   const [activeTab, setActiveTab] = useState<'bookings' | 'profile' | 'security'>('bookings');
@@ -50,6 +50,12 @@ export const AccountPage: React.FC<AccountPageProps> = ({
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState(false);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileName, setProfileName] = useState(user?.fullName || '');
+  const [profilePhone, setProfilePhone] = useState(user?.phoneNumber || '');
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [profileError, setProfileError] = useState('');
+  const [profileNotice, setProfileNotice] = useState('');
 
   useEffect(() => {
     if (!user?.email) return;
@@ -67,6 +73,19 @@ export const AccountPage: React.FC<AccountPageProps> = ({
         setIsLoadingBookings(false);
       });
   }, [user?.email]);
+
+  const handleProfileSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSavingProfile(true); setProfileError(''); setProfileNotice('');
+    try {
+      const result = await updateProfile({ fullName: profileName.trim(), phone: profilePhone.trim() || undefined });
+      if (!result.success) throw new Error(result.error || 'Profile details could not be saved.');
+      setIsEditingProfile(false);
+      setProfileNotice('Your profile details have been updated.');
+    } catch (error) {
+      setProfileError(error instanceof Error ? error.message : 'Profile details could not be saved.');
+    } finally { setIsSavingProfile(false); }
+  };
 
   const handleSignOut = async () => {
     await signOut();
@@ -133,11 +152,16 @@ export const AccountPage: React.FC<AccountPageProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto space-y-6">
+    <div className="account-page min-h-screen bg-[#F4F7FA] dark:bg-[#0A1118] py-8 sm:py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto space-y-6">
         
+        <div className="space-y-1">
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#0A6C74] dark:text-teal-300">Account center</p>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0E1B2A] dark:text-white">Your account</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Manage your reservations, personal information, and account security in one place.</p>
+        </div>
         {/* User Profile Card */}
-        <div className="bg-white border border-[#E8E3DA] rounded-xl p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
+        <div className="bg-white dark:bg-slate-900 border border-[#E8E3DA] dark:border-slate-700 rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-5 text-center sm:text-left">
             <div className="w-20 h-20 rounded-full bg-[#0A6C74] text-white flex items-center justify-center text-2xl font-bold border-2 border-[#0A6C74] shadow-sm overflow-hidden">
               {user.avatarUrl ? (
@@ -206,14 +230,14 @@ export const AccountPage: React.FC<AccountPageProps> = ({
         </div>
 
         {/* Tab Controls */}
-        <div className="flex border-b border-[#E8E3DA] space-x-6 text-xs sm:text-sm font-semibold text-stone-600">
+        <div className="flex gap-2 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2 shadow-sm text-xs sm:text-sm font-semibold text-stone-600 dark:text-slate-300">
           <button
             type="button"
             onClick={() => setActiveTab('bookings')}
-            className={`pb-3 px-1 border-b-2 flex items-center space-x-2 transition-colors cursor-pointer ${
+            className={`px-4 py-3 border-2 border-transparent flex items-center whitespace-nowrap space-x-2 transition-colors cursor-pointer ${
               activeTab === 'bookings'
-                ? 'border-[#0A6C74] text-[#0A6C74] font-bold'
-                : 'border-transparent hover:text-stone-900'
+                ? 'border-[#0A6C74] bg-[#0A6C74] text-white font-bold shadow-sm rounded-xl'
+                : 'border-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl'
             }`}
           >
             <CalendarCheck className="w-4 h-4" />
@@ -225,8 +249,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({
             onClick={() => setActiveTab('profile')}
             className={`pb-3 px-1 border-b-2 flex items-center space-x-2 transition-colors cursor-pointer ${
               activeTab === 'profile'
-                ? 'border-[#0A6C74] text-[#0A6C74] font-bold'
-                : 'border-transparent hover:text-stone-900'
+                ? 'border-[#0A6C74] bg-[#0A6C74] text-white font-bold shadow-sm rounded-xl'
+                : 'border-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl'
             }`}
           >
             <User className="w-4 h-4" />
@@ -238,8 +262,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({
             onClick={() => setActiveTab('security')}
             className={`pb-3 px-1 border-b-2 flex items-center space-x-2 transition-colors cursor-pointer ${
               activeTab === 'security'
-                ? 'border-[#0A6C74] text-[#0A6C74] font-bold'
-                : 'border-transparent hover:text-stone-900'
+                ? 'border-[#0A6C74] bg-[#0A6C74] text-white font-bold shadow-sm rounded-xl'
+                : 'border-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl'
             }`}
           >
             <KeyRound className="w-4 h-4" />
@@ -256,7 +280,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({
                 <p className="text-xs">Loading your reservations...</p>
               </div>
             ) : userBookings.length === 0 ? (
-              <div className="bg-white border border-[#E8E3DA] rounded-xl p-10 text-center space-y-4">
+              <div className="bg-white dark:bg-slate-900 border border-[#E8E3DA] dark:border-slate-700 rounded-2xl p-10 text-center space-y-4">
                 <div className="w-12 h-12 rounded-full bg-stone-100 text-[#0A6C74] flex items-center justify-center mx-auto">
                   <CalendarCheck className="w-6 h-6" />
                 </div>
@@ -286,7 +310,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({
                 {userBookings.map((b) => (
                   <div
                     key={b.bookingReference}
-                    className="bg-white border border-[#E8E3DA] rounded-xl p-5 shadow-2xs hover:shadow-sm transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
+                    className="bg-white dark:bg-slate-900 border border-[#E8E3DA] dark:border-slate-700 rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row items-start md:items-center justify-between gap-4"
                   >
                     <div className="flex items-start space-x-4">
                       {b.tourImage && (
@@ -360,51 +384,36 @@ export const AccountPage: React.FC<AccountPageProps> = ({
 
         {/* Tab 2: Profile Details */}
         {activeTab === 'profile' && (
-          <div className="bg-white border border-[#E8E3DA] rounded-xl p-6 sm:p-8 shadow-sm space-y-5">
-            <h3 className="font-display text-base font-bold text-[#0E1B2A]">
-              Personal Contact Profile
-            </h3>
-            <p className="text-xs text-stone-500">
-              These details are automatically populated during your excursion bookings for faster checkout.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-              <div className="p-3.5 bg-stone-50 rounded-lg border border-stone-200">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block mb-1">
-                  Full Name
-                </span>
-                <span className="text-xs sm:text-sm font-semibold text-stone-800">
-                  {user.fullName}
-                </span>
+          <div className="grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(260px,0.8fr)]">
+            <section className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 sm:p-8 shadow-sm">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div><p className="text-[11px] font-bold uppercase tracking-wider text-[#0A6C74] dark:text-teal-300">Personal information</p><h3 className="mt-1 text-lg font-bold text-slate-900 dark:text-white">Profile details</h3><p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Keep your contact information up to date for faster reservations.</p></div>
+                {!isEditingProfile && <button type="button" onClick={() => { setProfileName(user.fullName); setProfilePhone(user.phoneNumber || ''); setIsEditingProfile(true); setProfileError(''); }} className="rounded-xl border border-slate-200 dark:border-slate-700 px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800">Edit profile</button>}
               </div>
-
-              <div className="p-3.5 bg-stone-50 rounded-lg border border-stone-200">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block mb-1">
-                  Email Address
-                </span>
-                <span className="text-xs sm:text-sm font-semibold text-stone-800">
-                  {user.email}
-                </span>
-              </div>
-
-              <div className="p-3.5 bg-stone-50 rounded-lg border border-stone-200">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block mb-1">
-                  Mobile / WhatsApp
-                </span>
-                <span className="text-xs sm:text-sm font-semibold text-stone-800">
-                  {user.phoneNumber ? `${user.countryCode || '+20'} ${user.phoneNumber}` : 'Not provided'}
-                </span>
-              </div>
-
-              <div className="p-3.5 bg-stone-50 rounded-lg border border-stone-200">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block mb-1">
-                  Country of Residence
-                </span>
-                <span className="text-xs sm:text-sm font-semibold text-stone-800">
-                  {user.country || 'International'}
-                </span>
-              </div>
-            </div>
+              {profileNotice && <p role="status" className="mt-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900 p-3 text-sm text-emerald-800 dark:text-emerald-200">{profileNotice}</p>}
+              {profileError && <p role="alert" className="mt-4 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900 p-3 text-sm text-rose-800 dark:text-rose-200">{profileError}</p>}
+              {isEditingProfile ? (
+                <form onSubmit={handleProfileSave} className="mt-6 space-y-4">
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">Full name<input required minLength={2} value={profileName} onChange={(e) => setProfileName(e.target.value)} className="mt-1.5 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3.5 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0A6C74]" /></label>
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200">Mobile / WhatsApp<input type="tel" value={profilePhone} onChange={(e) => setProfilePhone(e.target.value)} placeholder="Your phone number" className="mt-1.5 w-full rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-3.5 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#0A6C74]" /></label>
+                  <div className="flex flex-wrap gap-2"><button type="submit" disabled={isSavingProfile} className="rounded-xl bg-[#0A6C74] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60">{isSavingProfile ? 'Saving…' : 'Save changes'}</button><button type="button" onClick={() => setIsEditingProfile(false)} className="rounded-xl border border-slate-200 dark:border-slate-700 px-5 py-2.5 text-sm font-semibold text-slate-700 dark:text-slate-200">Cancel</button></div>
+                </form>
+              ) : (
+                <dl className="mt-6 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/70 p-4"><dt className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Full name</dt><dd className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.fullName}</dd></div>
+                  <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/70 p-4"><dt className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Email address</dt><dd className="mt-1 break-words text-sm font-semibold text-slate-900 dark:text-slate-100">{user.email}</dd></div>
+                  <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/70 p-4"><dt className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Mobile / WhatsApp</dt><dd className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.phoneNumber ? (user.countryCode || '+20') + ' ' + user.phoneNumber : 'Not provided'}</dd></div>
+                  <div className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/70 p-4"><dt className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Country of residence</dt><dd className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{user.country || 'Not provided'}</dd></div>
+                </dl>
+              )}
+            </section>
+            <aside className="rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6 shadow-sm">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#E8F3F4] text-[#0A6C74] dark:bg-teal-950/50 dark:text-teal-300"><ShieldCheck className="h-5 w-5" /></div>
+              <h3 className="mt-4 text-base font-bold text-slate-900 dark:text-white">Account status</h3>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Your account is ready to use for reservations and trip updates.</p>
+              <div className="mt-5 border-t border-slate-100 dark:border-slate-700 pt-4"><p className="text-xs text-slate-500 dark:text-slate-400">Account email</p><p className="mt-1 break-all text-sm font-semibold text-slate-900 dark:text-slate-100">{user.email}</p></div>
+              <div className="mt-4"><p className="text-xs text-slate-500 dark:text-slate-400">Membership</p><p className="mt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">{isAdmin ? 'Team account' : 'Awesome Adventure member'}</p></div>
+            </aside>
           </div>
         )}
 

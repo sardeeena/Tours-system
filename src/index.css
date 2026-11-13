@@ -859,3 +859,35 @@ html.dark .admin-shell .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,.2),0 10px 
     animation-duration:.01ms !important; animation-iteration-count:1 !important;
   }
 }
+
+/* Admin theme cleanup: dark brand surfaces must remain readable in light mode. */
+html:not(.dark) .admin-shell [class~="bg-[#101b2b]"],
+html:not(.dark) .admin-shell [class~="bg-[#142238]"],
+html:not(.dark) .admin-shell [class~="bg-slate-950"],
+html:not(.dark) .admin-shell [class~="bg-gray-950"],
+html:not(.dark) .admin-shell [class~="bg-neutral-950"] {
+  background-color: #FFFFFF !important;
+  color: #172033 !important;
+  border-color: #E2E8F0 !important;
+}
+html:not(.dark) .admin-shell [class~="bg-[#142238]"] {
+  background-color: #F7F9FC !important;
+}
+html:not(.dark) .admin-shell [class~="bg-[#101b2b]"] .text-white,
+html:not(.dark) .admin-shell [class~="bg-[#101b2b]"] .text-slate-100,
+html:not(.dark) .admin-shell [class~="bg-[#101b2b]"] .text-slate-200,
+html:not(.dark) .admin-shell [class~="bg-[#101b2b]"] .text-slate-300,
+html:not(.dark) .admin-shell [class~="bg-[#142238]"] .text-white,
+html:not(.dark) .admin-shell [class~="bg-[#142238]"] .text-slate-100,
+html:not(.dark) .admin-shell [class~="bg-[#142238]"] .text-slate-200,
+html:not(.dark) .admin-shell [class~="bg-[#142238]"] .text-slate-300,
+html:not(.dark) .admin-shell [class~="bg-slate-950"] .text-white,
+html:not(.dark) .admin-shell [class~="bg-slate-950"] .text-slate-100,
+html:not(.dark) .admin-shell [class~="bg-slate-950"] .text-slate-200,
+html:not(.dark) .admin-shell [class~="bg-slate-950"] .text-slate-300 {
+  color: #334155 !important;
+}
+html:not(.dark) .admin-shell [class~="bg-[#101b2b]"] [class~="bg-[#142238]"],
+html:not(.dark) .admin-shell [class~="bg-[#101b2b]"] [class~="bg-slate-950"] {
+  background-color: #F1F5F9 !important;
+}
