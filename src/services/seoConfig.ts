@@ -7,13 +7,13 @@ import { APP_CONFIG } from '../config/appConfig';
  */
 export const SEO_DEFAULTS = {
   SITE_NAME: 'Awesome Adventure Tours',
-  DEFAULT_TITLE: 'Awesome Adventure Tours | Red Sea Excursions in Egypt',
+  DEFAULT_TITLE: 'Awesome Adventure Tours | Boat Trips, Island Tours & Safaris',
   DEFAULT_DESCRIPTION:
     'Explore Red Sea excursions in Egypt, including boat trips, island visits, snorkeling and desert experiences. Review each tour\'s details before booking.',
   DEFAULT_OG_IMAGE: 'https://awesomeadventure.tours/logo.webp',
   DEFAULT_LOCALE: 'en_US',
   KEYWORDS: [
-    'Red Sea excursions',
+    'Egypt boat trips',
     'Hurghada boat trips',
     'Orange Bay Giftun Island',
     'Ras Mohammed snorkeling',
@@ -264,11 +264,11 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> =
   }),
 
   '/excursions': (origin) => ({
-    title: 'Red Sea Excursions & Boat Trips | Awesome Adventure Tours',
+    title: 'Boat Trips & Island Tours in Egypt | Awesome Adventure Tours',
     description:
-      'Browse published Red Sea excursions in Egypt. Compare boat trips, island experiences, snorkeling activities, trip durations and prices.',
+      'Browse boat trips, island experiences, snorkeling activities and desert adventures across Egypt. Compare durations, inclusions and prices.',
     keywords: [
-      'Red Sea excursions catalog',
+      'Egypt boat trips and island tours',
       'boat trips Hurghada',
       'El Gouna water sports',
       'Sharm El-Sheikh diving',
@@ -289,11 +289,11 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> =
   }),
 
   '/experiences': (origin) => ({
-    title: 'Red Sea Experiences & Excursion Categories | Awesome Adventure Tours',
+    title: 'Boat Trips, Snorkeling & Desert Safaris | Awesome Adventure Tours',
     description:
       'Discover boat trips, island escapes, snorkeling, diving and desert adventures across Egypt’s Red Sea coast.',
     keywords: [
-      'Red Sea experiences',
+      'Egypt coastal experiences',
       'Hurghada boat trips',
       'Giftun Island excursions',
       'Red Sea snorkeling and diving',
@@ -319,7 +319,7 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> =
       'Sign in to create a support request and securely follow your conversations with the Awesome Adventure Tours team.',
     keywords: [
       'Awesome Adventure Tours support',
-      'Red Sea excursion assistance',
+      'Tour assistance in Egypt',
       'booking support',
       'customer service Hurghada',
     ],
@@ -396,7 +396,7 @@ export function getPageSeo(
         tour.title,
         tour.destination,
         tour.category,
-        'Red Sea excursion',
+        'Egypt tours and activities',
                 ...(tour.categories || []),
       ],
       canonicalUrl: tourUrl,
@@ -418,7 +418,7 @@ export function getPageSeo(
     return {
       title: destination.seoTitle || `${destination.name} Excursions & Activities | Awesome Adventure Tours`,
       description: destination.seoDescription || destination.description,
-      keywords: [destination.name, 'Egypt Red Sea excursions', 'activities', 'boat trips'],
+      keywords: [destination.name, 'Egypt tours and activities', 'activities', 'boat trips'],
       canonicalUrl: destinationUrl,
       ogType: 'website',
       ogImage: destination.image || SEO_DEFAULTS.DEFAULT_OG_IMAGE,
