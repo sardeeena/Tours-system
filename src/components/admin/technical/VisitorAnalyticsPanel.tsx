@@ -65,6 +65,8 @@ export const VisitorAnalyticsPanel: React.FC = () => {
   const [consents, setConsents] = useState<ConsentRecord[]>([]);
   const [auditRecords, setAuditRecords] = useState<AuditRecord[]>([]);
   const [expandedAuditId, setExpandedAuditId] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState<'overview' | 'activity' | 'audit' | 'privacy'>('overview');
+  const [expandedEventId, setExpandedEventId] = useState<string | null>(null);
   const [retention, setRetention] = useState<Retention>({ event_retention_days: 90, session_retention_days: 180, consent_retention_days: 730, technical_event_retention_days: 90, audit_log_retention_days: 2555 });
   const [search, setSearch] = useState('');
   const [eventType, setEventType] = useState('');
@@ -222,10 +224,24 @@ export const VisitorAnalyticsPanel: React.FC = () => {
         </div>
       </div>
 
+      <nav aria-label="Technical analytics sections" className="flex flex-wrap gap-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-2">
+        {([
+          ['overview','Overview'],
+          ['activity','Sessions & activity'],
+          ['audit','Audit trail'],
+          ['privacy','Privacy & retention'],
+        ] as const).map(([key,label]) => (
+          <button key={key} type="button" onClick={() => setActiveSection(key)} aria-pressed={activeSection === key}
+            className={`rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold transition-colors ${activeSection === key ? 'bg-[#0A6C74] text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>
+            {label}
+          </button>
+        ))}
+      </nav>
+
       {error && <p role="alert" className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800 dark:border-rose-900 dark:bg-rose-950/30 dark:text-rose-200">{error}</p>}
       {notice && <p role="status" className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-200">{notice}</p>}
 
-      {overview && <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+      {activeSection === 'overview' && overview && <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <Card label="Consented sessions · 30d" value={overview.sessions} icon={Users} />
         <Card label="Unique visitors" value={overview.uniqueVisitors} icon={Eye} />
         <Card label="Returning visitors" value={overview.returningVisitors} icon={Users} />
@@ -237,7 +253,7 @@ export const VisitorAnalyticsPanel: React.FC = () => {
         <Card label="Marketing opt-ins" value={overview.marketingOptIns} icon={Cookie} />
       </div>}
 
-      {overview && <div className="grid gap-3 xl:grid-cols-2">
+      {activeSection === 'overview' && overview && <div className="grid gap-3 xl:grid-cols-2">
         <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
           <h3 className="font-semibold">Booking conversion funnel · 30 days</h3>
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-5">
@@ -254,7 +270,7 @@ export const VisitorAnalyticsPanel: React.FC = () => {
         </div>
       </div>}
 
-      <div className="grid gap-3 lg:grid-cols-2">
+      {activeSection === 'activity' && <div className="grid gap-3 lg:grid-cols-2">
         <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
           <h3 className="font-semibold">Visitor sessions</h3>
           <p className="mt-1 text-xs text-slate-500">Select a session to inspect its event timeline.</p>
@@ -286,17 +302,20 @@ export const VisitorAnalyticsPanel: React.FC = () => {
           <div className="flex flex-wrap items-center justify-between gap-2"><div><h3 className="font-semibold">Visitor activity timeline</h3><p className="mt-1 text-xs text-slate-500">{selectedSession ? `Session ${selectedSession.slice(0, 8)}…` : 'Recent events across all consented sessions'}</p></div>{selectedSession && <button type="button" onClick={() => setSelectedSession('')} className="text-xs font-semibold text-[#9a702b] underline">Clear session</button>}</div>
           <div className="mt-3 max-h-[480px] space-y-2 overflow-y-auto">
             {visibleEvents.map((item) => <div key={item.id} className="rounded-lg border border-slate-200 p-3 text-xs dark:border-slate-700">
-              <div className="flex flex-wrap items-center justify-between gap-2"><span className="font-semibold">{item.event_name.replace(/_/g, ' ')}</span><span className="text-slate-500">{date(item.occurred_at)}</span></div>
+              <div className="flex flex-wrap items-center justify-between gap-2"><span className="font-semibold">{item.event_name.replace(/_/g, ' ')}</span><div className="flex items-center gap-3"><span className="text-slate-500">{date(item.occurred_at)}</span><button type="button" onClick={() => setExpandedEventId((current) => current === item.id ? null : item.id)} className="font-semibold text-[#9a702b] underline">{expandedEventId === item.id ? 'Hide details' : 'Inspect'}</button></div></div>
               <p className="mt-1 break-all text-slate-600 dark:text-slate-300">{item.page_path || 'No page recorded'}</p>
               <p className="mt-1 text-slate-500">Session {item.session_id.slice(0, 8)}…{item.duration_ms !== null ? ` · ${Math.round(item.duration_ms / 1000)}s` : ''}</p>
               {Object.keys(item.event_data || {}).length > 0 && <p className="mt-1 break-words text-slate-500">{Object.entries(item.event_data).map(([key, value]) => `${key}: ${value}`).join(' · ')}</p>}
+              {expandedEventId === item.id && <pre className="mt-3 max-h-48 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-slate-50 dark:bg-slate-950 p-3 text-[10px] text-slate-600 dark:text-slate-300">{JSON.stringify({ ...item, event_data: item.event_data || {} }, null, 2)}</pre>}
             </div>)}
             {!visibleEvents.length && <p className="py-6 text-center text-xs text-slate-500">No activity matches this filter.</p>}
           </div>
         </div>
       </div>
 
-      <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+}
+
+{activeSection === 'audit' &&       <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
         <div className="flex flex-wrap items-center justify-between gap-2"><div><h3 className="font-semibold">Website and administration audit trail</h3><p className="mt-1 text-xs text-slate-500">Recorded business and administrator actions, separate from optional visitor analytics.</p></div><span className="text-xs text-slate-500">{auditRecords.length.toLocaleString()} recent records</span></div>
         <div className="mt-3 max-h-[360px] space-y-2 overflow-y-auto">
           {auditRecords.filter((item) => !search.trim() || [item.action,item.entity_type,item.entity_id,item.user_id].some((value) => String(value || '').toLowerCase().includes(search.trim().toLowerCase()))).map((item) => <div key={item.id} className="rounded-lg border border-slate-200 p-3 text-xs dark:border-slate-700"><div className="flex flex-wrap items-center justify-between gap-2"><div className="min-w-0"><p className="font-semibold">{item.action.replace(/_/g, ' ')}</p><p className="mt-1 text-slate-500">{item.entity_type}{item.entity_id ? ` · ${item.entity_id}` : ''}{item.user_id ? ` · User ${item.user_id.slice(0,8)}…` : ' · System action'}</p></div><div className="flex items-center gap-3"><time className="shrink-0 text-slate-500">{date(item.created_at)}</time><button type="button" onClick={() => setExpandedAuditId((current) => current === item.id ? null : item.id)} className="font-semibold text-[#9a702b] underline">{expandedAuditId === item.id ? 'Hide changes' : 'View changes'}</button></div></div>{expandedAuditId === item.id && <div className="mt-3 grid gap-2 sm:grid-cols-2"><div className="min-w-0"><p className="mb-1 font-semibold text-slate-500">Before</p><pre className="max-h-40 overflow-auto whitespace-pre-wrap break-all rounded bg-slate-50 p-2 text-[10px] dark:bg-slate-950">{JSON.stringify(item.old_data || {}, null, 2)}</pre></div><div className="min-w-0"><p className="mb-1 font-semibold text-slate-500">After</p><pre className="max-h-40 overflow-auto whitespace-pre-wrap break-all rounded bg-slate-50 p-2 text-[10px] dark:bg-slate-950">{JSON.stringify(item.new_data || {}, null, 2)}</pre></div></div>}</div>)}
@@ -305,6 +324,9 @@ export const VisitorAnalyticsPanel: React.FC = () => {
         <p className="mt-2 text-[11px] text-slate-500">Before-and-after snapshots are redacted server-side; contact details, free text, credentials, cookies, tokens and nested payloads are withheld.</p>
       </div>
 
+}
+
+{activeSection === 'privacy' && <>
       <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
         <div className="flex items-center gap-2"><Cookie className="h-4 w-4 text-[#b58b3a]" /><h3 className="font-semibold">Consent history</h3></div>
         <div className="mt-3 overflow-x-auto"><table className="w-full min-w-[600px] text-left text-xs"><thead className="text-slate-500"><tr><th className="pb-2">Recorded</th><th className="pb-2">Visitor / User</th><th className="pb-2">Necessary</th><th className="pb-2">Analytics</th><th className="pb-2">Marketing</th><th className="pb-2">Source</th></tr></thead><tbody className="divide-y divide-slate-100 dark:divide-slate-800">{consents.map((item) => <tr key={item.id}><td className="py-2 pr-3 whitespace-nowrap">{date(item.recorded_at)}</td><td className="py-2 pr-3 font-mono">{(item.visitor_id || item.visitor_session_id || item.user_id || 'Unknown').slice(0,8)}…</td><td className="py-2 pr-3">{item.necessary ? 'Yes' : 'No'}</td><td className="py-2 pr-3">{item.analytics ? 'Accepted' : 'Declined'}</td><td className="py-2 pr-3">{item.marketing ? 'Accepted' : 'Declined'}</td><td className="py-2 pr-3">{item.consent_source}</td></tr>)}</tbody></table></div>
@@ -335,6 +357,8 @@ export const VisitorAnalyticsPanel: React.FC = () => {
       </div>
 
       <p className="text-[11px] leading-5 text-slate-500">Privacy safeguards: optional tracking starts only after analytics consent. Raw IP addresses, complete browser fingerprints, raw cookies, passwords, session tokens, form contents and payment credentials are not collected by this system. Marketing consent remains separate.</p>
+      </>}
+
     </section>
   );
 };
