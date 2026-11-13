@@ -2318,6 +2318,7 @@ app.post('/api/visitor/consent', rateLimit(20, 60_000), async (req: Authenticate
       const { error: updateError } = await serverSupabase.from('visitor_sessions').update({
         user_id: req.user?.id || null,
         last_seen_at: now,
+        ended_at: null,
         ...sessionMetadata,
         analytics_consent: true,
         marketing_consent: marketing,
