@@ -392,7 +392,7 @@ app.use('/api', rateLimit(300, 60_000));
 // Authenticate caller tokens for all API routes
 app.use('/api', authenticateToken as any);
 
-app.use('/api/admin', (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+app.use(['/api/admin', '/api/communications'], (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   if (!req.user || !['admin', 'super_admin'].includes(req.user.role)) return next();
   const token = (req.headers.authorization || '').replace(/^Bearer\\s+/i, '').trim();
   const claims = token ? parseJwtPayload(token) : null;
