@@ -170,12 +170,30 @@ export async function saveSocialLinks(links: SocialLinksSettings): Promise<void>
   return saveSetting<SocialLinksSettings>('social_links', links, 'Social media profile links');
 }
 
+function normalizePublicBrandText(value: string): string {
+  return value
+    .replace(/Kemet\\s*Spirit/gi, 'Awesome Adventure Tours')
+    .replace(/Red\\s*Sea\\s+Voyages/gi, 'Awesome Adventure Tours')
+    .replace(/Red\\s*Sea\\s+Excursions?/gi, 'Egypt tours and experiences');
+}
+
 export async function getFooterContent(): Promise<FooterContentSettings> {
-  return getSetting<FooterContentSettings>('footer_content', DEFAULT_FOOTER_CONTENT);
+  const content = await getSetting<FooterContentSettings>('footer_content', DEFAULT_FOOTER_CONTENT);
+  return {
+    ...content,
+    copyrightNotice: normalizePublicBrandText(content.copyrightNotice || DEFAULT_FOOTER_CONTENT.copyrightNotice),
+    aboutSnippet: normalizePublicBrandText(content.aboutSnippet || DEFAULT_FOOTER_CONTENT.aboutSnippet),
+    badges: (content.badges || []).map(normalizePublicBrandText),
+  };
 }
 
 export async function saveFooterContent(content: FooterContentSettings): Promise<void> {
-  return saveSetting<FooterContentSettings>('footer_content', content, 'Footer copy, copyright, and compliance badges');
+  return saveSetting<FooterContentSettings>('footer_content', {
+    ...content,
+    copyrightNotice: normalizePublicBrandText(content.copyrightNotice || ''),
+    aboutSnippet: normalizePublicBrandText(content.aboutSnippet || ''),
+    badges: (content.badges || []).map(normalizePublicBrandText),
+  }, 'Footer copy, copyright, and compliance badges');
 }
 
 export async function getStaticPages(): Promise<StaticPageContent[]> {
