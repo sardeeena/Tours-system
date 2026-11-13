@@ -27,7 +27,9 @@ assert(finance.includes('getCompanyBillingDetails()'), 'invoice creation loads c
 assert(finance.includes('name: settings.companyName?.trim() || APP_CONFIG.COMPANY_NAME'), 'invoice issuer name comes from the authoritative company setting');
 assert(finance.includes("website: 'https://awesomeadventure.tours'"), 'invoice fallback website uses the production domain');
 assert(adminSettings.includes('Legal & Invoice Identity') && adminSettings.includes('Tax Registration Number'), 'admins can configure legal invoice details');
-assert(settings.includes("getSetting<Partial<CompanySettings>>('invoice_billing'") && settings.includes("saveSetting('invoice_billing'"), 'private billing details are stored separately from public company settings');
+assert(settings.includes("getRestrictedSetting<Partial<CompanySettings>>('invoice_billing'") && settings.includes("saveRestrictedSetting('invoice_billing'"), 'private billing details are stored separately from public company settings');
+const restrictedRead = settings.slice(settings.indexOf('async function getRestrictedSetting'), settings.indexOf('async function saveRestrictedSetting'));
+assert(restrictedRead.includes('supabase') && !restrictedRead.includes('localStorage'), 'private billing details never fall back to shared browser storage');
 assert(billingPolicy.includes("public.has_permission('finance.create')") && billingPolicy.includes("key = 'invoice_billing'"), 'private invoice details are readable only by authorized finance/settings roles');
 assert(invoiceUi.includes('selectedInvoice.companyDetails.name'), 'invoice issuer footer uses the invoice company identity');
 assert(seoAdmin.includes('awesomeadventure.tours') && !seoAdmin.includes('kemetspirit.com'), 'SEO manager uses the current canonical domain');
