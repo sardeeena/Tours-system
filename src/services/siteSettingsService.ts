@@ -213,9 +213,19 @@ export async function getCompanySettings(): Promise<CompanySettings> {
     getSetting<Partial<CompanySettings>>('company_info', DEFAULT_COMPANY_SETTINGS),
     getRestrictedSetting<Partial<CompanySettings>>('invoice_billing', {}),
   ]);
+  const publicSettings = { ...saved };
+  // Never trust old company_info rows to carry private billing data.
+  delete publicSettings.billingAddress;
+  delete publicSettings.billingCity;
+  delete publicSettings.billingCountry;
+  delete publicSettings.taxRegistrationNumber;
+  delete publicSettings.commercialRegistryNumber;
+  delete publicSettings.bankName;
+  delete publicSettings.iban;
+  delete publicSettings.swiftBic;
   return {
     ...DEFAULT_COMPANY_SETTINGS,
-    ...saved,
+    ...publicSettings,
     ...invoiceBilling,
     companyName: normalizeCompanyText(saved.companyName, APP_CONFIG.COMPANY_NAME),
     email: normalizeCompanyText(saved.email, APP_CONFIG.SUPPORT_EMAIL),
