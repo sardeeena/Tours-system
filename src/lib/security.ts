@@ -69,7 +69,7 @@ export function isValidPhoneNumber(phone: string): boolean {
 }
 
 /**
- * Validates Red Sea Excursions booking reference format
+ * Validates Awesome Adventure Tours booking reference format
  * Accepts RST-YYYY-XXXX (4–32 alphanumeric characters) or RSE-XXXXX
  */
 export function isValidBookingReference(ref: string): boolean {

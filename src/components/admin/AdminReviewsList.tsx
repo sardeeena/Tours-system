@@ -495,7 +495,7 @@ export const AdminReviewsList: React.FC = () => {
                   {/* Tour Association */}
                   <div className="text-xs text-[#2dd4bf] font-medium flex items-center space-x-1.5">
                     <Calendar className="w-3.5 h-3.5 text-stone-500" />
-                    <span>{matchedTour ? matchedTour.title : 'Red Sea Excursion'}</span>
+                    <span>{matchedTour ? matchedTour.title : 'Tour'}</span>
                   </div>
 
                   {/* Comment */}

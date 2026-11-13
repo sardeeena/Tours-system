@@ -141,7 +141,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
             <div className="flex items-center justify-center mx-auto mb-3">
               <img 
                 src="/logo.png" 
-                alt="Kemet Spirit Logo" 
+                alt="Awesome Adventure Tours Logo" 
                 className="h-16 w-auto object-contain drop-shadow-sm"
               />
             </div>
@@ -275,7 +275,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
 
       {/* Footer */}
       <div className="text-center text-[11px] text-stone-500 dark:text-stone-400">
-        Kemet Spirit CMS • Supabase Database &amp; Auth Protected
+        Awesome Adventure Tours CMS • Supabase Database &amp; Auth Protected
       </div>
     </div>
   );

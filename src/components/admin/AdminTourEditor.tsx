@@ -1426,7 +1426,7 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
                 setSeo((prev) => ({ ...prev, seo_title: e.target.value }));
                 setHasUnsavedChanges(true);
               }}
-              placeholder={tourData.title ? `${tourData.title} | Red Sea Voyages` : 'SEO Title'}
+              placeholder={tourData.title ? `${tourData.title} | Awesome Adventure Tours` : 'SEO Title'}
               className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-xs text-white focus:outline-none focus:border-[#0A6C74]"
             />
           </div>
@@ -1517,7 +1517,7 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
                   setSeo((prev) => ({ ...prev, canonical_url: e.target.value }));
                   setHasUnsavedChanges(true);
                 }}
-                placeholder="https://redseavoyages.com/excursions/..."
+                placeholder="https://awesomeadventure.tours/excursions/..."
                 className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-xs text-white"
               />
             </div>

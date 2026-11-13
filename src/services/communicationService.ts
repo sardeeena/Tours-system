@@ -560,11 +560,13 @@ export function getProviderConfig(): ProviderConfig {
     },
   };
 
-  // Remove outdated sender details that may remain in browser storage from an older site identity.
-  if (safeConfig.email.fromEmail?.toLowerCase().endsWith('@redseavoyages.com')) {
+  // Clear sender values from retired company identities before they can appear in email settings.
+  const storedSenderEmail = safeConfig.email.fromEmail?.toLowerCase() || '';
+  const storedSenderName = safeConfig.email.fromName?.trim().toLowerCase() || '';
+  if (storedSenderEmail.includes('kemet') || storedSenderEmail.includes('redsea') || storedSenderEmail.includes('voyages')) {
     safeConfig.email.fromEmail = '';
   }
-  if (safeConfig.email.fromName?.trim().toLowerCase() === 'red sea voyages dispatch') {
+  if (storedSenderName.includes('kemet') || storedSenderName.includes('voyages')) {
     safeConfig.email.fromName = DEFAULT_PROVIDER_CONFIG.email.fromName;
   }
 

@@ -140,7 +140,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
     const vars = {
       customer_name: b ? `${b.customer.firstName} ${b.customer.lastName}` : (customerName || 'Valued Guest'),
       booking_reference: b ? b.bookingReference : (selectedBookingRef || 'RSV-DRAFT'),
-      tour_name: b ? b.tourTitle : 'Red Sea Excursion',
+      tour_name: b ? b.tourTitle : 'selected tour',
       tour_date: b ? b.date : 'Upcoming Date',
       pickup_time: hotelLoc ? '07:30 AM' : '08:00 AM',
       hotel: hotelLoc,

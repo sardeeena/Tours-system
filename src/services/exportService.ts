@@ -11,14 +11,14 @@ export function generateCalendarIcs(booking: Booking): string {
   // Default tour start at 08:30 AM local Egypt time (UTC+2 or +3)
   const dtStart = `${startDate}T083000`;
   const dtEnd = `${startDate}T163000`;
-  const summary = `${booking.tourTitle} - Red Sea Excursions`;
+  const summary = `${booking.tourTitle} - Awesome Adventure Tours`;
   const description = `Booking Reference: ${booking.bookingReference}\\nGuests: ${booking.guests.adults} Adults, ${booking.guests.children} Children\\nPickup: ${booking.pickup.hotelName || booking.pickup.locationName}\\nTotal: ${booking.pricing.formattedTotal}`;
   const location = `${booking.tourDestination}, Red Sea, Egypt`;
 
   return [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Red Sea Excursions//Booking System//EN',
+    'PRODID:-//Awesome Adventure Tours//Booking System//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',
@@ -50,10 +50,10 @@ export function downloadCalendarEvent(booking: Booking): void {
 
 export function getWhatsAppSupportUrl(booking?: Booking, customMessage?: string): string {
   const phoneDigits = APP_CONFIG.WHATSAPP_NUMBER.replace(/\D+/g, '');
-  let message = customMessage || `Hello Red Sea Excursions, I would like to inquire about excursion availability and hotel pickup.`;
+  let message = customMessage || `Hello Awesome Adventure Tours, I would like to inquire about excursion availability and hotel pickup.`;
 
   if (booking && !customMessage) {
-    message = `Hello Red Sea Excursions, I am contacting you regarding booking reference: ${booking.bookingReference} for ${booking.tourTitle} on ${booking.date}.`;
+    message = `Hello Awesome Adventure Tours, I am contacting you regarding booking reference: ${booking.bookingReference} for ${booking.tourTitle} on ${booking.date}.`;
   }
 
   return `https://wa.me/${phoneDigits}?text=${encodeURIComponent(message)}`;

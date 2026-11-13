@@ -161,7 +161,7 @@ export const WhatsAppTemplateManager: React.FC<WhatsAppTemplateManagerProps> = (
     setFormName('New WhatsApp Template');
     setFormKey(`custom_wa_${Date.now().toString(36)}`);
     setFormChannel('WhatsApp');
-    setFormBodyText(`Dear {{customer_name}},\n\nThis is a notification regarding your booking *{{booking_reference}}* for {{tour_name}}.\n\nYour pickup is scheduled at *{{pickup_time}}* from {{hotel}}.\n\nBest regards,\nRed Sea Voyages Team`);
+    setFormBodyText(`Dear {{customer_name}},\n\nThis is a notification regarding your booking *{{booking_reference}}* for {{tour_name}}.\n\nYour pickup is scheduled at *{{pickup_time}}* from {{hotel}}.\n\nBest regards,\nAwesome Adventure Tours Team`);
     setFormVariables(['customer_name', 'booking_reference', 'tour_name', 'pickup_time', 'hotel']);
     setFormIsActive(true);
     setFormSubject('');
@@ -302,7 +302,7 @@ export const WhatsAppTemplateManager: React.FC<WhatsAppTemplateManagerProps> = (
           ...previewCustomVars,
           customer_name: guestName,
           booking_reference: b.bookingReference,
-          tour_name: b.tourTitle || 'Red Sea Excursion',
+          tour_name: b.tourTitle || 'selected tour',
           tour_date: b.date || new Date().toISOString().split('T')[0],
           pickup_time: b.pickup?.pickupTime || '07:45 AM',
           hotel: hotelName,

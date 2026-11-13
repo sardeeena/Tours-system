@@ -58,7 +58,7 @@ export async function runPlatformIntegrationSimulation(
 
   const startTime = Date.now();
   const testRunId = Date.now().toString(36).substring(2, 6);
-  const testCustomerEmail = `traveler.test.${testRunId}@redseavoyages.com`;
+  const testCustomerEmail = `traveler.test.${testRunId}@example.test`;
   const testCustomerName = `Dr. Helena Vane ${testRunId.toUpperCase()}`;
   const testPhone = `+20 100 ${Math.floor(1000000 + Math.random() * 9000000)}`;
 

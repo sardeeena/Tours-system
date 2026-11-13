@@ -134,7 +134,7 @@ export const PWAInstallFloatingBanner: React.FC = () => {
             />
             <div className="min-w-0">
               <p className="font-bold text-xs text-stone-900 dark:text-white truncate">
-                Red Sea Excursions
+                Awesome Adventure Tours
               </p>
               <p className="text-[11px] text-stone-500 dark:text-stone-300 leading-tight line-clamp-1">
                 {t('pwa.bannerSub', 'Save as an app on your phone for quick offline access')}
@@ -198,7 +198,7 @@ export const IOSInstallModal: React.FC<{ onClose: () => void }> = ({ onClose }) 
 
         <div className="py-4 space-y-3.5 text-xs text-stone-600">
           <p className="text-stone-700">
-            {t('pwa.iosInstructions', 'Save Red Sea Excursions to your Home Screen in 2 simple taps without downloading from the App Store:')}
+            {t('pwa.iosInstructions', 'Save Awesome Adventure Tours to your Home Screen in 2 simple taps without downloading from the App Store:')}
           </p>
 
           <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 space-y-2.5">

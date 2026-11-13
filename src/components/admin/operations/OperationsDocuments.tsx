@@ -478,7 +478,7 @@ export const OperationsDocuments: React.FC<OperationsDocumentsProps> = ({ onNavi
               <div className="flex items-start justify-between">
                 <div>
                   <span className="text-[10px] font-bold tracking-widest uppercase text-stone-500 block">
-                    RED SEA VOYAGES &bull; LOGISTICS & GROUND TRANSPORTATION
+                    AWESOME ADVENTURE TOURS &bull; LOGISTICS & GROUND TRANSPORTATION
                   </span>
                   <h2 className="text-xl sm:text-2xl font-bold font-serif uppercase tracking-tight text-stone-900 mt-0.5">
                     Daily Hotel Transfer Dispatch & Run Sheet
@@ -588,7 +588,7 @@ export const OperationsDocuments: React.FC<OperationsDocumentsProps> = ({ onNavi
               <div className="flex items-start justify-between">
                 <div>
                   <span className="text-[10px] font-bold tracking-widest uppercase text-stone-500 block">
-                    RED SEA VOYAGES &bull; MARINE OPERATIONS DEPARTMENT
+                    AWESOME ADVENTURE TOURS &bull; MARINE OPERATIONS DEPARTMENT
                   </span>
                   <h2 className="text-xl sm:text-2xl font-bold font-serif uppercase tracking-tight text-stone-900 mt-0.5">
                     Captain & Marine Crew Departure Briefing
@@ -699,7 +699,7 @@ export const OperationsDocuments: React.FC<OperationsDocumentsProps> = ({ onNavi
               <div className="flex items-start justify-between">
                 <div>
                   <span className="text-[10px] font-bold tracking-widest uppercase text-stone-500 block">
-                    RED SEA VOYAGES &bull; FINANCIAL AUDIT & PIER COLLECTIONS
+                    AWESOME ADVENTURE TOURS &bull; FINANCIAL AUDIT & PIER COLLECTIONS
                   </span>
                   <h2 className="text-xl sm:text-2xl font-bold font-serif uppercase tracking-tight text-stone-900 mt-0.5">
                     Pier Balance & Pay-At-Pickup Roster

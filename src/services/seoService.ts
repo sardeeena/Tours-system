@@ -17,8 +17,8 @@ export interface SeoMetadata {
   schemaJsonLd?: Record<string, unknown>;
 }
 
-const DEFAULT_TITLE = 'Awesome Adventure Tours | Red Sea Excursions in Egypt';
-const DEFAULT_DESCRIPTION = 'Explore Red Sea excursions in Egypt, including boat trips, island visits, snorkeling and desert experiences. Review each tour\'s details before booking.';
+const DEFAULT_TITLE = 'Awesome Adventure Tours | Boat Trips, Island Tours & Safaris';
+const DEFAULT_DESCRIPTION = 'Discover boat trips, island experiences, snorkeling, diving and desert safaris across Egypt. Compare details and book with confidence.\'s details before booking.';
 const DEFAULT_IMAGE = 'https://awesomeadventure.tours/logo.webp';
 const SITE_NAME = 'Awesome Adventure Tours';
 
@@ -266,7 +266,7 @@ export const seoService = {
         tour.title,
         tour.destination,
         tour.category,
-        'Red Sea excursion',
+        'Egypt coastal tours',
         'Hurghada boat trip',
       ],
       canonicalUrl: tourUrl,
@@ -286,8 +286,8 @@ export const seoService = {
     const isAll = categoryName === 'All' || !categoryName;
 
     const title = isAll
-      ? 'All Red Sea Excursions & Boat Trips | Hurghada, El Gouna & Sinai'
-      : `${categoryName} Excursions in Red Sea | Boat Trips & Safaris`;
+      ? 'Boat Trips & Island Tours in Egypt | Awesome Adventure Tours'
+      : `${categoryName} Tours in Egypt | Awesome Adventure Tours`;
 
     const description = isAll
       ? `Compare ${tourCount} Red Sea boat trips, island cruises, snorkeling reefs, and desert safaris. Review pickup details, inclusions, and cancellation terms for each excursion.`
@@ -296,7 +296,7 @@ export const seoService = {
     const schemaJsonLd: Record<string, unknown> = {
       '@context': 'https://schema.org',
       '@type': 'ItemList',
-      name: isAll ? 'Red Sea Excursions & Tours' : `${categoryName} Excursions`,
+      name: isAll ? 'Awesome Adventure Tours Experiences' : `${categoryName} Tours | Awesome Adventure Tours`,
       description,
       numberOfItems: tourCount,
       itemListElement: matchingTours.slice(0, 10).map((t, idx) => ({
@@ -312,7 +312,7 @@ export const seoService = {
       description,
       keywords: [
         categoryName,
-        'Red Sea excursions',
+        'Egypt boat trips and island tours',
         'Hurghada boat trips',
         'Giftun island',
         'snorkeling reefs',

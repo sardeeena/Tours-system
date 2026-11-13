@@ -577,7 +577,7 @@ function MainApp() {
     if (currentPath === '/booking' || currentPath.startsWith('/booking/')) {
       seoService.apply({
         title: 'Book Your Excursion | Awesome Adventure Tours',
-        description: 'Complete your secure reservation for a Red Sea excursion.',
+        description: 'Complete your secure reservation for a Egyptian tour.',
         canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
         robotsIndex: false,
         robotsFollow: true,

@@ -217,7 +217,7 @@ export const ExecutiveDashboardView: React.FC<ExecutiveDashboardViewProps> = ({
           <div className="text-xl font-bold text-[#0E1B2A] dark:text-white mt-2 font-display">
             {metrics.repeatCustomersCount}
           </div>
-          <span className="text-[10px] text-stone-500 dark:text-stone-400 mt-0.5 block">Returning Kemet Spirit travelers</span>
+          <span className="text-[10px] text-stone-500 dark:text-stone-400 mt-0.5 block">Returning Awesome Adventure Tours customers</span>
         </div>
 
         {/* Leads */}

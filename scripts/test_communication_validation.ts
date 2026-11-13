@@ -57,7 +57,7 @@ async function runTests() {
     validateEmailProviderCredentials({
       provider: 'resend',
       apiKey: '',
-      fromEmail: 'info@redseavoyages.com',
+      fromEmail: 'info@retired-voyages.example.test',
       isConfigured: false,
     });
   } catch (err: any) {
@@ -180,7 +180,7 @@ async function runTests() {
     validateEmailProviderCredentials({
       provider: 'resend',
       apiKey: 're_1234567890abcdef',
-      fromEmail: 'concierge@redseavoyages.com',
+      fromEmail: 'concierge@retired-voyages.example.test',
       isConfigured: true,
     });
     passEmail = true;

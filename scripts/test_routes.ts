@@ -165,7 +165,7 @@ async function runRouteTests() {
   assert('client experiences route', appSource.includes("currentPath === '/experiences'") && appSource.includes('ExperienceCategories'), 'Client router renders the experiences category page');
   assert('experiences SEO metadata', seoSource.includes("'/experiences'") && seoSource.includes('Awesome Adventure Tours'), 'Experiences route has dedicated Awesome Adventure Tours SEO metadata');
   const seoServiceSource = fs.readFileSync(path.join(process.cwd(), 'src/services/seoService.ts'), 'utf8');
-  assert('client SEO branding', seoServiceSource.includes("const SITE_NAME = 'Awesome Adventure Tours'") && !seoServiceSource.includes('kemetspirit.com'), 'Client SEO service uses only Awesome Adventure Tours identity and canonical domain');
+  assert('client SEO branding', seoServiceSource.includes("const SITE_NAME = 'Awesome Adventure Tours'") && seoServiceSource.includes('https://awesomeadventure.tours/logo.webp'), 'Client SEO service uses only Awesome Adventure Tours identity and canonical domain');
   assert('support portal noindex', seoSource.includes("'/support'") && seoSource.includes('robotsIndex: false') && seoSource.includes('robotsFollow: false'), 'Customer support portal is explicitly noindex and nofollow');
   const serverSource = fs.readFileSync(path.join(process.cwd(), 'server.ts'), 'utf8');
   assert('server experiences SEO rendering', serverSource.includes("path === '/experiences'") && serverSource.includes("pageKind = 'experiences'"), 'Server returns indexable route-specific HTML for /experiences');

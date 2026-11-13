@@ -7,13 +7,9 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
+    // This worker does not use Cache Storage. Clear stale caches from previous releases.
     caches.keys()
-      .then((keys) => Promise.all(
-        keys
-          // Remove only the obsolete cache namespace previously used by this app.
-          .filter((key) => key.startsWith('kemet-spirit-'))
-          .map((key) => caches.delete(key))
-      ))
+      .then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
       .then(() => self.clients.claim())
   );
 });

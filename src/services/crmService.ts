@@ -67,7 +67,7 @@ export const DEFAULT_STAGES: CrmLeadStageConfig[] = [
 
 export const DEFAULT_TAGS: CrmTag[] = [
   { id: 'tag-1', name: 'VIP', description: 'High-value executive guests requiring white-glove concierge', color: '#fbbf24', category: 'tier', usageCount: 4, createdAt: '2026-01-01T00:00:00Z' },
-  { id: 'tag-2', name: 'repeat_customer', description: 'Traveled more than once with Red Sea Excursions', color: '#34d399', category: 'loyalty', usageCount: 6, createdAt: '2026-01-01T00:00:00Z' },
+  { id: 'tag-2', name: 'repeat_customer', description: 'Traveled more than once with Awesome Adventure Tours', color: '#34d399', category: 'loyalty', usageCount: 6, createdAt: '2026-01-01T00:00:00Z' },
   { id: 'tag-3', name: 'family', description: 'Traveling with children or multi-generational parties', color: '#60a5fa', category: 'interest', usageCount: 12, createdAt: '2026-01-01T00:00:00Z' },
   { id: 'tag-4', name: 'diving', description: 'Certified scuba divers or PADI course seekers', color: '#06b6d4', category: 'interest', usageCount: 8, createdAt: '2026-01-01T00:00:00Z' },
   { id: 'tag-5', name: 'snorkeling', description: 'Reef exploration and dolphin encounters', color: '#2dd4bf', category: 'interest', usageCount: 15, createdAt: '2026-01-01T00:00:00Z' },

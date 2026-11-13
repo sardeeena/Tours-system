@@ -23,6 +23,8 @@ import { DbGuide } from '../../../types/database';
 import { OperationalDeparture } from '../../../types/operations';
 import { useToast } from '../../../contexts/ToastContext';
 
+const isRetiredBrandEmail = (email?: string | null): boolean => /(?:kemet|redsea|voyages)/i.test(email || '');
+
 export const OperationsGuides: React.FC = () => {
   const { showToast } = useToast();
   const [guides, setGuides] = useState<DbGuide[]>([]);
@@ -113,7 +115,7 @@ export const OperationsGuides: React.FC = () => {
       role: guide.role,
       languages: guide.languages || [],
       phone: guide.phone || '',
-      email: guide.email || '',
+      email: isRetiredBrandEmail(guide.email) ? '' : guide.email || '',
       license_number: guide.license_number || '',
       rating: guide.rating || 5.0,
       is_active: guide.is_active,
@@ -367,7 +369,7 @@ export const OperationsGuides: React.FC = () => {
                   {g.email && (
                     <div className="flex items-center space-x-2 text-[11px] text-stone-400 truncate">
                       <Mail className="w-3 h-3 text-stone-500 shrink-0" />
-                      <span className="truncate">{g.email}</span>
+                      <span className="truncate">{isRetiredBrandEmail(g.email) ? 'Contact email needs updating' : g.email}</span>
                     </div>
                   )}
                   <div className="flex items-center space-x-1 text-amber-400 font-bold text-[11px] pt-0.5">
@@ -522,7 +524,7 @@ export const OperationsGuides: React.FC = () => {
                     type="email"
                     value={formData.email || ''}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="staff@redseavoyages.com"
+                    placeholder="name@company-domain.com"
                     className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded text-stone-200"
                   />
                 </div>

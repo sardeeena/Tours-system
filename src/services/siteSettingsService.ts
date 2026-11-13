@@ -45,7 +45,7 @@ export { INITIAL_STATIC_PAGES };
 export type { StaticPageContent };
 
 const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
-  companyName: 'Kemet Spirit',
+  companyName: 'Awesome Adventure Tours',
   email: '',
   phone: '',
   whatsapp: '',
@@ -76,7 +76,7 @@ const DEFAULT_SOCIAL_LINKS: SocialLinksSettings = {
 };
 
 const DEFAULT_FOOTER_CONTENT: FooterContentSettings = {
-  copyrightNotice: `© ${new Date().getFullYear()} Kemet Spirit.`,
+  copyrightNotice: `© ${new Date().getFullYear()} Awesome Adventure Tours.`,
   aboutSnippet: 'Explore excursions and experiences across Egypt’s Red Sea coast. Review each tour’s details, inclusions and booking information before reserving.',
   badges: [],
   paymentIconsText: '',
@@ -146,11 +146,12 @@ export async function saveSetting<T>(key: string, value: T, description?: string
 }
 
 export async function getCompanySettings(): Promise<CompanySettings> {
-  return getSetting<CompanySettings>('company_info', DEFAULT_COMPANY_SETTINGS);
+  const settings = await getSetting<CompanySettings>('company_info', DEFAULT_COMPANY_SETTINGS);
+  return { ...settings, companyName: 'Awesome Adventure Tours' };
 }
 
 export async function saveCompanySettings(settings: CompanySettings): Promise<void> {
-  return saveSetting<CompanySettings>('company_info', settings, 'Master company identity and contact details');
+  return saveSetting<CompanySettings>('company_info', { ...settings, companyName: 'Awesome Adventure Tours' }, 'Master company identity and contact details');
 }
 
 export async function getBookingPolicies(): Promise<BookingPolicySettings> {
@@ -169,12 +170,30 @@ export async function saveSocialLinks(links: SocialLinksSettings): Promise<void>
   return saveSetting<SocialLinksSettings>('social_links', links, 'Social media profile links');
 }
 
+function normalizePublicBrandText(value: string): string {
+  return value
+    .replace(/Kemet\s*Spirit/gi, 'Awesome Adventure Tours')
+    .replace(/Red\s*Sea\s+Voyages/gi, 'Awesome Adventure Tours')
+    .replace(/Red\s*Sea\s+Excursions?/gi, 'Egypt tours and experiences');
+}
+
 export async function getFooterContent(): Promise<FooterContentSettings> {
-  return getSetting<FooterContentSettings>('footer_content', DEFAULT_FOOTER_CONTENT);
+  const content = await getSetting<FooterContentSettings>('footer_content', DEFAULT_FOOTER_CONTENT);
+  return {
+    ...content,
+    copyrightNotice: normalizePublicBrandText(content.copyrightNotice || DEFAULT_FOOTER_CONTENT.copyrightNotice),
+    aboutSnippet: normalizePublicBrandText(content.aboutSnippet || DEFAULT_FOOTER_CONTENT.aboutSnippet),
+    badges: (content.badges || []).map(normalizePublicBrandText),
+  };
 }
 
 export async function saveFooterContent(content: FooterContentSettings): Promise<void> {
-  return saveSetting<FooterContentSettings>('footer_content', content, 'Footer copy, copyright, and compliance badges');
+  return saveSetting<FooterContentSettings>('footer_content', {
+    ...content,
+    copyrightNotice: normalizePublicBrandText(content.copyrightNotice || ''),
+    aboutSnippet: normalizePublicBrandText(content.aboutSnippet || ''),
+    badges: (content.badges || []).map(normalizePublicBrandText),
+  }, 'Footer copy, copyright, and compliance badges');
 }
 
 export async function getStaticPages(): Promise<StaticPageContent[]> {
@@ -194,9 +213,22 @@ export async function getStaticPages(): Promise<StaticPageContent[]> {
     return isPlaceholder || isOlderThanCurrentPolicy ? defaultPage : savedPage;
   });
 
-  const savedSlugs = new Set(mergedSavedPages.map((page) => page?.slug).filter(Boolean));
+  const normalizedSavedPages = mergedSavedPages.map((page) => ({
+    ...page,
+    title: normalizePublicBrandText(page.title || ''),
+    heroHeadline: normalizePublicBrandText(page.heroHeadline || ''),
+    heroSubtitle: normalizePublicBrandText(page.heroSubtitle || ''),
+    seoTitle: page.seoTitle ? normalizePublicBrandText(page.seoTitle) : page.seoTitle,
+    seoDescription: page.seoDescription ? normalizePublicBrandText(page.seoDescription) : page.seoDescription,
+    sections: (page.sections || []).map((section) => ({
+      ...section,
+      title: normalizePublicBrandText(section.title || ''),
+      content: normalizePublicBrandText(section.content || ''),
+    })),
+  }));
+  const savedSlugs = new Set(normalizedSavedPages.map((page) => page?.slug).filter(Boolean));
   return [
-    ...mergedSavedPages,
+    ...normalizedSavedPages,
     ...INITIAL_STATIC_PAGES.filter((page) => !savedSlugs.has(page.slug)),
   ];
 }

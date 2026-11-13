@@ -8,7 +8,7 @@ dotenv.config();
 
 /**
  * ==============================================================================
- * MAHMOUD CRM / RED SEA VOYAGES - AUTHORITATIVE CATALOGUE IMPORTER & DRY-RUN ENGINE
+ * AWESOME ADVENTURE TOURS - AUTHORITATIVE CATALOGUE IMPORTER & DRY-RUN ENGINE
  * ==============================================================================
  * Phase 3B.1 Architecture:
  * - Deterministic, RFC-4122 compliant UUIDs for all entities and child records.
@@ -25,9 +25,9 @@ dotenv.config();
 // UUID verification regex (RFC 4122)
 export const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// This repository is bound to the Kemet Spirit production Supabase project.
-// Never silently inspect or import data from the older Tours-system project.
-export const EXPECTED_SUPABASE_PROJECT_REF = 'mktrtoctcjyokclpdeui';
+// This repository is bound to the Awesome Adventure Tours production Supabase project.
+// Never silently inspect or import data from any other Supabase project.
+export const EXPECTED_SUPABASE_PROJECT_REF = 'uvtbtpxtrrmaublrztgv';
 
 /**
  * Validates whether a string is a valid PostgreSQL hexadecimal UUID
@@ -231,7 +231,7 @@ export async function runCatalogueDryRun(options?: {
   const issues: ValidationIssue[] = [];
 
   console.log('================================================================');
-  console.log('  Kemet Spirit - Catalogue Import Validator [READ-ONLY DRY-RUN]');
+  console.log('  Awesome Adventure Tours - Catalogue Import Validator [READ-ONLY DRY-RUN]');
   console.log('================================================================\n');
 
   // 1. Supabase Client Setup (strictly read-only; no project fallback)
@@ -258,7 +258,7 @@ export async function runCatalogueDryRun(options?: {
   if (supabaseUrl) {
     const configuredProjectRef = new URL(supabaseUrl).hostname.split('.')[0];
     if (configuredProjectRef !== EXPECTED_SUPABASE_PROJECT_REF) {
-      const message = `Refusing to inspect unexpected Supabase project "${configuredProjectRef}". Expected Kemet Spirit project "${EXPECTED_SUPABASE_PROJECT_REF}".`;
+      const message = `Refusing to inspect unexpected Supabase project "${configuredProjectRef}". Expected Awesome Adventure Tours project "${EXPECTED_SUPABASE_PROJECT_REF}".`;
       issues.push({ severity: 'error', entity: 'configuration', idOrSlug: configuredProjectRef, field: 'project_ref', message });
       console.error(message);
     } else if (supabaseKey) {
@@ -515,7 +515,7 @@ export async function runCatalogueDryRun(options?: {
   console.log(`  • Excursion Categories:      ${report.sourceCounts.categories} (Boat Trips, Snorkeling, Diving, Safari, Private Tours, Water Sports)`);
   console.log(`  • Pickup Locations:          ${report.sourceCounts.pickupLocations} (Central Hurghada, El Gouna, Makadi Bay, Sahl Hasheesh, Safaga, Marsa Alam, Sharm)`);
   console.log(`  • Booking Extras:            ${report.sourceCounts.tourExtras} (Photos, Guide, Transfer, Diving, Seafood, GoPro)`);
-  console.log(`  • Master Tours:              ${report.sourceCounts.tours} (All 13 Red Sea excursions)`);
+  console.log(`  • Master Tours:              ${report.sourceCounts.tours} (All 13 published tours)`);
   console.log(`  • Tour Categories Links:     ${report.sourceCounts.tourCategories}`);
   console.log(`  • Tour Media (Images):       ${report.sourceCounts.tourImages}`);
   console.log(`  • Itinerary Timeline Steps:  ${report.sourceCounts.itinerarySteps}`);
