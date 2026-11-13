@@ -50,7 +50,7 @@ export const StepCustomerInfo: React.FC<StepCustomerInfoProps> = ({
         email: customer.email || user.email,
         phoneNumber: customer.phoneNumber || user.phoneNumber || '',
         countryCode: customer.countryCode || user.countryCode || '+20',
-        country: customer.country || user.country || 'Germany',
+        country: customer.country || user.country || 'Egypt',
       });
     }
   }, [user]);
