@@ -182,6 +182,7 @@ export async function getCompanySettings(): Promise<CompanySettings> {
     ...saved,
     ...invoiceBilling,
     companyName: normalizeCompanyText(saved.companyName, APP_CONFIG.COMPANY_NAME),
+    email: normalizeCompanyText(saved.email, APP_CONFIG.SUPPORT_EMAIL),
     website: normalizeCompanyText(saved.website, 'https://awesomeadventure.tours'),
   };
 }
@@ -190,6 +191,7 @@ export async function saveCompanySettings(settings: CompanySettings): Promise<vo
   const normalized: CompanySettings = {
     ...settings,
     companyName: normalizeCompanyText(settings.companyName, APP_CONFIG.COMPANY_NAME),
+    email: normalizeCompanyText(settings.email, APP_CONFIG.SUPPORT_EMAIL),
     website: normalizeCompanyText(settings.website, 'https://awesomeadventure.tours'),
   };
   const {
