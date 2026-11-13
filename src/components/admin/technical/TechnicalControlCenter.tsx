@@ -43,6 +43,7 @@ export const TechnicalControlCenter: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [selectedEvent, setSelectedEvent] = useState<TechnicalEvent | null>(null);
+  const [activeSection, setActiveSection] = useState<'overview' | 'events' | 'visitors'>('overview');
 
   const load = useCallback(async (quiet = false) => {
     if (!quiet) setLoading(true);
@@ -116,10 +117,18 @@ export const TechnicalControlCenter: React.FC = () => {
         {overview && <div className="grid grid-cols-2 gap-px bg-white/10 md:grid-cols-4">{cards.map(({label,value,icon:Icon}) => <div key={label} className="bg-[#142238] p-4"><div className="flex items-center justify-between gap-2 text-xs text-slate-300"><span>{label}</span><Icon className="h-4 w-4 text-[#d6ad5b]" /></div><div className="mt-2 text-2xl font-bold tabular-nums">{loading ? '—' : value}</div></div>)}</div>}
       </section>
 
+
+      <nav aria-label="Technical control center sections" className="flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-white p-2 dark:border-slate-700 dark:bg-slate-900">
+        {([['overview','System health'],['events','Technical events'],['visitors','Visitor analytics']] as const).map(([key,label]) => (
+          <button key={key} type="button" onClick={() => setActiveSection(key)} aria-pressed={activeSection === key}
+            className={`rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold transition-colors ${activeSection === key ? 'bg-[#0A6C74] text-white shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>{label}</button>
+        ))}
+      </nav>
+
       {error && <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-800 dark:border-rose-900 dark:bg-rose-950/20 dark:text-rose-200">{error}</div>}
       {loading && !overview && <div className="rounded-xl border border-slate-200 bg-white p-8 text-center text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-900">Loading secure technical diagnostics…</div>}
 
-      {overview && <>
+      {activeSection === 'overview' && overview && <>
         <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900"><div className="flex items-center gap-2 text-sm font-semibold"><Server className="h-4 w-4 text-[#b58b3a]" /> Application runtime</div><div className="mt-3"><Status ok={overview.runtime.status === 'ok'}>Running</Status></div><p className="mt-2 text-xs text-slate-500">Node {overview.runtime.nodeVersion} · {overview.runtime.environment}</p><p className="mt-1 text-xs text-slate-500">Uptime {formatDuration(overview.runtime.uptimeSeconds)} · v{overview.runtime.appVersion}</p></div>
           <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900"><div className="flex items-center gap-2 text-sm font-semibold"><Database className="h-4 w-4 text-[#b58b3a]" /> Supabase database</div><div className="mt-3"><Status ok={overview.services.database.status === 'ok'}>{overview.services.database.status === 'ok' ? 'Connected' : 'Unavailable'}</Status></div><p className="mt-2 text-xs text-slate-500">Measured query: {overview.services.database.latencyMs === null ? '—' : `${overview.services.database.latencyMs} ms`}</p></div>
@@ -133,7 +142,7 @@ export const TechnicalControlCenter: React.FC = () => {
         </section>
       </>}
 
-      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
+      {activeSection === 'events' &&       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
         <div className="flex flex-col gap-3 border-b border-slate-200 p-4 dark:border-slate-700 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="font-semibold">Technical event log</h2><p className="mt-1 text-xs text-slate-500">Sanitized API request telemetry. Select a record to inspect its safe metadata. These logs are immutable evidence; retention controls govern their lifecycle.</p></div><div className="flex flex-col gap-2 sm:flex-row"><input aria-label="Search technical events" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search route, message or actor…" className="min-w-0 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800" /><select value={severity} onChange={(event) => setSeverity(event.target.value as TechnicalSeverity | 'all')} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-800"><option value="all">All severities</option><option value="error">Errors</option><option value="warning">Warnings</option><option value="info">Info</option></select></div></div>
         <div className="overflow-x-auto"><table className="w-full min-w-[760px] text-left text-xs"><thead className="bg-slate-50 text-slate-500 dark:bg-slate-800/70"><tr><th className="px-4 py-3">Time</th><th className="px-4 py-3">Severity</th><th className="px-4 py-3">Route</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Duration</th><th className="px-4 py-3">Actor</th><th className="px-4 py-3">Details</th></tr></thead><tbody className="divide-y divide-slate-100 dark:divide-slate-800">{visibleEvents.map((event) => <tr key={event.id} className="align-top"><td className="whitespace-nowrap px-4 py-3 text-slate-500">{dateTime(event.created_at)}</td><td className="px-4 py-3"><span className={`rounded-full px-2 py-1 font-semibold uppercase ${severityClass[event.severity]}`}>{event.severity}</span></td><td className="px-4 py-3"><div className="font-semibold">{event.request_method || event.event_type}</div><div className="mt-1 max-w-[360px] break-all text-slate-500">{event.request_path || event.message}</div></td><td className="px-4 py-3 tabular-nums">{event.status_code ?? '—'}</td><td className="px-4 py-3 tabular-nums">{event.duration_ms === null ? '—' : `${event.duration_ms} ms`}</td><td className="px-4 py-3 font-mono text-slate-500">{event.actor_user_id ? `${event.actor_user_id.slice(0,8)}…` : 'Guest / system'}</td><td className="px-4 py-3"><button type="button" onClick={() => setSelectedEvent(event)} className="font-semibold text-[#0A6C74] dark:text-teal-300 underline underline-offset-2">Inspect</button></td></tr>)}</tbody></table></div>
         {!visibleEvents.length && !loading && <div className="p-8 text-center text-sm text-slate-500">No technical events match this filter yet.</div>}
@@ -141,7 +150,7 @@ export const TechnicalControlCenter: React.FC = () => {
       </section>
 
 
-      {selectedEvent && <div role="dialog" aria-modal="true" aria-labelledby="technical-event-title" className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 p-4" onClick={() => setSelectedEvent(null)}>
+      {activeSection === 'events' && selectedEvent && <div role="dialog" aria-modal="true" aria-labelledby="technical-event-title" className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 p-4" onClick={() => setSelectedEvent(null)}>
         <section className="max-h-[85vh] w-full max-w-2xl overflow-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl dark:border-slate-700 dark:bg-slate-900" onClick={(event) => event.stopPropagation()}>
           <div className="flex items-start justify-between gap-3"><div><p className="text-[10px] font-bold uppercase tracking-wider text-[#0A6C74] dark:text-teal-300">Immutable technical record</p><h2 id="technical-event-title" className="mt-1 text-lg font-bold">Event details</h2><p className="mt-1 text-xs text-slate-500">{dateTime(selectedEvent.created_at)}</p></div><button type="button" onClick={() => setSelectedEvent(null)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-semibold dark:border-slate-700">Close</button></div>
           <dl className="mt-5 grid gap-3 sm:grid-cols-2 text-sm">
@@ -151,9 +160,11 @@ export const TechnicalControlCenter: React.FC = () => {
           <div className="mt-4"><h3 className="text-sm font-semibold">Safe metadata</h3><pre className="mt-1 max-h-64 overflow-auto whitespace-pre-wrap break-all rounded-lg bg-slate-50 p-3 text-[11px] text-slate-700 dark:bg-slate-800 dark:text-slate-200">{JSON.stringify(selectedEvent.metadata || {}, null, 2)}</pre></div>
           <p className="mt-3 text-[11px] text-slate-500">Technical records cannot be edited or manually deleted. This preserves the integrity of the system history. Retention settings apply automatically.</p>
         </section>
+}
+
       </div>}
 
-      <VisitorAnalyticsPanel />
+      {activeSection === 'visitors' && <VisitorAnalyticsPanel />}
     </div>
   );
 };
