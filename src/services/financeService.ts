@@ -411,6 +411,8 @@ export async function listInvoices(filter?: {
 
   if (!requireFinanceBackend()) {
     invoices = getLocal<FinanceInvoice[]>(LOCAL_INVOICES_KEY, []);
+    const currentCompanyDetails = await getCompanyBillingDetails();
+    invoices = invoices.map((invoice) => invoice.status === 'draft' ? { ...invoice, companyDetails: currentCompanyDetails } : invoice);
   } else {
     const { data, error } = await supabase
       .from('invoices')
@@ -666,7 +668,7 @@ export async function generateInvoiceForBooking(bookingReference: string): Promi
     balance: total,
     currency,
     status: billingDetailsComplete ? 'issued' : 'draft',
-    companyDetails: COMPANY_DETAILS,
+    companyDetails,
     notes: billingDetailsComplete
       ? null
       : 'Draft only. Complete the legal billing entity, billing address, city, country and tax registration details in Admin Settings before issuing this invoice.',
