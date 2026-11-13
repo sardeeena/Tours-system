@@ -11,7 +11,10 @@ type Session = {
   id: string; visitor_id: string; user_id: string | null; started_at: string; last_seen_at: string; ended_at: string | null;
   landing_path: string; referrer_host: string | null; utm_source: string | null; utm_medium: string | null;
   utm_campaign: string | null; utm_term?: string | null; utm_content?: string | null; device_type: string | null; browser_family: string | null; os_family: string | null;
-  screen_bucket: string | null; language: string | null; timezone: string | null;
+  screen_bucket: string | null; language: string | null; locale?: string | null; language_preferences?: string[] | null;
+  platform_family?: string | null; is_mobile?: boolean | null; viewport_bucket?: string | null;
+  timezone: string | null; country_code?: string | null; country_name?: string | null;
+  region_code?: string | null; region_name?: string | null; city?: string | null; location_source?: string | null;
   analytics_consent: boolean; marketing_consent: boolean;
 };
 type VisitorEvent = {
@@ -123,7 +126,7 @@ export const VisitorAnalyticsPanel: React.FC = () => {
     const term = search.trim().toLowerCase();
     return sessions.filter((item) => !term || [
       item.id, item.visitor_id, item.user_id, item.landing_path, item.referrer_host, item.utm_source,
-      item.utm_campaign, item.utm_term, item.utm_content, item.browser_family, item.os_family, item.device_type, item.language, item.timezone,
+      item.utm_campaign, item.utm_term, item.utm_content, item.browser_family, item.os_family, item.device_type, item.language, item.locale, ...(item.language_preferences || []), item.timezone, item.country_name, item.region_name, item.city,
     ].some((value) => String(value || '').toLowerCase().includes(term)));
   }, [sessions, search]);
 
@@ -141,8 +144,8 @@ export const VisitorAnalyticsPanel: React.FC = () => {
     visibleEvents.map((item) => [item.occurred_at, item.event_name, item.session_id, item.user_id || '', item.page_path || '', item.duration_ms ?? '', JSON.stringify(item.event_data || {})]));
 
   const exportSessionsCsv = () => downloadCsv('awesome-adventure-sessions-' + new Date().toISOString().slice(0,10) + '.csv',
-    ['Session ID','Visitor ID','User ID','Started','Last seen','Landing page','Referrer','UTM source','UTM medium','UTM campaign','UTM term','UTM content','Device','Browser','OS','Screen','Language','Timezone','Analytics consent','Marketing consent'],
-    visibleSessions.map((item) => [item.id,item.visitor_id,item.user_id || '',item.started_at,item.last_seen_at,item.landing_path,item.referrer_host || '',item.utm_source || '',item.utm_medium || '',item.utm_campaign || '',item.utm_term || '',item.utm_content || '',item.device_type || '',item.browser_family || '',item.os_family || '',item.screen_bucket || '',item.language || '',item.timezone || '',item.analytics_consent,item.marketing_consent]));
+    ['Session ID','Visitor ID','User ID','Started','Last seen','Landing page','Referrer','UTM source','UTM medium','UTM campaign','UTM term','UTM content','Device','Browser','OS','Platform','Mobile','Viewport','Screen','Language','Locale','Preferred languages','Timezone','City','Region','Country','Location accuracy','Analytics consent','Marketing consent'],
+    visibleSessions.map((item) => [item.id,item.visitor_id,item.user_id || '',item.started_at,item.last_seen_at,item.landing_path,item.referrer_host || '',item.utm_source || '',item.utm_medium || '',item.utm_campaign || '',item.utm_term || '',item.utm_content || '',item.device_type || '',item.browser_family || '',item.os_family || '',item.platform_family || '',item.is_mobile ?? '',item.viewport_bucket || '',item.screen_bucket || '',item.language || '',item.locale || '',(item.language_preferences || []).join('; '),item.timezone || '',item.city || '',item.region_name || '',item.country_name || item.country_code || '',item.location_source === 'ip_approximate' ? 'Approximate (IP)' : '',item.analytics_consent,item.marketing_consent]));
 
   const exportConsentCsv = () => downloadCsv('awesome-adventure-consent-history-' + new Date().toISOString().slice(0,10) + '.csv',
     ['Recorded at','Visitor ID','User ID','Necessary','Analytics','Marketing','Consent version','Source'],
@@ -250,7 +253,9 @@ export const VisitorAnalyticsPanel: React.FC = () => {
               <p className="mt-1 text-slate-500">{[item.device_type, item.browser_family, item.os_family].filter(Boolean).join(' · ') || 'Device details unavailable'}</p>
               <p className="mt-1 text-slate-500">Last activity: {date(item.last_seen_at)}</p>
               <p className="mt-1 text-slate-500">Referrer: {item.referrer_host || 'Direct'}{item.utm_campaign ? ` · ${item.utm_campaign}` : ''}{item.utm_term ? ` · Term: ${item.utm_term}` : ''}{item.utm_content ? ` · Content: ${item.utm_content}` : ''}</p>
-              <p className="mt-1 text-slate-500">{[item.language, item.timezone].filter(Boolean).join(' · ')}</p>
+              <p className="mt-1 text-slate-500">{[item.city, item.region_name, item.country_name || item.country_code].filter(Boolean).join(', ') || 'Approximate location unavailable'}{item.location_source === 'ip_approximate' ? ' · Approximate IP location' : ''}</p>
+              <p className="mt-1 text-slate-500">{[item.language, item.locale, ...(item.language_preferences || [])].filter(Boolean).join(' · ')}</p>
+              <p className="mt-1 text-slate-500">{[item.platform_family, item.is_mobile === null || item.is_mobile === undefined ? null : item.is_mobile ? 'Mobile browser' : 'Non-mobile browser', item.viewport_bucket, item.timezone].filter(Boolean).join(' · ')}</p>
             </button>)}
             {!visibleSessions.length && <p className="py-6 text-center text-xs text-slate-500">No matching sessions in the latest records.</p>}
           </div>
