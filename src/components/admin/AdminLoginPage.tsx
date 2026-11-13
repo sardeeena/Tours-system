@@ -213,7 +213,7 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
                   value={email}
                   disabled={rateLimitState.isLocked}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@kemetspirit.com"
+                  placeholder="admin@awesomeadventure.tours"
                   className="w-full pl-9 pr-3 py-2 bg-[#FAF8F5] dark:bg-[#0A1118] border border-[#E8E3DA] dark:border-[#1F3854] rounded-xl text-[#0E1B2A] dark:text-white text-xs placeholder-stone-400 focus:outline-none focus:border-[#0A6C74] disabled:opacity-50"
                   required
                 />
