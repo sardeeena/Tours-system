@@ -2151,14 +2151,14 @@ function isPrivateOrReservedIp(value: string, family: number): boolean {
   if (family === 4) {
     const octets = ip.split('.').map(Number);
     if (octets.length !== 4 || octets.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) return true;
-    const [a, b, d] = octets;
+    const [a, b, c, d] = octets;
     return a === 0 || a === 10 || a === 127 || a >= 224 ||
       (a === 100 && b >= 64 && b <= 127) ||
       (a === 169 && b === 254) ||
       (a === 172 && b >= 16 && b <= 31) ||
-      (a === 192 && (b === 168 || (b === 0 && (d === 0 || d === 2)))) ||
-      (a === 198 && (b === 18 || b === 19 || (b === 51 && d === 100))) ||
-      (a === 203 && b === 0 && d === 113);
+      (a === 192 && (b === 168 || (b === 0 && (c === 0 || c === 2)))) ||
+      (a === 198 && (b === 18 || b === 19 || (b === 51 && c === 100))) ||
+      (a === 203 && b === 0 && c === 113);
   }
   if (ip.startsWith('::ffff:')) {
     const mapped = ip.slice(7);
@@ -2431,7 +2431,7 @@ app.get('/api/admin/technical/visitors/sessions', rateLimit(60, 60_000), async (
   const limit = Math.min(500, Math.max(1, Number.parseInt(String(req.query.limit || '150'), 10) || 150));
   try {
     let query = serverSupabase.from('visitor_sessions')
-      .select('id,visitor_id,user_id,started_at,last_seen_at,ended_at,landing_path,referrer_host,utm_source,utm_medium,utm_campaign,utm_term,utm_content,device_type,browser_family,os_family,screen_bucket,language,timezone,country_code,region_code,analytics_consent,marketing_consent')
+      .select('id,visitor_id,user_id,started_at,last_seen_at,ended_at,landing_path,referrer_host,utm_source,utm_medium,utm_campaign,utm_term,utm_content,device_type,browser_family,os_family,screen_bucket,language,locale,language_preferences,platform_family,is_mobile,viewport_bucket,timezone,country_code,country_name,region_code,region_name,city,location_source,analytics_consent,marketing_consent')
       .order('last_seen_at', { ascending: false }).limit(limit);
     if (typeof req.query.search === 'string' && UUID_PATTERN.test(req.query.search)) query = query.or(`id.eq.${req.query.search},visitor_id.eq.${req.query.search},user_id.eq.${req.query.search}`);
     if (typeof req.query.device_type === 'string' && ['desktop','mobile','tablet','other'].includes(req.query.device_type)) query = query.eq('device_type', req.query.device_type);
