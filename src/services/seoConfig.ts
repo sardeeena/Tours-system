@@ -9,7 +9,7 @@ export const SEO_DEFAULTS = {
   SITE_NAME: 'Awesome Adventure Tours',
   DEFAULT_TITLE: 'Awesome Adventure Tours | Boat Trips, Island Tours & Safaris',
   DEFAULT_DESCRIPTION:
-    'Explore Red Sea excursions in Egypt, including boat trips, island visits, snorkeling and desert experiences. Review each tour\'s details before booking.',
+    'Discover boat trips, island experiences, snorkeling, diving and desert safaris across Egypt. Compare details and book with confidence.\'s details before booking.',
   DEFAULT_OG_IMAGE: 'https://awesomeadventure.tours/logo.webp',
   DEFAULT_LOCALE: 'en_US',
   KEYWORDS: [
@@ -251,7 +251,7 @@ export function generateDestinationJsonLd(
  */
 export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> = {
   '/': (origin) => ({
-    title: 'Awesome Adventure Tours | Red Sea Excursions in Egypt',
+    title: 'Awesome Adventure Tours | Boat Trips, Island Tours & Safaris',
     description:
       'Explore Red Sea boat trips to Orange Bay, Giftun Island, Ras Mohammed, and desert safaris. Compare tour details, pickup arrangements, inclusions, and cancellation terms.',
     keywords: SEO_DEFAULTS.KEYWORDS,
