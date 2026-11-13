@@ -173,10 +173,14 @@ function normalizeCompanyText(value: string | undefined, fallback: string): stri
 }
 
 export async function getCompanySettings(): Promise<CompanySettings> {
-  const saved = await getSetting<Partial<CompanySettings>>('company_info', DEFAULT_COMPANY_SETTINGS);
+  const [saved, invoiceBilling] = await Promise.all([
+    getSetting<Partial<CompanySettings>>('company_info', DEFAULT_COMPANY_SETTINGS),
+    getSetting<Partial<CompanySettings>>('invoice_billing', {}),
+  ]);
   return {
     ...DEFAULT_COMPANY_SETTINGS,
     ...saved,
+    ...invoiceBilling,
     companyName: normalizeCompanyText(saved.companyName, APP_CONFIG.COMPANY_NAME),
     website: normalizeCompanyText(saved.website, 'https://awesomeadventure.tours'),
   };
@@ -188,7 +192,31 @@ export async function saveCompanySettings(settings: CompanySettings): Promise<vo
     companyName: normalizeCompanyText(settings.companyName, APP_CONFIG.COMPANY_NAME),
     website: normalizeCompanyText(settings.website, 'https://awesomeadventure.tours'),
   };
-  return saveSetting<CompanySettings>('company_info', normalized, 'Master company identity and contact details');
+  const {
+    billingAddress,
+    billingCity,
+    billingCountry,
+    taxRegistrationNumber,
+    commercialRegistryNumber,
+    bankName,
+    iban,
+    swiftBic,
+    ...publicCompanySettings
+  } = normalized;
+
+  // Public contact/brand information remains in the public allowlisted setting.
+  // Tax, registry and bank details are stored separately behind finance/settings RLS.
+  await saveSetting('invoice_billing', {
+    billingAddress,
+    billingCity,
+    billingCountry,
+    taxRegistrationNumber,
+    commercialRegistryNumber,
+    bankName,
+    iban,
+    swiftBic,
+  }, 'Restricted invoice billing and settlement details');
+  await saveSetting<CompanySettings>('company_info', publicCompanySettings, 'Master company identity and contact details');
 }
 
 export async function getBookingPolicies(): Promise<BookingPolicySettings> {
