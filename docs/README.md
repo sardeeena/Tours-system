@@ -1,4 +1,4 @@
-# Kemet Spirit documentation
+# Awesome Adventure Tours documentation
 
 This directory contains operator guides, project reports and release/operations checklists.
 
