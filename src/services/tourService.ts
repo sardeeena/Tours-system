@@ -2093,7 +2093,7 @@ export async function getPublishedReviews(tourSlug?: string): Promise<PublishedR
       countryCode: r.country_code || 'DE',
       rating: Number(r.rating) || 5,
       date: r.date,
-      tourTitle: r.tours?.title || 'Red Sea Excursion',
+      tourTitle: r.tours?.title || 'Selected tour',
       tourSlug: r.tours?.slug || '',
       comment: r.comment || '',
       travelerType: r.traveler_type || 'Couple',
