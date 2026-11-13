@@ -201,7 +201,7 @@ export const AdminAccessControl:React.FC = () => {
     }
   };
 
-  if(loading&&!hasLoaded)return <div className="p-8 text-sm text-slate-500 flex items-center gap-2"><RefreshCw className="w-4 h-4 animate-spin"/> Loading live users, roles and permissions from Kemet Spirit…</div>;
+  if(loading&&!hasLoaded)return <div className="p-8 text-sm text-slate-500 flex items-center gap-2"><RefreshCw className="w-4 h-4 animate-spin"/> Loading accounts and access settings…</div>;
   if(error&&!hasLoaded)return <div className="space-y-4 rounded-2xl border border-red-200 dark:border-red-900 p-6"><div role="alert" className="text-sm text-red-700 dark:text-red-300">{error}</div><button onClick={()=>void load()} disabled={loading} className="inline-flex items-center gap-2 rounded-xl bg-[#0A6C74] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50"><RefreshCw className="w-4 h-4"/> Retry database connection</button></div>;
 
   return <div className="space-y-6">
@@ -213,16 +213,13 @@ export const AdminAccessControl:React.FC = () => {
       <button onClick={()=>void load()} disabled={loading||saving} className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50"><RefreshCw className={`w-4 h-4 ${loading?'animate-spin':''}`}/> Refresh</button>
     </div>
 
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><div className="text-xs text-slate-500">Live accounts</div><div className="text-2xl font-bold mt-1">{data.users.length}</div></div>
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><div className="text-xs text-slate-500">Active roles</div><div className="text-2xl font-bold mt-1">{data.roles.filter(r=>r.is_active).length}</div></div>
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><div className="text-xs text-slate-500">Defined permissions</div><div className="text-2xl font-bold mt-1">{data.permissions.length}</div></div>
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><div className="text-xs text-slate-500">Custom roles</div><div className="text-2xl font-bold mt-1">{data.roles.filter(r=>!r.is_system).length}</div></div>
-    </div>
-    <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
-      <span className="inline-flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-emerald-500"/> Connected to live Supabase RBAC data</span>
-      <span>Last refreshed: {lastLoadedAt?new Date(lastLoadedAt).toLocaleString():'Not yet refreshed'}</span>
-    </div>
+    <section className="flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-slate-200 dark:border-slate-700 py-3 text-sm">
+      <div><span className="text-slate-500">Accounts</span> <strong className="ml-1 tabular-nums">{data.users.length}</strong></div>
+      <div><span className="text-slate-500">Active roles</span> <strong className="ml-1 tabular-nums">{data.roles.filter(r=>r.is_active).length}</strong></div>
+      <div><span className="text-slate-500">Permissions</span> <strong className="ml-1 tabular-nums">{data.permissions.length}</strong></div>
+      <div><span className="text-slate-500">Custom roles</span> <strong className="ml-1 tabular-nums">{data.roles.filter(r=>!r.is_system).length}</strong></div>
+      <span className="ml-auto text-xs text-slate-500">Updated {lastLoadedAt?new Date(lastLoadedAt).toLocaleTimeString():'—'}</span>
+    </section>
     {error&&<div role="alert" className="rounded-xl border border-red-300 bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-300 px-4 py-3 text-sm">{error}</div>}
     {notice&&<div role="status" className="rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300 px-4 py-3 text-sm">{notice}</div>}
 
@@ -242,16 +239,24 @@ export const AdminAccessControl:React.FC = () => {
         <p className="mt-2 text-xs text-slate-500">Invitations are sent by Supabase Auth. New accounts receive the Customer role until an administrator assigns staff access.</p>
       </div>
       <div className="xl:col-span-2"><AdminAuthDirectory isSuperAdmin={isSuperAdmin}/></div>
-       <section className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-        <div className="p-4 border-b border-slate-200 dark:border-slate-700"><h3 className="font-bold">Registered users <span className="text-slate-400 font-normal">({data.users.length})</span></h3>
-          <div className="relative mt-3"><Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search name, email or role…" className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent pl-9 pr-3 py-2 text-sm"/></div>
+       <section className="min-w-0 overflow-hidden">
+        <div className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 dark:border-slate-700 pb-3">
+          <div><h3 className="font-bold">Registered accounts <span className="font-normal text-slate-500">({visibleUsers.length} of {data.users.length})</span></h3><p className="text-xs text-slate-500 mt-1">Choose an account to review or change its access.</p></div>
+          <div className="relative w-full sm:w-80"><Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search name, email or role…" className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 pl-9 pr-3 py-2 text-sm"/></div>
         </div>
-        <div className="max-h-[620px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
-          {visibleUsers.map(u=><button key={u.id} onClick={()=>setSelectedUserId(u.id)} className={`w-full text-left p-4 hover:bg-slate-50 dark:hover:bg-slate-800/60 ${selectedUserId===u.id?'bg-teal-50 dark:bg-teal-950/20':''}`}>
-            <div className="font-semibold text-sm text-slate-800 dark:text-slate-100">{u.full_name||'Unnamed user'}</div><div className="text-xs text-slate-500 mt-1 break-all">{u.email}</div>
-            <div className="flex flex-wrap gap-1 mt-2">{u.roles.map(r=><span key={r} className="text-[10px] rounded-md bg-slate-100 dark:bg-slate-700 px-2 py-1">{r}</span>)}</div>
-          </button>)}
-          {!visibleUsers.length&&<p className="p-5 text-sm text-slate-500">No matching users.</p>}
+        <div className="mt-2 overflow-x-auto">
+          <table className="w-full min-w-[620px] text-sm">
+            <thead><tr className="border-b border-slate-200 dark:border-slate-700"><th className="px-3 py-3">Account</th><th className="px-3 py-3">Assigned roles</th><th className="px-3 py-3">Email status</th><th className="px-3 py-3 text-right">Select</th></tr></thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+              {visibleUsers.map(u=><tr key={u.id} className={selectedUserId===u.id?'bg-teal-50/70 dark:bg-teal-950/20':''}>
+                <td className="px-3 py-3"><div className="font-semibold text-slate-800 dark:text-slate-100">{u.full_name||'Unnamed user'}</div><div className="text-xs text-slate-500 break-all">{u.email}</div></td>
+                <td className="px-3 py-3"><div className="flex flex-wrap gap-1">{u.roles.map(role=><span key={role} className="inline-flex rounded-full bg-slate-100 dark:bg-slate-700 px-2 py-1 text-[11px] text-slate-700 dark:text-slate-200">{role.replace(/_/g,' ')}</span>)}</div></td>
+                <td className="px-3 py-3"><span className={u.is_confirmed?'text-emerald-700 dark:text-emerald-300':'text-amber-700 dark:text-amber-300'}>{u.is_confirmed?'Verified':'Not verified'}</span></td>
+                <td className="px-3 py-3 text-right"><button type="button" onClick={()=>setSelectedUserId(u.id)} aria-pressed={selectedUserId===u.id} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-700">{selectedUserId===u.id?'Selected':'Manage'}</button></td>
+              </tr>)}
+              {!visibleUsers.length&&<tr><td colSpan={4} className="px-3 py-8 text-center text-sm text-slate-500">No matching accounts.</td></tr>}
+            </tbody>
+          </table>
         </div>
       </section>
 
