@@ -152,9 +152,14 @@ export const AccountPage: React.FC<AccountPageProps> = ({
   }
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto space-y-6">
+    <div className="account-page min-h-screen bg-[#F4F7FA] dark:bg-[#0A1118] py-8 sm:py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto space-y-6">
         
+        <div className="space-y-1">
+          <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#0A6C74] dark:text-teal-300">Account center</p>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#0E1B2A] dark:text-white">Your account</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Manage your reservations, personal information, and account security in one place.</p>
+        </div>
         {/* User Profile Card */}
         <div className="bg-white dark:bg-slate-900 border border-[#E8E3DA] dark:border-slate-700 rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col sm:flex-row items-center sm:items-start justify-between gap-6">
           <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-5 text-center sm:text-left">
