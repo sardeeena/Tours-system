@@ -92,4 +92,4 @@ SELECT ok(
 );
 
 SELECT * FROM finish();
-ROLLBACK();
+ROLLBACK;
