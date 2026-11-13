@@ -5,6 +5,7 @@ const ROOT = process.cwd();
 const SCAN_ROOTS = [
   'src',
   'public',
+  'scripts',
   'index.html',
   'supabase/seed.sql',
   'supabase/catalogue_seed.sql',
