@@ -213,9 +213,22 @@ export async function getStaticPages(): Promise<StaticPageContent[]> {
     return isPlaceholder || isOlderThanCurrentPolicy ? defaultPage : savedPage;
   });
 
-  const savedSlugs = new Set(mergedSavedPages.map((page) => page?.slug).filter(Boolean));
+  const normalizedSavedPages = mergedSavedPages.map((page) => ({
+    ...page,
+    title: normalizePublicBrandText(page.title || ''),
+    heroHeadline: normalizePublicBrandText(page.heroHeadline || ''),
+    heroSubtitle: normalizePublicBrandText(page.heroSubtitle || ''),
+    seoTitle: page.seoTitle ? normalizePublicBrandText(page.seoTitle) : page.seoTitle,
+    seoDescription: page.seoDescription ? normalizePublicBrandText(page.seoDescription) : page.seoDescription,
+    sections: (page.sections || []).map((section) => ({
+      ...section,
+      title: normalizePublicBrandText(section.title || ''),
+      content: normalizePublicBrandText(section.content || ''),
+    })),
+  }));
+  const savedSlugs = new Set(normalizedSavedPages.map((page) => page?.slug).filter(Boolean));
   return [
-    ...mergedSavedPages,
+    ...normalizedSavedPages,
     ...INITIAL_STATIC_PAGES.filter((page) => !savedSlugs.has(page.slug)),
   ];
 }
