@@ -244,7 +244,7 @@ export async function saveCompanySettings(settings: CompanySettings): Promise<vo
 
   // Public contact/brand information remains in the public allowlisted setting.
   // Tax, registry and bank details are stored separately behind finance/settings RLS.
-  await saveRestrictedSetting('invoice_billing', {
+  const privateBillingValues = [
     billingAddress,
     billingCity,
     billingCountry,
@@ -253,7 +253,21 @@ export async function saveCompanySettings(settings: CompanySettings): Promise<vo
     bankName,
     iban,
     swiftBic,
-  }, 'Restricted invoice billing and settlement details');
+  ];
+  if (isSupabaseConfigured()) {
+    await saveRestrictedSetting('invoice_billing', {
+      billingAddress,
+      billingCity,
+      billingCountry,
+      taxRegistrationNumber,
+      commercialRegistryNumber,
+      bankName,
+      iban,
+      swiftBic,
+    }, 'Restricted invoice billing and settlement details');
+  } else if (privateBillingValues.some((value) => Boolean(value?.trim()))) {
+    throw new Error('Private invoice billing details require the secure Supabase backend and are never stored in browser storage.');
+  }
   await saveSetting<CompanySettings>('company_info', publicCompanySettings, 'Master company identity and contact details');
 }
 
