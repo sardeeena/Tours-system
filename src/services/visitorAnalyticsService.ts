@@ -82,7 +82,14 @@ function sessionId(): string {
 export function readVisitorConsent(): VisitorConsent | null {
   try {
     const value = JSON.parse(localStorage.getItem('aat_cookie_consent_v1') || 'null');
-    if (value?.necessary !== true || typeof value.analytics !== 'boolean' || typeof value.marketing !== 'boolean' || value.version !== CONSENT_VERSION) return null;
+    if (value?.version !== CONSENT_VERSION) {
+      // Old consent did not disclose IP-derived approximate location. Remove
+      // optional identifiers until the visitor makes a fresh choice.
+      localStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(VISITOR_KEY);
+      return null;
+    }
+    if (value?.necessary !== true || typeof value.analytics !== 'boolean' || typeof value.marketing !== 'boolean') return null;
     return { necessary: true, analytics: value.analytics, marketing: value.marketing, updatedAt: typeof value.updatedAt === 'string' ? value.updatedAt : '', version: CONSENT_VERSION };
   } catch {
     return null;
