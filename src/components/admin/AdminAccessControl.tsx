@@ -273,10 +273,11 @@ export const AdminAccessControl:React.FC = () => {
             {(selectedUser.roles.includes('super_admin')||selectedUser.id===user?.id)&&<p className="text-xs text-amber-700 dark:text-amber-300 mt-2">Self-suspension and suspension of protected Super Admin accounts are disabled.</p>}
           </div>}
           <div className="mt-5 flex items-center justify-between gap-3"><div><h4 className="font-semibold text-sm">Assigned roles</h4><p className="text-xs text-slate-500 mt-1">Permissions from all selected roles are combined.</p></div><span className="text-xs rounded-lg bg-teal-50 text-teal-800 dark:bg-teal-950/40 dark:text-teal-200 px-2 py-1">{selectedRoles.length} selected</span></div>
-          {protectedSuperAdmin ? <p className="mt-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 p-3 text-sm text-amber-800 dark:text-amber-200">This account has protected Super Admin access. Only a Super Admin can modify its assignments.</p> : <div className="grid sm:grid-cols-2 gap-2 mt-3">
-            {data.roles.filter(r=>r.is_active&&(isSuperAdmin||r.slug!=='super_admin')).map(role=><label key={role.slug} className="flex gap-3 items-start rounded-xl border border-slate-200 dark:border-slate-700 p-3 cursor-pointer hover:border-teal-500">
-              <input type="checkbox" checked={selectedRoles.includes(role.slug)} onChange={()=>toggleRole(role.slug)} className="mt-1 accent-[#0A6C74]"/>
-              <span className="min-w-0"><span className="block text-sm font-semibold">{role.name}</span><span className="block text-xs text-slate-500 mt-0.5">{role.description||role.slug}</span></span>
+          {protectedSuperAdmin ? <p className="mt-4 rounded-lg bg-amber-50 dark:bg-amber-950/30 p-3 text-sm text-amber-800 dark:text-amber-200">This account has protected Super Admin access. Only a Super Admin can modify its assignments.</p> : <div className="mt-3 divide-y divide-slate-200 dark:divide-slate-700 border-y border-slate-200 dark:border-slate-700">
+            {data.roles.filter(r=>r.is_active&&(isSuperAdmin||r.slug!=='super_admin')).map(role=><label key={role.slug} className="flex gap-3 items-center py-3 cursor-pointer">
+              <input type="checkbox" checked={selectedRoles.includes(role.slug)} onChange={()=>toggleRole(role.slug)} className="h-4 w-4 accent-[#0A6C74]"/>
+              <span className="min-w-0 flex-1"><span className="block text-sm font-semibold">{role.name}</span><span className="block text-xs text-slate-500 mt-0.5">{role.description||role.slug}</span></span>
+              <span className="text-xs text-slate-500 whitespace-nowrap">{role.permissions.length} permissions</span>
             </label>)}
           </div>}
           {!isSuperAdmin&&<p className="mt-4 text-xs text-amber-700 dark:text-amber-300 flex gap-2"><LockKeyhole className="w-4 h-4 shrink-0"/> Super Admin assignment and changes are restricted to an existing Super Admin.</p>}
@@ -322,10 +323,19 @@ export const AdminAccessControl:React.FC = () => {
           <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">Role ID<input value={roleSlug} onChange={e=>setRoleSlug(e.target.value)} disabled={saving||Boolean(editingRoleSlug)} title={editingRoleSlug?'Role IDs cannot be changed while editing an existing role.':''} placeholder="reservations_supervisor" className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent p-2.5 text-sm disabled:opacity-60"/></label>
         </div>
         <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mt-3">Description<textarea value={roleDescription} onChange={e=>setRoleDescription(e.target.value)} rows={2} className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent p-2.5 text-sm"/></label>
-        <div className="mt-5"><div className="font-semibold text-sm mb-1">Grant permissions</div><p className="text-xs text-slate-500 mb-3">Select only the actions this custom role needs. Changes are saved to the live role_permissions tables through a protected database function.</p>
+        <div className="mt-5"><div className="font-semibold text-sm mb-1">Grant permissions</div><p className="text-xs text-slate-500 mb-3">Select only the actions this custom role needs. Changes are saved securely when you save this role.</p>
           <input value={permissionSearch} onChange={e=>setPermissionSearch(e.target.value)} placeholder="Filter permissions by module or action…" className="mb-3 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent p-2.5 text-sm"/>
           <div className="space-y-4">
-          {visiblePermissionGroups.map(([module,items])=><div key={module} className="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><h4 className="text-sm font-semibold mb-2">{MODULE_LABELS[module]||module}</h4><div className="grid sm:grid-cols-2 gap-2">{items.map(p=><label key={p.key} className="flex gap-2 items-start text-xs text-slate-600 dark:text-slate-300"><input type="checkbox" checked={rolePermissions.includes(p.key)} onChange={()=>togglePermission(p.key)} className="mt-0.5 accent-[#0A6C74]"/><span><span className="block font-semibold">{p.action.toUpperCase()}</span><span className="text-slate-400">{p.description}</span></span></label>)}</div></div>)}
+          {visiblePermissionGroups.map(([module,items])=><fieldset key={module} className="border-b border-slate-200 dark:border-slate-700 pb-3">
+            <legend className="w-full py-2 text-sm font-bold text-slate-800 dark:text-slate-100">{MODULE_LABELS[module]||module}<span className="ml-2 text-xs font-normal text-slate-500">{items.length} available</span></legend>
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              {items.map(permission=><label key={permission.key} className="flex gap-3 items-start py-2.5 text-sm cursor-pointer">
+                <input type="checkbox" checked={rolePermissions.includes(permission.key)} onChange={()=>togglePermission(permission.key)} className="mt-1 h-4 w-4 accent-[#0A6C74]"/>
+                <span className="min-w-0 flex-1"><span className="block font-semibold text-slate-700 dark:text-slate-200">{permission.action.replace(/_/g,' ')}</span><span className="block text-xs text-slate-500 mt-0.5">{permission.description}</span></span>
+                <span className="hidden md:block text-[11px] text-slate-400">{permission.key}</span>
+              </label>)}
+            </div>
+          </fieldset>)}
           {!visiblePermissionGroups.length&&<p className="text-xs text-slate-500 py-3">No permissions match this filter.</p>}
         </div></div>
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3"><p className="text-xs text-slate-500">{rolePermissions.length} permissions selected</p><button onClick={()=>void saveCustomRole()} disabled={saving||!roleName.trim()||!roleSlug.trim()} className="inline-flex items-center gap-2 rounded-xl bg-[#0A6C74] text-white px-4 py-2.5 text-sm font-semibold disabled:opacity-50"><Check className="w-4 h-4"/>{saving?'Saving…':'Save custom role'}</button></div>
