@@ -113,7 +113,7 @@ export const CookieConsent: React.FC = () => {
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#0A6C74] dark:text-[#60C3CC]">Your privacy choices</p>
           <h2 id="cookie-consent-title" className="mt-1 text-lg font-bold">Cookies & website storage</h2>
           <p className="mt-2 text-xs leading-6 text-stone-600 dark:text-slate-300">
-            We use essential storage to make the website and booking features work. With your permission, we also use analytics and marketing technologies. You can accept all, reject optional technologies or customise your choices. Read our <a className="font-semibold text-[#0A6C74] underline dark:text-[#60C3CC]" href="/cookie-policy">Cookie Policy</a> and <a className="font-semibold text-[#0A6C74] underline dark:text-[#60C3CC]" href="/privacy">Privacy Policy</a>.
+            We use essential storage to make the website and booking features work. With your permission, we also use analytics and marketing technologies. If you enable Analytics, we may estimate your country, region and city from your connection IP; the IP itself is not stored in our analytics database. You can accept all, reject optional technologies or customise your choices. Read our <a className="font-semibold text-[#0A6C74] underline dark:text-[#60C3CC]" href="/cookie-policy">Cookie Policy</a> and <a className="font-semibold text-[#0A6C74] underline dark:text-[#60C3CC]" href="/privacy">Privacy Policy</a>.
           </p>
         </div>
 
@@ -129,7 +129,7 @@ export const CookieConsent: React.FC = () => {
             <label className="flex cursor-pointer items-start justify-between gap-4 border-t border-stone-100 pt-3 dark:border-slate-800">
               <span>
                 <span className="block text-sm font-semibold">Analytics</span>
-                <span className="block text-xs leading-5 text-stone-500 dark:text-slate-400">Allow measurement that helps us understand and improve website use.</span>
+                <span className="block text-xs leading-5 text-stone-500 dark:text-slate-400">Allow measurement that helps us understand website use, including approximate country/region/city inferred from your connection IP. The IP is used for the lookup but is not saved in our analytics records.</span>
               </span>
               <input type="checkbox" checked={choices.analytics} onChange={(event) => setChoices((current) => ({ ...current, analytics: event.target.checked }))} className="mt-1 h-4 w-4 accent-[#0A6C74]" />
             </label>
