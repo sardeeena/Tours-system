@@ -13,6 +13,7 @@ export interface VisitorConsent {
   analytics: boolean;
   marketing: boolean;
   updatedAt: string;
+  version: string;
 }
 
 export interface VisitorMetadata {
@@ -39,6 +40,7 @@ const SESSION_KEY = 'aat_visitor_session_v1';
 const VISITOR_KEY = 'aat_visitor_id_v1';
 const SESSION_TTL_MS = 30 * 60 * 1000;
 const VISITOR_TTL_MS = 180 * 24 * 60 * 60 * 1000;
+const CONSENT_VERSION = '2';
 
 function randomId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
@@ -80,8 +82,8 @@ function sessionId(): string {
 export function readVisitorConsent(): VisitorConsent | null {
   try {
     const value = JSON.parse(localStorage.getItem('aat_cookie_consent_v1') || 'null');
-    if (value?.necessary !== true || typeof value.analytics !== 'boolean' || typeof value.marketing !== 'boolean') return null;
-    return { necessary: true, analytics: value.analytics, marketing: value.marketing, updatedAt: typeof value.updatedAt === 'string' ? value.updatedAt : '' };
+    if (value?.necessary !== true || typeof value.analytics !== 'boolean' || typeof value.marketing !== 'boolean' || value.version !== CONSENT_VERSION) return null;
+    return { necessary: true, analytics: value.analytics, marketing: value.marketing, updatedAt: typeof value.updatedAt === 'string' ? value.updatedAt : '', version: CONSENT_VERSION };
   } catch {
     return null;
   }
@@ -176,7 +178,7 @@ export async function recordVisitorConsent(choices: VisitorConsent, source = 'co
   }
   await post('/api/visitor/consent', {
     session_id: id, visitor_id: choices.analytics ? visitorId() : null, analytics: choices.analytics, marketing: choices.marketing,
-    source, ...(choices.analytics ? { landing_path: window.location.pathname, metadata: visitorMetadata() } : {}),
+    source, consent_version: choices.version, ...(choices.analytics ? { landing_path: window.location.pathname, metadata: visitorMetadata() } : {}),
   });
   window.dispatchEvent(new CustomEvent('awesome:visitor-consent-saved'));
 }
