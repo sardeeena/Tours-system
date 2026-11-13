@@ -14,11 +14,11 @@ const TEXT_EXTENSIONS = new Set([
   '.ts', '.tsx', '.js', '.jsx', '.html', '.css', '.json', '.webmanifest', '.svg', '.txt', '.sql',
 ]);
 const RETIRED_BRANDS = [
-  { label: 'Kemet Spirit', pattern: /Kemet\s+Spirit/i },
-  { label: 'Kemet Spirit domain', pattern: /kemetspirit\.com/i },
-  { label: 'Red Sea Voyages', pattern: /Red\s+Sea\s+Voyages/i },
-  { label: 'Red Sea Voyages domain', pattern: /redseavoyages\.com/i },
-  { label: 'Red Sea Excursions brand phrase', pattern: /Red\s+Sea\s+Excursions?/i },
+  { label: 'retired company identity', pattern: new RegExp(['Kemet', 'Spirit'].join('\\s+'), 'i') },
+  { label: 'retired company domain', pattern: new RegExp(['kemetspirit', '.com'].join(''), 'i') },
+  { label: 'retired travel brand', pattern: new RegExp(['Red', 'Sea', 'Voyages'].join('\\s+'), 'i') },
+  { label: 'retired travel domain', pattern: new RegExp(['redsea', 'voyages', '.com'].join(''), 'i') },
+  { label: 'retired category label', pattern: new RegExp(['Red', 'Sea', 'Excursions?'].join('\\s+'), 'i') },
 ];
 
 function collectFiles(entry: string): string[] {
