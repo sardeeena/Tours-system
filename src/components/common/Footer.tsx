@@ -112,7 +112,7 @@ export const Footer: React.FC<FooterProps> = ({
               />
             </div>
             <p className="text-xs text-stone-600 dark:text-slate-400 leading-relaxed mb-5 max-w-sm">
-              Explore trusted Red Sea excursions and experiences from Hurghada, Egypt, with local insight, clear trip information and helpful support.
+              Discover boat trips, island escapes, snorkeling and desert adventures across Egypt, with local insight and helpful support from the Awesome Adventure Tours team.
             </p>
             <div className="flex items-center space-x-2 text-[11px] text-stone-700 dark:text-slate-300">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
