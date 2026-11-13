@@ -201,8 +201,8 @@ export const AdminAccessControl:React.FC = () => {
     }
   };
 
-  if(loading&&!hasLoaded)return <div className="p-8 text-sm text-slate-500 flex items-center gap-2"><RefreshCw className="w-4 h-4 animate-spin"/> Loading live users, roles and permissions from Kemet Spirit…</div>;
-  if(error&&!hasLoaded)return <div className="space-y-4 rounded-2xl border border-red-200 dark:border-red-900 p-6"><div role="alert" className="text-sm text-red-700 dark:text-red-300">{error}</div><button onClick={()=>void load()} disabled={loading} className="inline-flex items-center gap-2 rounded-xl bg-[#0A6C74] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50"><RefreshCw className="w-4 h-4"/> Retry database connection</button></div>;
+  if(loading&&!hasLoaded)return <div className="p-8 text-sm text-slate-500 flex items-center gap-2"><RefreshCw className="w-4 h-4 animate-spin"/> Loading accounts and access settings…</div>;
+  if(error&&!hasLoaded)return <div className="space-y-4 rounded-2xl border border-red-200 dark:border-red-900 p-6"><div role="alert" className="text-sm text-red-700 dark:text-red-300">{error}</div><button onClick={()=>void load()} disabled={loading} className="inline-flex items-center gap-2 rounded-xl bg-[#0A6C74] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50"><RefreshCw className="w-4 h-4"/> Try again</button></div>;
 
   return <div className="space-y-6">
     <div className="flex flex-wrap items-start justify-between gap-4">
@@ -213,16 +213,13 @@ export const AdminAccessControl:React.FC = () => {
       <button onClick={()=>void load()} disabled={loading||saving} className="inline-flex items-center gap-2 rounded-xl border px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50"><RefreshCw className={`w-4 h-4 ${loading?'animate-spin':''}`}/> Refresh</button>
     </div>
 
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><div className="text-xs text-slate-500">Live accounts</div><div className="text-2xl font-bold mt-1">{data.users.length}</div></div>
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><div className="text-xs text-slate-500">Active roles</div><div className="text-2xl font-bold mt-1">{data.roles.filter(r=>r.is_active).length}</div></div>
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><div className="text-xs text-slate-500">Defined permissions</div><div className="text-2xl font-bold mt-1">{data.permissions.length}</div></div>
-      <div className="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><div className="text-xs text-slate-500">Custom roles</div><div className="text-2xl font-bold mt-1">{data.roles.filter(r=>!r.is_system).length}</div></div>
-    </div>
-    <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500">
-      <span className="inline-flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-emerald-500"/> Connected to live Supabase RBAC data</span>
-      <span>Last refreshed: {lastLoadedAt?new Date(lastLoadedAt).toLocaleString():'Not yet refreshed'}</span>
-    </div>
+    <section className="flex flex-wrap items-center gap-x-6 gap-y-2 border-y border-slate-200 dark:border-slate-700 py-3 text-sm">
+      <div><span className="text-slate-500">Accounts</span> <strong className="ml-1 tabular-nums">{data.users.length}</strong></div>
+      <div><span className="text-slate-500">Active roles</span> <strong className="ml-1 tabular-nums">{data.roles.filter(r=>r.is_active).length}</strong></div>
+      <div><span className="text-slate-500">Permissions</span> <strong className="ml-1 tabular-nums">{data.permissions.length}</strong></div>
+      <div><span className="text-slate-500">Custom roles</span> <strong className="ml-1 tabular-nums">{data.roles.filter(r=>!r.is_system).length}</strong></div>
+      <span className="ml-auto text-xs text-slate-500">Updated {lastLoadedAt?new Date(lastLoadedAt).toLocaleTimeString():'—'}</span>
+    </section>
     {error&&<div role="alert" className="rounded-xl border border-red-300 bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-300 px-4 py-3 text-sm">{error}</div>}
     {notice&&<div role="status" className="rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-300 px-4 py-3 text-sm">{notice}</div>}
 
@@ -239,19 +236,27 @@ export const AdminAccessControl:React.FC = () => {
           <input type="email" value={inviteEmail} onChange={e=>setInviteEmail(e.target.value)} placeholder="name@example.com" maxLength={254} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-3 py-2 text-sm"/>
           <button type="button" onClick={()=>void inviteAccount()} disabled={Boolean(accountBusy)||!inviteEmail.trim()} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0A6C74] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50"><Mail className="w-4 h-4"/>{accountBusy==='invite'?'Sending…':'Send invitation'}</button>
         </div>:<p className="mt-2 text-xs text-slate-500">Inviting accounts requires a Super Admin session with verified multi-factor authentication.</p>}
-        <p className="mt-2 text-xs text-slate-500">Invitations are sent by Supabase Auth. New accounts receive the Customer role until an administrator assigns staff access.</p>
+        <p className="mt-2 text-xs text-slate-500">An invitation email will be sent. New accounts start with the Customer role until an administrator assigns staff access.</p>
       </div>
       <div className="xl:col-span-2"><AdminAuthDirectory isSuperAdmin={isSuperAdmin}/></div>
-       <section className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-        <div className="p-4 border-b border-slate-200 dark:border-slate-700"><h3 className="font-bold">Registered users <span className="text-slate-400 font-normal">({data.users.length})</span></h3>
-          <div className="relative mt-3"><Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search name, email or role…" className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent pl-9 pr-3 py-2 text-sm"/></div>
+       <section className="min-w-0 overflow-hidden">
+        <div className="flex flex-wrap items-end justify-between gap-3 border-b border-slate-200 dark:border-slate-700 pb-3">
+          <div><h3 className="font-bold">Registered accounts <span className="font-normal text-slate-500">({visibleUsers.length} of {data.users.length})</span></h3><p className="text-xs text-slate-500 mt-1">Choose an account to review or change its access.</p></div>
+          <div className="relative w-full sm:w-80"><Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/><input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search name, email or role…" className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 pl-9 pr-3 py-2 text-sm"/></div>
         </div>
-        <div className="max-h-[620px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
-          {visibleUsers.map(u=><button key={u.id} onClick={()=>setSelectedUserId(u.id)} className={`w-full text-left p-4 hover:bg-slate-50 dark:hover:bg-slate-800/60 ${selectedUserId===u.id?'bg-teal-50 dark:bg-teal-950/20':''}`}>
-            <div className="font-semibold text-sm text-slate-800 dark:text-slate-100">{u.full_name||'Unnamed user'}</div><div className="text-xs text-slate-500 mt-1 break-all">{u.email}</div>
-            <div className="flex flex-wrap gap-1 mt-2">{u.roles.map(r=><span key={r} className="text-[10px] rounded-md bg-slate-100 dark:bg-slate-700 px-2 py-1">{r}</span>)}</div>
-          </button>)}
-          {!visibleUsers.length&&<p className="p-5 text-sm text-slate-500">No matching users.</p>}
+        <div className="mt-2 overflow-x-auto">
+          <table className="w-full min-w-[620px] text-sm">
+            <thead><tr className="border-b border-slate-200 dark:border-slate-700"><th className="px-3 py-3">Account</th><th className="px-3 py-3">Assigned roles</th><th className="px-3 py-3">Email status</th><th className="px-3 py-3 text-right">Select</th></tr></thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+              {visibleUsers.map(u=><tr key={u.id} className={selectedUserId===u.id?'bg-teal-50/70 dark:bg-teal-950/20':''}>
+                <td className="px-3 py-3"><div className="font-semibold text-slate-800 dark:text-slate-100">{u.full_name||'Unnamed user'}</div><div className="text-xs text-slate-500 break-all">{u.email}</div></td>
+                <td className="px-3 py-3"><div className="flex flex-wrap gap-1">{u.roles.map(role=><span key={role} className="inline-flex rounded-full bg-slate-100 dark:bg-slate-700 px-2 py-1 text-[11px] text-slate-700 dark:text-slate-200">{role.replace(/_/g,' ')}</span>)}</div></td>
+                <td className="px-3 py-3"><span className={u.is_confirmed?'text-emerald-700 dark:text-emerald-300':'text-amber-700 dark:text-amber-300'}>{u.is_confirmed?'Verified':'Not verified'}</span></td>
+                <td className="px-3 py-3 text-right"><button type="button" onClick={()=>setSelectedUserId(u.id)} aria-pressed={selectedUserId===u.id} className="rounded-lg border border-slate-300 dark:border-slate-600 px-3 py-1.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-700">{selectedUserId===u.id?'Selected':'Manage'}</button></td>
+              </tr>)}
+              {!visibleUsers.length&&<tr><td colSpan={4} className="px-3 py-8 text-center text-sm text-slate-500">No matching accounts.</td></tr>}
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -259,7 +264,7 @@ export const AdminAccessControl:React.FC = () => {
         {selectedUser?<><div className="flex flex-wrap justify-between gap-3"><div><h3 className="text-lg font-bold">{selectedUser.full_name||'User account'}</h3><p className="text-sm text-slate-500">{selectedUser.email}</p></div><span className="text-xs text-slate-500">{selectedUser.is_confirmed?'Email confirmed':'Email not confirmed'}</span></div>
           {isSuperAdmin&&<div className="mt-4 rounded-xl border border-slate-200 dark:border-slate-700 p-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div><div className="text-sm font-semibold">Authentication status</div><div className="text-xs text-slate-500 mt-1">{accountSuspended===null?'Checking secure Auth status…':accountSuspended?'Suspended in Supabase Auth':'Active in Supabase Auth'}</div></div>
+              <div><div className="text-sm font-semibold">Account status</div><div className="text-xs text-slate-500 mt-1">{accountSuspended===null?'Checking account status…':accountSuspended?'Suspended':'Active'}</div></div>
               <div className="flex flex-wrap gap-2">
                 <button type="button" onClick={()=>void manageAccount(accountSuspended?'reactivate':'suspend')} disabled={Boolean(accountBusy)||accountSuspended===null||selectedUser.id===user?.id||selectedUser.roles.includes('super_admin')} className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">{accountSuspended?<UserCheck className="w-4 h-4"/>:<UserX className="w-4 h-4"/>}{accountBusy==='suspend'?'Suspending…':accountBusy==='reactivate'?'Reactivating…':accountSuspended?'Reactivate account':'Suspend account'}</button>
                 <button type="button" onClick={()=>void manageAccount('password-reset')} disabled={Boolean(accountBusy)||protectedSuperAdmin} className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50"><KeyRound className="w-4 h-4"/>{accountBusy==='password-reset'?'Sending…':'Send password reset'}</button>
@@ -268,10 +273,11 @@ export const AdminAccessControl:React.FC = () => {
             {(selectedUser.roles.includes('super_admin')||selectedUser.id===user?.id)&&<p className="text-xs text-amber-700 dark:text-amber-300 mt-2">Self-suspension and suspension of protected Super Admin accounts are disabled.</p>}
           </div>}
           <div className="mt-5 flex items-center justify-between gap-3"><div><h4 className="font-semibold text-sm">Assigned roles</h4><p className="text-xs text-slate-500 mt-1">Permissions from all selected roles are combined.</p></div><span className="text-xs rounded-lg bg-teal-50 text-teal-800 dark:bg-teal-950/40 dark:text-teal-200 px-2 py-1">{selectedRoles.length} selected</span></div>
-          {protectedSuperAdmin ? <p className="mt-4 rounded-xl bg-amber-50 dark:bg-amber-950/30 p-3 text-sm text-amber-800 dark:text-amber-200">This account has protected Super Admin access. Only a Super Admin can modify its assignments.</p> : <div className="grid sm:grid-cols-2 gap-2 mt-3">
-            {data.roles.filter(r=>r.is_active&&(isSuperAdmin||r.slug!=='super_admin')).map(role=><label key={role.slug} className="flex gap-3 items-start rounded-xl border border-slate-200 dark:border-slate-700 p-3 cursor-pointer hover:border-teal-500">
-              <input type="checkbox" checked={selectedRoles.includes(role.slug)} onChange={()=>toggleRole(role.slug)} className="mt-1 accent-[#0A6C74]"/>
-              <span className="min-w-0"><span className="block text-sm font-semibold">{role.name}</span><span className="block text-xs text-slate-500 mt-0.5">{role.description||role.slug}</span></span>
+          {protectedSuperAdmin ? <p className="mt-4 rounded-lg bg-amber-50 dark:bg-amber-950/30 p-3 text-sm text-amber-800 dark:text-amber-200">This account has protected Super Admin access. Only a Super Admin can modify its assignments.</p> : <div className="mt-3 divide-y divide-slate-200 dark:divide-slate-700 border-y border-slate-200 dark:border-slate-700">
+            {data.roles.filter(r=>r.is_active&&(isSuperAdmin||r.slug!=='super_admin')).map(role=><label key={role.slug} className="flex gap-3 items-center py-3 cursor-pointer">
+              <input type="checkbox" checked={selectedRoles.includes(role.slug)} onChange={()=>toggleRole(role.slug)} className="h-4 w-4 accent-[#0A6C74]"/>
+              <span className="min-w-0 flex-1"><span className="block text-sm font-semibold">{role.name}</span><span className="block text-xs text-slate-500 mt-0.5">{role.description||role.slug}</span></span>
+              <span className="text-xs text-slate-500 whitespace-nowrap">{role.permissions.length} permissions</span>
             </label>)}
           </div>}
           {!isSuperAdmin&&<p className="mt-4 text-xs text-amber-700 dark:text-amber-300 flex gap-2"><LockKeyhole className="w-4 h-4 shrink-0"/> Super Admin assignment and changes are restricted to an existing Super Admin.</p>}
@@ -281,24 +287,34 @@ export const AdminAccessControl:React.FC = () => {
         </>:<p className="text-sm text-slate-500">Select a user to manage their roles.</p>}
       </section>
     </div>:<div className="grid grid-cols-1 xl:grid-cols-[minmax(260px,0.9fr)_minmax(0,1.5fr)] gap-5">
-      <section className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
-        <div className="p-4 border-b border-slate-200 dark:border-slate-700"><h3 className="font-bold">Available roles</h3><p className="text-xs text-slate-500 mt-1">Built-in roles are protected. Create custom roles for your organization.</p></div>
-        <div className="divide-y divide-slate-100 dark:divide-slate-800">{data.roles.map(r=><div key={r.slug} className="p-4">
-          <div className="flex justify-between gap-3">
-            <div className="min-w-0">
-              <div className="font-semibold text-sm">{r.name} {r.is_system&&<span className="text-[10px] uppercase text-slate-400 ml-1">Protected system role</span>}</div>
-              <p className="text-xs text-slate-500 mt-1">{r.description||r.slug}</p>
-              <p className="text-[11px] text-slate-400 mt-1">{r.permissions.length} permissions · {data.users.filter(u=>u.roles.includes(r.slug)).length} assigned accounts</p>
-            </div>
-            <div className="flex flex-wrap items-start gap-1 shrink-0">
-              <button onClick={()=>setExpandedRoleSlug(expandedRoleSlug===r.slug?null:r.slug)} disabled={saving} title="Inspect role permissions" className="text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg px-2 py-1 text-xs">{expandedRoleSlug===r.slug?'Hide permissions':'View permissions'}</button>
-              {!r.is_system&&<><button onClick={()=>{setRoleName(r.name);setRoleSlug(r.slug);setRoleDescription(r.description||'');setRolePermissions(r.permissions);setEditingRoleSlug(r.slug);setSection('roles');}} disabled={saving} title="Edit custom role" className="text-[#0A6C74] hover:bg-teal-50 dark:hover:bg-teal-950/30 rounded-lg px-2 py-1 text-xs">Edit</button><button onClick={()=>void deleteRole(r.slug)} disabled={saving} title="Delete custom role" className="text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg p-2"><Trash2 className="w-4 h-4"/></button></>}
-            </div>
-          </div>
-          {expandedRoleSlug===r.slug&&<div className="mt-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 p-3">
-            {r.permissions.length?<div className="flex flex-wrap gap-2">{r.permissions.map(permission=><span key={permission} className="text-[11px] rounded-md border border-slate-200 dark:border-slate-700 px-2 py-1">{permission}</span>)}</div>:<p className="text-xs text-slate-500">This role currently has no explicit module permissions. Customer/guide access may be controlled by ownership or assignment-specific policies.</p>}
-          </div>}
-        </div>)}</div>
+      <section className="min-w-0">
+        <div className="border-b border-slate-200 dark:border-slate-700 pb-3">
+          <h3 className="font-bold">Role catalogue <span className="font-normal text-slate-500">({data.roles.length})</span></h3>
+          <p className="text-xs text-slate-500 mt-1">Select a role to inspect its access. Built-in roles are protected; custom roles can be edited or removed.</p>
+        </div>
+        <div className="mt-2 overflow-x-auto">
+          <table className="w-full min-w-[650px] text-sm">
+            <thead><tr className="border-b border-slate-200 dark:border-slate-700"><th className="px-3 py-3">Role</th><th className="px-3 py-3">Type</th><th className="px-3 py-3">Permissions</th><th className="px-3 py-3">Accounts</th><th className="px-3 py-3 text-right">Actions</th></tr></thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+              {data.roles.map(role=><React.Fragment key={role.slug}>
+                <tr className={expandedRoleSlug===role.slug?'bg-teal-50/60 dark:bg-teal-950/20':''}>
+                  <td className="px-3 py-3"><div className="font-semibold text-slate-800 dark:text-slate-100">{role.name}</div><div className="text-xs text-slate-500">{role.description||role.slug}</div></td>
+                  <td className="px-3 py-3"><span className="text-xs text-slate-600 dark:text-slate-300">{role.is_system?'Built-in':'Custom'}</span></td>
+                  <td className="px-3 py-3 tabular-nums">{role.permissions.length}</td>
+                  <td className="px-3 py-3 tabular-nums">{data.users.filter(account=>account.roles.includes(role.slug)).length}</td>
+                  <td className="px-3 py-3"><div className="flex justify-end items-center gap-2">
+                    <button type="button" onClick={()=>setExpandedRoleSlug(expandedRoleSlug===role.slug?null:role.slug)} disabled={saving} className="rounded-lg border border-slate-300 dark:border-slate-600 px-2.5 py-1.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-700">{expandedRoleSlug===role.slug?'Hide details':'Permissions'}</button>
+                    {!role.is_system&&<><button type="button" onClick={()=>{setRoleName(role.name);setRoleSlug(role.slug);setRoleDescription(role.description||'');setRolePermissions(role.permissions);setEditingRoleSlug(role.slug);setSection('roles');}} disabled={saving} className="rounded-lg px-2.5 py-1.5 text-xs font-semibold text-teal-700 dark:text-teal-300 hover:bg-teal-50 dark:hover:bg-teal-950/30">Edit</button><button type="button" onClick={()=>void deleteRole(role.slug)} disabled={saving} title="Delete custom role" aria-label={`Delete ${role.name}`} className="rounded-lg p-2 text-red-600 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/30"><Trash2 className="w-4 h-4"/></button></>}
+                  </div></td>
+                </tr>
+                {expandedRoleSlug===role.slug&&<tr><td colSpan={5} className="bg-slate-50/70 dark:bg-slate-900/40 px-4 py-4">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-slate-500 mb-2">Granted permissions</div>
+                  {role.permissions.length?<div className="flex flex-wrap gap-x-4 gap-y-2">{role.permissions.map(permission=><span key={permission} className="text-xs text-slate-700 dark:text-slate-200">{permission}</span>)}</div>:<p className="text-xs text-slate-500">This role has no explicit module permissions. Some customer and guide access is determined by ownership or assignment.</p>}
+                </td></tr>}
+              </React.Fragment>)}
+            </tbody>
+          </table>
+        </div>
       </section>
       <section className="rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
         <div className="flex items-center justify-between gap-2"><div className="flex items-center gap-2"><Plus className="w-5 h-5 text-[#0A6C74]"/><h3 className="text-lg font-bold">{editingRoleSlug?'Edit custom role':'Create a custom role'}</h3></div>{editingRoleSlug&&<button type="button" onClick={cancelRoleEdit} disabled={saving} className="text-xs text-slate-500 underline">Cancel edit</button>}</div>
@@ -307,11 +323,20 @@ export const AdminAccessControl:React.FC = () => {
           <label className="text-xs font-semibold text-slate-600 dark:text-slate-300">Role ID<input value={roleSlug} onChange={e=>setRoleSlug(e.target.value)} disabled={saving||Boolean(editingRoleSlug)} title={editingRoleSlug?'Role IDs cannot be changed while editing an existing role.':''} placeholder="reservations_supervisor" className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent p-2.5 text-sm disabled:opacity-60"/></label>
         </div>
         <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mt-3">Description<textarea value={roleDescription} onChange={e=>setRoleDescription(e.target.value)} rows={2} className="mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent p-2.5 text-sm"/></label>
-        <div className="mt-5"><div className="font-semibold text-sm mb-1">Grant permissions</div><p className="text-xs text-slate-500 mb-3">Select only the actions this custom role needs. Changes are saved to the live role_permissions tables through a protected database function.</p>
+        <div className="mt-5"><div className="font-semibold text-sm mb-1">Grant permissions</div><p className="text-xs text-slate-500 mb-3">Select only the actions this custom role needs. Changes are saved securely when you save this role.</p>
           <input value={permissionSearch} onChange={e=>setPermissionSearch(e.target.value)} placeholder="Filter permissions by module or action…" className="mb-3 w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent p-2.5 text-sm"/>
           <div className="space-y-4">
-          {visiblePermissionGroups.map(([module,items])=><div key={module} className="rounded-xl border border-slate-200 dark:border-slate-700 p-3"><h4 className="text-sm font-semibold mb-2">{MODULE_LABELS[module]||module}</h4><div className="grid sm:grid-cols-2 gap-2">{items.map(p=><label key={p.key} className="flex gap-2 items-start text-xs text-slate-600 dark:text-slate-300"><input type="checkbox" checked={rolePermissions.includes(p.key)} onChange={()=>togglePermission(p.key)} className="mt-0.5 accent-[#0A6C74]"/><span><span className="block font-semibold">{p.action.toUpperCase()}</span><span className="text-slate-400">{p.description}</span></span></label>)}</div></div>)}
-          {!visiblePermissionGroups.length&&<p className="text-xs text-slate-500">No permissions match this filter.</p>}
+          {visiblePermissionGroups.map(([module,items])=><fieldset key={module} className="border-b border-slate-200 dark:border-slate-700 pb-3">
+            <legend className="w-full py-2 text-sm font-bold text-slate-800 dark:text-slate-100">{MODULE_LABELS[module]||module}<span className="ml-2 text-xs font-normal text-slate-500">{items.length} available</span></legend>
+            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+              {items.map(permission=><label key={permission.key} className="flex gap-3 items-start py-2.5 text-sm cursor-pointer">
+                <input type="checkbox" checked={rolePermissions.includes(permission.key)} onChange={()=>togglePermission(permission.key)} className="mt-1 h-4 w-4 accent-[#0A6C74]"/>
+                <span className="min-w-0 flex-1"><span className="block font-semibold text-slate-700 dark:text-slate-200">{permission.action.replace(/_/g,' ')}</span><span className="block text-xs text-slate-500 mt-0.5">{permission.description}</span></span>
+                <span className="hidden md:block text-[11px] text-slate-400">{permission.key}</span>
+              </label>)}
+            </div>
+          </fieldset>)}
+          {!visiblePermissionGroups.length&&<p className="text-xs text-slate-500 py-3">No permissions match this filter.</p>}
         </div></div>
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3"><p className="text-xs text-slate-500">{rolePermissions.length} permissions selected</p><button onClick={()=>void saveCustomRole()} disabled={saving||!roleName.trim()||!roleSlug.trim()} className="inline-flex items-center gap-2 rounded-xl bg-[#0A6C74] text-white px-4 py-2.5 text-sm font-semibold disabled:opacity-50"><Check className="w-4 h-4"/>{saving?'Saving…':'Save custom role'}</button></div>
       </section>
