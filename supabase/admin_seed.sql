@@ -14,14 +14,10 @@
 
 DO $$
 DECLARE
-    v_admin_email CONSTANT text := NULLIF(current_setting('app.admin_email', true), '');
+    v_admin_email CONSTANT text := 'admin@kemetspirit.com';
     v_user_id uuid;
     v_existing_role text;
 BEGIN
-    IF v_admin_email IS NULL THEN
-        RAISE EXCEPTION 'Set app.admin_email to the exact existing Auth user email before running this verification script.';
-    END IF;
-
     -- Check if auth user exists in auth.users
     SELECT id INTO v_user_id
     FROM auth.users
@@ -46,7 +42,7 @@ BEGIN
             ) VALUES (
                 v_user_id,
                 v_admin_email,
-                'Awesome Adventure Tours Administrator',
+                'Kemet Spirit Administrator',
                 'admin',
                 TRUE,
                 NOW(),

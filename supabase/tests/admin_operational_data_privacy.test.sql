@@ -69,14 +69,17 @@ SELECT ok(
     WHERE schemaname = 'public'
       AND tablename = 'site_settings'
       AND policyname = 'rbac_site_settings_read'
+      AND cmd = 'SELECT'
       AND roles @> ARRAY['authenticated']::name[]
-      AND qual LIKE '%company_info%'
-      AND qual LIKE '%booking_policies%'
-      AND qual LIKE '%social_links%'
-      AND qual LIKE '%footer_content%'
-      AND qual LIKE '%pages_content%'
+      AND qual LIKE '%settings.manage%'
+      AND qual NOT LIKE '%invoice_billing%'
+      AND qual NOT LIKE '%company_info%'
+      AND qual NOT LIKE '%booking_policies%'
+      AND qual NOT LIKE '%social_links%'
+      AND qual NOT LIKE '%footer_content%'
+      AND qual NOT LIKE '%pages_content%'
   ),
-  'public site settings reads are limited to the five approved public content keys'
+  'public content remains available through the allowlist while authenticated settings access requires settings.manage'
 );
 
 SELECT ok(

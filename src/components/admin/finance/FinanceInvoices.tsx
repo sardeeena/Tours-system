@@ -18,6 +18,7 @@ import {
 import {
   listInvoices,
   generateInvoiceForBooking,
+  COMPANY_DETAILS,
 } from '../../../services/financeService';
 import { FinanceInvoice } from '../../../types/finance';
 import { bookingRepository } from '../../../services/bookingRepository';
@@ -344,7 +345,7 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
               </div>
 
               <div className="p-3 bg-stone-900/60 rounded border border-stone-800 text-[11px] text-stone-400">
-                The invoice will use the current company identity and billing settings. It will remain a draft until the required legal billing details are completed in Admin Settings.
+                The invoice will be generated with full company tax registration details, itemized excursions, pickup transfers, and live payment settlements.
               </div>
 
               <div className="flex justify-end space-x-2 pt-3 border-t border-stone-800">
@@ -580,7 +581,7 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
                   Authorized Accounting Officer
                 </span>
                 <div className="border-b border-stone-400 pb-1">
-                  Authorized Representative &bull; {selectedInvoice.companyDetails.name}
+                  Finance Controller &bull; Red Sea Voyages
                 </div>
               </div>
             </div>

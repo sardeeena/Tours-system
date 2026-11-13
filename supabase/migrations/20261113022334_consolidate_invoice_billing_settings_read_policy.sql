@@ -1,0 +1,8 @@
+-- Historical migration-history compatibility file.
+-- Version 20261113022334 is already recorded as applied in the production
+-- Supabase migration ledger, but its original SQL file is not present in the
+-- repository. Its policy effect is superseded by the preserved
+-- 20261113050000 migration and the final rollback migration
+-- 20261113060000_restore_pre_pr122_site_settings_read_policy.sql.
+-- Keep this versioned file so local and remote migration histories reconcile.
+-- Do not add statements here; production has already applied this version.
