@@ -2151,7 +2151,7 @@ function isPrivateOrReservedIp(value: string, family: number): boolean {
   if (family === 4) {
     const octets = ip.split('.').map(Number);
     if (octets.length !== 4 || octets.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) return true;
-    const [a, b, c, d] = octets;
+    const [a, b, c] = octets;
     return a === 0 || a === 10 || a === 127 || a >= 224 ||
       (a === 100 && b >= 64 && b <= 127) ||
       (a === 169 && b === 254) ||
@@ -2170,7 +2170,8 @@ function isPrivateOrReservedIp(value: string, family: number): boolean {
 
 /** Approximate GeoIP lookup only after analytics consent; never persists the raw IP. */
 async function lookupApproximateVisitorLocation(rawIp?: string | null): Promise<ApproximateVisitorLocation | null> {
-  const ip = (rawIp || '').trim();
+  const suppliedIp = (rawIp || '').trim();
+  const ip = suppliedIp.toLowerCase().startsWith('::ffff:') ? suppliedIp.slice(7) : suppliedIp;
   const family = isIP(ip);
   if (!family || isPrivateOrReservedIp(ip, family)) return null;
   const cacheKey = createHash('sha256').update(ip).digest('hex');
@@ -2296,7 +2297,7 @@ app.post('/api/visitor/consent', rateLimit(20, 60_000), async (req: Authenticate
   const visitorId = typeof req.body?.visitor_id === 'string' && UUID_PATTERN.test(req.body.visitor_id) ? req.body.visitor_id : null;
   const metadata = safeVisitorMetadata(req.body?.metadata);
   try {
-    const location = analytics ? await lookupApproximateVisitorLocation(req.ip || null) : null;
+    const location = analytics && sessionId && visitorId ? await lookupApproximateVisitorLocation(req.ip || null) : null;
     const sessionMetadata = { ...metadata, ...(location || {}) };
     if (analytics && sessionId && visitorId) {
       const now = new Date().toISOString();
