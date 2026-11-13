@@ -196,7 +196,7 @@ export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
     slug: 'cookie-policy',
     heroHeadline: 'Cookies & Your Choices',
     heroSubtitle: 'Learn how this website uses browser storage and optional analytics technologies, and how to change your choices.',
-    lastUpdated: '2026-11-12',
+    lastUpdated: '2026-11-13',
     seoIndexable: true,
     seoTitle: 'Cookie Policy | Awesome Adventure Tours',
     seoDescription: 'Learn about essential website storage, Google Tag Manager analytics and marketing consent, and how to change cookie preferences on Awesome Adventure Tours.',
