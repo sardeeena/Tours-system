@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured, formatSupabaseError } from './supabaseClient';
 import { DbSiteSetting } from '../types/database';
+import { APP_CONFIG } from '../config/appConfig';
 
 export interface CompanySettings {
   companyName: string;
@@ -12,6 +13,17 @@ export interface CompanySettings {
   defaultCurrency: string;
   supportedCurrencies: string[];
   defaultCountry: string;
+  legalName?: string;
+  website?: string;
+  invoiceTagline?: string;
+  billingAddress?: string;
+  billingCity?: string;
+  billingCountry?: string;
+  taxRegistrationNumber?: string;
+  commercialRegistryNumber?: string;
+  bankName?: string;
+  iban?: string;
+  swiftBic?: string;
 }
 
 export interface BookingPolicySettings {
@@ -45,7 +57,18 @@ export { INITIAL_STATIC_PAGES };
 export type { StaticPageContent };
 
 const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
-  companyName: 'Kemet Spirit',
+  companyName: APP_CONFIG.COMPANY_NAME,
+  legalName: APP_CONFIG.LEGAL_NAME,
+  website: 'https://awesomeadventure.tours',
+  invoiceTagline: 'Tours & Experiences',
+  billingAddress: '',
+  billingCity: 'Hurghada',
+  billingCountry: 'Egypt',
+  taxRegistrationNumber: '',
+  commercialRegistryNumber: '',
+  bankName: '',
+  iban: '',
+  swiftBic: '',
   email: '',
   phone: '',
   whatsapp: '',
@@ -76,7 +99,7 @@ const DEFAULT_SOCIAL_LINKS: SocialLinksSettings = {
 };
 
 const DEFAULT_FOOTER_CONTENT: FooterContentSettings = {
-  copyrightNotice: `© ${new Date().getFullYear()} Kemet Spirit.`,
+  copyrightNotice: `© ${new Date().getFullYear()} ${APP_CONFIG.COMPANY_NAME}.`,
   aboutSnippet: 'Explore excursions and experiences across Egypt’s Red Sea coast. Review each tour’s details, inclusions and booking information before reserving.',
   badges: [],
   paymentIconsText: '',
@@ -145,12 +168,31 @@ export async function saveSetting<T>(key: string, value: T, description?: string
   }
 }
 
+function normalizeCompanyText(value: string | undefined, fallback: string): string {
+  const text = (value || '').trim();
+  if (!text || /kemet\s*spirit|kemetspirit\.com/i.test(text)) return fallback;
+  return text.replace(/kemetspirit\.com/gi, 'awesomeadventure.tours');
+}
+
 export async function getCompanySettings(): Promise<CompanySettings> {
-  return getSetting<CompanySettings>('company_info', DEFAULT_COMPANY_SETTINGS);
+  const saved = await getSetting<Partial<CompanySettings>>('company_info', DEFAULT_COMPANY_SETTINGS);
+  return {
+    ...DEFAULT_COMPANY_SETTINGS,
+    ...saved,
+    companyName: normalizeCompanyText(saved.companyName, APP_CONFIG.COMPANY_NAME),
+    legalName: normalizeCompanyText(saved.legalName, APP_CONFIG.LEGAL_NAME),
+    website: normalizeCompanyText(saved.website, 'https://awesomeadventure.tours'),
+  };
 }
 
 export async function saveCompanySettings(settings: CompanySettings): Promise<void> {
-  return saveSetting<CompanySettings>('company_info', settings, 'Master company identity and contact details');
+  const normalized: CompanySettings = {
+    ...settings,
+    companyName: normalizeCompanyText(settings.companyName, APP_CONFIG.COMPANY_NAME),
+    legalName: normalizeCompanyText(settings.legalName, APP_CONFIG.LEGAL_NAME),
+    website: normalizeCompanyText(settings.website, 'https://awesomeadventure.tours'),
+  };
+  return saveSetting<CompanySettings>('company_info', normalized, 'Master company identity and contact details');
 }
 
 export async function getBookingPolicies(): Promise<BookingPolicySettings> {
@@ -169,12 +211,30 @@ export async function saveSocialLinks(links: SocialLinksSettings): Promise<void>
   return saveSetting<SocialLinksSettings>('social_links', links, 'Social media profile links');
 }
 
+function normalizeFooterText(value: string): string {
+  return value.replace(/Kemet\s*Spirit/gi, APP_CONFIG.COMPANY_NAME).replace(/kemetspirit\.com/gi, 'awesomeadventure.tours');
+}
+
 export async function getFooterContent(): Promise<FooterContentSettings> {
-  return getSetting<FooterContentSettings>('footer_content', DEFAULT_FOOTER_CONTENT);
+  const saved = await getSetting<FooterContentSettings>('footer_content', DEFAULT_FOOTER_CONTENT);
+  return {
+    ...saved,
+    copyrightNotice: normalizeFooterText(saved.copyrightNotice || DEFAULT_FOOTER_CONTENT.copyrightNotice),
+    aboutSnippet: normalizeFooterText(saved.aboutSnippet || DEFAULT_FOOTER_CONTENT.aboutSnippet),
+    paymentIconsText: normalizeFooterText(saved.paymentIconsText || DEFAULT_FOOTER_CONTENT.paymentIconsText),
+    badges: (saved.badges || []).map(normalizeFooterText),
+  };
 }
 
 export async function saveFooterContent(content: FooterContentSettings): Promise<void> {
-  return saveSetting<FooterContentSettings>('footer_content', content, 'Footer copy, copyright, and compliance badges');
+  const normalized = {
+    ...content,
+    copyrightNotice: normalizeFooterText(content.copyrightNotice),
+    aboutSnippet: normalizeFooterText(content.aboutSnippet),
+    paymentIconsText: normalizeFooterText(content.paymentIconsText),
+    badges: (content.badges || []).map(normalizeFooterText),
+  };
+  return saveSetting<FooterContentSettings>('footer_content', normalized, 'Footer copy, copyright, and compliance badges');
 }
 
 export async function getStaticPages(): Promise<StaticPageContent[]> {
