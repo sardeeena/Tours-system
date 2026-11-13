@@ -30,6 +30,7 @@ assert(adminSettings.includes('Legal & Invoice Identity') && adminSettings.inclu
 assert(settings.includes("getRestrictedSetting<Partial<CompanySettings>>('invoice_billing'") && settings.includes("saveRestrictedSetting('invoice_billing'"), 'private billing details are stored separately from public company settings');
 const restrictedRead = settings.slice(settings.indexOf('async function getRestrictedSetting'), settings.indexOf('async function saveRestrictedSetting'));
 assert(restrictedRead.includes('supabase') && !restrictedRead.includes('localStorage'), 'private billing details never fall back to shared browser storage');
+assert(settings.includes('delete publicSettings.bankName') && settings.includes('delete publicSettings.iban'), 'legacy public company rows cannot expose bank details');
 assert(billingPolicy.includes("public.has_permission('finance.create')") && billingPolicy.includes("key = 'invoice_billing'"), 'private invoice details are readable only by authorized finance/settings roles');
 assert(invoiceUi.includes('selectedInvoice.companyDetails.name'), 'invoice issuer footer uses the invoice company identity');
 assert(seoAdmin.includes('awesomeadventure.tours') && !seoAdmin.includes('kemetspirit.com'), 'SEO manager uses the current canonical domain');
