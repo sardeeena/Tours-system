@@ -202,7 +202,7 @@ export const AdminAccessControl:React.FC = () => {
   };
 
   if(loading&&!hasLoaded)return <div className="p-8 text-sm text-slate-500 flex items-center gap-2"><RefreshCw className="w-4 h-4 animate-spin"/> Loading accounts and access settings…</div>;
-  if(error&&!hasLoaded)return <div className="space-y-4 rounded-2xl border border-red-200 dark:border-red-900 p-6"><div role="alert" className="text-sm text-red-700 dark:text-red-300">{error}</div><button onClick={()=>void load()} disabled={loading} className="inline-flex items-center gap-2 rounded-xl bg-[#0A6C74] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50"><RefreshCw className="w-4 h-4"/> Retry database connection</button></div>;
+  if(error&&!hasLoaded)return <div className="space-y-4 rounded-2xl border border-red-200 dark:border-red-900 p-6"><div role="alert" className="text-sm text-red-700 dark:text-red-300">{error}</div><button onClick={()=>void load()} disabled={loading} className="inline-flex items-center gap-2 rounded-xl bg-[#0A6C74] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50"><RefreshCw className="w-4 h-4"/> Try again</button></div>;
 
   return <div className="space-y-6">
     <div className="flex flex-wrap items-start justify-between gap-4">
@@ -236,7 +236,7 @@ export const AdminAccessControl:React.FC = () => {
           <input type="email" value={inviteEmail} onChange={e=>setInviteEmail(e.target.value)} placeholder="name@example.com" maxLength={254} className="rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-3 py-2 text-sm"/>
           <button type="button" onClick={()=>void inviteAccount()} disabled={Boolean(accountBusy)||!inviteEmail.trim()} className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#0A6C74] text-white px-4 py-2 text-sm font-semibold disabled:opacity-50"><Mail className="w-4 h-4"/>{accountBusy==='invite'?'Sending…':'Send invitation'}</button>
         </div>:<p className="mt-2 text-xs text-slate-500">Inviting accounts requires a Super Admin session with verified multi-factor authentication.</p>}
-        <p className="mt-2 text-xs text-slate-500">Invitations are sent by Supabase Auth. New accounts receive the Customer role until an administrator assigns staff access.</p>
+        <p className="mt-2 text-xs text-slate-500">An invitation email will be sent. New accounts start with the Customer role until an administrator assigns staff access.</p>
       </div>
       <div className="xl:col-span-2"><AdminAuthDirectory isSuperAdmin={isSuperAdmin}/></div>
        <section className="min-w-0 overflow-hidden">
@@ -264,7 +264,7 @@ export const AdminAccessControl:React.FC = () => {
         {selectedUser?<><div className="flex flex-wrap justify-between gap-3"><div><h3 className="text-lg font-bold">{selectedUser.full_name||'User account'}</h3><p className="text-sm text-slate-500">{selectedUser.email}</p></div><span className="text-xs text-slate-500">{selectedUser.is_confirmed?'Email confirmed':'Email not confirmed'}</span></div>
           {isSuperAdmin&&<div className="mt-4 rounded-xl border border-slate-200 dark:border-slate-700 p-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div><div className="text-sm font-semibold">Authentication status</div><div className="text-xs text-slate-500 mt-1">{accountSuspended===null?'Checking secure Auth status…':accountSuspended?'Suspended in Supabase Auth':'Active in Supabase Auth'}</div></div>
+              <div><div className="text-sm font-semibold">Account status</div><div className="text-xs text-slate-500 mt-1">{accountSuspended===null?'Checking account status…':accountSuspended?'Suspended':'Active'}</div></div>
               <div className="flex flex-wrap gap-2">
                 <button type="button" onClick={()=>void manageAccount(accountSuspended?'reactivate':'suspend')} disabled={Boolean(accountBusy)||accountSuspended===null||selectedUser.id===user?.id||selectedUser.roles.includes('super_admin')} className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50">{accountSuspended?<UserCheck className="w-4 h-4"/>:<UserX className="w-4 h-4"/>}{accountBusy==='suspend'?'Suspending…':accountBusy==='reactivate'?'Reactivating…':accountSuspended?'Reactivate account':'Suspend account'}</button>
                 <button type="button" onClick={()=>void manageAccount('password-reset')} disabled={Boolean(accountBusy)||protectedSuperAdmin} className="inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold disabled:opacity-50"><KeyRound className="w-4 h-4"/>{accountBusy==='password-reset'?'Sending…':'Send password reset'}</button>
