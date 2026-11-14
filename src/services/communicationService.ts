@@ -603,6 +603,8 @@ type ServerCommunicationStatus = {
     phoneNumberId?: string;
     businessAccountId?: string;
     fromNumber?: string;
+    templateName?: string;
+    templateLanguage?: string;
   };
 };
 
@@ -634,6 +636,8 @@ export async function refreshProviderConfigFromServer(): Promise<ProviderConfig>
     config.whatsapp.phoneNumberId = status.whatsapp?.phoneNumberId || '';
     config.whatsapp.businessAccountId = status.whatsapp?.businessAccountId || '';
     config.whatsapp.fromNumber = status.whatsapp?.fromNumber || config.whatsapp.fromNumber;
+    config.whatsapp.templateName = status.whatsapp?.templateName || '';
+    config.whatsapp.templateLanguage = status.whatsapp?.templateLanguage || 'en';
   } catch {
     // Status remains unconfigured when the authenticated server cannot be reached.
   }
@@ -866,9 +870,13 @@ export async function sendWhatsAppMessage(params: {
   }
 
   try {
+    if (!params.customerId || !config.whatsapp.templateName) {
+      throw new Error('WhatsApp requires a linked customer record, an approved Meta template, and verified customer consent.');
+    }
     const delivered = await dispatchServerCommunication('/api/communications/whatsapp', {
+      customerId: params.customerId,
       phone: params.recipientPhone,
-      text: params.content,
+      bodyParameter: params.content,
     }, messageId);
 
     const sent: CommunicationMessage = {
