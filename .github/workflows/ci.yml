@@ -55,6 +55,9 @@ jobs:
       - name: Verify communication provider security and validation
         run: npm run test:comm
 
+      - name: Verify WhatsApp consent and Meta template boundaries
+        run: npm run test:whatsapp-compliance
+
       - name: Verify booking identifier and production fallback behavior
         run: npm run test:booking
 
