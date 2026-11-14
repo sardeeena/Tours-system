@@ -10,7 +10,7 @@ const checks: Array<[string, boolean]> = [
  ['Consent endpoints require authorized communications staff', routes.includes('requireCommunicationsStaff(req, res)')],
  ['Consent writes require explicit staff attestation', routes.includes('req.body?.explicitConfirmation !== true')],
  ['Granting permission requires an evidence reference', routes.includes("(action === 'grant' && evidenceReference.length < 4)")],
- ['Customer identity and current database phone are verified', routes.includes("from('customers')") && routes.includes('normalizeConsentPhone(customer.phone) !== phone')],
+ ['Customer identity and current database phone are verified', routes.includes("from('customers')") && server.includes('normalizeConsentPhone(customer.phone) !== phone')],
  ['Consent is appended with actor, purpose, source and version', routes.includes("consent_source: 'staff_verified_record'") && routes.includes('recorded_by: req.user!.id') && routes.includes('consent_text_version:')],
  ['History reads are limited to the selected customer and phone', routes.includes(".eq('customer_id', customerId)") && routes.includes(".eq('phone_e164', phone)")],
  ['Browser service uses the authenticated staff session', service.includes('getCommunicationsAccessToken') && service.includes('Authorization:') && service.includes('recordWhatsAppConsentEvent')],
