@@ -80,13 +80,13 @@ export const FinanceDashboardView: React.FC<FinanceDashboardViewProps> = ({
         {/* Net Revenue */}
         <div className="bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854] rounded-2xl p-5 shadow-xs hover:border-sky-500/50 transition-colors">
           <div className="flex items-center justify-between text-xs text-stone-500 dark:text-stone-400">
-            <span className="font-medium">Net Realized Revenue</span>
+            <span className="font-medium">Net Booked Revenue</span>
             <TrendingUp className="w-4 h-4 text-sky-600 dark:text-sky-400" />
           </div>
           <div className="text-xl lg:text-2xl font-bold text-sky-600 dark:text-sky-400 mt-2 font-mono">
             €{metrics.netRevenueEur.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
-          <span className="text-[10px] text-stone-500 dark:text-stone-400 mt-1 block">Gross minus approved refunds</span>
+          <span className="text-[10px] text-stone-500 dark:text-stone-400 mt-1 block">Gross bookings less processed refunds</span>
         </div>
       </div>
 
