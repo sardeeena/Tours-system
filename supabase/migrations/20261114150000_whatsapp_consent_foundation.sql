@@ -46,4 +46,9 @@ CREATE TRIGGER trg_customer_communication_consent_events_append_only
 BEFORE UPDATE OR DELETE ON public.customer_communication_consent_events
 FOR EACH ROW EXECUTE FUNCTION private.prevent_customer_communication_consent_event_mutation();
 
+-- Register consent evidence with the same row-change audit trail as other business tables.
+CREATE TRIGGER trg_capture_business_audit
+AFTER INSERT OR UPDATE OR DELETE ON public.customer_communication_consent_events
+FOR EACH ROW EXECUTE FUNCTION private.capture_business_audit();
+
 COMMIT;
