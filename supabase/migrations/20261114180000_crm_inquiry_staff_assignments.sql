@@ -56,8 +56,7 @@ CREATE OR REPLACE FUNCTION public.list_crm_assignable_staff()
 RETURNS TABLE (
   id UUID,
   full_name TEXT,
-  email TEXT,
-  role_slugs TEXT[]
+  email TEXT
 )
 LANGUAGE plpgsql
 STABLE
@@ -74,14 +73,16 @@ BEGIN
   SELECT
     p.id,
     COALESCE(NULLIF(btrim(p.full_name), ''), p.email) AS full_name,
-    p.email,
-    array_agg(DISTINCT r.slug ORDER BY r.slug) AS role_slugs
+    p.email
   FROM public.profiles p
-  JOIN public.user_roles ur ON ur.user_id = p.id
-  JOIN public.access_roles r ON r.id = ur.role_id AND r.is_active
   WHERE p.is_confirmed IS TRUE
-    AND r.slug NOT IN ('customer', 'guide')
-  GROUP BY p.id, p.full_name, p.email
+    AND EXISTS (
+      SELECT 1
+      FROM public.user_roles ur
+      JOIN public.access_roles r ON r.id = ur.role_id AND r.is_active
+      WHERE ur.user_id = p.id
+        AND r.slug NOT IN ('customer', 'guide')
+    )
   ORDER BY COALESCE(NULLIF(btrim(p.full_name), ''), p.email), p.email;
 END;
 $function$;
