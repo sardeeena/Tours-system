@@ -22,6 +22,7 @@ assert.ok(finance.includes("['paid', 'partially paid'].includes(String(payment.p
   'finance reports include fully and partially settled payment transactions');
 assert.ok(finance.includes("refund.status !== 'processed'"), 'finance reports exclude requested, approved, and rejected refunds');
 assert.ok(finance.includes('cohortGrossCollected - cohortRefunded'), 'outstanding balances use net collected funds for the selected booking cohort');
+assert.ok(finance.includes('grossRevenueEur - cohortRefunded'), 'net booked revenue deducts refunds from the selected booking cohort');
 assert.ok(finance.includes("if (refund.status !== 'processed') return;"), 'monthly refund totals include only processed payouts');
 assert.ok(!finance.includes("r.status === 'processed' || r.status === 'approved'"),
   'approved-but-unpaid refund requests are not counted as completed refunds');
