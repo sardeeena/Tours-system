@@ -14,7 +14,7 @@ SELECT is(
   'Private conversion implementation uses a controlled SECURITY DEFINER boundary'
 );
 SELECT ok(
-  position('has_permission(''crm.manage'')' in pg_get_functiondef('public.convert_inquiry_to_lead(uuid)'::regprocedure)) > 0,
+  position('has_permission(''crm.manage'')' in pg_get_functiondef('private.convert_inquiry_to_lead(uuid)'::regprocedure)) > 0,
   'Conversion RPC checks CRM management permission'
 );
 SELECT ok(
