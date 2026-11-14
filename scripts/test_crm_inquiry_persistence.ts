@@ -42,4 +42,19 @@ assert.doesNotMatch(inquiryManager, /<option value="in_progress">|<option value=
 assert.match(inquiryManager, /if \(convertingInquiryId \|\| inq\.status === 'converted'\) return/);
 assert.match(inquiryManager, /disabled=\{convertingInquiryId === inq\.id\}/);
 
+
+const convertInquiry = section(
+  readFileSync(new URL('../src/services/crmService.ts', import.meta.url), 'utf8'),
+  'export async function convertInquiryToLead',
+  'export async function convertLeadToCustomer'
+);
+assert.match(convertInquiry, /\[source-inquiry:\$\{inquiry\.id\}\]/);
+assert.match(convertInquiry, /item\.notes\?\.includes\(sourceMarker\)/);
+assert.match(convertInquiry, /if \(error\) throw new Error\(formatSupabaseError\(error\)\)/);
+assert.match(convertInquiry, /if \(!data\) throw new Error/);
+assert.doesNotMatch(convertInquiry, /catch\s*\{/);
+
+assert.match(inquiryManager, /await convertLeadToCustomer\(lead\.id\)/);
+assert.doesNotMatch(inquiryManager, /updateCustomerMetadata/);
+
 console.log('CRM inquiry persistence integrity checks passed.');
