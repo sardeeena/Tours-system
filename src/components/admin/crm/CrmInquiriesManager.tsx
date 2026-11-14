@@ -197,10 +197,9 @@ export const CrmInquiriesManager: React.FC = () => {
           >
             <option value="all">All Inquiries ({inquiries.length})</option>
             <option value="new">New</option>
-            <option value="in_progress">In Progress</option>
-            <option value="responded">Responded</option>
+            <option value="contacted">Contacted</option>
+            <option value="resolved">Resolved</option>
             <option value="converted">Converted</option>
-            <option value="archived">Archived</option>
           </select>
         </div>
       </div>
