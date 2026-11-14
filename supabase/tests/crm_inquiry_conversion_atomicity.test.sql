@@ -1,11 +1,17 @@
 BEGIN;
-SELECT plan(6);
+SELECT plan(8);
 
-SELECT has_function('public', 'convert_inquiry_to_lead', ARRAY['uuid'], 'Atomic inquiry conversion RPC exists');
+SELECT has_function('public', 'convert_inquiry_to_lead', ARRAY['uuid'], 'Public atomic inquiry conversion RPC wrapper exists');
+SELECT has_function('private', 'convert_inquiry_to_lead', ARRAY['uuid'], 'Private atomic inquiry conversion implementation exists');
 SELECT is(
   (SELECT prosecdef FROM pg_proc WHERE oid = 'public.convert_inquiry_to_lead(uuid)'::regprocedure),
+  false,
+  'Public conversion RPC is an invoker-rights wrapper'
+);
+SELECT is(
+  (SELECT prosecdef FROM pg_proc WHERE oid = 'private.convert_inquiry_to_lead(uuid)'::regprocedure),
   true,
-  'Conversion RPC uses a controlled SECURITY DEFINER boundary'
+  'Private conversion implementation uses a controlled SECURITY DEFINER boundary'
 );
 SELECT ok(
   position('has_permission(''crm.manage'')' in pg_get_functiondef('public.convert_inquiry_to_lead(uuid)'::regprocedure)) > 0,
