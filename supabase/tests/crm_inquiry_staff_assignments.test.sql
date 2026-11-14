@@ -49,20 +49,21 @@ SELECT ok(
 );
 
 SELECT ok(
-  position('public.has_permission(''crm.read'')' IN pg_get_functiondef('public.list_crm_assignable_staff()'::regprocedure)) > 0,
-  'staff directory RPC requires CRM read permission'
+  NOT (SELECT prosecdef FROM pg_proc WHERE oid = 'public.list_crm_assignable_staff()'::regprocedure),
+  'client-callable staff directory wrapper is invoker-rights'
 );
 
 SELECT ok(
-  position('public.user_roles' IN pg_get_functiondef('public.list_crm_assignable_staff()'::regprocedure)) > 0
-  AND position('public.access_roles' IN pg_get_functiondef('public.list_crm_assignable_staff()'::regprocedure)) > 0
-  AND position('public.profiles' IN pg_get_functiondef('public.list_crm_assignable_staff()'::regprocedure)) > 0,
-  'staff directory is derived from profile records and normalized active role assignments'
+  position('public.has_permission(''crm.read'')' IN pg_get_functiondef('private.list_crm_assignable_staff()'::regprocedure)) > 0,
+  'private staff directory implementation requires CRM read permission'
 );
 
 SELECT ok(
-  position('p.role' IN pg_get_functiondef('public.list_crm_assignable_staff()'::regprocedure)) = 0,
-  'legacy profiles.role is not used to determine assignable staff'
+  position('public.user_roles' IN pg_get_functiondef('private.list_crm_assignable_staff()'::regprocedure)) > 0
+  AND position('public.access_roles' IN pg_get_functiondef('private.list_crm_assignable_staff()'::regprocedure)) > 0
+  AND position('public.profiles' IN pg_get_functiondef('private.list_crm_assignable_staff()'::regprocedure)) > 0
+  AND position('p.role' IN pg_get_functiondef('private.list_crm_assignable_staff()'::regprocedure)) = 0,
+  'private staff directory uses profile records and normalized active roles only'
 );
 
 SELECT * FROM finish();
