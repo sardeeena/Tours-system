@@ -73,6 +73,7 @@ export async function createCustomerInquiry(
         source: 'web',
         ip_address: null,
         admin_notes: 'Dropped honeypot bot trap',
+        assigned_staff_id: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
