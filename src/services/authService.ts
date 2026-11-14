@@ -577,10 +577,7 @@ export async function signOutAdmin(): Promise<void> {
  */
 export function isUserAdmin(user: AppUser | null | undefined): boolean {
   if (!user) return false;
-  return (
-    user.role === 'admin' || user.role === 'super_admin' || user.role === 'manager' || user.role === 'staff' ||
-    Boolean(user.roles?.some((role) => role !== 'customer' && role !== 'guide'))
-  );
+  return Boolean(user.roles?.some((role) => role !== 'customer' && role !== 'guide'));
 }
 
 /**
@@ -621,7 +618,7 @@ export async function getCurrentAdminUser(): Promise<AppUser | null> {
 
     const roles = Array.isArray(accessContext.roles)
       ? accessContext.roles.filter((role: unknown): role is string => typeof role === 'string')
-      : [profile.role as UserRole];
+      : [];
     const permissions = Array.isArray(accessContext.permissions)
       ? accessContext.permissions.filter((permission: unknown): permission is string => typeof permission === 'string')
       : [];
@@ -664,7 +661,7 @@ export async function verifyAdminAccess(): Promise<boolean> {
 
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
-      .select('role')
+      .select('id')
       .eq('id', user.id)
       .maybeSingle();
 
@@ -676,15 +673,14 @@ export async function verifyAdminAccess(): Promise<boolean> {
     const { data: accessContext, error: accessError } = await (supabase as any).rpc('get_my_access_context');
     if (accessError || !accessContext) return false;
     const roles = Array.isArray(accessContext.roles) ? accessContext.roles : [];
-    const isSuperAdmin = profile.role === 'super_admin' || roles.includes('super_admin');
+    const isSuperAdmin = roles.includes('super_admin');
 
     if (isSuperAdmin) {
       const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
       return !assuranceError && assurance.currentLevel === 'aal2';
     }
 
-    return profile.role === 'admin' || profile.role === 'manager' || profile.role === 'staff'
-      || roles.some((role: unknown) => typeof role === 'string' && role !== 'customer' && role !== 'guide');
+    return roles.some((role: unknown) => typeof role === 'string' && role !== 'customer' && role !== 'guide');
   } catch (err) {
     console.error('Error verifying admin access against profiles table:', err);
     return false;

@@ -70,6 +70,9 @@ jobs:
       - name: Verify server API access matrix and route authorization boundaries
         run: npm run test:server-api-access-matrix
 
+      - name: Verify normalized RBAC authority in client authorization gates
+        run: npm run test:normalized-rbac-client-boundary
+
       - name: Verify booking identifier and production fallback behavior
         run: npm run test:booking
 
