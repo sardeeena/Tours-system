@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(7);
+SELECT plan(9);
 
 SELECT has_table('public', 'whatsapp_provider_status_events', 'WhatsApp provider status events table exists');
 SELECT has_column('public', 'communication_messages', 'read_at', 'WhatsApp read timestamp is stored');
@@ -16,5 +16,5 @@ SELECT is(
   'false',
   'First provider event is recorded once'
 );
-SELECT * FROM finish();
+SELECT is(\n  public.record_whatsapp_provider_status(\n    repeat('a', 64), 'wamid.webhook-regression-test', 'delivered',\n    '2026-11-14T10:00:00Z'::timestamptz, NULL, NULL\n  )->>'duplicate',\n  'true',\n  'Duplicate provider event is idempotent'\n);\nSELECT is(\n  public.record_whatsapp_provider_status(\n    repeat('b', 64), 'wamid.unmatched-regression-test', 'sent',\n    '2026-11-14T10:01:00Z'::timestamptz, NULL, NULL\n  )->>'matched',\n  'false',\n  'Unmatched provider events are retained for later reconciliation'\n);\nSELECT * FROM finish();
 ROLLBACK;
