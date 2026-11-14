@@ -54,38 +54,53 @@ export const CrmFollowUpsManager: React.FC = () => {
   }, []);
 
   const handleMarkDone = async (task: CrmTask) => {
-    await updateTaskStatus(task.id, 'Completed');
-    showToast(`Follow-up "${task.title}" completed!`, 'success');
-    await loadData();
+    try {
+      await updateTaskStatus(task.id, 'Completed');
+      showToast(`Follow-up "${task.title}" completed!`, 'success');
+      await loadData();
+    } catch (error) {
+      console.error('Failed to complete CRM follow-up:', error);
+      showToast('Follow-up was not completed. Please refresh and try again.', 'error');
+    }
   };
 
   const handleReschedule = async (task: CrmTask, daysToAdd: number) => {
     const nextDate = new Date(Date.now() + daysToAdd * 86400000).toISOString();
-    await updateTask(task.id, { dueDate: nextDate, status: 'Pending' });
-    showToast(`Follow-up rescheduled by +${daysToAdd} day(s).`, 'info');
-    await loadData();
+    try {
+      await updateTask(task.id, { dueDate: nextDate, status: 'Pending' });
+      showToast(`Follow-up rescheduled by +${daysToAdd} day(s).`, 'info');
+      await loadData();
+    } catch (error) {
+      console.error('Failed to reschedule CRM follow-up:', error);
+      showToast('Follow-up was not rescheduled. Please refresh and try again.', 'error');
+    }
   };
 
   const handleCreateFollowUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
 
-    await createTask({
-      title: title.trim(),
-      customerName: customerName.trim() || undefined,
-      dueDate: dueDate || new Date(Date.now() + 86400000).toISOString(),
-      assignedStaffName: assignedStaff,
-      priority: 'High',
-      isFollowUp: true,
-      status: 'Pending',
-    });
+    try {
+      await createTask({
+        title: title.trim(),
+        customerName: customerName.trim() || undefined,
+        dueDate: dueDate || new Date(Date.now() + 86400000).toISOString(),
+        assignedStaffName: assignedStaff,
+        priority: 'High',
+        isFollowUp: true,
+        status: 'Pending',
+      });
 
-    showToast('Follow-up scheduled successfully.', 'success');
-    setIsModalOpen(false);
-    setTitle('');
-    setCustomerName('');
-    setDueDate('');
-    await loadData();
+      showToast('Follow-up scheduled successfully.', 'success');
+      setIsModalOpen(false);
+      setTitle('');
+      setCustomerName('');
+      setDueDate('');
+      await loadData();
+    } catch (error) {
+      console.error('Failed to schedule CRM follow-up:', error);
+      showToast('Follow-up was not saved. Please refresh and try again.', 'error');
+    }
   };
 
   return (

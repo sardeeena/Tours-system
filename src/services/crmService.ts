@@ -464,60 +464,57 @@ export async function listTasks(filter?: {
   priority?: string;
   isFollowUp?: boolean;
 }): Promise<CrmTask[]> {
-  let tasks: CrmTask[] = [];
-
-  if (isSupabaseConfigured()) {
-    try {
-      let query = supabase
-        .from('crm_tasks')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (filter?.status && filter.status !== 'all') {
-        query = query.eq('status', filter.status);
-      }
-      if (filter?.priority && filter.priority !== 'all') {
-        query = query.eq('priority', filter.priority);
-      }
-      if (filter?.isFollowUp !== undefined) {
-        query = query.eq('is_follow_up', filter.isFollowUp);
-      }
-
-      const { data, error } = await query;
-
-      if (!error && data) {
-        tasks = data.map((d) => ({
-          id: d.id,
-          title: d.title,
-          description: d.description,
-          customerId: d.customer_id,
-          customerName: d.customer_name,
-          leadId: d.lead_id,
-          leadName: d.lead_name,
-          bookingId: d.booking_id,
-          bookingReference: d.booking_reference,
-          assignedStaffId: d.assigned_staff_id,
-          assignedStaffName: d.assigned_staff_name,
-          dueDate: d.due_date,
-          priority: (d.priority as TaskPriority) || 'Medium',
-          status: (d.status as TaskStatus) || 'Pending',
-          isFollowUp: Boolean(d.is_follow_up),
-          followUpChannel: (d.follow_up_channel as FollowUpChannel) || 'Phone',
-          outcomeNotes: d.outcome_notes,
-          completedAt: d.completed_at,
-          completedByName: d.completed_by_name,
-          createdAt: d.created_at,
-          updatedAt: d.updated_at,
-        }));
-        setLocal(LOCAL_TASKS_KEY, tasks);
-        return filterTasksClient(tasks, filter);
-      }
-    } catch {
-      // ignore
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) {
+      throw new Error('Supabase is not configured; CRM tasks cannot be loaded in production.');
     }
+    return filterTasksClient(getLocal<CrmTask[]>(LOCAL_TASKS_KEY, []), filter);
   }
 
-  tasks = getLocal<CrmTask[]>(LOCAL_TASKS_KEY, []);
+  let query = supabase
+    .from('crm_tasks')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (filter?.status && filter.status !== 'all') {
+    query = query.eq('status', filter.status);
+  }
+  if (filter?.priority && filter.priority !== 'all') {
+    query = query.eq('priority', filter.priority);
+  }
+  if (filter?.isFollowUp !== undefined) {
+    query = query.eq('is_follow_up', filter.isFollowUp);
+  }
+
+  const { data, error } = await query;
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data) throw new Error('CRM tasks could not be loaded from the database.');
+
+  const tasks: CrmTask[] = data.map((d) => ({
+    id: d.id,
+    title: d.title,
+    description: d.description,
+    customerId: d.customer_id,
+    customerName: d.customer_name,
+    leadId: d.lead_id,
+    leadName: d.lead_name,
+    bookingId: d.booking_id,
+    bookingReference: d.booking_reference,
+    assignedStaffId: d.assigned_staff_id,
+    assignedStaffName: d.assigned_staff_name,
+    dueDate: d.due_date,
+    priority: (d.priority as TaskPriority) || 'Medium',
+    status: (d.status as TaskStatus) || 'Pending',
+    isFollowUp: Boolean(d.is_follow_up),
+    followUpChannel: (d.follow_up_channel as FollowUpChannel) || 'Phone',
+    outcomeNotes: d.outcome_notes,
+    completedAt: d.completed_at,
+    completedByName: d.completed_by_name,
+    createdAt: d.created_at,
+    updatedAt: d.updated_at,
+  }));
+
+  setLocal(LOCAL_TASKS_KEY, tasks);
   return filterTasksClient(tasks, filter);
 }
 
@@ -556,39 +553,40 @@ export async function createTask(input: Partial<CrmTask>): Promise<CrmTask> {
     updatedAt: new Date().toISOString(),
   };
 
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase
+      .from('crm_tasks')
+      .insert({
+        title: newTask.title,
+        description: newTask.description,
+        customer_id: newTask.customerId,
+        customer_name: newTask.customerName,
+        lead_id: newTask.leadId,
+        lead_name: newTask.leadName,
+        booking_id: newTask.bookingId,
+        booking_reference: newTask.bookingReference,
+        assigned_staff_id: newTask.assignedStaffId,
+        assigned_staff_name: newTask.assignedStaffName,
+        due_date: newTask.dueDate,
+        priority: newTask.priority,
+        status: newTask.status,
+        is_follow_up: newTask.isFollowUp,
+        follow_up_channel: newTask.followUpChannel,
+      })
+      .select('*')
+      .maybeSingle();
+
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The CRM task was not saved; no database record was returned.');
+    newTask.id = data.id;
+    newTask.createdAt = data.created_at || newTask.createdAt;
+    newTask.updatedAt = data.updated_at || newTask.updatedAt;
+  } else if (!import.meta.env.DEV) {
+    throw new Error('Supabase is not configured; CRM tasks cannot be created in production.');
+  }
+
   const tasks = getLocal<CrmTask[]>(LOCAL_TASKS_KEY, []);
   setLocal(LOCAL_TASKS_KEY, [newTask, ...tasks]);
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('crm_tasks')
-        .insert({
-          title: newTask.title,
-          description: newTask.description,
-          customer_id: newTask.customerId,
-          customer_name: newTask.customerName,
-          lead_id: newTask.leadId,
-          lead_name: newTask.leadName,
-          booking_id: newTask.bookingId,
-          booking_reference: newTask.bookingReference,
-          assigned_staff_name: newTask.assignedStaffName,
-          due_date: newTask.dueDate,
-          priority: newTask.priority,
-          status: newTask.status,
-          is_follow_up: newTask.isFollowUp,
-          follow_up_channel: newTask.followUpChannel,
-        })
-        .select('*')
-        .maybeSingle();
-
-      if (!error && data) {
-        newTask.id = data.id;
-      }
-    } catch {
-      // ignore
-    }
-  }
 
   await recordActivity({
     customerId: newTask.customerId,
@@ -603,6 +601,41 @@ export async function createTask(input: Partial<CrmTask>): Promise<CrmTask> {
 }
 
 export async function updateTask(taskId: string, updates: Partial<CrmTask>): Promise<boolean> {
+  if (!taskId.trim()) throw new Error('A task ID is required.');
+
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase
+      .from('crm_tasks')
+      .update({
+        title: updates.title,
+        description: updates.description,
+        customer_id: updates.customerId,
+        customer_name: updates.customerName,
+        lead_id: updates.leadId,
+        lead_name: updates.leadName,
+        booking_id: updates.bookingId,
+        booking_reference: updates.bookingReference,
+        assigned_staff_id: updates.assignedStaffId,
+        assigned_staff_name: updates.assignedStaffName,
+        due_date: updates.dueDate,
+        priority: updates.priority,
+        status: updates.status,
+        outcome_notes: updates.outcomeNotes,
+        follow_up_channel: updates.followUpChannel,
+        completed_at: updates.completedAt,
+        completed_by_name: updates.completedByName,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', taskId)
+      .select('id')
+      .maybeSingle();
+
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The CRM task was not updated because it no longer exists or is not accessible.');
+  } else if (!import.meta.env.DEV) {
+    throw new Error('Supabase is not configured; CRM tasks cannot be updated in production.');
+  }
+
   const tasks = getLocal<CrmTask[]>(LOCAL_TASKS_KEY, []);
   const updated = tasks.map((t) =>
     t.id === taskId
@@ -610,29 +643,6 @@ export async function updateTask(taskId: string, updates: Partial<CrmTask>): Pro
       : t
   );
   setLocal(LOCAL_TASKS_KEY, updated);
-
-  if (isSupabaseConfigured()) {
-    try {
-      await supabase
-        .from('crm_tasks')
-        .update({
-          title: updates.title,
-          description: updates.description,
-          assigned_staff_name: updates.assignedStaffName,
-          due_date: updates.dueDate,
-          priority: updates.priority,
-          status: updates.status,
-          outcome_notes: updates.outcomeNotes,
-          follow_up_channel: updates.followUpChannel,
-          completed_at: updates.completedAt,
-          completed_by_name: updates.completedByName,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', taskId);
-    } catch {
-      // ignore
-    }
-  }
 
   return true;
 }
@@ -660,7 +670,7 @@ export async function updateTaskStatus(
     await recordActivity({
       customerId: target.customerId,
       leadId: target.leadId,
-      eventType: isCompleted ? 'task_completed' : 'task_created',
+      eventType: isCompleted ? 'task_completed' : 'task',
       title: isCompleted ? `Completed: ${target.title}` : `Task Status: ${newStatus}`,
       description: outcomeNotes || `Task marked as "${newStatus}" by ${completedByName}.`,
       actor: completedByName,
@@ -671,20 +681,24 @@ export async function updateTaskStatus(
 }
 
 export async function deleteTask(taskId: string): Promise<boolean> {
-  const tasks = getLocal<CrmTask[]>(LOCAL_TASKS_KEY, []);
-  setLocal(
-    LOCAL_TASKS_KEY,
-    tasks.filter((t) => t.id !== taskId)
-  );
+  if (!taskId.trim()) throw new Error('A task ID is required.');
 
   if (isSupabaseConfigured()) {
-    try {
-      await supabase.from('crm_tasks').delete().eq('id', taskId);
-    } catch {
-      // ignore
-    }
+    const { data, error } = await supabase
+      .from('crm_tasks')
+      .delete()
+      .eq('id', taskId)
+      .select('id')
+      .maybeSingle();
+
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The CRM task was not deleted because it no longer exists or is not accessible.');
+  } else if (!import.meta.env.DEV) {
+    throw new Error('Supabase is not configured; CRM tasks cannot be deleted in production.');
   }
 
+  const tasks = getLocal<CrmTask[]>(LOCAL_TASKS_KEY, []);
+  setLocal(LOCAL_TASKS_KEY, tasks.filter((t) => t.id !== taskId));
   return true;
 }
 

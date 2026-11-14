@@ -93,11 +93,16 @@ export const CrmTasksManager: React.FC = () => {
 
   const handleToggleStatus = async (task: CrmTask) => {
     const nextStatus: TaskStatus = task.status === 'Completed' ? 'Pending' : 'Completed';
-    await updateTaskStatus(task.id, nextStatus);
-    setTasks((prev) =>
-      prev.map((t) => (t.id === task.id ? { ...t, status: nextStatus } : t))
-    );
-    showToast(`Task status set to "${nextStatus}".`, 'success');
+    try {
+      await updateTaskStatus(task.id, nextStatus);
+      setTasks((prev) =>
+        prev.map((t) => (t.id === task.id ? { ...t, status: nextStatus } : t))
+      );
+      showToast(`Task status set to "${nextStatus}".`, 'success');
+    } catch (error) {
+      console.error('Failed to update CRM task status:', error);
+      showToast('Task status was not saved. Please refresh and try again.', 'error');
+    }
   };
 
   const handleSaveTask = async (e: React.FormEvent) => {
@@ -125,9 +130,14 @@ export const CrmTasksManager: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     if (!window.confirm('Delete this task?')) return;
-    await deleteTask(id);
-    setTasks((prev) => prev.filter((t) => t.id !== id));
-    showToast('Task deleted.', 'info');
+    try {
+      await deleteTask(id);
+      setTasks((prev) => prev.filter((t) => t.id !== id));
+      showToast('Task deleted.', 'info');
+    } catch (error) {
+      console.error('Failed to delete CRM task:', error);
+      showToast('Task was not deleted. Please refresh and try again.', 'error');
+    }
   };
 
   const openCreateModal = () => {
