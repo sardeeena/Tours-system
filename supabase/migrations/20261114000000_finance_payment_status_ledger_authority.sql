@@ -2,7 +2,7 @@
 -- A processed refund reduces the balance available for subsequent collections.
 BEGIN;
 
-CREATE OR REPLACE FUNCTION public.record_payment_atomic(
+CREATE OR REPLACE FUNCTION private.record_payment_atomic(
   p_booking_reference TEXT,
   p_amount NUMERIC,
   p_currency TEXT,
