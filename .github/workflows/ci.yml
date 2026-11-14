@@ -58,6 +58,9 @@ jobs:
       - name: Verify booking identifier and production fallback behavior
         run: npm run test:booking
 
+      - name: Verify booking payment status is ledger-authoritative
+        run: npm run test:booking-finance-boundary
+
       - name: Validate catalogue source and read-only import safety
         run: npm run test:catalogue
 
