@@ -32,7 +32,8 @@
     "test:all": "tsx scripts/test_catalogue_import.ts && tsx scripts/verify_schema_parity.ts && tsx scripts/test_admin_security.ts && tsx scripts/test_abuse_prevention.ts && tsx scripts/test_routes.ts && tsx scripts/test_admin_dashboard_persistence.ts && tsx scripts/test_password_recovery.ts && tsx scripts/test_communication_validation.ts && tsx scripts/test_email_template_renderer.ts && tsx scripts/test_booking_identifier_resolution.ts && tsx scripts/test_supabase_project_guard.ts && tsx scripts/test_dynamic_experiences_destinations.ts && tsx scripts/test_phase6_2_dynamic_audit.ts && tsx scripts/test_phase6_3_staging_verification.ts && tsx scripts/test_phase7_admin_operations.ts && tsx scripts/test_phase8_financial_and_workflow_validation.ts && tsx scripts/test_technical_control_center.ts && npm run test:brand-identity",
     "test:technical": "tsx scripts/test_technical_control_center.ts",
     "test:brand-identity": "tsx scripts/test_brand_identity.ts",
-    "test:public-catalogue": "tsx scripts/test_public_catalogue_fail_closed.ts"
+    "test:public-catalogue": "tsx scripts/test_public_catalogue_fail_closed.ts",
+    "test:booking-finance-boundary": "tsx scripts/test_booking_finance_ledger_authority.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
