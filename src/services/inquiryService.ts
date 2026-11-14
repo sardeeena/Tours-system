@@ -297,6 +297,9 @@ export async function listInquiries(filter?: { status?: string }): Promise<DbInq
       if (error) {
         if (isSchemaMissingError(error)) {
           setSchemaMissing(true);
+          if (!import.meta.env.DEV) {
+            throw new Error('The inquiries table is unavailable. Cached inquiries are not used in production.');
+          }
         } else {
           console.error('Inquiries query error:', formatSupabaseError(error));
           throw new Error(formatSupabaseError(error));
@@ -307,11 +310,16 @@ export async function listInquiries(filter?: { status?: string }): Promise<DbInq
     } catch (err) {
       if (isSchemaMissingError(err)) {
         setSchemaMissing(true);
+        if (!import.meta.env.DEV) {
+          throw new Error('The inquiries table is unavailable. Cached inquiries are not used in production.');
+        }
       } else {
         console.error('Failed to list inquiries from Supabase:', err);
         throw err;
       }
     }
+  } else if (isSupabaseConfigured() && !import.meta.env.DEV) {
+    throw new Error('The inquiries table is unavailable. Cached inquiries are not used in production.');
   }
 
   const localList = getStoredInquiries();
@@ -330,47 +338,36 @@ export async function updateInquiryStatus(
   adminNotes?: string
 ): Promise<boolean> {
   const now = new Date().toISOString();
+  const updates: Record<string, unknown> = { status, updated_at: now };
+  if (adminNotes !== undefined) updates.admin_notes = adminNotes;
 
-  // 1. Update in local storage
-  const localList = getStoredInquiries();
-  const updated = localList.map((item) => {
-    if (item.id === id) {
-      return {
-        ...item,
-        status,
-        admin_notes: adminNotes !== undefined ? adminNotes : item.admin_notes,
-        updated_at: now,
-      };
-    }
-    return item;
-  });
-  saveStoredInquiries(updated);
-
-  // 2. Update in Supabase
   if (isSupabaseConfigured()) {
-    try {
-      const updates: Record<string, unknown> = {
-        status,
-        updated_at: now,
-      };
-      if (adminNotes !== undefined) {
-        updates.admin_notes = adminNotes;
-      }
+    const { data, error } = await supabase
+      .from('inquiries')
+      .update(updates)
+      .eq('id', id)
+      .select('id')
+      .maybeSingle();
 
-      const { error } = await supabase
-        .from('inquiries')
-        .update(updates)
-        .eq('id', id);
-
-      if (error) {
-        throw new Error(formatSupabaseError(error));
-      }
-    } catch (err: any) {
-      console.error('Failed to update inquiry in Supabase:', err);
-      throw err;
-    }
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('Inquiry was not found or could not be updated.');
+  } else if (!import.meta.env.DEV) {
+    throw new Error('Supabase is not configured. Inquiry changes cannot be saved in production.');
   }
 
+  // Update the local cache only after the authoritative write succeeds.
+  const localList = getStoredInquiries();
+  const updated = localList.map((item) =>
+    item.id === id
+      ? {
+          ...item,
+          status,
+          admin_notes: adminNotes !== undefined ? adminNotes : item.admin_notes,
+          updated_at: now,
+        }
+      : item
+  );
+  saveStoredInquiries(updated);
   return true;
 }
 

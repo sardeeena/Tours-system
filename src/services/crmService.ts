@@ -1850,7 +1850,19 @@ export async function listCrmSegments(): Promise<CrmSegment[]> {
 // ------------------------------------------------------------------------------
 
 export async function convertInquiryToLead(inquiry: any): Promise<CrmLead> {
-  const lead = await createLead({
+  if (!inquiry?.id) throw new Error('A valid inquiry is required for conversion.');
+
+  const sourceMarker = `[source-inquiry:${inquiry.id}]`;
+  const existingLead = (await listLeads()).find(
+    (item) => item.email.trim().toLowerCase() === String(inquiry.email || '').trim().toLowerCase()
+      && item.notes?.includes(sourceMarker)
+  );
+
+  if (inquiry.status === 'converted' && !existingLead) {
+    throw new Error('This inquiry is already marked converted, but its linked lead could not be found. Please investigate before retrying.');
+  }
+
+  const lead = existingLead || await createLead({
     name: inquiry.customer_name,
     email: inquiry.email,
     phone: inquiry.phone,
@@ -1858,17 +1870,23 @@ export async function convertInquiryToLead(inquiry: any): Promise<CrmLead> {
     source: (inquiry.source as LeadSource) || 'Website',
     interestedTourId: inquiry.tour_id,
     interestedTourTitle: inquiry.admin_notes?.replace('Referenced Tour: ', '') || null,
-    notes: `Converted from Help Inquiry: ${inquiry.message}`,
+    notes: `${sourceMarker} Converted from Help Inquiry: ${inquiry.message}`,
     stage: 'Contacted',
     score: 60,
   });
 
   if (isSupabaseConfigured()) {
-    try {
-      await supabase.from('inquiries').update({ status: 'converted' }).eq('id', inquiry.id);
-    } catch {
-      // ignore
-    }
+    const { data, error } = await supabase
+      .from('inquiries')
+      .update({ status: 'converted', updated_at: new Date().toISOString() })
+      .eq('id', inquiry.id)
+      .select('id')
+      .maybeSingle();
+
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The inquiry could not be marked converted. The linked lead is retained so the operation can be safely retried.');
+  } else if (!import.meta.env.DEV) {
+    throw new Error('Supabase is not configured. Inquiry conversion is unavailable in production.');
   }
 
   return lead;
