@@ -397,7 +397,6 @@ export const CrmInquiriesManager: React.FC = () => {
                   <select
                     value={tempStaffId}
                     onChange={(e) => setTempStaffId(e.target.value)}
-                    disabled={staffMembers.length === 0}
                     className="w-full px-3 py-1.5 bg-stone-950 border border-stone-800 rounded text-white disabled:opacity-50"
                   >
                     <option value="">Unassigned</option>
