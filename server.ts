@@ -900,6 +900,83 @@ app.post('/api/webhooks/resend', rateLimit(300, 60_000), async (req: Request, re
   return res.status(200).json({ success: true, eventId, eventType });
 });
 
+function normalizeConsentPhone(value: unknown): string {
+  return typeof value === 'string' ? value.replace(/\D/g, '') : '';
+}
+
+async function verifyConsentCustomerPhone(customerId: string, phone: string): Promise<{ valid: boolean; error?: string }> {
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return { valid: false, error: 'Secure consent storage is unavailable.' };
+  const { data: customer, error } = await serverSupabase.from('customers').select('id,phone').eq('id', customerId).maybeSingle();
+  if (error) {
+    console.error('[WhatsApp consent] Customer lookup failed:', error.message);
+    return { valid: false, error: 'The customer record could not be verified.' };
+  }
+  if (!customer) return { valid: false, error: 'Select a valid customer record before recording consent.' };
+  if (normalizeConsentPhone(customer.phone) !== phone) {
+    return { valid: false, error: 'The phone number must match the selected customer record. Update the customer contact details first if it has changed.' };
+  }
+  return { valid: true };
+}
+
+app.get('/api/communications/whatsapp/consent', rateLimit(60, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireCommunicationsStaff(req, res)) return;
+  const customerId = typeof req.query.customerId === 'string' ? req.query.customerId.trim() : '';
+  const phone = normalizeConsentPhone(req.query.phone);
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(customerId) || phone.length < 8 || phone.length > 15) {
+    return res.status(400).json({ success: false, error: 'A valid customer and international phone number are required.' });
+  }
+  const verified = await verifyConsentCustomerPhone(customerId, phone);
+  if (!verified.valid) return res.status(verified.error?.includes('unavailable') ? 503 : 400).json({ success: false, error: verified.error });
+  try {
+    const { data, error } = await serverSupabase!.from('customer_communication_consent_events')
+      .select('id,purpose,phone_e164,consent_action,consent_text_version,consent_source,recorded_by,recorded_at,evidence_reference')
+      .eq('customer_id', customerId).eq('channel', 'WhatsApp').eq('phone_e164', phone)
+      .order('recorded_at', { ascending: false }).limit(50);
+    if (error) {
+      console.error('[WhatsApp consent] History lookup failed:', error.message);
+      return res.status(503).json({ success: false, error: 'Consent history is temporarily unavailable.' });
+    }
+    return res.json({ success: true, events: data || [] });
+  } catch (error) {
+    console.error('[WhatsApp consent] History request failed:', error);
+    return res.status(503).json({ success: false, error: 'Consent history is temporarily unavailable.' });
+  }
+});
+
+app.post('/api/communications/whatsapp/consent', rateLimit(20, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireCommunicationsStaff(req, res)) return;
+  const customerId = typeof req.body?.customerId === 'string' ? req.body.customerId.trim() : '';
+  const phone = normalizeConsentPhone(req.body?.phone);
+  const purpose = req.body?.purpose;
+  const action = req.body?.action;
+  const evidenceReference = typeof req.body?.evidenceReference === 'string' ? req.body.evidenceReference.trim() : '';
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(customerId) ||
+      phone.length < 8 || phone.length > 15 || !['transactional', 'marketing'].includes(purpose) ||
+      !['grant', 'revoke'].includes(action) || req.body?.explicitConfirmation !== true ||
+      evidenceReference.length > 200 || (action === 'grant' && evidenceReference.length < 4)) {
+    return res.status(400).json({ success: false, error: 'Provide a valid customer, phone, purpose, action, explicit customer-choice confirmation, and evidence reference (required for a grant).' });
+  }
+  const verified = await verifyConsentCustomerPhone(customerId, phone);
+  if (!verified.valid) return res.status(verified.error?.includes('unavailable') ? 503 : 400).json({ success: false, error: verified.error });
+  try {
+    const { data, error } = await serverSupabase!.from('customer_communication_consent_events').insert({
+      customer_id: customerId, channel: 'WhatsApp', purpose, phone_e164: phone,
+      consent_action: action === 'grant' ? 'granted' : 'revoked',
+      consent_text_version: purpose === 'transactional' ? 'wa-transactional-v1' : 'wa-marketing-v1',
+      consent_source: 'staff_verified_record', recorded_by: req.user!.id,
+      evidence_reference: evidenceReference || null,
+    }).select('id,purpose,phone_e164,consent_action,consent_text_version,consent_source,recorded_by,recorded_at,evidence_reference').single();
+    if (error || !data) {
+      console.error('[WhatsApp consent] Append failed:', error?.message || 'No row returned');
+      return res.status(503).json({ success: false, error: 'Consent evidence could not be saved. No permission was changed.' });
+    }
+    return res.status(201).json({ success: true, event: data });
+  } catch (error) {
+    console.error('[WhatsApp consent] Record request failed:', error);
+    return res.status(503).json({ success: false, error: 'Consent evidence could not be saved. No permission was changed.' });
+  }
+});
+
 app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: AuthenticatedRequest, res: Response) => {
   if (!requireCommunicationsStaff(req, res)) return;
   const phone = typeof req.body?.phone === 'string' ? req.body.phone.replace(/[^0-9]/g, '') : '';
