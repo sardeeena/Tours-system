@@ -3266,7 +3266,7 @@ app.all('/api/db/query', rateLimit(60, 60_000), async (req: AuthenticatedRequest
             totalTours: toursRes.count || 0,
             totalBookings: bookingsRes.count || 0,
             totalCustomers: customersRes.count || 0,
-            verifiedRole: req.user.role,
+            verifiedRole: req.user?.role || 'unknown',
           },
         });
       } catch (err) {
