@@ -203,6 +203,8 @@ export interface AuthenticatedUser {
   id: string;
   email?: string;
   role: string;
+  roles: string[];
+  permissions: string[];
 }
 
 export interface AuthenticatedRequest extends Request {
@@ -324,7 +326,13 @@ async function authenticateToken(req: AuthenticatedRequest, res: Response, next:
       }
     }
 
-    req.user = { id: user.id, email: user.email, role };
+    const roles = Array.isArray(accessContext?.roles)
+      ? accessContext.roles.filter((item: unknown): item is string => typeof item === 'string')
+      : [];
+    const permissions = Array.isArray(accessContext?.permissions)
+      ? accessContext.permissions.filter((item: unknown): item is string => typeof item === 'string')
+      : [];
+    req.user = { id: user.id, email: user.email, role, roles, permissions };
     return next();
   } catch (err) {
     console.error('Server auth verification unavailable:', err);
@@ -395,7 +403,11 @@ app.use('/api', rateLimit(300, 60_000));
 app.use('/api', authenticateToken as any);
 
 app.use(['/api/admin', '/api/communications'], (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-  if (!req.user || !['admin', 'super_admin'].includes(req.user.role)) return next();
+  const hasAdministratorRole = Boolean(req.user && (
+    ['admin', 'super_admin'].includes(req.user.role)
+    || req.user.roles?.some(role => role === 'admin' || role === 'super_admin')
+  ));
+  if (!hasAdministratorRole) return next();
   const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '').trim();
   const claims = token ? parseJwtPayload(token) : null;
   if (claims?.aal !== 'aal2') {
@@ -591,17 +603,29 @@ app.get('/api/health', rateLimit(120, 60_000), (_req: Request, res: Response) =>
 // Provider secrets are read only from Hostinger/server environment variables.
 // Browser-supplied API keys are never accepted.
 // ------------------------------------------------------------------------------
-function requireCommunicationsStaff(req: AuthenticatedRequest, res: Response): boolean {
+function userHasPermission(req: AuthenticatedRequest, permission: string): boolean {
+  if (!req.user) return false;
+  const roles = req.user.roles || [];
+  if (roles.includes('super_admin') || roles.includes('admin')
+      || req.user.role === 'super_admin' || req.user.role === 'admin') return true;
+  const moduleName = permission.split('.')[0];
+  const permissions = req.user.permissions || [];
+  return permissions.includes(permission) || permissions.includes(moduleName + '.manage');
+}
+
+function requireCommunicationsStaff(
+  req: AuthenticatedRequest,
+  res: Response,
+  permission: 'communications.read' | 'communications.manage' = 'communications.read'
+): boolean {
   if (!req.user) {
-    res.status(401).json({ success: false, error: 'Sign in with an authorized staff account to send communications.' });
+    res.status(401).json({ success: false, error: 'Sign in with an authorized staff account to access communications.' });
     return false;
   }
-
-  if (!['staff', 'manager', 'admin', 'super_admin'].includes(req.user.role)) {
-    res.status(403).json({ success: false, error: 'Administrative or staff permissions are required.' });
+  if (!userHasPermission(req, permission)) {
+    res.status(403).json({ success: false, error: 'Your account does not have permission for this communications action.' });
     return false;
   }
-
   return true;
 }
 
@@ -643,7 +667,7 @@ app.get('/api/communications/status', rateLimit(60, 60_000), (req: Authenticated
 });
 
 app.post('/api/communications/email', rateLimit(20, 60_000), async (req: AuthenticatedRequest, res: Response) => {
-  if (!requireCommunicationsStaff(req, res)) return;
+  if (!requireCommunicationsStaff(req, res, 'communications.manage')) return;
 
   const to = typeof req.body?.to === 'string' ? req.body.to.trim().toLowerCase() : '';
   const subject = typeof req.body?.subject === 'string' ? req.body.subject.trim() : '';
@@ -946,7 +970,7 @@ app.get('/api/communications/whatsapp/consent', rateLimit(60, 60_000), async (re
 });
 
 app.post('/api/communications/whatsapp/consent', rateLimit(20, 60_000), async (req: AuthenticatedRequest, res: Response) => {
-  if (!requireCommunicationsStaff(req, res)) return;
+  if (!requireCommunicationsStaff(req, res, 'communications.manage')) return;
   const customerId = typeof req.body?.customerId === 'string' ? req.body.customerId.trim() : '';
   const phone = normalizeConsentPhone(req.body?.phone);
   const purpose = req.body?.purpose;
@@ -980,7 +1004,7 @@ app.post('/api/communications/whatsapp/consent', rateLimit(20, 60_000), async (r
 });
 
 app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: AuthenticatedRequest, res: Response) => {
-  if (!requireCommunicationsStaff(req, res)) return;
+  if (!requireCommunicationsStaff(req, res, 'communications.manage')) return;
   const phone = typeof req.body?.phone === 'string' ? req.body.phone.replace(/[^0-9]/g, '') : '';
   const customerId = typeof req.body?.customerId === 'string' ? req.body.customerId.trim() : '';
   const bodyParameter = typeof req.body?.bodyParameter === 'string' ? req.body.bodyParameter.trim() : '';
@@ -1457,7 +1481,7 @@ app.all(['/api/bookings/lookup', '/api/booking/lookup'], rateLimit(10, 60_000), 
     return res.status(503).json({ success: false, found: false, error: 'The reservation lookup service is temporarily unavailable.' });
   }
 
-  const isStaff = Boolean(req.user && ['admin', 'super_admin', 'manager', 'staff'].includes(req.user.role));
+  const isStaff = userHasPermission(req, 'bookings.read');
 
   try {
     if (isStaff) {
@@ -2118,7 +2142,7 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
 function requireSuperAdminAal2(req: AuthenticatedRequest, res: Response): boolean {
   const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '').trim();
   const claims = token ? parseJwtPayload(token) : null;
-  if (!req.user || req.user.role !== 'super_admin') {
+  if (!req.user || (req.user.role !== 'super_admin' && !req.user.roles?.includes('super_admin'))) {
     res.status(403).json({ success: false, error: 'Super Admin access is required.' });
     return false;
   }
@@ -2935,6 +2959,8 @@ app.get('/api/auth/verify-session', rateLimit(60, 60_000), (req: AuthenticatedRe
       id: req.user.id,
       email: req.user.email,
       role: req.user.role,
+      roles: req.user.roles,
+      permissions: req.user.permissions,
     },
   });
 });
@@ -3132,7 +3158,7 @@ app.all('/api/db/query', rateLimit(60, 60_000), async (req: AuthenticatedRequest
         return res.status(503).json({ success: false, error: 'The reservation lookup service is temporarily unavailable.' });
       }
 
-      const isStaff = Boolean(req.user && ['admin', 'super_admin', 'manager', 'staff'].includes(req.user.role));
+      const isStaff = userHasPermission(req, 'bookings.read');
 
       try {
         // Staff may retrieve the full record only after the server has verified their JWT and DB role.
@@ -3211,7 +3237,7 @@ app.all('/api/db/query', rateLimit(60, 60_000), async (req: AuthenticatedRequest
     }
 
     case 'get_admin_overview': {
-      if (!req.user || !['admin', 'super_admin', 'manager', 'staff'].includes(req.user.role)) {
+      if (!userHasPermission(req, 'analytics.read')) {
         return res.status(403).json({
           success: false,
           error: 'FORBIDDEN: Administrative authorization required to access operational metrics.',
