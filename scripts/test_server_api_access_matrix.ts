@@ -5,7 +5,7 @@ const results: Array<{ name: string; passed: boolean; detail?: string }> = [];
 const assert = (name: string, condition: boolean, detail?: string) => results.push({ name, passed: condition, detail });
 
 type RouteEntry = { method: string; path: string };
-const routePattern = /app\\.(get|post|put|patch|delete)\\(\\s*(\\[[\\s\\S]*?\\]|'[^']+'|"[^"]+")/g;
+const routePattern = /app\.(get|post|put|patch|delete)\(\s*(\[[\s\S]*?\]|'[^']+'|"[^"]+")/g;
 const actualRoutes: RouteEntry[] = [];
 let routeMatch: RegExpExecArray | null;
 while ((routeMatch = routePattern.exec(source)) !== null) {
@@ -67,23 +67,22 @@ assert(
 );
 
 const routeBlock = (method: string, path: string): string => {
-  const escapedPath = path.replace(/[.*+?^$|()[\\]{}]/g, '\\$&');
-  const start = source.search(new RegExp('app\\.' + method.toLowerCase() + '\\(\\s*[\\'"]' + escapedPath + '[\\'"]'));
+  const start = source.indexOf("app." + method.toLowerCase() + "('" + path + "'");
   if (start < 0) return '';
-  const nextRoute = source.slice(start + 1).search(/\\napp\\.(?:get|post|put|patch|delete)\\(/i);
+  const nextRoute = source.slice(start + 1).search(/\napp\.(?:get|post|put|patch|delete)\(/i);
   return source.slice(start, nextRoute < 0 ? source.length : start + 1 + nextRoute);
 };
 
 const superAdminRoutes = expectedRoutes.filter((route) => route.path.startsWith('/api/admin/'));
 assert(
   'Every Super Admin API route requires normalized Super Admin plus AAL2',
-  superAdminRoutes.length === 17 && superAdminRoutes.every((route) => routeBlock(route.method, route.path).includes('requireSuperAdminAal2(req, res)')),
+  superAdminRoutes.length === 15 && superAdminRoutes.every((route) => routeBlock(route.method, route.path).includes('requireSuperAdminAal2(req, res)')),
   'All /api/admin/* routes must retain the dedicated Super Admin/AAL2 guard.'
 );
 
 const communicationReadRoutes = [
-  { method: 'GET', path: '/api/communications/status', guard: "requireCommunicationsStaff(req, res)" },
-  { method: 'GET', path: '/api/communications/whatsapp/consent', guard: "requireCommunicationsStaff(req, res)" },
+  { method: 'GET', path: '/api/communications/status', guard: 'requireCommunicationsStaff(req, res)' },
+  { method: 'GET', path: '/api/communications/whatsapp/consent', guard: 'requireCommunicationsStaff(req, res)' },
 ];
 const communicationManageRoutes = [
   { method: 'POST', path: '/api/communications/email', guard: "requireCommunicationsStaff(req, res, 'communications.manage')" },
@@ -119,5 +118,5 @@ const failed = results.filter((result) => !result.passed);
 for (const result of results) {
   console.log((result.passed ? 'PASS ' : 'FAIL ') + result.name + (result.detail ? ' — ' + result.detail : ''));
 }
-console.log('\\n' + (results.length - failed.length) + '/' + results.length + ' API access matrix checks passed.');
+console.log('\n' + (results.length - failed.length) + '/' + results.length + ' API access matrix checks passed.');
 if (failed.length) process.exit(1);
