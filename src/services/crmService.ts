@@ -670,7 +670,7 @@ export async function updateTaskStatus(
     await recordActivity({
       customerId: target.customerId,
       leadId: target.leadId,
-      eventType: isCompleted ? 'task_completed' : 'task_status_changed',
+      eventType: isCompleted ? 'task_completed' : 'task',
       title: isCompleted ? `Completed: ${target.title}` : `Task Status: ${newStatus}`,
       description: outcomeNotes || `Task marked as "${newStatus}" by ${completedByName}.`,
       actor: completedByName,
