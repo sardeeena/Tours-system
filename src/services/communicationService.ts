@@ -465,40 +465,32 @@ export function validateEmailProviderCredentials(emailConfig?: ProviderConfig['e
  */
 export function validateWhatsAppProviderCredentials(whatsappConfig?: ProviderConfig['whatsapp']): void {
   const cfg = whatsappConfig || getProviderConfig().whatsapp;
-
   if (!cfg || !cfg.provider || cfg.provider === 'none') {
     throw new ProviderConfigurationError(
       'WhatsApp',
       'none',
       ['provider'],
-      'WhatsApp provider is not configured. Please select a valid provider (Meta Cloud API, Twilio, or Custom) in Communication Settings.'
+      'WhatsApp provider is not configured. Only the official Meta Cloud API is supported.'
     );
   }
-
+  if (cfg.provider !== 'meta_cloud') {
+    throw new ProviderConfigurationError(
+      'WhatsApp',
+      String(cfg.provider),
+      ['provider'],
+      'Unsupported WhatsApp provider. Only the official Meta Cloud API is permitted.'
+    );
+  }
   const missingFields: string[] = [];
-
-  if (!cfg.apiKey || !cfg.apiKey.trim()) {
-    missingFields.push('apiKey (Access Token / Twilio Auth Token)');
-  } else if (cfg.apiKey.trim().length < 6) {
-    missingFields.push('apiKey (must be at least 6 characters)');
-  }
-
-  if (cfg.provider === 'meta_cloud') {
-    if (!cfg.phoneNumberId || !cfg.phoneNumberId.trim()) {
-      missingFields.push('phoneNumberId (Meta Phone Number ID)');
-    }
-  } else if (cfg.provider === 'twilio') {
-    if (!cfg.fromNumber || !cfg.fromNumber.trim()) {
-      missingFields.push('fromNumber (Twilio WhatsApp Sender Number)');
-    }
-  }
-
+  if (!cfg.apiKey || !cfg.apiKey.trim()) missingFields.push('apiKey (Meta access token)');
+  else if (cfg.apiKey.trim().length < 6) missingFields.push('apiKey (must be at least 6 characters)');
+  if (!cfg.phoneNumberId || !cfg.phoneNumberId.trim()) missingFields.push('phoneNumberId (Meta Phone Number ID)');
   if (missingFields.length > 0) {
     throw new ProviderConfigurationError(
       'WhatsApp',
       cfg.provider,
       missingFields,
-      `Incomplete credentials for WhatsApp provider "${cfg.provider}". Missing or invalid required configuration: ${missingFields.join(', ')}.`
+      `Incomplete Meta Cloud API credentials. Missing or invalid required configuration: ${missingFields.join(', ')}.`
     );
   }
 }
@@ -603,6 +595,8 @@ type ServerCommunicationStatus = {
     phoneNumberId?: string;
     businessAccountId?: string;
     fromNumber?: string;
+    templateName?: string;
+    templateLanguage?: string;
   };
 };
 
@@ -634,6 +628,8 @@ export async function refreshProviderConfigFromServer(): Promise<ProviderConfig>
     config.whatsapp.phoneNumberId = status.whatsapp?.phoneNumberId || '';
     config.whatsapp.businessAccountId = status.whatsapp?.businessAccountId || '';
     config.whatsapp.fromNumber = status.whatsapp?.fromNumber || config.whatsapp.fromNumber;
+    config.whatsapp.templateName = status.whatsapp?.templateName || '';
+    config.whatsapp.templateLanguage = status.whatsapp?.templateLanguage || 'en';
   } catch {
     // Status remains unconfigured when the authenticated server cannot be reached.
   }
@@ -838,8 +834,8 @@ export async function sendWhatsAppMessage(params: {
     const error = new ProviderConfigurationError(
       'WhatsApp',
       'none',
-      ['WHATSAPP_ACCESS_TOKEN', 'WHATSAPP_PHONE_NUMBER_ID', 'WHATSAPP_GRAPH_API_VERSION'],
-      'WhatsApp provider is not configured on the server. Set the Meta Cloud API environment variables in Hostinger.'
+      ['WHATSAPP_ACCESS_TOKEN', 'WHATSAPP_PHONE_NUMBER_ID', 'WHATSAPP_GRAPH_API_VERSION', 'WHATSAPP_TEMPLATE_NAME'],
+      'WhatsApp provider is not configured on the server. Set the Meta Cloud API credentials and approved template configuration in Hostinger.'
     );
     const failed: CommunicationMessage = {
       id: messageId,
@@ -866,9 +862,13 @@ export async function sendWhatsAppMessage(params: {
   }
 
   try {
+    if (!params.customerId || !config.whatsapp.templateName) {
+      throw new Error('WhatsApp requires a linked customer record, an approved Meta template, and verified customer consent.');
+    }
     const delivered = await dispatchServerCommunication('/api/communications/whatsapp', {
+      customerId: params.customerId,
       phone: params.recipientPhone,
-      text: params.content,
+      bodyParameter: params.content,
     }, messageId);
 
     const sent: CommunicationMessage = {
