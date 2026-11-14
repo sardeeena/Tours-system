@@ -8,7 +8,6 @@ import {
   resetPasswordRequest,
   updateUserPassword,
   updateUserProfile,
-  getUserPermissions,
   validatePasswordStrength,
   signOutAdmin,
   getCurrentAdminUser,
@@ -77,11 +76,7 @@ interface AuthContextType {
 }
 
 const requiresAdministratorMfa = (candidate: AppUser | null): boolean =>
-  Boolean(candidate && (
-    candidate.role === 'admin' ||
-    candidate.role === 'super_admin' ||
-    candidate.roles?.some((role) => role === 'admin' || role === 'super_admin')
-  ));
+  Boolean(candidate?.roles?.some((role) => role === 'admin' || role === 'super_admin'));
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -97,10 +92,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [requiresMfaEnrollment, setRequiresMfaEnrollment] = useState(false);
   const idleTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const permissions = user?.permissions ?? getUserPermissions(user?.role);
+  const permissions = user?.permissions ?? [];
   const hasPermission = useCallback((action: string): boolean => {
     const [module, requestedAction] = action.split('.');
-    const fullAdmin = Boolean(user?.roles?.includes('admin') || user?.roles?.includes('super_admin') || user?.role === 'admin' || user?.role === 'super_admin');
+    const fullAdmin = Boolean(user?.roles?.includes('admin') || user?.roles?.includes('super_admin'));
     if (fullAdmin) return true;
     if (permissions.includes(action) || permissions.includes(`${module}.manage`)) return true;
     if (requestedAction === 'read') {
@@ -110,7 +105,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     }
     return false;
-  }, [permissions, user?.roles, user?.role]);
+  }, [permissions, user?.roles]);
 
   const openAuthModal = useCallback((view: AuthModalView = 'login') => {
     setAuthModalView(view);
