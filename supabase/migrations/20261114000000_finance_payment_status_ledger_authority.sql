@@ -215,7 +215,10 @@ DECLARE
   v_currency text := upper(coalesce(NEW.currency, 'EUR'));
   v_actual_status text := lower(replace(btrim(coalesce(NEW.payment_status, 'pending')), ' ', '_'));
 BEGIN
-  IF TG_OP = 'UPDATE' AND NEW.payment_status IS NOT DISTINCT FROM OLD.payment_status THEN
+  IF TG_OP = 'UPDATE'
+     AND NEW.payment_status IS NOT DISTINCT FROM OLD.payment_status
+     AND NEW.total IS NOT DISTINCT FROM OLD.total
+     AND NEW.currency IS NOT DISTINCT FROM OLD.currency THEN
     RETURN NEW;
   END IF;
 
