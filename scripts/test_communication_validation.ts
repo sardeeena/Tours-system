@@ -112,21 +112,21 @@ async function runTests() {
   assert(err5 instanceof ProviderConfigurationError, 'Throws ProviderConfigurationError when Meta Cloud phoneNumberId is missing');
   assert(err5?.message.includes('phoneNumberId'), `Error message highlights missing phoneNumberId: "${err5?.message}"`);
 
-  // Test 6: Twilio missing fromNumber
-  console.log('\nTest 6: Twilio Missing fromNumber');
+  // Test 6: Twilio is explicitly rejected by the Meta-only provider policy.
+  console.log('\nTest 6: Reject Unsupported WhatsApp Providers');
   let err6: any = null;
   try {
     validateWhatsAppProviderCredentials({
       provider: 'twilio',
       apiKey: 'AC1234567890abcdef12345',
-      fromNumber: '',
-      isConfigured: false,
+      fromNumber: '+15551234567',
+      isConfigured: true,
     });
   } catch (err: any) {
     err6 = err;
   }
-  assert(err6 instanceof ProviderConfigurationError, 'Throws ProviderConfigurationError when Twilio fromNumber is missing');
-  assert(err6?.message.includes('fromNumber'), `Error message highlights missing fromNumber: "${err6?.message}"`);
+  assert(err6 instanceof ProviderConfigurationError, 'Rejects Twilio even when its legacy credentials are present');
+  assert(err6?.message.includes('Only the official Meta Cloud API') || err6?.message.includes('Only the official Meta'), 'Explains that only official Meta Cloud API is supported');
 
   // Test 7: Universal validateProviderCredentials helper
   console.log('\nTest 7: Universal validateProviderCredentials Helper');
