@@ -15,6 +15,23 @@ assert(
     && source.includes('accessContext?.permissions')
 );
 assert(
+  'Legacy profile role cannot grant server API permissions when normalized RBAC context is missing',
+  source.includes('// Only the live, caller-scoped normalized RBAC context may grant access.')
+    && source.includes("if (roles.includes('super_admin') || roles.includes('admin')) return true;")
+    && !source.includes("|| req.user.role === 'super_admin' || req.user.role === 'admin'")
+);
+assert(
+  'Super Admin account lifecycle requires an explicit normalized super_admin assignment',
+  source.includes("if (!req.user || !req.user.roles?.includes('super_admin')) {")
+    && !source.includes("req.user.role !== 'super_admin' && !req.user.roles?.includes('super_admin')")
+);
+assert(
+  'Missing or failed RBAC context produces empty role and permission arrays',
+  source.includes("const roles = Array.isArray(accessContext?.roles)")
+    && source.includes("const permissions = Array.isArray(accessContext?.permissions)")
+    && source.includes(": [];\n    const permissions = Array.isArray(accessContext?.permissions)")
+);
+assert(
   'Permission checks support exact permissions and module manage grants',
   source.includes('function userHasPermission(')
     && source.includes('permissions.includes(permission)')

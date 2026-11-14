@@ -285,7 +285,8 @@ async function runSecurityTests() {
   assert(
     'Admin Auth lifecycle endpoints require Super Admin and AAL2',
     serverSource.includes('function requireSuperAdminAal2') &&
-    serverSource.includes("req.user.role !== 'super_admin'") &&
+    serverSource.includes("!req.user.roles?.includes('super_admin')") &&
+    !serverSource.includes("req.user.role !== 'super_admin' && !req.user.roles?.includes('super_admin')") &&
     serverSource.includes("claims?.aal !== 'aal2'") &&
     serverSource.includes("SUPABASE_KEY_TYPE !== 'service_role'"),
     'Account lifecycle APIs reject non-super-admin, non-AAL2, and non-secret server configurations'
