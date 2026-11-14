@@ -64,6 +64,9 @@ jobs:
       - name: Verify Meta WhatsApp delivery webhook security and idempotency
         run: npm run test:whatsapp-webhook
 
+      - name: Verify server API authorization uses normalized RBAC permissions
+        run: npm run test:server-rbac
+
       - name: Verify booking identifier and production fallback behavior
         run: npm run test:booking
 
