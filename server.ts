@@ -614,6 +614,8 @@ app.get('/api/communications/status', rateLimit(60, 60_000), (req: Authenticated
     process.env.WHATSAPP_ACCESS_TOKEN?.trim()
     && process.env.WHATSAPP_PHONE_NUMBER_ID?.trim()
     && /^v\d+\.\d+$/.test(process.env.WHATSAPP_GRAPH_API_VERSION || '')
+    && /^[a-z0-9_]{1,512}$/.test(process.env.WHATSAPP_TEMPLATE_NAME?.trim() || '')
+    && /^[a-z]{2}(?:_[A-Z]{2})?$/.test(process.env.WHATSAPP_TEMPLATE_LANGUAGE?.trim() || 'en')
   );
 
   res.json({
@@ -632,6 +634,8 @@ app.get('/api/communications/status', rateLimit(60, 60_000), (req: Authenticated
       phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID?.trim() || '',
       businessAccountId: process.env.WHATSAPP_BUSINESS_ACCOUNT_ID?.trim() || '',
       fromNumber: process.env.WHATSAPP_FROM_NUMBER?.trim() || '',
+      templateName: process.env.WHATSAPP_TEMPLATE_NAME?.trim() || '',
+      templateLanguage: process.env.WHATSAPP_TEMPLATE_LANGUAGE?.trim() || 'en',
     },
   });
 });
@@ -898,39 +902,58 @@ app.post('/api/webhooks/resend', rateLimit(300, 60_000), async (req: Request, re
 
 app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: AuthenticatedRequest, res: Response) => {
   if (!requireCommunicationsStaff(req, res)) return;
-
   const phone = typeof req.body?.phone === 'string' ? req.body.phone.replace(/[^0-9]/g, '') : '';
-  const message = typeof req.body?.text === 'string' ? req.body.text.trim() : '';
-
-  if (phone.length < 8 || phone.length > 15 || !message || message.length > 4096) {
-    return res.status(400).json({ success: false, error: 'A valid international phone number and message (max 4,096 characters) are required.' });
+  const customerId = typeof req.body?.customerId === 'string' ? req.body.customerId.trim() : '';
+  const bodyParameter = typeof req.body?.bodyParameter === 'string' ? req.body.bodyParameter.trim() : '';
+  if (phone.length < 8 || phone.length > 15 || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(customerId) || !bodyParameter || bodyParameter.length > 1024) {
+    return res.status(400).json({ success: false, error: 'A valid customer, international phone number, and template body parameter are required.' });
   }
-
   const accessToken = process.env.WHATSAPP_ACCESS_TOKEN?.trim();
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID?.trim();
   const graphVersion = process.env.WHATSAPP_GRAPH_API_VERSION?.trim();
-
-  if (!accessToken || !phoneNumberId || !/^\d{5,30}$/.test(phoneNumberId) || !/^v\d+\.\d+$/.test(graphVersion || '')) {
-    return res.status(503).json({ success: false, error: 'Server-side WhatsApp delivery is not configured. Set WHATSAPP_ACCESS_TOKEN, WHATSAPP_PHONE_NUMBER_ID, and WHATSAPP_GRAPH_API_VERSION in Hostinger environment variables.' });
+  const templateName = process.env.WHATSAPP_TEMPLATE_NAME?.trim() || '';
+  const templateLanguage = process.env.WHATSAPP_TEMPLATE_LANGUAGE?.trim() || 'en';
+  if (!accessToken || !phoneNumberId || !/^\d{5,30}$/.test(phoneNumberId) || !/^v\d+\.\d+$/.test(graphVersion || '') ||
+      !/^[a-z0-9_]{1,512}$/.test(templateName) || !/^[a-z]{2}(?:_[A-Z]{2})?$/.test(templateLanguage)) {
+    return res.status(503).json({ success: false, error: 'Meta WhatsApp is not fully configured. Configure the access token, phone number ID, Graph API version, approved template name, and template language on the server.' });
   }
-
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
+    return res.status(503).json({ success: false, error: 'Secure WhatsApp consent verification is unavailable. No message was sent.' });
+  }
   try {
+    const { data: consent, error: consentError } = await serverSupabase
+      .from('customer_communication_consent_events')
+      .select('consent_action,phone_e164,recorded_at')
+      .eq('customer_id', customerId)
+      .eq('channel', 'WhatsApp')
+      .eq('purpose', 'transactional')
+      .eq('phone_e164', phone)
+      .order('recorded_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (consentError) {
+      console.error('[WhatsApp] Consent verification failed:', consentError.message);
+      return res.status(503).json({ success: false, error: 'WhatsApp consent could not be verified. No message was sent.' });
+    }
+    if (!consent || consent.consent_action !== 'granted') {
+      return res.status(403).json({ success: false, error: 'The customer has not granted active WhatsApp transactional consent for this phone number. No message was sent.' });
+    }
     const providerResponse = await fetch(`https://graph.facebook.com/${graphVersion}/${phoneNumberId}/messages`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         messaging_product: 'whatsapp',
         recipient_type: 'individual',
         to: phone,
-        type: 'text',
-        text: { preview_url: false, body: message },
+        type: 'template',
+        template: {
+          name: templateName,
+          language: { code: templateLanguage },
+          components: [{ type: 'body', parameters: [{ type: 'text', text: bodyParameter }] }],
+        },
       }),
       signal: AbortSignal.timeout(15_000),
     });
-
     const providerBody = await providerResponse.json().catch(() => ({} as any));
     const providerMessageId = providerBody?.messages?.[0]?.id;
     if (!providerResponse.ok || typeof providerMessageId !== 'string') {
@@ -939,16 +962,10 @@ app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: Auth
         : `WhatsApp provider rejected the request (HTTP ${providerResponse.status}).`;
       return res.status(502).json({ success: false, error: providerError });
     }
-
-    return res.status(200).json({
-      success: true,
-      providerName: 'Meta Cloud API',
-      providerMessageId,
-      status: 'sent',
-    });
+    return res.status(200).json({ success: true, providerName: 'Meta Cloud API', providerMessageId, status: 'sent' });
   } catch (error: any) {
     const message = error?.name === 'TimeoutError'
-      ? 'WhatsApp provider request timed out. No delivery confirmation was received.'
+      ? 'WhatsApp provider request timed out. Delivery could not be confirmed.'
       : 'WhatsApp provider request failed. Please retry after checking the server logs.';
     return res.status(502).json({ success: false, error: message });
   }
