@@ -1084,7 +1084,7 @@ app.get('/api/webhooks/whatsapp', rateLimit(30, 60_000), (req: Request, res: Res
 app.post('/api/webhooks/whatsapp', rateLimit(180, 60_000), async (req: Request, res: Response) => {
   const appSecret = process.env.WHATSAPP_APP_SECRET?.trim() || '';
   const configuredPhoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID?.trim() || '';
-  if (!appSecret || !/^\\d{5,30}$/.test(configuredPhoneNumberId)) return res.status(503).json({ success: false, error: 'WhatsApp webhook signature verification and phone-number configuration are required.' });
+  if (!appSecret || !/^\d{5,30}$/.test(configuredPhoneNumberId)) return res.status(503).json({ success: false, error: 'WhatsApp webhook signature verification and phone-number configuration are required.' });
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
     return res.status(503).json({ success: false, error: 'Secure WhatsApp status storage is unavailable.' });
   }
