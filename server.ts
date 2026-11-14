@@ -1077,9 +1077,9 @@ app.get('/api/tours', rateLimit(120, 60_000), async (req: Request, res: Response
     });
   } catch (err: any) {
     console.error('Unhandled exception in /api/tours:', err);
-    return res.status(503).json({
+    return res.status(500).json({
       success: false,
-      error: 'The tour catalogue is temporarily unavailable. Please try again later.',
+      error: 'Unable to load the tour catalogue right now.',
       tours: [],
       count: 0,
       total: 0,
@@ -1087,6 +1087,7 @@ app.get('/api/tours', rateLimit(120, 60_000), async (req: Request, res: Response
   }
 });
 
+// ------------------------------------------------------------------------------
 // 5. Booking Creation & Authoritative Database Persistence
 // ------------------------------------------------------------------------------
 app.post('/api/bookings/create', rateLimit(10, 60_000), async (req: AuthenticatedRequest, res: Response) => {
