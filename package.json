@@ -44,7 +44,8 @@
     "test:audit-analytics-boundaries": "tsx scripts/test_audit_analytics_boundaries.ts",
     "test:crm-task-persistence": "tsx scripts/test_crm_task_persistence.ts",
     "test:crm-inquiry-persistence": "tsx scripts/test_crm_inquiry_persistence.ts",
-    "test:crm-inquiry-staff-assignment": "tsx scripts/test_crm_inquiry_staff_assignment.ts"
+    "test:crm-inquiry-staff-assignment": "tsx scripts/test_crm_inquiry_staff_assignment.ts",
+    "test:crm-inquiry-conversion-atomicity": "tsx scripts/test_crm_inquiry_conversion_atomicity.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

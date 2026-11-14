@@ -48,10 +48,10 @@ const convertInquiry = section(
   'export async function convertInquiryToLead',
   'export async function convertLeadToCustomer'
 );
-assert.match(convertInquiry, /\[source-inquiry:\$\{inquiry\.id\}\]/);
-assert.match(convertInquiry, /item\.notes\?\.includes\(sourceMarker\)/);
+assert.match(convertInquiry, /rpc\('convert_inquiry_to_lead'/);
 assert.match(convertInquiry, /if \(error\) throw new Error\(formatSupabaseError\(error\)\)/);
-assert.match(convertInquiry, /if \(!data\) throw new Error/);
+assert.match(convertInquiry, /if \(!row\?\.id\) throw new Error/);
+assert.doesNotMatch(convertInquiry, /listLeads\(\)|createLead\(/);
 assert.doesNotMatch(convertInquiry, /catch\s*\{/);
 
 assert.match(inquiryManager, /await convertLeadToCustomer\(lead\.id\)/);

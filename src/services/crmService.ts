@@ -1852,44 +1852,71 @@ export async function listCrmSegments(): Promise<CrmSegment[]> {
 export async function convertInquiryToLead(inquiry: any): Promise<CrmLead> {
   if (!inquiry?.id) throw new Error('A valid inquiry is required for conversion.');
 
-  const sourceMarker = `[source-inquiry:${inquiry.id}]`;
-  const existingLead = (await listLeads()).find(
-    (item) => item.email.trim().toLowerCase() === String(inquiry.email || '').trim().toLowerCase()
-      && item.notes?.includes(sourceMarker)
-  );
+  if (isSupabaseConfigured()) {
+    const { data, error } = await (supabase as any)
+      .rpc('convert_inquiry_to_lead', { p_inquiry_id: inquiry.id });
 
-  if (inquiry.status === 'converted' && !existingLead) {
-    throw new Error('This inquiry is already marked converted, but its linked lead could not be found. Please investigate before retrying.');
+    if (error) throw new Error(formatSupabaseError(error));
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row?.id) throw new Error('The database did not return the converted lead.');
+
+    const lead: CrmLead = {
+      id: row.id,
+      name: row.name,
+      email: row.email || '',
+      phone: row.phone,
+      whatsapp: row.whatsapp,
+      country: row.country,
+      hotel: row.hotel,
+      source: (row.source as LeadSource) || 'Website',
+      interestedTourId: row.interested_tour_id,
+      interestedTourTitle: row.interested_tour_title,
+      destination: row.destination,
+      travelDate: row.travel_date,
+      numberOfGuests: row.number_of_guests || 1,
+      estimatedValue: Number(row.estimated_value) || 0,
+      currency: row.currency || 'EUR',
+      stage: (row.stage as LeadStage) || 'Contacted',
+      status: row.status || 'active',
+      score: row.score ?? 60,
+      notes: row.notes,
+      tags: row.tags || [],
+      assignedStaffId: row.assigned_staff_id,
+      assignedStaffName: row.assigned_staff_name,
+      customerId: row.customer_id,
+      followUpDate: row.follow_up_date,
+      lastContactAt: row.last_contact_at,
+      contactAttemptsCount: row.contact_attempts_count || 0,
+      lostReason: row.lost_reason,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+    };
+
+    const cached = getLocal<CrmLead[]>(LOCAL_LEADS_KEY, []);
+    setLocal(LOCAL_LEADS_KEY, [lead, ...cached.filter((item) => item.id !== lead.id)]);
+    return lead;
   }
 
-  const lead = existingLead || await createLead({
+  if (!import.meta.env.DEV) {
+    throw new Error('Supabase is not configured. Inquiry conversion is unavailable in production.');
+  }
+
+  // Local-only development fallback; production always uses the atomic RPC.
+  const sourceMarker = `[source-inquiry:${inquiry.id}]`;
+  const existing = getLocal<CrmLead[]>(LOCAL_LEADS_KEY, []).find((item) => item.notes?.includes(sourceMarker));
+  if (existing) return existing;
+
+  return createLead({
     name: inquiry.customer_name,
     email: inquiry.email,
     phone: inquiry.phone,
     whatsapp: inquiry.whatsapp || inquiry.phone,
     source: (inquiry.source as LeadSource) || 'Website',
-    interestedTourId: inquiry.tour_id,
-    interestedTourTitle: inquiry.admin_notes?.replace('Referenced Tour: ', '') || null,
+    interestedTourTitle: inquiry.tour_title || null,
     notes: `${sourceMarker} Converted from Help Inquiry: ${inquiry.message}`,
     stage: 'Contacted',
     score: 60,
   });
-
-  if (isSupabaseConfigured()) {
-    const { data, error } = await supabase
-      .from('inquiries')
-      .update({ status: 'converted', updated_at: new Date().toISOString() })
-      .eq('id', inquiry.id)
-      .select('id')
-      .maybeSingle();
-
-    if (error) throw new Error(formatSupabaseError(error));
-    if (!data) throw new Error('The inquiry could not be marked converted. The linked lead is retained so the operation can be safely retried.');
-  } else if (!import.meta.env.DEV) {
-    throw new Error('Supabase is not configured. Inquiry conversion is unavailable in production.');
-  }
-
-  return lead;
 }
 
 export async function convertLeadToCustomer(leadId: string): Promise<string> {
