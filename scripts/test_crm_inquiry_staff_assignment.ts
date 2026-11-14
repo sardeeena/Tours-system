@@ -38,6 +38,9 @@ assert.match(migration, /REFERENCES public\.profiles\(id\) ON DELETE SET NULL/);
 assert.match(migration, /public\.has_permission\('crm\.read'\)/);
 assert.match(migration, /public\.user_roles/);
 assert.match(migration, /public\.access_roles/);
+assert.match(migration, /CREATE TRIGGER trg_validate_inquiry_assigned_staff/);
+assert.match(migration, /p\.is_confirmed IS TRUE/);
+assert.match(migration, /r\.slug NOT IN \('customer', 'guide'\)/);
 assert.match(migration, /REVOKE ALL ON FUNCTION public\.list_crm_assignable_staff\(\) FROM PUBLIC, anon/);
 assert.doesNotMatch(migration, /p\.role/);
 
