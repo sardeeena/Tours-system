@@ -80,7 +80,7 @@ const CMS_TABLES_LIST: Omit<TableHealthCheck, 'status'>[] = [
 export const AdminSettings: React.FC = () => {
   const { showToast } = useToast();
   const { user } = useAuth();
-  const isSuperAdmin = Boolean(user && (user.role === 'super_admin' || user.roles?.includes('super_admin')));
+  const isSuperAdmin = Boolean(user?.roles?.includes('super_admin'));
   const [activeTab, setActiveTab] = useState<'company' | 'policies' | 'social_footer' | 'supabase' | 'security'>('company');
 
   // Company Settings
