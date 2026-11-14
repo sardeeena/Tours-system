@@ -125,6 +125,7 @@ export async function createCustomerInquiry(
     source: input.source || 'web',
     ip_address: null,
     admin_notes: input.tour_title ? `Referenced Tour: ${input.tour_title}` : null,
+    assigned_staff_id: null,
     created_at: now,
     updated_at: now,
   };
