@@ -299,6 +299,7 @@ async function authenticateToken(req: AuthenticatedRequest, res: Response, next:
     }
 
     let role = 'customer';
+    let accessContext: any = null;
     // Read the authoritative role from the caller's own profile using their verified JWT.
     // If the lookup is unavailable or the profile is missing, retain the least-privileged role.
     if (SUPABASE_URL && SUPABASE_USER_KEY) {
@@ -318,7 +319,8 @@ async function authenticateToken(req: AuthenticatedRequest, res: Response, next:
         role = profile.role;
       }
 
-      const { data: accessContext, error: accessError } = await userScopedSupabase.rpc('get_my_access_context');
+      const { data: fetchedAccessContext, error: accessError } = await userScopedSupabase.rpc('get_my_access_context');
+      if (!accessError && fetchedAccessContext) accessContext = fetchedAccessContext;
       if (!accessError && Array.isArray(accessContext?.roles)) {
         const assignedRoles = accessContext.roles.filter((item: unknown): item is string => typeof item === 'string');
         if (assignedRoles.includes('super_admin')) role = 'super_admin';
