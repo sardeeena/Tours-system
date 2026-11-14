@@ -834,8 +834,8 @@ export async function sendWhatsAppMessage(params: {
     const error = new ProviderConfigurationError(
       'WhatsApp',
       'none',
-      ['WHATSAPP_ACCESS_TOKEN', 'WHATSAPP_PHONE_NUMBER_ID', 'WHATSAPP_GRAPH_API_VERSION'],
-      'WhatsApp provider is not configured on the server. Set the Meta Cloud API environment variables in Hostinger.'
+      ['WHATSAPP_ACCESS_TOKEN', 'WHATSAPP_PHONE_NUMBER_ID', 'WHATSAPP_GRAPH_API_VERSION', 'WHATSAPP_TEMPLATE_NAME'],
+      'WhatsApp provider is not configured on the server. Set the Meta Cloud API credentials and approved template configuration in Hostinger.'
     );
     const failed: CommunicationMessage = {
       id: messageId,
