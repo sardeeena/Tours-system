@@ -128,6 +128,8 @@ export interface ProviderConfig {
     phoneNumberId?: string;
     businessAccountId?: string;
     fromNumber?: string;
+    templateName?: string;
+    templateLanguage?: string;
     isConfigured: boolean;
   };
 }
