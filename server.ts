@@ -980,69 +980,38 @@ app.get('/api/tours', rateLimit(120, 60_000), async (req: Request, res: Response
   const { destination, category, search, limit } = req.query;
   const maxItems = Math.min(Math.max(1, parseInt(limit as string, 10) || 50), 100);
 
-  if (!serverSupabase) {
-    const tours = TOUR_CATALOG_SUMMARY.map((t) => ({
-      id: t.slug,
-      slug: t.slug,
-      title: t.title,
-      shortDescription: `${t.title} excursion in Red Sea`,
-      destination: t.destination,
-      category: t.category,
-      categories: [t.category],
-      priceEur: t.priceEur,
-      durationLabel: t.durationLabel,
-      durationHours: 7,
-      rating: 4.8,
-      reviewCount: 45,
-      primaryImage: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80',
-      badge: 'Popular',
-    }));
-    return res.json({
-      success: true,
-      count: tours.length,
-      total: tours.length,
-      tours,
+  // The public catalogue must use the publishable/anon client so RLS remains
+  // authoritative. Never return static/sample tours when Supabase is unavailable.
+  if (!publicSupabase) {
+    return res.status(503).json({
+      success: false,
+      error: 'The tour catalogue is temporarily unavailable. Please try again later.',
+      tours: [],
+      count: 0,
+      total: 0,
     });
   }
 
   try {
-    let query = serverSupabase
+    let query = publicSupabase
       .from('tours')
       .select(`
         id,
         title,
         slug,
         short_description,
-        description,
         destination_id,
         duration,
-        duration_type,
         duration_hours,
-        tour_type,
-        status,
         featured,
         price,
         child_price,
-        infant_price,
-        private_price,
-        currency,
-        max_guests,
-        minimum_booking_notice_hours,
-        pickup_available,
-        pickup_info,
-        cancellation_policy,
-        departure_time,
-        available_days,
-        languages,
-        difficulty,
-        age_restrictions,
         badge,
         rating,
         review_count,
         sort_order,
-        created_at,
         destinations (id, name, slug),
-        tour_categories (categories (id, name, slug)),
+        tour_categories (categories (name)),
         tour_images (id, image_url, is_primary, sort_order)
       `)
       .eq('status', 'published')
@@ -1066,9 +1035,9 @@ app.get('/api/tours', rateLimit(120, 60_000), async (req: Request, res: Response
     const { data, error } = await query;
     if (error) {
       console.error('Supabase /api/tours query error:', error.message);
-      return res.status(500).json({
+      return res.status(503).json({
         success: false,
-        error: 'Database query failed when loading tour catalogue.',
+        error: 'The tour catalogue is temporarily unavailable. Please try again later.',
         tours: [],
         count: 0,
         total: 0,
@@ -1078,20 +1047,23 @@ app.get('/api/tours', rateLimit(120, 60_000), async (req: Request, res: Response
     const tours = (data || []).map((t: any) => {
       const primaryImg = t.tour_images?.find((img: any) => img.is_primary) || t.tour_images?.[0];
       const cats = t.tour_categories?.map((tc: any) => tc.categories?.name).filter(Boolean) || [];
+      const rating = Number(t.rating);
+      const reviewCount = Number(t.review_count);
+      const durationHours = t.duration_hours != null ? Number(t.duration_hours) : undefined;
       return {
         id: t.id,
         slug: t.slug,
         title: t.title,
         shortDescription: t.short_description || '',
-        destination: t.destinations?.name || 'Hurghada',
-        category: cats[0] || 'Excursion',
+        destination: t.destinations?.name || '',
+        category: cats[0] || '',
         categories: cats,
         priceEur: Number(t.price) || 0,
         childPriceEur: t.child_price != null ? Number(t.child_price) : undefined,
-        durationLabel: t.duration || `${t.duration_hours || 7} Hours`,
-        durationHours: t.duration_hours || 7,
-        rating: Number(t.rating) || 5.0,
-        reviewCount: Number(t.review_count) || 0,
+        durationLabel: t.duration || (durationHours != null ? `${durationHours} Hours` : ''),
+        ...(durationHours != null ? { durationHours } : {}),
+        rating: Number.isFinite(rating) ? rating : 0,
+        reviewCount: Number.isFinite(reviewCount) ? reviewCount : 0,
         primaryImage: primaryImg?.image_url || '',
         badge: t.badge || (t.featured ? 'Popular' : undefined),
       };
@@ -1107,7 +1079,7 @@ app.get('/api/tours', rateLimit(120, 60_000), async (req: Request, res: Response
     console.error('Unhandled exception in /api/tours:', err);
     return res.status(500).json({
       success: false,
-      error: 'Internal server error processing tour catalogue request.',
+      error: 'Unable to load the tour catalogue right now.',
       tours: [],
       count: 0,
       total: 0,
