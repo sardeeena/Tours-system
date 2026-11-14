@@ -75,6 +75,8 @@ VALUES (
   'LEDGER-AUTH-20261114'
 );
 
+SELECT set_config('request.jwt.claim.role', 'service_role', true);
+
 UPDATE public.bookings
 SET payment_status = 'partially_paid'
 WHERE id = 'f6200000-0000-4000-8000-000000000001';
@@ -91,8 +93,6 @@ SELECT throws_ok(
   'Booking payment status must match the financial ledger (expected partially_paid, received paid).',
   'directly marking a partially paid booking as paid is rejected'
 );
-
-SELECT set_config('request.jwt.claim.role', 'service_role', true);
 
 SELECT ok(
   (public.record_payment_atomic(
