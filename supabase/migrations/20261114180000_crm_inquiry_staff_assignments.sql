@@ -88,7 +88,7 @@ END;
 $function$;
 
 REVOKE ALL ON FUNCTION public.list_crm_assignable_staff() FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.list_crm_assignable_staff() TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.list_crm_assignable_staff() TO authenticated;
 
 COMMENT ON FUNCTION public.list_crm_assignable_staff() IS
   'Returns confirmed staff profiles with active normalized non-customer/non-guide roles, only to CRM readers.';
