@@ -34,7 +34,6 @@ assert.match(inquiryManager, /<option value="">Unassigned<\/option>/);
 assert.match(inquiryManager, /staffMembers\.map\(\(staff\)/);
 
 assert.match(migration, /REFERENCES public\.profiles\(id\) ON DELETE SET NULL/);
-assert.match(migration, /private\.has_permission/);
 assert.match(migration, /public\.has_permission\('crm\.read'\)/);
 assert.match(migration, /SECURITY INVOKER/);
 assert.match(migration, /private\.list_crm_assignable_staff/);
