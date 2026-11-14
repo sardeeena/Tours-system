@@ -1,7 +1,10 @@
 -- Make inquiry-to-lead conversion atomic and idempotent under concurrent requests.
 BEGIN;
 
-CREATE OR REPLACE FUNCTION public.convert_inquiry_to_lead(p_inquiry_id UUID)
+CREATE SCHEMA IF NOT EXISTS private;
+GRANT USAGE ON SCHEMA private TO authenticated;
+
+CREATE OR REPLACE FUNCTION private.convert_inquiry_to_lead(p_inquiry_id UUID)
 RETURNS SETOF public.leads
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -96,6 +99,19 @@ BEGIN
   RETURN NEXT v_lead;
 END;
 $function$;
+
+REVOKE ALL ON FUNCTION private.convert_inquiry_to_lead(UUID) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION private.convert_inquiry_to_lead(UUID) TO authenticated;
+
+-- Supabase exposes only this invoker-rights wrapper through the public Data API.
+CREATE OR REPLACE FUNCTION public.convert_inquiry_to_lead(p_inquiry_id UUID)
+RETURNS SETOF public.leads
+LANGUAGE sql
+SECURITY INVOKER
+SET search_path = ''
+AS $wrapper$
+  SELECT * FROM private.convert_inquiry_to_lead(p_inquiry_id);
+$wrapper$;
 
 REVOKE ALL ON FUNCTION public.convert_inquiry_to_lead(UUID) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.convert_inquiry_to_lead(UUID) TO authenticated;
