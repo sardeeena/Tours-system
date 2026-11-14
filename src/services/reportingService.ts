@@ -1022,7 +1022,7 @@ export async function fetchFinanceReport(interval: DateRangeInterval): Promise<F
   const outstandingEur = Math.max(0, grossRevenueEur - cohortNetCollected);
 
   // Net booked revenue deducts completed refunds, not merely approved requests.
-  const netRevenueEur = Math.max(0, grossRevenueEur - refundsEur);
+  const netRevenueEur = Math.max(0, grossRevenueEur - cohortRefunded);
 
   // Collection Rate
   const netDue = Math.max(1, grossRevenueEur - discountsEur);
