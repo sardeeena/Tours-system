@@ -14,5 +14,8 @@ assert.match(conversion, /Supabase is not configured/);
 assert.match(migration, /pg_advisory_xact_lock/);
 assert.match(migration, /FOR UPDATE/);
 assert.match(migration, /has_permission\('crm\.manage'\)/);
+assert.match(migration, /CREATE OR REPLACE FUNCTION private\.convert_inquiry_to_lead/);
+assert.match(migration, /CREATE OR REPLACE FUNCTION public\.convert_inquiry_to_lead[\s\S]*?SECURITY INVOKER/);
+assert.match(migration, /REVOKE ALL ON FUNCTION private\.convert_inquiry_to_lead\(UUID\) FROM PUBLIC, anon/);
 assert.match(migration, /INSERT INTO public\.crm_activities/);
 console.log('Atomic CRM inquiry conversion checks passed.');
