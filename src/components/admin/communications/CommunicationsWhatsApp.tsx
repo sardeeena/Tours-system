@@ -301,7 +301,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
   // Filter messages
   const filteredMessages = useMemo(() => {
     return messages.filter((m) => {
-      if (statusFilter !== 'all' && m.status !== statusFilter) return false;
+      if (statusFilter !== 'all' && m.status.toLowerCase() !== statusFilter.toLowerCase()) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         return (
@@ -725,7 +725,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
             </div>
 
             <div className="flex items-center space-x-1.5 text-[11px]">
-              {(['all', 'Sent', 'Delivered', 'Queued', 'Failed'] as const).map((st) => (
+              {(['all', 'Sent', 'Delivered', 'Read', 'Queued', 'Failed'] as const).map((st) => (
                 <button
                   key={st}
                   type="button"
@@ -753,6 +753,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
                 const isFailed = msg.status === 'Failed';
                 const isSent = msg.status === 'Sent';
                 const isDelivered = msg.status === 'Delivered';
+                const isRead = msg.status === 'Read' || msg.status === 'read';
 
                 return (
                   <div
@@ -765,6 +766,9 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
                         {msg.customerName}
                       </div>
                       <div className="flex items-center space-x-1.5">
+                        {isRead && (
+                          <span className="rounded-full bg-sky-500/10 text-sky-300 px-2 py-0.5 text-[9px] font-bold uppercase">Read</span>
+                        )}
                         {isDelivered && (
                           <span className="px-1.5 py-0.5 text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded">
                             Delivered
@@ -961,6 +965,9 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
                 <span className="text-stone-400">Sent Timestamp:</span>
                 <span className="text-stone-300">{selectedMessage.sentAt ? new Date(selectedMessage.sentAt).toLocaleString() : 'Not dispatched'}</span>
               </div>
+              {selectedMessage.readAt && (
+                <div className="flex justify-between text-xs"><span className="text-stone-400">Read Timestamp:</span><span className="text-stone-300">{new Date(selectedMessage.readAt).toLocaleString()}</span></div>
+              )}
               {selectedMessage.failureReason && (
                 <div className="p-2.5 bg-rose-950/40 border border-rose-900/60 rounded text-rose-300">
                   <strong>Failure Reason:</strong> {selectedMessage.failureReason}

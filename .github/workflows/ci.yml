@@ -61,6 +61,9 @@ jobs:
       - name: Verify staff WhatsApp consent capture boundaries
         run: npm run test:whatsapp-consent-capture
 
+      - name: Verify Meta WhatsApp delivery webhook security and idempotency
+        run: npm run test:whatsapp-webhook
+
       - name: Verify booking identifier and production fallback behavior
         run: npm run test:booking
 

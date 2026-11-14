@@ -1032,6 +1032,7 @@ export async function updateMessageDeliveryStatus(
           status: newStatus,
           delivered_at: msg.deliveredAt,
           opened_at: msg.openedAt,
+        read_at: msg.readAt,
           failure_reason: msg.failureReason,
         })
         .eq('id', messageId);
@@ -1170,6 +1171,7 @@ export async function listCommunicationMessages(filter?: {
           sentAt: d.sent_at,
           deliveredAt: d.delivered_at,
           openedAt: d.opened_at,
+          readAt: d.read_at,
           staffName: d.staff_name || 'Staff',
           createdAt: d.created_at,
         }));

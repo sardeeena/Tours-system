@@ -3,11 +3,13 @@ export type MessageDeliveryStatus =
   | 'sent'
   | 'delivered'
   | 'failed'
+  | 'read'
   | 'opened'
   | 'Queued'
   | 'Sent'
   | 'Delivered'
   | 'Failed'
+  | 'Read'
   | 'Opened';
 
 export type CommunicationChannel = 'Email' | 'WhatsApp';
@@ -75,6 +77,7 @@ export interface CommunicationMessage {
   sentAt?: string | null;
   deliveredAt?: string | null;
   openedAt?: string | null;
+  readAt?: string | null;
   staffName: string;
   staffId?: string | null;
   createdAt: string;

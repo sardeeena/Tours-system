@@ -337,6 +337,8 @@ async function authenticateToken(req: AuthenticatedRequest, res: Response, next:
 // ------------------------------------------------------------------------------
 // Preserve the exact request bytes for Resend Svix signature verification.
 app.use('/api/webhooks/resend', express.raw({ type: 'application/json', limit: '1mb' }));
+// Meta signs the exact request bytes; parse WhatsApp JSON only after verification.
+app.use('/api/webhooks/whatsapp', express.raw({ type: 'application/json', limit: '1mb' }));
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
@@ -1045,6 +1047,106 @@ app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: Auth
       ? 'WhatsApp provider request timed out. Delivery could not be confirmed.'
       : 'WhatsApp provider request failed. Please retry after checking the server logs.';
     return res.status(502).json({ success: false, error: message });
+  }
+});
+
+
+function constantTimeStringEqual(left: string, right: string): boolean {
+  const a = Buffer.from(left, 'utf8');
+  const b = Buffer.from(right, 'utf8');
+  return a.length === b.length && timingSafeEqual(a, b);
+}
+
+function safeWhatsAppFailureReason(errors: any[]): { code: string | null; reason: string | null } {
+  const first = Array.isArray(errors) ? errors[0] : null;
+  if (!first || typeof first !== 'object') return { code: null, reason: null };
+  const code = first.code === undefined || first.code === null ? null : String(first.code).slice(0, 40);
+  const raw = typeof first.title === 'string' ? first.title : typeof first.message === 'string' ? first.message : '';
+  const reason = raw.replace(/[\r\n\t]+/g, ' ').replace(/\s{2,}/g, ' ').trim().slice(0, 500) || null;
+  return { code, reason };
+}
+
+// Public GET handshake. The verify token is distinct from the Meta app secret.
+app.get('/api/webhooks/whatsapp', rateLimit(30, 60_000), (req: Request, res: Response) => {
+  const verifyToken = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN?.trim() || '';
+  if (!verifyToken) return res.status(503).type('text').send('WhatsApp webhook verification is not configured.');
+  const mode = req.query['hub.mode'];
+  const suppliedToken = req.query['hub.verify_token'];
+  const challenge = req.query['hub.challenge'];
+  if (mode !== 'subscribe' || typeof suppliedToken !== 'string' || typeof challenge !== 'string' ||
+      challenge.length < 1 || challenge.length > 256 || !constantTimeStringEqual(suppliedToken, verifyToken)) {
+    return res.status(403).type('text').send('Webhook verification failed.');
+  }
+  return res.status(200).type('text/plain').send(challenge);
+});
+
+// Public POST callback. Verify HMAC against the raw bytes before parsing or trusting JSON.
+app.post('/api/webhooks/whatsapp', rateLimit(180, 60_000), async (req: Request, res: Response) => {
+  const appSecret = process.env.WHATSAPP_APP_SECRET?.trim() || '';
+  const configuredPhoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID?.trim() || '';
+  if (!appSecret || !/^\d{5,30}$/.test(configuredPhoneNumberId)) return res.status(503).json({ success: false, error: 'WhatsApp webhook signature verification and phone-number configuration are required.' });
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
+    return res.status(503).json({ success: false, error: 'Secure WhatsApp status storage is unavailable.' });
+  }
+  if (!Buffer.isBuffer(req.body)) return res.status(400).json({ success: false, error: 'Invalid webhook body.' });
+  const signature = req.header('x-hub-signature-256') || '';
+  const suppliedHex = signature.startsWith('sha256=') ? signature.slice(7) : '';
+  if (!/^[a-f0-9]{64}$/i.test(suppliedHex)) {
+    return res.status(401).json({ success: false, error: 'Invalid webhook signature.' });
+  }
+  const expected = createHmac('sha256', appSecret).update(req.body).digest();
+  const supplied = Buffer.from(suppliedHex, 'hex');
+  if (supplied.length !== expected.length || !timingSafeEqual(expected, supplied)) {
+    return res.status(401).json({ success: false, error: 'Invalid webhook signature.' });
+  }
+
+  let payload: any;
+  try { payload = JSON.parse(req.body.toString('utf8')); }
+  catch { return res.status(400).json({ success: false, error: 'Invalid webhook JSON.' }); }
+  if (!payload || payload.object !== 'whatsapp_business_account' || !Array.isArray(payload.entry)) {
+    return res.status(400).json({ success: false, error: 'Invalid WhatsApp webhook envelope.' });
+  }
+
+  let received = 0;
+  try {
+    for (const entry of payload.entry) {
+      if (!Array.isArray(entry?.changes)) continue;
+      for (const change of entry.changes) {
+        if (change?.field !== 'messages' || change?.value?.metadata?.phone_number_id !== configuredPhoneNumberId || !Array.isArray(change?.value?.statuses)) continue;
+        for (const event of change.value.statuses) {
+          const providerMessageId = typeof event?.id === 'string' ? event.id.trim() : '';
+          const status = typeof event?.status === 'string' ? event.status.toLowerCase() : '';
+          const seconds = typeof event?.timestamp === 'string' || typeof event?.timestamp === 'number'
+            ? Number(event.timestamp) : Number.NaN;
+          if (!providerMessageId || providerMessageId.length > 255 ||
+              !['sent', 'delivered', 'read', 'failed'].includes(status) ||
+              !Number.isSafeInteger(seconds) || seconds <= 0 || seconds > Math.floor(Date.now() / 1000) + 86400) continue;
+          const eventAt = new Date(seconds * 1000).toISOString();
+          const failure = status === 'failed' ? safeWhatsAppFailureReason(event.errors) : { code: null, reason: null };
+          const eventKey = createHash('sha256')
+            .update([providerMessageId, status, String(seconds), failure.code || '', failure.reason || ''].join('\0'))
+            .digest('hex');
+          const { error } = await serverSupabase.rpc('record_whatsapp_provider_status', {
+            p_event_key: eventKey,
+            p_provider_message_id: providerMessageId,
+            p_status: status,
+            p_event_at: eventAt,
+            p_error_code: failure.code,
+            p_failure_reason: failure.reason,
+          });
+          if (error) {
+            console.error('[WhatsApp webhook] Status persistence failed:', error.message);
+            return res.status(503).json({ success: false, error: 'WhatsApp delivery status could not be stored. Meta may retry this event.' });
+          }
+          received++;
+        }
+      }
+    }
+    // This endpoint tracks outbound delivery only; inbound customer messages are not ingested.
+    return res.status(200).json({ success: true, received });
+  } catch (error) {
+    console.error('[WhatsApp webhook] Event processing failed:', error);
+    return res.status(503).json({ success: false, error: 'WhatsApp delivery status processing failed. Meta may retry this event.' });
   }
 });
 
