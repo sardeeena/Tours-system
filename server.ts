@@ -607,9 +607,11 @@ app.get('/api/health', rateLimit(120, 60_000), (_req: Request, res: Response) =>
 // ------------------------------------------------------------------------------
 function userHasPermission(req: AuthenticatedRequest, permission: string): boolean {
   if (!req.user) return false;
+  // Only the live, caller-scoped normalized RBAC context may grant access.
+  // profiles.role is a compatibility field and must never become an authorization
+  // fallback when get_my_access_context is unavailable or returns no assignments.
   const roles = req.user.roles || [];
-  if (roles.includes('super_admin') || roles.includes('admin')
-      || req.user.role === 'super_admin' || req.user.role === 'admin') return true;
+  if (roles.includes('super_admin') || roles.includes('admin')) return true;
   const moduleName = permission.split('.')[0];
   const permissions = req.user.permissions || [];
   return permissions.includes(permission) || permissions.includes(moduleName + '.manage');
@@ -2144,7 +2146,7 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
 function requireSuperAdminAal2(req: AuthenticatedRequest, res: Response): boolean {
   const token = (req.headers.authorization || '').replace(/^Bearer\s+/i, '').trim();
   const claims = token ? parseJwtPayload(token) : null;
-  if (!req.user || (req.user.role !== 'super_admin' && !req.user.roles?.includes('super_admin'))) {
+  if (!req.user || !req.user.roles?.includes('super_admin')) {
     res.status(403).json({ success: false, error: 'Super Admin access is required.' });
     return false;
   }
