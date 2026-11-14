@@ -459,23 +459,34 @@ class SupabaseBookingRepository implements IBookingRepository {
       throw new Error('The reservation service is temporarily unavailable. Booking changes were not saved.');
     }
 
+    // Payment status is derived from the financial ledger. Booking edits must never
+    // write it directly, even when the caller passes a modified Booking object.
+    let savedBooking = booking;
     if (supabaseConfigured) {
       try {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('bookings')
           .update({
             status: booking.status,
-            payment_status: booking.paymentStatus,
             pickup_hotel_name: booking.pickup.hotelName,
             pickup_room_number: booking.pickup.roomNumber,
             special_requests: booking.customer.specialRequests,
             updated_at: new Date().toISOString(),
           })
-          .eq('booking_reference', booking.bookingReference);
+          .eq('booking_reference', booking.bookingReference)
+          .select('payment_status')
+          .maybeSingle();
 
         if (error) {
           throw new Error(formatSupabaseError(error));
         }
+        if (!data) {
+          throw new Error('Booking was not found or the update was not confirmed.');
+        }
+        savedBooking = {
+          ...booking,
+          paymentStatus: (data.payment_status || 'pending') as Booking['paymentStatus'],
+        };
       } catch (err) {
         console.error('Update booking Supabase error:', err);
         throw err;
@@ -485,23 +496,23 @@ class SupabaseBookingRepository implements IBookingRepository {
     // Update the browser cache only after the authoritative write succeeds, or
     // in the explicit development sandbox when Supabase is intentionally absent.
     const local = this.getLocalBookings().map((item) =>
-      item.bookingReference === booking.bookingReference ? booking : item
+      item.bookingReference === savedBooking.bookingReference ? savedBooking : item
     );
     this.saveLocalBookings(local);
 
     // CRM Activity Timeline
     try {
       await recordActivity({
-        customerId: booking.customerId,
-        bookingId: booking.bookingId || booking.bookingReference,
+        customerId: savedBooking.customerId,
+        bookingId: savedBooking.bookingId || savedBooking.bookingReference,
         eventType: 'booking_updated',
-        title: `Booking Updated: ${booking.bookingReference}`,
-        description: `Status: ${booking.status}. Payment status: ${booking.paymentStatus}. Hotel: ${booking.pickup.hotelName || 'Direct Arrival'}.`,
+        title: `Booking Updated: ${savedBooking.bookingReference}`,
+        description: `Status: ${savedBooking.status}. Payment status: ${savedBooking.paymentStatus}. Hotel: ${savedBooking.pickup.hotelName || 'Direct Arrival'}.`,
         actor: 'Staff Dispatch',
         metadata: {
-          bookingReference: booking.bookingReference,
-          status: booking.status,
-          paymentStatus: booking.paymentStatus,
+          bookingReference: savedBooking.bookingReference,
+          status: savedBooking.status,
+          paymentStatus: savedBooking.paymentStatus,
         },
       });
     } catch {}
@@ -511,18 +522,18 @@ class SupabaseBookingRepository implements IBookingRepository {
       await publishAutomationEvent(
         'booking.updated',
         {
-          bookingReference: booking.bookingReference,
-          status: booking.status,
-          paymentStatus: booking.paymentStatus,
-          date: booking.date,
-          tourTitle: booking.tourTitle,
+          bookingReference: savedBooking.bookingReference,
+          status: savedBooking.status,
+          paymentStatus: savedBooking.paymentStatus,
+          date: savedBooking.date,
+          tourTitle: savedBooking.tourTitle,
         },
         'booking',
-        booking.bookingId || booking.bookingReference
+        savedBooking.bookingId || savedBooking.bookingReference
       );
     } catch {}
 
-    return booking;
+    return savedBooking;
   }
 
   async cancelBooking(bookingReference: string, reason: string, verification: string): Promise<Booking | null> {
