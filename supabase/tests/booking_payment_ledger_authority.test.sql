@@ -75,7 +75,11 @@ VALUES (
   'LEDGER-AUTH-20261114'
 );
 
-SELECT set_config('request.jwt.claim.role', 'service_role', true);
+SELECT set_config(
+  'request.jwt.claims',
+  jsonb_build_object('role', 'service_role')::text,
+  true
+);
 
 UPDATE public.bookings
 SET payment_status = 'partially_paid'
