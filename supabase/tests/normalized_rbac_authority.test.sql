@@ -34,6 +34,17 @@ SELECT 'f9100000-0000-0000-0000-000000000003', id
 FROM public.access_roles WHERE slug = 'super_admin' AND is_active
 ON CONFLICT (user_id, role_id) DO NOTHING;
 
+SELECT ok(
+  NOT EXISTS (
+    SELECT 1
+    FROM public.role_permissions rp
+    JOIN public.access_roles r ON r.id = rp.role_id
+    JOIN public.access_permissions p ON p.id = rp.permission_id
+    WHERE r.slug = 'admin' AND p.permission_key = 'settings.manage'
+  ),
+  'settings.manage is not assigned to the ordinary Admin role'
+);
+
 SET LOCAL ROLE authenticated;
 SET LOCAL request.jwt.claims = '{"sub":"f9100000-0000-0000-0000-000000000001","role":"authenticated","aal":"aal2"}';
 SET LOCAL request.jwt.claim.sub = 'f9100000-0000-0000-0000-000000000001';
@@ -48,17 +59,6 @@ SET LOCAL request.jwt.claim.sub = 'f9100000-0000-0000-0000-000000000002';
 SELECT is(private.has_role('admin'), true, 'normalized admin assignment is recognized');
 SELECT is(private.has_permission('customers.update'), true, 'normalized admin retains ordinary module permissions');
 SELECT is(private.has_permission('settings.manage'), false, 'ordinary Admin cannot access site settings');
-SELECT ok(
-  NOT EXISTS (
-    SELECT 1
-    FROM public.role_permissions rp
-    JOIN public.access_roles r ON r.id = rp.role_id
-    JOIN public.access_permissions p ON p.id = rp.permission_id
-    WHERE r.slug = 'admin' AND p.permission_key = 'settings.manage'
-  ),
-  'settings.manage is not assigned to the ordinary Admin role'
-);
-
 SET LOCAL request.jwt.claims = '{"sub":"f9100000-0000-0000-0000-000000000003","role":"authenticated","aal":"aal2"}';
 SET LOCAL request.jwt.claim.sub = 'f9100000-0000-0000-0000-000000000003';
 
