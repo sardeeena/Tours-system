@@ -78,6 +78,17 @@ BEGIN
   )
   RETURNING * INTO v_lead;
 
+  INSERT INTO public.crm_activities (
+    lead_id, event_type, title, description, actor, metadata
+  ) VALUES (
+    v_lead.id,
+    'lead_created',
+    'Lead Created from Inquiry',
+    'Lead created through atomic inquiry conversion.',
+    'CRM Staff',
+    jsonb_build_object('source_inquiry_id', v_inquiry.id)
+  );
+
   UPDATE public.inquiries
   SET status = 'converted', updated_at = now()
   WHERE id = p_inquiry_id;
