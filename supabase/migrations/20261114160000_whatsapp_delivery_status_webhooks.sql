@@ -28,6 +28,11 @@ CREATE INDEX IF NOT EXISTS whatsapp_provider_status_events_message_time_idx
 ALTER TABLE public.whatsapp_provider_status_events ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.whatsapp_provider_status_events FROM PUBLIC, anon, authenticated, service_role;
 
+-- Keep the provider status ledger covered by the same business row-change audit trail.
+CREATE TRIGGER trg_capture_business_audit
+AFTER INSERT OR UPDATE OR DELETE ON public.whatsapp_provider_status_events
+FOR EACH ROW EXECUTE FUNCTION private.capture_business_audit();
+
 CREATE OR REPLACE FUNCTION public.record_whatsapp_provider_status(
   p_event_key text,
   p_provider_message_id text,
