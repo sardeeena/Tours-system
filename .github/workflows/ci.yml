@@ -55,6 +55,9 @@ jobs:
       - name: Verify persistent CRM inquiry staff assignments
         run: npm run test:crm-inquiry-staff-assignment
 
+      - name: Verify atomic CRM inquiry conversion
+        run: npm run test:crm-inquiry-conversion-atomicity
+
       - name: Type-check
         run: npm run lint
 
