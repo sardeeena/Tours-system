@@ -35,7 +35,8 @@
     "test:public-catalogue": "tsx scripts/test_public_catalogue_fail_closed.ts",
     "test:booking-finance-boundary": "tsx scripts/test_booking_finance_ledger_authority.ts",
     "test:finance-reporting": "tsx scripts/test_finance_reporting_refund_consistency.ts",
-    "test:whatsapp-compliance": "tsx scripts/test_whatsapp_compliance.ts"
+    "test:whatsapp-compliance": "tsx scripts/test_whatsapp_compliance.ts",
+    "test:whatsapp-consent-capture": "tsx scripts/test_whatsapp_consent_capture.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

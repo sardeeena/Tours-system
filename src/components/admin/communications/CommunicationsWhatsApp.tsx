@@ -33,6 +33,9 @@ import {
   renderTemplateVariables,
   getWhatsAppDirectUrl,
   ProviderConfigurationError,
+  listWhatsAppConsentEvents,
+  recordWhatsAppConsentEvent,
+  WhatsAppConsentEvent,
 } from '../../../services/communicationService';
 import {
   CommunicationMessage,
@@ -75,6 +78,14 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
   const [activeTab, setActiveTab] = useState<'composer' | 'preview'>('composer');
   const [sending, setSending] = useState(false);
 
+  const [consentPurpose, setConsentPurpose] = useState<'transactional' | 'marketing'>('transactional');
+  const [consentEvents, setConsentEvents] = useState<WhatsAppConsentEvent[]>([]);
+  const [consentLoading, setConsentLoading] = useState(false);
+  const [consentSaving, setConsentSaving] = useState(false);
+  const [consentConfirmed, setConsentConfirmed] = useState(false);
+  const [consentEvidenceReference, setConsentEvidenceReference] = useState('');
+
+
   // Provider Settings Modal
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [tempWaProvider, setTempWaProvider] = useState<'meta_cloud' | 'none'>('meta_cloud');
@@ -108,6 +119,37 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
     loadData();
   }, []);
 
+  const loadConsentHistory = async (customerId: string, phone: string) => {
+    if (!customerId || !phone.replace(/\D/g, '')) { setConsentEvents([]); return; }
+    setConsentLoading(true);
+    try { setConsentEvents(await listWhatsAppConsentEvents(customerId, phone)); }
+    catch (err: any) { setConsentEvents([]); showToast(err?.message || 'Unable to load consent history.', 'error'); }
+    finally { setConsentLoading(false); }
+  };
+
+  const handleRecordConsent = async (action: 'grant' | 'revoke') => {
+    const booking = bookings.find((item) => item.bookingReference === selectedBookingRef);
+    const customerId = booking?.customerId || '';
+    const phone = recipientPhone.replace(/\D/g, '');
+    if (!customerId || !phone || !consentConfirmed) {
+      showToast('Select a linked customer and confirm the customer’s recorded choice first.', 'error');
+      return;
+    }
+    if (action === 'grant' && consentEvidenceReference.trim().length < 4) {
+      showToast('Add a brief evidence reference before recording permission.', 'error');
+      return;
+    }
+    setConsentSaving(true);
+    try {
+      await recordWhatsAppConsentEvent({ customerId, phone, purpose: consentPurpose, action, evidenceReference: consentEvidenceReference.trim(), explicitConfirmation: consentConfirmed });
+      showToast(action === 'grant' ? 'Customer permission recorded.' : 'Customer withdrawal recorded.', 'success');
+      setConsentConfirmed(false);
+      setConsentEvidenceReference('');
+      await loadConsentHistory(customerId, recipientPhone);
+    } catch (err: any) { showToast(err?.message || 'Consent could not be recorded.', 'error'); }
+    finally { setConsentSaving(false); }
+  };
+
   // When booking selection changes, pre-fill customer details
   const handleBookingChange = (bookingRef: string) => {
     setSelectedBookingRef(bookingRef);
@@ -119,10 +161,10 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
       setRecipientPhone(fullPhone);
       setCustomerName(`${b.customer?.firstName || ''} ${b.customer?.lastName || ''}`.trim() || 'Guest');
 
-      if (selectedTemplateKey) {
-        applyTemplate(selectedTemplateKey, b);
-      }
-    }
+      if (selectedTemplateKey) applyTemplate(selectedTemplateKey, b);
+      if (b.customerId) void loadConsentHistory(b.customerId, fullPhone);
+      else setConsentEvents([]);
+    } else setConsentEvents([]);
   };
 
   // When template changes, inject variables and fill body
@@ -533,6 +575,27 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
               />
             </div>
           </div>
+
+          {/* Staff records verified customer choices; booking or cookie consent is never treated as WhatsApp permission. */}
+          <section className="rounded-xl border border-emerald-500/20 bg-stone-950 p-4 space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-emerald-400" /><h3 className="text-xs font-semibold text-white">Customer WhatsApp Permission</h3></div>
+              <button type="button" onClick={() => { const b = bookings.find((item) => item.bookingReference === selectedBookingRef); if (b?.customerId) void loadConsentHistory(b.customerId, recipientPhone); }} disabled={consentLoading || !selectedBookingRef} className="text-[10px] text-emerald-300 hover:text-emerald-200 disabled:opacity-40">{consentLoading ? 'Refreshing…' : 'Refresh history'}</button>
+            </div>
+            <p className="text-[11px] text-stone-400">Record only a choice the customer has already made. Selecting a booking, providing a phone number, or accepting cookies does not count as WhatsApp permission.</p>
+            {!bookings.find((item) => item.bookingReference === selectedBookingRef)?.customerId ? (
+              <p className="rounded-lg border border-amber-500/30 bg-amber-950/20 p-3 text-[11px] text-amber-200">Choose a booking linked to a customer record. Manual phone entries cannot be opted in through this screen.</p>
+            ) : <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div><label className="block text-[10px] text-stone-400 mb-1">Permission purpose</label><select value={consentPurpose} onChange={(e) => { setConsentPurpose(e.target.value as 'transactional' | 'marketing'); setConsentConfirmed(false); }} className="w-full bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs text-white"><option value="transactional">Booking and service updates</option><option value="marketing">Offers and promotions</option></select></div>
+                <div className="flex flex-col justify-end">{(() => { const latest = consentEvents.find((event) => event.purpose === consentPurpose); const active = latest?.consent_action === 'granted'; return <div className="rounded-lg border border-stone-800 bg-stone-900 px-3 py-2"><span className="block text-[10px] text-stone-500">Latest recorded choice</span><span className={active ? 'text-xs font-semibold text-emerald-300' : 'text-xs font-semibold text-amber-300'}>{latest ? (active ? 'Permission granted' : 'Permission withdrawn') : 'No permission recorded'}</span>{latest && <span className="block text-[10px] text-stone-500">{new Date(latest.recorded_at).toLocaleString()}</span>}</div>; })()}</div>
+              </div>
+              <div><label className="block text-[10px] text-stone-400 mb-1">Evidence reference (required to grant)</label><input value={consentEvidenceReference} onChange={(e) => setConsentEvidenceReference(e.target.value)} maxLength={200} placeholder="e.g. signed form date or booking form record ID" className="w-full bg-stone-900 border border-stone-700 rounded-lg px-3 py-2 text-xs text-white placeholder-stone-600" /></div>
+              <label className="flex items-start gap-2 text-[11px] text-stone-300"><input type="checkbox" checked={consentConfirmed} onChange={(e) => setConsentConfirmed(e.target.checked)} className="mt-0.5 accent-emerald-500" /><span>I verified the customer explicitly made this choice for this phone number and purpose. I am recording their choice, not granting permission on their behalf.</span></label>
+              <div className="flex flex-wrap gap-2"><button type="button" onClick={() => handleRecordConsent('grant')} disabled={consentSaving || !consentConfirmed || consentEvidenceReference.trim().length < 4} className="rounded-lg bg-emerald-700 hover:bg-emerald-600 disabled:opacity-40 px-3 py-2 text-[11px] font-semibold text-white">{consentSaving ? 'Saving…' : 'Record permission'}</button><button type="button" onClick={() => handleRecordConsent('revoke')} disabled={consentSaving || !consentConfirmed} className="rounded-lg border border-rose-500/40 bg-rose-950/20 hover:bg-rose-950/40 disabled:opacity-40 px-3 py-2 text-[11px] font-semibold text-rose-200">Record withdrawal</button></div>
+              <div className="border-t border-stone-800 pt-2"><p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-stone-500">Append-only consent history</p>{consentEvents.length === 0 ? <p className="text-[11px] text-stone-500">No evidence records for this customer and phone number.</p> : <div className="max-h-36 space-y-2 overflow-y-auto">{consentEvents.map((event) => <div key={event.id} className="flex flex-wrap items-start justify-between gap-2 rounded-lg bg-stone-900 px-3 py-2"><div><span className="text-[11px] font-medium text-stone-200">{event.purpose === 'transactional' ? 'Service updates' : 'Marketing'} · {event.consent_action === 'granted' ? 'Granted' : 'Withdrawn'}</span><span className="block text-[10px] text-stone-500">{new Date(event.recorded_at).toLocaleString()} · {event.consent_source.replace(/_/g, ' ')}</span>{event.evidence_reference && <span className="block text-[10px] text-stone-400">Evidence: {event.evidence_reference}</span>}</div><span className="text-[9px] text-stone-500">{event.consent_text_version}</span></div>)}</div>}</div>
+            </>}
+          </section>
 
           {/* Variable Insertion Buttons */}
           <div>

@@ -58,6 +58,9 @@ jobs:
       - name: Verify WhatsApp consent and Meta template boundaries
         run: npm run test:whatsapp-compliance
 
+      - name: Verify staff WhatsApp consent capture boundaries
+        run: npm run test:whatsapp-consent-capture
+
       - name: Verify booking identifier and production fallback behavior
         run: npm run test:booking
 

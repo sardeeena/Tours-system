@@ -805,6 +805,59 @@ export async function sendEmailMessage(params: {
   }
 }
 
+export interface WhatsAppConsentEvent {
+  id: string;
+  purpose: 'transactional' | 'marketing';
+  phone_e164: string;
+  consent_action: 'granted' | 'revoked';
+  consent_text_version: string;
+  consent_source: string;
+  recorded_by: string | null;
+  recorded_at: string;
+  evidence_reference: string | null;
+}
+
+async function getCommunicationsAccessToken(): Promise<string> {
+  if (!isSupabaseConfigured()) throw new Error('A configured staff sign-in is required to manage WhatsApp consent.');
+  const { data: { session }, error } = await supabase.auth.getSession();
+  if (error || !session) throw new Error('Sign in with an authorized staff account before managing WhatsApp consent.');
+  return session.access_token;
+}
+
+export async function listWhatsAppConsentEvents(customerId: string, phone: string): Promise<WhatsAppConsentEvent[]> {
+  const token = await getCommunicationsAccessToken();
+  const query = new URLSearchParams({ customerId, phone: phone.replace(/\D/g, '') });
+  const response = await fetch('/api/communications/whatsapp/consent?' + query.toString(), {
+    headers: { Authorization: 'Bearer ' + token },
+  });
+  const result = await response.json().catch(() => ({} as any));
+  if (!response.ok || result?.success !== true || !Array.isArray(result.events)) {
+    throw new Error(typeof result?.error === 'string' ? result.error : 'Unable to load WhatsApp consent history.');
+  }
+  return result.events as WhatsAppConsentEvent[];
+}
+
+export async function recordWhatsAppConsentEvent(params: {
+  customerId: string;
+  phone: string;
+  purpose: 'transactional' | 'marketing';
+  action: 'grant' | 'revoke';
+  evidenceReference: string;
+  explicitConfirmation: boolean;
+}): Promise<WhatsAppConsentEvent> {
+  const token = await getCommunicationsAccessToken();
+  const response = await fetch('/api/communications/whatsapp/consent', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+    body: JSON.stringify({ ...params, phone: params.phone.replace(/\D/g, '') }),
+  });
+  const result = await response.json().catch(() => ({} as any));
+  if (!response.ok || result?.success !== true || !result.event) {
+    throw new Error(typeof result?.error === 'string' ? result.error : 'Unable to record WhatsApp consent.');
+  }
+  return result.event as WhatsAppConsentEvent;
+}
+
 export async function sendWhatsAppMessage(params: {
   recipientPhone: string;
   customerName: string;
