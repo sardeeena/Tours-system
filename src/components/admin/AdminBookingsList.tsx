@@ -19,7 +19,7 @@ import { bookingRepository } from '../../services/bookingRepository';
 import { Booking, BookingStatus } from '../../types/booking';
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
-import { listPayments, recordPayment } from '../../services/financeService';
+import { listPayments, listRefunds, recordPayment } from '../../services/financeService';
 
 export const AdminBookingsList: React.FC = () => {
   const { showToast } = useToast();
@@ -103,45 +103,6 @@ export const AdminBookingsList: React.FC = () => {
     }
   };
 
-  const handleUpdatePaymentStatus = async (ref: string, newPaymentStatus: 'paid' | 'pending' | 'refunded') => {
-    if (newPaymentStatus === 'paid') {
-      if (!hasPermission('finance.create')) { showToast('Your role does not permit recording payments.', 'error'); return; }
-      const existingBooking = bookings.find((b) => b.bookingReference === ref);
-      if (existingBooking) { setPaymentToRecord(existingBooking); setPaymentMethod('Cash'); setPaymentNotes(''); }
-      return;
-    }
-    if (!hasPermission('bookings.update')) { showToast('Your role does not permit booking payment-status changes.', 'error'); return; }
-    const existing = bookings.find((b) => b.bookingReference === ref);
-    if (!existing) return;
-
-    const updated: Booking = {
-      ...existing,
-      paymentStatus: newPaymentStatus,
-      updatedAt: new Date().toISOString(),
-      timeline: [
-        ...(existing.timeline || []),
-        {
-          id: `ev-${Date.now()}`,
-          timestamp: new Date().toISOString(),
-          title: `Payment Status Changed to ${newPaymentStatus.toUpperCase()}`,
-          description: `Updated by administrator`,
-          type: 'modification',
-        },
-      ],
-    };
-
-    try {
-      await bookingRepository.updateBooking(updated);
-      showToast(`Payment status for ${ref} updated to ${newPaymentStatus.toUpperCase()}`, 'success');
-      if (selectedBooking?.bookingReference === ref) {
-        setSelectedBooking(updated);
-      }
-      await loadBookings();
-    } catch (err: any) {
-      showToast(err.message || 'Failed to update payment status', 'error');
-    }
-  };
-
   const confirmRecordPayment = async () => {
     if (!paymentToRecord || !hasPermission('finance.create')) return;
     setSavingPayment(true);
@@ -150,8 +111,13 @@ export const AdminBookingsList: React.FC = () => {
       const settled = existingPayments
         .filter((payment) => ['paid', 'partially paid', 'partially_paid'].includes(String(payment.paymentStatus).toLowerCase()))
         .reduce((sum, payment) => sum + payment.amount, 0);
+      const existingRefunds = await listRefunds({ bookingId: paymentToRecord.bookingReference });
+      const refunded = existingRefunds
+        .filter((refund) => refund.status === 'processed')
+        .reduce((sum, refund) => sum + (refund.approvedAmount || refund.amount), 0);
+      const netPaid = Math.max(0, settled - refunded);
       const bookingTotal = Number(paymentToRecord.pricing?.totalEur || 0);
-      const remaining = Math.max(0, Math.round((bookingTotal - settled) * 100) / 100);
+      const remaining = Math.max(0, Math.round((bookingTotal - netPaid) * 100) / 100);
       if (remaining <= 0) throw new Error('This booking has no outstanding balance in the payment ledger.');
       await recordPayment({
         bookingId: paymentToRecord.bookingId || paymentToRecord.bookingReference,
@@ -482,34 +448,23 @@ export const AdminBookingsList: React.FC = () => {
                   </span>
                 </div>
 
-                <div className="flex items-center space-x-1.5">
-                  {hasPermission('finance.create') && selectedBooking.paymentStatus !== 'paid' && (
+                <div className="flex flex-col items-end gap-2">
+                  {hasPermission('finance.create') && !['paid', 'refunded'].includes(selectedBooking.paymentStatus) && (
                     <button
                       type="button"
-                      onClick={() => handleUpdatePaymentStatus(selectedBooking.bookingReference, 'paid')}
-                      className="px-2 py-1 bg-teal-600 hover:bg-teal-500 text-white rounded font-medium text-[10px]"
+                      onClick={() => {
+                        setPaymentToRecord(selectedBooking);
+                        setPaymentMethod('Cash');
+                        setPaymentNotes('');
+                      }}
+                      className="px-3 py-1.5 bg-teal-600 hover:bg-teal-500 text-white rounded font-medium text-[10px]"
                     >
-                      Mark Paid
+                      Record Payment
                     </button>
                   )}
-                  {hasPermission('finance.create') && selectedBooking.paymentStatus === 'paid' && (
-                    <button
-                      type="button"
-                      onClick={() => handleUpdatePaymentStatus(selectedBooking.bookingReference, 'refunded')}
-                      className="px-2 py-1 bg-stone-700 hover:bg-stone-600 text-stone-200 rounded font-medium text-[10px]"
-                    >
-                      Refund
-                    </button>
-                  )}
-                  {hasPermission('finance.create') && selectedBooking.paymentStatus !== 'pending' && (
-                    <button
-                      type="button"
-                      onClick={() => handleUpdatePaymentStatus(selectedBooking.bookingReference, 'pending')}
-                      className="px-2 py-1 bg-stone-800 hover:bg-stone-700 text-stone-300 rounded font-medium text-[10px]"
-                    >
-                      Reset Pending
-                    </button>
-                  )}
+                  <p className="max-w-xs text-right text-[10px] leading-relaxed text-stone-500">
+                    Payment status follows recorded payments and processed refunds. Refunds must be managed through the Finance refund workflow.
+                  </p>
                 </div>
               </div>
             </div>
