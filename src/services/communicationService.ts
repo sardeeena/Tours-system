@@ -465,40 +465,32 @@ export function validateEmailProviderCredentials(emailConfig?: ProviderConfig['e
  */
 export function validateWhatsAppProviderCredentials(whatsappConfig?: ProviderConfig['whatsapp']): void {
   const cfg = whatsappConfig || getProviderConfig().whatsapp;
-
   if (!cfg || !cfg.provider || cfg.provider === 'none') {
     throw new ProviderConfigurationError(
       'WhatsApp',
       'none',
       ['provider'],
-      'WhatsApp provider is not configured. Please select a valid provider (Meta Cloud API, Twilio, or Custom) in Communication Settings.'
+      'WhatsApp provider is not configured. Only the official Meta Cloud API is supported.'
     );
   }
-
+  if (cfg.provider !== 'meta_cloud') {
+    throw new ProviderConfigurationError(
+      'WhatsApp',
+      String(cfg.provider),
+      ['provider'],
+      'Unsupported WhatsApp provider. Only the official Meta Cloud API is permitted.'
+    );
+  }
   const missingFields: string[] = [];
-
-  if (!cfg.apiKey || !cfg.apiKey.trim()) {
-    missingFields.push('apiKey (Access Token / Twilio Auth Token)');
-  } else if (cfg.apiKey.trim().length < 6) {
-    missingFields.push('apiKey (must be at least 6 characters)');
-  }
-
-  if (cfg.provider === 'meta_cloud') {
-    if (!cfg.phoneNumberId || !cfg.phoneNumberId.trim()) {
-      missingFields.push('phoneNumberId (Meta Phone Number ID)');
-    }
-  } else if (cfg.provider === 'twilio') {
-    if (!cfg.fromNumber || !cfg.fromNumber.trim()) {
-      missingFields.push('fromNumber (Twilio WhatsApp Sender Number)');
-    }
-  }
-
+  if (!cfg.apiKey || !cfg.apiKey.trim()) missingFields.push('apiKey (Meta access token)');
+  else if (cfg.apiKey.trim().length < 6) missingFields.push('apiKey (must be at least 6 characters)');
+  if (!cfg.phoneNumberId || !cfg.phoneNumberId.trim()) missingFields.push('phoneNumberId (Meta Phone Number ID)');
   if (missingFields.length > 0) {
     throw new ProviderConfigurationError(
       'WhatsApp',
       cfg.provider,
       missingFields,
-      `Incomplete credentials for WhatsApp provider "${cfg.provider}". Missing or invalid required configuration: ${missingFields.join(', ')}.`
+      `Incomplete Meta Cloud API credentials. Missing or invalid required configuration: ${missingFields.join(', ')}.`
     );
   }
 }
