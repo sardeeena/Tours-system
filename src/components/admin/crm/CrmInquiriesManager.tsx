@@ -18,9 +18,8 @@ import {
   Sparkles,
   MessageCircle,
 } from 'lucide-react';
-import { listInquiries } from '../../../services/inquiryService';
-import { supabase, isSupabaseConfigured } from '../../../services/supabaseClient';
-import { convertInquiryToLead, updateCustomerMetadata, listLeads } from '../../../services/crmService';
+import { listInquiries, updateInquiryStatus } from '../../../services/inquiryService';
+import { convertInquiryToLead, updateCustomerMetadata } from '../../../services/crmService';
 import { DbInquiry } from '../../../types/database';
 import { useToast } from '../../../contexts/ToastContext';
 
@@ -45,6 +44,7 @@ export const CrmInquiriesManager: React.FC = () => {
   const [tempNotes, setTempNotes] = useState<string>('');
   const [tempStaff, setTempStaff] = useState<string>(STAFF_MEMBERS[0]);
   const [savingAction, setSavingAction] = useState(false);
+  const [convertingInquiryId, setConvertingInquiryId] = useState<string | null>(null);
 
   const loadData = async () => {
     setLoading(true);
@@ -52,7 +52,8 @@ export const CrmInquiriesManager: React.FC = () => {
       const data = await listInquiries();
       setInquiries(data);
     } catch (err) {
-      console.warn('Failed to load inquiries:', err);
+      console.error('Failed to load inquiries:', err);
+      showToast('Could not load inquiries. Refresh and try again.', 'error');
     } finally {
       setLoading(false);
     }
@@ -89,48 +90,47 @@ export const CrmInquiriesManager: React.FC = () => {
     if (!selectedInquiry) return;
     setSavingAction(true);
     try {
-      if (isSupabaseConfigured()) {
-        await supabase
-          .from('inquiries')
-          .update({
-            status: tempStatus,
-            admin_notes: tempNotes,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', selectedInquiry.id);
+      if (!['new', 'contacted', 'resolved', 'converted'].includes(tempStatus)) {
+        throw new Error('Choose a valid inquiry status.');
       }
+      await updateInquiryStatus(selectedInquiry.id, tempStatus as DbInquiry['status'], tempNotes);
 
+      const savedAt = new Date().toISOString();
       setInquiries((prev) =>
         prev.map((i) =>
           i.id === selectedInquiry.id
-            ? { ...i, status: tempStatus as any, admin_notes: tempNotes }
+            ? { ...i, status: tempStatus as DbInquiry['status'], admin_notes: tempNotes, updated_at: savedAt }
             : i
         )
       );
 
       setSelectedInquiry((prev: DbInquiry | null) =>
-        prev ? { ...prev, status: tempStatus as any, admin_notes: tempNotes } : null
+        prev ? { ...prev, status: tempStatus as DbInquiry['status'], admin_notes: tempNotes, updated_at: savedAt } : null
       );
       showToast('Inquiry record updated.', 'success');
-    } catch {
-      showToast('Failed to update inquiry', 'error');
+    } catch (error) {
+      console.error('Failed to save inquiry:', error);
+      showToast(error instanceof Error ? error.message : 'Failed to update inquiry. Please try again.', 'error');
     } finally {
       setSavingAction(false);
     }
   };
 
   const handleConvertToLead = async (inq: DbInquiry) => {
+    if (convertingInquiryId || inq.status === 'converted') return;
+    setConvertingInquiryId(inq.id);
     try {
       await convertInquiryToLead(inq);
-      setInquiries((prev: DbInquiry[]) =>
-        prev.map((i) => (i.id === inq.id ? { ...i, status: 'converted' as any } : i))
-      );
+      await loadData();
       if (selectedInquiry?.id === inq.id) {
-        setSelectedInquiry((prev: DbInquiry | null) => (prev ? { ...prev, status: 'converted' as any } : null));
+        setSelectedInquiry(null);
       }
-      showToast(`Inquiry converted to Lead and added to sales pipeline!`, 'success');
+      showToast('Inquiry converted to Lead and added to the sales pipeline.', 'success');
     } catch (err: any) {
-      showToast(err.message || 'Failed to convert to lead', 'error');
+      console.error('Failed to convert inquiry to lead:', err);
+      showToast(err?.message || 'Failed to convert inquiry to lead. Please refresh and try again.', 'error');
+    } finally {
+      setConvertingInquiryId(null);
     }
   };
 
@@ -298,9 +298,10 @@ export const CrmInquiriesManager: React.FC = () => {
                             e.stopPropagation();
                             handleConvertToLead(inq);
                           }}
+                          disabled={convertingInquiryId === inq.id}
                           className="px-2.5 py-1 bg-[#0A6C74] hover:bg-[#08565C] text-white rounded text-[10px] font-semibold cursor-pointer"
                         >
-                          Convert to Lead
+                          {convertingInquiryId === inq.id ? 'Converting...' : 'Convert to Lead'}
                         </button>
                       )}
 
@@ -376,10 +377,9 @@ export const CrmInquiriesManager: React.FC = () => {
                     className="w-full px-3 py-1.5 bg-stone-950 border border-stone-800 rounded text-white"
                   >
                     <option value="new">New</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="responded">Responded</option>
+                    <option value="contacted">Contacted</option>
+                    <option value="resolved">Resolved</option>
                     <option value="converted">Converted</option>
-                    <option value="archived">Archived</option>
                   </select>
                 </div>
 
