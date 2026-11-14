@@ -429,14 +429,16 @@ app.use('/api', (req: AuthenticatedRequest, res: Response, next: NextFunction) =
   const requestId = randomUUID();
   res.setHeader('X-Request-ID', requestId);
   res.on('finish', () => {
-    if (!serverSupabase) return;
+    // technical_events is service-role-only in PostgreSQL. Do not attempt writes
+    // with a publishable/anon client when server secrets are unavailable.
+    if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return;
     const routePath = req.route?.path
       ? `${req.baseUrl}${String(req.route.path)}`
       : req.path;
     if (routePath.startsWith('/api/admin/technical') || routePath === '/api/health') return;
     const durationMs = Math.max(0, Date.now() - startedAt);
     const severity = res.statusCode >= 500 ? 'error' : res.statusCode >= 400 ? 'warning' : 'info';
-    void Promise.resolve(serverSupabase.from('technical_events').insert({
+    void serverSupabase.from('technical_events').insert({
       severity,
       event_type: 'api_request',
       source: 'http',
@@ -447,7 +449,11 @@ app.use('/api', (req: AuthenticatedRequest, res: Response, next: NextFunction) =
       duration_ms: durationMs,
       actor_user_id: req.user?.id || null,
       metadata: { request_id: requestId },
-    })).catch(() => undefined);
+    }).then(({ error }) => {
+      if (error) console.warn('[API telemetry] Sanitized event could not be persisted.');
+    }, () => {
+      console.warn('[API telemetry] Sanitized event could not be persisted.');
+    });
   });
   next();
 });
