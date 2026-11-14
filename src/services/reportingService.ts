@@ -205,12 +205,13 @@ export async function fetchExecutiveReport(interval: DateRangeInterval): Promise
   }
 
   // Pure Database and Repository Calculation
-  const [allBookings, allCustomers, inquiries, leads, payments] = await Promise.all([
+  const [allBookings, allCustomers, inquiries, leads, payments, refunds] = await Promise.all([
     bookingRepository.listBookings(),
     listUnifiedCustomers(),
     listInquiries(),
     listLeads(),
     listPayments(),
+    listRefunds(),
   ]);
 
   const activeBookings = filterBookingsByInterval(allBookings, interval);
@@ -244,15 +245,27 @@ export async function fetchExecutiveReport(interval: DateRangeInterval): Promise
 
   const passengersCount = adultsCount + childrenCount + infantsCount;
 
-  // Real collected payments
-  const activeBookingsRefs = new Set(activeBookings.map((b) => b.bookingReference));
-  const collectedPayments = payments.filter((p) => {
-    const isPaid = ['paid', 'partially paid', 'partially_paid'].includes(String(p.paymentStatus).toLowerCase());
-    return isPaid && activeBookingsRefs.has(p.bookingReference);
-  });
-  const collectedRevenueEur = collectedPayments.reduce((sum, p) => sum + p.amount, 0);
+  // Net collected revenue is settled payments less completed refunds for this booking cohort.
+  const activeBookingsRefs = new Set(nonCancelledBookings.map((b) => b.bookingReference));
+  const activeBookingIds = new Set(nonCancelledBookings.map((b) => b.bookingId).filter(Boolean));
+  const isForActiveBooking = (record: { bookingReference?: string; bookingId?: string }) =>
+    activeBookingsRefs.has(record.bookingReference || '') || activeBookingIds.has(record.bookingId || '');
+  const isSettledPayment = (payment: { paymentStatus: unknown }) =>
+    ['paid', 'partially paid'].includes(String(payment.paymentStatus).toLowerCase().replace(/_/g, ' '));
+  const collectedPayments = payments.filter((payment) =>
+    isSettledPayment(payment) && isForActiveBooking(payment)
+  );
+  const processedRefunds = refunds.filter((refund) =>
+    refund.status === 'processed' && isForActiveBooking(refund)
+  );
+  const grossCollectedRevenueEur = collectedPayments.reduce((sum, payment) => sum + payment.amount, 0);
+  const refundedRevenueEur = processedRefunds.reduce(
+    (sum, refund) => sum + (refund.approvedAmount || refund.amount || 0),
+    0
+  );
+  const collectedRevenueEur = Math.max(0, grossCollectedRevenueEur - refundedRevenueEur);
 
-  // Outstanding revenue = total gross revenue minus collected payments
+  // Outstanding revenue reflects the amount still retained by the business, not gross payments.
   const outstandingRevenueEur = Math.max(0, totalRevenueEur - collectedRevenueEur);
 
   // Unique customers & Repeat calculation
@@ -954,41 +967,61 @@ export async function fetchFinanceReport(interval: DateRangeInterval): Promise<F
   ]);
 
   const activeBookings = filterBookingsByInterval(allBookings, interval);
-  const activeBookingsRefs = new Set(activeBookings.map((b) => b.bookingReference));
 
-  // Gross contracted revenue
+  // Gross contracted revenue excludes cancelled bookings.
   const nonCancelled = activeBookings.filter(
     (b) => b.status !== 'cancelled' && b.status !== 'cancellation_requested'
   );
+  const activeBookingsRefs = new Set(nonCancelled.map((b) => b.bookingReference));
+  const activeBookingIds = new Set(nonCancelled.map((b) => b.bookingId).filter(Boolean));
+  const allNonCancelledBookingRefs = new Set(
+    allBookings
+      .filter((booking) => booking.status !== 'cancelled' && booking.status !== 'cancellation_requested')
+      .map((booking) => booking.bookingReference)
+  );
+  const matchesActiveBooking = (record: { bookingReference?: string; bookingId?: string }) =>
+    activeBookingsRefs.has(record.bookingReference || '') || activeBookingIds.has(record.bookingId || '');
+  const isSettledPayment = (payment: { paymentStatus: unknown }) =>
+    ['paid', 'partially paid'].includes(String(payment.paymentStatus).toLowerCase().replace(/_/g, ' '));
   const grossRevenueEur = nonCancelled.reduce((sum, b) => sum + (b.pricing?.totalEur || 0), 0);
 
   // Discounts
   const discountsEur = nonCancelled.reduce((sum, b) => sum + (b.pricing?.discountEur || 0), 0);
 
   // Filter payments within interval
-  const intervalPayments = payments.filter((p) => {
-    const isPaid = p.paymentStatus === 'Paid' || p.paymentStatus === 'paid';
-    if (!isPaid) return false;
-    const pDate = (p.paymentDate || p.createdAt || '').split('T')[0];
-    return (pDate >= interval.startDate && pDate <= interval.endDate) || activeBookingsRefs.has(p.bookingReference);
+  const intervalPayments = payments.filter((payment) => {
+    if (!isSettledPayment(payment) || !allNonCancelledBookingRefs.has(payment.bookingReference)) return false;
+    const paymentDate = (payment.paymentDate || payment.createdAt || '').split('T')[0];
+    return (paymentDate >= interval.startDate && paymentDate <= interval.endDate) || matchesActiveBooking(payment);
   });
 
   const collectedPaymentsEur = intervalPayments.reduce((sum, p) => sum + p.amount, 0);
 
   // Filter refunds
-  const intervalRefunds = refunds.filter((r) => {
-    const isProcessed = r.status === 'processed' || r.status === 'approved';
-    if (!isProcessed) return false;
-    const rDate = (r.processedDate || r.createdAt || '').split('T')[0];
-    return rDate >= interval.startDate && rDate <= interval.endDate;
+  const intervalRefunds = refunds.filter((refund) => {
+    if (refund.status !== 'processed') return false;
+    const refundDate = (refund.processedDate || refund.createdAt || '').split('T')[0];
+    return refundDate >= interval.startDate && refundDate <= interval.endDate;
   });
 
   const refundsEur = intervalRefunds.reduce((sum, r) => sum + (r.approvedAmount || r.amount || 0), 0);
 
-  // Outstanding balances = gross revenue minus collected
-  const outstandingEur = Math.max(0, grossRevenueEur - collectedPaymentsEur);
+  // Outstanding balances are based on net collections for this booking cohort.
+  const cohortPayments = payments.filter((payment) =>
+    isSettledPayment(payment) && matchesActiveBooking(payment)
+  );
+  const cohortRefunds = refunds.filter((refund) =>
+    refund.status === 'processed' && matchesActiveBooking(refund)
+  );
+  const cohortGrossCollected = cohortPayments.reduce((sum, payment) => sum + payment.amount, 0);
+  const cohortRefunded = cohortRefunds.reduce(
+    (sum, refund) => sum + (refund.approvedAmount || refund.amount || 0),
+    0
+  );
+  const cohortNetCollected = Math.max(0, cohortGrossCollected - cohortRefunded);
+  const outstandingEur = Math.max(0, grossRevenueEur - cohortNetCollected);
 
-  // Net revenue = gross contracted revenue minus approved refunds
+  // Net booked revenue deducts completed refunds, not merely approved requests.
   const netRevenueEur = Math.max(0, grossRevenueEur - refundsEur);
 
   // Collection Rate
@@ -1043,7 +1076,7 @@ export async function fetchFinanceReport(interval: DateRangeInterval): Promise<F
 
   // Aggregate payments by month
   payments.forEach((p) => {
-    if (p.paymentStatus === 'Paid' || p.paymentStatus === 'paid') {
+    if (isSettledPayment(p)) {
       const d = new Date(p.paymentDate || p.createdAt || '');
       if (d.getFullYear() === curYear) {
         const key = `${monthNames[d.getMonth()]} ${curYear}`;
@@ -1055,12 +1088,13 @@ export async function fetchFinanceReport(interval: DateRangeInterval): Promise<F
   });
 
   // Aggregate refunds by month
-  refunds.forEach((r) => {
-    const d = new Date(r.processedDate || r.createdAt || '');
-    if (d.getFullYear() === curYear) {
-      const key = `${monthNames[d.getMonth()]} ${curYear}`;
+  refunds.forEach((refund) => {
+    if (refund.status !== 'processed') return;
+    const processedDate = new Date(refund.processedDate || refund.createdAt || '');
+    if (processedDate.getFullYear() === curYear) {
+      const key = `${monthNames[processedDate.getMonth()]} ${curYear}`;
       const cur = monthMap.get(key) || { gross: 0, paid: 0, refunds: 0, bookings: 0 };
-      cur.refunds += r.approvedAmount || r.amount || 0;
+      cur.refunds += refund.approvedAmount || refund.amount || 0;
       monthMap.set(key, cur);
     }
   });
