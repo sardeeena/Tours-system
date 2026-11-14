@@ -16,5 +16,22 @@ SELECT is(
   'false',
   'First provider event is recorded once'
 );
-SELECT is(\n  public.record_whatsapp_provider_status(\n    repeat('a', 64), 'wamid.webhook-regression-test', 'delivered',\n    '2026-11-14T10:00:00Z'::timestamptz, NULL, NULL\n  )->>'duplicate',\n  'true',\n  'Duplicate provider event is idempotent'\n);\nSELECT is(\n  public.record_whatsapp_provider_status(\n    repeat('b', 64), 'wamid.unmatched-regression-test', 'sent',\n    '2026-11-14T10:01:00Z'::timestamptz, NULL, NULL\n  )->>'matched',\n  'false',\n  'Unmatched provider events are retained for later reconciliation'\n);\nSELECT * FROM finish();
+SELECT is(
+  public.record_whatsapp_provider_status(
+    repeat('a', 64), 'wamid.webhook-regression-test', 'delivered',
+    '2026-11-14T10:00:00Z'::timestamptz, NULL, NULL
+  )->>'duplicate',
+  'true',
+  'Duplicate provider event is idempotent'
+);
+SELECT is(
+  public.record_whatsapp_provider_status(
+    repeat('b', 64), 'wamid.unmatched-regression-test', 'sent',
+    '2026-11-14T10:01:00Z'::timestamptz, NULL, NULL
+  )->>'matched',
+  'false',
+  'Unmatched provider events are retained for later reconciliation'
+);
+
+SELECT * FROM finish();
 ROLLBACK;
