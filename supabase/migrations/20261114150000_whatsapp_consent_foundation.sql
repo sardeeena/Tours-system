@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS public.customer_communication_consent_events (
   consent_action text NOT NULL CHECK (consent_action IN ('granted', 'revoked')),
   consent_text_version text NOT NULL CHECK (length(btrim(consent_text_version)) BETWEEN 1 AND 80),
   consent_source text NOT NULL CHECK (consent_source IN ('booking_form', 'account_settings', 'staff_verified_record')),
-  recorded_by uuid NULL REFERENCES auth.users(id) ON DELETE SET NULL,
+  recorded_by uuid NULL,
   recorded_at timestamptz NOT NULL DEFAULT now(),
   evidence_reference text NULL CHECK (evidence_reference IS NULL OR length(evidence_reference) <= 200)
 );
