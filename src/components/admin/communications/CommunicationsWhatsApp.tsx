@@ -301,7 +301,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
   // Filter messages
   const filteredMessages = useMemo(() => {
     return messages.filter((m) => {
-      if (statusFilter !== 'all' && m.status !== statusFilter) return false;
+      if (statusFilter !== 'all' && m.status.toLowerCase() !== statusFilter.toLowerCase()) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         return (
