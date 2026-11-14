@@ -12,7 +12,7 @@ assert(
 assert(
   'Server authentication reads the caller-scoped RBAC context',
   source.includes("userScopedSupabase.rpc('get_my_access_context')")
-    && source.includes('fetchedAccessContext.permissions')
+    && source.includes('accessContext?.permissions')
 );
 assert(
   'Permission checks support exact permissions and module manage grants',
