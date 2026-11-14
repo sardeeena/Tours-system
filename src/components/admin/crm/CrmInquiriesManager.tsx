@@ -19,7 +19,7 @@ import {
   MessageCircle,
 } from 'lucide-react';
 import { listInquiries, updateInquiryStatus } from '../../../services/inquiryService';
-import { convertInquiryToLead, updateCustomerMetadata } from '../../../services/crmService';
+import { convertInquiryToLead, convertLeadToCustomer } from '../../../services/crmService';
 import { DbInquiry } from '../../../types/database';
 import { useToast } from '../../../contexts/ToastContext';
 
@@ -135,15 +135,19 @@ export const CrmInquiriesManager: React.FC = () => {
   };
 
   const handleConvertToCustomer = async (inq: DbInquiry) => {
+    if (convertingInquiryId || inq.status === 'converted') return;
+    setConvertingInquiryId(inq.id);
     try {
-      await updateCustomerMetadata(inq.email, {
-        notes: `Converted from Inquiry: ${inq.message}`,
-        tags: ['Inquiry Contact', 'Active Customer'],
-        source: inq.source || 'Website Help Form',
-      });
-      showToast(`Inquiry contact saved to Customer Directory!`, 'success');
-    } catch (err: any) {
-      showToast('Failed to convert to customer', 'error');
+      const lead = await convertInquiryToLead(inq);
+      await convertLeadToCustomer(lead.id);
+      await loadData();
+      if (selectedInquiry?.id === inq.id) setSelectedInquiry(null);
+      showToast('Inquiry converted to a customer and linked to its sales history.', 'success');
+    } catch (error: any) {
+      console.error('Failed to convert inquiry to customer:', error);
+      showToast(error?.message || 'Failed to convert inquiry to customer. Please refresh and try again.', 'error');
+    } finally {
+      setConvertingInquiryId(null);
     }
   };
 
@@ -416,6 +420,7 @@ export const CrmInquiriesManager: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleConvertToCustomer(selectedInquiry)}
+                    disabled={convertingInquiryId === selectedInquiry.id}
                     className="px-3 py-1 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded font-medium cursor-pointer"
                   >
                     Save as Customer
@@ -423,6 +428,7 @@ export const CrmInquiriesManager: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => handleConvertToLead(selectedInquiry)}
+                    disabled={convertingInquiryId === selectedInquiry.id}
                     className="px-3 py-1 bg-[#0A6C74] hover:bg-[#08565C] text-white rounded font-semibold cursor-pointer"
                   >
                     Convert to Pipeline Lead
