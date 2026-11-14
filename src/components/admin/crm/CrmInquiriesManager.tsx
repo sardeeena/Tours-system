@@ -18,22 +18,15 @@ import {
   Sparkles,
   MessageCircle,
 } from 'lucide-react';
-import { listInquiries, updateInquiryStatus } from '../../../services/inquiryService';
+import { listInquiries, listInquiryAssignees, updateInquiryStatus, InquiryAssignee } from '../../../services/inquiryService';
 import { convertInquiryToLead, convertLeadToCustomer } from '../../../services/crmService';
 import { DbInquiry } from '../../../types/database';
 import { useToast } from '../../../contexts/ToastContext';
 
-const STAFF_MEMBERS = [
-  'Captain Tarek',
-  'Mona Zaki (Concierge)',
-  'Ahmed Fathy',
-  'Captain Farouk',
-  'Youssef Marina Desk',
-];
-
 export const CrmInquiriesManager: React.FC = () => {
   const { showToast } = useToast();
   const [inquiries, setInquiries] = useState<DbInquiry[]>([]);
+  const [staffMembers, setStaffMembers] = useState<InquiryAssignee[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -42,7 +35,7 @@ export const CrmInquiriesManager: React.FC = () => {
   // Quick edit state inside modal
   const [tempStatus, setTempStatus] = useState<string>('new');
   const [tempNotes, setTempNotes] = useState<string>('');
-  const [tempStaff, setTempStaff] = useState<string>(STAFF_MEMBERS[0]);
+  const [tempStaffId, setTempStaffId] = useState<string>('');
   const [savingAction, setSavingAction] = useState(false);
   const [convertingInquiryId, setConvertingInquiryId] = useState<string | null>(null);
 
@@ -51,6 +44,14 @@ export const CrmInquiriesManager: React.FC = () => {
     try {
       const data = await listInquiries();
       setInquiries(data);
+      try {
+        const staff = await listInquiryAssignees();
+        setStaffMembers(staff);
+      } catch (staffError) {
+        console.error('Failed to load CRM assignable staff:', staffError);
+        setStaffMembers([]);
+        showToast('The staff directory is unavailable. Inquiry assignments cannot be changed right now.', 'error');
+      }
     } catch (err) {
       console.error('Failed to load inquiries:', err);
       showToast('Could not load inquiries. Refresh and try again.', 'error');
@@ -84,6 +85,7 @@ export const CrmInquiriesManager: React.FC = () => {
     setSelectedInquiry(inq);
     setTempStatus(inq.status);
     setTempNotes(inq.admin_notes || '');
+    setTempStaffId(inq.assigned_staff_id || '');
   };
 
   const handleSaveInquiry = async () => {
@@ -93,19 +95,19 @@ export const CrmInquiriesManager: React.FC = () => {
       if (!['new', 'contacted', 'resolved', 'converted'].includes(tempStatus)) {
         throw new Error('Choose a valid inquiry status.');
       }
-      await updateInquiryStatus(selectedInquiry.id, tempStatus as DbInquiry['status'], tempNotes);
+      await updateInquiryStatus(selectedInquiry.id, tempStatus as DbInquiry['status'], tempNotes, tempStaffId || null);
 
       const savedAt = new Date().toISOString();
       setInquiries((prev) =>
         prev.map((i) =>
           i.id === selectedInquiry.id
-            ? { ...i, status: tempStatus as DbInquiry['status'], admin_notes: tempNotes, updated_at: savedAt }
+            ? { ...i, status: tempStatus as DbInquiry['status'], admin_notes: tempNotes, assigned_staff_id: tempStaffId || null, updated_at: savedAt }
             : i
         )
       );
 
       setSelectedInquiry((prev: DbInquiry | null) =>
-        prev ? { ...prev, status: tempStatus as DbInquiry['status'], admin_notes: tempNotes, updated_at: savedAt } : null
+        prev ? { ...prev, status: tempStatus as DbInquiry['status'], admin_notes: tempNotes, assigned_staff_id: tempStaffId || null, updated_at: savedAt } : null
       );
       showToast('Inquiry record updated.', 'success');
     } catch (error) {
@@ -230,6 +232,7 @@ export const CrmInquiriesManager: React.FC = () => {
                   <th className="py-3 px-4">Subject & Message</th>
                   <th className="py-3 px-4">Source</th>
                   <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4">Assigned Staff</th>
                   <th className="py-3 px-4">Received</th>
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
@@ -276,6 +279,9 @@ export const CrmInquiriesManager: React.FC = () => {
                       </span>
                     </td>
 
+                    <td className="py-3 px-4 text-stone-300">
+                      {staffMembers.find((staff) => staff.id === inq.assigned_staff_id)?.full_name || 'Unassigned'}
+                    </td>
                     <td className="py-3 px-4 text-stone-400 font-mono text-[10px]">
                       {new Date(inq.created_at).toLocaleDateString()}
                     </td>
@@ -389,13 +395,17 @@ export const CrmInquiriesManager: React.FC = () => {
                 <div>
                   <label className="block text-stone-300 font-semibold mb-1">Assigned Staff</label>
                   <select
-                    value={tempStaff}
-                    onChange={(e) => setTempStaff(e.target.value)}
-                    className="w-full px-3 py-1.5 bg-stone-950 border border-stone-800 rounded text-white"
+                    value={tempStaffId}
+                    onChange={(e) => setTempStaffId(e.target.value)}
+                    className="w-full px-3 py-1.5 bg-stone-950 border border-stone-800 rounded text-white disabled:opacity-50"
                   >
-                    {STAFF_MEMBERS.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
+                    <option value="">Unassigned</option>
+                    {selectedInquiry.assigned_staff_id && !staffMembers.some((staff) => staff.id === selectedInquiry.assigned_staff_id) && (
+                      <option value={selectedInquiry.assigned_staff_id}>Previously assigned account (unavailable)</option>
+                    )}
+                    {staffMembers.map((staff) => (
+                      <option key={staff.id} value={staff.id}>
+                        {staff.full_name} — {staff.email}
                       </option>
                     ))}
                   </select>

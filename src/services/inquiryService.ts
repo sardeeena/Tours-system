@@ -18,6 +18,12 @@ export interface CreateInquiryInput {
   website_url_hp?: string; // Honeypot field for bot suppression
 }
 
+export interface InquiryAssignee {
+  id: string;
+  full_name: string;
+  email: string;
+}
+
 const LOCAL_INQUIRIES_KEY = 'rse_inquiries_data';
 
 const SEED_INQUIRIES: DbInquiry[] = [];
@@ -67,6 +73,7 @@ export async function createCustomerInquiry(
         source: 'web',
         ip_address: null,
         admin_notes: 'Dropped honeypot bot trap',
+        assigned_staff_id: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       },
@@ -118,6 +125,7 @@ export async function createCustomerInquiry(
     source: input.source || 'web',
     ip_address: null,
     admin_notes: input.tour_title ? `Referenced Tour: ${input.tour_title}` : null,
+    assigned_staff_id: null,
     created_at: now,
     updated_at: now,
   };
@@ -332,14 +340,32 @@ export async function listInquiries(filter?: { status?: string }): Promise<DbInq
 /**
  * Updates inquiry status or admin notes
  */
+export async function listInquiryAssignees(): Promise<InquiryAssignee[]> {
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) {
+      throw new Error('Supabase is not configured. Staff assignments are unavailable in production.');
+    }
+    return [];
+  }
+
+  const { data, error } = await (supabase as any).rpc('list_crm_assignable_staff');
+  if (error) throw new Error(formatSupabaseError(error));
+  return (Array.isArray(data) ? data : []) as InquiryAssignee[];
+}
+
+/**
+ * Updates inquiry status, notes, and (when supplied) its assigned staff profile.
+ */
 export async function updateInquiryStatus(
   id: string,
   status: DbInquiry['status'],
-  adminNotes?: string
+  adminNotes?: string,
+  assignedStaffId?: string | null
 ): Promise<boolean> {
   const now = new Date().toISOString();
   const updates: Record<string, unknown> = { status, updated_at: now };
   if (adminNotes !== undefined) updates.admin_notes = adminNotes;
+  if (assignedStaffId !== undefined) updates.assigned_staff_id = assignedStaffId;
 
   if (isSupabaseConfigured()) {
     const { data, error } = await supabase
@@ -363,6 +389,7 @@ export async function updateInquiryStatus(
           ...item,
           status,
           admin_notes: adminNotes !== undefined ? adminNotes : item.admin_notes,
+          ...(assignedStaffId !== undefined ? { assigned_staff_id: assignedStaffId } : {}),
           updated_at: now,
         }
       : item

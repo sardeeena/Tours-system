@@ -52,6 +52,9 @@ jobs:
       - name: Verify CRM inquiry persistence integrity
         run: npm run test:crm-inquiry-persistence
 
+      - name: Verify persistent CRM inquiry staff assignments
+        run: npm run test:crm-inquiry-staff-assignment
+
       - name: Type-check
         run: npm run lint
 
