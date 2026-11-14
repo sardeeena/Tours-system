@@ -66,9 +66,10 @@ BEGIN
   UPDATE public.communication_messages AS message
   SET status = p_status,
       provider_status_at = p_event_at,
+      sent_at = CASE WHEN p_status = 'sent' THEN COALESCE(message.sent_at, p_event_at) ELSE message.sent_at END,
       delivered_at = CASE WHEN p_status IN ('delivered', 'read') THEN COALESCE(message.delivered_at, p_event_at) ELSE message.delivered_at END,
       read_at = CASE WHEN p_status = 'read' THEN COALESCE(message.read_at, p_event_at) ELSE message.read_at END,
-      failure_reason = CASE WHEN p_status = 'failed' THEN p_failure_reason ELSE message.failure_reason END
+      failure_reason = CASE WHEN p_status = 'failed' THEN p_failure_reason ELSE NULL END
   WHERE message.channel = 'WhatsApp'
     AND message.provider_message_id = p_provider_message_id
     AND (
