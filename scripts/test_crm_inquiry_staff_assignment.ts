@@ -11,10 +11,9 @@ assert.match(domainTypes, /export interface DbInquiry[\s\S]*?assigned_staff_id: 
 assert.match(generatedTypes, /inquiries:[\s\S]*?assigned_staff_id: string \| null/);
 assert.match(generatedTypes, /inquiries_assigned_staff_id_fkey/);
 
-const assigneeLoader = inquiryService.slice(
-  inquiryService.indexOf('export async function listInquiryAssignees'),
-  inquiryService.indexOf('/**\n * Updates inquiry status')
-);
+const assigneeLoaderStart = inquiryService.indexOf('export async function listInquiryAssignees');
+const assigneeLoaderEnd = inquiryService.indexOf('export async function updateInquiryStatus', assigneeLoaderStart);
+const assigneeLoader = inquiryService.slice(assigneeLoaderStart, assigneeLoaderEnd);
 assert.match(assigneeLoader, /rpc\('list_crm_assignable_staff'\)/);
 assert.match(assigneeLoader, /if \(error\) throw new Error/);
 
@@ -35,7 +34,10 @@ assert.match(inquiryManager, /<option value="">Unassigned<\/option>/);
 assert.match(inquiryManager, /staffMembers\.map\(\(staff\)/);
 
 assert.match(migration, /REFERENCES public\.profiles\(id\) ON DELETE SET NULL/);
+assert.match(migration, /private\.has_permission/);
 assert.match(migration, /public\.has_permission\('crm\.read'\)/);
+assert.match(migration, /SECURITY INVOKER/);
+assert.match(migration, /private\.list_crm_assignable_staff/);
 assert.match(migration, /public\.user_roles/);
 assert.match(migration, /public\.access_roles/);
 assert.match(migration, /CREATE TRIGGER trg_validate_inquiry_assigned_staff/);
