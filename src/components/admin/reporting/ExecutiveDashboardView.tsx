@@ -54,7 +54,7 @@ export const ExecutiveDashboardView: React.FC<ExecutiveDashboardViewProps> = ({
         {/* Collected Revenue */}
         <div className="bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854] rounded-2xl p-5 lg:p-6 shadow-xs hover:border-emerald-500/50 hover:shadow-md transition-all duration-300 relative overflow-hidden group">
           <div className="flex items-center justify-between text-xs text-stone-500 dark:text-stone-400">
-            <span className="font-medium">Collected Revenue</span>
+            <span className="font-medium">Net Collected Revenue</span>
             <div className="w-9 h-9 rounded-xl bg-emerald-500/10 dark:bg-emerald-500/20 border border-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="w-4 h-4" />
             </div>
@@ -64,7 +64,7 @@ export const ExecutiveDashboardView: React.FC<ExecutiveDashboardViewProps> = ({
               €{metrics.collectedRevenueEur.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
             <div className="mt-1 flex items-center text-[11px] text-stone-500 dark:text-stone-400">
-              <span>Verified cash &amp; gateway receipts</span>
+              <span>Settled payments less processed refunds</span>
             </div>
           </div>
         </div>

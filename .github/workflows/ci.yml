@@ -61,6 +61,9 @@ jobs:
       - name: Verify booking payment status is ledger-authoritative
         run: npm run test:booking-finance-boundary
 
+      - name: Verify finance dashboards use settled payments and processed refunds
+        run: npm run test:finance-reporting
+
       - name: Validate catalogue source and read-only import safety
         run: npm run test:catalogue
 
