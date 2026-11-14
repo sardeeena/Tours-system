@@ -1109,11 +1109,11 @@ app.post('/api/webhooks/whatsapp', rateLimit(180, 60_000), async (req: Request, 
 
   let received = 0;
   try {
-    for (const entry of payload.entry.slice(0, 100)) {
+    for (const entry of payload.entry) {
       if (!Array.isArray(entry?.changes)) continue;
-      for (const change of entry.changes.slice(0, 100)) {
+      for (const change of entry.changes) {
         if (change?.field !== 'messages' || change?.value?.metadata?.phone_number_id !== configuredPhoneNumberId || !Array.isArray(change?.value?.statuses)) continue;
-        for (const event of change.value.statuses.slice(0, 100)) {
+        for (const event of change.value.statuses) {
           const providerMessageId = typeof event?.id === 'string' ? event.id.trim() : '';
           const status = typeof event?.status === 'string' ? event.status.toLowerCase() : '';
           const seconds = typeof event?.timestamp === 'string' || typeof event?.timestamp === 'number'
