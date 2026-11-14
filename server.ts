@@ -451,7 +451,7 @@ app.use('/api', (req: AuthenticatedRequest, res: Response, next: NextFunction) =
       metadata: { request_id: requestId },
     }).then(({ error }) => {
       if (error) console.warn('[API telemetry] Sanitized event could not be persisted.');
-    }).catch(() => {
+    }, () => {
       console.warn('[API telemetry] Sanitized event could not be persisted.');
     });
   });
