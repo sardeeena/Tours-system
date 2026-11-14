@@ -1083,7 +1083,8 @@ app.get('/api/webhooks/whatsapp', rateLimit(30, 60_000), (req: Request, res: Res
 // Public POST callback. Verify HMAC against the raw bytes before parsing or trusting JSON.
 app.post('/api/webhooks/whatsapp', rateLimit(180, 60_000), async (req: Request, res: Response) => {
   const appSecret = process.env.WHATSAPP_APP_SECRET?.trim() || '';
-  if (!appSecret) return res.status(503).json({ success: false, error: 'WhatsApp webhook signature verification is not configured.' });
+  const configuredPhoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID?.trim() || '';
+  if (!appSecret || !/^\\d{5,30}$/.test(configuredPhoneNumberId)) return res.status(503).json({ success: false, error: 'WhatsApp webhook signature verification and phone-number configuration are required.' });
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
     return res.status(503).json({ success: false, error: 'Secure WhatsApp status storage is unavailable.' });
   }
@@ -1111,7 +1112,7 @@ app.post('/api/webhooks/whatsapp', rateLimit(180, 60_000), async (req: Request, 
     for (const entry of payload.entry.slice(0, 100)) {
       if (!Array.isArray(entry?.changes)) continue;
       for (const change of entry.changes.slice(0, 100)) {
-        if (change?.field !== 'messages' || !Array.isArray(change?.value?.statuses)) continue;
+        if (change?.field !== 'messages' || change?.value?.metadata?.phone_number_id !== configuredPhoneNumberId || !Array.isArray(change?.value?.statuses)) continue;
         for (const event of change.value.statuses.slice(0, 100)) {
           const providerMessageId = typeof event?.id === 'string' ? event.id.trim() : '';
           const status = typeof event?.status === 'string' ? event.status.toLowerCase() : '';
