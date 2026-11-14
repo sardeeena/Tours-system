@@ -32,7 +32,7 @@ assert.ok(updateTask.indexOf(".from('crm_tasks')") < updateTask.indexOf('setLoca
 assert.doesNotMatch(updateTask, /catch\s*\{/);
 
 const updateTaskStatus = section('export async function updateTaskStatus', 'export async function deleteTask');
-assert.match(updateTaskStatus, /'task_status_changed'/);
+assert.match(updateTaskStatus, /eventType: isCompleted \? 'task_completed' : 'task'/);
 
 const deleteTask = section('export async function deleteTask', 'export async function getFollowUpsDue');
 assert.match(deleteTask, /\.delete\(\)[\s\S]*?\.select\('id'\)[\s\S]*?\.maybeSingle\(\)/);
