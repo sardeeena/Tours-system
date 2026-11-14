@@ -61,6 +61,9 @@ jobs:
       - name: Validate catalogue source and read-only import safety
         run: npm run test:catalogue
 
+      - name: Verify public catalogue fails closed without sample data
+        run: npm run test:public-catalogue
+
       - name: Verify Supabase project isolation
         run: npm run test:supabase-project
       - name: Verify server and SPA route fallback configuration
