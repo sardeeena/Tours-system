@@ -15,6 +15,7 @@
     "lint": "tsc --noEmit",
     "test:catalogue": "tsx scripts/test_catalogue_import.ts",
     "test:parity": "tsx scripts/verify_schema_parity.ts",
+    "test:migration-history": "tsx scripts/test_migration_history_integrity.ts",
     "test:admin": "tsx scripts/test_admin_dashboard_persistence.ts",
     "test:security": "tsx scripts/test_admin_security.ts",
     "test:abuse": "tsx scripts/test_abuse_prevention.ts",

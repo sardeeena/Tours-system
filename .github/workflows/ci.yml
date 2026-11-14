@@ -64,6 +64,9 @@ jobs:
       - name: Verify public catalogue fails closed without sample data
         run: npm run test:public-catalogue
 
+      - name: Verify migration history filenames and project identity
+        run: npm run test:migration-history
+
       - name: Verify Supabase project isolation
         run: npm run test:supabase-project
       - name: Verify server and SPA route fallback configuration
