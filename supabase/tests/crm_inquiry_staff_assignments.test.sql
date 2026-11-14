@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(8);
+SELECT plan(9);
 
 SELECT has_column(
   'public', 'inquiries', 'assigned_staff_id',
@@ -36,6 +36,16 @@ SELECT ok(
 SELECT ok(
   NOT has_function_privilege('anon', 'public.list_crm_assignable_staff()', 'EXECUTE'),
   'anonymous users cannot call the staff directory RPC'
+);
+
+SELECT ok(
+  EXISTS (
+    SELECT 1 FROM pg_trigger
+    WHERE tgrelid = 'public.inquiries'::regclass
+      AND tgname = 'trg_validate_inquiry_assigned_staff'
+      AND NOT tgisinternal
+  ),
+  'database trigger validates staff eligibility for assignment writes'
 );
 
 SELECT ok(
