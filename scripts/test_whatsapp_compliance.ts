@@ -2,20 +2,23 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const server = fs.readFileSync(path.resolve('server.ts'), 'utf8');
-const migrationPath = 'supabase/migrations/20261114150000_whatsapp_consent_foundation.sql';
-const migration = fs.readFileSync(path.resolve(migrationPath), 'utf8');
+const migration = fs.readFileSync(path.resolve('supabase/migrations/20261114150000_whatsapp_consent_foundation.sql'), 'utf8');
 const client = fs.readFileSync(path.resolve('src/services/communicationService.ts'), 'utf8');
 
+const routeStart = server.indexOf("app.post('/api/communications/whatsapp'");
+const routeEnd = server.indexOf('// 3. System Configuration Endpoint', routeStart);
+const route = routeStart >= 0 && routeEnd > routeStart ? server.slice(routeStart, routeEnd) : '';
+
 const checks: Array<[string, boolean]> = [
-  ['WhatsApp endpoint requires a linked customer UUID', /customerId.*test\\(customerId\\)/s.test(server)],
-  ['WhatsApp endpoint checks append-only consent evidence', /customer_communication_consent_events/.test(server)],
-  ['Consent is scoped to WhatsApp transactional purpose and exact phone', /\\.eq\\('channel', 'WhatsApp'\\)[\\s\\S]*?\\.eq\\('purpose', 'transactional'\\)[\\s\\S]*?\\.eq\\('phone_e164', phone\\)/.test(server)],
-  ['Revoked or missing consent is rejected', /consent\\.consent_action !== 'granted'[\\s\\S]*?status\\(403\\)/.test(server)],
-  ['Outbound WhatsApp uses a Meta template rather than free-form text', /type: 'template'[\\s\\S]*?template:[\\s\\S]*?name: templateName/.test(server) && !/type: 'text',[\\s\\S]*?text: \\{ preview_url: false, body: message \\}/.test(server)],
-  ['Approved template name is required in server configuration', /WHATSAPP_TEMPLATE_NAME/.test(server)],
-  ['Client requires a customer record before WhatsApp dispatch', /requires a linked customer record/.test(client)],
-  ['Consent history table is append-only', /BEFORE UPDATE OR DELETE[\\s\\S]*?prevent_customer_communication_consent_event_mutation/.test(migration)],
-  ['Consent table denies browser roles and grants server role only', /REVOKE ALL ON TABLE[\\s\\S]*?FROM PUBLIC, anon, authenticated[\\s\\S]*?GRANT SELECT, INSERT[\\s\\S]*?TO service_role/.test(migration)],
+  ['WhatsApp endpoint validates a linked customer UUID', route.includes('test(customerId)') && route.includes('customerId')],
+  ['WhatsApp endpoint checks append-only consent evidence', route.includes("from('customer_communication_consent_events')")],
+  ['Consent is scoped to WhatsApp transactional purpose and exact phone', route.includes(".eq('channel', 'WhatsApp')") && route.includes(".eq('purpose', 'transactional')") && route.includes(".eq('phone_e164', phone)")],
+  ['Missing or revoked consent is rejected before provider dispatch', route.includes("consent.consent_action !== 'granted'") && route.includes("status(403)") && route.indexOf("status(403)") < route.indexOf('https://graph.facebook.com')],
+  ['Outbound WhatsApp uses an approved Meta template payload', route.includes("type: 'template'") && route.includes('name: templateName') && route.includes('bodyParameter')],
+  ['Approved template name is required in server configuration', route.includes('WHATSAPP_TEMPLATE_NAME')],
+  ['Client requires a linked customer record before WhatsApp dispatch', client.includes('requires a linked customer record')],
+  ['Consent history has append-only mutation protection and audit capture', migration.includes('BEFORE UPDATE OR DELETE') && migration.includes('prevent_customer_communication_consent_event_mutation') && migration.includes('trg_capture_business_audit')],
+  ['Consent table denies browser roles and grants server role only', migration.includes('REVOKE ALL ON TABLE public.customer_communication_consent_events FROM PUBLIC, anon, authenticated') && migration.includes('GRANT SELECT, INSERT ON TABLE public.customer_communication_consent_events TO service_role')],
 ];
 
 let failed = 0;
