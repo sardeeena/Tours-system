@@ -1189,6 +1189,7 @@ export interface Database {
           source: 'web' | 'whatsapp' | 'email' | 'phone';
           ip_address: string | null;
           admin_notes: string | null;
+          assigned_staff_id: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -1206,6 +1207,7 @@ export interface Database {
           source?: 'web' | 'whatsapp' | 'email' | 'phone';
           ip_address?: string | null;
           admin_notes?: string | null;
+          assigned_staff_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -1223,10 +1225,19 @@ export interface Database {
           source?: 'web' | 'whatsapp' | 'email' | 'phone';
           ip_address?: string | null;
           admin_notes?: string | null;
+          assigned_staff_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'inquiries_assigned_staff_id_fkey';
+            columns: ['assigned_staff_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       coupons: {
         Row: {
