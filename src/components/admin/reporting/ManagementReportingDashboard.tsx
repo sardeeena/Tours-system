@@ -134,7 +134,7 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
       const headers = ['Metric', 'Value', 'Unit / Currency'];
       const rows = [
         ['Total Gross Revenue', executiveData.totalRevenueEur, 'EUR'],
-        ['Collected Revenue', executiveData.collectedRevenueEur, 'EUR'],
+        ['Net Collected Revenue', executiveData.collectedRevenueEur, 'EUR'],
         ['Outstanding Revenue', executiveData.outstandingRevenueEur, 'EUR'],
         ['Total Bookings Placed', executiveData.bookingsCount, 'Count'],
         ['Confirmed Bookings', executiveData.confirmedBookingsCount, 'Count'],
@@ -205,7 +205,7 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
       const headers = ['Metric', 'Value', 'Unit'];
       const rows = [
         ['Total Gross Revenue', `€${executiveData.totalRevenueEur.toFixed(2)}`, 'EUR'],
-        ['Collected Revenue', `€${executiveData.collectedRevenueEur.toFixed(2)}`, 'EUR'],
+        ['Net Collected Revenue', `€${executiveData.collectedRevenueEur.toFixed(2)}`, 'EUR'],
         ['Outstanding Balances', `€${executiveData.outstandingRevenueEur.toFixed(2)}`, 'EUR'],
         ['Total Bookings Placed', executiveData.bookingsCount, 'Count'],
         ['Confirmed Bookings', executiveData.confirmedBookingsCount, 'Count'],
