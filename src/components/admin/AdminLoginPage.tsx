@@ -125,34 +125,25 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
           <span>Return to Public Website</span>
         </button>
 
-        <div className="flex items-center space-x-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-[11px] text-stone-500 dark:text-stone-400 uppercase tracking-widest font-mono">
-            Secure administrator sign-in
-          </span>
-        </div>
       </div>
 
       {/* Center Auth Card */}
       <div className="max-w-md w-full mx-auto my-8">
-        <div className="bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854] rounded-2xl p-8 shadow-lg space-y-6">
+        <div className="bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854] rounded-2xl p-6 sm:p-8 shadow-lg space-y-5">
           {/* Brand & Title */}
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-1.5">
             <div className="flex items-center justify-center mx-auto mb-3">
               <img 
                 src="/logo.png" 
                 alt="Awesome Adventure Tours Logo" 
-                className="h-16 w-auto object-contain drop-shadow-sm"
+                className="h-14 w-auto object-contain"
               />
             </div>
-            <span className="text-[10px] uppercase font-bold tracking-widest text-[#0A6C74] dark:text-[#2DD4BF]">
-              Staff &amp; Operations Portal
-            </span>
-            <h1 className="text-2xl font-bold font-display text-[#0E1B2A] dark:text-white tracking-tight">
-              Admin CMS Login
+<h1 className="text-2xl font-bold font-display text-[#0E1B2A] dark:text-white tracking-tight">
+              Admin sign in
             </h1>
             <p className="text-xs text-stone-500 dark:text-stone-400">
-              Sign in with your verified administrator credentials to manage tours, itineraries, bookings, and operations.
+              Sign in to continue
             </p>
           </div>
 
@@ -273,10 +264,6 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
         </div>
       </div>
 
-      {/* Footer */}
-      <div className="text-center text-[11px] text-stone-500 dark:text-stone-400">
-        Awesome Adventure Tours CMS • Supabase Database &amp; Auth Protected
-      </div>
     </div>
   );
 };
