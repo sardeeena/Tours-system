@@ -4359,7 +4359,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       { '@type': 'AdministrativeArea', name: 'Red Sea Governorate' },
       { '@type': 'Country', name: 'Egypt' },
     ],
-    knowsAbout: ['Red Sea excursions', 'Boat trips', 'Island day trips', 'Snorkeling', 'Scuba diving', 'Desert safaris', 'Hurghada travel experiences'],
+    knowsAbout: ['Red Sea coastal experiences', 'Boat trips', 'Island day trips', 'Snorkeling', 'Scuba diving', 'Desert safaris', 'Hurghada travel experiences'],
     contactPoint: [{
       '@type': 'ContactPoint',
       telephone: '+201515212741',
