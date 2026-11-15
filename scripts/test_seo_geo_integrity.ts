@@ -14,6 +14,8 @@ const schema = server.slice(schemaStart, schemaEnd);
 
 assert.match(server, /from\('seo_metadata'\)[\s\S]*?eq\('robots_index', false\)/, 'SEO index exclusions are loaded from the authoritative metadata table');
 assert.match(sitemap, /loadAwesomeAdventureToursSeoIndexExclusions\(\)/, 'Sitemap applies SEO index exclusions');
+assert.match(sitemap, /descriptionLength < 650/, 'Sitemap excludes destinations below the substantive-content threshold');
+assert.match(server, /destinationDescription\.length \+ destinationTagline\.length\) < 650/, 'Destination renderer uses the same substantive-content threshold');
 assert.match(sitemap, /seoExclusions\.entityIds\.has\('tour:'/,'Sitemap excludes noindex tours');
 assert.match(sitemap, /seoExclusions\.entityIds\.has\('destination:'/,'Sitemap excludes noindex destinations');
 assert.match(sitemap, /seoExclusions\.pageSlugs\.has\(slug\)/,'Sitemap excludes noindex CMS and blog pages');
