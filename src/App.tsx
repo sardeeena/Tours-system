@@ -640,12 +640,11 @@ function MainApp() {
       if (!cancelled && savedMetadata) {
         const mergedMetadata = { ...baseSeoMetadata, ...savedMetadata };
         // Respect explicit noindex pages, but keep the four published legal
-        // policy pages indexable even if legacy SEO metadata marked the old
-        // privacy placeholder as noindex.
+        // approved public pages indexable even if legacy SEO metadata marked them noindex.
         if (staticPage?.seoIndexable === false) {
           mergedMetadata.robotsIndex = false;
           mergedMetadata.robotsFollow = false;
-        } else if (staticPage && ['privacy', 'terms', 'cancellation-policy', 'cookie-policy'].includes(staticPage.slug)) {
+        } else if (staticPage && ['about', 'privacy', 'terms', 'cancellation-policy', 'cookie-policy'].includes(staticPage.slug)) {
           mergedMetadata.robotsIndex = true;
           mergedMetadata.robotsFollow = true;
         }
