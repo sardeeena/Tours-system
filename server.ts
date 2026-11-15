@@ -3566,7 +3566,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
           const tourCount = destinationTourCounts.get(String(destination.id)) || 0;
           const descriptionLength = cleanPublicText(destination.description, 4000).length
             + cleanPublicText(destination.tagline, 500).length;
-          if (!name || seoExclusions.entityIds.has('destination:' + String(destination.id)) || (tourCount < 2 && descriptionLength < 300)) continue;
+          if (!name || seoExclusions.entityIds.has('destination:' + String(destination.id)) || (tourCount < 2 && descriptionLength < 650)) continue;
           if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
           const description = cleanPublicText(destination.description, 400);
           lines.push(`- [${name}](https://awesomeadventure.tours/destinations/${encodeURIComponent(slug)}): ${description}`);
