@@ -273,58 +273,23 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ redirectUrl, onNavig
   // =========================================================================
   return (
     <div className="min-h-[calc(100vh-160px)] bg-[#FAF8F5] py-10 px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
-      <div className="max-w-2xl w-full mx-auto space-y-6">
+      <div className="max-w-lg w-full mx-auto">
         
-        {/* Prominent Visitor Booking Reassurance Callout */}
-        <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 sm:p-5 flex items-start space-x-3.5 shadow-2xs">
-          <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center shrink-0 mt-0.5">
-            <Sparkles className="w-4 h-4" />
-          </div>
-          <div className="flex-1 text-xs">
-            <h3 className="font-bold text-emerald-950 text-sm">Visitors do NOT need to create an account to book!</h3>
-            <p className="text-emerald-800 mt-1">
-              You can make a direct excursion reservation in under 2 minutes with no password or registration needed.
-              We send your vouchers and pickup timing directly to your email and WhatsApp.
-            </p>
-            <div className="mt-3 flex items-center space-x-4">
-              <button
-                type="button"
-                onClick={() => onNavigate('booking')}
-                className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold rounded text-xs transition-colors flex items-center space-x-1 cursor-pointer"
-              >
-                <span>Continue as Guest to Book</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => onNavigate('excursions')}
-                className="text-emerald-900 hover:underline font-semibold text-xs cursor-pointer"
-              >
-                Browse Excursion Fleet
-              </button>
-            </div>
-          </div>
-        </div>
-
         {/* Registration Card */}
-        <div className="bg-white border border-[#E8E3DA] rounded-xl shadow-sm p-6 sm:p-8 space-y-6">
+        <div className="bg-white border border-[#E8E3DA] rounded-2xl shadow-sm p-6 sm:p-8 space-y-5">
           
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-1.5">
             <div className="flex items-center justify-center mx-auto mb-2">
               <img 
                 src="/logo.png" 
                 alt="Awesome Adventure Tours Logo" 
-                className="h-16 w-auto object-contain drop-shadow-sm"
+                className="h-14 w-auto object-contain"
               />
             </div>
-            <h1 className="font-display text-2xl font-bold text-[#0E1B2A]">Create Voyager Account</h1>
+            <h1 className="font-display text-2xl font-bold text-[#0E1B2A]">Create your account</h1>
             <p className="text-xs text-stone-500">
-              Join Awesome Adventure Tours for quick booking autofill, voucher downloads, and excursion archives
+              Enter your details to get started
             </p>
-            <div className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-medium">
-              <Mail className="w-3 h-3 text-[#0A6C74]" />
-              <span>Email confirmation link sent upon submission</span>
-            </div>
           </div>
 
           {/* Error Notice */}
@@ -511,16 +476,6 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ redirectUrl, onNavig
                 className="text-[#0A6C74] font-bold hover:underline cursor-pointer"
               >
                 Sign In
-              </button>
-            </p>
-            <p className="text-[11px] text-stone-400">
-              Need to check an existing guest booking?{' '}
-              <button
-                type="button"
-                onClick={() => onNavigate('my-booking')}
-                className="text-stone-600 hover:text-stone-900 underline cursor-pointer"
-              >
-                Find My Booking Voucher
               </button>
             </p>
           </div>
