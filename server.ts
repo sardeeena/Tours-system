@@ -3911,12 +3911,28 @@ async function loadAwesomeAdventureToursPages(): Promise<any[]> {
     }
   }
   // Keep baseline public trust pages available even when the CMS contains a
-  // partial page list. Explicit CMS content always wins for matching slugs.
-  const cmsSlugs = new Set(publishedPages
+  // partial page list. CMS content wins, while missing SEO metadata and hero
+  // fields inherit safe, reviewed defaults from the matching static page.
+  const staticPageBySlug = new Map(INITIAL_STATIC_PAGES.map((page) => [page.slug, page]));
+  const mergedPages = publishedPages.map((page: any) => {
+    const fallback = typeof page?.slug === 'string' ? staticPageBySlug.get(page.slug) : undefined;
+    if (!fallback) return page;
+    return {
+      ...fallback,
+      ...page,
+      title: page.title || fallback.title,
+      heroHeadline: page.heroHeadline || page.hero_headline || fallback.heroHeadline,
+      heroSubtitle: page.heroSubtitle || page.hero_subtitle || fallback.heroSubtitle,
+      seoTitle: page.seoTitle || page.seo_title || fallback.seoTitle,
+      seoDescription: page.seoDescription || page.seo_description || fallback.seoDescription,
+      seoIndexable: page.seoIndexable ?? page.seo_indexable ?? fallback.seoIndexable,
+    };
+  });
+  const cmsSlugs = new Set(mergedPages
     .map((page: any) => typeof page?.slug === 'string' ? page.slug : '')
     .filter(Boolean));
   return [
-    ...publishedPages,
+    ...mergedPages,
     ...INITIAL_STATIC_PAGES.filter((page) => !cmsSlugs.has(page.slug)),
   ];
 }
