@@ -17,6 +17,7 @@ import {
   RotateCw,
 } from 'lucide-react';
 import { useAuth, AuthModalView } from '../../contexts/AuthContext';
+import { useToast } from '../../contexts/ToastContext';
 import { sanitizeString, isValidEmail, validatePasswordStrength, authRateLimiter } from '../../lib/security';
 
 interface AuthModalProps {
@@ -46,6 +47,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const { showToast } = useToast();
+  const reportError = (message: string) => {
+    reportError(message);
+    showToast(message, 'error');
+  };
 
   // Form Fields
   const [email, setEmail] = useState('');
@@ -106,35 +112,38 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     e.preventDefault();
     const limit = authRateLimiter.check();
     if (limit.isLocked) {
-      setErrorMsg(`Too many attempts. Please wait ${limit.remainingSeconds} seconds before trying again.`);
+      reportError(`Too many attempts. Please wait ${limit.remainingSeconds} seconds before trying again.`);
       return;
     }
 
     const cleanEmail = sanitizeString(email).toLowerCase();
     if (!cleanEmail || !password) {
-      setErrorMsg('Please enter both your email and password.');
+      reportError('Please enter both your email and password.');
       return;
     }
 
     if (!isValidEmail(cleanEmail)) {
-      setErrorMsg('Please enter a valid email address format.');
+      reportError('Please enter a valid email address format.');
       return;
     }
 
     setLoading(true);
     setErrorMsg(null);
-
-    const result = await signIn(cleanEmail, password);
-    setLoading(false);
-
-    if (result.success) {
-      authRateLimiter.reset();
-      onClose();
-      if (onSuccess) onSuccess();
-    } else {
-      authRateLimiter.recordFailedAttempt();
-      console.warn('Customer sign-in failed:', result.error);
-      setErrorMsg('We could not sign you in. Please check your email and password and try again.');
+    try {
+      const result = await signIn(cleanEmail, password);
+      if (result.success) {
+        authRateLimiter.reset();
+        onClose();
+        if (onSuccess) onSuccess();
+      } else {
+        authRateLimiter.recordFailedAttempt();
+        console.warn('Customer sign-in failed:', result.error);
+        reportError('We could not sign you in. Please check your email and password and try again.');
+      }
+    } catch (error) {
+      reportError(error instanceof Error ? error.message : 'Sign-in failed unexpectedly. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -143,7 +152,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     e.preventDefault();
     const limit = authRateLimiter.check();
     if (limit.isLocked) {
-      setErrorMsg(`Too many registration attempts. Please wait ${limit.remainingSeconds} seconds.`);
+      reportError(`Too many registration attempts. Please wait ${limit.remainingSeconds} seconds.`);
       return;
     }
 
@@ -152,56 +161,58 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     const cleanPhone = sanitizeString(phone);
 
     if (!cleanName || cleanName.length < 2) {
-      setErrorMsg('Please enter your full legal name.');
+      reportError('Please enter your full legal name.');
       return;
     }
 
     if (!cleanEmail || !isValidEmail(cleanEmail)) {
-      setErrorMsg('Please enter a valid email address format.');
+      reportError('Please enter a valid email address format.');
       return;
     }
 
     const strengthCheck = validatePasswordStrength(password);
     if (!strengthCheck.isValid) {
-      setErrorMsg(strengthCheck.errors[0] || 'Password does not meet security requirements.');
+      reportError(strengthCheck.errors[0] || 'Password does not meet security requirements.');
       return;
     }
 
     if (password !== confirmPassword) {
-      setErrorMsg('Passwords do not match. Please re-enter.');
+      reportError('Passwords do not match. Please re-enter.');
       return;
     }
 
     if (!termsAccepted) {
-      setErrorMsg('Please agree to the Terms of Service & Privacy Policy.');
+      reportError('Please agree to the Terms of Service & Privacy Policy.');
       return;
     }
 
     setLoading(true);
     setErrorMsg(null);
-
-    const result = await signUp({
-      email: cleanEmail,
-      password,
-      fullName: cleanName,
-      phone: cleanPhone || undefined,
-    });
-
-    setLoading(false);
-
-    if (result.success) {
-      authRateLimiter.reset();
-      if (result.needsEmailConfirmation) {
-        setRegisteredEmail(cleanEmail);
-        setNeedsVerificationNotice(true);
+    try {
+      const result = await signUp({
+        email: cleanEmail,
+        password,
+        fullName: cleanName,
+        phone: cleanPhone || undefined,
+      });
+      if (result.success) {
+        authRateLimiter.reset();
+        if (result.needsEmailConfirmation) {
+          setRegisteredEmail(cleanEmail);
+          setNeedsVerificationNotice(true);
+        } else {
+          onClose();
+          if (onSuccess) onSuccess();
+        }
       } else {
-        onClose();
-        if (onSuccess) onSuccess();
+        authRateLimiter.recordFailedAttempt();
+        console.warn('Customer registration failed:', result.error);
+        reportError('We could not complete your registration. Please check your details and try again.');
       }
-    } else {
-      authRateLimiter.recordFailedAttempt();
-      console.warn('Customer registration failed:', result.error);
-      setErrorMsg('We could not complete your registration. Please check your details and try again.');
+    } catch (error) {
+      reportError(error instanceof Error ? error.message : 'Registration failed unexpectedly. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -210,29 +221,32 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     e.preventDefault();
     const limit = authRateLimiter.check();
     if (limit.isLocked) {
-      setErrorMsg(`Too many requests. Please wait ${limit.remainingSeconds} seconds.`);
+      reportError(`Too many requests. Please wait ${limit.remainingSeconds} seconds.`);
       return;
     }
 
     const cleanEmail = sanitizeString(email).toLowerCase();
     if (!cleanEmail || !isValidEmail(cleanEmail)) {
-      setErrorMsg('Please enter a valid email address.');
+      reportError('Please enter a valid email address.');
       return;
     }
 
     setLoading(true);
     setErrorMsg(null);
-
-    const result = await sendPasswordReset(cleanEmail);
-    setLoading(false);
-
-    if (result.success) {
-      authRateLimiter.reset();
-      setSuccessMsg(`We have dispatched password reset instructions to ${cleanEmail}. Please check your inbox and click the recovery link.`);
-    } else {
-      authRateLimiter.recordFailedAttempt();
-      console.warn('Password reset request failed:', result.error);
-      setErrorMsg('We could not send password reset instructions. Please try again.');
+    try {
+      const result = await sendPasswordReset(cleanEmail);
+      if (result.success) {
+        authRateLimiter.reset();
+        setSuccessMsg(`We have dispatched password reset instructions to ${cleanEmail}. Please check your inbox and click the recovery link.`);
+      } else {
+        authRateLimiter.recordFailedAttempt();
+        console.warn('Password reset request failed:', result.error);
+        reportError('We could not send password reset instructions. Please try again.');
+      }
+    } catch (error) {
+      reportError(error instanceof Error ? error.message : 'Password reset failed unexpectedly. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -240,13 +254,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const handleResend = async () => {
     if (!registeredEmail) return;
     setResendingVerification(true);
-    const res = await resendVerification(registeredEmail);
-    setResendingVerification(false);
-    if (res.success) {
-      setSuccessMsg('A new verification email has been dispatched. Please check your inbox.');
-    } else {
-      console.warn('Verification email resend failed:', res.error);
-      setErrorMsg('We could not resend the verification email. Please try again.');
+    try {
+      const res = await resendVerification(registeredEmail);
+      if (res.success) {
+        setSuccessMsg('A new verification email has been dispatched. Please check your inbox.');
+      } else {
+        console.warn('Verification email resend failed:', res.error);
+        reportError('We could not resend the verification email. Please try again.');
+      }
+    } catch (error) {
+      reportError(error instanceof Error ? error.message : 'Verification email resend failed. Please try again.');
+    } finally {
+      setResendingVerification(false);
     }
   };
 
