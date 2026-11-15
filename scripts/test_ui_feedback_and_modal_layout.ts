@@ -37,6 +37,8 @@ const help = fs.readFileSync('src/components/common/HelpInquiryModal.tsx', 'utf8
 assert.match(help, /aat-modal-actions/, 'Help request submit actions remain sticky and visible');
 assert.match(help, /catch \(error\)/, 'Unexpected help form failures are surfaced instead of leaving the form loading');
 assert.match(help, /showToast\(messageText, 'error'\)/, 'Help form failures also use the global error notification');
+const tourPreview = fs.readFileSync('src/components/home/TourPreviewModal.tsx', 'utf8');
+assert.match(tourPreview, /aat-modal-footer[\s\S]*Select Date & Book Now/, 'Tour preview keeps the primary booking action in the visible sticky footer');
 
 const bookingPage = fs.readFileSync('src/pages/BookingPage.tsx', 'utf8');
 assert.doesNotMatch(bookingPage, /notificationService\.sendBookingConfirmation/, 'Booking page does not call the inactive browser notification stub');
