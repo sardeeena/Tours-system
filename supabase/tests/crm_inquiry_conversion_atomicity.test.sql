@@ -18,11 +18,11 @@ SELECT ok(
   'Conversion RPC checks CRM management permission'
 );
 SELECT ok(
-  position('pg_advisory_xact_lock' in pg_get_functiondef('public.convert_inquiry_to_lead(uuid)'::regprocedure)) > 0,
+  position('pg_advisory_xact_lock' in pg_get_functiondef('private.convert_inquiry_to_lead(uuid)'::regprocedure)) > 0,
   'Conversion serializes concurrent attempts by inquiry ID'
 );
 SELECT ok(
-  position('FOR UPDATE' in pg_get_functiondef('public.convert_inquiry_to_lead(uuid)'::regprocedure)) > 0,
+  position('FOR UPDATE' in pg_get_functiondef('private.convert_inquiry_to_lead(uuid)'::regprocedure)) > 0,
   'Conversion locks the inquiry row before checking or changing state'
 );
 SELECT ok(

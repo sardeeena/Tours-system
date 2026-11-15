@@ -48,11 +48,18 @@ const convertInquiry = section(
   'export async function convertInquiryToLead',
   'export async function convertLeadToCustomer'
 );
-assert.match(convertInquiry, /rpc\('convert_inquiry_to_lead'/);
-assert.match(convertInquiry, /if \(error\) throw new Error\(formatSupabaseError\(error\)\)/);
-assert.match(convertInquiry, /if \(!row\?\.id\) throw new Error/);
-assert.doesNotMatch(convertInquiry, /listLeads\(\)|createLead\(/);
-assert.doesNotMatch(convertInquiry, /catch\s*\{/);
+const productionConversion = section(
+  convertInquiry,
+  'if (isSupabaseConfigured()) {',
+  "if (!import.meta.env.DEV)"
+);
+assert.match(productionConversion, /rpc\('convert_inquiry_to_lead'/);
+assert.match(productionConversion, /if \(error\) throw new Error\(formatSupabaseError\(error\)\)/);
+assert.match(productionConversion, /if \(!row\?\.id\) throw new Error/);
+assert.doesNotMatch(productionConversion, /listLeads\(\)|createLead\(/);
+assert.doesNotMatch(productionConversion, /catch\s*\{/);
+assert.match(convertInquiry, /if \(!import\.meta\.env\.DEV\)[\s\S]*?throw new Error/);
+assert.match(convertInquiry, /\/\/ Local-only development fallback; production always uses the atomic RPC\.[\s\S]*?return createLead\(/);
 
 assert.match(inquiryManager, /await convertLeadToCustomer\(lead\.id\)/);
 assert.doesNotMatch(inquiryManager, /updateCustomerMetadata/);

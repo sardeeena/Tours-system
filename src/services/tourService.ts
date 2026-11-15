@@ -1055,10 +1055,11 @@ async function syncTourRelations(tourId: string, payload: AdminTourPayload): Pro
 
   // Tour Assigned Extras & Custom Prices (Atomic Transactional Replacement)
   if (payload.extraIds !== undefined) {
-    const assignments = payload.extraIds.map((extId) => ({
+    const assignments = payload.extraIds.map((extId, index) => ({
       extra_id: extId,
       custom_price_eur: payload.extraPrices && payload.extraPrices[extId] !== undefined ? payload.extraPrices[extId] : null,
       is_active: true,
+      sort_order: index + 1,
     }));
 
     if (isSupabaseConfigured() && !isSchemaMissing()) {
@@ -1969,7 +1970,7 @@ export async function getPublishedTourExtras(tourIdOrSlug?: string): Promise<Boo
       if (targetTourId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
         const { data: assignedData, error: assignedErr } = await supabase
           .from('tour_assigned_extras')
-          .select('extra_id, custom_price_eur, is_active, tour_extras (*)')
+          .select('extra_id, custom_price_eur, is_active, sort_order, tour_extras (*)')
           .eq('tour_id', targetTourId);
 
         if (assignedErr) {
