@@ -1011,3 +1011,101 @@ html.dark .aat-modal-actions {
     padding-right: 1rem;
   }
 }
+
+
+/* ==============================================================================
+   AWESOME ADVENTURE — GLOBAL MOTION & SMART SCROLL
+   Subtle by default, consistent across public pages and the admin workspace.
+   ============================================================================== */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
+}
+html :is(section[id], article[id], [data-scroll-target]) {
+  scroll-margin-top: 6rem;
+}
+.public-site :is(button, a, [role="button"], input, select, textarea),
+.admin-shell :is(button, a, [role="button"], input, select, textarea) {
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease,
+    opacity 180ms ease;
+}
+.public-site :is(button, [role="button"]):not(:disabled):not([aria-disabled="true"]):hover,
+.admin-shell :is(button, [role="button"]):not(:disabled):not([aria-disabled="true"]):hover {
+  transform: translateY(-1px);
+}
+.public-site :is(button, [role="button"]):not(:disabled):active,
+.admin-shell :is(button, [role="button"]):not(:disabled):active {
+  transform: translateY(0) scale(.985);
+}
+.public-site a:focus-visible,
+.admin-shell a:focus-visible {
+  scroll-margin-block: 6rem;
+}
+.public-site main article,
+.admin-shell .admin-content article,
+.public-site main [data-motion-card],
+.admin-shell [data-motion-card] {
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+.public-site main article img,
+.admin-shell .admin-content article img {
+  transition: transform 420ms cubic-bezier(.2,.7,.2,1);
+}
+@media (hover: hover) and (pointer: fine) {
+  .public-site main article:hover,
+  .admin-shell .admin-content article:hover,
+  .public-site main [data-motion-card]:hover,
+  .admin-shell [data-motion-card]:hover {
+    transform: translateY(-3px);
+  }
+  .public-site main article:hover img,
+  .admin-shell .admin-content article:hover img {
+    transform: scale(1.025);
+  }
+}
+
+/* Reveal only after the motion observer is active; content remains visible without JS. */
+html.aat-motion-active .aat-reveal {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  transition:
+    opacity 620ms cubic-bezier(.2,.7,.2,1),
+    transform 620ms cubic-bezier(.2,.7,.2,1);
+  will-change: opacity, transform;
+}
+html.aat-motion-active .aat-reveal.aat-visible {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  will-change: auto;
+}
+html.aat-motion-active .aat-reveal:nth-of-type(2) { transition-delay: 45ms; }
+html.aat-motion-active .aat-reveal:nth-of-type(3) { transition-delay: 90ms; }
+html.aat-motion-active .aat-reveal:nth-of-type(4) { transition-delay: 135ms; }
+html.aat-motion-active .aat-reveal:nth-of-type(5) { transition-delay: 180ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  html.aat-motion-active .aat-reveal,
+  html.aat-motion-active .aat-reveal.aat-visible {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    will-change: auto !important;
+  }
+  .public-site *,
+  .public-site *::before,
+  .public-site *::after,
+  .admin-shell *,
+  .admin-shell *::before,
+  .admin-shell *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
