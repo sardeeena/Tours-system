@@ -1598,22 +1598,31 @@ export async function publishAutomationEvent(
     createdAt: new Date().toISOString(),
   };
 
-  const existing = getLocal<AutomationEvent[]>(LOCAL_AUTO_EVENTS_KEY, []);
-  setLocal(LOCAL_AUTO_EVENTS_KEY, [event, ...existing]);
-
+  // Persist first and use the database-generated UUID for every subsequent update.
+  // A temporary browser ID cannot match the UUID primary key in automation_events.
   if (isSupabaseConfigured()) {
-    try {
-      await supabase.from('automation_events').insert({
+    const { data, error } = await supabase
+      .from('automation_events')
+      .insert({
         event_name: event.eventName,
         payload: event.payload,
         entity_type: event.entityType,
         entity_id: event.entityId,
         processed: false,
-      });
-    } catch {
-      // ignore
+      })
+      .select('id')
+      .single();
+
+    if (error || !data?.id) {
+      throw new Error(
+        `Unable to persist automation event "${eventName}": ${error?.message || 'The database did not return an event ID.'}`
+      );
     }
+    event.id = data.id;
   }
+
+  const existing = getLocal<AutomationEvent[]>(LOCAL_AUTO_EVENTS_KEY, []);
+  setLocal(LOCAL_AUTO_EVENTS_KEY, [event, ...existing]);
 
   // Trigger registered in-memory listeners safely (single-run, error captured, no infinite recurrence)
   const handlers = eventHandlers.get(eventName);
@@ -1669,24 +1678,33 @@ export async function markAutomationEventProcessed(
   const events = getLocal<AutomationEvent[]>(LOCAL_AUTO_EVENTS_KEY, []);
   const idx = events.findIndex((e) => e.id === eventId);
   const now = new Date().toISOString();
+
+  // Confirm the authoritative database update before changing the browser cache.
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase
+      .from('automation_events')
+      .update({
+        processed: true,
+        processed_at: now,
+        actions_triggered: actionsTriggered,
+      })
+      .eq('id', eventId)
+      .select('id')
+      .maybeSingle();
+
+    if (error) {
+      throw new Error(`Unable to mark automation event as processed: ${error.message}`);
+    }
+    if (!data?.id) {
+      throw new Error('Automation event was not found when marking it processed.');
+    }
+  }
+
   if (idx !== -1) {
     events[idx].processed = true;
     events[idx].processedAt = now;
     events[idx].actionsTriggered = actionsTriggered;
     setLocal(LOCAL_AUTO_EVENTS_KEY, events);
-  }
-
-  if (isSupabaseConfigured()) {
-    try {
-      await supabase
-        .from('automation_events')
-        .update({
-          processed: true,
-          processed_at: now,
-          actions_triggered: actionsTriggered,
-        })
-        .eq('id', eventId);
-    } catch {}
   }
 }
 
