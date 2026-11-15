@@ -32,7 +32,7 @@ import {
   getCategories,
   getPickupLocations,
   getTourExtras,
-  getTourCustomExtraPrices,
+  fetchTourCustomExtraPricesFromDb,
   notifyCatalogueDataChanged
 } from '../../services/tourService';
 import {
@@ -195,7 +195,9 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
             setVideos(fullTour.videos || []);
             setSelectedPickupIds(fullTour.pickup_locations?.map((p) => p.id) || []);
             setSelectedExtraIds(fullTour.extras?.map((e) => e.id) || []);
-            const customPrices = getTourCustomExtraPrices(tourId);
+            // Load authoritative per-tour overrides from Supabase so edits on a new device
+            // do not silently reset prices to the global catalogue defaults.
+            const customPrices = await fetchTourCustomExtraPricesFromDb(tourId);
             setExtraPrices(customPrices || {});
             if (fullTour.seo) {
               setSeo({
