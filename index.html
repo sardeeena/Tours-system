@@ -68,7 +68,6 @@
             },
             execute: async function (input) {
               var limit = Number(input && input.limit);
-              params.set('limit', String(Number.isInteger(limit) ? Math.max(1, Math.min(20, limit)) : 10));
               var response = await fetch('/mcp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
