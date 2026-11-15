@@ -30,17 +30,17 @@ export const CompareModal: React.FC<CompareModalProps> = ({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6">
+      <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 aat-modal-overlay">
         <motion.div
           initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.96 }}
           transition={{ duration: 0.2 }}
-          className="relative w-full max-w-5xl bg-white rounded-lg border border-[#E8E3DA] shadow-2xl overflow-hidden my-6 flex flex-col max-h-[92vh]"
+          className="relative w-full max-w-5xl bg-white rounded-lg border border-[#E8E3DA] shadow-2xl overflow-hidden my-6 flex flex-col max-h-[92vh] aat-modal-panel"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 bg-[#FAF8F5]">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 bg-[#FAF8F5] aat-modal-header">
             <div className="flex items-center space-x-2.5">
               <div className="p-2 rounded bg-[#0A6C74]/10 text-[#0A6C74]">
                 <Scale className="w-5 h-5" />
@@ -77,7 +77,7 @@ export const CompareModal: React.FC<CompareModalProps> = ({
           </div>
 
           {/* Comparison Matrix Body */}
-          <div className="overflow-y-auto overflow-x-auto p-6">
+          <div className="overflow-y-auto overflow-x-auto p-6 aat-modal-body">
             {toursToCompare.length === 0 ? (
               <div className="text-center py-16">
                 <p className="text-sm font-semibold text-stone-700">No excursions selected for comparison.</p>
@@ -254,7 +254,7 @@ export const CompareModal: React.FC<CompareModalProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="px-6 py-3.5 border-t border-stone-200 bg-[#FAF8F5] flex items-center justify-between text-xs">
+          <div className="px-6 py-3.5 border-t border-stone-200 bg-[#FAF8F5] flex items-center justify-between text-xs aat-modal-footer">
             <span className="text-stone-500">
               Need personalized advice or a private vessel charter? WhatsApp our pier desk anytime.
             </span>
