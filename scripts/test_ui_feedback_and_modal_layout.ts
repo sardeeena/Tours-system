@@ -35,6 +35,8 @@ const quickBook = fs.readFileSync('src/components/home/QuickBookModal.tsx', 'utf
 assert.match(quickBook, /aat-modal-actions/, 'Quick booking submit action remains sticky and visible');
 const help = fs.readFileSync('src/components/common/HelpInquiryModal.tsx', 'utf8');
 assert.match(help, /aat-modal-actions/, 'Help request submit actions remain sticky and visible');
+assert.match(help, /catch \(error\)/, 'Unexpected help form failures are surfaced instead of leaving the form loading');
+assert.match(help, /showToast\(messageText, 'error'\)/, 'Help form failures also use the global error notification');
 
 const bookingPage = fs.readFileSync('src/pages/BookingPage.tsx', 'utf8');
 assert.doesNotMatch(bookingPage, /notificationService\.sendBookingConfirmation/, 'Booking page does not call the inactive browser notification stub');
