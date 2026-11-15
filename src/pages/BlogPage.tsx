@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowRight, CalendarDays, Clock3, BookOpen, Search } from 'lucide-react';
-import { BlogPost, getPublishedBlogPost, getPublishedBlogPosts } from '../services/blogService';
+import { BlogCategory, BlogPost, getBlogCategories, getPublishedBlogPost, getPublishedBlogPosts } from '../services/blogService';
 import { BlogContent } from '../components/blog/BlogContent';
 
 const dateLabel = (value?: string | null) => value ? new Date(value).toLocaleDateString('en',{month:'long',day:'numeric',year:'numeric'}) : '';
@@ -8,6 +8,8 @@ const readingTime = (content: string) => Math.max(1,Math.ceil(content.trim().spl
 
 export const BlogPage: React.FC<{ slug?: string; onNavigate:(path:string)=>void }> = ({slug,onNavigate}) => {
   const [posts,setPosts] = useState<BlogPost[]>([]);
+  const [categories,setCategories] = useState<BlogCategory[]>([]);
+  const [selectedCategory,setSelectedCategory] = useState('all');
   const [article,setArticle] = useState<BlogPost|null>(null);
   const [query,setQuery] = useState('');
   const [loading,setLoading] = useState(true);
@@ -15,7 +17,9 @@ export const BlogPage: React.FC<{ slug?: string; onNavigate:(path:string)=>void 
   useEffect(() => {
     let active=true; setLoading(true); setError(''); if (slug) setArticle(null);
     const task=slug ? getPublishedBlogPost(slug).then(p=>{if(active)setArticle(p);})
-      : getPublishedBlogPosts(60).then(p=>{if(active)setPosts(p);});
+      : Promise.all([getPublishedBlogPosts(60),getBlogCategories()]).then(([published,catalogue])=>{
+          if(active){setPosts(published);setCategories(catalogue);}
+        });
     task.catch(()=>{if(active)setError('The journal is temporarily unavailable. Please try again shortly.');})
       .finally(()=>{if(active)setLoading(false);});
     return ()=>{active=false;};
@@ -54,7 +58,8 @@ export const BlogPage: React.FC<{ slug?: string; onNavigate:(path:string)=>void 
     document.head.appendChild(schema);
     return () => { document.getElementById('awesome-adventure-blogposting-jsonld')?.remove(); };
   },[slug,article]);
-  const filtered=posts.filter(p=>[p.title,p.excerpt||'',p.category?.name||''].join(' ').toLowerCase().includes(query.toLowerCase()));
+  const filtered=posts.filter(p=>(selectedCategory==='all'||p.category?.slug===selectedCategory)&&[p.title,p.excerpt||'',p.category?.name||''].join(' ').toLowerCase().includes(query.toLowerCase()));
+  const visibleCategories=categories.filter(category=>posts.some(post=>post.category_id===category.id));
   const shell='bg-[#FAF8F5] text-[#111A24] dark:bg-[#0A1118] dark:text-slate-100';
   if (slug) return <main className={shell+' min-h-screen'}>
     <div className="max-w-4xl mx-auto px-5 sm:px-8 py-12 sm:py-20">
@@ -81,13 +86,23 @@ export const BlogPage: React.FC<{ slug?: string; onNavigate:(path:string)=>void 
       </div>
     </section>
     <section className="max-w-7xl mx-auto px-5 sm:px-8 py-14">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-8"><div><p className="text-xs uppercase tracking-widest text-[#C28D32] font-bold mb-2">From our team</p><h2 className="font-display text-3xl font-bold">Latest stories</h2></div><label className="relative block w-full sm:w-80"><Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={17}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search the journal" className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#E8E3DA] dark:border-[#243447] bg-white dark:bg-[#111E2E] outline-none focus:ring-2 focus:ring-[#0A6C74]"/></label></div>
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-6"><div><p className="text-xs uppercase tracking-widest text-[#C28D32] font-bold mb-2">From our team</p><h2 className="font-display text-3xl font-bold">Explore the journal</h2><p className="text-sm text-stone-500 dark:text-slate-400 mt-2">Browse by topic or search for something specific.</p></div><label className="relative block w-full sm:w-80"><Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400" size={17}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search the journal" className="w-full pl-11 pr-4 py-3 rounded-xl border border-[#E8E3DA] dark:border-[#243447] bg-white dark:bg-[#111E2E] outline-none focus:ring-2 focus:ring-[#0A6C74]"/></label></div>
+      {!loading && !error && visibleCategories.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-9" aria-label="Filter articles by category">
+          <button type="button" aria-pressed={selectedCategory==='all'} onClick={()=>setSelectedCategory('all')} className={`rounded-full px-4 py-2 text-xs font-semibold border transition-colors ${selectedCategory==='all'?'bg-[#0A6C74] text-white border-[#0A6C74]':'bg-white dark:bg-[#111E2E] text-stone-600 dark:text-slate-300 border-[#E8E3DA] dark:border-[#243447] hover:border-[#0A6C74]'}`}>All topics <span className="ml-1 opacity-75">{posts.length}</span></button>
+          {visibleCategories.map(category=>{
+            const count=posts.filter(post=>post.category_id===category.id).length;
+            const active=selectedCategory===category.slug;
+            return <button key={category.id} type="button" aria-pressed={active} onClick={()=>setSelectedCategory(active?'all':category.slug)} className={`rounded-full px-4 py-2 text-xs font-semibold border transition-colors ${active?'bg-[#0A6C74] text-white border-[#0A6C74]':'bg-white dark:bg-[#111E2E] text-stone-600 dark:text-slate-300 border-[#E8E3DA] dark:border-[#243447] hover:border-[#0A6C74]'}`}>{category.name}<span className="ml-1 opacity-75">{count}</span></button>;
+          })}
+        </div>
+      )}
       {loading ? <div className="grid md:grid-cols-3 gap-6">{[1,2,3].map(i=><div key={i} className="h-80 rounded-2xl bg-stone-200 dark:bg-slate-800 animate-pulse"/>)}</div>
       : error ? <p className="text-stone-500">{error}</p>
       : filtered.length ? <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-7">{filtered.map(post=><a key={post.id} href={'/blog/'+post.slug} onClick={event=>{event.preventDefault();onNavigate('/blog/'+post.slug);}} className="group block text-left rounded-2xl overflow-hidden bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#243447] hover:-translate-y-1 transition-all shadow-sm">
         <div className="aspect-[16/10] bg-[#E8F3F4] dark:bg-[#16283D] overflow-hidden">{post.cover_image_url ? <img src={post.cover_image_url} alt="" loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/> : <div className="w-full h-full flex items-center justify-center text-[#0A6C74]"><BookOpen size={42}/></div>}</div>
         <div className="p-6"><p className="text-[11px] uppercase tracking-widest text-[#0A6C74] dark:text-teal-300 font-bold">{post.category?.name||'Travel guide'}</p><h3 className="font-display text-2xl font-bold mt-3 leading-snug group-hover:text-[#0A6C74]">{post.title}</h3><p className="text-sm text-stone-500 dark:text-slate-400 mt-3 line-clamp-3">{post.excerpt}</p><div className="flex items-center gap-4 text-xs text-stone-400 mt-6"><span className="inline-flex gap-1.5 items-center"><CalendarDays size={13}/>{dateLabel(post.published_at)}</span><span className="inline-flex gap-1.5 items-center"><Clock3 size={13}/>{post.reading_time_minutes || 1} min read</span></div><span className="inline-flex items-center gap-2 mt-5 text-sm font-bold text-[#0A6C74]">Read story <ArrowRight size={15}/></span></div>
-      </a>)}</div> : <div className="rounded-2xl border border-dashed border-[#D5CFC4] dark:border-[#243447] p-12 text-center"><BookOpen className="mx-auto mb-3 text-[#0A6C74]" size={32}/><h3 className="font-display text-xl font-bold">New stories are on their way</h3><p className="text-sm text-stone-500 mt-2">Our travel team is preparing helpful guides and local recommendations.</p></div>}
+      </a>)}</div> : posts.length ? <div className="rounded-2xl border border-dashed border-[#D5CFC4] dark:border-[#243447] p-12 text-center"><BookOpen className="mx-auto mb-3 text-[#0A6C74]" size={32}/><h3 className="font-display text-xl font-bold">No stories match these filters</h3><p className="text-sm text-stone-500 mt-2">Try another category or clear your search.</p><button type="button" onClick={()=>{setSelectedCategory('all');setQuery('');}} className="mt-4 rounded-xl bg-[#0A6C74] text-white px-4 py-2 text-sm font-semibold">Clear filters</button></div> : <div className="rounded-2xl border border-dashed border-[#D5CFC4] dark:border-[#243447] p-12 text-center"><BookOpen className="mx-auto mb-3 text-[#0A6C74]" size={32}/><h3 className="font-display text-xl font-bold">New stories are on their way</h3><p className="text-sm text-stone-500 mt-2">Our travel team is preparing helpful guides and local recommendations.</p></div>}
     </section>
   </main>;
 };
