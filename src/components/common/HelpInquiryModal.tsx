@@ -72,28 +72,35 @@ export const HelpInquiryModal: React.FC<HelpInquiryModalProps> = ({
 
     setLoading(true);
 
-    const chosenTour = tours.find((t) => t.id === tourId) || selectedTour;
+    try {
+      const chosenTour = tours.find((t) => t.id === tourId) || selectedTour;
+      const res = await createCustomerInquiry({
+        customer_name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim() || null,
+        whatsapp: phone.trim() || null,
+        tour_id: chosenTour?.id || null,
+        tour_title: chosenTour?.title || null,
+        subject: subject.trim() || 'General Excursion Assistance & Help Request',
+        message: message.trim(),
+        source: 'web',
+        website_url_hp: websiteUrlHp,
+      });
 
-    const res = await createCustomerInquiry({
-      customer_name: name.trim(),
-      email: email.trim(),
-      phone: phone.trim() || null,
-      whatsapp: phone.trim() || null,
-      tour_id: chosenTour?.id || null,
-      tour_title: chosenTour?.title || null,
-      subject: subject.trim() || 'General Excursion Assistance & Help Request',
-      message: message.trim(),
-      source: 'web',
-      website_url_hp: websiteUrlHp,
-    });
-
-    setLoading(false);
-
-    if (res.success) {
-      setSubmitted(true);
-      showToast('Your help request has been sent directly to our pier concierge team.', 'success');
-    } else {
-      setErrorMsg(res.error || 'Failed to submit inquiry. Please try again or message WhatsApp.');
+      if (res.success) {
+        setSubmitted(true);
+        showToast('Your help request has been sent directly to our pier concierge team.', 'success');
+      } else {
+        const messageText = res.error || 'Failed to submit inquiry. Please try again or message WhatsApp.';
+        setErrorMsg(messageText);
+        showToast(messageText, 'error');
+      }
+    } catch (error) {
+      const messageText = error instanceof Error ? error.message : 'We could not submit your help request. Please try again.';
+      setErrorMsg(messageText);
+      showToast(messageText, 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -105,13 +112,13 @@ export const HelpInquiryModal: React.FC<HelpInquiryModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/75 backdrop-blur-sm animate-in fade-in duration-200 aat-modal-overlay">
       <div
-        className="relative w-full max-w-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl shadow-2xl overflow-hidden text-stone-900 dark:text-stone-100 max-h-[90vh] flex flex-col"
+        className="relative w-full max-w-lg bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-700 rounded-xl shadow-2xl overflow-hidden text-stone-900 dark:text-stone-100 max-h-[90vh] flex flex-col aat-modal-panel"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="px-6 py-4 bg-stone-50 dark:bg-stone-950 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between">
+        <div className="px-6 py-4 bg-stone-50 dark:bg-stone-950 border-b border-stone-200 dark:border-stone-800 flex items-center justify-between aat-modal-header">
           <div className="flex items-center space-x-2.5">
             <div className="w-8 h-8 rounded-full bg-[#0A6C74]/15 dark:bg-[#0A6C74]/20 border border-[#0A6C74] flex items-center justify-center text-[#0A6C74] dark:text-[#2dd4bf]">
               <HelpCircle className="w-4 h-4" />
@@ -135,7 +142,7 @@ export const HelpInquiryModal: React.FC<HelpInquiryModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto">
+        <div className="p-6 overflow-y-auto aat-modal-body">
           {submitted ? (
             <div className="text-center py-6 space-y-4">
               <div className="w-14 h-14 rounded-full bg-emerald-500/15 dark:bg-emerald-500/20 border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
@@ -317,7 +324,7 @@ export const HelpInquiryModal: React.FC<HelpInquiryModalProps> = ({
                 />
               </div>
 
-              <div className="pt-2 flex items-center justify-between border-t border-stone-200 dark:border-stone-800">
+              <div className="pt-2 flex items-center justify-between border-t border-stone-200 dark:border-stone-800 aat-modal-actions">
                 <span className="text-[11px] text-stone-500 dark:text-stone-400">
                   Data securely saved to database & dispatched to marina desk.
                 </span>

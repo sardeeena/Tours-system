@@ -4,6 +4,7 @@ import { Tour, CurrencyConfig } from '../../types';
 import { GuestCounts, Availability } from '../../types/booking';
 import { getEarliestSelectableDate, getTourAvailability, getTourAvailabilityFromServer } from '../../services/availabilityService';
 import { formatCurrencyAmount } from '../../services/pricingService';
+import { useToast } from '../../contexts/ToastContext';
 
 interface StepDateGuestsProps {
   tour: Tour;
@@ -29,6 +30,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
   onNext,
 }) => {
   const earliestDate = useMemo(() => getEarliestSelectableDate(24), []);
+  const { showToast } = useToast();
 
   // Set default date to earliestDate if none set
   React.useEffect(() => {
@@ -57,6 +59,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
       .catch((error) => {
         console.warn('Could not load authoritative tour availability:', error);
         if (active) {
+          showToast('We could not verify availability for this date. Please try again before continuing.', 'error');
           setAvailability({
             ...getTourAvailability(tour, selectedDate),
             isAvailable: false,
@@ -73,7 +76,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
     return () => {
       active = false;
     };
-  }, [tour, date, earliestDate]);
+  }, [tour, date, earliestDate, showToast]);
 
   const handleAdultsChange = (delta: number) => {
     const next = Math.max(1, guests.adults + delta);

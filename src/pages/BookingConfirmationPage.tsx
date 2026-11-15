@@ -59,8 +59,8 @@ export const BookingConfirmationPage: React.FC<BookingConfirmationPageProps> = (
             {booking.status === 'confirmed' ? 'Your booking is confirmed' : 'Your reservation has been received'}
           </h1>
           <p className="text-xs sm:text-sm text-stone-600 max-w-md mx-auto mt-2">
-            We have saved your booking and sent the details to{' '}
-            <strong className="text-stone-900">{booking.customer.email}</strong>.
+            We have saved your booking. A digital booking ticket is queued for{' '}
+            <strong className="text-stone-900">{booking.customer.email}</strong> for email processing. If it does not arrive, please check your spam folder or contact our booking team.
           </p>
 
           {/* Reference Badge with Copy */}

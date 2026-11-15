@@ -46,6 +46,12 @@ jobs:
       - name: Enforce canonical website branding
         run: npm run test:brand-identity
 
+      - name: Verify branded email templates and booking ticket renderer
+        run: npm run test:comm
+
+      - name: Verify toast, responsive modal and booking ticket UX
+        run: npm run test:ui-feedback
+
       - name: Verify CRM task and follow-up persistence integrity
         run: npm run test:crm-task-persistence
 

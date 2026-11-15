@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { renderBrandedEmailHtml } from '../utils/emailTemplate';
+import { renderBookingTicketEmailHtml } from '../utils/emailTemplate';
 
 type QueueMessage = {
   msg_id: number;
@@ -18,9 +18,18 @@ type BookingRow = {
   currency: string | null;
   status: string;
   payment_status: string;
+  payment_method: string;
+  adult_count: number;
+  child_count: number;
+  infant_count: number;
+  pickup_hotel_name: string | null;
+  pickup_room_number: string | null;
+  tour_language: string | null;
   customer_id: string | null;
   customers: any;
   tours: any;
+  pickup_locations: any;
+  booking_extras: any[];
 };
 
 const QUEUE_POLL_INTERVAL_MS = 15_000;
@@ -156,7 +165,7 @@ async function processMessage(
 
   const { data: booking, error: bookingError } = await client
     .from('bookings')
-    .select('id,booking_reference,booking_date,total,currency,status,payment_status,customer_id,customers(first_name,last_name,email),tours(title,departure_time)')
+    .select('id,booking_reference,booking_date,total,currency,status,payment_status,payment_method,adult_count,child_count,infant_count,pickup_hotel_name,pickup_room_number,tour_language,customer_id,customers(first_name,last_name,email,phone,country,hotel),tours(title,departure_time),pickup_locations(name,area),booking_extras(name,quantity,unit_price,total_price,pricing_type)')
     .eq('id', bookingId)
     .maybeSingle();
 
@@ -166,6 +175,8 @@ async function processMessage(
   const row = booking as unknown as BookingRow;
   const customer = normalizeRelation(row.customers);
   const tour = normalizeRelation(row.tours);
+  const pickup = normalizeRelation(row.pickup_locations);
+  const bookingExtras = Array.isArray(row.booking_extras) ? row.booking_extras : [];
   const recipient = String(customer?.email || '').trim().toLowerCase();
 
   if (!isValidEmail(recipient)) {
@@ -218,6 +229,56 @@ async function processMessage(
     String(template?.body_text || 'Hello {{customer_name}}, we received your booking request {{booking_reference}} for {{tour_name}} on {{tour_date}}. Our team will review it and send further details.'),
     variables
   );
+  const formatDate = (value: string) => {
+    const parsed = new Date(value + 'T00:00:00Z');
+    return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' });
+  };
+  const ticketExtras = bookingExtras.map((extra) => ({
+    name: String(extra.name || 'Booking extra'),
+    quantity: Math.max(1, Number(extra.quantity) || 1),
+    total: String(currency) + ' ' + Number(extra.total_price ?? extra.unit_price ?? 0).toFixed(2),
+  }));
+  const ticketText = [
+    content,
+    '',
+    'OFFICIAL BOOKING TICKET',
+    'Booking reference: ' + row.booking_reference,
+    'Excursion: ' + String(tour?.title || 'your selected tour'),
+    'Date: ' + formatDate(String(row.booking_date || '')),
+    'Guests: ' + Number(row.adult_count || 0) + ' adults, ' + Number(row.child_count || 0) + ' children, ' + Number(row.infant_count || 0) + ' infants',
+    'Pickup: ' + String(pickup?.name || 'To be confirmed') + (pickup?.area ? ' (' + String(pickup.area) + ')' : ''),
+    'Hotel: ' + String(row.pickup_hotel_name || customer?.hotel || 'To be confirmed'),
+    'Room: ' + String(row.pickup_room_number || 'To be confirmed'),
+    'Tour language: ' + String(row.tour_language || 'To be confirmed'),
+    'Booking status: ' + String(row.status || 'pending'),
+    'Payment status: ' + String(row.payment_status || 'pending'),
+    'Total: ' + currency + ' ' + amount,
+    ...ticketExtras.map((extra) => 'Extra: ' + extra.name + ' × ' + extra.quantity + ' — ' + extra.total),
+  ].join('\n');
+  const ticketHtml = renderBookingTicketEmailHtml({
+    heading: subject,
+    preheader: 'Your Awesome Adventure Tours ticket · ' + row.booking_reference,
+    introText: content,
+    bookingReference: String(row.booking_reference || ''),
+    customerName,
+    customerEmail: recipient,
+    tourName: String(tour?.title || 'your selected tour'),
+    tourDate: formatDate(String(row.booking_date || '')),
+    departureTime: tour?.departure_time ? String(tour.departure_time) : undefined,
+    adultCount: Number(row.adult_count || 0),
+    childCount: Number(row.child_count || 0),
+    infantCount: Number(row.infant_count || 0),
+    pickupLocation: pickup?.name ? String(pickup.name) : undefined,
+    pickupArea: pickup?.area ? String(pickup.area) : undefined,
+    hotelName: String(row.pickup_hotel_name || customer?.hotel || ''),
+    roomNumber: row.pickup_room_number ? String(row.pickup_room_number) : undefined,
+    tourLanguage: row.tour_language ? String(row.tour_language) : undefined,
+    bookingStatus: String(row.status || 'pending').replace(/_/g, ' '),
+    paymentStatus: String(row.payment_status || 'pending').replace(/_/g, ' '),
+    paymentMethod: String(row.payment_method || 'pay_at_pickup').replace(/_/g, ' '),
+    totalAmount: String(currency) + ' ' + amount,
+    extras: ticketExtras,
+  });
 
   let logRow: { id: string; status: string } | null = null;
   const { data: existingLog, error: existingLogError } = await client
@@ -248,7 +309,7 @@ async function processMessage(
         recipient_address: recipient,
         customer_name: customerName,
         subject,
-        content,
+        content: ticketText,
         provider_name: 'Resend',
         failure_reason: null,
       })
@@ -268,7 +329,7 @@ async function processMessage(
         booking_reference: row.booking_reference,
         template_key: 'booking_received',
         subject,
-        content,
+        content: ticketText,
         status: 'queued',
         provider_name: 'Resend',
         staff_name: 'Booking Notification Worker',
@@ -294,8 +355,8 @@ async function processMessage(
       reply_to: process.env.RESEND_REPLY_TO?.trim() || 'reservation@awesomeadventure.tours',
       bcc: [process.env.BOOKING_NOTIFICATION_EMAIL?.trim() || 'reservation@awesomeadventure.tours'],
       subject,
-      text: content,
-      html: renderBrandedEmailHtml({ heading: subject, preheader: subject, bodyText: content }),
+      text: ticketText,
+      html: ticketHtml,
       tags: [{ name: 'communication_id', value: String(logRow!.id) }],
     }),
     signal: AbortSignal.timeout(15_000),
@@ -339,7 +400,7 @@ async function processMessage(
 
 export function startBookingNotificationWorker(client: SupabaseClient): () => void {
   if (process.env.BOOKING_NOTIFICATION_WORKER_ENABLED?.trim().toLowerCase() !== 'true') {
-    console.info('[Booking Notification Worker] Not started: BOOKING_NOTIFICATION_WORKER_ENABLED is not true.');
+    console.info('[Booking Notification Worker] Not started: BOOKING_NOTIFICATION_WORKER_ENABLED is not explicitly true.');
     return () => undefined;
   }
 

@@ -891,3 +891,123 @@ html:not(.dark) .admin-shell [class~="bg-[#101b2b]"] [class~="bg-[#142238]"],
 html:not(.dark) .admin-shell [class~="bg-[#101b2b]"] [class~="bg-slate-950"] {
   background-color: #F1F5F9 !important;
 }
+
+
+/* Shared responsive modal layout: preserve the close/header and actions while content scrolls. */
+.aat-modal-overlay {
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding:
+    max(.75rem, env(safe-area-inset-top))
+    max(.75rem, env(safe-area-inset-right))
+    max(.75rem, env(safe-area-inset-bottom))
+    max(.75rem, env(safe-area-inset-left));
+}
+.aat-modal-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  max-height: calc(100vh - 1.5rem);
+  max-height: calc(100dvh - max(1.5rem, env(safe-area-inset-top) + env(safe-area-inset-bottom)));
+  margin: auto;
+  overflow: hidden;
+}
+.aat-modal-panel-scroll {
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.aat-modal-panel-scroll > button:first-child {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  width: fit-content;
+  margin: -.5rem -.5rem -2.25rem auto;
+}
+.aat-modal-header,
+.aat-modal-footer {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+}
+.aat-modal-header {
+  column-gap: .75rem;
+}
+.aat-modal-header > * {
+  min-width: 0;
+}
+.aat-modal-header button {
+  flex: 0 0 auto;
+}
+.aat-modal-header :is(h1, h2, h3, p) {
+  overflow-wrap: anywhere;
+}
+.aat-modal-body {
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.aat-modal-actions {
+  position: sticky;
+  z-index: 2;
+  bottom: 0;
+  margin-top: auto;
+  padding-top: .875rem;
+  padding-bottom: max(.25rem, env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, rgba(255,255,255,.94), #fff 18%);
+  border-top: 1px solid #e2e8f0;
+}
+html.dark .aat-modal-actions {
+  background: linear-gradient(to bottom, rgba(15,23,42,.94), #0f172a 18%);
+  border-color: #334155;
+}
+@media (max-width: 639px) {
+  .aat-modal-overlay {
+    align-items: flex-start;
+    padding:
+      max(.5rem, env(safe-area-inset-top))
+      max(.5rem, env(safe-area-inset-right))
+      max(.5rem, env(safe-area-inset-bottom))
+      max(.5rem, env(safe-area-inset-left));
+  }
+  .aat-modal-panel {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100vh - 1rem);
+    max-height: calc(100dvh - max(1rem, env(safe-area-inset-top) + env(safe-area-inset-bottom)));
+    margin-top: 0;
+    margin-bottom: 0;
+    border-radius: .875rem;
+  }
+  .aat-modal-header {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  .aat-modal-body {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  .aat-modal-footer {
+    gap: .5rem;
+    flex-wrap: wrap;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  .aat-modal-actions {
+    margin-left: -1rem;
+    margin-right: -1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
