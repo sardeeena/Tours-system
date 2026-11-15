@@ -3495,7 +3495,6 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
     '',
     '## Business identity',
     '- Operator: Awesome Adventure Tours',
-    '- Base: Hurghada New Marina, Berth B-14, Hurghada, Red Sea Governorate, Egypt',
     '- Telephone: +20 151 5212741',
     '- Service area: Hurghada and Egypt’s Red Sea coast',
     '- Customer-service languages: English, German and Russian',
