@@ -3493,8 +3493,18 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
     '',
     '> Explore excursions and experiences across Egypt’s Red Sea coast. Tour pages provide current published descriptions, inclusions, pricing and booking details.',
     '',
+    '## Business identity',
+    '- Operator: Awesome Adventure Tours',
+    '- Base: Hurghada New Marina, Berth B-14, Hurghada, Red Sea Governorate, Egypt',
+    '- Telephone: +20 151 5212741',
+    '- Service area: Hurghada and Egypt’s Red Sea coast',
+    '- Customer-service languages: English, German and Russian',
+    '',
     '## Main pages',
     '- [Homepage](https://awesomeadventure.tours/)',
+    '- [About](https://awesomeadventure.tours/about)',
+    '- [Contact](https://awesomeadventure.tours/contact)',
+    '- [Experiences](https://awesomeadventure.tours/experiences)',
     '- [Excursions](https://awesomeadventure.tours/excursions)',
     '- [Privacy Policy](https://awesomeadventure.tours/privacy)',
     '- [Terms & Conditions](https://awesomeadventure.tours/terms)',
@@ -4494,7 +4504,7 @@ async function startServer() {
       res.type('text/markdown; charset=utf-8');
       res.setHeader('Vary', 'Accept');
       res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=120, stale-while-revalidate=60');
-      return res.send(lines.join('\\n'));
+      return res.send(lines.join('\n'));
     });
 
     app.get('*', async (req: Request, res: Response) => {
