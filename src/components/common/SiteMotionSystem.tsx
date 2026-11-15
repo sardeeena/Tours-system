@@ -37,7 +37,7 @@ export function SiteMotionSystem() {
             if (!entry.isIntersecting) return;
             const element = entry.target as HTMLElement;
             element.classList.add('aat-visible');
-            observer.unobserve(element);
+            observer?.unobserve(element);
           });
         }, { threshold: 0.12, rootMargin: '0px 0px -36px 0px' })
       : null;
