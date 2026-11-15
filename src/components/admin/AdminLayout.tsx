@@ -17,6 +17,7 @@ import {
   LogOut,
   ExternalLink,
   ChevronRight,
+  ChevronDown,
   Database,
   Plus,
   ShieldCheck,
@@ -135,6 +136,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const supabaseConnected = isSupabaseConfigured();
   const [schemaMissing, setSchemaMissingState] = React.useState(isSchemaMissing());
   const [isIntegrationModalOpen, setIsIntegrationModalOpen] = React.useState(false);
+  const [collapsedSections, setCollapsedSections] = React.useState<Record<string, boolean>>({ header_ops: true, header_finance: true, header_comm: true, header_crm: true, header_cms: true, header_security: true });
 
   // Sidebar open/close state (default open on desktop, auto-closed on small screens)
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(() => typeof window === 'undefined' || window.innerWidth >= 1024);
@@ -162,6 +164,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  React.useEffect(() => {
+    const activeIndex = navItems.findIndex((item) => item.id === activeTab || item.children?.some((child) => child.id === activeTab));
+    if (activeIndex < 0) return;
+    const section = navItems.slice(0, activeIndex + 1).reverse().find((item) => item.isHeader);
+    if (section) setCollapsedSections((previous) => ({ ...previous, [section.id]: false }));
+  }, [activeTab]);
 
   const handleNavSelect = (tabId: AdminTab) => {
     onSelectTab(tabId);
@@ -318,6 +327,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       ? canManageAccess
       : !activePermission || hasPermission(activePermission);
 
+  let activeNavSection: string | null = null;
+
   return (
     <div className="admin-shell min-h-screen flex flex-col antialiased selection:bg-[#0A6C74] selection:text-white">
       {/* Clear operational warning; implementation details stay in the restricted technical area. */}
@@ -354,12 +365,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         {/* Sidebar */}
         <aside
           className={`
-            fixed inset-y-0 left-0 z-50 w-72 max-w-[88vw] bg-white dark:bg-[#101B28] border-r border-[#E5EAF0] dark:border-[#243447] flex flex-col justify-between shrink-0 transition-all duration-300 ease-in-out shadow-lg
+            fixed inset-y-0 left-0 z-50 h-dvh w-72 max-w-[88vw] bg-white dark:bg-[#101B28] border-r border-[#E5EAF0] dark:border-[#243447] flex flex-col overflow-hidden shrink-0 transition-all duration-300 ease-in-out shadow-lg
             lg:static lg:z-10
             ${isSidebarOpen ? 'translate-x-0 lg:w-72' : '-translate-x-full lg:w-0 lg:overflow-hidden lg:border-r-0'}
           `}
         >
-          <div>
+          <div className="flex min-h-0 flex-1 flex-col">
             {/* Brand Header with Close/Collapse Button */}
             <div className="p-4 border-b border-[#E8E3DA] dark:border-[#1F3854] flex items-center justify-between gap-2">
               <div className="flex items-center space-x-3 min-w-0">
@@ -404,18 +415,21 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             </div>}
 
             {/* Navigation links */}
-            <nav className="admin-nav p-3.5 space-y-1.5 text-[13px] overflow-y-auto max-h-[calc(100vh-220px)] scrollbar-thin scrollbar-thumb-stone-200 dark:scrollbar-thumb-stone-800">
+            <nav aria-label="Admin navigation" className="admin-nav min-h-0 flex-1 overflow-y-auto overscroll-contain p-3.5 space-y-1.5 text-[13px] scrollbar-thin scrollbar-thumb-stone-200 dark:scrollbar-thumb-stone-800">
               {visibleNavItems.map((item) => {
                 if (item.isHeader) {
+                  activeNavSection = item.id;
+                  const isCollapsed = Boolean(collapsedSections[item.id]);
                   return (
-                    <div
-                      key={item.id}
-                      className="pt-3 pb-1 px-3 text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500 border-t border-[#E8E3DA]/80 dark:border-[#1F3854]/80 mt-2 first:mt-0 first:border-0"
-                    >
-                      {item.label}
-                    </div>
+                    <button key={item.id} type="button" aria-expanded={!isCollapsed}
+                      onClick={() => setCollapsedSections((previous) => ({ ...previous, [item.id]: !previous[item.id] }))}
+                      className="w-full flex items-center justify-between text-left pt-3 pb-1 px-3 text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500 border-t border-[#E8E3DA]/80 dark:border-[#1F3854]/80 mt-2 first:mt-0 first:border-0 hover:text-[#0A6C74] dark:hover:text-[#2DD4BF]">
+                      <span>{item.label}</span>
+                      <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isCollapsed ? '-rotate-90' : ''}`} />
+                    </button>
                   );
                 }
+                if (activeNavSection && collapsedSections[activeNavSection]) return null;
 
                 const Icon = item.icon || ChevronRight;
                 const isCurrent = activeTab === item.id || (item.children && item.children.some((c) => c.id === activeTab));
@@ -464,7 +478,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           </div>
 
           {/* User Profile & Footer */}
-          <div className="p-3 border-t border-[#E8E3DA] dark:border-[#1F3854] space-y-2">
+          <div className="shrink-0 p-3 border-t border-[#E8E3DA] dark:border-[#1F3854] space-y-2 bg-white dark:bg-[#101B28]">
             <div className="flex items-center space-x-2 px-2.5 py-2 rounded-xl bg-[#FAF8F5] dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854]">
               <div className="w-8 h-8 rounded-full bg-[#0A6C74] text-white flex items-center justify-center font-bold text-xs shadow-xs">
                 {user?.fullName?.charAt(0) || 'A'}
