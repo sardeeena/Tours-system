@@ -97,7 +97,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       {children}
       <div
         aria-label="Notifications"
-        className="pointer-events-none fixed left-3 right-3 top-[max(0.75rem,env(safe-area-inset-top))] z-[10000] mx-auto flex w-auto max-w-sm flex-col gap-2 sm:left-auto sm:right-6 sm:top-6 sm:mx-0 sm:w-[min(24rem,calc(100vw-3rem))]"
+        className="pointer-events-none fixed left-1/2 top-[max(0.75rem,env(safe-area-inset-top))] z-[10000] -translate-x-1/2 flex w-[min(72vw,24rem)] max-w-sm flex-col gap-2 sm:left-6 sm:right-auto sm:top-6 sm:translate-x-0 sm:w-[min(24rem,calc(100vw-3rem))]"
       >
         <AnimatePresence initial={false} mode="popLayout">
           {toasts.map((toast) => (
