@@ -3497,7 +3497,8 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
     '- Operator: Awesome Adventure Tours',
     '- Telephone: +20 151 5212741',
     '- Service area: Hurghada and Egypt’s Red Sea coast',
-    '- Customer-service languages: English, German and Russian',
+    '- Customer-service languages: Multilingual support for international travellers; contact us in your preferred language',
+    '- TripAdvisor listing and traveller feedback: https://www.tripadvisor.co.uk/Attraction_Review-g297549-d34759384-Reviews-Awesome_Adventure_Tours-Hurghada_Red_Sea_and_Sinai.html',
     '',
     '## Main pages',
     '- [Homepage](https://awesomeadventure.tours/)',
@@ -4364,7 +4365,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
     telephone: '+201515212741',
     address: {
       '@type': 'PostalAddress',
-      streetAddress: 'Hurghada New Marina, Berth B-14',
+      streetAddress: '2nd floor, Bostan Cafe, Madres',
       addressLocality: 'Hurghada',
       addressRegion: 'Red Sea Governorate',
       addressCountry: 'EG',
@@ -4379,11 +4380,11 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       '@type': 'ContactPoint',
       telephone: '+201515212741',
       contactType: 'customer service',
-      availableLanguage: ['English', 'German', 'Russian'],
+      availableLanguage: 'Multilingual',
       url: `${origin}/contact`,
     }],
   };
-  if (configuredSameAs.length) organization.sameAs = Array.from(new Set(configuredSameAs));
+  organization.sameAs = Array.from(new Set([...configuredSameAs, 'https://www.tripadvisor.co.uk/Attraction_Review-g297549-d34759384-Reviews-Awesome_Adventure_Tours-Hurghada_Red_Sea_and_Sinai.html']));
   const graph: any[] = [
     organization,
     { '@type': 'WebSite', '@id': `${origin}/#website`, url: origin, name: 'Awesome Adventure Tours', publisher: { '@id': `${origin}/#organization` }, inLanguage: 'en' },
