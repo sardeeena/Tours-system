@@ -37,8 +37,8 @@ const sitemapDestinationEnd = server.indexOf("if (publicSupabase)", sitemapDesti
 const sitemapDestinationBlock = server.slice(sitemapDestinationStart, sitemapDestinationEnd);
 const llmsDestinationStart = server.indexOf("## Published destinations");
 const llmsDestinationBlock = server.slice(llmsDestinationStart, server.indexOf("## Published travel journal articles", llmsDestinationStart));
-assert.match(sitemapDestinationBlock, /if \(!name \|\| \(tourCount < 2 && descriptionLength < 300\)\) continue/, 'Sitemap and llms.txt exclude unnamed or thin destinations consistently');
-assert.match(llmsDestinationBlock, /if \(!name \|\| \(tourCount < 2 && descriptionLength < 300\)\) continue/, 'llms.txt excludes the same thin destinations as the sitemap');
+assert.match(sitemapDestinationBlock, /if \(!name \|\| \(tourCount < 2 && descriptionLength < 650\)\) continue/, 'Sitemap and llms.txt exclude unnamed or thin destinations consistently');
+assert.match(llmsDestinationBlock, /if \(!name \|\| \(tourCount < 2 && descriptionLength < 650\)\) continue/, 'llms.txt excludes the same thin destinations as the sitemap');
 assert.match(server, /app\.get\('\/sitemap\.xml'/, 'Public XML sitemap endpoint remains registered');
 assert.match(server, /app\.get\('\/llms\.txt'/, 'AI discovery llms.txt endpoint remains registered');
 
