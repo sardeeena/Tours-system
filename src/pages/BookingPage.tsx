@@ -7,7 +7,6 @@ import { STANDARD_PICKUP_LOCATIONS, GLOBAL_BOOKING_EXTRAS } from '../data/bookin
 import { getPublishedPickupLocations, getPublishedTourExtras } from '../services/tourService';
 import { calculateBookingPrice } from '../services/pricingService';
 import { bookingRepository, generateBookingReference } from '../services/bookingRepository';
-import { notificationService } from '../services/notificationService';
 import { loadBookingDraft, saveBookingDraft, clearBookingDraft, BookingDraftState } from '../services/draftStorage';
 import { BookingSummary } from '../components/booking/BookingSummary';
 import { StepDateGuests } from '../components/booking/StepDateGuests';
@@ -351,7 +350,8 @@ export const BookingPage: React.FC<BookingPageProps> = ({
       await bookingRepository.createBooking(newBooking);
       void recordVisitorEvent({ event_name: 'booking_submitted', page_path: '/booking', event_data: { tour_slug: currentTour?.slug || 'unknown', booking_step: currentStep } });
       clearBookingDraft();
-      notificationService.sendBookingConfirmation(newBooking);
+      // The database transaction has already enqueued booking.created in the durable
+      // booking notification queue. The server worker sends the email asynchronously.
       void recordVisitorEvent({ event_name: 'booking_confirmed', page_path: '/booking', event_data: { tour_slug: currentTour?.slug || 'unknown' } });
       showToast('Reservation submitted successfully!', 'success');
       onBookingSuccess(newBooking);
