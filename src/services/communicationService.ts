@@ -1678,13 +1678,8 @@ export async function markAutomationEventProcessed(
   const events = getLocal<AutomationEvent[]>(LOCAL_AUTO_EVENTS_KEY, []);
   const idx = events.findIndex((e) => e.id === eventId);
   const now = new Date().toISOString();
-  if (idx !== -1) {
-    events[idx].processed = true;
-    events[idx].processedAt = now;
-    events[idx].actionsTriggered = actionsTriggered;
-    setLocal(LOCAL_AUTO_EVENTS_KEY, events);
-  }
 
+  // Confirm the authoritative database update before changing the browser cache.
   if (isSupabaseConfigured()) {
     const { data, error } = await supabase
       .from('automation_events')
@@ -1703,6 +1698,13 @@ export async function markAutomationEventProcessed(
     if (!data?.id) {
       throw new Error('Automation event was not found when marking it processed.');
     }
+  }
+
+  if (idx !== -1) {
+    events[idx].processed = true;
+    events[idx].processedAt = now;
+    events[idx].actionsTriggered = actionsTriggered;
+    setLocal(LOCAL_AUTO_EVENTS_KEY, events);
   }
 }
 
