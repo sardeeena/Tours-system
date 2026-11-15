@@ -1259,7 +1259,8 @@ export async function getPublishedDestinations(): Promise<Destination[]> {
     .eq('status', 'published');
 
   if (toursError) {
-    console.warn('Could not query published tours for destination count:', formatSupabaseError(toursError));
+    console.error('Failed to calculate published destination counts:', formatSupabaseError(toursError));
+    throw new Error(`Unable to calculate published excursion counts: ${formatSupabaseError(toursError)}`);
   }
 
   const countMap: Record<string, number> = {};

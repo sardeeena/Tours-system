@@ -4240,8 +4240,8 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
     if (override?.seo_title) title = seoPlainText(override.seo_title, 180);
     if (override?.meta_description) description = seoPlainText(override.meta_description, 300);
     if (override?.og_image) pageImage = seoSafeImage(override.og_image) || pageImage;
-    if (override?.robots_index === false) noindex = true;
-    if (override?.robots_follow === false) nofollow = true;
+    if (override?.robots_index === false && !(pageKind === 'static' && seoIdentifier === 'about')) noindex = true;
+    if (override?.robots_follow === false && !(pageKind === 'static' && seoIdentifier === 'about')) nofollow = true;
   }
 
   const canonical = `${origin}${path === '/' ? '/' : path}`;
