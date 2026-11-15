@@ -25,17 +25,27 @@ export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
     title: 'About Awesome Adventure Tours',
     slug: 'about',
     heroHeadline: 'Explore Egypt’s Red Sea Coast with Awesome Adventure Tours',
-    heroSubtitle: 'Discover the excursions and experiences currently listed on Awesome Adventure Tours. Each tour page provides its own description and booking information.',
-    lastUpdated: '2026-11-11',
+    heroSubtitle: 'Awesome Adventure Tours helps travellers explore boat trips, island visits, snorkeling, diving, desert safaris and cultural excursions in Egypt. Browse published experiences, compare practical details and contact our Hurghada team before you reserve.',
+    lastUpdated: '2026-11-15',
+    seoTitle: 'About Awesome Adventure Tours | Egypt Excursions & Red Sea Experiences',
+    seoDescription: 'Get to know Awesome Adventure Tours in Hurghada, Egypt. Explore published Red Sea boat trips, island excursions, snorkeling, diving, desert safaris and cultural tours.',
     seoIndexable: true,
     sections: [
       {
-        title: 'Explore the available experiences',
-        content: 'Browse the published excursion catalogue to compare destinations, activities and trip details across Egypt’s Red Sea coast.',
+        title: 'Experiences across Egypt',
+        content: 'Our published catalogue brings together experiences in destinations including Hurghada, El Gouna, Sharm El Sheikh and other parts of Egypt. Depending on the trip, travellers can compare boat and island excursions, snorkeling and diving activities, desert safaris, transfers and cultural sightseeing.',
       },
       {
-        title: 'Review each tour before booking',
-        content: 'Tour pages provide the information available for each experience, including its description, price, duration, inclusions and pickup arrangements where applicable.',
+        title: 'Clear information before you reserve',
+        content: 'Every excursion can have different departure arrangements, prices, durations, inclusions, age requirements and cancellation conditions. Review the individual tour page and the booking summary carefully so you understand what is included and where pickup is available.',
+      },
+      {
+        title: 'Local support in Hurghada',
+        content: 'Awesome Adventure Tours is based in Hurghada, Red Sea, Egypt. Our team can help with questions about published excursions, hotel pickup information and reservations. Contact us before booking if you need clarification about a particular trip.',
+      },
+      {
+        title: 'How to choose your trip',
+        content: 'Start by selecting your destination or preferred activity. Compare the itinerary, duration, price, included services and practical requirements on each excursion page. Availability and operational conditions can change, especially for marine activities, so confirm the details for your chosen date before travelling.',
       },
     ],
   },
