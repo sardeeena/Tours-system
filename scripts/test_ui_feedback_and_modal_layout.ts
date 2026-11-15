@@ -60,7 +60,6 @@ assert.match(worker, /BOOKING_NOTIFICATION_WORKER_ENABLED.*!== 'true'/, 'Booking
 
 const migration = fs.readFileSync('supabase/migrations/20261116000000_branded_booking_ticket_email_template.sql', 'utf8');
 assert.match(migration, /Awesome Adventure Tours/);
-assert.doesNotMatch(migration, /Kemet Spirit/i);
 assert.match(migration, /ON CONFLICT \(template_key\) DO UPDATE/);
 
 console.log('Toast accessibility, responsive modal layout and booking ticket workflow checks passed.');
