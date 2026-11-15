@@ -399,8 +399,8 @@ async function processMessage(
 }
 
 export function startBookingNotificationWorker(client: SupabaseClient): () => void {
-  if (process.env.BOOKING_NOTIFICATION_WORKER_ENABLED?.trim().toLowerCase() === 'false') {
-    console.info('[Booking Notification Worker] Not started: BOOKING_NOTIFICATION_WORKER_ENABLED is explicitly false.');
+  if (process.env.BOOKING_NOTIFICATION_WORKER_ENABLED?.trim().toLowerCase() !== 'true') {
+    console.info('[Booking Notification Worker] Not started: BOOKING_NOTIFICATION_WORKER_ENABLED is not explicitly true.');
     return () => undefined;
   }
 
