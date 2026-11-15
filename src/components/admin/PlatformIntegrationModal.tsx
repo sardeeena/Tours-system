@@ -81,10 +81,10 @@ export const PlatformIntegrationModal: React.FC<PlatformIntegrationModalProps> =
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4 overflow-y-auto">
-      <div className="bg-stone-900 border border-stone-700 w-full max-w-4xl rounded-xl shadow-2xl overflow-hidden my-8 flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4 overflow-y-auto aat-modal-overlay">
+      <div className="bg-stone-900 border border-stone-700 w-full max-w-4xl rounded-xl shadow-2xl overflow-hidden my-8 flex flex-col max-h-[90vh] aat-modal-panel">
         {/* Header */}
-        <div className="p-6 border-b border-stone-800 flex items-center justify-between bg-stone-950/60 shrink-0">
+        <div className="p-6 border-b border-stone-800 flex items-center justify-between bg-stone-950/60 shrink-0 aat-modal-header">
           <div className="flex items-center space-x-3">
             <div className="p-2.5 rounded-lg bg-[#0A6C74]/20 border border-[#0A6C74]/30 text-[#2dd4bf]">
               <Layers className="w-5 h-5" />
@@ -112,7 +112,7 @@ export const PlatformIntegrationModal: React.FC<PlatformIntegrationModalProps> =
         </div>
 
         {/* Action Bar */}
-        <div className="p-4 bg-stone-950/30 border-b border-stone-800 flex flex-wrap items-center justify-between gap-4 shrink-0">
+        <div className="p-4 bg-stone-950/30 border-b border-stone-800 flex flex-wrap items-center justify-between gap-4 shrink-0 aat-modal-header">
           <div className="flex items-center space-x-4 text-xs text-stone-300">
             <div>
               <span className="text-stone-500 block text-[10px] uppercase font-bold">Systems Tested</span>
@@ -159,7 +159,7 @@ export const PlatformIntegrationModal: React.FC<PlatformIntegrationModalProps> =
         )}
 
         {/* Content Body */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1 text-xs">
+        <div className="p-6 overflow-y-auto space-y-6 flex-1 text-xs aat-modal-body">
           {/* Summary Box */}
           {report && (
             <div
