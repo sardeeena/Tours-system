@@ -7,9 +7,18 @@ const start = crm.indexOf('export async function convertInquiryToLead');
 const end = crm.indexOf('export async function convertLeadToCustomer', start);
 assert.ok(start >= 0 && end > start, 'Conversion service function exists');
 const conversion = crm.slice(start, end);
-assert.match(conversion, /rpc\('convert_inquiry_to_lead'/);
-assert.doesNotMatch(conversion, /listLeads\(\)|createLead\(/);
-assert.match(conversion, /if \(error\) throw new Error/);
+const productionConversionStart = conversion.indexOf('if (isSupabaseConfigured()) {');
+const productionConversionEnd = conversion.indexOf('if (!import.meta.env.DEV)', productionConversionStart);
+assert.ok(
+  productionConversionStart >= 0 && productionConversionEnd > productionConversionStart,
+  'Production conversion path and development-only fallback are clearly separated'
+);
+const productionConversion = conversion.slice(productionConversionStart, productionConversionEnd);
+assert.match(productionConversion, /rpc\('convert_inquiry_to_lead'/);
+assert.doesNotMatch(productionConversion, /listLeads\(\)|createLead\(/);
+assert.match(productionConversion, /if \(error\) throw new Error/);
+assert.doesNotMatch(productionConversion, /catch\s*\{/);
+assert.match(conversion, /if \(!import\.meta\.env\.DEV\)[\s\S]*?throw new Error/);
 assert.match(conversion, /Supabase is not configured/);
 assert.match(migration, /pg_advisory_xact_lock/);
 assert.match(migration, /FOR UPDATE/);
