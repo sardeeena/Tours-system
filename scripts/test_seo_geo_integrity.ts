@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const server = readFileSync(new URL('../server.ts', import.meta.url), 'utf8');
+const robots = readFileSync(new URL('../public/robots.txt', import.meta.url), 'utf8');
 const sitemapStart = server.indexOf("app.get('/sitemap.xml'");
 const llmsStart = server.indexOf("app.get('/llms.txt'");
 const schemaStart = server.indexOf("const organization: Record<string, any>");
@@ -27,6 +28,13 @@ assert.match(llms, /seoExclusions\.pageSlugs\.has\(slug\)/,'llms.txt excludes no
 assert.match(server, /staticPageBySlug = new Map\(INITIAL_STATIC_PAGES/, 'Partial CMS pages inherit reviewed static-page defaults');
 assert.match(server, /seoDescription: page\.seoDescription \|\| page\.seo_description \|\| fallback\.seoDescription/, 'CMS pages inherit reviewed SEO descriptions when metadata is missing');
 assert.match(server, /seoTitle: page\.seoTitle \|\| page\.seo_title \|\| fallback\.seoTitle/, 'CMS pages inherit reviewed SEO titles when metadata is missing');
+assert.match(robots, /User-agent: OAI-SearchBot\\s+Allow: \\//, 'OpenAI search crawler is explicitly allowed');
+assert.match(robots, /User-agent: Claude-SearchBot\\s+Allow: \\//, 'Anthropic search crawler is explicitly allowed');
+assert.match(robots, /User-agent: PerplexityBot\\s+Allow: \\//, 'Perplexity search crawler is explicitly allowed');
+assert.match(robots, /User-agent: GPTBot\\s+Disallow: \\//, 'OpenAI training crawler remains blocked');
+assert.match(robots, /User-agent: ClaudeBot\\s+Disallow: \\//, 'Anthropic training crawler remains blocked');
+assert.match(robots, /User-agent: Google-Extended\\s+Disallow: \\//, 'Google-Extended training access remains blocked without blocking Google Search');
+assert.match(robots, /User-agent: \\*\\s+Allow: \\//, 'General search crawlers remain allowed');
 assert.match(server, /function seoBoundedTitle\(/, 'Dynamic page titles are normalized to a concise search title');
 assert.match(server, /function seoBoundedDescription\(/, 'Dynamic meta descriptions are normalized to search-friendly length');
 assert.match(server, /title = seoBoundedTitle\(title\)/, 'Normalized title is applied after page and CMS metadata');
