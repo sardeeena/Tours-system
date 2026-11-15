@@ -53,7 +53,7 @@ export const Footer: React.FC<FooterProps> = ({
             </div>
             <div>
               <span className="text-stone-900 dark:text-white font-semibold block text-xs">Hurghada Office</span>
-              <span className="text-[11px] text-stone-500 dark:text-slate-400">Hurghada New Marina, Berth B-14, Red Sea, Egypt</span>
+              <span className="text-[11px] text-stone-500 dark:text-slate-400">2nd floor, Bostan Cafe, Madres, Hurghada, Egypt</span>
             </div>
           </div>
 
@@ -73,7 +73,7 @@ export const Footer: React.FC<FooterProps> = ({
             </div>
             <div>
               <span className="text-stone-900 dark:text-white font-semibold block text-xs">WhatsApp Support</span>
-              <span className="text-[11px] text-stone-500 dark:text-slate-400">Quick reply in English, German & Russian</span>
+              <span className="text-[11px] text-stone-500 dark:text-slate-400">Multilingual support for international travellers</span>
             </div>
           </div>
 
@@ -309,6 +309,9 @@ export const Footer: React.FC<FooterProps> = ({
               <li><a href="/blog" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">Travel Journal</a></li>
               <li>
                 <a href="/about" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">About Awesome Adventure Tours</a>
+              <li>
+                <a href="https://www.tripadvisor.co.uk/Attraction_Review-g297549-d34759384-Reviews-Awesome_Adventure_Tours-Hurghada_Red_Sea_and_Sinai.html" target="_blank" rel="noopener noreferrer" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">TripAdvisor Reviews</a>
+              </li>
               </li>
               <li>
                 <a href="/contact" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">Contact</a>
