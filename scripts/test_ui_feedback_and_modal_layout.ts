@@ -37,6 +37,14 @@ const help = fs.readFileSync('src/components/common/HelpInquiryModal.tsx', 'utf8
 assert.match(help, /aat-modal-actions/, 'Help request submit actions remain sticky and visible');
 assert.match(help, /catch \(error\)/, 'Unexpected help form failures are surfaced instead of leaving the form loading');
 assert.match(help, /showToast\(messageText, 'error'\)/, 'Help form failures also use the global error notification');
+const authModal = fs.readFileSync('src/components/auth/AuthModal.tsx', 'utf8');
+assert.match(authModal, /showToast\(message, 'error'\)/, 'Authentication form errors use visible notifications');
+assert.match(authModal, /catch \(error\)/, 'Authentication network failures are handled');
+const bookingLookup = fs.readFileSync('src/components/common/MyBookingModal.tsx', 'utf8');
+assert.match(bookingLookup, /showToast\(message, 'error'\)/, 'Booking lookup errors use visible notifications');
+const availabilityStep = fs.readFileSync('src/components/booking/StepDateGuests.tsx', 'utf8');
+assert.match(availabilityStep, /showToast\('We could not verify availability/, 'Availability service failures use visible notifications');
+
 const tourPreview = fs.readFileSync('src/components/home/TourPreviewModal.tsx', 'utf8');
 assert.match(tourPreview, /aat-modal-footer[\s\S]*Select Date & Book Now/, 'Tour preview keeps the primary booking action in the visible sticky footer');
 
