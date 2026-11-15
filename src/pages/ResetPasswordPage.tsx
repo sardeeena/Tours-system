@@ -248,36 +248,17 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
 
   return (
     <div className="min-h-[calc(100vh-160px)] bg-[#FAF8F5] py-12 px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
-      <div className="max-w-md w-full mx-auto space-y-6">
-
-        {/* Visitor Help Callout */}
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-start space-x-3 text-amber-900 shadow-2xs">
-          <CalendarCheck className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-          <div className="flex-1 text-xs">
-            <p className="font-semibold text-amber-950">Looking for an existing reservation?</p>
-            <p className="text-amber-800 mt-0.5">
-              You don't need an account to view your excursion booking. All travelers can look up reservations instantly with their booking reference code.
-            </p>
-            <button
-              type="button"
-              onClick={() => onNavigate('my-booking')}
-              className="mt-2 inline-flex items-center text-xs font-bold text-amber-800 hover:text-amber-950 underline underline-offset-2 cursor-pointer"
-            >
-              <span>Go to Find My Booking Portal</span>
-              <ArrowRight className="w-3.5 h-3.5 ml-1" />
-            </button>
-          </div>
-        </div>
+      <div className="max-w-md w-full mx-auto">
 
         {/* Main Card */}
-        <div className="bg-white border border-[#E8E3DA] rounded-xl shadow-sm p-6 sm:p-8 space-y-6">
+        <div className="bg-white border border-[#E8E3DA] rounded-2xl shadow-sm p-6 sm:p-8 space-y-5">
 
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-1.5">
             <div className="flex items-center justify-center mx-auto mb-2">
               <img
                 src="/logo.png"
                 alt="Awesome Adventure Tours Logo"
-                className="h-16 w-auto object-contain drop-shadow-sm"
+                className="h-14 w-auto object-contain"
               />
             </div>
 
@@ -291,12 +272,12 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
             </h1>
 
             <p className="text-xs text-stone-500">
-              {step === 'loading' && 'Validating your secure password recovery session...'}
-              {step === 'request' && 'Enter your account email address and we will send you a secure password reset link.'}
-              {step === 'requested' && `If an account exists for ${email}, a recovery link has been dispatched.`}
-              {step === 'update' && 'Choose a new secure password for your account (minimum 6 characters).'}
-              {step === 'completed' && 'Your password has been changed. You can now sign in with your new credentials.'}
-              {step === 'invalid_link' && 'This password reset link is invalid, has expired, or was already used.'}
+              {step === 'loading' && 'Please wait while we verify your link.'}
+              {step === 'request' && 'Enter your email to receive a reset link.'}
+              {step === 'requested' && 'If an account exists, a reset link has been sent.'}
+              {step === 'update' && 'Choose a new password for your account.'}
+              {step === 'completed' && 'Your password has been updated.'}
+              {step === 'invalid_link' && 'This reset link is invalid or expired. Please request a new one.'}
             </p>
           </div>
 
@@ -521,18 +502,6 @@ export const ResetPasswordPage: React.FC<ResetPasswordPageProps> = ({ onNavigate
             </button>
           </div>
 
-        </div>
-
-        {/* Back Link */}
-        <div className="text-center">
-          <button
-            type="button"
-            onClick={() => onNavigate('home')}
-            className="inline-flex items-center text-xs text-stone-500 hover:text-stone-800 font-medium transition-colors cursor-pointer"
-          >
-            <ArrowLeft className="w-3.5 h-3.5 mr-1" />
-            <span>Return to Homepage</span>
-          </button>
         </div>
 
       </div>
