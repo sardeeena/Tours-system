@@ -3433,7 +3433,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
           const tourCount = destinationTourCounts.get(String(destination.id)) || 0;
           const descriptionLength = cleanPublicText(destination.description, 4000).length
             + cleanPublicText(destination.tagline, 500).length;
-          if (!name || seoExclusions.entityIds.has('destination:' + String(destination.id)) || (tourCount < 2 && descriptionLength < 300)) continue;
+          if (!name || seoExclusions.entityIds.has('destination:' + String(destination.id)) || (tourCount < 2 && descriptionLength < 650)) continue;
           if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
           urls.set(
             `${AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN}/destinations/${encodeURIComponent(slug)}`,
@@ -3812,6 +3812,27 @@ function seoPlainText(value: unknown, maxLength = 4000): string {
     .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
     .replace(/<[^>]+>/g, ' ').replace(/&nbsp;/gi, ' ').replace(/\s+/g, ' ')
     .trim().slice(0, maxLength);
+}
+
+function seoBoundedTitle(value: unknown): string {
+  const clean = seoPlainText(value, 240);
+  if (clean.length <= 60) return clean;
+  const withoutBrand = clean
+    .replace(/^Awesome Adventure Tours\s*[|:–—-]\s*/i, '')
+    .replace(/\s*[|:–—-]\s*Awesome Adventure Tours(?: Journal)?$/i, '')
+    .trim();
+  if (withoutBrand.length <= 60) return withoutBrand;
+  const shortened = withoutBrand.slice(0, 57).replace(/\s+\S*$/, '').trim();
+  return shortened ? shortened + '…' : withoutBrand.slice(0, 60);
+}
+
+function seoBoundedDescription(value: unknown): string {
+  const clean = seoPlainText(value, 1200);
+  if (clean.length <= 160) return clean;
+  const firstSentence = clean.match(/^.{70,160}?[.!?](?:\s|$)/)?.[0]?.trim();
+  if (firstSentence && firstSentence.length <= 160) return firstSentence;
+  const shortened = clean.slice(0, 157).replace(/\s+\S*$/, '').trim();
+  return shortened ? shortened + '…' : clean.slice(0, 160);
 }
 
 function seoSafeImage(value: unknown): string {
@@ -4231,7 +4252,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       const destinationDescription = seoPlainText(activeDestination.description, 4000);
       const destinationTagline = seoPlainText(activeDestination.tagline, 500);
       description = seoPlainText(activeDestination.seo_description || destinationDescription || destinationTagline, 300);
-      noindex = destinationTours.length < 2 && (destinationDescription.length + destinationTagline.length) < 300;
+      noindex = destinationTours.length < 2 && (destinationDescription.length + destinationTagline.length) < 650;
       pageImage = seoSafeImage(activeDestination.main_image) || pageImage;
       const cards = destinationTours.map(seoTourCard).filter(Boolean).join('');
       body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / <a href="/excursions">Excursions</a> / ${seoHtmlEscape(seoPlainText(activeDestination.name, 120))}</nav>
@@ -4282,6 +4303,8 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
     if (override?.robots_follow === false && !(pageKind === 'static' && seoIdentifier === 'about')) nofollow = true;
   }
 
+  title = seoBoundedTitle(title) || 'Awesome Adventure Tours';
+  description = seoBoundedDescription(description) || 'Explore published excursions and experiences across Egypt’s Red Sea coast.';
   const canonical = `${origin}${path === '/' ? '/' : path}`;
   const cmsSocialProfiles: string[] = [];
   if (publicSupabase) {
