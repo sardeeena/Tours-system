@@ -15,7 +15,7 @@ export const BlogPage: React.FC<{ slug?: string; onNavigate:(path:string)=>void 
   useEffect(() => {
     let active=true; setLoading(true); setError(''); if (slug) setArticle(null);
     const task=slug ? getPublishedBlogPost(slug).then(p=>{if(active)setArticle(p);})
-      : getPublishedBlogPosts(30).then(p=>{if(active)setPosts(p);});
+      : getPublishedBlogPosts(60).then(p=>{if(active)setPosts(p);});
     task.catch(()=>{if(active)setError('The journal is temporarily unavailable. Please try again shortly.');})
       .finally(()=>{if(active)setLoading(false);});
     return ()=>{active=false;};

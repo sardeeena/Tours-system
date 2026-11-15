@@ -8,6 +8,8 @@ const hero = read('../src/components/home/Hero.tsx');
 const tourService = read('../src/services/tourService.ts');
 const server = read('../server.ts');
 const robots = read('../public/robots.txt');
+const blogPage = read('../src/pages/BlogPage.tsx');
+const cookieConsent = read('../src/components/common/CookieConsent.tsx');
 
 const about = pages.slice(pages.indexOf("id: 'about'"), pages.indexOf("id: 'contact'"));
 assert.match(about, /seoIndexable: true/, 'About fallback remains indexable');
@@ -42,4 +44,10 @@ assert.match(llmsDestinationBlock, /if \(!name \|\| seoExclusions\.entityIds\.ha
 assert.match(server, /app\.get\('\/sitemap\.xml'/, 'Public XML sitemap endpoint remains registered');
 assert.match(server, /app\.get\('\/llms\.txt'/, 'AI discovery llms.txt endpoint remains registered');
 
-console.log('Public SEO and content integrity checks passed.');
+assert.match(cookieConsent, /const GTM_ID = 'GTM-5SSVKB24'/, 'Cookie consent loads the newly confirmed Google Tag Manager container');
+assert.doesNotMatch(cookieConsent, /GTM-MZVP38WC/, 'Retired Google Tag Manager container is no longer referenced');
+assert.match(cookieConsent, /choices\.analytics \|\| choices\.marketing/, 'Google Tag Manager remains blocked until optional consent is granted');
+assert.match(cookieConsent, /gtag\?\.\('consent', 'update'/, 'Google Consent Mode is updated when visitors save their preferences');
+assert.match(blogPage, /getPublishedBlogPosts\(60\)/, 'Blog catalogue can display all 50 planned published articles');
+
+console.log('Public SEO, blog catalogue and consent-aware analytics integrity checks passed.');

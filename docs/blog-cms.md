@@ -1,4 +1,4 @@
-# Kemet Spirit Blog CMS
+# Awesome Adventure Tours Blog CMS
 
 ## Routes
 - Public journal: `/blog`
