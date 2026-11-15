@@ -31,7 +31,7 @@ const destinationRenderer = server.slice(destinationStart, server.indexOf("\n  }
 assert.match(destinationRenderer, /if \(activeDestination\)/, 'Published destination pages render even when they have no published excursions');
 assert.doesNotMatch(destinationRenderer, /if \(activeDestination && destinationTours\.length > 0\)/, 'Destination rendering does not incorrectly turn empty published destinations into 404s');
 assert.match(destinationRenderer, /There are no published excursions for this destination yet/, 'Empty destination pages provide useful crawlable fallback content');
-assert.match(destinationRenderer, /noindex = destinationTours\.length < 2 && \(destinationDescription\.length \+ destinationTagline\.length\) < 300/, 'Thin destination pages remain noindex');
+assert.match(destinationRenderer, /noindex = destinationTours\.length < 2 && \(destinationDescription\.length \+ destinationTagline\.length\) < 650/, 'Thin destination pages remain noindex');
 const sitemapDestinationStart = server.indexOf("const [destinationResult, tourDestinationResult]");
 const sitemapDestinationEnd = server.indexOf("if (publicSupabase)", sitemapDestinationStart + 20);
 const sitemapDestinationBlock = server.slice(sitemapDestinationStart, sitemapDestinationEnd);
