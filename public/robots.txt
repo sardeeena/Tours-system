@@ -1,4 +1,29 @@
 # Awesome Adventure Tours crawler policy
+# Permit search crawlers used by AI answer engines while keeping the existing
+# no-training preference for model-training crawlers.
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /api/
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /api/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /api/
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+# General search crawlers, including Googlebot and Bingbot.
 User-agent: *
 Allow: /
 
