@@ -6,7 +6,6 @@ import {
   CalendarCheck,
   Users,
   MapPin,
-  Layers,
   Calendar,
   Sparkles,
   Car,
@@ -45,16 +44,12 @@ import {
   ChevronLeft,
   PanelLeftClose,
   PanelLeftOpen,
-  Monitor,
-  Tablet,
-  Smartphone,
   Moon,
   Sun,
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { isSupabaseConfigured, isSchemaMissing, subscribeSchemaMissing } from '../../services/supabaseClient';
-import { PlatformIntegrationModal } from './PlatformIntegrationModal';
 
 export type AdminTab =
   | 'dashboard'
@@ -135,30 +130,16 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const { theme, toggleTheme } = useTheme();
   const supabaseConnected = isSupabaseConfigured();
   const [schemaMissing, setSchemaMissingState] = React.useState(isSchemaMissing());
-  const [isIntegrationModalOpen, setIsIntegrationModalOpen] = React.useState(false);
   const [collapsedSections, setCollapsedSections] = React.useState<Record<string, boolean>>({ header_ops: true, header_finance: true, header_comm: true, header_crm: true, header_cms: true, header_security: true });
 
   // Sidebar open/close state (default open on desktop, auto-closed on small screens)
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(() => typeof window === 'undefined' || window.innerWidth >= 1024);
 
-  // Device mode & screen viewport detection (PC, Tablet, Phone)
-  type DeviceMode = 'auto' | 'pc' | 'tablet' | 'phone';
-  const [deviceMode, setDeviceMode] = React.useState<DeviceMode>('auto');
-  const [screenDevice, setScreenDevice] = React.useState<'pc' | 'tablet' | 'phone'>('pc');
-
   React.useEffect(() => {
     const handleResize = () => {
       if (typeof window === 'undefined') return;
-      const w = window.innerWidth;
-      if (w < 768) {
-        setScreenDevice('phone');
-      } else if (w < 1024) {
-        setScreenDevice('tablet');
-      } else {
-        setScreenDevice('pc');
-      }
       // Keep the navigation drawer closed on touch-sized viewports.
-      if (w < 1024) setIsSidebarOpen(false);
+      if (window.innerWidth < 1024) setIsSidebarOpen(false);
     };
     handleResize();
     window.addEventListener('resize', handleResize);
@@ -492,15 +473,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               </span>
             </div>
 
-            {isSuperAdmin && <button
-              type="button"
-              onClick={() => setIsIntegrationModalOpen(true)}
-              className="w-full flex items-center justify-center space-x-1.5 py-2 px-2 bg-[#E8F3F4] hover:bg-[#d6ebed] dark:bg-[#0A6C74]/20 dark:hover:bg-[#0A6C74]/30 text-[#0A6C74] dark:text-[#2DD4BF] border border-[#0A6C74]/30 rounded-xl text-[11px] font-semibold transition-colors cursor-pointer"
-            >
-              <Layers className="w-3.5 h-3.5" />
-              <span>System diagnostics</span>
-            </button>}
-
             <div className="grid grid-cols-2 gap-1.5 pt-1">
               <button
                 type="button"
@@ -573,120 +545,13 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                 <span className="hidden sm:inline">{theme === 'dark' ? 'Light theme' : 'Dark theme'}</span>
               </button>
 
-              {/* Current Device Live Indicator */}
-              <div 
-                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-[#FAF8F5] dark:bg-[#16283D] border border-[#E8E3DA] dark:border-[#1F3854] text-xs shadow-2xs"
-                title={`Active detected device: ${screenDevice.toUpperCase()}`}
-              >
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-stone-500 dark:text-stone-400 text-[11px] hidden md:inline">Current Device:</span>
-                <span className="text-[#0E1B2A] dark:text-stone-200 font-semibold text-[11px] uppercase flex items-center gap-1">
-                  {screenDevice === 'phone' ? (
-                    <>
-                      <Smartphone className="w-3.5 h-3.5 text-sky-500" />
-                      Phone
-                    </>
-                  ) : screenDevice === 'tablet' ? (
-                    <>
-                      <Tablet className="w-3.5 h-3.5 text-amber-500" />
-                      Tablet
-                    </>
-                  ) : (
-                    <>
-                      <Monitor className="w-3.5 h-3.5 text-emerald-500" />
-                      PC
-                    </>
-                  )}
-                </span>
-              </div>
 
-              {/* Device Viewport Mode Switcher (PC, Tablet, Phone) */}
-              <div className="flex items-center bg-[#FAF8F5] dark:bg-[#16283D] rounded-xl p-0.5 border border-[#E8E3DA] dark:border-[#1F3854] text-xs shadow-2xs">
-                <button
-                  type="button"
-                  onClick={() => setDeviceMode('auto')}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer ${
-                    deviceMode === 'auto'
-                      ? 'bg-[#0A6C74] text-white shadow-xs'
-                      : 'text-stone-600 dark:text-stone-300 hover:text-[#0A6C74] dark:hover:text-white'
-                  }`}
-                  title="Auto responsive mode based on browser window"
-                >
-                  Auto
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDeviceMode('pc')}
-                  className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer ${
-                    deviceMode === 'pc'
-                      ? 'bg-[#0A6C74] text-white shadow-xs'
-                      : 'text-stone-600 dark:text-stone-300 hover:text-[#0A6C74] dark:hover:text-white'
-                  }`}
-                  title="Desktop PC mode (Full Width)"
-                >
-                  <Monitor className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">PC</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDeviceMode('tablet')}
-                  className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer ${
-                    deviceMode === 'tablet'
-                      ? 'bg-[#0A6C74] text-white shadow-xs'
-                      : 'text-stone-600 dark:text-stone-300 hover:text-[#0A6C74] dark:hover:text-white'
-                  }`}
-                  title="Tablet mode (768px layout)"
-                >
-                  <Tablet className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Tablet</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDeviceMode('phone')}
-                  className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer ${
-                    deviceMode === 'phone'
-                      ? 'bg-[#0A6C74] text-white shadow-xs'
-                      : 'text-stone-600 dark:text-stone-300 hover:text-[#0A6C74] dark:hover:text-white'
-                  }`}
-                  title="Phone mode (390px mobile layout)"
-                >
-                  <Smartphone className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Phone</span>
-                </button>
-              </div>
             </div>
           </header>
 
-          {/* Active Device Mode Banner when simulated */}
-          {deviceMode !== 'auto' && (
-            <div className="bg-[#E8F3F4] dark:bg-[#0A6C74]/20 border-b border-[#0A6C74]/30 px-4 py-2 text-xs text-[#0A6C74] dark:text-teal-200 flex items-center justify-between">
-              <span className="flex items-center space-x-2">
-                <span className="font-semibold uppercase tracking-wider text-[10px] bg-[#0A6C74] text-white px-2 py-0.5 rounded-md shadow-2xs">
-                  {deviceMode.toUpperCase()} VIEWPORT MODE
-                </span>
-                <span>Inspecting and verifying admin dashboard layout in {deviceMode} viewport.</span>
-              </span>
-              <button
-                type="button"
-                onClick={() => setDeviceMode('auto')}
-                className="text-[11px] font-semibold underline hover:text-[#08565C] dark:hover:text-white cursor-pointer"
-              >
-                Reset to Auto
-              </button>
-            </div>
-          )}
-
           {/* Main View Container with device container sizing */}
           <div className="admin-content flex-1 w-full min-w-0 p-4 sm:p-6 xl:p-8 overflow-x-auto flex justify-center">
-            <div
-              className={`w-full transition-all duration-300 ${
-                deviceMode === 'phone'
-                  ? 'w-[390px] max-w-full bg-white dark:bg-[#111E2E] rounded-3xl border-4 border-[#0A6C74]/30 shadow-2xl p-3 sm:p-4 my-2'
-                  : deviceMode === 'tablet'
-                  ? 'w-[768px] max-w-full bg-white dark:bg-[#111E2E] rounded-2xl border-4 border-[#0A6C74]/30 shadow-2xl p-4 sm:p-6 my-2'
-                  : 'max-w-[1600px]'
-              }`}
-            >
+            <div className="w-full max-w-[1600px]">
               {canAccessActiveTab ? children : (
                 <div className="max-w-xl mx-auto my-12 rounded-2xl border border-amber-300/70 bg-amber-50 dark:bg-amber-950/20 p-6 text-center">
                   <ShieldCheck className="w-8 h-8 mx-auto text-amber-600 dark:text-amber-300 mb-3" />
@@ -699,11 +564,6 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
         </main>
       </div>
 
-      {/* Platform Integration Simulation Suite Modal */}
-      <PlatformIntegrationModal
-        isOpen={isSuperAdmin && isIntegrationModalOpen}
-        onClose={() => setIsIntegrationModalOpen(false)}
-      />
     </div>
   );
 };
