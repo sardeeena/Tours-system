@@ -49,7 +49,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const { showToast } = useToast();
   const reportError = (message: string) => {
-    reportError(message);
+    setErrorMsg(message);
     showToast(message, 'error');
   };
 
