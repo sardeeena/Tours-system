@@ -33,6 +33,7 @@
     "test:technical": "tsx scripts/test_technical_control_center.ts",
     "test:brand-identity": "tsx scripts/test_brand_identity.ts",
     "test:public-catalogue": "tsx scripts/test_public_catalogue_fail_closed.ts",
+    "test:public-seo-content": "tsx scripts/test_public_seo_content_integrity.ts",
     "test:booking-finance-boundary": "tsx scripts/test_booking_finance_ledger_authority.ts",
     "test:finance-reporting": "tsx scripts/test_finance_reporting_refund_consistency.ts",
     "test:whatsapp-compliance": "tsx scripts/test_whatsapp_compliance.ts",
