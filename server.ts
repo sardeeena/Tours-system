@@ -3913,7 +3913,7 @@ async function loadAwesomeAdventureToursPages(): Promise<any[]> {
   // Keep baseline public trust pages available even when the CMS contains a
   // partial page list. CMS content wins, while missing SEO metadata and hero
   // fields inherit safe, reviewed defaults from the matching static page.
-  const staticPageBySlug = new Map(INITIAL_STATIC_PAGES.map((page) => [page.slug, page]));
+  const staticPageBySlug = new Map<string, typeof INITIAL_STATIC_PAGES[number]>(INITIAL_STATIC_PAGES.map((page) => [page.slug, page] as const));
   const mergedPages = publishedPages.map((page: any) => {
     const fallback = typeof page?.slug === 'string' ? staticPageBySlug.get(page.slug) : undefined;
     if (!fallback) return page;
