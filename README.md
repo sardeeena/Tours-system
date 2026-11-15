@@ -312,11 +312,11 @@ RESEND_FROM_EMAIL=no-reply@mail.awesomeadventure.tours
 RESEND_FROM_NAME=Awesome Adventure Tours
 RESEND_REPLY_TO=reservation@awesomeadventure.tours
 BOOKING_NOTIFICATION_EMAIL=reservation@awesomeadventure.tours
-BOOKING_NOTIFICATION_WORKER_ENABLED=false
+BOOKING_NOTIFICATION_WORKER_ENABLED=true
 RESEND_WEBHOOK_SECRET=<Resend webhook signing secret>
 ```
 
-Set `BOOKING_NOTIFICATION_WORKER_ENABLED=true` only after the verified sender, delivery path, failure handling and real booking-notification acceptance test are complete. Use the bare verified sender email address in `RESEND_FROM_EMAIL`; do not include a display name or surrounding quotes.
+The booking worker starts automatically in production when the server has a valid Supabase secret key and complete Resend credentials. Set `BOOKING_NOTIFICATION_WORKER_ENABLED=false` only to explicitly disable it. Verify the sender identity and complete a real booking-notification acceptance test before accepting live bookings. Use the bare verified sender email address in `RESEND_FROM_EMAIL`; do not include a display name or surrounding quotes.
 
 For Supabase Auth SMTP, configure the Resend SMTP host, port, username and API-key password in the hosted Supabase dashboard. The hosted Auth templates and SMTP settings are configured separately from application environment variables. See [Email System Setup](./docs/email-system-setup.md).
 
@@ -425,7 +425,7 @@ The development command runs `tsx server.ts`. Use this integrated server when te
 | `RESEND_REPLY_TO` | Optional | Reply-to address for business emails |
 | `RESEND_WEBHOOK_SECRET` | Optional until webhook is configured | Resend webhook signing secret |
 | `BOOKING_NOTIFICATION_EMAIL` | Optional | Operations inbox for booking notifications |
-| `BOOKING_NOTIFICATION_WORKER_ENABLED` | Optional; default false | Enable only after email delivery and failure handling are tested |
+| `BOOKING_NOTIFICATION_WORKER_ENABLED` | Optional; enabled when omitted and provider credentials are valid | Set `false` to explicitly disable the production booking email worker |
 | `WHATSAPP_ACCESS_TOKEN` | Optional | Server-side WhatsApp Cloud API token |
 | `WHATSAPP_PHONE_NUMBER_ID` | Optional | WhatsApp Cloud API phone-number ID |
 | `WHATSAPP_GRAPH_API_VERSION` | Optional | Graph API version in `vNN.N` format |
