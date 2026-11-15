@@ -120,6 +120,9 @@ jobs:
       - name: Verify read-only MCP protocol and tool boundaries
         run: npm run test:mcp-protocol
 
+      - name: Verify SEO/GEO sitemap and structured-data integrity
+        run: npm run test:seo-geo
+
       - name: Verify admin authentication and role provisioning security
         run: npm run test:security
 
