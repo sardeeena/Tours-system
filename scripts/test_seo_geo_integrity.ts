@@ -31,4 +31,10 @@ assert.match(schema, /mainEntityId/, 'Page entities link to their primary tour, 
 assert.match(schema, /'@type': 'WebPage'/, 'Every indexable public route receives a WebPage node');
 assert.doesNotMatch(schema, /aggregateRating|reviewRating|openingHoursSpecification|priceRange|geo:/, 'Schema does not invent reviews, hours, prices or geographic coordinates');
 
+const markdownHandlerStart = server.indexOf('const acceptsMarkdown');
+const markdownHandlerEnd = server.indexOf("app.get('*'", markdownHandlerStart);
+const markdownHandler = server.slice(markdownHandlerStart, markdownHandlerEnd);
+assert.ok(markdownHandler.includes("lines.join('\\n')"), 'Homepage text/markdown response separates lines with real newline characters');
+assert.ok(!markdownHandler.includes("lines.join('\\\\n')"), 'Homepage text/markdown response does not emit literal backslash-n sequences');
+
 console.log('SEO/GEO sitemap, indexation and structured-data integrity checks passed.');
