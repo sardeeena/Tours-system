@@ -8,7 +8,6 @@ import {
   ArrowRight, 
   AlertCircle, 
   CheckCircle2, 
-  Sparkles, 
   UserCheck, 
   ShieldCheck, 
   ArrowLeft,
