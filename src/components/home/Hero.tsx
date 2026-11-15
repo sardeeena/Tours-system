@@ -6,8 +6,6 @@ import {
   MapPin, 
   Award, 
   Waves,
-  Eye,
-  Thermometer,
   Compass,
   Ship,
   Sun,
@@ -36,8 +34,8 @@ interface TourSlide {
   title2: string;
   subtitle: string;
   location: string;
-  temperature: string;
-  visibility: string;
+  tripLabel: string;
+  detailLabel: string;
   highlightBadge: string;
   imageUrl: string;
   accentGradient: string;
@@ -53,9 +51,9 @@ const CINEMATIC_SLIDES: TourSlide[] = [
     title2: 'Giftun Island Reefs',
     subtitle: 'Sail to Orange Bay and Paradise Island with crystal shallow sands, live coral gardens, and wild dolphin pods.',
     location: 'Giftun Island Marine Park, Hurghada',
-    temperature: 'Water 26°C',
-    visibility: 'Visibility 28m',
-    highlightBadge: 'Dolphin Pods Active',
+    tripLabel: 'Island day trips',
+    detailLabel: 'Explore boat excursions',
+    highlightBadge: 'Explore published trips',
     imageUrl: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=2400&q=85',
     accentGradient: 'from-[#0A6C74] via-[#0D838C] to-[#0A6C74] dark:from-[#60C3CC] dark:via-[#91E4EB] dark:to-[#A3E8ED]',
   },
@@ -68,9 +66,9 @@ const CINEMATIC_SLIDES: TourSlide[] = [
     title2: 'Bedouin Nights',
     subtitle: 'High-octane ATV quad biking through Red Sea mountain canyons, sunset camel caravans, and authentic stargazing BBQ.',
     location: 'Hurghada Eastern Desert & Bedouin Valleys',
-    temperature: 'Desert 29°C',
-    visibility: 'Clear Starfield',
-    highlightBadge: 'Sunset Special',
+    tripLabel: 'Desert adventures',
+    detailLabel: 'Compare safari options',
+    highlightBadge: 'Explore published trips',
     imageUrl: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=2400&q=85',
     accentGradient: 'from-[#B45309] via-[#D97706] to-[#B45309] dark:from-[#F59E0B] dark:via-[#FBBF24] dark:to-[#FDE68A]',
   },
@@ -83,9 +81,9 @@ const CINEMATIC_SLIDES: TourSlide[] = [
     title2: 'Scuba Encounters',
     subtitle: 'Beginner intro discovery dives and 2-tank guided boat dives led by certified PADI divemasters across the Red Sea.',
     location: 'Abu Ramada & Carless Reef Pinnacles',
-    temperature: 'Water 25°C',
-    visibility: 'Visibility 35m',
-    highlightBadge: 'Sea Turtles Active',
+    tripLabel: 'Snorkeling & diving',
+    detailLabel: 'Review activity details',
+    highlightBadge: 'Explore published trips',
     imageUrl: 'https://images.unsplash.com/photo-1544551763-92ab472cad5d?auto=format&fit=crop&w=2400&q=85',
     accentGradient: 'from-[#0F766E] via-[#0D9488] to-[#0F766E] dark:from-[#2DD4BF] dark:via-[#5EEAD4] dark:to-[#99F6E4]',
   },
@@ -98,9 +96,9 @@ const CINEMATIC_SLIDES: TourSlide[] = [
     title2: 'Private Sandbars',
     subtitle: 'Tailored luxury yachts and high-speed cruisers with onboard chef, seclusion from crowds, and bespoke itineraries.',
     location: 'Abu Tig Marina & Magawish Archipelago',
-    temperature: 'Breeze 12 kts',
-    visibility: 'Full Sun',
-    highlightBadge: 'VIP White Glove',
+    tripLabel: 'Private sailing',
+    detailLabel: 'View charter options',
+    highlightBadge: 'Explore published trips',
     imageUrl: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d17?auto=format&fit=crop&w=2400&q=85',
     accentGradient: 'from-[#047857] via-[#059669] to-[#047857] dark:from-[#34D399] dark:via-[#6EE7B7] dark:to-[#A7F3D0]',
   },
@@ -113,9 +111,9 @@ const CINEMATIC_SLIDES: TourSlide[] = [
     title2: 'Coastal Thrills',
     subtitle: 'Panoramic underwater observatory windows, parasailing high above turquoise lagoons, and safe family bay adventures.',
     location: 'Sahl Hasheesh & Hurghada Coastline',
-    temperature: 'Calm Seas',
-    visibility: 'Visibility 25m',
-    highlightBadge: 'Family Favorite',
+    tripLabel: 'Water sports',
+    detailLabel: 'Compare family activities',
+    highlightBadge: 'Explore published trips',
     imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2400&q=85',
     accentGradient: 'from-[#0369A1] via-[#0284C7] to-[#0369A1] dark:from-[#38BDF8] dark:via-[#7DD3FC] dark:to-[#BAE6FD]',
   }
@@ -227,13 +225,13 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
                 </span>
                 <span className="text-stone-400 dark:text-slate-500">•</span>
                 <span className="flex items-center space-x-1">
-                  <Thermometer className="w-3.5 h-3.5 text-amber-500 dark:text-amber-300" />
-                  <span className="text-stone-700 dark:text-slate-200">{slide.temperature}</span>
+                  <Compass className="w-3.5 h-3.5 text-amber-500 dark:text-amber-300" />
+                  <span className="text-stone-700 dark:text-slate-200">{slide.tripLabel}</span>
                 </span>
                 <span className="text-stone-400 dark:text-slate-500">•</span>
                 <span className="flex items-center space-x-1">
-                  <Eye className="w-3.5 h-3.5 text-[#0A6C74] dark:text-cyan-300" />
-                  <span className="text-stone-700 dark:text-slate-200">{slide.visibility}</span>
+                  <MapPin className="w-3.5 h-3.5 text-[#0A6C74] dark:text-cyan-300" />
+                  <span className="text-stone-700 dark:text-slate-200">{slide.detailLabel}</span>
                 </span>
                 <span className="text-stone-400 dark:text-slate-500">•</span>
                 <span className="flex items-center space-x-1 text-[#0A6C74] dark:text-emerald-300 font-medium">
