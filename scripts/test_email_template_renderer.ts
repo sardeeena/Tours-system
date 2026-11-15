@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
-import { renderBrandedEmailHtml } from '../src/utils/emailTemplate';
+import { renderBrandedEmailHtml, renderBookingTicketEmailHtml, EMAIL_LOGO_URL } from '../src/utils/emailTemplate';
 
 const rendered = renderBrandedEmailHtml({
   heading: '<Welcome>',
@@ -8,7 +8,9 @@ const rendered = renderBrandedEmailHtml({
   bodyText: 'Hello <script>alert(1)</script>\n\nUnsubscribe: https://awesomeadventure.tours/unsubscribe?token=a&source=email',
 });
 
-assert.match(rendered, /https:\/\/awesomeadventure\.tours\/logo\.jpg/);
+assert.equal(EMAIL_LOGO_URL, 'https://awesomeadventure.tours/logo.png');
+assert.match(rendered, /https:\/\/awesomeadventure\.tours\/logo\.png/);
+assert.doesNotMatch(rendered, /logo\.jpg/);
 assert.match(rendered, /alt="Awesome Adventure Tours"/);
 assert.match(rendered, /&lt;Welcome&gt;/);
 assert.doesNotMatch(rendered, /<script>alert\(1\)<\/script>/);
@@ -20,14 +22,43 @@ const templates = [
   'email-changed.html', 'phone-changed.html', 'identity-linked.html',
   'identity-unlinked.html', 'verification-added.html', 'verification-removed.html',
 ];
+const ticket = renderBookingTicketEmailHtml({
+  heading: 'Your booking ticket',
+  bookingReference: 'RST-2026-AB4821',
+  customerName: 'Guest <script>alert(1)</script>',
+  customerEmail: 'guest@example.test',
+  tourName: 'Red Sea Adventure',
+  tourDate: '16 Nov 2026',
+  adultCount: 2,
+  childCount: 1,
+  infantCount: 0,
+  pickupLocation: 'Hurghada',
+  hotelName: 'Test Hotel',
+  roomNumber: '204',
+  tourLanguage: 'English',
+  bookingStatus: 'pending',
+  paymentStatus: 'pending',
+  paymentMethod: 'pay at pickup',
+  totalAmount: 'EUR 125.00',
+  extras: [{ name: 'GoPro', quantity: 1, total: 'EUR 15.00' }],
+});
+assert.match(ticket, /OFFICIAL BOOKING TICKET/);
+assert.match(ticket, /RST-2026-AB4821/);
+assert.match(ticket, /Red Sea Adventure/);
+assert.match(ticket, /Hurghada/);
+assert.match(ticket, /EUR 125\.00/);
+assert.match(ticket, /GoPro/);
+assert.doesNotMatch(ticket, /<script>alert\(1\)<\/script>/);
+
 for (const template of templates) {
   const path = 'supabase/templates/' + template;
   assert.ok(existsSync(path), 'Auth template exists: ' + template);
   const html = readFileSync(path, 'utf8');
-  assert.match(html, /logo\.jpg/, 'Auth template uses the production logo: ' + template);
+  assert.match(html, /https:\/\/awesomeadventure\.tours\/logo\.png/, 'Auth template uses the final production logo: ' + template);
+  assert.doesNotMatch(html, /logo\.jpg/, 'Auth template does not reference the retired logo: ' + template);
 }
 const config = readFileSync('supabase/config.toml', 'utf8');
 assert.match(config, /\[auth\.email\.template\.confirmation\]/);
 assert.match(config, /\[auth\.email\.notification\.mfa_factor_unenrolled\]/);
 
-console.log('Premium email renderer and all 13 Supabase Auth templates passed.');
+console.log('Branded email renderer, booking ticket HTML and all 13 Supabase Auth templates passed.');
