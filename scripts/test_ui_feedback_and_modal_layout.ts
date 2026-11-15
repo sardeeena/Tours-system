@@ -14,6 +14,7 @@ assert.match(css, /100dvh/);
 assert.match(css, /env\(safe-area-inset-bottom\)/);
 assert.match(css, /\.aat-modal-body/);
 assert.match(css, /\.aat-modal-actions/);
+assert.match(css, /\.aat-modal-panel-scroll > button:first-child[\s\S]*position: sticky/, 'Long confirmation dialogs keep their close control visible');
 
 const dialogs = [
   'src/components/auth/AuthModal.tsx',
