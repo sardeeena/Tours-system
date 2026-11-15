@@ -58,6 +58,9 @@ jobs:
       - name: Verify atomic CRM inquiry conversion
         run: npm run test:crm-inquiry-conversion-atomicity
 
+      - name: Verify project boundary and retired migration workflow safety
+        run: npm run test:project-boundaries
+
       - name: Type-check
         run: npm run lint
 
