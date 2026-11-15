@@ -28,7 +28,7 @@ for (const workflow of workflowContents) {
 const supabaseConfig = fs.readFileSync('supabase/config.toml', 'utf8');
 assert.match(
   supabaseConfig,
-  /^project_id\\s*=\\s*"uvtbtpxtrrmaublrztgv"\\s*$/m,
+  /^project_id\s*=\s*"uvtbtpxtrrmaublrztgv"\s*$/m,
   'the repository must remain pinned to the Awesome Adventure Tours Supabase project',
 );
 
