@@ -15,6 +15,7 @@ import { Booking } from '../../types/booking';
 import { bookingRepository } from '../../services/bookingRepository';
 import { formatCurrencyAmount } from '../../services/pricingService';
 import { sanitizeString } from '../../lib/security';
+import { useToast } from '../../contexts/ToastContext';
 
 interface MyBookingModalProps {
   isOpen: boolean;
@@ -28,6 +29,11 @@ export const MyBookingModal: React.FC<MyBookingModalProps> = ({ isOpen, onClose,
   const [booking, setBooking] = useState<Booking | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { showToast } = useToast();
+  const reportError = (message: string) => {
+    reportError(message);
+    showToast(message, 'error');
+  };
 
   if (!isOpen) return null;
 
@@ -41,7 +47,7 @@ export const MyBookingModal: React.FC<MyBookingModalProps> = ({ isOpen, onClose,
     const cleanContact = sanitizeString(emailOrPhone);
 
     if (!cleanRef || !cleanContact) {
-      setErrorMessage('Please enter both your booking reference and the email address or full phone number used during booking.');
+      reportError('Please enter both your booking reference and the email address or full phone number used during booking.');
       setIsLoading(false);
       return;
     }
@@ -52,12 +58,12 @@ export const MyBookingModal: React.FC<MyBookingModalProps> = ({ isOpen, onClose,
       if (result) {
         setBooking(result);
       } else {
-        setErrorMessage(
+        reportError(
           `Booking reference "${cleanRef}" was not found. Please verify the code on your confirmation voucher or contact our pier coordinator on WhatsApp.`
         );
       }
     } catch {
-      setErrorMessage('Could not retrieve booking details. Please verify your reference and try again.');
+      reportError('Could not retrieve booking details. Please verify your reference and try again.');
     } finally {
       setIsLoading(false);
     }
