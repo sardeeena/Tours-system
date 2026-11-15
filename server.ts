@@ -3496,6 +3496,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
     '## Business identity',
     '- Operator: Awesome Adventure Tours',
     '- Telephone: +20 151 5212741',
+    '- Office: 2nd floor, Bostan Cafe, Madres, Hurghada, Red Sea Governorate, Egypt',
     '- Service area: Hurghada and Egypt’s Red Sea coast',
     '- Customer-service languages: Multilingual support for international travellers; contact us in your preferred language',
     '- TripAdvisor listing and traveller feedback: https://www.tripadvisor.co.uk/Attraction_Review-g297549-d34759384-Reviews-Awesome_Adventure_Tours-Hurghada_Red_Sea_and_Sinai.html',
