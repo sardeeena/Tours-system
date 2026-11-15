@@ -304,7 +304,7 @@ export const PlatformIntegrationModal: React.FC<PlatformIntegrationModalProps> =
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-stone-800 bg-stone-950/60 flex items-center justify-between text-xs shrink-0">
+        <div className="p-4 border-t border-stone-800 bg-stone-950/60 flex items-center justify-between text-xs shrink-0 aat-modal-footer">
           <span className="text-stone-400">
             Authoritative Consistency Engine: <strong className="text-stone-200">Active</strong>
           </span>
