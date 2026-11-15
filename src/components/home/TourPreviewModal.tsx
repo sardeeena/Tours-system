@@ -32,13 +32,13 @@ export const TourPreviewModal: React.FC<TourPreviewModalProps> = ({
   if (!tour) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200 aat-modal-overlay">
       <div 
-        className="relative w-full max-w-4xl bg-white rounded-sm border border-[#E8E3DA] shadow-2xl overflow-hidden my-6 flex flex-col max-h-[90vh]"
+        className="relative w-full max-w-4xl bg-white rounded-sm border border-[#E8E3DA] shadow-2xl overflow-hidden my-6 flex flex-col max-h-[90vh] aat-modal-panel"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 bg-[#FAF8F5]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 bg-[#FAF8F5] aat-modal-header">
           <div className="flex items-center space-x-2">
             <span className="text-xs font-bold uppercase tracking-wider text-[#0A6C74] bg-[#E8F3F4] px-2 py-0.5 rounded">
               {tour.category}
@@ -61,7 +61,7 @@ export const TourPreviewModal: React.FC<TourPreviewModalProps> = ({
         </div>
 
         {/* Scrollable Content */}
-        <div className="overflow-y-auto p-6 space-y-6">
+        <div className="overflow-y-auto p-6 space-y-6 aat-modal-body">
           
           {/* Main Visual & Title */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
@@ -233,7 +233,7 @@ export const TourPreviewModal: React.FC<TourPreviewModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-3 border-t border-stone-200 bg-[#FAF8F5] flex items-center justify-between text-xs">
+        <div className="px-6 py-3 border-t border-stone-200 bg-[#FAF8F5] flex items-center justify-between text-xs aat-modal-footer">
           <span className="text-stone-500">Need private custom arrangements? Contact us directly.</span>
           <button
             type="button"
