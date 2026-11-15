@@ -344,27 +344,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ redirectUrl, onNavigate })
 
   return (
     <div className="min-h-[calc(100vh-160px)] bg-[#FAF8F5] py-12 px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
-      <div className="max-w-md w-full mx-auto space-y-6">
+      <div className="max-w-md w-full mx-auto">
         
-        {/* Guest Booking Reassurance Banner */}
-        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4 flex items-start space-x-3 text-emerald-900 shadow-2xs">
-          <Sparkles className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-          <div className="flex-1 text-xs">
-            <p className="font-semibold text-emerald-950">Booking an excursion today?</p>
-            <p className="text-emerald-800 mt-0.5">
-              Visitors can book directly with zero account setup. No registration is required.
-            </p>
-            <button
-              type="button"
-              onClick={() => onNavigate('booking')}
-              className="mt-2 inline-flex items-center text-xs font-bold text-emerald-700 hover:text-emerald-900 underline underline-offset-2 cursor-pointer"
-            >
-              <span>Continue to Excursion Booking as Guest</span>
-              <ArrowRight className="w-3.5 h-3.5 ml-1" />
-            </button>
-          </div>
-        </div>
-
         {/* Confirmed Banner (if arriving from email link) */}
         {confirmedNotice && (
           <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-xl text-emerald-900 text-xs flex items-start space-x-3 shadow-xs">
@@ -379,20 +360,20 @@ export const LoginPage: React.FC<LoginPageProps> = ({ redirectUrl, onNavigate })
         )}
 
         {/* Login Card */}
-        <div className="bg-white border border-[#E8E3DA] rounded-xl shadow-sm p-6 sm:p-8 space-y-6">
+        <div className="bg-white border border-[#E8E3DA] rounded-2xl shadow-sm p-6 sm:p-8 space-y-5">
           
           {/* Header */}
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-1.5">
             <div className="flex items-center justify-center mx-auto mb-2">
               <img 
                 src="/logo.png" 
                 alt="Awesome Adventure Tours Logo" 
-                className="h-16 w-auto object-contain drop-shadow-sm"
+                className="h-14 w-auto object-contain"
               />
             </div>
-            <h1 className="font-display text-2xl font-bold text-[#0E1B2A]">Sign in to Awesome Adventure Tours</h1>
+            <h1 className="font-display text-2xl font-bold text-[#0E1B2A]">Welcome back</h1>
             <p className="text-xs text-stone-500">
-              Access your reservations, digital vouchers, and saved excursions
+              Sign in to your account
             </p>
           </div>
 
@@ -577,16 +558,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ redirectUrl, onNavigate })
                 className="text-[#0A6C74] font-bold hover:underline cursor-pointer"
               >
                 Register Now
-              </button>
-            </p>
-            <p className="text-[11px] text-stone-400">
-              Just want to check an existing booking?{' '}
-              <button
-                type="button"
-                onClick={() => onNavigate('my-booking')}
-                className="text-stone-600 hover:text-stone-900 underline cursor-pointer"
-              >
-                Find My Booking Voucher
               </button>
             </p>
           </div>
