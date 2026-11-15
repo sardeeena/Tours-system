@@ -929,6 +929,18 @@ html:not(.dark) .admin-shell [class~="bg-[#101b2b]"] [class~="bg-slate-950"] {
   z-index: 1;
   flex: 0 0 auto;
 }
+.aat-modal-header {
+  column-gap: .75rem;
+}
+.aat-modal-header > * {
+  min-width: 0;
+}
+.aat-modal-header button {
+  flex: 0 0 auto;
+}
+.aat-modal-header :is(h1, h2, h3, p) {
+  overflow-wrap: anywhere;
+}
 .aat-modal-body {
   flex: 1 1 auto;
   min-width: 0;
