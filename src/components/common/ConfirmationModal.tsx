@@ -21,9 +21,9 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   if (!isOpen || !bookingDetails) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200 aat-modal-overlay">
       <div 
-        className="relative w-full max-w-lg bg-white rounded-sm border border-[#E8E3DA] shadow-2xl overflow-hidden my-6 p-6 sm:p-8"
+        className="relative w-full max-w-lg bg-white rounded-sm border border-[#E8E3DA] shadow-2xl overflow-hidden my-6 p-6 sm:p-8 aat-modal-panel aat-modal-panel-scroll"
         onClick={(e) => e.stopPropagation()}
       >
         <button
