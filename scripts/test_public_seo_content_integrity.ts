@@ -21,7 +21,7 @@ assert.match(server, /override\?\.robots_follow === false && !\(pageKind === 'st
 assert.doesNotMatch(hero, /Water 26°C|Water 25°C|Visibility 28m|Visibility 35m|Dolphin Pods Active|Sea Turtles Active/, 'hero does not publish unsupported live sea or wildlife conditions');
 assert.match(hero, /tripLabel: 'Island day trips'/, 'hero uses evergreen activity labels instead of current-condition claims');
 
-assert.match(tourService, /if \(toursError\)[\s\S]*?throw new Error\('Unable to calculate published excursion counts:/, 'destination count failures are surfaced instead of silently showing zero');
+assert.match(tourService, /if \(toursError\)[\s\S]*?throw new Error\(`Unable to calculate published excursion counts:/, 'destination count failures are surfaced instead of silently showing zero');
 
 assert.match(robots, /^User-agent: \*$/m, 'robots.txt contains a valid wildcard user-agent');
 assert.match(robots, /^Sitemap: https:\/\/awesomeadventure\.tours\/sitemap\.xml$/m, 'robots.txt advertises the canonical sitemap');
