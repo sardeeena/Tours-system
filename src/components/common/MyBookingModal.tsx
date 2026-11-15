@@ -75,13 +75,13 @@ export const MyBookingModal: React.FC<MyBookingModalProps> = ({ isOpen, onClose,
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200 aat-modal-overlay">
       <div 
-        className="relative w-full max-w-xl bg-white rounded-sm border border-[#E8E3DA] shadow-2xl overflow-hidden my-6"
+        className="relative w-full max-w-xl bg-white rounded-sm border border-[#E8E3DA] shadow-2xl overflow-hidden my-6 aat-modal-panel"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 bg-[#FAF8F5]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 bg-[#FAF8F5] aat-modal-header">
           <div className="flex items-center space-x-2">
             <CalendarCheck className="w-5 h-5 text-[#0A6C74]" />
             <h2 className="font-display text-lg font-bold text-[#0E1B2A]">
@@ -99,7 +99,7 @@ export const MyBookingModal: React.FC<MyBookingModalProps> = ({ isOpen, onClose,
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-6 aat-modal-body">
           {!booking ? (
             <form onSubmit={handleLookup} className="space-y-4">
               <p className="text-xs text-stone-600">
