@@ -22,7 +22,7 @@ assert.match(endpoint, /'2025-06-18', '2025-03-26'/, 'MCP supports the advertise
 assert.match(endpoint, /request\.method === 'notifications\/initialized'/, 'MCP initialized notification is handled');
 assert.match(endpoint, /request\.method === 'ping'/, 'MCP ping is implemented');
 assert.match(endpoint, /request\.method === 'tools\/list'/, 'MCP tools/list is implemented');
-assert.match(endpoint, /request\.method === 'tools\/call'/, 'MCP tools/call is implemented');
+assert.match(endpoint, /request\.method !== 'tools\/call'/, 'MCP routes tools/call requests and rejects unsupported methods');
 assert.match(endpoint, /rateLimit\(60, 60_000\)/, 'MCP endpoint has an explicit rate limit');
 
 const toolDefinitionsStart = server.indexOf('const AWESOME_ADVENTURE_TOURS_MCP_TOOLS');
