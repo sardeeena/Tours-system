@@ -3310,6 +3310,24 @@ const AWESOME_ADVENTURE_TOURS_CORE_PUBLIC_PATHS = [
   '/cookie-policy',
 ];
 
+async function loadAwesomeAdventureToursSeoIndexExclusions(): Promise<{ pageSlugs: Set<string>; entityIds: Set<string> }> {
+  const pageSlugs = new Set<string>();
+  const entityIds = new Set<string>();
+  if (!publicSupabase) return { pageSlugs, entityIds };
+  try {
+    const { data, error } = await publicSupabase.from('seo_metadata').select('entity_type,entity_id,page_slug').eq('robots_index', false);
+    if (error) { console.warn('[SEO discovery] Index exclusion lookup failed:', error.message); return { pageSlugs, entityIds }; }
+    for (const row of data || []) {
+      const type = typeof row.entity_type === 'string' ? row.entity_type.trim() : '';
+      const id = row.entity_id == null ? '' : String(row.entity_id).trim();
+      const slug = typeof row.page_slug === 'string' ? row.page_slug.trim() : '';
+      if (type === 'page' && slug) pageSlugs.add(slug);
+      else if (type && id) entityIds.add(type + ':' + id);
+    }
+  } catch (error) { console.warn('[SEO discovery] Index exclusion lookup failed:', error); }
+  return { pageSlugs, entityIds };
+}
+
 function escapeXml(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
@@ -3329,7 +3347,10 @@ function cleanPublicText(value: unknown, maxLength = 500): string {
 
 app.get('/sitemap.xml', async (_req: Request, res: Response) => {
   const urls = new Map<string, string | undefined>();
+  const seoExclusions = await loadAwesomeAdventureToursSeoIndexExclusions();
   for (const route of AWESOME_ADVENTURE_TOURS_CORE_PUBLIC_PATHS) {
+    const pageSlug = route === '/' ? 'home' : route.slice(1);
+    if (seoExclusions.pageSlugs.has(pageSlug)) continue;
     urls.set(`${AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN}${route === '/' ? '/' : route}`, undefined);
   }
 
@@ -3337,7 +3358,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
     try {
       const { data: tours, error: toursError } = await publicSupabase
         .from('tours')
-        .select('slug, updated_at')
+        .select('id,slug,updated_at')
         .eq('status', 'published')
         .order('updated_at', { ascending: false })
         .limit(5000);
@@ -3347,6 +3368,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
       } else {
         for (const tour of tours || []) {
           const slug = typeof tour.slug === 'string' ? tour.slug.trim() : '';
+          if (seoExclusions.entityIds.has('tour:' + String(tour.id))) continue;
           if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
           urls.set(
             `${AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN}/excursions/${encodeURIComponent(slug)}`,
@@ -3378,7 +3400,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
         for (const page of pages) {
           const slug = typeof page?.slug === 'string' ? page.slug.trim() : '';
           if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
-          if (page?.published === false || page?.status === 'draft' || page?.status === 'unpublished' || page?.seoIndexable === false) continue;
+          if (page?.published === false || page?.status === 'draft' || page?.status === 'unpublished' || page?.seoIndexable === false || seoExclusions.pageSlugs.has(slug)) continue;
           urls.set(
             `${AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN}/${encodeURIComponent(slug)}`,
             toSitemapDate(page?.updated_at || page?.lastUpdated)
@@ -3411,7 +3433,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
           const tourCount = destinationTourCounts.get(String(destination.id)) || 0;
           const descriptionLength = cleanPublicText(destination.description, 4000).length
             + cleanPublicText(destination.tagline, 500).length;
-          if (!name || (tourCount < 2 && descriptionLength < 300)) continue;
+          if (!name || seoExclusions.entityIds.has('destination:' + String(destination.id)) || (tourCount < 2 && descriptionLength < 300)) continue;
           if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
           urls.set(
             `${AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN}/destinations/${encodeURIComponent(slug)}`,
@@ -3438,7 +3460,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
       } else {
         for (const post of posts || []) {
           const slug = typeof post.slug === 'string' ? post.slug.trim() : '';
-          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug) || seoExclusions.pageSlugs.has(slug)) continue;
           urls.set(`${AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN}/blog/${encodeURIComponent(slug)}`, toSitemapDate(post.updated_at));
         }
       }
@@ -3465,6 +3487,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
 });
 
 app.get('/llms.txt', async (_req: Request, res: Response) => {
+  const seoExclusions = await loadAwesomeAdventureToursSeoIndexExclusions();
   const lines = [
     '# Awesome Adventure Tours',
     '',
@@ -3485,7 +3508,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
     try {
       const { data: tours, error } = await publicSupabase
         .from('tours')
-        .select('title, slug, short_description, price, currency')
+        .select('id,title,slug,short_description,price,currency')
         .eq('status', 'published')
         .order('sort_order', { ascending: true })
         .limit(500);
@@ -3496,7 +3519,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
         for (const tour of tours || []) {
           const slug = typeof tour.slug === 'string' ? tour.slug.trim() : '';
           const title = cleanPublicText(tour.title, 160);
-          if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+          if (!title || seoExclusions.entityIds.has('tour:' + String(tour.id)) || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
           const description = cleanPublicText(tour.short_description, 400);
           const price = Number(tour.price);
           const currency = typeof tour.currency === 'string' && /^[A-Z]{3}$/i.test(tour.currency) ? tour.currency.toUpperCase() : 'EUR';
@@ -3533,7 +3556,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
           const tourCount = destinationTourCounts.get(String(destination.id)) || 0;
           const descriptionLength = cleanPublicText(destination.description, 4000).length
             + cleanPublicText(destination.tagline, 500).length;
-          if (!name || (tourCount < 2 && descriptionLength < 300)) continue;
+          if (!name || seoExclusions.entityIds.has('destination:' + String(destination.id)) || (tourCount < 2 && descriptionLength < 300)) continue;
           if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
           const description = cleanPublicText(destination.description, 400);
           lines.push(`- [${name}](https://awesomeadventure.tours/destinations/${encodeURIComponent(slug)}): ${description}`);
@@ -3560,7 +3583,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
         for (const post of posts || []) {
           const slug = typeof post.slug === 'string' ? post.slug.trim() : '';
           const title = cleanPublicText(post.title, 160);
-          if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+          if (!title || seoExclusions.pageSlugs.has(slug) || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
           lines.push(`- [${title}](https://awesomeadventure.tours/blog/${encodeURIComponent(slug)}): ${cleanPublicText(post.excerpt, 400)}`);
         }
       }
@@ -4298,6 +4321,12 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       addressRegion: 'Red Sea Governorate',
       addressCountry: 'EG',
     },
+    areaServed: [
+      { '@type': 'City', name: 'Hurghada' },
+      { '@type': 'AdministrativeArea', name: 'Red Sea Governorate' },
+      { '@type': 'Country', name: 'Egypt' },
+    ],
+    knowsAbout: ['Red Sea excursions', 'Boat trips', 'Island day trips', 'Snorkeling', 'Scuba diving', 'Desert safaris', 'Hurghada travel experiences'],
     contactPoint: [{
       '@type': 'ContactPoint',
       telephone: '+201515212741',
@@ -4359,15 +4388,19 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       image: pageImage !== `${origin}/logo.webp` ? pageImage : undefined,
       subjectOf: { '@type': 'ItemList', itemListElement: destinationItems },
     });
-  } else {
-    graph.push({
-      '@type': pageKind === 'catalogue' || pageKind === 'experiences' || pageKind === 'home' || pageKind === 'blog-index' ? 'CollectionPage' : 'WebPage',
-      '@id': `${canonical}#webpage`,
-      url: canonical,
-      name: title,
-      description,
-      isPartOf: { '@id': `${origin}/#website` },
-    });
+  }
+
+  if (pageKind !== 'not-found') {
+    const mainEntityId = pageKind === 'tour' ? `${canonical}#touristtrip` : pageKind === 'destination' ? `${canonical}#destination` : pageKind === 'blog' ? `${canonical}#blogposting` : undefined;
+    const breadcrumbItems: Array<{ name: string; url: string }> = [{ name: 'Home', url: `${origin}/` }];
+    if (path.startsWith('/excursions/')) { breadcrumbItems.push({ name: 'Excursions', url: `${origin}/excursions` }); breadcrumbItems.push({ name: seoPlainText(currentTour?.title, 160) || title, url: canonical }); }
+    else if (path.startsWith('/destinations/')) { breadcrumbItems.push({ name: 'Excursions', url: `${origin}/excursions` }); breadcrumbItems.push({ name: seoPlainText(activeDestination?.name, 120) || title, url: canonical }); }
+    else if (path.startsWith('/blog/')) { breadcrumbItems.push({ name: 'Travel Journal', url: `${origin}/blog` }); breadcrumbItems.push({ name: seoPlainText(currentBlogPost?.title, 160) || title, url: canonical }); }
+    else if (path === '/blog') breadcrumbItems.push({ name: 'Travel Journal', url: canonical });
+    else if (path !== '/') breadcrumbItems.push({ name: seoPlainText(title.replace(/ \\| Awesome Adventure Tours.*$/, ''), 160) || title, url: canonical });
+    const hasBreadcrumb = breadcrumbItems.length > 1;
+    graph.push({ '@type': pageKind === 'catalogue' || pageKind === 'experiences' || pageKind === 'home' || pageKind === 'blog-index' ? 'CollectionPage' : 'WebPage', '@id': `${canonical}#webpage`, url: canonical, name: title, description, isPartOf: { '@id': `${origin}/#website` }, ...(mainEntityId ? { mainEntity: { '@id': mainEntityId } } : {}), ...(pageImage !== `${origin}/logo.webp` ? { primaryImageOfPage: { '@type': 'ImageObject', url: pageImage } } : {}), ...(hasBreadcrumb ? { breadcrumb: { '@id': `${canonical}#breadcrumb` } } : {}) });
+    if (hasBreadcrumb) graph.push({ '@type': 'BreadcrumbList', '@id': `${canonical}#breadcrumb`, itemListElement: breadcrumbItems.map((item, index) => ({ '@type': 'ListItem', position: index + 1, name: item.name, item: item.url })) });
   }
 
   const schema = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }).replace(/</g, '\\u003c');
