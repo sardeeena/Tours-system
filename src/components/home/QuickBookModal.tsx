@@ -72,13 +72,13 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200 aat-modal-overlay">
       <div 
-        className="relative w-full max-w-xl bg-white rounded-sm border border-[#E8E3DA] shadow-2xl overflow-hidden my-6 flex flex-col max-h-[92vh]"
+        className="relative w-full max-w-xl bg-white rounded-sm border border-[#E8E3DA] shadow-2xl overflow-hidden my-6 flex flex-col max-h-[92vh] aat-modal-panel"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 bg-[#FAF8F5]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 bg-[#FAF8F5] aat-modal-header">
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-[#0A6C74]">
               Direct Vessel Reservation
@@ -97,7 +97,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({
         </div>
 
         {/* Scrollable Form */}
-        <form onSubmit={handleSubmit} className="overflow-y-auto p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="overflow-y-auto p-6 space-y-4 aat-modal-body">
           
           {/* Excursion Meta Summary */}
           <div className="p-3 bg-stone-50 border border-stone-200 rounded text-xs flex items-center justify-between">
@@ -317,7 +317,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({
           </div>
 
           {/* Submit Action */}
-          <div className="pt-2">
+          <div className="pt-2 aat-modal-actions">
             <button
               type="submit"
               disabled={isSubmitting}
