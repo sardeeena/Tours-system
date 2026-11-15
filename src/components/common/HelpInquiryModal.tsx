@@ -72,28 +72,35 @@ export const HelpInquiryModal: React.FC<HelpInquiryModalProps> = ({
 
     setLoading(true);
 
-    const chosenTour = tours.find((t) => t.id === tourId) || selectedTour;
+    try {
+      const chosenTour = tours.find((t) => t.id === tourId) || selectedTour;
+      const res = await createCustomerInquiry({
+        customer_name: name.trim(),
+        email: email.trim(),
+        phone: phone.trim() || null,
+        whatsapp: phone.trim() || null,
+        tour_id: chosenTour?.id || null,
+        tour_title: chosenTour?.title || null,
+        subject: subject.trim() || 'General Excursion Assistance & Help Request',
+        message: message.trim(),
+        source: 'web',
+        website_url_hp: websiteUrlHp,
+      });
 
-    const res = await createCustomerInquiry({
-      customer_name: name.trim(),
-      email: email.trim(),
-      phone: phone.trim() || null,
-      whatsapp: phone.trim() || null,
-      tour_id: chosenTour?.id || null,
-      tour_title: chosenTour?.title || null,
-      subject: subject.trim() || 'General Excursion Assistance & Help Request',
-      message: message.trim(),
-      source: 'web',
-      website_url_hp: websiteUrlHp,
-    });
-
-    setLoading(false);
-
-    if (res.success) {
-      setSubmitted(true);
-      showToast('Your help request has been sent directly to our pier concierge team.', 'success');
-    } else {
-      setErrorMsg(res.error || 'Failed to submit inquiry. Please try again or message WhatsApp.');
+      if (res.success) {
+        setSubmitted(true);
+        showToast('Your help request has been sent directly to our pier concierge team.', 'success');
+      } else {
+        const messageText = res.error || 'Failed to submit inquiry. Please try again or message WhatsApp.';
+        setErrorMsg(messageText);
+        showToast(messageText, 'error');
+      }
+    } catch (error) {
+      const messageText = error instanceof Error ? error.message : 'We could not submit your help request. Please try again.';
+      setErrorMsg(messageText);
+      showToast(messageText, 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
