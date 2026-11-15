@@ -17,6 +17,7 @@ import {
   ExternalLink,
   ChevronRight,
   ChevronDown,
+  Layers,
   Database,
   Plus,
   ShieldCheck,
@@ -549,7 +550,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
             </div>
           </header>
 
-          {/* Main View Container with device container sizing */}
+          {/* Main dashboard content */}
           <div className="admin-content flex-1 w-full min-w-0 p-4 sm:p-6 xl:p-8 overflow-x-auto flex justify-center">
             <div className="w-full max-w-[1600px]">
               {canAccessActiveTab ? children : (
