@@ -24,6 +24,9 @@ assert.match(llms, /seoExclusions\.entityIds\.has\('tour:'/,'llms.txt excludes n
 assert.match(llms, /seoExclusions\.entityIds\.has\('destination:'/,'llms.txt excludes noindex destinations');
 assert.match(llms, /seoExclusions\.pageSlugs\.has\(slug\)/,'llms.txt excludes noindex blog pages');
 
+assert.match(server, /staticPageBySlug = new Map\(INITIAL_STATIC_PAGES/, 'Partial CMS pages inherit reviewed static-page defaults');
+assert.match(server, /seoDescription: page\.seoDescription \|\| page\.seo_description \|\| fallback\.seoDescription/, 'CMS pages inherit reviewed SEO descriptions when metadata is missing');
+assert.match(server, /seoTitle: page\.seoTitle \|\| page\.seo_title \|\| fallback\.seoTitle/, 'CMS pages inherit reviewed SEO titles when metadata is missing');
 assert.match(server, /function seoBoundedTitle\(/, 'Dynamic page titles are normalized to a concise search title');
 assert.match(server, /function seoBoundedDescription\(/, 'Dynamic meta descriptions are normalized to search-friendly length');
 assert.match(server, /title = seoBoundedTitle\(title\)/, 'Normalized title is applied after page and CMS metadata');
