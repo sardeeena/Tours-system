@@ -12,7 +12,6 @@ import {
   ArrowRight, 
   AlertCircle, 
   ShieldCheck, 
-  Sparkles, 
   ArrowLeft,
   MailCheck,
   Send,
