@@ -17,7 +17,10 @@ import {
   Compass,
   ArrowRight,
   ExternalLink,
+  Camera,
+  Loader2,
 } from 'lucide-react';
+import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
 import { useAuth } from '../contexts/AuthContext';
 import { useWishlist } from '../contexts/WishlistContext';
 
@@ -46,6 +49,9 @@ export const CustomerProfilePage: React.FC<CustomerProfilePageProps> = ({
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
+  const [avatarLoading, setAvatarLoading] = useState(false);
+  const [avatarError, setAvatarError] = useState<string | null>(null);
+  const avatarInputRef = React.useRef<HTMLInputElement>(null);
 
   // Password Change State
   const [showPasswordChange, setShowPasswordChange] = useState(false);
@@ -76,6 +82,70 @@ export const CustomerProfilePage: React.FC<CustomerProfilePageProps> = ({
       </div>
     );
   }
+
+  const handleAvatarUpload = async (file?: File) => {
+    if (!file || !user) return;
+    setAvatarError(null);
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/avif'];
+    if (!allowedTypes.includes(file.type)) {
+      setAvatarError('Choose a JPG, PNG, WebP or AVIF image.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setAvatarError('The image must be 5 MB or smaller.');
+      return;
+    }
+    if (!isSupabaseConfigured()) {
+      setAvatarError('Profile photo uploads are temporarily unavailable. Please try again later.');
+      return;
+    }
+
+    setAvatarLoading(true);
+    try {
+      const sourceUrl = URL.createObjectURL(file);
+      try {
+        const image = new Image();
+        image.src = sourceUrl;
+        await new Promise<void>((resolve, reject) => {
+          image.onload = () => resolve();
+          image.onerror = () => reject(new Error('This image could not be opened. Please choose another file.'));
+        });
+        const side = Math.min(image.naturalWidth, image.naturalHeight);
+        if (!side) throw new Error('This image has invalid dimensions.');
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const context = canvas.getContext('2d');
+        if (!context) throw new Error('Your browser could not process this image.');
+        const sx = Math.floor((image.naturalWidth - side) / 2);
+        const sy = Math.floor((image.naturalHeight - side) / 2);
+        context.drawImage(image, sx, sy, side, side, 0, 0, 512, 512);
+        const blob = await new Promise<Blob>((resolve, reject) => {
+          canvas.toBlob((result) => result ? resolve(result) : reject(new Error('Could not prepare the profile image.')), 'image/webp', 0.86);
+        });
+        const objectPath = `${user.id}/avatar.webp`;
+        const { error: uploadError } = await supabase.storage.from('avatars').upload(objectPath, blob, {
+          upsert: true,
+          contentType: 'image/webp',
+          cacheControl: '3600',
+        });
+        if (uploadError) throw uploadError;
+        const { data } = supabase.storage.from('avatars').getPublicUrl(objectPath);
+        const profileResult = await updateProfile({ avatarUrl: data.publicUrl });
+        if (!profileResult.success) {
+          throw new Error(profileResult.error || 'The image uploaded, but your profile could not be updated.');
+        }
+        setProfileSuccess(true);
+      } finally {
+        URL.revokeObjectURL(sourceUrl);
+      }
+    } catch (error) {
+      setAvatarError(error instanceof Error ? error.message : 'Could not upload your profile picture.');
+    } finally {
+      setAvatarLoading(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = '';
+    }
+  };
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,16 +203,22 @@ export const CustomerProfilePage: React.FC<CustomerProfilePageProps> = ({
         {/* Top Header Card */}
         <div className="bg-white rounded-2xl shadow-sm border border-[#E8E3DA] p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#0E1B2A] to-[#0A6C74] text-white flex items-center justify-center text-2xl font-bold font-display shadow-md">
-              {user.avatarUrl ? (
-                <img
-                  src={user.avatarUrl}
-                  alt={user.fullName}
-                  className="w-full h-full object-cover rounded-2xl"
-                />
-              ) : (
-                user.fullName.charAt(0).toUpperCase()
-              )}
+            <div className="flex flex-col items-center gap-2 shrink-0">
+              <div className="w-20 h-20 rounded-full overflow-hidden bg-gradient-to-tr from-[#0E1B2A] to-[#0A6C74] text-white flex items-center justify-center text-2xl font-bold font-display shadow-md ring-2 ring-white">
+                {user.avatarUrl ? (
+                  <img src={user.avatarUrl} alt={user.fullName} className="w-full h-full object-cover" />
+                ) : (
+                  user.fullName.charAt(0).toUpperCase()
+                )}
+              </div>
+              <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/avif"
+                className="sr-only" aria-label="Choose profile picture"
+                onChange={(event) => handleAvatarUpload(event.target.files?.[0])} />
+              <button type="button" onClick={() => avatarInputRef.current?.click()} disabled={avatarLoading}
+                className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#0A6C74] hover:text-[#08565C] disabled:opacity-50">
+                {avatarLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
+                {avatarLoading ? 'Uploading…' : user.avatarUrl ? 'Change photo' : 'Add photo'}
+              </button>
             </div>
             <div>
               <div className="flex items-center space-x-2">
@@ -188,6 +264,13 @@ export const CustomerProfilePage: React.FC<CustomerProfilePageProps> = ({
             </button>
           </div>
         </div>
+
+        {avatarError && (
+          <div role="alert" className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-xs text-rose-800">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{avatarError}</span>
+          </div>
+        )}
 
         {/* Global Feedback Notifications */}
         {profileSuccess && (
