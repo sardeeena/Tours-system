@@ -40,6 +40,7 @@ assert.match(help, /showToast\(messageText, 'error'\)/, 'Help form failures also
 const authModal = fs.readFileSync('src/components/auth/AuthModal.tsx', 'utf8');
 assert.match(authModal, /showToast\(message, 'error'\)/, 'Authentication form errors use visible notifications');
 assert.match(authModal, /catch \(error\)/, 'Authentication network failures are handled');
+assert.match(authModal, /setErrorMsg\(message\);\s*showToast\(message, 'error'\)/, 'Authentication errors update inline state and toast notifications');
 const bookingLookup = fs.readFileSync('src/components/common/MyBookingModal.tsx', 'utf8');
 assert.match(bookingLookup, /showToast\(message, 'error'\)/, 'Booking lookup errors use visible notifications');
 const availabilityStep = fs.readFileSync('src/components/booking/StepDateGuests.tsx', 'utf8');
