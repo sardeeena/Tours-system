@@ -36,26 +36,26 @@ export const MfaChallenge: React.FC<MfaChallengeProps> = ({ factorId, onCancel }
   };
 
   return (
-    <section className="rounded-2xl border border-[#1F3854] bg-[#111E2E] p-6 sm:p-8 space-y-5 text-white">
+    <section className="rounded-xl border border-[#E8E3DA] dark:border-[#1F3854] bg-[#FAF8F5] dark:bg-[#111E2E] p-4 sm:p-5 space-y-4 text-[#0E1B2A] dark:text-white">
       <div className="flex items-center gap-3">
-        <div className="rounded-xl bg-emerald-500/15 p-3">
-          <ShieldCheck className="h-6 w-6 text-emerald-300" />
+        <div className="rounded-lg bg-[#0A6C74]/10 p-2">
+          <ShieldCheck className="h-5 w-5 text-[#0A6C74] dark:text-emerald-300" />
         </div>
         <div>
-          <h2 className="text-lg font-bold">Two-factor verification</h2>
-          <p className="text-xs text-slate-400">Enter the 6-digit code from your authenticator app.</p>
+          <h2 className="text-base font-bold">Verify your sign-in</h2>
+          <p className="text-xs text-slate-400">Enter your 6-digit authenticator code.</p>
         </div>
       </div>
 
       {error && (
-        <div role="alert" className="flex items-start gap-2 rounded-lg border border-rose-800 bg-rose-950/50 p-3 text-xs text-rose-200">
+        <div role="alert" className="flex items-start gap-2 rounded-lg border border-rose-200 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/50 p-3 text-xs text-rose-700 dark:text-rose-200">
           <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
           <span>{error}</span>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <label className="block text-xs font-semibold text-slate-200" htmlFor="administrator-totp-code">
+        <label className="block text-xs font-semibold text-stone-700 dark:text-slate-200" htmlFor="administrator-totp-code">
           Authenticator code
         </label>
         <input
@@ -67,7 +67,7 @@ export const MfaChallenge: React.FC<MfaChallengeProps> = ({ factorId, onCancel }
           maxLength={6}
           value={code}
           onChange={(event) => setCode(event.target.value.replace(/\D/g, '').slice(0, 6))}
-          className="w-full rounded-xl border border-slate-700 bg-[#0A1118] px-4 py-3 text-center font-mono text-2xl tracking-[0.35em] text-white outline-none focus:border-emerald-400"
+          className="w-full rounded-xl border border-[#E8E3DA] dark:border-slate-700 bg-white dark:bg-[#0A1118] px-4 py-3 text-center font-mono text-2xl tracking-[0.35em] text-[#0E1B2A] dark:text-white outline-none focus:border-[#0A6C74]"
           placeholder="000000"
           required
         />
@@ -81,7 +81,7 @@ export const MfaChallenge: React.FC<MfaChallengeProps> = ({ factorId, onCancel }
         </button>
       </form>
 
-      <button type="button" onClick={onCancel} className="flex w-full items-center justify-center gap-2 text-xs text-slate-400 hover:text-white">
+      <button type="button" onClick={onCancel} className="flex w-full items-center justify-center gap-2 text-xs text-stone-500 dark:text-slate-400 hover:text-[#0A6C74] dark:hover:text-white">
         <LogOut className="h-3.5 w-3.5" />
         Sign out and use another account
       </button>
