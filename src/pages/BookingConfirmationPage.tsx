@@ -60,7 +60,7 @@ export const BookingConfirmationPage: React.FC<BookingConfirmationPageProps> = (
           </h1>
           <p className="text-xs sm:text-sm text-stone-600 max-w-md mx-auto mt-2">
             We have saved your booking. A digital booking ticket is queued for{' '}
-            <strong className="text-stone-900">{booking.customer.email}</strong> and will arrive by email shortly. If it does not appear, please check your spam folder or contact our booking team.
+            <strong className="text-stone-900">{booking.customer.email}</strong> for email processing. If it does not arrive, please check your spam folder or contact our booking team.
           </p>
 
           {/* Reference Badge with Copy */}
