@@ -138,17 +138,6 @@ export const TourPreviewModal: React.FC<TourPreviewModalProps> = ({
                   )}
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => {
-                    onClose();
-                    onBookNow(tour);
-                  }}
-                  className="w-full py-2.5 bg-[#0A6C74] hover:bg-[#08565C] text-white text-xs sm:text-sm font-semibold rounded-sm flex items-center justify-center space-x-2 transition-colors shadow"
-                >
-                  <span>Select Date & Book Now</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
               </div>
 
             </div>
@@ -233,15 +222,27 @@ export const TourPreviewModal: React.FC<TourPreviewModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-3 border-t border-stone-200 bg-[#FAF8F5] flex items-center justify-between text-xs aat-modal-footer">
-          <span className="text-stone-500">Need private custom arrangements? Contact us directly.</span>
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-1.5 bg-stone-200 hover:bg-stone-300 text-stone-800 rounded font-medium transition-colors"
-          >
-            Close
-          </button>
+        <div className="px-4 sm:px-6 py-3 border-t border-stone-200 bg-[#FAF8F5] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 text-xs aat-modal-footer">
+          <span className="text-stone-500 hidden sm:block">Need private custom arrangements? Contact us directly.</span>
+          <div className="flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 bg-stone-200 hover:bg-stone-300 text-stone-800 rounded font-medium transition-colors"
+            >
+              Close
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                onBookNow(tour);
+              }}
+              className="flex-1 sm:flex-none px-5 py-2.5 bg-[#0A6C74] hover:bg-[#08565C] text-white rounded font-semibold transition-colors shadow"
+            >
+              Select Date & Book Now
+            </button>
+          </div>
         </div>
 
       </div>
