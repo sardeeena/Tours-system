@@ -45,7 +45,7 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             You're Ready for the Red Sea!
           </h2>
           <p className="text-xs text-stone-600 mt-1">
-            Your reservation has been saved. A digital booking ticket is queued for email delivery shortly.
+            Your reservation has been saved. A digital booking ticket is queued for email processing.
           </p>
         </div>
 
