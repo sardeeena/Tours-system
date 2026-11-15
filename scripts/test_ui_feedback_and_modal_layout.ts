@@ -63,3 +63,24 @@ assert.match(migration, /Awesome Adventure Tours/);
 assert.match(migration, /ON CONFLICT \(template_key\) DO UPDATE/);
 
 console.log('Toast accessibility, responsive modal layout and booking ticket workflow checks passed.');
+
+
+const motionSystem = fs.readFileSync('src/components/common/SiteMotionSystem.tsx', 'utf8');
+assert.match(motionSystem, /prefers-reduced-motion: reduce/, 'Site motion respects reduced-motion preferences');
+assert.match(motionSystem, /IntersectionObserver/, 'Sections reveal as they enter the viewport without a scroll listener');
+assert.match(motionSystem, /MutationObserver/, 'Newly rendered route and admin content receives the same motion treatment');
+assert.match(motionSystem, /data-scroll-to/, 'Explicit scroll triggers bring their target into view');
+assert.match(motionSystem, /aria-controls/, 'Expandable controls and tabs scroll their newly revealed content into view');
+assert.match(motionSystem, /scrollIntoView/, 'Smart scrolling uses the browser native scroll API');
+assert.match(motionSystem, /aat-visible/, 'Revealed content transitions into its visible state');
+
+const app = fs.readFileSync('src/App.tsx', 'utf8');
+assert.match(app, /SiteMotionSystem/, 'The global motion system is mounted across the website');
+assert.match(app, /prefers-reduced-motion: reduce.*\? 'auto' : 'smooth'/, 'Route and section navigation avoid forced smooth motion for users who request reduced motion');
+
+assert.match(css, /scroll-behavior: smooth/, 'In-page anchor navigation scrolls smoothly');
+assert.match(css, /\.aat-reveal/, 'Shared reveal animation styles are available site-wide');
+assert.match(css, /@media \(prefers-reduced-motion: reduce\)/, 'Global motion styles disable movement when requested');
+assert.match(css, /\.admin-shell/, 'Motion styling covers the admin workspace as well as public pages');
+
+console.log('Site-wide motion, smart scrolling and reduced-motion accessibility checks passed.');

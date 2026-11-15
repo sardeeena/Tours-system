@@ -80,6 +80,7 @@ const AdminBlogManager = lazy(() => import('./components/admin/AdminBlogManager'
 const AdminTickets = lazy(() => import('./components/admin/AdminTickets').then(m => ({ default: m.AdminTickets })));
 const AdminLoginPage = lazy(() => import('./components/admin/AdminLoginPage').then(m => ({ default: m.AdminLoginPage })));
 import { HelpInquiryModal } from './components/common/HelpInquiryModal';
+import { SiteMotionSystem } from './components/common/SiteMotionSystem';
 
 // CRM Modules (Lazy-Loaded)
 const CrmDashboard = lazy(() => import('./components/admin/crm/CrmDashboard').then(m => ({ default: m.CrmDashboard })));
@@ -433,7 +434,7 @@ function MainApp() {
     const [pathname, searchStr] = fullPath.split('?');
     setCurrentPath(pathname || '/');
     setSearchParams(new URLSearchParams(searchStr || ''));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   };
 
   // Resolve booking reference if on confirmation page
@@ -755,11 +756,11 @@ function MainApp() {
       navigate('/');
       setTimeout(() => {
         const el = document.getElementById(sectionId);
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
+        if (el) el.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
       }, 100);
     } else {
       const el = document.getElementById(sectionId);
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
+      if (el) el.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
     }
   };
 
@@ -1601,6 +1602,7 @@ function MainApp() {
 
   return (
     <div className={`public-site min-h-screen flex flex-col bg-[#FAF8F5] dark:bg-[#0A1118] text-[#111A24] dark:text-[#F1F5F9] transition-colors duration-200 ${currentPath.startsWith('/admin') ? 'public-site-admin-route' : ''}`}>
+      <SiteMotionSystem />
       <CookieConsent />
       <VisitorAnalyticsTracker path={currentPath} userId={user?.id || null} />
       {/* Global Header */}
