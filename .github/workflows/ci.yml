@@ -61,6 +61,9 @@ jobs:
       - name: Verify project boundary and retired migration workflow safety
         run: npm run test:project-boundaries
 
+      - name: Verify automation event persistence and acknowledgement
+        run: npm run test:automation-persistence
+
       - name: Type-check
         run: npm run lint
 
