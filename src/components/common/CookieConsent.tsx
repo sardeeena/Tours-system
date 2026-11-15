@@ -10,7 +10,7 @@ type ConsentChoices = {
 };
 
 const CONSENT_KEY = 'aat_cookie_consent_v1';
-const GTM_ID = 'GTM-MZVP38WC';
+const GTM_ID = 'GTM-5SSVKB24';
 const CONSENT_VERSION = '2';
 
 function applyConsent(choices: ConsentChoices): void {
