@@ -48,7 +48,8 @@
     "test:crm-inquiry-staff-assignment": "tsx scripts/test_crm_inquiry_staff_assignment.ts",
     "test:crm-inquiry-conversion-atomicity": "tsx scripts/test_crm_inquiry_conversion_atomicity.ts",
     "test:project-boundaries": "tsx scripts/test_project_boundary_workflows.ts",
-    "test:automation-persistence": "tsx scripts/test_automation_event_persistence.ts"
+    "test:automation-persistence": "tsx scripts/test_automation_event_persistence.ts",
+    "test:mcp-protocol": "tsx scripts/test_mcp_protocol_integrity.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

@@ -114,6 +114,12 @@ jobs:
       - name: Verify server and SPA route fallback configuration
         run: npm run test:routes
 
+      - name: Verify public SEO, sitemap and AI-discovery integrity
+        run: npm run test:public-seo-content
+
+      - name: Verify read-only MCP protocol and tool boundaries
+        run: npm run test:mcp-protocol
+
       - name: Verify admin authentication and role provisioning security
         run: npm run test:security
 

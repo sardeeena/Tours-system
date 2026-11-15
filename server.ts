@@ -3391,7 +3391,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
 
     try {
       const [destinationResult, tourDestinationResult] = await Promise.all([
-        publicSupabase.from('destinations').select('id,slug,updated_at,tagline,description').eq('status', 'published'),
+        publicSupabase.from('destinations').select('id,name,slug,updated_at,tagline,description').eq('status', 'published'),
         publicSupabase.from('tours').select('destination_id').eq('status', 'published'),
       ]);
       if (destinationResult.error) {
@@ -3407,10 +3407,11 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
         }
         for (const destination of destinationResult.data || []) {
           const slug = typeof destination.slug === 'string' ? destination.slug.trim() : '';
+          const name = cleanPublicText(destination.name, 120);
           const tourCount = destinationTourCounts.get(String(destination.id)) || 0;
           const descriptionLength = cleanPublicText(destination.description, 4000).length
             + cleanPublicText(destination.tagline, 500).length;
-          if (tourCount < 2 && descriptionLength < 300) continue;
+          if (!name || (tourCount < 2 && descriptionLength < 300)) continue;
           if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
           urls.set(
             `${AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN}/destinations/${encodeURIComponent(slug)}`,
@@ -4184,7 +4185,10 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
         console.warn('[SEO render] Destination tours query exception:', error);
       }
     }
-    if (activeDestination && destinationTours.length > 0) {
+    // A published destination is a valid public landing page even when it has no
+    // published excursions yet. Keep the route consistent with sitemap and
+    // llms.txt eligibility; thin destinations remain noindex below.
+    if (activeDestination) {
       pageKind = 'destination';
       seoEntityType = 'destination';
       seoIdentifier = String(activeDestination.id);
@@ -4202,7 +4206,8 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
         ${activeDestination.tagline ? `<p><strong>${seoHtmlEscape(seoPlainText(activeDestination.tagline, 300))}</strong></p>` : ''}
         ${description ? `<p>${seoHtmlEscape(description)}</p>` : ''}
         <h2>Published excursions in ${seoHtmlEscape(seoPlainText(activeDestination.name, 120))}</h2>
-        <div class="seo-grid">${cards}</div></article></main>`;
+        ${cards ? `<div class="seo-grid">${cards}</div>` : '<p>There are no published excursions for this destination yet. Browse the full excursions catalogue for currently available trips.</p><p><a href="/excursions">Browse all excursions</a></p>'}
+        </article></main>`;
     }
   } else {
     const pages = await loadAwesomeAdventureToursPages();
