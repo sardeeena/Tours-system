@@ -47,6 +47,7 @@ assert.doesNotMatch(schema, /New Marina|Berth B-14/, 'Retired office address is 
 assert.match(schema, /availableLanguage: 'Multilingual'/, 'Business entity represents multilingual customer support');
 assert.match(schema, /tripadvisor\.co\.uk\/Attraction_Review-g297549-d34759384/, 'Business sameAs links to the verified TripAdvisor listing');
 assert.match(llms, /Customer-service languages: Multilingual support/, 'llms.txt describes international multilingual customer support');
+assert.match(llms, /Office: 2nd floor, Bostan Cafe, Madres, Hurghada, Red Sea Governorate, Egypt/, 'llms.txt publishes the owner-confirmed office address');
 assert.match(llms, /TripAdvisor listing and traveller feedback/, 'llms.txt links to the official TripAdvisor listing');
 assert.match(footer, /2nd floor, Bostan Cafe, Madres, Hurghada, Egypt/, 'Public footer displays the owner-confirmed office address');
 assert.doesNotMatch(footer, /New Marina|Berth B-14|English, German & Russian/, 'Public footer removes outdated office and language details');
