@@ -31,7 +31,7 @@ export const MyBookingModal: React.FC<MyBookingModalProps> = ({ isOpen, onClose,
   const [isLoading, setIsLoading] = useState(false);
   const { showToast } = useToast();
   const reportError = (message: string) => {
-    reportError(message);
+    setErrorMessage(message);
     showToast(message, 'error');
   };
 
