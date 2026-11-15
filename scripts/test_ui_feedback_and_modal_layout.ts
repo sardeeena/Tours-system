@@ -56,7 +56,7 @@ const worker = fs.readFileSync('src/server/bookingNotificationWorker.ts', 'utf8'
 assert.match(worker, /renderBookingTicketEmailHtml/, 'Booking worker sends the dedicated ticket HTML');
 assert.match(worker, /booking_extras\(/, 'Booking worker includes persisted add-ons');
 assert.match(worker, /pickup_locations\(/, 'Booking worker includes the persisted pickup location');
-assert.match(worker, /BOOKING_NOTIFICATION_WORKER_ENABLED.*=== 'false'/, 'Worker is enabled by default when configured and can be explicitly disabled');
+assert.match(worker, /BOOKING_NOTIFICATION_WORKER_ENABLED.*!== 'true'/, 'Booking email delivery remains explicitly opt-in until provider acceptance is verified');
 
 const migration = fs.readFileSync('supabase/migrations/20261116000000_branded_booking_ticket_email_template.sql', 'utf8');
 assert.match(migration, /Awesome Adventure Tours/);
