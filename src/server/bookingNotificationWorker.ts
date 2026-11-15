@@ -254,7 +254,7 @@ async function processMessage(
     'Payment status: ' + String(row.payment_status || 'pending'),
     'Total: ' + currency + ' ' + amount,
     ...ticketExtras.map((extra) => 'Extra: ' + extra.name + ' × ' + extra.quantity + ' — ' + extra.total),
-  ].join('\\n');
+  ].join('\n');
   const ticketHtml = renderBookingTicketEmailHtml({
     heading: subject,
     preheader: 'Your Awesome Adventure Tours ticket · ' + row.booking_reference,
