@@ -22,6 +22,10 @@ assert.match(llms, /seoExclusions\.entityIds\.has\('tour:'/,'llms.txt excludes n
 assert.match(llms, /seoExclusions\.entityIds\.has\('destination:'/,'llms.txt excludes noindex destinations');
 assert.match(llms, /seoExclusions\.pageSlugs\.has\(slug\)/,'llms.txt excludes noindex blog pages');
 
+assert.match(server, /function seoBoundedTitle\(/, 'Dynamic page titles are normalized to a concise search title');
+assert.match(server, /function seoBoundedDescription\(/, 'Dynamic meta descriptions are normalized to search-friendly length');
+assert.match(server, /title = seoBoundedTitle\(title\)/, 'Normalized title is applied after page and CMS metadata');
+assert.match(server, /description = seoBoundedDescription\(description\)/, 'Normalized description is applied after page and CMS metadata');
 assert.match(schema, /areaServed: \[/, 'Business entity declares its verified service area');
 assert.match(schema, /Hurghada New Marina, Berth B-14/, 'Business schema retains the verified public office address');
 assert.match(schema, /\+201515212741/, 'Business schema retains the verified public telephone number');
