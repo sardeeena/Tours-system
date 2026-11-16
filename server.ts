@@ -2834,9 +2834,15 @@ async function getTranslationSource(entityType: string, entityKey: string): Prom
   if (!table) return null;
   let query = serverSupabase.from(table).select('*');
   if (entityType === 'blog_post') query = query.in('status', ['published', 'scheduled']).lte('published_at', new Date().toISOString());
+  else if (entityType === 'tour' || entityType === 'destination') query = query.eq('status', 'published');
   const { data, error } = await query.eq('id', entityKey).maybeSingle();
   if (error) throw error;
   if (!data) return null;
+  if (entityType.startsWith('tour_') && data.tour_id) {
+    const { data: parentTour, error: parentError } = await serverSupabase.from('tours').select('id').eq('id', data.tour_id).eq('status', 'published').maybeSingle();
+    if (parentError) throw parentError;
+    if (!parentTour) return null;
+  }
   if (entityType === 'tour') {
     const relatedTables = [
       ['tour_itinerary', 'itinerary'],
