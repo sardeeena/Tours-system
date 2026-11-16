@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { buildHreflangAlternates, buildLocalizedPath, parseLocalePath } from '../src/i18n/localeRouting';
 
 const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8');
 const server = read('../server.ts');
@@ -14,6 +15,13 @@ assert.match(server, /currentTour = data && data\.slug === slug \? data : null/,
 assert.match(server, /CDN-Cache-Control', 'no-store'/, 'Tour detail HTML bypasses intermediary CDN caches');
 assert.match(server, /Surrogate-Control', 'no-store'/, 'Tour detail HTML bypasses surrogate caches');
 assert.match(server, /isTourDetailRoute/, 'Cache bypass is scoped to public tour detail routes');
+assert.match(server, /const localePath = parseLocalePath\(path\)/, 'SSR recognizes locale-prefixed routes');
+assert.match(server, /statusCode = 404;[\s\S]*noindex = true/, 'Unpublished locale routes fail closed and are not indexable');
+assert.deepEqual(parseLocalePath('/de/excursions/ras-mohammed'), { locale: 'de', pathname: '/excursions/ras-mohammed' });
+assert.equal(parseLocalePath('/xx/excursions/ras-mohammed'), null, 'Unknown locale prefixes are not treated as supported locales');
+assert.equal(buildLocalizedPath('de', '/excursions/ras-mohammed', ['de']), '/de/excursions/ras-mohammed');
+assert.equal(buildLocalizedPath('fr', '/excursions/ras-mohammed', ['de']), null, 'Unpublished locales never receive public URLs');
+assert.deepEqual(buildHreflangAlternates('/excursions/ras-mohammed', ['de']).map((item) => item.hreflang), ['en', 'x-default', 'de']);
 assert.match(app, /key=\{tourDetailSlug\}/, 'Tour detail component state is reset when the route slug changes');
 
 for (const locale of ['fr', 'es', 'nl', 'pl', 'pt', 'sv', 'da', 'nb', 'fi', 'el', 'bg', 'hr', 'cs', 'sk', 'sl', 'hu', 'et', 'lv', 'lt', 'uk', 'sr', 'sq', 'tr', 'ar']) {
