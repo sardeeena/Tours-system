@@ -84,14 +84,14 @@ async function getLocalizedCommunicationTemplate(
       if (source) {
         const sourceChecksum = createHash('sha256').update(stableTranslationJson(source)).digest('hex');
         const { data: approval, error: approvalError } = await client.from('content_translations')
-          .select('source_checksum,translation_state,reviewed_at,published_at')
+          .select('source_checksum,translation_state,reviewed_at,published_at,content')
           .eq('entity_type', 'communication_template').eq('entity_key', String(source.id)).eq('locale', locale).maybeSingle();
         if (approvalError) throw approvalError;
         if (approval?.translation_state === 'published' && approval.reviewed_at && approval.published_at && approval.source_checksum === sourceChecksum) {
           const { data: localized, error: localizedError } = await client.from('communication_templates')
             .select('subject,body_text,is_active').eq('template_key', templateKey).eq('locale', locale).maybeSingle();
           if (localizedError) throw localizedError;
-          if (localized) return localized;
+          if (localized && localized.subject === approval.content?.subject && localized.body_text === approval.content?.body_text && localized.is_active === source.is_active) return localized;
         }
       }
     } else {
