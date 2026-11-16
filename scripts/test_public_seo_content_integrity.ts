@@ -10,11 +10,13 @@ const server = read('../server.ts');
 const robots = read('../public/robots.txt');
 const blogPage = read('../src/pages/BlogPage.tsx');
 const cookieConsent = read('../src/components/common/CookieConsent.tsx');
+const appConfig = read('../src/config/appConfig.ts');
 
 const about = pages.slice(pages.indexOf("id: 'about'"), pages.indexOf("id: 'contact'"));
 assert.match(about, /seoIndexable: true/, 'About fallback remains indexable');
 assert.match(about, /Local support in Hurghada/, 'About page contains useful company context');
 assert.match(about, /Clear information before you reserve/, 'About page explains how customers compare and book trips');
+assert.ok(appConfig.includes('2nd floor, Bostan Cafe, Madres, Hurghada') && !appConfig.includes('Berth B-14'), 'Booking support uses the current Hurghada office location');
 const contact = pages.slice(pages.indexOf("id: 'contact'"), pages.indexOf("id: 'why-us'"));
 assert.ok(contact.length >= 1000, 'Contact page provides substantive visitor support information');
 assert.match(contact, /preferred language/, 'Contact page explains language support without promising every tour is available in every language');
