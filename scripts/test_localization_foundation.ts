@@ -41,9 +41,12 @@ assert.match(server, /app\.get\('\/api\/admin\/translations\/source'[\s\S]*requi
 assert.match(server, /app\.get\('\/api\/content-translations\/resolve'[\s\S]*translation_state', 'published'[\s\S]*current\.checksum === data\.source_checksum/, 'Public resolver requires published state and a current source checksum');
 assert.match(server, /reviewed_at && data\?\.published_at/, 'Public resolver requires reviewed and published timestamps');
 assert.match(server, /content_translations'[\s\S]*source_checksum[\s\S]*getCurrentTranslationSourceChecksum/, 'Localized sitemap and SSR validate source checksums');
+assert.match(server, /\['tour_itinerary', 'itinerary'\][\s\S]*\['tour_highlights', 'highlights'\][\s\S]*\['tour_inclusions', 'included'\][\s\S]*\['tour_exclusions', 'excluded'\]/, 'Tour source checksums include itinerary, highlights, inclusions and exclusions');
+assert.match(server, /alternateLinks\.push[\s\S]*hreflang/, 'Localized SSR emits hreflang alternates');
+assert.match(server, /Reviewed localized pages could not be loaded/, 'Sitemap validates localized content before inclusion');
 assert.match(server, /supportedLanguages: \['en', 'de', 'it', 'ro', 'ru'\]/, 'Config advertises only existing UI dictionary locales');
 assert.match(server, /content_translations'[\s\S]*translated_slug[\s\S]*source_checksum/, 'Localized sitemap is based on translation records');
-assert.match(server, /const privateRoute = \/\^\\\\\/(?:\[a-z\]\{2\}\\\\\/\)\?/, 'Localized private routes are matched before public SSR');
+assert.ok(server.includes("const privateRoute = /^\\\\/(?:[a-z]{2}\\\\/)?(?:admin"), 'Localized private routes are matched before public SSR');
 assert.match(server, /body\.confirm_publish !== true/, 'Publishing requires explicit human confirmation');
 assert.match(server, /64-character SHA-256 source checksum/, 'Translation writes require a SHA-256 source checksum');
 assert.match(app, /AdminTranslationManager/, 'Admin translation workspace is wired into the app');
