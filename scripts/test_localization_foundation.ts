@@ -35,5 +35,6 @@ assert.match(bookingLocaleMigration, /preferred_locale = p_customer_locale/, 'Cu
 assert.match(bookingLocaleMigration, /NOT IN \('en', 'de', 'it', 'ro', 'ru'\)/, 'Only currently supported UI locales can be persisted');
 assert.match(bookingRepository, /rpc\('create_booking_atomic_with_locale'/, 'Booking client uses the locale-aware atomic RPC');
 assert.match(bookingRepository, /p_customer_locale: booking\.customerLocale \|\| 'en'/, 'Booking client passes customer locale with safe English fallback');
+assert.match(bookingRepository, /customerLocale: data\.customer_locale \|\| customer\.preferred_locale \|\| 'en'/, 'Saved booking restores its customer locale');
 assert.match(bookingPage, /customerLocale: language/, 'Booking captures the current interface language');
 console.log('Public tour cache isolation and European localization foundation checks passed.');
