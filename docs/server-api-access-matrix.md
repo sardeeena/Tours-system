@@ -23,6 +23,7 @@ This inventory covers Express routes registered in `server.ts`. It is a regressi
 | POST | `/api/communications/whatsapp` | `communications.manage` |
 | GET/POST | `/api/admin/technical/*` | Normalized `super_admin` + AAL2 + server service-role key |
 | GET/POST | `/api/admin/users/*` | Normalized `super_admin` + AAL2 + server service-role key |
+| POST | `/api/admin/translations/generate-batch` | Normalized `super_admin` + AAL2; server-side Gemini + service-role only; creates drafts only |
 
 The exact technical and user-management route list is enforced by the automated access-matrix test.
 
@@ -52,7 +53,7 @@ Most admin CRUD screens use the Supabase client directly. Their effective author
 ## Localization API additions
 
 - `GET /api/content-translations/resolve` is public and rate-limited. It returns only published and reviewed translation records, verifies the current source SHA-256 before returning them, and returns only the source record ID/slug (not the full source row).
-- `GET /api/admin/translations/source` is Super Admin + AAL2 only. It loads the authoritative source snapshot and computes the checksum server-side for the translation workspace.
+- `GET /api/admin/translations/source` and `POST /api/admin/translations/generate-batch` are Super Admin + AAL2 only. The source helper computes checksums server-side; bulk generation uses the server Gemini key and writes draft records only.
 - Locale-prefixed tour, destination, blog and static-page routes now resolve by translated slug, fail closed with 404/noindex if missing or stale, and render translated metadata/content when valid.
 - Private locale-prefixed booking, customer portal and authentication routes are served as no-store/noindex application routes.
 - The XML sitemap includes only reviewed translations whose source checksum is current. Localized pages emit reciprocal hreflang links only for same-entity translations that pass the same checksum check.
@@ -64,5 +65,5 @@ Most admin CRUD screens use the Supabase client directly. Their effective author
 - `GET /api/content-translations/resolve` — resolve a published, reviewed content translation by translated slug or stable entity key; verify live source checksum.
 - `GET /api/content-translations/target` — map the current source/translated route to the selected locale's translated slug; private booking/account routes require a complete published UI catalog.
 - `GET /api/content-translations/ui` — serve a complete reviewed UI catalog after source checksum validation.
-- `GET /api/content-translations/locales` — advertise only locales with complete, reviewed UI catalogs.
+- `GET /api/content-translations/locales` — advertise only locales with a complete reviewed UI catalog, reviewed coverage for every current public content/communication record, and synchronized localized communication templates.
 - `GET /api/admin/translations/source` — Super Admin + AAL2 source snapshot/checksum helper.
