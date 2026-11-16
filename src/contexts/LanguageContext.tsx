@@ -11,7 +11,6 @@ interface LanguageContextValue {
   t: (key: string, fallback?: string) => string;
 }
 
-const STORAGE_KEY = 'rse_preferred_language';
 const LanguageContext = createContext<LanguageContextValue | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -72,13 +71,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         }
       }
     }
-    try {
-      localStorage.setItem(STORAGE_KEY, newLang);
-      document.documentElement.lang = newLang;
-      document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
-    } catch {
-      // Ignore storage restrictions.
-    }
+    document.documentElement.lang = newLang;
+    document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
   };
 
   useEffect(() => {
