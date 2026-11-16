@@ -5064,7 +5064,7 @@ async function startServer() {
         if (rendered.noindex) {
           res.setHeader('X-Robots-Tag', `noindex, ${rendered.nofollow ? 'nofollow' : 'follow'}`);
         }
-        const isTourDetailRoute = /^\/excursions\/[a-z0-9]+(?:-[a-z0-9]+)*\/?$/i.test(req.path);
+        const isTourDetailRoute = /^\/(?:[a-z]{2}\/)?excursions\/[a-z0-9]+(?:-[a-z0-9]+)*\/?$/i.test(req.path);
         if (isTourDetailRoute) {
           // Prevent an intermediary cache from serving one excursion's HTML under another
           // excursion URL. Tour pages contain route-specific title, body and booking links.
