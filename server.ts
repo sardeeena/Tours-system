@@ -2806,6 +2806,107 @@ const TRANSLATION_ENTITY_TYPES = new Set([
   'tour_faq','destination','blog_post','static_page',
 ]);
 
+const TRANSLATION_SOURCE_TABLES: Record<string, string> = {
+  tour: 'tours',
+  tour_itinerary: 'tour_itinerary',
+  tour_highlight: 'tour_highlights',
+  tour_inclusion: 'tour_inclusions',
+  tour_exclusion: 'tour_exclusions',
+  tour_faq: 'tour_faqs',
+  destination: 'destinations',
+  blog_post: 'blog_posts',
+};
+
+function stableTranslationJson(value: any): string {
+  if (Array.isArray(value)) return '[' + value.map(stableTranslationJson).join(',') + ']';
+  if (value && typeof value === 'object') {
+    return '{' + Object.keys(value).sort().map((key) => JSON.stringify(key) + ':' + stableTranslationJson(value[key])).join(',') + '}';
+  }
+  return JSON.stringify(value);
+}
+
+async function getTranslationSource(entityType: string, entityKey: string): Promise<any | null> {
+  if (!serverSupabase) return null;
+  if (entityType === 'static_page') {
+    return INITIAL_STATIC_PAGES.find((page) => page.slug === entityKey || page.id === entityKey) || null;
+  }
+  const table = TRANSLATION_SOURCE_TABLES[entityType];
+  if (!table) return null;
+  let query = serverSupabase.from(table).select('*');
+  if (entityType === 'blog_post') query = query.in('status', ['published', 'scheduled']).lte('published_at', new Date().toISOString());
+  const { data, error } = await query.eq('id', entityKey).maybeSingle();
+  if (error) throw error;
+  return data || null;
+}
+
+async function getCurrentTranslationSourceChecksum(entityType: string, entityKey: string): Promise<{ checksum: string; source: any } | null> {
+  const source = await getTranslationSource(entityType, entityKey);
+  if (!source) return null;
+  return { checksum: createHash('sha256').update(stableTranslationJson(source)).digest('hex'), source };
+}
+
+// Returns only a reviewed translation whose source checksum still matches the
+// current published source record. A stale translation fails closed.
+app.get('/api/content-translations/resolve', rateLimit(90, 60_000), async (req: Request, res: Response) => {
+  const locale = typeof req.query.locale === 'string' ? req.query.locale : '';
+  const entityType = typeof req.query.entity_type === 'string' ? req.query.entity_type : '';
+  const entityKey = typeof req.query.entity_key === 'string' ? req.query.entity_key : '';
+  const slug = typeof req.query.slug === 'string' ? req.query.slug : '';
+  if (!TRANSLATION_LOCALES.has(locale) || !TRANSLATION_ENTITY_TYPES.has(entityType) || (!entityKey && !slug)) {
+    return res.status(400).json({ success: false, error: 'A supported locale, content type, and record key or translated slug are required.' });
+  }
+  try {
+    if (!serverSupabase) return res.status(503).json({ success: false, error: 'Translation service unavailable.' });
+    let query = serverSupabase.from('content_translations')
+      .select('id,entity_type,entity_key,locale,translated_slug,title,summary,content,seo_title,seo_description,source_checksum,translation_state,reviewed_at,published_at')
+      .eq('locale', locale).eq('entity_type', entityType).eq('translation_state', 'published');
+    query = entityKey ? query.eq('entity_key', entityKey) : query.eq('translated_slug', slug);
+    const { data, error } = await query.maybeSingle();
+    if (error) throw error;
+    if (!data || !data.reviewed_at || !data.published_at) {
+      return res.status(404).json({ success: false, error: 'Reviewed translation not found.' });
+    }
+    const current = await getCurrentTranslationSourceChecksum(entityType, data.entity_key);
+    if (!current || !data.source_checksum || current.checksum !== data.source_checksum) {
+      return res.status(409).json({ success: false, error: 'This translation is outdated and requires review.' });
+    }
+    return res.json({ success: true, translation: data, source: current.source });
+  } catch (error) {
+    console.error('[Public translation resolver] Failed:', error);
+    return res.status(503).json({ success: false, error: 'Translation service temporarily unavailable.' });
+  }
+});
+
+// Authoring helper: return the authoritative source checksum from the server,
+// not a checksum typed or calculated by the browser.
+app.get('/api/admin/translations/source', rateLimit(30, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  const entityType = typeof req.query.entity_type === 'string' ? req.query.entity_type : '';
+  const entityKey = typeof req.query.entity_key === 'string' ? req.query.entity_key.trim() : '';
+  if (!TRANSLATION_ENTITY_TYPES.has(entityType) || !entityKey) return res.status(400).json({ success: false, error: 'A valid content type and source record key are required.' });
+  try {
+    const current = await getCurrentTranslationSourceChecksum(entityType, entityKey);
+    if (!current) return res.status(404).json({ success: false, error: 'Source record not found or not published.' });
+    const source = current.source;
+    return res.json({
+      success: true, source_checksum: current.checksum,
+      source: {
+        id: source.id || source.slug, slug: source.slug || null,
+        title: source.title || source.name || null,
+        summary: source.short_description || source.description || source.tagline || source.excerpt || null,
+        content: entityType === 'static_page'
+          ? { heroHeadline: source.heroHeadline, heroSubtitle: source.heroSubtitle, sections: source.sections }
+          : entityType === 'blog_post'
+            ? { title: source.title, excerpt: source.excerpt, content: source.content }
+            : { title: source.title || source.name, description: source.description || source.short_description },
+      },
+    });
+  } catch (error) {
+    console.error('[Translation source] Failed:', error);
+    return res.status(503).json({ success: false, error: 'Could not retrieve the current source record.' });
+  }
+});
+
 app.get('/api/admin/translations', rateLimit(30, 60_000), async (req: AuthenticatedRequest, res: Response) => {
   if (!requireSuperAdminAal2(req, res)) return;
   const locale = typeof req.query.locale === 'string' ? req.query.locale : '';
