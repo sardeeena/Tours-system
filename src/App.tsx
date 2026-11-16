@@ -1455,6 +1455,7 @@ function MainApp() {
       if (currentTourDetail && currentTourDetail.slug === tourDetailSlug) {
         return (
           <TourDetailPage
+            key={tourDetailSlug}
             tour={currentTourDetail}
             allTours={liveTours}
             currency={currentCurrency}
