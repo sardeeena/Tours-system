@@ -17,6 +17,9 @@ assert.match(server, /Surrogate-Control', 'no-store'/, 'Tour detail HTML bypasse
 assert.match(server, /isTourDetailRoute/, 'Cache bypass is scoped to public tour detail routes');
 assert.match(server, /const localePath = parseLocalePath\(path\)/, 'SSR recognizes locale-prefixed routes');
 assert.match(server, /statusCode = 404;[\s\S]*noindex = true/, 'Unpublished locale routes fail closed and are not indexable');
+assert.match(server, /\.eq\('locale', customerLocale\)/, 'Newsletter selects a communication template in the customer locale');
+assert.match(server, /if \(!welcomeTemplate && customerLocale !== 'en'\)/, 'Newsletter uses an explicit English template fallback');
+assert.match(server, /const customerLocale = \['en', 'de', 'it', 'ro', 'ru'\]/, 'Newsletter locale input is allowlisted');
 assert.deepEqual(parseLocalePath('/de/excursions/ras-mohammed'), { locale: 'de', pathname: '/excursions/ras-mohammed' });
 assert.equal(parseLocalePath('/xx/excursions/ras-mohammed'), null, 'Unknown locale prefixes are not treated as supported locales');
 assert.equal(buildLocalizedPath('de', '/excursions/ras-mohammed', ['de']), '/de/excursions/ras-mohammed');
