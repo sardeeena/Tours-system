@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(3);
+SELECT plan(6);
 
 SELECT ok(
   to_regprocedure('extensions.gen_random_bytes(integer)') IS NOT NULL,
@@ -34,6 +34,26 @@ SELECT ok(
       AND p.proconfig @> ARRAY['search_path=""']
   ),
   'atomic booking function remains SECURITY DEFINER with an empty search_path'
+);
+
+SELECT ok(
+  to_regprocedure('private.assign_short_booking_reference()') IS NOT NULL,
+  'new bookings receive a compact public reference from a dedicated trigger'
+);
+
+SELECT ok(
+  EXISTS (
+    SELECT 1 FROM pg_trigger
+    WHERE tgrelid = 'public.bookings'::regclass
+      AND tgname = 'trg_assign_short_booking_reference'
+      AND NOT tgisinternal
+  ),
+  'short-reference trigger is attached to the bookings table'
+);
+
+SELECT ok(
+  position('AAT-' IN pg_get_functiondef(to_regprocedure('private.assign_short_booking_reference()'))) > 0,
+  'new booking references use the short AAT prefix'
 );
 
 SELECT * FROM finish();
