@@ -64,6 +64,24 @@ export const AdminTranslationManager: React.FC = () => {
     setContentJson(JSON.stringify(row.content || {}, null, 2));
   };
 
+  const loadSource = async () => {
+    if (!entityKey.trim()) {
+      showToast('Enter the source record key first.', 'error');
+      return;
+    }
+    setLoading(true);
+    try {
+      const result = await request('/api/admin/translations/source?entity_type=' + encodeURIComponent(entityType) + '&entity_key=' + encodeURIComponent(entityKey.trim()));
+      setSourceChecksum(result.source_checksum || '');
+      if (result.source?.title && !title) setTitle(result.source.title);
+      if (result.source?.summary && !summary) setSummary(result.source.summary);
+      setContentJson(JSON.stringify(result.source?.content || {}, null, 2));
+      showToast('Current source loaded and its SHA-256 checksum verified.', 'success');
+    } catch (error: any) {
+      showToast(error.message || 'Could not load source record.', 'error');
+    } finally { setLoading(false); }
+  };
+
   const save = async (state: 'draft' | 'review' | 'published') => {
     if (!entityKey.trim() || !sourceChecksum.trim()) {
       showToast('A source record key and source checksum are required before saving.', 'error'); return;
@@ -122,7 +140,7 @@ export const AdminTranslationManager: React.FC = () => {
             <label className="text-xs text-stone-400">Content type<select value={entityType} onChange={e=>setEntityType(e.target.value)} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white">{ENTITY_TYPES.map(x=><option key={x}>{x}</option>)}</select></label>
             <label className="text-xs text-stone-400">Locale<select value={locale} onChange={e=>setLocale(e.target.value)} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white">{EUROPEAN_LOCALE_ROLLOUT.filter(x=>x.code!=='en').map(x=><option key={x.code} value={x.code}>{x.nativeName} ({x.code})</option>)}</select></label>
             <label className="text-xs text-stone-400 sm:col-span-2">Source record key<input value={entityKey} onChange={e=>setEntityKey(e.target.value)} placeholder="Original tour UUID or stable content key" className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label>
-            <label className="text-xs text-stone-400 sm:col-span-2">Source checksum<input value={sourceChecksum} onChange={e=>setSourceChecksum(e.target.value)} placeholder="SHA-256 of the current source content" className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label>
+            <div className="sm:col-span-2 flex flex-wrap items-end gap-2"><label className="min-w-0 flex-1 text-xs text-stone-400">Source checksum<input value={sourceChecksum} readOnly placeholder="Load the authoritative checksum from the server" className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label><button type="button" disabled={loading || !entityKey.trim()} onClick={()=>void loadSource()} className="rounded border border-teal-700 px-3 py-2 text-xs font-semibold text-teal-200 disabled:opacity-50">Load source + checksum</button></div>
             <label className="text-xs text-stone-400">Translated title<input value={title} onChange={e=>setTitle(e.target.value)} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label>
             <label className="text-xs text-stone-400">Translated slug<input value={slug} onChange={e=>setSlug(e.target.value)} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label>
             <label className="text-xs text-stone-400 sm:col-span-2">Summary<textarea value={summary} onChange={e=>setSummary(e.target.value)} rows={2} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label>
