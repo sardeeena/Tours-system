@@ -2987,7 +2987,7 @@ app.get('/api/admin/translations/source', rateLimit(30, 60_000), async (req: Aut
           : entityType === 'blog_post'
             ? { title: source.title, excerpt: source.excerpt, content: source.content }
             : entityType === 'ui_catalog'
-          ? { title: 'Interface messages', content: source.content || {} }
+          ? (source.content || {})
           : entityType === 'tour'
               ? {
                   title: source.title, description: source.description || source.short_description, durationLabel: source.duration,
