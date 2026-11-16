@@ -459,7 +459,7 @@ function MainApp() {
       window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     };
 
-    if (currentLocale !== 'en' && !/^\\/admin(?:\\/|$)/i.test(normalizedRequestedPath)) {
+    if (currentLocale !== 'en' && !/^\/admin(?:\/|$)/i.test(normalizedRequestedPath)) {
       const params = new URLSearchParams({ locale: currentLocale, pathname: normalizedRequestedPath });
       fetch('/api/content-translations/target?' + params.toString(), {
         headers: { Accept: 'application/json' },
