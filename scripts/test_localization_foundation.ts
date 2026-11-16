@@ -10,6 +10,7 @@ const migration = read('../supabase/migrations/20261116150000_european_localizat
 const bookingLocaleMigration = read('../supabase/migrations/20261116160000_booking_customer_locale_atomic.sql');
 const bookingRepository = read('../src/services/bookingRepository.ts');
 const bookingPage = read('../src/pages/BookingPage.tsx');
+const bookingNotificationWorker = read('../src/server/bookingNotificationWorker.ts');
 const languageContext = read('../src/contexts/LanguageContext.tsx');
 const localizedPage = read('../src/pages/LocalizedContentPage.tsx');
 
@@ -75,4 +76,9 @@ assert.match(bookingRepository, /rpc\('create_booking_atomic_with_locale'/, 'Boo
 assert.match(bookingRepository, /p_customer_locale: booking\.customerLocale \|\| 'en'/, 'Booking client passes customer locale with safe English fallback');
 assert.match(bookingRepository, /customerLocale: data\.customer_locale \|\| customer\.preferred_locale \|\| 'en'/, 'Saved booking restores its customer locale');
 assert.match(bookingPage, /customerLocale: language/, 'Booking captures the current interface language');
+assert.match(bookingNotificationWorker, /getLocalizedCommunicationTemplate\(client, 'booking_received', customerLocale\)/, 'Booking received email selects the saved customer locale');
+assert.match(bookingNotificationWorker, /getLocalizedCommunicationTemplate\(client, 'booking_review_request', customerLocale\)/, 'Completed booking review email selects the saved customer locale');
+assert.match(bookingNotificationWorker, /\.eq\('locale', locale\)/, 'Transactional email templates are locale-specific with an English fallback');
+assert.match(server, /selectedTemplateLanguage = preferredLocale/, 'WhatsApp approved template language follows the customer preference');
+assert.match(server, /preferred_locale'\)\.eq\('id', customerId\)/, 'WhatsApp language is resolved from the server-side customer record');
 console.log('Public tour cache isolation and European localization foundation checks passed.');
