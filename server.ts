@@ -3069,6 +3069,112 @@ app.get('/api/content-translations/resolve', rateLimit(90, 60_000), async (req: 
   }
 });
 
+// Super Admin + AAL2 bulk translation generation. Every generated row is a draft;
+// this endpoint never marks content reviewed or publishes it.
+const BULK_TRANSLATION_LOCALES: Record<string, string> = { fr: 'French', es: 'Spanish', nl: 'Dutch', pl: 'Polish', pt: 'Portuguese' };
+async function getBulkTranslationCandidates(): Promise<Array<{ entity_type: string; entity_key: string }>> {
+  if (!serverSupabase) throw new Error('Translation database unavailable.');
+  const results = await Promise.all([
+    serverSupabase.from('tours').select('id').eq('status','published').order('sort_order'),
+    serverSupabase.from('destinations').select('id').eq('status','published').order('name'),
+    serverSupabase.from('blog_posts').select('id').in('status',['published','scheduled']).lte('published_at',new Date().toISOString()).order('published_at',{ascending:false}),
+    serverSupabase.from('site_settings').select('value').eq('key','pages_content').maybeSingle(),
+  ]);
+  for (const result of results) if (result.error) throw result.error;
+  const out: Array<{entity_type:string;entity_key:string}> = [];
+  for (const row of results[0].data || []) out.push({entity_type:'tour',entity_key:String(row.id)});
+  for (const row of results[1].data || []) out.push({entity_type:'destination',entity_key:String(row.id)});
+  for (const row of results[2].data || []) out.push({entity_type:'blog_post',entity_key:String(row.id)});
+  out.push({entity_type:'static_page',entity_key:'home'});
+  const raw = results[3].data?.value;
+  const pages = Array.isArray(raw) ? raw : raw && Array.isArray(raw.pages) ? raw.pages : [];
+  for (const page of pages) if (page?.slug && page.published !== false && page.status !== 'draft' && page.status !== 'unpublished') out.push({entity_type:'static_page',entity_key:String(page.id || page.slug)});
+  for (const page of INITIAL_STATIC_PAGES) if (!out.some(x=>x.entity_type==='static_page' && x.entity_key===String(page.id || page.slug))) out.push({entity_type:'static_page',entity_key:String(page.id || page.slug)});
+  out.push({entity_type:'ui_catalog',entity_key:'site-ui'});
+  return out;
+}
+function bulkTranslationPayload(type: string, source: any): Record<string, any> {
+  if (type==='ui_catalog') return {content:source.content || {}};
+  if (type==='tour') return {title:source.title,summary:source.short_description || source.description || '',content:{
+    title:source.title,description:source.description || source.short_description || '',durationLabel:source.duration || '',
+    highlights:(source.highlights || []).map((x:any)=>x.item || x),itinerary:source.itinerary || [],included:source.included || [],
+    excluded:source.excluded || [],faqs:source.faqs || [],pickupInfo:source.pickup_info || '',
+    cancellationPolicy:source.cancellation_policy || '',ageRestrictions:source.age_restrictions || '',
+    labels:{highlights:'Highlights',itinerary:'Itinerary',included:'Included',excluded:'Not included',faqs:'Frequently asked questions',pickupInfo:'Pickup information',cancellationPolicy:'Cancellation policy',ageRestrictions:'Age restrictions',bookNow:'Book now',browseMore:'Browse more tours'}
+  }};
+  if (type==='destination') return {title:source.name || source.title,summary:source.tagline || source.description || '',content:{title:source.name || source.title,description:source.description || '',tagline:source.tagline || '',paragraphs:[],labels:{browseMore:'Explore more destinations'}}};
+  if (type==='blog_post') return {title:source.title,summary:source.excerpt || source.meta_description || '',content:{title:source.title,excerpt:source.excerpt || '',content:source.content || source.body || ''}};
+  return {title:source.title || source.name || 'Explore the Red Sea',summary:source.heroSubtitle || source.description || source.excerpt || '',content:{heroHeadline:source.heroHeadline || source.title || '',heroSubtitle:source.heroSubtitle || source.description || '',sections:source.sections || [],paragraphs:source.paragraphs || [],labels:{browseMore:'Explore more',bookNow:'Book now'}}};
+}
+function normalizedTranslationSlug(value: unknown, fallback: string): string {
+  const raw = typeof value==='string' ? value.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase() : '';
+  return raw.replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,160) || fallback.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,160) || 'page';
+}
+app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (req: AuthenticatedRequest,res: Response) => {
+  if (!requireSuperAdminAal2(req,res)) return;
+  const locale = typeof req.body?.locale==='string' ? req.body.locale : '';
+  const offset = Number.isInteger(req.body?.offset) && req.body.offset>=0 ? req.body.offset : 0;
+  const limit = Number.isInteger(req.body?.limit) ? Math.min(10,Math.max(1,req.body.limit)) : 10;
+  if (!Object.prototype.hasOwnProperty.call(BULK_TRANSLATION_LOCALES,locale)) return res.status(400).json({success:false,error:'Bulk generation supports fr, es, nl, pl and pt.'});
+  if (!ai) return res.status(503).json({success:false,error:'Server-side Gemini translation is not configured.'});
+  if (!serverSupabase) return res.status(503).json({success:false,error:'Translation database unavailable.'});
+  try {
+    const candidates = await getBulkTranslationCandidates();
+    const page = candidates.slice(offset,offset+limit);
+    const prepared: Array<{type:string;key:string;checksum:string;source:any;payload:any}> = [];
+    for (const candidate of page) {
+      const current = await getCurrentTranslationSourceChecksum(candidate.entity_type,candidate.entity_key);
+      if (current) prepared.push({type:candidate.entity_type,key:candidate.entity_key,checksum:current.checksum,source:current.source,payload:bulkTranslationPayload(candidate.entity_type,current.source)});
+    }
+    const {data:existing,error:existingError} = await serverSupabase.from('content_translations').select('entity_type,entity_key,translation_state,reviewed_at,published_at').eq('locale',locale).limit(2000);
+    if (existingError) throw existingError;
+    const known = new Map((existing || []).map((x:any)=>[x.entity_type+':'+x.entity_key,x]));
+    const work = prepared.filter(x=>{const old:any=known.get(x.type+':'+x.key);return !old || (old.translation_state==='draft' && !old.reviewed_at && !old.published_at);});
+    let saved=0, skipped=prepared.length-work.length;
+    if (work.length) {
+      const prompt = [
+        'You are a professional tourism translator localizing Awesome Adventure Tours, a licensed operator in Hurghada, Egypt.',
+        'Translate every human-facing string recursively into '+BULK_TRANSLATION_LOCALES[locale]+' ('+locale+').',
+        'Return only valid JSON: {"translations":[{"entity_type":"...","entity_key":"...","title":"...","translated_slug":"...","summary":"...","seo_title":"...","seo_description":"...","content":{...}}]}. Return exactly one item per input and preserve entity_type and entity_key exactly.',
+        'Preserve all JSON keys, arrays, order, object shapes and non-string values. Translate all prose, labels, headings, FAQs, itinerary and UI message values.',
+        'Never invent or change prices, currencies, numbers, dates, times, durations, pickup details, age limits, safety requirements, inclusions, exclusions, cancellation terms, legal claims, contacts, URLs, emails, phone numbers, IDs or brand/place names. Copy factual values exactly.',
+        'translated_slug must be a natural short lowercase ASCII slug using only a-z, 0-9 and hyphens. For ui_catalog use site-ui. Keep empty source strings empty. Do not omit fields or add commentary.',
+        'SEO title should be concise; SEO description accurate. No unsupported claims.',
+        'INPUT: '+JSON.stringify(work.map(x=>({entity_type:x.type,entity_key:x.key,source:x.payload})))
+      ].join('\n');
+      const generated = await ai.models.generateContent({model:'gemini-3.8-flash',contents:[{role:'user',parts:[{text:prompt}]}],config:{temperature:0.15,responseMimeType:'application/json'}});
+      const parsed = JSON.parse((generated.text || '').replace(/^\x60{3}(?:json)?\s*/i,'').replace(/\s*\x60{3}$/,''));
+      if (!Array.isArray(parsed?.translations)) throw new Error('AI returned an invalid translation batch.');
+      const byKey = new Map(parsed.translations.map((x:any)=>[x.entity_type+':'+x.entity_key,x]));
+      for (const item of work) {
+        const translated:any = byKey.get(item.type+':'+item.key);
+        if (!translated || !translated.content || typeof translated.content!=='object' || Array.isArray(translated.content)) {skipped++;continue;}
+        const latest = await getCurrentTranslationSourceChecksum(item.type,item.key);
+        if (!latest || latest.checksum!==item.checksum) {skipped++;continue;}
+        const isUi = item.type==='ui_catalog';
+        if (isUi) {
+          const keys=Object.keys(TRANSLATIONS.en || {});
+          if (!keys.every(key=>typeof translated.content[key]==='string' && String(translated.content[key]).trim())) {skipped++;continue;}
+        }
+        const record = {entity_type:item.type,entity_key:item.key,locale,translated_slug:isUi?'site-ui':normalizedTranslationSlug(translated.translated_slug,item.source.slug || item.source.title || item.source.name || item.key),
+          title:isUi?'Interface messages':String(translated.title || '').trim().slice(0,300),
+          summary:String(translated.summary || '').trim().slice(0,2000),
+          seo_title:isUi?null:String(translated.seo_title || translated.title || '').trim().slice(0,300),
+          seo_description:isUi?null:String(translated.seo_description || translated.summary || '').trim().slice(0,500),
+          content:translated.content,source_checksum:item.checksum,translation_state:'draft',reviewed_by:null,reviewed_at:null,published_at:null,updated_at:new Date().toISOString()};
+        const {error}=await serverSupabase.from('content_translations').upsert(record,{onConflict:'entity_type,entity_key,locale'});
+        if(error) throw error;
+        saved++;
+      }
+    }
+    await writeAccountAudit(req.user!.id,'CONTENT_TRANSLATION_BULK_DRAFT_GENERATED',locale,{locale,offset,requested:page.length,saved,skipped,total:candidates.length});
+    return res.json({success:true,locale,processed:saved,skipped,total:candidates.length,next_offset:Math.min(offset+limit,candidates.length),done:offset+limit>=candidates.length});
+  } catch(error) {
+    console.error('[Bulk translation generation] Failed:',error);
+    return res.status(502).json({success:false,error:'Translation generation failed for this batch. No translations were published; retry this batch.'});
+  }
+});
+
 // Authoring helper: return the authoritative source checksum from the server,
 // not a checksum typed or calculated by the browser.
 app.get('/api/admin/translations/source', rateLimit(30, 60_000), async (req: AuthenticatedRequest, res: Response) => {
