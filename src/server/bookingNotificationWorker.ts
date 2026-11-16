@@ -183,7 +183,7 @@ async function processMessage(
     await updateEvent(client, eventId, {
       processed: true,
       processed_at: new Date().toISOString(),
-      actions_triggered: ['booking_received_email_skipped_missing_email'],
+      actions_triggered: [event.event_name === 'booking.completed' ? 'booking_review_request_skipped_missing_email' : 'booking_received_email_skipped_missing_email'],
       error_message: 'Customer has no valid email address; no email was sent.',
     });
     await acknowledge(client, message.msg_id);
