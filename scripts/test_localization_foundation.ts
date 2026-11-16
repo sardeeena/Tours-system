@@ -18,7 +18,7 @@ assert.match(server, /currentTour = data && data\.slug === slug \? data : null/,
 assert.match(server, /CDN-Cache-Control', 'no-store'/, 'Tour detail HTML bypasses intermediary CDN caches');
 assert.match(server, /Surrogate-Control', 'no-store'/, 'Tour detail HTML bypasses surrogate caches');
 assert.match(server, /isTourDetailRoute/, 'Cache bypass is scoped to public tour detail routes');
-assert.match(server, /const localePath = parseLocalePath\(path\)/, 'SSR recognizes locale-prefixed routes');
+assert.match(server, /const localePath = parseLocalePath\(requestedPath\)/, 'SSR recognizes locale-prefixed routes');
 assert.match(server, /statusCode = 404;[\s\S]*noindex = true/, 'Unpublished locale routes fail closed and are not indexable');
 assert.match(server, /\.eq\('locale', customerLocale\)/, 'Newsletter selects a communication template in the customer locale');
 assert.match(server, /if \(!welcomeTemplate && customerLocale !== 'en'\)/, 'Newsletter uses an explicit English template fallback');
