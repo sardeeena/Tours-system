@@ -2,6 +2,15 @@
 -- as the authoritative booking, without conflating it with the spoken guide language.
 BEGIN;
 
+-- The translation registry also stores reviewed localized communication templates.
+ALTER TABLE public.content_translations
+  DROP CONSTRAINT IF EXISTS content_translations_entity_type_check;
+ALTER TABLE public.content_translations
+  ADD CONSTRAINT content_translations_entity_type_check CHECK (entity_type IN (
+    'tour', 'tour_itinerary', 'tour_highlight', 'tour_inclusion', 'tour_exclusion',
+    'tour_faq', 'destination', 'blog_post', 'static_page', 'communication_template', 'ui_catalog'
+  ));
+
 CREATE OR REPLACE FUNCTION private.create_booking_atomic_with_locale(
   p_tour_identifier text,
   p_booking_date date,
