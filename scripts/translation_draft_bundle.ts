@@ -45,6 +45,7 @@ async function exportBundle(path: string) {
   for (const source of destinations) bundle.push({ entity_type:'destination', entity_key:String(source.id), source_checksum:checksum(source), source });
   const posts = await rows('blog_posts', q => q.in('status',['published','scheduled']).lte('published_at',new Date().toISOString()));
   for (const source of posts) bundle.push({ entity_type:'blog_post', entity_key:String(source.id), source_checksum:checksum(source), source });
+  bundle.push({ entity_type:'static_page', entity_key:'home', source_checksum:checksum({ id:'home', slug:'home', title:'Explore Egypt’s Red Sea Coast', heroHeadline:'Explore Egypt’s Red Sea Coast', heroSubtitle:'Boat trips, island visits, snorkeling, diving and desert safaris across Egypt’s Red Sea coast.', sections:[] }), source:{ id:'home', slug:'home', title:'Explore Egypt’s Red Sea Coast', heroHeadline:'Explore Egypt’s Red Sea Coast', heroSubtitle:'Boat trips, island visits, snorkeling, diving and desert safaris across Egypt’s Red Sea coast.', sections:[] } });
   const settings = await rows('site_settings', q => q.eq('key','pages_content'));
   const raw = settings[0]?.value;
   const pages = Array.isArray(raw) ? raw : raw && Array.isArray(raw.pages) ? raw.pages : [];
@@ -72,6 +73,7 @@ async function currentSource(entityType:string, entityKey:string):Promise<any|nu
     q=entityType==='destination'?q.eq('status','published'):q.in('status',['published','scheduled']).lte('published_at',new Date().toISOString());
     const {data,error}=await q.maybeSingle(); if(error) throw error; return data||null;
   }
+  if(entityType==='static_page' && entityKey==='home') return { id:'home', slug:'home', title:'Explore Egypt’s Red Sea Coast', heroHeadline:'Explore Egypt’s Red Sea Coast', heroSubtitle:'Boat trips, island visits, snorkeling, diving and desert safaris across Egypt’s Red Sea coast.', sections:[] };
   if(entityType==='static_page') {
     const {data,error}=await db.from('site_settings').select('value').eq('key','pages_content').maybeSingle();
     if(error) throw error;
