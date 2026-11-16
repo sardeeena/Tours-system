@@ -6,7 +6,7 @@ const doc=read('../docs/LOCALIZATION_WORKFLOW.md');
 assert.match(script,/LOCALES = new Set<Locale>\(\['fr','es','nl','pl','pt'\]\)/);
 assert.match(script,/translation_state:'draft'/);
 assert.match(script,/reviewed_at:null, published_at:null/);
-assert.match(script,/existing\.data\.translation_state==='published' \|\| existing\.data\.reviewed_at \|\| existing\.data\.published_at/);
+assert.match(script,/existing\.data\.translation_state!=='draft' \|\| existing\.data\.reviewed_at \|\| existing\.data\.published_at/);
 assert.match(script,/flag==='--apply'/,'Import requires an explicit apply flag');
 assert.match(script,/source_checksum/);
 assert.match(script,/projectRef !== 'uvtbtpxtrrmaublrztgv'/,'Tooling is pinned to the AwesomeAdventure Supabase project');
