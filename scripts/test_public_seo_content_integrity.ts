@@ -21,6 +21,20 @@ assert.match(contact, /preferred language/, 'Contact page explains language supp
 assert.match(contact, /booking reference/, 'Contact page explains what existing customers should provide when asking for help');
 const aboutIndexabilityMigration = read('../supabase/migrations/20261116130000_about_page_indexability.sql');
 assert.ok(aboutIndexabilityMigration.includes('UPDATE public.seo_metadata') && aboutIndexabilityMigration.includes("page_slug = 'about'") && aboutIndexabilityMigration.includes('robots_index = TRUE'), 'Migration corrects the stale About-page noindex database override');
+const tourDetailStart = app.indexOf('// Dynamic Tour for TourDetailPage');
+const tourDetailEnd = app.indexOf('// Synchronize document title', tourDetailStart);
+const tourDetailEffect = app.slice(tourDetailStart, tourDetailEnd);
+assert.ok(tourDetailEffect.includes('let isCurrent = true;'), 'Tour detail lookup tracks the active route');
+assert.ok(tourDetailEffect.includes('current?.slug === tourDetailSlug ? current : null'), 'Changing tour routes clears content belonging to a different slug');
+assert.ok(tourDetailEffect.includes('if (!isCurrent) return;'), 'Late responses from an inactive tour route are ignored');
+assert.ok(tourDetailEffect.includes('fullTour?.slug === tourDetailSlug'), 'Fetched tour data must match the requested route slug');
+assert.ok(app.includes('if (currentTourDetail && currentTourDetail.slug === tourDetailSlug)'), 'The page never renders a previous tour under a new URL');
+const tourDataMigration = read('../supabase/migrations/20261116140000_tour_catalogue_data_integrity.sql');
+assert.ok(tourDataMigration.includes("array_replace(languages, 'Italy', 'Italian')"), 'Migration corrects the Italian tour-language label');
+assert.ok(tourDataMigration.includes("pickup_info = 'Complimentary lobby pickup and return across Sharm El Sheikh included.'"), 'Migration corrects the Sharm city-tour pickup region');
+assert.ok(tourDataMigration.includes("duration = 'Half Day (approx. 3 hours)'"), 'Migration normalizes three-hour half-day labels');
+assert.ok(tourDataMigration.includes("duration = 'Half Day (approx. 5 hours)'"), 'Migration normalizes the five-hour half-day label');
+
 
 assert.match(app, /\['about', 'privacy', 'terms', 'cancellation-policy', 'cookie-policy'\]/, 'About ignores stale CMS noindex overrides in client metadata');
 assert.match(server, /override\?\.robots_index === false && !\(pageKind === 'static' && seoIdentifier === 'about'\)/, 'About ignores stale CMS noindex overrides in server-rendered HTML');
