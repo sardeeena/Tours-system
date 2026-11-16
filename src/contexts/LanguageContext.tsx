@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { LanguageCode, LanguageConfig, SUPPORTED_LANGUAGES } from '../types/i18n';
 import { TRANSLATIONS } from '../i18n/translations';
+import { buildLocalizedPath, parseLocalePath } from '../i18n/localeRouting';
 
 interface LanguageContextValue {
   language: LanguageCode;
@@ -16,35 +17,54 @@ const LanguageContext = createContext<LanguageContextValue | undefined>(undefine
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<LanguageCode>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY) as LanguageCode | null;
-      if (saved && (saved === 'en' || saved === 'de' || saved === 'ru' || saved === 'it' || saved === 'ro')) {
-        return saved;
-      }
-      // Detect browser language
-      const browserLang = navigator.language?.toLowerCase() || '';
-      if (browserLang.startsWith('de')) return 'de';
-      if (browserLang.startsWith('ru')) return 'ru';
-      if (browserLang.startsWith('it')) return 'it';
-      if (browserLang.startsWith('ro')) return 'ro';
-    } catch {
-      // Ignore localStorage security/privacy restrictions
+    if (typeof window === 'undefined') return 'en';
+    const routeLocale = parseLocalePath(window.location.pathname)?.locale;
+    if (routeLocale && Object.prototype.hasOwnProperty.call(SUPPORTED_LANGUAGES, routeLocale)) {
+      return routeLocale as LanguageCode;
     }
+    // The URL is authoritative. Do not silently change page language from
+    // localStorage or browser preferences while the URL remains English.
     return 'en';
   });
 
   const setLanguage = (newLang: LanguageCode) => {
     setLanguageState(newLang);
+    if (typeof window !== 'undefined') {
+      const parsed = parseLocalePath(window.location.pathname);
+      const pathname = parsed?.pathname || window.location.pathname || '/';
+      const localized = buildLocalizedPath(newLang, pathname, Object.keys(SUPPORTED_LANGUAGES));
+      if (localized) {
+        const nextUrl = localized + window.location.search + window.location.hash;
+        if (window.location.pathname + window.location.search + window.location.hash !== nextUrl) {
+          window.history.pushState({}, '', nextUrl);
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        }
+      }
+    }
     try {
       localStorage.setItem(STORAGE_KEY, newLang);
       document.documentElement.lang = newLang;
+      document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
     } catch {
-      // Ignore
+      // Ignore storage restrictions.
     }
   };
 
   useEffect(() => {
+    const syncLocaleFromUrl = () => {
+      const routeLocale = parseLocalePath(window.location.pathname)?.locale;
+      const next = routeLocale && Object.prototype.hasOwnProperty.call(SUPPORTED_LANGUAGES, routeLocale)
+        ? routeLocale as LanguageCode
+        : 'en';
+      setLanguageState(next);
+    };
+    window.addEventListener('popstate', syncLocaleFromUrl);
+    return () => window.removeEventListener('popstate', syncLocaleFromUrl);
+  }, []);
+
+  useEffect(() => {
     document.documentElement.lang = language;
+    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
   }, [language]);
 
   const t = (key: string, fallback?: string): string => {
