@@ -20,7 +20,7 @@ jobs:
   verify:
     name: TypeScript and production build
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 35
     steps:
       - name: Check out repository
         uses: actions/checkout@v7
@@ -57,6 +57,36 @@ jobs:
 
       - name: Verify CRM inquiry persistence integrity
         run: npm run test:crm-inquiry-persistence
+
+      - name: Verify admin dashboard persistence
+        run: npm run test:admin
+
+      - name: Verify abuse prevention and rate limits
+        run: npm run test:abuse
+
+      - name: Verify password recovery flows
+        run: npm run test:recovery
+
+      - name: Verify dynamic experience and destination data
+        run: npm run test:experiences-destinations
+
+      - name: Verify phase 6.2 dynamic audit regressions
+        run: npm run test:audit-6-2
+
+      - name: Verify phase 6.3 staging regressions
+        run: npm run test:staging-6-3
+
+      - name: Verify phase 7 admin operations
+        run: npm run test:admin-ops-7
+
+      - name: Verify phase 8 finance and workflow regressions
+        run: npm run test:phase-8
+
+      - name: Verify schema parity
+        run: npm run test:parity
+
+      - name: Verify audit and analytics privacy boundaries
+        run: npm run test:audit-analytics-boundaries
 
       - name: Verify persistent CRM inquiry staff assignments
         run: npm run test:crm-inquiry-staff-assignment
