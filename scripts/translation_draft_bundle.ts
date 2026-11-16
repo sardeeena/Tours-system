@@ -10,6 +10,7 @@ type Draft = {
   content: Record<string, unknown>; source_checksum: string;
 };
 const LOCALES = new Set<Locale>(['fr','es','nl','pl','pt']);
+const ENTITY_TYPES = new Set(['tour','destination','blog_post','static_page']);
 const stable = (value: any): string => {
   if (Array.isArray(value)) return '[' + value.map(stable).join(',') + ']';
   if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map(k => JSON.stringify(k)+':'+stable(value[k])).join(',') + '}';
@@ -96,7 +97,7 @@ async function importDrafts(path: string, apply: boolean) {
   if (parsed?.schema_version !== 1 || !Array.isArray(parsed.records)) throw new Error('Unsupported translation bundle schema.');
   let accepted=0, skipped=0;
   for (const item of parsed.records as Draft[]) {
-    if (!LOCALES.has(item.locale) || !item.entity_type || !item.entity_key || !/^[a-f0-9]{64}$/i.test(item.source_checksum||'') || !item.content || typeof item.content !== 'object' || Array.isArray(item.content)) {
+    if (!LOCALES.has(item.locale) || !ENTITY_TYPES.has(item.entity_type) || !item.entity_key || !/^[a-f0-9]{64}$/i.test(item.source_checksum||'') || !item.content || typeof item.content !== 'object' || Array.isArray(item.content)) {
       skipped++; console.warn('Skipped invalid record', item?.entity_type, item?.entity_key, item?.locale); continue;
     }
     const source = await currentSource(item.entity_type,item.entity_key);
@@ -105,7 +106,7 @@ async function importDrafts(path: string, apply: boolean) {
     }
     const existing = await db.from('content_translations').select('translation_state,reviewed_at,published_at').eq('entity_type',item.entity_type).eq('entity_key',item.entity_key).eq('locale',item.locale).maybeSingle();
     if (existing.error) throw new Error('Existing translation lookup failed: '+existing.error.message);
-    if (existing.data && (existing.data.translation_state==='published' || existing.data.reviewed_at || existing.data.published_at)) {
+    if (existing.data && (existing.data.translation_state!=='draft' || existing.data.reviewed_at || existing.data.published_at)) {
       skipped++; console.warn('Preserved reviewed/published record:',item.entity_type,item.entity_key,item.locale); continue;
     }
     if (apply) {
