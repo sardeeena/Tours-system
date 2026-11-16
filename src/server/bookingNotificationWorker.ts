@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { renderBookingTicketEmailHtml, renderBrandedEmailHtml } from '../utils/emailTemplate';
 
@@ -59,7 +60,15 @@ function normalizeRelation(value: any): any {
 
 function normalizeCustomerLocale(value: unknown): string {
   const locale = typeof value === 'string' ? value.trim().toLowerCase() : '';
-  return ['en', 'de', 'it', 'ro', 'ru'].includes(locale) ? locale : 'en';
+  return ['en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'].includes(locale) ? locale : 'en';
+}
+
+function stableTranslationJson(value: any): string {
+  if (Array.isArray(value)) return '[' + value.map(stableTranslationJson).join(',') + ']';
+  if (value && typeof value === 'object') {
+    return '{' + Object.keys(value).sort().map((key) => JSON.stringify(key) + ':' + stableTranslationJson(value[key])).join(',') + '}';
+  }
+  return JSON.stringify(value);
 }
 
 async function getLocalizedCommunicationTemplate(
@@ -68,11 +77,30 @@ async function getLocalizedCommunicationTemplate(
   locale: string
 ): Promise<{ subject: string | null; body_text: string | null; is_active: boolean | null } | null> {
   if (locale !== 'en') {
-    const { data, error } = await client.from('communication_templates')
-      .select('subject,body_text,is_active')
-      .eq('template_key', templateKey).eq('locale', locale).maybeSingle();
-    if (error) throw error;
-    if (data) return data;
+    if (['fr', 'es', 'nl', 'pl', 'pt'].includes(locale)) {
+      const { data: source, error: sourceError } = await client.from('communication_templates')
+        .select('*').eq('template_key', templateKey).eq('locale', 'en').maybeSingle();
+      if (sourceError) throw sourceError;
+      if (source) {
+        const sourceChecksum = createHash('sha256').update(stableTranslationJson(source)).digest('hex');
+        const { data: approval, error: approvalError } = await client.from('content_translations')
+          .select('source_checksum,translation_state,reviewed_at,published_at,content')
+          .eq('entity_type', 'communication_template').eq('entity_key', String(source.id)).eq('locale', locale).maybeSingle();
+        if (approvalError) throw approvalError;
+        if (approval?.translation_state === 'published' && approval.reviewed_at && approval.published_at && approval.source_checksum === sourceChecksum) {
+          const { data: localized, error: localizedError } = await client.from('communication_templates')
+            .select('subject,body_text,is_active').eq('template_key', templateKey).eq('locale', locale).maybeSingle();
+          if (localizedError) throw localizedError;
+          if (localized && localized.subject === approval.content?.subject && localized.body_text === approval.content?.body_text && localized.is_active === source.is_active) return localized;
+        }
+      }
+    } else {
+      const { data, error } = await client.from('communication_templates')
+        .select('subject,body_text,is_active')
+        .eq('template_key', templateKey).eq('locale', locale).maybeSingle();
+      if (error) throw error;
+      if (data) return data;
+    }
   }
   const { data, error } = await client.from('communication_templates')
     .select('subject,body_text,is_active')

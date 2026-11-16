@@ -1029,7 +1029,7 @@ app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: Auth
   const templateName = process.env.WHATSAPP_TEMPLATE_NAME?.trim() || '';
   const templateLanguage = process.env.WHATSAPP_TEMPLATE_LANGUAGE?.trim() || 'en';
   if (!accessToken || !phoneNumberId || !/^\d{5,30}$/.test(phoneNumberId) || !/^v\d+\.\d+$/.test(graphVersion || '') ||
-      !/^[a-z0-9_]{1,512}$/.test(templateName) || !/^[a-z]{2}(?:_[A-Z]{2})?$/.test(templateLanguage)) {
+      !/^[a-z0-9_]{1,512}$/.test(templateName) || !/^[a-z]{2}(?:_[A-Z]{2})?$/.test(templateLanguage) || !['en', 'de', 'it', 'ro', 'ru'].includes(templateLanguage.split('_')[0])) {
     return res.status(503).json({ success: false, error: 'Meta WhatsApp is not fully configured. Configure the access token, phone number ID, Graph API version, approved template name, and template language on the server.' });
   }
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
@@ -1970,7 +1970,7 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
 
   const cleanEmail = email.trim().toLowerCase();
   const requestedLocale = typeof preferredLanguage === 'string' ? preferredLanguage.trim().toLowerCase() : 'en';
-  const customerLocale = ['en', 'de', 'it', 'ro', 'ru'].includes(requestedLocale) ? requestedLocale : 'en';
+  const customerLocale = ['en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'].includes(requestedLocale) ? requestedLocale : 'en';
   const source = typeof req.body?.source === 'string' ? req.body.source.trim().slice(0, 80) || 'website' : 'website';
   let subscriber: { id: string; created_at: string; updated_at: string } | null = null;
   let shouldSendWelcome = false;
@@ -2818,7 +2818,7 @@ const TRANSLATION_LOCALES = new Set([
 ]);
 const TRANSLATION_ENTITY_TYPES = new Set([
   'tour','tour_itinerary','tour_highlight','tour_inclusion','tour_exclusion',
-  'tour_faq','destination','blog_post','static_page','ui_catalog',
+  'tour_faq','destination','blog_post','static_page','communication_template','ui_catalog',
 ]);
 
 const TRANSLATION_SOURCE_TABLES: Record<string, string> = {
@@ -2830,6 +2830,7 @@ const TRANSLATION_SOURCE_TABLES: Record<string, string> = {
   tour_faq: 'tour_faqs',
   destination: 'destinations',
   blog_post: 'blog_posts',
+  communication_template: 'communication_templates',
 };
 
 function stableTranslationJson(value: any): string {
@@ -2858,6 +2859,7 @@ async function getTranslationSource(entityType: string, entityKey: string): Prom
   const table = TRANSLATION_SOURCE_TABLES[entityType];
   if (!table) return null;
   let query = serverSupabase.from(table).select('*');
+  if (entityType === 'communication_template') query = query.eq('locale', 'en');
   if (entityType === 'blog_post') query = query.in('status', ['published', 'scheduled']).lte('published_at', new Date().toISOString());
   else if (entityType === 'tour' || entityType === 'destination') query = query.eq('status', 'published');
   const { data, error } = await query.eq('id', entityKey).maybeSingle();
@@ -2932,12 +2934,51 @@ app.get('/api/content-translations/locales', rateLimit(30, 60_000), async (_req:
     if (error) throw error;
     const current = await getCurrentTranslationSourceChecksum('ui_catalog', 'site-ui');
     const englishKeys = Object.keys(TRANSLATIONS.en || {});
-    const locales = (data || []).filter((row) => {
+    const uiComplete = (data || []).filter((row) => {
       const messages = row.content && typeof row.content === 'object' && !Array.isArray(row.content) ? row.content as Record<string, unknown> : {};
       return Boolean(row.reviewed_at && row.published_at && current && current.checksum === row.source_checksum &&
         englishKeys.every((key) => typeof messages[key] === 'string' && String(messages[key]).trim().length > 0));
-    }).map((row) => row.locale);
-    return res.json({ success: true, locales: Array.from(new Set(locales)) });
+    }).map((row) => row.locale).filter((locale): locale is string => typeof locale === 'string');
+    const candidates = await getBulkTranslationCandidates();
+    const candidateKeys = candidates.map((item) => item.entity_type + ':' + item.entity_key);
+    const completeLocales: string[] = [];
+    if (uiComplete.length && candidateKeys.length) {
+      const [{ data: publishedRows, error: publishedError }, { data: sourceTemplates, error: sourceTemplateError }, { data: localizedTemplates, error: localizedTemplateError }] = await Promise.all([
+        serverSupabase.from('content_translations').select('locale,entity_type,entity_key,source_checksum,reviewed_at,published_at')
+          .in('locale', uiComplete).eq('translation_state', 'published')
+          .not('reviewed_at', 'is', null).not('published_at', 'is', null).limit(5000),
+        serverSupabase.from('communication_templates').select('*').eq('locale', 'en'),
+        serverSupabase.from('communication_templates').select('template_key,locale').in('locale', uiComplete),
+      ]);
+      if (publishedError || sourceTemplateError || localizedTemplateError) throw publishedError || sourceTemplateError || localizedTemplateError;
+      const coverage = new Map<string, Set<string>>();
+      const communicationChecksums = new Map<string, Map<string, string>>();
+      for (const item of publishedRows || []) {
+        if (!item.source_checksum) continue;
+        if (!coverage.has(item.locale)) coverage.set(item.locale, new Set());
+        coverage.get(item.locale)!.add(item.entity_type + ':' + item.entity_key);
+        if (item.entity_type === 'communication_template') {
+          if (!communicationChecksums.has(item.locale)) communicationChecksums.set(item.locale, new Map());
+          communicationChecksums.get(item.locale)!.set(item.entity_key, item.source_checksum);
+        }
+      }
+      const englishTemplateKeys = (sourceTemplates || []).map((item) => item.template_key).filter(Boolean);
+      const sourceTemplateChecksums = new Map((sourceTemplates || []).map((item) => [String(item.id), createHash('sha256').update(stableTranslationJson(item)).digest('hex')]));
+      const templatesByLocale = new Map<string, Set<string>>();
+      for (const item of localizedTemplates || []) {
+        if (!templatesByLocale.has(item.locale)) templatesByLocale.set(item.locale, new Set());
+        templatesByLocale.get(item.locale)!.add(item.template_key);
+      }
+      for (const locale of uiComplete) {
+        const keys = coverage.get(locale);
+        const localizedKeys = templatesByLocale.get(locale);
+        const allTemplatesPresent = englishTemplateKeys.every((key) => localizedKeys?.has(key));
+        const approvedChecksums = communicationChecksums.get(locale);
+        const allTemplateSourcesCurrent = Array.from(sourceTemplateChecksums.entries()).every(([entityKey, checksum]) => approvedChecksums?.get(entityKey) === checksum);
+        if (keys && candidateKeys.every((key) => keys.has(key)) && allTemplatesPresent && allTemplateSourcesCurrent) completeLocales.push(locale);
+      }
+    }
+    return res.json({ success: true, locales: completeLocales });
   } catch (error) {
     console.error('[UI translation locales] Lookup failed:', error);
     return res.status(503).json({ success: false, error: 'Interface translation availability is temporarily unavailable.' });
@@ -2968,6 +3009,9 @@ app.get('/api/content-translations/target', rateLimit(90, 60_000), async (req: R
     const privateRoute = /^\/(?:booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|admin(?:\/|$)|support(?:\/|$))/i.test(pathname);
     if (privateRoute) {
       if (locale === 'en') return res.json({ success: true, path: pathname });
+      if (['fr', 'es', 'nl', 'pl', 'pt'].includes(locale)) {
+        return res.status(404).json({ success: false, error: 'This language is not yet available for booking, account and support interfaces.' });
+      }
       const current = await getCurrentTranslationSourceChecksum('ui_catalog', 'site-ui');
       const { data, error } = await serverSupabase!.from('content_translations')
         .select('content,source_checksum,reviewed_at,published_at')
@@ -3069,6 +3113,143 @@ app.get('/api/content-translations/resolve', rateLimit(90, 60_000), async (req: 
   }
 });
 
+// Super Admin + AAL2 bulk translation generation. Every generated row is a draft;
+// this endpoint never marks content reviewed or publishes it.
+const BULK_TRANSLATION_LOCALES: Record<string, string> = { fr: 'French', es: 'Spanish', nl: 'Dutch', pl: 'Polish', pt: 'Portuguese' };
+async function getBulkTranslationCandidates(): Promise<Array<{ entity_type: string; entity_key: string }>> {
+  if (!serverSupabase) throw new Error('Translation database unavailable.');
+  const results = await Promise.all([
+    serverSupabase.from('tours').select('id').eq('status','published').order('sort_order').order('id'),
+    serverSupabase.from('destinations').select('id').eq('status','published').order('name').order('id'),
+    serverSupabase.from('blog_posts').select('id').in('status',['published','scheduled']).lte('published_at',new Date().toISOString()).order('published_at',{ascending:false}).order('id'),
+    serverSupabase.from('site_settings').select('value').eq('key','pages_content').maybeSingle(),
+    serverSupabase.from('communication_templates').select('id').eq('locale','en').order('template_key').order('id'),
+  ]);
+  for (const result of results) if (result.error) throw result.error;
+  const out: Array<{entity_type:string;entity_key:string}> = [];
+  for (const row of results[0].data || []) out.push({entity_type:'tour',entity_key:String(row.id)});
+  for (const row of results[1].data || []) out.push({entity_type:'destination',entity_key:String(row.id)});
+  for (const row of results[2].data || []) out.push({entity_type:'blog_post',entity_key:String(row.id)});
+  for (const row of results[4].data || []) out.push({entity_type:'communication_template',entity_key:String(row.id)});
+  out.push({entity_type:'static_page',entity_key:'home'});
+  const raw = results[3].data?.value;
+  const pages = Array.isArray(raw) ? raw : raw && Array.isArray(raw.pages) ? raw.pages : [];
+  for (const page of pages) if (page?.slug && page.published !== false && page.status !== 'draft' && page.status !== 'unpublished') out.push({entity_type:'static_page',entity_key:String(page.id || page.slug)});
+  for (const page of INITIAL_STATIC_PAGES) if (!out.some(x=>x.entity_type==='static_page' && x.entity_key===String(page.id || page.slug))) out.push({entity_type:'static_page',entity_key:String(page.id || page.slug)});
+  out.push({entity_type:'ui_catalog',entity_key:'site-ui'});
+  return out;
+}
+function bulkTranslationPayload(type: string, source: any): Record<string, any> {
+  if (type==='ui_catalog') return {content:source.content || {}};
+  if (type==='tour') return {title:source.title,summary:source.short_description || source.description || '',content:{
+    title:source.title,description:source.description || source.short_description || '',durationLabel:source.duration || '',
+    highlights:(source.highlights || []).map((x:any)=>x.item || x),itinerary:source.itinerary || [],included:source.included || [],
+    excluded:source.excluded || [],faqs:source.faqs || [],pickupInfo:source.pickup_info || '',
+    cancellationPolicy:source.cancellation_policy || '',ageRestrictions:source.age_restrictions || '',
+    labels:{highlights:'Highlights',itinerary:'Itinerary',included:'Included',excluded:'Not included',faqs:'Frequently asked questions',pickupInfo:'Pickup information',cancellationPolicy:'Cancellation policy',ageRestrictions:'Age restrictions',bookNow:'Book now',browseMore:'Browse more tours'}
+  }};
+  if (type==='destination') return {title:source.name || source.title,summary:source.tagline || source.description || '',content:{title:source.name || source.title,description:source.description || '',tagline:source.tagline || '',paragraphs:[],labels:{browseMore:'Explore more destinations'}}};
+  if (type==='blog_post') return {title:source.title,summary:source.excerpt || source.meta_description || '',content:{title:source.title,excerpt:source.excerpt || '',content:source.content || source.body || ''}};
+  if (type==='communication_template') return {title:source.name,summary:source.subject || '',content:{name:source.name,subject:source.subject || '',body_text:source.body_text || '',variables:source.variables || {},channel:source.channel,template_key:source.template_key}};
+  return {title:source.title || source.name || 'Explore the Red Sea',summary:source.heroSubtitle || source.description || source.excerpt || '',content:{heroHeadline:source.heroHeadline || source.title || '',heroSubtitle:source.heroSubtitle || source.description || '',sections:source.sections || [],paragraphs:source.paragraphs || [],labels:{browseMore:'Explore more',bookNow:'Book now'}}};
+}
+function translationStructureMatches(source: any, translated: any): boolean {
+  if (typeof source === 'string') {
+    if (typeof translated !== 'string') return false;
+    if (!source.trim()) return !translated.trim();
+    const protectedTokens = source.match(/\{\{[^{}]+\}\}|https?:\/\/[^\s<>"']+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|\+?\d[\d\s().-]{4,}\d|\b\d+(?:[.,]\d+)?\b/g) || [];
+    return Boolean(translated.trim()) && protectedTokens.every((token) => translated.includes(token));
+  }
+  if (Array.isArray(source)) {
+    return Array.isArray(translated) && source.length === translated.length
+      && source.every((value, index) => translationStructureMatches(value, translated[index]));
+  }
+  if (source && typeof source === 'object') {
+    if (!translated || typeof translated !== 'object' || Array.isArray(translated)) return false;
+    const sourceKeys = Object.keys(source).sort();
+    const translatedKeys = Object.keys(translated).sort();
+    return sourceKeys.length === translatedKeys.length
+      && sourceKeys.every((key, index) => key === translatedKeys[index] && translationStructureMatches(source[key], translated[key]));
+  }
+  return source === translated;
+}
+function normalizedTranslationSlug(value: unknown, fallback: string): string {
+  const raw = typeof value==='string' ? value.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase() : '';
+  return raw.replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,160) || fallback.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,160) || 'page';
+}
+app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (req: AuthenticatedRequest,res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  const locale = typeof req.body?.locale==='string' ? req.body.locale : '';
+  const offset = Number.isInteger(req.body?.offset) && req.body.offset>=0 ? req.body.offset : 0;
+  const limit = Number.isInteger(req.body?.limit) ? Math.min(10,Math.max(1,req.body.limit)) : 10;
+  if (!Object.prototype.hasOwnProperty.call(BULK_TRANSLATION_LOCALES,locale)) return res.status(400).json({success:false,error:'Bulk generation supports fr, es, nl, pl and pt.'});
+  if (!ai) return res.status(503).json({success:false,error:'Server-side Gemini translation is not configured.'});
+  if (!serverSupabase) return res.status(503).json({success:false,error:'Translation database unavailable.'});
+  try {
+    const candidates = await getBulkTranslationCandidates();
+    const page = candidates.slice(offset,offset+limit);
+    const prepared: Array<{type:string;key:string;checksum:string;source:any;payload:any}> = [];
+    for (const candidate of page) {
+      const current = await getCurrentTranslationSourceChecksum(candidate.entity_type,candidate.entity_key);
+      if (current) prepared.push({type:candidate.entity_type,key:candidate.entity_key,checksum:current.checksum,source:current.source,payload:bulkTranslationPayload(candidate.entity_type,current.source)});
+    }
+    const {data:existing,error:existingError} = await serverSupabase.from('content_translations').select('entity_type,entity_key,translated_slug,translation_state,reviewed_at,published_at').eq('locale',locale).limit(2000);
+    if (existingError) throw existingError;
+    const known = new Map((existing || []).map((x:any)=>[x.entity_type+':'+x.entity_key,x]));
+    const work = prepared.filter(x=>{const old:any=known.get(x.type+':'+x.key);return !old || (old.translation_state==='draft' && !old.reviewed_at && !old.published_at);});
+    const workKeys = new Set(work.map((x)=>x.type+':'+x.key));
+    const usedSlugs = new Set((existing || []).filter((x:any)=>!workKeys.has(x.entity_type+':'+x.entity_key)).map((x:any)=>x.translated_slug).filter(Boolean));
+    let saved=0, skipped=prepared.length-work.length;
+    if (work.length) {
+      const prompt = [
+        'You are a professional tourism translator localizing Awesome Adventure Tours, a licensed operator in Hurghada, Egypt.',
+        'Translate every human-facing string recursively into '+BULK_TRANSLATION_LOCALES[locale]+' ('+locale+').',
+        'Return only valid JSON: {"translations":[{"entity_type":"...","entity_key":"...","title":"...","translated_slug":"...","summary":"...","seo_title":"...","seo_description":"...","content":{...}}]}. Return exactly one item per input and preserve entity_type and entity_key exactly.',
+        'Preserve all JSON keys, arrays, order, object shapes and non-string values. Translate all prose, labels, headings, FAQs, itinerary and UI message values.',
+        'Never invent or change prices, currencies, numbers, dates, times, durations, pickup details, age limits, safety requirements, inclusions, exclusions, cancellation terms, legal claims, contacts, URLs, emails, phone numbers, IDs or brand/place names. Copy factual values exactly. In communication templates preserve every {{placeholder}} token byte-for-byte and do not translate variable names.',
+        'translated_slug must be a natural short lowercase ASCII slug using only a-z, 0-9 and hyphens. For ui_catalog use site-ui. For communication templates, preserve template_key and variables exactly; preserve every {{placeholder}} in both subject and body_text exactly. Keep empty source strings empty. Do not omit fields or add commentary.',
+        'SEO title should be concise; SEO description accurate. No unsupported claims.',
+        'INPUT: '+JSON.stringify(work.map(x=>({entity_type:x.type,entity_key:x.key,source:x.payload})))
+      ].join('\n');
+      const generated = await ai.models.generateContent({model:'gemini-3.8-flash',contents:[{role:'user',parts:[{text:prompt}]}],config:{temperature:0.15,responseMimeType:'application/json'}});
+      const parsed = JSON.parse((generated.text || '').replace(/^\x60{3}(?:json)?\s*/i,'').replace(/\s*\x60{3}$/,''));
+      if (!Array.isArray(parsed?.translations)) throw new Error('AI returned an invalid translation batch.');
+      const byKey = new Map(parsed.translations.map((x:any)=>[x.entity_type+':'+x.entity_key,x]));
+      for (const item of work) {
+        const translated:any = byKey.get(item.type+':'+item.key);
+        if (!translated || !translated.content || typeof translated.content!=='object' || Array.isArray(translated.content) || !translationStructureMatches(item.payload.content, translated.content)) {skipped++;continue;}
+        if (item.type !== 'ui_catalog' && item.payload.title && !String(translated.title || '').trim()) {skipped++;continue;}
+        if (item.type === 'communication_template' && (translated.content.template_key !== item.source.template_key || translated.content.channel !== item.source.channel || JSON.stringify(translated.content.variables || {}) !== JSON.stringify(item.source.variables || {}))) {skipped++;continue;}
+        const latest = await getCurrentTranslationSourceChecksum(item.type,item.key);
+        if (!latest || latest.checksum!==item.checksum) {skipped++;continue;}
+        const isUi = item.type==='ui_catalog';
+        if (isUi) {
+          const keys=Object.keys(TRANSLATIONS.en || {});
+          if (!keys.every(key=>typeof translated.content[key]==='string' && String(translated.content[key]).trim())) {skipped++;continue;}
+        }
+        let translatedSlug = isUi ? 'site-ui' : (item.type==='static_page' && item.key==='home' ? 'home' : item.type==='communication_template' ? 'template-'+String(item.source.template_key || item.key) : normalizedTranslationSlug(translated.translated_slug,item.source.slug || item.source.title || item.source.name || item.key));
+        if (usedSlugs.has(translatedSlug)) translatedSlug = translatedSlug.slice(0,140) + '-' + createHash('sha256').update(item.type + ':' + item.key).digest('hex').slice(0,8);
+        usedSlugs.add(translatedSlug);
+        const record = {entity_type:item.type,entity_key:item.key,locale,translated_slug:translatedSlug,
+          title:isUi?'Interface messages':String(translated.title || '').trim().slice(0,300),
+          summary:String(translated.summary || '').trim().slice(0,2000),
+          seo_title:isUi?null:String(translated.seo_title || translated.title || '').trim().slice(0,300),
+          seo_description:isUi?null:String(translated.seo_description || translated.summary || '').trim().slice(0,500),
+          content:translated.content,source_checksum:item.checksum,translation_state:'draft',reviewed_by:null,reviewed_at:null,published_at:null,updated_at:new Date().toISOString()};
+        const {error}=await serverSupabase.from('content_translations').upsert(record,{onConflict:'entity_type,entity_key,locale'});
+        if(error) throw error;
+        saved++;
+      }
+    }
+    const { error: auditError } = await serverSupabase.from('audit_logs').insert({ user_id: req.user!.id, action: 'CONTENT_TRANSLATION_BULK_DRAFT_GENERATED', entity_type: 'content_translation_batch', entity_id: null, new_data: { locale, offset, requested: page.length, saved, skipped, total: candidates.length } });
+    if (auditError) console.warn('[Bulk translation generation] Audit event could not be persisted.');
+    return res.json({success:true,locale,processed:saved,skipped,total:candidates.length,next_offset:Math.min(offset+limit,candidates.length),done:offset+limit>=candidates.length});
+  } catch(error) {
+    console.error('[Bulk translation generation] Failed:',error);
+    return res.status(502).json({success:false,error:'Translation generation failed for this batch. No translations were published; retry this batch.'});
+  }
+});
+
 // Authoring helper: return the authoritative source checksum from the server,
 // not a checksum typed or calculated by the browser.
 app.get('/api/admin/translations/source', rateLimit(30, 60_000), async (req: AuthenticatedRequest, res: Response) => {
@@ -3092,7 +3273,9 @@ app.get('/api/admin/translations/source', rateLimit(30, 60_000), async (req: Aut
             ? { title: source.title, excerpt: source.excerpt, content: source.content }
             : entityType === 'ui_catalog'
           ? (source.content || {})
-          : entityType === 'tour'
+          : entityType === 'communication_template'
+            ? { name: source.name, subject: source.subject, body_text: source.body_text, variables: source.variables || {}, channel: source.channel, template_key: source.template_key }
+            : entityType === 'tour'
               ? {
                   title: source.title, description: source.description || source.short_description, durationLabel: source.duration,
                   highlights: (source.highlights || []).map((item: any) => item.item || item), itinerary: source.itinerary || [],
@@ -3160,6 +3343,14 @@ app.post('/api/admin/translations', rateLimit(30, 60_000), async (req: Authentic
       const keys = Object.keys(source?.content || {});
       const complete = keys.length > 0 && keys.every((key) => typeof translationContent[key] === 'string' && String(translationContent[key]).trim().length > 0);
       if (!complete) return res.status(400).json({ success: false, error: 'The interface catalog must translate every source UI message before publication.' });
+    } else if (entityType === 'communication_template') {
+      const source = await getTranslationSource(entityType, entityKey);
+      const translatedBody = typeof translationContent.body_text === 'string' ? translationContent.body_text : '';
+      const sourceTokens = (String(source?.subject || '') + '\\n' + String(source?.body_text || '')).match(/\{\{[^{}]+\}\}/g) || [];
+      const translatedTokens = (String(translationContent.subject || '') + '\\n' + translatedBody).match(/\{\{[^{}]+\}\}/g) || [];
+      if (!source || !translatedBody.trim() || sourceTokens.sort().join('|') !== translatedTokens.sort().join('|')) {
+        return res.status(400).json({ success: false, error: 'Publishing a communication template requires a body and every original {{placeholder}} token unchanged.' });
+      }
     } else if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(translatedSlug) || !seoTitle || !seoDescription) {
       return res.status(400).json({ success: false, error: 'Publishing requires a translated title and slug, SEO title and description, and a source checksum.' });
     }
@@ -3194,6 +3385,18 @@ app.post('/api/admin/translations', rateLimit(30, 60_000), async (req: Authentic
       .select('id,entity_type,entity_key,locale,translated_slug,title,summary,content,seo_title,seo_description,source_checksum,translation_state,reviewed_by,reviewed_at,published_at,updated_at')
       .single();
     if (error) throw error;
+    if (state === 'published' && entityType === 'communication_template') {
+      const sourceTemplate = await getTranslationSource(entityType, entityKey);
+      if (!sourceTemplate) throw new Error('The English communication template source is no longer available.');
+      const { error: templateError } = await serverSupabase!.from('communication_templates').upsert({
+        template_key: sourceTemplate.template_key, name: String(translationContent.name || title || sourceTemplate.name),
+        channel: sourceTemplate.channel, subject: String(translationContent.subject || ''),
+        body_text: String(translationContent.body_text), variables: sourceTemplate.variables || {},
+        is_active: Boolean(sourceTemplate.is_active), locale,
+        updated_at: now,
+      }, { onConflict: 'template_key,locale' });
+      if (templateError) throw templateError;
+    }
     await writeAccountAudit(req.user!.id, state === 'published' ? 'CONTENT_TRANSLATION_PUBLISHED' : 'CONTENT_TRANSLATION_SAVED', data.id, {
       entity_type: entityType, entity_key: entityKey, locale, translation_state: state,
     });
@@ -3777,6 +3980,7 @@ function cleanPublicText(value: unknown, maxLength = 500): string {
 
 app.get('/sitemap.xml', async (_req: Request, res: Response) => {
   const urls = new Map<string, string | undefined>();
+  const alternatesByUrl = new Map<string, Map<string, string>>();
   const seoExclusions = await loadAwesomeAdventureToursSeoIndexExclusions();
   for (const route of AWESOME_ADVENTURE_TOURS_CORE_PUBLIC_PATHS) {
     const pageSlug = route === '/' ? 'home' : route.slice(1);
@@ -3906,7 +4110,8 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
         .select('entity_type,entity_key,locale,translated_slug,source_checksum,published_at,reviewed_at')
         .eq('translation_state', 'published').not('translated_slug', 'is', null).limit(5000);
       if (error) throw error;
-      const sourceChecksumCache = new Map<string, string | null>();
+      const sourceCache = new Map<string, { checksum: string; source: any } | null>();
+      const alternatesByEntity = new Map<string, Map<string, string>>();
       for (const item of translations || []) {
         if (!item.translated_slug || !item.locale || !item.reviewed_at || !item.published_at) continue;
         const routePrefix = item.entity_type === 'tour' ? '/excursions/'
@@ -3915,28 +4120,52 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
               : item.entity_type === 'static_page' ? '/' : null;
         if (!routePrefix) continue;
         const cacheKey = item.entity_type + ':' + item.entity_key;
-        if (!sourceChecksumCache.has(cacheKey)) {
-          const current = await getCurrentTranslationSourceChecksum(item.entity_type, item.entity_key);
-          sourceChecksumCache.set(cacheKey, current?.checksum || null);
+        if (!sourceCache.has(cacheKey)) {
+          sourceCache.set(cacheKey, await getCurrentTranslationSourceChecksum(item.entity_type, item.entity_key));
         }
-        if (sourceChecksumCache.get(cacheKey) !== item.source_checksum) continue;
+        const current = sourceCache.get(cacheKey);
+        if (!current || current.checksum !== item.source_checksum) continue;
+        const sourceSlug = typeof current.source?.slug === 'string' ? current.source.slug : '';
+        if (!sourceSlug) continue;
+        const englishPath = item.entity_type === 'static_page'
+          ? (sourceSlug === 'home' ? '/' : '/' + encodeURIComponent(sourceSlug))
+          : routePrefix + encodeURIComponent(sourceSlug);
         const translatedPath = item.entity_type === 'static_page' && item.translated_slug === 'home'
           ? '/' + item.locale
           : '/' + item.locale + routePrefix + encodeURIComponent(item.translated_slug);
-        urls.set(AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN + translatedPath, toSitemapDate(item.published_at));
+        const englishUrl = AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN + englishPath;
+        const translatedUrl = AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN + translatedPath;
+        urls.set(translatedUrl, toSitemapDate(item.published_at));
+        let alternates = alternatesByEntity.get(cacheKey);
+        if (!alternates) {
+          alternates = new Map<string, string>();
+          alternates.set('en', englishUrl);
+          alternates.set('x-default', englishUrl);
+          alternatesByEntity.set(cacheKey, alternates);
+        }
+        alternates.set(item.locale, translatedUrl);
+      }
+      for (const alternates of alternatesByEntity.values()) {
+        for (const url of alternates.values()) alternatesByUrl.set(url, alternates);
       }
     } catch (error) {
       console.warn('[SEO sitemap] Reviewed localized pages could not be loaded:', error);
     }
   }
 
-  const entries = Array.from(urls.entries()).map(([loc, lastmod]) => (
-    `  <url><loc>${escapeXml(loc)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}</url>`
-  ));
+  const entries = Array.from(urls.entries()).map(([loc, lastmod]) => {
+    const alternates = alternatesByUrl.get(loc);
+    const hreflangLinks = alternates
+      ? Array.from(alternates.entries()).map(([hreflang, href]) =>
+          `<xhtml:link rel="alternate" hreflang="${escapeXml(hreflang)}" href="${escapeXml(href)}" />`
+        ).join('')
+      : '';
+    return `  <url><loc>${escapeXml(loc)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}${hreflangLinks}</url>`;
+  });
 
   const xml = [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">',
     ...entries,
     '</urlset>',
   ].join('\n');

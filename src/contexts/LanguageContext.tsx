@@ -119,8 +119,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return fallback || key;
   };
 
+  const privateWorkflowPath = typeof window !== 'undefined' && /^\/(?:[a-z]{2}\/)?(?:booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|admin(?:\/|$)|support(?:\/|$))/i.test(window.location.pathname);
   const dynamicConfigs: LanguageConfig[] = EUROPEAN_LOCALE_ROLLOUT
-    .filter((locale) => publishedUiLocales.includes(locale.code) && !SUPPORTED_LANGUAGES[locale.code])
+    .filter((locale) => !privateWorkflowPath && publishedUiLocales.includes(locale.code) && !SUPPORTED_LANGUAGES[locale.code])
     .map((locale) => ({
       code: locale.code,
       name: locale.englishName,

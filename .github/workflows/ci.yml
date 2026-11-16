@@ -132,6 +132,9 @@ jobs:
       - name: Verify locale routing, publication gates and booking language persistence
         run: npm run test:localization-foundation
 
+      - name: Verify safe multilingual translation draft tooling
+        run: npm run test:translation-drafts
+
       - name: Verify admin authentication and role provisioning security
         run: npm run test:security
 
