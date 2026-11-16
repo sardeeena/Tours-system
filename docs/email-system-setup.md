@@ -23,6 +23,13 @@ Security notification templates are supplied but configured disabled in local co
 - Resend webhook endpoint: `https://awesomeadventure.tours/api/webhooks/resend`.
 - Subscribe to `email.sent`, `email.delivered`, `email.delivery_delayed`, `email.bounced`, `email.complained`, `email.opened`, `email.clicked`, `email.failed`, and `email.suppressed`.
 
+## Completed-tour review requests
+- A booking review request is queued only when a booking transitions to `completed` and its authoritative payment status is `paid`.
+- The database event is unique per booking, and the Resend request uses an event-specific idempotency key to prevent duplicate customer emails during retries.
+- The `booking_review_request` communication template can be enabled or disabled in the Communications template manager.
+- The email links to the Google Maps listing search, the Awesome Adventure Tours Tripadvisor profile, and the exact `/excursions/<tour-slug>` page for the booked tour.
+- Review requests are not sent retroactively for bookings already completed before this migration.
+
 ## Operational checks
 1. Confirm `RESEND_API_KEY` is a valid active sending key.
 2. Set `RESEND_FROM_EMAIL` to the bare verified sender mailbox, e.g. `no-reply@mail.awesomeadventure.tours`.
