@@ -11,7 +11,7 @@ type TranslationRow = {
   source_checksum: string | null; translation_state: 'draft' | 'review' | 'published' | 'outdated';
 };
 
-const ENTITY_TYPES = ['tour', 'tour_itinerary', 'tour_highlight', 'tour_inclusion', 'tour_exclusion', 'tour_faq', 'destination', 'blog_post', 'static_page'];
+const ENTITY_TYPES = ['tour', 'tour_itinerary', 'tour_highlight', 'tour_inclusion', 'tour_exclusion', 'tour_faq', 'destination', 'blog_post', 'static_page', 'ui_catalog'];
 
 export const AdminTranslationManager: React.FC = () => {
   const { showToast } = useToast();
@@ -137,15 +137,15 @@ export const AdminTranslationManager: React.FC = () => {
         <section className="rounded-xl border border-stone-800 bg-stone-900/60 p-4 sm:p-6">
           <div className="mb-4 flex items-center gap-2"><FileText className="h-5 w-5 text-teal-400" /><h2 className="font-semibold">Translation record</h2></div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="text-xs text-stone-400">Content type<select value={entityType} onChange={e=>setEntityType(e.target.value)} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white">{ENTITY_TYPES.map(x=><option key={x}>{x}</option>)}</select></label>
+            <label className="text-xs text-stone-400">Content type<select value={entityType} onChange={e=>{setEntityType(e.target.value);if(e.target.value==='ui_catalog')setEntityKey('site-ui');else if(entityKey==='site-ui')setEntityKey('');}} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white">{ENTITY_TYPES.map(x=><option key={x}>{x}</option>)}</select></label>
             <label className="text-xs text-stone-400">Locale<select value={locale} onChange={e=>setLocale(e.target.value)} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white">{EUROPEAN_LOCALE_ROLLOUT.filter(x=>x.code!=='en').map(x=><option key={x.code} value={x.code}>{x.nativeName} ({x.code})</option>)}</select></label>
-            <label className="text-xs text-stone-400 sm:col-span-2">Source record key<input value={entityKey} onChange={e=>setEntityKey(e.target.value)} placeholder="Original tour UUID or stable content key" className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label>
+            <label className="text-xs text-stone-400 sm:col-span-2">Source record key<input value={entityKey} onChange={e=>setEntityKey(e.target.value)} placeholder={entityType==='ui_catalog'?'site-ui':'Source record UUID or stable content key'} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label>
             <div className="sm:col-span-2 flex flex-wrap items-end gap-2"><label className="min-w-0 flex-1 text-xs text-stone-400">Source checksum<input value={sourceChecksum} readOnly placeholder="Load the authoritative checksum from the server" className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label><button type="button" disabled={loading || !entityKey.trim()} onClick={()=>void loadSource()} className="rounded border border-teal-700 px-3 py-2 text-xs font-semibold text-teal-200 disabled:opacity-50">Load source + checksum</button></div>
-            <label className="text-xs text-stone-400">Translated title<input value={title} onChange={e=>setTitle(e.target.value)} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label>
+            {entityType!=='ui_catalog' && <><label className="text-xs text-stone-400">Translated title<input value={title} onChange={e=>setTitle(e.target.value)} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label>
             <label className="text-xs text-stone-400">Translated slug<input value={slug} onChange={e=>setSlug(e.target.value)} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label>
             <label className="text-xs text-stone-400 sm:col-span-2">Summary<textarea value={summary} onChange={e=>setSummary(e.target.value)} rows={2} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label>
             <label className="text-xs text-stone-400">SEO title<input value={seoTitle} onChange={e=>setSeoTitle(e.target.value)} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label>
-            <label className="text-xs text-stone-400">SEO description<input value={seoDescription} onChange={e=>setSeoDescription(e.target.value)} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label>
+            <label className="text-xs text-stone-400">SEO description<input value={seoDescription} onChange={e=>setSeoDescription(e.target.value)} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label></>}
             <label className="text-xs text-stone-400 sm:col-span-2">Translated structured content (JSON)<textarea value={contentJson} onChange={e=>setContentJson(e.target.value)} rows={10} spellCheck={false} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-3 font-mono text-xs text-white" /></label>
           </div>
           <div className="mt-5 flex flex-wrap gap-2">
@@ -154,7 +154,7 @@ export const AdminTranslationManager: React.FC = () => {
             <button disabled={saving} onClick={()=>void save('published')} className="inline-flex items-center gap-2 rounded bg-teal-700 px-4 py-2 text-sm font-semibold disabled:opacity-50"><CheckCircle2 className="h-4 w-4"/>Approve & publish</button>
             {saving && <span className="inline-flex items-center gap-2 text-xs text-stone-400"><Loader2 className="h-4 w-4 animate-spin"/>Saving…</span>}
           </div>
-          <p className="mt-4 text-xs leading-relaxed text-amber-300/80">Publishing records approval and makes the row eligible for a future public resolver. This PR still keeps locale-prefixed public routes noindex/404 until localized SSR, client hydration, canonical metadata and sitemap integration are complete.</p>
+          <p className="mt-4 text-xs leading-relaxed text-amber-300/80">Publishing records approval and makes the row eligible for a future public resolver. UI catalogs are publishable only when every source message has a non-empty translation. Public UI delivery uses the verified catalog; booking/account routes are not offered in planned locales until a complete catalog exists.</p>
         </section>
       </div>
     </div>
