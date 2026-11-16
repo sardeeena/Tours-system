@@ -4784,12 +4784,37 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
   html = html.replace(/<link\s+rel="canonical"[^>]*>/i, `<link rel="canonical" href="${seoHtmlEscape(canonical)}" />`);
   html = html.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '');
   if (localePath) {
-    html = html.replace(/<html\b([^>]*)>/i, (_match, attrs) => `<html${String(attrs).replace(/\s+lang=["'][^"']*["']/i, '').replace(/\s+dir=["'][^"']*["']/i, '')} lang="${localePath.locale}" dir="${localePath.locale === 'ar' ? 'rtl' : 'ltr'}">`);
+    html = html.replace(/<html\b([^>]*)>/i, (_match, attrs) => '<html' + String(attrs).replace(/\s+lang=["'][^"']*["']/i, '').replace(/\s+dir=["'][^"']*["']/i, '') + ' lang="' + localePath.locale + '" dir="' + (localePath.locale === 'ar' ? 'rtl' : 'ltr') + '">');
     const alternateLinks: string[] = [];
-    alternateLinks.push(`<link rel="alternate" hreflang="en" href="${origin}${path}">`);
-    alternateLinks.push(`<link rel="alternate" hreflang="x-default" href="${origin}${path}">`);
-    if (localizedTranslation) alternateLinks.push(`<link rel="alternate" hreflang="${localePath.locale}" href="${origin}${requestedPath}">`);
-    html = html.replace('</head>', `${alternateLinks.join('')}<script type="application/ld+json">${schema}</script>${seoInitialStyles()}</head>`);
+    alternateLinks.push('<link rel="alternate" hreflang="en" href="' + origin + path + '">');
+    alternateLinks.push('<link rel="alternate" hreflang="x-default" href="' + origin + path + '">');
+    if (localizedTranslation) {
+      alternateLinks.push('<link rel="alternate" hreflang="' + localePath.locale + '" href="' + origin + requestedPath + '">');
+      if (serverSupabase) {
+        try {
+          const { data: alternatives } = await serverSupabase.from('content_translations')
+            .select('locale,translated_slug,source_checksum,reviewed_at,published_at')
+            .eq('entity_type', localizedTranslation.entity_type)
+            .eq('entity_key', localizedTranslation.entity_key)
+            .eq('translation_state', 'published').not('translated_slug', 'is', null);
+          for (const alternative of alternatives || []) {
+            if (!alternative.locale || !alternative.translated_slug || !alternative.reviewed_at || !alternative.published_at) continue;
+            const current = await getCurrentTranslationSourceChecksum(localizedTranslation.entity_type, localizedTranslation.entity_key);
+            if (!current || current.checksum !== alternative.source_checksum) continue;
+            const routePrefix = localizedTranslation.entity_type === 'tour' ? '/excursions/'
+              : localizedTranslation.entity_type === 'destination' ? '/destinations/'
+                : localizedTranslation.entity_type === 'blog_post' ? '/blog/' : '/';
+            const alternatePath = localizedTranslation.entity_type === 'static_page' && alternative.translated_slug === 'home'
+              ? '/' + alternative.locale
+              : '/' + alternative.locale + routePrefix + encodeURIComponent(alternative.translated_slug);
+            if (alternative.locale !== localePath.locale) alternateLinks.push('<link rel="alternate" hreflang="' + alternative.locale + '" href="' + origin + alternatePath + '">');
+          }
+        } catch (error) {
+          console.warn('[Localized SSR] Reciprocal hreflang lookup failed:', error);
+        }
+      }
+    }
+    html = html.replace('</head>', alternateLinks.join('') + '<script type="application/ld+json">' + schema + '</script>' + seoInitialStyles() + '</head>');
   } else {
     html = html.replace('</head>', `<script type="application/ld+json">${schema}</script>${seoInitialStyles()}</head>`);
   }
