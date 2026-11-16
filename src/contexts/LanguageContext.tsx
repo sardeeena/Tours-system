@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { LanguageCode, LanguageConfig, SUPPORTED_LANGUAGES, EUROPEAN_LOCALE_ROLLOUT } from '../types/i18n';
 import { TRANSLATIONS } from '../i18n/translations';
-import { buildLocalizedPath, parseLocalePath } from '../i18n/localeRouting';
+import { parseLocalePath } from '../i18n/localeRouting';
 
 interface LanguageContextValue {
   language: LanguageCode;
@@ -21,6 +21,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   });
   const [publishedUiLocales, setPublishedUiLocales] = useState<string[]>([]);
   const [remoteDictionary, setRemoteDictionary] = useState<Record<string, string>>({});
+  const languageSwitchRequest = useRef(0);
 
   useEffect(() => {
     let active = true;
@@ -57,22 +58,42 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [language]);
 
   const setLanguage = (newLang: LanguageCode) => {
-    setLanguageState(newLang);
-    if (typeof window !== 'undefined') {
-      const parsed = parseLocalePath(window.location.pathname);
-      const pathname = parsed?.pathname || window.location.pathname || '/';
-      const published = [...Object.keys(SUPPORTED_LANGUAGES), ...publishedUiLocales];
-      const localized = buildLocalizedPath(newLang, pathname, published);
-      if (localized) {
-        const nextUrl = localized + window.location.search + window.location.hash;
-        if (window.location.pathname + window.location.search + window.location.hash !== nextUrl) {
-          window.history.pushState({}, '', nextUrl);
-          window.dispatchEvent(new PopStateEvent('popstate'));
-        }
-      }
+    if (typeof window === 'undefined') {
+      setLanguageState(newLang);
+      return;
     }
-    document.documentElement.lang = newLang;
-    document.documentElement.dir = newLang === 'ar' ? 'rtl' : 'ltr';
+    const currentRouteLocale = parseLocalePath(window.location.pathname)?.locale || 'en';
+    if (currentRouteLocale === newLang) {
+      languageSwitchRequest.current += 1;
+      setLanguageState(newLang);
+      return;
+    }
+    const requestId = ++languageSwitchRequest.current;
+    const params = new URLSearchParams({
+      locale: newLang,
+      pathname: window.location.pathname || '/',
+    });
+    fetch('/api/content-translations/target?' + params.toString(), {
+      headers: { Accept: 'application/json' },
+      cache: 'no-store',
+    })
+      .then(async (response) => {
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok || !payload?.success || typeof payload.path !== 'string' || !payload.path.startsWith('/')) {
+          throw new Error(payload?.error || 'This page is not translated into the selected language yet.');
+        }
+        if (requestId !== languageSwitchRequest.current) return;
+        const nextUrl = payload.path + window.location.search + window.location.hash;
+        window.history.pushState({}, '', nextUrl);
+        setLanguageState(newLang);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      })
+      .catch((error) => {
+        if (requestId !== languageSwitchRequest.current) return;
+        window.dispatchEvent(new CustomEvent('rse_language_route_unavailable', {
+          detail: { locale: newLang, message: error instanceof Error ? error.message : 'This page is not translated yet.' },
+        }));
+      });
   };
 
   useEffect(() => {
