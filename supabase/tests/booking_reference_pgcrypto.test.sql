@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(6);
+SELECT plan(4);
 
 SELECT ok(
   to_regprocedure('extensions.gen_random_bytes(integer)') IS NOT NULL,
@@ -37,23 +37,9 @@ SELECT ok(
 );
 
 SELECT ok(
-  to_regprocedure('private.assign_short_booking_reference()') IS NOT NULL,
-  'new bookings receive a compact public reference from a dedicated trigger'
-);
-
-SELECT ok(
-  EXISTS (
-    SELECT 1 FROM pg_trigger
-    WHERE tgrelid = 'public.bookings'::regclass
-      AND tgname = 'trg_assign_short_booking_reference'
-      AND NOT tgisinternal
-  ),
-  'short-reference trigger is attached to the bookings table'
-);
-
-SELECT ok(
-  position('AAT-' IN pg_get_functiondef(to_regprocedure('private.assign_short_booking_reference()'))) > 0,
-  'new booking references use the short AAT prefix'
+  position('AAT-' IN pg_get_functiondef(to_regprocedure('private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)'))) > 0
+  AND position('extensions.gen_random_bytes(8)' IN pg_get_functiondef(to_regprocedure('private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)'))) > 0,
+  'atomic booking function generates compact AAT references using cryptographic randomness'
 );
 
 SELECT * FROM finish();
