@@ -44,8 +44,9 @@ export const SUPPORTED_LANGUAGES: Partial<Record<LanguageCode, LanguageConfig>> 
 
 /**
  * Europe-wide locale catalogue. These are planned translation targets, not
- * a claim that translated content is already published. Keep LanguageCode /
- * SUPPORTED_LANGUAGES limited to locales with complete UI dictionaries.
+ * a claim that translated content is already published. LanguageCode is the
+ * complete route-code union; SUPPORTED_LANGUAGES lists the built-in dictionaries,
+ * while additional locales are advertised only after a complete reviewed UI catalog exists.
  */
 export type EuropeanLocaleCode =
   | 'en' | 'de' | 'fr' | 'it' | 'es' | 'nl' | 'pl' | 'pt' | 'ro' | 'ru'
