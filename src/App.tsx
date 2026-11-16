@@ -211,7 +211,7 @@ const AdminLoginLoadingFallback = () => (
 );
 
 function MainApp() {
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, supportedLanguages } = useLanguage();
   const { user, isAdmin, loading: authLoading, refreshUser, checkAdminAccess } = useAuth();
   const [currentCurrency, setCurrentCurrency] = useState<CurrencyConfig>(CURRENCY_CONFIGS.EUR);
 
@@ -398,7 +398,7 @@ function MainApp() {
       const parsedLocale = parseLocalePath(window.location.pathname);
       setCurrentLocale(parsedLocale?.locale || 'en');
       setCurrentPath(parsedLocale?.pathname || window.location.pathname || '/');
-      if (parsedLocale && ['en','de','it','ro','ru'].includes(parsedLocale.locale)) setLanguage(parsedLocale.locale as any);
+      if (parsedLocale) setLanguage(parsedLocale.locale as any);
       setSearchParams(new URLSearchParams(window.location.search));
     };
     window.addEventListener('popstate', handlePopState);
@@ -1329,7 +1329,7 @@ function MainApp() {
     if (currentLocale !== 'en' && !/^\/(?:booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|admin(?:\/|$)|support(?:\/|$))/i.test(currentPath)) {
       return <Suspense fallback={<PublicPageLoadingFallback />}><LocalizedContentPage locale={currentLocale} pathname={currentPath} onNavigate={(path) => navigate(path)} /></Suspense>;
     }
-    if (currentLocale !== 'en' && !['de','it','ro','ru'].includes(currentLocale) && /^\/(?:booking|my-booking|login|register|account|profile|reset-password)(?:\/|$)/i.test(currentPath)) {
+    if (currentLocale !== 'en' && !supportedLanguages.some((item) => item.code === currentLocale) && /^\/(?:booking|my-booking|login|register|account|profile|reset-password)(?:\/|$)/i.test(currentPath)) {
       return <main className="mx-auto max-w-xl px-5 py-24 text-center"><h1 className="text-2xl font-bold">This interface language is not ready yet</h1><p className="mt-3">This language is not yet fully translated for booking and account workflows.</p><button className="mt-6 rounded bg-teal-800 px-5 py-3 text-white" onClick={() => navigate('/')}>Return to the English site</button></main>;
     }
     // Auth: Login Page
