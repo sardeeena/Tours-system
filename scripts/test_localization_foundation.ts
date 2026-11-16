@@ -57,6 +57,8 @@ assert.match(server, /body\.confirm_publish !== true/, 'Publishing requires expl
 assert.match(server, /64-character SHA-256 source checksum/, 'Translation writes require a SHA-256 source checksum');
 assert.match(app, /AdminTranslationManager/, 'Admin translation workspace is wired into the app');
 assert.match(app, /LocalizedContentPage/, 'Localized content route renderer is wired into the app');
+assert.match(app, /api\/content-translations\/target/, 'Localized internal navigation resolves translated slugs instead of prefixing English slugs');
+assert.match(app, /showToast\(error instanceof Error \? error.message/, 'Unavailable localized destinations are surfaced without changing the current route');
 assert.match(app, /currentLocale !== 'en'/, 'Locale-prefixed routes are handled separately from English routes');
 assert.match(languageContext, /Locale-prefixed URLs are authoritative/, 'URL is the source of truth for interface language');
 assert.match(languageContext, /api\/content-translations\/ui\?locale=/, 'Interface language loads its published UI catalog from the server');
