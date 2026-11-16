@@ -3001,6 +3001,9 @@ app.get('/api/content-translations/target', rateLimit(90, 60_000), async (req: R
     const privateRoute = /^\/(?:booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|admin(?:\/|$)|support(?:\/|$))/i.test(pathname);
     if (privateRoute) {
       if (locale === 'en') return res.json({ success: true, path: pathname });
+      if (['fr', 'es', 'nl', 'pl', 'pt'].includes(locale)) {
+        return res.status(404).json({ success: false, error: 'This language is not yet available for booking, account and support interfaces.' });
+      }
       const current = await getCurrentTranslationSourceChecksum('ui_catalog', 'site-ui');
       const { data, error } = await serverSupabase!.from('content_translations')
         .select('content,source_checksum,reviewed_at,published_at')
