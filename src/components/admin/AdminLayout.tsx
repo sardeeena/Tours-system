@@ -289,7 +289,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   };
   const canManageAccess = Boolean(user?.roles?.includes('admin') || user?.roles?.includes('super_admin') || user?.role === 'admin' || user?.role === 'super_admin');
   const isSuperAdmin = Boolean(user?.roles?.includes('super_admin') || user?.role === 'super_admin');
-  const canSeeTab = (id: string) => id === 'technical' || id === 'settings'
+  const canSeeTab = (id: string) => id === 'technical' || id === 'settings' || id === 'translations'
     ? isSuperAdmin
     : id === 'access_control'
       ? canManageAccess
@@ -305,7 +305,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     return canSeeTab(item.id) || Boolean(children?.length) ? [{ ...item, children }] : [];
   });
   const activePermission = requiredPermission(activeTab);
-  const canAccessActiveTab = activeTab === 'technical' || activeTab === 'settings'
+  const canAccessActiveTab = activeTab === 'technical' || activeTab === 'settings' || activeTab === 'translations'
     ? isSuperAdmin
     : activeTab === 'access_control'
       ? canManageAccess
