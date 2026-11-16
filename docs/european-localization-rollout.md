@@ -76,3 +76,20 @@ Publishing requires explicit confirmation plus translated title/slug, SEO title/
 
 
 Validation note: CI run #1143 passed both the TypeScript/production build and the isolated Supabase migration + pgTAP security suite for the translation API/workspace implementation. The final navigation-role guard and its regression assertion were added immediately afterward and are included in the next CI run.
+
+
+## Complete UI catalog and transactional messaging
+
+The translation workspace also supports a single `ui_catalog` record per locale (`entity_key=site-ui`). Its source snapshot is the complete English `TRANSLATIONS.en` dictionary. Publishing is rejected unless every English message key has a non-empty translation and the source checksum is current. The public UI catalog endpoint serves only reviewed, complete catalogs; the locale-discovery endpoint advertises only locales that pass those checks. The language provider loads the published catalog and makes additional locales selectable only after this gate.
+
+Booking confirmation and completed-booking review emails now select `communication_templates` by `bookings.customer_locale`, with an explicit English fallback. Staff-sent Meta WhatsApp template messages use the customer's saved `preferred_locale` to select the approved template language; consent verification remains mandatory.
+
+### Translation JSON contract
+
+- **Tour:** `description`, `durationLabel`, `highlights[]`, `itinerary[{title,description}]`, `included[]`, `excluded[]`, `faqs[{question,answer}]`, `pickupInfo`, `cancellationPolicy`, `ageRestrictions`, and translated `labels` for each visible section/action.
+- **Blog:** `content` (translated article body), with translated title, summary and SEO fields on the record.
+- **Destination:** translated title, summary, description/tagline and any translated highlights.
+- **Static/CMS page:** `heroHeadline`, `heroSubtitle`, and `sections[{title,content}]`.
+- **UI catalog:** a complete key/value object matching every key in the current English dictionary. New English keys automatically invalidate old catalogs until they are updated and reviewed.
+
+A complete UI catalog is the activation gate for additional booking/account interface locales. The actual language catalogs and page translations still need to be authored and human-reviewed; no machine-generated or unreviewed translations are seeded or auto-published by this PR.
