@@ -110,7 +110,7 @@ assert.match(server, /communication_templates'\)\.upsert[\s\S]*onConflict: 'temp
 assert.match(server, /entityType === 'communication_template'[\s\S]*body_text: source\.body_text/, 'Translation workspace loads authoritative email subject and body fields');
 assert.match(server, /entityType === 'communication_template'[\s\S]*source\.template_key/, 'Communication template source metadata is preserved for publishing');
 assert.match(expandedBookingLocaleMigration, /communication_template/, 'Translation schema allows localized communication template drafts');
-assert.match(server, /item\.type==='static_page' && item\.key==='home'\?'home'/, 'Translated homepage keeps the canonical localized root path');
+assert.match(server, /item\.type==='static_page' && item\.key==='home'\s*\?\s*'home'/, 'Translated homepage keeps the canonical localized root path');
 assert.match(server, /usedSlugs\.has\(translatedSlug\)[\s\S]*createHash\('sha256'\)/, 'Bulk translation generation prevents translated slug collisions');
 assert.match(server, /function translationStructureMatches[\s\S]*protectedTokens\.every\(\(token\) => translated\.includes\(token\)\)/, 'Bulk translation output must preserve structure and operational tokens');
 assert.match(server, /translated\.content\.template_key !== item\.source\.template_key[\s\S]*JSON\.stringify\(translated\.content\.variables/, 'Communication translation cannot alter template keys, channels or variable names');
