@@ -4093,8 +4093,26 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
     try { slug = decodeURIComponent(path.slice('/excursions/'.length)); } catch { slug = ''; }
     if (publicSupabase && /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) {
       try {
-        const { data, error } = await publicSupabase.from('tours').select('*')
-          .eq('slug', slug).eq('status', 'published').maybeSingle();
+        // Fetch the tour and all SEO-visible child content in one PostgREST request.
+        // This avoids six separate database round trips for every public detail page.
+        const { data, error } = await publicSupabase.from('tours')
+          .select(`
+            id,slug,title,short_description,description,price,currency,duration,duration_hours,
+            pickup_info,cancellation_policy,
+            tour_images(image_url,alt_text,is_primary,sort_order),
+            tour_highlights(item,sort_order),
+            tour_inclusions(item,sort_order),
+            tour_exclusions(item,sort_order),
+            tour_itinerary(time,title,description,sort_order)
+          `)
+          .eq('slug', slug)
+          .eq('status', 'published')
+          .order('sort_order', { ascending: true, referencedTable: 'tour_images' })
+          .order('sort_order', { ascending: true, referencedTable: 'tour_highlights' })
+          .order('sort_order', { ascending: true, referencedTable: 'tour_inclusions' })
+          .order('sort_order', { ascending: true, referencedTable: 'tour_exclusions' })
+          .order('sort_order', { ascending: true, referencedTable: 'tour_itinerary' })
+          .maybeSingle();
         if (error) console.warn('[SEO render] Tour detail unavailable:', error.message);
         currentTour = data || null;
       } catch (error) {
@@ -4109,20 +4127,13 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       title = `${seoPlainText(currentTour.title, 160)} | Awesome Adventure Tours`;
       const summary = seoPlainText(currentTour.short_description || currentTour.description, 300);
       description = summary || `Review details and booking information for ${seoPlainText(currentTour.title, 160)}.`;
-      const relationQueries = await Promise.all([
-        publicSupabase!.from('tour_images').select('image_url,alt_text,is_primary').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
-        publicSupabase!.from('tour_highlights').select('item').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
-        publicSupabase!.from('tour_inclusions').select('item').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
-        publicSupabase!.from('tour_exclusions').select('item').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
-        publicSupabase!.from('tour_itinerary').select('time,title,description').eq('tour_id', currentTour.id).order('sort_order', { ascending: true }),
-      ]);
-      const tourImages = relationQueries[0].error ? [] : relationQueries[0].data || [];
+      const tourImages = Array.isArray(currentTour.tour_images) ? currentTour.tour_images : [];
       const primaryImage = tourImages.find((image: any) => image.is_primary) || tourImages[0];
       pageImage = seoSafeImage(primaryImage?.image_url) || pageImage;
-      currentHighlights = relationQueries[1].error ? [] : relationQueries[1].data || [];
-      currentInclusions = relationQueries[2].error ? [] : relationQueries[2].data || [];
-      currentExclusions = relationQueries[3].error ? [] : relationQueries[3].data || [];
-      currentItinerary = relationQueries[4].error ? [] : relationQueries[4].data || [];
+      currentHighlights = Array.isArray(currentTour.tour_highlights) ? currentTour.tour_highlights : [];
+      currentInclusions = Array.isArray(currentTour.tour_inclusions) ? currentTour.tour_inclusions : [];
+      currentExclusions = Array.isArray(currentTour.tour_exclusions) ? currentTour.tour_exclusions : [];
+      currentItinerary = Array.isArray(currentTour.tour_itinerary) ? currentTour.tour_itinerary : [];
 
       const price = seoPrice(currentTour.price, currentTour.currency);
       const duration = seoPlainText(currentTour.duration, 100);
