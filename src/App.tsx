@@ -49,6 +49,7 @@ import { Compass } from 'lucide-react';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
+import { useToast } from './contexts/ToastContext';
 import { parseLocalePath } from './i18n/localeRouting';
 import { ToastProvider } from './contexts/ToastContext';
 import { WishlistProvider } from './contexts/WishlistContext';
@@ -212,6 +213,7 @@ const AdminLoginLoadingFallback = () => (
 
 function MainApp() {
   const { setLanguage, supportedLanguages } = useLanguage();
+  const { showToast } = useToast();
   const { user, isAdmin, loading: authLoading, refreshUser, checkAdminAccess } = useAuth();
   const [currentCurrency, setCurrentCurrency] = useState<CurrencyConfig>(CURRENCY_CONFIGS.EUR);
 
@@ -391,6 +393,15 @@ function MainApp() {
     window.addEventListener('rse_data_updated', handleDataUpdated);
     return () => window.removeEventListener('rse_data_updated', handleDataUpdated);
   }, [refreshCatalogue]);
+
+  useEffect(() => {
+    const handleUnavailableLanguageRoute = (event: Event) => {
+      const detail = (event as CustomEvent).detail;
+      showToast(detail?.message || 'This page is not translated into the selected language yet.', 'info');
+    };
+    window.addEventListener('rse_language_route_unavailable', handleUnavailableLanguageRoute);
+    return () => window.removeEventListener('rse_language_route_unavailable', handleUnavailableLanguageRoute);
+  }, [showToast]);
 
   // Sync browser back/forward buttons
   useEffect(() => {
