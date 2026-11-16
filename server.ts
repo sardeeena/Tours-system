@@ -4255,7 +4255,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
         const { data, error } = await serverSupabase.from('content_translations')
           .select('id,entity_type,entity_key,locale,translated_slug,title,summary,content,seo_title,seo_description,source_checksum,translation_state,reviewed_at,published_at')
           .eq('entity_type', route.entityType).eq('locale', localePath.locale)
-          .eq('translated_slug', parts[parts.length - 1]).eq('translation_state', 'published').maybeSingle();
+          .eq('translated_slug', parts[parts.length - 1] || 'home').eq('translation_state', 'published').maybeSingle();
         if (error) throw error;
         if (data?.reviewed_at && data?.published_at) {
           const current = await getCurrentTranslationSourceChecksum(route.entityType, data.entity_key);
