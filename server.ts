@@ -3777,6 +3777,7 @@ function cleanPublicText(value: unknown, maxLength = 500): string {
 
 app.get('/sitemap.xml', async (_req: Request, res: Response) => {
   const urls = new Map<string, string | undefined>();
+  const alternatesByUrl = new Map<string, Map<string, string>>();
   const seoExclusions = await loadAwesomeAdventureToursSeoIndexExclusions();
   for (const route of AWESOME_ADVENTURE_TOURS_CORE_PUBLIC_PATHS) {
     const pageSlug = route === '/' ? 'home' : route.slice(1);
@@ -3941,7 +3942,6 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
         }
         alternates.set(item.locale, translatedUrl);
       }
-      const alternatesByUrl = new Map<string, Map<string, string>>();
       for (const alternates of alternatesByEntity.values()) {
         for (const url of alternates.values()) alternatesByUrl.set(url, alternates);
       }
