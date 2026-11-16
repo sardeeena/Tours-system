@@ -19,7 +19,16 @@ const checksum = (value: unknown) => createHash('sha256').update(stable(value)).
 const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 if (!supabaseUrl || !supabaseKey) throw new Error('Set SUPABASE_URL and the server-only SUPABASE_SECRET_KEY (or legacy service-role key).');
-if (supabaseKey.startsWith('sb_publishable_')) throw new Error('A publishable key cannot export or import translation data.');
+const projectRef = new URL(supabaseUrl).hostname.split('.')[0];
+if (projectRef !== 'uvtbtpxtrrmaublrztgv') throw new Error('Refusing to access any Supabase project other than AwesomeAdventure (uvtbtpxtrrmaublrztgv).');
+const legacyPayload = supabaseKey.split('.')[1];
+let legacyRole = '';
+if (legacyPayload) {
+  try { legacyRole = JSON.parse(Buffer.from(legacyPayload.replace(/-/g,'+').replace(/_/g,'/'),'base64').toString('utf8')).role || ''; } catch { legacyRole = ''; }
+}
+if (!supabaseKey.startsWith('sb_secret_') && legacyRole !== 'service_role') {
+  throw new Error('A server-only Supabase secret key is required; anon/publishable keys are rejected.');
+}
 const db = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false, autoRefreshToken: false } });
 
 async function rows(table: string, configure: (q: any) => any = q => q) {
