@@ -125,6 +125,7 @@ assert.match(bookingRepository, /customerLocale: data\.customer_locale \|\| cust
 assert.match(bookingPage, /customerLocale,/, 'Booking captures the selected customer locale, including the public-language fallback');
 assert.match(bookingNotificationWorker, /getLocalizedCommunicationTemplate\(client, 'booking_received', customerLocale\)/, 'Booking received email selects the saved customer locale');
 assert.match(bookingNotificationWorker, /content_translations'[\s\S]*sourceChecksum[\s\S]*approval\.source_checksum === sourceChecksum/, 'New-locale emails require a reviewed translation with a current English template checksum');
+assert.match(bookingNotificationWorker, /localized\.subject === approval\.content\?\.subject[\s\S]*localized\.body_text === approval\.content\?\.body_text/, 'New-locale emails use only the exact template body that was reviewed and published');
 assert.match(bookingNotificationWorker, /'en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'/, 'Booking notification worker recognizes all five additional customer locales');
 assert.match(bookingNotificationWorker, /getLocalizedCommunicationTemplate\(client, 'booking_review_request', customerLocale\)/, 'Completed booking review email selects the saved customer locale');
 assert.match(bookingNotificationWorker, /\.eq\('locale', locale\)/, 'Transactional email templates are locale-specific with an English fallback');
