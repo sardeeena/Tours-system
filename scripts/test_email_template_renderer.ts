@@ -64,7 +64,7 @@ assert.match(config, /\[auth\.email\.notification\.mfa_factor_unenrolled\]/);
 const reviewEmail = renderBrandedEmailHtml({
   heading: 'Thank you for joining us',
   bodyText: [
-    'Google: https://www.google.com/maps/search/?api=1&query=Awesome%20Adventure%20Tours%20Hurghada',
+    'Google: https://www.google.com/maps/search/?api=1&query=Awesome%20Adventure%20Tours%2C%2020%20Sheraton%20St%2C%20Hurghada%2084511%2C%20Egypt',
     'Tripadvisor: https://www.tripadvisor.co.uk/Attraction_Review-g297549-d34759384-Reviews-Awesome_Adventure_Tours-Hurghada_Red_Sea_and_Sinai.html',
     'Your tour: https://awesomeadventure.tours/excursions/orange-bay-island-snorkeling',
   ].join('\n\n'),
