@@ -53,6 +53,8 @@ const expectedRoutes: RouteEntry[] = [
   { method: 'POST', path: '/api/admin/translations' },
   { method: 'GET', path: '/api/admin/translations/source' },
   { method: 'GET', path: '/api/content-translations/resolve' },
+  { method: 'GET', path: '/api/content-translations/ui' },
+  { method: 'GET', path: '/api/content-translations/locales' },
   { method: 'GET', path: '/api/admin/users' },
   { method: 'POST', path: '/api/admin/users/invite' },
   { method: 'GET', path: '/api/admin/users/:userId/status' },
