@@ -44,6 +44,7 @@ assert.match(server, /app\.get\('\/api\/content-translations\/resolve'[\s\S]*tra
 assert.match(server, /app\.get\('\/api\/content-translations\/ui'[\s\S]*complete = englishKeys\.every/, 'Public UI catalog is delivered only when every source message is translated');
 assert.match(server, /app\.get\('\/api\/content-translations\/locales'[\s\S]*englishKeys\.every/, 'Only locales with complete reviewed UI catalogs are advertised');
 assert.match(server, /const candidates = await getBulkTranslationCandidates\(\)[\s\S]*candidateKeys\.every\(\(key\) => keys\.has\(key\)\)/, 'New languages are not advertised until every published content and communication record is reviewed');
+assert.match(server, /englishTemplateKeys\.every\(\(key\) => localizedKeys\?\.has\(key\)\)/, 'A language is not activated until its localized email templates are actually synchronized');
 assert.match(server, /entityType === 'ui_catalog'[\s\S]*TRANSLATIONS\.en/, 'UI catalog source checksum is anchored to the English source dictionary');
 assert.match(server, /entityType === 'ui_catalog'[\s\S]*interface catalog must translate every source UI message/, 'UI catalog publication rejects missing messages');
 assert.match(migration, /'static_page', 'ui_catalog'/, 'Translation schema supports reviewed UI message catalogs');
