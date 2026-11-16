@@ -97,6 +97,8 @@ assert.match(server, /communication_template[\s\S]*communication_templates/, 'Co
 assert.match(server, /String\(source\?\.subject \|\| ''\)[\s\S]*String\(source\?\.body_text \|\| ''\)/, 'Communication template placeholder checks include both subject and body');
 assert.match(server, /sourceTokens\.sort\(\)\.join\('\|'\) !== translatedTokens\.sort\(\)\.join\('\|'\)/, 'Communication template publication preserves every original placeholder token');
 assert.match(server, /communication_templates'\)\.upsert[\s\S]*onConflict: 'template_key,locale'/, 'Approved communication translations are synchronized to the customer-template table');
+assert.match(server, /entityType === 'communication_template'[\s\S]*body_text: source\.body_text/, 'Translation workspace loads authoritative email subject and body fields');
+assert.match(server, /entityType === 'communication_template'[\s\S]*source\.template_key/, 'Communication template source metadata is preserved for publishing');
 assert.match(expandedBookingLocaleMigration, /communication_template/, 'Translation schema allows localized communication template drafts');
 assert.match(server, /item\.type==='static_page' && item\.key==='home'\?'home'/, 'Translated homepage keeps the canonical localized root path');
 const adminTranslations = read('../src/components/admin/AdminTranslationManager.tsx');
