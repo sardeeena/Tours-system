@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { renderBookingTicketEmailHtml } from '../utils/emailTemplate';
+import { renderBookingTicketEmailHtml, renderBrandedEmailHtml } from '../utils/emailTemplate';
 
 type QueueMessage = {
   msg_id: number;
@@ -147,7 +147,7 @@ async function processMessage(
     return;
   }
 
-  if (event.event_name !== 'booking.created') {
+  if (!['booking.created', 'booking.completed'].includes(event.event_name)) {
     await updateEvent(client, eventId, {
       processed: true,
       processed_at: new Date().toISOString(),
@@ -165,7 +165,7 @@ async function processMessage(
 
   const { data: booking, error: bookingError } = await client
     .from('bookings')
-    .select('id,booking_reference,booking_date,total,currency,status,payment_status,payment_method,adult_count,child_count,infant_count,pickup_hotel_name,pickup_room_number,tour_language,customer_id,customers(first_name,last_name,email,phone,country,hotel),tours(title,departure_time),pickup_locations(name,area),booking_extras(name,quantity,unit_price,total_price,pricing_type)')
+    .select('id,booking_reference,booking_date,total,currency,status,payment_status,payment_method,adult_count,child_count,infant_count,pickup_hotel_name,pickup_room_number,tour_language,customer_id,customers(first_name,last_name,email,phone,country,hotel),tours(title,departure_time,slug),pickup_locations(name,area),booking_extras(name,quantity,unit_price,total_price,pricing_type)')
     .eq('id', bookingId)
     .maybeSingle();
 
@@ -185,6 +185,183 @@ async function processMessage(
       processed_at: new Date().toISOString(),
       actions_triggered: ['booking_received_email_skipped_missing_email'],
       error_message: 'Customer has no valid email address; no email was sent.',
+    });
+    await acknowledge(client, message.msg_id);
+    return;
+  }
+
+  if (event.event_name === 'booking.completed') {
+    if (row.status !== 'completed' || row.payment_status !== 'paid') {
+      await updateEvent(client, eventId, {
+        processed: true,
+        processed_at: new Date().toISOString(),
+        actions_triggered: ['booking_review_request_skipped_booking_not_completed_and_paid'],
+        error_message: null,
+      });
+      await acknowledge(client, message.msg_id);
+      return;
+    }
+
+    const tourSlug = String(tour?.slug || '').trim();
+    if (!tourSlug) throw new Error('The completed booking has no published tour slug for its review link.');
+
+    const { data: reviewTemplate, error: reviewTemplateError } = await client
+      .from('communication_templates')
+      .select('subject,body_text,is_active')
+      .eq('template_key', 'booking_review_request')
+      .maybeSingle();
+
+    if (reviewTemplateError) throw reviewTemplateError;
+    if (!reviewTemplate) throw new Error('The booking review request email template is missing.');
+    if (reviewTemplate.is_active === false) {
+      await updateEvent(client, eventId, {
+        processed: true,
+        processed_at: new Date().toISOString(),
+        actions_triggered: ['booking_review_request_template_disabled'],
+        error_message: null,
+      });
+      await acknowledge(client, message.msg_id);
+      return;
+    }
+
+    const customerName = [customer?.first_name, customer?.last_name].filter(Boolean).join(' ').trim() || 'there';
+    const tourName = String(tour?.title || 'your tour');
+    const googleReviewUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('Awesome Adventure Tours Hurghada');
+    const tripadvisorReviewUrl = 'https://www.tripadvisor.co.uk/Attraction_Review-g297549-d34759384-Reviews-Awesome_Adventure_Tours-Hurghada_Red_Sea_and_Sinai.html';
+    const tourReviewUrl = 'https://awesomeadventure.tours/excursions/' + encodeURIComponent(tourSlug);
+    const reviewVariables: Record<string, string> = {
+      customer_name: customerName,
+      booking_reference: String(row.booking_reference || ''),
+      tour_name: tourName,
+      google_review_url: googleReviewUrl,
+      tripadvisor_review_url: tripadvisorReviewUrl,
+      tour_review_url: tourReviewUrl,
+    };
+    const reviewSubject = renderTemplate(
+      String(reviewTemplate.subject || 'How was {{tour_name}}? We would love your feedback'),
+      reviewVariables
+    );
+    const reviewContent = renderTemplate(
+      String(reviewTemplate.body_text || 'Hello {{customer_name}}, thank you for joining us on {{tour_name}}. We would be grateful for an honest review. Google: {{google_review_url}} Tripadvisor: {{tripadvisor_review_url}} Tour page: {{tour_review_url}}'),
+      reviewVariables
+    );
+    const reviewHtml = renderBrandedEmailHtml({
+      heading: reviewSubject,
+      preheader: 'Thank you for travelling with Awesome Adventure Tours.',
+      bodyText: reviewContent,
+    });
+
+    const { data: existingReviewLog, error: existingReviewLogError } = await client
+      .from('communication_messages')
+      .select('id,status')
+      .eq('automation_event_id', eventId)
+      .eq('channel', 'Email')
+      .maybeSingle();
+
+    if (existingReviewLogError) throw existingReviewLogError;
+    if (existingReviewLog?.status === 'sent') {
+      await updateEvent(client, eventId, {
+        processed: true,
+        processed_at: new Date().toISOString(),
+        actions_triggered: ['booking_review_request_email'],
+        error_message: null,
+      });
+      await acknowledge(client, message.msg_id);
+      return;
+    }
+
+    let reviewLogId = existingReviewLog?.id || '';
+    if (reviewLogId) {
+      const { error: updateLogError } = await client
+        .from('communication_messages')
+        .update({
+          status: 'queued',
+          recipient_address: recipient,
+          customer_name: customerName,
+          subject: reviewSubject,
+          content: reviewContent,
+          template_key: 'booking_review_request',
+          provider_name: 'Resend',
+          failure_reason: null,
+        })
+        .eq('id', reviewLogId);
+      if (updateLogError) throw updateLogError;
+    } else {
+      const { data: insertedLog, error: insertLogError } = await client
+        .from('communication_messages')
+        .insert({
+          automation_event_id: eventId,
+          channel: 'Email',
+          customer_id: row.customer_id,
+          customer_name: customerName,
+          recipient_address: recipient,
+          booking_id: row.id,
+          booking_reference: row.booking_reference,
+          template_key: 'booking_review_request',
+          subject: reviewSubject,
+          content: reviewContent,
+          status: 'queued',
+          provider_name: 'Resend',
+          staff_name: 'Booking Review Request Worker',
+        })
+        .select('id')
+        .single();
+      if (insertLogError) throw insertLogError;
+      reviewLogId = insertedLog.id;
+    }
+
+    const reviewIdempotencyKey = `awesome-adventure-booking-${eventId}-review-email`;
+    const reviewResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'Idempotency-Key': reviewIdempotencyKey,
+      },
+      body: JSON.stringify({
+        from: `${fromName} <${fromEmail}>`,
+        to: [recipient],
+        reply_to: process.env.RESEND_REPLY_TO?.trim() || 'reservation@awesomeadventure.tours',
+        bcc: [process.env.BOOKING_NOTIFICATION_EMAIL?.trim() || 'reservation@awesomeadventure.tours'],
+        subject: reviewSubject,
+        text: reviewContent,
+        html: reviewHtml,
+        tags: [{ name: 'communication_id', value: String(reviewLogId) }],
+      }),
+      signal: AbortSignal.timeout(15_000),
+    });
+    const reviewProviderBody = await reviewResponse.json().catch(() => ({} as any));
+    if (!reviewResponse.ok || typeof reviewProviderBody?.id !== 'string') {
+      const detail = typeof reviewProviderBody?.message === 'string'
+        ? reviewProviderBody.message
+        : `Resend rejected the review request (HTTP ${reviewResponse.status}).`;
+      throw new Error(detail);
+    }
+
+    const reviewSentAt = new Date().toISOString();
+    const { error: reviewProviderUpdateError } = await client
+      .from('communication_messages')
+      .update({
+        provider_name: 'Resend',
+        provider_message_id: reviewProviderBody.id,
+        sent_at: reviewSentAt,
+        failure_reason: null,
+      })
+      .eq('id', reviewLogId);
+    if (reviewProviderUpdateError) throw reviewProviderUpdateError;
+
+    const { error: reviewStatusError } = await client
+      .from('communication_messages')
+      .update({ status: 'sent' })
+      .eq('id', reviewLogId)
+      .eq('status', 'queued');
+    if (reviewStatusError) throw reviewStatusError;
+
+    await updateEvent(client, eventId, {
+      processed: true,
+      processed_at: reviewSentAt,
+      actions_triggered: ['booking_review_request_email'],
+      error_message: null,
     });
     await acknowledge(client, message.msg_id);
     return;
