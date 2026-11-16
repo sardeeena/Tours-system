@@ -12,6 +12,7 @@ import { STANDARD_PICKUP_LOCATIONS, GLOBAL_BOOKING_EXTRAS } from './src/data/boo
 import { startBookingNotificationWorker } from './src/server/bookingNotificationWorker';
 import { INITIAL_STATIC_PAGES } from './src/data/staticPages';
 import { EXPECTED_AWESOME_ADVENTURE_TOURS_SUPABASE_PROJECT_REF, isExpectedAwesomeAdventureToursSupabaseUrl } from './src/lib/supabaseProjectGuard';
+import { parseLocalePath } from './src/i18n/localeRouting';
 
 dotenv.config();
 
@@ -4024,7 +4025,17 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
   let seoIdentifier = 'home';
   let seoIdentifierIsPageSlug = true;
 
-  if (path === '/' || path === '/excursions') {
+  const localePath = parseLocalePath(path);
+  if (localePath) {
+    // Recognized locale URLs must never silently serve English source content.
+    // They remain non-indexable until a reviewed, published translation route is wired.
+    statusCode = 404;
+    noindex = true;
+    nofollow = false;
+    title = 'This language version is not available yet | Awesome Adventure Tours';
+    description = 'This translated page is not published yet. Browse the available English excursion information instead.';
+    body = '<main id="seo-initial-content"><h1>This language version is not available yet</h1><p>We are preparing reviewed translations for this page. The English version remains available.</p><p><a href="/excursions">Browse English excursions</a></p></main>';
+  } else if (path === '/' || path === '/excursions') {
     // These catalogue reads are independent; run them concurrently so public
     // HTML rendering is bounded by the slower query rather than their sum.
     const [publishedTours, allDestinations] = await Promise.all([
