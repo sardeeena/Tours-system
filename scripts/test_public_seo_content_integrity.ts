@@ -66,6 +66,12 @@ assert.match(sitemapDestinationBlock, /if \(!name \|\| seoExclusions\.entityIds\
 assert.match(llmsDestinationBlock, /if \(!name \|\| seoExclusions\.entityIds\.has\('destination:' \+ String\(destination\.id\)\) \|\| \(tourCount < 2 && descriptionLength < 650\)\) continue/, 'llms.txt excludes the same destinations as the sitemap');
 assert.match(server, /app\.get\('\/sitemap\.xml'/, 'Public XML sitemap endpoint remains registered');
 assert.match(server, /app\.get\('\/llms\.txt'/, 'AI discovery llms.txt endpoint remains registered');
+const tourRendererStart = server.indexOf("} else if (path.startsWith('/excursions/'))");
+const tourRendererEnd = server.indexOf("} else if (path === '/blog')", tourRendererStart);
+const tourRenderer = server.slice(tourRendererStart, tourRendererEnd);
+assert.ok(tourRenderer.includes('tour_images(image_url,alt_text,is_primary,sort_order)') && tourRenderer.includes('tour_itinerary(time,title,description,sort_order)'), 'Tour HTML loads SEO-visible related content in one joined query');
+assert.ok(!tourRenderer.includes('Promise.all([') && !tourRenderer.includes('relationQueries'), 'Tour HTML avoids repeated relation round trips');
+
 
 assert.match(cookieConsent, /const GTM_ID = 'GTM-5SSVKB24'/, 'Cookie consent loads the newly confirmed Google Tag Manager container');
 assert.doesNotMatch(cookieConsent, /GTM-MZVP38WC/, 'Retired Google Tag Manager container is no longer referenced');
