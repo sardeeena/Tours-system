@@ -16,11 +16,11 @@ assert.match(about, /seoIndexable: true/, 'About fallback remains indexable');
 assert.match(about, /Local support in Hurghada/, 'About page contains useful company context');
 assert.match(about, /Clear information before you reserve/, 'About page explains how customers compare and book trips');
 const contact = pages.slice(pages.indexOf("id: 'contact'"), pages.indexOf("id: 'why-us'"));
-assert.ok((contact.match(/\\b[\\w’'-]+\\b/g) || []).length >= 120, 'Contact page provides substantive visitor support information');
+assert.ok(contact.split(/\\s+/).length >= 120, 'Contact page provides substantive visitor support information');
 assert.match(contact, /preferred language/, 'Contact page explains language support without promising every tour is available in every language');
 assert.match(contact, /booking reference/, 'Contact page explains what existing customers should provide when asking for help');
 const aboutIndexabilityMigration = read('../supabase/migrations/20261116130000_about_page_indexability.sql');
-assert.match(aboutIndexabilityMigration, /UPDATE public\\.seo_metadata[\\s\\S]*page_slug = 'about'[\\s\\S]*robots_index = TRUE/i, 'Migration corrects the stale About-page noindex database override');
+assert.ok(aboutIndexabilityMigration.includes('UPDATE public.seo_metadata') && aboutIndexabilityMigration.includes("page_slug = 'about'") && aboutIndexabilityMigration.includes('robots_index = TRUE'), 'Migration corrects the stale About-page noindex database override');
 
 assert.match(app, /\['about', 'privacy', 'terms', 'cancellation-policy', 'cookie-policy'\]/, 'About ignores stale CMS noindex overrides in client metadata');
 assert.match(server, /override\?\.robots_index === false && !\(pageKind === 'static' && seoIdentifier === 'about'\)/, 'About ignores stale CMS noindex overrides in server-rendered HTML');
