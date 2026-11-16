@@ -226,7 +226,7 @@ async function processMessage(
 
     const customerName = [customer?.first_name, customer?.last_name].filter(Boolean).join(' ').trim() || 'there';
     const tourName = String(tour?.title || 'your tour');
-    const googleReviewUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('Awesome Adventure Tours Hurghada');
+    const googleReviewUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('Awesome Adventure Tours, 20 Sheraton St, Hurghada 84511, Egypt');
     const tripadvisorReviewUrl = 'https://www.tripadvisor.co.uk/Attraction_Review-g297549-d34759384-Reviews-Awesome_Adventure_Tours-Hurghada_Red_Sea_and_Sinai.html';
     const tourReviewUrl = 'https://awesomeadventure.tours/excursions/' + encodeURIComponent(tourSlug);
     const reviewVariables: Record<string, string> = {
