@@ -46,7 +46,7 @@ assert.match(server, /alternateLinks\.push[\s\S]*hreflang/, 'Localized SSR emits
 assert.match(server, /Reviewed localized pages could not be loaded/, 'Sitemap validates localized content before inclusion');
 assert.match(server, /supportedLanguages: \['en', 'de', 'it', 'ro', 'ru'\]/, 'Config advertises only existing UI dictionary locales');
 assert.match(server, /content_translations'[\s\S]*translated_slug[\s\S]*source_checksum/, 'Localized sitemap is based on translation records');
-assert.ok(server.includes("const privateRoute = /^\\\\/(?:[a-z]{2}\\\\/)?(?:admin"), 'Localized private routes are matched before public SSR');
+assert.ok(server.includes("const privateRoute = /^\\/(?:[a-z]{2}\\/)?(?:admin"), 'Localized private routes are matched before public SSR');
 assert.match(server, /body\.confirm_publish !== true/, 'Publishing requires explicit human confirmation');
 assert.match(server, /64-character SHA-256 source checksum/, 'Translation writes require a SHA-256 source checksum');
 assert.match(app, /AdminTranslationManager/, 'Admin translation workspace is wired into the app');
