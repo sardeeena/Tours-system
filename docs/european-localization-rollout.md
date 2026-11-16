@@ -33,6 +33,31 @@ Next waves: Swedish, Danish, Norwegian Bokmål, Finnish, Greek, Bulgarian, Croat
 
 This schema and registry do not translate the 25 tours, 50 blog posts, or destination/static-page content. They also do not activate locale-prefixed routes or add hreflang. Those require the locale-aware server renderer, UI coverage, admin translation workflow and reviewed translation content; turning on a selector before those are complete would mislead customers and search engines.
 
+## Release gates and verification
+
+A locale is not launch-ready until all of these checks pass:
+
+- [ ] Every route resolves to a published translation for the requested locale; missing, draft, review and outdated records return a non-indexable not-found response rather than English fallback.
+- [ ] Translated slugs are unique within a locale and cannot resolve to a different source entity.
+- [ ] Page body, title, description, Open Graph values, JSON-LD, canonical URL, breadcrumb URLs and booking links all use the same locale and source entity.
+- [ ] hreflang is reciprocal across every published translation, includes the English source and x-default, and never points to a draft or missing page.
+- [ ] Sitemap contains only canonical URLs for published translations.
+- [ ] Locale is retained when moving from tour detail to booking, confirmation, account and customer support.
+- [ ] Booking stores the customer's interface/communication locale separately from the selected spoken guide language.
+- [ ] Confirmation email and WhatsApp templates select the customer's locale, with a reviewed English fallback only where no localized template exists.
+- [ ] Automated route tests cover all supported locale prefixes, malformed locale codes, translated-slug collisions, unpublished records, stale checksums and cross-entity slug mismatches.
+- [ ] A human reviewer approves each translated legal, safety, pickup, cancellation, price, age and payment statement before publication.
+
+## Database and account hardening follow-up
+
+The translation table is intentionally server-only. Its lifecycle changes must remain covered by the existing business audit trigger, while the generic audit snapshot redacts the content JSON field. CI asserts the table's RLS posture, absence of public/authenticated SELECT privileges, and audit-trigger presence.
+
+The earlier Supabase advisor report also identified seven public tables with RLS enabled and no policies. Do not add broad authenticated policies to silence that warning: zero policies means deny-all for client roles, which may be the intended posture. Before changing anything, verify each table's consumers and ensure all reads/writes occur through trusted server-side service-role code. Add narrowly scoped policies only if a documented client use case requires them.
+
+Leaked-password protection is a Supabase Auth project setting, not a SQL migration. It must be enabled in the Supabase Dashboard under Authentication security/password settings and then verified with an Auth configuration review. It is not safe to imply that a repository migration changed this setting.
+
+For unused-index notices, first capture pg_stat_user_indexes over a representative traffic period and inspect EXPLAIN (ANALYZE, BUFFERS) for affected query paths. Do not drop indexes supporting foreign keys, uniqueness, booking lookups, RLS predicates or infrequent but critical administrative operations based on a single advisor snapshot.
+
 ## Operational checks outside Git
 
 - Enable Supabase Auth leaked-password protection in the project's Auth security settings after checking the current account-level configuration.
