@@ -199,7 +199,12 @@ export async function getPublishedTours(options?: TourFilterOptions): Promise<To
   }
 
   if (!isSupabaseConfigured() || isSchemaMissing()) {
-    return import.meta.env.PROD ? [] : filterTours(localTours);
+    if (import.meta.env.PROD) {
+      throw new Error(!isSupabaseConfigured()
+        ? 'The public excursion catalogue is unavailable because Supabase is not configured.'
+        : 'The public excursion catalogue is unavailable because its database schema could not be verified.');
+    }
+    return filterTours(localTours);
   }
 
   try {
@@ -259,8 +264,9 @@ export async function getPublishedTours(options?: TourFilterOptions): Promise<To
       if (isSchemaMissingError(error)) {
         setSchemaMissing(true);
       }
-      console.error('Failed to query published tours:', formatSupabaseError(error));
-      return [];
+      const message = formatSupabaseError(error);
+      console.error('Failed to query published tours:', message);
+      throw new Error(`Unable to load published excursions: ${message}`);
     }
 
     if (!data || data.length === 0) {
@@ -299,7 +305,7 @@ export async function getPublishedTours(options?: TourFilterOptions): Promise<To
       setSchemaMissing(true);
     }
     console.warn('Supabase getPublishedTours failed:', err);
-    return [];
+    throw new Error(err instanceof Error ? err.message : 'Unable to load published excursions.');
   }
 }
 

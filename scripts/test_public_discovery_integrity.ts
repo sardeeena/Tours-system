@@ -1,0 +1,39 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+
+const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8');
+const app = read('../src/App.tsx');
+const excursions = read('../src/pages/ExcursionsPage.tsx');
+const experiences = read('../src/components/home/ExperienceCategories.tsx');
+const destinations = read('../src/components/home/DestinationsSection.tsx');
+const tourService = read('../src/services/tourService.ts');
+const server = read('../server.ts');
+const routes = read('../scripts/test_routes.ts');
+
+assert.match(app, /currentPath === '\/excursions'/, 'the public excursions directory has an explicit client route');
+assert.match(app, /currentPath === '\/experiences'/, 'the experiences directory has an explicit client route');
+assert.match(app, /currentPath === '\/destinations'/, 'the destinations directory has an explicit client route');
+assert.match(app, /error=\{toursError\}[\s\S]*?onRetry=\{refreshPublishedTours\}/, 'excursion loading failures reach the catalogue with a retry action');
+assert.match(app, /setToursError\(toursRes\.reason instanceof Error/, 'parallel catalogue loading preserves excursion errors');
+assert.match(excursions, /error\?: string \| null/, 'excursion page accepts a catalogue error state');
+assert.match(excursions, /role="alert"[\s\S]*?Try again/, 'excursion page visibly explains failures and offers retry');
+assert.match(excursions, /\.sort\(\(a, b\) =>/, 'excursion results are sorted after applying filters');
+assert.match(excursions, /sidebarFilters\.minRating/, 'minimum rating filter is applied');
+assert.match(excursions, /sidebarFilters\.pickupOnly/, 'pickup-only filter is applied');
+assert.match(excursions, /sidebarFilters\.languages/, 'language filter is applied');
+assert.match(excursions, /sidebarFilters\.durationPreset/, 'duration presets are applied');
+assert.match(experiences, /onSelectCategory/, 'experience categories expose selection navigation');
+assert.match(destinations, /onSelectDestination/, 'destination cards expose selection navigation');
+assert.match(tourService, /throw new Error\(!isSupabaseConfigured\(\)/, 'production catalogue configuration failures are not misreported as an empty catalogue');
+assert.match(tourService, /Unable to load published excursions:/, 'Supabase query failures propagate instead of silently returning an empty list');
+assert.match(server, /app\.get\('\/sitemap\.xml'/, 'the public sitemap endpoint exists');
+assert.match(server, /app\.get\('\/llms\.txt'/, 'the AI discovery index endpoint exists');
+assert.match(server, /path === '\/excursions'/, 'server-side excursion catalogue rendering is explicit');
+assert.match(server, /path === '\/experiences'/, 'server-side experience catalogue rendering is explicit');
+assert.match(server, /path.startsWith\('\/excursions\/'\)/, 'server-side excursion detail rendering is explicit');
+assert.match(server, /path.startsWith\('\/destinations\/'\)/, 'server-side destination detail rendering is explicit');
+assert.match(server, /res\.setHeader\('Cache-Control', 'private, no-store, max-age=0'\)/, 'tour detail HTML is protected from cross-route cache leakage');
+assert.match(routes, /\/excursions\/orange-bay-island-snorkeling/, 'route regression suite covers direct excursion detail URLs');
+assert.match(routes, /\/destinations/, 'route regression suite covers destination directory URLs');
+
+console.log('Public discovery route, filtering, error-state and SEO integrity checks passed.');

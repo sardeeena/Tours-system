@@ -220,6 +220,7 @@ function MainApp() {
   // Live published tours loaded dynamically from Supabase
   const [liveTours, setLiveTours] = useState<Tour[]>([]);
   const [loadingTours, setLoadingTours] = useState<boolean>(true);
+  const [toursError, setToursError] = useState<string | null>(null);
 
   // Live published destinations & categories loaded dynamically from Supabase
   const [liveDestinations, setLiveDestinations] = useState<Destination[]>([]);
@@ -301,6 +302,7 @@ function MainApp() {
     setLoadingTours(true);
     setLoadingDestinations(true);
     setLoadingCategories(true);
+    setToursError(null);
     setDestinationsError(null);
     setCategoriesError(null);
 
@@ -314,6 +316,7 @@ function MainApp() {
       setLiveTours(toursRes.value || []);
     } else {
       console.warn('Failed to load published tours from Supabase:', toursRes.reason);
+      setToursError(toursRes.reason instanceof Error ? toursRes.reason.message : 'Unable to load published excursions. Please try again.');
       setLiveTours([]);
     }
     setLoadingTours(false);
@@ -339,11 +342,13 @@ function MainApp() {
 
   const refreshPublishedTours = useCallback(async () => {
     setLoadingTours(true);
+    setToursError(null);
     try {
       const data = await getPublishedTours();
       setLiveTours(data || []);
     } catch (err) {
       console.warn('Failed to load published tours from Supabase:', err);
+      setToursError(err instanceof Error ? err.message : 'Unable to load published excursions. Please try again.');
       setLiveTours([]);
     } finally {
       setLoadingTours(false);
@@ -1560,6 +1565,8 @@ function MainApp() {
           currency={currentCurrency}
           tours={liveTours}
           isLoading={loadingTours}
+          error={toursError}
+          onRetry={refreshPublishedTours}
           initialDestination={initialSearchFilter.destination}
           initialCategory={initialSearchFilter.category}
           destinations={liveDestinations}
