@@ -1063,7 +1063,7 @@ app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: Auth
     const preferredLocale = typeof customerPreference?.preferred_locale === 'string'
       ? customerPreference.preferred_locale.trim().toLowerCase()
       : '';
-    if (['en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'].includes(preferredLocale)) {
+    if (['en', 'de', 'it', 'ro', 'ru'].includes(preferredLocale)) {
       selectedTemplateLanguage = preferredLocale;
     }
 
@@ -2818,7 +2818,7 @@ const TRANSLATION_LOCALES = new Set([
 ]);
 const TRANSLATION_ENTITY_TYPES = new Set([
   'tour','tour_itinerary','tour_highlight','tour_inclusion','tour_exclusion',
-  'tour_faq','destination','blog_post','static_page','ui_catalog',
+  'tour_faq','destination','blog_post','static_page','communication_template','ui_catalog',
 ]);
 
 const TRANSLATION_SOURCE_TABLES: Record<string, string> = {
@@ -2830,6 +2830,7 @@ const TRANSLATION_SOURCE_TABLES: Record<string, string> = {
   tour_faq: 'tour_faqs',
   destination: 'destinations',
   blog_post: 'blog_posts',
+  communication_template: 'communication_templates',
 };
 
 function stableTranslationJson(value: any): string {
@@ -2858,6 +2859,7 @@ async function getTranslationSource(entityType: string, entityKey: string): Prom
   const table = TRANSLATION_SOURCE_TABLES[entityType];
   if (!table) return null;
   let query = serverSupabase.from(table).select('*');
+  if (entityType === 'communication_template') query = query.eq('locale', 'en');
   if (entityType === 'blog_post') query = query.in('status', ['published', 'scheduled']).lte('published_at', new Date().toISOString());
   else if (entityType === 'tour' || entityType === 'destination') query = query.eq('status', 'published');
   const { data, error } = await query.eq('id', entityKey).maybeSingle();
@@ -3104,6 +3106,7 @@ function bulkTranslationPayload(type: string, source: any): Record<string, any> 
   }};
   if (type==='destination') return {title:source.name || source.title,summary:source.tagline || source.description || '',content:{title:source.name || source.title,description:source.description || '',tagline:source.tagline || '',paragraphs:[],labels:{browseMore:'Explore more destinations'}}};
   if (type==='blog_post') return {title:source.title,summary:source.excerpt || source.meta_description || '',content:{title:source.title,excerpt:source.excerpt || '',content:source.content || source.body || ''}};
+  if (type==='communication_template') return {title:source.name,summary:source.subject || '',content:{name:source.name,subject:source.subject || '',body_text:source.body_text || '',variables:source.variables || {},channel:source.channel,template_key:source.template_key}};
   return {title:source.title || source.name || 'Explore the Red Sea',summary:source.heroSubtitle || source.description || source.excerpt || '',content:{heroHeadline:source.heroHeadline || source.title || '',heroSubtitle:source.heroSubtitle || source.description || '',sections:source.sections || [],paragraphs:source.paragraphs || [],labels:{browseMore:'Explore more',bookNow:'Book now'}}};
 }
 function normalizedTranslationSlug(value: unknown, fallback: string): string {
@@ -3137,7 +3140,7 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
         'Translate every human-facing string recursively into '+BULK_TRANSLATION_LOCALES[locale]+' ('+locale+').',
         'Return only valid JSON: {"translations":[{"entity_type":"...","entity_key":"...","title":"...","translated_slug":"...","summary":"...","seo_title":"...","seo_description":"...","content":{...}}]}. Return exactly one item per input and preserve entity_type and entity_key exactly.',
         'Preserve all JSON keys, arrays, order, object shapes and non-string values. Translate all prose, labels, headings, FAQs, itinerary and UI message values.',
-        'Never invent or change prices, currencies, numbers, dates, times, durations, pickup details, age limits, safety requirements, inclusions, exclusions, cancellation terms, legal claims, contacts, URLs, emails, phone numbers, IDs or brand/place names. Copy factual values exactly.',
+        'Never invent or change prices, currencies, numbers, dates, times, durations, pickup details, age limits, safety requirements, inclusions, exclusions, cancellation terms, legal claims, contacts, URLs, emails, phone numbers, IDs or brand/place names. Copy factual values exactly. In communication templates preserve every {{placeholder}} token byte-for-byte and do not translate variable names.',
         'translated_slug must be a natural short lowercase ASCII slug using only a-z, 0-9 and hyphens. For ui_catalog use site-ui. Keep empty source strings empty. Do not omit fields or add commentary.',
         'SEO title should be concise; SEO description accurate. No unsupported claims.',
         'INPUT: '+JSON.stringify(work.map(x=>({entity_type:x.type,entity_key:x.key,source:x.payload})))
@@ -3266,6 +3269,14 @@ app.post('/api/admin/translations', rateLimit(30, 60_000), async (req: Authentic
       const keys = Object.keys(source?.content || {});
       const complete = keys.length > 0 && keys.every((key) => typeof translationContent[key] === 'string' && String(translationContent[key]).trim().length > 0);
       if (!complete) return res.status(400).json({ success: false, error: 'The interface catalog must translate every source UI message before publication.' });
+    } else if (entityType === 'communication_template') {
+      const source = await getTranslationSource(entityType, entityKey);
+      const translatedBody = typeof translationContent.body_text === 'string' ? translationContent.body_text : '';
+      const sourceTokens = String(source?.body_text || '').match(/\{\{[^{}]+\}\}/g) || [];
+      const translatedTokens = translatedBody.match(/\{\{[^{}]+\}\}/g) || [];
+      if (!source || !translatedBody.trim() || sourceTokens.sort().join('|') !== translatedTokens.sort().join('|')) {
+        return res.status(400).json({ success: false, error: 'Publishing a communication template requires a body and every original {{placeholder}} token unchanged.' });
+      }
     } else if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(translatedSlug) || !seoTitle || !seoDescription) {
       return res.status(400).json({ success: false, error: 'Publishing requires a translated title and slug, SEO title and description, and a source checksum.' });
     }
@@ -3300,6 +3311,18 @@ app.post('/api/admin/translations', rateLimit(30, 60_000), async (req: Authentic
       .select('id,entity_type,entity_key,locale,translated_slug,title,summary,content,seo_title,seo_description,source_checksum,translation_state,reviewed_by,reviewed_at,published_at,updated_at')
       .single();
     if (error) throw error;
+    if (state === 'published' && entityType === 'communication_template') {
+      const sourceTemplate = await getTranslationSource(entityType, entityKey);
+      if (!sourceTemplate) throw new Error('The English communication template source is no longer available.');
+      const { error: templateError } = await serverSupabase!.from('communication_templates').upsert({
+        template_key: sourceTemplate.template_key, name: String(translationContent.name || title || sourceTemplate.name),
+        channel: sourceTemplate.channel, subject: String(translationContent.subject || ''),
+        body_text: String(translationContent.body_text), variables: sourceTemplate.variables || {},
+        is_active: Boolean(sourceTemplate.is_active), locale,
+        updated_at: now,
+      }, { onConflict: 'template_key,locale' });
+      if (templateError) throw templateError;
+    }
     await writeAccountAudit(req.user!.id, state === 'published' ? 'CONTENT_TRANSLATION_PUBLISHED' : 'CONTENT_TRANSLATION_SAVED', data.id, {
       entity_type: entityType, entity_key: entityKey, locale, translation_state: state,
     });
