@@ -60,6 +60,10 @@ assert.match(schema, /knowsAbout:/, 'Business entity declares its visible servic
 assert.match(schema, /'@type': 'BreadcrumbList'/, 'Public pages expose breadcrumb structured data');
 assert.match(schema, /mainEntityId/, 'Page entities link to their primary tour, destination or article entity');
 assert.match(schema, /'@type': 'WebPage'/, 'Every indexable public route receives a WebPage node');
+assert.match(server, /slug && slug !== 'about'/, 'Sitemap and llms discovery preserve the explicitly indexable About page');
+assert.match(server, /Office: 2nd floor, Bostan Cafe, Madres, Hurghada, Red Sea Governorate, Egypt/, 'Homepage Markdown response uses the canonical owner-confirmed office address');
+assert.doesNotMatch(server, /Hurghada New Marina, Berth B-14/, 'Homepage Markdown response does not expose the retired office address');
+assert.match(server, /Starting price: \\${price}/, 'Homepage Markdown response exposes verified published tour prices');
 assert.doesNotMatch(schema, /aggregateRating|reviewRating|openingHoursSpecification|priceRange|geo:/, 'Schema does not invent reviews, hours, prices or geographic coordinates');
 
 const markdownHandlerStart = server.indexOf('const acceptsMarkdown');
