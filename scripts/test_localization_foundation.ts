@@ -35,7 +35,7 @@ assert.match(locales, /direction: 'rtl'/, 'RTL direction is represented in local
 assert.match(migration, /CREATE TABLE IF NOT EXISTS public\.content_translations/, 'Translation content schema exists');
 assert.match(server, /app\.get\('\/api\/admin\/translations'[\s\S]*requireSuperAdminAal2\(req, res\)/, 'Translation listing API requires Super Admin AAL2');
 assert.match(server, /app\.post\('\/api\/admin\/translations'[\s\S]*requireSuperAdminAal2\(req, res\)/, 'Translation writes require Super Admin AAL2');
-assert.match(server, /translation_state: state[\s\S]*confirm_publish !== true/, 'Publishing requires explicit human confirmation');
+assert.match(server, /body\.confirm_publish !== true/, 'Publishing requires explicit human confirmation');
 assert.match(server, /64-character SHA-256 source checksum/, 'Translation writes require a SHA-256 source checksum');
 assert.match(app, /AdminTranslationManager/, 'Admin translation workspace is wired into the app');
 assert.match(migration, /ALTER TABLE public\.bookings[\s\S]*customer_locale/, 'Booking customer locale is separate from guide language');
