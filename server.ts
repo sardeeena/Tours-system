@@ -1029,7 +1029,7 @@ app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: Auth
   const templateName = process.env.WHATSAPP_TEMPLATE_NAME?.trim() || '';
   const templateLanguage = process.env.WHATSAPP_TEMPLATE_LANGUAGE?.trim() || 'en';
   if (!accessToken || !phoneNumberId || !/^\d{5,30}$/.test(phoneNumberId) || !/^v\d+\.\d+$/.test(graphVersion || '') ||
-      !/^[a-z0-9_]{1,512}$/.test(templateName) || !/^[a-z]{2}(?:_[A-Z]{2})?$/.test(templateLanguage)) {
+      !/^[a-z0-9_]{1,512}$/.test(templateName) || !['en', 'de', 'it', 'ro', 'ru'].includes(templateLanguage)) {
     return res.status(503).json({ success: false, error: 'Meta WhatsApp is not fully configured. Configure the access token, phone number ID, Graph API version, approved template name, and template language on the server.' });
   }
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
