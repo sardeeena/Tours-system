@@ -1,4 +1,4 @@
-export type LanguageCode = 'en' | 'de' | 'ru' | 'it' | 'ro';
+export type LanguageCode = EuropeanLocaleCode;
 
 export interface LanguageConfig {
   code: LanguageCode;
@@ -7,7 +7,7 @@ export interface LanguageConfig {
   flag: string;
 }
 
-export const SUPPORTED_LANGUAGES: Record<LanguageCode, LanguageConfig> = {
+export const SUPPORTED_LANGUAGES: Partial<Record<LanguageCode, LanguageConfig>> = {
   en: {
     code: 'en',
     name: 'English',
