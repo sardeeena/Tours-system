@@ -2004,7 +2004,7 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
           source,
           status: 'subscribed',
           discount_code: 'REDSEA15',
-          metadata: { preferredLanguage: String(preferredLanguage || 'en').slice(0, 20), consentSource: source, consentedAt: new Date().toISOString() },
+          metadata: { preferredLanguage: customerLocale, consentSource: source, consentedAt: new Date().toISOString() },
         })
         .select('id,created_at,updated_at')
         .single();
