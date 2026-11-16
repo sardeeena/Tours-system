@@ -459,6 +459,15 @@ function MainApp() {
       window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     };
 
+    const privateBookingPath = /^\/booking(?:\/|$)/i.test(normalizedRequestedPath);
+    if (privateBookingPath && ['fr', 'es', 'nl', 'pl', 'pt'].includes(currentLocale)) {
+      // The first-wave public pages are localized; the booking form remains English
+      // until its complete UI dictionary is reviewed. Preserve the chosen customer
+      // locale in the query string so confirmations and emails use that language.
+      commitNavigation(normalizedRequestedPath);
+      return;
+    }
+
     if (currentLocale !== 'en' && !/^\/admin(?:\/|$)/i.test(normalizedRequestedPath)) {
       const params = new URLSearchParams({ locale: currentLocale, pathname: normalizedRequestedPath });
       fetch('/api/content-translations/target?' + params.toString(), {
