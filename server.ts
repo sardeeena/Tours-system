@@ -3151,10 +3151,10 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
       const current = await getCurrentTranslationSourceChecksum(candidate.entity_type,candidate.entity_key);
       if (current) prepared.push({type:candidate.entity_type,key:candidate.entity_key,checksum:current.checksum,source:current.source,payload:bulkTranslationPayload(candidate.entity_type,current.source)});
     }
-    const {data:existing,error:existingError} = await serverSupabase.from('content_translations').select('entity_type,entity_key,translation_state,reviewed_at,published_at').eq('locale',locale).limit(2000);
+    const {data:existing,error:existingError} = await serverSupabase.from('content_translations').select('entity_type,entity_key,translated_slug,translation_state,reviewed_at,published_at').eq('locale',locale).limit(2000);
     if (existingError) throw existingError;
     const known = new Map((existing || []).map((x:any)=>[x.entity_type+':'+x.entity_key,x]));
-    const usedSlugs = new Set((existing || []).filter((x:any)=>!(prepared.some(p=>p.candidate.entity_type===x.entity_type && p.candidate.entity_key===x.entity_key))).map((x:any)=>x.translated_slug).filter(Boolean));
+    const usedSlugs = new Set((existing || []).filter((x:any)=>!(prepared.some(p=>p.type===x.entity_type && p.key===x.entity_key))).map((x:any)=>x.translated_slug).filter(Boolean));
     const work = prepared.filter(x=>{const old:any=known.get(x.type+':'+x.key);return !old || (old.translation_state==='draft' && !old.reviewed_at && !old.published_at);});
     let saved=0, skipped=prepared.length-work.length;
     if (work.length) {
