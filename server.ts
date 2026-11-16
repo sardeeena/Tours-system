@@ -3081,12 +3081,14 @@ async function getBulkTranslationCandidates(): Promise<Array<{ entity_type: stri
     serverSupabase.from('destinations').select('id').eq('status','published').order('name'),
     serverSupabase.from('blog_posts').select('id').in('status',['published','scheduled']).lte('published_at',new Date().toISOString()).order('published_at',{ascending:false}),
     serverSupabase.from('site_settings').select('value').eq('key','pages_content').maybeSingle(),
+    serverSupabase.from('communication_templates').select('id').eq('locale','en'),
   ]);
   for (const result of results) if (result.error) throw result.error;
   const out: Array<{entity_type:string;entity_key:string}> = [];
   for (const row of results[0].data || []) out.push({entity_type:'tour',entity_key:String(row.id)});
   for (const row of results[1].data || []) out.push({entity_type:'destination',entity_key:String(row.id)});
   for (const row of results[2].data || []) out.push({entity_type:'blog_post',entity_key:String(row.id)});
+  for (const row of results[4].data || []) out.push({entity_type:'communication_template',entity_key:String(row.id)});
   out.push({entity_type:'static_page',entity_key:'home'});
   const raw = results[3].data?.value;
   const pages = Array.isArray(raw) ? raw : raw && Array.isArray(raw.pages) ? raw.pages : [];
