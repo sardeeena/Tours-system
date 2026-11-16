@@ -4525,8 +4525,8 @@ async function startServer() {
         '- Excursions catalogue: https://awesomeadventure.tours/excursions',
         '- About: https://awesomeadventure.tours/about',
         '- Contact: https://awesomeadventure.tours/contact',
-        '- Terms & Conditions: https://awesomeadventure.tours/terms
-        '- Cancellation & Refund Policy: https://awesomeadventure.tours/cancellation-policy',',
+        '- Terms & Conditions: https://awesomeadventure.tours/terms',
+        '- Cancellation & Refund Policy: https://awesomeadventure.tours/cancellation-policy',
         '- Full agent index: https://awesomeadventure.tours/llms.txt',
         '',
         '## Contact',
