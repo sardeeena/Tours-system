@@ -40,6 +40,11 @@ assert.match(server, /app\.get\('\/api\/admin\/translations'[\s\S]*requireSuperA
 assert.match(server, /app\.post\('\/api\/admin\/translations'[\s\S]*requireSuperAdminAal2\(req, res\)/, 'Translation writes require Super Admin AAL2');
 assert.match(server, /app\.get\('\/api\/admin\/translations\/source'[\s\S]*requireSuperAdminAal2\(req, res\)/, 'Authoritative source checksum endpoint requires Super Admin AAL2');
 assert.match(server, /app\.get\('\/api\/content-translations\/resolve'[\s\S]*translation_state', 'published'[\s\S]*current\.checksum === data\.source_checksum/, 'Public resolver requires published state and a current source checksum');
+assert.match(server, /app\.get\('\/api\/content-translations\/ui'[\s\S]*complete = englishKeys\.every/, 'Public UI catalog is delivered only when every source message is translated');
+assert.match(server, /app\.get\('\/api\/content-translations\/locales'[\s\S]*englishKeys\.every/, 'Only locales with complete reviewed UI catalogs are advertised');
+assert.match(server, /entityType === 'ui_catalog'[\s\S]*TRANSLATIONS\.en/, 'UI catalog source checksum is anchored to the English source dictionary');
+assert.match(server, /entityType === 'ui_catalog'[\s\S]*interface catalog must translate every source UI message/, 'UI catalog publication rejects missing messages');
+assert.match(migration, /'static_page', 'ui_catalog'/, 'Translation schema supports reviewed UI message catalogs');
 assert.match(server, /reviewed_at && data\?\.published_at/, 'Public resolver requires reviewed and published timestamps');
 assert.match(server, /content_translations'[\s\S]*source_checksum[\s\S]*getCurrentTranslationSourceChecksum/, 'Localized sitemap and SSR validate source checksums');
 assert.match(server, /\['tour_itinerary', 'itinerary'\][\s\S]*\['tour_highlights', 'highlights'\][\s\S]*\['tour_inclusions', 'included'\][\s\S]*\['tour_exclusions', 'excluded'\]/, 'Tour source checksums include itinerary, highlights, inclusions and exclusions');
@@ -54,6 +59,8 @@ assert.match(app, /AdminTranslationManager/, 'Admin translation workspace is wir
 assert.match(app, /LocalizedContentPage/, 'Localized content route renderer is wired into the app');
 assert.match(app, /currentLocale !== 'en'/, 'Locale-prefixed routes are handled separately from English routes');
 assert.match(languageContext, /The URL is authoritative/, 'URL is the source of truth for interface language');
+assert.match(languageContext, /api\/content-translations\/ui\?locale=/, 'Interface language loads its published UI catalog from the server');
+assert.match(languageContext, /api\/content-translations\/locales/, 'Language selector discovers only fully translated UI catalogs');
 assert.doesNotMatch(languageContext, /navigator\.language/, 'Browser language does not silently override the route language');
 assert.match(localizedPage, /cache: 'no-store'/, 'Public translation resolution bypasses stale browser caches');
 assert.match(localizedPage, /translation\.entity_type === 'tour'/, 'Translated tour routes retain a booking handoff');
