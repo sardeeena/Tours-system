@@ -55,8 +55,6 @@ export const BookingPage: React.FC<BookingPageProps> = ({
 }) => {
   const { showToast } = useToast();
   const { language } = useLanguage();
-  const requestedCustomerLocale = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('customer_locale') : null;
-  const customerLocale = requestedCustomerLocale && ['en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'].includes(requestedCustomerLocale) ? requestedCustomerLocale : language;
 
   // Find current tour or fallback
   const [selectedTourSlug, setSelectedTourSlug] = useState<string>(
@@ -310,7 +308,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
         tourDestination: currentTour.destination,
         tourDuration: currentTour.durationLabel,
         tourLanguage: selectedTourLanguage,
-        customerLocale,
+        customerLocale: language,
         date,
         guests,
         pickup: {
@@ -443,9 +441,6 @@ export const BookingPage: React.FC<BookingPageProps> = ({
             Reserve Your Excursion
           </h1>
         </div>
-        {customerLocale !== language && <p role="status" aria-live="polite" className="mb-5 rounded-lg border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-900">
-          The booking form is currently in English. Your booking confirmation and customer emails will use your selected language ({customerLocale.toUpperCase()}).
-        </p>}
 
         {/* 2-Column Responsive Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
