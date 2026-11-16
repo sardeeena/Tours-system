@@ -405,10 +405,10 @@ BEGIN
         v_ref_random := extensions.gen_random_bytes(10);
         v_booking_ref := 'AWE-' ||
             (SELECT string_agg(SUBSTRING('ABCDEFGHJKLMNPQRSTUVWXYZ23456789' FROM get_byte(v_ref_random, i) + 1 FOR 1), '' ORDER BY i)
-             FROM generate_series(0, 4) AS i) ||
+             FROM generate_series(0, 4) AS gs(i)) ||
             '-' ||
             (SELECT string_agg(SUBSTRING('ABCDEFGHJKLMNPQRSTUVWXYZ23456789' FROM get_byte(v_ref_random, i) + 1 FOR 1), '' ORDER BY i)
-             FROM generate_series(5, 9) AS i);
+             FROM generate_series(5, 9) AS gs(i));
 
         -- 11. Insert Authoritative Booking Record with Idempotency Key & Collision Protection
         BEGIN
