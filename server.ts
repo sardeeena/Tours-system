@@ -4208,7 +4208,44 @@ function seoUpsertMeta(html: string, kind: 'name' | 'property', key: string, val
 }
 
 async function renderAwesomeAdventureToursPublicHtml(pathname: string, template: string): Promise<{ html: string; statusCode: number; noindex: boolean; nofollow: boolean }> {
-  const path = pathname.replace(/\/+$/, '') || '/';
+  const requestedPath = pathname.replace(/\/+$/, '') || '/';
+  const localePath = parseLocalePath(requestedPath);
+  let path = localePath?.pathname || requestedPath;
+  let localizedTranslation: any = null;
+  let localizedSource: any = null;
+  if (localePath) {
+    const parts = path.split('/').filter(Boolean);
+    const route = parts.length === 2 && parts[0] === 'excursions'
+      ? { entityType: 'tour', prefix: '/excursions/' }
+      : parts.length === 2 && parts[0] === 'destinations'
+        ? { entityType: 'destination', prefix: '/destinations/' }
+        : parts.length === 2 && parts[0] === 'blog'
+          ? { entityType: 'blog_post', prefix: '/blog/' }
+          : parts.length === 1
+            ? { entityType: 'static_page', prefix: '/' }
+            : null;
+    if (route && serverSupabase) {
+      try {
+        const { data, error } = await serverSupabase.from('content_translations')
+          .select('id,entity_type,entity_key,locale,translated_slug,title,summary,content,seo_title,seo_description,source_checksum,translation_state,reviewed_at,published_at')
+          .eq('entity_type', route.entityType).eq('locale', localePath.locale)
+          .eq('translated_slug', parts[parts.length - 1]).eq('translation_state', 'published').maybeSingle();
+        if (error) throw error;
+        if (data?.reviewed_at && data?.published_at) {
+          const current = await getCurrentTranslationSourceChecksum(route.entityType, data.entity_key);
+          if (current && current.checksum === data.source_checksum) {
+            localizedTranslation = data;
+            localizedSource = current.source;
+            const sourceSlug = typeof current.source.slug === 'string' ? current.source.slug : '';
+            path = route.entityType === 'static_page' ? '/' + sourceSlug : route.prefix + sourceSlug;
+          }
+        }
+      } catch (error) {
+        console.error('[Localized SSR] Translation resolution failed:', error);
+      }
+    }
+    if (!localizedTranslation) path = '/__localized_translation_unavailable__';
+  }
   const origin = 'https://awesomeadventure.tours';
   let title = 'Awesome Adventure Tours | Boat Trips, Island Tours & Safaris';
   let description = 'Discover boat trips, island experiences, snorkeling, diving and desert safaris across Egypt. Compare tour details and book with confidence.';
@@ -4232,16 +4269,13 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
   let seoIdentifier = 'home';
   let seoIdentifierIsPageSlug = true;
 
-  const localePath = parseLocalePath(path);
-  if (localePath) {
-    // Recognized locale URLs must never silently serve English source content.
-    // They remain non-indexable until a reviewed, published translation route is wired.
+  if (localePath && !localizedTranslation) {
     statusCode = 404;
     noindex = true;
     nofollow = false;
-    title = 'This language version is not available yet | Awesome Adventure Tours';
-    description = 'This translated page is not published yet. Browse the available English excursion information instead.';
-    body = '<main id="seo-initial-content"><h1>This language version is not available yet</h1><p>We are preparing reviewed translations for this page. The English version remains available.</p><p><a href="/excursions">Browse English excursions</a></p></main>';
+    title = 'This translation is unavailable | Awesome Adventure Tours';
+    description = 'A current reviewed translation for this page is not available.';
+    body = '<main id="seo-initial-content"><h1>This translation is unavailable</h1><p>This page has no current reviewed translation. Browse the original page instead.</p><p><a href="/excursions">Browse excursions</a></p></main>';
   } else if (path === '/' || path === '/excursions') {
     // These catalogue reads are independent; run them concurrently so public
     // HTML rendering is bounded by the slower query rather than their sum.
@@ -4554,9 +4588,29 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
     if (override?.robots_follow === false && !(pageKind === 'static' && seoIdentifier === 'about')) nofollow = true;
   }
 
+  if (localizedTranslation) {
+    title = localizedTranslation.seo_title || localizedTranslation.title || title;
+    description = localizedTranslation.seo_description || localizedTranslation.summary || description;
+    noindex = false;
+    nofollow = false;
+    const content = localizedTranslation.content && typeof localizedTranslation.content === 'object' ? localizedTranslation.content : {};
+    const safeParagraphs = Array.isArray(content.paragraphs) ? content.paragraphs.filter((v: any) => typeof v === 'string') : [];
+    const safeSections = Array.isArray(content.sections) ? content.sections.filter((v: any) => v && typeof v.title === 'string' && typeof v.content === 'string') : [];
+    const safeLists = ['highlights','itinerary','included','excluded'].map((key) => {
+      const values = Array.isArray(content[key]) ? content[key].filter((v: any) => typeof v === 'string' || (v && typeof v === 'object')) : [];
+      return values.length ? '<ul>' + values.map((item: any) => '<li>' + seoHtmlEscape(typeof item === 'string' ? item : (item.title || '') + ' ' + (item.description || '')) + '</li>').join('') + '</ul>' : '';
+    }).join('');
+    const prose = typeof content.content === 'string' ? content.content : typeof content.description === 'string' ? content.description : '';
+    body = '<main id="seo-initial-content"><h1>' + seoHtmlEscape(localizedTranslation.title || title) + '</h1>' +
+      (localizedTranslation.summary ? '<p>' + seoHtmlEscape(localizedTranslation.summary) + '</p>' : '') +
+      (prose ? '<p>' + seoHtmlEscape(prose) + '</p>' : '') +
+      safeParagraphs.map((item: string) => '<p>' + seoHtmlEscape(item) + '</p>').join('') +
+      safeSections.map((section: any) => '<section><h2>' + seoHtmlEscape(section.title) + '</h2><p>' + seoHtmlEscape(section.content) + '</p></section>').join('') + safeLists + '</main>';
+  }
   title = seoBoundedTitle(title) || 'Awesome Adventure Tours';
   description = seoBoundedDescription(description) || 'Explore published excursions and experiences across Egypt’s Red Sea coast.';
-  const canonical = `${origin}${path === '/' ? '/' : path}`;
+  const canonicalPath = localePath ? requestedPath : path;
+  const canonical = `${origin}${canonicalPath === '/' ? '/' : canonicalPath}`;
   const cmsSocialProfiles: string[] = [];
   if (publicSupabase) {
     try {
@@ -4703,7 +4757,16 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
   html = seoUpsertMeta(html, 'name', 'twitter:image', pageImage);
   html = html.replace(/<link\s+rel="canonical"[^>]*>/i, `<link rel="canonical" href="${seoHtmlEscape(canonical)}" />`);
   html = html.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '');
-  html = html.replace('</head>', `<script type="application/ld+json">${schema}</script>${seoInitialStyles()}</head>`);
+  if (localePath) {
+    html = html.replace(/<html\b([^>]*)>/i, (_match, attrs) => `<html${String(attrs).replace(/\s+lang=["'][^"']*["']/i, '').replace(/\s+dir=["'][^"']*["']/i, '')} lang="${localePath.locale}" dir="${localePath.locale === 'ar' ? 'rtl' : 'ltr'}">`);
+    const alternateLinks: string[] = [];
+    alternateLinks.push(`<link rel="alternate" hreflang="en" href="${origin}${path}">`);
+    alternateLinks.push(`<link rel="alternate" hreflang="x-default" href="${origin}${path}">`);
+    if (localizedTranslation) alternateLinks.push(`<link rel="alternate" hreflang="${localePath.locale}" href="${origin}${requestedPath}">`);
+    html = html.replace('</head>', `${alternateLinks.join('')}<script type="application/ld+json">${schema}</script>${seoInitialStyles()}</head>`);
+  } else {
+    html = html.replace('</head>', `<script type="application/ld+json">${schema}</script>${seoInitialStyles()}</head>`);
+  }
   html = html.replace(/<div id="root"><\/div>/i, `<div id="root">${body}</div>`);
   return { html, statusCode, noindex, nofollow };
 }
