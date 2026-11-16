@@ -542,14 +542,9 @@ function MainApp() {
     }
 
     if (currentPath.startsWith('/blog/')) {
-      seoService.apply({
-        title: 'Travel Story | Awesome Adventure Tours Journal',
-        description: 'Travel inspiration and local guides from the Awesome Adventure Tours team in Hurghada, Egypt.',
-        canonicalUrl: typeof window !== 'undefined' ? `https://awesomeadventure.tours${currentPath}` : undefined,
-        ogType: 'article',
-        robotsIndex: true,
-        robotsFollow: true,
-      });
+      // Keep the article-specific metadata emitted by the server renderer.
+      // BlogPage applies the loaded article's own SEO title, description and schema;
+      // a generic App-level title here can overwrite those values during hydration.
       return;
     }
 
