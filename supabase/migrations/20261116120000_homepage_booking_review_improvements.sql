@@ -15,6 +15,7 @@ DECLARE
     v_pickup_location_id UUID;
     v_booking_id UUID;
     v_booking_ref TEXT;
+    v_ref_random BYTEA;
     v_total_guests INT;
     v_subtotal NUMERIC(10,2) := 0.00;
     v_pickup_fee NUMERIC(10,2) := 0.00;
@@ -397,28 +398,37 @@ BEGIN
         WHERE id = v_customer_id;
     END IF;
 
-    -- 10. Generate Authoritative Unpredictable Booking Reference
-    v_booking_ref := 'AAT-' || TO_CHAR(CURRENT_DATE, 'YY') || '-' || UPPER(SUBSTRING(ENCODE(extensions.gen_random_bytes(8), 'hex') FROM 1 FOR 16));
+    -- 10. Generate a short, human-friendly, cryptographically random reference.
+    -- The 32-character alphabet excludes visually ambiguous 0/1/I/O; 10 symbols provide 50 bits.
+    -- Retry only on a booking_reference collision. Other unique violations still surface.
+    LOOP
+        v_ref_random := extensions.gen_random_bytes(10);
+        v_booking_ref := 'AWE-' ||
+            (SELECT string_agg(SUBSTRING('ABCDEFGHJKLMNPQRSTUVWXYZ23456789' FROM get_byte(v_ref_random, i) + 1 FOR 1), '' ORDER BY i)
+             FROM generate_series(0, 4) AS i) ||
+            '-' ||
+            (SELECT string_agg(SUBSTRING('ABCDEFGHJKLMNPQRSTUVWXYZ23456789' FROM get_byte(v_ref_random, i) + 1 FOR 1), '' ORDER BY i)
+             FROM generate_series(5, 9) AS i);
 
-    -- 11. Insert Authoritative Booking Record with Idempotency Key & Concurrency Protection
-    BEGIN
-        INSERT INTO public.bookings (
-            booking_reference, user_id, tour_id, customer_id, booking_date, status, payment_status,
-            payment_method, adult_count, child_count, infant_count, pickup_location_id,
-            pickup_hotel_name, pickup_room_number, subtotal, extras_total, discount, total,
-            currency, special_requests, idempotency_key, idempotency_payload
-        )
-        VALUES (
-            v_booking_ref, v_current_user_id, v_tour.id, v_customer_id, p_booking_date, v_initial_status,
-            v_initial_payment_status, p_payment_method, p_adult_count,
-            COALESCE(p_child_count, 0), COALESCE(p_infant_count, 0),            v_pickup_location_id,
-            p_customer_hotel, p_pickup_room_number, v_subtotal, v_extras_total, v_discount, v_final_total,
-            'EUR', p_special_requests, TRIM(p_idempotency_key), v_idempotency_payload
-        )
-        RETURNING id INTO v_booking_id;
-    EXCEPTION WHEN unique_violation THEN
-        -- Concurrently committed duplicate request with exact same idempotency_key
-        IF p_idempotency_key IS NOT NULL AND TRIM(p_idempotency_key) <> '' THEN
+        -- 11. Insert Authoritative Booking Record with Idempotency Key & Collision Protection
+        BEGIN
+            INSERT INTO public.bookings (
+                booking_reference, user_id, tour_id, customer_id, booking_date, status, payment_status,
+                payment_method, adult_count, child_count, infant_count, pickup_location_id,
+                pickup_hotel_name, pickup_room_number, subtotal, extras_total, discount, total,
+                currency, special_requests, idempotency_key, idempotency_payload
+            )
+            VALUES (
+                v_booking_ref, v_current_user_id, v_tour.id, v_customer_id, p_booking_date, v_initial_status,
+                v_initial_payment_status, p_payment_method, p_adult_count,
+                COALESCE(p_child_count, 0), COALESCE(p_infant_count, 0), v_pickup_location_id,
+                p_customer_hotel, p_pickup_room_number, v_subtotal, v_extras_total, v_discount, v_final_total,
+                'EUR', p_special_requests, TRIM(p_idempotency_key), v_idempotency_payload
+            )
+            RETURNING id INTO v_booking_id;
+            EXIT;
+        EXCEPTION WHEN unique_violation THEN
+            -- First resolve a concurrent retry of the same idempotent request.
             SELECT * INTO v_existing_dup
             FROM public.bookings
             WHERE idempotency_key = TRIM(p_idempotency_key)
@@ -443,9 +453,16 @@ BEGIN
                     'message', 'Idempotent replay: concurrent request resolved.'
                 );
             END IF;
-        END IF;
-        RAISE;
-    END;
+
+            -- A different booking may have won the same random reference. Generate another.
+            IF EXISTS (SELECT 1 FROM public.bookings WHERE booking_reference = v_booking_ref) THEN
+                CONTINUE;
+            END IF;
+
+            -- Do not hide unrelated unique-constraint violations.
+            RAISE;
+        END;
+    END LOOP;
 
     -- 12. Persist Immutable Booking Extras Snapshot
     IF p_extras IS NOT NULL AND jsonb_typeof(p_extras) = 'array' AND jsonb_array_length(p_extras) > 0 THEN
