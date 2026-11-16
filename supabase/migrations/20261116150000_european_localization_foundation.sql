@@ -68,6 +68,12 @@ ALTER TABLE public.content_translations ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.content_translations FROM PUBLIC, anon, authenticated;
 GRANT ALL ON TABLE public.content_translations TO service_role;
 
+-- The generic audit function redacts JSON/content fields before storing snapshots.
+-- Keep translation lifecycle changes auditable without exposing translated body text.
+CREATE TRIGGER trg_capture_business_audit
+  AFTER INSERT OR UPDATE OR DELETE ON public.content_translations
+  FOR EACH ROW EXECUTE FUNCTION private.capture_business_audit();
+
 COMMENT ON TABLE public.content_translations IS
   'Server-managed reviewed translations. Do not publish or index draft, review, or outdated rows.';
 COMMENT ON COLUMN public.bookings.customer_locale IS
