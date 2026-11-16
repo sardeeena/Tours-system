@@ -25,6 +25,7 @@ export const LocalizedContentPage: React.FC<{
 }> = ({ locale, pathname, onNavigate }) => {
   const route = useMemo(() => {
     const parts = pathname.split('/').filter(Boolean);
+    if (parts.length === 0) return { entityType: 'static_page', slug: 'home' };
     if (parts.length === 2 && parts[0] === 'excursions') return { entityType: 'tour', slug: parts[1] };
     if (parts.length === 2 && parts[0] === 'destinations') return { entityType: 'destination', slug: parts[1] };
     if (parts.length === 2 && parts[0] === 'blog') return { entityType: 'blog_post', slug: parts[1] };
@@ -74,35 +75,32 @@ export const LocalizedContentPage: React.FC<{
   const itinerary = Array.isArray(content.itinerary) ? content.itinerary as Array<{ title?: string; description?: string }> : [];
   const included = asStrings(content.included);
   const excluded = asStrings(content.excluded);
-  const articleBody = clean(content.content || content.description || content.fullDescription || content.body);
+  const articleBody = clean(content.content || content.description || content.fullDescription || content.body || content.heroSubtitle);
+  const labels = content.labels && typeof content.labels === 'object' ? content.labels as Record<string, string> : {};
+  const heroHeadline = clean(content.heroHeadline);
   const sourceSlug = clean(result?.source?.slug || result?.source?.id);
 
   if (loading) return <main className="min-h-[60vh] grid place-items-center px-5"><Loader2 className="h-8 w-8 animate-spin text-teal-700" aria-label="Loading translation" /></main>;
   if (unavailable || !translation) return (
-    <main className="mx-auto max-w-2xl px-5 py-24 text-center">
-      <Globe className="mx-auto mb-5 h-10 w-10 text-stone-400" />
-      <h1 className="font-display text-3xl font-bold text-stone-900 dark:text-white">This translation is not available</h1>
-      <p className="mt-4 text-stone-600 dark:text-slate-300">This page has no current, reviewed translation in this language. We will not substitute English text or index an incomplete translation.</p>
-      <button onClick={() => onNavigate(pathname)} className="mt-7 inline-flex items-center gap-2 rounded-xl bg-teal-800 px-5 py-3 font-semibold text-white"><ArrowLeft size={16}/> Return</button>
-    </main>
+    <main className="mx-auto max-w-2xl px-5 py-24 text-center"><Globe className="mx-auto mb-5 h-10 w-10 text-stone-400" /><h1 className="font-display text-3xl font-bold text-stone-900 dark:text-white">404</h1></main>
   );
 
   return (
     <main className="min-h-screen bg-[#FAF8F5] px-5 py-12 text-[#17212B] dark:bg-[#0A1118] dark:text-slate-100" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
       <article className="mx-auto max-w-4xl">
         <p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-teal-700 dark:text-teal-300">{locale.toUpperCase()} · Awesome Adventure Tours</p>
-        <h1 className="font-display text-4xl font-bold leading-tight sm:text-5xl">{translation.title}</h1>
+        <h1 className="font-display text-4xl font-bold leading-tight sm:text-5xl">{heroHeadline || translation.title}</h1>
         {translation.summary && <p className="mt-6 text-xl leading-relaxed text-stone-600 dark:text-slate-300">{translation.summary}</p>}
         {articleBody && <div className="mt-8 whitespace-pre-line text-lg leading-8">{articleBody}</div>}
         {paragraphs.map((paragraph, index) => <p key={index} className="mt-5 text-lg leading-8">{paragraph}</p>)}
         {sections.map((section, index) => <section key={index} className="mt-10"><h2 className="font-display text-2xl font-bold">{section.title}</h2><p className="mt-3 whitespace-pre-line leading-8">{section.content}</p></section>)}
-        {highlights.length > 0 && <section className="mt-10"><h2 className="font-display text-2xl font-bold">Highlights</h2><ul className="mt-4 list-disc space-y-2 ps-6">{highlights.map((item,index)=><li key={index}>{item}</li>)}</ul></section>}
-        {itinerary.length > 0 && <section className="mt-10"><h2 className="font-display text-2xl font-bold">Itinerary</h2><ol className="mt-4 list-decimal space-y-3 ps-6">{itinerary.map((item,index)=><li key={index}><strong>{item.title}</strong>{item.description && <p className="mt-1">{item.description}</p>}</li>)}</ol></section>}
-        {included.length > 0 && <section className="mt-10"><h2 className="font-display text-2xl font-bold">Included</h2><ul className="mt-3 list-disc space-y-2 ps-6">{included.map((item,index)=><li key={index}>{item}</li>)}</ul></section>}
-        {excluded.length > 0 && <section className="mt-8"><h2 className="font-display text-2xl font-bold">Not included</h2><ul className="mt-3 list-disc space-y-2 ps-6">{excluded.map((item,index)=><li key={index}>{item}</li>)}</ul></section>}
+        {highlights.length > 0 && <section className="mt-10">{labels.highlights && <h2 className="font-display text-2xl font-bold">{labels.highlights}</h2>}<ul className="mt-4 list-disc space-y-2 ps-6">{highlights.map((item,index)=><li key={index}>{item}</li>)}</ul></section>}
+        {itinerary.length > 0 && <section className="mt-10">{labels.itinerary && <h2 className="font-display text-2xl font-bold">{labels.itinerary}</h2>}<ol className="mt-4 list-decimal space-y-3 ps-6">{itinerary.map((item,index)=><li key={index}><strong>{item.title}</strong>{item.description && <p className="mt-1">{item.description}</p>}</li>)}</ol></section>}
+        {included.length > 0 && <section className="mt-10">{labels.included && <h2 className="font-display text-2xl font-bold">{labels.included}</h2>}<ul className="mt-3 list-disc space-y-2 ps-6">{included.map((item,index)=><li key={index}>{item}</li>)}</ul></section>}
+        {excluded.length > 0 && <section className="mt-8">{labels.excluded && <h2 className="font-display text-2xl font-bold">{labels.excluded}</h2>}<ul className="mt-3 list-disc space-y-2 ps-6">{excluded.map((item,index)=><li key={index}>{item}</li>)}</ul></section>}
         <div className="mt-14 flex flex-wrap gap-3 border-t border-stone-200 pt-8 dark:border-slate-700">
-          {translation.entity_type === 'tour' && <button onClick={() => onNavigate('/booking?tour=' + encodeURIComponent(sourceSlug))} className="inline-flex items-center gap-2 rounded-xl bg-teal-800 px-6 py-3 font-semibold text-white">Book this excursion <ArrowRight size={16}/></button>}
-          <button onClick={() => onNavigate(translation.entity_type === 'blog_post' ? '/blog' : '/excursions')} className="inline-flex items-center gap-2 rounded-xl border border-stone-300 px-5 py-3 font-semibold dark:border-slate-600"><ArrowLeft size={16}/> Browse more</button>
+          {translation.entity_type === 'tour' && labels.bookNow && <button onClick={() => onNavigate('/booking?tour=' + encodeURIComponent(sourceSlug))} className="inline-flex items-center gap-2 rounded-xl bg-teal-800 px-6 py-3 font-semibold text-white">{labels.bookNow}<ArrowRight size={16}/></button>}
+          {labels.browseMore && <button onClick={() => onNavigate(translation.entity_type === 'blog_post' ? '/blog' : '/excursions')} className="inline-flex items-center gap-2 rounded-xl border border-stone-300 px-5 py-3 font-semibold dark:border-slate-600"><ArrowLeft size={16}/>{labels.browseMore}</button>}
         </div>
       </article>
     </main>
