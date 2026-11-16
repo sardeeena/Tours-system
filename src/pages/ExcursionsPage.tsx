@@ -99,6 +99,9 @@ export const ExcursionsPage: React.FC<ExcursionsPageProps> = ({
     }
     if (initialCategory) {
       setActivitySelect(initialCategory);
+      setActiveCategoryTab(initialCategory);
+    } else {
+      setActiveCategoryTab('All');
     }
   }, [initialDestination, initialCategory]);
 
