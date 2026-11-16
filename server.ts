@@ -4671,6 +4671,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
     const content = localizedTranslation.content && typeof localizedTranslation.content === 'object' ? localizedTranslation.content : {};
     const safeParagraphs = Array.isArray(content.paragraphs) ? content.paragraphs.filter((v: any) => typeof v === 'string') : [];
     const safeSections = Array.isArray(content.sections) ? content.sections.filter((v: any) => v && typeof v.title === 'string' && typeof v.content === 'string') : [];
+    const safeFaqs = Array.isArray(content.faqs) ? content.faqs.filter((v: any) => v && typeof v.question === 'string' && typeof v.answer === 'string') : [];
     const safeLists = ['highlights','itinerary','included','excluded'].map((key) => {
       const values = Array.isArray(content[key]) ? content[key].filter((v: any) => typeof v === 'string' || (v && typeof v === 'object')) : [];
       return values.length ? '<ul>' + values.map((item: any) => '<li>' + seoHtmlEscape(typeof item === 'string' ? item : (item.title || '') + ' ' + (item.description || '')) + '</li>').join('') + '</ul>' : '';
@@ -4680,7 +4681,9 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       (localizedTranslation.summary ? '<p>' + seoHtmlEscape(localizedTranslation.summary) + '</p>' : '') +
       (prose ? '<p>' + seoHtmlEscape(prose) + '</p>' : '') +
       safeParagraphs.map((item: string) => '<p>' + seoHtmlEscape(item) + '</p>').join('') +
-      safeSections.map((section: any) => '<section><h2>' + seoHtmlEscape(section.title) + '</h2><p>' + seoHtmlEscape(section.content) + '</p></section>').join('') + safeLists + '</main>';
+      safeSections.map((section: any) => '<section><h2>' + seoHtmlEscape(section.title) + '</h2><p>' + seoHtmlEscape(section.content) + '</p></section>').join('') +
+      safeFaqs.map((faq: any) => '<section><h2>' + seoHtmlEscape(faq.question) + '</h2><p>' + seoHtmlEscape(faq.answer) + '</p></section>').join('') +
+      ['pickupInfo','cancellationPolicy','ageRestrictions'].map((key) => typeof content[key] === 'string' ? '<p>' + seoHtmlEscape(content[key]) + '</p>' : '').join('') + safeLists + '</main>';
   }
   title = seoBoundedTitle(title) || 'Awesome Adventure Tours';
   description = seoBoundedDescription(description) || 'Explore published excursions and experiences across Egypt’s Red Sea coast.';
