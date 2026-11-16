@@ -14,6 +14,8 @@ import {
   Clock,
   CheckCircle2,
   Filter,
+  ChevronDown,
+  Check,
 } from 'lucide-react';
 import {
   DashboardViewMode,
@@ -59,6 +61,7 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
   const { showToast } = useToast();
 
   const [activeView, setActiveView] = useState<DashboardViewMode>(initialViewMode);
+  const [isSectionMenuOpen, setIsSectionMenuOpen] = useState(false);
   const [dateRange, setDateRange] = useState<ReportDateRangeType>('this_month');
   const [customStartDate, setCustomStartDate] = useState<string>('');
   const [customEndDate, setCustomEndDate] = useState<string>('');
@@ -305,27 +308,27 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
         </div>
       </div>
 
-      {/* View Switcher Tabs (6 Views including Report Builder) */}
-      <div className="flex items-center space-x-1.5 overflow-x-auto p-1.5 bg-white dark:bg-[#0E1B2A] rounded-2xl border border-[#E8E3DA] dark:border-[#1F3854] text-xs shadow-xs print:hidden">
-        {viewTabs.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeView === tab.id;
-          return (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveView(tab.id)}
-              className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl font-semibold transition-all whitespace-nowrap cursor-pointer ${
-                isActive
-                  ? 'bg-[#0A6C74] text-white shadow-xs'
-                  : 'text-stone-600 dark:text-stone-300 hover:text-[#0A6C74] hover:bg-[#FAF8F5] dark:hover:bg-[#16283D]'
-              }`}
-            >
-              <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-stone-400 dark:text-stone-500'}`} />
-              <span>{tab.label}</span>
-            </button>
-          );
-        })}
+      {/* Compact dashboard section menu */}
+      <div className="relative print:hidden">
+        <button type="button" aria-haspopup="menu" aria-expanded={isSectionMenuOpen} onClick={() => setIsSectionMenuOpen((open) => !open)}
+          className="inline-flex min-w-[240px] max-w-full items-center justify-between gap-4 rounded-xl border border-[#D8E2E3] dark:border-[#294653] bg-white dark:bg-[#111E2E] px-4 py-3 text-sm font-semibold text-[#0E1B2A] dark:text-white shadow-sm hover:border-[#0A6C74]/60 focus:outline-none focus:ring-2 focus:ring-[#0A6C74]/30">
+          <span className="flex items-center gap-2.5">
+            {React.createElement(viewTabs.find((tab) => tab.id === activeView)?.icon || LayoutDashboard, { className: 'w-4 h-4 text-[#0A6C74] dark:text-[#2DD4BF]' })}
+            {viewTabs.find((tab) => tab.id === activeView)?.label.replace(/^\d+\.\s*/, '') || 'Executive Dashboard'}
+          </span>
+          <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform ${isSectionMenuOpen ? 'rotate-180' : ''}`} />
+        </button>
+        {isSectionMenuOpen && <>
+          <button type="button" aria-label="Close section menu" className="fixed inset-0 z-20 cursor-default" onClick={() => setIsSectionMenuOpen(false)} />
+          <div role="menu" className="absolute left-0 top-full z-30 mt-2 w-full min-w-[260px] max-w-sm overflow-hidden rounded-2xl border border-[#E8E3DA] dark:border-[#294653] bg-white dark:bg-[#111E2E] p-1.5 shadow-xl">
+            {viewTabs.map((tab) => { const Icon = tab.icon; const isActive = activeView === tab.id; return (
+              <button key={tab.id} type="button" role="menuitem" onClick={() => { setActiveView(tab.id); setIsSectionMenuOpen(false); }}
+                className={`flex w-full items-center gap-3 rounded-xl px-3.5 py-3 text-left text-sm transition-colors ${isActive ? 'bg-[#E8F3F4] dark:bg-[#0A6C74]/20 text-[#0A6C74] dark:text-[#2DD4BF] font-semibold' : 'text-stone-700 dark:text-stone-200 hover:bg-[#FAF8F5] dark:hover:bg-[#16283D]'}`}>
+                <Icon className="h-4 w-4 shrink-0" /><span className="flex-1">{tab.label.replace(/^\d+\.\s*/, '')}</span>{isActive && <Check className="h-4 w-4" />}
+              </button>
+            ); })}
+          </div>
+        </>}
       </div>
 
       {/* Date Filter Bar (Shown for dashboards) */}
