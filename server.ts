@@ -3145,6 +3145,26 @@ function bulkTranslationPayload(type: string, source: any): Record<string, any> 
   if (type==='communication_template') return {title:source.name,summary:source.subject || '',content:{name:source.name,subject:source.subject || '',body_text:source.body_text || '',variables:source.variables || {},channel:source.channel,template_key:source.template_key}};
   return {title:source.title || source.name || 'Explore the Red Sea',summary:source.heroSubtitle || source.description || source.excerpt || '',content:{heroHeadline:source.heroHeadline || source.title || '',heroSubtitle:source.heroSubtitle || source.description || '',sections:source.sections || [],paragraphs:source.paragraphs || [],labels:{browseMore:'Explore more',bookNow:'Book now'}}};
 }
+function translationStructureMatches(source: any, translated: any): boolean {
+  if (typeof source === 'string') {
+    if (typeof translated !== 'string') return false;
+    if (!source.trim()) return !translated.trim();
+    const protectedTokens = source.match(/\{\{[^{}]+\}\}|https?:\/\/[^\s<>"']+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|\+?\d[\d\s().-]{4,}\d|\b\d+(?:[.,]\d+)?\b/g) || [];
+    return Boolean(translated.trim()) && protectedTokens.every((token) => translated.includes(token));
+  }
+  if (Array.isArray(source)) {
+    return Array.isArray(translated) && source.length === translated.length
+      && source.every((value, index) => translationStructureMatches(value, translated[index]));
+  }
+  if (source && typeof source === 'object') {
+    if (!translated || typeof translated !== 'object' || Array.isArray(translated)) return false;
+    const sourceKeys = Object.keys(source).sort();
+    const translatedKeys = Object.keys(translated).sort();
+    return sourceKeys.length === translatedKeys.length
+      && sourceKeys.every((key, index) => key === translatedKeys[index] && translationStructureMatches(source[key], translated[key]));
+  }
+  return source === translated;
+}
 function normalizedTranslationSlug(value: unknown, fallback: string): string {
   const raw = typeof value==='string' ? value.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase() : '';
   return raw.replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,160) || fallback.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,160) || 'page';
@@ -3189,7 +3209,8 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
       const byKey = new Map(parsed.translations.map((x:any)=>[x.entity_type+':'+x.entity_key,x]));
       for (const item of work) {
         const translated:any = byKey.get(item.type+':'+item.key);
-        if (!translated || !translated.content || typeof translated.content!=='object' || Array.isArray(translated.content)) {skipped++;continue;}
+        if (!translated || !translated.content || typeof translated.content!=='object' || Array.isArray(translated.content) || !translationStructureMatches(item.payload.content, translated.content)) {skipped++;continue;}
+        if (item.type !== 'ui_catalog' && item.payload.title && !String(translated.title || '').trim()) {skipped++;continue;}
         const latest = await getCurrentTranslationSourceChecksum(item.type,item.key);
         if (!latest || latest.checksum!==item.checksum) {skipped++;continue;}
         const isUi = item.type==='ui_catalog';
