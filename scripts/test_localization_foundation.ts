@@ -94,6 +94,7 @@ assert.match(expandedBookingLocaleMigration, /NOT IN \('en', 'de', 'it', 'ro', '
 assert.match(server, /app\.post\('\/api\/admin\/translations\/generate-batch'[\s\S]*requireSuperAdminAal2\(req, res\)/, 'AI bulk generation requires Super Admin AAL2');
 assert.match(server, /translation_state:\s*'draft'[\s\S]*reviewed_by:\s*null,\s*reviewed_at:\s*null,\s*published_at:\s*null/, 'AI bulk generation can only create unreviewed drafts');
 assert.match(server, /BULK_TRANSLATION_LOCALES: Record<string, string> = \{ fr: 'French', es: 'Spanish', nl: 'Dutch', pl: 'Polish', pt: 'Portuguese' \}/, 'Bulk generator targets all five requested locales');
+assert.match(server, /communication_templates'\)\.select\('id'\)\.eq\('locale','en'\)\.order\('template_key'\)\.order\('id'\)/, 'Bulk generation uses deterministic communication-template ordering for offset batches');
 assert.match(server, /communication_template[\s\S]*communication_templates/, 'Communication templates are included in the protected translation workflow');
 assert.match(server, /String\(source\?\.subject \|\| ''\)[\s\S]*String\(source\?\.body_text \|\| ''\)/, 'Communication template placeholder checks include both subject and body');
 assert.match(server, /sourceTokens\.sort\(\)\.join\('\|'\) !== translatedTokens\.sort\(\)\.join\('\|'\)/, 'Communication template publication preserves every original placeholder token');
