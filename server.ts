@@ -3321,7 +3321,8 @@ async function loadAwesomeAdventureToursSeoIndexExclusions(): Promise<{ pageSlug
       const type = typeof row.entity_type === 'string' ? row.entity_type.trim() : '';
       const id = row.entity_id == null ? '' : String(row.entity_id).trim();
       const slug = typeof row.page_slug === 'string' ? row.page_slug.trim() : '';
-      if (type === 'page' && slug) pageSlugs.add(slug);
+      // The About page is explicitly kept indexable by the public HTML renderer; keep discovery files aligned.
+      if (type === 'page' && slug && slug !== 'about') pageSlugs.add(slug);
       else if (type && id) entityIds.add(type + ':' + id);
     }
   } catch (error) { console.warn('[SEO discovery] Index exclusion lookup failed:', error); }
@@ -4524,12 +4525,13 @@ async function startServer() {
         '- Excursions catalogue: https://awesomeadventure.tours/excursions',
         '- About: https://awesomeadventure.tours/about',
         '- Contact: https://awesomeadventure.tours/contact',
-        '- Booking terms: https://awesomeadventure.tours/booking-conditions',
+        '- Terms & Conditions: https://awesomeadventure.tours/terms
+        '- Cancellation & Refund Policy: https://awesomeadventure.tours/cancellation-policy',',
         '- Full agent index: https://awesomeadventure.tours/llms.txt',
         '',
         '## Contact',
         '- Phone: +20 151 5212741',
-        '- Office: Hurghada New Marina, Berth B-14, Red Sea, Egypt',
+        '- Office: 2nd floor, Bostan Cafe, Madres, Hurghada, Red Sea Governorate, Egypt',
         '',
         '## Published excursions',
       ];
@@ -4538,7 +4540,10 @@ async function startServer() {
         const title = cleanPublicText(tour.title, 160);
         if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
         const summary = cleanPublicText(tour.short_description || tour.description, 300);
-        lines.push(`- [${title}](https://awesomeadventure.tours/excursions/${encodeURIComponent(slug)}): ${summary}`);
+        const duration = cleanPublicText(tour.duration, 80);
+        const price = seoPrice(tour.price, tour.currency);
+        const details = [summary, duration ? `Duration: ${duration}` : '', price ? `Starting price: ${price}` : ''].filter(Boolean).join(' | ');
+        lines.push(`- [${title}](https://awesomeadventure.tours/excursions/${encodeURIComponent(slug)}): ${details}`);
       }
       res.status(200);
       res.type('text/markdown; charset=utf-8');
