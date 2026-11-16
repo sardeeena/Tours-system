@@ -2934,12 +2934,32 @@ app.get('/api/content-translations/locales', rateLimit(30, 60_000), async (_req:
     if (error) throw error;
     const current = await getCurrentTranslationSourceChecksum('ui_catalog', 'site-ui');
     const englishKeys = Object.keys(TRANSLATIONS.en || {});
-    const locales = (data || []).filter((row) => {
+    const uiComplete = (data || []).filter((row) => {
       const messages = row.content && typeof row.content === 'object' && !Array.isArray(row.content) ? row.content as Record<string, unknown> : {};
       return Boolean(row.reviewed_at && row.published_at && current && current.checksum === row.source_checksum &&
         englishKeys.every((key) => typeof messages[key] === 'string' && String(messages[key]).trim().length > 0));
-    }).map((row) => row.locale);
-    return res.json({ success: true, locales: Array.from(new Set(locales)) });
+    }).map((row) => row.locale).filter((locale): locale is string => typeof locale === 'string');
+    const candidates = await getBulkTranslationCandidates();
+    const candidateKeys = candidates.map((item) => item.entity_type + ':' + item.entity_key);
+    const completeLocales: string[] = [];
+    if (uiComplete.length && candidateKeys.length) {
+      const { data: publishedRows, error: publishedError } = await serverSupabase.from('content_translations')
+        .select('locale,entity_type,entity_key,source_checksum,reviewed_at,published_at')
+        .in('locale', uiComplete).eq('translation_state', 'published')
+        .not('reviewed_at', 'is', null).not('published_at', 'is', null).limit(5000);
+      if (publishedError) throw publishedError;
+      const coverage = new Map<string, Set<string>>();
+      for (const item of publishedRows || []) {
+        if (!item.source_checksum) continue;
+        if (!coverage.has(item.locale)) coverage.set(item.locale, new Set());
+        coverage.get(item.locale)!.add(item.entity_type + ':' + item.entity_key);
+      }
+      for (const locale of uiComplete) {
+        const keys = coverage.get(locale);
+        if (keys && candidateKeys.every((key) => keys.has(key))) completeLocales.push(locale);
+      }
+    }
+    return res.json({ success: true, locales: completeLocales });
   } catch (error) {
     console.error('[UI translation locales] Lookup failed:', error);
     return res.status(503).json({ success: false, error: 'Interface translation availability is temporarily unavailable.' });
