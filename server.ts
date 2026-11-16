@@ -2889,7 +2889,7 @@ app.get('/api/content-translations/resolve', rateLimit(90, 60_000), async (req: 
     if (!current || !data.source_checksum || current.checksum !== data.source_checksum) {
       return res.status(409).json({ success: false, error: 'This translation is outdated and requires review.' });
     }
-    return res.json({ success: true, translation: data, source: current.source });
+    return res.json({ success: true, translation: data, source: { id: current.source.id || current.source.slug, slug: current.source.slug || null } });
   } catch (error) {
     console.error('[Public translation resolver] Failed:', error);
     return res.status(503).json({ success: false, error: 'Translation service temporarily unavailable.' });
@@ -4792,6 +4792,18 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
     if (hasBreadcrumb) graph.push({ '@type': 'BreadcrumbList', '@id': `${canonical}#breadcrumb`, itemListElement: breadcrumbItems.map((item, index) => ({ '@type': 'ListItem', position: index + 1, name: item.name, item: item.url })) });
   }
 
+  if (localizedTranslation) {
+    for (const node of graph) {
+      if (node && typeof node === 'object' && node['@type'] === 'WebPage') {
+        node.name = title;
+        node.description = description;
+      }
+      if (node && typeof node === 'object' && typeof node['@id'] === 'string' && node['@id'].startsWith(canonical + '#') && node.name) {
+        node.name = localizedTranslation.title || title;
+        node.description = localizedTranslation.summary || description;
+      }
+    }
+  }
   const schema = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }).replace(/</g, '\\u003c');
   let html = template.replace(/<title>[\s\S]*?<\/title>/i, `<title>${seoHtmlEscape(title)}</title>`);
   html = seoUpsertMeta(html, 'name', 'description', description);
