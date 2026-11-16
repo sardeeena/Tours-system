@@ -39,7 +39,7 @@ const priorityTone: Record<string,string> = {
   high:'bg-amber-100 text-amber-800', urgent:'bg-orange-100 text-orange-800', critical:'bg-rose-100 text-rose-800'
 };
 const fieldClass = 'w-full rounded-xl border border-[#E8E3DA] dark:border-[#243447] bg-white dark:bg-[#111E2E] px-3.5 py-3 text-sm text-stone-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-[#0A6C74]';
-const panelClass = 'rounded-2xl border border-[#E8E3DA] dark:border-[#243447] bg-white dark:bg-[#111E2E]';
+const panelClass = 'rounded-2xl border border-[#E3E9E8] dark:border-[#263B4C] bg-white dark:bg-[#111E2E] shadow-sm';
 
 export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = false }) => {
   const { user, hasPermission } = useAuth();
@@ -209,7 +209,7 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
 
   return <main className="flex-1 bg-[#FAF8F5] dark:bg-[#0A1118] py-8 sm:py-12">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 space-y-6">
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-4 border-b border-stone-200/80 dark:border-slate-700 pb-5">
         <div><p className="text-[11px] uppercase tracking-[.2em] font-bold text-[#0A6C74]">{isStaff ? 'TEAM WORKSPACE' : 'CUSTOMER PORTAL'}</p>
           <h1 className="font-display text-3xl sm:text-4xl font-bold text-stone-900 dark:text-white mt-1">{isStaff ? 'Ticket management' : 'My support tickets'}</h1>
           <p className="text-sm text-stone-500 dark:text-slate-400 mt-2">{isStaff ? 'Prioritize, collaborate and resolve customer requests across departments.' : 'Create a request and keep every reply in one secure place.'}</p>
@@ -223,19 +223,37 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
       {error && <div role="alert" className="rounded-xl border border-rose-200 bg-rose-50 text-rose-800 px-4 py-3 text-sm flex gap-2"><AlertCircle size={17} className="shrink-0 mt-0.5"/>{error}</div>}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {[{label:'Open tickets',value:openCount,icon:Ticket},{label:'Urgent / critical',value:urgentCount,icon:AlertCircle},{label:'Past SLA target',value:overdueCount,icon:Clock3}].map(card=><div key={card.label} className={panelClass+' p-4 flex items-center gap-3'}><div className="w-10 h-10 rounded-xl bg-[#E8F3F4] text-[#0A6C74] flex items-center justify-center"><card.icon size={19}/></div><div><p className="text-xs text-stone-500">{card.label}</p><p className="text-2xl font-bold text-stone-900 dark:text-white">{card.value}</p></div></div>)}
+        {[{label:'Open tickets',value:openCount,icon:Ticket},{label:'Urgent / critical',value:urgentCount,icon:AlertCircle},{label:'Past SLA target',value:overdueCount,icon:Clock3}].map(card=><div key={card.label} className={panelClass+' p-5 flex items-center gap-4'}><div className="w-10 h-10 rounded-xl bg-[#E8F3F4] text-[#0A6C74] flex items-center justify-center"><card.icon size={19}/></div><div><p className="text-xs text-stone-500">{card.label}</p><p className="text-2xl font-bold text-stone-900 dark:text-white">{card.value}</p></div></div>)}
       </div>
 
-      {showNew && <form onSubmit={createTicket} className={panelClass+' p-5 sm:p-6 space-y-4'}>
-        <div className="flex items-center justify-between"><h2 className="font-display text-xl font-bold">Create a support ticket</h2><button type="button" onClick={()=>setShowNew(false)} className="text-sm text-stone-500">Cancel</button></div>
-        <div className="grid sm:grid-cols-2 gap-3">
-          <label className="text-xs font-semibold space-y-1.5">Subject<input className={fieldClass} maxLength={180} minLength={4} required value={subject} onChange={e=>setSubject(e.target.value)} placeholder="How can we help?"/></label>
-          <label className="text-xs font-semibold space-y-1.5">Category<select className={fieldClass} value={category} onChange={e=>setCategory(e.target.value)}>{[['general','General enquiry'],['booking','Booking'],['payment','Payment'],['refund','Refund'],['tour_operation','Tour / excursion'],['pickup','Pickup'],['technical','Technical issue'],['complaint','Complaint'],['other','Other']].map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>
-          {isStaff && <><label className="text-xs font-semibold space-y-1.5">Department<select className={fieldClass} value={department} onChange={e=>setDepartment(e.target.value)}>{['support','booking','operations','finance','sales','technical','management'].map(v=><option key={v} value={v}>{v.replace('_',' ').replace(/^./,x=>x.toUpperCase())}</option>)}</select></label><label className="text-xs font-semibold space-y-1.5">Priority<select className={fieldClass} value={priority} onChange={e=>setPriority(e.target.value)}>{['low','normal','high','urgent','critical'].map(v=><option key={v} value={v}>{v.toUpperCase()}</option>)}</select></label></>}
+      {showNew && <form onSubmit={createTicket} className={panelClass+' overflow-hidden'}>
+        <div className="flex items-start justify-between gap-4 border-b border-stone-100 dark:border-slate-700 px-5 py-5 sm:px-6">
+          <div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#0A6C74]">Customer support</p>
+            <h2 className="mt-1 font-display text-xl font-bold text-stone-900 dark:text-white">{isStaff ? 'Create support ticket' : 'How can we help?'}</h2>
+            <p className="mt-1 text-sm text-stone-500 dark:text-slate-400">{isStaff ? 'Open a request on behalf of a customer. You can set its routing and priority.' : 'Tell us what happened. Our team will review your request and take it from here.'}</p></div>
+          <button type="button" onClick={()=>setShowNew(false)} aria-label="Close form" className="rounded-lg px-3 py-2 text-sm text-stone-500 hover:bg-stone-100 dark:hover:bg-slate-800">Cancel</button>
         </div>
-        <label className="text-xs font-semibold space-y-1.5">Related booking (optional)<select className={fieldClass} value={bookingId} onChange={e=>setBookingId(e.target.value)}><option value="">No booking selected</option>{bookings.map(b=><option key={b.id} value={b.id}>{b.booking_reference}</option>)}</select></label>
-        <label className="block text-xs font-semibold space-y-1.5">Describe your request<textarea className={fieldClass+' min-h-32 resize-y'} maxLength={10000} minLength={10} required value={description} onChange={e=>setDescription(e.target.value)} placeholder="Include relevant details so our team can help quickly."/></label>
-        <div className="flex justify-end"><button disabled={busy} className="rounded-xl bg-[#0A6C74] text-white px-5 py-3 text-sm font-bold disabled:opacity-50">{busy?'Creating…':'Submit ticket'}</button></div>
+        <div className="space-y-4 p-5 sm:p-6">
+          <label className="block space-y-1.5 text-xs font-semibold text-stone-700 dark:text-slate-200">What do you need help with?
+            <input className={fieldClass} maxLength={180} minLength={4} required value={subject} onChange={e=>setSubject(e.target.value)} placeholder="For example: Question about my booking"/></label>
+          <label className="block space-y-1.5 text-xs font-semibold text-stone-700 dark:text-slate-200">Tell us a little more
+            <textarea className={fieldClass+' min-h-36 resize-y'} maxLength={10000} minLength={10} required value={description} onChange={e=>setDescription(e.target.value)} placeholder="Describe the issue and what you need help with…"/>
+            <span className="block text-[11px] font-normal text-stone-400">Please do not include passwords or full payment-card details.</span></label>
+          {isStaff && <div className="grid sm:grid-cols-3 gap-3 rounded-xl border border-stone-100 dark:border-slate-700 bg-stone-50/70 dark:bg-slate-900/40 p-4">
+            <label className="text-xs font-semibold space-y-1.5">Category<select className={fieldClass} value={category} onChange={e=>setCategory(e.target.value)}>{[['general','General enquiry'],['booking','Booking'],['payment','Payment'],['refund','Refund'],['tour_operation','Tour / excursion'],['pickup','Pickup'],['technical','Technical issue'],['complaint','Complaint'],['other','Other']].map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>
+            <label className="text-xs font-semibold space-y-1.5">Department<select className={fieldClass} value={department} onChange={e=>setDepartment(e.target.value)}>{['support','booking','operations','finance','sales','technical','management'].map(v=><option key={v} value={v}>{v.replace('_',' ').replace(/^./,x=>x.toUpperCase())}</option>)}</select></label>
+            <label className="text-xs font-semibold space-y-1.5">Priority<select className={fieldClass} value={priority} onChange={e=>setPriority(e.target.value)}>{['low','normal','high','urgent','critical'].map(v=><option key={v} value={v}>{v.toUpperCase()}</option>)}</select></label>
+          </div>}
+          <details className="group rounded-xl border border-stone-200 dark:border-slate-700 px-4 py-3">
+            <summary className="cursor-pointer list-none text-xs font-semibold text-stone-600 dark:text-slate-300 flex items-center justify-between">Add a booking reference <span className="text-stone-400 font-normal">Optional</span></summary>
+            <label className="block mt-3 space-y-1.5 text-xs font-medium text-stone-600 dark:text-slate-300">Select a related booking (if applicable)
+              <select className={fieldClass} value={bookingId} onChange={e=>setBookingId(e.target.value)}><option value="">No booking selected</option>{bookings.map(b=><option key={b.id} value={b.id}>{b.booking_reference}</option>)}</select></label>
+          </details>
+          <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-stone-100 dark:border-slate-700 pt-4">
+            <p className="text-[11px] text-stone-400">Our support team will handle priority and assignment.</p>
+            <button disabled={busy} className="inline-flex justify-center items-center rounded-xl bg-[#0A6C74] hover:bg-[#085B62] text-white px-6 py-3 text-sm font-bold shadow-sm disabled:opacity-50">{busy?'Submitting…':'Send support request'}</button>
+          </div>
+        </div>
       </form>}
 
       <div className="grid lg:grid-cols-[minmax(300px,.8fr)_minmax(0,1.5fr)] gap-5 items-start">
@@ -244,7 +262,7 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
             <select aria-label="Filter tickets" className="text-xs rounded-lg border border-stone-200 dark:border-slate-700 bg-transparent px-2 py-2" value={filter} onChange={e=>setFilter(e.target.value)}>{[['all','All statuses'],...Object.entries(statusLabels)].map(([v,l])=><option key={v} value={v}>{l}</option>)}</select>
           </div>
           {loading ? <div className="p-8 text-center text-sm text-stone-500">Loading tickets…</div> : visibleTickets.length===0 ? <div className="p-8 text-center"><MessageSquare className="w-8 h-8 text-stone-300 mx-auto mb-2"/><p className="text-sm font-semibold">No tickets found</p><p className="text-xs text-stone-500 mt-1">New requests will appear here.</p></div> :
-            <div className="max-h-[650px] overflow-y-auto divide-y divide-stone-100 dark:divide-slate-700">{visibleTickets.map(ticket=><button key={ticket.id} type="button" onClick={()=>{setSelected(ticket);setShowNew(false);}} className={'w-full p-4 text-left hover:bg-stone-50 dark:hover:bg-slate-800/60 transition-colors '+(selected?.id===ticket.id?'bg-[#E8F3F4]/70 dark:bg-teal-950/30':'')}>
+            <div className="max-h-[650px] overflow-y-auto divide-y divide-stone-100 dark:divide-slate-700">{visibleTickets.map(ticket=><button key={ticket.id} type="button" onClick={()=>{setSelected(ticket);setShowNew(false);}} className={'w-full p-4 sm:p-5 text-left hover:bg-[#F5FAF9] dark:hover:bg-slate-800/60 transition-colors border-l-2 '+(selected?.id===ticket.id?'bg-[#E8F3F4]/70 dark:bg-teal-950/30 border-[#0A6C74]':'border-transparent')}>
               <div className="flex items-center justify-between gap-2"><span className="text-[10px] font-bold tracking-wide text-[#0A6C74]">KS-{String(ticket.ticket_number).padStart(6,'0')}</span><span className={'text-[10px] px-2 py-1 rounded-full font-bold '+(priorityTone[ticket.priority]||priorityTone.normal)}>{ticket.priority}</span></div>
               <p className="font-semibold text-sm text-stone-900 dark:text-white mt-2 line-clamp-2">{ticket.subject}</p>
               <div className="flex items-center justify-between gap-2 mt-2 text-[11px] text-stone-500"><span>{statusLabels[ticket.status]||ticket.status}</span><span>{new Date(ticket.updated_at).toLocaleDateString()}</span></div>
@@ -253,7 +271,7 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
 
         <section className={panelClass+' min-h-[460px] overflow-hidden'}>
           {!selected ? <div className="h-full min-h-[460px] flex flex-col items-center justify-center p-8 text-center"><div className="w-14 h-14 rounded-2xl bg-[#E8F3F4] text-[#0A6C74] flex items-center justify-center mb-4"><Headphones size={26}/></div><h2 className="font-display text-xl font-bold">Select a ticket</h2><p className="text-sm text-stone-500 mt-2 max-w-sm">Choose a ticket from the queue to view its conversation and manage its progress.</p></div> :
-          <><div className="p-5 border-b border-stone-100 dark:border-slate-700 space-y-3">
+          <><div className="p-5 sm:p-6 border-b border-stone-100 dark:border-slate-700 space-y-4 bg-gradient-to-br from-white to-stone-50/70 dark:from-[#111E2E] dark:to-slate-900/40">
             <button type="button" onClick={()=>setSelected(null)} className="lg:hidden inline-flex items-center gap-1 text-xs text-stone-500"><ArrowLeft size={14}/> Back to queue</button>
             <div className="flex flex-wrap items-center justify-between gap-2"><span className="text-xs font-bold text-[#0A6C74]">KS-{String(selected.ticket_number).padStart(6,'0')}</span><span className="text-xs text-stone-500">Created {new Date(selected.created_at).toLocaleString()}</span></div>
             <h2 className="font-display text-xl sm:text-2xl font-bold text-stone-900 dark:text-white">{selected.subject}</h2>
@@ -263,9 +281,9 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
               {canAssign && <button type="button" disabled={busy} onClick={()=>void updateTicket({assigned_to:user.id,status:selected.status==='open'?'assigned':selected.status})} className="text-xs rounded-lg border border-[#0A6C74]/40 text-[#0A6C74] px-3 py-2 inline-flex items-center gap-1"><UserRound size={13}/> Assign to me</button>}
             </div>}
           </div>
-          <div className="p-5 space-y-4 max-h-[480px] overflow-y-auto">
-            <article className="rounded-xl bg-stone-50 dark:bg-slate-800/60 p-4"><div className="flex items-center gap-2 text-xs font-bold mb-2"><UserRound size={14}/> Requester <span className="ml-auto text-[10px] font-normal text-stone-500">{new Date(selected.created_at).toLocaleString()}</span></div><p className="text-sm whitespace-pre-wrap text-stone-700 dark:text-slate-200">{selected.description}</p></article>
-            {messages.map(message=><article key={message.id} className={'rounded-xl p-4 '+(message.is_internal?'bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900':'bg-[#E8F3F4]/70 dark:bg-teal-950/30')}>
+          <div className="p-5 sm:p-6 space-y-4 max-h-[520px] overflow-y-auto bg-stone-50/50 dark:bg-slate-950/20">
+            <article className="rounded-2xl bg-white dark:bg-slate-800/70 border border-stone-200/80 dark:border-slate-700 p-4 sm:p-5 shadow-xs"><div className="flex items-center gap-2 text-xs font-bold mb-2"><UserRound size={14}/> Requester <span className="ml-auto text-[10px] font-normal text-stone-500">{new Date(selected.created_at).toLocaleString()}</span></div><p className="text-sm whitespace-pre-wrap text-stone-700 dark:text-slate-200">{selected.description}</p></article>
+            {messages.map(message=><article key={message.id} className={'rounded-2xl p-4 sm:p-5 shadow-xs '+(message.is_internal?'bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900':'bg-[#E8F3F4]/70 dark:bg-teal-950/30')}>
               <div className="flex items-center gap-2 text-xs font-bold mb-2">{message.is_internal?<><Shield size={14}/> Internal note</>:<><Users size={14}/> {message.author_id===user.id?'You':'Team reply'}</>}<span className="ml-auto text-[10px] font-normal text-stone-500">{new Date(message.created_at).toLocaleString()}</span></div><p className="text-sm whitespace-pre-wrap">{message.body}</p>
               {message.attachments?.length ? <div className="mt-3 flex flex-col gap-1.5">{message.attachments.map((attachment,i)=><AttachmentLink key={attachment.path||i} attachment={attachment}/>)}</div> : null}
             </article>)}
