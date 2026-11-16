@@ -27,6 +27,7 @@ const AccountPage = lazy(() => import('./pages/AccountPage').then(m => ({ defaul
 const StaticContentPage = lazy(() => import('./pages/StaticContentPage').then(m => ({ default: m.StaticContentPage })));
 const DestinationDetailPage = lazy(() => import('./pages/DestinationDetailPage').then(m => ({ default: m.DestinationDetailPage })));
 const BlogPage = lazy(() => import('./pages/BlogPage').then(m => ({ default: m.BlogPage })));
+const LocalizedContentPage = lazy(() => import('./pages/LocalizedContentPage').then(m => ({ default: m.LocalizedContentPage })));
 const SupportPage = lazy(() => import('./pages/SupportPage').then(m => ({ default: m.SupportPage })));
 import { ALL_TOURS, CURRENCY_CONFIGS } from './data/toursData';
 import { Tour, CurrencyConfig, Destination, Category } from './types';
@@ -47,7 +48,8 @@ import { Compass } from 'lucide-react';
 // Providers
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { LanguageProvider } from './contexts/LanguageContext';
+import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
+import { parseLocalePath } from './i18n/localeRouting';
 import { ToastProvider } from './contexts/ToastContext';
 import { WishlistProvider } from './contexts/WishlistContext';
 import { ComparisonProvider } from './contexts/ComparisonContext';
@@ -209,6 +211,7 @@ const AdminLoginLoadingFallback = () => (
 );
 
 function MainApp() {
+  const { language, setLanguage } = useLanguage();
   const { user, isAdmin, loading: authLoading, refreshUser, checkAdminAccess } = useAuth();
   const [currentCurrency, setCurrentCurrency] = useState<CurrencyConfig>(CURRENCY_CONFIGS.EUR);
 
@@ -232,8 +235,9 @@ function MainApp() {
   const [helpSelectedTour, setHelpSelectedTour] = useState<Tour | null>(null);
 
   // Client-side router path & search query
+  const [currentLocale, setCurrentLocale] = useState<string>(() => parseLocalePath(window.location.pathname)?.locale || 'en');
   const [currentPath, setCurrentPath] = useState<string>(() => {
-    return window.location.pathname || '/';
+    return parseLocalePath(window.location.pathname)?.pathname || window.location.pathname || '/';
   });
 
   const [searchParams, setSearchParams] = useState<URLSearchParams>(() => {
@@ -391,12 +395,15 @@ function MainApp() {
   // Sync browser back/forward buttons
   useEffect(() => {
     const handlePopState = () => {
-      setCurrentPath(window.location.pathname || '/');
+      const parsedLocale = parseLocalePath(window.location.pathname);
+      setCurrentLocale(parsedLocale?.locale || 'en');
+      setCurrentPath(parsedLocale?.pathname || window.location.pathname || '/');
+      if (parsedLocale && ['en','de','it','ro','ru'].includes(parsedLocale.locale)) setLanguage(parsedLocale.locale as any);
       setSearchParams(new URLSearchParams(window.location.search));
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
+  }, [setLanguage]);
 
   // Central Navigation function
   const navigate = (path: string, param?: string) => {
@@ -428,12 +435,20 @@ function MainApp() {
       fullPath = '/account';
     }
 
-    if (window.location.pathname + window.location.search !== fullPath) {
-      window.history.pushState({}, '', fullPath);
+    const [requestedPathname, searchStr] = fullPath.split('?');
+    const normalizedRequestedPath = requestedPathname || '/';
+    const isPrivatePath = /^\/(?:admin|login|register|account|profile|reset-password|booking|my-booking)(?:\/|$)/i.test(normalizedRequestedPath);
+    const localizedPath = currentLocale !== 'en' && !isPrivatePath
+      ? `/${currentLocale}${normalizedRequestedPath === '/' ? '' : normalizedRequestedPath}`
+      : currentLocale !== 'en' && isPrivatePath
+        ? `/${currentLocale}${normalizedRequestedPath}`
+        : normalizedRequestedPath;
+    const finalPath = searchStr ? `${localizedPath}?${searchStr}` : localizedPath;
+    if (window.location.pathname + window.location.search !== finalPath) {
+      window.history.pushState({}, '', finalPath);
     }
 
-    const [pathname, searchStr] = fullPath.split('?');
-    setCurrentPath(pathname || '/');
+    setCurrentPath(normalizedRequestedPath);
     setSearchParams(new URLSearchParams(searchStr || ''));
     window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   };
@@ -1308,6 +1323,15 @@ function MainApp() {
   // PUBLIC WEBSITE VIEWS
   // ==============================================================================
   const renderCurrentView = () => {
+    // Locale-prefixed content routes are resolved only from checksum-verified,
+    // human-reviewed translations. Booking and account workflows continue to
+    // use their existing language-aware components.
+    if (currentLocale !== 'en' && !/^\\/(?:booking(?:\\/|$)|my-booking(?:\\/|$)|login(?:\\/|$)|register(?:\\/|$)|account(?:\\/|$)|profile(?:\\/|$)|reset-password(?:\\/|$)|admin(?:\\/|$)|support(?:\\/|$))/i.test(currentPath)) {
+      return <Suspense fallback={<PublicPageLoadingFallback />}><LocalizedContentPage locale={currentLocale} pathname={currentPath} onNavigate={(path) => navigate(path)} /></Suspense>;
+    }
+    if (currentLocale !== 'en' && !['de','it','ro','ru'].includes(currentLocale) && /^\\/(?:booking|my-booking|login|register|account|profile|reset-password)(?:\\/|$)/i.test(currentPath)) {
+      return <main className="mx-auto max-w-xl px-5 py-24 text-center"><h1 className="text-2xl font-bold">This interface language is not ready yet</h1><p className="mt-3">This language is not yet fully translated for booking and account workflows.</p><button className="mt-6 rounded bg-teal-800 px-5 py-3 text-white" onClick={() => navigate('/')}>Return to the English site</button></main>;
+    }
     // Auth: Login Page
     if (currentPath === '/login') {
       const rawRedirect = searchParams.get('redirect');
