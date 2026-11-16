@@ -6,6 +6,9 @@ const server = read('../server.ts');
 const app = read('../src/App.tsx');
 const locales = read('../src/types/i18n.ts');
 const migration = read('../supabase/migrations/20261116150000_european_localization_foundation.sql');
+const bookingLocaleMigration = read('../supabase/migrations/20261116160000_booking_customer_locale_atomic.sql');
+const bookingRepository = read('../src/services/bookingRepository.ts');
+const bookingPage = read('../src/pages/BookingPage.tsx');
 
 assert.match(server, /currentTour = data && data\.slug === slug \? data : null/, 'SSR refuses a tour record whose slug differs from the requested URL');
 assert.match(server, /CDN-Cache-Control', 'no-store'/, 'Tour detail HTML bypasses intermediary CDN caches');
@@ -25,4 +28,12 @@ assert.match(migration, /ADD COLUMN IF NOT EXISTS locale text NOT NULL DEFAULT '
 assert.match(migration, /ENABLE ROW LEVEL SECURITY/, 'Translation content is protected by RLS');
 assert.match(migration, /REVOKE ALL ON TABLE public\.content_translations FROM PUBLIC, anon, authenticated/, 'Translation drafts are not exposed to public or authenticated Data API roles');
 assert.match(migration, /CREATE TRIGGER trg_capture_business_audit[\s\S]*private\.capture_business_audit\(\)/, 'Translation lifecycle changes use the private business audit trigger');
+assert.match(bookingLocaleMigration, /CREATE OR REPLACE FUNCTION public\.create_booking_atomic_with_locale/, 'Locale-aware booking RPC exists');
+assert.match(bookingLocaleMigration, /SECURITY DEFINER[\s\S]*SET search_path = ''/, 'Locale-aware booking RPC has a locked search path');
+assert.match(bookingLocaleMigration, /customer_locale = p_customer_locale/, 'Booking locale is persisted in the booking transaction');
+assert.match(bookingLocaleMigration, /preferred_locale = p_customer_locale/, 'Customer communication preference is updated with the booking');
+assert.match(bookingLocaleMigration, /NOT IN \('en', 'de', 'it', 'ro', 'ru'\)/, 'Only currently supported UI locales can be persisted');
+assert.match(bookingRepository, /rpc\('create_booking_atomic_with_locale'/, 'Booking client uses the locale-aware atomic RPC');
+assert.match(bookingRepository, /p_customer_locale: booking\.customerLocale \|\| 'en'/, 'Booking client passes customer locale with safe English fallback');
+assert.match(bookingPage, /customerLocale: language/, 'Booking captures the current interface language');
 console.log('Public tour cache isolation and European localization foundation checks passed.');
