@@ -59,7 +59,7 @@ function normalizeRelation(value: any): any {
 
 function normalizeCustomerLocale(value: unknown): string {
   const locale = typeof value === 'string' ? value.trim().toLowerCase() : '';
-  return ['en', 'de', 'it', 'ro', 'ru'].includes(locale) ? locale : 'en';
+  return ['en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'].includes(locale) ? locale : 'en';
 }
 
 async function getLocalizedCommunicationTemplate(
