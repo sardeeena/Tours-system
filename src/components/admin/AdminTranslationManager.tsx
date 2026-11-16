@@ -94,7 +94,7 @@ export const AdminTranslationManager: React.FC = () => {
     } catch {
       showToast('Content must be valid JSON object data.', 'error'); return;
     }
-    if (state === 'published' && !window.confirm('Publish this human-reviewed translation? It will become eligible for public routing only after the publication resolver is deployed.')) return;
+    if (state === 'published' && !window.confirm('Publish this human-reviewed translation? Content routes and UI catalogs are exposed only after source-checksum and completeness verification.')) return;
     setSaving(true);
     try {
       const result = await request('/api/admin/translations', {
@@ -137,7 +137,7 @@ export const AdminTranslationManager: React.FC = () => {
         <section className="rounded-xl border border-stone-800 bg-stone-900/60 p-4 sm:p-6">
           <div className="mb-4 flex items-center gap-2"><FileText className="h-5 w-5 text-teal-400" /><h2 className="font-semibold">Translation record</h2></div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="text-xs text-stone-400">Content type<select value={entityType} onChange={e=>{setEntityType(e.target.value);if(e.target.value==='ui_catalog')setEntityKey('site-ui');else if(entityKey==='site-ui')setEntityKey('');}} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white">{ENTITY_TYPES.map(x=><option key={x}>{x}</option>)}</select></label>
+            <label className="text-xs text-stone-400">Content type<select value={entityType} onChange={e=>{const next=e.target.value;setEntityType(next);if(next==='ui_catalog'){setEntityKey('site-ui');setTitle('Interface messages');setSlug('');setSummary('');setSeoTitle('');setSeoDescription('');}else if(entityKey==='site-ui'){setEntityKey('');setTitle('');setSlug('');setSummary('');setSeoTitle('');setSeoDescription('');}}} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white">{ENTITY_TYPES.map(x=><option key={x}>{x}</option>)}</select></label>
             <label className="text-xs text-stone-400">Locale<select value={locale} onChange={e=>setLocale(e.target.value)} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white">{EUROPEAN_LOCALE_ROLLOUT.filter(x=>x.code!=='en').map(x=><option key={x.code} value={x.code}>{x.nativeName} ({x.code})</option>)}</select></label>
             <label className="text-xs text-stone-400 sm:col-span-2">Source record key<input value={entityKey} onChange={e=>setEntityKey(e.target.value)} placeholder={entityType==='ui_catalog'?'site-ui':'Source record UUID or stable content key'} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label>
             <div className="sm:col-span-2 flex flex-wrap items-end gap-2"><label className="min-w-0 flex-1 text-xs text-stone-400">Source checksum<input value={sourceChecksum} readOnly placeholder="Load the authoritative checksum from the server" className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label><button type="button" disabled={loading || !entityKey.trim()} onClick={()=>void loadSource()} className="rounded border border-teal-700 px-3 py-2 text-xs font-semibold text-teal-200 disabled:opacity-50">Load source + checksum</button></div>
