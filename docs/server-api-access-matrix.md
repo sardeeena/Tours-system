@@ -47,3 +47,13 @@ Most admin CRUD screens use the Supabase client directly. Their effective author
 2. Classify it as public, provider-verified, permission-gated, or Super Admin/AAL2.
 3. Add a regression assertion for the required guard.
 4. Keep authorization on the server/database; hiding a frontend control is not authorization.
+
+
+## Localization API additions
+
+- `GET /api/content-translations/resolve` is public and rate-limited. It returns only published and reviewed translation records, verifies the current source SHA-256 before returning them, and returns only the source record ID/slug (not the full source row).
+- `GET /api/admin/translations/source` is Super Admin + AAL2 only. It loads the authoritative source snapshot and computes the checksum server-side for the translation workspace.
+- Locale-prefixed tour, destination, blog and static-page routes now resolve by translated slug, fail closed with 404/noindex if missing or stale, and render translated metadata/content when valid.
+- Private locale-prefixed booking, customer portal and authentication routes are served as no-store/noindex application routes.
+- The XML sitemap includes only reviewed translations whose source checksum is current. Localized pages emit reciprocal hreflang links only for same-entity translations that pass the same checksum check.
+- `/api/config` advertises only the five existing interface dictionaries (`en,de,it,ro,ru`); planned locales are not advertised as complete.
