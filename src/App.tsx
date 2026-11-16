@@ -459,15 +459,6 @@ function MainApp() {
       window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     };
 
-    const privateBookingPath = /^\/booking(?:\/|$)/i.test(normalizedRequestedPath);
-    if (privateBookingPath && ['fr', 'es', 'nl', 'pl', 'pt'].includes(currentLocale)) {
-      // The first-wave public pages are localized; the booking form remains English
-      // until its complete UI dictionary is reviewed. Preserve the chosen customer
-      // locale in the query string so confirmations and emails use that language.
-      commitNavigation(normalizedRequestedPath);
-      return;
-    }
-
     if (currentLocale !== 'en' && !/^\/admin(?:\/|$)/i.test(normalizedRequestedPath)) {
       const params = new URLSearchParams({ locale: currentLocale, pathname: normalizedRequestedPath });
       fetch('/api/content-translations/target?' + params.toString(), {
@@ -1358,9 +1349,8 @@ function MainApp() {
   // PUBLIC WEBSITE VIEWS
   // ==============================================================================
   const renderCurrentView = () => {
-    // Locale-prefixed content routes are resolved only from checksum-verified,
-    // human-reviewed translations. Booking and account workflows continue to
-    // use their existing language-aware components.
+    // Public content routes and private customer workflows are rendered only
+    // when the complete reviewed UI catalogue and required content are available.
     if (currentLocale !== 'en' && !/^\/(?:booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|admin(?:\/|$)|support(?:\/|$))/i.test(currentPath)) {
       return <Suspense fallback={<PublicPageLoadingFallback />}><LocalizedContentPage locale={currentLocale} pathname={currentPath} onNavigate={(path) => navigate(path)} /></Suspense>;
     }

@@ -8,16 +8,27 @@ const ROOT = process.cwd();
 const SOURCE_ROOT = path.join(ROOT, 'src');
 const OUTPUT = path.join(SOURCE_ROOT, 'i18n/privateUiCatalog.generated.ts');
 const BLOCKED_TEXT_PARENTS = new Set(['script', 'style', 'pre', 'code', 'textarea']);
-const TRANSLATABLE_CALLS = new Set(['showToast', 'confirm', 'alert', 'setError', 'setFormError', 'setProfileError', 'setBookingError', 'setSupportError', 'setMessage']);
+const TRANSLATABLE_CALLS = new Set(['showToast', 'confirm', 'alert', 'setError', 'setFormError', 'setProfileError', 'setBookingError', 'setSupportError', 'setProfileNotice', 'setPasswordNotice', 'setSuccessMessage', 'setMessage']);
+const TRANSLATABLE_TYPE_ALIASES = new Set(['BookingStatus', 'PaymentStatus', 'PaymentMethod']);
 
 function containsJsx(node: ts.Node): boolean {
   if (ts.isJsxElement(node) || ts.isJsxSelfClosingElement(node) || ts.isJsxFragment(node)) return true;
   return node.getChildren().some(containsJsx);
 }
 
+function addMessage(message: string, messages: Map<string, string>): void {
+  if (!message.trim() || !/\p{L}/u.test(message)) return;
+  messages.set(privateUiMessageKey(message), message);
+  if (/^[a-z][a-z_-]*$/.test(message)) {
+    const titleCase = message.replace(/(^|[_-])([a-z])/g, (_match, separator, letter) => (separator ? ' ' : '') + letter.toUpperCase());
+    addMessage(titleCase, messages);
+    addMessage(message.toUpperCase(), messages);
+  }
+}
+
 function addStringLiterals(node: ts.Node, messages: Map<string, string>): void {
   if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
-    if (node.text.trim() && /\\p{L}/u.test(node.text)) messages.set(privateUiMessageKey(node.text), node.text);
+    addMessage(node.text, messages);
     return;
   }
   ts.forEachChild(node, (child) => addStringLiterals(child, messages));
@@ -25,13 +36,12 @@ function addStringLiterals(node: ts.Node, messages: Map<string, string>): void {
 
 function addValueStrings(node: ts.Node, messages: Map<string, string>): void {
   if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
-    if (node.text.trim() && /\\p{L}/u.test(node.text)) messages.set(privateUiMessageKey(node.text), node.text);
+    addMessage(node.text, messages);
     return;
   }
   if (ts.isObjectLiteralExpression(node)) {
     for (const property of node.properties) {
       if (ts.isPropertyAssignment(property)) addValueStrings(property.initializer, messages);
-      else if (ts.isMethodDeclaration(property) || ts.isGetAccessor(property) || ts.isSetAccessor(property)) continue;
     }
     return;
   }
@@ -48,15 +58,15 @@ function addValueStrings(node: ts.Node, messages: Map<string, string>): void {
 function walk(directory: string): string[] {
   return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const fullPath = path.join(directory, entry.name);
-    return entry.isDirectory() ? walk(fullPath) : entry.isFile() && entry.name.endsWith('.tsx') ? [fullPath] : [];
+    return entry.isDirectory() ? walk(fullPath) : entry.isFile() && (entry.name.endsWith('.tsx') || entry.name.endsWith('.ts')) ? [fullPath] : [];
   });
 }
 
 export function collectPrivateUiMessages(): Record<string, string> {
   const messages = new Map<string, string>();
-  for (const filePath of walk(SOURCE_ROOT).filter(isPrivateUiSourcePath).sort()) {
+  for (const filePath of walk(SOURCE_ROOT).filter((filePath) => isPrivateUiSourcePath(filePath) || filePath.replace(/\\/g, '/').endsWith('/src/types/booking.ts')).sort()) {
     const source = readFileSync(filePath, 'utf8');
-    const sourceFile = ts.createSourceFile(filePath, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+    const sourceFile = ts.createSourceFile(filePath, source, ts.ScriptTarget.Latest, true, filePath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
     const visit = (node: ts.Node, blocked = false): void => {
       if (ts.isJsxElement(node)) {
         const tagName = node.openingElement.tagName.getText(sourceFile).toLowerCase();
@@ -64,9 +74,12 @@ export function collectPrivateUiMessages(): Record<string, string> {
         node.children.forEach((child) => visit(child, blocked || BLOCKED_TEXT_PARENTS.has(tagName)));
         return;
       }
-      if (ts.isJsxExpression(node) && node.expression && !containsJsx(node.expression)) {
+      if (ts.isJsxExpression(node) && !blocked && (ts.isJsxElement(node.parent) || ts.isJsxFragment(node.parent)) && node.expression && !containsJsx(node.expression)) {
         addStringLiterals(node.expression, messages);
         return;
+      }
+      if (ts.isTypeAliasDeclaration(node) && TRANSLATABLE_TYPE_ALIASES.has(node.name.text) && ts.isUnionTypeNode(node.type)) {
+        for (const member of node.type.types) if (ts.isLiteralTypeNode(member) && ts.isStringLiteral(member.literal)) addMessage(member.literal.text, messages);
       }
       if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && /(?:labels|options|messages|copy|text|titles)$/i.test(node.name.text) && node.initializer) {
         addValueStrings(node.initializer, messages);

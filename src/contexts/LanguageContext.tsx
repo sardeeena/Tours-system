@@ -98,10 +98,19 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   useEffect(() => {
     const syncLocaleFromUrl = () => {
+      const adminPath = /^\/(?:[a-z]{2}\/)?admin(?:\/|$)/i.test(window.location.pathname);
       const routeLocale = parseLocalePath(window.location.pathname)?.locale;
+      if (adminPath && routeLocale) {
+        const unprefixedPath = window.location.pathname.replace(/^\/[a-z]{2}(?=\/admin(?:\/|$))/i, '');
+        window.history.replaceState({}, '', unprefixedPath + window.location.search + window.location.hash);
+        window.dispatchEvent(new PopStateEvent('popstate'));
+        setLanguageState('en');
+        return;
+      }
       setLanguageState((routeLocale || 'en') as LanguageCode);
     };
     window.addEventListener('popstate', syncLocaleFromUrl);
+    syncLocaleFromUrl();
     return () => window.removeEventListener('popstate', syncLocaleFromUrl);
   }, []);
 
@@ -119,9 +128,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return fallback || key;
   };
 
-  const privateWorkflowPath = typeof window !== 'undefined' && /^\/(?:[a-z]{2}\/)?(?:booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|admin(?:\/|$)|support(?:\/|$))/i.test(window.location.pathname);
+  const adminPath = typeof window !== 'undefined' && /^\/(?:[a-z]{2}\/)?admin(?:\/|$)/i.test(window.location.pathname);
   const dynamicConfigs: LanguageConfig[] = EUROPEAN_LOCALE_ROLLOUT
-    .filter((locale) => !privateWorkflowPath && publishedUiLocales.includes(locale.code) && !SUPPORTED_LANGUAGES[locale.code])
+    .filter((locale) => !adminPath && publishedUiLocales.includes(locale.code) && !SUPPORTED_LANGUAGES[locale.code])
     .map((locale) => ({
       code: locale.code,
       name: locale.englishName,

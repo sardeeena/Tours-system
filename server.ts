@@ -14,6 +14,8 @@ import { INITIAL_STATIC_PAGES } from './src/data/staticPages';
 import { EXPECTED_AWESOME_ADVENTURE_TOURS_SUPABASE_PROJECT_REF, isExpectedAwesomeAdventureToursSupabaseUrl } from './src/lib/supabaseProjectGuard';
 import { parseLocalePath } from './src/i18n/localeRouting';
 import { TRANSLATIONS } from './src/i18n/translations';
+import { PRIVATE_UI_SOURCE_CATALOG } from './src/i18n/privateUiCatalog.generated';
+import { resolveWhatsAppLocaleLanguageMap, selectWhatsAppTemplateLanguage } from './src/lib/whatsappLocaleMapping';
 
 dotenv.config();
 
@@ -648,12 +650,15 @@ app.get('/api/communications/status', rateLimit(60, 60_000), (req: Authenticated
   const apiKeyPresent = Boolean(process.env.RESEND_API_KEY?.trim());
   const fromEmailValid = isValidEmail(normalizedFromEmail);
   const emailConfigured = apiKeyPresent && fromEmailValid;
+  const whatsappTemplateLanguage = process.env.WHATSAPP_TEMPLATE_LANGUAGE?.trim() || 'en';
+  const whatsappLanguageConfig = resolveWhatsAppLocaleLanguageMap(process.env.WHATSAPP_TEMPLATE_LANGUAGE_MAP, whatsappTemplateLanguage);
   const whatsappConfigured = Boolean(
     process.env.WHATSAPP_ACCESS_TOKEN?.trim()
     && process.env.WHATSAPP_PHONE_NUMBER_ID?.trim()
     && /^v\d+\.\d+$/.test(process.env.WHATSAPP_GRAPH_API_VERSION || '')
     && /^[a-z0-9_]{1,512}$/.test(process.env.WHATSAPP_TEMPLATE_NAME?.trim() || '')
-    && /^[a-z]{2}(?:_[A-Z]{2})?$/.test(process.env.WHATSAPP_TEMPLATE_LANGUAGE?.trim() || 'en')
+    && whatsappLanguageConfig.valid
+    && whatsappLanguageConfig.approvedLanguageCodes.includes(whatsappTemplateLanguage)
   );
 
   res.json({
@@ -673,7 +678,10 @@ app.get('/api/communications/status', rateLimit(60, 60_000), (req: Authenticated
       businessAccountId: process.env.WHATSAPP_BUSINESS_ACCOUNT_ID?.trim() || '',
       fromNumber: process.env.WHATSAPP_FROM_NUMBER?.trim() || '',
       templateName: process.env.WHATSAPP_TEMPLATE_NAME?.trim() || '',
-      templateLanguage: process.env.WHATSAPP_TEMPLATE_LANGUAGE?.trim() || 'en',
+      templateLanguage: whatsappTemplateLanguage,
+      languageMappingValid: whatsappLanguageConfig.valid,
+      localeLanguageMap: whatsappLanguageConfig.mapping,
+      availableCustomerLocales: Object.keys(whatsappLanguageConfig.mapping),
     },
   });
 });
@@ -1028,9 +1036,10 @@ app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: Auth
   const graphVersion = process.env.WHATSAPP_GRAPH_API_VERSION?.trim();
   const templateName = process.env.WHATSAPP_TEMPLATE_NAME?.trim() || '';
   const templateLanguage = process.env.WHATSAPP_TEMPLATE_LANGUAGE?.trim() || 'en';
+  const whatsappLanguageConfig = resolveWhatsAppLocaleLanguageMap(process.env.WHATSAPP_TEMPLATE_LANGUAGE_MAP, templateLanguage);
   if (!accessToken || !phoneNumberId || !/^\d{5,30}$/.test(phoneNumberId) || !/^v\d+\.\d+$/.test(graphVersion || '') ||
-      !/^[a-z0-9_]{1,512}$/.test(templateName) || !/^[a-z]{2}(?:_[A-Z]{2})?$/.test(templateLanguage) || !['en', 'de', 'it', 'ro', 'ru'].includes(templateLanguage.split('_')[0])) {
-    return res.status(503).json({ success: false, error: 'Meta WhatsApp is not fully configured. Configure the access token, phone number ID, Graph API version, approved template name, and template language on the server.' });
+      !/^[a-z0-9_]{1,512}$/.test(templateName) || !whatsappLanguageConfig.valid || !whatsappLanguageConfig.approvedLanguageCodes.includes(templateLanguage)) {
+    return res.status(503).json({ success: false, error: 'Meta WhatsApp is not fully configured. Configure the access token, phone number ID, Graph API version, approved template name, fallback language, and valid WHATSAPP_TEMPLATE_LANGUAGE_MAP on the server.' });
   }
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
     return res.status(503).json({ success: false, error: 'Secure WhatsApp consent verification is unavailable. No message was sent.' });
@@ -1063,8 +1072,8 @@ app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: Auth
     const preferredLocale = typeof customerPreference?.preferred_locale === 'string'
       ? customerPreference.preferred_locale.trim().toLowerCase()
       : '';
-    if (['en', 'de', 'it', 'ro', 'ru'].includes(preferredLocale)) {
-      selectedTemplateLanguage = preferredLocale;
+    if (Object.prototype.hasOwnProperty.call(whatsappLanguageConfig.mapping, preferredLocale)) {
+      selectedTemplateLanguage = selectWhatsAppTemplateLanguage(preferredLocale, templateLanguage, whatsappLanguageConfig.mapping);
     }
 
     const providerResponse = await fetch(`https://graph.facebook.com/${graphVersion}/${phoneNumberId}/messages`, {
@@ -2812,6 +2821,7 @@ async function writeAccountAudit(actorId: string, action: string, targetId: stri
 
 // Reviewed translation workflow. Translation content is never read directly by browser
 // Supabase clients; all access is mediated by the AAL2 Super Admin API.
+const ENGLISH_UI_CATALOG: Record<string, string> = { ...(TRANSLATIONS.en || {}), ...PRIVATE_UI_SOURCE_CATALOG };
 const TRANSLATION_LOCALES = new Set([
   'en','de','fr','it','es','nl','pl','pt','ro','ru','sv','da','nb','fi','el',
   'bg','hr','cs','sk','sl','hu','et','lv','lt','uk','sr','sq','tr','ar',
@@ -2842,7 +2852,7 @@ function stableTranslationJson(value: any): string {
 }
 
 async function getTranslationSource(entityType: string, entityKey: string): Promise<any | null> {
-  if (entityType === 'ui_catalog') return entityKey === 'site-ui' ? { id: 'site-ui', slug: 'site-ui', title: 'Interface messages', content: TRANSLATIONS.en || {} } : null;
+  if (entityType === 'ui_catalog') return entityKey === 'site-ui' ? { id: 'site-ui', slug: 'site-ui', title: 'Interface messages', content: ENGLISH_UI_CATALOG } : null;
   if (!serverSupabase) return null;
   if (entityType === 'static_page') {
     if (entityKey === 'home') return { id: 'home', slug: 'home', title: 'Explore Egypt’s Red Sea Coast', heroHeadline: 'Explore Egypt’s Red Sea Coast', heroSubtitle: 'Boat trips, island visits, snorkeling, diving and desert safaris across Egypt’s Red Sea coast.', sections: [] };
@@ -2902,7 +2912,7 @@ async function getCurrentTranslationSourceChecksum(entityType: string, entityKey
 app.get('/api/content-translations/ui', rateLimit(60, 60_000), async (req: Request, res: Response) => {
   const locale = typeof req.query.locale === 'string' ? req.query.locale : '';
   if (!TRANSLATION_LOCALES.has(locale)) return res.status(400).json({ success: false, error: 'Unsupported locale.' });
-  if (locale === 'en') return res.json({ success: true, locale, messages: TRANSLATIONS.en || {} });
+  if (locale === 'en') return res.json({ success: true, locale, messages: ENGLISH_UI_CATALOG });
   try {
     if (!serverSupabase) return res.status(503).json({ success: false, error: 'Translation service unavailable.' });
     const { data, error } = await serverSupabase.from('content_translations')
@@ -2912,7 +2922,7 @@ app.get('/api/content-translations/ui', rateLimit(60, 60_000), async (req: Reque
     if (error) throw error;
     const current = await getCurrentTranslationSourceChecksum('ui_catalog', 'site-ui');
     const messages = data?.content && typeof data.content === 'object' && !Array.isArray(data.content) ? data.content as Record<string, unknown> : {};
-    const englishKeys = Object.keys(TRANSLATIONS.en || {});
+    const englishKeys = Object.keys(ENGLISH_UI_CATALOG);
     const complete = englishKeys.every((key) => typeof messages[key] === 'string' && String(messages[key]).trim().length > 0);
     if (!data?.reviewed_at || !data?.published_at || !current || current.checksum !== data.source_checksum || !complete) {
       return res.status(404).json({ success: false, error: 'A complete, current, reviewed interface catalog is not available.' });
@@ -2933,7 +2943,7 @@ app.get('/api/content-translations/locales', rateLimit(30, 60_000), async (_req:
       .eq('translation_state', 'published').not('locale', 'is', null).limit(100);
     if (error) throw error;
     const current = await getCurrentTranslationSourceChecksum('ui_catalog', 'site-ui');
-    const englishKeys = Object.keys(TRANSLATIONS.en || {});
+    const englishKeys = Object.keys(ENGLISH_UI_CATALOG);
     const uiComplete = (data || []).filter((row) => {
       const messages = row.content && typeof row.content === 'object' && !Array.isArray(row.content) ? row.content as Record<string, unknown> : {};
       return Boolean(row.reviewed_at && row.published_at && current && current.checksum === row.source_checksum &&
@@ -3009,9 +3019,7 @@ app.get('/api/content-translations/target', rateLimit(90, 60_000), async (req: R
     const privateRoute = /^\/(?:booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|admin(?:\/|$)|support(?:\/|$))/i.test(pathname);
     if (privateRoute) {
       if (locale === 'en') return res.json({ success: true, path: pathname });
-      if (['fr', 'es', 'nl', 'pl', 'pt'].includes(locale)) {
-        return res.status(404).json({ success: false, error: 'This language is not yet available for booking, account and support interfaces.' });
-      }
+      if (/^\/admin(?:\/|$)/i.test(pathname)) return res.status(404).json({ success: false, error: 'The staff admin interface remains English-only.' });
       const current = await getCurrentTranslationSourceChecksum('ui_catalog', 'site-ui');
       const { data, error } = await serverSupabase!.from('content_translations')
         .select('content,source_checksum,reviewed_at,published_at')
@@ -3019,7 +3027,7 @@ app.get('/api/content-translations/target', rateLimit(90, 60_000), async (req: R
         .eq('locale', locale).eq('translation_state', 'published').maybeSingle();
       if (error) throw error;
       const messages = data?.content && typeof data.content === 'object' && !Array.isArray(data.content) ? data.content as Record<string, unknown> : {};
-      const complete = Object.keys(TRANSLATIONS.en || {}).every((key) => typeof messages[key] === 'string' && String(messages[key]).trim().length > 0);
+      const complete = Object.keys(ENGLISH_UI_CATALOG).every((key) => typeof messages[key] === 'string' && String(messages[key]).trim().length > 0);
       if (!data?.reviewed_at || !data?.published_at || !current || current.checksum !== data.source_checksum || !complete) {
         return res.status(404).json({ success: false, error: 'A complete interface catalog is required for this language.' });
       }
@@ -3224,7 +3232,7 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
         if (!latest || latest.checksum!==item.checksum) {skipped++;continue;}
         const isUi = item.type==='ui_catalog';
         if (isUi) {
-          const keys=Object.keys(TRANSLATIONS.en || {});
+          const keys=Object.keys(ENGLISH_UI_CATALOG);
           if (!keys.every(key=>typeof translated.content[key]==='string' && String(translated.content[key]).trim())) {skipped++;continue;}
         }
         let translatedSlug = isUi ? 'site-ui' : (item.type==='static_page' && item.key==='home' ? 'home' : item.type==='communication_template' ? 'template-'+String(item.source.template_key || item.key) : normalizedTranslationSlug(translated.translated_slug,item.source.slug || item.source.title || item.source.name || item.key));

@@ -2,10 +2,12 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import { defineConfig } from 'vite';
+import { privateUiTranslationPlugin } from './src/i18n/privateUiVitePlugin';
 
 export default defineConfig(() => {
   return {
     plugins: [
+      privateUiTranslationPlugin(),
       react(),
       tailwindcss(),
     ],
