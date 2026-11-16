@@ -66,3 +66,10 @@ For unused-index notices, first capture pg_stat_user_indexes over a representati
 - The seven public-schema tables reported by the advisor with RLS enabled and zero policies are deliberately deny-all candidates: `customer_communication_consent_events`, `technical_events`, `visitor_analytics_settings`, `visitor_consent_records`, `visitor_events`, `visitor_sessions`, `whatsapp_provider_status_events`. Confirm they are only accessed through trusted server/service-role paths before changing policies.
 - Do not drop indexes solely because the advisor says they are unused. Several support foreign keys and operational queries; evaluate with query plans and a representative usage window first.
 - Verify Hostinger/CDN response headers after deployment. Tour detail HTML is explicitly marked no-store in this change to avoid cross-route cache contamination.
+
+
+## Admin translation workspace (PR implementation)
+
+The admin sidebar now includes **Translations & Locales**. The workspace is protected by the existing server-side Super Admin + verified AAL2 guard; it does not access the translation table from the browser. Its API supports listing records and saving draft, review, or published lifecycle states through the server-only service-role client. Every write is recorded in the account audit log, and the table audit trigger remains enabled.
+
+Publishing requires explicit confirmation plus translated title/slug, SEO title/description, structured content, and a source checksum. The checksum is currently a required provenance field supplied by the editor; automated comparison against each source entity is not yet wired. Therefore a published row is **not yet eligible for public delivery**: locale-prefixed public routes remain 404/noindex until a source-checksum resolver, translated-slug lookup, localized SSR/client rendering, metadata/hreflang and sitemap integration ship. Treat the current workspace as the secure translation authoring/review foundation, not a finished multilingual publishing system.
