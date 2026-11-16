@@ -75,6 +75,11 @@ export const LocalizedContentPage: React.FC<{
   const itinerary = Array.isArray(content.itinerary) ? content.itinerary as Array<{ title?: string; description?: string }> : [];
   const included = asStrings(content.included);
   const excluded = asStrings(content.excluded);
+  const faqs = Array.isArray(content.faqs) ? content.faqs as Array<{ question?: string; answer?: string }> : [];
+  const pickupInfo = clean(content.pickupInfo || content.pickup_info);
+  const cancellationPolicy = clean(content.cancellationPolicy || content.cancellation_policy);
+  const ageRestrictions = clean(content.ageRestrictions || content.age_restrictions);
+  const durationLabel = clean(content.durationLabel || content.duration_label);
   const articleBody = clean(content.content || content.description || content.fullDescription || content.body || content.heroSubtitle);
   const labels = content.labels && typeof content.labels === 'object' ? content.labels as Record<string, string> : {};
   const heroHeadline = clean(content.heroHeadline);
@@ -91,6 +96,7 @@ export const LocalizedContentPage: React.FC<{
         <p className="mb-4 text-xs font-bold uppercase tracking-[.2em] text-teal-700 dark:text-teal-300">{locale.toUpperCase()} · Awesome Adventure Tours</p>
         <h1 className="font-display text-4xl font-bold leading-tight sm:text-5xl">{heroHeadline || translation.title}</h1>
         {translation.summary && <p className="mt-6 text-xl leading-relaxed text-stone-600 dark:text-slate-300">{translation.summary}</p>}
+        {durationLabel && <p className="mt-4 text-sm font-semibold text-teal-700 dark:text-teal-300">{durationLabel}</p>}
         {articleBody && <div className="mt-8 whitespace-pre-line text-lg leading-8">{articleBody}</div>}
         {paragraphs.map((paragraph, index) => <p key={index} className="mt-5 text-lg leading-8">{paragraph}</p>)}
         {sections.map((section, index) => <section key={index} className="mt-10"><h2 className="font-display text-2xl font-bold">{section.title}</h2><p className="mt-3 whitespace-pre-line leading-8">{section.content}</p></section>)}
@@ -98,6 +104,8 @@ export const LocalizedContentPage: React.FC<{
         {itinerary.length > 0 && <section className="mt-10">{labels.itinerary && <h2 className="font-display text-2xl font-bold">{labels.itinerary}</h2>}<ol className="mt-4 list-decimal space-y-3 ps-6">{itinerary.map((item,index)=><li key={index}><strong>{item.title}</strong>{item.description && <p className="mt-1">{item.description}</p>}</li>)}</ol></section>}
         {included.length > 0 && <section className="mt-10">{labels.included && <h2 className="font-display text-2xl font-bold">{labels.included}</h2>}<ul className="mt-3 list-disc space-y-2 ps-6">{included.map((item,index)=><li key={index}>{item}</li>)}</ul></section>}
         {excluded.length > 0 && <section className="mt-8">{labels.excluded && <h2 className="font-display text-2xl font-bold">{labels.excluded}</h2>}<ul className="mt-3 list-disc space-y-2 ps-6">{excluded.map((item,index)=><li key={index}>{item}</li>)}</ul></section>}
+        {(pickupInfo || cancellationPolicy || ageRestrictions) && <section className="mt-10 space-y-4">{pickupInfo && <p>{labels.pickupInfo ? <strong>{labels.pickupInfo}: </strong> : null}{pickupInfo}</p>}{cancellationPolicy && <p>{labels.cancellationPolicy ? <strong>{labels.cancellationPolicy}: </strong> : null}{cancellationPolicy}</p>}{ageRestrictions && <p>{labels.ageRestrictions ? <strong>{labels.ageRestrictions}: </strong> : null}{ageRestrictions}</p>}</section>}
+        {faqs.length > 0 && <section className="mt-10">{labels.faqs && <h2 className="font-display text-2xl font-bold">{labels.faqs}</h2>}{faqs.map((faq,index)=><details key={index} className="border-b border-stone-200 py-4 dark:border-slate-700"><summary className="cursor-pointer font-semibold">{faq.question}</summary><p className="mt-3 leading-7">{faq.answer}</p></details>)}</section>}
         <div className="mt-14 flex flex-wrap gap-3 border-t border-stone-200 pt-8 dark:border-slate-700">
           {translation.entity_type === 'tour' && labels.bookNow && <button onClick={() => onNavigate('/booking?tour=' + encodeURIComponent(sourceSlug))} className="inline-flex items-center gap-2 rounded-xl bg-teal-800 px-6 py-3 font-semibold text-white">{labels.bookNow}<ArrowRight size={16}/></button>}
           {labels.browseMore && <button onClick={() => onNavigate(translation.entity_type === 'blog_post' ? '/blog' : '/excursions')} className="inline-flex items-center gap-2 rounded-xl border border-stone-300 px-5 py-3 font-semibold dark:border-slate-600"><ArrowLeft size={16}/>{labels.browseMore}</button>}
