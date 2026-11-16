@@ -26,6 +26,7 @@ assert.match(experiences, /onSelectCategory/, 'experience categories expose sele
 assert.match(destinations, /onSelectDestination/, 'destination cards expose selection navigation');
 assert.match(tourService, /throw new Error\(!isSupabaseConfigured\(\)/, 'production catalogue configuration failures are not misreported as an empty catalogue');
 assert.match(tourService, /Unable to load published excursions:/, 'Supabase query failures propagate instead of silently returning an empty list');
+assert.match(tourService, /Unable to calculate published experience counts:/, 'experience count query failures are surfaced instead of publishing false zero counts');
 assert.match(server, /app\.get\('\/sitemap\.xml'/, 'the public sitemap endpoint exists');
 assert.match(server, /app\.get\('\/llms\.txt'/, 'the AI discovery index endpoint exists');
 assert.match(server, /path === '\/excursions'/, 'server-side excursion catalogue rendering is explicit');
