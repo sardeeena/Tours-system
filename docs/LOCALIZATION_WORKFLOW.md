@@ -7,6 +7,12 @@
 - Machine-generated translations are drafts only. A human reviewer must check language quality, operational accuracy, SEO metadata, slugs, and all structured fields before using the existing Super Admin + AAL2 publish workflow.
 - Publishing remains gated by the server's current SHA-256 source checksum. A changed source invalidates the draft for publication.
 
+## Generate all five locales from the protected admin workspace
+
+After this PR is merged and deployed with the existing server-side `GEMINI_API_KEY` configured, a Super Admin with verified MFA (AAL2) can open **Admin → Translation workspace → Generate all 5 languages**. The workflow processes published tours (including itinerary, highlights, inclusions, exclusions and FAQs), destinations, published blog posts, published CMS pages, the homepage, all English communication templates, and every English UI message for French, Spanish, Dutch, Polish and Portuguese. It runs in bounded batches with a rate-limit delay and displays per-language progress. It can be safely retried: reviewed/published records are preserved, and changed source records are rechecked.
+
+Every generated record is saved as `draft` with reviewer and publication timestamps unset. The public site, language selector, sitemap and booking locale support do not treat a draft as live. A human reviewer must check factual and operational details, SEO, slugs, and message placeholders. Communication-template publication verifies every original `{{placeholder}}` token and only then synchronizes the reviewed template into the locale-specific customer communication table. Meta/WhatsApp template translations still require approval in Meta Business Manager; the system deliberately keeps WhatsApp sends on currently approved language codes until that external approval exists.
+
 ## Export the authoritative source bundle
 
 Run with a server-only Supabase secret in the environment:
@@ -15,7 +21,7 @@ Run with a server-only Supabase secret in the environment:
 npm run translations:export -- ./translation-source.json
 ```
 
-The export contains published tours and their itinerary/highlights/inclusions/exclusions/FAQs, published destinations, currently published blog posts, and published CMS pages. It includes source checksums. Treat the export as confidential operational content; do not commit it to the repository.
+The export contains published tours and their itinerary/highlights/inclusions/exclusions/FAQs, published destinations, currently published blog posts, and published CMS pages. AI bulk generation also covers the homepage, English communication templates, and the complete UI catalog. It includes source checksums. Treat the export as confidential operational content; do not commit it to the repository.
 
 ## Translation bundle format
 
