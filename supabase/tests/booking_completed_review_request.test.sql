@@ -1,7 +1,7 @@
 BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(4);
+SELECT plan(5);
 
 SELECT ok(
   position('AAT-' IN pg_get_functiondef(to_regprocedure('private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)'))) > 0
@@ -26,6 +26,13 @@ SELECT ok(
       AND NOT tgisinternal
   ),
   'completed and paid booking transitions enqueue review requests'
+);
+
+SELECT ok(
+  position('booking.completed' IN pg_get_functiondef(to_regprocedure('private.enqueue_booking_completed_review_event()'))) > 0
+  AND position('pgmq.send' IN pg_get_functiondef(to_regprocedure('private.enqueue_booking_completed_review_event()'))) > 0
+  AND position('NEW.payment_status = ''paid''' IN pg_get_functiondef(to_regprocedure('private.enqueue_booking_completed_review_event()'))) > 0,
+  'review event is queued only after a completed booking is fully paid'
 );
 
 SELECT ok(
