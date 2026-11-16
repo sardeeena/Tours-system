@@ -3170,7 +3170,7 @@ function normalizedTranslationSlug(value: unknown, fallback: string): string {
   return raw.replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,160) || fallback.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,160) || 'page';
 }
 app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (req: AuthenticatedRequest,res: Response) => {
-  if (!requireSuperAdminAal2(req,res)) return;
+  if (!requireSuperAdminAal2(req, res)) return;
   const locale = typeof req.body?.locale==='string' ? req.body.locale : '';
   const offset = Number.isInteger(req.body?.offset) && req.body.offset>=0 ? req.body.offset : 0;
   const limit = Number.isInteger(req.body?.limit) ? Math.min(10,Math.max(1,req.body.limit)) : 10;
