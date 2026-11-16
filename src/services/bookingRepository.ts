@@ -713,6 +713,7 @@ class SupabaseBookingRepository implements IBookingRepository {
       tourDestination: tourDest,
       tourDuration: tour.duration || (tour.duration_hours ? `${tour.duration_hours} Hours` : 'Full Day'),
       tourLanguage: data.tour_language || undefined,
+      customerLocale: data.customer_locale || customer.preferred_locale || 'en',
       date: data.booking_date,
       guests: {
         adults: data.adult_count || 1,
