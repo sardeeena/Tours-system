@@ -49,6 +49,9 @@ assert.match(server, /reviewed_at && data\?\.published_at/, 'Public resolver req
 assert.match(server, /content_translations'[\s\S]*source_checksum[\s\S]*getCurrentTranslationSourceChecksum/, 'Localized sitemap and SSR validate source checksums');
 assert.match(server, /\['tour_itinerary', 'itinerary'\][\s\S]*\['tour_highlights', 'highlights'\][\s\S]*\['tour_inclusions', 'included'\][\s\S]*\['tour_exclusions', 'excluded'\]/, 'Tour source checksums include itinerary, highlights, inclusions and exclusions');
 assert.match(server, /alternateLinks\.push[\s\S]*hreflang/, 'Localized SSR emits hreflang alternates');
+assert.match(server, /xmlns:xhtml="http:\/\/www\.w3\.org\/1999\/xhtml"/, 'Localized sitemap declares the XHTML namespace');
+assert.match(server, /alternatesByUrl\.get\(loc\)[\s\S]*hreflangLinks[\s\S]*hreflang=/, 'Localized sitemap emits reciprocal hreflang links for each translated source record');
+assert.match(server, /alternates\.set\('x-default', englishUrl\)/, 'Localized sitemap includes the English x-default target');
 assert.match(server, /Reviewed localized pages could not be loaded/, 'Sitemap validates localized content before inclusion');
 assert.match(server, /supportedLanguages: \['en', 'de', 'it', 'ro', 'ru'\]/, 'Config advertises only existing UI dictionary locales');
 assert.match(server, /content_translations'[\s\S]*translated_slug[\s\S]*source_checksum/, 'Localized sitemap is based on translation records');
