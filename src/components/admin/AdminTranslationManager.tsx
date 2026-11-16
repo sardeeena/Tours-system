@@ -29,6 +29,8 @@ export const AdminTranslationManager: React.FC = () => {
   const [contentJson, setContentJson] = useState('{}');
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState('');
 
   const request = useCallback(async (url: string, init?: RequestInit) => {
     const { data } = await supabase.auth.getSession();
@@ -82,6 +84,42 @@ export const AdminTranslationManager: React.FC = () => {
     } finally { setLoading(false); }
   };
 
+  const generateAllRequestedLocales = async () => {
+    if (!window.confirm('Generate draft translations for all published tours, destinations, blog posts, public pages and the complete interface catalog in French, Spanish, Dutch, Polish and Portuguese? This uses the configured Gemini service and saves drafts only. Nothing will be published.')) return;
+    setGenerating(true);
+    setGenerationProgress('Preparing translation batches…');
+    const locales = ['fr', 'es', 'nl', 'pl', 'pt'];
+    try {
+      for (let localeIndex = 0; localeIndex < locales.length; localeIndex += 1) {
+        const targetLocale = locales[localeIndex];
+        let offset = 0;
+        let done = false;
+        while (!done) {
+          const result = await request('/api/admin/translations/generate-batch', {
+            method: 'POST',
+            body: JSON.stringify({ locale: targetLocale, offset, limit: 10 }),
+          });
+          offset = result.next_offset;
+          done = Boolean(result.done);
+          setGenerationProgress(targetLocale.toUpperCase() + ': ' + offset + '/' + result.total + ' source records · ' + (localeIndex + 1) + '/5 languages');
+          if (!(done && localeIndex === locales.length - 1)) {
+            await new Promise(resolve => window.setTimeout(resolve, 6500));
+          }
+        }
+      }
+      setLocale('fr');
+      const result = await request('/api/admin/translations?locale=fr');
+      setRows(result.translations || []);
+      showToast('Bulk translation generation completed. All generated records remain drafts pending human review.', 'success');
+      setGenerationProgress('Completed all five language batches. Review drafts before publication.');
+    } catch (error: any) {
+      showToast(error.message || 'Bulk translation generation stopped. You can safely retry; reviewed and published records are preserved.', 'error');
+      setGenerationProgress('Stopped safely. Retry to continue; existing reviewed/published records are protected.');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   const save = async (state: 'draft' | 'review' | 'published') => {
     if (!entityKey.trim() || !sourceChecksum.trim()) {
       showToast('A source record key and source checksum are required before saving.', 'error'); return;
@@ -121,8 +159,12 @@ export const AdminTranslationManager: React.FC = () => {
           <h1 className="flex items-center gap-2 text-2xl font-bold"><Globe className="h-6 w-6 text-teal-400" /> Translation workspace</h1>
           <p className="mt-1 text-sm text-stone-400">Super Admin + verified MFA required. Drafts never appear on public pages.</p>
         </div>
-        <button onClick={() => void load()} disabled={loading} className="rounded border border-stone-700 px-3 py-2 text-sm disabled:opacity-50">{loading ? 'Loading…' : 'Refresh records'}</button>
+        <div className="flex flex-wrap gap-2">
+          <button onClick={() => void generateAllRequestedLocales()} disabled={generating || loading || saving} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{generating ? 'Generating drafts…' : 'Generate all 5 languages'}</button>
+          <button onClick={() => void load()} disabled={loading || generating} className="rounded border border-stone-700 px-3 py-2 text-sm disabled:opacity-50">{loading ? 'Loading…' : 'Refresh records'}</button>
+        </div>
       </header>
+      {generationProgress && <p role="status" aria-live="polite" className="rounded-lg border border-stone-800 bg-stone-900/50 px-4 py-3 text-sm text-stone-300">{generationProgress}</p>}
       <div className="grid gap-5 xl:grid-cols-[minmax(240px,0.8fr)_minmax(0,2fr)]">
         <aside className="rounded-xl border border-stone-800 bg-stone-900/60 p-4">
           <div className="mb-3 flex items-center justify-between"><h2 className="font-semibold">Existing translations</h2><span className="text-xs text-stone-500">{rows.length}</span></div>
