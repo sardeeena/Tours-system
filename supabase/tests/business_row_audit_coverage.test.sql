@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(22);
+SELECT plan(29);
 
 SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.audit_logs'::regclass), 'audit_logs has RLS enabled');
 SELECT ok(NOT has_table_privilege('anon', 'public.audit_logs', 'SELECT'), 'anon cannot read audit logs');
@@ -24,6 +24,37 @@ SELECT ok(EXISTS (
   SELECT 1 FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid
   WHERE c.oid = 'public.tours'::regclass AND t.tgname = 'trg_capture_business_audit' AND NOT t.tgisinternal
 ), 'tour catalogue changes are audited');
+
+SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.content_translations'::regclass), 'translation records have RLS enabled');
+SELECT ok(NOT has_table_privilege('anon', 'public.content_translations', 'SELECT') AND NOT has_table_privilege('authenticated', 'public.content_translations', 'SELECT'), 'translation drafts and content are not exposed to public or authenticated roles');
+SELECT ok(EXISTS (SELECT 1 FROM pg_trigger WHERE tgrelid = 'public.content_translations'::regclass AND tgname = 'trg_capture_business_audit' AND NOT tgisinternal), 'translation lifecycle changes are audited');
+
+
+SELECT ok(EXISTS (
+  SELECT 1 FROM pg_attribute
+  WHERE attrelid = 'public.bookings'::regclass AND attname = 'customer_locale' AND NOT attisdropped
+), 'bookings persist customer locale separately from tour language');
+
+SELECT ok(EXISTS (
+  SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+  WHERE n.nspname = 'public'
+    AND p.proname = 'create_booking_atomic_with_locale'
+    AND NOT p.prosecdef
+), 'public locale-aware booking wrapper remains invoker-rights');
+
+SELECT ok(EXISTS (
+  SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+  WHERE n.nspname = 'private'
+    AND p.proname = 'create_booking_atomic_with_locale'
+    AND p.prosecdef
+    AND COALESCE(p.proconfig, ARRAY[]::text[]) @> ARRAY['search_path=""']::text[]
+), 'private locale persistence implementation is security definer with a locked search path');
+
+SELECT ok(
+  has_function_privilege('anon', 'public.create_booking_atomic_with_locale(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text,text,text)', 'EXECUTE')
+  AND has_function_privilege('authenticated', 'public.create_booking_atomic_with_locale(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text,text,text)', 'EXECUTE'),
+  'public booking flow can persist its own validated customer locale'
+);
 
 SELECT ok(EXISTS (
   SELECT 1 FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid

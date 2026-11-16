@@ -106,6 +106,7 @@ export interface Booking {
   tourDestination: string;
   tourDuration: string;
   tourLanguage?: string;
+  customerLocale?: string;
   date: string;
   departureTime?: string;
   customerId?: string;

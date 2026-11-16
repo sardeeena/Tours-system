@@ -25,6 +25,7 @@ type BookingRow = {
   pickup_hotel_name: string | null;
   pickup_room_number: string | null;
   tour_language: string | null;
+  customer_locale: string | null;
   customer_id: string | null;
   customers: any;
   tours: any;
@@ -54,6 +55,30 @@ function renderTemplate(source: string, values: Record<string, string>): string 
 
 function normalizeRelation(value: any): any {
   return Array.isArray(value) ? value[0] ?? null : value;
+}
+
+function normalizeCustomerLocale(value: unknown): string {
+  const locale = typeof value === 'string' ? value.trim().toLowerCase() : '';
+  return ['en', 'de', 'it', 'ro', 'ru'].includes(locale) ? locale : 'en';
+}
+
+async function getLocalizedCommunicationTemplate(
+  client: SupabaseClient,
+  templateKey: string,
+  locale: string
+): Promise<{ subject: string | null; body_text: string | null; is_active: boolean | null } | null> {
+  if (locale !== 'en') {
+    const { data, error } = await client.from('communication_templates')
+      .select('subject,body_text,is_active')
+      .eq('template_key', templateKey).eq('locale', locale).maybeSingle();
+    if (error) throw error;
+    if (data) return data;
+  }
+  const { data, error } = await client.from('communication_templates')
+    .select('subject,body_text,is_active')
+    .eq('template_key', templateKey).eq('locale', 'en').maybeSingle();
+  if (error) throw error;
+  return data || null;
 }
 
 function retryDelaySeconds(readCount: number): number {
@@ -165,7 +190,7 @@ async function processMessage(
 
   const { data: booking, error: bookingError } = await client
     .from('bookings')
-    .select('id,booking_reference,booking_date,total,currency,status,payment_status,payment_method,adult_count,child_count,infant_count,pickup_hotel_name,pickup_room_number,tour_language,customer_id,customers(first_name,last_name,email,phone,country,hotel),tours(title,departure_time,slug),pickup_locations(name,area),booking_extras(name,quantity,unit_price,total_price,pricing_type)')
+    .select('id,booking_reference,booking_date,total,currency,status,payment_status,payment_method,adult_count,child_count,infant_count,pickup_hotel_name,pickup_room_number,tour_language,customer_locale,customer_id,customers(first_name,last_name,email,phone,country,hotel,preferred_locale),tours(title,departure_time,slug),pickup_locations(name,area),booking_extras(name,quantity,unit_price,total_price,pricing_type)')
     .eq('id', bookingId)
     .maybeSingle();
 
@@ -178,6 +203,7 @@ async function processMessage(
   const pickup = normalizeRelation(row.pickup_locations);
   const bookingExtras = Array.isArray(row.booking_extras) ? row.booking_extras : [];
   const recipient = String(customer?.email || '').trim().toLowerCase();
+  const customerLocale = normalizeCustomerLocale(row.customer_locale || customer?.preferred_locale);
 
   if (!isValidEmail(recipient)) {
     await updateEvent(client, eventId, {
@@ -205,13 +231,7 @@ async function processMessage(
     const tourSlug = String(tour?.slug || '').trim();
     if (!tourSlug) throw new Error('The completed booking has no published tour slug for its review link.');
 
-    const { data: reviewTemplate, error: reviewTemplateError } = await client
-      .from('communication_templates')
-      .select('subject,body_text,is_active')
-      .eq('template_key', 'booking_review_request')
-      .maybeSingle();
-
-    if (reviewTemplateError) throw reviewTemplateError;
+    const reviewTemplate = await getLocalizedCommunicationTemplate(client, 'booking_review_request', customerLocale);
     if (!reviewTemplate) throw new Error('The booking review request email template is missing.');
     if (reviewTemplate.is_active === false) {
       await updateEvent(client, eventId, {
@@ -367,13 +387,7 @@ async function processMessage(
     return;
   }
 
-  const { data: template, error: templateError } = await client
-    .from('communication_templates')
-    .select('subject,body_text,is_active')
-    .eq('template_key', 'booking_received')
-    .maybeSingle();
-
-  if (templateError) throw templateError;
+  const template = await getLocalizedCommunicationTemplate(client, 'booking_received', customerLocale);
   if (template && template.is_active === false) {
     await updateEvent(client, eventId, {
       processed: true,

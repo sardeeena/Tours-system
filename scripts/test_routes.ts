@@ -173,7 +173,8 @@ async function runRouteTests() {
   console.log('Step 5: Verifying server-side private SPA route allowlist...');
   assert(
     'server private support route fallback',
-    serverSource.split('const privateRoute =').length === 3 &&
+    (serverSource.match(/const privateRoute =/g) || []).length >= 3 &&
+      serverSource.includes(String.raw`(?:[a-z]{2}\/)?(?:admin`) &&
       serverSource.includes(String.raw`support(?:\/|$)`),
     'Server-side private route handling includes the customer support portal'
   );

@@ -1,6 +1,6 @@
 import { LanguageCode } from '../types/i18n';
 
-export const TRANSLATIONS: Record<LanguageCode, Record<string, string>> = {
+export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>> = {
   en: {
     // Header Top Bar
     'top.licensed': 'Licensed Egyptian Tour Operator #2491/ETB',

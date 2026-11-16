@@ -12,6 +12,8 @@ import { STANDARD_PICKUP_LOCATIONS, GLOBAL_BOOKING_EXTRAS } from './src/data/boo
 import { startBookingNotificationWorker } from './src/server/bookingNotificationWorker';
 import { INITIAL_STATIC_PAGES } from './src/data/staticPages';
 import { EXPECTED_AWESOME_ADVENTURE_TOURS_SUPABASE_PROJECT_REF, isExpectedAwesomeAdventureToursSupabaseUrl } from './src/lib/supabaseProjectGuard';
+import { parseLocalePath } from './src/i18n/localeRouting';
+import { TRANSLATIONS } from './src/i18n/translations';
 
 dotenv.config();
 
@@ -1051,6 +1053,20 @@ app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: Auth
     if (!consent || consent.consent_action !== 'granted') {
       return res.status(403).json({ success: false, error: 'The customer has not granted active WhatsApp transactional consent for this phone number. No message was sent.' });
     }
+    let selectedTemplateLanguage = templateLanguage;
+    const { data: customerPreference, error: customerPreferenceError } = await serverSupabase
+      .from('customers').select('preferred_locale').eq('id', customerId).maybeSingle();
+    if (customerPreferenceError) {
+      console.error('[WhatsApp] Customer locale lookup failed:', customerPreferenceError.message);
+      return res.status(503).json({ success: false, error: 'Customer language preference could not be verified. No message was sent.' });
+    }
+    const preferredLocale = typeof customerPreference?.preferred_locale === 'string'
+      ? customerPreference.preferred_locale.trim().toLowerCase()
+      : '';
+    if (['en', 'de', 'it', 'ro', 'ru'].includes(preferredLocale)) {
+      selectedTemplateLanguage = preferredLocale;
+    }
+
     const providerResponse = await fetch(`https://graph.facebook.com/${graphVersion}/${phoneNumberId}/messages`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
@@ -1061,7 +1077,7 @@ app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: Auth
         type: 'template',
         template: {
           name: templateName,
-          language: { code: templateLanguage },
+          language: { code: selectedTemplateLanguage },
           components: [{ type: 'body', parameters: [{ type: 'text', text: bodyParameter }] }],
         },
       }),
@@ -1195,7 +1211,7 @@ app.get('/api/config', rateLimit(120, 60_000), (_req: Request, res: Response) =>
     operatingHours: '06:00 - 22:00 EET (Daily)',
     currencyDefault: 'EUR',
     supportedCurrencies: ['EUR', 'USD', 'GBP', 'EGP'],
-    supportedLanguages: ['en', 'de', 'ru', 'fr', 'ar', 'it', 'pl', 'nl'],
+    supportedLanguages: ['en', 'de', 'it', 'ro', 'ru'],
     depositRequired: false,
     cancellationFreeNoticeHours: 24,
   });
@@ -1953,6 +1969,8 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
   }
 
   const cleanEmail = email.trim().toLowerCase();
+  const requestedLocale = typeof preferredLanguage === 'string' ? preferredLanguage.trim().toLowerCase() : 'en';
+  const customerLocale = ['en', 'de', 'it', 'ro', 'ru'].includes(requestedLocale) ? requestedLocale : 'en';
   const source = typeof req.body?.source === 'string' ? req.body.source.trim().slice(0, 80) || 'website' : 'website';
   let subscriber: { id: string; created_at: string; updated_at: string } | null = null;
   let shouldSendWelcome = false;
@@ -1985,7 +2003,7 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
           status: 'subscribed',
           source,
           discount_code: 'REDSEA15',
-          metadata: { preferredLanguage: String(preferredLanguage || 'en').slice(0, 20), reSubscribedAt: new Date().toISOString() },
+          metadata: { preferredLanguage: customerLocale, reSubscribedAt: new Date().toISOString() },
           updated_at: new Date().toISOString(),
         })
         .eq('id', existing.id)
@@ -2001,7 +2019,7 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
           source,
           status: 'subscribed',
           discount_code: 'REDSEA15',
-          metadata: { preferredLanguage: String(preferredLanguage || 'en').slice(0, 20), consentSource: source, consentedAt: new Date().toISOString() },
+          metadata: { preferredLanguage: customerLocale, consentSource: source, consentedAt: new Date().toISOString() },
         })
         .select('id,created_at,updated_at')
         .single();
@@ -2028,13 +2046,30 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
   const fromName = (process.env.RESEND_FROM_NAME || 'Awesome Adventure Tours').replace(/[<>\r\n]/g, '').trim() || 'Awesome Adventure Tours';
   const unsubscribeToken = createNewsletterUnsubscribeToken(subscriber.id, cleanEmail);
   const unsubscribeUrl = `https://awesomeadventure.tours/api/newsletter/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`;
-  const { data: welcomeTemplate, error: welcomeTemplateError } = await serverSupabase
+  let welcomeTemplate: { subject: string | null; body_text: string | null; is_active: boolean | null } | null = null;
+  const { data: localizedWelcomeTemplate, error: localizedWelcomeTemplateError } = await serverSupabase
     .from('communication_templates')
     .select('subject,body_text,is_active')
     .eq('template_key', 'newsletter_welcome')
+    .eq('locale', customerLocale)
     .maybeSingle();
-  if (welcomeTemplateError) {
-    console.error('Newsletter welcome template lookup failed:', welcomeTemplateError.message);
+  if (localizedWelcomeTemplateError) {
+    console.error('Localized newsletter welcome template lookup failed:', localizedWelcomeTemplateError.message);
+  } else {
+    welcomeTemplate = localizedWelcomeTemplate;
+  }
+  if (!welcomeTemplate && customerLocale !== 'en') {
+    const { data: englishWelcomeTemplate, error: englishWelcomeTemplateError } = await serverSupabase
+      .from('communication_templates')
+      .select('subject,body_text,is_active')
+      .eq('template_key', 'newsletter_welcome')
+      .eq('locale', 'en')
+      .maybeSingle();
+    if (englishWelcomeTemplateError) {
+      console.error('English newsletter welcome template fallback lookup failed:', englishWelcomeTemplateError.message);
+    } else {
+      welcomeTemplate = englishWelcomeTemplate;
+    }
   }
   const templateVariables: Record<string, string> = {
     discount_code: 'REDSEA15',
@@ -2775,6 +2810,400 @@ async function writeAccountAudit(actorId: string, action: string, targetId: stri
   if (error) console.error('[Admin account audit] Could not persist audit event:', error.message);
 }
 
+// Reviewed translation workflow. Translation content is never read directly by browser
+// Supabase clients; all access is mediated by the AAL2 Super Admin API.
+const TRANSLATION_LOCALES = new Set([
+  'en','de','fr','it','es','nl','pl','pt','ro','ru','sv','da','nb','fi','el',
+  'bg','hr','cs','sk','sl','hu','et','lv','lt','uk','sr','sq','tr','ar',
+]);
+const TRANSLATION_ENTITY_TYPES = new Set([
+  'tour','tour_itinerary','tour_highlight','tour_inclusion','tour_exclusion',
+  'tour_faq','destination','blog_post','static_page','ui_catalog',
+]);
+
+const TRANSLATION_SOURCE_TABLES: Record<string, string> = {
+  tour: 'tours',
+  tour_itinerary: 'tour_itinerary',
+  tour_highlight: 'tour_highlights',
+  tour_inclusion: 'tour_inclusions',
+  tour_exclusion: 'tour_exclusions',
+  tour_faq: 'tour_faqs',
+  destination: 'destinations',
+  blog_post: 'blog_posts',
+};
+
+function stableTranslationJson(value: any): string {
+  if (Array.isArray(value)) return '[' + value.map(stableTranslationJson).join(',') + ']';
+  if (value && typeof value === 'object') {
+    return '{' + Object.keys(value).sort().map((key) => JSON.stringify(key) + ':' + stableTranslationJson(value[key])).join(',') + '}';
+  }
+  return JSON.stringify(value);
+}
+
+async function getTranslationSource(entityType: string, entityKey: string): Promise<any | null> {
+  if (entityType === 'ui_catalog') return entityKey === 'site-ui' ? { id: 'site-ui', slug: 'site-ui', title: 'Interface messages', content: TRANSLATIONS.en || {} } : null;
+  if (!serverSupabase) return null;
+  if (entityType === 'static_page') {
+    if (entityKey === 'home') return { id: 'home', slug: 'home', title: 'Explore Egypt’s Red Sea Coast', heroHeadline: 'Explore Egypt’s Red Sea Coast', heroSubtitle: 'Boat trips, island visits, snorkeling, diving and desert safaris across Egypt’s Red Sea coast.', sections: [] };
+    if (serverSupabase) {
+      const { data: setting, error } = await serverSupabase.from('site_settings').select('value').eq('key', 'pages_content').maybeSingle();
+      if (error) throw error;
+      const raw = setting?.value;
+      const pages = Array.isArray(raw) ? raw : raw && typeof raw === 'object' && Array.isArray((raw as any).pages) ? (raw as any).pages : [];
+      const page = pages.find((item: any) => (item?.slug === entityKey || item?.id === entityKey) && item?.published !== false && item?.status !== 'draft' && item?.status !== 'unpublished');
+      if (page) return page;
+    }
+    return INITIAL_STATIC_PAGES.find((page) => page.slug === entityKey || page.id === entityKey) || null;
+  }
+  const table = TRANSLATION_SOURCE_TABLES[entityType];
+  if (!table) return null;
+  let query = serverSupabase.from(table).select('*');
+  if (entityType === 'blog_post') query = query.in('status', ['published', 'scheduled']).lte('published_at', new Date().toISOString());
+  else if (entityType === 'tour' || entityType === 'destination') query = query.eq('status', 'published');
+  const { data, error } = await query.eq('id', entityKey).maybeSingle();
+  if (error) throw error;
+  if (!data) return null;
+  if (entityType.startsWith('tour_') && data.tour_id) {
+    const { data: parentTour, error: parentError } = await serverSupabase.from('tours').select('id').eq('id', data.tour_id).eq('status', 'published').maybeSingle();
+    if (parentError) throw parentError;
+    if (!parentTour) return null;
+  }
+  if (entityType === 'tour') {
+    const relatedTables = [
+      ['tour_itinerary', 'itinerary'],
+      ['tour_highlights', 'highlights'],
+      ['tour_inclusions', 'included'],
+      ['tour_exclusions', 'excluded'],
+      ['tour_faqs', 'faqs'],
+    ] as const;
+    const related = await Promise.all(relatedTables.map(async ([table, key]) => {
+      const result = await serverSupabase!.from(table).select('*').eq('tour_id', entityKey);
+      if (result.error) throw result.error;
+      const rows = (result.data || []).slice().sort((a: any, b: any) =>
+        Number(a.sort_order || 0) - Number(b.sort_order || 0) || String(a.id || '').localeCompare(String(b.id || ''))
+      );
+      return [key, rows] as const;
+    }));
+    return { ...data, ...Object.fromEntries(related) };
+  }
+  return data;
+}
+
+async function getCurrentTranslationSourceChecksum(entityType: string, entityKey: string): Promise<{ checksum: string; source: any } | null> {
+  const source = await getTranslationSource(entityType, entityKey);
+  if (!source) return null;
+  return { checksum: createHash('sha256').update(stableTranslationJson(source)).digest('hex'), source };
+}
+
+// Returns only a reviewed translation whose source checksum still matches the
+// current published source record. A stale translation fails closed.
+app.get('/api/content-translations/ui', rateLimit(60, 60_000), async (req: Request, res: Response) => {
+  const locale = typeof req.query.locale === 'string' ? req.query.locale : '';
+  if (!TRANSLATION_LOCALES.has(locale)) return res.status(400).json({ success: false, error: 'Unsupported locale.' });
+  if (locale === 'en') return res.json({ success: true, locale, messages: TRANSLATIONS.en || {} });
+  try {
+    if (!serverSupabase) return res.status(503).json({ success: false, error: 'Translation service unavailable.' });
+    const { data, error } = await serverSupabase.from('content_translations')
+      .select('content,source_checksum,reviewed_at,published_at')
+      .eq('entity_type', 'ui_catalog').eq('entity_key', 'site-ui')
+      .eq('locale', locale).eq('translation_state', 'published').maybeSingle();
+    if (error) throw error;
+    const current = await getCurrentTranslationSourceChecksum('ui_catalog', 'site-ui');
+    const messages = data?.content && typeof data.content === 'object' && !Array.isArray(data.content) ? data.content as Record<string, unknown> : {};
+    const englishKeys = Object.keys(TRANSLATIONS.en || {});
+    const complete = englishKeys.every((key) => typeof messages[key] === 'string' && String(messages[key]).trim().length > 0);
+    if (!data?.reviewed_at || !data?.published_at || !current || current.checksum !== data.source_checksum || !complete) {
+      return res.status(404).json({ success: false, error: 'A complete, current, reviewed interface catalog is not available.' });
+    }
+    return res.json({ success: true, locale, messages });
+  } catch (error) {
+    console.error('[UI translation catalog] Lookup failed:', error);
+    return res.status(503).json({ success: false, error: 'Interface translation service temporarily unavailable.' });
+  }
+});
+
+app.get('/api/content-translations/locales', rateLimit(30, 60_000), async (_req: Request, res: Response) => {
+  try {
+    if (!serverSupabase) return res.status(503).json({ success: false, error: 'Translation service unavailable.' });
+    const { data, error } = await serverSupabase.from('content_translations')
+      .select('locale,content,source_checksum,reviewed_at,published_at')
+      .eq('entity_type', 'ui_catalog').eq('entity_key', 'site-ui')
+      .eq('translation_state', 'published').not('locale', 'is', null).limit(100);
+    if (error) throw error;
+    const current = await getCurrentTranslationSourceChecksum('ui_catalog', 'site-ui');
+    const englishKeys = Object.keys(TRANSLATIONS.en || {});
+    const locales = (data || []).filter((row) => {
+      const messages = row.content && typeof row.content === 'object' && !Array.isArray(row.content) ? row.content as Record<string, unknown> : {};
+      return Boolean(row.reviewed_at && row.published_at && current && current.checksum === row.source_checksum &&
+        englishKeys.every((key) => typeof messages[key] === 'string' && String(messages[key]).trim().length > 0));
+    }).map((row) => row.locale);
+    return res.json({ success: true, locales: Array.from(new Set(locales)) });
+  } catch (error) {
+    console.error('[UI translation locales] Lookup failed:', error);
+    return res.status(503).json({ success: false, error: 'Interface translation availability is temporarily unavailable.' });
+  }
+});
+
+async function getTranslationSourceBySlug(entityType: string, slug: string): Promise<any | null> {
+  if (entityType === 'static_page') return getTranslationSource(entityType, slug);
+  const table = TRANSLATION_SOURCE_TABLES[entityType];
+  if (!table || !serverSupabase) return null;
+  let query = serverSupabase.from(table).select('id,slug');
+  if (entityType === 'blog_post') query = query.in('status', ['published', 'scheduled']).lte('published_at', new Date().toISOString());
+  else query = query.eq('status', 'published');
+  const { data, error } = await query.eq('slug', slug).maybeSingle();
+  if (error) throw error;
+  return data || null;
+}
+
+app.get('/api/content-translations/target', rateLimit(90, 60_000), async (req: Request, res: Response) => {
+  const locale = typeof req.query.locale === 'string' ? req.query.locale : '';
+  const requestedPath = typeof req.query.pathname === 'string' ? req.query.pathname : '';
+  if (!TRANSLATION_LOCALES.has(locale) || !requestedPath.startsWith('/') || requestedPath.length > 512) {
+    return res.status(400).json({ success: false, error: 'A supported locale and valid page path are required.' });
+  }
+  try {
+    const currentLocalePath = parseLocalePath(requestedPath);
+    const pathname = currentLocalePath?.pathname || requestedPath;
+    const privateRoute = /^\/(?:booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|admin(?:\/|$)|support(?:\/|$))/i.test(pathname);
+    if (privateRoute) {
+      if (locale === 'en') return res.json({ success: true, path: pathname });
+      const current = await getCurrentTranslationSourceChecksum('ui_catalog', 'site-ui');
+      const { data, error } = await serverSupabase!.from('content_translations')
+        .select('content,source_checksum,reviewed_at,published_at')
+        .eq('entity_type', 'ui_catalog').eq('entity_key', 'site-ui')
+        .eq('locale', locale).eq('translation_state', 'published').maybeSingle();
+      if (error) throw error;
+      const messages = data?.content && typeof data.content === 'object' && !Array.isArray(data.content) ? data.content as Record<string, unknown> : {};
+      const complete = Object.keys(TRANSLATIONS.en || {}).every((key) => typeof messages[key] === 'string' && String(messages[key]).trim().length > 0);
+      if (!data?.reviewed_at || !data?.published_at || !current || current.checksum !== data.source_checksum || !complete) {
+        return res.status(404).json({ success: false, error: 'A complete interface catalog is required for this language.' });
+      }
+      return res.json({ success: true, path: '/' + locale + (pathname === '/' ? '' : pathname) });
+    }
+
+    const parts = pathname.split('/').filter(Boolean);
+    const route = parts.length === 2 && parts[0] === 'excursions'
+      ? { entityType: 'tour', prefix: '/excursions/' }
+      : parts.length === 2 && parts[0] === 'destinations'
+        ? { entityType: 'destination', prefix: '/destinations/' }
+        : parts.length === 2 && parts[0] === 'blog'
+          ? { entityType: 'blog_post', prefix: '/blog/' }
+          : parts.length === 1 || parts.length === 0
+            ? { entityType: 'static_page', prefix: '/' }
+            : null;
+    if (!route) return res.status(404).json({ success: false, error: 'This page does not have a translatable route.' });
+
+    const currentSlug = parts[parts.length - 1] || 'home';
+    let entityKey = '';
+    let source: any = null;
+    if (currentLocalePath) {
+      const { data: currentTranslation, error } = await serverSupabase!.from('content_translations')
+        .select('entity_key,source_checksum')
+        .eq('entity_type', route.entityType).eq('locale', currentLocalePath.locale)
+        .eq('translated_slug', currentSlug).eq('translation_state', 'published').maybeSingle();
+      if (error) throw error;
+      if (!currentTranslation) return res.status(404).json({ success: false, error: 'Current page translation not found.' });
+      const current = await getCurrentTranslationSourceChecksum(route.entityType, currentTranslation.entity_key);
+      if (!current || current.checksum !== currentTranslation.source_checksum) return res.status(409).json({ success: false, error: 'Current page translation is outdated.' });
+      entityKey = currentTranslation.entity_key;
+      source = current.source;
+    } else {
+      source = await getTranslationSourceBySlug(route.entityType, currentSlug);
+      if (!source) return res.status(404).json({ success: false, error: 'Source page not found.' });
+      entityKey = String(source.id || source.slug);
+    }
+
+    const sourceSlug = typeof source?.slug === 'string' ? source.slug : currentSlug;
+    if (locale === 'en') {
+      const englishPath = route.entityType === 'static_page' ? (sourceSlug === 'home' ? '/' : '/' + sourceSlug) : route.prefix + sourceSlug;
+      return res.json({ success: true, path: englishPath });
+    }
+
+    const { data: target, error: targetError } = await serverSupabase!.from('content_translations')
+      .select('translated_slug,source_checksum,reviewed_at,published_at')
+      .eq('entity_type', route.entityType).eq('entity_key', entityKey)
+      .eq('locale', locale).eq('translation_state', 'published').maybeSingle();
+    if (targetError) throw targetError;
+    const current = await getCurrentTranslationSourceChecksum(route.entityType, entityKey);
+    if (!target?.translated_slug || !target.reviewed_at || !target.published_at || !current || current.checksum !== target.source_checksum) {
+      return res.status(404).json({ success: false, error: 'A current reviewed translation is not available for this page.' });
+    }
+    const targetPath = route.entityType === 'static_page' && target.translated_slug === 'home'
+      ? '/' + locale
+      : '/' + locale + route.prefix + encodeURIComponent(target.translated_slug);
+    return res.json({ success: true, path: targetPath });
+  } catch (error) {
+    console.error('[Locale route target] Resolution failed:', error);
+    return res.status(503).json({ success: false, error: 'Localized route lookup temporarily unavailable.' });
+  }
+});
+
+app.get('/api/content-translations/resolve', rateLimit(90, 60_000), async (req: Request, res: Response) => {
+  const locale = typeof req.query.locale === 'string' ? req.query.locale : '';
+  const entityType = typeof req.query.entity_type === 'string' ? req.query.entity_type : '';
+  const entityKey = typeof req.query.entity_key === 'string' ? req.query.entity_key : '';
+  const slug = typeof req.query.slug === 'string' ? req.query.slug : '';
+  if (!TRANSLATION_LOCALES.has(locale) || !TRANSLATION_ENTITY_TYPES.has(entityType) || (!entityKey && !slug)) {
+    return res.status(400).json({ success: false, error: 'A supported locale, content type, and record key or translated slug are required.' });
+  }
+  try {
+    if (!serverSupabase) return res.status(503).json({ success: false, error: 'Translation service unavailable.' });
+    let query = serverSupabase.from('content_translations')
+      .select('id,entity_type,entity_key,locale,translated_slug,title,summary,content,seo_title,seo_description,source_checksum,translation_state,reviewed_at,published_at')
+      .eq('locale', locale).eq('entity_type', entityType).eq('translation_state', 'published');
+    query = entityKey ? query.eq('entity_key', entityKey) : query.eq('translated_slug', slug);
+    const { data, error } = await query.maybeSingle();
+    if (error) throw error;
+    if (!data || !data.reviewed_at || !data.published_at) {
+      return res.status(404).json({ success: false, error: 'Reviewed translation not found.' });
+    }
+    const current = await getCurrentTranslationSourceChecksum(entityType, data.entity_key);
+    if (!current || !data.source_checksum || current.checksum !== data.source_checksum) {
+      return res.status(409).json({ success: false, error: 'This translation is outdated and requires review.' });
+    }
+    return res.json({ success: true, translation: data, source: { id: current.source.id || current.source.slug, slug: current.source.slug || null } });
+  } catch (error) {
+    console.error('[Public translation resolver] Failed:', error);
+    return res.status(503).json({ success: false, error: 'Translation service temporarily unavailable.' });
+  }
+});
+
+// Authoring helper: return the authoritative source checksum from the server,
+// not a checksum typed or calculated by the browser.
+app.get('/api/admin/translations/source', rateLimit(30, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  const entityType = typeof req.query.entity_type === 'string' ? req.query.entity_type : '';
+  const entityKey = typeof req.query.entity_key === 'string' ? req.query.entity_key.trim() : '';
+  if (!TRANSLATION_ENTITY_TYPES.has(entityType) || !entityKey) return res.status(400).json({ success: false, error: 'A valid content type and source record key are required.' });
+  try {
+    const current = await getCurrentTranslationSourceChecksum(entityType, entityKey);
+    if (!current) return res.status(404).json({ success: false, error: 'Source record not found or not published.' });
+    const source = current.source;
+    return res.json({
+      success: true, source_checksum: current.checksum,
+      source: {
+        id: source.id || source.slug, slug: source.slug || null,
+        title: source.title || source.name || null,
+        summary: source.short_description || source.description || source.tagline || source.excerpt || null,
+        content: entityType === 'static_page'
+          ? { heroHeadline: source.heroHeadline, heroSubtitle: source.heroSubtitle, sections: source.sections }
+          : entityType === 'blog_post'
+            ? { title: source.title, excerpt: source.excerpt, content: source.content }
+            : entityType === 'ui_catalog'
+          ? (source.content || {})
+          : entityType === 'tour'
+              ? {
+                  title: source.title, description: source.description || source.short_description, durationLabel: source.duration,
+                  highlights: (source.highlights || []).map((item: any) => item.item || item), itinerary: source.itinerary || [],
+                  included: source.included || [], excluded: source.excluded || [], faqs: source.faqs || [],
+                  pickup_info: source.pickup_info || null, cancellation_policy: source.cancellation_policy || null,
+                  age_restrictions: source.age_restrictions || null,
+                }
+              : { title: source.title || source.name, description: source.description || source.short_description, tagline: source.tagline || null, distance_from_airport: source.distance_from_airport || null },
+      },
+    });
+  } catch (error) {
+    console.error('[Translation source] Failed:', error);
+    return res.status(503).json({ success: false, error: 'Could not retrieve the current source record.' });
+  }
+});
+
+app.get('/api/admin/translations', rateLimit(30, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  const locale = typeof req.query.locale === 'string' ? req.query.locale : '';
+  const entityType = typeof req.query.entity_type === 'string' ? req.query.entity_type : '';
+  if (locale && !TRANSLATION_LOCALES.has(locale)) return res.status(400).json({ success: false, error: 'Unsupported locale.' });
+  if (entityType && !TRANSLATION_ENTITY_TYPES.has(entityType)) return res.status(400).json({ success: false, error: 'Unsupported content type.' });
+  try {
+    let query = serverSupabase!.from('content_translations')
+      .select('id,entity_type,entity_key,locale,translated_slug,title,summary,content,seo_title,seo_description,source_checksum,translation_state,reviewed_by,reviewed_at,published_at,updated_at')
+      .order('updated_at', { ascending: false }).limit(200);
+    if (locale) query = query.eq('locale', locale);
+    if (entityType) query = query.eq('entity_type', entityType);
+    const { data, error } = await query;
+    if (error) throw error;
+    return res.json({ success: true, translations: data || [] });
+  } catch (error) {
+    console.error('[Translation editor] Could not list translations:', error);
+    return res.status(503).json({ success: false, error: 'Translation records are temporarily unavailable.' });
+  }
+});
+
+app.post('/api/admin/translations', rateLimit(30, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  const body = req.body || {};
+  const entityType = typeof body.entity_type === 'string' ? body.entity_type : '';
+  const entityKey = typeof body.entity_key === 'string' ? body.entity_key.trim().slice(0, 180) : '';
+  const locale = typeof body.locale === 'string' ? body.locale : '';
+  const state = typeof body.translation_state === 'string' ? body.translation_state : 'draft';
+  const title = typeof body.title === 'string' ? body.title.trim().slice(0, 300) : '';
+  const translatedSlug = typeof body.translated_slug === 'string' ? body.translated_slug.trim().toLowerCase().slice(0, 180) : '';
+  const summary = typeof body.summary === 'string' ? body.summary.trim().slice(0, 2000) : '';
+  const seoTitle = typeof body.seo_title === 'string' ? body.seo_title.trim().slice(0, 300) : '';
+  const seoDescription = typeof body.seo_description === 'string' ? body.seo_description.trim().slice(0, 500) : '';
+  const sourceChecksum = typeof body.source_checksum === 'string' ? body.source_checksum.trim().slice(0, 128) : '';
+  const translationContent = body.content && typeof body.content === 'object' && !Array.isArray(body.content) ? body.content : null;
+  if (!TRANSLATION_ENTITY_TYPES.has(entityType) || !entityKey || !TRANSLATION_LOCALES.has(locale)) {
+    return res.status(400).json({ success: false, error: 'Choose a valid content type, source record key, and locale.' });
+  }
+  if (!['draft','review','published','outdated'].includes(state)) {
+    return res.status(400).json({ success: false, error: 'Invalid translation lifecycle state.' });
+  }
+  if (!translationContent || !/^[a-f0-9]{64}$/i.test(sourceChecksum)) {
+    return res.status(400).json({ success: false, error: 'Translation content and a 64-character SHA-256 source checksum are required.' });
+  }
+  if (state === 'published') {
+    if (body.confirm_publish !== true) return res.status(400).json({ success: false, error: 'Publishing requires explicit confirmation.' });
+    if (entityType === 'ui_catalog') {
+      const source = await getTranslationSource('ui_catalog', entityKey);
+      const keys = Object.keys(source?.content || {});
+      const complete = keys.length > 0 && keys.every((key) => typeof translationContent[key] === 'string' && String(translationContent[key]).trim().length > 0);
+      if (!complete) return res.status(400).json({ success: false, error: 'The interface catalog must translate every source UI message before publication.' });
+    } else if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(translatedSlug) || !seoTitle || !seoDescription) {
+      return res.status(400).json({ success: false, error: 'Publishing requires a translated title and slug, SEO title and description, and a source checksum.' });
+    }
+  }
+  if (state !== 'outdated') {
+    try {
+      const currentSource = await getCurrentTranslationSourceChecksum(entityType, entityKey);
+      if (!currentSource) return res.status(404).json({ success: false, error: 'The source record does not exist or is not published.' });
+      if (currentSource.checksum !== sourceChecksum) return res.status(409).json({ success: false, error: 'The source content changed. Reload the source snapshot before saving this translation.' });
+    } catch (error) {
+      console.error('[Translation editor] Source verification failed:', error);
+      return res.status(503).json({ success: false, error: 'Could not verify the current source record.' });
+    }
+  }
+  if (state === 'published' && Object.keys(translationContent).length === 0) {
+    return res.status(400).json({ success: false, error: 'Published translations must contain translated content.' });
+  }
+  const now = new Date().toISOString();
+  const record = {
+    entity_type: entityType, entity_key: entityKey, locale, translated_slug: translatedSlug || null,
+    title: title || null, summary: summary || null, content: translationContent,
+    seo_title: seoTitle || null, seo_description: seoDescription || null, source_checksum: sourceChecksum,
+    translation_state: state,
+    reviewed_by: state === 'published' ? req.user!.id : null,
+    reviewed_at: state === 'published' ? now : null,
+    published_at: state === 'published' ? now : null,
+    updated_at: now,
+  };
+  try {
+    const { data, error } = await serverSupabase!.from('content_translations')
+      .upsert(record, { onConflict: 'entity_type,entity_key,locale' })
+      .select('id,entity_type,entity_key,locale,translated_slug,title,summary,content,seo_title,seo_description,source_checksum,translation_state,reviewed_by,reviewed_at,published_at,updated_at')
+      .single();
+    if (error) throw error;
+    await writeAccountAudit(req.user!.id, state === 'published' ? 'CONTENT_TRANSLATION_PUBLISHED' : 'CONTENT_TRANSLATION_SAVED', data.id, {
+      entity_type: entityType, entity_key: entityKey, locale, translation_state: state,
+    });
+    return res.status(200).json({ success: true, translation: data });
+  } catch (error) {
+    console.error('[Translation editor] Could not save translation:', error);
+    return res.status(409).json({ success: false, error: 'The translation could not be saved. Check for a duplicate translated slug or retry.' });
+  }
+});
+
 app.get('/api/admin/users', rateLimit(20, 60_000), async (req: AuthenticatedRequest, res: Response) => {
   // Personal account data is restricted to a verified Super Admin + AAL2 session.
   if (!requireSuperAdminAal2(req, res)) return;
@@ -3470,6 +3899,37 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
     }
   }
 
+  // Include only locale URLs whose translation is published, reviewed and still matches its source.
+  if (serverSupabase) {
+    try {
+      const { data: translations, error } = await serverSupabase.from('content_translations')
+        .select('entity_type,entity_key,locale,translated_slug,source_checksum,published_at,reviewed_at')
+        .eq('translation_state', 'published').not('translated_slug', 'is', null).limit(5000);
+      if (error) throw error;
+      const sourceChecksumCache = new Map<string, string | null>();
+      for (const item of translations || []) {
+        if (!item.translated_slug || !item.locale || !item.reviewed_at || !item.published_at) continue;
+        const routePrefix = item.entity_type === 'tour' ? '/excursions/'
+          : item.entity_type === 'destination' ? '/destinations/'
+            : item.entity_type === 'blog_post' ? '/blog/'
+              : item.entity_type === 'static_page' ? '/' : null;
+        if (!routePrefix) continue;
+        const cacheKey = item.entity_type + ':' + item.entity_key;
+        if (!sourceChecksumCache.has(cacheKey)) {
+          const current = await getCurrentTranslationSourceChecksum(item.entity_type, item.entity_key);
+          sourceChecksumCache.set(cacheKey, current?.checksum || null);
+        }
+        if (sourceChecksumCache.get(cacheKey) !== item.source_checksum) continue;
+        const translatedPath = item.entity_type === 'static_page' && item.translated_slug === 'home'
+          ? '/' + item.locale
+          : '/' + item.locale + routePrefix + encodeURIComponent(item.translated_slug);
+        urls.set(AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN + translatedPath, toSitemapDate(item.published_at));
+      }
+    } catch (error) {
+      console.warn('[SEO sitemap] Reviewed localized pages could not be loaded:', error);
+    }
+  }
+
   const entries = Array.from(urls.entries()).map(([loc, lastmod]) => (
     `  <url><loc>${escapeXml(loc)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}</url>`
   ));
@@ -3767,7 +4227,7 @@ app.all('/mcp', (_req: Request, res: Response) => {
 // Private customer and administration routes must be crawlable so search engines
 // can observe noindex. This header is not an access-control mechanism.
 app.use((req: Request, res: Response, next: NextFunction) => {
-  const privateRoute = /^\/(?:admin(?:\/|$)|booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|support(?:\/|$))/i;
+  const privateRoute = /^\/(?:[a-z]{2}\/)?(?:admin(?:\/|$)|booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|support(?:\/|$))/i;
   if ((req.method === 'GET' || req.method === 'HEAD') && privateRoute.test(req.path)) {
     res.setHeader('X-Robots-Tag', 'noindex, nofollow');
     res.setHeader('Cache-Control', 'private, no-store, max-age=0');
@@ -4000,7 +4460,42 @@ function seoUpsertMeta(html: string, kind: 'name' | 'property', key: string, val
 }
 
 async function renderAwesomeAdventureToursPublicHtml(pathname: string, template: string): Promise<{ html: string; statusCode: number; noindex: boolean; nofollow: boolean }> {
-  const path = pathname.replace(/\/+$/, '') || '/';
+  const requestedPath = pathname.replace(/\/+$/, '') || '/';
+  const localePath = parseLocalePath(requestedPath);
+  let path = localePath?.pathname || requestedPath;
+  let localizedTranslation: any = null;
+  if (localePath) {
+    const parts = path.split('/').filter(Boolean);
+    const route = parts.length === 2 && parts[0] === 'excursions'
+      ? { entityType: 'tour', prefix: '/excursions/' }
+      : parts.length === 2 && parts[0] === 'destinations'
+        ? { entityType: 'destination', prefix: '/destinations/' }
+        : parts.length === 2 && parts[0] === 'blog'
+          ? { entityType: 'blog_post', prefix: '/blog/' }
+          : parts.length === 1 || parts.length === 0
+            ? { entityType: 'static_page', prefix: '/' }
+            : null;
+    if (route && serverSupabase) {
+      try {
+        const { data, error } = await serverSupabase.from('content_translations')
+          .select('id,entity_type,entity_key,locale,translated_slug,title,summary,content,seo_title,seo_description,source_checksum,translation_state,reviewed_at,published_at')
+          .eq('entity_type', route.entityType).eq('locale', localePath.locale)
+          .eq('translated_slug', parts[parts.length - 1] || 'home').eq('translation_state', 'published').maybeSingle();
+        if (error) throw error;
+        if (data?.reviewed_at && data?.published_at) {
+          const current = await getCurrentTranslationSourceChecksum(route.entityType, data.entity_key);
+          if (current && current.checksum === data.source_checksum) {
+            localizedTranslation = data;
+            const sourceSlug = typeof current.source.slug === 'string' ? current.source.slug : '';
+            path = route.entityType === 'static_page' ? (sourceSlug === 'home' ? '/' : '/' + sourceSlug) : route.prefix + sourceSlug;
+          }
+        }
+      } catch (error) {
+        console.error('[Localized SSR] Translation resolution failed:', error);
+      }
+    }
+    if (!localizedTranslation) path = '/__localized_translation_unavailable__';
+  }
   const origin = 'https://awesomeadventure.tours';
   let title = 'Awesome Adventure Tours | Boat Trips, Island Tours & Safaris';
   let description = 'Discover boat trips, island experiences, snorkeling, diving and desert safaris across Egypt. Compare tour details and book with confidence.';
@@ -4024,7 +4519,14 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
   let seoIdentifier = 'home';
   let seoIdentifierIsPageSlug = true;
 
-  if (path === '/' || path === '/excursions') {
+  if (localePath && !localizedTranslation) {
+    statusCode = 404;
+    noindex = true;
+    nofollow = false;
+    title = 'This translation is unavailable | Awesome Adventure Tours';
+    description = 'A current reviewed translation for this page is not available.';
+    body = '<main id="seo-initial-content"><h1>This translation is unavailable</h1><p>This page has no current reviewed translation. Browse the original page instead.</p><p><a href="/excursions">Browse excursions</a></p></main>';
+  } else if (path === '/' || path === '/excursions') {
     // These catalogue reads are independent; run them concurrently so public
     // HTML rendering is bounded by the slower query rather than their sum.
     const [publishedTours, allDestinations] = await Promise.all([
@@ -4114,7 +4616,11 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
           .order('sort_order', { ascending: true, referencedTable: 'tour_itinerary' })
           .maybeSingle();
         if (error) console.warn('[SEO render] Tour detail unavailable:', error.message);
-        currentTour = data || null;
+        // Never allow a mismatched PostgREST result to become the page body.
+        currentTour = data && data.slug === slug ? data : null;
+        if (data && data.slug !== slug) {
+          console.error('[SEO render] Tour slug mismatch; refusing to render:', { requested: slug, returned: data.slug });
+        }
       } catch (error) {
         console.warn('[SEO render] Tour detail query failed:', error);
       }
@@ -4332,9 +4838,32 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
     if (override?.robots_follow === false && !(pageKind === 'static' && seoIdentifier === 'about')) nofollow = true;
   }
 
+  if (localizedTranslation) {
+    title = localizedTranslation.seo_title || localizedTranslation.title || title;
+    description = localizedTranslation.seo_description || localizedTranslation.summary || description;
+    noindex = false;
+    nofollow = false;
+    const content = localizedTranslation.content && typeof localizedTranslation.content === 'object' ? localizedTranslation.content : {};
+    const safeParagraphs = Array.isArray(content.paragraphs) ? content.paragraphs.filter((v: any) => typeof v === 'string') : [];
+    const safeSections = Array.isArray(content.sections) ? content.sections.filter((v: any) => v && typeof v.title === 'string' && typeof v.content === 'string') : [];
+    const safeFaqs = Array.isArray(content.faqs) ? content.faqs.filter((v: any) => v && typeof v.question === 'string' && typeof v.answer === 'string') : [];
+    const safeLists = ['highlights','itinerary','included','excluded'].map((key) => {
+      const values = Array.isArray(content[key]) ? content[key].filter((v: any) => typeof v === 'string' || (v && typeof v === 'object')) : [];
+      return values.length ? '<ul>' + values.map((item: any) => '<li>' + seoHtmlEscape(typeof item === 'string' ? item : (item.title || '') + ' ' + (item.description || '')) + '</li>').join('') + '</ul>' : '';
+    }).join('');
+    const prose = typeof content.content === 'string' ? content.content : typeof content.description === 'string' ? content.description : '';
+    body = '<main id="seo-initial-content"><h1>' + seoHtmlEscape(localizedTranslation.title || title) + '</h1>' +
+      (localizedTranslation.summary ? '<p>' + seoHtmlEscape(localizedTranslation.summary) + '</p>' : '') +
+      (prose ? '<p>' + seoHtmlEscape(prose) + '</p>' : '') +
+      safeParagraphs.map((item: string) => '<p>' + seoHtmlEscape(item) + '</p>').join('') +
+      safeSections.map((section: any) => '<section><h2>' + seoHtmlEscape(section.title) + '</h2><p>' + seoHtmlEscape(section.content) + '</p></section>').join('') +
+      safeFaqs.map((faq: any) => '<section><h2>' + seoHtmlEscape(faq.question) + '</h2><p>' + seoHtmlEscape(faq.answer) + '</p></section>').join('') +
+      ['pickupInfo','cancellationPolicy','ageRestrictions'].map((key) => typeof content[key] === 'string' ? '<p>' + seoHtmlEscape(content[key]) + '</p>' : '').join('') + safeLists + '</main>';
+  }
   title = seoBoundedTitle(title) || 'Awesome Adventure Tours';
   description = seoBoundedDescription(description) || 'Explore published excursions and experiences across Egypt’s Red Sea coast.';
-  const canonical = `${origin}${path === '/' ? '/' : path}`;
+  const canonicalPath = localePath ? requestedPath : path;
+  const canonical = `${origin}${canonicalPath === '/' ? '/' : canonicalPath}`;
   const cmsSocialProfiles: string[] = [];
   if (publicSupabase) {
     try {
@@ -4465,6 +4994,18 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
     if (hasBreadcrumb) graph.push({ '@type': 'BreadcrumbList', '@id': `${canonical}#breadcrumb`, itemListElement: breadcrumbItems.map((item, index) => ({ '@type': 'ListItem', position: index + 1, name: item.name, item: item.url })) });
   }
 
+  if (localizedTranslation) {
+    for (const node of graph) {
+      if (node && typeof node === 'object' && node['@type'] === 'WebPage') {
+        node.name = title;
+        node.description = description;
+      }
+      if (node && typeof node === 'object' && typeof node['@id'] === 'string' && node['@id'].startsWith(canonical + '#') && node.name) {
+        node.name = localizedTranslation.title || title;
+        node.description = localizedTranslation.summary || description;
+      }
+    }
+  }
   const schema = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }).replace(/</g, '\\u003c');
   let html = template.replace(/<title>[\s\S]*?<\/title>/i, `<title>${seoHtmlEscape(title)}</title>`);
   html = seoUpsertMeta(html, 'name', 'description', description);
@@ -4481,7 +5022,41 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
   html = seoUpsertMeta(html, 'name', 'twitter:image', pageImage);
   html = html.replace(/<link\s+rel="canonical"[^>]*>/i, `<link rel="canonical" href="${seoHtmlEscape(canonical)}" />`);
   html = html.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '');
-  html = html.replace('</head>', `<script type="application/ld+json">${schema}</script>${seoInitialStyles()}</head>`);
+  if (localePath) {
+    html = html.replace(/<html\b([^>]*)>/i, (_match, attrs) => '<html' + String(attrs).replace(/\s+lang=["'][^"']*["']/i, '').replace(/\s+dir=["'][^"']*["']/i, '') + ' lang="' + localePath.locale + '" dir="' + (localePath.locale === 'ar' ? 'rtl' : 'ltr') + '">');
+    const alternateLinks: string[] = [];
+    alternateLinks.push('<link rel="alternate" hreflang="en" href="' + origin + path + '">');
+    alternateLinks.push('<link rel="alternate" hreflang="x-default" href="' + origin + path + '">');
+    if (localizedTranslation) {
+      alternateLinks.push('<link rel="alternate" hreflang="' + localePath.locale + '" href="' + origin + requestedPath + '">');
+      if (serverSupabase) {
+        try {
+          const { data: alternatives } = await serverSupabase.from('content_translations')
+            .select('locale,translated_slug,source_checksum,reviewed_at,published_at')
+            .eq('entity_type', localizedTranslation.entity_type)
+            .eq('entity_key', localizedTranslation.entity_key)
+            .eq('translation_state', 'published').not('translated_slug', 'is', null);
+          const current = await getCurrentTranslationSourceChecksum(localizedTranslation.entity_type, localizedTranslation.entity_key);
+          for (const alternative of alternatives || []) {
+            if (!alternative.locale || !alternative.translated_slug || !alternative.reviewed_at || !alternative.published_at) continue;
+            if (!current || current.checksum !== alternative.source_checksum) continue;
+            const routePrefix = localizedTranslation.entity_type === 'tour' ? '/excursions/'
+              : localizedTranslation.entity_type === 'destination' ? '/destinations/'
+                : localizedTranslation.entity_type === 'blog_post' ? '/blog/' : '/';
+            const alternatePath = localizedTranslation.entity_type === 'static_page' && alternative.translated_slug === 'home'
+              ? '/' + alternative.locale
+              : '/' + alternative.locale + routePrefix + encodeURIComponent(alternative.translated_slug);
+            if (alternative.locale !== localePath.locale) alternateLinks.push('<link rel="alternate" hreflang="' + alternative.locale + '" href="' + origin + alternatePath + '">');
+          }
+        } catch (error) {
+          console.warn('[Localized SSR] Reciprocal hreflang lookup failed:', error);
+        }
+      }
+    }
+    html = html.replace('</head>', alternateLinks.join('') + '<script type="application/ld+json">' + schema + '</script>' + seoInitialStyles() + '</head>');
+  } else {
+    html = html.replace('</head>', `<script type="application/ld+json">${schema}</script>${seoInitialStyles()}</head>`);
+  }
   html = html.replace(/<div id="root"><\/div>/i, `<div id="root">${body}</div>`);
   return { html, statusCode, noindex, nofollow };
 }
@@ -4571,7 +5146,7 @@ async function startServer() {
         return res.status(503).send('Awesome Adventure Tours production assets are not available.');
       }
 
-      const privateRoute = /^\/(?:admin(?:\/|$)|booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|support(?:\/|$))/i;
+      const privateRoute = /^\/(?:[a-z]{2}\/)?(?:admin(?:\/|$)|booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|support(?:\/|$))/i;
       if (privateRoute.test(req.path)) {
         return res.sendFile(indexHtmlPath);
       }
@@ -4584,9 +5159,18 @@ async function startServer() {
         if (rendered.noindex) {
           res.setHeader('X-Robots-Tag', `noindex, ${rendered.nofollow ? 'nofollow' : 'follow'}`);
         }
-        res.setHeader('Cache-Control', rendered.statusCode === 200
-          ? 'public, max-age=30, s-maxage=60, stale-while-revalidate=30'
-          : 'no-store');
+        const isTourDetailRoute = /^\/(?:[a-z]{2}\/)?excursions\/[a-z0-9]+(?:-[a-z0-9]+)*\/?$/i.test(req.path);
+        if (isTourDetailRoute) {
+          // Prevent an intermediary cache from serving one excursion's HTML under another
+          // excursion URL. Tour pages contain route-specific title, body and booking links.
+          res.setHeader('Cache-Control', 'private, no-store, max-age=0');
+          res.setHeader('CDN-Cache-Control', 'no-store');
+          res.setHeader('Surrogate-Control', 'no-store');
+        } else {
+          res.setHeader('Cache-Control', rendered.statusCode === 200
+            ? 'public, max-age=30, s-maxage=60, stale-while-revalidate=30'
+            : 'no-store');
+        }
         return res.send(rendered.html);
       } catch (error) {
         console.error('[Public SEO render] Failed to render route:', req.path, error);

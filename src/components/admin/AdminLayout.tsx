@@ -78,6 +78,7 @@ export type AdminTab =
   | 'media'
   | 'seo'
   | 'pages'
+  | 'translations'
   | 'blog'
   | 'settings'
   | 'access_control'
@@ -254,6 +255,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'reviews', label: 'Traveler Reviews', icon: Star },
     { id: 'seo', label: 'SEO & Meta Tags', icon: Globe },
     { id: 'pages', label: 'Pages & Content', icon: FileText },
+    { id: 'translations', label: 'Translations & Locales', icon: Globe },
     { id: 'blog', label: 'Blog & Journal', icon: BookOpen },
     { id: 'newsletter', label: 'Newsletter', icon: Mail },
     // SECURITY & ACCESS CONTROL
@@ -280,7 +282,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     if (id.startsWith('crm_') || id === 'inquiries') return 'crm.read';
     if (id === 'comm_templates') return 'communications.manage';
     if (id.startsWith('comm_')) return 'communications.read';
-    if (['destinations','categories','newsletter','extras','faqs','reviews','media','seo','pages'].includes(id)) return 'content.read';
+    if (['destinations','categories','newsletter','extras','faqs','reviews','media','seo','pages','translations'].includes(id)) return 'content.read';
     if (id === 'coupons') return 'bookings.read';
     if (id === 'settings') return 'settings.manage';
     return null;
@@ -289,7 +291,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const isSuperAdmin = Boolean(user?.roles?.includes('super_admin') || user?.role === 'super_admin');
   const canSeeTab = (id: string) => id === 'technical' || id === 'settings'
     ? isSuperAdmin
-    : id === 'access_control'
+    : id === 'translations'
+      ? isSuperAdmin
+      : id === 'access_control'
       ? canManageAccess
       : (() => { const required = requiredPermission(id); return !required || hasPermission(required); })();
 
@@ -305,7 +309,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const activePermission = requiredPermission(activeTab);
   const canAccessActiveTab = activeTab === 'technical' || activeTab === 'settings'
     ? isSuperAdmin
-    : activeTab === 'access_control'
+    : activeTab === 'translations'
+      ? isSuperAdmin
+      : activeTab === 'access_control'
       ? canManageAccess
       : !activePermission || hasPermission(activePermission);
 

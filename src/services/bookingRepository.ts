@@ -173,7 +173,7 @@ class SupabaseBookingRepository implements IBookingRepository {
       // 1. Authoritative Primary Path: create_booking_atomic RPC
       // Executes single PostgreSQL transaction with row-level capacity lock, server-side pricing,
       // passenger manifest creation, extras persistence, genuine request idempotency, and audit logging.
-      const { data: atomicRes, error: rpcErr } = await supabase.rpc('create_booking_atomic_with_language', {
+      const { data: atomicRes, error: rpcErr } = await supabase.rpc('create_booking_atomic_with_locale', {
         p_tour_identifier: resolveBookingTourIdentifier(booking.tourId, booking.tourSlug),
         p_booking_date: bookingDateStr,
         p_adult_count: adults,
@@ -197,6 +197,7 @@ class SupabaseBookingRepository implements IBookingRepository {
         p_special_requests: booking.customer.specialRequests || null,
         p_idempotency_key: idempotencyKey,
         p_tour_language: booking.tourLanguage || 'English',
+        p_customer_locale: booking.customerLocale || 'en',
       });
 
       if (!rpcErr && atomicRes && typeof atomicRes === 'object') {
@@ -712,6 +713,7 @@ class SupabaseBookingRepository implements IBookingRepository {
       tourDestination: tourDest,
       tourDuration: tour.duration || (tour.duration_hours ? `${tour.duration_hours} Hours` : 'Full Day'),
       tourLanguage: data.tour_language || undefined,
+      customerLocale: data.customer_locale || customer.preferred_locale || 'en',
       date: data.booking_date,
       guests: {
         adults: data.adult_count || 1,
