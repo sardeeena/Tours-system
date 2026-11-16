@@ -78,4 +78,5 @@ assert.match(reviewWorker, /event\.event_name === 'booking\.completed'/);
 assert.match(reviewWorker, /booking_review_request/);
 assert.match(reviewWorker, /awesome-adventure-booking-\$\{eventId\}-review-email/);
 assert.match(reviewWorker, /tours\(title,departure_time,slug\)/);
-\nconsole.log('Branded email renderer, booking ticket HTML and all 13 Supabase Auth templates passed.');
+
+console.log('Branded email renderer, booking ticket HTML and all 13 Supabase Auth templates passed.');
