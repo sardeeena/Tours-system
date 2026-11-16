@@ -38,6 +38,8 @@ assert.match(server, /app\.post\('\/api\/admin\/translations'[\s\S]*requireSuper
 assert.match(server, /body\.confirm_publish !== true/, 'Publishing requires explicit human confirmation');
 assert.match(server, /64-character SHA-256 source checksum/, 'Translation writes require a SHA-256 source checksum');
 assert.match(app, /AdminTranslationManager/, 'Admin translation workspace is wired into the app');
+const adminLayout = read('../src/components/admin/AdminLayout.tsx');
+assert.match(adminLayout, /id === 'translations'/, 'Translation workspace navigation is restricted to Super Admin');
 assert.match(migration, /ALTER TABLE public\.bookings[\s\S]*customer_locale/, 'Booking customer locale is separate from guide language');
 assert.match(migration, /ADD COLUMN IF NOT EXISTS preferred_locale/, 'Customer communication preference is persisted');
 assert.match(migration, /ADD COLUMN IF NOT EXISTS locale text NOT NULL DEFAULT 'en'/, 'Communication templates are locale-aware');
