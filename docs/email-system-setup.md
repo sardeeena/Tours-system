@@ -1,5 +1,10 @@
 # AwesomeAdventure email system
 
+## Booking references
+- New bookings receive a compact `AWE-XXXXX-XXXXX` reference (15 characters total).
+- The authoritative database booking function generates 10 cryptographically random symbols from an alphabet that avoids visually ambiguous characters and retries on a booking-reference collision.
+- Existing booking references remain unchanged so old confirmations, receipts, and lookup links continue to work.
+
 ## Architecture
 - Supabase Auth generates authentication and account-security emails and owns all confirmation, recovery, magic-link, invite, and reauthentication tokens.
 - Resend SMTP delivers Supabase Auth messages.
