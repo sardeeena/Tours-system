@@ -1954,6 +1954,8 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
   }
 
   const cleanEmail = email.trim().toLowerCase();
+  const requestedLocale = typeof preferredLanguage === 'string' ? preferredLanguage.trim().toLowerCase() : 'en';
+  const customerLocale = ['en', 'de', 'it', 'ro', 'ru'].includes(requestedLocale) ? requestedLocale : 'en';
   const source = typeof req.body?.source === 'string' ? req.body.source.trim().slice(0, 80) || 'website' : 'website';
   let subscriber: { id: string; created_at: string; updated_at: string } | null = null;
   let shouldSendWelcome = false;
@@ -1986,7 +1988,7 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
           status: 'subscribed',
           source,
           discount_code: 'REDSEA15',
-          metadata: { preferredLanguage: String(preferredLanguage || 'en').slice(0, 20), reSubscribedAt: new Date().toISOString() },
+          metadata: { preferredLanguage: customerLocale, reSubscribedAt: new Date().toISOString() },
           updated_at: new Date().toISOString(),
         })
         .eq('id', existing.id)
@@ -2029,13 +2031,30 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
   const fromName = (process.env.RESEND_FROM_NAME || 'Awesome Adventure Tours').replace(/[<>\r\n]/g, '').trim() || 'Awesome Adventure Tours';
   const unsubscribeToken = createNewsletterUnsubscribeToken(subscriber.id, cleanEmail);
   const unsubscribeUrl = `https://awesomeadventure.tours/api/newsletter/unsubscribe?token=${encodeURIComponent(unsubscribeToken)}`;
-  const { data: welcomeTemplate, error: welcomeTemplateError } = await serverSupabase
+  let welcomeTemplate: { subject: string | null; body_text: string | null; is_active: boolean | null } | null = null;
+  const { data: localizedWelcomeTemplate, error: localizedWelcomeTemplateError } = await serverSupabase
     .from('communication_templates')
     .select('subject,body_text,is_active')
     .eq('template_key', 'newsletter_welcome')
+    .eq('locale', customerLocale)
     .maybeSingle();
-  if (welcomeTemplateError) {
-    console.error('Newsletter welcome template lookup failed:', welcomeTemplateError.message);
+  if (localizedWelcomeTemplateError) {
+    console.error('Localized newsletter welcome template lookup failed:', localizedWelcomeTemplateError.message);
+  } else {
+    welcomeTemplate = localizedWelcomeTemplate;
+  }
+  if (!welcomeTemplate && customerLocale !== 'en') {
+    const { data: englishWelcomeTemplate, error: englishWelcomeTemplateError } = await serverSupabase
+      .from('communication_templates')
+      .select('subject,body_text,is_active')
+      .eq('template_key', 'newsletter_welcome')
+      .eq('locale', 'en')
+      .maybeSingle();
+    if (englishWelcomeTemplateError) {
+      console.error('English newsletter welcome template fallback lookup failed:', englishWelcomeTemplateError.message);
+    } else {
+      welcomeTemplate = englishWelcomeTemplate;
+    }
   }
   const templateVariables: Record<string, string> = {
     discount_code: 'REDSEA15',
