@@ -57,3 +57,12 @@ Most admin CRUD screens use the Supabase client directly. Their effective author
 - Private locale-prefixed booking, customer portal and authentication routes are served as no-store/noindex application routes.
 - The XML sitemap includes only reviewed translations whose source checksum is current. Localized pages emit reciprocal hreflang links only for same-entity translations that pass the same checksum check.
 - `/api/config` advertises only the five existing interface dictionaries (`en,de,it,ro,ru`); planned locales are not advertised as complete.
+
+
+### Public translation endpoints
+
+- `GET /api/content-translations/resolve` — resolve a published, reviewed content translation by translated slug or stable entity key; verify live source checksum.
+- `GET /api/content-translations/target` — map the current source/translated route to the selected locale's translated slug; private booking/account routes require a complete published UI catalog.
+- `GET /api/content-translations/ui` — serve a complete reviewed UI catalog after source checksum validation.
+- `GET /api/content-translations/locales` — advertise only locales with complete, reviewed UI catalogs.
+- `GET /api/admin/translations/source` — Super Admin + AAL2 source snapshot/checksum helper.
