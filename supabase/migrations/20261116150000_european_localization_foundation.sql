@@ -11,6 +11,29 @@ ALTER TABLE public.bookings
 ALTER TABLE public.communication_templates
   ADD COLUMN IF NOT EXISTS locale text NOT NULL DEFAULT 'en';
 
+-- A template key can now have one reviewed version per locale.
+DO $
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conrelid = 'public.communication_templates'::regclass
+      AND conname = 'communication_templates_template_key_key'
+  ) THEN
+    ALTER TABLE public.communication_templates
+      DROP CONSTRAINT communication_templates_template_key_key;
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conrelid = 'public.communication_templates'::regclass
+      AND conname = 'communication_templates_template_key_locale_key'
+  ) THEN
+    ALTER TABLE public.communication_templates
+      ADD CONSTRAINT communication_templates_template_key_locale_key
+      UNIQUE (template_key, locale);
+  END IF;
+END $;
+
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'customers_preferred_locale_format_check') THEN
