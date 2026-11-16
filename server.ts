@@ -3208,7 +3208,8 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
         saved++;
       }
     }
-    await writeAccountAudit(req.user!.id,'CONTENT_TRANSLATION_BULK_DRAFT_GENERATED',locale,{locale,offset,requested:page.length,saved,skipped,total:candidates.length});
+    const { error: auditError } = await serverSupabase.from('audit_logs').insert({ user_id: req.user!.id, action: 'CONTENT_TRANSLATION_BULK_DRAFT_GENERATED', entity_type: 'content_translation_batch', entity_id: null, new_data: { locale, offset, requested: page.length, saved, skipped, total: candidates.length } });
+    if (auditError) console.warn('[Bulk translation generation] Audit event could not be persisted.');
     return res.json({success:true,locale,processed:saved,skipped,total:candidates.length,next_offset:Math.min(offset+limit,candidates.length),done:offset+limit>=candidates.length});
   } catch(error) {
     console.error('[Bulk translation generation] Failed:',error);
