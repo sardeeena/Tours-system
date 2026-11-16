@@ -211,7 +211,7 @@ const AdminLoginLoadingFallback = () => (
 );
 
 function MainApp() {
-  const { language, setLanguage, supportedLanguages } = useLanguage();
+  const { setLanguage, supportedLanguages } = useLanguage();
   const { user, isAdmin, loading: authLoading, refreshUser, checkAdminAccess } = useAuth();
   const [currentCurrency, setCurrentCurrency] = useState<CurrencyConfig>(CURRENCY_CONFIGS.EUR);
 
