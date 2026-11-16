@@ -11,7 +11,7 @@ type TranslationRow = {
   source_checksum: string | null; translation_state: 'draft' | 'review' | 'published' | 'outdated';
 };
 
-const ENTITY_TYPES = ['tour', 'tour_itinerary', 'tour_highlight', 'tour_inclusion', 'tour_exclusion', 'tour_faq', 'destination', 'blog_post', 'static_page', 'ui_catalog'];
+const ENTITY_TYPES = ['tour', 'tour_itinerary', 'tour_highlight', 'tour_inclusion', 'tour_exclusion', 'tour_faq', 'destination', 'blog_post', 'static_page', 'communication_template', 'ui_catalog'];
 
 export const AdminTranslationManager: React.FC = () => {
   const { showToast } = useToast();
