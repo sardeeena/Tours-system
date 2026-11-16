@@ -3154,6 +3154,7 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
     const {data:existing,error:existingError} = await serverSupabase.from('content_translations').select('entity_type,entity_key,translation_state,reviewed_at,published_at').eq('locale',locale).limit(2000);
     if (existingError) throw existingError;
     const known = new Map((existing || []).map((x:any)=>[x.entity_type+':'+x.entity_key,x]));
+    const usedSlugs = new Set((existing || []).filter((x:any)=>!(prepared.some(p=>p.candidate.entity_type===x.entity_type && p.candidate.entity_key===x.entity_key))).map((x:any)=>x.translated_slug).filter(Boolean));
     const work = prepared.filter(x=>{const old:any=known.get(x.type+':'+x.key);return !old || (old.translation_state==='draft' && !old.reviewed_at && !old.published_at);});
     let saved=0, skipped=prepared.length-work.length;
     if (work.length) {
@@ -3181,7 +3182,10 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
           const keys=Object.keys(TRANSLATIONS.en || {});
           if (!keys.every(key=>typeof translated.content[key]==='string' && String(translated.content[key]).trim())) {skipped++;continue;}
         }
-        const record = {entity_type:item.type,entity_key:item.key,locale,translated_slug:isUi?'site-ui':(item.type==='static_page' && item.key==='home'?'home':item.type==='communication_template'?'template-'+String(item.source.template_key || item.key):normalizedTranslationSlug(translated.translated_slug,item.source.slug || item.source.title || item.source.name || item.key)),
+        let translatedSlug = isUi ? 'site-ui' : (item.type==='static_page' && item.key==='home' ? 'home' : item.type==='communication_template' ? 'template-'+String(item.source.template_key || item.key) : normalizedTranslationSlug(translated.translated_slug,item.source.slug || item.source.title || item.source.name || item.key));
+        if (usedSlugs.has(translatedSlug)) translatedSlug = translatedSlug.slice(0,140) + '-' + createHash('sha256').update(item.type + ':' + item.key).digest('hex').slice(0,8);
+        usedSlugs.add(translatedSlug);
+        const record = {entity_type:item.type,entity_key:item.key,locale,translated_slug:translatedSlug,
           title:isUi?'Interface messages':String(translated.title || '').trim().slice(0,300),
           summary:String(translated.summary || '').trim().slice(0,2000),
           seo_title:isUi?null:String(translated.seo_title || translated.title || '').trim().slice(0,300),
