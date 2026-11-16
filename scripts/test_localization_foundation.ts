@@ -108,6 +108,7 @@ assert.match(bookingRepository, /p_customer_locale: booking\.customerLocale \|\|
 assert.match(bookingRepository, /customerLocale: data\.customer_locale \|\| customer\.preferred_locale \|\| 'en'/, 'Saved booking restores its customer locale');
 assert.match(bookingPage, /customerLocale: language/, 'Booking captures the current interface language');
 assert.match(bookingNotificationWorker, /getLocalizedCommunicationTemplate\(client, 'booking_received', customerLocale\)/, 'Booking received email selects the saved customer locale');
+assert.match(bookingNotificationWorker, /'en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'/, 'Booking notification worker recognizes all five additional customer locales');
 assert.match(bookingNotificationWorker, /getLocalizedCommunicationTemplate\(client, 'booking_review_request', customerLocale\)/, 'Completed booking review email selects the saved customer locale');
 assert.match(bookingNotificationWorker, /\.eq\('locale', locale\)/, 'Transactional email templates are locale-specific with an English fallback');
 assert.match(server, /selectedTemplateLanguage = preferredLocale/, 'WhatsApp approved template language follows the customer preference');
