@@ -1,4 +1,4 @@
-# Kemet Spirit Ticket Management
+# Awesome Adventure Tours Ticket Management
 
 ## Overview
 The unified support module provides a customer-facing portal at `/support` and an admin workspace at `/admin/tickets`. Both use the same Supabase tables and RLS policies; the UI is not the security boundary.
