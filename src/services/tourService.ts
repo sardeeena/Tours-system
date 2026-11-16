@@ -1344,10 +1344,14 @@ export async function getPublishedCategories(): Promise<Category[]> {
         }
       }
     } else {
-      const { data: toursWithTc } = await supabase
+      const { data: toursWithTc, error: fallbackError } = await supabase
         .from('tours')
         .select('id, tour_categories(category_id)')
         .eq('status', 'published');
+
+      if (fallbackError) {
+        throw new Error(`Unable to calculate published experience counts: ${formatSupabaseError(fallbackError)}`);
+      }
 
       if (toursWithTc) {
         for (const t of toursWithTc as any[]) {
@@ -1362,7 +1366,8 @@ export async function getPublishedCategories(): Promise<Category[]> {
       }
     }
   } catch (countErr) {
-    console.warn('Could not calculate category tour counts:', countErr);
+    console.error('Could not calculate category tour counts:', countErr);
+    throw new Error(countErr instanceof Error ? countErr.message : 'Unable to calculate published experience counts.');
   }
 
   const mapped = cats.map((c) => ({
