@@ -55,6 +55,31 @@ async function exportBundle(path: string) {
   console.log('Exported '+bundle.length+' source records to '+path+' (tours '+tours.length+', blog '+posts.length+', destinations '+destinations.length+', CMS pages '+pages.length+').');
 }
 function sortRows(a:any,b:any) { return Number(a.sort_order||0)-Number(b.sort_order||0) || String(a.id||'').localeCompare(String(b.id||'')); }
+async function currentSource(entityType:string, entityKey:string):Promise<any|null> {
+  if (entityType==='tour') {
+    const {data,error}=await db.from('tours').select('*').eq('id',entityKey).eq('status','published').maybeSingle();
+    if(error) throw error; if(!data) return null;
+    const related=await Promise.all([
+      rows('tour_itinerary',q=>q.eq('tour_id',entityKey)), rows('tour_highlights',q=>q.eq('tour_id',entityKey)),
+      rows('tour_inclusions',q=>q.eq('tour_id',entityKey)), rows('tour_exclusions',q=>q.eq('tour_id',entityKey)),
+      rows('tour_faqs',q=>q.eq('tour_id',entityKey)),
+    ]);
+    return {...data,itinerary:related[0].sort(sortRows),highlights:related[1].sort(sortRows),included:related[2].sort(sortRows),excluded:related[3].sort(sortRows),faqs:related[4].sort(sortRows)};
+  }
+  if(entityType==='destination'||entityType==='blog_post') {
+    const table=entityType==='destination'?'destinations':'blog_posts';
+    let q=db.from(table).select('*').eq('id',entityKey);
+    q=entityType==='destination'?q.eq('status','published'):q.in('status',['published','scheduled']).lte('published_at',new Date().toISOString());
+    const {data,error}=await q.maybeSingle(); if(error) throw error; return data||null;
+  }
+  if(entityType==='static_page') {
+    const {data,error}=await db.from('site_settings').select('value').eq('key','pages_content').maybeSingle();
+    if(error) throw error;
+    const raw=data?.value; const pages=Array.isArray(raw)?raw:raw&&Array.isArray(raw.pages)?raw.pages:[];
+    return pages.find((p:any)=>(String(p.id||p.slug)===entityKey||p.slug===entityKey)&&p.published!==false&&p.status!=='draft'&&p.status!=='unpublished')||null;
+  }
+  return null;
+}
 async function importDrafts(path: string, apply: boolean) {
   const parsed = JSON.parse(await readFile(path,'utf8'));
   if (parsed?.schema_version !== 1 || !Array.isArray(parsed.records)) throw new Error('Unsupported translation bundle schema.');
@@ -62,6 +87,10 @@ async function importDrafts(path: string, apply: boolean) {
   for (const item of parsed.records as Draft[]) {
     if (!LOCALES.has(item.locale) || !item.entity_type || !item.entity_key || !/^[a-f0-9]{64}$/i.test(item.source_checksum||'') || !item.content || typeof item.content !== 'object' || Array.isArray(item.content)) {
       skipped++; console.warn('Skipped invalid record', item?.entity_type, item?.entity_key, item?.locale); continue;
+    }
+    const source = await currentSource(item.entity_type,item.entity_key);
+    if (!source || checksum(source)!==item.source_checksum) {
+      skipped++; console.warn('Skipped missing or changed source (re-export and retranslate):',item.entity_type,item.entity_key,item.locale); continue;
     }
     const existing = await db.from('content_translations').select('translation_state,reviewed_at,published_at').eq('entity_type',item.entity_type).eq('entity_key',item.entity_key).eq('locale',item.locale).maybeSingle();
     if (existing.error) throw new Error('Existing translation lookup failed: '+existing.error.message);
@@ -81,7 +110,6 @@ async function importDrafts(path: string, apply: boolean) {
   }
   console.log((apply?'Imported ':'Dry run: would import ')+accepted+' drafts; skipped '+skipped+'. No record was published.');
 }
-const sortRowsNoop = undefined;
 const [mode,path,flag] = process.argv.slice(2);
 if (mode==='export' && path) await exportBundle(path);
 else if (mode==='import' && path) await importDrafts(path,flag==='--apply');
