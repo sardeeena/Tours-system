@@ -93,7 +93,7 @@ export async function sendChatMessage(
       if (data && data.text) {
         const recommendedTours = data.recommendedTours?.length 
           ? data.recommendedTours 
-          : extractMatchingTours(data.text + ' ' + latestPrompt);
+          : [];
 
         return {
           content: data.text,
