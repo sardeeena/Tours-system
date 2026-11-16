@@ -18,7 +18,7 @@ export const APP_CONFIG = {
   
   SUPPORT_PHONE: '+20 151 5212741',
   SUPPORT_EMAIL: 'reservations@awesomeadventure.tours',
-  OFFICE_LOCATION: 'Berth B-14, Hurghada Marina, Red Sea Governorate, Egypt',
+  OFFICE_LOCATION: '2nd floor, Bostan Cafe, Madres, Hurghada, Red Sea Governorate, Egypt',
 
   // Booking notice & availability defaults
   DEFAULT_MIN_BOOKING_NOTICE_HOURS: 24,
