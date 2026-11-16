@@ -1052,6 +1052,20 @@ app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: Auth
     if (!consent || consent.consent_action !== 'granted') {
       return res.status(403).json({ success: false, error: 'The customer has not granted active WhatsApp transactional consent for this phone number. No message was sent.' });
     }
+    let selectedTemplateLanguage = templateLanguage;
+    const { data: customerPreference, error: customerPreferenceError } = await serverSupabase
+      .from('customers').select('preferred_locale').eq('id', customerId).maybeSingle();
+    if (customerPreferenceError) {
+      console.error('[WhatsApp] Customer locale lookup failed:', customerPreferenceError.message);
+      return res.status(503).json({ success: false, error: 'Customer language preference could not be verified. No message was sent.' });
+    }
+    const preferredLocale = typeof customerPreference?.preferred_locale === 'string'
+      ? customerPreference.preferred_locale.trim().toLowerCase()
+      : '';
+    if (['en', 'de', 'it', 'ro', 'ru'].includes(preferredLocale)) {
+      selectedTemplateLanguage = preferredLocale;
+    }
+
     const providerResponse = await fetch(`https://graph.facebook.com/${graphVersion}/${phoneNumberId}/messages`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
@@ -1062,7 +1076,7 @@ app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: Auth
         type: 'template',
         template: {
           name: templateName,
-          language: { code: templateLanguage },
+          language: { code: selectedTemplateLanguage },
           components: [{ type: 'body', parameters: [{ type: 'text', text: bodyParameter }] }],
         },
       }),
