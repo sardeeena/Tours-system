@@ -3906,7 +3906,8 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
         .select('entity_type,entity_key,locale,translated_slug,source_checksum,published_at,reviewed_at')
         .eq('translation_state', 'published').not('translated_slug', 'is', null).limit(5000);
       if (error) throw error;
-      const sourceChecksumCache = new Map<string, string | null>();
+      const sourceCache = new Map<string, { checksum: string; source: any } | null>();
+      const alternatesByEntity = new Map<string, Map<string, string>>();
       for (const item of translations || []) {
         if (!item.translated_slug || !item.locale || !item.reviewed_at || !item.published_at) continue;
         const routePrefix = item.entity_type === 'tour' ? '/excursions/'
@@ -3915,28 +3916,53 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
               : item.entity_type === 'static_page' ? '/' : null;
         if (!routePrefix) continue;
         const cacheKey = item.entity_type + ':' + item.entity_key;
-        if (!sourceChecksumCache.has(cacheKey)) {
-          const current = await getCurrentTranslationSourceChecksum(item.entity_type, item.entity_key);
-          sourceChecksumCache.set(cacheKey, current?.checksum || null);
+        if (!sourceCache.has(cacheKey)) {
+          sourceCache.set(cacheKey, await getCurrentTranslationSourceChecksum(item.entity_type, item.entity_key));
         }
-        if (sourceChecksumCache.get(cacheKey) !== item.source_checksum) continue;
+        const current = sourceCache.get(cacheKey);
+        if (!current || current.checksum !== item.source_checksum) continue;
+        const sourceSlug = typeof current.source?.slug === 'string' ? current.source.slug : '';
+        if (!sourceSlug) continue;
+        const englishPath = item.entity_type === 'static_page'
+          ? (sourceSlug === 'home' ? '/' : '/' + encodeURIComponent(sourceSlug))
+          : routePrefix + encodeURIComponent(sourceSlug);
         const translatedPath = item.entity_type === 'static_page' && item.translated_slug === 'home'
           ? '/' + item.locale
           : '/' + item.locale + routePrefix + encodeURIComponent(item.translated_slug);
-        urls.set(AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN + translatedPath, toSitemapDate(item.published_at));
+        const englishUrl = AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN + englishPath;
+        const translatedUrl = AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN + translatedPath;
+        urls.set(translatedUrl, toSitemapDate(item.published_at));
+        let alternates = alternatesByEntity.get(cacheKey);
+        if (!alternates) {
+          alternates = new Map<string, string>();
+          alternates.set('en', englishUrl);
+          alternates.set('x-default', englishUrl);
+          alternatesByEntity.set(cacheKey, alternates);
+        }
+        alternates.set(item.locale, translatedUrl);
+      }
+      const alternatesByUrl = new Map<string, Map<string, string>>();
+      for (const alternates of alternatesByEntity.values()) {
+        for (const url of alternates.values()) alternatesByUrl.set(url, alternates);
       }
     } catch (error) {
       console.warn('[SEO sitemap] Reviewed localized pages could not be loaded:', error);
     }
   }
 
-  const entries = Array.from(urls.entries()).map(([loc, lastmod]) => (
-    `  <url><loc>${escapeXml(loc)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}</url>`
-  ));
+  const entries = Array.from(urls.entries()).map(([loc, lastmod]) => {
+    const alternates = alternatesByUrl.get(loc);
+    const hreflangLinks = alternates
+      ? Array.from(alternates.entries()).map(([hreflang, href]) =>
+          `<xhtml:link rel="alternate" hreflang="${escapeXml(hreflang)}" href="${escapeXml(href)}" />`
+        ).join('')
+      : '';
+    return `  <url><loc>${escapeXml(loc)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}${hreflangLinks}</url>`;
+  });
 
   const xml = [
     '<?xml version="1.0" encoding="UTF-8"?>',
-    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">',
     ...entries,
     '</urlset>',
   ].join('\n');
