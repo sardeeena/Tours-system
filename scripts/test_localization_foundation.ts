@@ -40,7 +40,8 @@ assert.match(migration, /ENABLE ROW LEVEL SECURITY/, 'Translation content is pro
 assert.match(migration, /REVOKE ALL ON TABLE public\.content_translations FROM PUBLIC, anon, authenticated/, 'Translation drafts are not exposed to public or authenticated Data API roles');
 assert.match(migration, /CREATE TRIGGER trg_capture_business_audit[\s\S]*private\.capture_business_audit\(\)/, 'Translation lifecycle changes use the private business audit trigger');
 assert.match(bookingLocaleMigration, /CREATE OR REPLACE FUNCTION public\.create_booking_atomic_with_locale/, 'Locale-aware booking RPC exists');
-assert.match(bookingLocaleMigration, /SECURITY DEFINER[\s\S]*SET search_path = ''/, 'Locale-aware booking RPC has a locked search path');
+assert.match(bookingLocaleMigration, /CREATE OR REPLACE FUNCTION private\.create_booking_atomic_with_locale[\s\S]*SECURITY DEFINER[\s\S]*SET search_path = ''/, 'Private locale-aware booking implementation has a locked definer search path');
+assert.match(bookingLocaleMigration, /CREATE OR REPLACE FUNCTION public\.create_booking_atomic_with_locale[\s\S]*SECURITY INVOKER/, 'Public locale-aware booking RPC remains invoker-rights');
 assert.match(bookingLocaleMigration, /customer_locale = p_customer_locale/, 'Booking locale is persisted in the booking transaction');
 assert.match(bookingLocaleMigration, /preferred_locale = p_customer_locale/, 'Customer communication preference is updated with the booking');
 assert.match(bookingLocaleMigration, /NOT IN \('en', 'de', 'it', 'ro', 'ru'\)/, 'Only currently supported UI locales can be persisted');
