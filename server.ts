@@ -2844,6 +2844,15 @@ async function getTranslationSource(entityType: string, entityKey: string): Prom
   if (entityType === 'ui_catalog') return entityKey === 'site-ui' ? { id: 'site-ui', slug: 'site-ui', title: 'Interface messages', content: TRANSLATIONS.en || {} } : null;
   if (!serverSupabase) return null;
   if (entityType === 'static_page') {
+    if (entityKey === 'home') return { id: 'home', slug: 'home', title: 'Explore Egypt’s Red Sea Coast', heroHeadline: 'Explore Egypt’s Red Sea Coast', heroSubtitle: 'Boat trips, island visits, snorkeling, diving and desert safaris across Egypt’s Red Sea coast.', sections: [] };
+    if (serverSupabase) {
+      const { data: setting, error } = await serverSupabase.from('site_settings').select('value').eq('key', 'pages_content').maybeSingle();
+      if (error) throw error;
+      const raw = setting?.value;
+      const pages = Array.isArray(raw) ? raw : raw && typeof raw === 'object' && Array.isArray((raw as any).pages) ? (raw as any).pages : [];
+      const page = pages.find((item: any) => (item?.slug === entityKey || item?.id === entityKey) && item?.published !== false && item?.status !== 'draft' && item?.status !== 'unpublished');
+      if (page) return page;
+    }
     return INITIAL_STATIC_PAGES.find((page) => page.slug === entityKey || page.id === entityKey) || null;
   }
   const table = TRANSLATION_SOURCE_TABLES[entityType];
