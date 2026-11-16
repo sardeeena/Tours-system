@@ -254,7 +254,7 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
             <button disabled={busy} className="inline-flex justify-center items-center rounded-xl bg-[#0A6C74] hover:bg-[#085B62] text-white px-6 py-3 text-sm font-bold shadow-sm disabled:opacity-50">{busy?'Submitting…':'Send support request'}</button>
           </div>
         </div>
-      </form>
+      </form>}
 
       <div className="grid lg:grid-cols-[minmax(300px,.8fr)_minmax(0,1.5fr)] gap-5 items-start">
         <section className={panelClass+' overflow-hidden'}>
