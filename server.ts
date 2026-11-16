@@ -3203,7 +3203,9 @@ app.get('/api/admin/translations/source', rateLimit(30, 60_000), async (req: Aut
             ? { title: source.title, excerpt: source.excerpt, content: source.content }
             : entityType === 'ui_catalog'
           ? (source.content || {})
-          : entityType === 'tour'
+          : entityType === 'communication_template'
+            ? { name: source.name, subject: source.subject, body_text: source.body_text, variables: source.variables || {}, channel: source.channel, template_key: source.template_key }
+            : entityType === 'tour'
               ? {
                   title: source.title, description: source.description || source.short_description, durationLabel: source.duration,
                   highlights: (source.highlights || []).map((item: any) => item.item || item), itinerary: source.itinerary || [],
