@@ -4265,7 +4265,6 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
   const localePath = parseLocalePath(requestedPath);
   let path = localePath?.pathname || requestedPath;
   let localizedTranslation: any = null;
-  let localizedSource: any = null;
   if (localePath) {
     const parts = path.split('/').filter(Boolean);
     const route = parts.length === 2 && parts[0] === 'excursions'
@@ -4288,7 +4287,6 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
           const current = await getCurrentTranslationSourceChecksum(route.entityType, data.entity_key);
           if (current && current.checksum === data.source_checksum) {
             localizedTranslation = data;
-            localizedSource = current.source;
             const sourceSlug = typeof current.source.slug === 'string' ? current.source.slug : '';
             path = route.entityType === 'static_page' ? (sourceSlug === 'home' ? '/' : '/' + sourceSlug) : route.prefix + sourceSlug;
           }
