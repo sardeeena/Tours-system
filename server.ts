@@ -3097,11 +3097,11 @@ const BULK_TRANSLATION_LOCALES: Record<string, string> = { fr: 'French', es: 'Sp
 async function getBulkTranslationCandidates(): Promise<Array<{ entity_type: string; entity_key: string }>> {
   if (!serverSupabase) throw new Error('Translation database unavailable.');
   const results = await Promise.all([
-    serverSupabase.from('tours').select('id').eq('status','published').order('sort_order'),
-    serverSupabase.from('destinations').select('id').eq('status','published').order('name'),
-    serverSupabase.from('blog_posts').select('id').in('status',['published','scheduled']).lte('published_at',new Date().toISOString()).order('published_at',{ascending:false}),
+    serverSupabase.from('tours').select('id').eq('status','published').order('sort_order').order('id'),
+    serverSupabase.from('destinations').select('id').eq('status','published').order('name').order('id'),
+    serverSupabase.from('blog_posts').select('id').in('status',['published','scheduled']).lte('published_at',new Date().toISOString()).order('published_at',{ascending:false}).order('id'),
     serverSupabase.from('site_settings').select('value').eq('key','pages_content').maybeSingle(),
-    serverSupabase.from('communication_templates').select('id').eq('locale','en'),
+    serverSupabase.from('communication_templates').select('id').eq('locale','en').order('template_key').order('id'),
   ]);
   for (const result of results) if (result.error) throw result.error;
   const out: Array<{entity_type:string;entity_key:string}> = [];
