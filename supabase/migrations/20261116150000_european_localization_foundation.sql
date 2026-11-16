@@ -12,7 +12,7 @@ ALTER TABLE public.communication_templates
   ADD COLUMN IF NOT EXISTS locale text NOT NULL DEFAULT 'en';
 
 -- A template key can now have one reviewed version per locale.
-DO $
+DO $$
 BEGIN
   IF EXISTS (
     SELECT 1 FROM pg_constraint
@@ -32,7 +32,7 @@ BEGIN
       ADD CONSTRAINT communication_templates_template_key_locale_key
       UNIQUE (template_key, locale);
   END IF;
-END $;
+END $$;
 
 DO $$
 BEGIN
