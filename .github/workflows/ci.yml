@@ -129,6 +129,9 @@ jobs:
       - name: Verify SEO/GEO sitemap and structured-data integrity
         run: npm run test:seo-geo
 
+      - name: Verify locale routing, publication gates and booking language persistence
+        run: npm run test:localization-foundation
+
       - name: Verify admin authentication and role provisioning security
         run: npm run test:security
 
