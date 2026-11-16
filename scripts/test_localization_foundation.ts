@@ -93,9 +93,14 @@ assert.match(expandedBookingLocaleMigration, /NOT IN \('en', 'de', 'it', 'ro', '
 assert.match(server, /app\.post\('\/api\/admin\/translations\/generate-batch'[\s\S]*requireSuperAdminAal2\(req, res\)/, 'AI bulk generation requires Super Admin AAL2');
 assert.match(server, /translation_state: 'draft'[\s\S]*reviewed_by: null, reviewed_at: null, published_at: null/, 'AI bulk generation can only create unreviewed drafts');
 assert.match(server, /BULK_TRANSLATION_LOCALES: Record<string, string> = \{ fr: 'French', es: 'Spanish', nl: 'Dutch', pl: 'Polish', pt: 'Portuguese' \}/, 'Bulk generator targets all five requested locales');
+assert.match(server, /communication_template[\s\S]*communication_templates/, 'Communication templates are included in the protected translation workflow');
+assert.match(server, /sourceTokens\.sort\(\)\.join\('\|'\) !== translatedTokens\.sort\(\)\.join\('\|'\)/, 'Communication template publication preserves every original placeholder token');
+assert.match(server, /communication_templates'\)\.upsert[\s\S]*onConflict: 'template_key,locale'/, 'Approved communication translations are synchronized to the customer-template table');
+assert.match(expandedBookingLocaleMigration, /communication_template/, 'Translation schema allows localized communication template drafts');
 assert.match(server, /item\.type==='static_page' && item\.key==='home'\?'home'/, 'Translated homepage keeps the canonical localized root path');
 const adminTranslations = read('../src/components/admin/AdminTranslationManager.tsx');
 assert.match(adminTranslations, /Generate all 5 languages/, 'Super Admin can run the bulk five-language generation workflow');
+assert.match(adminTranslations, /'communication_template'/, 'Super Admin can review communication template translations');
 assert.match(adminTranslations, /6500/, 'Bulk generator respects the server generation rate limit');
 assert.match(bookingRepository, /rpc\('create_booking_atomic_with_locale'/, 'Booking client uses the locale-aware atomic RPC');
 assert.match(bookingRepository, /p_customer_locale: booking\.customerLocale \|\| 'en'/, 'Booking client passes customer locale with safe English fallback');
