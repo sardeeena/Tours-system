@@ -27,6 +27,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { useToast } from '../contexts/ToastContext';
+import { useLanguage } from '../contexts/LanguageContext';
 
 interface BookingPageProps {
   tours: Tour[];
@@ -53,6 +54,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
   onNavigate,
 }) => {
   const { showToast } = useToast();
+  const { language } = useLanguage();
 
   // Find current tour or fallback
   const [selectedTourSlug, setSelectedTourSlug] = useState<string>(
@@ -306,6 +308,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
         tourDestination: currentTour.destination,
         tourDuration: currentTour.durationLabel,
         tourLanguage: selectedTourLanguage,
+        customerLocale: language,
         date,
         guests,
         pickup: {
