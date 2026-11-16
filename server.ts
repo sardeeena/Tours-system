@@ -2836,7 +2836,26 @@ async function getTranslationSource(entityType: string, entityKey: string): Prom
   if (entityType === 'blog_post') query = query.in('status', ['published', 'scheduled']).lte('published_at', new Date().toISOString());
   const { data, error } = await query.eq('id', entityKey).maybeSingle();
   if (error) throw error;
-  return data || null;
+  if (!data) return null;
+  if (entityType === 'tour') {
+    const relatedTables = [
+      ['tour_itinerary', 'itinerary'],
+      ['tour_highlights', 'highlights'],
+      ['tour_inclusions', 'included'],
+      ['tour_exclusions', 'excluded'],
+      ['tour_faqs', 'faqs'],
+    ] as const;
+    const related = await Promise.all(relatedTables.map(async ([table, key]) => {
+      const result = await serverSupabase!.from(table).select('*').eq('tour_id', entityKey);
+      if (result.error) throw result.error;
+      const rows = (result.data || []).slice().sort((a: any, b: any) =>
+        Number(a.sort_order || 0) - Number(b.sort_order || 0) || String(a.id || '').localeCompare(String(b.id || ''))
+      );
+      return [key, rows] as const;
+    }));
+    return { ...data, ...Object.fromEntries(related) };
+  }
+  return data;
 }
 
 async function getCurrentTranslationSourceChecksum(entityType: string, entityKey: string): Promise<{ checksum: string; source: any } | null> {
@@ -2898,7 +2917,15 @@ app.get('/api/admin/translations/source', rateLimit(30, 60_000), async (req: Aut
           ? { heroHeadline: source.heroHeadline, heroSubtitle: source.heroSubtitle, sections: source.sections }
           : entityType === 'blog_post'
             ? { title: source.title, excerpt: source.excerpt, content: source.content }
-            : { title: source.title || source.name, description: source.description || source.short_description },
+            : entityType === 'tour'
+              ? {
+                  title: source.title, description: source.description || source.short_description,
+                  highlights: source.highlights || [], itinerary: source.itinerary || [],
+                  included: source.included || [], excluded: source.excluded || [], faqs: source.faqs || [],
+                  pickup_info: source.pickup_info || null, cancellation_policy: source.cancellation_policy || null,
+                  age_restrictions: source.age_restrictions || null,
+                }
+              : { title: source.title || source.name, description: source.description || source.short_description },
       },
     });
   } catch (error) {
