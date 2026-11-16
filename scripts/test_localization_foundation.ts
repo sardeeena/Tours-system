@@ -10,6 +10,8 @@ const migration = read('../supabase/migrations/20261116150000_european_localizat
 const bookingLocaleMigration = read('../supabase/migrations/20261116160000_booking_customer_locale_atomic.sql');
 const bookingRepository = read('../src/services/bookingRepository.ts');
 const bookingPage = read('../src/pages/BookingPage.tsx');
+const languageContext = read('../src/contexts/LanguageContext.tsx');
+const localizedPage = read('../src/pages/LocalizedContentPage.tsx');
 
 assert.match(server, /currentTour = data && data\.slug === slug \? data : null/, 'SSR refuses a tour record whose slug differs from the requested URL');
 assert.match(server, /CDN-Cache-Control', 'no-store'/, 'Tour detail HTML bypasses intermediary CDN caches');
@@ -35,9 +37,23 @@ assert.match(locales, /direction: 'rtl'/, 'RTL direction is represented in local
 assert.match(migration, /CREATE TABLE IF NOT EXISTS public\.content_translations/, 'Translation content schema exists');
 assert.match(server, /app\.get\('\/api\/admin\/translations'[\s\S]*requireSuperAdminAal2\(req, res\)/, 'Translation listing API requires Super Admin AAL2');
 assert.match(server, /app\.post\('\/api\/admin\/translations'[\s\S]*requireSuperAdminAal2\(req, res\)/, 'Translation writes require Super Admin AAL2');
+assert.match(server, /app\.get\('\/api\/admin\/translations\/source'[\s\S]*requireSuperAdminAal2\(req, res\)/, 'Authoritative source checksum endpoint requires Super Admin AAL2');
+assert.match(server, /app\.get\('\/api\/content-translations\/resolve'[\s\S]*translation_state', 'published'[\s\S]*current\.checksum === data\.source_checksum/, 'Public resolver requires published state and a current source checksum');
+assert.match(server, /reviewed_at && data\?\.published_at/, 'Public resolver requires reviewed and published timestamps');
+assert.match(server, /content_translations'[\s\S]*source_checksum[\s\S]*getCurrentTranslationSourceChecksum/, 'Localized sitemap and SSR validate source checksums');
+assert.match(server, /supportedLanguages: \['en', 'de', 'it', 'ro', 'ru'\]/, 'Config advertises only existing UI dictionary locales');
+assert.match(server, /content_translations'[\s\S]*translated_slug[\s\S]*source_checksum/, 'Localized sitemap is based on translation records');
+assert.match(server, /const privateRoute = \/\^\\\\\/(?:\[a-z\]\{2\}\\\\\/\)\?/, 'Localized private routes are matched before public SSR');
 assert.match(server, /body\.confirm_publish !== true/, 'Publishing requires explicit human confirmation');
 assert.match(server, /64-character SHA-256 source checksum/, 'Translation writes require a SHA-256 source checksum');
 assert.match(app, /AdminTranslationManager/, 'Admin translation workspace is wired into the app');
+assert.match(app, /LocalizedContentPage/, 'Localized content route renderer is wired into the app');
+assert.match(app, /currentLocale !== 'en'/, 'Locale-prefixed routes are handled separately from English routes');
+assert.match(languageContext, /The URL is authoritative/, 'URL is the source of truth for interface language');
+assert.doesNotMatch(languageContext, /navigator\.language/, 'Browser language does not silently override the route language');
+assert.match(localizedPage, /cache: 'no-store'/, 'Public translation resolution bypasses stale browser caches');
+assert.match(localizedPage, /translation\.entity_type === 'tour'/, 'Translated tour routes retain a booking handoff');
+assert.match(localizedPage, /labels\.bookNow/, 'Localized page actions require translated UI labels');
 const adminLayout = read('../src/components/admin/AdminLayout.tsx');
 assert.match(adminLayout, /id === 'translations'/, 'Translation workspace navigation is restricted to Super Admin');
 assert.match(migration, /ALTER TABLE public\.bookings[\s\S]*customer_locale/, 'Booking customer locale is separate from guide language');
