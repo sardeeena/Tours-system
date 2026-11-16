@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(28);
+SELECT plan(29);
 
 SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.audit_logs'::regclass), 'audit_logs has RLS enabled');
 SELECT ok(NOT has_table_privilege('anon', 'public.audit_logs', 'SELECT'), 'anon cannot read audit logs');
@@ -39,8 +39,16 @@ SELECT ok(EXISTS (
   SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
   WHERE n.nspname = 'public'
     AND p.proname = 'create_booking_atomic_with_locale'
+    AND NOT p.prosecdef
+), 'public locale-aware booking wrapper remains invoker-rights');
+
+SELECT ok(EXISTS (
+  SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+  WHERE n.nspname = 'private'
+    AND p.proname = 'create_booking_atomic_with_locale'
     AND p.prosecdef
-), 'locale-aware booking wrapper runs with a protected definer context');
+    AND COALESCE(p.proconfig, ARRAY[]::text[]) @> ARRAY['search_path=""']::text[]
+), 'private locale persistence implementation is security definer with a locked search path');
 
 SELECT ok(
   has_function_privilege('anon', 'public.create_booking_atomic_with_locale(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text,text,text)', 'EXECUTE')
