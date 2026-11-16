@@ -2944,6 +2944,101 @@ app.get('/api/content-translations/locales', rateLimit(30, 60_000), async (_req:
   }
 });
 
+async function getTranslationSourceBySlug(entityType: string, slug: string): Promise<any | null> {
+  if (entityType === 'static_page') return getTranslationSource(entityType, slug);
+  const table = TRANSLATION_SOURCE_TABLES[entityType];
+  if (!table || !serverSupabase) return null;
+  let query = serverSupabase.from(table).select('id,slug');
+  if (entityType === 'blog_post') query = query.in('status', ['published', 'scheduled']).lte('published_at', new Date().toISOString());
+  else query = query.eq('status', 'published');
+  const { data, error } = await query.eq('slug', slug).maybeSingle();
+  if (error) throw error;
+  return data || null;
+}
+
+app.get('/api/content-translations/target', rateLimit(90, 60_000), async (req: Request, res: Response) => {
+  const locale = typeof req.query.locale === 'string' ? req.query.locale : '';
+  const requestedPath = typeof req.query.pathname === 'string' ? req.query.pathname : '';
+  if (!TRANSLATION_LOCALES.has(locale) || !requestedPath.startsWith('/') || requestedPath.length > 512) {
+    return res.status(400).json({ success: false, error: 'A supported locale and valid page path are required.' });
+  }
+  try {
+    const currentLocalePath = parseLocalePath(requestedPath);
+    const pathname = currentLocalePath?.pathname || requestedPath;
+    const privateRoute = /^\/(?:booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|admin(?:\/|$)|support(?:\/|$))/i.test(pathname);
+    if (privateRoute) {
+      if (locale === 'en') return res.json({ success: true, path: pathname });
+      const current = await getCurrentTranslationSourceChecksum('ui_catalog', 'site-ui');
+      const { data, error } = await serverSupabase!.from('content_translations')
+        .select('content,source_checksum,reviewed_at,published_at')
+        .eq('entity_type', 'ui_catalog').eq('entity_key', 'site-ui')
+        .eq('locale', locale).eq('translation_state', 'published').maybeSingle();
+      if (error) throw error;
+      const messages = data?.content && typeof data.content === 'object' && !Array.isArray(data.content) ? data.content as Record<string, unknown> : {};
+      const complete = Object.keys(TRANSLATIONS.en || {}).every((key) => typeof messages[key] === 'string' && String(messages[key]).trim().length > 0);
+      if (!data?.reviewed_at || !data?.published_at || !current || current.checksum !== data.source_checksum || !complete) {
+        return res.status(404).json({ success: false, error: 'A complete interface catalog is required for this language.' });
+      }
+      return res.json({ success: true, path: '/' + locale + (pathname === '/' ? '' : pathname) });
+    }
+
+    const parts = pathname.split('/').filter(Boolean);
+    const route = parts.length === 2 && parts[0] === 'excursions'
+      ? { entityType: 'tour', prefix: '/excursions/' }
+      : parts.length === 2 && parts[0] === 'destinations'
+        ? { entityType: 'destination', prefix: '/destinations/' }
+        : parts.length === 2 && parts[0] === 'blog'
+          ? { entityType: 'blog_post', prefix: '/blog/' }
+          : parts.length === 1 || parts.length === 0
+            ? { entityType: 'static_page', prefix: '/' }
+            : null;
+    if (!route) return res.status(404).json({ success: false, error: 'This page does not have a translatable route.' });
+
+    const currentSlug = parts[parts.length - 1] || 'home';
+    let entityKey = '';
+    let source: any = null;
+    if (currentLocalePath) {
+      const { data: currentTranslation, error } = await serverSupabase!.from('content_translations')
+        .select('entity_key,source_checksum')
+        .eq('entity_type', route.entityType).eq('locale', currentLocalePath.locale)
+        .eq('translated_slug', currentSlug).eq('translation_state', 'published').maybeSingle();
+      if (error) throw error;
+      if (!currentTranslation) return res.status(404).json({ success: false, error: 'Current page translation not found.' });
+      const current = await getCurrentTranslationSourceChecksum(route.entityType, currentTranslation.entity_key);
+      if (!current || current.checksum !== currentTranslation.source_checksum) return res.status(409).json({ success: false, error: 'Current page translation is outdated.' });
+      entityKey = currentTranslation.entity_key;
+      source = current.source;
+    } else {
+      source = await getTranslationSourceBySlug(route.entityType, currentSlug);
+      if (!source) return res.status(404).json({ success: false, error: 'Source page not found.' });
+      entityKey = String(source.id || source.slug);
+    }
+
+    const sourceSlug = typeof source?.slug === 'string' ? source.slug : currentSlug;
+    if (locale === 'en') {
+      const englishPath = route.entityType === 'static_page' ? (sourceSlug === 'home' ? '/' : '/' + sourceSlug) : route.prefix + sourceSlug;
+      return res.json({ success: true, path: englishPath });
+    }
+
+    const { data: target, error: targetError } = await serverSupabase!.from('content_translations')
+      .select('translated_slug,source_checksum,reviewed_at,published_at')
+      .eq('entity_type', route.entityType).eq('entity_key', entityKey)
+      .eq('locale', locale).eq('translation_state', 'published').maybeSingle();
+    if (targetError) throw targetError;
+    const current = await getCurrentTranslationSourceChecksum(route.entityType, entityKey);
+    if (!target?.translated_slug || !target.reviewed_at || !target.published_at || !current || current.checksum !== target.source_checksum) {
+      return res.status(404).json({ success: false, error: 'A current reviewed translation is not available for this page.' });
+    }
+    const targetPath = route.entityType === 'static_page' && target.translated_slug === 'home'
+      ? '/' + locale
+      : '/' + locale + route.prefix + encodeURIComponent(target.translated_slug);
+    return res.json({ success: true, path: targetPath });
+  } catch (error) {
+    console.error('[Locale route target] Resolution failed:', error);
+    return res.status(503).json({ success: false, error: 'Localized route lookup temporarily unavailable.' });
+  }
+});
+
 app.get('/api/content-translations/resolve', rateLimit(90, 60_000), async (req: Request, res: Response) => {
   const locale = typeof req.query.locale === 'string' ? req.query.locale : '';
   const entityType = typeof req.query.entity_type === 'string' ? req.query.entity_type : '';
