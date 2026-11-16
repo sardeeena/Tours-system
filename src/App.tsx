@@ -747,7 +747,7 @@ function MainApp() {
     const selectedDestination = liveDestinations.find(
       (destination) => destination.name === destName || destination.slug === destName
     );
-    if (selectedDestination && selectedDestination.tourCount > 0) {
+    if (selectedDestination) {
       navigate(`/destinations/${selectedDestination.slug}`);
       return;
     }
@@ -1568,6 +1568,28 @@ function MainApp() {
           onViewTour={handleViewTour}
           onBookTour={handleStartBooking}
         />
+      );
+    }
+
+    // Published destination directory: /destinations
+    if (currentPath === '/destinations') {
+      return (
+        <main className="flex-1 bg-[#FAF8F5] dark:bg-[#0A1118]">
+          <section className="max-w-7xl mx-auto px-4 sm:px-8 pt-12 sm:pt-16 pb-4">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#0A6C74] dark:text-[#60C3CC] mb-2">Explore Egypt</p>
+            <h1 className="font-display text-3xl sm:text-5xl font-semibold text-[#0E1B2A] dark:text-white tracking-tight">Our Destinations</h1>
+            <p className="max-w-3xl text-stone-600 dark:text-slate-300 mt-4 leading-relaxed">
+              Explore the destinations served by Awesome Adventure Tours. Discover each location, review available excursions and find the right experience for your trip.
+            </p>
+          </section>
+          <DestinationsSection
+            destinations={liveDestinations}
+            isLoading={loadingDestinations}
+            error={destinationsError}
+            onRetry={refreshPublishedDestinations}
+            onSelectDestination={handleSelectHomeDestination}
+          />
+        </main>
       );
     }
 
