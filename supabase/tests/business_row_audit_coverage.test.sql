@@ -1,5 +1,5 @@
 BEGIN;
-SELECT plan(22);
+SELECT plan(25);
 
 SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.audit_logs'::regclass), 'audit_logs has RLS enabled');
 SELECT ok(NOT has_table_privilege('anon', 'public.audit_logs', 'SELECT'), 'anon cannot read audit logs');
@@ -24,6 +24,10 @@ SELECT ok(EXISTS (
   SELECT 1 FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid
   WHERE c.oid = 'public.tours'::regclass AND t.tgname = 'trg_capture_business_audit' AND NOT t.tgisinternal
 ), 'tour catalogue changes are audited');
+
+SELECT ok((SELECT relrowsecurity FROM pg_class WHERE oid = 'public.content_translations'::regclass), 'translation records have RLS enabled');
+SELECT ok(NOT has_table_privilege('anon', 'public.content_translations', 'SELECT') AND NOT has_table_privilege('authenticated', 'public.content_translations', 'SELECT'), 'translation drafts and content are not exposed to public or authenticated roles');
+SELECT ok(EXISTS (SELECT 1 FROM pg_trigger WHERE tgrelid = 'public.content_translations'::regclass AND tgname = 'trg_capture_business_audit' AND NOT tgisinternal), 'translation lifecycle changes are audited');
 
 SELECT ok(EXISTS (
   SELECT 1 FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid
