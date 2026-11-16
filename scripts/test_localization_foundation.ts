@@ -61,6 +61,10 @@ assert.match(app, /currentLocale !== 'en'/, 'Locale-prefixed routes are handled 
 assert.match(languageContext, /The URL is authoritative/, 'URL is the source of truth for interface language');
 assert.match(languageContext, /api\/content-translations\/ui\?locale=/, 'Interface language loads its published UI catalog from the server');
 assert.match(languageContext, /api\/content-translations\/locales/, 'Language selector discovers only fully translated UI catalogs');
+assert.match(languageContext, /api\/content-translations\/target/, 'Language switching resolves the translated slug for the same source record');
+assert.match(server, /app\.get\('\/api\/content-translations\/target'[\s\S]*getCurrentTranslationSourceChecksum/, 'Translated route targets are source-checksum verified');
+assert.match(server, /getTranslationSourceBySlug/, 'English source slugs resolve to stable entity keys before switching locale');
+assert.match(server, /complete interface catalog is required for this language/, 'Booking and account route targets require a complete UI catalog');
 assert.doesNotMatch(languageContext, /navigator\.language/, 'Browser language does not silently override the route language');
 assert.match(localizedPage, /cache: 'no-store'/, 'Public translation resolution bypasses stale browser caches');
 assert.match(localizedPage, /translation\.entity_type === 'tour'/, 'Translated tour routes retain a booking handoff');
