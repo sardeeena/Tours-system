@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS public.content_translations (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   entity_type text NOT NULL CHECK (entity_type IN (
     'tour', 'tour_itinerary', 'tour_highlight', 'tour_inclusion',
-    'tour_exclusion', 'tour_faq', 'destination', 'blog_post', 'static_page'
+    'tour_exclusion', 'tour_faq', 'destination', 'blog_post', 'static_page', 'ui_catalog'
   )),
   entity_key text NOT NULL,
   locale text NOT NULL CHECK (locale ~ '^[a-z]{2}(-[A-Z]{2})?$'),
