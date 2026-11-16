@@ -115,7 +115,7 @@ export const AdminTranslationManager: React.FC = () => {
       const result = await request('/api/admin/translations?locale=fr');
       setRows(result.translations || []);
       if (skippedCount > 0) {
-        showToast('Draft generation finished with ' + skippedCount + ' skipped records. Review the log and retry to fill any missing items; nothing was published.', 'info');
+        showToast('Draft generation finished with ' + skippedCount + ' skipped records. Retry to fill any missing items; nothing was published.', 'info');
         setGenerationProgress('Finished: ' + generatedCount + ' drafts saved, ' + skippedCount + ' skipped. Retry if any records are missing; review all drafts before publication.');
       } else {
         showToast('Bulk translation generation completed. All generated records remain drafts pending human review.', 'success');
