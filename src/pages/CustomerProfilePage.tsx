@@ -123,7 +123,7 @@ export const CustomerProfilePage: React.FC<CustomerProfilePageProps> = ({
         const blob = await new Promise<Blob>((resolve, reject) => {
           canvas.toBlob((result) => result ? resolve(result) : reject(new Error('Could not prepare the profile image.')), 'image/webp', 0.86);
         });
-        const objectPath = `${user.id}/avatar.webp`;
+        const objectPath = `${user.id}/avatar-${crypto.randomUUID()}.webp`;
         const { error: uploadError } = await supabase.storage.from('avatars').upload(objectPath, blob, {
           upsert: true,
           contentType: 'image/webp',
@@ -133,7 +133,27 @@ export const CustomerProfilePage: React.FC<CustomerProfilePageProps> = ({
         const { data } = supabase.storage.from('avatars').getPublicUrl(objectPath);
         const profileResult = await updateProfile({ avatarUrl: data.publicUrl });
         if (!profileResult.success) {
+          await supabase.storage.from('avatars').remove([objectPath]).catch(() => undefined);
           throw new Error(profileResult.error || 'The image uploaded, but your profile could not be updated.');
+        }
+
+        // Use a unique object URL for each upload so browser/CDN caches cannot
+        // keep showing the previous photo after a user replaces it.
+        if (user.avatarUrl) {
+          try {
+            const previousUrl = new URL(user.avatarUrl);
+            const bucketPathMarker = '/storage/v1/object/public/avatars/';
+            const markerIndex = previousUrl.pathname.indexOf(bucketPathMarker);
+            const previousPath = markerIndex >= 0
+              ? decodeURIComponent(previousUrl.pathname.slice(markerIndex + bucketPathMarker.length))
+              : '';
+            if (previousPath.startsWith(`${user.id}/`) && previousPath !== objectPath) {
+              await supabase.storage.from('avatars').remove([previousPath]);
+            }
+          } catch {
+            // The new avatar is already saved; failure to clean up an old file
+            // must not turn a successful profile update into an apparent failure.
+          }
         }
         setProfileSuccess(true);
       } finally {
