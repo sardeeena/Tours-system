@@ -1,7 +1,7 @@
 BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(5);
+SELECT plan(6);
 
 SELECT ok(
   position('AAT-' IN pg_get_functiondef(to_regprocedure('private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)'))) > 0
@@ -33,6 +33,19 @@ SELECT ok(
   AND position('pgmq.send' IN pg_get_functiondef(to_regprocedure('private.enqueue_booking_completed_review_event()'))) > 0
   AND position('NEW.payment_status = ''paid''' IN pg_get_functiondef(to_regprocedure('private.enqueue_booking_completed_review_event()'))) > 0,
   'review event is queued only after a completed booking is fully paid'
+);
+
+SELECT ok(
+  EXISTS (
+    SELECT 1
+    FROM pg_proc AS p
+    JOIN pg_namespace AS n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'private'
+      AND p.proname = 'enqueue_booking_completed_review_event'
+      AND p.prosecdef
+      AND p.proconfig @> ARRAY['search_path=""']
+  ),
+  'review event trigger runs as a hardened SECURITY DEFINER function'
 );
 
 SELECT ok(
