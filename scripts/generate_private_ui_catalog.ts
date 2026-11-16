@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import ts from 'typescript';
+import ts from '@typescript/old';
 import { isPrivateUiSourcePath, normalizePrivateUiText, privateUiMessageKey } from '../src/i18n/privateUiCatalog';
 
 const ROOT = process.cwd();
