@@ -39,6 +39,12 @@ assert.ok(tourDataMigration.includes("duration = 'Half Day (approx. 3 hours)'"),
 assert.ok(tourDataMigration.includes("duration = 'Half Day (approx. 5 hours)'"), 'Migration normalizes the five-hour half-day label');
 
 
+assert.match(app, /currentPath === '\/destinations'/, 'Client router explicitly handles the public destinations directory');
+assert.match(server, /path === '\/destinations'/, 'Server-side SEO renderer explicitly handles the public destinations directory');
+assert.match(server, /  '\/destinations',/, 'Public XML sitemap includes the destinations directory');
+assert.match(server, /\[Destinations\]\(https:\/\/awesomeadventure\.tours\/destinations\)/, 'llms.txt advertises the destinations directory');
+assert.match(server, /visibleDestinations = path === '\/destinations'[\s\S]*?\? allDestinations/, 'Destination directory includes all published destinations, including locations with no tours');
+assert.match(app, /if \(selectedDestination\) \{[\s\S]*?navigate\(\`\/destinations\/\$\{selectedDestination\.slug\}\`\)/, 'Selecting a published destination opens its detail page even when it has zero tours');
 assert.match(app, /\['about', 'privacy', 'terms', 'cancellation-policy', 'cookie-policy'\]/, 'About ignores stale CMS noindex overrides in client metadata');
 assert.match(server, /override\?\.robots_index === false && !\(pageKind === 'static' && seoIdentifier === 'about'\)/, 'About ignores stale CMS noindex overrides in server-rendered HTML');
 assert.match(server, /override\?\.robots_follow === false && !\(pageKind === 'static' && seoIdentifier === 'about'\)/, 'About remains followable in server-rendered HTML');

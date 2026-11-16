@@ -220,6 +220,7 @@ function MainApp() {
   // Live published tours loaded dynamically from Supabase
   const [liveTours, setLiveTours] = useState<Tour[]>([]);
   const [loadingTours, setLoadingTours] = useState<boolean>(true);
+  const [toursError, setToursError] = useState<string | null>(null);
 
   // Live published destinations & categories loaded dynamically from Supabase
   const [liveDestinations, setLiveDestinations] = useState<Destination[]>([]);
@@ -301,6 +302,7 @@ function MainApp() {
     setLoadingTours(true);
     setLoadingDestinations(true);
     setLoadingCategories(true);
+    setToursError(null);
     setDestinationsError(null);
     setCategoriesError(null);
 
@@ -314,6 +316,7 @@ function MainApp() {
       setLiveTours(toursRes.value || []);
     } else {
       console.warn('Failed to load published tours from Supabase:', toursRes.reason);
+      setToursError(toursRes.reason instanceof Error ? toursRes.reason.message : 'Unable to load published excursions. Please try again.');
       setLiveTours([]);
     }
     setLoadingTours(false);
@@ -339,11 +342,13 @@ function MainApp() {
 
   const refreshPublishedTours = useCallback(async () => {
     setLoadingTours(true);
+    setToursError(null);
     try {
       const data = await getPublishedTours();
       setLiveTours(data || []);
     } catch (err) {
       console.warn('Failed to load published tours from Supabase:', err);
+      setToursError(err instanceof Error ? err.message : 'Unable to load published excursions. Please try again.');
       setLiveTours([]);
     } finally {
       setLoadingTours(false);
@@ -747,7 +752,7 @@ function MainApp() {
     const selectedDestination = liveDestinations.find(
       (destination) => destination.name === destName || destination.slug === destName
     );
-    if (selectedDestination && selectedDestination.tourCount > 0) {
+    if (selectedDestination) {
       navigate(`/destinations/${selectedDestination.slug}`);
       return;
     }
@@ -1560,6 +1565,8 @@ function MainApp() {
           currency={currentCurrency}
           tours={liveTours}
           isLoading={loadingTours}
+          error={toursError}
+          onRetry={refreshPublishedTours}
           initialDestination={initialSearchFilter.destination}
           initialCategory={initialSearchFilter.category}
           destinations={liveDestinations}
@@ -1568,6 +1575,28 @@ function MainApp() {
           onViewTour={handleViewTour}
           onBookTour={handleStartBooking}
         />
+      );
+    }
+
+    // Published destination directory: /destinations
+    if (currentPath === '/destinations') {
+      return (
+        <main className="flex-1 bg-[#FAF8F5] dark:bg-[#0A1118]">
+          <section className="max-w-7xl mx-auto px-4 sm:px-8 pt-12 sm:pt-16 pb-4">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#0A6C74] dark:text-[#60C3CC] mb-2">Explore Egypt</p>
+            <h1 className="font-display text-3xl sm:text-5xl font-semibold text-[#0E1B2A] dark:text-white tracking-tight">Our Destinations</h1>
+            <p className="max-w-3xl text-stone-600 dark:text-slate-300 mt-4 leading-relaxed">
+              Explore the destinations served by Awesome Adventure Tours. Discover each location, review available excursions and find the right experience for your trip.
+            </p>
+          </section>
+          <DestinationsSection
+            destinations={liveDestinations}
+            isLoading={loadingDestinations}
+            error={destinationsError}
+            onRetry={refreshPublishedDestinations}
+            onSelectDestination={handleSelectHomeDestination}
+          />
+        </main>
       );
     }
 

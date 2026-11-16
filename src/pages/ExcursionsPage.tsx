@@ -51,6 +51,8 @@ interface ExcursionsPageProps {
   currency: CurrencyConfig;
   tours?: Tour[];
   isLoading?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
   initialDestination?: string;
   initialCategory?: string;
   destinations?: Destination[];
@@ -64,6 +66,8 @@ export const ExcursionsPage: React.FC<ExcursionsPageProps> = ({
   currency,
   tours = [],
   isLoading = false,
+  error = null,
+  onRetry,
   initialDestination,
   initialCategory,
   destinations,
@@ -76,8 +80,11 @@ export const ExcursionsPage: React.FC<ExcursionsPageProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [destinationSelect, setDestinationSelect] = useState(initialDestination || 'All');
   const [activitySelect, setActivitySelect] = useState(initialCategory || 'All');
-  const [date, setDate] = useState('');
-  const [guests, setGuests] = useState(2);
+  const [date, setDate] = useState(() => new URLSearchParams(window.location.search).get('date') || '');
+  const [guests, setGuests] = useState(() => {
+    const value = Number(new URLSearchParams(window.location.search).get('guests'));
+    return Number.isInteger(value) && value >= 1 && value <= 50 ? value : 2;
+  });
   const [activeCategoryTab, setActiveCategoryTab] = useState('All');
 
   // Persistent sidebar filters
@@ -92,6 +99,9 @@ export const ExcursionsPage: React.FC<ExcursionsPageProps> = ({
     }
     if (initialCategory) {
       setActivitySelect(initialCategory);
+      setActiveCategoryTab(initialCategory);
+    } else {
+      setActiveCategoryTab('All');
     }
   }, [initialDestination, initialCategory]);
 
@@ -150,6 +160,21 @@ export const ExcursionsPage: React.FC<ExcursionsPageProps> = ({
     }
   }, [sidebarFilters]);
 
+  // Keep travel date and traveller count shareable and restorable on direct links.
+  useEffect(() => {
+    try {
+      if (!window.location.pathname.startsWith('/excursions')) return;
+      const url = new URL(window.location.href);
+      if (date) url.searchParams.set('date', date);
+      else url.searchParams.delete('date');
+      if (guests !== 2) url.searchParams.set('guests', String(guests));
+      else url.searchParams.delete('guests');
+      window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+    } catch {
+      // Ignore browsers that restrict history updates.
+    }
+  }, [date, guests]);
+
   // Handle category tab change
   const handleCategoryTabSelect = (tab: string) => {
     setActiveCategoryTab(tab);
@@ -193,6 +218,21 @@ export const ExcursionsPage: React.FC<ExcursionsPageProps> = ({
           tour.categories?.some((c) => c.toLowerCase().includes(activitySelect.toLowerCase()));
         if (!actMatch) return false;
       }
+
+      // 3b. Travel date: when a tour publishes recurring available days, match the selected weekday.
+      // Tours without day restrictions remain eligible; actual date-level capacity is checked during booking.
+      if (date && Array.isArray(tour.availableDays) && tour.availableDays.length > 0) {
+        const selected = new Date(`${date}T12:00:00`);
+        if (!Number.isNaN(selected.getTime())) {
+          const weekday = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][selected.getDay()];
+          const allowedDays = tour.availableDays.map((day) => String(day).trim().toLowerCase());
+          const hasDay = allowedDays.some((day) => day === 'daily' || day === 'every day' || day === weekday || day.slice(0, 3) === weekday.slice(0, 3));
+          if (!hasDay) return false;
+        }
+      }
+
+      // 3c. Traveller count: respect a published maximum when one is configured.
+      if (tour.maxGuests > 0 && guests > tour.maxGuests) return false;
 
       // 4. Sidebar: Destinations
       if (sidebarFilters.destinations.length > 0) {
@@ -280,6 +320,8 @@ export const ExcursionsPage: React.FC<ExcursionsPageProps> = ({
     sidebarFilters,
     sortOption,
     tours,
+    date,
+    guests,
   ]);
 
   const handleClearAll = () => {
@@ -287,6 +329,8 @@ export const ExcursionsPage: React.FC<ExcursionsPageProps> = ({
     setDestinationSelect('All');
     setActivitySelect('All');
     setActiveCategoryTab('All');
+    setDate('');
+    setGuests(2);
     setSidebarFilters(INITIAL_FILTERS);
     try {
       localStorage.removeItem(PERSISTENT_FILTERS_KEY);
@@ -306,8 +350,13 @@ export const ExcursionsPage: React.FC<ExcursionsPageProps> = ({
     if (sidebarFilters.activities.length > 0) count += sidebarFilters.activities.length;
     if (sidebarFilters.tourTypes.length > 0) count += sidebarFilters.tourTypes.length;
     if (sidebarFilters.pickupOnly) count++;
+    if (searchQuery.trim()) count++;
+    if (destinationSelect !== 'All') count++;
+    if (activitySelect !== 'All') count++;
+    if (date) count++;
+    if (guests !== 2) count++;
     return count;
-  }, [sidebarFilters]);
+  }, [sidebarFilters, searchQuery, destinationSelect, activitySelect, date, guests]);
 
   // Dynamic SEO meta tags, OpenGraph, and Schema.org JSON-LD based on current filters
   const activeLabel = activitySelect !== 'All' ? activitySelect : destinationSelect !== 'All' ? destinationSelect : 'All';
@@ -317,9 +366,9 @@ export const ExcursionsPage: React.FC<ExcursionsPageProps> = ({
   useSeo(seoData);
 
   useEffect(() => {
-    const filterCount = [destinationSelect !== 'All', activitySelect !== 'All', date !== '', sidebarFilters.destinations.length > 0, sidebarFilters.activities.length > 0, sidebarFilters.durations.length > 0].filter(Boolean).length;
+    const filterCount = [destinationSelect !== 'All', activitySelect !== 'All', date !== '', guests !== 2, sidebarFilters.destinations.length > 0, sidebarFilters.activities.length > 0, sidebarFilters.durations.length > 0].filter(Boolean).length;
     if (filterCount > 0) void recordVisitorEvent({ event_name: 'tour_filter_applied', page_path: '/excursions', event_data: { filter_count: filterCount, result_count: filteredTours.length, sort_order: sortOption } });
-  }, [destinationSelect, activitySelect, date, sidebarFilters, sortOption, filteredTours.length]);
+  }, [destinationSelect, activitySelect, date, guests, sidebarFilters, sortOption, filteredTours.length]);
 
   return (
     <div className="w-full min-w-0 max-w-7xl mx-auto overflow-x-clip bg-[#FAF8F5] min-h-screen py-6 px-4 sm:px-6 lg:px-8">
@@ -388,6 +437,18 @@ export const ExcursionsPage: React.FC<ExcursionsPageProps> = ({
             onOpenMobileFilters={() => setMobileFiltersOpen(true)}
             activeFiltersCount={activeFiltersCount}
           />
+
+          {error && !isLoading && (
+            <div role="alert" className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
+              <p className="font-semibold">We couldn’t load the excursions right now.</p>
+              <p className="mt-1">{error}</p>
+              {onRetry && (
+                <button type="button" onClick={onRetry} className="mt-3 rounded-lg border border-red-300 px-4 py-2 font-semibold hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500">
+                  Try again
+                </button>
+              )}
+            </div>
+          )}
 
           {/* Tour Grid with Skeleton Loading */}
           <TourGrid

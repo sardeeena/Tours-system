@@ -129,6 +129,7 @@ async function runRouteTests() {
     { path: '/login', expectedDest: '/index.html', description: 'Customer login page' },
     { path: '/register', expectedDest: '/index.html', description: 'Customer registration' },
     { path: '/excursions', expectedDest: '/index.html', description: 'Excursions catalog' },
+    { path: '/destinations', expectedDest: '/index.html', description: 'Published destinations directory' },
     { path: '/experiences', expectedDest: '/index.html', description: 'Public experiences and categories page' },
     { path: '/excursions/orange-bay-island-snorkeling', expectedDest: '/index.html', description: 'Tour detail deep link' },
     { path: '/booking', expectedDest: '/index.html', description: 'Booking checkout flow' },
@@ -162,12 +163,16 @@ async function runRouteTests() {
   console.log('Step 4: Verifying public experiences route across client, server and SEO...');
   const appSource = fs.readFileSync(path.join(process.cwd(), 'src/App.tsx'), 'utf8');
   const seoSource = fs.readFileSync(path.join(process.cwd(), 'src/services/seoConfig.ts'), 'utf8');
+  assert('client destinations route', appSource.includes("currentPath === '/destinations'") && appSource.includes('Our Destinations'), 'Client router renders the published destinations directory');
   assert('client experiences route', appSource.includes("currentPath === '/experiences'") && appSource.includes('ExperienceCategories'), 'Client router renders the experiences category page');
+  assert('destinations SEO metadata', seoSource.includes("'/destinations'") && seoSource.includes('Explore Egypt Destinations'), 'Destinations directory has dedicated canonical SEO metadata');
   assert('experiences SEO metadata', seoSource.includes("'/experiences'") && seoSource.includes('Awesome Adventure Tours'), 'Experiences route has dedicated Awesome Adventure Tours SEO metadata');
   const seoServiceSource = fs.readFileSync(path.join(process.cwd(), 'src/services/seoService.ts'), 'utf8');
   assert('client SEO branding', seoServiceSource.includes("const SITE_NAME = 'Awesome Adventure Tours'") && seoServiceSource.includes('https://awesomeadventure.tours/logo.webp'), 'Client SEO service uses only Awesome Adventure Tours identity and canonical domain');
   assert('support portal noindex', seoSource.includes("'/support'") && seoSource.includes('robotsIndex: false') && seoSource.includes('robotsFollow: false'), 'Customer support portal is explicitly noindex and nofollow');
   const serverSource = fs.readFileSync(path.join(process.cwd(), 'server.ts'), 'utf8');
+  assert('server destinations SEO rendering', serverSource.includes("path === '/destinations'") && serverSource.includes("pageKind = 'destinations'") && serverSource.includes('Explore Our Destinations in Egypt'), 'Server returns route-specific destination directory HTML for /destinations');
+  assert('destinations discovery', serverSource.includes("  '/destinations',") && serverSource.includes('[Destinations](https://awesomeadventure.tours/destinations)'), 'Sitemap and llms.txt both advertise the destinations directory');
   assert('server experiences SEO rendering', serverSource.includes("path === '/experiences'") && serverSource.includes("pageKind = 'experiences'"), 'Server returns indexable route-specific HTML for /experiences');
 
   console.log('Step 5: Verifying server-side private SPA route allowlist...');

@@ -288,6 +288,30 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> =
     ),
   }),
 
+  '/destinations': (origin) => ({
+    title: 'Explore Egypt Destinations & Excursions | Awesome Adventure Tours',
+    description: 'Explore the destinations served by Awesome Adventure Tours across Egypt. Discover each location and browse available boat trips, island experiences and adventures.',
+    keywords: [
+      'Egypt tour destinations',
+      'Hurghada excursions',
+      'Sharm El Sheikh excursions',
+      'El Gouna tours',
+      'Red Sea destinations',
+    ],
+    canonicalUrl: `${origin}/destinations`,
+    ogType: 'website',
+    ogImage: SEO_DEFAULTS.DEFAULT_OG_IMAGE,
+    ogImageAlt: 'Destinations and excursions across Egypt',
+    twitterCard: 'summary_large_image',
+    schemaJsonLd: generateBreadcrumbsJsonLd(
+      [
+        { name: 'Home', path: '/' },
+        { name: 'Destinations', path: '/destinations' },
+      ],
+      origin
+    ),
+  }),
+
   '/experiences': (origin) => ({
     title: 'Boat Trips, Snorkeling & Desert Safaris | Awesome Adventure Tours',
     description:

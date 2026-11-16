@@ -3940,6 +3940,7 @@ const AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN = 'https://awesomeadventure.tours';
 const AWESOME_ADVENTURE_TOURS_CORE_PUBLIC_PATHS = [
   '/',
   '/excursions',
+  '/destinations',
   '/experiences',
   '/blog',
   '/about',
@@ -4204,6 +4205,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
     '- [About](https://awesomeadventure.tours/about)',
     '- [Contact](https://awesomeadventure.tours/contact)',
     '- [Experiences](https://awesomeadventure.tours/experiences)',
+    '- [Destinations](https://awesomeadventure.tours/destinations)',
     '- [Excursions](https://awesomeadventure.tours/excursions)',
     '- [Privacy Policy](https://awesomeadventure.tours/privacy)',
     '- [Terms & Conditions](https://awesomeadventure.tours/terms)',
@@ -4740,7 +4742,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
   let noindex = false;
   let nofollow = false;
   let statusCode = 200;
-  let pageKind: 'home' | 'catalogue' | 'experiences' | 'tour' | 'destination' | 'static' | 'blog-index' | 'blog' | 'not-found' = 'not-found';
+  let pageKind: 'home' | 'catalogue' | 'destinations' | 'experiences' | 'tour' | 'destination' | 'static' | 'blog-index' | 'blog' | 'not-found' = 'not-found';
   let tours: any[] = [];
   let currentTour: any = null;
   let currentBlogPost: any = null;
@@ -4763,7 +4765,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
     title = 'This translation is unavailable | Awesome Adventure Tours';
     description = 'A current reviewed translation for this page is not available.';
     body = '<main id="seo-initial-content"><h1>This translation is unavailable</h1><p>This page has no current reviewed translation. Browse the original page instead.</p><p><a href="/excursions">Browse excursions</a></p></main>';
-  } else if (path === '/' || path === '/excursions') {
+  } else if (path === '/' || path === '/excursions' || path === '/destinations') {
     // These catalogue reads are independent; run them concurrently so public
     // HTML rendering is bounded by the slower query rather than their sum.
     const [publishedTours, allDestinations] = await Promise.all([
@@ -4774,7 +4776,9 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
     const publishedDestinationIds = new Set(
       tours.map((tour) => tour.destination_id).filter(Boolean).map(String)
     );
-    visibleDestinations = allDestinations.filter((destination) => publishedDestinationIds.has(String(destination.id)));
+    visibleDestinations = path === '/destinations'
+      ? allDestinations
+      : allDestinations.filter((destination) => publishedDestinationIds.has(String(destination.id)));
   }
 
   if (path === '/') {
@@ -4788,6 +4792,17 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       <div class="seo-grid">${cards || '<p>Explore the excursions catalogue for currently published experiences and details.</p>'}</div>
       <h2>About Awesome Adventure Tours</h2><p>Explore our <a href="/about">about page</a>, learn about <a href="/booking-conditions">booking terms and conditions</a>, or <a href="/contact">contact our Hurghada team</a>.</p>
       <p>Phone: <a href="tel:+201515212741">+20 151 5212741</a></p></main>`;
+  } else if (path === '/destinations') {
+    pageKind = 'destinations';
+    seoIdentifier = 'destinations';
+    title = 'Explore Egypt Destinations & Excursions | Awesome Adventure Tours';
+    description = 'Explore the destinations served by Awesome Adventure Tours across Egypt. Discover each location and browse available boat trips, island experiences and adventures.';
+    const cards = visibleDestinations.map(seoDestinationCard).filter(Boolean).join('');
+    body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / Destinations</nav>
+      <h1>Explore Our Destinations in Egypt</h1>
+      <p>Discover the destinations served by Awesome Adventure Tours. Explore each location, compare available excursions and choose the experiences that suit your trip.</p>
+      <div class="seo-grid">${cards || '<p>Destination information is being updated. Please browse our <a href="/excursions">published excursions</a>.</p>'}</div>
+      <p><a href="/excursions">Browse all excursions</a></p></main>`;
   } else if (path === '/experiences') {
     pageKind = 'experiences';
     seoIdentifier = 'experiences';
@@ -5227,7 +5242,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
     else if (path === '/blog') breadcrumbItems.push({ name: 'Travel Journal', url: canonical });
     else if (path !== '/') breadcrumbItems.push({ name: seoPlainText(title.replace(/ \\| Awesome Adventure Tours.*$/, ''), 160) || title, url: canonical });
     const hasBreadcrumb = breadcrumbItems.length > 1;
-    graph.push({ '@type': pageKind === 'catalogue' || pageKind === 'experiences' || pageKind === 'home' || pageKind === 'blog-index' ? 'CollectionPage' : 'WebPage', '@id': `${canonical}#webpage`, url: canonical, name: title, description, isPartOf: { '@id': `${origin}/#website` }, ...(mainEntityId ? { mainEntity: { '@id': mainEntityId } } : {}), ...(pageImage !== `${origin}/logo.webp` ? { primaryImageOfPage: { '@type': 'ImageObject', url: pageImage } } : {}), ...(hasBreadcrumb ? { breadcrumb: { '@id': `${canonical}#breadcrumb` } } : {}) });
+    graph.push({ '@type': pageKind === 'catalogue' || pageKind === 'destinations' || pageKind === 'experiences' || pageKind === 'home' || pageKind === 'blog-index' ? 'CollectionPage' : 'WebPage', '@id': `${canonical}#webpage`, url: canonical, name: title, description, isPartOf: { '@id': `${origin}/#website` }, ...(mainEntityId ? { mainEntity: { '@id': mainEntityId } } : {}), ...(pageImage !== `${origin}/logo.webp` ? { primaryImageOfPage: { '@type': 'ImageObject', url: pageImage } } : {}), ...(hasBreadcrumb ? { breadcrumb: { '@id': `${canonical}#breadcrumb` } } : {}) });
     if (hasBreadcrumb) graph.push({ '@type': 'BreadcrumbList', '@id': `${canonical}#breadcrumb`, itemListElement: breadcrumbItems.map((item, index) => ({ '@type': 'ListItem', position: index + 1, name: item.name, item: item.url })) });
   }
 

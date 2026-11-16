@@ -123,6 +123,9 @@ jobs:
       - name: Verify public SEO, sitemap and AI-discovery integrity
         run: npm run test:public-seo-content
 
+      - name: Verify public discovery routes, filtering and failure states
+        run: npm run test:public-discovery
+
       - name: Verify read-only MCP protocol and tool boundaries
         run: npm run test:mcp-protocol
 
