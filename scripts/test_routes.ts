@@ -172,6 +172,7 @@ async function runRouteTests() {
   assert('support portal noindex', seoSource.includes("'/support'") && seoSource.includes('robotsIndex: false') && seoSource.includes('robotsFollow: false'), 'Customer support portal is explicitly noindex and nofollow');
   const serverSource = fs.readFileSync(path.join(process.cwd(), 'server.ts'), 'utf8');
   assert('server destinations SEO rendering', serverSource.includes("path === '/destinations'") && serverSource.includes("pageKind = 'destinations'") && serverSource.includes('Explore Our Destinations in Egypt'), 'Server returns route-specific destination directory HTML for /destinations');
+  assert('destinations discovery', serverSource.includes("  '/destinations',") && serverSource.includes('[Destinations](https://awesomeadventure.tours/destinations)'), 'Sitemap and llms.txt both advertise the destinations directory');
   assert('server experiences SEO rendering', serverSource.includes("path === '/experiences'") && serverSource.includes("pageKind = 'experiences'"), 'Server returns indexable route-specific HTML for /experiences');
 
   console.log('Step 5: Verifying server-side private SPA route allowlist...');

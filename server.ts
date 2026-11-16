@@ -3940,6 +3940,7 @@ const AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN = 'https://awesomeadventure.tours';
 const AWESOME_ADVENTURE_TOURS_CORE_PUBLIC_PATHS = [
   '/',
   '/excursions',
+  '/destinations',
   '/experiences',
   '/blog',
   '/about',
@@ -4204,6 +4205,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
     '- [About](https://awesomeadventure.tours/about)',
     '- [Contact](https://awesomeadventure.tours/contact)',
     '- [Experiences](https://awesomeadventure.tours/experiences)',
+    '- [Destinations](https://awesomeadventure.tours/destinations)',
     '- [Excursions](https://awesomeadventure.tours/excursions)',
     '- [Privacy Policy](https://awesomeadventure.tours/privacy)',
     '- [Terms & Conditions](https://awesomeadventure.tours/terms)',
@@ -5240,7 +5242,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
     else if (path === '/blog') breadcrumbItems.push({ name: 'Travel Journal', url: canonical });
     else if (path !== '/') breadcrumbItems.push({ name: seoPlainText(title.replace(/ \\| Awesome Adventure Tours.*$/, ''), 160) || title, url: canonical });
     const hasBreadcrumb = breadcrumbItems.length > 1;
-    graph.push({ '@type': pageKind === 'catalogue' || pageKind === 'experiences' || pageKind === 'home' || pageKind === 'blog-index' ? 'CollectionPage' : 'WebPage', '@id': `${canonical}#webpage`, url: canonical, name: title, description, isPartOf: { '@id': `${origin}/#website` }, ...(mainEntityId ? { mainEntity: { '@id': mainEntityId } } : {}), ...(pageImage !== `${origin}/logo.webp` ? { primaryImageOfPage: { '@type': 'ImageObject', url: pageImage } } : {}), ...(hasBreadcrumb ? { breadcrumb: { '@id': `${canonical}#breadcrumb` } } : {}) });
+    graph.push({ '@type': pageKind === 'catalogue' || pageKind === 'destinations' || pageKind === 'experiences' || pageKind === 'home' || pageKind === 'blog-index' ? 'CollectionPage' : 'WebPage', '@id': `${canonical}#webpage`, url: canonical, name: title, description, isPartOf: { '@id': `${origin}/#website` }, ...(mainEntityId ? { mainEntity: { '@id': mainEntityId } } : {}), ...(pageImage !== `${origin}/logo.webp` ? { primaryImageOfPage: { '@type': 'ImageObject', url: pageImage } } : {}), ...(hasBreadcrumb ? { breadcrumb: { '@id': `${canonical}#breadcrumb` } } : {}) });
     if (hasBreadcrumb) graph.push({ '@type': 'BreadcrumbList', '@id': `${canonical}#breadcrumb`, itemListElement: breadcrumbItems.map((item, index) => ({ '@type': 'ListItem', position: index + 1, name: item.name, item: item.url })) });
   }
 
