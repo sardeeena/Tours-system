@@ -2943,20 +2943,31 @@ app.get('/api/content-translations/locales', rateLimit(30, 60_000), async (_req:
     const candidateKeys = candidates.map((item) => item.entity_type + ':' + item.entity_key);
     const completeLocales: string[] = [];
     if (uiComplete.length && candidateKeys.length) {
-      const { data: publishedRows, error: publishedError } = await serverSupabase.from('content_translations')
-        .select('locale,entity_type,entity_key,source_checksum,reviewed_at,published_at')
-        .in('locale', uiComplete).eq('translation_state', 'published')
-        .not('reviewed_at', 'is', null).not('published_at', 'is', null).limit(5000);
-      if (publishedError) throw publishedError;
+      const [{ data: publishedRows, error: publishedError }, { data: sourceTemplates, error: sourceTemplateError }, { data: localizedTemplates, error: localizedTemplateError }] = await Promise.all([
+        serverSupabase.from('content_translations').select('locale,entity_type,entity_key,source_checksum,reviewed_at,published_at')
+          .in('locale', uiComplete).eq('translation_state', 'published')
+          .not('reviewed_at', 'is', null).not('published_at', 'is', null).limit(5000),
+        serverSupabase.from('communication_templates').select('template_key').eq('locale', 'en'),
+        serverSupabase.from('communication_templates').select('template_key,locale').in('locale', uiComplete),
+      ]);
+      if (publishedError || sourceTemplateError || localizedTemplateError) throw publishedError || sourceTemplateError || localizedTemplateError;
       const coverage = new Map<string, Set<string>>();
       for (const item of publishedRows || []) {
         if (!item.source_checksum) continue;
         if (!coverage.has(item.locale)) coverage.set(item.locale, new Set());
         coverage.get(item.locale)!.add(item.entity_type + ':' + item.entity_key);
       }
+      const englishTemplateKeys = (sourceTemplates || []).map((item) => item.template_key).filter(Boolean);
+      const templatesByLocale = new Map<string, Set<string>>();
+      for (const item of localizedTemplates || []) {
+        if (!templatesByLocale.has(item.locale)) templatesByLocale.set(item.locale, new Set());
+        templatesByLocale.get(item.locale)!.add(item.template_key);
+      }
       for (const locale of uiComplete) {
         const keys = coverage.get(locale);
-        if (keys && candidateKeys.every((key) => keys.has(key))) completeLocales.push(locale);
+        const localizedKeys = templatesByLocale.get(locale);
+        const allTemplatesPresent = englishTemplateKeys.every((key) => localizedKeys?.has(key));
+        if (keys && candidateKeys.every((key) => keys.has(key)) && allTemplatesPresent) completeLocales.push(locale);
       }
     }
     return res.json({ success: true, locales: completeLocales });
