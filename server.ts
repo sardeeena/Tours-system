@@ -3211,6 +3211,7 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
         const translated:any = byKey.get(item.type+':'+item.key);
         if (!translated || !translated.content || typeof translated.content!=='object' || Array.isArray(translated.content) || !translationStructureMatches(item.payload.content, translated.content)) {skipped++;continue;}
         if (item.type !== 'ui_catalog' && item.payload.title && !String(translated.title || '').trim()) {skipped++;continue;}
+        if (item.type === 'communication_template' && (translated.content.template_key !== item.source.template_key || translated.content.channel !== item.source.channel || JSON.stringify(translated.content.variables || {}) !== JSON.stringify(item.source.variables || {}))) {skipped++;continue;}
         const latest = await getCurrentTranslationSourceChecksum(item.type,item.key);
         if (!latest || latest.checksum!==item.checksum) {skipped++;continue;}
         const isUi = item.type==='ui_catalog';
