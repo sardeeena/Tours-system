@@ -1063,7 +1063,7 @@ app.post('/api/communications/whatsapp', rateLimit(20, 60_000), async (req: Auth
     const preferredLocale = typeof customerPreference?.preferred_locale === 'string'
       ? customerPreference.preferred_locale.trim().toLowerCase()
       : '';
-    if (['en', 'de', 'it', 'ro', 'ru'].includes(preferredLocale)) {
+    if (['en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'].includes(preferredLocale)) {
       selectedTemplateLanguage = preferredLocale;
     }
 
@@ -1970,7 +1970,7 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
 
   const cleanEmail = email.trim().toLowerCase();
   const requestedLocale = typeof preferredLanguage === 'string' ? preferredLanguage.trim().toLowerCase() : 'en';
-  const customerLocale = ['en', 'de', 'it', 'ro', 'ru'].includes(requestedLocale) ? requestedLocale : 'en';
+  const customerLocale = ['en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'].includes(requestedLocale) ? requestedLocale : 'en';
   const source = typeof req.body?.source === 'string' ? req.body.source.trim().slice(0, 80) || 'website' : 'website';
   let subscriber: { id: string; created_at: string; updated_at: string } | null = null;
   let shouldSendWelcome = false;
@@ -3156,7 +3156,7 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
           const keys=Object.keys(TRANSLATIONS.en || {});
           if (!keys.every(key=>typeof translated.content[key]==='string' && String(translated.content[key]).trim())) {skipped++;continue;}
         }
-        const record = {entity_type:item.type,entity_key:item.key,locale,translated_slug:isUi?'site-ui':normalizedTranslationSlug(translated.translated_slug,item.source.slug || item.source.title || item.source.name || item.key),
+        const record = {entity_type:item.type,entity_key:item.key,locale,translated_slug:isUi?'site-ui':(item.type==='static_page' && item.key==='home'?'home':normalizedTranslationSlug(translated.translated_slug,item.source.slug || item.source.title || item.source.name || item.key)),
           title:isUi?'Interface messages':String(translated.title || '').trim().slice(0,300),
           summary:String(translated.summary || '').trim().slice(0,2000),
           seo_title:isUi?null:String(translated.seo_title || translated.title || '').trim().slice(0,300),
