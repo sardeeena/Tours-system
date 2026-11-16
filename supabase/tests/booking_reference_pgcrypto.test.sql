@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(3);
+SELECT plan(4);
 
 SELECT ok(
   to_regprocedure('extensions.gen_random_bytes(integer)') IS NOT NULL,
@@ -34,6 +34,15 @@ SELECT ok(
       AND p.proconfig @> ARRAY['search_path=""']
   ),
   'atomic booking function remains SECURITY DEFINER with an empty search_path'
+);
+
+SELECT ok(
+  position('AWE-' IN pg_get_functiondef(to_regprocedure('private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)'))) > 0
+  AND position('extensions.gen_random_bytes(10)' IN pg_get_functiondef(to_regprocedure('private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)'))) > 0
+  AND position('ABCDEFGHJKLMNPQRSTUVWXYZ23456789' IN pg_get_functiondef(to_regprocedure('private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)'))) > 0
+  AND position('% 32' IN pg_get_functiondef(to_regprocedure('private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)'))) > 0
+  AND position('CONTINUE;' IN pg_get_functiondef(to_regprocedure('private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)'))) > 0,
+  'atomic booking function generates short AWE references with 50-bit randomness and collision retry'
 );
 
 SELECT * FROM finish();

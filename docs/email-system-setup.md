@@ -1,5 +1,10 @@
 # AwesomeAdventure email system
 
+## Booking references
+- New bookings receive a compact `AWE-XXXXX-XXXXX` reference (15 characters total).
+- The authoritative database booking function generates 10 cryptographically random symbols from an alphabet that avoids visually ambiguous characters and retries on a booking-reference collision.
+- Existing booking references remain unchanged so old confirmations, receipts, and lookup links continue to work.
+
 ## Architecture
 - Supabase Auth generates authentication and account-security emails and owns all confirmation, recovery, magic-link, invite, and reauthentication tokens.
 - Resend SMTP delivers Supabase Auth messages.
@@ -22,6 +27,13 @@ Security notification templates are supplied but configured disabled in local co
 - Application sender address is configured only in Hostinger environment variables. Never commit credentials.
 - Resend webhook endpoint: `https://awesomeadventure.tours/api/webhooks/resend`.
 - Subscribe to `email.sent`, `email.delivered`, `email.delivery_delayed`, `email.bounced`, `email.complained`, `email.opened`, `email.clicked`, `email.failed`, and `email.suppressed`.
+
+## Completed-tour review requests
+- A booking review request is queued only when a booking transitions to `completed` and its authoritative payment status is `paid`.
+- The database event is unique per booking, and the Resend request uses an event-specific idempotency key to prevent duplicate customer emails during retries.
+- The `booking_review_request` communication template can be enabled or disabled in the Communications template manager.
+- The email links to the supplied Google review link, the Awesome Adventure Tours Tripadvisor profile, and the exact `/excursions/<tour-slug>` page for the booked tour.
+- Review requests are not sent retroactively for bookings already completed before this migration.
 
 ## Operational checks
 1. Confirm `RESEND_API_KEY` is a valid active sending key.

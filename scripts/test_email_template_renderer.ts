@@ -24,7 +24,7 @@ const templates = [
 ];
 const ticket = renderBookingTicketEmailHtml({
   heading: 'Your booking ticket',
-  bookingReference: 'RST-2026-AB4821',
+  bookingReference: 'AWE-K7Q9M-2PX8C',
   customerName: 'Guest <script>alert(1)</script>',
   customerEmail: 'guest@example.test',
   tourName: 'Red Sea Adventure',
@@ -43,7 +43,7 @@ const ticket = renderBookingTicketEmailHtml({
   extras: [{ name: 'GoPro', quantity: 1, total: 'EUR 15.00' }],
 });
 assert.match(ticket, /OFFICIAL BOOKING TICKET/);
-assert.match(ticket, /RST-2026-AB4821/);
+assert.match(ticket, /AWE-K7Q9M-2PX8C/);
 assert.match(ticket, /Red Sea Adventure/);
 assert.match(ticket, /Hurghada/);
 assert.match(ticket, /EUR 125\.00/);
@@ -60,5 +60,23 @@ for (const template of templates) {
 const config = readFileSync('supabase/config.toml', 'utf8');
 assert.match(config, /\[auth\.email\.template\.confirmation\]/);
 assert.match(config, /\[auth\.email\.notification\.mfa_factor_unenrolled\]/);
+
+const reviewEmail = renderBrandedEmailHtml({
+  heading: 'Thank you for joining us',
+  bodyText: [
+    'Google: https://share.google/zOClg9BBAjmz6TIR5',
+    'Tripadvisor: https://www.tripadvisor.co.uk/Attraction_Review-g297549-d34759384-Reviews-Awesome_Adventure_Tours-Hurghada_Red_Sea_and_Sinai.html',
+    'Your tour: https://awesomeadventure.tours/excursions/orange-bay-island-snorkeling',
+  ].join('\n\n'),
+});
+assert.match(reviewEmail, /share\.google\/zOClg9BBAjmz6TIR5/);
+assert.match(reviewEmail, /tripadvisor\.co\.uk\/Attraction_Review/);
+assert.match(reviewEmail, /awesomeadventure\.tours\/excursions\/orange-bay-island-snorkeling/);
+
+const reviewWorker = readFileSync('src/server/bookingNotificationWorker.ts', 'utf8');
+assert.match(reviewWorker, /event\.event_name === 'booking\.completed'/);
+assert.match(reviewWorker, /booking_review_request/);
+assert.match(reviewWorker, /awesome-adventure-booking-\$\{eventId\}-review-email/);
+assert.match(reviewWorker, /tours\(title,departure_time,slug\)/);
 
 console.log('Branded email renderer, booking ticket HTML and all 13 Supabase Auth templates passed.');
