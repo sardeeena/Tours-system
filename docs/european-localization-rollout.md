@@ -93,3 +93,8 @@ Booking confirmation and completed-booking review emails now select `communicati
 - **UI catalog:** a complete key/value object matching every key in the current English dictionary. New English keys automatically invalidate old catalogs until they are updated and reviewed.
 
 A complete UI catalog is the activation gate for additional booking/account interface locales. The actual language catalogs and page translations still need to be authored and human-reviewed; no machine-generated or unreviewed translations are seeded or auto-published by this PR.
+
+
+### Locale switching and translated slugs
+
+The language selector does not blindly prefix the current English slug. It calls `GET /api/content-translations/target`, which resolves the current source entity (or current translated record), checks the source checksum, and returns the target locale's translated slug. Switching back to English returns the original source slug. Booking, customer portal and authentication paths require a complete published UI catalog before the language switch is accepted; a missing translation leaves the current route/language unchanged and displays a toast.
