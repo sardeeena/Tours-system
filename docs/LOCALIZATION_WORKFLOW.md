@@ -2,7 +2,7 @@
 
 ## Safety and publication policy
 
-- The five locales are draft targets, not publicly active languages.
+- The five locales are draft targets, not publicly active languages. The public content routes are the first-wave localized surface; booking/account/support application forms remain on the existing UI languages until their complete private-workflow dictionaries are translated and reviewed.
 - Never translate or alter source prices, currency, pickup times/locations, age limits, safety instructions, inclusions, exclusions, cancellation terms, payment rules, licensing claims, or medical/emergency guidance by assumption. Keep these values faithful to the source and flag ambiguous text for a human.
 - Machine-generated translations are drafts only. A human reviewer must check language quality, operational accuracy, SEO metadata, slugs, and all structured fields before using the existing Super Admin + AAL2 publish workflow.
 - Publishing remains gated by the server's current SHA-256 source checksum. A changed source invalidates the draft for publication.
@@ -43,6 +43,6 @@ The default is a dry run. `--apply` upserts only `draft` rows, never marks them 
 3. Manually verify all safety/operational details against the English source.
 4. Submit for review, then publish only after approval.
 5. Confirm the locale appears in the public language selector only after the complete UI catalog is published.
-6. Test localized SSR, canonical/hreflang, sitemap, booking handoff, and email/WhatsApp template fallback before marketing the locale.
+6. Test localized SSR, canonical/hreflang, sitemap, booking handoff, and email/WhatsApp template fallback before marketing the locale. New-locale booking CTAs deliberately open the English booking form while retaining the chosen customer locale for confirmation emails; they do not claim the booking form itself is translated.
 
 No migration or production write is run by this workflow automatically.
