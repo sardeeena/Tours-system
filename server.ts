@@ -4114,7 +4114,11 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
           .order('sort_order', { ascending: true, referencedTable: 'tour_itinerary' })
           .maybeSingle();
         if (error) console.warn('[SEO render] Tour detail unavailable:', error.message);
-        currentTour = data || null;
+        // Never allow a mismatched PostgREST result to become the page body.
+        currentTour = data && data.slug === slug ? data : null;
+        if (data && data.slug !== slug) {
+          console.error('[SEO render] Tour slug mismatch; refusing to render:', { requested: slug, returned: data.slug });
+        }
       } catch (error) {
         console.warn('[SEO render] Tour detail query failed:', error);
       }
@@ -4584,9 +4588,18 @@ async function startServer() {
         if (rendered.noindex) {
           res.setHeader('X-Robots-Tag', `noindex, ${rendered.nofollow ? 'nofollow' : 'follow'}`);
         }
-        res.setHeader('Cache-Control', rendered.statusCode === 200
-          ? 'public, max-age=30, s-maxage=60, stale-while-revalidate=30'
-          : 'no-store');
+        const isTourDetailRoute = /^\/excursions\/[a-z0-9]+(?:-[a-z0-9]+)*\/?$/i.test(req.path);
+        if (isTourDetailRoute) {
+          // Prevent an intermediary cache from serving one excursion's HTML under another
+          // excursion URL. Tour pages contain route-specific title, body and booking links.
+          res.setHeader('Cache-Control', 'private, no-store, max-age=0');
+          res.setHeader('CDN-Cache-Control', 'no-store');
+          res.setHeader('Surrogate-Control', 'no-store');
+        } else {
+          res.setHeader('Cache-Control', rendered.statusCode === 200
+            ? 'public, max-age=30, s-maxage=60, stale-while-revalidate=30'
+            : 'no-store');
+        }
         return res.send(rendered.html);
       } catch (error) {
         console.error('[Public SEO render] Failed to render route:', req.path, error);
