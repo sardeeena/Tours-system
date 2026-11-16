@@ -16,7 +16,7 @@ assert.match(about, /seoIndexable: true/, 'About fallback remains indexable');
 assert.match(about, /Local support in Hurghada/, 'About page contains useful company context');
 assert.match(about, /Clear information before you reserve/, 'About page explains how customers compare and book trips');
 const contact = pages.slice(pages.indexOf("id: 'contact'"), pages.indexOf("id: 'why-us'"));
-assert.ok(contact.split(/\\s+/).length >= 120, 'Contact page provides substantive visitor support information');
+assert.ok(contact.length >= 1000, 'Contact page provides substantive visitor support information');
 assert.match(contact, /preferred language/, 'Contact page explains language support without promising every tour is available in every language');
 assert.match(contact, /booking reference/, 'Contact page explains what existing customers should provide when asking for help');
 const aboutIndexabilityMigration = read('../supabase/migrations/20261116130000_about_page_indexability.sql');
