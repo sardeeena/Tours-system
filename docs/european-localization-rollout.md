@@ -35,6 +35,8 @@ This schema and registry do not translate the 25 tours, 50 blog posts, or destin
 
 ## Release gates and verification
 
+The application now recognizes locale-prefixed URL shapes and has pure helpers for building localized paths and reciprocal hreflang sets from an explicit published-locale allowlist. Server rendering deliberately returns a non-indexable 404 for recognized locale prefixes until the corresponding reviewed translation and client hydration path are implemented; it never serves English source copy under a translated URL. English URLs remain unchanged.
+
 A locale is not launch-ready until all of these checks pass:
 
 - [ ] Every route resolves to a published translation for the requested locale; missing, draft, review and outdated records return a non-indexable not-found response rather than English fallback.
