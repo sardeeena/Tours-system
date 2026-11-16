@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+const read=(p:string)=>readFileSync(new URL(p,import.meta.url),'utf8');
+const script=read('../scripts/translation_draft_bundle.ts');
+const doc=read('../docs/LOCALIZATION_WORKFLOW.md');
+assert.match(script,/LOCALES = new Set<Locale>\(\['fr','es','nl','pl','pt'\]\)/);
+assert.match(script,/translation_state:'draft'/);
+assert.match(script,/reviewed_at:null, published_at:null/);
+assert.match(script,/existing\.data\.translation_state==='published' \|\| existing\.data\.reviewed_at \|\| existing\.data\.published_at/);
+assert.match(script,/flag==='--apply'/,'Import requires an explicit apply flag');
+assert.match(script,/source_checksum/);
+assert.match(doc,/human reviewer/i);
+assert.match(doc,/dry run/i);
+console.log('Bulk localization draft workflow safety checks passed.');
