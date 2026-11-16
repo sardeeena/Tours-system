@@ -2947,17 +2947,23 @@ app.get('/api/content-translations/locales', rateLimit(30, 60_000), async (_req:
         serverSupabase.from('content_translations').select('locale,entity_type,entity_key,source_checksum,reviewed_at,published_at')
           .in('locale', uiComplete).eq('translation_state', 'published')
           .not('reviewed_at', 'is', null).not('published_at', 'is', null).limit(5000),
-        serverSupabase.from('communication_templates').select('template_key').eq('locale', 'en'),
+        serverSupabase.from('communication_templates').select('*').eq('locale', 'en'),
         serverSupabase.from('communication_templates').select('template_key,locale').in('locale', uiComplete),
       ]);
       if (publishedError || sourceTemplateError || localizedTemplateError) throw publishedError || sourceTemplateError || localizedTemplateError;
       const coverage = new Map<string, Set<string>>();
+      const communicationChecksums = new Map<string, Map<string, string>>();
       for (const item of publishedRows || []) {
         if (!item.source_checksum) continue;
         if (!coverage.has(item.locale)) coverage.set(item.locale, new Set());
         coverage.get(item.locale)!.add(item.entity_type + ':' + item.entity_key);
+        if (item.entity_type === 'communication_template') {
+          if (!communicationChecksums.has(item.locale)) communicationChecksums.set(item.locale, new Map());
+          communicationChecksums.get(item.locale)!.set(item.entity_key, item.source_checksum);
+        }
       }
       const englishTemplateKeys = (sourceTemplates || []).map((item) => item.template_key).filter(Boolean);
+      const sourceTemplateChecksums = new Map((sourceTemplates || []).map((item) => [String(item.id), createHash('sha256').update(stableTranslationJson(item)).digest('hex')]));
       const templatesByLocale = new Map<string, Set<string>>();
       for (const item of localizedTemplates || []) {
         if (!templatesByLocale.has(item.locale)) templatesByLocale.set(item.locale, new Set());
@@ -2967,7 +2973,9 @@ app.get('/api/content-translations/locales', rateLimit(30, 60_000), async (_req:
         const keys = coverage.get(locale);
         const localizedKeys = templatesByLocale.get(locale);
         const allTemplatesPresent = englishTemplateKeys.every((key) => localizedKeys?.has(key));
-        if (keys && candidateKeys.every((key) => keys.has(key)) && allTemplatesPresent) completeLocales.push(locale);
+        const approvedChecksums = communicationChecksums.get(locale);
+        const allTemplateSourcesCurrent = Array.from(sourceTemplateChecksums.entries()).every(([entityKey, checksum]) => approvedChecksums?.get(entityKey) === checksum);
+        if (keys && candidateKeys.every((key) => keys.has(key)) && allTemplatesPresent && allTemplateSourcesCurrent) completeLocales.push(locale);
       }
     }
     return res.json({ success: true, locales: completeLocales });
