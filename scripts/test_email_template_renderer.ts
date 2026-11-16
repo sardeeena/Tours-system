@@ -67,15 +67,15 @@ const reviewEmail = renderBrandedEmailHtml({
     'Google: https://www.google.com/maps/search/?api=1&query=Awesome%20Adventure%20Tours%20Hurghada',
     'Tripadvisor: https://www.tripadvisor.co.uk/Attraction_Review-g297549-d34759384-Reviews-Awesome_Adventure_Tours-Hurghada_Red_Sea_and_Sinai.html',
     'Your tour: https://awesomeadventure.tours/excursions/orange-bay-island-snorkeling',
-  ].join('\\n\\n'),
+  ].join('\n\n'),
 });
-assert.match(reviewEmail, /google\\.com\\/maps\\/search/);
-assert.match(reviewEmail, /tripadvisor\\.co\\.uk\\/Attraction_Review/);
-assert.match(reviewEmail, /awesomeadventure\\.tours\\/excursions\\/orange-bay-island-snorkeling/);
+assert.match(reviewEmail, /google\.com\/maps\/search/);
+assert.match(reviewEmail, /tripadvisor\.co\.uk\/Attraction_Review/);
+assert.match(reviewEmail, /awesomeadventure\.tours\/excursions\/orange-bay-island-snorkeling/);
 
 const reviewWorker = readFileSync('src/server/bookingNotificationWorker.ts', 'utf8');
-assert.match(reviewWorker, /event\\.event_name === 'booking\\.completed'/);
+assert.match(reviewWorker, /event\.event_name === 'booking\.completed'/);
 assert.match(reviewWorker, /booking_review_request/);
-assert.match(reviewWorker, /awesome-adventure-booking-\\$\\{eventId\\}-review-email/);
-assert.match(reviewWorker, /tours\\(title,departure_time,slug\\)/);
+assert.match(reviewWorker, /awesome-adventure-booking-\$\{eventId\}-review-email/);
+assert.match(reviewWorker, /tours\(title,departure_time,slug\)/);
 \nconsole.log('Branded email renderer, booking ticket HTML and all 13 Supabase Auth templates passed.');
