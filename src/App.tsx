@@ -448,20 +448,35 @@ function MainApp() {
 
     const [requestedPathname, searchStr] = fullPath.split('?');
     const normalizedRequestedPath = requestedPathname || '/';
-    const isPrivatePath = /^\/(?:admin|login|register|account|profile|reset-password|booking|my-booking)(?:\/|$)/i.test(normalizedRequestedPath);
-    const localizedPath = currentLocale !== 'en' && !isPrivatePath
-      ? `/${currentLocale}${normalizedRequestedPath === '/' ? '' : normalizedRequestedPath}`
-      : currentLocale !== 'en' && isPrivatePath
-        ? `/${currentLocale}${normalizedRequestedPath}`
-        : normalizedRequestedPath;
-    const finalPath = searchStr ? `${localizedPath}?${searchStr}` : localizedPath;
-    if (window.location.pathname + window.location.search !== finalPath) {
-      window.history.pushState({}, '', finalPath);
+    const commitNavigation = (targetPath: string) => {
+      const finalPath = searchStr ? targetPath + '?' + searchStr : targetPath;
+      if (window.location.pathname + window.location.search !== finalPath) window.history.pushState({}, '', finalPath);
+      const parsedTarget = parseLocalePath(targetPath);
+      setCurrentLocale(parsedTarget?.locale || 'en');
+      setCurrentPath(parsedTarget?.pathname || targetPath);
+      setSearchParams(new URLSearchParams(searchStr || ''));
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    };
+
+    if (currentLocale !== 'en' && !/^\\/admin(?:\\/|$)/i.test(normalizedRequestedPath)) {
+      const params = new URLSearchParams({ locale: currentLocale, pathname: normalizedRequestedPath });
+      fetch('/api/content-translations/target?' + params.toString(), {
+        headers: { Accept: 'application/json' },
+        cache: 'no-store',
+      })
+        .then(async (response) => {
+          const payload = await response.json().catch(() => ({}));
+          if (!response.ok || !payload?.success || typeof payload.path !== 'string' || !payload.path.startsWith('/')) {
+            throw new Error(payload?.error || 'This page is not translated into the selected language yet.');
+          }
+          commitNavigation(payload.path);
+        })
+        .catch((error) => showToast(error instanceof Error ? error.message : 'This page is not translated yet.', 'info'));
+      return;
     }
 
-    setCurrentPath(normalizedRequestedPath);
-    setSearchParams(new URLSearchParams(searchStr || ''));
-    window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    commitNavigation(normalizedRequestedPath);
   };
 
   // Resolve booking reference if on confirmation page
