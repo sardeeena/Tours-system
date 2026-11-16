@@ -485,23 +485,36 @@ function MainApp() {
   const [currentTourDetail, setCurrentTourDetail] = useState<Tour | null>(null);
 
   useEffect(() => {
+    let isCurrent = true;
+
+    // Never keep displaying a previous excursion while the new route is loading.
+    setCurrentTourDetail((current) => current?.slug === tourDetailSlug ? current : null);
+
     if (!tourDetailSlug) {
-      setCurrentTourDetail(null);
-      return;
+      return () => {
+        isCurrent = false;
+      };
     }
 
-    // Check in-memory list first
+    // Check the in-memory list first, but only use a record for this exact slug.
     const quickFind = liveTours.find((t) => t.slug === tourDetailSlug);
     if (quickFind) {
       setCurrentTourDetail(quickFind);
     }
 
-    // Always fetch latest relational details from Supabase (or allow preview if admin)
+    // Ignore late responses from an excursion route that is no longer active.
     getTourBySlug(tourDetailSlug, isAdmin).then((fullTour) => {
-      if (fullTour) {
+      if (!isCurrent) return;
+      if (fullTour?.slug === tourDetailSlug) {
         setCurrentTourDetail(fullTour);
+      } else if (!quickFind) {
+        setCurrentTourDetail(null);
       }
     });
+
+    return () => {
+      isCurrent = false;
+    };
   }, [tourDetailSlug, liveTours, isAdmin]);
 
   // Synchronize document title, OpenGraph tags, and Schema.org for all routes
@@ -1444,7 +1457,7 @@ function MainApp() {
 
     // 4. Tour Detail Page: /excursions/:slug
     if (tourDetailSlug) {
-      if (currentTourDetail) {
+      if (currentTourDetail && currentTourDetail.slug === tourDetailSlug) {
         return (
           <TourDetailPage
             tour={currentTourDetail}
