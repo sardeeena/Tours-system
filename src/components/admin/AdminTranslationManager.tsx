@@ -89,6 +89,8 @@ export const AdminTranslationManager: React.FC = () => {
     setGenerating(true);
     setGenerationProgress('Preparing translation batches…');
     const locales = ['fr', 'es', 'nl', 'pl', 'pt'];
+    let generatedCount = 0;
+    let skippedCount = 0;
     try {
       for (let localeIndex = 0; localeIndex < locales.length; localeIndex += 1) {
         const targetLocale = locales[localeIndex];
@@ -101,7 +103,9 @@ export const AdminTranslationManager: React.FC = () => {
           });
           offset = result.next_offset;
           done = Boolean(result.done);
-          setGenerationProgress(targetLocale.toUpperCase() + ': ' + offset + '/' + result.total + ' source records · ' + (localeIndex + 1) + '/5 languages');
+          generatedCount += Number(result.processed || 0);
+          skippedCount += Number(result.skipped || 0);
+          setGenerationProgress(targetLocale.toUpperCase() + ': ' + offset + '/' + result.total + ' source records · ' + generatedCount + ' drafts saved · ' + skippedCount + ' skipped · ' + (localeIndex + 1) + '/5 languages');
           if (!(done && localeIndex === locales.length - 1)) {
             await new Promise(resolve => window.setTimeout(resolve, 6500));
           }
@@ -110,8 +114,13 @@ export const AdminTranslationManager: React.FC = () => {
       setLocale('fr');
       const result = await request('/api/admin/translations?locale=fr');
       setRows(result.translations || []);
-      showToast('Bulk translation generation completed. All generated records remain drafts pending human review.', 'success');
-      setGenerationProgress('Completed all five language batches. Review drafts before publication.');
+      if (skippedCount > 0) {
+        showToast('Draft generation finished with ' + skippedCount + ' skipped records. Review the log and retry to fill any missing items; nothing was published.', 'info');
+        setGenerationProgress('Finished: ' + generatedCount + ' drafts saved, ' + skippedCount + ' skipped. Retry if any records are missing; review all drafts before publication.');
+      } else {
+        showToast('Bulk translation generation completed. All generated records remain drafts pending human review.', 'success');
+        setGenerationProgress('Completed all five language batches: ' + generatedCount + ' drafts saved. Review before publication.');
+      }
     } catch (error: any) {
       showToast(error.message || 'Bulk translation generation stopped. You can safely retry; reviewed and published records are preserved.', 'error');
       setGenerationProgress('Stopped safely. Retry to continue; existing reviewed/published records are protected.');
