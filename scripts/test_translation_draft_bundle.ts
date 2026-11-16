@@ -4,6 +4,7 @@ const read=(p:string)=>readFileSync(new URL(p,import.meta.url),'utf8');
 const script=read('../scripts/translation_draft_bundle.ts');
 const doc=read('../docs/LOCALIZATION_WORKFLOW.md');
 assert.match(script,/LOCALES = new Set<Locale>\(\['fr','es','nl','pl','pt'\]\)/);
+assert.match(script,/ENTITY_TYPES = new Set\(\['tour','destination','blog_post','static_page'\]\)/);
 assert.match(script,/translation_state:'draft'/);
 assert.match(script,/reviewed_at:null, published_at:null/);
 assert.match(script,/existing\.data\.translation_state!=='draft' \|\| existing\.data\.reviewed_at \|\| existing\.data\.published_at/);
