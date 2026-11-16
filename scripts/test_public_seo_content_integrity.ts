@@ -21,6 +21,7 @@ assert.match(contact, /preferred language/, 'Contact page explains language supp
 assert.match(contact, /booking reference/, 'Contact page explains what existing customers should provide when asking for help');
 const aboutIndexabilityMigration = read('../supabase/migrations/20261116130000_about_page_indexability.sql');
 assert.ok(aboutIndexabilityMigration.includes('UPDATE public.seo_metadata') && aboutIndexabilityMigration.includes("page_slug = 'about'") && aboutIndexabilityMigration.includes('robots_index = TRUE'), 'Migration corrects the stale About-page noindex database override');
+assert.ok(aboutIndexabilityMigration.includes('meta_description ='), 'Migration replaces the stale generic About-page description');
 const tourDetailStart = app.indexOf('// Dynamic Tour for TourDetailPage');
 const tourDetailEnd = app.indexOf('// Synchronize document title', tourDetailStart);
 const tourDetailEffect = app.slice(tourDetailStart, tourDetailEnd);
