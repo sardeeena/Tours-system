@@ -32,7 +32,7 @@ Security notification templates are supplied but configured disabled in local co
 - A booking review request is queued only when a booking transitions to `completed` and its authoritative payment status is `paid`.
 - The database event is unique per booking, and the Resend request uses an event-specific idempotency key to prevent duplicate customer emails during retries.
 - The `booking_review_request` communication template can be enabled or disabled in the Communications template manager.
-- The email links to the Google Maps listing search, the Awesome Adventure Tours Tripadvisor profile, and the exact `/excursions/<tour-slug>` page for the booked tour.
+- The email links to the supplied Google review link, the Awesome Adventure Tours Tripadvisor profile, and the exact `/excursions/<tour-slug>` page for the booked tour.
 - Review requests are not sent retroactively for bookings already completed before this migration.
 
 ## Operational checks
