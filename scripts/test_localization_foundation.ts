@@ -58,7 +58,7 @@ assert.match(server, /64-character SHA-256 source checksum/, 'Translation writes
 assert.match(app, /AdminTranslationManager/, 'Admin translation workspace is wired into the app');
 assert.match(app, /LocalizedContentPage/, 'Localized content route renderer is wired into the app');
 assert.match(app, /currentLocale !== 'en'/, 'Locale-prefixed routes are handled separately from English routes');
-assert.match(languageContext, /The URL is authoritative/, 'URL is the source of truth for interface language');
+assert.match(languageContext, /Locale-prefixed URLs are authoritative/, 'URL is the source of truth for interface language');
 assert.match(languageContext, /api\/content-translations\/ui\?locale=/, 'Interface language loads its published UI catalog from the server');
 assert.match(languageContext, /api\/content-translations\/locales/, 'Language selector discovers only fully translated UI catalogs');
 assert.match(languageContext, /api\/content-translations\/target/, 'Language switching resolves the translated slug for the same source record');
