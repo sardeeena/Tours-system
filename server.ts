@@ -2795,6 +2795,93 @@ async function writeAccountAudit(actorId: string, action: string, targetId: stri
   if (error) console.error('[Admin account audit] Could not persist audit event:', error.message);
 }
 
+// Reviewed translation workflow. Translation content is never read directly by browser
+// Supabase clients; all access is mediated by the AAL2 Super Admin API.
+const TRANSLATION_LOCALES = new Set([
+  'en','de','fr','it','es','nl','pl','pt','ro','ru','sv','da','nb','fi','el',
+  'bg','hr','cs','sk','sl','hu','et','lv','lt','uk','sr','sq','tr','ar',
+]);
+const TRANSLATION_ENTITY_TYPES = new Set([
+  'tour','tour_itinerary','tour_highlight','tour_inclusion','tour_exclusion',
+  'tour_faq','destination','blog_post','static_page',
+]);
+
+app.get('/api/admin/translations', rateLimit(30, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  const locale = typeof req.query.locale === 'string' ? req.query.locale : '';
+  const entityType = typeof req.query.entity_type === 'string' ? req.query.entity_type : '';
+  if (locale && !TRANSLATION_LOCALES.has(locale)) return res.status(400).json({ success: false, error: 'Unsupported locale.' });
+  if (entityType && !TRANSLATION_ENTITY_TYPES.has(entityType)) return res.status(400).json({ success: false, error: 'Unsupported content type.' });
+  try {
+    let query = serverSupabase!.from('content_translations')
+      .select('id,entity_type,entity_key,locale,translated_slug,title,summary,content,seo_title,seo_description,source_checksum,translation_state,reviewed_by,reviewed_at,published_at,updated_at')
+      .order('updated_at', { ascending: false }).limit(200);
+    if (locale) query = query.eq('locale', locale);
+    if (entityType) query = query.eq('entity_type', entityType);
+    const { data, error } = await query;
+    if (error) throw error;
+    return res.json({ success: true, translations: data || [] });
+  } catch (error) {
+    console.error('[Translation editor] Could not list translations:', error);
+    return res.status(503).json({ success: false, error: 'Translation records are temporarily unavailable.' });
+  }
+});
+
+app.post('/api/admin/translations', rateLimit(30, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  const body = req.body || {};
+  const entityType = typeof body.entity_type === 'string' ? body.entity_type : '';
+  const entityKey = typeof body.entity_key === 'string' ? body.entity_key.trim().slice(0, 180) : '';
+  const locale = typeof body.locale === 'string' ? body.locale : '';
+  const state = typeof body.translation_state === 'string' ? body.translation_state : 'draft';
+  const title = typeof body.title === 'string' ? body.title.trim().slice(0, 300) : '';
+  const translatedSlug = typeof body.translated_slug === 'string' ? body.translated_slug.trim().toLowerCase().slice(0, 180) : '';
+  const summary = typeof body.summary === 'string' ? body.summary.trim().slice(0, 2000) : '';
+  const seoTitle = typeof body.seo_title === 'string' ? body.seo_title.trim().slice(0, 300) : '';
+  const seoDescription = typeof body.seo_description === 'string' ? body.seo_description.trim().slice(0, 500) : '';
+  const sourceChecksum = typeof body.source_checksum === 'string' ? body.source_checksum.trim().slice(0, 128) : '';
+  const translationContent = body.content && typeof body.content === 'object' && !Array.isArray(body.content) ? body.content : null;
+  if (!TRANSLATION_ENTITY_TYPES.has(entityType) || !entityKey || !TRANSLATION_LOCALES.has(locale)) {
+    return res.status(400).json({ success: false, error: 'Choose a valid content type, source record key, and locale.' });
+  }
+  if (!['draft','review','published','outdated'].includes(state)) {
+    return res.status(400).json({ success: false, error: 'Invalid translation lifecycle state.' });
+  }
+  if (!translationContent || !sourceChecksum) {
+    return res.status(400).json({ success: false, error: 'Translation content and its source checksum are required.' });
+  }
+  if (state === 'published') {
+    if (body.confirm_publish !== true || !title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(translatedSlug) || !seoTitle || !seoDescription) {
+      return res.status(400).json({ success: false, error: 'Publishing requires explicit confirmation, a translated title and slug, SEO title and description, and a source checksum.' });
+    }
+  }
+  const now = new Date().toISOString();
+  const record = {
+    entity_type: entityType, entity_key: entityKey, locale, translated_slug: translatedSlug || null,
+    title: title || null, summary: summary || null, content: translationContent,
+    seo_title: seoTitle || null, seo_description: seoDescription || null, source_checksum: sourceChecksum,
+    translation_state: state,
+    reviewed_by: state === 'published' ? req.user!.id : null,
+    reviewed_at: state === 'published' ? now : null,
+    published_at: state === 'published' ? now : null,
+    updated_at: now,
+  };
+  try {
+    const { data, error } = await serverSupabase!.from('content_translations')
+      .upsert(record, { onConflict: 'entity_type,entity_key,locale' })
+      .select('id,entity_type,entity_key,locale,translated_slug,title,summary,content,seo_title,seo_description,source_checksum,translation_state,reviewed_by,reviewed_at,published_at,updated_at')
+      .single();
+    if (error) throw error;
+    await writeAccountAudit(req.user!.id, state === 'published' ? 'CONTENT_TRANSLATION_PUBLISHED' : 'CONTENT_TRANSLATION_SAVED', data.id, {
+      entity_type: entityType, entity_key: entityKey, locale, translation_state: state,
+    });
+    return res.status(200).json({ success: true, translation: data });
+  } catch (error) {
+    console.error('[Translation editor] Could not save translation:', error);
+    return res.status(409).json({ success: false, error: 'The translation could not be saved. Check for a duplicate translated slug or retry.' });
+  }
+});
+
 app.get('/api/admin/users', rateLimit(20, 60_000), async (req: AuthenticatedRequest, res: Response) => {
   // Personal account data is restricted to a verified Super Admin + AAL2 session.
   if (!requireSuperAdminAal2(req, res)) return;
