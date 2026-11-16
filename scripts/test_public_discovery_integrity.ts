@@ -22,7 +22,12 @@ assert.match(excursions, /sidebarFilters\.minRating/, 'minimum rating filter is 
 assert.match(excursions, /sidebarFilters\.pickupOnly/, 'pickup-only filter is applied');
 assert.match(excursions, /sidebarFilters\.languages/, 'language filter is applied');
 assert.match(excursions, /sidebarFilters\.durationPreset/, 'duration presets are applied');
+assert.match(excursions, /tour\.availableDays/, 'selected travel dates filter tours by published recurring availability days');
+assert.match(excursions, /guests > tour\.maxGuests/, 'traveller count respects configured tour capacity');
+assert.match(excursions, /setGuests\(2\)/, 'clear filters resets the traveller count');
 assert.match(experiences, /onSelectCategory/, 'experience categories expose selection navigation');
+assert.match(read('../src/components/tours/TourSearch.tsx'), /id="excursion-guests"/, 'the catalogue exposes a functional traveller-count input');
+assert.match(read('../src/components/tours/TourSearch.tsx'), /onGuestsChange\(/, 'traveller-count input updates the catalogue filter state');
 assert.match(destinations, /onSelectDestination/, 'destination cards expose selection navigation');
 assert.match(tourService, /throw new Error\(!isSupabaseConfigured\(\)/, 'production catalogue configuration failures are not misreported as an empty catalogue');
 assert.match(tourService, /Unable to load published excursions:/, 'Supabase query failures propagate instead of silently returning an empty list');

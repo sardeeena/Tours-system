@@ -122,7 +122,7 @@ export const TourSearch: React.FC<TourSearchProps> = ({
           </div>
 
           {/* Activity / Category */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-2 min-w-0 w-full">
             <label className="block text-[10px] font-bold uppercase tracking-wider text-stone-600 mb-1">
               Activity
             </label>
@@ -146,7 +146,7 @@ export const TourSearch: React.FC<TourSearchProps> = ({
           </div>
 
           {/* Date Picker */}
-          <div className="lg:col-span-2 min-w-0 w-full">
+          <div className="lg:col-span-1 min-w-0 w-full">
             <label className="block text-[10px] font-bold uppercase tracking-wider text-stone-600 mb-1">
               Date
             </label>
@@ -155,8 +155,29 @@ export const TourSearch: React.FC<TourSearchProps> = ({
                 type="date"
                 value={date}
                 onChange={(e) => onDateChange(e.target.value)}
-                min={new Date().toISOString().split('T')[0]}
+                min={(() => { const today = new Date(); return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`; })()}
                 className="w-full px-2.5 py-1.5 rounded-sm border border-stone-200 bg-stone-50/50 text-[#0E1B2A] text-xs focus:outline-none focus:ring-1 focus:ring-[#0A6C74]"
+              />
+            </div>
+          </div>
+
+          {/* Guest capacity */}
+          <div className="lg:col-span-2 min-w-0 w-full">
+            <label htmlFor="excursion-guests" className="block text-[10px] font-bold uppercase tracking-wider text-stone-600 mb-1">
+              Travellers
+            </label>
+            <div className="relative">
+              <Users className="w-3.5 h-3.5 absolute left-3 top-2.5 text-[#0A6C74]" />
+              <input
+                id="excursion-guests"
+                type="number"
+                min={1}
+                max={50}
+                step={1}
+                inputMode="numeric"
+                value={guests}
+                onChange={(e) => onGuestsChange(Math.min(50, Math.max(1, Number(e.target.value) || 1)))}
+                className="w-full pl-8 pr-2.5 py-1.5 rounded-sm border border-stone-200 bg-stone-50/50 text-[#0E1B2A] text-xs focus:outline-none focus:ring-1 focus:ring-[#0A6C74]"
               />
             </div>
           </div>
