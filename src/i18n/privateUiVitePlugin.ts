@@ -55,13 +55,13 @@ export function privateUiTranslationPlugin(): Plugin {
         }
       };
 
-      const translateLiteral = (node: StringLiteral, componentBody?: Block) => {
+      const translateLiteral = (node: StringLiteral, componentBody?: Block, jsxAttribute = false) => {
         if (!componentBody || !node.text.trim() || !/\p{L}/u.test(node.text)) return;
         const key = privateUiMessageKey(node.text);
         edits.push({
           start: node.getStart(sourceFile),
           end: node.getEnd(),
-          value: `__privateUiT(${JSON.stringify(key)}, ${JSON.stringify(node.text)})`,
+          value: jsxAttribute ? `{__privateUiT(${JSON.stringify(key)}, ${JSON.stringify(node.text)})}` : `__privateUiT(${JSON.stringify(key)}, ${JSON.stringify(node.text)})`,
         });
         addHook(componentBody);
       };
@@ -133,7 +133,7 @@ export function privateUiTranslationPlugin(): Plugin {
 
         if (ts.isJsxAttribute(node) && TRANSLATABLE_ATTRIBUTES.has(node.name.getText(sourceFile))) {
           const initializer = node.initializer;
-          if (initializer && ts.isStringLiteral(initializer)) translateLiteral(initializer, componentBody);
+          if (initializer && ts.isStringLiteral(initializer)) translateLiteral(initializer, componentBody, true);
         }
 
         if (ts.isCallExpression(node) && TRANSLATABLE_CALLS.has(callName(node.expression)) && node.arguments.length) {
