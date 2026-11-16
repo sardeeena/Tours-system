@@ -103,6 +103,7 @@ assert.match(server, /entityType === 'communication_template'[\s\S]*source\.temp
 assert.match(expandedBookingLocaleMigration, /communication_template/, 'Translation schema allows localized communication template drafts');
 assert.match(server, /item\.type==='static_page' && item\.key==='home'\?'home'/, 'Translated homepage keeps the canonical localized root path');
 assert.match(server, /usedSlugs\.has\(translatedSlug\)[\s\S]*createHash\('sha256'\)/, 'Bulk translation generation prevents translated slug collisions');
+assert.match(server, /select\('entity_type,entity_key,translated_slug,translation_state[\s\S]*workKeys\.has\(x\.entity_type\+':'\+x\.entity_key\)/, 'Bulk generation reserves slugs already used by reviewed or published translations');
 const adminTranslations = read('../src/components/admin/AdminTranslationManager.tsx');
 assert.match(adminTranslations, /Generate all 5 languages/, 'Super Admin can run the bulk five-language generation workflow');
 assert.match(adminTranslations, /'communication_template'/, 'Super Admin can review communication template translations');
