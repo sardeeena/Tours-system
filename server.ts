@@ -13,6 +13,7 @@ import { startBookingNotificationWorker } from './src/server/bookingNotification
 import { INITIAL_STATIC_PAGES } from './src/data/staticPages';
 import { EXPECTED_AWESOME_ADVENTURE_TOURS_SUPABASE_PROJECT_REF, isExpectedAwesomeAdventureToursSupabaseUrl } from './src/lib/supabaseProjectGuard';
 import { parseLocalePath } from './src/i18n/localeRouting';
+import { TRANSLATIONS } from './src/i18n/translations';
 
 dotenv.config();
 
@@ -2817,7 +2818,7 @@ const TRANSLATION_LOCALES = new Set([
 ]);
 const TRANSLATION_ENTITY_TYPES = new Set([
   'tour','tour_itinerary','tour_highlight','tour_inclusion','tour_exclusion',
-  'tour_faq','destination','blog_post','static_page',
+  'tour_faq','destination','blog_post','static_page','ui_catalog',
 ]);
 
 const TRANSLATION_SOURCE_TABLES: Record<string, string> = {
@@ -2840,6 +2841,7 @@ function stableTranslationJson(value: any): string {
 }
 
 async function getTranslationSource(entityType: string, entityKey: string): Promise<any | null> {
+  if (entityType === 'ui_catalog') return entityKey === 'site-ui' ? { id: 'site-ui', slug: 'site-ui', title: 'Interface messages', content: TRANSLATIONS.en || {} } : null;
   if (!serverSupabase) return null;
   if (entityType === 'static_page') {
     return INITIAL_STATIC_PAGES.find((page) => page.slug === entityKey || page.id === entityKey) || null;
@@ -2886,6 +2888,53 @@ async function getCurrentTranslationSourceChecksum(entityType: string, entityKey
 
 // Returns only a reviewed translation whose source checksum still matches the
 // current published source record. A stale translation fails closed.
+app.get('/api/content-translations/ui', rateLimit(60, 60_000), async (req: Request, res: Response) => {
+  const locale = typeof req.query.locale === 'string' ? req.query.locale : '';
+  if (!TRANSLATION_LOCALES.has(locale)) return res.status(400).json({ success: false, error: 'Unsupported locale.' });
+  if (locale === 'en') return res.json({ success: true, locale, messages: TRANSLATIONS.en || {} });
+  try {
+    if (!serverSupabase) return res.status(503).json({ success: false, error: 'Translation service unavailable.' });
+    const { data, error } = await serverSupabase.from('content_translations')
+      .select('content,source_checksum,reviewed_at,published_at')
+      .eq('entity_type', 'ui_catalog').eq('entity_key', 'site-ui')
+      .eq('locale', locale).eq('translation_state', 'published').maybeSingle();
+    if (error) throw error;
+    const current = await getCurrentTranslationSourceChecksum('ui_catalog', 'site-ui');
+    const messages = data?.content && typeof data.content === 'object' && !Array.isArray(data.content) ? data.content as Record<string, unknown> : {};
+    const englishKeys = Object.keys(TRANSLATIONS.en || {});
+    const complete = englishKeys.every((key) => typeof messages[key] === 'string' && String(messages[key]).trim().length > 0);
+    if (!data?.reviewed_at || !data?.published_at || !current || current.checksum !== data.source_checksum || !complete) {
+      return res.status(404).json({ success: false, error: 'A complete, current, reviewed interface catalog is not available.' });
+    }
+    return res.json({ success: true, locale, messages });
+  } catch (error) {
+    console.error('[UI translation catalog] Lookup failed:', error);
+    return res.status(503).json({ success: false, error: 'Interface translation service temporarily unavailable.' });
+  }
+});
+
+app.get('/api/content-translations/locales', rateLimit(30, 60_000), async (_req: Request, res: Response) => {
+  try {
+    if (!serverSupabase) return res.status(503).json({ success: false, error: 'Translation service unavailable.' });
+    const { data, error } = await serverSupabase.from('content_translations')
+      .select('locale,content,source_checksum,reviewed_at,published_at')
+      .eq('entity_type', 'ui_catalog').eq('entity_key', 'site-ui')
+      .eq('translation_state', 'published').not('locale', 'is', null).limit(100);
+    if (error) throw error;
+    const current = await getCurrentTranslationSourceChecksum('ui_catalog', 'site-ui');
+    const englishKeys = Object.keys(TRANSLATIONS.en || {});
+    const locales = (data || []).filter((row) => {
+      const messages = row.content && typeof row.content === 'object' && !Array.isArray(row.content) ? row.content as Record<string, unknown> : {};
+      return Boolean(row.reviewed_at && row.published_at && current && current.checksum === row.source_checksum &&
+        englishKeys.every((key) => typeof messages[key] === 'string' && String(messages[key]).trim().length > 0));
+    }).map((row) => row.locale);
+    return res.json({ success: true, locales: Array.from(new Set(locales)) });
+  } catch (error) {
+    console.error('[UI translation locales] Lookup failed:', error);
+    return res.status(503).json({ success: false, error: 'Interface translation availability is temporarily unavailable.' });
+  }
+});
+
 app.get('/api/content-translations/resolve', rateLimit(90, 60_000), async (req: Request, res: Response) => {
   const locale = typeof req.query.locale === 'string' ? req.query.locale : '';
   const entityType = typeof req.query.entity_type === 'string' ? req.query.entity_type : '';
@@ -2937,7 +2986,9 @@ app.get('/api/admin/translations/source', rateLimit(30, 60_000), async (req: Aut
           ? { heroHeadline: source.heroHeadline, heroSubtitle: source.heroSubtitle, sections: source.sections }
           : entityType === 'blog_post'
             ? { title: source.title, excerpt: source.excerpt, content: source.content }
-            : entityType === 'tour'
+            : entityType === 'ui_catalog'
+          ? { title: 'Interface messages', content: source.content || {} }
+          : entityType === 'tour'
               ? {
                   title: source.title, description: source.description || source.short_description, durationLabel: source.duration,
                   highlights: (source.highlights || []).map((item: any) => item.item || item), itinerary: source.itinerary || [],
@@ -2999,8 +3050,14 @@ app.post('/api/admin/translations', rateLimit(30, 60_000), async (req: Authentic
     return res.status(400).json({ success: false, error: 'Translation content and a 64-character SHA-256 source checksum are required.' });
   }
   if (state === 'published') {
-    if (body.confirm_publish !== true || !title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(translatedSlug) || !seoTitle || !seoDescription) {
-      return res.status(400).json({ success: false, error: 'Publishing requires explicit confirmation, a translated title and slug, SEO title and description, and a source checksum.' });
+    if (body.confirm_publish !== true) return res.status(400).json({ success: false, error: 'Publishing requires explicit confirmation.' });
+    if (entityType === 'ui_catalog') {
+      const source = await getTranslationSource('ui_catalog', entityKey);
+      const keys = Object.keys(source?.content || {});
+      const complete = keys.length > 0 && keys.every((key) => typeof translationContent[key] === 'string' && String(translationContent[key]).trim().length > 0);
+      if (!complete) return res.status(400).json({ success: false, error: 'The interface catalog must translate every source UI message before publication.' });
+    } else if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(translatedSlug) || !seoTitle || !seoDescription) {
+      return res.status(400).json({ success: false, error: 'Publishing requires a translated title and slug, SEO title and description, and a source checksum.' });
     }
   }
   if (state !== 'outdated') {
