@@ -1,5 +1,5 @@
 import path from 'node:path';
-import * as ts from 'typescript-7';
+import ts from '@typescript/old';
 import type { Block, Expression, Node as TsNode, SourceFile, StringLiteral } from '@typescript/old';
 import type { Plugin } from 'vite';
 import { isPrivateUiSourcePath, normalizePrivateUiText, privateUiMessageKey } from './privateUiCatalog';
