@@ -1326,10 +1326,10 @@ function MainApp() {
     // Locale-prefixed content routes are resolved only from checksum-verified,
     // human-reviewed translations. Booking and account workflows continue to
     // use their existing language-aware components.
-    if (currentLocale !== 'en' && !/^\\/(?:booking(?:\\/|$)|my-booking(?:\\/|$)|login(?:\\/|$)|register(?:\\/|$)|account(?:\\/|$)|profile(?:\\/|$)|reset-password(?:\\/|$)|admin(?:\\/|$)|support(?:\\/|$))/i.test(currentPath)) {
+    if (currentLocale !== 'en' && !/^\/(?:booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|admin(?:\/|$)|support(?:\/|$))/i.test(currentPath)) {
       return <Suspense fallback={<PublicPageLoadingFallback />}><LocalizedContentPage locale={currentLocale} pathname={currentPath} onNavigate={(path) => navigate(path)} /></Suspense>;
     }
-    if (currentLocale !== 'en' && !['de','it','ro','ru'].includes(currentLocale) && /^\\/(?:booking|my-booking|login|register|account|profile|reset-password)(?:\\/|$)/i.test(currentPath)) {
+    if (currentLocale !== 'en' && !['de','it','ro','ru'].includes(currentLocale) && /^\/(?:booking|my-booking|login|register|account|profile|reset-password)(?:\/|$)/i.test(currentPath)) {
       return <main className="mx-auto max-w-xl px-5 py-24 text-center"><h1 className="text-2xl font-bold">This interface language is not ready yet</h1><p className="mt-3">This language is not yet fully translated for booking and account workflows.</p><button className="mt-6 rounded bg-teal-800 px-5 py-3 text-white" onClick={() => navigate('/')}>Return to the English site</button></main>;
     }
     // Auth: Login Page
