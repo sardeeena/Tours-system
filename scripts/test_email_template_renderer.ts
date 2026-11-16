@@ -69,7 +69,7 @@ const reviewEmail = renderBrandedEmailHtml({
     'Your tour: https://awesomeadventure.tours/excursions/orange-bay-island-snorkeling',
   ].join('\n\n'),
 });
-assert.match(reviewEmail, /google\.com\/maps\/search/);
+assert.match(reviewEmail, /share\.google\/zOClg9BBAjmz6TIR5/);
 assert.match(reviewEmail, /tripadvisor\.co\.uk\/Attraction_Review/);
 assert.match(reviewEmail, /awesomeadventure\.tours\/excursions\/orange-bay-island-snorkeling/);
 
