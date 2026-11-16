@@ -3718,6 +3718,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
         .select('entity_type,entity_key,locale,translated_slug,source_checksum,published_at,reviewed_at')
         .eq('translation_state', 'published').not('translated_slug', 'is', null).limit(5000);
       if (error) throw error;
+      const sourceChecksumCache = new Map<string, string | null>();
       for (const item of translations || []) {
         if (!item.translated_slug || !item.locale || !item.reviewed_at || !item.published_at) continue;
         const routePrefix = item.entity_type === 'tour' ? '/excursions/'
@@ -3725,8 +3726,12 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
             : item.entity_type === 'blog_post' ? '/blog/'
               : item.entity_type === 'static_page' ? '/' : null;
         if (!routePrefix) continue;
-        const current = await getCurrentTranslationSourceChecksum(item.entity_type, item.entity_key);
-        if (!current || current.checksum !== item.source_checksum) continue;
+        const cacheKey = item.entity_type + ':' + item.entity_key;
+        if (!sourceChecksumCache.has(cacheKey)) {
+          const current = await getCurrentTranslationSourceChecksum(item.entity_type, item.entity_key);
+          sourceChecksumCache.set(cacheKey, current?.checksum || null);
+        }
+        if (sourceChecksumCache.get(cacheKey) !== item.source_checksum) continue;
         const translatedPath = item.entity_type === 'static_page' && item.translated_slug === 'home'
           ? '/' + item.locale
           : '/' + item.locale + routePrefix + encodeURIComponent(item.translated_slug);
@@ -4840,9 +4845,9 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
             .eq('entity_type', localizedTranslation.entity_type)
             .eq('entity_key', localizedTranslation.entity_key)
             .eq('translation_state', 'published').not('translated_slug', 'is', null);
+          const current = await getCurrentTranslationSourceChecksum(localizedTranslation.entity_type, localizedTranslation.entity_key);
           for (const alternative of alternatives || []) {
             if (!alternative.locale || !alternative.translated_slug || !alternative.reviewed_at || !alternative.published_at) continue;
-            const current = await getCurrentTranslationSourceChecksum(localizedTranslation.entity_type, localizedTranslation.entity_key);
             if (!current || current.checksum !== alternative.source_checksum) continue;
             const routePrefix = localizedTranslation.entity_type === 'tour' ? '/excursions/'
               : localizedTranslation.entity_type === 'destination' ? '/destinations/'
