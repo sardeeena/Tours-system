@@ -4247,7 +4247,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
         ? { entityType: 'destination', prefix: '/destinations/' }
         : parts.length === 2 && parts[0] === 'blog'
           ? { entityType: 'blog_post', prefix: '/blog/' }
-          : parts.length === 1
+          : parts.length === 1 || parts.length === 0
             ? { entityType: 'static_page', prefix: '/' }
             : null;
     if (route && serverSupabase) {
@@ -4263,7 +4263,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
             localizedTranslation = data;
             localizedSource = current.source;
             const sourceSlug = typeof current.source.slug === 'string' ? current.source.slug : '';
-            path = route.entityType === 'static_page' ? '/' + sourceSlug : route.prefix + sourceSlug;
+            path = route.entityType === 'static_page' ? (sourceSlug === 'home' ? '/' : '/' + sourceSlug) : route.prefix + sourceSlug;
           }
         }
       } catch (error) {
