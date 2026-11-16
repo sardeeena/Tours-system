@@ -78,5 +78,11 @@ assert.doesNotMatch(cookieConsent, /GTM-MZVP38WC/, 'Retired Google Tag Manager c
 assert.match(cookieConsent, /choices\.analytics \|\| choices\.marketing/, 'Google Tag Manager remains blocked until optional consent is granted');
 assert.match(cookieConsent, /gtag\?\.\('consent', 'update'/, 'Google Consent Mode is updated when visitors save their preferences');
 assert.match(blogPage, /getPublishedBlogPosts\(60\)/, 'Blog catalogue can display all 50 planned published articles');
+const blogSeoStart = app.indexOf("if (currentPath.startsWith('/blog/'))");
+const blogSeoEnd = app.indexOf("if (['/login'", blogSeoStart);
+const blogSeoRoute = app.slice(blogSeoStart, blogSeoEnd);
+assert.ok(!blogSeoRoute.includes('seoService.apply'), 'App does not overwrite article-specific server SEO with a generic blog title');
+assert.ok(blogPage.includes('article.seo_title') && blogPage.includes('article.seo_description'), 'Blog articles apply their own stored SEO title and description');
+
 
 console.log('Public SEO, blog catalogue and consent-aware analytics integrity checks passed.');
