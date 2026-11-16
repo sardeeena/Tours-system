@@ -74,6 +74,7 @@ const AdminSeoManager = lazy(() => import('./components/admin/AdminSeoManager').
 const AdminCouponsList = lazy(() => import('./components/admin/AdminCouponsList').then(m => ({ default: m.AdminCouponsList })));
 const AdminFaqsManager = lazy(() => import('./components/admin/AdminFaqsManager').then(m => ({ default: m.AdminFaqsManager })));
 const AdminPagesManager = lazy(() => import('./components/admin/AdminPagesManager').then(m => ({ default: m.AdminPagesManager })));
+const AdminTranslationManager = lazy(() => import('./components/admin/AdminTranslationManager').then(m => ({ default: m.AdminTranslationManager })));
 const AdminSettings = lazy(() => import('./components/admin/AdminSettings').then(m => ({ default: m.AdminSettings })));
 const AdminAccessControl = lazy(() => import('./components/admin/AdminAccessControl').then(m => ({ default: m.AdminAccessControl })));
 const AdminBlogManager = lazy(() => import('./components/admin/AdminBlogManager').then(m => ({ default: m.AdminBlogManager })));
@@ -1290,6 +1291,8 @@ function MainApp() {
           {activeAdminTab === 'seo' && <AdminSeoManager />}
 
           {activeAdminTab === 'pages' && <AdminPagesManager />}
+
+          {activeAdminTab === 'translations' && <AdminTranslationManager />}
 
           {activeAdminTab === 'settings' && <AdminSettings />}
 
