@@ -24,4 +24,5 @@ assert.match(migration, /ADD COLUMN IF NOT EXISTS preferred_locale/, 'Customer c
 assert.match(migration, /ADD COLUMN IF NOT EXISTS locale text NOT NULL DEFAULT 'en'/, 'Communication templates are locale-aware');
 assert.match(migration, /ENABLE ROW LEVEL SECURITY/, 'Translation content is protected by RLS');
 assert.match(migration, /REVOKE ALL ON TABLE public\.content_translations FROM PUBLIC, anon, authenticated/, 'Translation drafts are not exposed to public or authenticated Data API roles');
+assert.match(migration, /CREATE TRIGGER trg_capture_business_audit[\\s\\S]*private\.capture_business_audit\(\)/, 'Translation lifecycle changes use the private business audit trigger');
 console.log('Public tour cache isolation and European localization foundation checks passed.');
