@@ -1,79 +1,81 @@
-import React from 'react';
-import { motion } from 'motion/react';
-import { 
-  ShieldCheck, 
-  Award, 
-  Bus, 
-  Clock, 
-  Headphones, 
-  CheckCircle,
-  FileCheck2,
-  Sparkles
-} from 'lucide-react';
+import React, { useRef } from 'react';
+import { Award, Bus, CheckCircle2, ChevronLeft, ChevronRight, Clock, Headphones, ShieldCheck } from 'lucide-react';
 import { TRUST_PILLARS } from '../../data/toursData';
 
 export const WhyChooseUs: React.FC = () => {
+  const trackRef = useRef<HTMLDivElement>(null);
+
   const getIcon = (iconName: string) => {
+    const className = 'w-5 h-5 text-[#0A6C74] dark:text-[#60C3CC]';
     switch (iconName) {
-      case 'ShieldCheck': return <ShieldCheck className="w-5 h-5 text-[#0A6C74]" />;
-      case 'Award': return <Award className="w-5 h-5 text-[#0A6C74]" />;
-      case 'Bus': return <Bus className="w-5 h-5 text-[#0A6C74]" />;
-      case 'Clock': return <Clock className="w-5 h-5 text-[#0A6C74]" />;
-      case 'Headphones': return <Headphones className="w-5 h-5 text-[#0A6C74]" />;
-      default: return <CheckCircle className="w-5 h-5 text-[#0A6C74]" />;
+      case 'ShieldCheck': return <ShieldCheck className={className} />;
+      case 'Award': return <Award className={className} />;
+      case 'Bus': return <Bus className={className} />;
+      case 'Clock': return <Clock className={className} />;
+      case 'Headphones': return <Headphones className={className} />;
+      default: return <CheckCircle2 className={className} />;
     }
   };
 
+  const scrollCards = (direction: -1 | 1) => {
+    if (!trackRef.current) return;
+    const card = trackRef.current.querySelector<HTMLElement>('[data-trust-card]');
+    const distance = card ? card.offsetWidth + 16 : 300;
+    trackRef.current.scrollBy({ left: direction * distance, behavior: 'smooth' });
+  };
+
   return (
-    <section id="why-us-section" className="py-16 sm:py-24 bg-white dark:bg-[#0A1118] border-b border-[#E8E3DA] dark:border-slate-800 transition-colors">
+    <section id="why-us-section" className="py-10 sm:py-14 bg-white dark:bg-[#0A1118] border-b border-[#E8E3DA] dark:border-slate-800 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-8">
-        
-        {/* Header */}
-        <div className="max-w-3xl mb-12">
-          <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#0A6C74] dark:text-[#60C3CC] mb-2">
-            <span className="w-5 h-0.5 bg-[#0A6C74] dark:bg-[#60C3CC] rounded-full"></span>
-            <span>Direct Licensed Fleet Operator</span>
+        <div className="flex items-end justify-between gap-4 mb-5 sm:mb-6">
+          <div className="min-w-0">
+            <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[.16em] text-[#0A6C74] dark:text-[#60C3CC] mb-1.5">
+              Local knowledge. Real people.
+            </p>
+            <h2 className="font-display text-xl sm:text-3xl font-bold text-[#0E1B2A] dark:text-white tracking-tight">
+              Why Book Directly With Us
+            </h2>
+            <p className="text-xs sm:text-sm text-stone-600 dark:text-slate-300 mt-1.5 max-w-2xl">
+              Your local team, from the first message to the end of your trip.
+            </p>
           </div>
-          <h2 className="font-display text-2xl sm:text-4xl text-[#0E1B2A] dark:text-white tracking-tight">
-            Why Book Directly With Us
-          </h2>
-          <p className="text-stone-600 dark:text-slate-300 text-sm sm:text-base mt-2 leading-relaxed">
-            We operate our own passenger yachts, speedboat charters, and hotel transfer fleet in Hurghada and El Gouna. You enjoy direct local captain support, transparent pricing, and zero middleman markups.
-          </p>
+          <div className="hidden sm:flex shrink-0 items-center gap-2">
+            <button type="button" onClick={() => scrollCards(-1)} aria-label="Scroll benefits left" className="w-9 h-9 rounded-full border border-stone-200 dark:border-slate-700 flex items-center justify-center text-stone-600 dark:text-slate-300 hover:border-[#0A6C74] hover:text-[#0A6C74] transition-colors">
+              <ChevronLeft size={17} />
+            </button>
+            <button type="button" onClick={() => scrollCards(1)} aria-label="Scroll benefits right" className="w-9 h-9 rounded-full border border-stone-200 dark:border-slate-700 flex items-center justify-center text-stone-600 dark:text-slate-300 hover:border-[#0A6C74] hover:text-[#0A6C74] transition-colors">
+              <ChevronRight size={17} />
+            </button>
+          </div>
         </div>
 
-        {/* Pillars Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {TRUST_PILLARS.map((pillar, idx) => (
-            <motion.div
+        <div
+          ref={trackRef}
+          className="flex gap-3 sm:gap-4 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 [&::-webkit-scrollbar]:hidden"
+          style={{ scrollbarWidth: 'none' }}
+          aria-label="Reasons to book directly with Awesome Adventure Tours"
+        >
+          {TRUST_PILLARS.map((pillar) => (
+            <article
               key={pillar.id}
-              initial={{ opacity: 0, y: 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.45, delay: idx * 0.07 }}
-              whileHover={{ y: -5 }}
-              className="p-6 rounded-2xl border border-[#E8E3DA] dark:border-slate-800 bg-[#FAF8F5] dark:bg-[#132235] flex flex-col justify-between hover:border-[#0A6C74]/50 hover:bg-white dark:hover:bg-[#182C44] hover:shadow-xl transition-all duration-300 group"
+              data-trust-card
+              className="snap-start shrink-0 w-[82vw] max-w-[290px] sm:w-[280px] min-h-[154px] sm:min-h-[166px] rounded-xl border border-[#E8E3DA] dark:border-slate-800 bg-[#FAF8F5] dark:bg-[#132235] p-4 sm:p-5 flex flex-col transition-colors hover:border-[#0A6C74]/50 hover:bg-white dark:hover:bg-[#172A40]"
             >
-              <div>
-                <div className="w-12 h-12 rounded-xl bg-white dark:bg-[#16283D] border border-[#E8E3DA] dark:border-slate-700 flex items-center justify-center mb-4 shadow-2xs group-hover:scale-110 group-hover:border-[#0A6C74]/40 transition-all">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="w-9 h-9 rounded-lg bg-white dark:bg-[#16283D] border border-[#E8E3DA] dark:border-slate-700 flex items-center justify-center shrink-0">
                   {getIcon(pillar.iconName)}
-                </div>
-                <h3 className="font-display text-base font-bold text-[#0E1B2A] dark:text-white mb-2 group-hover:text-[#0A6C74] dark:group-hover:text-[#60C3CC] transition-colors">
+                </span>
+                <h3 className="font-display text-sm sm:text-base font-bold text-[#0E1B2A] dark:text-white leading-snug">
                   {pillar.title}
                 </h3>
-                <p className="text-xs text-stone-600 dark:text-slate-300 leading-relaxed">
-                  {pillar.description}
-                </p>
               </div>
-
-              <div className="mt-5 pt-3.5 border-t border-stone-200/60 dark:border-slate-700/60 flex items-center text-[11px] text-[#0A6C74] dark:text-[#60C3CC] font-semibold">
-                <FileCheck2 className="w-3.5 h-3.5 mr-1.5 shrink-0" />
-                <span>Verified Direct Fleet Standard</span>
-              </div>
-            </motion.div>
+              <p className="text-xs text-stone-600 dark:text-slate-300 leading-relaxed">
+                {pillar.description}
+              </p>
+            </article>
           ))}
         </div>
-
+        <p className="sm:hidden text-[10px] text-stone-400 dark:text-slate-500 mt-1">Swipe to explore more</p>
       </div>
     </section>
   );
