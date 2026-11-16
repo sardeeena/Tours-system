@@ -94,6 +94,7 @@ assert.match(server, /app\.post\('\/api\/admin\/translations\/generate-batch'[\s
 assert.match(server, /translation_state: 'draft'[\s\S]*reviewed_by: null, reviewed_at: null, published_at: null/, 'AI bulk generation can only create unreviewed drafts');
 assert.match(server, /BULK_TRANSLATION_LOCALES: Record<string, string> = \{ fr: 'French', es: 'Spanish', nl: 'Dutch', pl: 'Polish', pt: 'Portuguese' \}/, 'Bulk generator targets all five requested locales');
 assert.match(server, /communication_template[\s\S]*communication_templates/, 'Communication templates are included in the protected translation workflow');
+assert.match(server, /String\(source\?\.subject \|\| ''\)[\s\S]*String\(source\?\.body_text \|\| ''\)/, 'Communication template placeholder checks include both subject and body');
 assert.match(server, /sourceTokens\.sort\(\)\.join\('\|'\) !== translatedTokens\.sort\(\)\.join\('\|'\)/, 'Communication template publication preserves every original placeholder token');
 assert.match(server, /communication_templates'\)\.upsert[\s\S]*onConflict: 'template_key,locale'/, 'Approved communication translations are synchronized to the customer-template table');
 assert.match(expandedBookingLocaleMigration, /communication_template/, 'Translation schema allows localized communication template drafts');
