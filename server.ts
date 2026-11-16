@@ -3678,6 +3678,32 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
     }
   }
 
+  // Include only locale URLs whose translation is published, reviewed and still matches its source.
+  if (serverSupabase) {
+    try {
+      const { data: translations, error } = await serverSupabase.from('content_translations')
+        .select('entity_type,entity_key,locale,translated_slug,source_checksum,published_at,reviewed_at')
+        .eq('translation_state', 'published').not('translated_slug', 'is', null).limit(5000);
+      if (error) throw error;
+      for (const item of translations || []) {
+        if (!item.translated_slug || !item.locale || !item.reviewed_at || !item.published_at) continue;
+        const routePrefix = item.entity_type === 'tour' ? '/excursions/'
+          : item.entity_type === 'destination' ? '/destinations/'
+            : item.entity_type === 'blog_post' ? '/blog/'
+              : item.entity_type === 'static_page' ? '/' : null;
+        if (!routePrefix) continue;
+        const current = await getCurrentTranslationSourceChecksum(item.entity_type, item.entity_key);
+        if (!current || current.checksum !== item.source_checksum) continue;
+        const translatedPath = item.entity_type === 'static_page' && item.translated_slug === 'home'
+          ? '/' + item.locale
+          : '/' + item.locale + routePrefix + encodeURIComponent(item.translated_slug);
+        urls.set(AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN + translatedPath, toSitemapDate(item.published_at));
+      }
+    } catch (error) {
+      console.warn('[SEO sitemap] Reviewed localized pages could not be loaded:', error);
+    }
+  }
+
   const entries = Array.from(urls.entries()).map(([loc, lastmod]) => (
     `  <url><loc>${escapeXml(loc)}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}</url>`
   ));
