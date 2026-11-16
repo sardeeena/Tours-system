@@ -2925,13 +2925,13 @@ app.get('/api/admin/translations/source', rateLimit(30, 60_000), async (req: Aut
             ? { title: source.title, excerpt: source.excerpt, content: source.content }
             : entityType === 'tour'
               ? {
-                  title: source.title, description: source.description || source.short_description,
-                  highlights: source.highlights || [], itinerary: source.itinerary || [],
+                  title: source.title, description: source.description || source.short_description, durationLabel: source.duration,
+                  highlights: (source.highlights || []).map((item: any) => item.item || item), itinerary: source.itinerary || [],
                   included: source.included || [], excluded: source.excluded || [], faqs: source.faqs || [],
                   pickup_info: source.pickup_info || null, cancellation_policy: source.cancellation_policy || null,
                   age_restrictions: source.age_restrictions || null,
                 }
-              : { title: source.title || source.name, description: source.description || source.short_description },
+              : { title: source.title || source.name, description: source.description || source.short_description, tagline: source.tagline || null, distance_from_airport: source.distance_from_airport || null },
       },
     });
   } catch (error) {
