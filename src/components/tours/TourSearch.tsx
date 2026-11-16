@@ -134,12 +134,18 @@ export const TourSearch: React.FC<TourSearchProps> = ({
                 className="w-full pl-8 pr-6 py-2 rounded-sm border border-stone-200 bg-stone-50/50 text-[#0E1B2A] text-xs focus:outline-none focus:ring-1 focus:ring-[#0A6C74] appearance-none"
               >
                 <option value="All">All Activities</option>
-                <option value="Boat Trip">Boat Trips & Cruises</option>
-                <option value="Snorkeling">Snorkeling Excursions</option>
-                <option value="Diving">Scuba Diving</option>
-                <option value="Safari">Desert Quad & Buggy</option>
-                <option value="Private Tour">Private Charters</option>
-                <option value="Water Sports">Water Sports & Rides</option>
+                {categories.length > 0 ? categories.map((category) => (
+                  <option key={category.id} value={category.name}>{category.name}</option>
+                )) : (
+                  <>
+                    <option value="Boat Trip">Boat Trips & Cruises</option>
+                    <option value="Snorkeling">Snorkeling Excursions</option>
+                    <option value="Diving">Scuba Diving</option>
+                    <option value="Safari">Desert Quad & Buggy</option>
+                    <option value="Private Tour">Private Charters</option>
+                    <option value="Water Sports">Water Sports & Rides</option>
+                  </>
+                )}
               </select>
               <ChevronDown className="w-3 h-3 absolute right-2.5 top-3 text-stone-400 pointer-events-none" />
             </div>
