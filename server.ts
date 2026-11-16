@@ -2989,6 +2989,19 @@ app.post('/api/admin/translations', rateLimit(30, 60_000), async (req: Authentic
       return res.status(400).json({ success: false, error: 'Publishing requires explicit confirmation, a translated title and slug, SEO title and description, and a source checksum.' });
     }
   }
+  if (state !== 'outdated') {
+    try {
+      const currentSource = await getCurrentTranslationSourceChecksum(entityType, entityKey);
+      if (!currentSource) return res.status(404).json({ success: false, error: 'The source record does not exist or is not published.' });
+      if (currentSource.checksum !== sourceChecksum) return res.status(409).json({ success: false, error: 'The source content changed. Reload the source snapshot before saving this translation.' });
+    } catch (error) {
+      console.error('[Translation editor] Source verification failed:', error);
+      return res.status(503).json({ success: false, error: 'Could not verify the current source record.' });
+    }
+  }
+  if (state === 'published' && Object.keys(translationContent).length === 0) {
+    return res.status(400).json({ success: false, error: 'Published translations must contain translated content.' });
+  }
   const now = new Date().toISOString();
   const record = {
     entity_type: entityType, entity_key: entityKey, locale, translated_slug: translatedSlug || null,
