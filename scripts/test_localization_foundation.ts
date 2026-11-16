@@ -75,7 +75,7 @@ assert.match(languageContext, /!privateWorkflowPath && publishedUiLocales\.inclu
 assert.match(server, /if \(\['fr', 'es', 'nl', 'pl', 'pt'\]\.includes\(locale\)\)[\s\S]*not yet available for booking, account and support interfaces/, 'Private route target API blocks incomplete new locale interfaces');
 assert.match(appNavigation, /privateBookingPath[\s\S]*commitNavigation\(normalizedRequestedPath\)/, 'Localized booking CTA safely falls back to English booking without losing the customer locale query');
 assert.match(bookingPage, /customer_locale[\s\S]*customerLocale,/, 'English booking fallback persists the selected public locale for customer communications');
-assert.match(localizedPage, /customer_locale=' \+ encodeURIComponent\(locale\)/, 'Localized tour booking CTA carries the original customer locale');
+assert.match(localizedPage, /\&customer_locale=' \+ encodeURIComponent\(locale\)/, 'Localized tour booking CTA carries the original customer locale');
 assert.match(server, /app\.get\('\/api\/content-translations\/target'[\s\S]*getCurrentTranslationSourceChecksum/, 'Translated route targets are source-checksum verified');
 assert.match(server, /getTranslationSourceBySlug/, 'English source slugs resolve to stable entity keys before switching locale');
 assert.match(server, /complete interface catalog is required for this language/, 'Booking and account route targets require a complete UI catalog');
