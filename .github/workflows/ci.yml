@@ -135,6 +135,12 @@ jobs:
       - name: Verify safe multilingual translation draft tooling
         run: npm run test:translation-drafts
 
+      - name: Verify private customer UI localization extraction and runtime transform
+        run: npm run test:private-ui-localization
+
+      - name: Verify WhatsApp locale mapping and safe fallback
+        run: npm run test:whatsapp-locale-mapping
+
       - name: Verify admin authentication and role provisioning security
         run: npm run test:security
 

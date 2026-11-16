@@ -47,7 +47,7 @@ assert.match(server, /app\.get\('\/api\/content-translations\/locales'[\s\S]*eng
 assert.match(server, /const candidates = await getBulkTranslationCandidates\(\)[\s\S]*candidateKeys\.every\(\(key\) => keys\.has\(key\)\)/, 'New languages are not advertised until every published content and communication record is reviewed');
 assert.match(server, /englishTemplateKeys\.every\(\(key\) => localizedKeys\?\.has\(key\)\)/, 'A language is not activated until its localized email templates are actually synchronized');
 assert.match(server, /sourceTemplateChecksums[\s\S]*allTemplateSourcesCurrent[\s\S]*approvedChecksums\?\.get\(entityKey\) === checksum/, 'A language is not activated when an email translation is stale against its English source');
-assert.match(server, /entityType === 'ui_catalog'[\s\S]*TRANSLATIONS\.en/, 'UI catalog source checksum is anchored to the English source dictionary');
+assert.match(server, /entityType === 'ui_catalog'[\s\S]*ENGLISH_UI_CATALOG/, 'UI catalog source checksum is anchored to the complete English source dictionary');
 assert.match(server, /entityType === 'ui_catalog'[\s\S]*interface catalog must translate every source UI message/, 'UI catalog publication rejects missing messages');
 assert.match(migration, /'static_page', 'ui_catalog'/, 'Translation schema supports reviewed UI message catalogs');
 assert.match(server, /reviewed_at && data\?\.published_at/, 'Public resolver requires reviewed and published timestamps');
@@ -72,9 +72,13 @@ assert.match(languageContext, /Locale-prefixed URLs are authoritative/, 'URL is 
 assert.match(languageContext, /api\/content-translations\/ui\?locale=/, 'Interface language loads its published UI catalog from the server');
 assert.match(languageContext, /api\/content-translations\/locales/, 'Language selector discovers only fully translated UI catalogs');
 assert.match(languageContext, /api\/content-translations\/target/, 'Language switching resolves the translated slug for the same source record');
-assert.match(languageContext, /!privateWorkflowPath && publishedUiLocales\.includes/, 'New locale options are hidden in private booking/account workflows until their UI is translated');
-assert.match(server, /if \(\['fr', 'es', 'nl', 'pl', 'pt'\]\.includes\(locale\)\)[\s\S]*not yet available for booking, account and support interfaces/, 'Private route target API blocks incomplete new locale interfaces');
-assert.match(appNavigation, /privateBookingPath[\s\S]*commitNavigation\(normalizedRequestedPath\)/, 'Localized booking CTA safely falls back to English booking without losing the customer locale query');
+assert.match(languageContext, /publishedUiLocales\.includes\(locale\.code\)/, 'New locale options are shown only after the complete reviewed UI catalog is published');
+assert.doesNotMatch(server, /not yet available for booking, account and support interfaces/, 'Fully translated private workflows are no longer hard-blocked by locale');
+assert.match(server, /staff admin interface remains English-only/, 'Staff admin routes stay English-only until their own UI catalogue exists.');
+assert.match(languageContext, /const adminPath = .*admin/, 'New customer locales are hidden on the untranslated staff admin interface.');
+assert.match(server, /const privateRoute = \/\^\\\//, 'Private route locale switching remains behind the complete UI catalog gate');
+assert.doesNotMatch(appNavigation, /privateBookingPath/, 'New customer locales no longer force booking and checkout back to English.');
+assert.match(appNavigation, /const params = new URLSearchParams\(\{ locale: currentLocale, pathname: normalizedRequestedPath \}\)/, 'Private customer routes use the same checksum-verified locale target resolver.');
 assert.match(bookingPage, /customer_locale[\s\S]*customerLocale,/, 'English booking fallback persists the selected public locale for customer communications');
 assert.match(localizedPage, /\&customer_locale=' \+ encodeURIComponent\(locale\)/, 'Localized tour booking CTA carries the original customer locale');
 assert.match(server, /app\.get\('\/api\/content-translations\/target'[\s\S]*getCurrentTranslationSourceChecksum/, 'Translated route targets are source-checksum verified');
@@ -129,6 +133,7 @@ assert.match(bookingNotificationWorker, /localized\.subject === approval\.conten
 assert.match(bookingNotificationWorker, /'en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'/, 'Booking notification worker recognizes all five additional customer locales');
 assert.match(bookingNotificationWorker, /getLocalizedCommunicationTemplate\(client, 'booking_review_request', customerLocale\)/, 'Completed booking review email selects the saved customer locale');
 assert.match(bookingNotificationWorker, /\.eq\('locale', locale\)/, 'Transactional email templates are locale-specific with an English fallback');
-assert.match(server, /selectedTemplateLanguage = preferredLocale/, 'WhatsApp approved template language follows the customer preference');
+assert.match(server, /selectedTemplateLanguage = selectWhatsAppTemplateLanguage\(preferredLocale/, 'WhatsApp customer locale maps only to an explicitly approved Meta language code');
+assert.match(server, /whatsappLanguageConfig\.approvedLanguageCodes\.includes\(templateLanguage\)/, 'WhatsApp fallback language must be in the configured Meta-approved map');
 assert.match(server, /preferred_locale'\)\.eq\('id', customerId\)/, 'WhatsApp language is resolved from the server-side customer record');
 console.log('Public tour cache isolation and European localization foundation checks passed.');

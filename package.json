@@ -7,12 +7,12 @@
     "node": ">=22.0.0 <23.0.0"
   },
   "scripts": {
-    "dev": "tsx server.ts",
+    "dev": "tsx scripts/generate_private_ui_catalog.ts && tsx server.ts",
     "start": "node server.js",
-    "build": "vite build && esbuild server.ts --bundle --platform=node --format=esm --packages=external --outfile=server.js",
+    "build": "tsx scripts/generate_private_ui_catalog.ts && vite build && esbuild server.ts --bundle --platform=node --format=esm --packages=external --outfile=server.js",
     "preview": "vite preview",
     "clean": "rm -rf dist",
-    "lint": "tsc --noEmit",
+    "lint": "tsx scripts/generate_private_ui_catalog.ts && ./node_modules/typescript-7/bin/tsc --noEmit",
     "test:catalogue": "tsx scripts/test_catalogue_import.ts",
     "test:parity": "tsx scripts/verify_schema_parity.ts",
     "test:migration-history": "tsx scripts/test_migration_history_integrity.ts",
@@ -29,7 +29,7 @@
     "test:staging-6-3": "tsx scripts/test_phase6_3_staging_verification.ts",
     "test:admin-ops-7": "tsx scripts/test_phase7_admin_operations.ts",
     "test:phase-8": "tsx scripts/test_phase8_financial_and_workflow_validation.ts",
-    "test:all": "tsx scripts/test_catalogue_import.ts && tsx scripts/verify_schema_parity.ts && tsx scripts/test_admin_security.ts && tsx scripts/test_abuse_prevention.ts && tsx scripts/test_routes.ts && tsx scripts/test_admin_dashboard_persistence.ts && tsx scripts/test_password_recovery.ts && tsx scripts/test_communication_validation.ts && tsx scripts/test_email_template_renderer.ts && tsx scripts/test_booking_identifier_resolution.ts && tsx scripts/test_supabase_project_guard.ts && tsx scripts/test_dynamic_experiences_destinations.ts && tsx scripts/test_phase6_2_dynamic_audit.ts && tsx scripts/test_phase6_3_staging_verification.ts && tsx scripts/test_phase7_admin_operations.ts && tsx scripts/test_phase8_financial_and_workflow_validation.ts && tsx scripts/test_technical_control_center.ts && npm run test:public-seo-content && npm run test:brand-identity && npm run test:audit-analytics-boundaries && npm run test:crm-task-persistence && npm run test:crm-inquiry-persistence && npm run test:crm-inquiry-staff-assignment && npm run test:project-boundaries && npm run test:automation-persistence && npm run test:ui-feedback && npm run test:localization-foundation && npm run test:translation-drafts",
+    "test:all": "tsx scripts/test_catalogue_import.ts && tsx scripts/verify_schema_parity.ts && tsx scripts/test_admin_security.ts && tsx scripts/test_abuse_prevention.ts && tsx scripts/test_routes.ts && tsx scripts/test_admin_dashboard_persistence.ts && tsx scripts/test_password_recovery.ts && tsx scripts/test_communication_validation.ts && tsx scripts/test_email_template_renderer.ts && tsx scripts/test_booking_identifier_resolution.ts && tsx scripts/test_supabase_project_guard.ts && tsx scripts/test_dynamic_experiences_destinations.ts && tsx scripts/test_phase6_2_dynamic_audit.ts && tsx scripts/test_phase6_3_staging_verification.ts && tsx scripts/test_phase7_admin_operations.ts && tsx scripts/test_phase8_financial_and_workflow_validation.ts && tsx scripts/test_technical_control_center.ts && npm run test:public-seo-content && npm run test:brand-identity && npm run test:audit-analytics-boundaries && npm run test:crm-task-persistence && npm run test:crm-inquiry-persistence && npm run test:crm-inquiry-staff-assignment && npm run test:project-boundaries && npm run test:automation-persistence && npm run test:ui-feedback && npm run test:localization-foundation && npm run test:private-ui-localization && npm run test:whatsapp-locale-mapping && npm run test:translation-drafts",
     "test:technical": "tsx scripts/test_technical_control_center.ts",
     "test:ui-feedback": "tsx scripts/test_ui_feedback_and_modal_layout.ts",
     "test:brand-identity": "tsx scripts/test_brand_identity.ts",
@@ -52,10 +52,12 @@
     "test:automation-persistence": "tsx scripts/test_automation_event_persistence.ts",
     "test:mcp-protocol": "tsx scripts/test_mcp_protocol_integrity.ts",
     "test:seo-geo": "tsx scripts/test_seo_geo_integrity.ts",
-    "test:localization-foundation": "tsx scripts/test_localization_foundation.ts",
+    "test:localization-foundation": "tsx scripts/generate_private_ui_catalog.ts && tsx scripts/test_localization_foundation.ts",
     "translations:export": "tsx scripts/translation_draft_bundle.ts export",
     "translations:import": "tsx scripts/translation_draft_bundle.ts import",
-    "test:translation-drafts": "tsx scripts/test_translation_draft_bundle.ts"
+    "test:translation-drafts": "tsx scripts/test_translation_draft_bundle.ts",
+    "test:private-ui-localization": "tsx scripts/test_private_ui_translation.ts",
+    "test:whatsapp-locale-mapping": "tsx scripts/test_whatsapp_locale_mapping.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -82,7 +84,9 @@
     "sharp": "^0.35.5",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.21.0",
-    "typescript": "^7.0.2"
+    "typescript": "npm:@typescript/typescript6@^6.0.0",
+    "typescript-7": "npm:typescript@^7.0.2",
+    "@typescript/old": "npm:typescript@^6.0.0"
   },
   "overrides": {
     "body-parser": "1.20.9",

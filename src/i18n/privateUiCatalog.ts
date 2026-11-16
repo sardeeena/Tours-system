@@ -32,6 +32,7 @@ export function privateUiMessageKey(message: string): string {
 
 export function isPrivateUiSourcePath(filePath: string): boolean {
   const normalized = filePath.replace(/\\/g, '/');
-  return /\/src\/pages\/(?:BookingPage|AccountPage|CustomerProfilePage|MyBookingPage|SupportPage|BookingConfirmationPage)\.tsx$/.test(normalized)
+  if (/\/components\/common\/(?:LocalizedText|LocalizedValue)\.tsx$/.test(normalized)) return false;
+  return /\/src\/pages\/(?:BookingPage|AccountPage|CustomerProfilePage|MyBookingPage|SupportPage|BookingConfirmationPage|LoginPage|RegisterPage|ResetPasswordPage)\.tsx$/.test(normalized)
     || /\/src\/components\/(?:booking|auth|common|tours)\/.*\.tsx$/.test(normalized);
 }
