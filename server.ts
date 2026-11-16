@@ -2847,8 +2847,8 @@ app.post('/api/admin/translations', rateLimit(30, 60_000), async (req: Authentic
   if (!['draft','review','published','outdated'].includes(state)) {
     return res.status(400).json({ success: false, error: 'Invalid translation lifecycle state.' });
   }
-  if (!translationContent || !sourceChecksum) {
-    return res.status(400).json({ success: false, error: 'Translation content and its source checksum are required.' });
+  if (!translationContent || !/^[a-f0-9]{64}$/i.test(sourceChecksum)) {
+    return res.status(400).json({ success: false, error: 'Translation content and a 64-character SHA-256 source checksum are required.' });
   }
   if (state === 'published') {
     if (body.confirm_publish !== true || !title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(translatedSlug) || !seoTitle || !seoDescription) {
