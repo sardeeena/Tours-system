@@ -121,7 +121,7 @@ assert.match(adminTranslations, /6500/, 'Bulk generator respects the server gene
 assert.match(bookingRepository, /rpc\('create_booking_atomic_with_locale'/, 'Booking client uses the locale-aware atomic RPC');
 assert.match(bookingRepository, /p_customer_locale: booking\.customerLocale \|\| 'en'/, 'Booking client passes customer locale with safe English fallback');
 assert.match(bookingRepository, /customerLocale: data\.customer_locale \|\| customer\.preferred_locale \|\| 'en'/, 'Saved booking restores its customer locale');
-assert.match(bookingPage, /customerLocale: language/, 'Booking captures the current interface language');
+assert.match(bookingPage, /customerLocale,/, 'Booking captures the selected customer locale, including the public-language fallback');
 assert.match(bookingNotificationWorker, /getLocalizedCommunicationTemplate\(client, 'booking_received', customerLocale\)/, 'Booking received email selects the saved customer locale');
 assert.match(bookingNotificationWorker, /'en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'/, 'Booking notification worker recognizes all five additional customer locales');
 assert.match(bookingNotificationWorker, /getLocalizedCommunicationTemplate\(client, 'booking_review_request', customerLocale\)/, 'Completed booking review email selects the saved customer locale');
