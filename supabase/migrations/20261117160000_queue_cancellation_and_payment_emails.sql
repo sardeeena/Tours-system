@@ -60,9 +60,10 @@ DECLARE
   v_event_id UUID;
 BEGIN
   IF TG_OP = 'INSERT' THEN
-    v_should_enqueue := NEW.status IN ('Paid','Partially Paid');
+    v_should_enqueue := NEW.booking_id IS NOT NULL AND NEW.status IN ('Paid','Partially Paid');
   ELSE
-    v_should_enqueue := NEW.status IN ('Paid','Partially Paid')
+    v_should_enqueue := NEW.booking_id IS NOT NULL
+      AND NEW.status IN ('Paid','Partially Paid')
       AND OLD.status IS DISTINCT FROM NEW.status;
   END IF;
 
