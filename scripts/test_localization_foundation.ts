@@ -116,6 +116,9 @@ for (const locale of ['en', 'de', 'fr', 'it', 'es', 'nl', 'pl', 'pt', 'ro', 'ru'
 }
 
 assert.match(server, /app\.post\('\/api\/admin\/translations\/generate-batch'[\s\S]*requireSuperAdminAal2\(req, res\)/, 'AI bulk generation requires Super Admin AAL2');
+assert.match(server, /process\.env\.OPENAI_API_KEY[\s\S]*generateOpenAITranslationBatch\(prompt/, 'Bulk translations use the server-side OpenAI API key and provider');
+assert.doesNotMatch(server, /ai\.models\.generateContent\(\{model:'gemini-3\.8-flash'/, 'Bulk translation generation no longer depends on Gemini');
+assert.match(read('../src/server/openAiTranslation.ts'), /api\.openai\.com\/v1\/chat\/completions[\s\S]*response_format: \{ type: 'json_object' \}/, 'OpenAI translation requests use the official API and JSON response mode');
 assert.match(server, /translation_state:\s*'draft'[\s\S]*reviewed_by:\s*null,\s*reviewed_at:\s*null,\s*published_at:\s*null/, 'AI bulk generation can only create unreviewed drafts');
 assert.match(server, /BULK_TRANSLATION_LOCALES: Record<string, string> = Object\.fromEntries\([\s\S]*EUROPEAN_LOCALE_ROLLOUT\.filter\(\(locale\) => locale\.code !== 'en'\)/, 'Bulk generator targets every configured non-English locale');
 assert.match(server, /communication_templates'\)\.select\('id'\)\.eq\('locale','en'\)\.order\('template_key'\)\.order\('id'\)/, 'Bulk generation uses deterministic communication-template ordering for offset batches');
