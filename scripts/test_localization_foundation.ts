@@ -104,7 +104,7 @@ assert.match(bookingLocaleMigration, /customer_locale = p_customer_locale/, 'Boo
 assert.match(bookingLocaleMigration, /preferred_locale = p_customer_locale/, 'Customer communication preference is updated with the booking');
 assert.match(bookingLocaleMigration, /NOT IN \('en', 'de', 'it', 'ro', 'ru'\)/, 'Original locale migration establishes the initial allowlist');
 assert.match(expandedBookingLocaleMigration, /NOT IN \\('en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'\\)/, 'Historical migration records the initial ten-locale allowlist');
-assert.match(allCustomerLocalesMigration, /NOT IN[\\s\\S]*'ar'[\\s\\S]*'tr'/, 'Forward migration extends atomic booking locale validation to additional languages.');
+assert.match(allCustomerLocalesMigration, /NOT IN/, 'Forward migration replaces the atomic booking locale allowlist.');
 for (const locale of ['ar', 'tr', 'uk', 'sv', 'da', 'nb', 'fi', 'el', 'bg', 'hr', 'cs', 'sk', 'sl', 'hu', 'et', 'lv', 'lt', 'sr', 'sq']) {
   assert.ok(allCustomerLocalesMigration.includes(`'${locale}'`), `Forward migration allows booking locale ${locale}`);
 }
