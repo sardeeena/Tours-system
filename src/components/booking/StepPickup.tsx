@@ -46,7 +46,7 @@ export const StepPickup: React.FC<StepPickupProps> = ({
             Choose Your Hotel Transfer Area
           </h2>
           <p className="text-xs text-stone-600 mt-1">
-            We provide direct air-conditioned van transfers from hotel reception lobbies to the departure marina.
+            {pickupAvailable ? 'Choose only a hotel transfer area explicitly approved for this excursion.' : 'Hotel pickup is not offered for this excursion.'}
           </p>
         </div>
 
