@@ -9,7 +9,8 @@ const server = readText('../server.ts');
 const migration = readText('../supabase/migrations/20261117212644_correct_inconsistent_tour_itinerary_and_faq.sql');
 const migrationRetry = readText('../supabase/migrations/20261117212701_correct_inconsistent_tour_itinerary_and_faq.sql');
 const migrationRelease = readText('../supabase/migrations/20261117233000_correct_inconsistent_tour_itinerary_and_faq.sql');
-const quadFaqCleanup = readText('../supabase/migrations/20261117235000_remove_unrelated_snorkeling_faqs_from_quad_tour.sql');
+const quadFaqCleanup = readText('../supabase/migrations/20261117213225_remove_unrelated_snorkeling_faqs_from_quad_tour.sql');
+const quadFaqCleanupRetry = readText('../supabase/migrations/20261117213227_remove_unrelated_snorkeling_faqs_from_quad_tour.sql');
 
 for (const name of ['vite', '@vitejs/plugin-react', '@tailwindcss/vite']) {
   assert.ok(pkg.devDependencies?.[name], name + ' must remain a development/build dependency');
@@ -41,6 +42,7 @@ assert.doesNotMatch(itineraryInsert, /sailing|snorkeling|onboard lunch|island be
   'The corrected quad itinerary must not retain the unrelated boat excursion');
 
 
+assert.equal(quadFaqCleanupRetry, quadFaqCleanup, 'Both already-recorded FAQ cleanup migration versions are represented consistently');
 assert.match(quadFaqCleanup, /el-gouna-desert-quad-safari-bedouin-village-camel-ride/);
 assert.match(quadFaqCleanup, /Is snorkeling equipment provided or should I bring my own\?/);
 assert.match(quadFaqCleanup, /Can non-swimmers participate safely\?/);
