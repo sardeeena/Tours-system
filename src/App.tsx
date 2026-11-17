@@ -1057,6 +1057,7 @@ function MainApp() {
         'media',
         'seo',
         'pages',
+        'translations',
         'settings',
         'access_control',
         'technical',
