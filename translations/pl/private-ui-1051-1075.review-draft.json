@@ -1,0 +1,35 @@
+{
+  "locale": "pl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "private_ui_messages": 25
+  },
+  "content": {
+    "private.text.fb25e0f9": "Członkostwo",
+    "private.text.fb28d130": "Hasło i bezpieczeństwo",
+    "private.text.fb32bc8e": "Zaplanowano i zweryfikowano",
+    "private.text.fb38c712": "Linki odzyskiwania można wykorzystać tylko raz i wygasają po 1 godzinie. Poproś o nowy link. ",
+    "private.text.fb541cea": "Akceptuję",
+    "private.text.fba3bfb9": "Bezpłatnie do 24 godzin przed wypłynięciem",
+    "private.text.fbdd3afe": "Status konta",
+    "private.text.fc959d33": "x @ €",
+    "private.text.fd2b126f": "Język wycieczki",
+    "private.text.fdd15019": "Opcjonalnie",
+    "private.text.fe16883e": "Zapisywanie opinii...",
+    "private.text.fe18c7eb": "Co najmniej 6 znaków",
+    "private.text.fe1d6b87": "Dla tej wycieczki nie zatwierdzono wyraźnie żadnego aktywnego miejsca odbioru.",
+    "private.text.fe56c6ad": "Para",
+    "private.text.fe77afea": "Zmień hasło ",
+    "private.text.fec2c9e3": "Personel / Administracja",
+    "private.text.fed5ab71": "iOS / Safari",
+    "private.text.fef40768": "Nie można otworzyć tego obrazu. Wybierz inny plik.",
+    "private.text.ff2ccd22": "Wycieczki w Hurghadzie ",
+    "private.text.ff4b2739": "Maks.:",
+    "private.text.ff4def07": "Zainstaluj aplikację Morza Czerwonego",
+    "private.text.ff566677": "Hasło zostało zaktualizowane",
+    "private.text.ff566f40": "Imię i nazwisko ",
+    "private.text.8db53650": "Zarezerwuj teraz ",
+    "private.text.d59d8b58": "Wypłynięcie łodzi około 08:30 – 09:00 AM "
+  }
+}
