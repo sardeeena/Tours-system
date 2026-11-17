@@ -1,7 +1,7 @@
--- Close legacy language-aware booking RPC pickup-policy bypasses.
--- Public wrappers remain available, but execute as their owner so the private
--- implementation functions can be made inaccessible to client roles.
--- All booking variants must enforce the same explicit pickup mappings.
+-- Apply strict tour-specific pickup validation to the language-aware booking core.
+-- The public RPC wrappers remain invoker-rights as required by the existing
+-- authorization architecture; their private implementation functions remain
+-- SECURITY DEFINER with an empty search_path.
 
 BEGIN;
 
@@ -130,7 +130,7 @@ BEGIN
   ) INTO v_definition;
 
   IF position(v_old_pickup_block IN v_definition) = 0 THEN
-    RAISE EXCEPTION 'Expected legacy pickup validation block was not found in the language-aware booking function; refusing to overwrite it.';
+    RAISE EXCEPTION 'Expected legacy pickup validation block was not found in the language-aware booking core; refusing to overwrite it.';
   END IF;
 
   v_definition := replace(v_definition, v_old_pickup_block, v_new_pickup_block);
@@ -139,51 +139,12 @@ BEGIN
      OR position('A pickup location is required for this excursion.' IN v_definition) = 0
      OR position('pickup_location_id = v_extra_record.id' IN v_definition) = 0
      OR position('Pickup is not configured for this excursion.' IN v_definition) = 0 THEN
-    RAISE EXCEPTION 'Strict pickup enforcement postconditions failed for the language-aware booking function.';
+    RAISE EXCEPTION 'Strict pickup enforcement postconditions failed for the language-aware booking core.';
   END IF;
 
   EXECUTE v_definition;
 END;
 $strict_language_pickup$;
-
--- Keep the public PostgREST entry points, but make the wrappers execute their
--- private callees as the trusted owner. The wrappers contain no user-controlled
--- SQL and delegate to fixed, fully-qualified functions with an empty search_path.
-ALTER FUNCTION public.create_booking_atomic(
-  text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text
-) SECURITY DEFINER;
-ALTER FUNCTION public.create_booking_atomic(
-  text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text
-) SET search_path = '';
-
-ALTER FUNCTION public.create_booking_atomic_with_language(
-  text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text,text
-) SECURITY DEFINER;
-ALTER FUNCTION public.create_booking_atomic_with_language(
-  text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text,text
-) SET search_path = '';
-
-ALTER FUNCTION public.create_booking_atomic_with_locale(
-  text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text,text,text
-) SECURITY DEFINER;
-ALTER FUNCTION public.create_booking_atomic_with_locale(
-  text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text,text,text
-) SET search_path = '';
-
--- Prevent clients from calling implementation functions directly, including
--- the legacy overloads. Service-role and postgres privileges are retained.
-REVOKE ALL PRIVILEGES ON FUNCTION private.create_booking_atomic(
-  text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text
-) FROM PUBLIC, anon, authenticated;
-REVOKE ALL PRIVILEGES ON FUNCTION private.create_booking_atomic(
-  text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text,text
-) FROM PUBLIC, anon, authenticated;
-REVOKE ALL PRIVILEGES ON FUNCTION private.create_booking_atomic_with_language(
-  text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text,text
-) FROM PUBLIC, anon, authenticated;
-REVOKE ALL PRIVILEGES ON FUNCTION private.create_booking_atomic_with_locale(
-  text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text,text,text
-) FROM PUBLIC, anon, authenticated;
 
 NOTIFY pgrst, 'reload schema';
 COMMIT;
