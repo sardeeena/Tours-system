@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { PRIVATE_UI_SOURCE_CATALOG } from '../src/i18n/privateUiCatalog.generated';
 import { TRANSLATIONS } from '../src/i18n/translations';
+import { INITIAL_STATIC_PAGES } from '../src/data/staticPages';
 
 const read = (path: string) => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
 const bundle = read('../translations/fr/all-content.review-draft.json');
@@ -67,5 +68,52 @@ for (const [key, source] of Object.entries(PRIVATE_UI_SOURCE_CATALOG)) {
   const translatedTokens = protectedTokens(translated);
   assert.deepEqual(translatedTokens, sourceTokens, 'Private UI translation preserves numbers, URLs, email addresses and phone numbers: ' + key);
 }
+
+
+const structureMatches = (source: any, translated: any): boolean => {
+  if (typeof source === 'string') {
+    if (typeof translated !== 'string') return false;
+    if (!source.trim()) return !translated.trim();
+    const protectedTokens = source.match(/\\{\\{[^{}]+\\}\\}|https?:\\/\\/[^\\s<>"']+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}|\\+?\\d[\\d\\s().-]{4,}\\d|\\b\\d+(?:[.,]\\d+)?\\b/g) || [];
+    return Boolean(translated.trim()) && protectedTokens.every((token) => translated.includes(token));
+  }
+  if (Array.isArray(source)) return Array.isArray(translated) && source.length === translated.length
+    && source.every((value, index) => structureMatches(value, translated[index]));
+  if (source && typeof source === 'object') {
+    if (!translated || typeof translated !== 'object' || Array.isArray(translated)) return false;
+    const sourceKeys = Object.keys(source).sort(), translatedKeys = Object.keys(translated).sort();
+    return sourceKeys.length === translatedKeys.length
+      && sourceKeys.every((key, index) => key === translatedKeys[index] && structureMatches(source[key], translated[key]));
+  }
+  return source === translated;
+};
+
+const staticRecords = records.filter((record) => record.entity_type === 'static_page');
+const homeSource = {
+  title:'Explore Egypt’s Red Sea Coast',
+  heroHeadline:'Explore Egypt’s Red Sea Coast',
+  heroSubtitle:'Boat trips, island visits, snorkeling, diving and desert safaris across Egypt’s Red Sea coast.',
+  sections:[], paragraphs:[],
+};
+const staticSources = [homeSource, ...INITIAL_STATIC_PAGES];
+for (const source of staticSources) {
+  const key = source.id || source.slug || 'home';
+  const draft = staticRecords.find((record) => record.entity_key === key);
+  assert.ok(draft, 'Static page translated: ' + key);
+  const expected = {
+    title:source.title || source.name || 'Explore the Red Sea',
+    summary:source.heroSubtitle || source.description || source.excerpt || '',
+    content:{
+      heroHeadline:source.heroHeadline || source.title || '',
+      heroSubtitle:source.heroSubtitle || source.description || '',
+      sections:source.sections || [], paragraphs:[],
+      labels:{browseMore:'Explore more',bookNow:'Book now'},
+    },
+  };
+  assert.ok(structureMatches(expected, {title:draft.title,summary:draft.summary,content:draft.content}),
+    'Static page preserves all source sections, keys, placeholders, links and numeric facts: ' + key);
+}
+assert.equal(staticSources.length, 10, 'Home plus all nine fallback static pages are covered');
+assert.equal(records.length, 111, 'The full French review bundle contains every known source candidate');
 
 console.log('French draft coverage passed: 25 tours, 50 articles, 7 destinations, 15 communication templates, homepage, public UI and ' + expectedPrivateKeys.length + ' private UI messages.');
