@@ -6,7 +6,10 @@
   "coverage": {
     "tour": 25,
     "blog_post": 50,
-    "source_records": 75
+    "destination": 7,
+    "static_page": 10,
+    "communication_template": 18,
+    "source_records": 110
   },
   "records": [
     {
@@ -2705,6 +2708,944 @@
       "age_restrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
       "pickup_info": "Gratis ophalen en terugbrengen bij hotels in Caïro en Gizeh inbegrepen.",
       "cancellation_policy": "Gratis annuleren tot 24 uur vóór aanvang van de excursie.",
+      "locale": "nl"
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "ffcc83a6-2dc4-4990-91bb-1d72450755c2",
+      "locale": "nl",
+      "translated_slug": "sharm-el-sheikh",
+      "title": "Sharm-el-Sheikh",
+      "summary": "Ontdek de magie van de Rode Zee",
+      "seo_title": "Sharm-el-Sheikh: snorkelen, stranden en woestijnsafari's",
+      "seo_description": "Ontdek Sharm-el-Sheikh: koraalriffen, snorkelen, duiken, stranden, woestijnsafari's en zonsondergangen aan de Rode Zee.",
+      "content": {
+        "title": "Sharm-el-Sheikh",
+        "description": "Ontdek Sharm-el-Sheikh, de toonaangevende bestemming aan de Egyptische Rode Zee, bekend om het kristalheldere water, kleurrijke koraalriffen, gouden stranden en luxe resorts. Geniet van onvergetelijke snorkel- en duikervaringen, spannende woestijnsafari's en spectaculaire zonsondergangen. Of je nu op zoek bent naar avontuur of ontspanning, Sharm-el-Sheikh is een ideale bestemming.",
+        "tagline": "Ontdek de magie van de Rode Zee",
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer"
+        }
+      },
+      "source_slug": "sharm-el-sheikh"
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "985fd0a3-6b7a-4e0f-b535-cff4aa4ac0be",
+      "locale": "nl",
+      "translated_slug": "hurghada",
+      "title": "Hurghada",
+      "summary": "Ontdek de schoonheid van de Rode Zee",
+      "seo_title": "Hurghada: excursies, stranden en avonturen aan de Rode Zee",
+      "seo_description": "Plan je verblijf in Hurghada: snorkelen, duiken, woestijnsafari's, eilandexcursies en cruises bij zonsondergang.",
+      "content": {
+        "title": "Hurghada",
+        "description": "Ontdek Hurghada, een van de populairste bestemmingen aan de Egyptische Rode Zee, beroemd om het kristalheldere water, kleurrijke koraalriffen, gouden zandstranden en resorts van wereldklasse. Geniet van onvergetelijke snorkel- en duikavonturen, spannende woestijnsafari's, eilandexcursies en spectaculaire cruises bij zonsondergang. Of je nu ontspanning, avontuur of plezier voor het hele gezin zoekt, Hurghada biedt een onvergetelijke vakantie.",
+        "tagline": "Ontdek de schoonheid van de Rode Zee",
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer"
+        }
+      },
+      "source_slug": "hurghada"
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "88d0f219-2819-4ff8-a6ce-01d7682296d0",
+      "locale": "nl",
+      "translated_slug": "el-gouna",
+      "title": "El Gouna",
+      "summary": "Luxe lagunes, stranden en een levendige jachthaven",
+      "seo_title": "El Gouna: lagunes, stranden en activiteiten aan de Rode Zee",
+      "seo_description": "Ontdek El Gouna met turquoise lagunes, stranden, een jachthaven, snorkelen, kitesurfen en boottochten.",
+      "content": {
+        "title": "El Gouna",
+        "description": "Ontdek El Gouna, een prachtige badplaats aan de Egyptische kust van de Rode Zee, bekend om de turquoise lagunes, zandstranden, luxe resorts, jachthaven, watersporten en levendige restaurantscene. Geniet van boottochten, snorkelen, kitesurfen en ontspannen momenten aan zee.",
+        "tagline": "Luxe lagunes, stranden en een levendige jachthaven",
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer"
+        }
+      },
+      "source_slug": "el-gouna"
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "b58b8665-3870-4674-96ea-e3c22fed426e",
+      "locale": "nl",
+      "translated_slug": "luxor",
+      "title": "Luxor",
+      "summary": "Ontdek het oude Egypte en zijn tijdloze wonderen",
+      "seo_title": "Luxor: oude tempels en de Vallei der Koningen",
+      "seo_description": "Bezoek Luxor, het Karnak-tempelcomplex, de tempel van Hatsjepsoet en de Vallei der Koningen tijdens begeleide excursies in Egypte.",
+      "content": {
+        "title": "Luxor",
+        "description": "Verken Luxor, een van de meest bijzondere historische bestemmingen van Egypte. Ontdek het indrukwekkende tempelcomplex van Karnak, de Luxortempel, de Vallei der Koningen en de tempel van Hatsjepsoet. Geniet van begeleide historische rondleidingen, Nijlcruises en onvergetelijke ballonvaarten boven eeuwenoude monumenten.",
+        "tagline": "Ontdek het oude Egypte en zijn tijdloze wonderen",
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer"
+        }
+      },
+      "source_slug": "luxor"
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "689b5e4f-8168-4713-9181-9ebcbd884a7a",
+      "locale": "nl",
+      "translated_slug": "cairo",
+      "title": "Caïro",
+      "summary": "De piramides, oude geschiedenis en Egyptische cultuur",
+      "seo_title": "Caïro: piramides, geschiedenis en Egyptische cultuur",
+      "seo_description": "Ontdek Caïro, de piramides van Gizeh, de Grote Sfinx, het Grand Egyptian Museum, historische moskeeën en levendige bazaars.",
+      "content": {
+        "title": "Caïro",
+        "description": "Ervaar Caïro, de bruisende hoofdstad van Egypte, waar eeuwenoude wonderen samenkomen met het moderne stadsleven. Bezoek de iconische piramides van Gizeh, de Grote Sfinx, het Grand Egyptian Museum, historische moskeeën en levendige bazaars. Ontdek de Egyptische geschiedenis, de lokale keuken en onvergetelijke culturele ervaringen.",
+        "tagline": "De piramides, oude geschiedenis en Egyptische cultuur",
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer"
+        }
+      },
+      "source_slug": "cairo"
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "16e32986-869a-4bf1-aa2f-aa7552e46b05",
+      "locale": "nl",
+      "translated_slug": "sahl-hasheesh",
+      "title": "Sahl Hasheesh",
+      "summary": "Luxe resorts aan de Rode Zee en ongerepte stranden",
+      "seo_title": "Sahl Hasheesh: luxe resorts en stranden aan de Rode Zee",
+      "seo_description": "Verblijf in Sahl Hasheesh, ten zuiden van Hurghada, en geniet van ongerepte stranden, resorts aan zee, snorkelen en duiken.",
+      "content": {
+        "title": "Sahl Hasheesh",
+        "description": "Ontdek Sahl Hasheesh, een elegante badplaats aan de Rode Zee ten zuiden van Hurghada. Geniet van kristalhelder water, prachtige zandstranden, luxe resorts aan het strand, snorkelen, duiken en romantische wandelingen langs de kust. Het is een ideale bestemming voor stellen, gezinnen en reizigers die op zoek zijn naar ontspanning en een hoogwaardige vakantie.",
+        "tagline": "Luxe resorts aan de Rode Zee en ongerepte stranden",
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer"
+        }
+      },
+      "source_slug": "sahl-hasheesh"
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "ebf085ec-ebaa-4b73-ac66-ebedb34c74f0",
+      "locale": "nl",
+      "translated_slug": "makadi-bay",
+      "title": "Makadi Bay",
+      "summary": "Gezinsvriendelijke resorts, koraalriffen en zeeavonturen",
+      "seo_title": "Makadi Bay: stranden, riffen en excursies",
+      "seo_description": "Ontdek Makadi Bay: all-inclusive resorts, snorkelen, duiken, boottochten, woestijnsafari's en activiteiten voor het hele gezin.",
+      "content": {
+        "title": "Makadi Bay",
+        "description": "Geniet van Makadi Bay, een populaire vakantiebestemming aan de Rode Zee die bekendstaat om all-inclusive resorts, een prachtige kustlijn en kleurrijke koraalriffen. Ontdek snorkelen, duiken, boottochten, woestijnsafari's en activiteiten voor het hele gezin. Makadi Bay biedt een ontspannen verblijf voor stellen, gezinnen en avontuurlijke reizigers.",
+        "tagline": "Gezinsvriendelijke resorts, koraalriffen en zeeavonturen",
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer"
+        }
+      },
+      "source_slug": "makadi-bay"
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "home",
+      "locale": "nl",
+      "source_slug": "home",
+      "translated_slug": "home",
+      "title": "Ontdek de Egyptische kust van de Rode Zee",
+      "summary": "Boottochten, eilandexcursies, snorkelen, duiken en woestijnsafari's aan de Egyptische kust van de Rode Zee.",
+      "seo_title": "Excursies aan de Rode Zee in Egypte | Awesome Adventure Tours",
+      "seo_description": "Ontdek de Egyptische Rode Zee met boottochten, eilandexcursies, snorkelen, duiken en woestijnsafari's vanuit Hurghada.",
+      "content": {
+        "heroHeadline": "Ontdek de Egyptische kust van de Rode Zee",
+        "heroSubtitle": "Boottochten, eilandexcursies, snorkelen, duiken en woestijnsafari's aan de Egyptische kust van de Rode Zee.",
+        "sections": [],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer",
+          "bookNow": "Boek nu"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "about",
+      "locale": "nl",
+      "source_slug": "about",
+      "translated_slug": "over-ons",
+      "title": "Over Awesome Adventure Tours",
+      "summary": "Awesome Adventure Tours helpt je boottochten, eilanden, snorkelen, duiken, woestijnsafari's en culturele excursies in Egypte te ontdekken. Bekijk de gepubliceerde ervaringen, vergelijk praktische informatie en neem vóór het boeken contact op met ons team in Hurghada.",
+      "seo_title": "Over Awesome Adventure Tours | Excursies in Egypte en aan de Rode Zee",
+      "seo_description": "Ontdek Awesome Adventure Tours in Hurghada, Egypte. Verken boottochten op de Rode Zee, eilanden, snorkelen, duiken, woestijnsafari's en culturele excursies.",
+      "content": {
+        "heroHeadline": "Ontdek de Egyptische kust van de Rode Zee met Awesome Adventure Tours",
+        "heroSubtitle": "Awesome Adventure Tours helpt je boottochten, eilanden, snorkelen, duiken, woestijnsafari's en culturele excursies in Egypte te ontdekken. Bekijk de gepubliceerde ervaringen, vergelijk praktische informatie en neem vóór het boeken contact op met ons team in Hurghada.",
+        "sections": [
+          {
+            "title": "Ervaringen in heel Egypte",
+            "content": "Onze gepubliceerde catalogus bevat ervaringen op verschillende bestemmingen, waaronder Hurghada, El Gouna, Sharm El Sheikh en andere regio's van Egypte. Afhankelijk van de excursie kunnen reizigers boot- en eilandtochten, snorkel- en duikactiviteiten, woestijnsafari's, transfers en culturele bezoeken vergelijken."
+          },
+          {
+            "title": "Duidelijke informatie vóór het boeken",
+            "content": "Elke excursie kan eigen vertrektijden, prijzen, duur, inbegrepen voorzieningen, leeftijdsvoorwaarden en annuleringsregels hebben. Lees de excursiepagina en het boekingsoverzicht zorgvuldig door, zodat je weet wat is inbegrepen en waar ophalen mogelijk is."
+          },
+          {
+            "title": "Lokale ondersteuning in Hurghada",
+            "content": "Awesome Adventure Tours is gevestigd in Hurghada aan de Rode Zee in Egypte. Ons team kan vragen beantwoorden over gepubliceerde excursies, ophaalinformatie bij hotels en boekingen. Wil je iets weten over een specifieke excursie? Neem dan vóór het boeken contact met ons op."
+          },
+          {
+            "title": "Zo kies je je excursie",
+            "content": "Begin met het kiezen van je bestemming of de activiteit die je interesseert. Vergelijk op elke excursiepagina de route, duur, prijs, inbegrepen voorzieningen en praktische voorwaarden. Beschikbaarheid en operationele omstandigheden kunnen veranderen, vooral bij activiteiten op zee. Bevestig daarom de details voor de gekozen datum vóór vertrek."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer",
+          "bookNow": "Boek nu"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "contact",
+      "locale": "nl",
+      "source_slug": "contact",
+      "translated_slug": "contact",
+      "title": "Contact opnemen met Awesome Adventure Tours",
+      "summary": "Neem contact op met Awesome Adventure Tours om gepubliceerde excursies te vergelijken, ophaalregelingen te begrijpen, boekingsgegevens te controleren en je verblijf in Egypte voor te bereiden.",
+      "seo_title": "Contact opnemen met Awesome Adventure Tours | Hurghada, Egypte",
+      "seo_description": "Neem contact op met Awesome Adventure Tours in Hurghada voor vragen over excursies, boekingen, ophalen en reizigersondersteuning in de taal van je voorkeur.",
+      "content": {
+        "heroHeadline": "Neem contact op met ons excursieteam in Hurghada",
+        "heroSubtitle": "Neem contact op met Awesome Adventure Tours om gepubliceerde excursies te vergelijken, ophaalregelingen te begrijpen, boekingsgegevens te controleren en je verblijf in Egypte voor te bereiden.",
+        "sections": [
+          {
+            "title": "Praat met ons team",
+            "content": "Bel +20 151 5212741 voor vragen over gepubliceerde excursies, boekingen en praktische reisinformatie. Gaat je vraag over een specifieke excursie? Vermeld dan de naam of deel de pagina, je gewenste reisdatum en het aantal deelnemers. Zo kan ons team je beter helpen. Houd bij vragen over een bestaande boeking je boekingsreferentie bij de hand, zodat we het juiste dossier kunnen vinden."
+          },
+          {
+            "title": "Bezoek ons kantoor in Hurghada",
+            "content": "Ons kantoor bevindt zich op de 2e verdieping van Bostan Cafe, Madres, Hurghada, gouvernement Rode Zee, Egypte. Wil je persoonlijk langskomen? Neem dan eerst contact met ons op om je vraag te bespreken en de beste bezoekregeling te bevestigen."
+          },
+          {
+            "title": "Hulp bij het kiezen en voorbereiden van een excursie",
+            "content": "Bekijk vóór het boeken de excursiepagina voor de actuele vanafprijs, duur, route, inbegrepen voorzieningen, uitsluitingen, leeftijdsvoorwaarden, ophaalinformatie en annuleringsvoorwaarden. Deze gegevens kunnen per excursie verschillen en door operationele omstandigheden veranderen. Is iets niet duidelijk? Stel ons dan vóór het boeken vragen over de betreffende excursie. Vermeld bij vragen over ophalen je hotel of gewenste ontmoetingslocatie en de bestemming van de excursie."
+          },
+          {
+            "title": "Ondersteuning voor internationale reizigers",
+            "content": "We ondersteunen internationale reizigers en kunnen met klanten communiceren in de taal van hun voorkeur. Geef aan welke taal je wilt gebruiken wanneer je contact met ons opneemt. De beschikbaarheid van een gids in een bepaalde taal verschilt per excursie en vertrekdatum. Controleer de opties voor jouw reis in plaats van ervan uit te gaan dat elke excursie in elke taal beschikbaar is."
+          },
+          {
+            "title": "Veilig boeken en betalen",
+            "content": "Gebruik het boekingsformulier en de instructies bij je boeking voor betalingsgegevens. Stuur geen wachtwoorden, volledige betaalkaartnummers of beveiligingscodes via gewone berichten. Controleer altijd het definitieve overzicht, de datum, de deelnemersgegevens en de prijs voordat je je boeking bevestigt."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer",
+          "bookNow": "Boek nu"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "why-us",
+      "locale": "nl",
+      "source_slug": "why-us",
+      "translated_slug": "waarom-ons-kiezen",
+      "title": "Waarom kiezen voor Awesome Adventure Tours",
+      "summary": "Gebruik de gepubliceerde excursie-informatie om beschikbare ervaringen te vergelijken en de excursie te kiezen die bij je plannen past.",
+      "seo_title": "Waarom kiezen voor Awesome Adventure Tours | Excursies aan de Rode Zee",
+      "seo_description": "Vergelijk excursies aan de Rode Zee op prijs, duur, route, inbegrepen voorzieningen en ophaalvoorwaarden voordat je boekt.",
+      "content": {
+        "heroHeadline": "Bereid je ervaring aan de Rode Zee voor",
+        "heroSubtitle": "Gebruik de gepubliceerde excursie-informatie om beschikbare ervaringen te vergelijken en de excursie te kiezen die bij je plannen past.",
+        "sections": [
+          {
+            "title": "Excursie-informatie op één plek",
+            "content": "Bekijk de beschrijving, prijs, duur, route en inbegrepen voorzieningen van elke excursie voordat je boekt."
+          },
+          {
+            "title": "Controleer de belangrijke details",
+            "content": "Ophaalopties, leeftijdsvoorwaarden, beschikbaarheid en annuleringsvoorwaarden kunnen per excursie verschillen. Bekijk de betreffende pagina en boekingsgegevens voordat je bevestigt."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer",
+          "bookNow": "Boek nu"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "marine-safety",
+      "locale": "nl",
+      "source_slug": "marine-safety",
+      "translated_slug": "veiligheid-op-zee-en-vertrekinfo",
+      "title": "Veiligheid op zee en vertrekgegevens",
+      "summary": "Excursies op zee kunnen worden beïnvloed door het weer, de toestand van de zee en operationele beperkingen. Raadpleeg de informatie voor de excursie die je hebt gekozen.",
+      "seo_title": "Veiligheid op zee en vertrek | Awesome Adventure Tours",
+      "seo_description": "Bekijk veiligheidsrichtlijnen, vertrekgegevens en weersomstandigheden die excursies aan de Rode Zee kunnen wijzigen.",
+      "content": {
+        "heroHeadline": "Veiligheid en vertrekgegevens",
+        "heroSubtitle": "Excursies op zee kunnen worden beïnvloed door het weer, de toestand van de zee en operationele beperkingen. Raadpleeg de informatie voor de excursie die je hebt gekozen.",
+        "sections": [
+          {
+            "title": "Vóór vertrek",
+            "content": "Lees de vertrekgegevens, deelnamevoorwaarden en informatie over de uitrusting voor de excursie die je hebt gekozen. Volg tijdens de activiteit de instructies van de bemanning en het begeleidende personeel."
+          },
+          {
+            "title": "Weer en operationele wijzigingen",
+            "content": "Activiteiten op zee kunnen worden aangepast, vertraagd of geannuleerd wanneer de omstandigheden een veilige afvaart niet toelaten. Raadpleeg de boekingsvoorwaarden van je excursie voor de toepasselijke regelingen."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer",
+          "bookNow": "Boek nu"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "booking-conditions",
+      "locale": "nl",
+      "source_slug": "booking-conditions",
+      "translated_slug": "boekingsvoorwaarden",
+      "title": "Boekingsvoorwaarden",
+      "summary": "Lees de informatie en voorwaarden voor de gekozen excursie voordat je je boeking afrondt.",
+      "seo_title": "Boekingsvoorwaarden | Awesome Adventure Tours",
+      "seo_description": "Controleer bevestigingen, ophalen, vertrektijden, wijzigingen en annuleringen voordat je je excursie aan de Rode Zee boekt.",
+      "content": {
+        "heroHeadline": "Boekingsinformatie",
+        "heroSubtitle": "Lees de informatie en voorwaarden voor de gekozen excursie voordat je je boeking afrondt.",
+        "sections": [
+          {
+            "title": "Boekingen en bevestiging",
+            "content": "Controleer de gekozen datum, het aantal deelnemers, de prijs, de ophaalgegevens en overige boekingsinformatie voordat je je aanvraag verzendt. Bewaar de bevestigingsgegevens die je na het boeken ontvangt."
+          },
+          {
+            "title": "Ophalen en vertrek",
+            "content": "De beschikbaarheid van ophalen, ontmoetingslocaties, toeslagen en vertrektijden kan per excursie en bestemming verschillen. Controleer de gegevens voor je reis voordat je bevestigt."
+          },
+          {
+            "title": "Wijzigingen en annuleringen",
+            "content": "Annuleringstermijnen, terugbetalingsregelingen en voorwaarden voor het verzetten van een excursie zijn afhankelijk van de boekingsvoorwaarden van de gekozen excursie. Lees deze vóór het afronden van je boeking."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer",
+          "bookNow": "Boek nu"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "privacy",
+      "locale": "nl",
+      "source_slug": "privacy",
+      "translated_slug": "privacybeleid",
+      "title": "Privacybeleid",
+      "summary": "Lees hoe Awesome Adventure Tours gegevens verzamelt, gebruikt, beschermt en deelt wanneer je de website bezoekt, contact met ons opneemt of een boeking maakt.",
+      "seo_title": "Privacybeleid | Awesome Adventure Tours",
+      "seo_description": "Lees hoe Awesome Adventure Tours gegevens over boekingen, contact, accounts en websitegebruik verwerkt, inclusief geschatte locatie met toestemming, apparaattaal, dienstverleners en je privacyrechten.",
+      "content": {
+        "heroHeadline": "Jouw privacy is belangrijk",
+        "heroSubtitle": "Lees hoe Awesome Adventure Tours gegevens verzamelt, gebruikt, beschermt en deelt wanneer je de website bezoekt, contact met ons opneemt of een boeking maakt.",
+        "sections": [
+          {
+            "title": "1. Wie zijn wij en hoe kun je contact opnemen?",
+            "content": "Deze website wordt beheerd onder de naam Awesome Adventure Tours vanuit Hurghada aan de Rode Zee in Egypte. Ons contactadres is: 2e verdieping, Bostan Cafe, Madres, Hurghada, Egypte. Voor vragen of verzoeken over privacy kun je contact opnemen via https://awesomeadventure.tours/contact of bellen naar +20 151 5212741. Geef voldoende informatie zodat we je verzoek kunnen terugvinden, maar stuur geen wachtwoorden of volledige betaalkaartgegevens. Dit beleid beschrijft de website en boekingsdiensten; het is geen juridisch advies over de wetten die op een individuele reiziger of transactie van toepassing kunnen zijn."
+          },
+          {
+            "title": "2. Welke informatie kunnen we verzamelen?",
+            "content": "Afhankelijk van hoe je de website gebruikt, kunnen we de volgende gegevens verwerken: contact- en identiteitsgegevens, zoals je naam, e-mailadres, telefoonnummer en land; boekingsgegevens, zoals de gekozen excursie, datum, aantal deelnemers, leeftijden, gekozen excursietaal, boekingsreferentie, ophaal- of ontmoetingsgegevens en bijzondere verzoeken; accountgegevens die nodig zijn om je te registreren, in te loggen en je profiel te beheren; berichten en ondersteuningsverzoeken die je naar ons stuurt; gegevens over je nieuwsbriefinschrijving en de status daarvan; en technische informatie, zoals verbindings- en netwerkgegevens (waaronder het IP-adres wanneer dat nodig is voor beveiliging en misbruikpreventie), browser en apparaat, voorkeurstaal en regio-instellingen van de browser, tijdzone, categorieën voor scherm- en viewportgrootte, opgevraagde pagina's, tijdstempels, beveiligingsgebeurtenissen en toestemmingsvoorkeuren. Als je optionele analyses inschakelt, sturen we je verbindings-IP-adres tijdelijk naar ipwho.is om je land, regio en stad bij benadering vast te stellen. Dit is een globale schatting, geen GPS-locatiebepaling, en kan onnauwkeurig zijn. We bewaren het ruwe IP-adres niet in de bezoekersanalysedatabase. Deel geen gevoelige persoonsgegevens, tenzij die echt nodig zijn voor je verzoek en je ervoor kiest ze te verstrekken."
+          },
+          {
+            "title": "3. Waarom gebruiken we deze informatie?",
+            "content": "We gebruiken gegevens om vragen te beantwoorden; beschikbaarheid te controleren en boekingen voor te bereiden, te beheren en erover te communiceren; bevestigingen, vouchers, service-updates en klantenondersteuning te leveren; de betreffende excursie, transfer of activiteit af te stemmen met de uitvoerende aanbieder; accounts te beheren en inlog- en boekingsdiensten te beveiligen; administratie bij te houden, fraude en misbruik te voorkomen, geschillen op te lossen en aan wettelijke verplichtingen te voldoen; en, wanneer je daarvoor hebt gekozen, nieuwsbrieven of promotionele berichten te versturen. Afhankelijk van de situatie baseren we ons op stappen die op jouw verzoek vóór het sluiten van een overeenkomst worden genomen, de uitvoering van een boeking, onze gerechtvaardigde belangen zoals servicebeveiliging en klantenondersteuning, wettelijke verplichtingen en toestemming wanneer die vereist is (met name voor optionele analyse- of marketingtechnologieën)."
+          },
+          {
+            "title": "4. Met wie kunnen we informatie delen?",
+            "content": "We delen alleen informatie die redelijkerwijs nodig is voor het betreffende doel. Ontvangers kunnen zijn: de excursieaanbieder, boot- of activiteitenexploitant, transfer- of ophaalprovider en andere leveranciers die betrokken zijn bij de uitvoering van je boeking; onze leveranciers voor websitehosting, database, authenticatie, opslag en e-mailbezorging (waaronder Hostinger, Supabase en Resend wanneer deze worden gebruikt); analyse- of tagmanagementproviders, uitsluitend volgens je cookiekeuzes en de toepasselijke instellingen; ipwho.is, alleen wanneer je analyses hebt ingeschakeld, om op basis van je verbindings-IP-adres een schatting van land, regio en stad terug te geven (het IP-adres wordt tijdelijk voor de opzoeking verzonden en niet opgeslagen in onze bezoekersanalysedatabase); en overheidsinstanties, toezichthouders, rechtbanken of professionele adviseurs wanneer openbaarmaking wettelijk verplicht of redelijkerwijs noodzakelijk is om rechten, veiligheid of de dienstverlening te beschermen. Dienstverleners kunnen gegevens verwerken volgens hun eigen privacyverklaringen wanneer zij hun diensten leveren."
+          },
+          {
+            "title": "5. Internationale gegevensverwerking",
+            "content": "Sommige technische en operationele leveranciers kunnen informatie verwerken of opslaan in landen buiten Egypte, waaronder landen waar hun infrastructuur of ondersteuningsteams gevestigd zijn. Wanneer toepasselijke wetgeving waarborgen voor internationale doorgifte vereist, gebruiken we een passende doorgiftemethode of een andere wettelijk erkende bescherming. Neem contact met ons op als je meer informatie wilt over een specifieke leverancier of doorgifte."
+          },
+          {
+            "title": "6. Bewaartermijnen en beveiliging",
+            "content": "We bewaren informatie zolang dat redelijkerwijs nodig is voor de hierboven beschreven doelen, waaronder het uitvoeren van een boeking, het bieden van ondersteuning, het bijhouden van financiële en operationele administratie, het behandelen van klachten en het naleven van wettelijke verplichtingen. Bewaartermijnen verschillen per soort dossier en wettelijke verplichting. We gebruiken toegangscontroles en technische en organisatorische maatregelen om informatie te beschermen, maar geen enkele website of elektronische overdracht kan als volledig veilig worden gegarandeerd. Gebruik een uniek wachtwoord en deel je accountgegevens niet."
+          },
+          {
+            "title": "7. Je privacykeuzes en -rechten",
+            "content": "Afhankelijk van de wetgeving die op jou van toepassing is, kun je het recht hebben om inzage in je persoonsgegevens, correctie of verwijdering ervan te vragen, bezwaar te maken tegen bepaalde verwerkingen of beperking daarvan te verzoeken, je toestemming in te trekken of een kopie te ontvangen van informatie die je hebt verstrekt. Je kunt je afmelden voor marketingberichten via de afmeldmogelijkheid wanneer die wordt aangeboden; service- en boekingsberichten kunnen waar nodig nog steeds worden verzonden. Je kunt je keuzes voor optionele cookies wijzigen via 'Cookie-instellingen' in de voettekst van de website. Om een privacyrecht uit te oefenen, kun je contact opnemen via de gegevens in paragraaf 1. Mogelijk moeten we je identiteit verifiëren en bepaalde informatie bewaren wanneer de wet dat toestaat of vereist."
+          },
+          {
+            "title": "8. Kinderen en websites van derden",
+            "content": "De website is bedoeld voor mensen die reizen en boekingen organiseren. Waar nodig moet een ouder of verantwoordelijke volwassene boekingsinformatie over kinderen verstrekken en mag die geen account voor een kind aanmaken zonder passende toestemming. Onze website kan links bevatten naar websites of berichtendiensten van derden. We hebben geen controle over hun inhoud of privacypraktijken; lees hun privacyverklaringen voordat je ze gebruikt."
+          },
+          {
+            "title": "9. Wijzigingen in dit beleid",
+            "content": "We kunnen dit beleid bijwerken wanneer onze diensten, technologieën of wettelijke vereisten veranderen. De datum die bovenaan wordt weergegeven, is de datum waarop deze versie voor het laatst is bijgewerkt. Belangrijke wijzigingen worden op deze pagina vermeld."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer",
+          "bookNow": "Boek nu"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "terms",
+      "locale": "nl",
+      "source_slug": "terms",
+      "translated_slug": "algemene-voorwaarden",
+      "title": "Algemene voorwaarden",
+      "summary": "Lees deze voorwaarden voordat je de website gebruikt of een boekingsaanvraag voor een excursie indient.",
+      "seo_title": "Algemene voorwaarden | Awesome Adventure Tours",
+      "seo_description": "Lees de voorwaarden voor websitegebruik, excursieboekingen, prijzen, verantwoordelijkheden van aanbieders, veiligheid, wijzigingen en toepasselijke bepalingen van Awesome Adventure Tours.",
+      "content": {
+        "heroHeadline": "Algemene voorwaarden",
+        "heroSubtitle": "Lees deze voorwaarden voordat je de website gebruikt of een boekingsaanvraag voor een excursie indient.",
+        "sections": [
+          {
+            "title": "1. Over deze voorwaarden",
+            "content": "Deze voorwaarden zijn van toepassing op je gebruik van awesomeadventure.tours en op boekingsaanvragen die via de website worden ingediend. De website wordt beheerd onder de naam Awesome Adventure Tours vanuit Hurghada, Egypte. Sommige excursies kunnen worden uitgevoerd door onafhankelijke aanbieders van boten, vervoer, activiteiten of bestemmingen. De aanbieder- en dienstspecifieke informatie die bij een excursie wordt vermeld, maakt deel uit van de informatie die je vóór het boeken moet lezen."
+          },
+          {
+            "title": "2. Website-informatie en beschikbaarheid",
+            "content": "We nemen redelijke maatregelen om excursiebeschrijvingen, afbeeldingen, tijden, prijzen, inbegrepen diensten, ophaalinformatie en beschikbaarheid actueel en bruikbaar te houden. Deze gegevens kunnen veranderen door de bedrijfsvoering van aanbieders, het weer, seizoensschema's of beschikbaarheid. Een vermelding garandeert niet dat een vertrek doorgaat totdat je boeking is bevestigd. Neem contact met ons op voordat je op informatie vertrouwt als een belangrijk detail onjuist lijkt."
+          },
+          {
+            "title": "3. Boekingen en bevestiging",
+            "content": "Wanneer je een boekingsformulier verzendt, vraag je ons de gekozen excursie te regelen op basis van de informatie die je verstrekt. Een aanvraag is pas een bevestigde boeking wanneer de website of ons team een boekingsbevestiging of voucher heeft afgegeven. Je bent verantwoordelijk voor het controleren van de datum, excursie, aantal en leeftijden van deelnemers, excursietaal, ophaalgegevens, contactgegevens, prijs en bijzondere voorwaarden. Bewaar je boekingsreferentie en bevestiging."
+          },
+          {
+            "title": "4. Prijzen, valuta en betaling",
+            "content": "De prijs en valuta die tijdens het boekingsproces voor de gekozen excursie worden weergegeven, zijn de aangeboden bedragen die van toepassing zijn, behoudens toeslagen of wijzigingen die duidelijk worden vermeld en vóór aanvaarding van de boeking worden bevestigd. Weergegeven valutaconversies zijn indicatief; je bank of betalingsprovider kan een eigen wisselkoers of kosten toepassen. Betaalmethoden kunnen per excursie verschillen en worden tijdens het boeken of in je bevestiging vermeld. Verstuur nooit kaartnummers, beveiligingscodes of wachtwoorden via gewone e-mail, chat of boekingsnotities."
+          },
+          {
+            "title": "5. Excursietaal, deelnemers en ophalen",
+            "content": "Beschikbare gidstalen, minimale boekingstermijnen, leeftijdsgrenzen, ophaalgebieden, ontmoetingsplaatsen en eventuele transfertoeslagen verschillen per excursie en datum. Een taaloptie is een verzoek voor de gekozen excursie en blijft afhankelijk van de beschikbaarheid die voor dat vertrek wordt vermeld. Verstrek juiste informatie over deelnemers en ophalen en neem snel contact met ons op als deze gegevens veranderen. Wees op tijd op de bevestigde ontmoetingsplaats en volg de instructies van de aanbieder."
+          },
+          {
+            "title": "6. Veiligheid en gedrag",
+            "content": "Je moet redelijke veiligheidsinstructies van bemanning, gids, chauffeur en begeleidend personeel opvolgen, lokale wetten naleven en respect tonen voor andere deelnemers en het milieu. Informeer de betreffende aanbieder vooraf over medische omstandigheden of mobiliteitsbehoeften die van invloed kunnen zijn op veilige deelname. De aanbieder kan deelname weigeren of beëindigen wanneer gedrag of een omstandigheid een veiligheidsrisico vormt, met inachtneming van toepasselijke wetgeving en de omstandigheden."
+          },
+          {
+            "title": "7. Wijzigingen, weer en werkzaamheden van aanbieders",
+            "content": "Excursies kunnen worden vertraagd, omgeleid, vervangen of geannuleerd vanwege het weer, de toestand van de zee, havensluitingen, instructies van autoriteiten, veiligheidszorgen, beschikbaarheid van aanbieders of gebeurtenissen buiten redelijke controle. Wij of de betreffende aanbieder communiceren belangrijke wijzigingen waar mogelijk. Als de exploitant een vertrek annuleert, worden de beschikbare opties voor omboeken of terugbetaling voor die boeking toegelicht. Raadpleeg het Annulerings- en terugbetalingsbeleid voor meer informatie."
+          },
+          {
+            "title": "8. Annuleringen en terugbetalingen",
+            "content": "Annuleringstermijnen en terugbetalingsvoorwaarden zijn niet voor alle excursies hetzelfde. De voorwaarden op de pagina van de gekozen excursie, tijdens het afrekenen en in je bevestiging of voucher gelden voor die boeking en gaan vóór algemene voorbeelden op de website. Lees https://awesomeadventure.tours/cancellation-policy voordat je boekt."
+          },
+          {
+            "title": "9. Aansprakelijkheid en dwingende rechten",
+            "content": "Niets in deze voorwaarden sluit aansprakelijkheid uit of beperkt die waar dat onwettig zou zijn, waaronder rechten of rechtsmiddelen waarvan onder toepasselijke consumentenwetgeving geen afstand kan worden gedaan. Voor zover wettelijk toegestaan, ligt de verantwoordelijkheid voor de feitelijke exploitatie en uitvoering van de excursie op de geplande dag bij de aanbieder die de dienst levert. Wij blijven verantwoordelijk voor onze eigen verplichtingen binnen de grenzen van toepasselijke wetgeving."
+          },
+          {
+            "title": "10. Websitegebruik, intellectueel eigendom en beveiliging",
+            "content": "Je mag de website gebruiken voor wettige reisvoorbereiding en persoonlijke boekingen. Je mag de website niet misbruiken, de beveiliging ervan niet aantasten, geen ongeautoriseerde toegang proberen te verkrijgen, geen valse informatie indienen, geen grote hoeveelheden inhoud scrapen of kopiëren en geen schadelijke bestanden uploaden. Websitekopij, merk, ontwerp en media worden beschermd door toepasselijke intellectuele-eigendomswetten, tenzij anders vermeld."
+          },
+          {
+            "title": "11. Toepasselijk recht en contact",
+            "content": "Deze voorwaarden zijn bedoeld om te worden uitgelegd volgens Egyptisch recht, zonder dwingende consumentenbescherming weg te nemen die volgens het recht van je woonland op jou van toepassing is. Geschillen worden behandeld door een bevoegde rechtbank overeenkomstig toepasselijke wetgeving. Neem contact met ons op via https://awesomeadventure.tours/contact of +20 151 5212741. Als een bepaling niet afdwingbaar is, blijven de overige bepalingen van kracht voor zover de wet dat toestaat."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer",
+          "bookNow": "Boek nu"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "cancellation-policy",
+      "locale": "nl",
+      "source_slug": "cancellation-policy",
+      "translated_slug": "annulerings-en-terugbetalingsbeleid",
+      "title": "Annulerings- en terugbetalingsbeleid",
+      "summary": "Annulerings- en terugbetalingsvoorwaarden zijn afhankelijk van de excursie en worden bevestigd in je boekingsgegevens.",
+      "seo_title": "Annulerings- en terugbetalingsbeleid | Awesome Adventure Tours",
+      "seo_description": "Lees hoe je een annulering aanvraagt, hoe excursiespecifieke termijnen gelden en wat er gebeurt wanneer het weer of operationele beperkingen een vertrek verhinderen.",
+      "content": {
+        "heroHeadline": "Annuleringen en terugbetalingen",
+        "heroSubtitle": "Annulerings- en terugbetalingsvoorwaarden zijn afhankelijk van de excursie en worden bevestigd in je boekingsgegevens.",
+        "sections": [
+          {
+            "title": "1. Het beleid voor jouw excursie is van toepassing",
+            "content": "Annuleringstermijnen en terugbetalingsvoorwaarden kunnen per excursie en aanbieder verschillen. Lees vóór betaling of het indienen van een boeking de annuleringsinformatie op de pagina van de gekozen excursie, tijdens het afrekenen en in de bevestiging of voucher. Deze excursiespecifieke voorwaarden zijn bepalend voor je boeking wanneer ze afwijken van dit algemene beleid."
+          },
+          {
+            "title": "2. Termijnen voor gratis annuleren",
+            "content": "Sommige excursies bieden mogelijk gratis annulering tot 24 uur vóór de geplande starttijd. Dit is geen algemene toezegging voor alle excursies: de termijn van 24 uur geldt alleen wanneer deze uitdrukkelijk wordt vermeld voor de gekozen excursie of in je voucher wordt bevestigd. Als je boeking een andere termijn, kosten of een niet-restitueerbare voorwaarde vermeldt, geldt die specifieke voorwaarde, met inachtneming van dwingende wettelijke rechten."
+          },
+          {
+            "title": "3. Een annulering of wijziging aanvragen",
+            "content": "Neem zo snel mogelijk contact op met ons team via https://awesomeadventure.tours/contact of bel +20 151 5212741. Vermeld je boekingsreferentie, de naam van de hoofdreiziger en de excursiedatum. Een annulering is niet definitief alleen omdat je een bericht hebt verstuurd; wacht op onze ontvangstbevestiging of schriftelijke bevestiging. Verzoeken die kort vóór vertrek binnenkomen, worden mogelijk niet verwerkt voordat de deadline van de aanbieder verstrijkt. Wacht daarom niet tot het laatste moment."
+          },
+          {
+            "title": "4. Vertragingen en niet komen opdagen",
+            "content": "Als je de ophaalservice of het vertrek mist, na de bevestigde ontmoetings- of ophaaltijd aankomt of niet verschijnt, kan de aanbieder de boeking als een no-show behandelen. Afhankelijk van de vermelde voorwaarden kan de boeking dan niet-restitueerbaar zijn. Neem onmiddellijk contact met ons op als je onverwacht vertraging hebt. Een uitzondering is afhankelijk van de beslissing van de aanbieder en toepasselijke wetgeving."
+          },
+          {
+            "title": "5. Weer, veiligheid en annulering door de exploitant",
+            "content": "Boottochten en buitenactiviteiten kunnen worden beïnvloed door het weer, de toestand van de zee, havensluitingen, instructies van autoriteiten of veiligheidsbeslissingen. Als de verantwoordelijke exploitant het vertrek annuleert of de excursie niet veilig kan uitvoeren, nemen we contact op met de betrokken reizigers om de voor die boeking beschikbare opties toe te lichten. Afhankelijk van de omstandigheden en toepasselijke voorwaarden kan dit een andere datum, een passende vervangende activiteit of een terugbetaling omvatten. We zullen reizigers niet vragen deel te nemen aan een activiteit die de verantwoordelijke exploitant onveilig acht."
+          },
+          {
+            "title": "6. Terugbetalingsmethode en verwerkingstijd",
+            "content": "Wanneer een terugbetaling verschuldigd is, worden het bedrag en de methode met je bevestigd. Terugbetalingen worden normaal gesproken uitgevoerd via de oorspronkelijke betaalmethode wanneer die terugbetalingen ondersteunt. Wanneer de betaling rechtstreeks met een aanbieder is geregeld of bij het ophalen is geïnd, legt het team de toepasselijke procedure uit. Banken en betalingsproviders kunnen extra tijd nodig hebben om het bedrag bij te schrijven. We beloven geen vaste verwerkingstermijn wanneer die afhankelijk is van een derde partij."
+          },
+          {
+            "title": "7. Wijzigingen op verzoek van de reiziger",
+            "content": "Wijzigingen van datum, aantal deelnemers, ophaallocatie of excursietaal zijn afhankelijk van beschikbaarheid en goedkeuring door de aanbieder. Een wijzigingsverzoek kan als annulering en nieuwe boeking worden behandeld wanneer de aanbieder de oorspronkelijke boeking niet kan aanpassen. Eventuele prijsverschillen of kosten worden toegelicht voordat de wijziging wordt bevestigd."
+          },
+          {
+            "title": "8. Vragen en geschillen",
+            "content": "Bewaar je boekingsbevestiging en alle correspondentie over de annulering. Als je denkt dat een annulering of terugbetaling onjuist is afgehandeld, neem dan contact met ons op met je boekingsreferentie en een duidelijke beschrijving van het probleem, zodat we dit met de betreffende aanbieder kunnen onderzoeken. Niets in dit beleid beperkt consumentenrechten waarvan wettelijk geen afstand kan worden gedaan."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer",
+          "bookNow": "Boek nu"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "cookie-policy",
+      "locale": "nl",
+      "source_slug": "cookie-policy",
+      "translated_slug": "cookiebeleid",
+      "title": "Cookiebeleid en opslag op de website",
+      "summary": "Lees hoe deze website browseropslag en optionele analysetechnologieën gebruikt en hoe je je keuzes kunt wijzigen.",
+      "seo_title": "Cookiebeleid | Awesome Adventure Tours",
+      "seo_description": "Lees over essentiële websiteopslag, analyse en marketing via Google Tag Manager en hoe je je cookievoorkeuren op Awesome Adventure Tours kunt wijzigen.",
+      "content": {
+        "heroHeadline": "Cookiebeleid",
+        "heroSubtitle": "Lees hoe deze website browseropslag en optionele analysetechnologieën gebruikt en hoe je je keuzes kunt wijzigen.",
+        "sections": [
+          {
+            "title": "1. Cookies en vergelijkbare technologieën",
+            "content": "Cookies zijn kleine bestanden die een website in je browser opslaat. Websites kunnen ook lokale opslag, sessieopslag, pixels en scripts voor vergelijkbare doeleinden gebruiken. Deze website gebruikt browseropslag voor essentiële functies en voorkeuren. Google Tag Manager is ook op de website geïnstalleerd; optionele analyse- of advertentietags blijven geblokkeerd totdat je in de cookiebanner een optionele toestemmingscategorie kiest. Wanneer je analyses inschakelt, stuurt de server je verbindings-IP-adres ook tijdelijk naar ipwho.is om je land, regio en stad bij benadering vast te stellen. Het IP-adres zelf wordt niet opgeslagen in onze bezoekersanalysedata."
+          },
+          {
+            "title": "2. Essentiële opslag",
+            "content": "Essentiële opslag maakt het mogelijk de website te leveren die je wilt gebruiken. Afhankelijk van de functies kan deze opslag onder meer je taal en lichte/donkere thema onthouden, een boekingsconcept of tijdelijke interfacevoorkeuren bewaren, de authenticatie- en sessiestatus via onze authenticatieprovider behouden en je cookietoestemming opslaan. Deze functies worden niet gebruikt om advertentieprofielen op te bouwen. Als je alle browseropslag blokkeert, werken sommige account-, boekings- of voorkeursfuncties mogelijk niet goed."
+          },
+          {
+            "title": "3. Keuzes voor analyse en marketing",
+            "content": "Analysetechnologieën helpen ons te begrijpen hoe de website wordt gebruikt en hoe we navigatie en boekingsprocessen kunnen verbeteren. Marketingtechnologieën kunnen, indien ingeschakeld in onze tagbeheerconfiguratie, promotionele activiteiten meten of personaliseren. Deze optionele categorieën zijn standaard uitgeschakeld. Google Tag Manager wordt pas geladen nadat je toestemming hebt gegeven voor analyse of marketing; toestemmingssignalen die naar Google worden verzonden, maken onderscheid tussen analysekeuzes en advertentiekeuzes. Ook afzonderlijke tags in de tagmanager moeten zo zijn ingesteld dat ze de bijbehorende toestemmingscategorie respecteren."
+          },
+          {
+            "title": "4. Diensten van derden",
+            "content": "Wanneer ze zijn ingeschakeld of gebruikt, kunnen diensten van derden hun eigen technologieën plaatsen of uitlezen volgens hun eigen beleid. Dit kan bestaan uit Google-diensten via onze tagmanager, Supabase voor authenticatie en applicatiegegevens, ipwho.is voor een geschatte locatie op basis van het IP-adres wanneer analysetoestemming is ingeschakeld, en externe diensten of inhoud die je zelf opent, zoals WhatsApp. Het laden van externe afbeeldingen, lettertypen of links kan er ook toe leiden dat je browser contact maakt met de betreffende aanbieder. Raadpleeg de privacy- en cookie-informatie van elke aanbieder voor meer details."
+          },
+          {
+            "title": "5. Toestemming beheren en intrekken",
+            "content": "Kies bij je eerste bezoek in de cookiebanner 'Alles accepteren', 'Optionele opties weigeren' of 'Aanpassen'. Noodzakelijke opslag blijft altijd actief omdat de website zonder deze opslag de belangrijkste functies niet kan leveren. Je kunt de instellingen op elk moment opnieuw openen via 'Cookie-instellingen' in de voettekst en je keuzes voor analyse of marketing wijzigen. Elke wijziging werkt de toestemmingssignalen bij die de website gebruikt voor toekomstige tagactiviteiten. Als een derde partij al een cookie heeft opgeslagen, moet je die mogelijk ook via de browserinstellingen verwijderen."
+          },
+          {
+            "title": "6. Browserinstellingen en bewaartermijn",
+            "content": "De meeste browsers bieden opties om cookies te bekijken, te blokkeren of te verwijderen en websitegegevens te wissen. De cookietoestemming wordt in die browser opgeslagen zodat de website je keuze kan onthouden; het wissen van websitegegevens of het gebruiken van een andere browser of ander apparaat kan ervoor zorgen dat de banner opnieuw verschijnt. Voorkeuren en applicatieopslag kunnen bewaard blijven totdat je ze verwijdert of de applicatie ze vervangt. De levensduur van cookies van derden wordt bepaald door de betreffende aanbieder."
+          },
+          {
+            "title": "7. Updates en contact",
+            "content": "We kunnen dit beleid bijwerken wanneer websitefuncties of aanbieders veranderen. Neem bij vragen over cookies of je keuzes contact met ons op via https://awesomeadventure.tours/contact of bel +20 151 5212741. Raadpleeg ons Privacybeleid voor algemene informatie over persoonsgegevens."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer",
+          "bookNow": "Boek nu"
+        }
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "9d0afa47-45f6-47b8-8dde-eeae58e45b97",
+      "translated_slug": "template-boeking-bevestiging",
+      "title": "Boekingsbevestiging",
+      "summary": "Boekingsbevestiging: {{tour_name}} (ref.: {{booking_reference}})",
+      "content": {
+        "name": "Boekingsbevestiging",
+        "subject": "Boekingsbevestiging: {{tour_name}} (ref.: {{booking_reference}})",
+        "body_text": "Hallo {{customer_name}},\n\nBedankt voor je boeking bij Awesome Adventure Tours. Je boeking voor {{tour_name}} op {{tour_date}} is bevestigd.\n\nBoekingsreferentie: {{booking_reference}}\nTotaalbedrag: {{amount}}\nResterend saldo: {{balance_due}}\nOphaaltijd: {{pickup_time}}\n\nMet vriendelijke groet,\nDe conciërgeservice van Awesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "tour_date",
+          "pickup_time",
+          "amount",
+          "balance_due"
+        ],
+        "channel": "Both",
+        "template_key": "booking_confirmation"
+      },
+      "locale": "nl"
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "a2067910-50a2-41e4-bb08-80722a0750bf",
+      "translated_slug": "template-boeking-ontvangen",
+      "title": "Boekingsticket",
+      "summary": "Je boekingsticket van Awesome Adventure Tours: {{booking_reference}}",
+      "content": {
+        "name": "Boekingsticket",
+        "subject": "Je boekingsticket van Awesome Adventure Tours: {{booking_reference}}",
+        "body_text": "Hallo {{customer_name}},\n\nWe hebben je boekingsaanvraag voor {{tour_name}} op {{tour_date}} ontvangen. Je digitale boekingsticket vind je hieronder.\n\nBoekingsreferentie: {{booking_reference}}\nBoekingsstatus: {{booking_status}}\nTotaal: {{currency}} {{amount}}\n\nHoud je boekingsreferentie bij de hand wanneer je contact opneemt met ons team. De ophaaltijd en praktische details kunnen afzonderlijk worden bevestigd.\n\nBedankt,\nAwesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "tour_date",
+          "booking_status",
+          "currency",
+          "amount"
+        ],
+        "channel": "Email",
+        "template_key": "booking_received"
+      },
+      "locale": "nl"
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "3f657bd6-15e7-477f-b513-ac9038af2383",
+      "translated_slug": "template-verzoek-beoordeling-na-excursie",
+      "title": "Verzoek om beoordeling na afloop van de excursie",
+      "summary": "Hoe was je excursie {{tour_name}}? We horen graag je mening",
+      "content": {
+        "name": "Verzoek om beoordeling na afloop van de excursie",
+        "subject": "Hoe was je excursie {{tour_name}}? We horen graag je mening",
+        "body_text": "Hallo {{customer_name}},\n\nBedankt dat je hebt deelgenomen aan {{tour_name}} (boeking {{booking_reference}}). We hopen dat je een geweldige tijd hebt gehad.\n\nAls je even de tijd hebt, zouden we het zeer waarderen als je een eerlijke beoordeling wilt achterlaten:\n\nGoogle: {{google_review_url}}\nTripadvisor: {{tripadvisor_review_url}}\nPagina van je excursie: {{tour_review_url}}\n\nBedankt dat je voor Awesome Adventure Tours hebt gekozen. We hopen je binnenkort opnieuw te mogen verwelkomen!",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "google_review_url",
+          "tripadvisor_review_url",
+          "tour_review_url"
+        ],
+        "channel": "Email",
+        "template_key": "booking_review_request"
+      },
+      "locale": "nl"
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "9aca4700-542d-4c35-94ef-b0cae8095e19",
+      "translated_slug": "template-boeking-update",
+      "title": "Boekingsupdate",
+      "summary": "Update van je boeking: {{tour_name}} (ref.: {{booking_reference}})",
+      "content": {
+        "name": "Boekingsupdate",
+        "subject": "Update van je boeking: {{tour_name}} (ref.: {{booking_reference}})",
+        "body_text": "Hallo {{customer_name}},\n\nJe boeking voor {{tour_name}} (ref.: {{booking_reference}}) is bijgewerkt.\n\nVertrekdatum: {{tour_date}}\nOphaaltijd: {{pickup_time}}\nResterend saldo: {{balance_due}}\n\nMet vriendelijke groet,\nHet coördinatieteam van Awesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "tour_date",
+          "pickup_time",
+          "balance_due"
+        ],
+        "channel": "Both",
+        "template_key": "booking_update"
+      },
+      "locale": "nl"
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "ba3bfad1-d02f-4d94-9cb3-be129dde05e0",
+      "translated_slug": "template-boeking-annulering",
+      "title": "Boekingsannulering",
+      "summary": "Bevestiging van annulering: {{booking_reference}} - {{tour_name}}",
+      "content": {
+        "name": "Boekingsannulering",
+        "subject": "Bevestiging van annulering: {{booking_reference}} - {{tour_name}}",
+        "body_text": "Hallo {{customer_name}},\n\nJe boeking {{booking_reference}} voor {{tour_name}} op {{tour_date}} is geannuleerd.\n\nOns team neemt contact met je op als je in aanmerking komt voor terugbetaling.\n\nMet vriendelijke groet,\nDe reizigersondersteuning van Awesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "tour_date"
+        ],
+        "channel": "Both",
+        "template_key": "cancellation"
+      },
+      "locale": "nl"
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "2f758e25-31ce-4a32-abaf-0f167c94ac1e",
+      "translated_slug": "template-opvolging-klant",
+      "title": "Opvolging klant",
+      "summary": "Je conciërge voor je vakantie aan de Rode Zee neemt contact met je op",
+      "content": {
+        "name": "Opvolging klant",
+        "subject": "Je conciërge voor je vakantie aan de Rode Zee neemt contact met je op",
+        "body_text": "Hallo {{customer_name}},\n\nWe hopen dat je volop geniet van je verblijf in de regio van de Rode Zee. Ons team staat voor je klaar om je te helpen bij het plannen van je volgende avontuur.\n\nMet vriendelijke groet,\nDe VIP-conciërgeservice van Awesome Adventure Tours",
+        "variables": [
+          "customer_name"
+        ],
+        "channel": "Both",
+        "template_key": "follow_up"
+      },
+      "locale": "nl"
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "f2916b63-45b6-49aa-94a0-180c4ac026dc",
+      "translated_slug": "template-antwoord-informatieverzoek",
+      "title": "Antwoord op informatieverzoek",
+      "summary": "Over je aanvraag - Awesome Adventure Tours",
+      "content": {
+        "name": "Antwoord op informatieverzoek",
+        "subject": "Over je aanvraag - Awesome Adventure Tours",
+        "body_text": "Hallo {{customer_name}},\n\nBedankt voor je interesse in Awesome Adventure Tours. Ons team bekijkt je aanvraag en helpt je graag verder.\n\nMet vriendelijke groet,\nHet reizigerservaringsteam van Awesome Adventure Tours",
+        "variables": [
+          "customer_name"
+        ],
+        "channel": "Both",
+        "template_key": "inquiry_response"
+      },
+      "locale": "nl"
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "2fe01cb2-58ed-41f6-aaa0-186fdfb78e5f",
+      "translated_slug": "template-welkom-nieuwsbrief",
+      "title": "Welkom bij de nieuwsbrief",
+      "summary": "Welkom bij Awesome Adventure Tours — je kortingsvoucher van 15%",
+      "content": {
+        "name": "Welkom bij de nieuwsbrief",
+        "subject": "Welkom bij Awesome Adventure Tours — je kortingsvoucher van 15%",
+        "body_text": "Bedankt voor je inschrijving op de nieuwsbrief van Awesome Adventure Tours. Je kortingscode van 15% is {{discount_code}}. Gebruik deze wanneer je informatie opvraagt over je volgende excursie.\n\nJe kunt je op elk moment uitschrijven: {{unsubscribe_url}}",
+        "variables": [
+          "discount_code",
+          "unsubscribe_url"
+        ],
+        "channel": "Email",
+        "template_key": "newsletter_welcome"
+      },
+      "locale": "nl"
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "286f3159-e9a2-4038-bcd8-ad2a0ec53079",
+      "translated_slug": "template-betalingsbevestiging",
+      "title": "Betalingsbevestiging",
+      "summary": "Betalingsbevestiging: {{booking_reference}} - Awesome Adventure Tours",
+      "content": {
+        "name": "Betalingsbevestiging",
+        "subject": "Betalingsbevestiging: {{booking_reference}} - Awesome Adventure Tours",
+        "body_text": "Hallo {{customer_name}},\n\nWe hebben je betaling van {{amount}} voor boeking {{booking_reference}} ({{tour_name}}) succesvol verwerkt.\n\nResterend saldo: {{balance_due}}\n\nBedankt,\nDe financiële afdeling van Awesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "amount",
+          "balance_due"
+        ],
+        "channel": "Both",
+        "template_key": "payment_confirmation"
+      },
+      "locale": "nl"
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "97dcca82-9361-4683-9097-ded3d3bfd338",
+      "translated_slug": "template-betalingsherinnering",
+      "title": "Betalingsherinnering",
+      "summary": "Betalingsherinnering: resterend saldo voor {{tour_name}}",
+      "content": {
+        "name": "Betalingsherinnering",
+        "subject": "Betalingsherinnering: resterend saldo voor {{tour_name}}",
+        "body_text": "Hallo {{customer_name}},\n\nWe sturen je een vriendelijke herinnering voor je aanstaande vertrek voor {{tour_name}} op {{tour_date}}.\n\nResterend saldo: {{balance_due}}\nGeplande ophaaltijd bij het hotel: {{pickup_time}}\n\nMet vriendelijke groet,\nAwesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "tour_date",
+          "pickup_time",
+          "balance_due"
+        ],
+        "channel": "Both",
+        "template_key": "payment_reminder"
+      },
+      "locale": "nl"
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "9143122e-c8e6-4d7b-bb64-ad562d44e8e4",
+      "translated_slug": "template-ophaalherinnering",
+      "title": "Ophaalherinnering",
+      "summary": "Herinnering voor ophalen bij het hotel morgen: {{tour_name}}",
+      "content": {
+        "name": "Ophaalherinnering",
+        "subject": "Herinnering voor ophalen bij het hotel morgen: {{tour_name}}",
+        "body_text": "Hallo {{customer_name}},\n\nWe kijken ernaar uit je morgen te verwelkomen voor {{tour_name}}.\n\nJe ophalen bij het hotel is bevestigd voor {{pickup_time}}.\nBoekingsreferentie: {{booking_reference}}\n\nNeem zwemkleding, zonnebescherming, een handdoek en een geldig identiteitsbewijs of paspoort mee.",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "pickup_time"
+        ],
+        "channel": "Both",
+        "template_key": "pickup_reminder"
+      },
+      "locale": "nl"
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "2e8a1598-4077-45f3-96c7-1c92503d39b3",
+      "translated_slug": "template-terugbetalingsmelding",
+      "title": "Melding van terugbetaling",
+      "summary": "Terugbetaling uitgevoerd: {{booking_reference}} - Awesome Adventure Tours",
+      "content": {
+        "name": "Melding van terugbetaling",
+        "subject": "Terugbetaling uitgevoerd: {{booking_reference}} - Awesome Adventure Tours",
+        "body_text": "Hallo {{customer_name}},\n\nEr is een terugbetaling goedgekeurd en uitgevoerd voor boeking {{booking_reference}} ({{tour_name}}).\n\nTerugbetaald bedrag: {{amount}}\n\nMet vriendelijke groet,\nDe financiële afdeling van Awesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "amount"
+        ],
+        "channel": "Both",
+        "template_key": "refund"
+      },
+      "locale": "nl"
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "d8e61555-7c7b-4286-8923-c78741d9cbf4",
+      "translated_slug": "template-verzoek-beoordeling",
+      "title": "Verzoek om beoordeling",
+      "summary": "Hoe heb je je excursie {{tour_name}} ervaren?",
+      "content": {
+        "name": "Verzoek om beoordeling",
+        "subject": "Hoe heb je je excursie {{tour_name}} ervaren?",
+        "body_text": "Hallo {{customer_name}},\n\nWe hopen dat je een geweldige tijd hebt gehad tijdens je excursie {{tour_name}}. Je mening is erg belangrijk voor ons lokale team.\n\nLink om een beoordeling achter te laten: https://awesomeadventure.tours/review?ref={{booking_reference}}\n\nBedankt dat je met ons hebt gevaren,\nAwesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "tour_name",
+          "booking_reference"
+        ],
+        "channel": "Both",
+        "template_key": "review_request"
+      },
+      "locale": "nl"
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "dc0e86c3-edd5-48cc-8cd9-c3c2e7bb8cba",
+      "translated_slug": "template-excursie-herinnering",
+      "title": "Excursieherinnering",
+      "summary": "Herinnering aan je komende excursie: {{tour_name}} op {{tour_date}}",
+      "content": {
+        "name": "Excursieherinnering",
+        "subject": "Herinnering aan je komende excursie: {{tour_name}} op {{tour_date}}",
+        "body_text": "Hallo {{customer_name}},\n\nJe excursie {{tour_name}} komt eraan: deze vindt plaats op {{tour_date}}.\n\nBoekingsreferentie: {{booking_reference}}\nGeplande ophaaltijd: {{pickup_time}}\nResterend saldo: {{balance_due}}\n\nWe kijken ernaar uit je te verwelkomen.",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "tour_date",
+          "pickup_time",
+          "balance_due"
+        ],
+        "channel": "Both",
+        "template_key": "tour_reminder"
+      },
+      "locale": "nl"
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "83b34c2d-3d1d-4a32-aed8-ae2d2cf35d50",
+      "translated_slug": "template-welkom",
+      "title": "Welkom bij Awesome Adventure Tours",
+      "summary": "Welkom bij Awesome Adventure Tours, {{customer_name}}!",
+      "content": {
+        "name": "Welkom bij Awesome Adventure Tours",
+        "subject": "Welkom bij Awesome Adventure Tours, {{customer_name}}!",
+        "body_text": "Hallo {{customer_name}},\n\nWelkom bij Awesome Adventure Tours. We helpen je graag om de Egyptische Rode Zee te ontdekken.\n\nBekijk ons aanbod aan excursies: https://awesomeadventure.tours/excursions\n\nMet vriendelijke groet,\nHet reizigersrelatieteam van Awesome Adventure Tours",
+        "variables": [
+          "customer_name"
+        ],
+        "channel": "Both",
+        "template_key": "welcome"
+      },
+      "locale": "nl"
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "612bdb2c-703a-4ac3-96d9-3554246b8426",
+      "translated_slug": "template-bedankt-na-de-reis",
+      "title": "Bedankt dat je met ons hebt gereisd",
+      "summary": "Bedankt dat je hebt deelgenomen aan {{tour_name}}",
+      "content": {
+        "name": "Bedankt dat je met ons hebt gereisd",
+        "subject": "Bedankt dat je hebt deelgenomen aan {{tour_name}}",
+        "body_text": "Hallo {{customer_name}},\n\nBedankt dat je hebt deelgenomen aan {{tour_name}}. We hopen dat je van je ervaring aan de Rode Zee hebt genoten en verwelkomen je graag nog eens.",
+        "variables": [
+          "customer_name",
+          "tour_name"
+        ],
+        "channel": "Email",
+        "template_key": "post_trip_thank_you"
+      },
+      "locale": "nl"
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "ea7c52e1-5b5e-40a4-8e70-6144b9ae141c",
+      "translated_slug": "template-ondersteuningsverzoek-aangemaakt",
+      "title": "Ondersteuningsverzoek ontvangen",
+      "summary": "We hebben je ondersteuningsverzoek {{ticket_reference}} ontvangen",
+      "content": {
+        "name": "Ondersteuningsverzoek ontvangen",
+        "subject": "We hebben je ondersteuningsverzoek {{ticket_reference}} ontvangen",
+        "body_text": "Hallo {{customer_name}},\n\nWe hebben je ondersteuningsverzoek ({{ticket_reference}}) ontvangen. Ons team zal het bekijken en zo snel mogelijk reageren.",
+        "variables": [
+          "customer_name",
+          "ticket_reference"
+        ],
+        "channel": "Email",
+        "template_key": "ticket_created"
+      },
+      "locale": "nl"
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "18b48d44-d030-42de-8a8d-970cf3adc493",
+      "translated_slug": "template-antwoord-op-ondersteuningsticket",
+      "title": "Nieuw antwoord op je ondersteuningsticket {{ticket_reference}}",
+      "summary": "Er is een update over je ondersteuningsverzoek",
+      "content": {
+        "name": "Nieuw antwoord op je ondersteuningsticket {{ticket_reference}}",
+        "subject": "Er is een update over je ondersteuningsverzoek",
+        "body_text": "Hallo {{customer_name}},\n\nOns team heeft gereageerd op je ondersteuningsverzoek ({{ticket_reference}}). Log in op je account om het antwoord te bekijken.",
+        "variables": [
+          "customer_name",
+          "ticket_reference"
+        ],
+        "channel": "Email",
+        "template_key": "ticket_reply"
+      },
       "locale": "nl"
     }
   ]
