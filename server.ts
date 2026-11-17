@@ -3,7 +3,7 @@ import { renderBrandedEmailHtml } from './src/utils/emailTemplate';
 import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import { isIP } from 'node:net';
 import { GoogleGenAI } from '@google/genai';
-import { generateContentWithModelFallback } from './src/server/geminiTranslationFallback';
+import { generateContentWithModelFallback, getGeminiProviderErrorDetails } from './src/server/geminiTranslationFallback';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import path from 'path';
 import fs from 'fs';
