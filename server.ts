@@ -13,7 +13,8 @@ import { startBookingNotificationWorker } from './src/server/bookingNotification
 import { startStaffNotificationWorker } from './src/server/staffNotificationWorker';
 import { INITIAL_STATIC_PAGES } from './src/data/staticPages';
 import { EXPECTED_AWESOME_ADVENTURE_TOURS_SUPABASE_PROJECT_REF, isExpectedAwesomeAdventureToursSupabaseUrl } from './src/lib/supabaseProjectGuard';
-import { parseLocalePath } from './src/i18n/localeRouting';
+import { parseLocalePath, ROUTABLE_LOCALE_CODES } from './src/i18n/localeRouting';
+import { EUROPEAN_LOCALE_ROLLOUT } from './src/types/i18n';
 import { TRANSLATIONS } from './src/i18n/translations';
 import { PRIVATE_UI_SOURCE_CATALOG } from './src/i18n/privateUiCatalog.generated';
 import { resolveWhatsAppLocaleLanguageMap, selectWhatsAppTemplateLanguage } from './src/lib/whatsappLocaleMapping';
@@ -1287,7 +1288,8 @@ app.get('/api/config', rateLimit(120, 60_000), (_req: Request, res: Response) =>
     operatingHours: '06:00 - 22:00 EET (Daily)',
     currencyDefault: 'EUR',
     supportedCurrencies: ['EUR', 'USD', 'GBP', 'EGP'],
-    supportedLanguages: ['en', 'de', 'it', 'ro', 'ru'],
+    // Publicly advertise English until another locale passes the full publication gate.
+    supportedLanguages: ['en'],
     depositRequired: false,
     cancellationFreeNoticeHours: 24,
   });
@@ -2046,7 +2048,7 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
 
   const cleanEmail = email.trim().toLowerCase();
   const requestedLocale = typeof preferredLanguage === 'string' ? preferredLanguage.trim().toLowerCase() : 'en';
-  const customerLocale = ['en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'].includes(requestedLocale) ? requestedLocale : 'en';
+  const customerLocale = TRANSLATION_LOCALES.has(requestedLocale) ? requestedLocale : 'en';
   const source = typeof req.body?.source === 'string' ? req.body.source.trim().slice(0, 80) || 'website' : 'website';
   let subscriber: { id: string; created_at: string; updated_at: string } | null = null;
   let shouldSendWelcome = false;
@@ -2889,10 +2891,7 @@ async function writeAccountAudit(actorId: string, action: string, targetId: stri
 // Reviewed translation workflow. Translation content is never read directly by browser
 // Supabase clients; all access is mediated by the AAL2 Super Admin API.
 const ENGLISH_UI_CATALOG: Record<string, string> = { ...(TRANSLATIONS.en || {}), ...PRIVATE_UI_SOURCE_CATALOG };
-const TRANSLATION_LOCALES = new Set([
-  'en','de','fr','it','es','nl','pl','pt','ro','ru','sv','da','nb','fi','el',
-  'bg','hr','cs','sk','sl','hu','et','lv','lt','uk','sr','sq','tr','ar',
-]);
+const TRANSLATION_LOCALES = new Set<string>(ROUTABLE_LOCALE_CODES);
 const TRANSLATION_ENTITY_TYPES = new Set([
   'tour','tour_itinerary','tour_highlight','tour_inclusion','tour_exclusion',
   'tour_faq','destination','blog_post','static_page','communication_template','ui_catalog',
@@ -3190,7 +3189,10 @@ app.get('/api/content-translations/resolve', rateLimit(90, 60_000), async (req: 
 
 // Super Admin + AAL2 bulk translation generation. Every generated row is a draft;
 // this endpoint never marks content reviewed or publishes it.
-const BULK_TRANSLATION_LOCALES: Record<string, string> = { fr: 'French', es: 'Spanish', nl: 'Dutch', pl: 'Polish', pt: 'Portuguese' };
+const BULK_TRANSLATION_LOCALES: Record<string, string> = Object.fromEntries(
+  EUROPEAN_LOCALE_ROLLOUT.filter((locale) => locale.code !== 'en')
+    .map((locale) => [locale.code, locale.englishName]),
+);
 async function getBulkTranslationCandidates(): Promise<Array<{ entity_type: string; entity_key: string }>> {
   if (!serverSupabase) throw new Error('Translation database unavailable.');
   const results = await Promise.all([
@@ -3257,7 +3259,7 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
   const locale = typeof req.body?.locale==='string' ? req.body.locale : '';
   const offset = Number.isInteger(req.body?.offset) && req.body.offset>=0 ? req.body.offset : 0;
   const limit = Number.isInteger(req.body?.limit) ? Math.min(10,Math.max(1,req.body.limit)) : 10;
-  if (!Object.prototype.hasOwnProperty.call(BULK_TRANSLATION_LOCALES,locale)) return res.status(400).json({success:false,error:'Bulk generation supports fr, es, nl, pl and pt.'});
+  if (!Object.prototype.hasOwnProperty.call(BULK_TRANSLATION_LOCALES,locale)) return res.status(400).json({success:false,error:'Bulk generation supports the configured non-English locales.'});
   if (!ai) return res.status(503).json({success:false,error:'Server-side Gemini translation is not configured.'});
   if (!serverSupabase) return res.status(503).json({success:false,error:'Translation database unavailable.'});
   try {
@@ -3283,7 +3285,9 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
         'Preserve all JSON keys, arrays, order, object shapes and non-string values. Translate all prose, labels, headings, FAQs, itinerary and UI message values.',
         'Never invent or change prices, currencies, numbers, dates, times, durations, pickup details, age limits, safety requirements, inclusions, exclusions, cancellation terms, legal claims, contacts, URLs, emails, phone numbers, IDs or brand/place names. Copy factual values exactly. In communication templates preserve every {{placeholder}} token byte-for-byte and do not translate variable names.',
         'translated_slug must be a natural short lowercase ASCII slug using only a-z, 0-9 and hyphens. For ui_catalog use site-ui. For communication templates, preserve template_key and variables exactly; preserve every {{placeholder}} in both subject and body_text exactly. Keep empty source strings empty. Do not omit fields or add commentary.',
-        'SEO title should be concise; SEO description accurate. No unsupported claims.',
+        locale === 'ar'
+          ? 'For Arabic, use clear Modern Standard Arabic suitable for international visitors to Egypt. Preserve official place, vessel and brand names accurately; do not invent local claims. The UI will render right-to-left, so return natural Arabic text without manual visual reordering.'
+          : 'Use natural, locally fluent language for the target locale. SEO title should be concise; SEO description accurate. No unsupported claims.',
         'INPUT: '+JSON.stringify(work.map(x=>({entity_type:x.type,entity_key:x.key,source:x.payload})))
       ].join('\n');
       const generated = await ai.models.generateContent({model:'gemini-3.8-flash',contents:[{role:'user',parts:[{text:prompt}]}],config:{temperature:0.15,responseMimeType:'application/json'}});

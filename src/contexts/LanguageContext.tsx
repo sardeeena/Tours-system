@@ -138,7 +138,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       flag: locale.direction === 'rtl' ? '🌐' : '🌍',
     }));
   const supportedLanguages = [
-    ...Object.values(SUPPORTED_LANGUAGES).filter((value): value is LanguageConfig => Boolean(value)),
+    ...Object.values(SUPPORTED_LANGUAGES).filter(
+      (value): value is LanguageConfig => value !== undefined && (value.code === 'en' || publishedUiLocales.includes(value.code)),
+    ),
     ...dynamicConfigs,
   ];
   const currentLanguageConfig = supportedLanguages.find((item) => item.code === language) || SUPPORTED_LANGUAGES.en!;

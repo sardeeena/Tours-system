@@ -85,15 +85,15 @@ export const AdminTranslationManager: React.FC = () => {
   };
 
   const generateAllRequestedLocales = async () => {
-    if (!window.confirm('Generate draft translations for all published tours, destinations, blog posts, public pages and the complete interface catalog in French, Spanish, Dutch, Polish and Portuguese? This uses the configured Gemini service and saves drafts only. Nothing will be published.')) return;
+    if (!window.confirm('Generate draft translations for all published tours, destinations, blog posts, public pages, customer communication templates and the complete interface catalog in all 28 configured non-English languages, including Arabic? This uses the configured Gemini service and saves drafts only. Nothing will be published.')) return;
     setGenerating(true);
     setGenerationProgress('Preparing translation batches…');
-    const locales = ['fr', 'es', 'nl', 'pl', 'pt'];
+    const locales = EUROPEAN_LOCALE_ROLLOUT.filter((item) => item.code !== 'en');
     let generatedCount = 0;
     let skippedCount = 0;
     try {
       for (let localeIndex = 0; localeIndex < locales.length; localeIndex += 1) {
-        const targetLocale = locales[localeIndex];
+        const targetLocale = locales[localeIndex].code;
         let offset = 0;
         let done = false;
         while (!done) {
@@ -105,7 +105,7 @@ export const AdminTranslationManager: React.FC = () => {
           done = Boolean(result.done);
           generatedCount += Number(result.processed || 0);
           skippedCount += Number(result.skipped || 0);
-          setGenerationProgress(targetLocale.toUpperCase() + ': ' + offset + '/' + result.total + ' source records · ' + generatedCount + ' drafts saved · ' + skippedCount + ' skipped · ' + (localeIndex + 1) + '/5 languages');
+          setGenerationProgress(targetLocale.toUpperCase() + ': ' + offset + '/' + result.total + ' source records · ' + generatedCount + ' drafts saved · ' + skippedCount + ' skipped · ' + (localeIndex + 1) + '/' + locales.length + ' languages');
           if (!(done && localeIndex === locales.length - 1)) {
             await new Promise(resolve => window.setTimeout(resolve, 6500));
           }
@@ -119,7 +119,7 @@ export const AdminTranslationManager: React.FC = () => {
         setGenerationProgress('Finished: ' + generatedCount + ' drafts saved, ' + skippedCount + ' skipped. Retry if any records are missing; review all drafts before publication.');
       } else {
         showToast('Bulk translation generation completed. All generated records remain drafts pending human review.', 'success');
-        setGenerationProgress('Completed all five language batches: ' + generatedCount + ' drafts saved. Review before publication.');
+        setGenerationProgress('Completed all ' + locales.length + ' language batches: ' + generatedCount + ' drafts saved. Review before publication.');
       }
     } catch (error: any) {
       showToast(error.message || 'Bulk translation generation stopped. You can safely retry; reviewed and published records are preserved.', 'error');
@@ -169,7 +169,7 @@ export const AdminTranslationManager: React.FC = () => {
           <p className="mt-1 text-sm text-stone-400">Super Admin + verified MFA required. Drafts never appear on public pages.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button onClick={() => void generateAllRequestedLocales()} disabled={generating || loading || saving} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{generating ? 'Generating drafts…' : 'Generate all 5 languages'}</button>
+          <button onClick={() => void generateAllRequestedLocales()} disabled={generating || loading || saving} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{generating ? 'Generating drafts…' : 'Generate all 28 languages'}</button>
           <button onClick={() => void load()} disabled={loading || generating} className="rounded border border-stone-700 px-3 py-2 text-sm disabled:opacity-50">{loading ? 'Loading…' : 'Refresh records'}</button>
         </div>
       </header>

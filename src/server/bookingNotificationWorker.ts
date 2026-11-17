@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { renderBookingTicketEmailHtml, renderBrandedEmailHtml } from '../utils/emailTemplate';
+import { ROUTABLE_LOCALE_CODES } from '../i18n/localeRouting';
 
 type QueueMessage = {
   msg_id: number;
@@ -36,6 +37,7 @@ type BookingRow = {
 
 const QUEUE_POLL_INTERVAL_MS = 15_000;
 const MAX_DELIVERY_ATTEMPTS = 5;
+const CUSTOMER_LOCALE_CODES = new Set<string>(ROUTABLE_LOCALE_CODES);
 
 function normalizeSenderEmail(value: string): string {
   const trimmed = value.trim().replace(/^["']|["']$/g, '');
@@ -60,7 +62,7 @@ function normalizeRelation(value: any): any {
 
 function normalizeCustomerLocale(value: unknown): string {
   const locale = typeof value === 'string' ? value.trim().toLowerCase() : '';
-  return ['en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'].includes(locale) ? locale : 'en';
+  return CUSTOMER_LOCALE_CODES.has(locale) ? locale : 'en';
 }
 
 function stableTranslationJson(value: any): string {
@@ -77,7 +79,7 @@ async function getLocalizedCommunicationTemplate(
   locale: string
 ): Promise<{ subject: string | null; body_text: string | null; is_active: boolean | null } | null> {
   if (locale !== 'en') {
-    if (['fr', 'es', 'nl', 'pl', 'pt'].includes(locale)) {
+    if (CUSTOMER_LOCALE_CODES.has(locale) && locale !== 'en') {
       const { data: source, error: sourceError } = await client.from('communication_templates')
         .select('*').eq('template_key', templateKey).eq('locale', 'en').maybeSingle();
       if (sourceError) throw sourceError;
