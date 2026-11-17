@@ -37,7 +37,7 @@
 
 ## P2 — Catalogue, content, localization and AI
 
-- [ ] Fix the published blog detail route that was listed in sitemap/catalogue but returned 404 in the public route check. Verify with the actual anon Data API role and RLS, not only privileged SQL.
+- [x] Rechecked the reported blog detail 404 against the live database using the actual anon role. The post is published and anon RLS returns it; the earlier audit used a misspelled slug (`mohamed` instead of the real `mohammed`). No database or content correction is required for that article.
 - [ ] Improve thin blog posts with original, useful, fact-checked content; do not auto-expand articles with generic filler.
 - [ ] Add itinerary steps to tours after the operator confirms real sequence and times. Do not invent schedules.
 - [ ] Complete destination landing pages only when they have meaningful, accurate excursion inventory and unique content.
