@@ -31,6 +31,7 @@ export const AdminTranslationManager: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState('');
+  const [confirmGenerate, setConfirmGenerate] = useState(false);
 
   const request = useCallback(async (url: string, init?: RequestInit) => {
     const { data } = await supabase.auth.getSession();
@@ -85,7 +86,6 @@ export const AdminTranslationManager: React.FC = () => {
   };
 
   const generateAllRequestedLocales = async () => {
-    if (!window.confirm('Generate draft translations for all published tours, destinations, blog posts, public pages, customer communication templates and the complete interface catalog in all 28 configured non-English languages, including Arabic? This uses the configured Gemini service and saves drafts only. Nothing will be published.')) return;
     setGenerating(true);
     setGenerationProgress('Preparing translation batches…');
     const locales = EUROPEAN_LOCALE_ROLLOUT.filter((item) => item.code !== 'en');
@@ -122,8 +122,9 @@ export const AdminTranslationManager: React.FC = () => {
         setGenerationProgress('Completed all ' + locales.length + ' language batches: ' + generatedCount + ' drafts saved. Review before publication.');
       }
     } catch (error: any) {
-      showToast(error.message || 'Bulk translation generation stopped. You can safely retry; reviewed and published records are preserved.', 'error');
-      setGenerationProgress('Stopped safely. Retry to continue; existing reviewed/published records are protected.');
+      const message = error instanceof Error ? error.message : 'Bulk translation generation stopped. You can safely retry.';
+      showToast(message, 'error');
+      setGenerationProgress('Stopped safely: ' + message + ' Existing reviewed/published records are preserved. Retry after the issue is resolved.');
     } finally {
       setGenerating(false);
     }
@@ -169,10 +170,15 @@ export const AdminTranslationManager: React.FC = () => {
           <p className="mt-1 text-sm text-stone-400">Super Admin + verified MFA required. Drafts never appear on public pages.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button onClick={() => void generateAllRequestedLocales()} disabled={generating || loading || saving} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{generating ? 'Generating drafts…' : 'Generate all 28 languages'}</button>
+          <button type="button" onClick={() => setConfirmGenerate(true)} disabled={generating || loading || saving} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{generating ? 'Generating drafts…' : 'Generate all 28 languages'}</button>
           <button onClick={() => void load()} disabled={loading || generating} className="rounded border border-stone-700 px-3 py-2 text-sm disabled:opacity-50">{loading ? 'Loading…' : 'Refresh records'}</button>
         </div>
       </header>
+      {confirmGenerate && !generating && <div role="dialog" aria-modal="true" aria-labelledby="translation-generate-title" className="rounded-xl border border-teal-700 bg-teal-950/40 p-4 space-y-3">
+        <h2 id="translation-generate-title" className="font-semibold text-white">Generate translation drafts?</h2>
+        <p className="text-sm text-stone-300">This translates published tours, destinations, blog posts, public pages, communication templates and the interface catalog into all 28 configured non-English languages, including Arabic. It uses Gemini. All results remain drafts; nothing is published automatically.</p>
+        <div className="flex flex-wrap gap-2"><button type="button" onClick={() => setConfirmGenerate(false)} className="rounded border border-stone-600 px-3 py-2 text-sm">Cancel</button><button type="button" onClick={() => { setConfirmGenerate(false); void generateAllRequestedLocales(); }} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white">Start generating drafts</button></div>
+      </div>}
       {generationProgress && <p role="status" aria-live="polite" className="rounded-lg border border-stone-800 bg-stone-900/50 px-4 py-3 text-sm text-stone-300">{generationProgress}</p>}
       <div className="grid gap-5 xl:grid-cols-[minmax(240px,0.8fr)_minmax(0,2fr)]">
         <aside className="rounded-xl border border-stone-800 bg-stone-900/60 p-4">
@@ -188,9 +194,9 @@ export const AdminTranslationManager: React.FC = () => {
         <section className="rounded-xl border border-stone-800 bg-stone-900/60 p-4 sm:p-6">
           <div className="mb-4 flex items-center gap-2"><FileText className="h-5 w-5 text-teal-400" /><h2 className="font-semibold">Translation record</h2></div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="text-xs text-stone-400">Content type<select value={entityType} onChange={e=>{const next=e.target.value;setEntityType(next);if(next==='ui_catalog'){setEntityKey('site-ui');setTitle('Interface messages');setSlug('');setSummary('');setSeoTitle('');setSeoDescription('');}else if(entityKey==='site-ui'){setEntityKey('');setTitle('');setSlug('');setSummary('');setSeoTitle('');setSeoDescription('');}}} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white">{ENTITY_TYPES.map(x=><option key={x}>{x}</option>)}</select></label>
+            <label className="text-xs text-stone-400">Content type<select value={entityType} onChange={e=>{const next=e.target.value;setEntityType(next);setSourceChecksum('');setSelectedId('');if(next==='ui_catalog'){setEntityKey('site-ui');setTitle('Interface messages');setSlug('');setSummary('');setSeoTitle('');setSeoDescription('');}else if(entityKey==='site-ui'){setEntityKey('');setTitle('');setSlug('');setSummary('');setSeoTitle('');setSeoDescription('');}}} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white">{ENTITY_TYPES.map(x=><option key={x}>{x}</option>)}</select></label>
             <label className="text-xs text-stone-400">Locale<select value={locale} onChange={e=>setLocale(e.target.value)} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white">{EUROPEAN_LOCALE_ROLLOUT.filter(x=>x.code!=='en').map(x=><option key={x.code} value={x.code}>{x.nativeName} ({x.code})</option>)}</select></label>
-            <label className="text-xs text-stone-400 sm:col-span-2">Source record key<input value={entityKey} onChange={e=>setEntityKey(e.target.value)} placeholder={entityType==='ui_catalog'?'site-ui':'Source record UUID or stable content key'} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label>
+            <label className="text-xs text-stone-400 sm:col-span-2">Source record key<input value={entityKey} onChange={e=>{setEntityKey(e.target.value);setSourceChecksum('');setSelectedId('');}} placeholder={entityType==='ui_catalog'?'site-ui':'Source record UUID or stable content key'} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label>
             <div className="sm:col-span-2 flex flex-wrap items-end gap-2"><label className="min-w-0 flex-1 text-xs text-stone-400">Source checksum<input value={sourceChecksum} readOnly placeholder="Load the authoritative checksum from the server" className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label><button type="button" disabled={loading || !entityKey.trim()} onClick={()=>void loadSource()} className="rounded border border-teal-700 px-3 py-2 text-xs font-semibold text-teal-200 disabled:opacity-50">Load source + checksum</button></div>
             {entityType!=='ui_catalog' && <><label className="text-xs text-stone-400">Translated title<input value={title} onChange={e=>setTitle(e.target.value)} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label>
             <label className="text-xs text-stone-400">Translated slug<input value={slug} onChange={e=>setSlug(e.target.value)} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label>
@@ -200,11 +206,12 @@ export const AdminTranslationManager: React.FC = () => {
             <label className="text-xs text-stone-400 sm:col-span-2">Translated structured content (JSON)<textarea value={contentJson} onChange={e=>setContentJson(e.target.value)} rows={10} spellCheck={false} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-3 font-mono text-xs text-white" /></label>
           </div>
           <div className="mt-5 flex flex-wrap gap-2">
-            <button disabled={saving} onClick={()=>void save('draft')} className="inline-flex items-center gap-2 rounded bg-stone-700 px-4 py-2 text-sm font-semibold disabled:opacity-50"><Save className="h-4 w-4"/>Save draft</button>
-            <button disabled={saving} onClick={()=>void save('review')} className="inline-flex items-center gap-2 rounded bg-amber-700 px-4 py-2 text-sm font-semibold disabled:opacity-50"><Send className="h-4 w-4"/>Submit for review</button>
-            <button disabled={saving} onClick={()=>void save('published')} className="inline-flex items-center gap-2 rounded bg-teal-700 px-4 py-2 text-sm font-semibold disabled:opacity-50"><CheckCircle2 className="h-4 w-4"/>Approve & publish</button>
+            <button disabled={saving || !entityKey.trim() || !sourceChecksum.trim()} onClick={()=>void save('draft')} className="inline-flex items-center gap-2 rounded bg-stone-700 px-4 py-2 text-sm font-semibold disabled:opacity-50"><Save className="h-4 w-4"/>Save draft</button>
+            <button disabled={saving || !entityKey.trim() || !sourceChecksum.trim()} onClick={()=>void save('review')} className="inline-flex items-center gap-2 rounded bg-amber-700 px-4 py-2 text-sm font-semibold disabled:opacity-50"><Send className="h-4 w-4"/>Submit for review</button>
+            <button disabled={saving || !entityKey.trim() || !sourceChecksum.trim()} onClick={()=>void save('published')} className="inline-flex items-center gap-2 rounded bg-teal-700 px-4 py-2 text-sm font-semibold disabled:opacity-50"><CheckCircle2 className="h-4 w-4"/>Approve & publish</button>
             {saving && <span className="inline-flex items-center gap-2 text-xs text-stone-400"><Loader2 className="h-4 w-4 animate-spin"/>Saving…</span>}
           </div>
+          {(!entityKey.trim() || !sourceChecksum.trim()) && <p className="mt-3 text-xs text-amber-300">To save, select an existing translation or enter its source record key and click <strong>Load source + checksum</strong>. Save actions stay disabled until the server verifies the source.</p>}
           <p className="mt-4 text-xs leading-relaxed text-amber-300/80">Publishing records approval and makes the row eligible for a future public resolver. UI catalogs are publishable only when every source message has a non-empty translation. Public UI delivery uses the verified catalog; booking/account routes are not offered in planned locales until a complete catalog exists.</p>
         </section>
       </div>
