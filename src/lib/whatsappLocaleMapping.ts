@@ -1,3 +1,5 @@
+import { EUROPEAN_LOCALE_ROLLOUT } from '../types/i18n';
+
 export const DEFAULT_WHATSAPP_LOCALE_LANGUAGE_MAP: Readonly<Record<string, string>> = {
   en: 'en',
   de: 'de',
@@ -6,7 +8,7 @@ export const DEFAULT_WHATSAPP_LOCALE_LANGUAGE_MAP: Readonly<Record<string, strin
   ru: 'ru',
 };
 
-const SUPPORTED_CUSTOMER_LOCALES = new Set(['en', 'de', 'fr', 'it', 'es', 'nl', 'pl', 'pt', 'ro', 'ru']);
+const SUPPORTED_CUSTOMER_LOCALES = new Set(EUROPEAN_LOCALE_ROLLOUT.map((locale) => locale.code));
 const META_LANGUAGE_CODE = /^[a-z]{2}(?:_[A-Z]{2})?$/;
 
 export interface WhatsAppLocaleLanguageConfig {
