@@ -23,6 +23,7 @@ import {
   getTourBySlug,
 } from '../src/services/tourService';
 import { TRANSLATIONS } from '../src/i18n/translations';
+import { isSupabaseConfigured } from '../src/services/supabaseClient';
 
 let passed = 0;
 let failed = 0;
