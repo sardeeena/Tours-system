@@ -3,6 +3,7 @@ import { renderBrandedEmailHtml } from './src/utils/emailTemplate';
 import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import { isIP } from 'node:net';
 import { GoogleGenAI } from '@google/genai';
+import { generateContentWithModelFallback, getGeminiProviderErrorDetails } from './src/server/geminiTranslationFallback';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import path from 'path';
 import fs from 'fs';
@@ -3267,29 +3268,31 @@ function parseGeminiTranslationJson(rawText: string): any {
   }
 }
 
-async function generateBulkGeminiContentWithRetry(
-  gemini: GoogleGenAI,
-  request: Parameters<GoogleGenAI['models']['generateContent']>[0],
-): Promise<Awaited<ReturnType<GoogleGenAI['models']['generateContent']>>> {
-  const maxAttempts = 4;
-  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    try {
-      return await gemini.models.generateContent(request);
-    } catch (error: any) {
-      const message = String(error?.message || error || 'Unknown Gemini error');
-      const status = Number(error?.status || error?.code || message.match(/(?:HTTP\\s*)?(429|500|502|503|504)/)?.[1] || 0);
-      const retryable = [429, 500, 502, 503, 504].includes(status)
-        || /UNAVAILABLE|RESOURCE_EXHAUSTED|ECONNRESET|ETIMEDOUT|temporarily unavailable|high demand/i.test(message);
-      if (!retryable || attempt === maxAttempts) throw error;
-      const delayMs = 1500 * (2 ** (attempt - 1));
-      console.warn('[Bulk translation generation] Gemini transient failure; retrying safely.', {
-        attempt, nextAttempt: attempt + 1, maxAttempts, status: status || null, delayMs,
-      });
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
-    }
-  }
-  throw new Error('Gemini translation request failed after retry attempts.');
-}
+const BULK_TRANSLATION_RESPONSE_SCHEMA = {
+  type: 'object',
+  properties: {
+    translations: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          entity_type: { type: 'string' },
+          entity_key: { type: 'string' },
+          title: { type: 'string' },
+          translated_slug: { type: 'string' },
+          summary: { type: 'string' },
+          seo_title: { type: 'string' },
+          seo_description: { type: 'string' },
+          content: { type: 'object', additionalProperties: true },
+        },
+        required: ['entity_type', 'entity_key', 'title', 'translated_slug', 'summary', 'seo_title', 'seo_description', 'content'],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ['translations'],
+  additionalProperties: false,
+};
 
 async function generateBulkTranslationResponse(
   items: BulkTranslationWorkItem[],
@@ -3310,12 +3313,12 @@ async function generateBulkTranslationResponse(
     'INPUT: ' + JSON.stringify(items.map(x => ({ entity_type: x.type, entity_key: x.key, source: x.payload }))),
   ].join('\n');
 
-  const response = await generateBulkGeminiContentWithRetry(gemini, {
+  const response = await generateContentWithModelFallback((request) => gemini.models.generateContent(request), {
     model: 'gemini-3.8-flash',
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     config: {
-      temperature: 0.1,
       responseMimeType: 'application/json',
+      responseJsonSchema: BULK_TRANSLATION_RESPONSE_SCHEMA,
       maxOutputTokens: 65536,
     },
   });
@@ -3352,13 +3355,13 @@ async function generateBulkTranslationResponse(
       const right = await generateBulkTranslationResponse(items.slice(midpoint), locale);
       return { translations: [...left.translations, ...right.translations] };
     }
-    const repaired = await generateBulkGeminiContentWithRetry(gemini, {
+    const repaired = await generateContentWithModelFallback((request) => gemini.models.generateContent(request), {
       model: 'gemini-3.8-flash',
       contents: [{ role: 'user', parts: [{ text: [
         'Repair only the JSON syntax of the following model output. Do not rewrite, summarize, translate, add, remove, or alter any values. Return one valid JSON object with the same translations array and exact field values. Return JSON only.',
         responseText,
       ].join('\n') }] }],
-      config: { temperature: 0, responseMimeType: 'application/json', maxOutputTokens: 65536 },
+      config: { responseMimeType: 'application/json', responseJsonSchema: BULK_TRANSLATION_RESPONSE_SCHEMA, maxOutputTokens: 65536 },
     });
     try {
       parsed = parseGeminiTranslationJson(repaired.text || '');
@@ -3377,9 +3380,13 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
   if (!Object.prototype.hasOwnProperty.call(BULK_TRANSLATION_LOCALES,locale)) return res.status(400).json({success:false,error:'Bulk generation supports the configured non-English locales.'});
   if (!ai) return res.status(503).json({success:false,error:'Server-side Gemini translation is not configured.'});
   if (!serverSupabase) return res.status(503).json({success:false,error:'Translation database unavailable.'});
+  let batchSize = 0;
+  let totalCandidates: number | null = null;
   try {
     const candidates = await getBulkTranslationCandidates();
+    totalCandidates = candidates.length;
     const page = candidates.slice(offset,offset+limit);
+    batchSize = page.length;
     const prepared: Array<{type:string;key:string;checksum:string;source:any;payload:any}> = [];
     for (const candidate of page) {
       const current = await getCurrentTranslationSourceChecksum(candidate.entity_type,candidate.entity_key);
@@ -3424,9 +3431,21 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
     const { error: auditError } = await serverSupabase.from('audit_logs').insert({ user_id: req.user!.id, action: 'CONTENT_TRANSLATION_BULK_DRAFT_GENERATED', entity_type: 'content_translation_batch', entity_id: null, new_data: { locale, offset, requested: page.length, saved, skipped, total: candidates.length } });
     if (auditError) console.warn('[Bulk translation generation] Audit event could not be persisted.');
     return res.json({success:true,locale,processed:saved,skipped,total:candidates.length,next_offset:Math.min(offset+limit,candidates.length),done:offset+limit>=candidates.length});
-  } catch(error) {
-    console.error('[Bulk translation generation] Failed:',error);
-    return res.status(502).json({success:false,error:'Translation generation failed for this batch. No translations were published; retry this batch.'});
+  } catch(error: any) {
+    const details = getGeminiProviderErrorDetails(error);
+    const providerUnavailable = details.status === 503;
+    console.error('[Bulk translation generation] Failed safely:', {
+      locale, offset, batchSize, totalCandidates,
+      providerStatus: details.status || null, providerCode: details.code || null,
+      errorName: String(error?.name || 'Error'),
+    });
+    return res.status(providerUnavailable ? 503 : 502).json({
+      success:false,
+      error: providerUnavailable
+        ? 'Gemini is temporarily unavailable on the primary and fallback models. No translations were published; retry this batch later.'
+        : 'Translation generation failed for this batch. No translations were published; retry this batch.',
+    });
+
   }
 });
 
