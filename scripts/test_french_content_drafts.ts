@@ -26,6 +26,14 @@ assert.deepEqual(missingPrivate, [], 'Every extracted private customer UI messag
 assert.deepEqual(extraPrivate, [], 'The private French catalogue contains no unknown source keys');
 assert.equal(translatedPrivateKeys.length, expectedPrivateKeys.length);
 assert.equal(privateDraft.coverage, translatedPrivateKeys.length);
+assert.equal(bundle.coverage?.tour, count('tour'));
+assert.equal(bundle.coverage?.blog_post, count('blog_post'));
+assert.equal(bundle.coverage?.destination, count('destination'));
+assert.equal(bundle.coverage?.communication_template, count('communication_template'));
+assert.equal(bundle.coverage?.static_page, count('static_page'));
+assert.equal(bundle.coverage?.private_ui_messages, expectedPrivateKeys.length);
+assert.equal(bundle.coverage?.ui_catalog_messages, Object.keys(ui.content).length);
+assert.equal(bundle.coverage?.source_records, records.length);
 
 const ui = records.find((record) => record.entity_type === 'ui_catalog');
 for (const key of Object.keys(TRANSLATIONS.en)) assert.ok(ui.content[key], 'Public UI key translated: ' + key);
