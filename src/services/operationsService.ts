@@ -1122,7 +1122,8 @@ export async function updatePickupScheduleStatus(
   newStatus: PickupStatus,
   driverVehicle?: string,
   driverName?: string,
-  pickupTime?: string
+  pickupTime?: string,
+  driverId?: string
 ): Promise<boolean> {
   const normalized = (newStatus || 'pending').toLowerCase() as PickupStatus;
   const reference = bookingRef?.trim().toUpperCase();
@@ -1139,6 +1140,7 @@ export async function updatePickupScheduleStatus(
       ...(driverVehicle !== undefined ? { driverVehicle: driverVehicle.trim() } : {}),
       ...(driverName !== undefined ? { driverName: driverName.trim() } : {}),
       ...(pickupTime !== undefined ? { pickupTime } : {}),
+      ...(driverId !== undefined ? { driverId } : {}),
     };
     setLocal(LOCAL_PICKUPS_KEY, cached);
     return true;
@@ -1172,7 +1174,7 @@ export async function updatePickupScheduleStatus(
     .limit(1);
   if (scheduleReadError) throw new Error(formatSupabaseError(scheduleReadError));
 
-  if ((driverName !== undefined || driverVehicle !== undefined || pickupTime !== undefined) && !scheduleRows?.[0]?.id) {
+  if ((driverName !== undefined || driverVehicle !== undefined || pickupTime !== undefined || driverId !== undefined) && !scheduleRows?.[0]?.id) {
     throw new Error('No persisted pickup schedule exists for this booking yet. Create the pickup schedule before assigning a driver, vehicle or pickup time.');
   }
 
@@ -1184,6 +1186,7 @@ export async function updatePickupScheduleStatus(
     if (driverVehicle !== undefined) schedulePatch.vehicle = driverVehicle.trim() || null;
     if (driverName !== undefined) schedulePatch.driver_name = driverName.trim() || null;
     if (pickupTime !== undefined) schedulePatch.pickup_time = pickupTime;
+    if (driverId !== undefined) schedulePatch.driver_id = driverId || null;
     const { error: scheduleError } = await supabase
       .from('pickup_schedules')
       .update(schedulePatch)
@@ -1198,6 +1201,7 @@ export async function updatePickupScheduleStatus(
     ...(driverVehicle !== undefined ? { driverVehicle: driverVehicle.trim() } : {}),
     ...(driverName !== undefined ? { driverName: driverName.trim() } : {}),
     ...(pickupTime !== undefined ? { pickupTime } : {}),
+    ...(driverId !== undefined ? { driverId } : {}),
   };
   setLocal(LOCAL_PICKUPS_KEY, cached);
   return true;
