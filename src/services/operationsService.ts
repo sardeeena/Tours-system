@@ -1048,24 +1048,22 @@ export async function getDailyPickupSchedule(dateTarget?: string): Promise<Picku
   const date = dateTarget || new Date().toISOString().split('T')[0];
   const allBookings = await bookingRepository.listBookings();
 
-  // Query dedicated pickup_schedules table if populated
+  // The database is authoritative in production. A failed query must not be
+  // silently replaced by stale browser data.
   let dbPickups: any[] = [];
   if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('pickup_schedules')
-        .select('*')
-        .eq('tour_date', date);
-      if (!error && data && data.length > 0) {
-        dbPickups = data;
-      }
-    } catch {
-      // ignore
-    }
+    const { data, error } = await supabase
+      .from('pickup_schedules')
+      .select('*')
+      .eq('tour_date', date);
+    if (error) throw new Error(formatSupabaseError(error));
+    dbPickups = data || [];
   }
 
-  // Also read cached state
-  const cachedExtras = getLocal<Record<string, Partial<PickupScheduleItem>>>(LOCAL_PICKUPS_KEY, {});
+  // Browser-local pickup overrides are restricted to the explicit dev sandbox.
+  const cachedExtras = import.meta.env.DEV
+    ? getLocal<Record<string, Partial<PickupScheduleItem>>>(LOCAL_PICKUPS_KEY, {})
+    : {};
 
   const dayBookings = allBookings.filter((b) => {
     const bDate = b.date ? b.date.split('T')[0] : '';
