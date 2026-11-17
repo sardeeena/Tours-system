@@ -18,7 +18,7 @@ assert.match(script,/checksum\(source\)!==item\.source_checksum/,'Stale source b
 assert.match(doc,/human reviewer/i);
 assert.match(doc,/dry run/i);
 assert.match(server,/maxOutputTokens:\s*65536/, 'Gemini output budget is large enough for structured catalogue translations');
-assert.match(server,/thinkingConfig:\s*\{\s*thinkingLevel:\s*'LOW'\s*\}/, 'Bulk translation generation limits unnecessary reasoning overhead');
+assert.match(server,/thinkingConfig:\s*\{\s*thinkingLevel:\s*'MINIMAL'\s*\}/, 'Bulk translation generation limits unnecessary reasoning overhead');
 assert.match(server,/generateBulkTranslationResponse[\s\S]*MAX_TOKENS[\s\S]*malformed JSON[\s\S]*Repair only the JSON syntax/, 'Gemini truncation and malformed JSON have safe recovery paths');
 assert.match(server,/content_translations_locale_slug_unique[\s\S]*already used in this language/, 'Duplicate localized slugs return a useful save error');
 assert.match(editor,/role="dialog"[\s\S]*Start generating drafts/, 'Generation uses a visible in-app confirmation instead of a browser prompt');
