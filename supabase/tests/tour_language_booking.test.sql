@@ -86,8 +86,8 @@ SELECT ok(
 
 -- Exercise the public RPC as a guest and as a signed-in customer. The entire
 -- test runs in this file's transaction and is rolled back at the end.
-INSERT INTO public.tours (title, slug, status, price, max_guests, languages)
-VALUES ('pgTAP Language Test Tour', 'pgtap-language-test-tour', 'published', 100.00, 10, ARRAY['English', 'Arabic']::text[]);
+INSERT INTO public.tours (title, slug, status, price, max_guests, pickup_available, languages)
+VALUES ('pgTAP Language Test Tour', 'pgtap-language-test-tour', 'published', 100.00, 10, FALSE, ARRAY['English', 'Arabic']::text[]);
 
 INSERT INTO public.tour_availability (tour_id, date, max_capacity, booked_count, status)
 SELECT id, CURRENT_DATE + 40, 10, 0, 'available'
