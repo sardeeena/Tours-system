@@ -1,0 +1,103 @@
+{
+  "locale": "fr",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "records": [
+    {
+      "entity_type": "tour",
+      "entity_key": "87f5ab47-2499-4511-9a68-39a279e5bb85",
+      "source_slug": "hurghada-airport-to-hotel-private-arrival-transfer",
+      "translated_slug": "transfert-prive-arrivee-aeroport-hurghada-hotel",
+      "title": "Aéroport de Hurghada vers votre hôtel : transfert privé à l’arrivée",
+      "summary": "Commencez vos vacances à Hurghada sans stress grâce à une prise en charge privée à l’aéroport. Votre chauffeur vous attendra dans le hall des arrivées avec une pancarte à votre nom et vous conduira directement à votre hôtel dans un véhicule moderne et climatisé. Service disponible 24 h/24 et 7 j/7, sans autres passagers ni file d’attente pour les taxis.",
+      "content": {
+        "short_description": "Commencez votre séjour à Hurghada en toute sérénité grâce à une prise en charge privée à l’aéroport. Votre chauffeur vous accueillera dans le hall des arrivées avec une pancarte à votre nom et vous conduira directement à votre hôtel dans un véhicule moderne et climatisé. Service disponible 24 h/24, sans passagers partagés ni file d’attente pour les taxis.",
+        "description": "Rendez votre arrivée à Hurghada simple et confortable grâce à un transfert privé organisé à l’avance depuis l’aéroport.\n\nAprès avoir récupéré vos bagages et passé les formalités douanières, votre chauffeur vous attendra dans le hall des arrivées de l’aéroport avec une pancarte portant votre nom. Vous n’aurez pas besoin de chercher un taxi, de négocier le prix ni d’attendre d’autres passagers.\n\nProfitez d’un trajet direct jusqu’à votre hôtel dans votre propre véhicule privé et climatisé. Votre chauffeur vous aidera avec vos bagages et vous conduira directement à votre hébergement pour commencer vos vacances en toute tranquillité.\n\nLe service de transfert fonctionne 24 heures sur 24. Que votre vol arrive tôt le matin, dans l’après-midi ou tard dans la nuit, votre prise en charge peut être organisée en fonction de votre heure d’arrivée.\n\nVous recevrez également un contact WhatsApp avant votre voyage, ce qui facilitera la coordination avec votre chauffeur si nécessaire. Si vous souhaitez faire un bref arrêt dans un magasin pour acheter de l’eau ou d’autres produits essentiels avant d’arriver à votre hôtel, vous pouvez demander un court arrêt en chemin.\n\nRéservez votre transfert à l’arrivée à l’avance et profitez d’un trajet privé et pratique entre l’aéroport de Hurghada et votre hôtel, sans attente inutile.",
+        "highlights": [
+          "Transfert privé aller simple de l’aéroport de Hurghada à votre hôtel",
+          "Accueil personnalisé dans le hall des arrivées de l’aéroport",
+          "Véhicule moderne et climatisé réservé exclusivement à votre groupe",
+          "Aide pour vos bagages par votre chauffeur",
+          "Service 24 h/24, y compris pour les arrivées tard dans la nuit ou tôt le matin",
+          "Aucun passager partagé, aucune file d’attente pour les taxis et aucune négociation de tarif"
+        ],
+        "included": [
+          "Transfert privé aller simple de l’aéroport de Hurghada à votre hôtel",
+          "Véhicule privé et climatisé réservé à votre groupe uniquement",
+          "Accueil personnalisé dans le hall des arrivées de l’aéroport",
+          "Aide pour les bagages",
+          "Tous les frais de service applicables"
+        ],
+        "excluded": [
+          "Transfert retour de votre hôtel vers l’aéroport de Hurghada",
+          "Transferts vers les resorts situés en dehors de la ville de Hurghada",
+          "Arrêts supplémentaires ou temps prolongé consacré au shopping",
+          "Nourriture, boissons et achats personnels",
+          "Tout service non expressément mentionné dans les prestations incluses"
+        ],
+        "faqs": []
+      },
+      "seo_title": "Transfert privé de l’aéroport de Hurghada à votre hôtel",
+      "seo_description": "Réservez un transfert privé depuis l’aéroport de Hurghada : accueil avec pancarte nominative, aide aux bagages et véhicule climatisé disponible 24 h/24.",
+      "duration": "30 minutes",
+      "duration_type": "Demi-journée",
+      "departure_time": "09:00 AM",
+      "age_restrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
+      "pickup_info": "Prise en charge gratuite dans le hall de votre hôtel et retour inclus dans toute la zone de Hurghada.",
+      "cancellation_policy": "Annulation gratuite jusqu’à 24 heures avant l’heure de début de l’excursion."
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "a66d28fb-505c-4cf6-b326-c47bbabe2624",
+      "source_slug": "hurghada-desert-quad-safari-atv-adventure-camel-ride-bedouin-village",
+      "translated_slug": "hurghada-safari-quad-desert-balade-chameau-village-bedouin",
+      "title": "Safari en quad dans le désert de Hurghada : aventure en ATV, balade à dos de chameau et village bédouin",
+      "summary": "Découvrez la facette aventureuse de Hurghada lors d’une sortie palpitante en quad à travers les magnifiques paysages désertiques. Suivez votre moniteur professionnel sur les pistes de sable doré, visitez un village bédouin traditionnel et profitez d’une balade reposante à dos de chameau. Faites une pause autour d’un authentique thé aux herbes et découvrez l’hospitalité chaleureuse du désert. Choisissez un départ le matin, l’après-midi ou au coucher du soleil.",
+      "content": {
+        "short_description": "Découvrez la facette aventureuse de Hurghada lors d’une sortie en quad à travers les magnifiques paysages désertiques. Suivez votre moniteur professionnel sur les pistes de sable doré, visitez un village bédouin traditionnel et profitez d’une balade à dos de chameau. Faites une pause autour d’un thé aux herbes et découvrez l’hospitalité du désert. Choisissez un départ le matin, l’après-midi ou au coucher du soleil.",
+        "description": "## Découvrez les sensations du désert égyptien\n\nVous cherchez une activité différente pendant vos vacances à Hurghada ? Quittez l’ambiance animée des resorts et découvrez la beauté du désert environnant lors d’un safari palpitant en quad.\n\nVotre aventure commence par une prise en charge pratique à votre hôtel de Hurghada. Profitez d’un transfert confortable jusqu’à la station de quad, située près de la lisière du désert, où votre moniteur professionnel vous accueillera et vous préparera à la randonnée.\n\n## Préparez-vous à votre aventure en quad\n\nAvant le départ, vous recevrez un briefing de sécurité et apprendrez à utiliser les commandes de base de votre quad. Vous aurez également le temps d’effectuer un court essai afin de vous familiariser avec le véhicule et de prendre confiance avant de partir dans le désert.\n\nLorsque tout le monde sera prêt, suivez votre moniteur sur les étendues de sable lors d’une expérience palpitante de 45 minutes en quad. Sentez la brise fraîche du désert, profitez des paysages changeants et découvrez les sensations de la conduite à travers les étendues dorées qui entourent Hurghada.\n\nQue vous conduisiez un quad pour la première fois ou que vous aimiez déjà les aventures tout-terrain, votre guide veillera à ce que l’expérience reste agréable et adaptée au rythme du groupe.\n\n## Découvrez la chaleur de l’hospitalité bédouine\n\nAprès votre randonnée, faites une pause dans un village bédouin traditionnel et découvrez un aspect plus paisible de la vie dans le désert.\n\nDégustez un verre de thé aux herbes fraîchement préparé, rencontrez les hôtes locaux et découvrez quelques coutumes et traditions qui façonnent la vie dans le désert depuis des générations.\n\nC’est une belle occasion de ralentir, de profiter des environs et d’apprécier l’accueil chaleureux de l’hospitalité bédouine.\n\n## Profitez d’une balade traditionnelle à dos de chameau\n\nUne expérience dans le désert ne serait pas complète sans rencontrer l’un des animaux les plus emblématiques de la région.\n\nMontez à dos de chameau et profitez d’une promenade tranquille à travers les paysages sablonneux. À l’opposé des sensations du quad, cette expérience paisible vous permet d’apprécier le désert à un rythme plus lent et de prendre quelques photos mémorables.\n\n## Choisissez l’heure de départ qui vous convient\n\nPersonnalisez votre expérience en choisissant un départ le matin, l’après-midi ou au coucher du soleil.\n\nLes sorties matinales offrent un début de journée rafraîchissant, tandis que les excursions de l’après-midi et du coucher du soleil proposent une ambiance différente, au fil des changements de lumière dans le désert.\n\nAprès vos activités, retournez à la station de safari et profitez d’un transfert confortable jusqu’à votre hôtel.\n\nDes sensations de la randonnée en quad au plaisir simple de partager un thé dans un village bédouin, cette expérience réunit aventure, culture locale et moments mémorables dans le désert égyptien.",
+        "highlights": [
+          "Profitez d’une aventure palpitante de 45 minutes en quad dans le désert",
+          "Parcourez les paysages de sable doré qui entourent Hurghada",
+          "Recevez un briefing de sécurité et effectuez un court essai avant le départ",
+          "Visitez un village bédouin traditionnel et découvrez les traditions locales du désert",
+          "Découvrez l’hospitalité bédouine authentique autour d’un thé aux herbes",
+          "Profitez d’une balade reposante à dos de chameau dans le désert",
+          "Choisissez un départ le matin, l’après-midi ou au coucher du soleil",
+          "Voyagez confortablement avec prise en charge et retour à l’hôtel à Hurghada",
+          "Choisissez entre une aventure en groupe partagé ou une expérience privée"
+        ],
+        "included": [
+          "Prise en charge et retour à l’hôtel à Hurghada et dans les environs",
+          "Transport climatisé",
+          "Expérience de 45 minutes en quad ATV",
+          "Moniteur professionnel de safari dans le désert",
+          "Casque de sécurité",
+          "Briefing de sécurité et essai de conduite",
+          "Visite d’un village bédouin traditionnel",
+          "Balade à dos de chameau",
+          "Thé aux herbes traditionnel bédouin",
+          "Une bouteille d’eau minérale"
+        ],
+        "excluded": [
+          "Foulard bédouin (disponible en option)",
+          "Lunettes de protection (disponibles en option)",
+          "Frais de transfert supplémentaires depuis certaines zones environnantes",
+          "Services de photographie et de vidéo professionnels",
+          "Dépenses personnelles",
+          "Pourboires",
+          "Tout service non expressément mentionné dans les prestations incluses"
+        ],
+        "faqs": []
+      },
+      "seo_title": "Safari en quad dans le désert de Hurghada avec chameau et village bédouin",
+      "seo_description": "Partez en quad dans le désert de Hurghada, visitez un village bédouin, dégustez un thé traditionnel et profitez d’une balade à dos de chameau.",
+      "duration": "Demi-journée (environ 3 heures)",
+      "duration_type": "Demi-journée",
+      "departure_time": "08:30 AM",
+      "age_restrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
+      "pickup_info": "Prise en charge gratuite dans le hall de votre hôtel et retour inclus dans toute la zone de Hurghada.",
+      "cancellation_policy": "Annulation gratuite jusqu’à 24 heures avant l’heure de début de l’excursion."
+    }
+  ]
+}

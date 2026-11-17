@@ -1,0 +1,27 @@
+{
+  "locale": "fr",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "records": [
+    {
+      "entity_type": "static_page",
+      "entity_key": "home",
+      "source_slug": "home",
+      "translated_slug": "home",
+      "title": "Explorez le littoral égyptien de la mer Rouge",
+      "summary": "Excursions en bateau, visites d’îles, snorkeling, plongée et safaris dans le désert sur la côte égyptienne de la mer Rouge.",
+      "seo_title": "Excursions en mer Rouge en Égypte | Awesome Adventure Tours",
+      "seo_description": "Découvrez la mer Rouge égyptienne avec des sorties en bateau, des excursions sur les îles, du snorkeling, de la plongée et des safaris dans le désert au départ de Hurghada.",
+      "content": {
+        "heroHeadline": "Explorez le littoral égyptien de la mer Rouge",
+        "heroSubtitle": "Excursions en bateau, visites d’îles, snorkeling, plongée et safaris dans le désert sur la côte égyptienne de la mer Rouge.",
+        "sections": [],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Découvrir davantage",
+          "bookNow": "Réserver"
+        }
+      }
+    }
+  ]
+}

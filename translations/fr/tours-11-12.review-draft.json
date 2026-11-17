@@ -1,0 +1,118 @@
+{
+  "locale": "fr",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "records": [
+    {
+      "entity_type": "tour",
+      "entity_key": "8737c07b-794e-4189-a7d3-401fd9c8c02b",
+      "source_slug": "hurghada-desert-stargazing-safari-jeep-adventure-bedouin-dinner-telescope-experience",
+      "translated_slug": "hurghada-safari-jeep-desert-observation-etoiles-diner-bedouin",
+      "title": "Safari dans le désert de Hurghada avec observation des étoiles : aventure en Jeep, dîner bédouin et télescope",
+      "summary": "Échappez aux lumières de la ville et découvrez la magie du désert égyptien lors d’une soirée inoubliable au départ de Hurghada. Profitez d’une excursion palpitante en Jeep tout-terrain, découvrez l’hospitalité bédouine, faites une balade mémorable à dos de chameau et admirez le coucher du soleil dans le désert. Terminez la soirée par un délicieux dîner et une séance fascinante d’observation des étoiles au télescope avec un expert en astronomie.",
+      "content": {
+        "short_description": "Échappez aux lumières de la ville et découvrez la magie du désert égyptien lors d’une soirée inoubliable au départ de Hurghada. Profitez d’une excursion en Jeep tout-terrain, découvrez l’hospitalité bédouine, faites une balade à dos de chameau et admirez le coucher du soleil. Terminez par un délicieux dîner et une séance d’observation des étoiles au télescope avec un expert en astronomie.",
+        "description": "## Découvrez la magie du désert après le coucher du soleil\n\nÉchangez l’agitation de Hurghada contre la beauté paisible du désert égyptien lors d’un safari en soirée unique, riche en aventures, en découvertes culturelles et en panoramas inoubliables.\n\nVotre expérience commence par une prise en charge pratique à votre hôtel, suivie d’un trajet jusqu’au point de rendez-vous dans le désert. De là, montez à bord d’une puissante Jeep 4x4 et partez à la découverte des terrains accidentés du désert. Profitez des sensations de la conduite sur les pistes sablonneuses tout en admirant les impressionnants paysages montagneux et les vastes étendues du désert oriental.\n\n## Découvrez la vie bédouine traditionnelle\n\nPoursuivez votre parcours jusqu’à un village bédouin traditionnel, où vous découvrirez un aperçu du mode de vie local et recevrez un accueil chaleureux de la communauté. Découvrez certaines de leurs coutumes et traditions, détendez-vous dans un environnement paisible et goûtez à l’authentique hospitalité bédouine autour d’un thé traditionnel.\n\nVous aurez également l’occasion de faire une balade à dos de chameau, une belle façon de découvrir le désert à un rythme plus lent et de prendre quelques photos mémorables de vos vacances.\n\n## Admirez un magnifique coucher de soleil dans le désert\n\nÀ mesure que l’après-midi laisse place à la soirée, prenez le temps d’admirer les couleurs changeantes du ciel lorsque le soleil se couche derrière les montagnes du désert. Le calme des environs et les paysages naturels spectaculaires créent une atmosphère idéale pour se détendre et prendre des photos.\n\n## Un délicieux dîner sous le ciel du désert\n\nAprès avoir admiré le coucher du soleil, installez-vous pour un dîner traditionnel de style bédouin. Savourez une sélection de plats fraîchement préparés dans un cadre accueillant au cœur du désert, entouré par la tranquillité de la soirée.\n\n## Explorez les merveilles du ciel nocturne\n\nLe moment fort de votre aventure arrive après la tombée de la nuit. Loin des lumières éclatantes de la ville, le désert offre un cadre exceptionnel pour découvrir le ciel nocturne.\n\nAvec l’aide d’un guide expérimenté en astronomie, apprenez à connaître les étoiles, les constellations et des objets célestes fascinants. Regardez à travers un télescope pour observer de plus près la lune, les planètes et d’autres éléments visibles du ciel nocturne. Une expérience mémorable pour les voyageurs curieux comme pour les passionnés d’astronomie.\n\nAprès une soirée riche en aventures dans le désert, en découvertes culturelles, en cuisine savoureuse et en observation fascinante des étoiles, détendez-vous pendant le trajet de retour et profitez d’un transfert confortable jusqu’à votre hôtel à Hurghada.",
+        "highlights": [
+          "Explorez le désert égyptien lors d’une passionnante aventure en Jeep 4x4",
+          "Visitez un village bédouin traditionnel et découvrez l’hospitalité locale",
+          "Profitez d’une balade reposante à dos de chameau dans le désert",
+          "Admirez de magnifiques vues sur le coucher du soleil derrière les montagnes du désert",
+          "Savourez un délicieux dîner bédouin traditionnel",
+          "Découvrez les étoiles et les constellations avec un guide expert en astronomie",
+          "Observez la lune, les planètes et le ciel nocturne à travers un télescope professionnel",
+          "Profitez de la prise en charge et du retour à l’hôtel à Hurghada"
+        ],
+        "included": [
+          "Prise en charge et retour à l’hôtel à Hurghada",
+          "Safari dans le désert en Jeep 4x4",
+          "Visite d’un village bédouin traditionnel",
+          "Balade à dos de chameau",
+          "Thé bédouin traditionnel",
+          "Dîner de style bédouin",
+          "Guide professionnel",
+          "Séance guidée d’observation des étoiles",
+          "Session d’observation au télescope"
+        ],
+        "excluded": [
+          "Dépenses personnelles",
+          "Pourboires",
+          "Boissons supplémentaires non incluses dans le repas",
+          "Achats facultatifs au village bédouin",
+          "Tout service non mentionné dans les prestations incluses"
+        ],
+        "faqs": []
+      },
+      "seo_title": "Safari dans le désert de Hurghada avec dîner bédouin et observation des étoiles",
+      "seo_description": "Partez en Jeep 4x4 dans le désert de Hurghada, visitez un village bédouin, dégustez un dîner traditionnel et observez les étoiles au télescope.",
+      "duration": "5 heures",
+      "duration_type": "Demi-journée",
+      "departure_time": "14:00",
+      "age_restrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
+      "pickup_info": "Prise en charge gratuite dans le hall de votre hôtel et retour inclus dans toute la zone de Hurghada.",
+      "cancellation_policy": "Annulation gratuite jusqu’à 24 heures avant l’heure de début de l’excursion."
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "59b8ecbd-a2a7-4cbf-bbef-dc6f4f1374be",
+      "source_slug": "hurghada-dolphin-watching-snorkeling-boat-trip",
+      "translated_slug": "hurghada-observation-dauphins-snorkeling-sortie-bateau",
+      "title": "Hurghada : observation des dauphins et snorkeling en bateau",
+      "summary": "Passez une journée sur la mer Rouge à la recherche de dauphins sauvages, explorez des récifs coralliens colorés et profitez d’un déjeuner fraîchement préparé à bord.",
+      "content": {
+        "short_description": "Passez une journée sur la mer Rouge à la recherche de dauphins sauvages, à explorer des récifs coralliens colorés et à savourer un déjeuner fraîchement préparé à bord du bateau.",
+        "description": "Il y a quelque chose de particulier dans le fait d’apercevoir des dauphins en pleine mer. Vous profitez tranquillement du mouvement du bateau et, l’instant suivant, vous pouvez voir un groupe de dauphins nager dans les eaux bleues à proximité.\n\nVotre journée commence par une prise en charge à votre hôtel de Hurghada avant de rejoindre la marina, où le bateau vous attend. Mettez le cap sur Dolphin House, également connue sous le nom de Sha'ab El Erg, une zone récifale réputée pour ses dauphins à long bec sauvages.\n\nGardez les yeux sur l’eau et profitez de l’observation de ces magnifiques animaux dans leur habitat naturel. Les observations de dauphins sont fréquentes, mais elles ne peuvent jamais être garanties. L’équipage applique des pratiques responsables d’observation de la faune et laisse aux dauphins l’espace nécessaire pour se déplacer librement.\n\nL’aventure se poursuit avec deux arrêts snorkeling sur des récifs coralliens, où vous pourrez découvrir des poissons colorés et des paysages sous-marins fascinants. Que vous soyez un adepte expérimenté du snorkeling ou que vous essayiez pour la première fois, les guides sont là pour vous aider à vous sentir à l’aise.\n\nEntre les arrêts, profitez d’un déjeuner buffet, de boissons rafraîchissantes et de moments de détente sur le pont ensoleillé du bateau ou dans l’espace ombragé.\n\nC’est bien plus qu’une simple sortie en bateau. C’est l’occasion de ralentir, de profiter de la mer, de découvrir la vie marine et de regagner le rivage après une journée mémorable.",
+        "highlights": [
+          "Recherchez les dauphins à long bec sauvages dans leur habitat naturel",
+          "Naviguez sur les magnifiques eaux de la mer Rouge",
+          "Visitez la célèbre zone récifale de Dolphin House",
+          "Explorez deux récifs coralliens lors d’arrêts snorkeling guidés",
+          "Découvrez des poissons tropicaux colorés et la vie marine",
+          "Profitez d’un déjeuner buffet et de boissons rafraîchissantes à bord",
+          "Détendez-vous sur le pont ensoleillé ou dans le salon ombragé du yacht",
+          "Vivez une journée complète d’aventure marine au départ de Hurghada"
+        ],
+        "included": [
+          "Prise en charge et retour à l’hôtel dans la zone de Hurghada",
+          "Transport aller-retour climatisé",
+          "Croisière en yacht vers Dolphin House et les récifs coralliens voisins",
+          "Expérience d’observation des dauphins sauvages",
+          "Deux arrêts snorkeling",
+          "Guides professionnels de snorkeling",
+          "Équipement de snorkeling, notamment masque, palmes et gilet de sauvetage",
+          "Déjeuner buffet servi à bord",
+          "Collations et fruits de saison",
+          "Boissons sans alcool, boissons chaudes et eau minérale",
+          "Toilettes à bord, douche d’eau douce et espace ombragé",
+          "Taxes et frais de service applicables"
+        ],
+        "excluded": [
+          "Transferts depuis Makadi Bay, Sahl Hasheesh, El Gouna, Safaga ou Soma Bay, sauf s’ils sont ajoutés à la réservation",
+          "Serviettes",
+          "Dépenses personnelles et pourboires",
+          "Options supplémentaires non précisées dans la formule sélectionnée"
+        ],
+        "faqs": [
+          {
+            "question": "L’équipement de snorkeling est-il fourni ou dois-je apporter le mien ?",
+            "answer": "Des masques, tubas et palmes désinfectés, en tailles adulte et enfant, sont fournis gratuitement à bord.",
+            "section": "faq"
+          },
+          {
+            "question": "Les personnes qui ne savent pas nager peuvent-elles participer en toute sécurité ?",
+            "answer": "Oui. Des gilets de flottaison homologués par les garde-côtes sont fournis et des moniteurs de plongée certifiés accompagnent les participants dans l’eau.",
+            "section": "faq"
+          }
+        ]
+      },
+      "seo_title": "Observation des dauphins et snorkeling en bateau à Hurghada",
+      "seo_description": "Partez de Hurghada pour observer les dauphins sauvages, faire du snorkeling sur deux récifs et profiter d’un déjeuner buffet à bord.",
+      "duration": "Journée complète (environ 7 heures)",
+      "duration_type": "Journée complète",
+      "departure_time": "08:30 AM",
+      "age_restrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
+      "pickup_info": "Prise en charge gratuite dans le hall de votre hôtel et retour inclus dans toute la zone de Hurghada.",
+      "cancellation_policy": "Annulation gratuite jusqu’à 24 heures avant l’heure de début de l’excursion."
+    }
+  ]
+}

@@ -1,0 +1,278 @@
+{
+  "locale": "fr",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "records": [
+    {
+      "entity_type": "communication_template",
+      "entity_key": "9d0afa47-45f6-47b8-8dde-eeae58e45b97",
+      "template_key": "booking_confirmation",
+      "name": "Confirmation de réservation",
+      "channel": "Both",
+      "subject": "Confirmation de réservation : {{tour_name}} (réf. : {{booking_reference}})",
+      "body_text": "Bonjour {{customer_name}},\n\nMerci d’avoir réservé auprès d’Awesome Adventure Tours. Votre réservation pour {{tour_name}} le {{tour_date}} est confirmée.\n\nRéférence de réservation : {{booking_reference}}\nMontant total : {{amount}}\nSolde restant dû : {{balance_due}}\nHeure de prise en charge : {{pickup_time}}\n\nBien cordialement,\nLe service conciergerie d’Awesome Adventure Tours",
+      "variables": [
+        "customer_name",
+        "booking_reference",
+        "tour_name",
+        "tour_date",
+        "pickup_time",
+        "amount",
+        "balance_due"
+      ]
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "a2067910-50a2-41e4-bb08-80722a0750bf",
+      "template_key": "booking_received",
+      "name": "Billet de réservation",
+      "channel": "Email",
+      "subject": "Votre billet de réservation Awesome Adventure Tours : {{booking_reference}}",
+      "body_text": "Bonjour {{customer_name}},\n\nNous avons bien reçu votre demande de réservation pour {{tour_name}} le {{tour_date}}. Votre billet de réservation numérique figure ci-dessous.\n\nRéférence de réservation : {{booking_reference}}\nStatut de la réservation : {{booking_status}}\nTotal : {{currency}} {{amount}}\n\nVeuillez conserver votre référence de réservation à portée de main lorsque vous contactez notre équipe. L’heure de prise en charge et les détails opérationnels pourront être confirmés séparément.\n\nMerci,\nAwesome Adventure Tours",
+      "variables": [
+        "customer_name",
+        "booking_reference",
+        "tour_name",
+        "tour_date",
+        "booking_status",
+        "currency",
+        "amount"
+      ]
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "3f657bd6-15e7-477f-b513-ac9038af2383",
+      "template_key": "booking_review_request",
+      "name": "Demande d’avis après une excursion terminée",
+      "channel": "Email",
+      "subject": "Comment s’est passée votre excursion {{tour_name}} ? Votre avis nous intéresse",
+      "body_text": "Bonjour {{customer_name}},\n\nMerci d’avoir participé à {{tour_name}} (réservation {{booking_reference}}). Nous espérons que vous avez passé un excellent moment.\n\nSi vous avez quelques instants, nous vous serions très reconnaissants de partager un avis sincère :\n\nGoogle : {{google_review_url}}\nTripadvisor : {{tripadvisor_review_url}}\nPage de votre excursion : {{tour_review_url}}\n\nMerci d’avoir choisi Awesome Adventure Tours. Nous espérons avoir le plaisir de vous accueillir à nouveau bientôt !",
+      "variables": [
+        "customer_name",
+        "booking_reference",
+        "tour_name",
+        "google_review_url",
+        "tripadvisor_review_url",
+        "tour_review_url"
+      ]
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "9aca4700-542d-4c35-94ef-b0cae8095e19",
+      "template_key": "booking_update",
+      "name": "Mise à jour de réservation",
+      "channel": "Both",
+      "subject": "Mise à jour de votre réservation : {{tour_name}} (réf. : {{booking_reference}})",
+      "body_text": "Bonjour {{customer_name}},\n\nVotre réservation pour {{tour_name}} (réf. : {{booking_reference}}) a été mise à jour.\n\nDate de départ : {{tour_date}}\nHeure de prise en charge : {{pickup_time}}\nSolde restant dû : {{balance_due}}\n\nCordialement,\nL’équipe de coordination d’Awesome Adventure Tours",
+      "variables": [
+        "customer_name",
+        "booking_reference",
+        "tour_name",
+        "tour_date",
+        "pickup_time",
+        "balance_due"
+      ]
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "ba3bfad1-d02f-4d94-9cb3-be129dde05e0",
+      "template_key": "cancellation",
+      "name": "Annulation de réservation",
+      "channel": "Both",
+      "subject": "Confirmation d’annulation : {{booking_reference}} - {{tour_name}}",
+      "body_text": "Bonjour {{customer_name}},\n\nVotre réservation {{booking_reference}} pour {{tour_name}} le {{tour_date}} a été annulée.\n\nNotre équipe vous contactera si un remboursement est applicable.\n\nBien cordialement,\nLe service d’assistance aux voyageurs d’Awesome Adventure Tours",
+      "variables": [
+        "customer_name",
+        "booking_reference",
+        "tour_name",
+        "tour_date"
+      ]
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "2f758e25-31ce-4a32-abaf-0f167c94ac1e",
+      "template_key": "follow_up",
+      "name": "Suivi client",
+      "channel": "Both",
+      "subject": "Votre concierge de vacances en mer Rouge prend de vos nouvelles",
+      "body_text": "Bonjour {{customer_name}},\n\nNous espérons que vous profitez pleinement de votre séjour dans la région de la mer Rouge. Notre équipe est à votre disposition pour vous aider à organiser votre prochaine aventure.\n\nCordialement,\nLe service conciergerie VIP d’Awesome Adventure Tours",
+      "variables": [
+        "customer_name"
+      ]
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "f2916b63-45b6-49aa-94a0-180c4ac026dc",
+      "template_key": "inquiry_response",
+      "name": "Réponse à une demande de renseignements",
+      "channel": "Both",
+      "subject": "À propos de votre demande - Awesome Adventure Tours",
+      "body_text": "Bonjour {{customer_name}},\n\nMerci de l’intérêt que vous portez à Awesome Adventure Tours. Notre équipe étudie votre demande et se fera un plaisir de vous aider.\n\nCordialement,\nL’équipe Expérience voyageurs d’Awesome Adventure Tours",
+      "variables": [
+        "customer_name"
+      ]
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "2fe01cb2-58ed-41f6-aaa0-186fdfb78e5f",
+      "template_key": "newsletter_welcome",
+      "name": "Bienvenue à la newsletter",
+      "channel": "Email",
+      "subject": "Bienvenue chez Awesome Adventure Tours — votre bon de réduction de 15 %",
+      "body_text": "Merci de vous être abonné(e) à la newsletter d’Awesome Adventure Tours. Votre code de réduction de 15 % est {{discount_code}}. Utilisez-le lorsque vous vous renseignerez sur votre prochaine excursion.\n\nVous pouvez vous désabonner à tout moment : {{unsubscribe_url}}",
+      "variables": [
+        "discount_code",
+        "unsubscribe_url"
+      ]
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "286f3159-e9a2-4038-bcd8-ad2a0ec53079",
+      "template_key": "payment_confirmation",
+      "name": "Confirmation de paiement",
+      "channel": "Both",
+      "subject": "Confirmation de paiement : {{booking_reference}} - Awesome Adventure Tours",
+      "body_text": "Bonjour {{customer_name}},\n\nNous avons traité avec succès votre paiement de {{amount}} pour la réservation {{booking_reference}} ({{tour_name}}).\n\nSolde restant dû : {{balance_due}}\n\nMerci,\nLe service financier d’Awesome Adventure Tours",
+      "variables": [
+        "customer_name",
+        "booking_reference",
+        "tour_name",
+        "amount",
+        "balance_due"
+      ]
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "97dcca82-9361-4683-9097-ded3d3bfd338",
+      "template_key": "payment_reminder",
+      "name": "Rappel de paiement",
+      "channel": "Both",
+      "subject": "Rappel de paiement : solde restant dû pour {{tour_name}}",
+      "body_text": "Bonjour {{customer_name}},\n\nNous vous adressons un aimable rappel concernant votre prochain départ pour {{tour_name}} le {{tour_date}}.\n\nSolde restant dû : {{balance_due}}\nPrise en charge prévue à l’hôtel : {{pickup_time}}\n\nCordialement,\nAwesome Adventure Tours",
+      "variables": [
+        "customer_name",
+        "booking_reference",
+        "tour_name",
+        "tour_date",
+        "pickup_time",
+        "balance_due"
+      ]
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "9143122e-c8e6-4d7b-bb64-ad562d44e8e4",
+      "template_key": "pickup_reminder",
+      "name": "Rappel de prise en charge",
+      "channel": "Both",
+      "subject": "Rappel de prise en charge à l’hôtel pour demain : {{tour_name}}",
+      "body_text": "Bonjour {{customer_name}},\n\nNous avons hâte de vous accueillir demain pour {{tour_name}}.\n\nVotre prise en charge à l’hôtel est confirmée à {{pickup_time}}.\nRéférence de réservation : {{booking_reference}}\n\nVeuillez apporter un maillot de bain, une protection solaire, une serviette et une pièce d’identité ou un passeport en cours de validité.",
+      "variables": [
+        "customer_name",
+        "booking_reference",
+        "tour_name",
+        "pickup_time"
+      ]
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "2e8a1598-4077-45f3-96c7-1c92503d39b3",
+      "template_key": "refund",
+      "name": "Notification de remboursement",
+      "channel": "Both",
+      "subject": "Remboursement effectué : {{booking_reference}} - Awesome Adventure Tours",
+      "body_text": "Bonjour {{customer_name}},\n\nUn remboursement a été approuvé et effectué pour la réservation {{booking_reference}} ({{tour_name}}).\n\nMontant du remboursement : {{amount}}\n\nCordialement,\nLe service financier d’Awesome Adventure Tours",
+      "variables": [
+        "customer_name",
+        "booking_reference",
+        "tour_name",
+        "amount"
+      ]
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "d8e61555-7c7b-4286-8923-c78741d9cbf4",
+      "template_key": "review_request",
+      "name": "Demande d’avis",
+      "channel": "Both",
+      "subject": "Comment avez-vous vécu votre excursion {{tour_name}} ?",
+      "body_text": "Bonjour {{customer_name}},\n\nNous espérons que vous avez passé un merveilleux moment lors de votre excursion {{tour_name}}. Votre avis compte beaucoup pour notre équipe locale.\n\nLien pour laisser un avis : https://awesomeadventure.tours/review?ref={{booking_reference}}\n\nMerci d’avoir navigué avec nous,\nAwesome Adventure Tours",
+      "variables": [
+        "customer_name",
+        "tour_name",
+        "booking_reference"
+      ]
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "dc0e86c3-edd5-48cc-8cd9-c3c2e7bb8cba",
+      "template_key": "tour_reminder",
+      "name": "Rappel d’excursion",
+      "channel": "Both",
+      "subject": "Rappel de votre prochaine excursion : {{tour_name}} le {{tour_date}}",
+      "body_text": "Bonjour {{customer_name}},\n\nVotre excursion {{tour_name}} approche : elle aura lieu le {{tour_date}}.\n\nRéférence de réservation : {{booking_reference}}\nHeure de prise en charge prévue : {{pickup_time}}\nSolde restant dû : {{balance_due}}\n\nNous avons hâte de vous accueillir.",
+      "variables": [
+        "customer_name",
+        "booking_reference",
+        "tour_name",
+        "tour_date",
+        "pickup_time",
+        "balance_due"
+      ]
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "83b34c2d-3d1d-4a32-aed8-ae2d2cf35d50",
+      "template_key": "welcome",
+      "name": "Bienvenue chez Awesome Adventure Tours",
+      "channel": "Both",
+      "subject": "Bienvenue chez Awesome Adventure Tours, {{customer_name}} !",
+      "body_text": "Bonjour {{customer_name}},\n\nBienvenue chez Awesome Adventure Tours. Nous sommes ravis de vous aider à découvrir la mer Rouge égyptienne.\n\nDécouvrez notre sélection d’excursions : https://awesomeadventure.tours/excursions\n\nBien cordialement,\nL’équipe Relations voyageurs d’Awesome Adventure Tours",
+      "variables": [
+        "customer_name"
+      ]
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "612bdb2c-703a-4ac3-96d9-3554246b8426",
+      "locale": "fr",
+      "template_key": "post_trip_thank_you",
+      "name": "Merci d’avoir voyagé avec nous",
+      "channel": "Email",
+      "subject": "Merci d’avoir participé à {{tour_name}}",
+      "body_text": "Bonjour {{customer_name}},\n\nMerci d’avoir participé à {{tour_name}}. Nous espérons que vous avez apprécié votre expérience en mer Rouge et serions ravis de vous accueillir à nouveau.",
+      "variables": [
+        "customer_name",
+        "tour_name"
+      ]
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "ea7c52e1-5b5e-40a4-8e70-6144b9ae141c",
+      "locale": "fr",
+      "template_key": "ticket_created",
+      "name": "Demande d’assistance reçue",
+      "channel": "Email",
+      "subject": "Nous avons reçu votre demande d’assistance {{ticket_reference}}",
+      "body_text": "Bonjour {{customer_name}},\n\nNous avons bien reçu votre demande d’assistance ({{ticket_reference}}). Notre équipe l’examinera et vous répondra dès que possible.",
+      "variables": [
+        "customer_name",
+        "ticket_reference"
+      ]
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "18b48d44-d030-42de-8a8d-970cf3adc493",
+      "locale": "fr",
+      "template_key": "ticket_reply",
+      "name": "Nouvelle réponse à votre ticket d’assistance {{ticket_reference}}",
+      "channel": "Email",
+      "subject": "Une mise à jour concerne votre demande d’assistance",
+      "body_text": "Bonjour {{customer_name}},\n\nNotre équipe a répondu à votre demande d’assistance ({{ticket_reference}}). Connectez-vous à votre compte pour consulter la réponse.",
+      "variables": [
+        "customer_name",
+        "ticket_reference"
+      ]
+    }
+  ],
+  "coverage": 18
+}

@@ -27,6 +27,13 @@ function addMessage(message: string, messages: Map<string, string>): void {
 }
 
 function addStringLiterals(node: ts.Node, messages: Map<string, string>): void {
+  // `t()` takes an internal lookup key followed by its visible English fallback.
+  // Only the fallback is translatable UI copy; the key itself may contain digits
+  // or identifiers and must never enter the customer-facing message catalogue.
+  if (ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === 't') {
+    if (node.arguments[1]) addStringLiterals(node.arguments[1], messages);
+    return;
+  }
   if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
     addMessage(node.text, messages);
     return;

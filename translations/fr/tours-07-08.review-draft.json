@@ -1,0 +1,118 @@
+{
+  "locale": "fr",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "records": [
+    {
+      "entity_type": "tour",
+      "entity_key": "1ecd1710-72ff-4903-a88c-bc301b5b2d7f",
+      "source_slug": "giftun-island-orange-bay-yacht-trip-with-snorkeling-lunch",
+      "translated_slug": "ile-giftun-orange-bay-yacht-snorkeling-dejeuner",
+      "title": "Île Giftun et Orange Bay : excursion en yacht avec snorkeling et déjeuner",
+      "summary": "Passez une magnifique journée sur la mer Rouge lors d’une sortie en yacht depuis Hurghada vers Orange Bay et l’île Giftun. Découvrez les récifs coralliens lors de deux arrêts snorkeling, détendez-vous sur une superbe plage de sable blanc et profitez d’un déjeuner buffet accompagné de boissons rafraîchissantes à bord.",
+      "content": {
+        "short_description": "Passez une magnifique journée à découvrir la mer Rouge lors d’une sortie en yacht depuis Hurghada vers Orange Bay et l’île Giftun. Admirez les récifs coralliens colorés lors de deux arrêts snorkeling, détendez-vous sur une superbe plage de sable blanc et savourez un déjeuner buffet avec des boissons rafraîchissantes à bord.",
+        "description": "Échappez au continent et découvrez la beauté de la mer Rouge lors d’une excursion en bateau d’une journée vers Orange Bay et l’île Giftun.\n\nVotre journée commence par une prise en charge à votre hôtel de Hurghada et un transfert confortable jusqu’à la marina. Montez à bord d’un yacht spacieux et profitez d’une croisière panoramique sur les eaux bleu clair, avec de magnifiques vues sur le littoral tout au long du trajet.\n\nL’excursion comprend deux arrêts snorkeling sur des sites récifaux différents. Explorez les formations coralliennes colorées et observez la fascinante vie marine de la mer Rouge. Un moniteur professionnel de snorkeling vous accompagnera pour rendre l’expérience agréable aussi bien aux débutants qu’aux nageurs plus expérimentés.\n\nVous rejoindrez ensuite Orange Bay, célèbre pour son sable blanc et ses eaux turquoise peu profondes. Profitez d’environ deux heures de détente sur l’île : baignade, bain de soleil, photos ou simple moment de tranquillité sur la plage.\n\nDe retour à bord, savourez un déjeuner buffet fraîchement préparé, accompagné de fruits de saison, d’eau minérale, de boissons sans alcool, de thé et de café à volonté. Vous aurez tout le temps de vous détendre sur le pont et d’admirer le paysage avant le retour du yacht à la marina de Hurghada.\n\nAvec les transferts depuis l’hôtel, l’équipement de snorkeling, l’accès à l’île, le déjeuner et les boissons inclus, cette excursion est une merveilleuse façon de découvrir le meilleur de la mer Rouge en une journée inoubliable.\n\nEnvie d’aller plus loin ? Vous pouvez enrichir votre expérience avec une plongée sous-marine d’initiation, une séance de parachute ascensionnel ou une sortie privée en hors-bord vers Orange Bay.",
+        "highlights": [
+          "Naviguez sur la mer Rouge jusqu’à Orange Bay et l’île Giftun",
+          "Profitez de deux arrêts snorkeling guidés sur de magnifiques sites de récifs coralliens",
+          "Découvrez des poissons colorés et des paysages sous-marins fascinants",
+          "Passez environ deux heures à vous détendre sur la plage de sable blanc d’Orange Bay",
+          "Rafraîchissez-vous avec de l’eau minérale, des boissons sans alcool, du thé et du café à volonté",
+          "Savourez un déjeuner buffet fraîchement préparé à bord du yacht",
+          "Voyagez confortablement avec prise en charge et retour à l’hôtel à Hurghada"
+        ],
+        "included": [
+          "Prise en charge et retour à l’hôtel à Hurghada",
+          "Transport aller-retour dans un véhicule moderne et climatisé",
+          "Croisière en yacht d’une journée vers Orange Bay et l’île Giftun",
+          "Frais d’entrée au parc national de l’île Giftun et à Orange Bay",
+          "Deux arrêts snorkeling avec un moniteur professionnel",
+          "Équipement de snorkeling : masque, palmes et gilet de sauvetage",
+          "Déjeuner buffet servi à bord",
+          "Fruits frais de saison",
+          "Eau minérale et boissons sans alcool à volonté",
+          "Thé et café",
+          "Douche d’eau douce à bord",
+          "Tous les frais de service applicables"
+        ],
+        "excluded": [
+          "Transfert depuis la baie de Makadi, Sahl Hasheesh ou El Gouna (disponible en supplément)",
+          "Transfert depuis Safaga ou Soma Bay (disponible en supplément)",
+          "Plongée sous-marine d’initiation (disponible avec le forfait plongée)",
+          "Parachute ascensionnel (disponible avec le forfait parachute ascensionnel)",
+          "Photos et vidéos",
+          "Gâteau d’anniversaire et autres options supplémentaires",
+          "Tout service non expressément mentionné dans les prestations incluses"
+        ],
+        "faqs": [
+          {
+            "question": "L’équipement de snorkeling est-il fourni ou dois-je apporter le mien ?",
+            "answer": "Des masques, tubas et palmes désinfectés, en tailles adulte et enfant, sont fournis gratuitement à bord.",
+            "section": "faq"
+          },
+          {
+            "question": "Les personnes qui ne savent pas nager peuvent-elles participer en toute sécurité ?",
+            "answer": "Oui. Des gilets de flottaison homologués par les garde-côtes sont fournis et des moniteurs de plongée certifiés accompagnent les participants dans l’eau.",
+            "section": "faq"
+          }
+        ]
+      },
+      "seo_title": "Excursion en yacht vers l’île Giftun et Orange Bay avec snorkeling et déjeuner",
+      "seo_description": "Partez en yacht de Hurghada vers Orange Bay et l’île Giftun : deux arrêts snorkeling, plage de sable blanc, déjeuner buffet et boissons à volonté.",
+      "duration": "Journée complète (environ 7 heures)",
+      "duration_type": "Journée complète",
+      "departure_time": "08:30 AM",
+      "age_restrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
+      "pickup_info": "Prise en charge gratuite dans le hall de votre hôtel et retour inclus dans toute la zone de Hurghada.",
+      "cancellation_policy": "Annulation gratuite jusqu’à 24 heures avant l’heure de début de l’excursion."
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "b2303c4d-0803-4526-9246-31a19b8901c3",
+      "source_slug": "grand-egyptian-museum-guided-tour-with-entry-ticket",
+      "translated_slug": "visite-guidee-grand-musee-egyptien-billet-entree",
+      "title": "Visite guidée du Grand Musée égyptien avec billet d’entrée",
+      "summary": "Découvrez les merveilles de l’Égypte antique lors d’une visite guidée du Grand Musée égyptien au Caire. Admirez la statue colossale de Ramsès II, parcourez le magnifique Grand Escalier et découvrez l’histoire fascinante de Toutânkhamon avec un égyptologue professionnel. Choisissez entre un rendez-vous directement au musée ou un transfert pratique depuis votre hôtel au Caire ou à Gizeh.",
+      "content": {
+        "short_description": "Découvrez les merveilles de l’Égypte antique lors d’une visite guidée du Grand Musée égyptien au Caire. Explorez les trésors pharaoniques, admirez la statue colossale de Ramsès II, parcourez le magnifique Grand Escalier et découvrez l’histoire de Toutânkhamon avec un égyptologue professionnel. Choisissez entre un rendez-vous au musée ou un transfert depuis votre hôtel au Caire ou à Gizeh.",
+        "description": "### Entrez dans l’univers de l’Égypte antique au Grand Musée égyptien\n\nImaginez-vous face à des monuments qui ont traversé des milliers d’années, entouré d’histoires de rois, de reines, de dieux et de l’une des civilisations les plus fascinantes de l’histoire humaine.\n\nLe Grand Musée égyptien est bien plus qu’un lieu où admirer des objets anciens. C’est l’occasion de vous rapprocher du passé de l’Égypte et de découvrir les histoires qui se cachent derrière certains de ses trésors les plus remarquables.\n\nVotre expérience commence au musée, où vous rencontrerez votre égyptologue professionnel avant de partir à la découverte de ses collections impressionnantes. L’un des premiers monuments qui vous accueillera est l’immense statue de Ramsès II, fièrement dressée dans le magnifique atrium d’entrée.\n\nVous poursuivrez votre visite le long du Grand Escalier, entouré de statues et de monuments antiques qui témoignent de la puissance et des réalisations artistiques des pharaons d’Égypte. Les galeries du musée vous feront traverser différentes périodes de l’histoire égyptienne antique, grâce à des objets fascinants et à des récits qui donnent vie au passé.\n\nL’un des moments les plus mémorables de la visite est la découverte des trésors de Toutânkhamon. Des bijoux magnifiquement décorés aux objets royaux et aux extraordinaires pièces funéraires, chaque élément offre un aperçu de la vie et de l’héritage du jeune roi.\n\nTout au long de la visite, votre égyptologue partagera des détails intéressants, des explications historiques et des récits moins connus qui rendent l’expérience bien plus enrichissante qu’une simple promenade dans les salles d’exposition.\n\nVous pouvez choisir de retrouver votre guide directement au musée ou de faciliter votre journée grâce à une prise en charge et un retour à votre hôtel au Caire ou à Gizeh, dans un véhicule confortable et climatisé.\n\nÀ la fin de la visite guidée, nul besoin de partir précipitamment. Prenez votre temps, retournez voir vos expositions préférées, profitez de l’atmosphère du musée ou arrêtez-vous pour prendre quelques photos mémorables.\n\nQue vous visitiez l’Égypte pour la première fois ou que vous souhaitiez simplement en apprendre davantage sur son histoire exceptionnelle, cette expérience est une merveilleuse façon de passer quelques heures au Caire.",
+        "highlights": [
+          "Explorez le remarquable Grand Musée égyptien avec un égyptologue professionnel",
+          "Admirez la magnifique statue de Ramsès II dans le grand atrium du musée",
+          "Parcourez le spectaculaire Grand Escalier entouré de monuments de l’Égypte antique",
+          "Découvrez des artefacts fascinants représentant plusieurs milliers d’années d’histoire égyptienne",
+          "Approchez-vous des trésors légendaires du roi Toutânkhamon",
+          "Profitez des récits passionnants et des explications historiques de votre guide expert",
+          "Choisissez entre un rendez-vous directement au musée ou un transfert pratique depuis votre hôtel"
+        ],
+        "included": [
+          "Billet d’entrée au Grand Musée égyptien avec créneau horaire réservé à l’avance",
+          "Visite guidée du musée avec un égyptologue professionnel",
+          "Guide accompagnateur en direct dans la langue disponible sélectionnée",
+          "Audioguide dans les langues sélectionnées, selon disponibilité",
+          "Prise en charge et retour à l’hôtel au Caire ou à Gizeh (uniquement avec les options comprenant le transfert)",
+          "Transport confortable dans un véhicule moderne et climatisé (pour les options avec transfert)",
+          "Toutes les taxes et frais de service applicables"
+        ],
+        "excluded": [
+          "Exposition immersive Toutânkhamon (disponible en option)",
+          "Déjeuner, boissons et collations",
+          "Dépenses personnelles et souvenirs",
+          "Pourboires pour le guide et le chauffeur",
+          "Autorisations de photographie ou de tournage professionnel",
+          "Tout service non expressément mentionné dans les prestations incluses"
+        ],
+        "faqs": []
+      },
+      "seo_title": "Visite guidée du Grand Musée égyptien avec billet d’entrée",
+      "seo_description": "Visitez le Grand Musée égyptien avec un égyptologue : statue de Ramsès II, Grand Escalier et trésors de Toutânkhamon, avec transfert en option.",
+      "duration": "Demi-journée (environ 3 heures)",
+      "duration_type": "Demi-journée",
+      "departure_time": "09:00 AM",
+      "age_restrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
+      "pickup_info": "Prise en charge gratuite dans le hall de votre hôtel et retour inclus dans toute la zone du Caire et de Gizeh.",
+      "cancellation_policy": "Annulation gratuite jusqu’à 24 heures avant l’heure de début de l’excursion."
+    }
+  ]
+}

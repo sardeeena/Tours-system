@@ -3,6 +3,9 @@ import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { createClient } from '@supabase/supabase-js';
 import { EUROPEAN_LOCALE_ROLLOUT, EuropeanLocaleCode } from '../src/types/i18n';
+import { INITIAL_STATIC_PAGES } from '../src/data/staticPages';
+import { TRANSLATIONS } from '../src/i18n/translations';
+import { collectPrivateUiMessages } from './generate_private_ui_catalog';
 
 type Locale = Exclude<EuropeanLocaleCode, 'en'>;
 type Draft = {
@@ -11,7 +14,7 @@ type Draft = {
   content: Record<string, unknown>; source_checksum: string;
 };
 const LOCALES = new Set<Locale>(EUROPEAN_LOCALE_ROLLOUT.filter((locale) => locale.code !== 'en').map((locale) => locale.code));
-const ENTITY_TYPES = new Set(['tour','destination','blog_post','static_page']);
+const ENTITY_TYPES = new Set(['tour','destination','blog_post','static_page','communication_template','ui_catalog']);
 const stable = (value: any): string => {
   if (Array.isArray(value)) return '[' + value.map(stable).join(',') + ']';
   if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map(k => JSON.stringify(k)+':'+stable(value[k])).join(',') + '}';
@@ -57,17 +60,33 @@ async function exportBundle(path: string) {
   const posts = await rows('blog_posts', q => q.in('status',['published','scheduled']).lte('published_at',new Date().toISOString()));
   for (const source of posts) bundle.push({ entity_type:'blog_post', entity_key:String(source.id), source_checksum:checksum(source), source });
   bundle.push({ entity_type:'static_page', entity_key:'home', source_checksum:checksum({ id:'home', slug:'home', title:'Explore Egypt’s Red Sea Coast', heroHeadline:'Explore Egypt’s Red Sea Coast', heroSubtitle:'Boat trips, island visits, snorkeling, diving and desert safaris across Egypt’s Red Sea coast.', sections:[] }), source:{ id:'home', slug:'home', title:'Explore Egypt’s Red Sea Coast', heroHeadline:'Explore Egypt’s Red Sea Coast', heroSubtitle:'Boat trips, island visits, snorkeling, diving and desert safaris across Egypt’s Red Sea coast.', sections:[] } });
+  const templates = await rows('communication_templates', q => q.eq('locale','en'));
+  for (const source of templates) bundle.push({ entity_type:'communication_template', entity_key:String(source.id), source_checksum:checksum(source), source });
+  const uiSource = { id:'site-ui', slug:'site-ui', title:'Interface messages', content:{ ...TRANSLATIONS.en, ...collectPrivateUiMessages() } };
+  bundle.push({ entity_type:'ui_catalog', entity_key:'site-ui', source_checksum:checksum(uiSource), source:uiSource });
   const settings = await rows('site_settings', q => q.eq('key','pages_content'));
   const raw = settings[0]?.value;
   const pages = Array.isArray(raw) ? raw : raw && Array.isArray(raw.pages) ? raw.pages : [];
-  for (const source of pages.filter((p:any)=>p && p.slug && p.published !== false && !['draft','unpublished'].includes(p.status))) {
-    bundle.push({ entity_type:'static_page', entity_key:String(source.id || source.slug), source_checksum:checksum(source), source });
+  const publishedPages = pages.filter((p:any)=>p && p.slug && p.published !== false && !['draft','unpublished'].includes(p.status));
+  for (const source of publishedPages) bundle.push({ entity_type:'static_page', entity_key:String(source.id || source.slug), source_checksum:checksum(source), source });
+  for (const source of INITIAL_STATIC_PAGES) {
+    const key = String(source.id || source.slug);
+    if (!bundle.some((item) => item.entity_type==='static_page' && item.entity_key===key)) {
+      bundle.push({ entity_type:'static_page', entity_key:key, source_checksum:checksum(source), source });
+    }
   }
   await writeFile(path, JSON.stringify({ schema_version:1, generated_at:new Date().toISOString(), locales:[...LOCALES], records:bundle }, null, 2) + '\n');
   console.log('Exported '+bundle.length+' source records to '+path+' (tours '+tours.length+', blog '+posts.length+', destinations '+destinations.length+', CMS pages '+pages.length+').');
 }
 function sortRows(a:any,b:any) { return Number(a.sort_order||0)-Number(b.sort_order||0) || String(a.id||'').localeCompare(String(b.id||'')); }
 async function currentSource(entityType:string, entityKey:string):Promise<any|null> {
+  if (entityType==='ui_catalog' && entityKey==='site-ui') {
+    return { id:'site-ui', slug:'site-ui', title:'Interface messages', content:{ ...TRANSLATIONS.en, ...collectPrivateUiMessages() } };
+  }
+  if (entityType==='communication_template') {
+    const {data,error}=await db.from('communication_templates').select('*').eq('id',entityKey).eq('locale','en').maybeSingle();
+    if(error) throw error; return data||null;
+  }
   if (entityType==='tour') {
     const {data,error}=await db.from('tours').select('*').eq('id',entityKey).eq('status','published').maybeSingle();
     if(error) throw error; if(!data) return null;
@@ -89,7 +108,8 @@ async function currentSource(entityType:string, entityKey:string):Promise<any|nu
     const {data,error}=await db.from('site_settings').select('value').eq('key','pages_content').maybeSingle();
     if(error) throw error;
     const raw=data?.value; const pages=Array.isArray(raw)?raw:raw&&Array.isArray(raw.pages)?raw.pages:[];
-    return pages.find((p:any)=>(String(p.id||p.slug)===entityKey||p.slug===entityKey)&&p.published!==false&&p.status!=='draft'&&p.status!=='unpublished')||null;
+    const page = pages.find((p:any)=>(String(p.id||p.slug)===entityKey||p.slug===entityKey)&&p.published!==false&&p.status!=='draft'&&p.status!=='unpublished');
+    return page || INITIAL_STATIC_PAGES.find((p:any)=>String(p.id||p.slug)===entityKey || p.slug===entityKey) || null;
   }
   return null;
 }
