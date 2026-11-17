@@ -1205,6 +1205,21 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
             Only the locations selected here are offered to customers. Published tours that offer pickup must have at least one explicitly approved active pickup zone. Regional surcharges are calculated from the saved pickup-zone fees.
           </p>
 
+          <label className="flex items-start gap-3 rounded border border-stone-800 bg-stone-900 p-3 text-xs text-stone-200">
+            <input
+              type="checkbox"
+              checked={tourData.pickup_available !== false}
+              onChange={(e) => handleFieldChange('pickup_available', e.target.checked)}
+              className="mt-0.5 rounded text-[#0A6C74] focus:ring-0"
+            />
+            <span>
+              <span className="font-semibold block">This excursion offers hotel pickup</span>
+              <span className="text-[11px] text-stone-400 block mt-1">
+                Turn this off only when the operator confirms that no hotel pickup is offered. Existing pickup mappings are preserved but will not be offered to customers while pickup is disabled.
+              </span>
+            </span>
+          </label>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             {pickupLocations.map((loc) => {
               const checked = selectedPickupIds.includes(loc.id);
