@@ -1,0 +1,138 @@
+{
+  "locale": "fr",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "records": [
+    {
+      "entity_type": "tour",
+      "entity_key": "686495d5-66bc-4e21-961f-fa26c1f917e7",
+      "source_slug": "ras-mohamed-white-island-diving-snorkeling-boat-trip",
+      "translated_slug": "ras-mohammed-white-island-plongee-snorkeling-bateau",
+      "title": "Ras Mohammed et White Island : excursion en bateau avec plongée et snorkeling",
+      "summary": "Découvrez le monde sous-marin spectaculaire de la mer Rouge lors d’une excursion en bateau d’une journée vers le parc national de Ras Mohammed et White Island. Profitez de deux arrêts snorkeling, détendez-vous sur la magnifique White Island et choisissez entre une plongée d’initiation ou une plongée professionnelle. Un délicieux déjeuner buffet et des boissons rafraîchissantes sont servis à bord.",
+      "content": {
+        "short_description": "Découvrez le monde sous-marin spectaculaire de la mer Rouge lors d’une excursion en bateau d’une journée vers le parc national de Ras Mohammed et White Island. Profitez de deux arrêts snorkeling, détendez-vous sur la magnifique White Island et choisissez entre une plongée d’initiation ou une plongée professionnelle. Déjeuner buffet et boissons à bord.",
+        "description": "Partez pour une aventure marine inoubliable au départ de Charm el-Cheikh et découvrez deux des destinations les plus spectaculaires de la mer Rouge : le parc national de Ras Mohammed et White Island.\n\nVotre journée commence par une prise en charge à votre hôtel et un transfert jusqu’à la marina, où vous monterez à bord d’un bateau spacieux à plusieurs niveaux, équipé de sièges confortables et d’espaces ombragés.\n\nNaviguez vers le parc national de Ras Mohammed, l’une des zones marines les plus réputées de la région, célèbre pour ses eaux cristallines, ses récifs coralliens colorés et sa faune marine diversifiée.\n\nPendant l’excursion, profitez de deux arrêts snorkeling qui vous permettront de nager parmi les poissons colorés et d’explorer les magnifiques récifs coralliens de la mer Rouge.\n\nVous visiterez également White Island, une superbe île de sable entourée d’eaux turquoise. Prenez le temps de nager, de vous détendre, d’admirer le paysage et de prendre des photos mémorables.\n\nPour les participants qui souhaitent faire de la plongée sous-marine, une plongée d’initiation est proposée aux débutants sans expérience préalable. Après un briefing de sécurité, vous plongerez sous la supervision d’un moniteur professionnel et découvrirez le monde sous-marin de la mer Rouge.\n\nLes plongeurs certifiés peuvent également choisir l’option de plongée professionnelle et profiter d’une expérience plus approfondie, adaptée à leur certification et à leur niveau d’expérience.\n\nTout au long de la journée, savourez un délicieux déjeuner buffet servi à bord, accompagné d’eau, de boissons sans alcool, de thé et de café.\n\nAprès une journée complète de baignade, de snorkeling, de plongée et de détente en mer, naviguez vers la marina avant de regagner votre hôtel.",
+        "highlights": [
+          "Explorez le parc national de Ras Mohammed",
+          "Visitez le spectaculaire White Island",
+          "Profitez de deux arrêts snorkeling",
+          "Découvrez la faune marine colorée de la mer Rouge",
+          "Essayez une plongée sous-marine d’initiation avec un moniteur professionnel",
+          "Choisissez la plongée professionnelle si vous êtes plongeur certifié",
+          "Détendez-vous à bord d’un spacieux bateau à plusieurs niveaux",
+          "Savourez un délicieux déjeuner buffet à bord",
+          "Rafraîchissez-vous avec des boissons à volonté",
+          "Prenez des photos inoubliables de votre aventure en mer Rouge"
+        ],
+        "included": [
+          "Prise en charge et retour à l’hôtel",
+          "Excursion en bateau d’une journée complète",
+          "Visite du parc national de Ras Mohammed",
+          "Visite de White Island",
+          "Deux arrêts snorkeling",
+          "Déjeuner buffet à bord",
+          "Eau",
+          "Boissons sans alcool",
+          "Thé et café",
+          "Équipage professionnel",
+          "Moniteur de plongée professionnel pour les options de plongée sélectionnées",
+          "Équipement de snorkeling, selon l’option sélectionnée",
+          "Une plongée d’initiation",
+          "Plongée professionnelle, selon l’option sélectionnée"
+        ],
+        "excluded": [
+          "Dépenses personnelles",
+          "Serviettes",
+          "Crème solaire",
+          "Tout service ou supplément non expressément mentionné dans l’option de réservation sélectionnée",
+          "Frais d’entrée à Ras Mohammed : 5 euros par personne"
+        ],
+        "faqs": [
+          {
+            "question": "L’équipement de snorkeling est-il fourni ou dois-je apporter le mien ?",
+            "answer": "Des masques, tubas et palmes désinfectés, en tailles adulte et enfant, sont fournis gratuitement à bord.",
+            "section": "faq"
+          },
+          {
+            "question": "Les personnes qui ne savent pas nager peuvent-elles participer en toute sécurité ?",
+            "answer": "Oui. Des gilets de flottaison homologués par les garde-côtes sont fournis et des moniteurs de plongée certifiés accompagnent les participants dans l’eau.",
+            "section": "faq"
+          }
+        ]
+      },
+      "seo_title": "Ras Mohammed et White Island : plongée et snorkeling en bateau",
+      "seo_description": "Partez en bateau vers Ras Mohammed et White Island : deux arrêts snorkeling, plongée d’initiation ou professionnelle et déjeuner buffet à bord.",
+      "duration": "7 heures",
+      "duration_type": "Journée complète",
+      "departure_time": "08:30 AM",
+      "age_restrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
+      "pickup_info": "La prise en charge et le retour sont inclus dans des véhicules modernes et climatisés.",
+      "cancellation_policy": "Annulation gratuite jusqu’à 24 heures avant l’heure de début de l’excursion."
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "86f2d93f-33bf-420a-88a5-4c6035ae05ba",
+      "source_slug": "sharm-el-sheikh-private-city-tour-old-market-mosque-cathedral",
+      "translated_slug": "charm-el-cheikh-visite-privee-ville-vieux-marche-mosquee-cathedrale",
+      "title": "Visite privée de Charm el-Cheikh : vieux marché, mosquée et cathédrale",
+      "summary": "Découvrez une autre facette de Charm el-Cheikh lors d’une visite privée associant culture locale, architecture remarquable et rues commerçantes animées. Visitez l’impressionnante mosquée Al Sahaba, découvrez les fresques colorées de la cathédrale céleste, admirez les vues panoramiques sur la mer Rouge et profitez de temps libre dans le célèbre vieux marché. Voyagez confortablement avec votre guide privé et un véhicule climatisé, avec des arrêts facultatifs au café Farsha, à SOHO Square ou au musée de Charm el-Cheikh.",
+      "content": {
+        "short_description": "Découvrez une autre facette de Charm el-Cheikh lors d’une visite privée associant culture locale, architecture remarquable et rues commerçantes animées. Visitez la mosquée Al Sahaba, découvrez les fresques de la cathédrale céleste, admirez les vues sur la mer Rouge et profitez du vieux marché avec votre guide privé et un véhicule climatisé.",
+        "description": "### Découvrez le charme local de Charm el-Cheikh au-delà des resorts\n\nCharm el-Cheikh est célèbre pour ses magnifiques plages et ses eaux cristallines, mais la ville possède une autre facette qui mérite d’être découverte.\n\nÉloignez-vous de l’ambiance des resorts pendant quelques heures et explorez les lieux qui donnent à Charm el-Cheikh son caractère particulier. Entre monuments religieux impressionnants, belle architecture, points de vue panoramiques et rues commerçantes traditionnelles, cette visite privée de la ville vous permet de découvrir tranquillement la destination au-delà de votre hôtel.\n\nVotre expérience commence par une prise en charge à votre hôtel dans un véhicule privé confortable et climatisé. Retrouvez votre guide local et dirigez-vous vers le cœur de Charm el-Cheikh, où votre premier arrêt vous fera découvrir l’un des monuments les plus remarquables de la ville.\n\nLa magnifique mosquée Al Sahaba se dresse fièrement dans la vieille ville, avec ses dômes impressionnants, ses minarets élégants et son architecture islamique détaillée. Prenez le temps d’admirer le bâtiment, de faire quelques photos et d’en apprendre davantage sur son importance pour la communauté locale. Lorsque cela est autorisé et en dehors des heures de prière, vous pourrez également découvrir son intérieur paisible.\n\nEnsuite, découvrez la cathédrale céleste, un magnifique monument souvent méconnu, célèbre pour ses fresques colorées peintes à la main et ses impressionnelles œuvres d’art religieux. L’atmosphère intérieure est très différente de celle des rues animées à l’extérieur : c’est un endroit agréable pour faire une pause et apprécier une autre facette de l’identité culturelle de la ville.\n\nEn poursuivant votre visite, votre guide vous conduira vers des points de vue panoramiques sur Charm el-Cheikh. Profitez de magnifiques vues sur la mer Rouge, la marina et les montagnes environnantes du Sinaï. Ces arrêts sont parfaits pour prendre des photos et découvrir la ville sous un autre angle.\n\nIl sera ensuite temps de découvrir l’un des quartiers les plus animés de Charm : le vieux marché. Parcourez les ruelles bordées d’épices colorées, de parfums, de lanternes traditionnelles, de souvenirs et d’objets artisanaux. Vous disposerez de temps libre pour flâner dans les boutiques, profiter de l’ambiance locale et choisir un souvenir à rapporter. Aucun achat n’est obligatoire : prenez simplement le temps de découvrir le quartier à votre rythme.\n\nVous souhaitez prolonger un peu votre sortie ? Vous pouvez ajouter une visite facultative au célèbre café Farsha, perché au-dessus de la mer Rouge, ou passer du temps à SOHO Square avec ses restaurants, ses boutiques et son ambiance en soirée. Vous pouvez également choisir de visiter le musée de Charm el-Cheikh pour en apprendre davantage sur l’histoire fascinante de l’Égypte.\n\nTout au long de l’expérience, vous profiterez du confort et de la flexibilité de votre propre véhicule privé et de votre guide, ce qui vous permettra de profiter de chaque arrêt sans vous presser.\n\nQue ce soit votre première visite à Charm el-Cheikh ou que vous ayez déjà passé plusieurs jours à profiter de la plage, cette visite de la ville est une belle occasion d’en découvrir davantage et de ressentir son caractère local.",
+        "highlights": [
+          "Découvrez la ville de Charm el-Cheikh lors d’une visite privée confortable",
+          "Visitez la magnifique mosquée Al Sahaba et admirez ses beaux dômes et ses minarets élancés",
+          "Découvrez la cathédrale céleste et ses impressionnantes fresques bibliques peintes à la main",
+          "Profitez de vues panoramiques sur la mer Rouge, la marina et les montagnes environnantes du Sinaï",
+          "Parcourez le célèbre vieux marché, rempli d’épices, de parfums, de souvenirs et d’artisanat égyptien traditionnel",
+          "Profitez de temps libre pour faire du shopping sans aucune obligation d’achat",
+          "Voyagez avec votre propre guide local privé et un véhicule climatisé",
+          "Prolongez votre sortie avec des visites facultatives au café Farsha, à SOHO Square ou au musée de Charm el-Cheikh",
+          "Profitez de la prise en charge et du retour à l’hôtel partout à Charm el-Cheikh"
+        ],
+        "included": [
+          "Prise en charge et retour depuis tous les hôtels de Charm el-Cheikh",
+          "Véhicule privé climatisé pendant toute l’excursion",
+          "Guide local privé professionnel",
+          "Visite privée de Charm el-Cheikh",
+          "Visite de la mosquée Al Sahaba",
+          "Visite de la cathédrale céleste",
+          "Temps libre au vieux marché pour faire du shopping et découvrir le quartier",
+          "Arrêts à des points de vue panoramiques de la ville",
+          "Toutes les taxes et frais de service applicables"
+        ],
+        "excluded": [
+          "Nourriture, collations et boissons",
+          "Visite du café Farsha (surclassement de transfert facultatif)",
+          "Visite de SOHO Square (surclassement de transfert facultatif)",
+          "Visite du musée de Charm el-Cheikh (option supplémentaire)",
+          "Déjeuner ou dîner dans un restaurant oriental (option supplémentaire)",
+          "Achats personnels et souvenirs",
+          "Pourboires pour le guide et le chauffeur",
+          "Tout service non expressément mentionné dans les prestations incluses"
+        ],
+        "faqs": [
+          {
+            "question": "L’équipement de snorkeling est-il fourni ou dois-je apporter le mien ?",
+            "answer": "Des masques, tubas et palmes désinfectés, en tailles adulte et enfant, sont fournis gratuitement à bord.",
+            "section": "faq"
+          },
+          {
+            "question": "Les personnes qui ne savent pas nager peuvent-elles participer en toute sécurité ?",
+            "answer": "Oui. Des gilets de flottaison homologués par les garde-côtes sont fournis et des moniteurs de plongée certifiés accompagnent les participants dans l’eau.",
+            "section": "faq"
+          }
+        ]
+      },
+      "seo_title": "Visite privée de Charm el-Cheikh : vieux marché, mosquée et cathédrale",
+      "seo_description": "Découvrez la mosquée Al Sahaba, la cathédrale céleste, les panoramas de la mer Rouge et le vieux marché lors d’une visite privée de Charm el-Cheikh.",
+      "duration": "Demi-journée (environ 3 heures)",
+      "duration_type": "Demi-journée",
+      "departure_time": "11:00, 13:00, 14:00, 15:00, 16:00, 18:00, 20:00",
+      "age_restrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
+      "pickup_info": "Prise en charge gratuite dans le hall de votre hôtel et retour inclus dans toute la zone de Charm el-Cheikh.",
+      "cancellation_policy": "Annulation gratuite jusqu’à 24 heures avant l’heure de début de l’excursion."
+    }
+  ]
+}
