@@ -625,10 +625,11 @@ export async function detectAssignmentConflicts(params: {
 }): Promise<AssignmentConflict[]> {
   const conflicts: AssignmentConflict[] = [];
 
-  const [departures, vessels, guides] = await Promise.all([
+  const [departures, vessels, guides, dynamicTours] = await Promise.all([
     getTodayDepartures(params.date),
     listVessels(),
     listGuides(),
+    getPublishedTours(),
   ]);
 
   const targetDeparture = departures.find(
