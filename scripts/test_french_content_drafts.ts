@@ -32,10 +32,10 @@ assert.equal(bundle.coverage?.destination, count('destination'));
 assert.equal(bundle.coverage?.communication_template, count('communication_template'));
 assert.equal(bundle.coverage?.static_page, count('static_page'));
 assert.equal(bundle.coverage?.private_ui_messages, expectedPrivateKeys.length);
-assert.equal(bundle.coverage?.ui_catalog_messages, Object.keys(ui.content).length);
 assert.equal(bundle.coverage?.source_records, records.length);
 
 const ui = records.find((record) => record.entity_type === 'ui_catalog');
+assert.equal(bundle.coverage?.ui_catalog_messages, Object.keys(ui.content).length);
 for (const key of Object.keys(TRANSLATIONS.en)) assert.ok(ui.content[key], 'Public UI key translated: ' + key);
 for (const key of expectedPrivateKeys) assert.ok(ui.content[key], 'Private UI key translated: ' + key);
 assert.equal(Object.keys(ui.content).length, Object.keys(TRANSLATIONS.en).length + expectedPrivateKeys.length);
