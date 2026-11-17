@@ -959,7 +959,7 @@ export async function getPassengerManifest(
       tourId: b.tourId,
       tourTitle: b.tourTitle,
       tourDate: b.date || date,
-      departureTime: (b as any).departureTime || '08:30',
+      departureTime: (b as any).departureTime || 'Not scheduled',
       fullName: `${b.customer.firstName} ${b.customer.lastName}`,
       nationality: b.customer.country || 'International',
       passportOrId: null,
@@ -1101,14 +1101,14 @@ export async function getDailyPickupSchedule(dateTarget?: string): Promise<Picku
       hotelName: dbItem?.hotel || b.pickup.hotelName || b.customer.hotelName || 'Direct Arrival (Marina)',
       roomNumber: b.pickup.roomNumber || b.customer.roomNumber || null,
       pickupArea: dbItem?.location || b.pickup.area || 'Hurghada Central',
-      pickupTime: dbItem?.pickup_time || extra.pickupTime || (b as any).pickupTime || '07:30',
+      pickupTime: dbItem?.pickup_time || extra.pickupTime || (b as any).pickupTime || 'Not scheduled',
       passengerCount: partySize,
       tourTitle: b.tourTitle,
       tourDate: b.date || date,
       departureTime: (b as any).departureTime || '08:30',
       driverId: dbItem?.driver_id || extra.driverId || null,
-      driverName: dbItem?.driver_name || extra.driverName || 'Captain Mahmoud (Van #12)',
-      driverVehicle: dbItem?.vehicle || extra.driverVehicle || 'Toyota HiAce VIP',
+      driverName: dbItem?.driver_name || extra.driverName || 'Unassigned driver',
+      driverVehicle: dbItem?.vehicle || extra.driverVehicle || 'Unassigned vehicle',
       status: normalizedStatus,
       specialRequests: b.customer.specialRequests || null,
       notes: dbItem?.notes || extra.notes || null,
@@ -1126,43 +1126,74 @@ export async function updatePickupScheduleStatus(
   driverName?: string
 ): Promise<boolean> {
   const normalized = (newStatus || 'pending').toLowerCase() as PickupStatus;
+  const reference = bookingRef?.trim().toUpperCase();
+  if (!reference) throw new Error('A booking reference is required.');
 
-  // Update in-memory cache
-  const cached = getLocal<Record<string, Partial<PickupScheduleItem>>>(LOCAL_PICKUPS_KEY, {});
-  cached[bookingRef] = {
-    ...(cached[bookingRef] || {}),
-    status: normalized,
-    driverVehicle: driverVehicle || cached[bookingRef]?.driverVehicle,
-    driverName: driverName || cached[bookingRef]?.driverName,
-  };
-  setLocal(LOCAL_PICKUPS_KEY, cached);
-
-  if (isSupabaseConfigured()) {
-    try {
-      // 1. Update pickup_schedules table if present
-      await supabase
-        .from('pickup_schedules')
-        .update({
-          status: normalized,
-          vehicle: driverVehicle,
-          driver_name: driverName,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('booking_reference', bookingRef);
-
-      // 2. Sync to bookings table
-      await supabase
-        .from('bookings')
-        .update({
-          pickup_status: normalized,
-          driver_vehicle: driverVehicle,
-        })
-        .eq('booking_reference', bookingRef);
-    } catch {
-      // ignore
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) {
+      throw new Error('The live pickup scheduling service is unavailable. No changes were saved.');
     }
+    const cached = getLocal<Record<string, Partial<PickupScheduleItem>>>(LOCAL_PICKUPS_KEY, {});
+    cached[reference] = {
+      ...(cached[reference] || {}),
+      status: normalized,
+      ...(driverVehicle !== undefined ? { driverVehicle: driverVehicle.trim() } : {}),
+      ...(driverName !== undefined ? { driverName: driverName.trim() } : {}),
+    };
+    setLocal(LOCAL_PICKUPS_KEY, cached);
+    return true;
   }
 
+  // The booking row is the authoritative record for pickup state. Require an
+  // affected row so UI success cannot be reported after a silent database error.
+  const bookingPatch: Record<string, unknown> = {
+    pickup_status: normalized,
+    updated_at: new Date().toISOString(),
+  };
+  if (driverVehicle !== undefined) bookingPatch.driver_vehicle = driverVehicle.trim() || null;
+
+  const { data: savedBooking, error: bookingError } = await supabase
+    .from('bookings')
+    .update(bookingPatch)
+    .eq('booking_reference', reference)
+    .select('id')
+    .maybeSingle();
+
+  if (bookingError) throw new Error(formatSupabaseError(bookingError));
+  if (!savedBooking?.id) {
+    throw new Error('The booking was not found or its pickup update was not confirmed.');
+  }
+
+  // Keep an existing dedicated schedule row in sync; do not fabricate one.
+  const { data: scheduleRows, error: scheduleReadError } = await supabase
+    .from('pickup_schedules')
+    .select('id')
+    .eq('booking_reference', reference)
+    .limit(1);
+  if (scheduleReadError) throw new Error(formatSupabaseError(scheduleReadError));
+
+  if (scheduleRows?.[0]?.id) {
+    const schedulePatch: Record<string, unknown> = {
+      status: normalized,
+      updated_at: new Date().toISOString(),
+    };
+    if (driverVehicle !== undefined) schedulePatch.vehicle = driverVehicle.trim() || null;
+    if (driverName !== undefined) schedulePatch.driver_name = driverName.trim() || null;
+    const { error: scheduleError } = await supabase
+      .from('pickup_schedules')
+      .update(schedulePatch)
+      .eq('id', scheduleRows[0].id);
+    if (scheduleError) throw new Error(formatSupabaseError(scheduleError));
+  }
+
+  const cached = getLocal<Record<string, Partial<PickupScheduleItem>>>(LOCAL_PICKUPS_KEY, {});
+  cached[reference] = {
+    ...(cached[reference] || {}),
+    status: normalized,
+    ...(driverVehicle !== undefined ? { driverVehicle: driverVehicle.trim() } : {}),
+    ...(driverName !== undefined ? { driverName: driverName.trim() } : {}),
+  };
+  setLocal(LOCAL_PICKUPS_KEY, cached);
   return true;
 }
 
