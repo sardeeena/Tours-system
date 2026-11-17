@@ -32,7 +32,8 @@
 - [ ] Implement cancellation-to-refund orchestration with idempotency, provider reconciliation, audit events and customer/staff notification. Do not automatically refund bookings without an approved business rule and provider support.
 - [ ] Decide whether online payments are required and choose an eligible provider for the business jurisdiction and settlement bank. Stripe/PayPal are not connected; do not expose online payment options until sandbox and production webhooks pass.
 - [x] Replace localStorage-backed staff notification authority with a database inbox and SQL scanner over bookings, inquiries, payments, leads, CRM tasks, departures and pickup schedules. A production worker runs the idempotent scan every five minutes; localStorage is development-only.
-- [x] Add durable database-generated staff alerts for payment pending/overdue, cancellation requests, departure assignment gaps, pickup confirmations and CRM follow-ups/tasks, with unique deduplication keys and a five-minute server worker. Customer-facing event delivery and scheduled email/WhatsApp reminders remain separate work.
+- [x] Add durable database-generated staff alerts for payment pending/overdue, cancellation requests, departure assignment gaps, pickup confirmations and CRM follow-ups/tasks, with unique deduplication keys and a five-minute server worker.
+- [x] Add transactional PGMQ email events for approved booking cancellations and settled payments; the Resend worker now uses the existing English cancellation/payment templates, per-event idempotency keys and payment balance calculation. Refund approval still remains a separate, policy-controlled workflow.
 - [ ] Configure and test WhatsApp Cloud API only after Meta credentials, approved templates, consent and opt-out rules are supplied.
 
 ## P2 — Catalogue, content, localization and AI
