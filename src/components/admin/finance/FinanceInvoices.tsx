@@ -151,7 +151,7 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
             <span>Commercial Invoices</span>
           </h1>
           <p className="text-xs text-stone-400 mt-1">
-            Itemized commercial invoices generated directly from excursion reservations with official company tax and registry credentials.
+            Draft invoices are generated from saved reservations and payment records. Legal issuance stays locked until the verified billing identity and tax details are configured.
           </p>
         </div>
 
@@ -345,7 +345,7 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
               </div>
 
               <div className="p-3 bg-stone-900/60 rounded border border-stone-800 text-[11px] text-stone-400">
-                The invoice will be generated with full company tax registration details, itemized excursions, pickup transfers, and live payment settlements.
+                A draft will be generated from the saved reservation and payment ledger. It is not a tax invoice and cannot be issued until the owner supplies and verifies the legal entity, registered address and required tax or registry details.
               </div>
 
               <div className="flex justify-end space-x-2 pt-3 border-t border-stone-800">
@@ -412,6 +412,11 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
             </div>
 
             {/* Official Company Header & Invoice Metadata */}
+            {selectedInvoice.status === 'draft' && (
+              <div className="border-2 border-amber-600 bg-amber-50 text-amber-900 rounded-lg px-4 py-3 text-center font-bold tracking-wide">
+                DRAFT — NOT A TAX INVOICE — NOT ISSUED
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-6 items-start border-b border-stone-300 pb-6">
               <div>
                 <span className="text-xs uppercase font-bold text-teal-800 tracking-wider block">
