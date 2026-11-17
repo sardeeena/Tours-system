@@ -458,6 +458,7 @@ async function runAll() {
     await testRefundBounds();
     await testOperationsConflicts();
   } else {
+    console.log('Skipping database mutation integration tests; they require TOURS_TEST_DB_ISOLATED=true and a disposable isolated Supabase project.');
     await testDatabaseMutationsFailClosedWithoutIsolatedDatabase();
   }
   testPricingEngine();
