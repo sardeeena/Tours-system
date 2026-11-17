@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "locale": "pl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "static_page": 3,
+    "source_records": 3
+  },
+  "records": [
+    {
+      "entity_type": "static_page",
+      "entity_key": "why-us",
+      "locale": "pl",
+      "source_slug": "why-us",
+      "translated_slug": "dlaczego-my",
+      "title": "Dlaczego warto wybrać Awesome Adventure Tours",
+      "summary": "Skorzystaj z opublikowanych informacji o wycieczkach, aby porównać dostępne atrakcje i wybrać tę, która pasuje do Twoich planów.",
+      "seo_title": "Dlaczego warto wybrać Awesome Adventure Tours | Wycieczki nad Morzem Czerwonym",
+      "seo_description": "Porównaj wycieczki nad Morzem Czerwonym pod względem ceny, czasu trwania, trasy, usług w cenie i warunków odbioru przed rezerwacją.",
+      "content": {
+        "heroHeadline": "Zaplanuj swoją przygodę nad Morzem Czerwonym",
+        "heroSubtitle": "Skorzystaj z opublikowanych informacji o wycieczkach, aby porównać dostępne atrakcje i wybrać tę, która pasuje do Twoich planów.",
+        "sections": [
+          {
+            "title": "Informacje o wycieczkach w jednym miejscu",
+            "content": "Przed rezerwacją sprawdź opis, cenę, czas trwania, trasę i usługi wliczone w cenę każdej wycieczki."
+          },
+          {
+            "title": "Sprawdź najważniejsze szczegóły",
+            "content": "Opcje odbioru, ograniczenia wiekowe, dostępność i zasady anulowania mogą różnić się w zależności od wycieczki. Przed potwierdzeniem sprawdź odpowiednią stronę i dane rezerwacji."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Odkryj więcej",
+          "bookNow": "Rezerwuj teraz"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "marine-safety",
+      "locale": "pl",
+      "source_slug": "marine-safety",
+      "translated_slug": "bezpieczenstwo-na-morzu-i-informacje-o-wyplynieciu",
+      "title": "Bezpieczeństwo na morzu i informacje o wypłynięciu",
+      "summary": "Wycieczki morskie mogą zależeć od pogody, stanu morza i ograniczeń operacyjnych. Zapoznaj się z informacjami dotyczącymi wybranej wycieczki.",
+      "seo_title": "Bezpieczeństwo na morzu i wypłynięcie | Awesome Adventure Tours",
+      "seo_description": "Poznaj zasady bezpieczeństwa, informacje o wypłynięciu i warunki pogodowe, które mogą wpływać na wycieczki nad Morzem Czerwonym.",
+      "content": {
+        "heroHeadline": "Bezpieczeństwo i informacje o wypłynięciu",
+        "heroSubtitle": "Wycieczki morskie mogą zależeć od pogody, stanu morza i ograniczeń operacyjnych. Zapoznaj się z informacjami dotyczącymi wybranej wycieczki.",
+        "sections": [
+          {
+            "title": "Przed wypłynięciem",
+            "content": "Przeczytaj informacje o wypłynięciu, warunki uczestnictwa i szczegóły dotyczące wyposażenia dla wybranej wycieczki. Podczas aktywności stosuj się do poleceń załogi i personelu prowadzącego."
+          },
+          {
+            "title": "Pogoda i zmiany operacyjne",
+            "content": "Aktywności na morzu mogą zostać zmienione, opóźnione lub odwołane, jeśli warunki nie pozwalają na bezpieczne wypłynięcie. Sprawdź zasady rezerwacji wybranej wycieczki, aby poznać obowiązujące rozwiązania."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Odkryj więcej",
+          "bookNow": "Rezerwuj teraz"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "booking-conditions",
+      "locale": "pl",
+      "source_slug": "booking-conditions",
+      "translated_slug": "warunki-rezerwacji",
+      "title": "Warunki rezerwacji",
+      "summary": "Przed zakończeniem rezerwacji zapoznaj się z informacjami i warunkami dotyczącymi wybranej wycieczki.",
+      "seo_title": "Warunki rezerwacji | Awesome Adventure Tours",
+      "seo_description": "Przed rezerwacją wycieczki nad Morzem Czerwonym sprawdź potwierdzenia, odbiór, godziny wypłynięcia, zmiany i anulowanie.",
+      "content": {
+        "heroHeadline": "Informacje o rezerwacji",
+        "heroSubtitle": "Przed zakończeniem rezerwacji zapoznaj się z informacjami i warunkami dotyczącymi wybranej wycieczki.",
+        "sections": [
+          {
+            "title": "Rezerwacje i potwierdzenie",
+            "content": "Przed wysłaniem zgłoszenia sprawdź wybraną datę, liczbę uczestników, cenę, dane odbioru i pozostałe informacje o rezerwacji. Zachowaj dane potwierdzenia otrzymane po dokonaniu rezerwacji."
+          },
+          {
+            "title": "Odbiór i wypłynięcie",
+            "content": "Dostępność odbioru, miejsca spotkania, dopłaty i godziny wypłynięcia mogą różnić się w zależności od wycieczki i destynacji. Przed potwierdzeniem sprawdź szczegóły dotyczące Twojej podróży."
+          },
+          {
+            "title": "Zmiany i anulowanie",
+            "content": "Terminy anulowania, zasady zwrotów i warunki zmiany daty wycieczki zależą od zasad rezerwacji wybranej oferty. Przeczytaj je przed zakończeniem rezerwacji."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Odkryj więcej",
+          "bookNow": "Rezerwuj teraz"
+        }
+      }
+    }
+  ]
+}
