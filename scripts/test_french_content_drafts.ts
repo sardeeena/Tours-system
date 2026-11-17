@@ -13,7 +13,7 @@ assert.equal(bundle.locale, 'fr');
 assert.equal(count('tour'), 25, 'All 25 published tours have French drafts');
 assert.equal(count('blog_post'), 50, 'All 50 published blog posts have French drafts');
 assert.equal(count('destination'), 7, 'All 7 published destinations have French drafts');
-assert.equal(count('communication_template'), 15, 'All 15 active communication templates have French drafts');
+assert.equal(count('communication_template'), 18, 'All 18 English communication templates in the rollout source have French drafts');
 assert.equal(count('static_page'), 1, 'The French homepage draft is present');
 assert.equal(count('ui_catalog'), 1, 'The French UI catalogue draft is present');
 

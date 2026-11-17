@@ -4142,7 +4142,7 @@
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "booking_confirmation",
+      "entity_key": "9d0afa47-45f6-47b8-8dde-eeae58e45b97",
       "locale": "fr",
       "translated_slug": "template-booking-confirmation",
       "title": "Confirmation de réservation",
@@ -4164,12 +4164,11 @@
         ],
         "channel": "Both",
         "template_key": "booking_confirmation"
-      },
-      "template_key": "booking_confirmation"
+      }
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "booking_received",
+      "entity_key": "a2067910-50a2-41e4-bb08-80722a0750bf",
       "locale": "fr",
       "translated_slug": "template-booking-received",
       "title": "Billet de réservation",
@@ -4191,12 +4190,11 @@
         ],
         "channel": "Email",
         "template_key": "booking_received"
-      },
-      "template_key": "booking_received"
+      }
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "booking_review_request",
+      "entity_key": "3f657bd6-15e7-477f-b513-ac9038af2383",
       "locale": "fr",
       "translated_slug": "template-booking-review-request",
       "title": "Demande d’avis après une excursion terminée",
@@ -4217,12 +4215,11 @@
         ],
         "channel": "Email",
         "template_key": "booking_review_request"
-      },
-      "template_key": "booking_review_request"
+      }
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "booking_update",
+      "entity_key": "9aca4700-542d-4c35-94ef-b0cae8095e19",
       "locale": "fr",
       "translated_slug": "template-booking-update",
       "title": "Mise à jour de réservation",
@@ -4243,12 +4240,11 @@
         ],
         "channel": "Both",
         "template_key": "booking_update"
-      },
-      "template_key": "booking_update"
+      }
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "cancellation",
+      "entity_key": "ba3bfad1-d02f-4d94-9cb3-be129dde05e0",
       "locale": "fr",
       "translated_slug": "template-cancellation",
       "title": "Annulation de réservation",
@@ -4267,12 +4263,11 @@
         ],
         "channel": "Both",
         "template_key": "cancellation"
-      },
-      "template_key": "cancellation"
+      }
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "follow_up",
+      "entity_key": "2f758e25-31ce-4a32-abaf-0f167c94ac1e",
       "locale": "fr",
       "translated_slug": "template-follow-up",
       "title": "Suivi client",
@@ -4288,12 +4283,11 @@
         ],
         "channel": "Both",
         "template_key": "follow_up"
-      },
-      "template_key": "follow_up"
+      }
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "inquiry_response",
+      "entity_key": "f2916b63-45b6-49aa-94a0-180c4ac026dc",
       "locale": "fr",
       "translated_slug": "template-inquiry-response",
       "title": "Réponse à une demande de renseignements",
@@ -4309,12 +4303,11 @@
         ],
         "channel": "Both",
         "template_key": "inquiry_response"
-      },
-      "template_key": "inquiry_response"
+      }
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "newsletter_welcome",
+      "entity_key": "2fe01cb2-58ed-41f6-aaa0-186fdfb78e5f",
       "locale": "fr",
       "translated_slug": "template-newsletter-welcome",
       "title": "Bienvenue à la newsletter",
@@ -4331,12 +4324,11 @@
         ],
         "channel": "Email",
         "template_key": "newsletter_welcome"
-      },
-      "template_key": "newsletter_welcome"
+      }
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "payment_confirmation",
+      "entity_key": "286f3159-e9a2-4038-bcd8-ad2a0ec53079",
       "locale": "fr",
       "translated_slug": "template-payment-confirmation",
       "title": "Confirmation de paiement",
@@ -4356,12 +4348,11 @@
         ],
         "channel": "Both",
         "template_key": "payment_confirmation"
-      },
-      "template_key": "payment_confirmation"
+      }
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "payment_reminder",
+      "entity_key": "97dcca82-9361-4683-9097-ded3d3bfd338",
       "locale": "fr",
       "translated_slug": "template-payment-reminder",
       "title": "Rappel de paiement",
@@ -4382,12 +4373,11 @@
         ],
         "channel": "Both",
         "template_key": "payment_reminder"
-      },
-      "template_key": "payment_reminder"
+      }
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "pickup_reminder",
+      "entity_key": "9143122e-c8e6-4d7b-bb64-ad562d44e8e4",
       "locale": "fr",
       "translated_slug": "template-pickup-reminder",
       "title": "Rappel de prise en charge",
@@ -4406,12 +4396,11 @@
         ],
         "channel": "Both",
         "template_key": "pickup_reminder"
-      },
-      "template_key": "pickup_reminder"
+      }
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "refund",
+      "entity_key": "2e8a1598-4077-45f3-96c7-1c92503d39b3",
       "locale": "fr",
       "translated_slug": "template-refund",
       "title": "Notification de remboursement",
@@ -4430,12 +4419,11 @@
         ],
         "channel": "Both",
         "template_key": "refund"
-      },
-      "template_key": "refund"
+      }
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "review_request",
+      "entity_key": "d8e61555-7c7b-4286-8923-c78741d9cbf4",
       "locale": "fr",
       "translated_slug": "template-review-request",
       "title": "Demande d’avis",
@@ -4453,12 +4441,11 @@
         ],
         "channel": "Both",
         "template_key": "review_request"
-      },
-      "template_key": "review_request"
+      }
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "tour_reminder",
+      "entity_key": "dc0e86c3-edd5-48cc-8cd9-c3c2e7bb8cba",
       "locale": "fr",
       "translated_slug": "template-tour-reminder",
       "title": "Rappel d’excursion",
@@ -4479,12 +4466,11 @@
         ],
         "channel": "Both",
         "template_key": "tour_reminder"
-      },
-      "template_key": "tour_reminder"
+      }
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "welcome",
+      "entity_key": "83b34c2d-3d1d-4a32-aed8-ae2d2cf35d50",
       "locale": "fr",
       "translated_slug": "template-welcome",
       "title": "Bienvenue chez Awesome Adventure Tours",
@@ -4500,8 +4486,70 @@
         ],
         "channel": "Both",
         "template_key": "welcome"
-      },
-      "template_key": "welcome"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "612bdb2c-703a-4ac3-96d9-3554246b8426",
+      "locale": "fr",
+      "translated_slug": "template-post-trip-thank-you",
+      "title": "Merci d’avoir voyagé avec nous",
+      "summary": "Merci d’avoir participé à {{tour_name}}",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "name": "Merci d’avoir voyagé avec nous",
+        "subject": "Merci d’avoir participé à {{tour_name}}",
+        "body_text": "Bonjour {{customer_name}},\n\nMerci d’avoir participé à {{tour_name}}. Nous espérons que vous avez apprécié votre expérience en mer Rouge et serions ravis de vous accueillir à nouveau.",
+        "variables": [
+          "customer_name",
+          "tour_name"
+        ],
+        "channel": "Email",
+        "template_key": "post_trip_thank_you"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "ea7c52e1-5b5e-40a4-8e70-6144b9ae141c",
+      "locale": "fr",
+      "translated_slug": "template-ticket-created",
+      "title": "Demande d’assistance reçue",
+      "summary": "Nous avons reçu votre demande d’assistance {{ticket_reference}}",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "name": "Demande d’assistance reçue",
+        "subject": "Nous avons reçu votre demande d’assistance {{ticket_reference}}",
+        "body_text": "Bonjour {{customer_name}},\n\nNous avons bien reçu votre demande d’assistance ({{ticket_reference}}). Notre équipe l’examinera et vous répondra dès que possible.",
+        "variables": [
+          "customer_name",
+          "ticket_reference"
+        ],
+        "channel": "Email",
+        "template_key": "ticket_created"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "18b48d44-d030-42de-8a8d-970cf3adc493",
+      "locale": "fr",
+      "translated_slug": "template-ticket-reply",
+      "title": "Nouvelle réponse à votre ticket d’assistance {{ticket_reference}}",
+      "summary": "Une mise à jour concerne votre demande d’assistance",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "name": "Nouvelle réponse à votre ticket d’assistance {{ticket_reference}}",
+        "subject": "Une mise à jour concerne votre demande d’assistance",
+        "body_text": "Bonjour {{customer_name}},\n\nNotre équipe a répondu à votre demande d’assistance ({{ticket_reference}}). Connectez-vous à votre compte pour consulter la réponse.",
+        "variables": [
+          "customer_name",
+          "ticket_reference"
+        ],
+        "channel": "Email",
+        "template_key": "ticket_reply"
+      }
     }
   ]
 }
