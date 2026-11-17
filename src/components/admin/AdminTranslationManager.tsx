@@ -93,21 +93,21 @@ export const AdminTranslationManager: React.FC = () => {
     let skippedCount = 0;
     try {
       let offset = 0;
-        let done = false;
-        while (!done) {
-          const result = await request('/api/admin/translations/generate-batch', {
-            method: 'POST',
-            body: JSON.stringify({ locale: targetLocale, offset, limit: 10 }),
-          });
-          offset = result.next_offset;
-          done = Boolean(result.done);
-          generatedCount += Number(result.processed || 0);
-          skippedCount += Number(result.skipped || 0);
-          setGenerationProgress(targetLocale.toUpperCase() + ': ' + offset + '/' + result.total + ' source records · ' + generatedCount + ' drafts saved · ' + skippedCount + ' skipped · French only');
-          if (!done) {
-            await new Promise(resolve => window.setTimeout(resolve, 6500));
-          }
+      let done = false;
+      while (!done) {
+        const result = await request('/api/admin/translations/generate-batch', {
+          method: 'POST',
+          body: JSON.stringify({ locale: targetLocale, offset, limit: 10 }),
+        });
+        offset = result.next_offset;
+        done = Boolean(result.done);
+        generatedCount += Number(result.processed || 0);
+        skippedCount += Number(result.skipped || 0);
+        setGenerationProgress(targetLocale.toUpperCase() + ': ' + offset + '/' + result.total + ' source records · ' + generatedCount + ' drafts saved · ' + skippedCount + ' skipped · French only');
+        if (!done) {
+          await new Promise(resolve => window.setTimeout(resolve, 6500));
         }
+      }
       const result = await request('/api/admin/translations?locale=' + encodeURIComponent(targetLocale));
       setRows(result.translations || []);
       if (skippedCount > 0) {
@@ -172,7 +172,7 @@ export const AdminTranslationManager: React.FC = () => {
       </header>
       {confirmGenerate && !generating && <div role="dialog" aria-modal="true" aria-labelledby="translation-generate-title" className="rounded-xl border border-teal-700 bg-teal-950/40 p-4 space-y-3">
         <h2 id="translation-generate-title" className="font-semibold text-white">Generate translation drafts?</h2>
-        <p className="text-sm text-stone-300">This translates published tours, destinations, blog posts, public pages, communication templates and the interface catalog into French only. It uses Gemini. All results remain drafts; nothing is published automatically. All results remain drafts; nothing is published automatically.</p>
+        <p className="text-sm text-stone-300">This translates published tours, destinations, blog posts, public pages, communication templates and the interface catalog into French only. It uses Gemini. All results remain drafts; nothing is published automatically.</p>
         <div className="flex flex-wrap gap-2"><button type="button" onClick={() => setConfirmGenerate(false)} className="rounded border border-stone-600 px-3 py-2 text-sm">Cancel</button><button type="button" onClick={() => { setConfirmGenerate(false); void generateSelectedLocale(); }} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white">Start generating drafts</button></div>
       </div>}
       {generationProgress && <p role="status" aria-live="polite" className="rounded-lg border border-stone-800 bg-stone-900/50 px-4 py-3 text-sm text-stone-300">{generationProgress}</p>}
