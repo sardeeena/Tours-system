@@ -220,7 +220,7 @@ async function runPhase62TestSuite() {
   );
 
   if (isSupabaseConfigured()) {
-    const pickupLocations = await getPublishedPickupLocations();
+    const pickupLocations = await getPublishedPickupLocations('test-tour-id');
     assert(Array.isArray(pickupLocations), 'getPublishedPickupLocations returns database rows');
     if (pickupLocations.length > 0) {
       assert(pickupLocations[0].id !== undefined && pickupLocations[0].name !== undefined, 'Pickup locations have valid id and name attributes');
@@ -231,7 +231,7 @@ async function runPhase62TestSuite() {
   } else {
     let pickupFailedClosed = false;
     let extrasFailedClosed = false;
-    try { await getPublishedPickupLocations(); } catch (error) { pickupFailedClosed = String(error).includes('Supabase is not configured'); }
+    try { await getPublishedPickupLocations('test-tour-id'); } catch (error) { pickupFailedClosed = String(error).includes('Supabase is not configured'); }
     try { await getPublishedTourExtras(); } catch (error) { extrasFailedClosed = String(error).includes('Supabase is not configured'); }
     assert(pickupFailedClosed, 'Pickup locations fail closed instead of using hardcoded business data');
     assert(extrasFailedClosed, 'Tour extras fail closed instead of using hardcoded business data');
