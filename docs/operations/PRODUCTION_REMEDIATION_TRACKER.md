@@ -6,7 +6,7 @@
 
 ## Production migration note
 
-- The database migration ledger confirms `20261117120000_link_departures_to_booking_capacity` has already been applied to the Awesome Adventure Tours Supabase project.
+- The database migration ledger confirms `20261117120000_link_departures_to_booking_capacity` is already recorded as applied to the Awesome Adventure Tours Supabase project. No migration-apply operation was executed in this remediation session, so the source/time of its application is unverified.
 - That migration added nullable `departure_id` links and booking triggers. A live read-only check found **zero linked bookings and zero linked availability rows**; no existing reservations or availability counts were changed by the linkage.
 - The applied version exposes only a private RPC. The forward-only migration `20261117170000_departure_capacity_hardening.sql` adds the public authenticated RPC used by the application, reconciles existing booking counts, blocks past/started departures and enforces vessel maintenance checks.
 - Do not rewrite or roll back the applied migration. Apply the forward migration through the normal release process before deploying the application code that calls the public RPC.
