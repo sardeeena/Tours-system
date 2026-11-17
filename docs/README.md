@@ -1,6 +1,6 @@
-# Kemet Spirit documentation
+# Awesome Adventure Tours documentation
 
-This directory contains operator guides, project reports and release/operations checklists.
+This directory contains operator guides, project reports and release/operations checklists for Awesome Adventure Tours. Older audit and phase reports are historical snapshots; current code, migrations and production evidence take precedence.
 
 ## Start here
 
@@ -8,7 +8,7 @@ This directory contains operator guides, project reports and release/operations 
 - [Hostinger deployment guide](./guides/HOSTINGER_DEPLOYMENT_GUIDE.md) — Node.js production deployment.
 - [Setup guide](./guides/SETUP_GUIDE.md) — local and environment setup notes.
 - [Supabase guide](./guides/SUPABASE.md) — database and Auth notes.
-- [Legacy manual](./guides/LEGACY_MANUAL.md) — retained historical material; verify every instruction against the current README before use.
+- [Legacy manual](./guides/LEGACY_MANUAL.md) — retained historical material; do not use it to configure or modify production without validating against current migrations and owner-approved procedures.
 
 ## Guides
 
