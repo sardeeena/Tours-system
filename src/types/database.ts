@@ -358,6 +358,7 @@ export interface DbVessel {
   status?: 'active' | 'in_service' | 'maintenance' | 'dry_dock' | 'inactive' | string;
   maintenance_notes?: string | null;
   next_maintenance?: string | null;
+  next_maintenance_date?: string | null;
   crew?: string | null;
   created_at: string;
   updated_at: string;

@@ -95,7 +95,7 @@ export const OperationsVessels: React.FC = () => {
       is_active: true,
       status: 'active',
       maintenance_notes: '',
-      next_maintenance: '2026-12-01',
+      next_maintenance: '',
       crew: '',
     });
     setAmenityInput('');
@@ -117,7 +117,7 @@ export const OperationsVessels: React.FC = () => {
       is_active: vessel.is_active,
       status: vessel.status || (vessel.is_active ? 'active' : 'inactive'),
       maintenance_notes: vessel.maintenance_notes || '',
-      next_maintenance: vessel.next_maintenance || '',
+      next_maintenance: vessel.next_maintenance_date || vessel.next_maintenance || '',
       crew: vessel.crew || '',
     });
     setAmenityInput('');
