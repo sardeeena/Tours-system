@@ -175,6 +175,13 @@ jobs:
       - name: Verify private customer UI localization extraction and runtime transform
         run: npm run test:private-ui-localization
 
+      - name: Upload extracted private customer UI source catalog for translation audit
+        uses: actions/upload-artifact@v4
+        with:
+          name: private-ui-source-catalog
+          path: src/i18n/privateUiCatalog.generated.ts
+          if-no-files-found: error
+
       - name: Verify French rollout dictionary completeness and publication gates
         run: npm run test:french-rollout
 
