@@ -1208,357 +1208,214 @@ export async function listCommunicationMessages(filter?: {
 // 5. INTERNAL STAFF NOTIFICATIONS (All 10 Categories with Anti-Spam Deduplication)
 // ------------------------------------------------------------------------------
 
+function mapStaffNotification(row: any): StaffNotification {
+  return {
+    id: row.id,
+    category: row.category as NotificationCategory,
+    dedupKey: row.dedup_key || row.id,
+    title: row.title,
+    message: row.message,
+    severity: row.severity,
+    entityType: row.entity_type || undefined,
+    entityId: row.entity_id || undefined,
+    linkTab: row.link_tab || undefined,
+    isRead: Boolean(row.is_read),
+    readAt: row.read_at || null,
+    createdAt: row.created_at,
+  };
+}
+
 export async function listStaffNotifications(): Promise<StaffNotification[]> {
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('The staff notification database is unavailable.');
+    return getLocal<StaffNotification[]>(LOCAL_NOTIFS_KEY, [])
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
   await checkAndGenerateStaffNotifications();
-  const notifs = getLocal<StaffNotification[]>(LOCAL_NOTIFS_KEY, []);
-  return notifs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const { data, error } = await supabase
+    .from('staff_notifications')
+    .select('id,category,dedup_key,title,message,severity,entity_type,entity_id,link_tab,is_read,read_at,created_at')
+    .order('created_at', { ascending: false })
+    .limit(250);
+  if (error) throw new Error(error.message || 'Could not load the staff notification inbox.');
+  return (data || []).map(mapStaffNotification);
 }
 
 export async function markNotificationRead(id: string): Promise<void> {
-  const all = getLocal<StaffNotification[]>(LOCAL_NOTIFS_KEY, []);
-  const updated = all.map((n) =>
-    n.id === id ? { ...n, isRead: true, readAt: new Date().toISOString() } : n
-  );
-  setLocal(LOCAL_NOTIFS_KEY, updated);
-
-  if (isSupabaseConfigured()) {
-    try {
-      await supabase
-        .from('staff_notifications')
-        .update({ is_read: true, read_at: new Date().toISOString() })
-        .eq('id', id);
-    } catch {
-      // ignore
-    }
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('The staff notification database is unavailable.');
+    const all = getLocal<StaffNotification[]>(LOCAL_NOTIFS_KEY, []);
+    setLocal(LOCAL_NOTIFS_KEY, all.map((n) => n.id === id ? { ...n, isRead: true, readAt: new Date().toISOString() } : n));
+    return;
   }
+
+  const { data, error } = await supabase
+    .from('staff_notifications')
+    .update({ is_read: true, read_at: new Date().toISOString() })
+    .eq('id', id)
+    .select('id')
+    .maybeSingle();
+  if (error) throw new Error(error.message || 'Could not mark the notification as read.');
+  if (!data?.id) throw new Error('The notification was not found or could not be updated.');
 }
 
 export async function markAllNotificationsRead(): Promise<void> {
-  const all = getLocal<StaffNotification[]>(LOCAL_NOTIFS_KEY, []);
-  const updated = all.map((n) => ({ ...n, isRead: true, readAt: new Date().toISOString() }));
-  setLocal(LOCAL_NOTIFS_KEY, updated);
-
-  if (isSupabaseConfigured()) {
-    try {
-      await supabase
-        .from('staff_notifications')
-        .update({ is_read: true, read_at: new Date().toISOString() })
-        .eq('is_read', false);
-    } catch {
-      // ignore
-    }
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('The staff notification database is unavailable.');
+    const all = getLocal<StaffNotification[]>(LOCAL_NOTIFS_KEY, []);
+    setLocal(LOCAL_NOTIFS_KEY, all.map((n) => ({ ...n, isRead: true, readAt: new Date().toISOString() })));
+    return;
   }
+
+  const { error } = await supabase
+    .from('staff_notifications')
+    .update({ is_read: true, read_at: new Date().toISOString() })
+    .eq('is_read', false);
+  if (error) throw new Error(error.message || 'Could not mark notifications as read.');
 }
 
 /**
- * Intelligent notification generator:
- * Covers all 10 requested examples:
- * 1. New booking
- * 2. New inquiry
- * 3. New payment
- * 4. Payment overdue
- * 5. New lead
- * 6. Follow-up due
- * 7. Task overdue
- * 8. Departure unassigned
- * 9. Pickup pending
- * 10. Document expiring
+ * Build deduplicated alerts from the same persisted tables used by the admin
+ * modules. Production localStorage is never consulted or treated as authoritative.
  */
 export async function checkAndGenerateStaffNotifications(): Promise<void> {
-  const currentNotifs = getLocal<StaffNotification[]>(LOCAL_NOTIFS_KEY, []);
-  const existingDedupKeys = new Set(currentNotifs.map((n) => n.dedupKey));
-  const newNotifications: StaffNotification[] = [];
-  const now = new Date();
-  const todayStr = now.toISOString().split('T')[0];
+  if (!isSupabaseConfigured()) {
+    if (import.meta.env.DEV) return;
+    throw new Error('The staff notification database is unavailable.');
+  }
 
-  try {
-    const bookings = await bookingRepository.listBookings();
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+  const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
-    // 1. New Bookings
-    bookings.forEach((b) => {
-      const dedupKey = `new_booking_${b.bookingReference}`;
-      if (!existingDedupKeys.has(dedupKey)) {
-        newNotifications.push({
-          id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-          category: 'new_booking',
-          dedupKey,
-          title: `New Booking: ${b.bookingReference}`,
-          message: `${b.customer.firstName} ${b.customer.lastName} booked ${b.tourTitle} for ${b.date} (€${b.pricing?.totalEur || 0}).`,
-          severity: 'success',
-          entityType: 'booking',
-          entityId: b.bookingReference,
-          linkTab: 'bookings',
-          isRead: false,
-          createdAt: b.createdAt || now.toISOString(),
-        });
-        existingDedupKeys.add(dedupKey);
-      }
+  const [
+    bookingsResult,
+    inquiriesResult,
+    paymentsResult,
+    leadsResult,
+    tasksResult,
+    departuresResult,
+    pickupsResult,
+  ] = await Promise.all([
+    supabase.from('bookings').select('id,booking_reference,booking_date,total,currency,payment_status,status,created_at,customers(first_name,last_name),tours(title)').order('created_at', { ascending: false }).limit(250),
+    supabase.from('inquiries').select('id,customer_name,email,subject,status,created_at').eq('status', 'new').order('created_at', { ascending: false }).limit(100),
+    supabase.from('payment_transactions').select('id,booking_reference,customer_name,amount,currency,payment_method,status,payment_date').in('status', ['Paid','Partially Paid']).order('payment_date', { ascending: false }).limit(100),
+    supabase.from('leads').select('id,name,country,stage,estimated_value,follow_up_date,created_at').order('created_at', { ascending: false }).limit(250),
+    supabase.from('crm_tasks').select('id,title,assigned_staff_name,due_date,status').not('due_date', 'is', null).limit(250),
+    supabase.from('departures').select('id,date,status,guide_id,vessel_id,tours(title)').gte('date', todayStr).not('status', 'in', '(cancelled,completed)').limit(250),
+    supabase.from('pickup_schedules').select('id,booking_reference,hotel,customer_name,pickup_time,tour_date,status').lte('tour_date', tomorrow).eq('status', 'pending').limit(250),
+  ]);
 
-      // 4. Payment Overdue
-      if (b.date <= todayStr && b.paymentStatus !== 'paid' && b.status !== 'cancelled') {
-        const payOverdueDedup = `payment_overdue_${b.bookingReference}_${b.date}`;
-        if (!existingDedupKeys.has(payOverdueDedup)) {
-          newNotifications.push({
-            id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-            category: 'payment_overdue',
-            dedupKey: payOverdueDedup,
-            title: `Payment Overdue: ${b.bookingReference}`,
-            message: `Reservation ${b.bookingReference} for ${b.date} has unpaid balance (€${b.pricing?.totalEur || 0}). Collect at check-in.`,
-            severity: 'warning',
-            entityType: 'booking',
-            entityId: b.bookingReference,
-            linkTab: 'fin_balances',
-            isRead: false,
-            createdAt: now.toISOString(),
-          });
-          existingDedupKeys.add(payOverdueDedup);
-        }
-      }
+  const queryErrors = [
+    bookingsResult.error, inquiriesResult.error, paymentsResult.error,
+    leadsResult.error, tasksResult.error, departuresResult.error, pickupsResult.error,
+  ].filter(Boolean);
+  if (queryErrors.length) {
+    throw new Error('The staff inbox scan could not read all required production data: ' + queryErrors.map((e: any) => e.message).join('; '));
+  }
+
+  const rows: Array<Record<string, unknown>> = [];
+  const push = (
+    category: NotificationCategory,
+    dedupKey: string,
+    title: string,
+    message: string,
+    severity: StaffNotification['severity'],
+    entityType: string,
+    entityId: string,
+    linkTab: string,
+    createdAt?: string
+  ) => {
+    rows.push({
+      category, dedup_key: dedupKey, title, message, severity,
+      entity_type: entityType, entity_id: entityId, link_tab: linkTab,
+      is_read: false, created_at: createdAt || new Date().toISOString(),
     });
+  };
 
-    // 2. New Inquiries
-    const inquiriesRaw = localStorage.getItem('rse_inquiries_data');
-    if (inquiriesRaw) {
-      try {
-        const inquiries = JSON.parse(inquiriesRaw);
-        inquiries.slice(0, 15).forEach((inq: any) => {
-          if (inq.status === 'new') {
-            const inqDedup = `new_inquiry_${inq.id}`;
-            if (!existingDedupKeys.has(inqDedup)) {
-              newNotifications.push({
-                id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-                category: 'new_inquiry',
-                dedupKey: inqDedup,
-                title: `New Inquiry: ${inq.customer_name}`,
-                message: `${inq.customer_name} inquired about "${inq.subject}". Email: ${inq.email}`,
-                severity: 'info',
-                entityType: 'inquiry',
-                entityId: inq.id,
-                linkTab: 'inquiries',
-                isRead: false,
-                createdAt: inq.created_at || now.toISOString(),
-              });
-              existingDedupKeys.add(inqDedup);
-            }
-          }
-        });
-      } catch {}
+  for (const booking of bookingsResult.data || []) {
+    const customer = Array.isArray(booking.customers) ? booking.customers[0] : booking.customers;
+    const tour = Array.isArray(booking.tours) ? booking.tours[0] : booking.tours;
+    const customerName = [customer?.first_name, customer?.last_name].filter(Boolean).join(' ') || 'Guest';
+    push(
+      'new_booking',
+      'new_booking_' + booking.booking_reference,
+      'New Booking: ' + booking.booking_reference,
+      customerName + ' booked ' + (tour?.title || 'an excursion') + ' for ' + booking.booking_date + ' (' + (booking.currency || 'EUR') + ' ' + Number(booking.total || 0).toFixed(2) + ').',
+      'success','booking',booking.booking_reference,'bookings',booking.created_at
+    );
+
+    if (booking.booking_date <= todayStr && booking.payment_status !== 'paid' && booking.status !== 'cancelled') {
+      push(
+        'payment_overdue',
+        'payment_overdue_' + booking.booking_reference + '_' + booking.booking_date,
+        'Payment Overdue: ' + booking.booking_reference,
+        'Reservation ' + booking.booking_reference + ' for ' + booking.booking_date + ' has an outstanding payment balance.',
+        'warning','booking',booking.booking_reference,'fin_balances'
+      );
     }
-
-    // 3. New Payments
-    const paymentsRaw = localStorage.getItem('rse_finance_payments');
-    if (paymentsRaw) {
-      try {
-        const payments = JSON.parse(paymentsRaw);
-        payments.slice(0, 10).forEach((p: any) => {
-          const payDedup = `new_payment_${p.id}`;
-          if (!existingDedupKeys.has(payDedup)) {
-            newNotifications.push({
-              id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-              category: 'new_payment',
-              dedupKey: payDedup,
-              title: `New Payment: €${p.amount} (${p.currency || 'EUR'})`,
-              message: `Received ${p.paymentMethod} from ${p.customerName} for ${p.bookingReference || 'Direct Payment'}.`,
-              severity: 'success',
-              entityType: 'payment',
-              entityId: p.id,
-              linkTab: 'fin_payments',
-              isRead: false,
-              createdAt: p.paymentDate || p.createdAt || now.toISOString(),
-            });
-            existingDedupKeys.add(payDedup);
-          }
-        });
-      } catch {}
-    }
-
-    // 5. New Leads & 6. Follow-up Due
-    const leadsRaw = localStorage.getItem('rse_crm_leads');
-    if (leadsRaw) {
-      try {
-        const leads = JSON.parse(leadsRaw);
-        leads.forEach((lead: any) => {
-          // New Lead
-          const leadDedup = `new_lead_${lead.id}`;
-          if (!existingDedupKeys.has(leadDedup)) {
-            newNotifications.push({
-              id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-              category: 'new_lead',
-              dedupKey: leadDedup,
-              title: `New CRM Lead: ${lead.name}`,
-              message: `${lead.name} from ${lead.country || 'International'} (${lead.stage}). Value: €${lead.estimatedValue || 0}.`,
-              severity: 'info',
-              entityType: 'customer',
-              entityId: lead.id,
-              linkTab: 'crm_leads',
-              isRead: false,
-              createdAt: lead.createdAt || now.toISOString(),
-            });
-            existingDedupKeys.add(leadDedup);
-          }
-
-          // Follow-up Due
-          if (lead.followUpDate && lead.stage !== 'Won' && lead.stage !== 'Lost') {
-            const followDate = lead.followUpDate.split('T')[0];
-            if (followDate <= todayStr) {
-              const followDedup = `followup_due_${lead.id}_${followDate}`;
-              if (!existingDedupKeys.has(followDedup)) {
-                newNotifications.push({
-                  id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-                  category: 'followup_due',
-                  dedupKey: followDedup,
-                  title: `Follow-up Due: ${lead.name}`,
-                  message: `Action required for ${lead.name} (${lead.interestedTourTitle || 'General inquiry'}). Target date: ${followDate}.`,
-                  severity: 'warning',
-                  entityType: 'customer',
-                  entityId: lead.id,
-                  linkTab: 'crm_followups',
-                  isRead: false,
-                  createdAt: now.toISOString(),
-                });
-                existingDedupKeys.add(followDedup);
-              }
-            }
-          }
-        });
-      } catch {}
-    }
-
-    // 7. Task Overdue
-    const tasksRaw = localStorage.getItem('rse_crm_tasks');
-    if (tasksRaw) {
-      try {
-        const tasks = JSON.parse(tasksRaw);
-        tasks.forEach((task: any) => {
-          if (task.status !== 'Completed' && task.dueDate) {
-            const taskDate = task.dueDate.split('T')[0];
-            if (taskDate < todayStr) {
-              const taskDedup = `task_overdue_${task.id}_${taskDate}`;
-              if (!existingDedupKeys.has(taskDedup)) {
-                newNotifications.push({
-                  id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-                  category: 'task_overdue',
-                  dedupKey: taskDedup,
-                  title: `Task Overdue: ${task.title}`,
-                  message: `Assigned to ${task.assignedStaffName || 'Staff'}. Due on ${taskDate}.`,
-                  severity: 'critical',
-                  entityType: 'task',
-                  entityId: task.id,
-                  linkTab: 'crm_tasks',
-                  isRead: false,
-                  createdAt: now.toISOString(),
-                });
-                existingDedupKeys.add(taskDedup);
-              }
-            }
-          }
-        });
-      } catch {}
-    }
-
-    // 8. Departure Unassigned
-    const departuresRaw = localStorage.getItem('rse_ops_departures');
-    if (departuresRaw) {
-      try {
-        const departures = JSON.parse(departuresRaw);
-        departures.forEach((dep: any) => {
-          if (dep.date >= todayStr && dep.status !== 'cancelled' && dep.status !== 'completed') {
-            const missingStaff = !dep.lead_guide_id && !dep.guide_name;
-            const missingVessel = !dep.vessel_id && !dep.vessel_name;
-            if (missingStaff || missingVessel) {
-              const unassignedDedup = `departure_unassigned_${dep.id}`;
-              if (!existingDedupKeys.has(unassignedDedup)) {
-                const missingWhat = missingStaff && missingVessel ? 'Guide and Vessel' : missingStaff ? 'Guide' : 'Vessel';
-                newNotifications.push({
-                  id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-                  category: 'departure_unassigned',
-                  dedupKey: unassignedDedup,
-                  title: `Departure Unassigned: ${dep.date}`,
-                  message: `${dep.tour_name || 'Tour'} on ${dep.date} is missing ${missingWhat} assignment.`,
-                  severity: 'critical',
-                  entityType: 'departure',
-                  entityId: dep.id,
-                  linkTab: 'ops_assignments',
-                  isRead: false,
-                  createdAt: now.toISOString(),
-                });
-                existingDedupKeys.add(unassignedDedup);
-              }
-            }
-          }
-        });
-      } catch {}
-    }
-
-    // 9. Pickup Pending
-    const pickupsRaw = localStorage.getItem('rse_ops_pickups');
-    if (pickupsRaw) {
-      try {
-        const pickups = JSON.parse(pickupsRaw);
-        pickups.forEach((pu: any) => {
-          if (pu.status === 'pending') {
-            const puDedup = `pickup_pending_${pu.id}`;
-            if (!existingDedupKeys.has(puDedup)) {
-              newNotifications.push({
-                id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-                category: 'pickup_pending',
-                dedupKey: puDedup,
-                title: `Pickup Pending: ${pu.hotel_name || 'Hotel'}`,
-                message: `Passenger pickup for ${pu.passenger_name || 'Guest'} at ${pu.pickup_time || 'morning'} requires driver confirmation.`,
-                severity: 'warning',
-                entityType: 'departure',
-                entityId: pu.id,
-                linkTab: 'ops_pickups',
-                isRead: false,
-                createdAt: now.toISOString(),
-              });
-              existingDedupKeys.add(puDedup);
-            }
-          }
-        });
-      } catch {}
-    }
-
-    // 10. Document Expiring
-    const docsRaw = localStorage.getItem('rse_ops_documents');
-    if (docsRaw) {
-      try {
-        const docs = JSON.parse(docsRaw);
-        docs.forEach((doc: any) => {
-          if (doc.expiry_date) {
-            const expTime = new Date(doc.expiry_date).getTime();
-            const daysLeft = Math.round((expTime - now.getTime()) / (1000 * 60 * 60 * 24));
-            if (daysLeft <= 14) {
-              const docDedup = `document_expiring_${doc.id}`;
-              if (!existingDedupKeys.has(docDedup)) {
-                newNotifications.push({
-                  id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-                  category: 'document_expiring',
-                  dedupKey: docDedup,
-                  title: `Document Expiring: ${doc.title}`,
-                  message: `${doc.document_type || 'Operational Document'} (${doc.title}) expires in ${daysLeft > 0 ? `${daysLeft} days` : 'OVERDUE'}. Renewal required.`,
-                  severity: daysLeft <= 3 ? 'critical' : 'warning',
-                  entityType: 'document',
-                  entityId: doc.id,
-                  linkTab: 'ops_documents',
-                  isRead: false,
-                  createdAt: now.toISOString(),
-                });
-                existingDedupKeys.add(docDedup);
-              }
-            }
-          }
-        });
-      } catch {}
-    }
-  } catch (err) {
-    console.warn('Notification generator scan error:', err);
   }
 
-  if (newNotifications.length > 0) {
-    const combined = [...newNotifications, ...currentNotifs];
-    setLocal(LOCAL_NOTIFS_KEY, combined);
+  for (const inquiry of inquiriesResult.data || []) {
+    push('new_inquiry','new_inquiry_' + inquiry.id,'New Inquiry: ' + inquiry.customer_name,
+      inquiry.customer_name + ' asked about "' + inquiry.subject + '". Email: ' + inquiry.email,
+      'info','inquiry',inquiry.id,'inquiries',inquiry.created_at);
   }
+
+  for (const payment of paymentsResult.data || []) {
+    push('new_payment','new_payment_' + payment.id,
+      'New Payment: ' + payment.currency + ' ' + Number(payment.amount || 0).toFixed(2),
+      'Received ' + payment.payment_method + ' from ' + (payment.customer_name || 'Guest') + ' for ' + (payment.booking_reference || 'a booking') + '.',
+      'success','payment',payment.id,'fin_payments',payment.payment_date);
+  }
+
+  for (const lead of leadsResult.data || []) {
+    if (String(lead.stage || '').toLowerCase() === 'new') {
+      push('new_lead','new_lead_' + lead.id,'New CRM Lead: ' + lead.name,
+        lead.name + ' (' + (lead.country || 'International') + '). Estimated value: ' + (lead.currency || 'EUR') + ' ' + Number(lead.estimated_value || 0).toFixed(2) + '.',
+        'info','customer',lead.id,'crm_leads',lead.created_at);
+    }
+    if (lead.follow_up_date && !['won','lost'].includes(String(lead.stage || '').toLowerCase()) && String(lead.follow_up_date).slice(0,10) <= todayStr) {
+      const followDate = String(lead.follow_up_date).slice(0,10);
+      push('followup_due','followup_due_' + lead.id + '_' + followDate,'Follow-up Due: ' + lead.name,
+        'Follow-up required for ' + lead.name + '. Target date: ' + followDate + '.',
+        'warning','customer',lead.id,'crm_followups');
+    }
+  }
+
+  for (const task of tasksResult.data || []) {
+    if (String(task.status || '').toLowerCase() !== 'completed' && String(task.due_date || '').slice(0,10) < todayStr) {
+      const dueDate = String(task.due_date).slice(0,10);
+      push('task_overdue','task_overdue_' + task.id + '_' + dueDate,'Task Overdue: ' + task.title,
+        'Assigned to ' + (task.assigned_staff_name || 'Staff') + '. Due on ' + dueDate + '.',
+        'critical','task',task.id,'crm_tasks');
+    }
+  }
+
+  for (const departure of departuresResult.data || []) {
+    if (!departure.guide_id || !departure.vessel_id) {
+      const tour = Array.isArray(departure.tours) ? departure.tours[0] : departure.tours;
+      const missing = !departure.guide_id && !departure.vessel_id ? 'guide and vessel' : !departure.guide_id ? 'guide' : 'vessel';
+      push('departure_unassigned','departure_unassigned_' + departure.id,
+        'Departure Unassigned: ' + departure.date,
+        (tour?.title || 'Tour') + ' on ' + departure.date + ' is missing ' + missing + ' assignment.',
+        'critical','departure',departure.id,'ops_departures');
+    }
+  }
+
+  for (const pickup of pickupsResult.data || []) {
+    push('pickup_pending','pickup_pending_' + pickup.id,
+      'Pickup Pending: ' + (pickup.hotel || 'Hotel'),
+      'Passenger pickup for ' + (pickup.customer_name || 'Guest') + ' at ' + (pickup.pickup_time || 'an unconfirmed time') + ' requires driver confirmation. Booking ' + pickup.booking_reference + '.',
+      'warning','departure',pickup.id,'ops_pickups');
+  }
+
+  if (!rows.length) return;
+  const { error: insertError } = await supabase
+    .from('staff_notifications')
+    .upsert(rows, { onConflict: 'dedup_key', ignoreDuplicates: true });
+  if (insertError) throw new Error(insertError.message || 'Could not persist staff notifications.');
 }
 
 // ------------------------------------------------------------------------------
