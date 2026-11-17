@@ -175,6 +175,9 @@ jobs:
       - name: Verify private customer UI localization extraction and runtime transform
         run: npm run test:private-ui-localization
 
+      - name: Verify French rollout dictionary completeness and publication gates
+        run: npm run test:french-rollout
+
       - name: Verify WhatsApp locale mapping and safe fallback
         run: npm run test:whatsapp-locale-mapping
 
