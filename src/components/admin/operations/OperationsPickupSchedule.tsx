@@ -128,8 +128,8 @@ export const OperationsPickupSchedule: React.FC = () => {
       );
       showToast(`Driver & vehicle assigned for ${editingItem.bookingReference}.`, 'success');
       setEditingItem(null);
-    } catch {
-      showToast('Failed to update driver assignment.', 'error');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Failed to update driver assignment.', 'error');
     } finally {
       setSavingAction(false);
     }
