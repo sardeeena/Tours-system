@@ -4,6 +4,13 @@
 **Baseline:** read-only production audit performed 17 November 2026.  
 **Rule:** This tracker is not permission to fabricate business facts, credentials, schedules, invoices, or customer data. Production records must be preserved.
 
+## Production migration note
+
+- The database migration ledger confirms `20261117120000_link_departures_to_booking_capacity` has already been applied to the Awesome Adventure Tours Supabase project.
+- That migration added nullable `departure_id` links and booking triggers. A live read-only check found **zero linked bookings and zero linked availability rows**; no existing reservations or availability counts were changed by the linkage.
+- The applied version exposes only a private RPC. The forward-only migration `20261117170000_departure_capacity_hardening.sql` adds the public authenticated RPC used by the application, reconciles existing booking counts, blocks past/started departures and enforces vessel maintenance checks.
+- Do not rewrite or roll back the applied migration. Apply the forward migration through the normal release process before deploying the application code that calls the public RPC.
+
 ## Implemented in this pull request
 
 - [x] Replace unsupported homepage trust claims about owning boats/transfers, universal guide credentials, universal free pickup, guaranteed 100% weather/cancellation refunds, and guaranteed multilingual WhatsApp support with qualified, tour-specific wording.
