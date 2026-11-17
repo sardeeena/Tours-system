@@ -1,0 +1,105 @@
+{
+  "locale": "fr",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "records": [
+    {
+      "entity_type": "destination",
+      "entity_key": "689b5e4f-8168-4713-9181-9ebcbd884a7a",
+      "source_slug": "cairo",
+      "translated_slug": "le-caire",
+      "title": "Le Caire",
+      "summary": "Pyramides, histoire ancienne et culture égyptienne",
+      "seo_title": "Le Caire : pyramides, histoire et culture égyptienne",
+      "seo_description": "Explorez Le Caire, les pyramides de Gizeh, le Grand Sphinx, le Grand Musée égyptien, les mosquées historiques et les souks.",
+      "content": {
+        "tagline": "Pyramides, histoire ancienne et culture égyptienne",
+        "description": "Découvrez Le Caire, la capitale animée de l’Égypte, où les merveilles antiques côtoient la vie urbaine moderne. Visitez les célèbres pyramides de Gizeh, le Grand Sphinx, le Grand Musée égyptien, les mosquées historiques et les souks animés. Plongez dans l’histoire égyptienne, la cuisine locale et des expériences culturelles inoubliables."
+      }
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "88d0f219-2819-4ff8-a6ce-01d7682296d0",
+      "source_slug": "el-gouna",
+      "translated_slug": "el-gouna",
+      "title": "El Gouna",
+      "summary": "Lagons turquoise, plages et vie de marina",
+      "seo_title": "El Gouna : lagons, plages et activités en mer Rouge",
+      "seo_description": "Découvrez El Gouna et ses lagons turquoise, ses plages, sa marina, le snorkeling, le kitesurf et les sorties en bateau.",
+      "content": {
+        "tagline": "Lagons turquoise, plages et vie de marina",
+        "description": "Découvrez El Gouna, une magnifique station balnéaire sur la côte égyptienne de la mer Rouge, réputée pour ses lagons turquoise, ses plages de sable, ses complexes hôteliers haut de gamme, sa marina, ses sports nautiques et ses restaurants animés. Profitez de sorties en bateau, de snorkeling, de kitesurf et de moments de détente au bord de la mer."
+      }
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "985fd0a3-6b7a-4e0f-b535-cff4aa4ac0be",
+      "source_slug": "hurghada",
+      "translated_slug": "hurghada",
+      "title": "Hurghada",
+      "summary": "Découvrez les merveilles de la mer Rouge",
+      "seo_title": "Hurghada : excursions, plages et aventures en mer Rouge",
+      "seo_description": "Organisez votre séjour à Hurghada : snorkeling, plongée, safaris dans le désert, excursions sur les îles et croisières au coucher du soleil.",
+      "content": {
+        "tagline": "Découvrez les merveilles de la mer Rouge",
+        "description": "Découvrez Hurghada, l’une des destinations les plus prisées d’Égypte sur la mer Rouge, célèbre pour ses eaux cristallines, ses récifs coralliens colorés, ses plages de sable doré et ses complexes hôteliers de renommée internationale. Profitez d’inoubliables sorties de snorkeling et de plongée, de safaris passionnants dans le désert, d’excursions vers les îles et de croisières au coucher du soleil. Que vous recherchiez le repos, l’aventure ou des activités en famille, Hurghada vous promet des vacances mémorables."
+      }
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "b58b8665-3870-4674-96ea-e3c22fed426e",
+      "source_slug": "luxor",
+      "translated_slug": "louxor",
+      "title": "Louxor",
+      "summary": "À la découverte de l’Égypte antique et de ses merveilles éternelles",
+      "seo_title": "Louxor : temples antiques et Vallée des Rois",
+      "seo_description": "Visitez Louxor, le complexe de Karnak, le temple d’Hatchepsout et la Vallée des Rois lors d’excursions guidées en Égypte.",
+      "content": {
+        "tagline": "À la découverte de l’Égypte antique et de ses merveilles éternelles",
+        "description": "Explorez Louxor, l’une des destinations historiques les plus remarquables d’Égypte. Découvrez le majestueux complexe de Karnak, le temple de Louxor, la Vallée des Rois et le temple d’Hatchepsout. Profitez de visites guidées consacrées à l’histoire, de croisières sur le Nil et de vols inoubliables en montgolfière au-dessus des monuments antiques."
+      }
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "ebf085ec-ebaa-4b73-ac66-ebedb34c74f0",
+      "source_slug": "makadi-bay",
+      "translated_slug": "baie-de-makadi",
+      "title": "Baie de Makadi",
+      "summary": "Complexes familiaux, récifs coralliens et aventures en mer",
+      "seo_title": "Baie de Makadi : plages, récifs et excursions",
+      "seo_description": "Découvrez la baie de Makadi : resorts tout compris, snorkeling, plongée, sorties en bateau, safaris dans le désert et activités familiales.",
+      "content": {
+        "tagline": "Complexes familiaux, récifs coralliens et aventures en mer",
+        "description": "Profitez de la baie de Makadi, une destination de vacances prisée sur la mer Rouge, connue pour ses complexes tout compris, son magnifique littoral et ses récifs coralliens colorés. Découvrez le snorkeling, la plongée sous-marine, les sorties en bateau, les safaris dans le désert et les activités adaptées aux familles. La baie de Makadi est une escapade reposante pour les couples, les familles et les amateurs d’aventure."
+      }
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "16e32986-869a-4bf1-aa2f-aa7552e46b05",
+      "source_slug": "sahl-hasheesh",
+      "translated_slug": "sahl-hasheesh",
+      "title": "Sahl Hasheesh",
+      "summary": "Resorts de luxe sur la mer Rouge et plages préservées",
+      "seo_title": "Sahl Hasheesh : resorts de luxe et plages de la mer Rouge",
+      "seo_description": "Séjournez à Sahl Hasheesh, au sud de Hurghada, pour profiter de plages préservées, de resorts en bord de mer, du snorkeling et de la plongée.",
+      "content": {
+        "tagline": "Resorts de luxe sur la mer Rouge et plages préservées",
+        "description": "Découvrez Sahl Hasheesh, une élégante station balnéaire de la mer Rouge située au sud de Hurghada. Profitez d’eaux cristallines, de belles plages de sable, de resorts de luxe en bord de mer, de snorkeling, de plongée et de promenades romantiques sur le littoral. C’est une destination idéale pour les couples, les familles et les voyageurs en quête de détente et de vacances haut de gamme."
+      }
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "ffcc83a6-2dc4-4990-91bb-1d72450755c2",
+      "source_slug": "sharm-el-sheikh",
+      "translated_slug": "charm-el-cheikh",
+      "title": "Charm el-Cheikh",
+      "summary": "Découvrez la magie de la mer Rouge",
+      "seo_title": "Charm el-Cheikh : plongée, plages et safaris dans le désert",
+      "seo_description": "Explorez Charm el-Cheikh : récifs coralliens, snorkeling, plongée, plages, safaris dans le désert et couchers de soleil sur la mer Rouge.",
+      "content": {
+        "tagline": "Découvrez la magie de la mer Rouge",
+        "description": "Découvrez Charm el-Cheikh, la destination phare de l’Égypte sur la mer Rouge, célèbre pour ses eaux cristallines, ses récifs coralliens colorés, ses plages dorées et ses resorts luxueux. Profitez d’expériences inoubliables de snorkeling et de plongée, de safaris passionnants dans le désert et de couchers de soleil spectaculaires. Que vous soyez en quête d’aventure ou de détente, Charm el-Cheikh est une escapade idéale."
+      }
+    }
+  ]
+}
