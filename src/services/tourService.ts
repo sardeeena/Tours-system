@@ -1510,84 +1510,61 @@ export async function adminListTourExtras(): Promise<DbTourExtra[]> {
  * Filters locations by the selected tour's city/hub (e.g. Hurghada vs Marsa Alam vs Sharm El-Sheikh)
  * or explicit tour_pickup_locations.
  */
-export async function getPublishedPickupLocations(tourIdOrDestination?: string): Promise<PickupLocation[]> {
-  const dbLocations = await getPickupLocations();
-  const allLocations: PickupLocation[] = dbLocations.map((l) => ({
-    id: l.code || l.id,
-    name: l.name,
-    area: l.area,
-    feeEurPerPerson: Number(l.fee_eur_per_person) || 0,
-    feeEurFlat: Number(l.fee_eur_flat) || 0,
-    note: l.description || undefined,
-    isPopular: l.code === 'hurghada' || l.sort_order === 1,
-  }));
-
-  if (!tourIdOrDestination) {
-    return allLocations;
+export async function getPublishedPickupLocations(tourIdOrSlug: string): Promise<PickupLocation[]> {
+  if (!tourIdOrSlug?.trim()) {
+    throw new Error('A published tour identifier is required to load approved pickup locations.');
+  }
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase is not configured. Approved pickup locations cannot be verified.');
+  }
+  if (isSchemaMissing()) {
+    throw new Error('The pickup mapping schema is unavailable. Approved pickup locations cannot be verified.');
   }
 
-  // Check if tourIdOrDestination matches a tour with explicit tour_pickup_locations in DB
-  if (isSupabaseConfigured() && !isSchemaMissing()) {
-    try {
-      let tourId = tourIdOrDestination;
-      if (!tourId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-        const { data: tourRow } = await supabase.from('tours').select('id, destinations(name)').eq('slug', tourIdOrDestination).maybeSingle();
-        if (tourRow) {
-          tourId = tourRow.id;
-        }
-      }
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tourIdOrSlug);
+  let tourQuery = supabase
+    .from('tours')
+    .select('id, pickup_available')
+    .eq('status', 'published');
+  tourQuery = isUuid ? tourQuery.eq('id', tourIdOrSlug) : tourQuery.eq('slug', tourIdOrSlug);
 
-      if (tourId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
-        const { data: assignedPickups } = await supabase
-          .from('tour_pickup_locations')
-          .select('pickup_location_id, pickup_locations (*)')
-          .eq('tour_id', tourId);
-
-        if (assignedPickups && assignedPickups.length > 0) {
-          const mapped = assignedPickups
-            .map((ap: any) => ap.pickup_locations)
-            .filter(Boolean)
-            .filter((l: any) => l.is_active)
-            .map((l: any) => ({
-              id: l.code || l.id,
-              name: l.name,
-              area: l.area,
-              feeEurPerPerson: Number(l.fee_eur_per_person) || 0,
-              feeEurFlat: Number(l.fee_eur_flat) || 0,
-              note: l.description || undefined,
-              isPopular: l.code === 'hurghada' || l.sort_order === 1,
-            }));
-          if (mapped.length > 0) {
-            return mapped;
-          }
-        }
-      }
-    } catch {
-      // fallback to destination string filtering
-    }
+  const { data: tour, error: tourError } = await tourQuery.maybeSingle();
+  if (tourError) {
+    throw new Error(`Unable to verify tour pickup eligibility: ${formatSupabaseError(tourError)}`);
+  }
+  if (!tour) {
+    throw new Error('The published tour could not be verified. Pickup options are unavailable.');
+  }
+  if (!tour.pickup_available) {
+    return [];
   }
 
-  // Filter pickup destinations by the selected tour's city / hub
-  const normalized = tourIdOrDestination.toLowerCase();
-  if (normalized.includes('marsa') || normalized.includes('ghalib')) {
-    const marsaList = allLocations.filter((l) => l.id.includes('marsa') || l.area.toLowerCase().includes('marsa'));
-    return marsaList.length > 0 ? marsaList : allLocations;
+  const { data: assignments, error: assignmentError } = await supabase
+    .from('tour_pickup_locations')
+    .select('pickup_location_id')
+    .eq('tour_id', tour.id);
+
+  if (assignmentError) {
+    throw new Error(`Unable to verify approved pickup locations: ${formatSupabaseError(assignmentError)}`);
   }
 
-  if (normalized.includes('sharm') || normalized.includes('sinai') || normalized.includes('dahab')) {
-    const sharmList = allLocations.filter((l) => l.id.includes('sharm') || l.area.toLowerCase().includes('sharm') || l.area.toLowerCase().includes('naama'));
-    return sharmList.length > 0 ? sharmList : allLocations;
+  const approvedLocationIds = new Set((assignments || []).map((assignment: any) => assignment.pickup_location_id));
+  if (approvedLocationIds.size === 0) {
+    return [];
   }
 
-  // Default to Hurghada & Red Sea coastal hub (El Gouna, Makadi Bay, Sahl Hasheesh, Safaga / Soma Bay)
-  const hurghadaList = allLocations.filter((l) =>
-    l.id === 'hurghada' ||
-    l.id === 'el-gouna' ||
-    l.id === 'makadi-bay' ||
-    l.id === 'sahl-hasheesh' ||
-    l.id === 'safaga'
-  );
-  return hurghadaList.length > 0 ? hurghadaList : allLocations;
+  const activeLocations = await getPickupLocations();
+  return activeLocations
+    .filter((location) => approvedLocationIds.has(location.id))
+    .map((location) => ({
+      id: location.code || location.id,
+      name: location.name,
+      area: location.area,
+      feeEurPerPerson: Number(location.fee_eur_per_person) || 0,
+      feeEurFlat: Number(location.fee_eur_flat) || 0,
+      note: location.description || undefined,
+      isPopular: location.code === 'hurghada-city' || location.sort_order === 1,
+    }));
 }
 
 // In-memory / localStorage cache for tour-specific extra price overrides
