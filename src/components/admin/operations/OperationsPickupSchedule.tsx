@@ -22,10 +22,8 @@ import {
 import {
   getDailyPickupSchedule,
   updatePickupScheduleStatus,
-  listGuides,
 } from '../../../services/operationsService';
 import { PickupScheduleItem, PickupStatus } from '../../../types/operations';
-import { DbGuide } from '../../../types/database';
 import { useToast } from '../../../contexts/ToastContext';
 
 export const OperationsPickupSchedule: React.FC = () => {
@@ -34,7 +32,6 @@ export const OperationsPickupSchedule: React.FC = () => {
     () => new Date().toISOString().split('T')[0]
   );
   const [pickups, setPickups] = useState<PickupScheduleItem[]>([]);
-  const [drivers, setDrivers] = useState<DbGuide[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -50,12 +47,8 @@ export const OperationsPickupSchedule: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [data, allGuides] = await Promise.all([
-        getDailyPickupSchedule(selectedDate),
-        listGuides(),
-      ]);
+      const data = await getDailyPickupSchedule(selectedDate);
       setPickups(data);
-      setDrivers(allGuides.filter((g) => g.role === 'driver' || g.role === 'guide'));
     } catch (err) {
       console.warn('Failed to load pickup schedule:', err);
     } finally {
