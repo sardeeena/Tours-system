@@ -41,52 +41,68 @@ function mergeRows(sourceRows: any[], translatedRows: any[], fields: string[], l
     return result;
   });
 }
-function sourcePayload(type: string, source: AnyRecord, draft: AnyRecord): AnyRecord {
+function expectedPayload(type: string, source: AnyRecord): AnyRecord {
   if (type === 'ui_catalog') return { content: source.content || {} };
+  if (type === 'tour') return {
+    title: source.title, summary: source.short_description || source.description || '',
+    content: {
+      title:source.title, description:source.description || source.short_description || '', durationLabel:source.duration || '',
+      highlights:(source.highlights || []).map((x:any)=>x.item || x), itinerary:source.itinerary || [],
+      included:source.included || [], excluded:source.excluded || [], faqs:source.faqs || [],
+      pickupInfo:source.pickup_info || '', cancellationPolicy:source.cancellation_policy || '',
+      ageRestrictions:source.age_restrictions || '',
+      labels:{highlights:'Highlights',itinerary:'Itinerary',included:'Included',excluded:'Not included',faqs:'Frequently asked questions',
+        pickupInfo:'Pickup information',cancellationPolicy:'Cancellation policy',ageRestrictions:'Age restrictions',
+        bookNow:'Book now',browseMore:'Browse more tours'},
+    },
+  };
+  if (type === 'destination') return {
+    title:source.name || source.title, summary:source.tagline || source.description || '',
+    content:{title:source.name || source.title,description:source.description || '',tagline:source.tagline || '',
+      paragraphs:[],labels:{browseMore:'Explore more destinations'}},
+  };
+  if (type === 'blog_post') return {
+    title:source.title, summary:source.excerpt || source.meta_description || '',
+    content:{title:source.title,excerpt:source.excerpt || '',content:source.content || source.body || ''},
+  };
+  if (type === 'communication_template') return {
+    title:source.name, summary:source.subject || '',
+    content:{name:source.name,subject:source.subject || '',body_text:source.body_text || '',
+      variables:source.variables || {},channel:source.channel,template_key:source.template_key},
+  };
+  return {
+    title:source.title || source.name || 'Explore the Red Sea',
+    summary:source.heroSubtitle || source.description || source.excerpt || '',
+    content:{heroHeadline:source.heroHeadline || source.title || '',
+      heroSubtitle:source.heroSubtitle || source.description || '',sections:source.sections || [],paragraphs:source.paragraphs || [],
+      labels:{browseMore:'Explore more',bookNow:'Book now'}},
+  };
+}
+function translatedPayload(type: string, source: AnyRecord, draft: AnyRecord): AnyRecord {
+  if (type === 'ui_catalog') return { content:draft.content };
   if (type === 'tour') {
     const content = draft.content || {};
     return {
-      title: source.title,
-      summary: source.short_description || source.description || '',
-      content: {
-        title: content.title,
-        description: content.description,
-        durationLabel: content.durationLabel,
-        highlights: content.highlights,
-        itinerary: mergeRows(source.itinerary || [], content.itinerary || [], ['time','title','description'], 'tour itinerary'),
-        included: mergeRows(source.included || [], content.included || [], ['item'], 'tour inclusions'),
-        excluded: mergeRows(source.excluded || [], content.excluded || [], ['item'], 'tour exclusions'),
-        faqs: mergeRows(source.faqs || [], content.faqs || [], ['question','answer','section'], 'tour FAQs'),
-        pickupInfo: content.pickupInfo,
-        cancellationPolicy: content.cancellationPolicy,
-        ageRestrictions: content.ageRestrictions,
-        labels: content.labels,
+      title:draft.title, summary:draft.summary,
+      content:{
+        title:content.title,description:content.description,durationLabel:content.durationLabel,
+        highlights:content.highlights,
+        itinerary:mergeRows(source.itinerary || [],content.itinerary || [],['time','title','description'],'tour itinerary'),
+        included:mergeRows(source.included || [],content.included || [],['item'],'tour inclusions'),
+        excluded:mergeRows(source.excluded || [],content.excluded || [],['item'],'tour exclusions'),
+        faqs:mergeRows(source.faqs || [],content.faqs || [],['question','answer','section'],'tour FAQs'),
+        pickupInfo:content.pickupInfo,cancellationPolicy:content.cancellationPolicy,ageRestrictions:content.ageRestrictions,labels:content.labels,
       },
     };
   }
-  if (type === 'destination') return {
-    title: source.name || source.title,
-    summary: source.tagline || source.description || '',
-    content: { title:draft.content.title, description:draft.content.description, tagline:draft.content.tagline,
-      paragraphs:draft.content.paragraphs, labels:draft.content.labels },
-  };
-  if (type === 'blog_post') return {
-    title: source.title,
-    summary: source.excerpt || source.meta_description || '',
-    content: { title:draft.content.title, excerpt:draft.content.excerpt, content:draft.content.content },
-  };
+  if (type === 'destination') return {title:draft.title,summary:draft.summary,content:draft.content};
+  if (type === 'blog_post') return {title:draft.title,summary:draft.summary,content:draft.content};
   if (type === 'communication_template') return {
-    title: source.name,
-    summary: source.subject || '',
-    content: { name:draft.content.name, subject:draft.content.subject, body_text:draft.content.body_text,
-      variables:source.variables || {}, channel:source.channel, template_key:source.template_key },
+    title:draft.title,summary:draft.summary,
+    content:{name:draft.content.name,subject:draft.content.subject,body_text:draft.content.body_text,
+      variables:source.variables || {},channel:source.channel,template_key:source.template_key},
   };
-  return {
-    title: source.title || source.name || 'Explore the Red Sea',
-    summary: source.heroSubtitle || source.description || source.excerpt || '',
-    content: { heroHeadline:draft.content.heroHeadline, heroSubtitle:draft.content.heroSubtitle,
-      sections:draft.content.sections, paragraphs:draft.content.paragraphs, labels:draft.content.labels },
-  };
+  return {title:draft.title,summary:draft.summary,content:draft.content};
 }
 async function main() {
   const [sourcePath, outputPath = './translations/fr/french-import-bundle.json'] = process.argv.slice(2);
@@ -103,15 +119,15 @@ async function main() {
     if (!sourceRecord || !/^[a-f0-9]{64}$/i.test(sourceRecord.source_checksum || '')) {
       throw new Error('Missing current source record or checksum: ' + draft.entity_type + ':' + draft.entity_key);
     }
-    const payload = sourcePayload(draft.entity_type, sourceRecord.source, draft);
-    if (payload.title !== undefined && !translationStructureMatches(payload.title, draft.title)) {
+    const expected = expectedPayload(draft.entity_type, sourceRecord.source);
+    const payload = translatedPayload(draft.entity_type, sourceRecord.source, draft);
+    if (expected.title !== undefined && !translationStructureMatches(expected.title, payload.title)) {
       throw new Error('Title structure/token mismatch: ' + draft.entity_type + ':' + draft.entity_key);
     }
-    if (payload.summary !== undefined && !translationStructureMatches(payload.summary, draft.summary)) {
+    if (expected.summary !== undefined && !translationStructureMatches(expected.summary, payload.summary)) {
       throw new Error('Summary structure/token mismatch: ' + draft.entity_type + ':' + draft.entity_key);
     }
-    if (!translationStructureMatches(payload.content, payload.content)) throw new Error('Internal source payload validation error.');
-    if (!translationStructureMatches(payload.content, draft.entity_type === 'tour' ? payload.content : draft.content)) {
+    if (!translationStructureMatches(expected.content, payload.content)) {
       throw new Error('Content structure/token mismatch: ' + draft.entity_type + ':' + draft.entity_key);
     }
     const slug = normalizedSlug(draft.translated_slug, draft.entity_key);
