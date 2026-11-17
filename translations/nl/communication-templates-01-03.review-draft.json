@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "locale": "nl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "communication_template": 3,
+    "source_records": 3
+  },
+  "records": [
+    {
+      "entity_type": "communication_template",
+      "entity_key": "9d0afa47-45f6-47b8-8dde-eeae58e45b97",
+      "translated_slug": "template-boeking-bevestiging",
+      "title": "Boekingsbevestiging",
+      "summary": "Boekingsbevestiging: {{tour_name}} (ref.: {{booking_reference}})",
+      "content": {
+        "name": "Boekingsbevestiging",
+        "subject": "Boekingsbevestiging: {{tour_name}} (ref.: {{booking_reference}})",
+        "body_text": "Hallo {{customer_name}},\n\nBedankt voor je boeking bij Awesome Adventure Tours. Je boeking voor {{tour_name}} op {{tour_date}} is bevestigd.\n\nBoekingsreferentie: {{booking_reference}}\nTotaalbedrag: {{amount}}\nResterend saldo: {{balance_due}}\nOphaaltijd: {{pickup_time}}\n\nMet vriendelijke groet,\nDe conciërgeservice van Awesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "tour_date",
+          "pickup_time",
+          "amount",
+          "balance_due"
+        ],
+        "channel": "Both",
+        "template_key": "booking_confirmation"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "a2067910-50a2-41e4-bb08-80722a0750bf",
+      "translated_slug": "template-boeking-ontvangen",
+      "title": "Boekingsticket",
+      "summary": "Je boekingsticket van Awesome Adventure Tours: {{booking_reference}}",
+      "content": {
+        "name": "Boekingsticket",
+        "subject": "Je boekingsticket van Awesome Adventure Tours: {{booking_reference}}",
+        "body_text": "Hallo {{customer_name}},\n\nWe hebben je boekingsaanvraag voor {{tour_name}} op {{tour_date}} ontvangen. Je digitale boekingsticket vind je hieronder.\n\nBoekingsreferentie: {{booking_reference}}\nBoekingsstatus: {{booking_status}}\nTotaal: {{currency}} {{amount}}\n\nHoud je boekingsreferentie bij de hand wanneer je contact opneemt met ons team. De ophaaltijd en praktische details kunnen afzonderlijk worden bevestigd.\n\nBedankt,\nAwesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "tour_date",
+          "booking_status",
+          "currency",
+          "amount"
+        ],
+        "channel": "Email",
+        "template_key": "booking_received"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "3f657bd6-15e7-477f-b513-ac9038af2383",
+      "translated_slug": "template-verzoek-beoordeling-na-excursie",
+      "title": "Verzoek om beoordeling na afloop van de excursie",
+      "summary": "Hoe was je excursie {{tour_name}}? We horen graag je mening",
+      "content": {
+        "name": "Verzoek om beoordeling na afloop van de excursie",
+        "subject": "Hoe was je excursie {{tour_name}}? We horen graag je mening",
+        "body_text": "Hallo {{customer_name}},\n\nBedankt dat je hebt deelgenomen aan {{tour_name}} (boeking {{booking_reference}}). We hopen dat je een geweldige tijd hebt gehad.\n\nAls je even de tijd hebt, zouden we het zeer waarderen als je een eerlijke beoordeling wilt achterlaten:\n\nGoogle: {{google_review_url}}\nTripadvisor: {{tripadvisor_review_url}}\nPagina van je excursie: {{tour_review_url}}\n\nBedankt dat je voor Awesome Adventure Tours hebt gekozen. We hopen je binnenkort opnieuw te mogen verwelkomen!",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "google_review_url",
+          "tripadvisor_review_url",
+          "tour_review_url"
+        ],
+        "channel": "Email",
+        "template_key": "booking_review_request"
+      }
+    }
+  ]
+}
