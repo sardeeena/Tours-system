@@ -145,6 +145,12 @@ assert.deepEqual(bundle.source_data_warnings || [], [], 'The two previously flag
 const correctedQuad = records.find((record) => record.entity_type === 'tour' && record.entity_key === '18375e31-b866-4f07-b3a8-c13b2a5c243b');
 assert.equal(correctedQuad.content.itinerary.length, 5, 'El Gouna quad safari has five corrected itinerary steps');
 assert.equal(correctedQuad.content.faqs.length, 0, 'Unrelated boat/snorkeling FAQs are removed from the desert quad safari');
+const nonMarineTourSlugs = ["afternoon-desert-safari-with-echo-mountains-bedouin-village","cairo-pyramids-sphinx-egyptian-museum-day-trip-from-sharm-el-sheikh","el-gouna-jeep-desert-safari-bbq-dinner-stargazing-experience","from-hurghada-luxor-day-trip-karnak-temple-valley-of-the-kings","grand-egyptian-museum-guided-tour-with-entry-ticket","hurghada-airport-to-hotel-private-arrival-transfer","hurghada-desert-quad-safari-atv-adventure-camel-ride-bedouin-village","hurghada-desert-stargazing-safari-jeep-adventure-bedouin-dinner-telescope-experience","hurghada-parasailing-banana-boat-adventure-with-hotel-pickup","hurghada-quad-bike-safari-desert-ride-camel-experience-bedouin-village","mount-sinai-sunrise-hike-st-catherines-monastery-from-sharm-el-sheikh","old-cairo-full-day-tour-islamic-coptic-heritage-with-lunch","sharm-el-sheikh-private-city-tour-old-market-mosque-cathedral","st-catherine-monastery-dahab-day-trip-from-sharm-el-sheikh","ultimate-sinai-desert-safari-quad-camel-bbq-adventure","ultimate-sinai-desert-safari-quad-camel-bbq-adventure-copy-757"];
+for (const slug of nonMarineTourSlugs) {
+  const tour = records.find((record) => record.entity_type === 'tour' && record.source_slug === slug);
+  assert.ok(tour, 'Non-marine source tour is present: ' + slug);
+  assert.equal(tour.content.faqs.length, 0, 'Unrelated snorkeling FAQs are removed from non-marine tour: ' + slug);
+}
 assert.match(JSON.stringify(correctedQuad.content.itinerary), /quad|quadri|bédouin|chameau/i);
 assert.doesNotMatch(JSON.stringify(correctedQuad.content.itinerary), /marina|snorkeling|bateau|navigation|île|island|à bord/i, 'Quad itinerary no longer contains boat-trip content');
 const rasMohammed = records.find((record) => record.entity_type === 'tour' && record.entity_key === '2f7cbd8c-bda2-4915-b5e4-5fc98927a388');

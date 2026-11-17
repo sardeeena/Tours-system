@@ -11,6 +11,7 @@ const migrationRetry = readText('../supabase/migrations/20261117212701_correct_i
 const migrationRelease = readText('../supabase/migrations/20261117233000_correct_inconsistent_tour_itinerary_and_faq.sql');
 const quadFaqCleanup = readText('../supabase/migrations/20261117213225_remove_unrelated_snorkeling_faqs_from_quad_tour.sql');
 const quadFaqCleanupRetry = readText('../supabase/migrations/20261117213227_remove_unrelated_snorkeling_faqs_from_quad_tour.sql');
+const nonMarineFaqCleanup = readText('../supabase/migrations/20261117213351_remove_unrelated_snorkeling_faqs_from_non_marine_tours.sql');
 
 for (const name of ['vite', '@vitejs/plugin-react', '@tailwindcss/vite']) {
   assert.ok(pkg.devDependencies?.[name], name + ' must remain a development/build dependency');
@@ -48,5 +49,9 @@ assert.match(quadFaqCleanup, /Is snorkeling equipment provided or should I bring
 assert.match(quadFaqCleanup, /Can non-swimmers participate safely\?/);
 assert.match(quadFaqCleanup, /refusing to delete changed FAQ content/);
 assert.match(quadFaqCleanup, /DELETE FROM public\.tour_faqs/);
+assert.match(nonMarineFaqCleanup, /hurghada-desert-quad-safari-atv-adventure-camel-ride-bedouin-village/);
+assert.match(nonMarineFaqCleanup, /st-catherine-monastery-dahab-day-trip-from-sharm-el-sheikh/);
+assert.match(nonMarineFaqCleanup, /refusing to delete changed FAQ content/);
+assert.match(nonMarineFaqCleanup, /DELETE FROM public\\.tour_faqs/);
 
 console.log('Source corrections and production dependency isolation checks passed.');
