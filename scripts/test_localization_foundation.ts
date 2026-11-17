@@ -9,6 +9,7 @@ const locales = read('../src/types/i18n.ts');
 const migration = read('../supabase/migrations/20261116150000_european_localization_foundation.sql');
 const bookingLocaleMigration = read('../supabase/migrations/20261116160000_booking_customer_locale_atomic.sql');
 const expandedBookingLocaleMigration = read('../supabase/migrations/20261116170000_expand_booking_customer_locale_languages.sql');
+const allCustomerLocalesMigration = read('../supabase/migrations/20261117230000_expand_all_customer_locales.sql');
 const bookingRepository = read('../src/services/bookingRepository.ts');
 const bookingPage = read('../src/pages/BookingPage.tsx');
 const appNavigation = read('../src/App.tsx');
@@ -24,7 +25,7 @@ assert.match(server, /const localePath = parseLocalePath\(requestedPath\)/, 'SSR
 assert.match(server, /statusCode = 404;[\s\S]*noindex = true/, 'Unpublished locale routes fail closed and are not indexable');
 assert.match(server, /\.eq\('locale', customerLocale\)/, 'Newsletter selects a communication template in the customer locale');
 assert.match(server, /if \(!welcomeTemplate && customerLocale !== 'en'\)/, 'Newsletter uses an explicit English template fallback');
-assert.match(server, /const customerLocale = \['en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'\]/, 'Newsletter locale input includes the five new supported languages');
+assert.match(server, /TRANSLATION_LOCALES\.has\(requestedLocale\)/, 'Newsletter accepts every configured customer locale');
 assert.deepEqual(parseLocalePath('/de/excursions/ras-mohammed'), { locale: 'de', pathname: '/excursions/ras-mohammed' });
 assert.equal(parseLocalePath('/xx/excursions/ras-mohammed'), null, 'Unknown locale prefixes are not treated as supported locales');
 assert.equal(buildLocalizedPath('de', '/excursions/ras-mohammed', ['de']), '/de/excursions/ras-mohammed');
@@ -105,7 +106,7 @@ assert.match(bookingLocaleMigration, /NOT IN \('en', 'de', 'it', 'ro', 'ru'\)/, 
 assert.match(expandedBookingLocaleMigration, /NOT IN \('en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'\)/, 'Expanded booking migration accepts all five new customer locales');
 assert.match(server, /app\.post\('\/api\/admin\/translations\/generate-batch'[\s\S]*requireSuperAdminAal2\(req, res\)/, 'AI bulk generation requires Super Admin AAL2');
 assert.match(server, /translation_state:\s*'draft'[\s\S]*reviewed_by:\s*null,\s*reviewed_at:\s*null,\s*published_at:\s*null/, 'AI bulk generation can only create unreviewed drafts');
-assert.match(server, /BULK_TRANSLATION_LOCALES: Record<string, string> = \{ fr: 'French', es: 'Spanish', nl: 'Dutch', pl: 'Polish', pt: 'Portuguese' \}/, 'Bulk generator targets all five requested locales');
+assert.match(server, /BULK_TRANSLATION_LOCALES: Record<string, string> = Object\.fromEntries\([\s\S]*EUROPEAN_LOCALE_ROLLOUT\.filter\(\(locale\) => locale\.code !== 'en'\)/, 'Bulk generator targets every configured non-English locale');
 assert.match(server, /communication_templates'\)\.select\('id'\)\.eq\('locale','en'\)\.order\('template_key'\)\.order\('id'\)/, 'Bulk generation uses deterministic communication-template ordering for offset batches');
 assert.match(server, /communication_template[\s\S]*communication_templates/, 'Communication templates are included in the protected translation workflow');
 assert.match(server, /String\(source\?\.subject \|\| ''\)[\s\S]*String\(source\?\.body_text \|\| ''\)/, 'Communication template placeholder checks include both subject and body');
@@ -120,7 +121,7 @@ assert.match(server, /function translationStructureMatches[\s\S]*protectedTokens
 assert.match(server, /translated\.content\.template_key !== item\.source\.template_key[\s\S]*JSON\.stringify\(translated\.content\.variables/, 'Communication translation cannot alter template keys, channels or variable names');
 assert.match(server, /select\('entity_type,entity_key,translated_slug,translation_state[\s\S]*workKeys\.has\(x\.entity_type\+':'\+x\.entity_key\)/, 'Bulk generation reserves slugs already used by reviewed or published translations');
 const adminTranslations = read('../src/components/admin/AdminTranslationManager.tsx');
-assert.match(adminTranslations, /Generate all 5 languages/, 'Super Admin can run the bulk five-language generation workflow');
+assert.match(adminTranslations, /Generate all 28 languages/, 'Super Admin can run the bulk all-locale generation workflow');
 assert.match(adminTranslations, /'communication_template'/, 'Super Admin can review communication template translations');
 assert.match(adminTranslations, /6500/, 'Bulk generator respects the server generation rate limit');
 assert.match(bookingRepository, /rpc\('create_booking_atomic_with_locale'/, 'Booking client uses the locale-aware atomic RPC');
@@ -132,7 +133,7 @@ assert.match(bookingNotificationWorker, /transactionalTemplateKey = 'cancellatio
 assert.match(bookingNotificationWorker, /transactionalTemplateKey = 'payment_confirmation'/, 'Settled payment notifications select the approved payment confirmation template');
 assert.match(bookingNotificationWorker, /sourceChecksum[\s\S]*content_translations'[\s\S]*approval\??\.source_checksum === sourceChecksum/, 'New-locale emails require a reviewed translation with a current English template checksum');
 assert.match(bookingNotificationWorker, /localized\.subject === approval\.content\?\.subject[\s\S]*localized\.body_text === approval\.content\?\.body_text/, 'New-locale emails use only the exact template body that was reviewed and published');
-assert.match(bookingNotificationWorker, /'en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'/, 'Booking notification worker recognizes all five additional customer locales');
+assert.match(bookingNotificationWorker, /CUSTOMER_LOCALE_CODES\.has\(locale\)/, 'Booking notification worker recognizes every configured customer locale');
 assert.match(bookingNotificationWorker, /getLocalizedCommunicationTemplate\(client, 'booking_review_request', customerLocale\)/, 'Completed booking review email selects the saved customer locale');
 assert.match(bookingNotificationWorker, /\.eq\('locale', locale\)/, 'Transactional email templates are locale-specific with an English fallback');
 assert.match(server, /selectedTemplateLanguage = selectWhatsAppTemplateLanguage\(preferredLocale/, 'WhatsApp customer locale maps only to an explicitly approved Meta language code');
