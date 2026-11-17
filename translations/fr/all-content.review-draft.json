@@ -4946,5 +4946,19 @@
         }
       }
     }
+  ],
+  "source_data_warnings": [
+    {
+      "entity_type": "tour",
+      "entity_key": "18375e31-b866-4f07-b3a8-c13b2a5c243b",
+      "severity": "review-before-publication",
+      "issue": "The source itinerary for this quad-safari product describes a boat trip from Hurghada marina, including sailing, snorkeling, lunch on board and an island beach stop. The French draft preserves and translates the source faithfully; the operations team must verify and correct the English source before publishing this translation."
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "2f7cbd8c-bda2-4915-b5e4-5fc98927a388",
+      "severity": "review-before-publication",
+      "issue": "The source life-jacket FAQ contains a corrupted sentence that merges the life-jacket answer with snorkeling content. The French FAQ was translated from the coherent meaning of the surrounding source entry; the source FAQ must be corrected and the French answer rechecked before publication."
+    }
   ]
 }

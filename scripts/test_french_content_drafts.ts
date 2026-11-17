@@ -125,5 +125,6 @@ for (const source of staticSources) {
 }
 assert.equal(staticSources.length, 10, 'Home plus all nine fallback static pages are covered');
 assert.equal(records.length, 111, 'The full French review bundle contains every known source candidate');
+assert.equal(bundle.source_data_warnings?.length, 2, 'Known source-data issues remain visible and block publication review');
 
 console.log('French draft coverage passed: 25 tours, 50 articles, 7 destinations, 18 communication templates, homepage, public UI and ' + expectedPrivateKeys.length + ' private UI messages.');
