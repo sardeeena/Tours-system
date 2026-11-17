@@ -1,0 +1,178 @@
+{
+  "locale": "fr",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "records": [
+    {
+      "entity_type": "tour",
+      "entity_key": "18375e31-b866-4f07-b3a8-c13b2a5c243b",
+      "source_slug": "el-gouna-desert-quad-safari-bedouin-village-camel-ride",
+      "translated_slug": "el-gouna-safari-quad-desert-village-bedouin-chameau",
+      "title": "El Gouna : safari en quad dans le désert, village bédouin et balade à dos de chameau",
+      "summary": "Quittez votre resort et découvrez la beauté sauvage du désert égyptien lors d’une aventure en quad au départ d’El Gouna. Parcourez les pistes sablonneuses avec les montagnes de la mer Rouge en toile de fond, visitez un village bédouin traditionnel, dégustez un thé bédouin et profitez d’une courte balade à dos de chameau. Transferts depuis l’hôtel et guide professionnel inclus.",
+      "content": {
+        "short_description": "Quittez votre resort et découvrez la beauté sauvage du désert égyptien lors d’une aventure en quad au départ d’El Gouna. Parcourez les pistes sablonneuses avec les montagnes de la mer Rouge en toile de fond, visitez un village bédouin traditionnel, dégustez un thé bédouin et profitez d’une courte balade à dos de chameau. Transferts depuis l’hôtel et guide professionnel inclus.",
+        "description": "### Troquez la plage contre une aventure dans le désert égyptien\n\nEnvie de changer de décor ? Quittez le littoral d’El Gouna pendant quelques heures et partez dans le désert, entre montagnes escarpées, vastes étendues de sable et sensations fortes.\n\nVotre aventure commence par une prise en charge à votre hôtel d’El Gouna. Après votre arrivée à la station de quad dans la région désertique de Hurghada, vous rencontrerez l’équipe, vous familiariserez avec votre véhicule et recevrez un briefing de sécurité avant le départ.\n\nLorsque vous serez prêt, la randonnée pourra commencer. Suivez votre guide sur les pistes du désert et traversez de vastes étendues de sable, avec l’impressionnante chaîne de montagnes de la mer Rouge à l’horizon. Profitez des sensations de la conduite sur les pistes, de l’air frais du désert et des paysages tout au long du parcours.\n\nAprès environ une heure de randonnée, vous atteindrez un village bédouin traditionnel. Le rythme ralentit et vous découvrirez un autre mode de vie. Installez-vous, dégustez un thé bédouin traditionnel et découvrez quelques coutumes locales ainsi que la vie quotidienne dans le désert.\n\nEt bien sûr, une visite ne serait pas tout à fait complète sans rencontrer un chameau. Profitez d’une courte balade à dos de chameau et prenez quelques photos mémorables avant de vous préparer au retour.\n\nLorsque viendra le moment de repartir, remontez sur votre quad et suivez les pistes du désert jusqu’au point de départ. Après la randonnée, votre transfert vous ramènera confortablement à votre hôtel à El Gouna.\n\nQue vous voyagiez en couple, entre amis ou que vous cherchiez une activité originale à ajouter à vos vacances, ce safari dans le désert est une excellente façon de découvrir une autre facette de l’Égypte, loin des plages.",
+        "highlights": [
+          "Vivez une aventure palpitante en quad dans le magnifique désert égyptien",
+          "Parcourez environ 55 km de pistes désertiques entourées par les montagnes de la mer Rouge",
+          "Découvrez les sensations de la conduite sur de vastes étendues sablonneuses et des pistes désertiques accidentées",
+          "Visitez un village bédouin traditionnel et découvrez un aperçu de la vie locale dans le désert",
+          "Détendez-vous autour d’une tasse de thé bédouin fraîchement préparé",
+          "Profitez d’une courte balade à dos de chameau et prenez des photos mémorables dans le désert",
+          "Admirez les paysages spectaculaires du désert oriental",
+          "Profitez de la prise en charge et du retour à l’hôtel à El Gouna",
+          "Choisissez entre un quad double partagé, un quad simple ou un safari privé"
+        ],
+        "included": [
+          "Prise en charge et retour à l’hôtel depuis tous les hôtels d’El Gouna",
+          "Transport aller-retour vers la station de safari dans le désert",
+          "Safari en quad d’environ 55 km",
+          "Quad double ou simple selon l’option sélectionnée",
+          "Guide professionnel dans le désert et consignes de conduite",
+          "Casque de sécurité pendant la randonnée en quad",
+          "Visite d’un village bédouin traditionnel",
+          "Courte balade à dos de chameau (environ 5 minutes)",
+          "Thé bédouin traditionnel",
+          "Eau potable en bouteille",
+          "Briefing de sécurité avant l’aventure"
+        ],
+        "excluded": [
+          "Foulard bédouin (disponible en option)",
+          "Lunettes de protection (disponibles en option)",
+          "Surclassement avec transfert privé (disponible en option)",
+          "Taxe touristique gouvernementale de 1 $ par personne",
+          "Dépenses personnelles et souvenirs",
+          "Pourboires pour le guide du désert et le chauffeur",
+          "Tout service non expressément mentionné dans les prestations incluses"
+        ],
+        "itinerary": [
+          {
+            "time": "08:00",
+            "title": "Prise en charge à l’hôtel",
+            "description": "Transfert climatisé depuis le hall de votre resort jusqu’à la marina de Hurghada."
+          },
+          {
+            "time": "09:00",
+            "title": "Départ de la marina",
+            "description": "Briefing de sécurité et navigation panoramique sur la mer Rouge."
+          },
+          {
+            "time": "10:00",
+            "title": "Premier arrêt snorkeling",
+            "description": "Session guidée de snorkeling sur le récif pour observer les poissons-perroquets, les raies et les coraux."
+          },
+          {
+            "time": "12:30",
+            "title": "Déjeuner à bord",
+            "description": "Déjeuner buffet chaud avec poisson, poulet, riz, salades et fruits."
+          },
+          {
+            "time": "14:00",
+            "title": "Temps libre sur la plage de l’île",
+            "description": "Débarquement sur la plage pour se détendre, prendre des photos et nager dans les eaux peu profondes."
+          },
+          {
+            "time": "16:30",
+            "title": "Retour à la marina",
+            "description": "Croisière tranquille au retour, tandis que le soleil de l’après-midi se reflète sur les montagnes côtières."
+          },
+          {
+            "time": "17:00",
+            "title": "Retour à l’hôtel",
+            "description": "Transfert de retour jusqu’au hall de votre hôtel."
+          }
+        ],
+        "faqs": [
+          {
+            "question": "L’équipement de snorkeling est-il fourni ou dois-je apporter le mien ?",
+            "answer": "Des masques, tubas et palmes désinfectés, en tailles adulte et enfant, sont fournis gratuitement à bord.",
+            "section": "faq"
+          },
+          {
+            "question": "Les personnes qui ne savent pas nager peuvent-elles participer en toute sécurité ?",
+            "answer": "Oui. Des gilets de flottaison homologués par les garde-côtes sont fournis et des moniteurs de plongée certifiés accompagnent les participants dans l’eau.",
+            "section": "faq"
+          }
+        ]
+      },
+      "seo_title": "Safari en quad à El Gouna : village bédouin et balade à dos de chameau",
+      "seo_description": "Partez en quad dans le désert depuis El Gouna, visitez un village bédouin et profitez d’un thé traditionnel et d’une balade à dos de chameau.",
+      "duration": "Demi-journée (environ 3 heures)",
+      "duration_type": "Demi-journée",
+      "departure_time": "13:30 AM",
+      "age_restrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
+      "pickup_info": "Prise en charge gratuite dans le hall de votre hôtel et retour inclus dans toute la zone d’El Gouna.",
+      "cancellation_policy": "Annulation gratuite jusqu’à 24 heures avant l’heure de début de l’excursion.",
+      "source_content_warnings": [
+        "L’itinéraire source de ce produit de safari en quad décrit une journée en bateau au départ de la marina de Hurghada (navigation, snorkeling, déjeuner à bord et plage d’île). Cette incohérence du contenu source a été conservée et traduite fidèlement ; elle doit être vérifiée par l’équipe opérationnelle avant toute publication."
+      ]
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "5a15257b-d664-4957-be77-c2cb87bd174a",
+      "source_slug": "el-gouna-jeep-desert-safari-bbq-dinner-stargazing-experience",
+      "translated_slug": "el-gouna-safari-jeep-desert-diner-barbecue-observation-etoiles",
+      "title": "El Gouna : safari en Jeep dans le désert, dîner barbecue et observation des étoiles",
+      "summary": "Échappez aux lumières d’El Gouna pour passer une soirée inoubliable au cœur du désert égyptien. Partez en safari en Jeep 4x4 dans les montagnes de la mer Rouge, admirez le coucher du soleil et découvrez l’hospitalité bédouine autour d’un délicieux dîner barbecue. À la nuit tombée, observez le ciel du désert à travers un télescope professionnel et découvrez les étoiles et les planètes avec un guide en astronomie.",
+      "content": {
+        "short_description": "Échappez aux lumières d’El Gouna pour passer une soirée inoubliable au cœur du désert égyptien. Partez en safari en Jeep 4x4 dans les montagnes de la mer Rouge, admirez le coucher du soleil et découvrez l’hospitalité bédouine autour d’un délicieux dîner barbecue. À la nuit tombée, observez le ciel du désert à travers un télescope professionnel et découvrez les étoiles et les planètes avec un guide en astronomie.",
+        "description": "Une soirée d’aventure dans le désert, d’hospitalité bédouine et de ciel étoilé\n\nCertaines expériences prennent toute leur dimension après le coucher du soleil, et cette aventure dans le désert en fait partie.\n\nQuittez l’ambiance animée d’El Gouna et partez dans le magnifique désert oriental pour une soirée pleine d’aventure, de traditions locales et d’émerveillement. De l’excitation d’une excursion en Jeep 4x4 à la beauté paisible d’un ciel étoilé, découvrez une facette de l’Égypte que de nombreux visiteurs ne connaissent pas.\n\nVotre soirée commence par une prise en charge à votre hôtel d’El Gouna, puis vous rejoignez le désert à bord d’un véhicule 4x4. À mesure que la ville disparaît derrière vous, le paysage s’ouvre sur de vastes étendues, des montagnes escarpées et des panoramas désertiques à perte de vue.\n\nAprès avoir parcouru environ 26 kilomètres dans le désert, vous atteindrez un point de vue panoramique pour admirer le coucher du soleil. Observez les couleurs du ciel changer tandis que le soleil disparaît lentement derrière les montagnes. C’est le moment idéal pour prendre des photos, profiter de l’air frais du désert et apprécier simplement le paysage.\n\nL’aventure se poursuit vers un camp bédouin traditionnel, où vous serez accueilli selon les traditions de l’hospitalité locale. Installez-vous, dégustez un thé bédouin aux herbes et découvrez un aperçu des traditions et du mode de vie des communautés du désert. Vous aurez également l’occasion de faire une courte balade à dos de chameau et de prendre quelques photos mémorables.\n\nÀ la tombée de la nuit, un délicieux dîner buffet barbecue vous attend. Savourez des plats fraîchement préparés, des saveurs traditionnelles et des boissons sans alcool rafraîchissantes dans une ambiance bédouine détendue, au milieu du calme du désert.\n\nMais le moment le plus magique de la soirée reste à venir.\n\nLorsque la nuit sera installée et que vous serez loin des lumières de la ville, levez les yeux et découvrez un tout autre spectacle dans le ciel. Avec l’aide d’un guide professionnel en astronomie, explorez les étoiles, apprenez des faits intéressants sur la galaxie et découvrez comment reconnaître différents objets célestes.\n\nGrâce à un télescope professionnel, observez de plus près les planètes visibles et d’autres objets fascinants du ciel nocturne, selon la météo et les conditions astronomiques.\n\nCette expérience associe aventure, culture et astronomie au cours d’une soirée mémorable.\n\nAprès ce moment sous les étoiles, détendez-vous pendant le trajet de retour en Jeep vers El Gouna et repartez avec le souvenir d’une nuit exceptionnelle dans le désert.",
+        "highlights": [
+          "Vivez un safari palpitant en Jeep 4x4 dans le magnifique désert oriental",
+          "Parcourez environ 26 km dans le désert, entouré par les impressionnantes montagnes de la mer Rouge",
+          "Admirez un magnifique coucher de soleil depuis un point de vue panoramique dans le désert",
+          "Découvrez l’hospitalité bédouine traditionnelle dans un camp du désert",
+          "Profitez d’une courte balade à dos de chameau et prenez des photos mémorables",
+          "Dégustez un thé bédouin fraîchement préparé et du pain traditionnel",
+          "Savourez un délicieux dîner buffet barbecue accompagné de boissons sans alcool",
+          "Explorez le ciel nocturne avec un guide professionnel en astronomie",
+          "Observez les planètes visibles et les objets célestes à travers un télescope professionnel",
+          "Apprenez des faits fascinants sur les étoiles, les planètes et la galaxie",
+          "Profitez de la prise en charge et du retour à l’hôtel à El Gouna"
+        ],
+        "included": [
+          "Prise en charge et retour à l’hôtel depuis tous les hôtels d’El Gouna",
+          "Safari dans le désert en Jeep 4x4",
+          "Parcours d’environ 26 km dans le désert",
+          "Bouteille d’eau minérale pendant le trajet en Jeep",
+          "Arrêt panoramique au coucher du soleil dans le désert",
+          "Courte balade à dos de chameau avec possibilité de prendre des photos",
+          "Thé bédouin traditionnel et pain fraîchement préparé",
+          "Dîner buffet barbecue dans un camp du désert de style bédouin",
+          "Boissons sans alcool et eau en bouteille pendant le dîner",
+          "Séance d’observation des étoiles avec télescope professionnel",
+          "Guide professionnel en astronomie"
+        ],
+        "excluded": [
+          "Taxe touristique gouvernementale de 1 $ par personne",
+          "Dépenses personnelles et souvenirs",
+          "Nourriture et boissons supplémentaires non mentionnées dans les prestations incluses",
+          "Pourboires pour le guide et le chauffeur",
+          "Services de photographie professionnelle",
+          "Tout service non expressément mentionné dans les prestations incluses"
+        ],
+        "faqs": [
+          {
+            "question": "L’équipement de snorkeling est-il fourni ou dois-je apporter le mien ?",
+            "answer": "Des masques, tubas et palmes désinfectés, en tailles adulte et enfant, sont fournis gratuitement à bord.",
+            "section": "faq"
+          },
+          {
+            "question": "Les personnes qui ne savent pas nager peuvent-elles participer en toute sécurité ?",
+            "answer": "Oui. Des gilets de flottaison homologués par les garde-côtes sont fournis et des moniteurs de plongée certifiés accompagnent les participants dans l’eau.",
+            "section": "faq"
+          }
+        ]
+      },
+      "seo_title": "Safari en Jeep à El Gouna : dîner barbecue et observation des étoiles",
+      "seo_description": "Découvrez le désert oriental en Jeep 4x4 depuis El Gouna : coucher de soleil, hospitalité bédouine, dîner barbecue et observation des étoiles au télescope.",
+      "duration": "Journée complète (environ 5 heures)",
+      "duration_type": "Journée complète",
+      "departure_time": "13:00 PM",
+      "age_restrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
+      "pickup_info": "Prise en charge gratuite dans le hall de votre hôtel et retour inclus dans toute la zone d’El Gouna.",
+      "cancellation_policy": "Annulation gratuite jusqu’à 24 heures avant l’heure de début de l’excursion."
+    }
+  ]
+}
