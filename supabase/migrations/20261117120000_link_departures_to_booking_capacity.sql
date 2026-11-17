@@ -65,6 +65,9 @@ BEGIN
   IF p_end_time <= p_start_time THEN
     RAISE EXCEPTION 'Departure end time must be later than its start time' USING ERRCODE = '22023';
   END IF;
+  IF p_departure_id IS NULL AND p_date < current_date THEN
+    RAISE EXCEPTION 'A new departure cannot be scheduled in the past' USING ERRCODE = '22023';
+  END IF;
   IF v_status NOT IN ('scheduled','confirmed','boarding','in_progress','completed','cancelled') THEN
     RAISE EXCEPTION 'Unsupported departure status' USING ERRCODE = '22023';
   END IF;
@@ -176,7 +179,7 @@ BEGIN
   END IF;
 
   v_availability_status := CASE
-    WHEN v_status IN ('cancelled','completed') THEN 'unavailable'
+    WHEN v_status IN ('cancelled','completed','boarding','in_progress') THEN 'unavailable'
     WHEN v_booked >= p_capacity THEN 'sold_out'
     ELSE 'available'
   END;
@@ -214,7 +217,7 @@ BEGIN
 
   UPDATE public.tour_availability
   SET booked_count = v_booked,
-      status = CASE WHEN v_status IN ('cancelled','completed') THEN 'unavailable'
+      status = CASE WHEN v_status IN ('cancelled','completed','boarding','in_progress') THEN 'unavailable'
                     WHEN v_booked >= p_capacity THEN 'sold_out' ELSE 'available' END,
       updated_at = now()
   WHERE departure_id = v_departure.id;
@@ -286,7 +289,7 @@ BEGIN
   WHERE b.departure_id = v_departure_id AND b.status <> 'cancelled';
 
   v_availability_status := CASE
-    WHEN EXISTS (SELECT 1 FROM public.departures d WHERE d.id = v_departure_id AND d.status IN ('cancelled','completed')) THEN 'unavailable'
+    WHEN EXISTS (SELECT 1 FROM public.departures d WHERE d.id = v_departure_id AND d.status IN ('cancelled','completed','boarding','in_progress')) THEN 'unavailable'
     WHEN v_booked >= v_capacity THEN 'sold_out'
     ELSE 'available'
   END;
