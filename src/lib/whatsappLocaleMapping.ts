@@ -8,7 +8,7 @@ export const DEFAULT_WHATSAPP_LOCALE_LANGUAGE_MAP: Readonly<Record<string, strin
   ru: 'ru',
 };
 
-const SUPPORTED_CUSTOMER_LOCALES = new Set(EUROPEAN_LOCALE_ROLLOUT.map((locale) => locale.code));
+const SUPPORTED_CUSTOMER_LOCALES = new Set<string>(EUROPEAN_LOCALE_ROLLOUT.map((locale) => locale.code));
 const META_LANGUAGE_CODE = /^[a-z]{2}(?:_[A-Z]{2})?$/;
 
 export interface WhatsAppLocaleLanguageConfig {
