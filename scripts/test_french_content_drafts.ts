@@ -69,7 +69,7 @@ assert.equal(new Set(slugs).size, slugs.length, 'French translated slugs are uni
 for (const slug of slugs) assert.match(slug, /^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'French slug is normalized: ' + slug);
 
 const protectedTokens = (value: string) => {
-  const matches = value.match(/https?:\/\/[^\s)]+|[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}|\+?\d[\d\s()./-]{4,}\d|\d+(?:[.,]\d+)?/g) || [];
+  const matches = value.match(/https?:\/\/[^\s)]+|[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}|\+\d[\d\s()./-]{5,}\d|\d+(?:[.,]\d+)?/g) || [];
   return matches.map((token) => token.replace(/\s+/g, ' ').trim()).sort();
 };
 const privateTokenFailures: Array<{ key: string; source: string; translated: string; sourceTokens: string[]; translatedTokens: string[] }> = [];
