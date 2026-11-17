@@ -1392,23 +1392,7 @@ export async function getPublishedCategories(): Promise<Category[]> {
  * Lists destinations for admin management or selective filtering
  */
 export async function getDestinations(options?: { publishedOnly?: boolean }): Promise<DbDestination[]> {
-  if (!isSupabaseConfigured()) {
-    if (import.meta.env.PROD) return [];
-    return POPULAR_DESTINATIONS.map((d, index) => ({
-      id: d.id,
-      name: d.name,
-      slug: d.slug,
-      tagline: d.tagline,
-      description: d.description,
-      main_image: d.image,
-      status: 'published',
-      sort_order: index + 1,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      distance_from_airport: d.distanceFromAirport,
-      seo_keywords: d.highlights,
-    })) as any;
-  }
+  if (!isSupabaseConfigured()) return [];
 
   let query = supabase
     .from('destinations')
@@ -1432,21 +1416,7 @@ export async function getDestinations(options?: { publishedOnly?: boolean }): Pr
  * Lists categories for admin management or selective filtering
  */
 export async function getCategories(options?: { publishedOnly?: boolean }): Promise<DbCategory[]> {
-  if (!isSupabaseConfigured()) {
-    if (import.meta.env.PROD) return [];
-    return TOUR_CATEGORIES.map((c, index) => ({
-      id: c.id,
-      name: c.name,
-      slug: c.slug,
-      description: c.description,
-      main_image: c.image,
-      icon_name: c.iconName,
-      status: 'published',
-      sort_order: index + 1,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    })) as any;
-  }
+  if (!isSupabaseConfigured()) return [];
 
   let query = supabase
     .from('categories')
