@@ -218,8 +218,11 @@ jobs:
       - name: Verify superadmin technical center security boundaries
         run: npm run test:technical
 
-      - name: Enforce a clean dependency audit
-        run: npm audit --audit-level=low
+      - name: Verify Vite and its plugins are build-only dependencies
+        run: npm run test:source-content-corrections
+
+      - name: Audit production runtime dependencies
+        run: npm audit --omit=dev --audit-level=low
 
   database:
     name: Supabase migrations and RLS tests

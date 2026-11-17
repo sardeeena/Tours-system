@@ -1155,67 +1155,29 @@
         ],
         "itinerary": [
           {
-            "id": "84b610b0-f847-45fc-8f7d-635cce8fc0ed",
-            "tour_id": "18375e31-b866-4f07-b3a8-c13b2a5c243b",
-            "time": "08:00",
-            "title": "Prise en charge à l’hôtel",
-            "description": "Transfert climatisé depuis le hall de votre resort jusqu’à la marina de Hurghada.",
-            "sort_order": 1,
-            "created_at": "2026-11-15 23:33:41.436284+00"
+            "time": "Prise en charge",
+            "title": "Transfert depuis votre hôtel à El Gouna",
+            "description": "Transfert climatisé depuis votre hôtel à El Gouna jusqu’à la station de quad dans la zone désertique d’Hurghada."
           },
           {
-            "id": "a6746548-c0ba-4293-9b9e-e04581b43f82",
-            "tour_id": "18375e31-b866-4f07-b3a8-c13b2a5c243b",
-            "time": "09:00",
-            "title": "Départ de la marina",
-            "description": "Briefing de sécurité et croisière panoramique sur la mer Rouge.",
-            "sort_order": 2,
-            "created_at": "2026-11-15 23:33:41.436284+00"
+            "time": "Avant le départ",
+            "title": "Briefing de sécurité et essai",
+            "description": "Rencontrez l’équipe du désert, familiarisez-vous avec le quad et recevez les consignes de sécurité avant de partir."
           },
           {
-            "id": "b1d4d7f0-7d26-4d33-911c-e01b67014bdd",
-            "tour_id": "18375e31-b866-4f07-b3a8-c13b2a5c243b",
-            "time": "10:00",
-            "title": "Premier arrêt snorkeling",
-            "description": "Session guidée de snorkeling sur le récif pour observer les poissons-perroquets, les raies et les coraux.",
-            "sort_order": 3,
-            "created_at": "2026-11-15 23:33:41.436284+00"
+            "time": "Parcours dans le désert",
+            "title": "Excursion guidée en quad",
+            "description": "Suivez votre guide sur les pistes du désert et traversez les étendues de sable avec les montagnes de la mer Rouge à l’horizon."
           },
           {
-            "id": "6dd99cf6-838d-4bf2-a1d8-e1d1e787d041",
-            "tour_id": "18375e31-b866-4f07-b3a8-c13b",
-            "time": "12:30",
-            "title": "Déjeuner à bord",
-            "description": "Déjeuner buffet chaud avec poisson, poulet, riz, salades et fruits.",
-            "sort_order": 4,
-            "created_at": "2026-11-15 23:33:41.436284+00"
+            "time": "Village bédouin",
+            "title": "Visite d’un village bédouin et balade à dos de chameau",
+            "description": "Visitez un village bédouin traditionnel, dégustez un thé bédouin, découvrez les coutumes locales et profitez d’une courte balade à dos de chameau."
           },
           {
-            "id": "99766122-56db-4ecc-a9da-792a9efe7064",
-            "tour_id": "18375e31-b866-4f07-b3a8-c13b",
-            "time": "14:00",
-            "title": "Temps libre sur la plage de l’île",
-            "description": "Débarquement sur la plage pour se détendre, prendre des photos et nager dans les eaux peu profondes.",
-            "sort_order": 5,
-            "created_at": "2026-11-15 23:33:41.436284+00"
-          },
-          {
-            "id": "189f04e7-4948-4698-bba0-121c6ec1e363",
-            "tour_id": "18375e31-b866-4f07-b3a8-c13b",
-            "time": "16:30",
-            "title": "Retour à la marina",
-            "description": "Croisière tranquille au retour, tandis que le soleil de l’après-midi se reflète sur les montagnes côtières.",
-            "sort_order": 6,
-            "created_at": "2026-11-15 23:33:41.436284+00"
-          },
-          {
-            "id": "708e633b-2a9d-46c2-812e-7dca7a3f7e6f",
-            "tour_id": "18375e31-b866-4f07-b3a8-c13b",
-            "time": "17:00",
-            "title": "Retour à l’hôtel",
-            "description": "Transfert de retour jusqu’au hall de votre hôtel.",
-            "sort_order": 7,
-            "created_at": "2026-11-15 23:33:41.436284+00"
+            "time": "Retour",
+            "title": "Retour à El Gouna",
+            "description": "Reprenez votre quad pour revenir au point de départ, puis rejoignez votre hôtel à El Gouna en transfert."
           }
         ],
         "included": [
@@ -4926,18 +4888,5 @@
       }
     }
   ],
-  "source_data_warnings": [
-    {
-      "entity_type": "tour",
-      "entity_key": "18375e31-b866-4f07-b3a8-c13b2a5c243b",
-      "severity": "review-before-publication",
-      "issue": "The source itinerary for this quad-safari product describes a boat trip from Hurghada marina, including sailing, snorkeling, lunch on board and an island beach stop. The French draft preserves and translates the source faithfully; the operations team must verify and correct the English source before publishing this translation."
-    },
-    {
-      "entity_type": "tour",
-      "entity_key": "2f7cbd8c-bda2-4915-b5e4-5fc98927a388",
-      "severity": "review-before-publication",
-      "issue": "The source life-jacket FAQ contains a corrupted sentence that merges the life-jacket answer with snorkeling content. The French FAQ was translated from the coherent meaning of the surrounding source entry; the source FAQ must be corrected and the French answer rechecked before publication."
-    }
-  ]
+  "source_data_warnings": []
 }

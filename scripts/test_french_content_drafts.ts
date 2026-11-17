@@ -141,6 +141,13 @@ for (const source of staticSources) {
 }
 assert.equal(staticSources.length, 10, 'Home plus all nine fallback static pages are covered');
 assert.equal(records.length, 111, 'The full French review bundle contains every known source candidate');
-assert.equal(bundle.source_data_warnings?.length, 2, 'Known source-data issues remain visible and block publication review');
+assert.deepEqual(bundle.source_data_warnings || [], [], 'The two previously flagged source-data issues have approved, source-backed corrections in the PR migration');
+const correctedQuad = records.find((record) => record.entity_type === 'tour' && record.entity_key === '18375e31-b866-4f07-b3a8-c13b2a5c243b');
+assert.equal(correctedQuad.content.itinerary.length, 5, 'El Gouna quad safari has five corrected itinerary steps');
+assert.match(JSON.stringify(correctedQuad.content.itinerary), /quad|quadri|bédouin|chameau/i);
+assert.doesNotMatch(JSON.stringify(correctedQuad.content.itinerary), /marina|snorkeling|bateau|navigation|île|island|à bord/i, 'Quad itinerary no longer contains boat-trip content');
+const rasMohammed = records.find((record) => record.entity_type === 'tour' && record.entity_key === '2f7cbd8c-bda2-4915-b5e4-5fc98927a388');
+assert.match(rasMohammed.content.faqs.find((faq: any) => /snorkeling est-il inclus/i.test(faq.question))?.answer || '', /Coral Gardens/);
+assert.match(rasMohammed.content.faqs.find((faq: any) => /snorkeling est-il inclus/i.test(faq.question))?.answer || '', /option de réservation/);
 
 console.log('French draft coverage passed: 25 tours, 50 articles, 7 destinations, 18 communication templates, homepage, public UI and ' + expectedPrivateKeys.length + ' private UI messages.');
