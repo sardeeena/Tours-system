@@ -601,7 +601,7 @@ ${JSON.stringify(liveCatalogue)}
 
 The catalogue above is current published content, not date-specific inventory. Do not claim a date is available or quote a confirmed departure time. Tell the traveler to check the excursion page for live date availability and exact booking details.`;
 
-    const response = await ai.models.generateContent({
+    const response = await gemini.models.generateContent({
       model: 'gemini-3.8-flash',
       contents: conversationHistory,
       config: {
@@ -3270,9 +3270,9 @@ function parseGeminiTranslationJson(rawText: string): any {
 async function generateBulkTranslationResponse(
   items: BulkTranslationWorkItem[],
   locale: string,
-  repairAttempt = false,
 ): Promise<{ translations: any[] }> {
-  if (!ai || !items.length) throw new Error('Gemini translation service is unavailable.');
+  const gemini = ai;
+  if (!gemini || !items.length) throw new Error('Gemini translation service is unavailable.');
   const prompt = [
     'You are a professional tourism translator localizing Awesome Adventure Tours, a licensed operator in Hurghada, Egypt.',
     'Translate every human-facing string recursively into ' + BULK_TRANSLATION_LOCALES[locale] + ' (' + locale + ').',
@@ -3284,7 +3284,7 @@ async function generateBulkTranslationResponse(
       ? 'For Arabic, use clear Modern Standard Arabic suitable for international visitors to Egypt. Preserve official place, vessel and brand names accurately; do not invent local claims. The UI will render right-to-left, so return natural Arabic text without manual visual reordering.'
       : 'Use natural, locally fluent language for the target locale. SEO title should be concise; SEO description accurate. No unsupported claims.',
     'INPUT: ' + JSON.stringify(items.map(x => ({ entity_type: x.type, entity_key: x.key, source: x.payload }))),
-  ].join('\\n');
+  ].join('\n');
 
   const response = await ai.models.generateContent({
     model: 'gemini-3.8-flash',
@@ -3329,13 +3329,12 @@ async function generateBulkTranslationResponse(
       const right = await generateBulkTranslationResponse(items.slice(midpoint), locale);
       return { translations: [...left.translations, ...right.translations] };
     }
-    if (repairAttempt) throw parseError;
     const repaired = await ai.models.generateContent({
       model: 'gemini-3.8-flash',
       contents: [{ role: 'user', parts: [{ text: [
         'Repair only the JSON syntax of the following model output. Do not rewrite, summarize, translate, add, remove, or alter any values. Return one valid JSON object with the same translations array and exact field values. Return JSON only.',
         responseText,
-      ].join('\\n') }] }],
+      ].join('\n') }] }],
       config: { temperature: 0, responseMimeType: 'application/json', maxOutputTokens: 65536, thinkingConfig: { thinkingLevel: 'LOW' } },
     });
     try {
