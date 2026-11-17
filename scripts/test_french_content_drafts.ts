@@ -124,6 +124,8 @@ for (const source of staticSources) {
   const key = pageSource.id || pageSource.slug || 'home';
   const draft = staticRecords.find((record) => record.entity_key === key);
   assert.ok(draft, 'Static page translated: ' + key);
+  assert.ok(draft.seo_title?.trim(), 'Static page SEO title is translated: ' + key);
+  assert.ok(draft.seo_description?.trim(), 'Static page SEO description is translated: ' + key);
   const expected = {
     title:pageSource.title || pageSource.name || 'Explore the Red Sea',
     summary:pageSource.heroSubtitle || pageSource.description || pageSource.excerpt || '',
