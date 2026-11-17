@@ -30,6 +30,7 @@ assert(booking.includes('Promise.allSettled') && booking.includes('pickupResult.
 assert(!pickupStep.includes('STANDARD_PICKUP_LOCATIONS'), 'pickup step never falls back to a global standard pickup list');
 assert(pickupStep.includes('pickupList.length > 0') && pickupStep.includes('disabled={!canContinue}'), 'checkout cannot continue when a pickup-enabled tour has no approved locations');
 assert(adminEditor.includes('selectedPickupIds.length === 0') && adminEditor.includes('must have at least one explicitly approved active pickup location'), 'admin cannot publish a pickup-enabled tour without an explicit mapping');
+assert(adminEditor.includes("handleFieldChange('pickup_available', e.target.checked)") && adminEditor.includes('Existing pickup mappings are preserved'), 'admin can explicitly disable pickup without deleting existing mappings');
 assert(review.includes("'No pickup service'"), 'booking review does not invent a default Hurghada pickup');
 assert(migration.includes('COALESCE(v_tour.pickup_available, FALSE)') && migration.includes('pickup_location_id = v_extra_record.id'), 'database migration enforces strict tour-specific pickup eligibility');
 assert(audit.includes('11**') && audit.includes('35 active tour-to-zone mapping rows') && audit.includes('Sharm El Sheikh (€0)'), 'production audit records missing tours, mapping count, and anomaly for operator review');
