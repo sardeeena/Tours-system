@@ -151,3 +151,8 @@ After starting the server on Hostinger, verify the live deployment:
   *Expected*: Secure login screen leading to 15 CRM and Operations back-office modules.
 - [ ] **AI Concierge**: Click the chat widget on the bottom right and ask: *"Recommend a snorkeling trip for families"*.  
   *Expected*: Live streaming advice powered by Gemini with tour cards.
+
+
+## Durable staff notification worker
+
+The production Node process starts the database-backed staff notification scanner when the server-only Supabase secret is configured. It runs every five minutes and uses unique database deduplication keys. Set `STAFF_NOTIFICATION_WORKER_ENABLED=false` only for a controlled maintenance window. It is separate from `BOOKING_NOTIFICATION_WORKER_ENABLED`, which controls customer email delivery through Resend.
