@@ -82,7 +82,8 @@ In Hostinger hPanel > **Node.js** > **Environment Variables** (or create a `.env
 | `VITE_APP_URL` | `https://awesomeadventure.tours` | Frontend canonical origin |
 | `SUPABASE_URL` | `https://uvtbtpxtrrmaublrztgv.supabase.co` | Server-side Supabase URL |
 | `SUPABASE_ANON_KEY` | *(Same publishable/anon key)* | Server-side key used with verified user JWTs |
-| `SUPABASE_SECRET_KEY` | *(Optional server-only secret key)* | Privileged server operations only; never add a `VITE_` prefix |
+| `SUPABASE_SECRET_KEY` | *(Server-only Supabase secret key)* | Application server privileged operations; never add a `VITE_` prefix |
+| `SUPABASE_SERVICE_ROLE_KEY` | *(Only when required by the admin CLI script)* | Legacy CLI compatibility for `scripts/setup-admin.ts`; terminal-only, never add a `VITE_` prefix |
 | `RESEND_API_KEY` | *(Resend API key)* | Server-only email delivery secret |
 | `RESEND_FROM_EMAIL` | *(Verified sender address)* | Must be verified in Resend |
 | `RESEND_FROM_NAME` | `Awesome Adventure Tours` | Email sender display name |
@@ -96,7 +97,7 @@ In Hostinger hPanel > **Node.js** > **Environment Variables** (or create a `.env
 > **Communications Note**: Resend and Meta Cloud API credentials must be stored only in Hostinger server environment variables. The admin UI intentionally discards API keys typed into the browser. Email uses Resend; WhatsApp uses Meta Cloud API. The WhatsApp adapter sends text messages and Meta may reject free-form messages outside its customer-service window unless an approved template is used.  
 >
 > **Security Note**:  
-> `SUPABASE_SECRET_KEY` must **NEVER** be added to client environment variables (`VITE_...`) and is never committed to Git. If running administrative CLI scripts like `scripts/setup-admin.ts` via SSH, export `SUPABASE_SECRET_KEY` solely in that terminal session.
+> `SUPABASE_SECRET_KEY` must **NEVER** be added to client environment variables (`VITE_...`) and is never committed to Git. The `scripts/setup-admin.ts` CLI currently expects `SUPABASE_SERVICE_ROLE_KEY`; export that legacy compatibility variable solely in the terminal session when the script explicitly requires it, and never persist it in browser-visible configuration.
 
 ---
 
