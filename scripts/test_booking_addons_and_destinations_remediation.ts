@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { calculateBookingPrice } from '../src/services/pricingService';
-import { getPublishedPickupLocations, getPublishedTourExtras } from '../src/services/tourService';
+import { getPublishedTourExtras } from '../src/services/tourService';
 import { Tour } from '../src/types';
 import { BookingExtra, GuestCounts, PickupLocation } from '../src/types/booking';
 
