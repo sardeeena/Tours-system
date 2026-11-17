@@ -125,6 +125,7 @@ export const StepPickup: React.FC<StepPickupProps> = ({
 
         {/* Accommodation Name Input */}
         {pickupAvailable && pickupList.length > 0 && !loading && !error && (
+        <>
         <div className="pt-3 border-t border-stone-200 space-y-2">
           <label htmlFor="hotel-input" className="block text-xs font-bold text-stone-900 flex items-center">
             <Building className="w-3.5 h-3.5 mr-1.5 text-[#0A6C74]" />
@@ -164,6 +165,7 @@ export const StepPickup: React.FC<StepPickupProps> = ({
             <span>Contact Us</span>
           </a>
         </div>
+        </>
         )}
       </div>
 
