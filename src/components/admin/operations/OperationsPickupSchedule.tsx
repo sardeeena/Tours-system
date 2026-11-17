@@ -86,11 +86,16 @@ export const OperationsPickupSchedule: React.FC = () => {
   }, [pickups, statusFilter, searchQuery]);
 
   const handleStatusChange = async (bookingRef: string, newStatus: PickupStatus) => {
-    await updatePickupScheduleStatus(bookingRef, newStatus);
-    setPickups((prev) =>
-      prev.map((p) => (p.bookingReference === bookingRef ? { ...p, status: newStatus } : p))
-    );
-    showToast(`Pickup status for ${bookingRef} updated to "${newStatus}".`, 'success');
+    try {
+      const saved = await updatePickupScheduleStatus(bookingRef, newStatus);
+      if (!saved) throw new Error('The database did not confirm the pickup status update.');
+      setPickups((prev) =>
+        prev.map((p) => (p.bookingReference === bookingRef ? { ...p, status: newStatus } : p))
+      );
+      showToast(`Pickup status for ${bookingRef} updated to "${newStatus}".`, 'success');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Pickup status could not be saved.', 'error');
+    }
   };
 
   const handleOpenEdit = (item: PickupScheduleItem) => {
