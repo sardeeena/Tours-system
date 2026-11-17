@@ -3403,7 +3403,7 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
     return res.json({success:true,locale,processed:saved,skipped,total:candidates.length,next_offset:Math.min(offset+limit,candidates.length),done:offset+limit>=candidates.length});
   } catch(error: any) {
     const errorMessage = String(error?.message || '');
-    const providerStatus = Number(error?.status || error?.code || errorMessage.match(/\b(429|500|502|503|504)\b/)?.[1] || 0);
+    const providerStatus = Number(error?.status) || Number(error?.code) || Number(errorMessage.match(/\b(429|500|502|503|504)\b/)?.[1]) || 0;
     const providerCode = String(error?.code || '');
     const providerUnavailable = providerStatus === 503 || /UNAVAILABLE|high demand/i.test(errorMessage);
     console.error('[Bulk translation generation] Failed safely:', {

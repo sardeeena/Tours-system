@@ -25,7 +25,7 @@ async function testQuotaDoesNotFailover() {
   await assert.rejects(() => generateContentWithModelFallback(
     async (request: { model: string }) => {
       calls.push(request.model);
-      throw makeError(429, 'RESOURCE_EXHAUSTED');
+      throw Object.assign(new Error('HTTP 429 RESOURCE_EXHAUSTED'), { code: 'RESOURCE_EXHAUSTED' });
     },
     { model: 'gemini-3.8-flash' },
     { fallbackModels: ['gemini-3.5-flash-lite'], sleep: noWait, onRetry: () => {} },

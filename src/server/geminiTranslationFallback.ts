@@ -18,7 +18,7 @@ export type GeminiFailoverOptions = {
 function errorDetails(error: unknown): { status: number; message: string } {
   const value = error as { status?: unknown; code?: unknown; message?: unknown } | null;
   const message = String(value?.message || error || '');
-  const status = Number(value?.status || value?.code || message.match(/\b(429|500|502|503|504)\b/)?.[1] || 0);
+  const status = Number(value?.status) || Number(value?.code) || Number(message.match(/\b(429|500|502|503|504)\b/)?.[1]) || 0;
   return { status, message };
 }
 
