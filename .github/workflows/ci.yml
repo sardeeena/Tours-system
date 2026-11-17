@@ -186,6 +186,15 @@ jobs:
       - name: Verify French rollout dictionary completeness and publication gates
         run: npm run test:french-rollout
 
+      - name: Validate French import bundle against live Supabase sources (read-only)
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          npm run translations:export -- ./translation-source.json
+          npm run translations:assemble-fr -- ./translation-source.json ./translations/fr/french-import-bundle.review-draft.json
+          npm run translations:import -- ./translations/fr/french-import-bundle.review-draft.json
+
       - name: Verify WhatsApp locale mapping and safe fallback
         run: npm run test:whatsapp-locale-mapping
 
