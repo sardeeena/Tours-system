@@ -10,6 +10,7 @@ import dotenv from 'dotenv';
 import { CONCIERGE_SYSTEM_PROMPT } from './src/data/chatKnowledge';
 import { STANDARD_PICKUP_LOCATIONS, GLOBAL_BOOKING_EXTRAS } from './src/data/bookingData';
 import { startBookingNotificationWorker } from './src/server/bookingNotificationWorker';
+import { startStaffNotificationWorker } from './src/server/staffNotificationWorker';
 import { INITIAL_STATIC_PAGES } from './src/data/staticPages';
 import { EXPECTED_AWESOME_ADVENTURE_TOURS_SUPABASE_PROJECT_REF, isExpectedAwesomeAdventureToursSupabaseUrl } from './src/lib/supabaseProjectGuard';
 import { parseLocalePath } from './src/i18n/localeRouting';
@@ -5499,6 +5500,7 @@ async function startServer() {
   }
 
   let stopBookingNotificationWorker: (() => void) | null = null;
+  let stopStaffNotificationWorker: (() => void) | null = null;
 
   const server = app.listen(Number(PORT), '0.0.0.0', () => {
     console.log(`Awesome Adventure Tours server running on port/socket ${PORT} [${process.env.NODE_ENV || 'development'}]`);
@@ -5515,11 +5517,20 @@ async function startServer() {
     } else if (process.env.NODE_ENV === 'production') {
       console.warn('[Booking Notification Worker] Not started: a valid server-side Supabase secret key is required.');
     }
+
+    // Durable staff inbox scan runs in the same server process and uses the
+    // server-only Supabase client. It is idempotent and can be disabled explicitly.
+    if (process.env.NODE_ENV === 'production' && serverSupabase && SUPABASE_KEY_TYPE === 'service_role') {
+      stopStaffNotificationWorker = startStaffNotificationWorker(serverSupabase);
+    } else if (process.env.NODE_ENV === 'production') {
+      console.warn('[Staff Notification Worker] Not started: a valid server-side Supabase secret key is required.');
+    }
   });
 
   const shutdown = (signal: string) => {
     console.log(`Received ${signal}. Shutting down gracefully...`);
     stopBookingNotificationWorker?.();
+    stopStaffNotificationWorker?.();
     server.close(() => {
       console.log('HTTP server closed.');
       process.exit(0);
