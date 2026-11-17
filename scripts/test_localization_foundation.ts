@@ -6,6 +6,7 @@ const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf
 const server = read('../server.ts');
 const app = read('../src/App.tsx');
 const locales = read('../src/types/i18n.ts');
+const publicStyles = read('../src/index.css');
 const migration = read('../supabase/migrations/20261116150000_european_localization_foundation.sql');
 const bookingLocaleMigration = read('../supabase/migrations/20261116160000_booking_customer_locale_atomic.sql');
 const expandedBookingLocaleMigration = read('../supabase/migrations/20261116170000_expand_booking_customer_locale_languages.sql');
@@ -38,6 +39,10 @@ for (const locale of ['fr', 'es', 'nl', 'pl', 'pt', 'sv', 'da', 'nb', 'fi', 'el'
 }
 assert.match(locales, /rollout: 'planned'/, 'New languages are explicitly planned rather than falsely marked translated');
 assert.match(locales, /direction: 'rtl'/, 'RTL direction is represented in locale metadata');
+assert.match(languageContext, /document\.documentElement\.dir = language === 'ar' \? 'rtl' : 'ltr'/, 'Arabic locale activates document-level RTL direction');
+assert.match(publicStyles, /html\[dir="rtl"\] \.public-site/, 'Public storefront has an explicit RTL layout baseline');
+assert.match(publicStyles, /Noto Sans Arabic/, 'Arabic storefront uses an Arabic-capable font fallback stack');
+assert.match(publicStyles, /unicode-bidi: isolate/, 'Mixed-direction values can be isolated safely in RTL layouts');
 assert.match(migration, /CREATE TABLE IF NOT EXISTS public\.content_translations/, 'Translation content schema exists');
 assert.match(server, /app\.get\('\/api\/admin\/translations'[\s\S]*requireSuperAdminAal2\(req, res\)/, 'Translation listing API requires Super Admin AAL2');
 assert.match(server, /app\.post\('\/api\/admin\/translations'[\s\S]*requireSuperAdminAal2\(req, res\)/, 'Translation writes require Super Admin AAL2');
@@ -105,7 +110,7 @@ assert.match(bookingLocaleMigration, /preferred_locale = p_customer_locale/, 'Cu
 assert.match(bookingLocaleMigration, /NOT IN \('en', 'de', 'it', 'ro', 'ru'\)/, 'Original locale migration establishes the initial allowlist');
 assert.match(expandedBookingLocaleMigration, /NOT IN \\('en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'\\)/, 'Historical migration records the initial ten-locale allowlist');
 assert.match(allCustomerLocalesMigration, /NOT IN/, 'Forward migration replaces the atomic booking locale allowlist.');
-for (const locale of ['ar', 'tr', 'uk', 'sv', 'da', 'nb', 'fi', 'el', 'bg', 'hr', 'cs', 'sk', 'sl', 'hu', 'et', 'lv', 'lt', 'sr', 'sq']) {
+for (const locale of ['en', 'de', 'fr', 'it', 'es', 'nl', 'pl', 'pt', 'ro', 'ru', 'sv', 'da', 'nb', 'fi', 'el', 'bg', 'hr', 'cs', 'sk', 'sl', 'hu', 'et', 'lv', 'lt', 'uk', 'sr', 'sq', 'tr', 'ar']) {
   assert.ok(allCustomerLocalesMigration.includes(`'${locale}'`), `Forward migration allows booking locale ${locale}`);
 }
 assert.match(server, /TRANSLATION_LOCALES\\.has\\(requestedLocale\\)/, 'Newsletter accepts every configured customer locale');
