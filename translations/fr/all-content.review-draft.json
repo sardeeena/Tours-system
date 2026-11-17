@@ -4136,9 +4136,11 @@
         "private.text.ff4b2739": "Max. :",
         "private.text.ff4def07": "Installer l’application de la mer Rouge",
         "private.text.ff566677": "Mot de passe mis à jour",
-        "private.text.ff566f40": "Nom "
+        "private.text.ff566f40": "Nom ",
+        "private.text.8db53650": "Réserver maintenant ",
+        "private.text.d59d8b58": "Départ du bateau vers 08:30 – 09:00 AM "
       },
-      "private_ui_message_count": 1098
+      "private_ui_message_count": 1100
     },
     {
       "entity_type": "communication_template",
