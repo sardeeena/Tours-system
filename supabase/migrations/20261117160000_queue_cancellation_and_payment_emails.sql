@@ -73,10 +73,11 @@ BEGIN
       'payment.received',
       jsonb_build_object(
         'booking_id',NEW.booking_id,
-        'payment_id',NEW.id
+        'payment_id',NEW.id,
+        'payment_status',NEW.status
       ),
       'payment',
-      NEW.id::TEXT,
+      NEW.id::TEXT || ':' || NEW.status,
       FALSE
     )
     ON CONFLICT DO NOTHING
