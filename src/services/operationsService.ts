@@ -1204,7 +1204,7 @@ export async function updatePickupScheduleStatus(
     const location = pickupLocation?.area || pickupLocation?.name;
     const customerName = [customer?.first_name, customer?.last_name].filter(Boolean).join(' ').trim();
 
-    if (!pickupTime || !driverId || !driverName?.trim() || !driverVehicle?.trim() || !hotel?.trim() || !location?.trim() || !customerName) {
+    if (!pickupTime || !driverName?.trim() || !driverVehicle?.trim() || !hotel?.trim() || !location?.trim() || !customerName) {
       throw new Error('A real pickup time, active driver, vehicle, customer and pickup location are required before a pickup schedule can be created.');
     }
 
