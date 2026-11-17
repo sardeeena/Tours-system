@@ -100,7 +100,7 @@ export const OperationsPickupSchedule: React.FC = () => {
 
   const handleOpenEdit = (item: PickupScheduleItem) => {
     setEditingItem(item);
-    setAssignedDriver(item.driverId || '');
+    setAssignedDriver(item.driverName && item.driverName !== 'Unassigned driver' ? item.driverName : '');
     setAssignedVehicle(item.driverVehicle && item.driverVehicle !== 'Unassigned vehicle' ? item.driverVehicle : '');
     setAssignedTime(item.pickupTime && item.pickupTime !== 'Not scheduled' ? item.pickupTime : '');
   };
@@ -108,8 +108,7 @@ export const OperationsPickupSchedule: React.FC = () => {
   const handleSaveDriver = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingItem) return;
-    const selectedDriver = drivers.find((driver) => driver.id === assignedDriver);
-    if (!selectedDriver || !assignedVehicle.trim() || !assignedTime.trim()) {
+    if (!assignedDriver.trim() || !assignedVehicle.trim() || !assignedTime.trim()) {
       showToast('Enter the actual assigned driver, vehicle and pickup time before saving.', 'error');
       return;
     }
@@ -119,17 +118,15 @@ export const OperationsPickupSchedule: React.FC = () => {
         editingItem.bookingReference,
         editingItem.status,
         assignedVehicle.trim(),
-        selectedDriver.full_name,
-        assignedTime,
-        selectedDriver.id
+        assignedDriver.trim(),
+        assignedTime
       );
       setPickups((prev) =>
         prev.map((p) =>
           p.bookingReference === editingItem.bookingReference
             ? {
                 ...p,
-                driverId: selectedDriver.id,
-                driverName: selectedDriver.full_name,
+                driverName: assignedDriver.trim(),
                 driverVehicle: assignedVehicle.trim(),
                 pickupTime: assignedTime,
               }
@@ -542,20 +539,15 @@ export const OperationsPickupSchedule: React.FC = () => {
 
               <div>
                 <label className="block text-stone-300 font-semibold mb-1">Assigned Driver</label>
-                <select
+                <input
+                  type="text"
                   value={assignedDriver}
                   onChange={(e) => setAssignedDriver(e.target.value)}
+                  placeholder="Enter the confirmed driver's full name"
                   className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded text-stone-200"
                   required
-                >
-                  <option value="">Select an active guide / driver</option>
-                  {drivers.filter((driver) => driver.is_active !== false).map((driver) => (
-                    <option key={driver.id} value={driver.id}>{driver.full_name}</option>
-                  ))}
-                </select>
-                {drivers.filter((driver) => driver.is_active !== false).length === 0 && (
-                  <p className="mt-1 text-amber-400">No active drivers or guides are available for assignment.</p>
-                )}
+                />
+                <p className="mt-1 text-stone-500">Enter the actual assigned driver. Guide records are not treated as driver credentials.</p>
               </div>
 
               <div>
