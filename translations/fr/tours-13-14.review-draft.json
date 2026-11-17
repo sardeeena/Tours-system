@@ -1,0 +1,131 @@
+{
+  "locale": "fr",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "records": [
+    {
+      "entity_type": "tour",
+      "entity_key": "e2019bda-5664-4dd3-ac21-a38c2fd95c9f",
+      "source_slug": "hurghada-parasailing-banana-boat-adventure-with-hotel-pickup",
+      "translated_slug": "hurghada-parachute-ascensionnel-bouee-banane-transfert-hotel",
+      "title": "Hurghada : parachute ascensionnel et bouée banane avec prise en charge à l’hôtel",
+      "summary": "Envolez-vous au-dessus de la mer Rouge scintillante lors d’une séance palpitante de parachute ascensionnel, puis amusez-vous avec des sorties en bouée banane et en bouée tractée. Parfaite pour les débutants, cette expérience de sports nautiques comprend une prise en charge et un retour confortables à votre hôtel à Hurghada.",
+      "content": {
+        "short_description": "Survolez les eaux scintillantes de la mer Rouge lors d’une séance palpitante de parachute ascensionnel, puis profitez d’une sortie en bouée banane et en bouée tractée. Cette expérience de sports nautiques adaptée aux débutants comprend une prise en charge et un retour confortables à votre hôtel à Hurghada.",
+        "description": "Découvrez Hurghada sous un tout nouvel angle grâce à une expérience palpitante de parachute ascensionnel et de sports nautiques au-dessus de la magnifique mer Rouge.\n\nVotre aventure commence par une prise en charge à votre hôtel de Hurghada et un transfert confortable jusqu’à la marina. Une fois sur place, rencontrez l’équipage, recevez votre équipement de sécurité et préparez-vous pour le moment fort de l’expérience.\n\nMontez à bord du hors-bord et prenez le large. Lorsque le parachute prend le vent, vous vous élevez doucement au-dessus de la mer et profitez de magnifiques vues sur le littoral et les nuances de bleu qui s’étendent sur la mer Rouge. Que vous choisissiez de voler seul ou côte à côte avec un compagnon, l’expérience est mémorable et ne nécessite aucune expérience préalable.\n\nAprès votre retour à bord, prolongez les sensations avec une sortie amusante en bouée banane et une activité en bouée tractée sur l’eau. C’est une excellente façon de partager des moments de rire et d’ajouter encore plus d’action à votre journée en mer.\n\nLorsque les activités seront terminées, retournez à la marina et profitez d’un transfert confortable jusqu’à votre hôtel.\n\nQue vous recherchiez une dose d’adrénaline, un nouveau point de vue sur Hurghada ou simplement une activité amusante à partager avec votre famille et vos amis, cette expérience réunit trois activités nautiques agréables en une seule sortie.",
+        "highlights": [
+          "Profitez d’un vol palpitant en parachute ascensionnel à 30–40 mètres au-dessus de la mer Rouge",
+          "Admirez de magnifiques vues aériennes sur le littoral de Hurghada et ses eaux turquoise",
+          "Découvrez les sensations d’une ascension douce tractée par un hors-bord",
+          "Amusez-vous lors d’une sortie en bouée banane sur la mer",
+          "Ajoutez encore plus de sensations avec une sortie en bouée tractée",
+          "Aucune expérience préalable du parachute ascensionnel n’est nécessaire",
+          "Profitez de la prise en charge et du retour à l’hôtel dans un véhicule climatisé",
+          "Vivez les sensations d’une ascension douce tractée par un hors-bord"
+        ],
+        "included": [
+          "Prise en charge et retour à l’hôtel dans toute la zone de Hurghada",
+          "Transferts aller-retour dans un véhicule moderne et climatisé",
+          "Accès à la marina de Hurghada",
+          "Trajet en hors-bord jusqu’à la zone de parachute ascensionnel",
+          "Vol en parachute ascensionnel (environ 5 à 7 minutes dans les airs)",
+          "Sortie en bouée banane",
+          "Sortie en bouée tractée",
+          "Équipement de sécurité et gilet de sauvetage",
+          "Toutes les taxes et frais de service applicables"
+        ],
+        "excluded": [
+          "Photos et vidéos de votre expérience",
+          "Sortie en jet boat (disponible en option)",
+          "Transferts depuis les hôtels de Makadi Bay, Sahl Hasheesh, El Gouna, Safaga et Soma Bay (des frais supplémentaires s’appliquent)",
+          "Nourriture et boissons",
+          "Pourboires et dépenses personnelles",
+          "Tout service non expressément mentionné dans les prestations incluses"
+        ],
+        "faqs": [
+          {
+            "question": "L’équipement de snorkeling est-il fourni ou dois-je apporter le mien ?",
+            "answer": "Des masques, tubas et palmes désinfectés, en tailles adulte et enfant, sont fournis gratuitement à bord.",
+            "section": "faq"
+          },
+          {
+            "question": "Les personnes qui ne savent pas nager peuvent-elles participer en toute sécurité ?",
+            "answer": "Oui. Des gilets de flottaison homologués par les garde-côtes sont fournis et des moniteurs de plongée certifiés accompagnent les participants dans l’eau.",
+            "section": "faq"
+          }
+        ]
+      },
+      "seo_title": "Parachute ascensionnel et bouée banane à Hurghada avec transfert hôtel",
+      "seo_description": "Profitez du parachute ascensionnel, d’une sortie en bouée banane et d’une bouée tractée sur la mer Rouge, avec transferts depuis votre hôtel à Hurghada.",
+      "duration": "2 heures",
+      "duration_type": "Demi-journée",
+      "departure_time": "11:00 AM",
+      "age_restrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
+      "pickup_info": "Prise en charge gratuite dans le hall de votre hôtel et retour inclus dans toute la zone de Hurghada.",
+      "cancellation_policy": "Annulation gratuite jusqu’à 24 heures avant l’heure de début de l’excursion."
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "0bf0a28b-b49e-4c3e-a076-6d5eb53e8c7d",
+      "source_slug": "hurghada-quad-bike-safari-desert-ride-camel-experience-bedouin-village",
+      "translated_slug": "hurghada-safari-quad-desert-balade-chameau-village-bedouin",
+      "title": "Safari en quad à Hurghada : randonnée dans le désert, balade à dos de chameau et village bédouin",
+      "summary": "Ajoutez une touche d’aventure à vos vacances à Hurghada avec un safari dans le désert en quad ou en buggy. Parcourez les paysages sablonneux, profitez des magnifiques panoramas désertiques et visitez un village bédouin traditionnel. Complétez l’expérience par une balade mémorable à dos de chameau et découvrez l’hospitalité bédouine authentique. Choisissez un départ le matin ou au coucher du soleil.",
+      "content": {
+        "short_description": "Ajoutez une touche d’aventure à vos vacances à Hurghada avec un safari dans le désert en quad ou en buggy. Parcourez les paysages sablonneux, profitez des panoramas désertiques et visitez un village bédouin traditionnel. Complétez l’expérience par une balade à dos de chameau et découvrez l’hospitalité bédouine authentique. Choisissez un départ le matin ou au coucher du soleil.",
+        "description": "## Une aventure palpitante dans le désert au départ de Hurghada\n\nPréparez-vous à vivre une aventure inoubliable au-delà de la ville en explorant les fascinants paysages désertiques qui entourent Hurghada. Que vous préfériez une sortie tôt le matin ou la magnifique ambiance du coucher du soleil, ce safari associe sensations en plein air et découverte de la culture bédouine traditionnelle.\n\nVotre expérience commence par une prise en charge pratique à votre hôtel de Hurghada et un transfert jusqu’à la base du safari, où l’aventure débute.\n\n## Préparez-vous à votre randonnée dans le désert\n\nÀ votre arrivée, rencontrez l’équipe du safari et recevez un briefing de sécurité ainsi que des instructions sur la conduite du véhicule choisi. Une fois tout prêt, partez pour une randonnée palpitante à travers le désert.\n\nChoisissez entre un puissant quad ou un buggy, selon l’option sélectionnée. Suivez votre guide sur les itinéraires désignés et profitez des paysages ouverts, des pistes sablonneuses et des impressionnants panoramas désertiques.\n\nSelon l’itinéraire de safari sélectionné, votre parcours peut également inclure des sections le long du littoral, offrant un autre point de vue sur la région de la mer Rouge.\n\n## Découvrez l’hospitalité bédouine traditionnelle\n\nPendant votre aventure, visitez un village de style bédouin traditionnel et découvrez de plus près le mode de vie et les coutumes locales. Profitez d’une pause reposante, appréciez l’atmosphère accueillante et dégustez un thé ou un café bédouin traditionnel.\n\nVous aurez également la possibilité de faire une balade à dos de chameau, une façon mémorable de découvrir les déplacements traditionnels dans le désert et une belle occasion de prendre des photos de vacances.\n\n## Aventure matinale ou expérience au coucher du soleil\n\nRendez votre expérience encore plus spéciale en choisissant l’heure de départ qui vous convient le mieux.\n\nUn safari le matin est idéal pour profiter du désert à la fraîcheur de la journée, tandis qu’un départ au coucher du soleil offre de beaux paysages et une atmosphère particulière lorsque le soleil descend à l’horizon.\n\nAprès vos activités, retournez à la base du safari avant de profiter de votre transfert de retour à l’hôtel à Hurghada.\n\nQue vous voyagiez entre amis, en couple ou en famille, ce safari dans le désert est une excellente façon d’ajouter de l’aventure et une touche de culture locale à vos vacances.",
+        "highlights": [
+          "Vivez un safari palpitant dans le désert au départ de Hurghada",
+          "Choisissez entre une aventure en quad ou en buggy",
+          "Parcourez des pistes désertiques panoramiques et des paysages sablonneux",
+          "Visitez un village bédouin traditionnel",
+          "Découvrez les coutumes locales et l’authentique hospitalité bédouine",
+          "Profitez d’une balade mémorable à dos de chameau",
+          "Dégustez un thé ou un café bédouin traditionnel",
+          "Choisissez un départ le matin ou au coucher du soleil",
+          "Profitez de la prise en charge et du retour à l’hôtel à Hurghada"
+        ],
+        "included": [
+          "Prise en charge et retour à l’hôtel à Hurghada",
+          "Véhicule de transfert climatisé",
+          "Randonnée en quad ou en buggy (selon l’option sélectionnée)",
+          "Guide professionnel de safari",
+          "Briefing et consignes de sécurité",
+          "Casque de sécurité",
+          "Visite d’un village bédouin traditionnel",
+          "Balade à dos de chameau",
+          "Thé ou café bédouin traditionnel"
+        ],
+        "excluded": [
+          "Frais de safari en ville et taxes applicables, s’ils sont facturés séparément",
+          "Frais de transfert supplémentaires pour les hôtels situés en dehors du centre de Hurghada, le cas échéant",
+          "Lunettes de protection et foulards, sauf s’ils sont inclus dans l’option sélectionnée",
+          "Services de photographie et de vidéo professionnels",
+          "Dépenses personnelles",
+          "Pourboires",
+          "Tout service non mentionné dans les prestations incluses"
+        ],
+        "faqs": [
+          {
+            "question": "L’équipement de snorkeling est-il fourni ou dois-je apporter le mien ?",
+            "answer": "Des masques, tubas et palmes désinfectés, en tailles adulte et enfant, sont fournis gratuitement à bord.",
+            "section": "faq"
+          },
+          {
+            "question": "Les personnes qui ne savent pas nager peuvent-elles participer en toute sécurité ?",
+            "answer": "Oui. Des gilets de flottaison homologués par les garde-côtes sont fournis et des moniteurs de plongée certifiés accompagnent les participants dans l’eau.",
+            "section": "faq"
+          }
+        ]
+      },
+      "seo_title": "Safari en quad à Hurghada : désert, chameau et village bédouin",
+      "seo_description": "Partez en safari en quad ou en buggy dans le désert de Hurghada, visitez un village bédouin et profitez d’une balade à dos de chameau.",
+      "duration": "Demi-journée (environ 3 heures)",
+      "duration_type": "Demi-journée",
+      "departure_time": "14:00",
+      "age_restrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
+      "pickup_info": "Prise en charge gratuite dans le hall de votre hôtel et retour inclus dans toute la zone de Hurghada.",
+      "cancellation_policy": "Annulation gratuite jusqu’à 24 heures avant l’heure de début de l’excursion."
+    }
+  ]
+}
