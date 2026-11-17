@@ -52,6 +52,6 @@ assert.match(quadFaqCleanup, /DELETE FROM public\.tour_faqs/);
 assert.match(nonMarineFaqCleanup, /hurghada-desert-quad-safari-atv-adventure-camel-ride-bedouin-village/);
 assert.match(nonMarineFaqCleanup, /st-catherine-monastery-dahab-day-trip-from-sharm-el-sheikh/);
 assert.match(nonMarineFaqCleanup, /refusing to delete changed FAQ content/);
-assert.match(nonMarineFaqCleanup, /DELETE FROM public\\.tour_faqs/);
+assert.match(nonMarineFaqCleanup, /DELETE FROM public\.tour_faqs/);
 
 console.log('Source corrections and production dependency isolation checks passed.');
