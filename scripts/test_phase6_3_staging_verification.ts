@@ -477,7 +477,7 @@ async function runPhase63VerificationSuite() {
   } else {
     let pickupFailedClosed = false;
     let extrasFailedClosed = false;
-    try { await getPublishedPickupLocations(); } catch (error) { pickupFailedClosed = String(error).includes('Supabase is not configured'); }
+    try { await getPublishedPickupLocations('test-tour-id'); } catch (error) { pickupFailedClosed = String(error).includes('Supabase is not configured'); }
     try { await getPublishedTourExtras(); } catch (error) { extrasFailedClosed = String(error).includes('Supabase is not configured'); }
     assert(pickupFailedClosed, 'pickup location queries fail closed without Supabase');
     assert(extrasFailedClosed, 'tour extras queries fail closed without Supabase');
