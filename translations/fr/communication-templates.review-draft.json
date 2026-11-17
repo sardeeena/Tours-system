@@ -5,7 +5,7 @@
   "records": [
     {
       "entity_type": "communication_template",
-      "entity_key": "booking_confirmation",
+      "entity_key": "9d0afa47-45f6-47b8-8dde-eeae58e45b97",
       "template_key": "booking_confirmation",
       "name": "Confirmation de réservation",
       "channel": "Both",
@@ -23,7 +23,7 @@
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "booking_received",
+      "entity_key": "a2067910-50a2-41e4-bb08-80722a0750bf",
       "template_key": "booking_received",
       "name": "Billet de réservation",
       "channel": "Email",
@@ -41,7 +41,7 @@
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "booking_review_request",
+      "entity_key": "3f657bd6-15e7-477f-b513-ac9038af2383",
       "template_key": "booking_review_request",
       "name": "Demande d’avis après une excursion terminée",
       "channel": "Email",
@@ -58,7 +58,7 @@
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "booking_update",
+      "entity_key": "9aca4700-542d-4c35-94ef-b0cae8095e19",
       "template_key": "booking_update",
       "name": "Mise à jour de réservation",
       "channel": "Both",
@@ -75,7 +75,7 @@
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "cancellation",
+      "entity_key": "ba3bfad1-d02f-4d94-9cb3-be129dde05e0",
       "template_key": "cancellation",
       "name": "Annulation de réservation",
       "channel": "Both",
@@ -90,7 +90,7 @@
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "follow_up",
+      "entity_key": "2f758e25-31ce-4a32-abaf-0f167c94ac1e",
       "template_key": "follow_up",
       "name": "Suivi client",
       "channel": "Both",
@@ -102,7 +102,7 @@
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "inquiry_response",
+      "entity_key": "f2916b63-45b6-49aa-94a0-180c4ac026dc",
       "template_key": "inquiry_response",
       "name": "Réponse à une demande de renseignements",
       "channel": "Both",
@@ -114,7 +114,7 @@
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "newsletter_welcome",
+      "entity_key": "2fe01cb2-58ed-41f6-aaa0-186fdfb78e5f",
       "template_key": "newsletter_welcome",
       "name": "Bienvenue à la newsletter",
       "channel": "Email",
@@ -127,7 +127,7 @@
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "payment_confirmation",
+      "entity_key": "286f3159-e9a2-4038-bcd8-ad2a0ec53079",
       "template_key": "payment_confirmation",
       "name": "Confirmation de paiement",
       "channel": "Both",
@@ -143,7 +143,7 @@
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "payment_reminder",
+      "entity_key": "97dcca82-9361-4683-9097-ded3d3bfd338",
       "template_key": "payment_reminder",
       "name": "Rappel de paiement",
       "channel": "Both",
@@ -160,7 +160,7 @@
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "pickup_reminder",
+      "entity_key": "9143122e-c8e6-4d7b-bb64-ad562d44e8e4",
       "template_key": "pickup_reminder",
       "name": "Rappel de prise en charge",
       "channel": "Both",
@@ -175,7 +175,7 @@
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "refund",
+      "entity_key": "2e8a1598-4077-45f3-96c7-1c92503d39b3",
       "template_key": "refund",
       "name": "Notification de remboursement",
       "channel": "Both",
@@ -190,7 +190,7 @@
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "review_request",
+      "entity_key": "d8e61555-7c7b-4286-8923-c78741d9cbf4",
       "template_key": "review_request",
       "name": "Demande d’avis",
       "channel": "Both",
@@ -204,7 +204,7 @@
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "tour_reminder",
+      "entity_key": "dc0e86c3-edd5-48cc-8cd9-c3c2e7bb8cba",
       "template_key": "tour_reminder",
       "name": "Rappel d’excursion",
       "channel": "Both",
@@ -221,7 +221,7 @@
     },
     {
       "entity_type": "communication_template",
-      "entity_key": "welcome",
+      "entity_key": "83b34c2d-3d1d-4a32-aed8-ae2d2cf35d50",
       "template_key": "welcome",
       "name": "Bienvenue chez Awesome Adventure Tours",
       "channel": "Both",
@@ -230,6 +230,49 @@
       "variables": [
         "customer_name"
       ]
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "612bdb2c-703a-4ac3-96d9-3554246b8426",
+      "locale": "fr",
+      "template_key": "post_trip_thank_you",
+      "name": "Merci d’avoir voyagé avec nous",
+      "channel": "Email",
+      "subject": "Merci d’avoir participé à {{tour_name}}",
+      "body_text": "Bonjour {{customer_name}},\n\nMerci d’avoir participé à {{tour_name}}. Nous espérons que vous avez apprécié votre expérience en mer Rouge et serions ravis de vous accueillir à nouveau.",
+      "variables": [
+        "customer_name",
+        "tour_name"
+      ]
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "ea7c52e1-5b5e-40a4-8e70-6144b9ae141c",
+      "locale": "fr",
+      "template_key": "ticket_created",
+      "name": "Demande d’assistance reçue",
+      "channel": "Email",
+      "subject": "Nous avons reçu votre demande d’assistance {{ticket_reference}}",
+      "body_text": "Bonjour {{customer_name}},\n\nNous avons bien reçu votre demande d’assistance ({{ticket_reference}}). Notre équipe l’examinera et vous répondra dès que possible.",
+      "variables": [
+        "customer_name",
+        "ticket_reference"
+      ]
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "18b48d44-d030-42de-8a8d-970cf3adc493",
+      "locale": "fr",
+      "template_key": "ticket_reply",
+      "name": "Nouvelle réponse à votre ticket d’assistance {{ticket_reference}}",
+      "channel": "Email",
+      "subject": "Une mise à jour concerne votre demande d’assistance",
+      "body_text": "Bonjour {{customer_name}},\n\nNotre équipe a répondu à votre demande d’assistance ({{ticket_reference}}). Connectez-vous à votre compte pour consulter la réponse.",
+      "variables": [
+        "customer_name",
+        "ticket_reference"
+      ]
     }
-  ]
+  ],
+  "coverage": 18
 }
