@@ -303,6 +303,9 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
         throw new Error('Add at least one tour language before saving.');
       }
       const statusToSave = overrideStatus || tourData.status || 'draft';
+      if (statusToSave === 'published' && tourData.pickup_available !== false && selectedPickupIds.length === 0) {
+        throw new Error('A published tour that offers pickup must have at least one explicitly approved active pickup location. Configure its pickup points or disable pickup for this tour before publishing.');
+      }
 
       const payload = {
         tour: {
@@ -1199,7 +1202,7 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
         <div className="bg-stone-950 p-6 rounded-lg border border-stone-800 space-y-4">
           <h3 className="text-sm font-bold text-white">Supported Pickup Locations & Transfer Fees</h3>
           <p className="text-xs text-stone-400">
-            Pickups enabled for this excursion will appear in the customer multi-step booking wizard with their regional surcharges.
+            Only the locations selected here are offered to customers. Published tours that offer pickup must have at least one explicitly approved active pickup zone. Regional surcharges are calculated from the saved pickup-zone fees.
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
