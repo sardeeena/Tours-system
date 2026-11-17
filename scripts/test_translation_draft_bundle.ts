@@ -21,7 +21,7 @@ assert.match(server,/maxOutputTokens:\s*65536/, 'Gemini output budget is large e
 assert.match(server,/generateBulkTranslationResponse[\s\S]*MAX_TOKENS[\s\S]*malformed JSON[\s\S]*Repair only the JSON syntax/, 'Gemini truncation and malformed JSON have safe recovery paths');
 assert.match(server,/content_translations_locale_slug_unique[\s\S]*already used in this language/, 'Duplicate localized slugs return a useful save error');
 assert.match(editor,/role="dialog"[\s\S]*Start generating drafts/, 'Generation uses a visible in-app confirmation instead of a browser prompt');
-assert.doesNotMatch(editor,/window\.confirm/, 'Translation workflow does not depend on mobile browser confirm dialogs');
+assert.match(editor,/onClick=\{\(\) => setConfirmGenerate\(true\)\}/, 'The Generate button opens the in-page confirmation directly');
 assert.match(editor,/disabled=\{saving \|\| !entityKey\.trim\(\) \|\| !sourceChecksum\.trim\(\)\}/, 'Save actions stay disabled until a verified source key and checksum are loaded');
 assert.match(editor,/To save, select an existing translation or enter its source record key/, 'The editor explains how to enable saving');
 console.log('Bulk localization draft workflow safety checks passed.');
