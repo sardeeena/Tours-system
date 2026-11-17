@@ -3285,7 +3285,9 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
         'Preserve all JSON keys, arrays, order, object shapes and non-string values. Translate all prose, labels, headings, FAQs, itinerary and UI message values.',
         'Never invent or change prices, currencies, numbers, dates, times, durations, pickup details, age limits, safety requirements, inclusions, exclusions, cancellation terms, legal claims, contacts, URLs, emails, phone numbers, IDs or brand/place names. Copy factual values exactly. In communication templates preserve every {{placeholder}} token byte-for-byte and do not translate variable names.',
         'translated_slug must be a natural short lowercase ASCII slug using only a-z, 0-9 and hyphens. For ui_catalog use site-ui. For communication templates, preserve template_key and variables exactly; preserve every {{placeholder}} in both subject and body_text exactly. Keep empty source strings empty. Do not omit fields or add commentary.',
-        'SEO title should be concise; SEO description accurate. No unsupported claims.',
+        locale === 'ar'
+          ? 'For Arabic, use clear Modern Standard Arabic suitable for international visitors to Egypt. Preserve official place, vessel and brand names accurately; do not invent local claims. The UI will render right-to-left, so return natural Arabic text without manual visual reordering.'
+          : 'Use natural, locally fluent language for the target locale. SEO title should be concise; SEO description accurate. No unsupported claims.',
         'INPUT: '+JSON.stringify(work.map(x=>({entity_type:x.type,entity_key:x.key,source:x.payload})))
       ].join('\n');
       const generated = await ai.models.generateContent({model:'gemini-3.8-flash',contents:[{role:'user',parts:[{text:prompt}]}],config:{temperature:0.15,responseMimeType:'application/json'}});
