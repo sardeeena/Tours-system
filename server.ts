@@ -3354,9 +3354,13 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
   if (!Object.prototype.hasOwnProperty.call(BULK_TRANSLATION_LOCALES,locale)) return res.status(400).json({success:false,error:'Bulk generation supports the configured non-English locales.'});
   if (!ai) return res.status(503).json({success:false,error:'Server-side Gemini translation is not configured.'});
   if (!serverSupabase) return res.status(503).json({success:false,error:'Translation database unavailable.'});
+  let batchSize = 0;
+  let totalCandidates: number | null = null;
   try {
     const candidates = await getBulkTranslationCandidates();
+    totalCandidates = candidates.length;
     const page = candidates.slice(offset,offset+limit);
+    batchSize = page.length;
     const prepared: Array<{type:string;key:string;checksum:string;source:any;payload:any}> = [];
     for (const candidate of page) {
       const current = await getCurrentTranslationSourceChecksum(candidate.entity_type,candidate.entity_key);
@@ -3407,7 +3411,7 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
     const providerCode = String(error?.code || '');
     const providerUnavailable = providerStatus === 503 || /UNAVAILABLE|high demand/i.test(errorMessage);
     console.error('[Bulk translation generation] Failed safely:', {
-      locale, offset, batchSize: page.length, totalCandidates: candidates.length,
+      locale, offset, batchSize, totalCandidates,
       providerStatus: providerStatus || null, providerCode: providerCode || null,
       errorName: String(error?.name || 'Error'),
     });
