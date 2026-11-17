@@ -1,0 +1,76 @@
+name: Encrypted Supabase database backup
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-production-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    name: Dump, encrypt, and verify production database
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes postgresql-client
+
+      - name: Create and verify encrypted logical backup
+        shell: bash
+        env:
+          SOURCE_DATABASE_URL: ${{ secrets.SUPABASE_SOURCE_DB_URL }}
+          BACKUP_ENCRYPTION_PASSPHRASE: ${{ secrets.BACKUP_ENCRYPTION_PASSPHRASE }}
+        run: |
+          set -Eeuo pipefail
+          set +x
+          if [[ -z "${SOURCE_DATABASE_URL:-}" ]]; then
+            echo "::error::Missing GitHub Actions secret SUPABASE_SOURCE_DB_URL"
+            exit 1
+          fi
+          if [[ -z "${BACKUP_ENCRYPTION_PASSPHRASE:-}" || ${#BACKUP_ENCRYPTION_PASSPHRASE} -lt 32 ]]; then
+            echo "::error::Add BACKUP_ENCRYPTION_PASSPHRASE as a strong secret of at least 32 characters."
+            exit 1
+          fi
+
+          mkdir -p backup
+          chmod 700 backup
+          umask 077
+          DUMP_FILE="backup/awesome-adventure-tours-${GITHUB_RUN_ID}.dump"
+          ENCRYPTED_FILE="${DUMP_FILE}.enc"
+
+          pg_dump --format=custom --compress=9 --no-owner --no-acl \
+            --file="${DUMP_FILE}" "${SOURCE_DATABASE_URL}"
+
+          test -s "${DUMP_FILE}"
+          openssl enc -aes-256-cbc -salt -pbkdf2 -iter 600000 \
+            -in "${DUMP_FILE}" -out "${ENCRYPTED_FILE}" \
+            -pass env:BACKUP_ENCRYPTION_PASSPHRASE
+
+          # Verify decryption and PostgreSQL archive readability before upload.
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 \
+            -in "${ENCRYPTED_FILE}" -out backup/verify.dump \
+            -pass env:BACKUP_ENCRYPTION_PASSPHRASE
+          pg_restore --list backup/verify.dump > backup/archive-contents.txt
+          test -s backup/archive-contents.txt
+          sha256sum "${ENCRYPTED_FILE}" > "${ENCRYPTED_FILE}.sha256"
+
+          rm -f "${DUMP_FILE}" backup/verify.dump
+          echo "Encrypted backup created and archive integrity verified."
+          echo "Encrypted archive bytes: $(stat -c '%s' "${ENCRYPTED_FILE}")"
+
+      - name: Upload encrypted backup artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: awesome-adventure-tours-db-backup-${{ github.run_id }}
+          path: |
+            backup/*.dump.enc
+            backup/*.dump.enc.sha256
+            backup/archive-contents.txt
+          if-no-files-found: error
+          retention-days: 3
