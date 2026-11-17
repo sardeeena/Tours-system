@@ -1,0 +1,187 @@
+{
+  "locale": "fr",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "records": [
+    {
+      "entity_type": "tour",
+      "entity_key": "74bfe543-678a-470f-958b-34087125a56b",
+      "source_slug": "sinai-adventure-colored-canyon-blue-hole-dahab",
+      "translated_slug": "aventure-sinai-colored-canyon-blue-hole-dahab",
+      "title": "Aventure dans le Sinaï : Colored Canyon, Blue Hole et Dahab",
+      "summary": "Des canyons sinueux du désert aux eaux cristallines de Dahab, profitez d’une journée riche en merveilles naturelles, en découvertes locales et en moments inoubliables dans le Sinaï.",
+      "content": {
+        "short_description": "Des canyons sinueux du désert aux eaux cristallines de Dahab, profitez d’une journée riche en merveilles naturelles, en découvertes locales et en moments inoubliables dans le Sinaï.",
+        "description": "Certains lieux se découvrent mieux en prenant son temps, avec une touche d’aventure et de nombreuses occasions d’admirer les paysages. Ce voyage à travers le Sinaï réunit la beauté spectaculaire du Colored Canyon, le littoral paisible de Dahab et le remarquable monde sous-marin de la mer Rouge.\n\nQuittez les rues animées de Charm el-Cheikh et partez dans le désert, où des couches de grès naturellement colorées composent un paysage unique. Marchez entre les parois du canyon, observez les nuances changeantes de la roche et profitez de la sensation d’être entouré par la nature.\n\nL’aventure se poursuit au Blue Hole de Dahab, où la mer offre une beauté tout à fait différente. Prenez le temps de profiter du bord de l’eau, faites du snorkeling si vous le souhaitez et détendez-vous autour d’un déjeuner face au paysage côtier.\n\nVous aurez également le temps de découvrir le côté plus simple de Dahab. Profitez d’une balade traditionnelle à dos de chameau le long de la côte, parcourez les boutiques locales et imprégnez-vous de l’atmosphère décontractée qui rend cette ville si particulière. Selon la formule choisie, vous pourrez également ajouter une sortie en quad pour encore plus de sensations.\n\nQue vous voyagiez en couple, entre amis ou en famille, cette excursion vous permet de sortir du programme habituel des vacances et de découvrir une autre facette de l’Égypte, entre grands espaces, air marin et souvenirs mémorables.",
+        "highlights": [
+          "Parcourez le canyon de grès naturellement sculpté du Sinaï",
+          "Profitez d’une aventure hors piste à travers les paysages désertiques",
+          "Visitez le célèbre Blue Hole sur la côte de la mer Rouge",
+          "Découvrez l’atmosphère balnéaire décontractée de Dahab",
+          "Faites une pause pour déjeuner et savourer les spécialités locales",
+          "Profitez d’une balade traditionnelle à dos de chameau au bord de la mer",
+          "Parcourez les petites boutiques et les étals du marché local de Dahab",
+          "Ajoutez une sortie en quad pour encore plus d’aventure, selon disponibilité"
+        ],
+        "included": [
+          "Prise en charge et retour à l’hôtel à Charm el-Cheikh",
+          "Visite guidée du Colored Canyon",
+          "Safari en Jeep dans le désert du Sinaï",
+          "Visite du Blue Hole, selon la formule sélectionnée",
+          "Balade à dos de chameau, si incluse dans l’option sélectionnée",
+          "Temps libre pour découvrir Dahab",
+          "Assistance du guide tout au long de l’excursion",
+          "Déjeuner dans un restaurant local"
+        ],
+        "excluded": [
+          "Location de l’équipement de snorkeling",
+          "Frais d’entrée au Blue Hole, s’ils ne sont pas inclus dans votre formule",
+          "Sortie en quad, sauf si sélectionnée et réglée",
+          "Boissons et nourriture supplémentaires",
+          "Achats personnels et souvenirs",
+          "Pourboires",
+          "Tout service non expressément mentionné dans les prestations incluses"
+        ],
+        "faqs": [
+          {
+            "question": "L’équipement de snorkeling est-il fourni ou dois-je apporter le mien ?",
+            "answer": "Des masques, tubas et palmes désinfectés, en tailles adulte et enfant, sont fournis gratuitement à bord.",
+            "section": "faq"
+          },
+          {
+            "question": "Les personnes qui ne savent pas nager peuvent-elles participer en toute sécurité ?",
+            "answer": "Oui. Des gilets de flottaison homologués par les garde-côtes sont fournis et des moniteurs de plongée certifiés accompagnent les participants dans l’eau.",
+            "section": "faq"
+          }
+        ]
+      },
+      "seo_title": "Aventure dans le Sinaï : Colored Canyon, Blue Hole et Dahab",
+      "seo_description": "Découvrez le Colored Canyon, le Blue Hole et Dahab lors d’une excursion dans le Sinaï avec paysages désertiques, côte et déjeuner local.",
+      "duration": "8 heures",
+      "duration_type": "Journée complète",
+      "departure_time": "08:30 AM",
+      "age_restrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
+      "pickup_info": "Prise en charge et retour à votre hôtel inclus.",
+      "cancellation_policy": "Annulation gratuite jusqu’à 24 heures avant l’heure de début de l’excursion."
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "56fdd9fc-3a63-4faf-89b4-ac9e7332b86d",
+      "source_slug": "st-catherine-monastery-dahab-day-trip-from-sharm-el-sheikh",
+      "translated_slug": "monastere-sainte-catherine-dahab-excursion-depuis-charm",
+      "title": "Monastère Sainte-Catherine et Dahab : excursion à la journée depuis Charm el-Cheikh",
+      "summary": "Découvrez l’histoire et l’atmosphère paisible du monastère Sainte-Catherine, niché au milieu des montagnes spectaculaires du Sinaï, puis rejoignez le littoral de la mer Rouge pour un après-midi de détente à Dahab. Profitez d’une visite guidée du monastère, d’un délicieux déjeuner et de temps libre pour découvrir cette charmante ville côtière.",
+      "content": {
+        "short_description": "Découvrez l’histoire et l’atmosphère paisible du monastère Sainte-Catherine, niché au milieu des montagnes du Sinaï, puis rejoignez le littoral de la mer Rouge pour un après-midi de détente à Dahab. Profitez d’une visite guidée du monastère, d’un déjeuner et de temps libre dans cette charmante ville côtière.",
+        "description": "Quittez l’ambiance animée des resorts de Charm el-Cheikh et partez à la découverte de deux des destinations les plus fascinantes du Sinaï lors d’un voyage mémorable d’une journée.\n\nVotre journée commence tôt par une prise en charge à votre hôtel et un trajet confortable à travers les paysages spectaculaires du Sinaï. En direction des montagnes, vous traverserez des paysages désertiques accidentés et des formations naturelles remarquables avant d’arriver au monastère Sainte-Catherine, l’un des plus anciens monastères chrétiens encore en activité au monde.\n\nSitué au pied du mont Sinaï, le monastère est un lieu remarquable par son histoire, sa spiritualité et son architecture. Accompagné d’un égyptologue qualifié, découvrez son patrimoine fascinant, admirez des icônes et des manuscrits religieux vieux de plusieurs siècles et visitez la chapelle traditionnellement associée au Buisson ardent.\n\nAprès la découverte du monastère, poursuivez vers le littoral de la mer Rouge et la ville décontractée de Dahab. L’atmosphère passe alors de la tranquillité des montagnes au charme du bord de mer. Profitez du déjeuner, admirez les vues côtières et prenez du temps libre pour vous promener à Dahab à votre rythme.\n\nEn associant découverte culturelle, magnifiques paysages montagneux et escapade côtière reposante, cette excursion vous offre une autre perspective sur le Sinaï, au-delà des plages de Charm el-Cheikh.",
+        "highlights": [
+          "Explorez le monastère Sainte-Catherine, site inscrit au patrimoine mondial de l’UNESCO",
+          "Découvrez l’histoire remarquable du monastère avec un égyptologue qualifié",
+          "Visitez la chapelle traditionnellement associée au Buisson ardent",
+          "Admirez les anciennes icônes religieuses, l’architecture historique et le cadre paisible des montagnes",
+          "Profitez d’un trajet panoramique à travers les paysages spectaculaires du désert et des montagnes du Sinaï",
+          "Rejoignez Dahab pour déjeuner et profiter de temps libre au bord de la mer Rouge",
+          "Voyagez confortablement avec des transferts aller-retour depuis votre hôtel à Charm el-Cheikh"
+        ],
+        "included": [
+          "Prise en charge et retour à l’hôtel à Charm el-Cheikh",
+          "Transport aller-retour dans un véhicule moderne et climatisé",
+          "Guide égyptologue qualifié",
+          "Visite guidée du monastère Sainte-Catherine",
+          "Déjeuner à Dahab",
+          "Temps libre pour découvrir Dahab",
+          "Toutes les taxes et frais de service"
+        ],
+        "excluded": [
+          "Entrée au musée du monastère (sacristie sacrée), disponible en option",
+          "Boissons pendant le déjeuner",
+          "Dépenses personnelles et achats",
+          "Pourboires",
+          "Tout service non expressément mentionné dans les prestations incluses"
+        ],
+        "faqs": [
+          {
+            "question": "L’équipement de snorkeling est-il fourni ou dois-je apporter le mien ?",
+            "answer": "Des masques, tubas et palmes désinfectés, en tailles adulte et enfant, sont fournis gratuitement à bord.",
+            "section": "faq"
+          },
+          {
+            "question": "Les personnes qui ne savent pas nager peuvent-elles participer en toute sécurité ?",
+            "answer": "Oui. Des gilets de flottaison homologués par les garde-côtes sont fournis et des moniteurs de plongée certifiés accompagnent les participants dans l’eau.",
+            "section": "faq"
+          }
+        ]
+      },
+      "seo_title": "Monastère Sainte-Catherine et Dahab : excursion à la journée depuis Charm el-Cheikh",
+      "seo_description": "Visitez le monastère Sainte-Catherine avec un égyptologue, puis profitez d’un déjeuner et de temps libre à Dahab lors d’une excursion depuis Charm el-Cheikh.",
+      "duration": "Journée complète (environ 9 heures)",
+      "duration_type": "Journée complète",
+      "departure_time": "05:00 AM",
+      "age_restrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
+      "pickup_info": "Prise en charge gratuite dans le hall de votre hôtel et retour inclus dans toute la zone de Charm el-Cheikh.",
+      "cancellation_policy": "Annulation gratuite jusqu’à 24 heures avant l’heure de début de l’excursion."
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "2f2ca1a1-f0c7-4737-9700-57e801a08d99",
+      "source_slug": "ultimate-sinai-desert-safari-quad-camel-bbq-adventure",
+      "translated_slug": "super-safari-desert-sinai-quad-chameau-barbecue",
+      "title": "Super safari dans le désert du Sinaï : quad, chameau et aventure barbecue",
+      "summary": "Profitez d’un safari de cinq heures dans le désert de Charm el-Cheikh, combinant quad, balade traditionnelle à dos de chameau, culture bédouine et dîner barbecue. Découvrez les spectacles orientaux et profitez d’une soirée mémorable dans le désert du Sinaï.",
+      "content": {
+        "short_description": "Profitez d’un safari de cinq heures dans le désert de Charm el-Cheikh, combinant quad, balade à dos de chameau, culture bédouine et dîner barbecue. Découvrez les spectacles orientaux et profitez d’une soirée mémorable dans le désert du Sinaï.",
+        "description": "Échappez à la ville et découvrez la beauté du désert du Sinaï lors d’une aventure safari inoubliable au départ de Charm el-Cheikh.\n\nProfitez d’une passionnante randonnée en quad à travers le désert, découvrez l’hospitalité bédouine traditionnelle, faites une balade à dos de chameau et passez une soirée dans un camp bédouin autour d’un délicieux dîner barbecue et de spectacles orientaux divertissants.\n\nAvec la prise en charge et le retour confortables à l’hôtel, l’accompagnement de professionnels et une combinaison d’aventure et de découvertes culturelles, ce safari est une excellente façon de découvrir le désert au cours d’une excursion mémorable.",
+        "highlights": [
+          "Faire du quad dans le désert du Sinaï",
+          "Balade à dos de chameau",
+          "Découverte d’un camp bédouin",
+          "Thé bédouin traditionnel",
+          "Echo Valley",
+          "Dîner barbecue",
+          "Spectacles orientaux et animations en direct",
+          "Prise en charge et retour à l’hôtel"
+        ],
+        "included": [
+          "Prise en charge et retour à l’hôtel",
+          "Transport climatisé",
+          "Guide professionnel de safari",
+          "Casque de sécurité et lunettes de protection",
+          "Randonnée en quad",
+          "Balade à dos de chameau",
+          "Thé bédouin et pain traditionnel",
+          "Dîner barbecue / buffet à volonté",
+          "Une bouteille d’eau minérale",
+          "Spectacles de divertissement oriental"
+        ],
+        "excluded": [
+          "Chicha",
+          "Services de photographie",
+          "Huiles",
+          "Dépenses personnelles",
+          "Transfert retour privé en option",
+          "Parcours privé en véhicule en option"
+        ],
+        "faqs": [
+          {
+            "question": "L’équipement de snorkeling est-il fourni ou dois-je apporter le mien ?",
+            "answer": "Des masques, tubas et palmes désinfectés, en tailles adulte et enfant, sont fournis gratuitement à bord.",
+            "section": "faq"
+          },
+          {
+            "question": "Les personnes qui ne savent pas nager peuvent-elles participer en toute sécurité ?",
+            "answer": "Oui. Des gilets de flottaison homologués par les garde-côtes sont fournis et des moniteurs de plongée certifiés accompagnent les participants dans l’eau.",
+            "section": "faq"
+          }
+        ]
+      },
+      "seo_title": "Super safari dans le désert du Sinaï avec quad, chameau et barbecue",
+      "seo_description": "Vivez une aventure dans le désert du Sinaï avec quad, balade à dos de chameau, camp bédouin, dîner barbecue et spectacles orientaux.",
+      "duration": "5 heures",
+      "duration_type": "Demi-journée",
+      "departure_time": "15:30",
+      "age_restrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
+      "pickup_info": "La prise en charge et le retour sont inclus dans des véhicules modernes et climatisés.",
+      "cancellation_policy": "Annulation gratuite jusqu’à 24 heures avant l’heure de début de l’excursion."
+    }
+  ]
+}
