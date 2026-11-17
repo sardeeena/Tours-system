@@ -33,7 +33,7 @@ assert(adminEditor.includes('selectedPickupIds.length === 0') && adminEditor.inc
 assert(adminEditor.includes("handleFieldChange('pickup_available', e.target.checked)") && adminEditor.includes('Existing pickup mappings are preserved'), 'admin can explicitly disable pickup without deleting existing mappings');
 assert(review.includes("'No pickup service'"), 'booking review does not invent a default Hurghada pickup');
 assert(migration.includes('COALESCE(v_tour.pickup_available, FALSE)') && migration.includes('pickup_location_id = v_extra_record.id'), 'database migration enforces strict tour-specific pickup eligibility');
-assert(audit.includes('11**') && audit.includes('35 active tour-to-zone mapping rows') && audit.includes('Sharm El Sheikh (€0)'), 'production audit records missing tours, mapping count, and anomaly for operator review');
+assert(audit.includes('11**') && audit.includes('Active tour-to-zone mapping rows: **35**') && audit.includes('Sharm El Sheikh (€0)'), 'production audit records missing tours, mapping count, and anomaly for operator review');
 
 console.log(`\nStrict pickup policy tests: ${passed} passed, ${failed} failed.`);
 if (failed > 0) process.exit(1);
