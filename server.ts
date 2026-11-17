@@ -545,7 +545,7 @@ app.post('/api/chat', rateLimit(10, 60_000), async (req: Request, res: Response)
   try {
     const { data: catalogueRows, error: catalogueError } = await publicSupabase
       .from('tours')
-      .select('id,title,slug,short_description,duration,duration_hours,price,child_price,currency,tour_type,pickup_available,pickup_info,cancellation_policy,departure_time,available_days,destinations(name)')
+      .select('id,title,slug,short_description,duration,duration_hours,price,child_price,currency,tour_type,pickup_available,pickup_info,cancellation_policy,departure_time,available_days,destinations(name),tour_images(image_url,is_primary,sort_order)')
       .eq('status', 'published')
       .order('sort_order', { ascending: true })
       .limit(60);
@@ -570,6 +570,7 @@ app.post('/api/chat', rateLimit(10, 60_000), async (req: Request, res: Response)
         currency: tour.currency || 'EUR',
         tourType: tour.tour_type || null,
         pickupAvailable: Boolean(tour.pickup_available),
+        primaryImage: (Array.isArray(tour.tour_images) ? [...tour.tour_images].sort((a: any,b: any) => Number(Boolean(b.is_primary))-Number(Boolean(a.is_primary)) || Number(a.sort_order || 0)-Number(b.sort_order || 0))[0]?.image_url : '') || '',
         pickupInformation: tour.pickup_info || null,
         cancellationPolicy: tour.cancellation_policy || null,
         publishedDepartureLabel: tour.departure_time || null,
@@ -616,7 +617,7 @@ The catalogue above is current published content, not date-specific inventory. D
         id: tour.id,
         slug: tour.slug,
         title: tour.title,
-        primaryImage: '',
+        primaryImage: tour.primaryImage,
         priceEur: tour.startingPrice,
       }));
 
