@@ -60,7 +60,7 @@ export function getGeminiProviderErrorDetails(error: unknown): GeminiProviderErr
 
 const wait = (milliseconds: number) => new Promise<void>((resolve) => setTimeout(resolve, milliseconds));
 const jitteredDelay = (baseMs: number, random: () => number) =>
-  Math.max(1, Math.round(baseMs * (0.75 + Math.min(1, Math.max(0, random())) * 0.5));
+  Math.max(1, Math.round(baseMs * (0.75 + Math.min(1, Math.max(0, random())) * 0.5)));
 
 /**
  * Retry transient Gemini failures with bounded exponential backoff and jitter.
