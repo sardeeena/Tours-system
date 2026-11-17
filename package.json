@@ -66,7 +66,8 @@
     "test:source-content-corrections": "tsx scripts/test_source_content_corrections.ts",
     "prebuild": "if [ \"$NODE_ENV\" = \"production\" ]; then npm install --include=dev --no-save; fi",
     "postbuild": "if [ \"$NODE_ENV\" = \"production\" ]; then npm prune --omit=dev; fi",
-    "test:dutch-content-drafts": "tsx scripts/test_dutch_content_drafts.ts"
+    "test:dutch-content-drafts": "tsx scripts/test_dutch_content_drafts.ts",
+    "translations:assemble-nl": "tsx scripts/assemble_dutch_import_bundle.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
