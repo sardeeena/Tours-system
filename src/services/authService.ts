@@ -503,7 +503,7 @@ export async function resetPasswordRequest(
     try {
       const redirectOrigin = typeof window !== 'undefined' && window.location?.origin
         ? window.location.origin
-        : 'https://mahmoud-crm-eosin.vercel.app';
+        : 'https://awesomeadventure.tours';
 
       const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
         redirectTo: `${redirectOrigin}/reset-password`,
