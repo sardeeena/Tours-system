@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - "chatgpt/**"
+      - "fix/**"
   pull_request:
     branches:
       - main
