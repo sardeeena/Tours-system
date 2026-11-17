@@ -109,8 +109,8 @@ function translatedPayload(type: string, source: AnyRecord, draft: AnyRecord): A
   return {title:draft.title,summary:draft.summary,content:draft.content};
 }
 async function main() {
-  const [sourcePath, outputPath = './translations/fr/dutch-import-bundle.json'] = process.argv.slice(2);
-  if (!sourcePath) throw new Error('Usage: npm run translations:assemble-fr -- ./translation-source.json [./output.json]');
+  const [sourcePath, outputPath = './translations/nl/dutch-import-bundle.json'] = process.argv.slice(2);
+  if (!sourcePath) throw new Error('Usage: npm run translations:assemble-nl -- ./translation-source.json [./output.json]');
   const sourceBundle = JSON.parse(await readFile(sourcePath, 'utf8'));
   const draftBundle = JSON.parse(await readFile('./translations/nl/all-content.review-draft.json', 'utf8'));
   if (sourceBundle?.schema_version !== 1 || !Array.isArray(sourceBundle.records)) throw new Error('Unsupported authoritative source bundle.');
