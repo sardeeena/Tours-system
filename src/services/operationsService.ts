@@ -1363,7 +1363,7 @@ export async function saveVessel(vessel: Partial<DbVessel>): Promise<DbVessel> {
     .select('*')
     .single();
   if (error || !data) {
-    throw new Error(formatSupabaseError(error || new Error('The database did not return the saved vessel.')));
+    throw new Error(error?.message || 'The database did not return the saved vessel.');
   }
 
   const saved: DbVessel = {
