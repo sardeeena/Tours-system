@@ -3293,7 +3293,6 @@ async function generateBulkTranslationResponse(
       temperature: 0.1,
       responseMimeType: 'application/json',
       maxOutputTokens: 65536,
-      thinkingConfig: { thinkingLevel: 'MINIMAL' },
     },
   });
   const finishReason = String(response.candidates?.[0]?.finishReason || '');
@@ -3335,7 +3334,7 @@ async function generateBulkTranslationResponse(
         'Repair only the JSON syntax of the following model output. Do not rewrite, summarize, translate, add, remove, or alter any values. Return one valid JSON object with the same translations array and exact field values. Return JSON only.',
         responseText,
       ].join('\n') }] }],
-      config: { temperature: 0, responseMimeType: 'application/json', maxOutputTokens: 65536, thinkingConfig: { thinkingLevel: 'MINIMAL' } },
+      config: { temperature: 0, responseMimeType: 'application/json', maxOutputTokens: 65536 },
     });
     try {
       parsed = parseGeminiTranslationJson(repaired.text || '');
