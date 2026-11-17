@@ -11,6 +11,7 @@ AS $function$
 DECLARE
   v_inserted INTEGER := 0;
   v_rows INTEGER := 0;
+  v_today DATE := (now() AT TIME ZONE 'Africa/Cairo')::DATE;
 BEGIN
   IF NOT (
     coalesce(auth.role(),'') = 'service_role'
@@ -41,7 +42,7 @@ BEGIN
     'Reservation ' || b.booking_reference || ' for ' || b.booking_date::TEXT || ' has an outstanding payment balance.',
     'warning','booking',b.booking_reference,'fin_balances',FALSE,now()
   FROM public.bookings b
-  WHERE b.booking_date <= current_date AND b.payment_status <> 'paid' AND b.status <> 'cancelled'
+  WHERE b.booking_date <= v_today AND b.payment_status <> 'paid' AND b.status <> 'cancelled'
   ON CONFLICT (dedup_key) DO NOTHING;
   GET DIAGNOSTICS v_rows = ROW_COUNT; v_inserted := v_inserted + v_rows;
 
@@ -53,7 +54,7 @@ BEGIN
     'Upcoming reservation ' || b.booking_reference || ' has an unpaid or partially paid balance.',
     'warning','booking',b.booking_reference,'fin_balances',FALSE,now()
   FROM public.bookings b
-  WHERE b.booking_date > current_date
+  WHERE b.booking_date > v_today
     AND b.payment_status IN ('pending','partially_paid')
     AND b.status NOT IN ('cancelled','completed')
   ON CONFLICT (dedup_key) DO NOTHING;
@@ -121,7 +122,7 @@ BEGIN
     'warning','customer',l.id::TEXT,'crm_followups',FALSE,now()
   FROM public.leads l
   WHERE l.follow_up_date IS NOT NULL
-    AND l.follow_up_date::DATE <= current_date
+    AND l.follow_up_date::DATE <= v_today
     AND lower(coalesce(l.stage,'')) NOT IN ('won','lost')
   ON CONFLICT (dedup_key) DO NOTHING;
   GET DIAGNOSTICS v_rows = ROW_COUNT; v_inserted := v_inserted + v_rows;
@@ -150,7 +151,7 @@ BEGIN
     'critical','departure',d.id::TEXT,'ops_departures',FALSE,now()
   FROM public.departures d
   LEFT JOIN public.tours t ON t.id=d.tour_id
-  WHERE d.date >= current_date AND d.status NOT IN ('cancelled','completed')
+  WHERE d.date >= v_today AND d.status NOT IN ('cancelled','completed')
     AND (d.guide_id IS NULL OR d.vessel_id IS NULL)
   ON CONFLICT (dedup_key) DO NOTHING;
   GET DIAGNOSTICS v_rows = ROW_COUNT; v_inserted := v_inserted + v_rows;
@@ -165,7 +166,7 @@ BEGIN
       ' requires driver confirmation. Booking ' || p.booking_reference || '.',
     'warning','departure',p.id::TEXT,'ops_pickups',FALSE,now()
   FROM public.pickup_schedules p
-  WHERE p.tour_date <= current_date + 1 AND p.status='pending'
+  WHERE p.tour_date <= v_today + 1 AND p.status='pending'
   ON CONFLICT (dedup_key) DO NOTHING;
   GET DIAGNOSTICS v_rows = ROW_COUNT; v_inserted := v_inserted + v_rows;
 
