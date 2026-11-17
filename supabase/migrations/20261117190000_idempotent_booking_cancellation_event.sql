@@ -124,6 +124,6 @@ BEGIN
 
   RETURN JSONB_BUILD_OBJECT('success', TRUE, 'bookingReference', v_booking.booking_reference, 'status', 'cancelled', 'capacityReleased', v_guest_count);
 END;
-$function$
+$function$;
 
 COMMIT;
