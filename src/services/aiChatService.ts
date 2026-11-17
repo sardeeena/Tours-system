@@ -1,4 +1,3 @@
-import { ALL_TOURS } from '../data/toursData';
 import { Tour } from '../types';
 
 export interface ChatMessage {
@@ -10,55 +9,10 @@ export interface ChatMessage {
 }
 
 /**
- * Searches the response text or user query for matches in ALL_TOURS
+ * Safe fallback used when the live concierge endpoint is unavailable.
  */
-export function extractMatchingTours(text: string): Tour[] {
-  const lower = text.toLowerCase();
-  const matched: Tour[] = [];
-
-  for (const tour of ALL_TOURS) {
-    const titleLower = tour.title.toLowerCase();
-    const slugLower = tour.slug.toLowerCase();
-
-    // Check direct slug or distinctive keywords from title
-    const keywords = titleLower
-      .replace(/[()&,]/g, ' ')
-      .split(' ')
-      .filter((w) => w.length > 4);
-
-    let matchCount = 0;
-    for (const kw of keywords) {
-      if (lower.includes(kw)) {
-        matchCount++;
-      }
-    }
-
-    if (
-      lower.includes(slugLower) || 
-      lower.includes(titleLower) ||
-      matchCount >= 2 ||
-      (lower.includes('orange bay') && tour.slug.includes('orange-bay')) ||
-      (lower.includes('dolphin') && tour.slug.includes('dolphin')) ||
-      (lower.includes('paradise') && tour.slug.includes('paradise')) ||
-      (lower.includes('quad') && tour.slug.includes('safari')) ||
-      (lower.includes('diving') && tour.slug.includes('diving')) ||
-      (lower.includes('speedboat') && tour.slug.includes('speedboat')) ||
-      (lower.includes('luxor') && tour.slug.includes('luxor')) ||
-      (lower.includes('cairo') && tour.slug.includes('cairo')) ||
-      (lower.includes('submarine') && tour.slug.includes('submarine')) ||
-      (lower.includes('sharm el naga') && tour.slug.includes('sharm-el-naga'))
-    ) {
-      if (!matched.some((m) => m.id === tour.id)) {
-        matched.push(tour);
-      }
-    }
-  }
-
-  return matched.slice(0, 3);
-}
-
 /**
- * Fallback recommendation engine in case server API is offline or without key
+ * Fail closed rather than guessing from the legacy static catalogue.
  */
 function generateSmartFallback(_userPrompt: string): { content: string; recommendedTours: Tour[] } {
   return {
