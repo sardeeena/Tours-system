@@ -142,6 +142,19 @@ BEGIN
   END IF;
   v_booked := v_actual_booked;
 
+  IF EXISTS (
+    SELECT 1 FROM public.bookings
+    WHERE tour_id = p_tour_id AND booking_date = p_date
+      AND status <> 'cancelled'
+      AND (
+        (assigned_vessel_id IS NOT NULL AND assigned_vessel_id IS DISTINCT FROM p_vessel_id)
+        OR (assigned_guide_id IS NOT NULL AND assigned_guide_id IS DISTINCT FROM p_guide_id)
+      )
+  ) THEN
+    RAISE EXCEPTION 'Existing booking vessel/guide assignments do not match the proposed departure. Reconcile assignments before linking.'
+      USING ERRCODE = '23514';
+  END IF;
+
   IF p_departure_id IS NOT NULL THEN
     SELECT * INTO v_existing FROM public.departures WHERE id = p_departure_id FOR UPDATE;
     IF NOT FOUND THEN
@@ -202,7 +215,9 @@ BEGIN
   END IF;
 
   UPDATE public.bookings
-  SET departure_id = v_departure.id
+  SET departure_id = v_departure.id,
+      assigned_vessel_id = v_departure.vessel_id,
+      assigned_guide_id = v_departure.guide_id
   WHERE tour_id = p_tour_id AND booking_date = p_date
     AND status <> 'cancelled' AND departure_id IS NULL;
 
@@ -266,6 +281,34 @@ $function$;
 
 REVOKE ALL ON FUNCTION public.upsert_departure_with_availability(UUID,UUID,DATE,TEXT,TEXT,INTEGER,TEXT,UUID,UUID,UUID,TEXT) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.upsert_departure_with_availability(UUID,UUID,DATE,TEXT,TEXT,INTEGER,TEXT,UUID,UUID,UUID,TEXT) TO authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION private.assign_booking_to_scheduled_departure()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $function$
+DECLARE
+  v_vessel_id UUID;
+  v_guide_id UUID;
+BEGIN
+  IF NEW.departure_id IS NULL THEN
+    SELECT ta.departure_id INTO NEW.departure_id
+    FROM public.tour_availability AS ta
+    WHERE ta.tour_id = NEW.tour_id AND ta.date = NEW.booking_date
+      AND ta.status = 'available'
+      AND ta.departure_id IS NOT NULL;
+  END IF;
+
+  IF NEW.departure_id IS NOT NULL THEN
+    SELECT vessel_id,guide_id INTO v_vessel_id,v_guide_id
+    FROM public.departures WHERE id = NEW.departure_id;
+    NEW.assigned_vessel_id := v_vessel_id;
+    NEW.assigned_guide_id := v_guide_id;
+  END IF;
+  RETURN NEW;
+END;
+$function$;
 
 CREATE OR REPLACE FUNCTION private.sync_scheduled_departure_capacity()
 RETURNS TRIGGER
