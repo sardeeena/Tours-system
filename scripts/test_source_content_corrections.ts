@@ -27,7 +27,9 @@ assert.match(migration, /Bedouin village and camel ride/);
 assert.match(migration, /Return transfer to El Gouna/);
 assert.match(migration, /corrected_faq_answer text := 'A: The itinerary includes a snorkeling stop at Coral Gardens\./);
 assert.match(migration, /refusing to overwrite it/);
-assert.doesNotMatch(migration, /sailing|snorkeling stop|onboard lunch|island beach/i,
+const itineraryInsert = migration.split('INSERT INTO public.tour_itinerary')[1]?.split('END IF;')[0] || '';
+assert.ok(itineraryInsert, 'The corrected quad itinerary insert is present');
+assert.doesNotMatch(itineraryInsert, /sailing|snorkeling|onboard lunch|island beach|marina/i,
   'The corrected quad itinerary must not retain the unrelated boat excursion');
 
 console.log('Source corrections and production dependency isolation checks passed.');
