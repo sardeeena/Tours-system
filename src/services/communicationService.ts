@@ -1208,356 +1208,87 @@ export async function listCommunicationMessages(filter?: {
 // 5. INTERNAL STAFF NOTIFICATIONS (All 10 Categories with Anti-Spam Deduplication)
 // ------------------------------------------------------------------------------
 
+function mapStaffNotification(row: any): StaffNotification {
+  return {
+    id: row.id,
+    category: row.category as NotificationCategory,
+    dedupKey: row.dedup_key || row.id,
+    title: row.title,
+    message: row.message,
+    severity: row.severity,
+    entityType: row.entity_type || undefined,
+    entityId: row.entity_id || undefined,
+    linkTab: row.link_tab || undefined,
+    isRead: Boolean(row.is_read),
+    readAt: row.read_at || null,
+    createdAt: row.created_at,
+  };
+}
+
 export async function listStaffNotifications(): Promise<StaffNotification[]> {
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('The staff notification database is unavailable.');
+    return getLocal<StaffNotification[]>(LOCAL_NOTIFS_KEY, [])
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
   await checkAndGenerateStaffNotifications();
-  const notifs = getLocal<StaffNotification[]>(LOCAL_NOTIFS_KEY, []);
-  return notifs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  const { data, error } = await supabase
+    .from('staff_notifications')
+    .select('id,category,dedup_key,title,message,severity,entity_type,entity_id,link_tab,is_read,read_at,created_at')
+    .order('created_at', { ascending: false })
+    .limit(250);
+  if (error) throw new Error(error.message || 'Could not load the staff notification inbox.');
+  return (data || []).map(mapStaffNotification);
 }
 
 export async function markNotificationRead(id: string): Promise<void> {
-  const all = getLocal<StaffNotification[]>(LOCAL_NOTIFS_KEY, []);
-  const updated = all.map((n) =>
-    n.id === id ? { ...n, isRead: true, readAt: new Date().toISOString() } : n
-  );
-  setLocal(LOCAL_NOTIFS_KEY, updated);
-
-  if (isSupabaseConfigured()) {
-    try {
-      await supabase
-        .from('staff_notifications')
-        .update({ is_read: true, read_at: new Date().toISOString() })
-        .eq('id', id);
-    } catch {
-      // ignore
-    }
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('The staff notification database is unavailable.');
+    const all = getLocal<StaffNotification[]>(LOCAL_NOTIFS_KEY, []);
+    setLocal(LOCAL_NOTIFS_KEY, all.map((n) => n.id === id ? { ...n, isRead: true, readAt: new Date().toISOString() } : n));
+    return;
   }
+
+  const { data, error } = await supabase
+    .from('staff_notifications')
+    .update({ is_read: true, read_at: new Date().toISOString() })
+    .eq('id', id)
+    .select('id')
+    .maybeSingle();
+  if (error) throw new Error(error.message || 'Could not mark the notification as read.');
+  if (!data?.id) throw new Error('The notification was not found or could not be updated.');
 }
 
 export async function markAllNotificationsRead(): Promise<void> {
-  const all = getLocal<StaffNotification[]>(LOCAL_NOTIFS_KEY, []);
-  const updated = all.map((n) => ({ ...n, isRead: true, readAt: new Date().toISOString() }));
-  setLocal(LOCAL_NOTIFS_KEY, updated);
-
-  if (isSupabaseConfigured()) {
-    try {
-      await supabase
-        .from('staff_notifications')
-        .update({ is_read: true, read_at: new Date().toISOString() })
-        .eq('is_read', false);
-    } catch {
-      // ignore
-    }
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('The staff notification database is unavailable.');
+    const all = getLocal<StaffNotification[]>(LOCAL_NOTIFS_KEY, []);
+    setLocal(LOCAL_NOTIFS_KEY, all.map((n) => ({ ...n, isRead: true, readAt: new Date().toISOString() })));
+    return;
   }
+
+  const { error } = await supabase
+    .from('staff_notifications')
+    .update({ is_read: true, read_at: new Date().toISOString() })
+    .eq('is_read', false);
+  if (error) throw new Error(error.message || 'Could not mark notifications as read.');
 }
 
 /**
- * Intelligent notification generator:
- * Covers all 10 requested examples:
- * 1. New booking
- * 2. New inquiry
- * 3. New payment
- * 4. Payment overdue
- * 5. New lead
- * 6. Follow-up due
- * 7. Task overdue
- * 8. Departure unassigned
- * 9. Pickup pending
- * 10. Document expiring
+ * Build deduplicated alerts from the same persisted tables used by the admin
+ * modules. Production localStorage is never consulted or treated as authoritative.
  */
 export async function checkAndGenerateStaffNotifications(): Promise<void> {
-  const currentNotifs = getLocal<StaffNotification[]>(LOCAL_NOTIFS_KEY, []);
-  const existingDedupKeys = new Set(currentNotifs.map((n) => n.dedupKey));
-  const newNotifications: StaffNotification[] = [];
-  const now = new Date();
-  const todayStr = now.toISOString().split('T')[0];
-
-  try {
-    const bookings = await bookingRepository.listBookings();
-
-    // 1. New Bookings
-    bookings.forEach((b) => {
-      const dedupKey = `new_booking_${b.bookingReference}`;
-      if (!existingDedupKeys.has(dedupKey)) {
-        newNotifications.push({
-          id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-          category: 'new_booking',
-          dedupKey,
-          title: `New Booking: ${b.bookingReference}`,
-          message: `${b.customer.firstName} ${b.customer.lastName} booked ${b.tourTitle} for ${b.date} (€${b.pricing?.totalEur || 0}).`,
-          severity: 'success',
-          entityType: 'booking',
-          entityId: b.bookingReference,
-          linkTab: 'bookings',
-          isRead: false,
-          createdAt: b.createdAt || now.toISOString(),
-        });
-        existingDedupKeys.add(dedupKey);
-      }
-
-      // 4. Payment Overdue
-      if (b.date <= todayStr && b.paymentStatus !== 'paid' && b.status !== 'cancelled') {
-        const payOverdueDedup = `payment_overdue_${b.bookingReference}_${b.date}`;
-        if (!existingDedupKeys.has(payOverdueDedup)) {
-          newNotifications.push({
-            id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-            category: 'payment_overdue',
-            dedupKey: payOverdueDedup,
-            title: `Payment Overdue: ${b.bookingReference}`,
-            message: `Reservation ${b.bookingReference} for ${b.date} has unpaid balance (€${b.pricing?.totalEur || 0}). Collect at check-in.`,
-            severity: 'warning',
-            entityType: 'booking',
-            entityId: b.bookingReference,
-            linkTab: 'fin_balances',
-            isRead: false,
-            createdAt: now.toISOString(),
-          });
-          existingDedupKeys.add(payOverdueDedup);
-        }
-      }
-    });
-
-    // 2. New Inquiries
-    const inquiriesRaw = localStorage.getItem('rse_inquiries_data');
-    if (inquiriesRaw) {
-      try {
-        const inquiries = JSON.parse(inquiriesRaw);
-        inquiries.slice(0, 15).forEach((inq: any) => {
-          if (inq.status === 'new') {
-            const inqDedup = `new_inquiry_${inq.id}`;
-            if (!existingDedupKeys.has(inqDedup)) {
-              newNotifications.push({
-                id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-                category: 'new_inquiry',
-                dedupKey: inqDedup,
-                title: `New Inquiry: ${inq.customer_name}`,
-                message: `${inq.customer_name} inquired about "${inq.subject}". Email: ${inq.email}`,
-                severity: 'info',
-                entityType: 'inquiry',
-                entityId: inq.id,
-                linkTab: 'inquiries',
-                isRead: false,
-                createdAt: inq.created_at || now.toISOString(),
-              });
-              existingDedupKeys.add(inqDedup);
-            }
-          }
-        });
-      } catch {}
-    }
-
-    // 3. New Payments
-    const paymentsRaw = localStorage.getItem('rse_finance_payments');
-    if (paymentsRaw) {
-      try {
-        const payments = JSON.parse(paymentsRaw);
-        payments.slice(0, 10).forEach((p: any) => {
-          const payDedup = `new_payment_${p.id}`;
-          if (!existingDedupKeys.has(payDedup)) {
-            newNotifications.push({
-              id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-              category: 'new_payment',
-              dedupKey: payDedup,
-              title: `New Payment: €${p.amount} (${p.currency || 'EUR'})`,
-              message: `Received ${p.paymentMethod} from ${p.customerName} for ${p.bookingReference || 'Direct Payment'}.`,
-              severity: 'success',
-              entityType: 'payment',
-              entityId: p.id,
-              linkTab: 'fin_payments',
-              isRead: false,
-              createdAt: p.paymentDate || p.createdAt || now.toISOString(),
-            });
-            existingDedupKeys.add(payDedup);
-          }
-        });
-      } catch {}
-    }
-
-    // 5. New Leads & 6. Follow-up Due
-    const leadsRaw = localStorage.getItem('rse_crm_leads');
-    if (leadsRaw) {
-      try {
-        const leads = JSON.parse(leadsRaw);
-        leads.forEach((lead: any) => {
-          // New Lead
-          const leadDedup = `new_lead_${lead.id}`;
-          if (!existingDedupKeys.has(leadDedup)) {
-            newNotifications.push({
-              id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-              category: 'new_lead',
-              dedupKey: leadDedup,
-              title: `New CRM Lead: ${lead.name}`,
-              message: `${lead.name} from ${lead.country || 'International'} (${lead.stage}). Value: €${lead.estimatedValue || 0}.`,
-              severity: 'info',
-              entityType: 'customer',
-              entityId: lead.id,
-              linkTab: 'crm_leads',
-              isRead: false,
-              createdAt: lead.createdAt || now.toISOString(),
-            });
-            existingDedupKeys.add(leadDedup);
-          }
-
-          // Follow-up Due
-          if (lead.followUpDate && lead.stage !== 'Won' && lead.stage !== 'Lost') {
-            const followDate = lead.followUpDate.split('T')[0];
-            if (followDate <= todayStr) {
-              const followDedup = `followup_due_${lead.id}_${followDate}`;
-              if (!existingDedupKeys.has(followDedup)) {
-                newNotifications.push({
-                  id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-                  category: 'followup_due',
-                  dedupKey: followDedup,
-                  title: `Follow-up Due: ${lead.name}`,
-                  message: `Action required for ${lead.name} (${lead.interestedTourTitle || 'General inquiry'}). Target date: ${followDate}.`,
-                  severity: 'warning',
-                  entityType: 'customer',
-                  entityId: lead.id,
-                  linkTab: 'crm_followups',
-                  isRead: false,
-                  createdAt: now.toISOString(),
-                });
-                existingDedupKeys.add(followDedup);
-              }
-            }
-          }
-        });
-      } catch {}
-    }
-
-    // 7. Task Overdue
-    const tasksRaw = localStorage.getItem('rse_crm_tasks');
-    if (tasksRaw) {
-      try {
-        const tasks = JSON.parse(tasksRaw);
-        tasks.forEach((task: any) => {
-          if (task.status !== 'Completed' && task.dueDate) {
-            const taskDate = task.dueDate.split('T')[0];
-            if (taskDate < todayStr) {
-              const taskDedup = `task_overdue_${task.id}_${taskDate}`;
-              if (!existingDedupKeys.has(taskDedup)) {
-                newNotifications.push({
-                  id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-                  category: 'task_overdue',
-                  dedupKey: taskDedup,
-                  title: `Task Overdue: ${task.title}`,
-                  message: `Assigned to ${task.assignedStaffName || 'Staff'}. Due on ${taskDate}.`,
-                  severity: 'critical',
-                  entityType: 'task',
-                  entityId: task.id,
-                  linkTab: 'crm_tasks',
-                  isRead: false,
-                  createdAt: now.toISOString(),
-                });
-                existingDedupKeys.add(taskDedup);
-              }
-            }
-          }
-        });
-      } catch {}
-    }
-
-    // 8. Departure Unassigned
-    const departuresRaw = localStorage.getItem('rse_ops_departures');
-    if (departuresRaw) {
-      try {
-        const departures = JSON.parse(departuresRaw);
-        departures.forEach((dep: any) => {
-          if (dep.date >= todayStr && dep.status !== 'cancelled' && dep.status !== 'completed') {
-            const missingStaff = !dep.lead_guide_id && !dep.guide_name;
-            const missingVessel = !dep.vessel_id && !dep.vessel_name;
-            if (missingStaff || missingVessel) {
-              const unassignedDedup = `departure_unassigned_${dep.id}`;
-              if (!existingDedupKeys.has(unassignedDedup)) {
-                const missingWhat = missingStaff && missingVessel ? 'Guide and Vessel' : missingStaff ? 'Guide' : 'Vessel';
-                newNotifications.push({
-                  id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-                  category: 'departure_unassigned',
-                  dedupKey: unassignedDedup,
-                  title: `Departure Unassigned: ${dep.date}`,
-                  message: `${dep.tour_name || 'Tour'} on ${dep.date} is missing ${missingWhat} assignment.`,
-                  severity: 'critical',
-                  entityType: 'departure',
-                  entityId: dep.id,
-                  linkTab: 'ops_assignments',
-                  isRead: false,
-                  createdAt: now.toISOString(),
-                });
-                existingDedupKeys.add(unassignedDedup);
-              }
-            }
-          }
-        });
-      } catch {}
-    }
-
-    // 9. Pickup Pending
-    const pickupsRaw = localStorage.getItem('rse_ops_pickups');
-    if (pickupsRaw) {
-      try {
-        const pickups = JSON.parse(pickupsRaw);
-        pickups.forEach((pu: any) => {
-          if (pu.status === 'pending') {
-            const puDedup = `pickup_pending_${pu.id}`;
-            if (!existingDedupKeys.has(puDedup)) {
-              newNotifications.push({
-                id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-                category: 'pickup_pending',
-                dedupKey: puDedup,
-                title: `Pickup Pending: ${pu.hotel_name || 'Hotel'}`,
-                message: `Passenger pickup for ${pu.passenger_name || 'Guest'} at ${pu.pickup_time || 'morning'} requires driver confirmation.`,
-                severity: 'warning',
-                entityType: 'departure',
-                entityId: pu.id,
-                linkTab: 'ops_pickups',
-                isRead: false,
-                createdAt: now.toISOString(),
-              });
-              existingDedupKeys.add(puDedup);
-            }
-          }
-        });
-      } catch {}
-    }
-
-    // 10. Document Expiring
-    const docsRaw = localStorage.getItem('rse_ops_documents');
-    if (docsRaw) {
-      try {
-        const docs = JSON.parse(docsRaw);
-        docs.forEach((doc: any) => {
-          if (doc.expiry_date) {
-            const expTime = new Date(doc.expiry_date).getTime();
-            const daysLeft = Math.round((expTime - now.getTime()) / (1000 * 60 * 60 * 24));
-            if (daysLeft <= 14) {
-              const docDedup = `document_expiring_${doc.id}`;
-              if (!existingDedupKeys.has(docDedup)) {
-                newNotifications.push({
-                  id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-                  category: 'document_expiring',
-                  dedupKey: docDedup,
-                  title: `Document Expiring: ${doc.title}`,
-                  message: `${doc.document_type || 'Operational Document'} (${doc.title}) expires in ${daysLeft > 0 ? `${daysLeft} days` : 'OVERDUE'}. Renewal required.`,
-                  severity: daysLeft <= 3 ? 'critical' : 'warning',
-                  entityType: 'document',
-                  entityId: doc.id,
-                  linkTab: 'ops_documents',
-                  isRead: false,
-                  createdAt: now.toISOString(),
-                });
-                existingDedupKeys.add(docDedup);
-              }
-            }
-          }
-        });
-      } catch {}
-    }
-  } catch (err) {
-    console.warn('Notification generator scan error:', err);
+  if (!isSupabaseConfigured()) {
+    if (import.meta.env.DEV) return;
+    throw new Error('The staff notification database is unavailable.');
   }
 
-  if (newNotifications.length > 0) {
-    const combined = [...newNotifications, ...currentNotifs];
-    setLocal(LOCAL_NOTIFS_KEY, combined);
+  const { data, error } = await supabase.rpc('scan_staff_notifications');
+  if (error) throw new Error(error.message || 'The staff notification scan failed.');
+  if ((data as any)?.success !== true) {
+    throw new Error('The database did not confirm the staff notification scan.');
   }
 }
 

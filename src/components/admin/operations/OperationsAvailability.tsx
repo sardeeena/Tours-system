@@ -52,10 +52,10 @@ export const OperationsAvailability: React.FC = () => {
     try {
       const [data, loadedTours] = await Promise.all([
         listAvailabilitySlots(),
-        getPublishedTours().catch(() => []),
+        getPublishedTours(),
       ]);
       setSlots(data);
-      setTours(loadedTours || []);
+      setTours(loadedTours);
       if (!blackoutTourId && loadedTours?.length) setBlackoutTourId(loadedTours[0].id);
     } catch (err) {
       console.warn('Failed to load availability slots:', err);

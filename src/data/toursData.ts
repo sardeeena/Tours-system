@@ -905,32 +905,32 @@ export const RECENT_REVIEWS = REVIEWS_DATA;
 export const TRUST_PILLARS = [
   {
     id: 'trust-local',
-    title: 'Direct Local Operator',
-    description: 'We run our own boats, safari bases, and transfers. You book directly with the local team who welcomes you.',
+    title: 'Local Booking Support',
+    description: 'Our Hurghada-based team helps you arrange excursions delivered by local activity providers. Provider details are confirmed for each trip.',
     iconName: 'ShieldCheck',
   },
   {
     id: 'trust-fleet',
-    title: 'Licensed Skippers & Guides',
-    description: 'Certified PADI divemasters, licensed sea captains, and first-aid trained crew on every tour.',
+    title: 'Local Activity Providers',
+    description: 'Excursions are delivered by independent local providers. Guide, skipper and certification details depend on the activity and are confirmed before booking.',
     iconName: 'Award',
   },
   {
     id: 'trust-transfers',
-    title: 'Hotel Pickup & Return',
-    description: 'Direct pickup and return from your hotel lobby across Hurghada, El Gouna, and Makadi Bay.',
+    title: 'Pickup Options',
+    description: 'Pickup availability and any area supplement vary by excursion and resort. Check the pickup details shown for your selected trip before booking.',
     iconName: 'Bus',
   },
   {
     id: 'trust-cancellation',
-    title: 'Free 24h Cancellation',
-    description: 'Plans change? Cancel any tour up to 24 hours before departure for a full 100% refund.',
+    title: 'Clear Cancellation Terms',
+    description: 'Cancellation terms are shown for each excursion. Review the tour-specific policy and conditions before confirming your reservation.',
     iconName: 'Clock',
   },
   {
     id: 'trust-support',
-    title: 'Daily WhatsApp Support',
-    description: 'Quick answers in English, German, and Russian from our team stationed at the marina.',
+    title: 'Contact Our Team',
+    description: 'Contact options and support availability are shown on our website. Automated WhatsApp messaging may not be available for every request.',
     iconName: 'Headphones',
   }
 ];

@@ -200,7 +200,7 @@ async function processMessage(
     return;
   }
 
-  if (!['booking.created', 'booking.completed'].includes(event.event_name)) {
+  if (!['booking.created', 'booking.completed', 'booking.cancelled', 'payment.received'].includes(event.event_name)) {
     await updateEvent(client, eventId, {
       processed: true,
       processed_at: new Date().toISOString(),
@@ -242,6 +242,63 @@ async function processMessage(
     });
     await acknowledge(client, message.msg_id);
     return;
+  }
+
+  let transactionalTemplateKey: 'booking_received' | 'cancellation' | 'payment_confirmation' = 'booking_received';
+  let transactionalAction = 'booking_received_email';
+  let paymentAmountText = Number(row.total || 0).toFixed(2);
+  let paymentBalanceDueText = '0.00';
+
+  if (event.event_name === 'booking.cancelled') {
+    if (row.status !== 'cancelled') {
+      await updateEvent(client, eventId, {
+        processed: true,
+        processed_at: new Date().toISOString(),
+        actions_triggered: ['cancellation_email_skipped_booking_not_cancelled'],
+        error_message: null,
+      });
+      await acknowledge(client, message.msg_id);
+      return;
+    }
+    transactionalTemplateKey = 'cancellation';
+    transactionalAction = 'booking_cancelled_email';
+  }
+
+  if (event.event_name === 'payment.received') {
+    const paymentId = String(event.payload?.payment_id || '');
+    if (!paymentId) throw new Error('Payment notification event is missing payment_id.');
+
+    const { data: payment, error: paymentError } = await client
+      .from('payment_transactions')
+      .select('id,amount,currency,status')
+      .eq('id', paymentId)
+      .eq('booking_id', bookingId)
+      .maybeSingle();
+    if (paymentError) throw paymentError;
+    if (!payment || !['Paid', 'Partially Paid'].includes(String(payment.status))) {
+      await updateEvent(client, eventId, {
+        processed: true,
+        processed_at: new Date().toISOString(),
+        actions_triggered: ['payment_confirmation_skipped_payment_not_settled'],
+        error_message: null,
+      });
+      await acknowledge(client, message.msg_id);
+      return;
+    }
+
+    const { data: settledPayments, error: settledPaymentsError } = await client
+      .from('payment_transactions')
+      .select('amount')
+      .eq('booking_id', bookingId)
+      .in('status', ['Paid', 'Partially Paid']);
+    if (settledPaymentsError) throw settledPaymentsError;
+
+    const paidTotal = (settledPayments || []).reduce((sum: number, item: any) => sum + Number(item.amount || 0), 0);
+    const bookingTotal = Number(row.total || 0);
+    paymentAmountText = Number(payment.amount || 0).toFixed(2);
+    paymentBalanceDueText = Math.max(0, bookingTotal - paidTotal).toFixed(2);
+    transactionalTemplateKey = 'payment_confirmation';
+    transactionalAction = 'payment_confirmation_email';
   }
 
   if (event.event_name === 'booking.completed') {
@@ -415,12 +472,12 @@ async function processMessage(
     return;
   }
 
-  const template = await getLocalizedCommunicationTemplate(client, 'booking_received', customerLocale);
+  const template = await getLocalizedCommunicationTemplate(client, transactionalTemplateKey, customerLocale);
   if (template && template.is_active === false) {
     await updateEvent(client, eventId, {
       processed: true,
       processed_at: new Date().toISOString(),
-      actions_triggered: ['booking_received_template_disabled'],
+      actions_triggered: [transactionalTemplateKey + '_template_disabled'],
       error_message: null,
     });
     await acknowledge(client, message.msg_id);
@@ -428,7 +485,9 @@ async function processMessage(
   }
 
   const customerName = [customer?.first_name, customer?.last_name].filter(Boolean).join(' ').trim() || 'Customer';
-  const amount = Number(row.total || 0).toFixed(2);
+  const amount = transactionalTemplateKey === 'payment_confirmation'
+    ? paymentAmountText
+    : Number(row.total || 0).toFixed(2);
   const currency = String(row.currency || 'EUR').toUpperCase();
   const variables: Record<string, string> = {
     customer_name: customerName,
@@ -437,27 +496,29 @@ async function processMessage(
     tour_date: String(row.booking_date || '').slice(0, 10),
     booking_status: String(row.status || 'pending').replace(/_/g, ' '),
     currency,
-    amount,
+    amount: transactionalTemplateKey === 'payment_confirmation' ? currency + ' ' + amount : amount,
+    balance_due: currency + ' ' + paymentBalanceDueText,
   };
 
   const subject = renderTemplate(
-    String(template?.subject || 'We received your booking request {{booking_reference}}'),
+    String(template?.subject || (transactionalTemplateKey === 'cancellation' ? 'Cancellation confirmation {{booking_reference}}' : transactionalTemplateKey === 'payment_confirmation' ? 'Payment confirmation {{booking_reference}}' : 'We received your booking request {{booking_reference}}')),
     variables
   );
   const content = renderTemplate(
-    String(template?.body_text || 'Hello {{customer_name}}, we received your booking request {{booking_reference}} for {{tour_name}} on {{tour_date}}. Our team will review it and send further details.'),
+    String(template?.body_text || (transactionalTemplateKey === 'cancellation' ? 'Hello {{customer_name}}, your reservation {{booking_reference}} for {{tour_name}} on {{tour_date}} has been cancelled. Our team will contact you if a refund is applicable.' : transactionalTemplateKey === 'payment_confirmation' ? 'Hello {{customer_name}}, we received {{amount}} for booking {{booking_reference}}. Remaining balance: {{balance_due}}.' : 'Hello {{customer_name}}, we received your booking request {{booking_reference}} for {{tour_name}} on {{tour_date}}. Our team will review it and send further details.')),
     variables
   );
   const formatDate = (value: string) => {
     const parsed = new Date(value + 'T00:00:00Z');
     return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' });
   };
+  const isBookingReceivedEvent = event.event_name === 'booking.created';
   const ticketExtras = bookingExtras.map((extra) => ({
     name: String(extra.name || 'Booking extra'),
     quantity: Math.max(1, Number(extra.quantity) || 1),
     total: String(currency) + ' ' + Number(extra.total_price ?? extra.unit_price ?? 0).toFixed(2),
   }));
-  const ticketText = [
+  const ticketText = isBookingReceivedEvent ? [
     content,
     '',
     'OFFICIAL BOOKING TICKET',
@@ -473,31 +534,33 @@ async function processMessage(
     'Payment status: ' + String(row.payment_status || 'pending'),
     'Total: ' + currency + ' ' + amount,
     ...ticketExtras.map((extra) => 'Extra: ' + extra.name + ' × ' + extra.quantity + ' — ' + extra.total),
-  ].join('\n');
-  const ticketHtml = renderBookingTicketEmailHtml({
-    heading: subject,
-    preheader: 'Your Awesome Adventure Tours ticket · ' + row.booking_reference,
-    introText: content,
-    bookingReference: String(row.booking_reference || ''),
-    customerName,
-    customerEmail: recipient,
-    tourName: String(tour?.title || 'your selected tour'),
-    tourDate: formatDate(String(row.booking_date || '')),
-    departureTime: tour?.departure_time ? String(tour.departure_time) : undefined,
-    adultCount: Number(row.adult_count || 0),
-    childCount: Number(row.child_count || 0),
-    infantCount: Number(row.infant_count || 0),
-    pickupLocation: pickup?.name ? String(pickup.name) : undefined,
-    pickupArea: pickup?.area ? String(pickup.area) : undefined,
-    hotelName: String(row.pickup_hotel_name || customer?.hotel || ''),
-    roomNumber: row.pickup_room_number ? String(row.pickup_room_number) : undefined,
-    tourLanguage: row.tour_language ? String(row.tour_language) : undefined,
-    bookingStatus: String(row.status || 'pending').replace(/_/g, ' '),
-    paymentStatus: String(row.payment_status || 'pending').replace(/_/g, ' '),
-    paymentMethod: String(row.payment_method || 'pay_at_pickup').replace(/_/g, ' '),
-    totalAmount: String(currency) + ' ' + amount,
-    extras: ticketExtras,
-  });
+  ].join('\n') : content;
+  const ticketHtml = isBookingReceivedEvent
+    ? renderBookingTicketEmailHtml({
+        heading: subject,
+        preheader: 'Your Awesome Adventure Tours ticket · ' + row.booking_reference,
+        introText: content,
+        bookingReference: String(row.booking_reference || ''),
+        customerName,
+        customerEmail: recipient,
+        tourName: String(tour?.title || 'your selected tour'),
+        tourDate: formatDate(String(row.booking_date || '')),
+        departureTime: tour?.departure_time ? String(tour.departure_time) : undefined,
+        adultCount: Number(row.adult_count || 0),
+        childCount: Number(row.child_count || 0),
+        infantCount: Number(row.infant_count || 0),
+        pickupLocation: pickup?.name ? String(pickup.name) : undefined,
+        pickupArea: pickup?.area ? String(pickup.area) : undefined,
+        hotelName: String(row.pickup_hotel_name || customer?.hotel || ''),
+        roomNumber: row.pickup_room_number ? String(row.pickup_room_number) : undefined,
+        tourLanguage: row.tour_language ? String(row.tour_language) : undefined,
+        bookingStatus: String(row.status || 'pending').replace(/_/g, ' '),
+        paymentStatus: String(row.payment_status || 'pending').replace(/_/g, ' '),
+        paymentMethod: String(row.payment_method || 'pay_at_pickup').replace(/_/g, ' '),
+        totalAmount: String(currency) + ' ' + amount,
+        extras: ticketExtras,
+      })
+    : renderBrandedEmailHtml({ heading: subject, bodyText: content, preheader: 'Booking ' + row.booking_reference });
 
   let logRow: { id: string; status: string } | null = null;
   const { data: existingLog, error: existingLogError } = await client
@@ -513,7 +576,7 @@ async function processMessage(
     await updateEvent(client, eventId, {
       processed: true,
       processed_at: new Date().toISOString(),
-      actions_triggered: ['booking_received_email'],
+      actions_triggered: [transactionalAction],
       error_message: null,
     });
     await acknowledge(client, message.msg_id);
@@ -546,7 +609,7 @@ async function processMessage(
         recipient_address: recipient,
         booking_id: row.id,
         booking_reference: row.booking_reference,
-        template_key: 'booking_received',
+        template_key: transactionalTemplateKey,
         subject,
         content: ticketText,
         status: 'queued',
@@ -560,7 +623,7 @@ async function processMessage(
     logRow = inserted;
   }
 
-  const idempotencyKey = `awesome-adventure-booking-${eventId}-email`;
+  const idempotencyKey = `awesome-adventure-${event.event_name}-${eventId}-email`;
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {

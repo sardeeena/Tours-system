@@ -34,17 +34,23 @@ SELECT ok(
 
 SELECT ok(
   NOT EXISTS (
-    SELECT 1
-    FROM pg_proc p
-    JOIN pg_namespace n ON n.oid = p.pronamespace
-    WHERE n.nspname = 'public'
-      AND p.prosecdef
-      AND (
-        has_function_privilege('anon', p.oid, 'EXECUTE')
-        OR has_function_privilege('authenticated', p.oid, 'EXECUTE')
-      )
+    SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'public' AND p.prosecdef
+      AND has_function_privilege('anon', p.oid, 'EXECUTE')
+  )
+  AND NOT EXISTS (
+    SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'public' AND p.prosecdef
+      AND has_function_privilege('authenticated', p.oid, 'EXECUTE')
+      AND p.proname NOT IN ('upsert_departure_with_availability','scan_staff_notifications')
+  )
+  AND NOT EXISTS (
+    SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'public' AND p.prosecdef
+      AND p.proname IN ('upsert_departure_with_availability','scan_staff_notifications')
+      AND position('public.is_admin()' IN pg_get_functiondef(p.oid)) = 0
   ),
-  'client-callable public RPCs are invoker-rights wrappers, not SECURITY DEFINER functions'
+  'public SECURITY DEFINER RPCs are limited to explicitly guarded admin-only operations'
 );
 
 SELECT ok(

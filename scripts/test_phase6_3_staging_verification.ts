@@ -29,6 +29,7 @@ import {
 import { calculateBookingPrice, formatCurrencyAmount } from '../src/services/pricingService';
 import { validateBookingPayload, generateBookingReference } from '../src/services/bookingRepository';
 import { TRANSLATIONS } from '../src/i18n/translations';
+import { isSupabaseConfigured } from '../src/services/supabaseClient';
 import { CURRENCY_CONFIGS } from '../src/data/toursData';
 import { Tour } from '../src/types';
 import { Booking, PickupLocation, BookingExtra } from '../src/types/booking';
@@ -411,9 +412,13 @@ async function runPhase63VerificationSuite() {
     rlsSql.includes('ALTER TABLE IF EXISTS public.bookings ENABLE ROW LEVEL SECURITY;'),
     'Row Level Security is explicitly enabled on public.bookings'
   );
+  const normalizedRbacPath = path.resolve('supabase/migrations/20261114170000_database_rbac_normalized_authority.sql');
+  const normalizedRbacSql = fs.readFileSync(normalizedRbacPath, 'utf8');
   assert(
-    rlsSql.includes("role IN ('admin', 'staff', 'superadmin', 'manager')"),
-    'is_admin function strictly checks administrative role memberships'
+    normalizedRbacSql.includes("public.has_role('super_admin')") &&
+      normalizedRbacSql.includes("public.has_role('admin')") &&
+      normalizedRbacSql.includes("auth.jwt() ->> 'aal' = 'aal2'"),
+    'normalized is_admin authorization requires a database-backed admin role and verified AAL2'
   );
 
   const securityFoundationPath = path.resolve('supabase/migrations/20261008000000_production_foundation_and_security.sql');
@@ -439,29 +444,41 @@ async function runPhase63VerificationSuite() {
     'getPublishedReviews returns structured numeric totals without NaN or undefined'
   );
 
-  const liveDestinations = await getPublishedDestinations();
-  assert(
-    Array.isArray(liveDestinations),
-    'getPublishedDestinations returns an array from database layer'
-  );
+  let liveDestinations: any[] = [];
+  try {
+    liveDestinations = await getPublishedDestinations();
+    assert(Array.isArray(liveDestinations), 'getPublishedDestinations returns an array from database layer');
+  } catch (error) {
+    assert(
+      !isSupabaseConfigured() && String(error).includes('Supabase is not configured'),
+      'getPublishedDestinations fails closed when no database is configured'
+    );
+  }
 
-  const liveCategories = await getPublishedCategories();
-  assert(
-    Array.isArray(liveCategories),
-    'getPublishedCategories returns an array from database layer'
-  );
+  let liveCategories: any[] = [];
+  try {
+    liveCategories = await getPublishedCategories();
+    assert(Array.isArray(liveCategories), 'getPublishedCategories returns an array from database layer');
+  } catch (error) {
+    assert(
+      !isSupabaseConfigured() && String(error).includes('Supabase is not configured'),
+      'getPublishedCategories fails closed when no database is configured'
+    );
+  }
 
-  const livePickupLocations = await getPublishedPickupLocations();
-  assert(
-    Array.isArray(livePickupLocations) && livePickupLocations.length > 0,
-    'getPublishedPickupLocations returns operational locations array'
-  );
-
-  const liveExtras = await getPublishedTourExtras();
-  assert(
-    Array.isArray(liveExtras) && liveExtras.length > 0,
-    'getPublishedTourExtras returns operational extras array'
-  );
+  if (isSupabaseConfigured()) {
+    const livePickupLocations = await getPublishedPickupLocations();
+    assert(Array.isArray(livePickupLocations), 'getPublishedPickupLocations returns database operational locations');
+    const liveExtras = await getPublishedTourExtras();
+    assert(Array.isArray(liveExtras), 'getPublishedTourExtras returns database operational extras');
+  } else {
+    let pickupFailedClosed = false;
+    let extrasFailedClosed = false;
+    try { await getPublishedPickupLocations(); } catch (error) { pickupFailedClosed = String(error).includes('Supabase is not configured'); }
+    try { await getPublishedTourExtras(); } catch (error) { extrasFailedClosed = String(error).includes('Supabase is not configured'); }
+    assert(pickupFailedClosed, 'pickup location queries fail closed without Supabase');
+    assert(extrasFailedClosed, 'tour extras queries fail closed without Supabase');
+  }
 
   console.log('================================================================');
   console.log(`  Phase 6.3 Verification Completed: ${passed + failed} | Passed: ${passed} | Failed: ${failed}`);

@@ -1,4 +1,4 @@
-# Kemet Spirit — Administrator account lifecycle
+# Awesome Adventure Tours — Administrator account lifecycle
 
 The Users & Roles screen provides account invitations, suspension/reactivation, password-reset requests, and a read-only Supabase Auth directory.
 

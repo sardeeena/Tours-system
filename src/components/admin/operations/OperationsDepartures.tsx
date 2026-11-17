@@ -73,13 +73,13 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
         getMaritimeWeather(selectedDate),
         listVessels(),
         listGuides(),
-        getPublishedTours().catch(() => []),
+        getPublishedTours(),
       ]);
       setDepartures(deps);
       setWeather(wea);
       setVessels(ves);
       setGuides(gui);
-      setTours(loadedTours || []);
+      setTours(loadedTours);
       if (!newTourId && loadedTours?.length) setNewTourId(loadedTours[0].id);
     } catch (err) {
       console.warn('Failed to load departures:', err);

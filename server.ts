@@ -7,9 +7,10 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import path from 'path';
 import fs from 'fs';
 import dotenv from 'dotenv';
-import { CONCIERGE_SYSTEM_PROMPT, TOUR_CATALOG_SUMMARY } from './src/data/chatKnowledge';
+import { CONCIERGE_SYSTEM_PROMPT } from './src/data/chatKnowledge';
 import { STANDARD_PICKUP_LOCATIONS, GLOBAL_BOOKING_EXTRAS } from './src/data/bookingData';
 import { startBookingNotificationWorker } from './src/server/bookingNotificationWorker';
+import { startStaffNotificationWorker } from './src/server/staffNotificationWorker';
 import { INITIAL_STATIC_PAGES } from './src/data/staticPages';
 import { EXPECTED_AWESOME_ADVENTURE_TOURS_SUPABASE_PROJECT_REF, isExpectedAwesomeAdventureToursSupabaseUrl } from './src/lib/supabaseProjectGuard';
 import { parseLocalePath } from './src/i18n/localeRouting';
@@ -533,67 +534,102 @@ app.post('/api/chat', rateLimit(10, 60_000), async (req: Request, res: Response)
     return res.status(400).json({ error: 'Prompt is required' });
   }
 
-  // If Gemini API is available, invoke gemini-3.8-flash
-  if (ai) {
-    try {
-      // Only user/assistant roles and bounded content are accepted from the browser.
-      const conversationHistory = cleanMessages.map((m: { role: string; content: string }) => ({
-        role: m.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: m.content }],
-      }));
-
-      // Append latest prompt if not already present
-      if (cleanPrompt && (!cleanMessages.length || cleanMessages[cleanMessages.length - 1]?.content !== cleanPrompt)) {
-        conversationHistory.push({
-          role: 'user',
-          parts: [{ text: cleanPrompt }],
-        });
-      }
-
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: conversationHistory,
-        config: {
-          systemInstruction: CONCIERGE_SYSTEM_PROMPT,
-          temperature: 0.7,
-        },
-      });
-
-      const responseText = response.text || '';
-
-      // Match recommended tour objects from catalog
-      const lower = responseText.toLowerCase();
-      const matchedTours = TOUR_CATALOG_SUMMARY.filter((tour) => {
-        return (
-          lower.includes(tour.title.toLowerCase()) ||
-          lower.includes(tour.slug) ||
-          (lower.includes('orange bay') && tour.slug.includes('orange-bay')) ||
-          (lower.includes('dolphin house') && tour.slug.includes('dolphin')) ||
-          (lower.includes('paradise island') && tour.slug.includes('paradise')) ||
-          (lower.includes('quad') && tour.slug.includes('safari')) ||
-          (lower.includes('scuba diving') && tour.slug.includes('diving')) ||
-          (lower.includes('speedboat') && tour.slug.includes('speedboat')) ||
-          (lower.includes('luxor') && tour.slug.includes('luxor')) ||
-          (lower.includes('cairo') && tour.slug.includes('cairo')) ||
-          (lower.includes('submarine') && tour.slug.includes('submarine')) ||
-          (lower.includes('sharm el naga') && tour.slug.includes('sharm-el-naga'))
-        );
-      }).slice(0, 3);
-
-      return res.json({
-        text: responseText,
-        recommendedTours: matchedTours,
-      });
-    } catch (err: any) {
-      console.warn('Gemini generateContent error in /api/chat:', err);
-    }
+  // The concierge must have both Gemini and the public RLS-scoped catalogue.
+  // It never falls back to the legacy static tour list.
+  if (!ai || !publicSupabase) {
+    return res.status(503).json({
+      error: 'Live concierge is not configured. Please browse the published excursions or contact our team.',
+      fallback: true,
+    });
   }
 
-  // Graceful fallback if no API key or API call issue
-  return res.status(503).json({
-    error: 'Gemini service temporarily unavailable',
-    fallback: true,
-  });
+  try {
+    const { data: catalogueRows, error: catalogueError } = await publicSupabase
+      .from('tours')
+      .select('id,title,slug,short_description,duration,duration_hours,price,child_price,currency,tour_type,pickup_available,pickup_info,cancellation_policy,departure_time,available_days,destinations(name),tour_images(image_url,is_primary,sort_order)')
+      .eq('status', 'published')
+      .order('sort_order', { ascending: true })
+      .limit(60);
+
+    if (catalogueError) {
+      console.warn('[AI Concierge] Live published catalogue query failed:', catalogueError.message);
+      return res.status(503).json({ error: 'The live excursion catalogue is temporarily unavailable.', fallback: true });
+    }
+
+    const liveCatalogue = (catalogueRows || []).map((tour: any) => {
+      const destination = Array.isArray(tour.destinations) ? tour.destinations[0] : tour.destinations;
+      return {
+        id: tour.id,
+        title: tour.title,
+        slug: tour.slug,
+        destination: destination?.name || 'Not specified',
+        summary: tour.short_description || '',
+        duration: tour.duration || null,
+        durationHours: tour.duration_hours == null ? null : Number(tour.duration_hours),
+        startingPrice: tour.price == null ? null : Number(tour.price),
+        childPrice: tour.child_price == null ? null : Number(tour.child_price),
+        currency: tour.currency || 'EUR',
+        tourType: tour.tour_type || null,
+        pickupAvailable: Boolean(tour.pickup_available),
+        primaryImage: (Array.isArray(tour.tour_images) ? [...tour.tour_images].sort((a: any,b: any) => Number(Boolean(b.is_primary))-Number(Boolean(a.is_primary)) || Number(a.sort_order || 0)-Number(b.sort_order || 0))[0]?.image_url : '') || '',
+        pickupInformation: tour.pickup_info || null,
+        cancellationPolicy: tour.cancellation_policy || null,
+        publishedDepartureLabel: tour.departure_time || null,
+        operatingDays: Array.isArray(tour.available_days) ? tour.available_days : [],
+      };
+    });
+
+    if (liveCatalogue.length === 0) {
+      return res.status(503).json({ error: 'No published excursions are currently available to the concierge.', fallback: true });
+    }
+
+    // Only user/assistant roles and bounded content are accepted from the browser.
+    const conversationHistory = cleanMessages.map((m: { role: string; content: string }) => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }],
+    }));
+
+    if (cleanPrompt && (!cleanMessages.length || cleanMessages[cleanMessages.length - 1]?.content !== cleanPrompt)) {
+      conversationHistory.push({ role: 'user', parts: [{ text: cleanPrompt }] });
+    }
+
+    const liveSystemInstruction = `${CONCIERGE_SYSTEM_PROMPT}
+
+CURRENT PUBLISHED CATALOGUE — retrieved from the public database for this request:
+${JSON.stringify(liveCatalogue)}
+
+The catalogue above is current published content, not date-specific inventory. Do not claim a date is available or quote a confirmed departure time. Tell the traveler to check the excursion page for live date availability and exact booking details.`;
+
+    const response = await ai.models.generateContent({
+      model: 'gemini-3.8-flash',
+      contents: conversationHistory,
+      config: {
+        systemInstruction: liveSystemInstruction,
+        temperature: 0.35,
+      },
+    });
+
+    const responseText = response.text || '';
+    const lower = responseText.toLocaleLowerCase();
+    const matchedTours = liveCatalogue
+      .filter((tour) => tour.title && lower.includes(tour.title.toLocaleLowerCase()))
+      .slice(0, 3)
+      .map((tour) => ({
+        id: tour.id,
+        slug: tour.slug,
+        title: tour.title,
+        primaryImage: tour.primaryImage,
+        priceEur: tour.startingPrice,
+      }));
+
+    return res.json({ text: responseText, recommendedTours: matchedTours });
+  } catch (err: any) {
+    console.warn('Gemini generateContent error in /api/chat:', err?.message || 'Unknown error');
+    return res.status(503).json({
+      error: 'The live concierge is temporarily unavailable. Please browse the published excursions or contact our team.',
+      fallback: true,
+    });
+  }
 });
 
 // ------------------------------------------------------------------------------
@@ -606,6 +642,37 @@ app.get('/api/health', rateLimit(120, 60_000), (_req: Request, res: Response) =>
     status: 'ok',
     version: '2.4.0',
     uptimeSeconds: Math.floor((Date.now() - SERVER_START_TIME) / 1000),
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// Readiness is separate from liveness: it verifies that the public application
+// can reach its RLS-scoped production catalogue without disclosing credentials.
+app.get('/api/health/ready', rateLimit(30, 60_000), async (_req: Request, res: Response) => {
+  if (!publicSupabase) {
+    return res.status(503).json({
+      status: 'not_ready',
+      checks: { database: 'unavailable' },
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  const { error } = await publicSupabase
+    .from('tours')
+    .select('id', { head: true, count: 'exact' })
+    .eq('status', 'published');
+
+  if (error) {
+    return res.status(503).json({
+      status: 'not_ready',
+      checks: { database: 'unavailable' },
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  return res.json({
+    status: 'ready',
+    checks: { database: 'ok' },
     timestamp: new Date().toISOString(),
   });
 });
@@ -5433,6 +5500,7 @@ async function startServer() {
   }
 
   let stopBookingNotificationWorker: (() => void) | null = null;
+  let stopStaffNotificationWorker: (() => void) | null = null;
 
   const server = app.listen(Number(PORT), '0.0.0.0', () => {
     console.log(`Awesome Adventure Tours server running on port/socket ${PORT} [${process.env.NODE_ENV || 'development'}]`);
@@ -5449,11 +5517,20 @@ async function startServer() {
     } else if (process.env.NODE_ENV === 'production') {
       console.warn('[Booking Notification Worker] Not started: a valid server-side Supabase secret key is required.');
     }
+
+    // Durable staff inbox scan runs in the same server process and uses the
+    // server-only Supabase client. It is idempotent and can be disabled explicitly.
+    if (process.env.NODE_ENV === 'production' && serverSupabase && SUPABASE_KEY_TYPE === 'service_role') {
+      stopStaffNotificationWorker = startStaffNotificationWorker(serverSupabase);
+    } else if (process.env.NODE_ENV === 'production') {
+      console.warn('[Staff Notification Worker] Not started: a valid server-side Supabase secret key is required.');
+    }
   });
 
   const shutdown = (signal: string) => {
     console.log(`Received ${signal}. Shutting down gracefully...`);
     stopBookingNotificationWorker?.();
+    stopStaffNotificationWorker?.();
     server.close(() => {
       console.log('HTTP server closed.');
       process.exit(0);

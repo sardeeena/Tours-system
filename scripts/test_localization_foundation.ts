@@ -127,7 +127,9 @@ assert.match(bookingRepository, /rpc\('create_booking_atomic_with_locale'/, 'Boo
 assert.match(bookingRepository, /p_customer_locale: booking\.customerLocale \|\| 'en'/, 'Booking client passes customer locale with safe English fallback');
 assert.match(bookingRepository, /customerLocale: data\.customer_locale \|\| customer\.preferred_locale \|\| 'en'/, 'Saved booking restores its customer locale');
 assert.match(bookingPage, /customerLocale,/, 'Booking captures the selected customer locale, including the public-language fallback');
-assert.match(bookingNotificationWorker, /getLocalizedCommunicationTemplate\(client, 'booking_received', customerLocale\)/, 'Booking received email selects the saved customer locale');
+assert.match(bookingNotificationWorker, /getLocalizedCommunicationTemplate\(client, transactionalTemplateKey, customerLocale\)/, 'Booking, cancellation and payment emails select the saved customer locale after resolving the event-specific template key');
+assert.match(bookingNotificationWorker, /transactionalTemplateKey = 'cancellation'/, 'Cancellation notifications select the approved cancellation template');
+assert.match(bookingNotificationWorker, /transactionalTemplateKey = 'payment_confirmation'/, 'Settled payment notifications select the approved payment confirmation template');
 assert.match(bookingNotificationWorker, /sourceChecksum[\s\S]*content_translations'[\s\S]*approval\??\.source_checksum === sourceChecksum/, 'New-locale emails require a reviewed translation with a current English template checksum');
 assert.match(bookingNotificationWorker, /localized\.subject === approval\.content\?\.subject[\s\S]*localized\.body_text === approval\.content\?\.body_text/, 'New-locale emails use only the exact template body that was reviewed and published');
 assert.match(bookingNotificationWorker, /'en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'/, 'Booking notification worker recognizes all five additional customer locales');

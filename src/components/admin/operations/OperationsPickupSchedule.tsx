@@ -22,10 +22,8 @@ import {
 import {
   getDailyPickupSchedule,
   updatePickupScheduleStatus,
-  listGuides,
 } from '../../../services/operationsService';
 import { PickupScheduleItem, PickupStatus } from '../../../types/operations';
-import { DbGuide } from '../../../types/database';
 import { useToast } from '../../../contexts/ToastContext';
 
 export const OperationsPickupSchedule: React.FC = () => {
@@ -34,7 +32,6 @@ export const OperationsPickupSchedule: React.FC = () => {
     () => new Date().toISOString().split('T')[0]
   );
   const [pickups, setPickups] = useState<PickupScheduleItem[]>([]);
-  const [drivers, setDrivers] = useState<DbGuide[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -50,12 +47,8 @@ export const OperationsPickupSchedule: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [data, allGuides] = await Promise.all([
-        getDailyPickupSchedule(selectedDate),
-        listGuides(),
-      ]);
+      const data = await getDailyPickupSchedule(selectedDate);
       setPickups(data);
-      setDrivers(allGuides.filter((g) => g.role === 'driver' || g.role === 'guide'));
     } catch (err) {
       console.warn('Failed to load pickup schedule:', err);
     } finally {
@@ -86,30 +79,40 @@ export const OperationsPickupSchedule: React.FC = () => {
   }, [pickups, statusFilter, searchQuery]);
 
   const handleStatusChange = async (bookingRef: string, newStatus: PickupStatus) => {
-    await updatePickupScheduleStatus(bookingRef, newStatus);
-    setPickups((prev) =>
-      prev.map((p) => (p.bookingReference === bookingRef ? { ...p, status: newStatus } : p))
-    );
-    showToast(`Pickup status for ${bookingRef} updated to "${newStatus}".`, 'success');
+    try {
+      const saved = await updatePickupScheduleStatus(bookingRef, newStatus);
+      if (!saved) throw new Error('The database did not confirm the pickup status update.');
+      setPickups((prev) =>
+        prev.map((p) => (p.bookingReference === bookingRef ? { ...p, status: newStatus } : p))
+      );
+      showToast(`Pickup status for ${bookingRef} updated to "${newStatus}".`, 'success');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Pickup status could not be saved.', 'error');
+    }
   };
 
   const handleOpenEdit = (item: PickupScheduleItem) => {
     setEditingItem(item);
-    setAssignedDriver(item.driverName || 'Captain Mahmoud');
-    setAssignedVehicle(item.driverVehicle || 'Toyota HiAce VIP');
-    setAssignedTime(item.pickupTime || '07:30');
+    setAssignedDriver(item.driverName && item.driverName !== 'Unassigned driver' ? item.driverName : '');
+    setAssignedVehicle(item.driverVehicle && item.driverVehicle !== 'Unassigned vehicle' ? item.driverVehicle : '');
+    setAssignedTime(item.pickupTime && item.pickupTime !== 'Not scheduled' ? item.pickupTime : '');
   };
 
   const handleSaveDriver = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingItem) return;
+    if (!assignedDriver.trim() || !assignedVehicle.trim() || !assignedTime.trim()) {
+      showToast('Enter the actual assigned driver, vehicle and pickup time before saving.', 'error');
+      return;
+    }
     setSavingAction(true);
     try {
       await updatePickupScheduleStatus(
         editingItem.bookingReference,
         editingItem.status,
         assignedVehicle.trim(),
-        assignedDriver.trim()
+        assignedDriver.trim(),
+        assignedTime
       );
       setPickups((prev) =>
         prev.map((p) =>
@@ -125,8 +128,8 @@ export const OperationsPickupSchedule: React.FC = () => {
       );
       showToast(`Driver & vehicle assigned for ${editingItem.bookingReference}.`, 'success');
       setEditingItem(null);
-    } catch {
-      showToast('Failed to update driver assignment.', 'error');
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Failed to update driver assignment.', 'error');
     } finally {
       setSavingAction(false);
     }
@@ -533,10 +536,11 @@ export const OperationsPickupSchedule: React.FC = () => {
                   type="text"
                   value={assignedDriver}
                   onChange={(e) => setAssignedDriver(e.target.value)}
-                  placeholder="e.g. Captain Mahmoud Hassan"
+                  placeholder="Enter the confirmed driver's full name"
                   className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded text-stone-200"
                   required
                 />
+                <p className="mt-1 text-stone-500">Enter the actual assigned driver. Guide records are not treated as driver credentials.</p>
               </div>
 
               <div>

@@ -1,7 +1,7 @@
 # Hostinger Business Web Hosting — Production Deployment Guide
 **Application**: Awesome Adventure Tours  
 **Target Canonical Production Domain**: `https://awesomeadventure.tours`  
-**Authoritative Supabase Project**: `mktrtoctcjyokclpdeui` (`https://mktrtoctcjyokclpdeui.supabase.co`)  
+**Authoritative Supabase Project**: `uvtbtpxtrrmaublrztgv` (`https://uvtbtpxtrrmaublrztgv.supabase.co`)  
 **Production Runtime**: Node.js 22.x LTS (ESM Full-Stack Express + Vite SPA)
 
 ---
@@ -47,7 +47,7 @@
 #### Option B: Manual Upload / Deployment
 If uploading manually via FTP or File Manager:
 1. Ensure all project files are uploaded to the application root.
-2. Ensure `.env` is uploaded with production values (see Section 3).
+2. Never upload `.env` or secret files to the public web root. Configure production values only in Hostinger's server-side Environment Variables panel (see Section 3).
 
 ---
 
@@ -77,12 +77,13 @@ In Hostinger hPanel > **Node.js** > **Environment Variables** (or create a `.env
 | `NODE_ENV` | `production` | Enables production static asset caching and disables Vite dev middleware |
 | `PORT` | `3000` | Port for Express server (Hostinger sets this dynamically if left blank) |
 | `APP_URL` | `https://awesomeadventure.tours` | Canonical production domain |
-| `VITE_SUPABASE_URL` | `https://mktrtoctcjyokclpdeui.supabase.co` | Authoritative production Supabase project URL |
+| `VITE_SUPABASE_URL` | `https://uvtbtpxtrrmaublrztgv.supabase.co` | Authoritative production Supabase project URL |
 | `VITE_SUPABASE_ANON_KEY` | *(Your Supabase anon/publishable key)* | Public browser API key (safe to expose only with RLS and least-privilege grants) |
 | `VITE_APP_URL` | `https://awesomeadventure.tours` | Frontend canonical origin |
-| `SUPABASE_URL` | `https://mktrtoctcjyokclpdeui.supabase.co` | Server-side Supabase URL |
+| `SUPABASE_URL` | `https://uvtbtpxtrrmaublrztgv.supabase.co` | Server-side Supabase URL |
 | `SUPABASE_ANON_KEY` | *(Same publishable/anon key)* | Server-side key used with verified user JWTs |
-| `SUPABASE_SERVICE_ROLE_KEY` | *(Optional server-only secret key)* | Privileged server operations only; never add a `VITE_` prefix |
+| `SUPABASE_SECRET_KEY` | *(Server-only Supabase secret key)* | Application server privileged operations; never add a `VITE_` prefix |
+| `SUPABASE_SERVICE_ROLE_KEY` | *(Only when required by the admin CLI script)* | Legacy CLI compatibility for `scripts/setup-admin.ts`; terminal-only, never add a `VITE_` prefix |
 | `RESEND_API_KEY` | *(Resend API key)* | Server-only email delivery secret |
 | `RESEND_FROM_EMAIL` | *(Verified sender address)* | Must be verified in Resend |
 | `RESEND_FROM_NAME` | `Awesome Adventure Tours` | Email sender display name |
@@ -91,12 +92,12 @@ In Hostinger hPanel > **Node.js** > **Environment Variables** (or create a `.env
 | `WHATSAPP_BUSINESS_ACCOUNT_ID` | *(Meta WABA ID)* | Optional account metadata |
 | `WHATSAPP_FROM_NUMBER` | *(E.164 sender number)* | Optional display metadata |
 | `WHATSAPP_GRAPH_API_VERSION` | *(Supported Meta Graph API version)* | Required explicit Graph API version |
-| `GEMINI_API_KEY` | *(Your Google AI Studio Gemini API key)* | Powers the AI Concierge assistant (`gemini-3.8-flash`) |
+| `GEMINI_API_KEY` | *(Your Google AI Studio Gemini API key)* | Powers the AI Concierge assistant (`the configured Gemini model`) |
 
 > **Communications Note**: Resend and Meta Cloud API credentials must be stored only in Hostinger server environment variables. The admin UI intentionally discards API keys typed into the browser. Email uses Resend; WhatsApp uses Meta Cloud API. The WhatsApp adapter sends text messages and Meta may reject free-form messages outside its customer-service window unless an approved template is used.  
 >
 > **Security Note**:  
-> `SUPABASE_SERVICE_ROLE_KEY` must **NEVER** be added to client environment variables (`VITE_...`) and is never committed to Git. If running administrative CLI scripts like `scripts/setup-admin.ts` via SSH, export `SUPABASE_SERVICE_ROLE_KEY` solely in that terminal session.
+> `SUPABASE_SECRET_KEY` must **NEVER** be added to client environment variables (`VITE_...`) and is never committed to Git. The `scripts/setup-admin.ts` CLI currently expects `SUPABASE_SERVICE_ROLE_KEY`; export that legacy compatibility variable solely in the terminal session when the script explicitly requires it, and never persist it in browser-visible configuration.
 
 ---
 
@@ -104,7 +105,7 @@ In Hostinger hPanel > **Node.js** > **Environment Variables** (or create a `.env
 
 To ensure seamless Google/email authentication and password reset flows on the new domain:
 
-1. Open the [Supabase Dashboard](https://supabase.com/dashboard/project/mktrtoctcjyokclpdeui).
+1. Open the [Supabase Dashboard](https://supabase.com/dashboard/project/uvtbtpxtrrmaublrztgv).
 2. Go to **Authentication** > **URL Configuration**.
 3. Set **Site URL**:
    ```
@@ -150,3 +151,8 @@ After starting the server on Hostinger, verify the live deployment:
   *Expected*: Secure login screen leading to 15 CRM and Operations back-office modules.
 - [ ] **AI Concierge**: Click the chat widget on the bottom right and ask: *"Recommend a snorkeling trip for families"*.  
   *Expected*: Live streaming advice powered by Gemini with tour cards.
+
+
+## Durable staff notification worker
+
+The production Node process starts the database-backed staff notification scanner when the server-only Supabase secret is configured. It runs every five minutes and uses unique database deduplication keys. Set `STAFF_NOTIFICATION_WORKER_ENABLED=false` only for a controlled maintenance window. It is separate from `BOOKING_NOTIFICATION_WORKER_ENABLED`, which controls customer email delivery through Resend.

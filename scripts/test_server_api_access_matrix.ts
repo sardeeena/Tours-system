@@ -19,6 +19,7 @@ while ((routeMatch = routePattern.exec(source)) !== null) {
 const expectedRoutes: RouteEntry[] = [
   { method: 'POST', path: '/api/chat' },
   { method: 'GET', path: '/api/health' },
+  { method: 'GET', path: '/api/health/ready' },
   { method: 'GET', path: '/api/communications/status' },
   { method: 'POST', path: '/api/communications/email' },
   { method: 'POST', path: '/api/webhooks/resend' },

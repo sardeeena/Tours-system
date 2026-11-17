@@ -16,6 +16,7 @@ import { recordPayment, requestRefund, listPayments } from '../src/services/fina
 import { detectAssignmentConflicts, saveVessel } from '../src/services/operationsService';
 import { calculateBookingPrice } from '../src/services/pricingService';
 import { validateBookingPayload } from '../src/services/bookingValidator';
+import { isSupabaseConfigured } from '../src/services/supabaseClient';
 import { Tour, PickupLocation, BookingExtra, CurrencyConfig } from '../src/types';
 
 let passed = 0;
@@ -221,6 +222,81 @@ async function testOperationsConflicts() {
   );
 }
 
+// Default CI mode never writes test payments, refunds, or vessels to a connected
+// project. Enable TOURS_TEST_DB_ISOLATED only for a dedicated disposable DB.
+async function testDatabaseMutationsFailClosedWithoutIsolatedDatabase() {
+  if (isSupabaseConfigured()) {
+    assert(
+      process.env.TOURS_TEST_DB_ISOLATED !== 'true',
+      'Connected database mutation tests are skipped unless an isolated test database is explicitly selected'
+    );
+    return;
+  }
+
+  try {
+    await recordPayment({
+      bookingId: 'test-book-no-db',
+      bookingReference: 'RST-NO-DB-0001',
+      customerName: 'Test Guest',
+      customerEmail: 'guest@example.invalid',
+      amount: 100,
+      currency: 'EUR',
+      paymentMethod: 'cash',
+      paymentStatus: 'paid',
+      transactionReference: 'TXN-NO-DB-001',
+    });
+    assert(false, 'recordPayment must not create a local/demo payment without Supabase');
+  } catch (error: any) {
+    assert(
+      String(error?.message || error).toLowerCase().includes('finance services are not configured'),
+      'recordPayment fails closed when the authoritative finance database is unavailable'
+    );
+  }
+
+  try {
+    const refund = await requestRefund({
+      bookingId: 'test-book-no-db',
+      bookingReference: 'RST-NO-DB-0001',
+      customerName: 'Test Guest',
+      customerEmail: 'guest@example.invalid',
+      requestedAmount: 25,
+      currency: 'EUR',
+      reason: 'CI fail-closed test',
+      refundMethod: 'cash',
+      requestedBy: 'CI',
+    });
+    assert(refund.success === false && Boolean(refund.error), 'requestRefund refuses to create a refund without the finance database');
+  } catch (error) {
+    assert(Boolean(error), 'requestRefund throws rather than creating a local/demo refund without the finance database');
+  }
+
+  try {
+    await detectAssignmentConflicts({
+      tourId: 'missing-test-tour',
+      date: new Date().toISOString().slice(0, 10),
+      startTime: '08:00',
+      bookedPassengers: 2,
+    });
+    assert(false, 'detectAssignmentConflicts must not approve a resource assignment without live data');
+  } catch (error: any) {
+    assert(
+      String(error?.message || error).toLowerCase().includes('supabase is not configured'),
+      'Resource conflict detection fails closed when live operations data is unavailable'
+    );
+  }
+
+  try {
+    await saveVessel({
+      name: 'CI Must Not Persist Vessel',
+      is_active: true,
+      passenger_capacity: 12,
+    });
+    assert(false, 'saveVessel must not persist local/demo fleet data without Supabase');
+  } catch (error) {
+    assert(Boolean(error), 'Vessel mutations are rejected when the authoritative operations database is unavailable');
+  }
+}
+
 // ------------------------------------------------------------------------------
 // TEST GROUP 3: Complete Booking Lifecycle & Pricing Calculation Engine
 // ------------------------------------------------------------------------------
@@ -330,9 +406,16 @@ assert(
   bookingRepoCode.includes("eventType: 'booking_updated'") && bookingRepoCode.includes('recordActivity'),
   'bookingRepository records immutable audit trails in crm_activities on state changes'
 );
+const cancellationMigrationCode = fs.readFileSync(
+  path.join(rootDir, 'supabase/migrations/20261110000000_booking_lookup_cancellation_hardening.sql'),
+  'utf8'
+);
 assert(
-  bookingRepoCode.includes("Revert capacity in tour_availability") || bookingRepoCode.includes('Math.max(0, (curAvail.booked_count || 0) - partySize)'),
-  'cancelBooking rolls back reserved seats in tour_availability'
+  bookingRepoCode.includes("request_booking_cancellation_secure") &&
+  bookingRepoCode.includes("admin_resolve_booking_cancellation") &&
+  cancellationMigrationCode.includes('UPDATE public.tour_availability') &&
+  cancellationMigrationCode.includes('capacityReleased'),
+  'Cancellation requests and approvals use secure database RPCs that release reserved capacity transactionally'
 );
 
 const commServiceCode = fs.readFileSync(path.join(rootDir, 'src/services/communicationService.ts'), 'utf8');
@@ -377,9 +460,14 @@ assert(!foundSecret, 'Zero occurrences of SUPABASE_SERVICE_ROLE_KEY or administr
 // ------------------------------------------------------------------------------
 async function runAll() {
   await testPaymentNonPositive();
-  await testDuplicatePayment();
-  await testRefundBounds();
-  await testOperationsConflicts();
+  if (process.env.TOURS_TEST_DB_ISOLATED === 'true' && isSupabaseConfigured()) {
+    await testDuplicatePayment();
+    await testRefundBounds();
+    await testOperationsConflicts();
+  } else {
+    console.log('Skipping database mutation integration tests; they require TOURS_TEST_DB_ISOLATED=true and a disposable isolated Supabase project.');
+    await testDatabaseMutationsFailClosedWithoutIsolatedDatabase();
+  }
   testPricingEngine();
 
   console.log('\n================================================================');

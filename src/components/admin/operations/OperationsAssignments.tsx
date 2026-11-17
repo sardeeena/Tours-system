@@ -68,12 +68,12 @@ export const OperationsAssignments: React.FC = () => {
         listAssignments(selectedDate),
         listVessels(),
         listGuides(),
-        getPublishedTours().catch(() => []),
+        getPublishedTours(),
       ]);
       setAssignments(assigns);
       setVessels(ves);
       setGuides(gui);
-      setTours(loadedTours || []);
+      setTours(loadedTours);
       if (!tourId && loadedTours?.length) setTourId(loadedTours[0].id);
     } catch (err) {
       console.warn('Failed to load assignments:', err);

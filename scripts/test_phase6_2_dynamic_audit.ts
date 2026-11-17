@@ -23,6 +23,7 @@ import {
   getTourBySlug,
 } from '../src/services/tourService';
 import { TRANSLATIONS } from '../src/i18n/translations';
+import { isSupabaseConfigured } from '../src/services/supabaseClient';
 
 let passed = 0;
 let failed = 0;
@@ -218,25 +219,23 @@ async function runPhase62TestSuite() {
     'getPublishedReviews returns reviews array'
   );
 
-  const pickupLocations = await getPublishedPickupLocations();
-  assert(
-    Array.isArray(pickupLocations) && pickupLocations.length > 0,
-    'getPublishedPickupLocations returns active pickup locations'
-  );
-  assert(
-    pickupLocations[0].id !== undefined && pickupLocations[0].name !== undefined,
-    'Pickup locations have valid id and name attributes'
-  );
-
-  const tourExtras = await getPublishedTourExtras();
-  assert(
-    Array.isArray(tourExtras) && tourExtras.length > 0,
-    'getPublishedTourExtras returns active tour extras'
-  );
-  assert(
-    typeof tourExtras[0].priceEur === 'number',
-    'Tour extras priceEur is numeric'
-  );
+  if (isSupabaseConfigured()) {
+    const pickupLocations = await getPublishedPickupLocations();
+    assert(Array.isArray(pickupLocations), 'getPublishedPickupLocations returns database rows');
+    if (pickupLocations.length > 0) {
+      assert(pickupLocations[0].id !== undefined && pickupLocations[0].name !== undefined, 'Pickup locations have valid id and name attributes');
+    }
+    const tourExtras = await getPublishedTourExtras();
+    assert(Array.isArray(tourExtras), 'getPublishedTourExtras returns database rows');
+    if (tourExtras.length > 0) assert(typeof tourExtras[0].priceEur === 'number', 'Tour extras priceEur is numeric');
+  } else {
+    let pickupFailedClosed = false;
+    let extrasFailedClosed = false;
+    try { await getPublishedPickupLocations(); } catch (error) { pickupFailedClosed = String(error).includes('Supabase is not configured'); }
+    try { await getPublishedTourExtras(); } catch (error) { extrasFailedClosed = String(error).includes('Supabase is not configured'); }
+    assert(pickupFailedClosed, 'Pickup locations fail closed instead of using hardcoded business data');
+    assert(extrasFailedClosed, 'Tour extras fail closed instead of using hardcoded business data');
+  }
 
   // ----------------------------------------------------------------------------
   // GROUP 5: ADMIN REVIEW MUTATION NOTIFICATION

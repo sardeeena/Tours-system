@@ -117,7 +117,7 @@ function setLocal<T>(key: string, data: T): void {
   memoryStore.set(key, JSON.stringify(data));
 }
 
-const isDevelopmentBuild = Boolean(import.meta.env.DEV);
+const isDevelopmentBuild = Boolean(import.meta.env?.DEV);
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function requireFinanceBackend(): boolean {
