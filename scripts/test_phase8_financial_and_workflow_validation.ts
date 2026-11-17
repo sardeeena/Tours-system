@@ -453,7 +453,7 @@ assert(!foundSecret, 'Zero occurrences of SUPABASE_SERVICE_ROLE_KEY or administr
 // ------------------------------------------------------------------------------
 async function runAll() {
   await testPaymentNonPositive();
-  if (process.env.TOURS_TEST_DB_ISOLATED === 'true') {
+  if (process.env.TOURS_TEST_DB_ISOLATED === 'true' && isSupabaseConfigured()) {
     await testDuplicatePayment();
     await testRefundBounds();
     await testOperationsConflicts();
