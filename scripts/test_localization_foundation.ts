@@ -67,7 +67,7 @@ assert.match(server, /Reviewed localized pages could not be loaded/, 'Sitemap va
 assert.ok(server.includes("supportedLanguages: ['en']"), 'Public config advertises English until complete reviewed locales are published');
 assert.ok(languageContext.includes("value.code === 'en' || publishedUiLocales.includes(value.code)"), 'Built-in dictionaries are not advertised as full languages before content publication');
 assert.match(server, /content_translations'[\s\S]*translated_slug[\s\S]*source_checksum/, 'Localized sitemap is based on translation records');
-assert.ok(server.includes("const privateRoute = /^\\/(?:[a-z]{2}\\/)?(?:admin"), 'Localized private routes are matched before public SSR');
+assert.ok(server.includes("const privateRoute = /^\\\\/(?:booking"), 'Customer booking, account and support routes are identified before localized target resolution');
 assert.match(server, /body\.confirm_publish !== true/, 'Publishing requires explicit human confirmation');
 assert.match(server, /64-character SHA-256 source checksum/, 'Translation writes require a SHA-256 source checksum');
 assert.match(app, /AdminTranslationManager/, 'Admin translation workspace is wired into the app');
