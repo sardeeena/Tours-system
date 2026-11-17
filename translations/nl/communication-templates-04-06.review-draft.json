@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "locale": "nl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "communication_template": 3,
+    "source_records": 3
+  },
+  "records": [
+    {
+      "entity_type": "communication_template",
+      "entity_key": "9aca4700-542d-4c35-94ef-b0cae8095e19",
+      "translated_slug": "template-boeking-update",
+      "title": "Boekingsupdate",
+      "summary": "Update van je boeking: {{tour_name}} (ref.: {{booking_reference}})",
+      "content": {
+        "name": "Boekingsupdate",
+        "subject": "Update van je boeking: {{tour_name}} (ref.: {{booking_reference}})",
+        "body_text": "Hallo {{customer_name}},\n\nJe boeking voor {{tour_name}} (ref.: {{booking_reference}}) is bijgewerkt.\n\nVertrekdatum: {{tour_date}}\nOphaaltijd: {{pickup_time}}\nResterend saldo: {{balance_due}}\n\nMet vriendelijke groet,\nHet coördinatieteam van Awesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "tour_date",
+          "pickup_time",
+          "balance_due"
+        ],
+        "channel": "Both",
+        "template_key": "booking_update"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "ba3bfad1-d02f-4d94-9cb3-be129dde05e0",
+      "translated_slug": "template-boeking-annulering",
+      "title": "Boekingsannulering",
+      "summary": "Bevestiging van annulering: {{booking_reference}} - {{tour_name}}",
+      "content": {
+        "name": "Boekingsannulering",
+        "subject": "Bevestiging van annulering: {{booking_reference}} - {{tour_name}}",
+        "body_text": "Hallo {{customer_name}},\n\nJe boeking {{booking_reference}} voor {{tour_name}} op {{tour_date}} is geannuleerd.\n\nOns team neemt contact met je op als je in aanmerking komt voor terugbetaling.\n\nMet vriendelijke groet,\nDe reizigersondersteuning van Awesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "tour_date"
+        ],
+        "channel": "Both",
+        "template_key": "cancellation"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "2f758e25-31ce-4a32-abaf-0f167c94ac1e",
+      "translated_slug": "template-opvolging-klant",
+      "title": "Opvolging klant",
+      "summary": "Je conciërge voor je vakantie aan de Rode Zee neemt contact met je op",
+      "content": {
+        "name": "Opvolging klant",
+        "subject": "Je conciërge voor je vakantie aan de Rode Zee neemt contact met je op",
+        "body_text": "Hallo {{customer_name}},\n\nWe hopen dat je volop geniet van je verblijf in de regio van de Rode Zee. Ons team staat voor je klaar om je te helpen bij het plannen van je volgende avontuur.\n\nMet vriendelijke groet,\nDe VIP-conciërgeservice van Awesome Adventure Tours",
+        "variables": [
+          "customer_name"
+        ],
+        "channel": "Both",
+        "template_key": "follow_up"
+      }
+    }
+  ]
+}
