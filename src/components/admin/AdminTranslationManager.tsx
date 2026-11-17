@@ -85,7 +85,7 @@ export const AdminTranslationManager: React.FC = () => {
   };
 
   const generateAllRequestedLocales = async () => {
-    if (!window.confirm('Generate draft translations for all published tours, destinations, blog posts, public pages, customer communication templates and the complete interface catalog in all 28 configured non-English languages, including Arabic? This uses the configured Gemini service and saves drafts only. Nothing will be published.')) return;
+    if (!window.confirm('Generate draft translations for all published tours, destinations, blog posts, public pages, customer communication templates and the complete interface catalog in all 28 configured non-English languages, including Arabic? This uses the configured OpenAI API and saves drafts only. Nothing will be published.')) return;
     setGenerating(true);
     setGenerationProgress('Preparing translation batches…');
     const locales = EUROPEAN_LOCALE_ROLLOUT.filter((item) => item.code !== 'en');
