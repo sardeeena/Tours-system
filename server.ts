@@ -3268,6 +3268,32 @@ function parseGeminiTranslationJson(rawText: string): any {
   }
 }
 
+const BULK_TRANSLATION_RESPONSE_SCHEMA = {
+  type: 'object',
+  properties: {
+    translations: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          entity_type: { type: 'string' },
+          entity_key: { type: 'string' },
+          title: { type: 'string' },
+          translated_slug: { type: 'string' },
+          summary: { type: 'string' },
+          seo_title: { type: 'string' },
+          seo_description: { type: 'string' },
+          content: { type: 'object', additionalProperties: true },
+        },
+        required: ['entity_type', 'entity_key', 'title', 'translated_slug', 'summary', 'seo_title', 'seo_description', 'content'],
+        additionalProperties: false,
+      },
+    },
+  },
+  required: ['translations'],
+  additionalProperties: false,
+};
+
 async function generateBulkTranslationResponse(
   items: BulkTranslationWorkItem[],
   locale: string,
@@ -3291,8 +3317,8 @@ async function generateBulkTranslationResponse(
     model: 'gemini-3.8-flash',
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     config: {
-      temperature: 0.1,
       responseMimeType: 'application/json',
+      responseJsonSchema: BULK_TRANSLATION_RESPONSE_SCHEMA,
       maxOutputTokens: 65536,
     },
   });
@@ -3335,7 +3361,7 @@ async function generateBulkTranslationResponse(
         'Repair only the JSON syntax of the following model output. Do not rewrite, summarize, translate, add, remove, or alter any values. Return one valid JSON object with the same translations array and exact field values. Return JSON only.',
         responseText,
       ].join('\n') }] }],
-      config: { temperature: 0, responseMimeType: 'application/json', maxOutputTokens: 65536 },
+      config: { responseMimeType: 'application/json', responseJsonSchema: BULK_TRANSLATION_RESPONSE_SCHEMA, maxOutputTokens: 65536 },
     });
     try {
       parsed = parseGeminiTranslationJson(repaired.text || '');
@@ -3406,13 +3432,11 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
     if (auditError) console.warn('[Bulk translation generation] Audit event could not be persisted.');
     return res.json({success:true,locale,processed:saved,skipped,total:candidates.length,next_offset:Math.min(offset+limit,candidates.length),done:offset+limit>=candidates.length});
   } catch(error: any) {
-    const errorMessage = String(error?.message || '');
-    const providerStatus = Number(error?.status) || Number(error?.code) || Number(errorMessage.match(/\b(429|500|502|503|504)\b/)?.[1]) || 0;
-    const providerCode = String(error?.code || '');
-    const providerUnavailable = providerStatus === 503 || /UNAVAILABLE|high demand/i.test(errorMessage);
+    const details = getGeminiProviderErrorDetails(error);
+    const providerUnavailable = details.status === 503;
     console.error('[Bulk translation generation] Failed safely:', {
       locale, offset, batchSize, totalCandidates,
-      providerStatus: providerStatus || null, providerCode: providerCode || null,
+      providerStatus: details.status || null, providerCode: details.code || null,
       errorName: String(error?.name || 'Error'),
     });
     return res.status(providerUnavailable ? 503 : 502).json({
@@ -3421,6 +3445,7 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
         ? 'Gemini is temporarily unavailable on the primary and fallback models. No translations were published; retry this batch later.'
         : 'Translation generation failed for this batch. No translations were published; retry this batch.',
     });
+
   }
 });
 
