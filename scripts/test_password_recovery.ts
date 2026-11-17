@@ -1,5 +1,7 @@
 import { resetPasswordRequest, updateUserPassword, signInUser, signUpUser } from '../src/services/authService';
-import { supabase, isSupabaseConfigured, formatSupabaseError } from '../src/services/supabaseClient';
+import { isSupabaseConfigured } from '../src/services/supabaseClient';
+import fs from 'node:fs';
+import path from 'node:path';
 
 /**
  * ==============================================================================
@@ -42,31 +44,38 @@ async function runRecoveryTests() {
   // ----------------------------------------------------------------------------
   console.log('Test 1: Reset request calls Supabase without generating local OTP');
   const testEmail = 'traveler-recovery-test@example.com';
-  
-  // Clean mock sessionStorage
-  if (typeof sessionStorage !== 'undefined') {
-    sessionStorage.clear();
-  }
+  const authServiceSource = fs.readFileSync(path.resolve(process.cwd(), 'src/services/authService.ts'), 'utf8');
 
-  const resetResult = await resetPasswordRequest(testEmail);
-  assert(
-    resetResult.success === true,
-    'resetPasswordRequest returns success for valid email format'
-  );
-  assert(
-    (resetResult as any).resetCode === undefined,
-    'resetPasswordRequest returns NO resetCode / local OTP property'
-  );
-
-  if (typeof sessionStorage !== 'undefined') {
-    const storedReset = sessionStorage.getItem(`rse_reset_${testEmail}`);
+  // Never send real password-recovery emails from CI or a developer test run.
+  if (isSupabaseConfigured()) {
     assert(
-      storedReset === null,
-      'No recovery code or secret is written to sessionStorage'
+      authServiceSource.includes('supabase.auth.resetPasswordForEmail'),
+      'Configured recovery uses Supabase Auth email recovery'
+    );
+    assert(
+      authServiceSource.includes('https://awesomeadventure.tours'),
+      'Recovery links use the production Awesome Adventure Tours fallback origin'
     );
   } else {
-    assert(true, 'sessionStorage is not touched in headless environment');
+    const resetResult = await resetPasswordRequest(testEmail);
+    assert(
+      resetResult.success === false && Boolean(resetResult.error),
+      'Unconfigured recovery fails truthfully instead of pretending an email was sent'
+    );
+    assert(
+      String(resetResult.error).toLowerCase().includes('supabase'),
+      'Unconfigured recovery explains that the authentication service is unavailable'
+    );
   }
+
+  assert(
+    !authServiceSource.includes('mahmoud-crm-eosin.vercel.app'),
+    'Password recovery contains no retired project redirect origin'
+  );
+  assert(
+    !authServiceSource.includes('sessionStorage.setItem(`rse_reset_'),
+    'Password recovery does not store local OTPs or reset secrets'
+  );
 
   // ----------------------------------------------------------------------------
   // TEST 2: Request Errors Handled Truthfully
