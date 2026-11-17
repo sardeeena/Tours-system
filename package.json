@@ -64,13 +64,13 @@
     "test:french-content-drafts": "tsx scripts/test_french_content_drafts.ts",
     "translations:assemble-fr": "tsx scripts/assemble_french_import_bundle.ts",
     "test:source-content-corrections": "tsx scripts/test_source_content_corrections.ts",
-    "prebuild": "npm install --include=dev"
+    "prebuild": "if [ \"$NODE_ENV\" = \"production\" ]; then npm install --include=dev --no-save; fi",
+    "postbuild": "if [ \"$NODE_ENV\" = \"production\" ]; then npm prune --omit=dev; fi"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
     "@supabase/supabase-js": "^2.117.0",
     "dotenv": "^17.2.3",
-    "esbuild": "^0.28.2",
     "express": "^4.21.2",
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
@@ -93,7 +93,8 @@
     "typescript-7": "npm:typescript@^7.0.2",
     "@tailwindcss/vite": "^4.3.3",
     "@vitejs/plugin-react": "^6.1.1",
-    "vite": "^8.3.3"
+    "vite": "^8.3.3",
+    "esbuild": "^0.28.2"
   },
   "overrides": {
     "body-parser": "1.20.9",
