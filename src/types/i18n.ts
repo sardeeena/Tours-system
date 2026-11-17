@@ -32,6 +32,12 @@ export const SUPPORTED_LANGUAGES: Partial<Record<LanguageCode, LanguageConfig>> 
     localName: 'Nederlands',
     flag: '🇳🇱',
   },
+  pl: {
+    code: 'pl',
+    name: 'Polish',
+    localName: 'Polski',
+    flag: '🇵🇱',
+  },
   ro: {
     code: 'ro',
     name: 'Romanian',

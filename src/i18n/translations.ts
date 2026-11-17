@@ -713,4 +713,108 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'pwa.saveToPhone': 'Salvează pe Telefon',
     'pwa.installSubtitle': 'Acces rapid offline la vouchere și rezervări',
   },
+  pl: {
+    // Górny pasek
+    'top.licensed': 'Licencjonowany egipski organizator turystyki nr 2491/ETB',
+    'top.cancellation': 'Bezpłatne anulowanie do 24 godzin przed odbiorem',
+    'top.pierDesk': 'Pomoc',
+    'top.language': 'Język',
+    'top.currency': 'Waluta',
+
+    // Nawigacja
+    'nav.allExcursions': 'Wycieczki',
+    'nav.destinations': 'Destynacje',
+    'nav.experiences': 'Atrakcje',
+    'nav.whyChooseUs': 'O nas',
+    'nav.guestReviews': 'Opinie',
+    'nav.findMyBooking': 'Moja rezerwacja',
+    'nav.explore': 'Zobacz wycieczki',
+    'nav.bookExcursion': 'Rezerwuj teraz',
+    'nav.brandSubtitle': 'Wycieczki w Hurghadzie i nad Morzem Czerwonym',
+
+    // Menu mobilne
+    'mobile.popularTours': 'Popularne wycieczki i rejsy na wyspy',
+    'mobile.destinationsDetailed': 'Destynacje (Hurghada, El Gouna, Marsa Alam)',
+    'mobile.categories': 'Kategorie wycieczek',
+    'mobile.safety': 'Bezpieczeństwo i gwarancje',
+    'mobile.reviews': 'Opinie klientów',
+    'mobile.findBookingSubtitle': 'Moja rezerwacja (sprawdź i anuluj)',
+    'mobile.contactWhatsApp': 'Skontaktuj się z nami przez WhatsApp',
+    'mobile.selectLanguage': 'Wybierz język',
+
+    // Sekcja główna
+    'hero.badge': 'Bezpośredni organizator wycieczek w Hurghadzie i El Gounie',
+    'hero.guestsHosted': 'Codziennie potwierdzane wypłynięcia',
+    'hero.title1': 'Odkryj Morze Czerwone',
+    'hero.title2': 'z lokalnymi kapitanami',
+    'hero.subtitle': 'Rejsy ze snorkelingiem, wycieczki na wyspy i pustynne safari quadami, codziennie z Hurghady, El Gouny i Makadi Bay. Bezpośredni lokalny organizator, odbiór z hotelu i przejrzyste ceny.',
+    'hero.guarantee1': 'Gwarancja 100% zwrotu w przypadku złej pogody',
+    'hero.guarantee2': 'Bezpłatne anulowanie do 24 godzin przed wyjazdem',
+    'hero.guarantee3': 'Odbiór z hotelu w cenie',
+    'hero.guarantee4': 'Licencjonowani lokalni przewodnicy',
+
+    // Wyszukiwarka
+    'search.destination': 'Destynacja',
+    'search.allDestinations': 'Wszystkie destynacje',
+    'search.activity': 'Atrakcja',
+    'search.allActivities': 'Wszystkie atrakcje',
+    'search.date': 'Wybierz datę',
+    'search.guests': 'Uczestnicy',
+    'search.submit': 'Znajdź wycieczki',
+    'search.adults': 'Dorośli',
+    'search.children': 'Dzieci',
+    'search.ageAdult': 'Wiek 12+',
+    'search.ageChild': 'Wiek 4–11 lat',
+
+    // Popularne wycieczki
+    'popular.title': 'Popularne wycieczki nad Morzem Czerwonym',
+    'popular.subtitle': 'Wszystkie wycieczki obejmują odbiór z hotelu, sprzęt do snorkelingu i wymagane opłaty za park morski.',
+    'popular.viewAll': 'Zobacz wszystkie wycieczki',
+    'popular.quickBook': 'Rezerwuj teraz',
+    'popular.viewDetails': 'Zobacz wycieczkę',
+    'popular.from': 'Od',
+    'popular.perPerson': 'za osobę',
+    'popular.instantConfirmation': 'Natychmiastowe potwierdzenie',
+    'popular.verified': 'Oficjalny organizator',
+
+    // Dlaczego warto wybrać nas
+    'why.title': 'Dlaczego warto rezerwować bezpośrednio u nas?',
+    'why.subtitle': 'Korzystamy z własnych łodzi i pojazdów, z certyfikowanymi kapitanami i przyjaznymi lokalnymi przewodnikami. Płacisz lokalne ceny organizatora, bez marży agencji.',
+
+    // Wezwanie do działania
+    'cta.title': 'Gotowy, by odkryć Morze Czerwone?',
+    'cta.subtitle': 'Zarezerwuj online już teraz z bezpłatnym anulowaniem. Możesz zapłacić podczas odbioru z hotelu.',
+    'cta.browse': 'Zobacz wszystkie wycieczki',
+    'cta.chat': 'Napisz na WhatsApp',
+    'cta.lookup': 'Znajdź moją rezerwację',
+
+    // Pływający widżet WhatsApp
+    'whatsapp.concierge': 'Centrum obsługi wycieczek',
+    'whatsapp.online': 'Teraz online · Bezpośredni kontakt przez WhatsApp',
+    'whatsapp.replies': 'Szybka odpowiedź',
+    'whatsapp.greeting': 'Cześć! 🌊 Masz pytania o dostępność wycieczek, odbiór z hotelu lub prywatne rejsy?',
+    'whatsapp.instruction': 'Wybierz temat poniżej lub napisz do nas bezpośrednio na WhatsApp.',
+    'whatsapp.quickInquiries': 'Szybkie pytania',
+    'whatsapp.customQuestion': 'Twoje pytanie',
+    'whatsapp.placeholder': 'np. Czy możemy zarezerwować wycieczkę dla 6 osób na Orange Bay w ten czwartek?',
+    'whatsapp.openButton': 'Otwórz WhatsApp',
+    'whatsapp.needHelp': 'Potrzebujesz pomocy? Napisz do nas na WhatsApp',
+    'whatsapp.presetAvailability': '🚤 Dostępność wycieczek: Czy są wolne miejsca na jutro?',
+    'whatsapp.presetPickup': '🚐 Odbiór z hotelu: O której godzinie zostanę odebrany?',
+    'whatsapp.presetPrivate': '🛥️ Prywatna łódź: Prośba o wycenę dla rodziny lub grupy',
+    'whatsapp.presetBooking': '🎟️ Istniejąca rezerwacja: Potrzebuję pomocy z moją rezerwacją',
+
+    // Stopka
+    'footer.companyDesc': 'Licencjonowany organizator rejsów z siedzibą w marinie w Hurghadzie. Certyfikowany przez egipskie Ministerstwo Turystyki oraz Izbę Nurkowania i Sportów Wodnych (CDWS).',
+    'footer.destinations': 'Destynacje',
+    'footer.experiences': 'Atrakcje',
+    'footer.customerCare': 'Obsługa klienta',
+    'footer.hurghadaDesk': 'Biuro w Hurghadzie',
+    'footer.allRights': 'Wszelkie prawa zastrzeżone.',
+
+    // PWA i instalacja mobilna
+    'pwa.installApp': 'Zainstaluj aplikację',
+    'pwa.saveToPhone': 'Zapisz w telefonie',
+    'pwa.installSubtitle': 'Szybki dostęp offline do voucherów i rezerwacji',
+  },
 };
