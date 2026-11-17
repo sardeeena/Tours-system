@@ -19,7 +19,7 @@ export const AdminTranslationManager: React.FC = () => {
   const [selectedId, setSelectedId] = useState('');
   const [entityType, setEntityType] = useState('tour');
   const [entityKey, setEntityKey] = useState('');
-  const [locale, setLocale] = useState('de');
+  const [locale, setLocale] = useState('fr');
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
   const [summary, setSummary] = useState('');
@@ -85,15 +85,14 @@ export const AdminTranslationManager: React.FC = () => {
     } finally { setLoading(false); }
   };
 
-  const generateAllRequestedLocales = async () => {
+  const generateSelectedLocale = async () => {
     setGenerating(true);
     setGenerationProgress('Preparing translation batches…');
-    const locales = EUROPEAN_LOCALE_ROLLOUT.filter((item) => item.code !== 'en');
+    const targetLocale = locale;
     let generatedCount = 0;
     let skippedCount = 0;
     try {
-      for (let localeIndex = 0; localeIndex < locales.length; localeIndex += 1) {
-        const targetLocale = locales[localeIndex].code;
+      {
         let offset = 0;
         let done = false;
         while (!done) {
@@ -105,21 +104,20 @@ export const AdminTranslationManager: React.FC = () => {
           done = Boolean(result.done);
           generatedCount += Number(result.processed || 0);
           skippedCount += Number(result.skipped || 0);
-          setGenerationProgress(targetLocale.toUpperCase() + ': ' + offset + '/' + result.total + ' source records · ' + generatedCount + ' drafts saved · ' + skippedCount + ' skipped · ' + (localeIndex + 1) + '/' + locales.length + ' languages');
-          if (!(done && localeIndex === locales.length - 1)) {
+          setGenerationProgress(targetLocale.toUpperCase() + ': ' + offset + '/' + result.total + ' source records · ' + generatedCount + ' drafts saved · ' + skippedCount + ' skipped · one selected language);
+          if (!done) {
             await new Promise(resolve => window.setTimeout(resolve, 6500));
           }
         }
       }
-      setLocale('fr');
-      const result = await request('/api/admin/translations?locale=fr');
+      const result = await request('/api/admin/translations?locale=' + encodeURIComponent(targetLocale));
       setRows(result.translations || []);
       if (skippedCount > 0) {
         showToast('Draft generation finished with ' + skippedCount + ' skipped records. Retry to fill any missing items; nothing was published.', 'info');
         setGenerationProgress('Finished: ' + generatedCount + ' drafts saved, ' + skippedCount + ' skipped. Retry if any records are missing; review all drafts before publication.');
       } else {
-        showToast('Bulk translation generation completed. All generated records remain drafts pending human review.', 'success');
-        setGenerationProgress('Completed all ' + locales.length + ' language batches: ' + generatedCount + ' drafts saved. Review before publication.');
+        showToast('French translation draft generation completed. All generated records remain drafts pending human review.', 'success');
+        setGenerationProgress('Completed ' + targetLocale.toUpperCase() + ': ' + generatedCount + ' drafts saved. Review before publication.');
       }
     } catch (error: any) {
       const message = error instanceof Error ? error.message : 'Bulk translation generation stopped. You can safely retry.';
@@ -170,14 +168,14 @@ export const AdminTranslationManager: React.FC = () => {
           <p className="mt-1 text-sm text-stone-400">Super Admin + verified MFA required. Drafts never appear on public pages.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={() => setConfirmGenerate(true)} disabled={generating || loading || saving} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{generating ? 'Generating drafts…' : 'Generate all 28 languages'}</button>
+          <button type="button" onClick={() => setConfirmGenerate(true)} disabled={generating || loading || saving} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{generating ? 'Generating drafts…' : 'Generate selected language'}</button>
           <button onClick={() => void load()} disabled={loading || generating} className="rounded border border-stone-700 px-3 py-2 text-sm disabled:opacity-50">{loading ? 'Loading…' : 'Refresh records'}</button>
         </div>
       </header>
       {confirmGenerate && !generating && <div role="dialog" aria-modal="true" aria-labelledby="translation-generate-title" className="rounded-xl border border-teal-700 bg-teal-950/40 p-4 space-y-3">
         <h2 id="translation-generate-title" className="font-semibold text-white">Generate translation drafts?</h2>
-        <p className="text-sm text-stone-300">This translates published tours, destinations, blog posts, public pages, communication templates and the interface catalog into all 28 configured non-English languages, including Arabic. It uses Gemini. All results remain drafts; nothing is published automatically.</p>
-        <div className="flex flex-wrap gap-2"><button type="button" onClick={() => setConfirmGenerate(false)} className="rounded border border-stone-600 px-3 py-2 text-sm">Cancel</button><button type="button" onClick={() => { setConfirmGenerate(false); void generateAllRequestedLocales(); }} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white">Start generating drafts</button></div>
+        <p className="text-sm text-stone-300">This translates published tours, destinations, blog posts, public pages, communication templates and the interface catalog into the selected language only. This PR is scoped to French (fr). It uses Gemini. All results remain drafts; nothing is published automatically.</p>
+        <div className="flex flex-wrap gap-2"><button type="button" onClick={() => setConfirmGenerate(false)} className="rounded border border-stone-600 px-3 py-2 text-sm">Cancel</button><button type="button" onClick={() => { setConfirmGenerate(false); void generateSelectedLocale(); }} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white">Start generating drafts</button></div>
       </div>}
       {generationProgress && <p role="status" aria-live="polite" className="rounded-lg border border-stone-800 bg-stone-900/50 px-4 py-3 text-sm text-stone-300">{generationProgress}</p>}
       <div className="grid gap-5 xl:grid-cols-[minmax(240px,0.8fr)_minmax(0,2fr)]">
