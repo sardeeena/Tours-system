@@ -21,11 +21,20 @@
 - [x] Replace obsolete Kemet Spirit catalogue-seed and 33-table Supabase setup instructions with current Awesome Adventure Tours project-scoped guidance.
 - [x] Retain historical audit/phase reports as records; do not rewrite applied migration history.
 
+## Latest production verification — 17 November 2026
+
+- Hostinger deployed commit `c7fb2605f6bbb6f73b283a7ce425c8a92b0f3b4f`; `/api/health` returned `ok` and `/api/health/ready` returned `ready` with database `ok`.
+- Production currently has 25 published tours, 672 availability rows, zero departures, zero operational assignments, and zero pickup schedules. Six guides and four vessels are active; all guide license fields are populated, all active vessels have positive capacity and non-expired safety inspection dates.
+- One future booking (20 November 2026) has no departure, guide, vessel or pickup time assignment. One past booking (16 November 2026) remains pending. These require operator review; no records were changed.
+- Four bookings and their payment ledger rows were inspected. The completed bookings are paid; the pending 16 November booking is also ledger-paid; the 20 November booking is confirmed with payment pending. Draft invoices remain drafts and are not promoted or treated as tax invoices.
+- The translation API currently advertises no public locales (`locales: []`), and `content_translations` has zero rows. The bulk translation generator is already implemented but Hostinger has no `GEMINI_API_KEY`; no locale is activated until complete translations are human-reviewed and published.
+- A production schema mismatch was found: legacy `vessels.next_maintenance` contains a 15 November 2026 date while the newer `next_maintenance_date` column is NULL. The current departure RPC checks only the newer column. This PR adds a forward-only backfill so the overdue date is not silently bypassed.
+
 ## P0 — Operational booking integrity (requires implementation and operator data)
 
 - [x] Add a staged departure-capacity linkage: operator-created departures are created/updated atomically with the existing `tour_availability` capacity row; new bookings inherit the linked `departure_id`; booking insert/status changes recalculate departure and availability passenger counts. Existing unlinked availability remains untouched until an operator schedules it. Multiple departures for the same tour/date remain blocked because the current availability model has one row per tour/date.
 - [ ] Reconcile the existing availability pool with actual departures before enforcing the new constraint. The current production data has no operational departures/assignments, so a fail-closed cutover must be staged with the operator to avoid unintentionally disabling every booking.
-- [ ] Review vessel maintenance state. The M/Y Red Sea Star VIP maintenance date was 15 November 2026 and is overdue as of the audit date; confirm inspection/maintenance completion before assigning it to any departure.
+- [ ] Confirm the overdue legacy vessel maintenance entry (legacy `next_maintenance` date 2026-11-15) was completed before clearing the canonical `next_maintenance_date`. The production schema currently has this legacy date populated while the canonical field is NULL; the forward-only fix in this PR backfills it and restores the intended fail-closed departure check. Do not clear the date without maintenance evidence.
 - [ ] Populate explicit pickup-zone assignments for all tours where pickup is offered. Current fallback behavior can expose every active zone for tours without explicit mappings; remove that broad fallback after data is reconciled.
 - [ ] Confirm each pickup surcharge and display it before booking. Five of seven active zones currently carry a supplement.
 - [ ] Add operational acceptance checks for guide, vessel, departure time, pickup route, passenger manifest and weather/closure handling.
