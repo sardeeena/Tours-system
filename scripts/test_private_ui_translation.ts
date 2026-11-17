@@ -10,6 +10,8 @@ const generated = readFileSync(new URL('../src/i18n/privateUiCatalog.generated.t
 const messages = collectPrivateUiMessages();
 
 assert.ok(count > 100, 'The private customer workflow catalogue must cover more than a token handful of UI messages.');
+assert.equal(messages[privateUiMessageKey('pwa.iosStep1End')], undefined, 'Internal t() lookup keys are never extracted as visible customer UI messages.');
+assert.ok(messages[privateUiMessageKey('button in your Safari browser navigation bar.')], 'The visible English fallback passed to t() is extracted.');
 for (const required of [
   'Sign In Required',
   'Welcome back',
