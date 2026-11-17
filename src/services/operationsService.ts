@@ -1146,6 +1146,14 @@ export async function updatePickupScheduleStatus(
     return true;
   }
 
+  const { data: bookingDetails, error: bookingDetailsError } = await supabase
+    .from('bookings')
+    .select('id,booking_date,adult_count,child_count,infant_count,pickup_hotel_name,special_requests,customer_id,customers(first_name,last_name,phone,hotel),pickup_locations(name,area),tours(title)')
+    .eq('booking_reference', reference)
+    .maybeSingle();
+  if (bookingDetailsError) throw new Error(formatSupabaseError(bookingDetailsError));
+  if (!bookingDetails?.id) throw new Error('Booking not found. Pickup changes were not saved.');
+
   // The booking row is the authoritative record for pickup state. Require an
   // affected row so UI success cannot be reported after a silent database error.
   const bookingPatch: Record<string, unknown> = {
@@ -1175,7 +1183,38 @@ export async function updatePickupScheduleStatus(
   if (scheduleReadError) throw new Error(formatSupabaseError(scheduleReadError));
 
   if ((driverName !== undefined || driverVehicle !== undefined || pickupTime !== undefined || driverId !== undefined) && !scheduleRows?.[0]?.id) {
-    throw new Error('No persisted pickup schedule exists for this booking yet. Create the pickup schedule before assigning a driver, vehicle or pickup time.');
+    const customer = Array.isArray(bookingDetails.customers) ? bookingDetails.customers[0] : bookingDetails.customers;
+    const pickupLocation = Array.isArray(bookingDetails.pickup_locations) ? bookingDetails.pickup_locations[0] : bookingDetails.pickup_locations;
+    const tour = Array.isArray(bookingDetails.tours) ? bookingDetails.tours[0] : bookingDetails.tours;
+    const hotel = bookingDetails.pickup_hotel_name || customer?.hotel;
+    const location = pickupLocation?.area || pickupLocation?.name;
+    const customerName = [customer?.first_name, customer?.last_name].filter(Boolean).join(' ').trim();
+
+    if (!pickupTime || !driverId || !driverName?.trim() || !driverVehicle?.trim() || !hotel?.trim() || !location?.trim() || !customerName) {
+      throw new Error('A real pickup time, active driver, vehicle, customer and pickup location are required before a pickup schedule can be created.');
+    }
+
+    const passengerCount = Number(bookingDetails.adult_count || 0) +
+      Number(bookingDetails.child_count || 0) + Number(bookingDetails.infant_count || 0);
+    const { error: insertScheduleError } = await supabase.from('pickup_schedules').insert({
+      booking_id: bookingDetails.id,
+      booking_reference: reference,
+      customer_name: customerName,
+      customer_phone: customer?.phone || null,
+      hotel,
+      location,
+      pickup_time: pickupTime,
+      driver_id: driverId,
+      driver_name: driverName.trim(),
+      vehicle: driverVehicle.trim(),
+      passenger_count: passengerCount,
+      tour_title: tour?.title || null,
+      tour_date: bookingDetails.booking_date,
+      departure_time: null,
+      status: normalized,
+      special_requests: bookingDetails.special_requests || null,
+    });
+    if (insertScheduleError) throw new Error(formatSupabaseError(insertScheduleError));
   }
 
   if (scheduleRows?.[0]?.id) {
