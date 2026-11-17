@@ -186,7 +186,21 @@ jobs:
       - name: Verify French rollout dictionary completeness and publication gates
         run: npm run test:french-rollout
 
+      - name: Check live-source validation credentials
+        id: french-source-credentials
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL || secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_SECRET_KEY" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Live French source-checksum dry run skipped: expected read-only Supabase URL/service-key Actions secrets are not configured."
+          fi
+
       - name: Validate French import bundle against live Supabase sources (read-only)
+        if: steps.french-source-credentials.outputs.available == 'true'
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL || secrets.VITE_SUPABASE_URL }}
           SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY }}
