@@ -28,7 +28,8 @@
 - One future booking (20 November 2026) has no departure, guide, vessel or pickup time assignment. One past booking (16 November 2026) remains pending. These require operator review; no records were changed.
 - Four bookings and their payment ledger rows were inspected. The completed bookings are paid; the pending 16 November booking is also ledger-paid; the 20 November booking is confirmed with payment pending. Draft invoices remain drafts and are not promoted or treated as tax invoices.
 - The translation API currently advertises no public locales (`locales: []`), and `content_translations` has zero rows. The bulk translation generator is already implemented but Hostinger has no `GEMINI_API_KEY`; no locale is activated until complete translations are human-reviewed and published.
-- A production schema mismatch was found: legacy `vessels.next_maintenance` contains a 15 November 2026 date while the newer `next_maintenance_date` column is NULL. The current departure RPC checks only the newer column. This PR adds a forward-only backfill so the overdue date is not silently bypassed.
+- Security Advisor currently reports eight RLS-enabled tables without policies; direct `anon` and `authenticated` table grants were absent on those tables, consistent with server-only access. Two `SECURITY DEFINER` RPC warnings were inspected and both functions contain explicit service-role/admin authorization checks. Leaked-password protection remains disabled and requires owner action in Supabase Auth.
+- A production schema mismatch was found: legacy `vessels.next_maintenance` contains a 15 November 2026 date while the newer `next_maintenance_date` column is NULL. The current departure RPC checks only the newer column. This PR adds a forward-only backfill and updates the fleet editor to dual-write both fields so the overdue date is not silently bypassed again.
 
 ## P0 — Operational booking integrity (requires implementation and operator data)
 
