@@ -1239,7 +1239,7 @@ export async function getPublishedDestinations(): Promise<Destination[]> {
   }
 
   if (!isSupabaseConfigured()) {
-    return import.meta.env?.PROD ? [] : POPULAR_DESTINATIONS;
+    throw new Error('Supabase is not configured. Published destinations cannot be loaded.');
   }
 
   // 1. Fetch published destinations ordered by sort_order
