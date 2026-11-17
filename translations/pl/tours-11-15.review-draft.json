@@ -1,0 +1,434 @@
+{
+  "schema_version": 1,
+  "locale": "pl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "tour": 5,
+    "source_records": 5
+  },
+  "records": [
+    {
+      "entity_type": "tour",
+      "entity_key": "2f7cbd8c-bda2-4915-b5e4-5fc98927a388",
+      "source_slug": "sharm-el-sheikh-ras-mohammed-magic-lake-snorkeling-adventure",
+      "translated_slug": "sharm-ras-mohamed-magic-lake-snorkeling-przygoda",
+      "locale": "pl",
+      "title": "Sharm el-Sheikh: Ras Mohamed, Magic Lake i przygoda ze snorkelingiem",
+      "summary": "Odkryj naturalne piękno Parku Narodowego Ras Mohamed podczas niezapomnianej półdniowej wycieczki z Sharm el-Sheikh. Snorkeling wśród kolorowego życia morskiego, słynna Brama Allaha, niezwykłe formacje powstałe w wyniku trzęsień ziemi i drzewa namorzynowe. Zakończ wycieczkę relaksującym postojem przy pięknym Magic Lake, otoczonym spokojnym nadmorskim krajobrazem Synaju.",
+      "seo_title": "Ras Mohamed i Magic Lake: przygoda ze snorkelingiem z Sharm el-Sheikh",
+      "seo_description": "Odkryj Ras Mohamed z Sharm el-Sheikh: snorkeling w Coral Gardens, Brama Allaha, namorzyny i Magic Lake.",
+      "duration": "Pół dnia (około 5 godzin)",
+      "pickup_info": "Odbiór i powrót do wszystkich hoteli w Sharm el-Sheikh.",
+      "cancellation_policy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+      "age_restrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+      "content": {
+        "title": "Sharm el-Sheikh: Ras Mohamed, Magic Lake i przygoda ze snorkelingiem",
+        "description": "## Odkryj cuda natury Ras Mohamed\n\nOderwij się od typowego planu wakacji i odkryj jeden z najpiękniejszych obszarów przyrodniczych Morza Czerwonego. Ta wycieczka z Sharm el-Sheikh prowadzi do Parku Narodowego Ras Mohamed, gdzie spektakularne krajobrazy wybrzeża, niezwykłe formacje geologiczne i kolorowe życie podwodne tworzą wyjątkowe miejsce.\n\nDzień rozpocznie się od odbioru z hotelu nowoczesnym, klimatyzowanym pojazdem. Podczas przejazdu do parku profesjonalny przewodnik opowie Ci o naturalnym pięknie i ciekawej historii tego obszaru.\n\n## Odkryj podwodny świat Coral Gardens\n\nJednym z głównych punktów wycieczki jest postój na snorkeling w Coral Gardens. Poznaj przejrzyste wody Morza Czerwonego i odkryj kolorowy podwodny świat pełen formacji koralowych i fascynującego życia morskiego.\n\nNiezależnie od tego, czy masz doświadczenie w snorkelingu, czy próbujesz go po raz pierwszy, to doskonała okazja, aby podziwiać rafę i wyjątkową przyrodę podwodną Ras Mohamed.\n\n## Odwiedź słynną Bramę Allaha\n\nNastępnie udasz się do imponującej Bramy Allaha, jednego z najbardziej rozpoznawalnych punktów parku. Charakterystyczna kamienna konstrukcja stanowi wyjątkowe wejście do rezerwatu przyrody i jest świetnym miejscem na zdjęcia.\n\n## Zobacz formacje powstałe w wyniku trzęsień ziemi\n\nPoznaj geologiczną stronę Ras Mohamed przy naturalnych szczelinach powstałych wskutek dawnej aktywności sejsmicznej. Te niezwykłe formacje pokazują potężne procesy przyrodnicze, które ukształtowały krajobraz Synaju.\n\nPrzewodnik opowie o ich cechach i pochodzeniu.\n\n## Podziwiaj las namorzynowy\n\nOdwiedź drzewa namorzynowe, które są ważną częścią nadmorskiego ekosystemu parku. Te niezwykłe rośliny rosną w słonym środowisku i zapewniają siedlisko wielu gatunkom zwierząt.\n\nCiesz się spokojną atmosferą, zrób zdjęcia i odkryj mniej znaną stronę Morza Czerwonego.\n\n## Odpocznij przy Magic Lake\n\nWycieczka prowadzi dalej do słynnego Magic Lake, pięknego naturalnego miejsca znanego ze spokojnej atmosfery i malowniczego otoczenia.\n\nPodziwiaj widoki i, jeśli pozwolą na to warunki, skorzystaj z orzeźwiającej kąpieli przed dalszym zwiedzaniem parku.\n\n## Widoki na Zatokę Akaba\n\nPo drodze zatrzymasz się w wybranych punktach widokowych, z których rozciąga się panorama Zatoki Akaba. Zobaczysz kontrast między pustynnymi górami a błękitną wodą Morza Czerwonego.\n\nPo odkryciu najważniejszych atrakcji parku odpocznij podczas powrotu do Sharm el-Sheikh i zabierz ze sobą wspomnienia dnia pełnego natury, odkrywania i przygody.",
+        "durationLabel": "Pół dnia (około 5 godzin)",
+        "highlights": [
+          "Odkryj spektakularne krajobrazy Parku Narodowego Ras Mohamed",
+          "Snorkeling w pięknym Coral Gardens",
+          "Poznaj kolorowe rafy koralowe i fascynujące życie morskie Morza Czerwonego",
+          "Odwiedź słynną Bramę Allaha i zrób piękne zdjęcia",
+          "Zobacz niezwykłe naturalne szczeliny powstałe podczas dawnych trzęsień ziemi",
+          "Odkryj drzewa namorzynowe i nadmorski ekosystem",
+          "Odpocznij przy słynnym Magic Lake",
+          "Podziwiaj malownicze widoki na Zatokę Akaba",
+          "Podróżuj wygodnie dzięki odbiorowi z hotelu i powrotowi w Sharm el-Sheikh"
+        ],
+        "itinerary": [],
+        "included": [
+          "Odbiór i powrót z hoteli w Sharm el-Sheikh",
+          "Nowoczesny transport klimatyzowanym pojazdem",
+          "Opłaty za wstęp do Parku Narodowego Ras Mohamed",
+          "Profesjonalny przewodnik",
+          "Postój na snorkeling z brzegu w Coral Gardens",
+          "Wizyta przy słynnej Bramie Allaha",
+          "Postój przy naturalnych formacjach powstałych podczas trzęsień ziemi",
+          "Wizyta przy drzewach namorzynowych i postój na zdjęcia",
+          "Wizyta przy Magic Lake",
+          "Obowiązujące podatki i opłaty"
+        ],
+        "excluded": [
+          "Sprzęt do snorkelingu, chyba że jest wliczony w wybraną opcję",
+          "Opcjonalny wynajem kamizelki ratunkowej, jeśli jest naliczany osobno",
+          "Jedzenie i napoje",
+          "Profesjonalne usługi fotograficzne",
+          "Wydatki osobiste",
+          "Napiwki",
+          "Usługi niewymienione wyraźnie w elementach wliczonych w cenę"
+        ],
+        "faqs": [
+          {
+            "question": "Ile trwa wycieczka do Ras Mohamed?",
+            "answer": "Wycieczka trwa około 5 godzin i obejmuje najważniejsze postoje oraz transfery.",
+            "section": "faq"
+          },
+          {
+            "question": "Czy snorkeling jest wliczony w program wycieczki?",
+            "answer": "Program obejmuje postój na snorkeling w Coral Gardens. To, czy sprzęt do snorkelingu jest wliczony w cenę, zależy od wybranej opcji rezerwacji.",
+            "section": "faq"
+          },
+          {
+            "question": "Czy muszę dobrze pływać, aby wziąć udział?",
+            "answer": "Wcześniejsze doświadczenie w snorkelingu nie jest wymagane, ale powinieneś czuć się swobodnie w wodzie. Zawsze stosuj się do instrukcji bezpieczeństwa przewodnika.",
+            "section": "faq"
+          },
+          {
+            "question": "Czy można pływać w Magic Lake?",
+            "answer": "Pływanie może być możliwe w zależności od lokalnych warunków i zasad obowiązujących w parku w dniu wizyty.",
+            "section": "faq"
+          },
+          {
+            "question": "Czy odbiór z hotelu jest wliczony w cenę?",
+            "answer": "Tak, odbiór i powrót są dostępne z hoteli i miejsc w Sharm el-Sheikh.",
+            "section": "faq"
+          },
+          {
+            "question": "Co należy zabrać?",
+            "answer": "Zabierz strój kąpielowy, ręcznik, wygodne buty, krem z filtrem, okulary przeciwsłoneczne i aparat. Możesz również zabrać własny sprzęt do snorkelingu.",
+            "section": "faq"
+          }
+        ],
+        "pickupInfo": "Odbiór i powrót do wszystkich hoteli w Sharm el-Sheikh.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+        "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+        "labels": {
+          "highlights": "Najważniejsze atrakcje",
+          "itinerary": "Plan wycieczki",
+          "included": "W cenie",
+          "excluded": "Nie w cenie",
+          "faqs": "Najczęstsze pytania",
+          "pickupInfo": "Informacje o odbiorze",
+          "cancellationPolicy": "Zasady anulowania",
+          "ageRestrictions": "Ograniczenia wiekowe",
+          "bookNow": "Rezerwuj teraz",
+          "browseMore": "Zobacz więcej wycieczek"
+        }
+      }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "2c8dd759-1674-46d2-b550-2225ed61133c",
+      "source_slug": "hurghada-hula-hula-island-yacht-trip-with-snorkeling-lunch",
+      "translated_slug": "hurghada-jacht-hula-hula-island-snorkeling-lunch",
+      "locale": "pl",
+      "title": "Hurghada: rejs jachtem na Hula Hula Island ze snorkelingiem i lunchem",
+      "summary": "Spędź wspaniały dzień na Morzu Czerwonym podczas relaksującego rejsu jachtem na Hula Hula Island. Skorzystaj z dwóch postojów na snorkeling wśród kolorowych raf koralowych, odpocznij na pięknej piaszczystej plaży wyspy i popływaj w krystalicznie czystej wodzie. Całość uzupełniają pyszny lunch w formie bufetu, orzeźwiające napoje i wygodny transfer z hotelu.",
+      "seo_title": "Rejs jachtem na Hula Hula Island z Hurghady ze snorkelingiem i lunchem",
+      "seo_description": "Zarezerwuj rejs jachtem z Hurghady na Hula Hula Island: dwa postoje na snorkeling, czas na plaży, bufet lunchowy i transfer z hotelu.",
+      "duration": "Cały dzień (około 7 godzin)",
+      "pickup_info": "Bezpłatny odbiór i powrót do hoteli w całej Hurghadzie.",
+      "cancellation_policy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+      "age_restrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+      "content": {
+        "title": "Hurghada: rejs jachtem na Hula Hula Island ze snorkelingiem i lunchem",
+        "description": "## Odpocznij na pięknej Hula Hula Island\n\nZostaw codzienną rutynę za sobą i spędź cały dzień w otoczeniu piękna Morza Czerwonego. Ten relaksujący rejs jachtem z Hurghady zabierze Cię na Hula Hula Island — wyjątkowe miejsce nad morzem z miękką piaszczystą plażą, turkusową wodą i spokojną atmosferą.\n\nDzień rozpocznie się od odbioru z hotelu w Hurghadzie. Klimatyzowanym pojazdem dotrzesz do mariny, gdzie załoga powita Cię na pokładzie. Znajdź wygodne miejsce na pokładzie, poczuj morską bryzę i przygotuj się na wyjątkowy dzień na wodzie.\n\n## Popłyń przez Morze Czerwone\n\nPo opuszczeniu mariny jacht popłynie malowniczą trasą w kierunku Hula Hula Island. Podziwiaj widoki wybrzeża, odpoczywaj na pokładzie i ciesz się otwartym morzem.\n\nPo drodze załoga zabierze Cię do dwóch starannie wybranych miejsc na snorkeling. W każdym z nich odkryjesz inny fragment podwodnego świata Morza Czerwonego.\n\n## Odkryj dwie piękne rafy koralowe\n\nPodczas dwóch postojów na snorkeling w przejrzystej wodzie zobaczysz kolorowe formacje koralowe i fascynujące życie morskie. Sprzęt do snorkelingu jest dostępny, a instruktor może towarzyszyć Ci w wodzie. Dzięki temu możesz odkrywać rafy we własnym tempie i zgodnie ze swoim komfortem.\n\nNiezależnie od tego, czy snorkelujesz od dawna, czy robisz to po raz pierwszy, postoje są doskonałą okazją do podziwiania natury pod powierzchnią wody.\n\n## Czas wolny na Hula Hula Island\n\nNajważniejszym punktem dnia jest wizyta na Hula Hula Island. Zejdź na miękki piasek, podziwiaj piękne odcienie błękitu i ciesz się około dwiema godzinami wolnego czasu na plaży.\n\nPopływaj w płytkiej turkusowej wodzie, odpocznij na słońcu lub po prostu naciesz się spokojną atmosferą wyspy. To idealny moment na zdjęcia z wakacji i wspólny czas z rodziną lub przyjaciółmi.\n\n## Pyszny lunch na pokładzie\n\nPo wizycie na wyspie wrócisz na jacht, gdzie będzie czekał świeżo przygotowany lunch w formie otwartego bufetu. Spróbuj różnych dań, sezonowych owoców, napojów bezalkoholowych, gorących napojów i wody mineralnej.\n\nOtoczony morzem i kołysaniem jachtu lunch stanie się przyjemną częścią całej wycieczki.\n\n## Druga sesja snorkelingu\n\nPrzed powrotem zatrzymasz się jeszcze przy innej rafie koralowej. Odkryj nowy podwodny krajobraz, wypatruj kolorowych ryb i ciesz się ostatnimi chwilami w Morzu Czerwonym.\n\n## Relaksujący powrót\n\nPodczas rejsu do mariny odpocznij na pokładzie, podziwiaj widoki i wspominaj dzień pełen pływania, snorkelingu, słońca i relaksu na wyspie.\n\nPo dopłynięciu do mariny będzie czekał klimatyzowany transfer, który wygodnie odwiezie Cię do hotelu w Hurghadzie.\n\nOd pięknych krajobrazów wyspy po tętniące życiem rafy koralowe i spokojną atmosferę na pokładzie — to wspaniały sposób na poznanie Morza Czerwonego i stworzenie wyjątkowych wspomnień z wakacji.",
+        "durationLabel": "Cały dzień (około 7 godzin)",
+        "highlights": [
+          "Popłyń wygodnym jachtem po pięknym Morzu Czerwonym",
+          "Odwiedź zachwycającą Hula Hula Island i ciesz się turkusową wodą",
+          "Odkryj dwie różne rafy koralowe podczas postojów na snorkeling z przewodnikiem",
+          "Spędź około dwóch godzin na relaksie na piaszczystej plaży wyspy",
+          "Pływaj w przejrzystej, płytkiej wodzie i ciesz się spokojną atmosferą wyspy",
+          "Zjedz pyszny lunch w formie otwartego bufetu na pokładzie",
+          "Spróbuj sezonowych owoców, napojów bezalkoholowych, gorących napojów i wody mineralnej",
+          "Skorzystaj z odbioru z hotelu i powrotu w Hurghadzie",
+          "Stwórz niezapomniane wspomnienia, łącząc morską przygodę z relaksem"
+        ],
+        "itinerary": [],
+        "included": [
+          "Odbiór i powrót z hoteli w Hurghadzie",
+          "Transfer klimatyzowanym pojazdem do mariny i z powrotem",
+          "Całodniowy rejs jachtem na Hula Hula Island",
+          "Dwa postoje na snorkeling przy pięknych rafach koralowych",
+          "Sprzęt do snorkelingu: maska, płetwy i kamizelka ratunkowa",
+          "Profesjonalny przewodnik i instruktor snorkelingu w wodzie",
+          "Lunch w formie otwartego bufetu na pokładzie",
+          "Świeże owoce sezonowe",
+          "Napoje bezalkoholowe, gorące napoje i woda mineralna",
+          "Prysznice ze słodką wodą i toalety na pokładzie",
+          "Opłaty za wstęp do parku narodowego",
+          "Wstęp na Hula Hula Island"
+        ],
+        "excluded": [
+          "Transfery z Makadi Bay, Sahl Hasheesh i El Gouny, chyba że dodano je podczas rezerwacji",
+          "Transfery z Soma Bay i Safagi, chyba że dodano je podczas rezerwacji",
+          "Profesjonalne zdjęcia i filmy (dostępne do zakupu)",
+          "Wydatki osobiste",
+          "Napiwki",
+          "Usługi niewymienione wyraźnie w elementach wliczonych w cenę"
+        ],
+        "faqs": [
+          {
+            "question": "Czy sprzęt do snorkelingu jest wliczony w cenę, czy muszę zabrać własny?",
+            "answer": "Na pokładzie dostępne są bezpłatne, dezynfekowane maski, rurki i płetwy w rozmiarach dla dorosłych i dzieci.",
+            "section": "faq"
+          },
+          {
+            "question": "Czy osoby, które nie potrafią pływać, mogą bezpiecznie uczestniczyć?",
+            "answer": "Tak. Dostępne są kamizelki ratunkowe zatwierdzone przez straż przybrzeżną, a certyfikowani instruktorzy nurkowania pomagają gościom w wodzie.",
+            "section": "faq"
+          }
+        ],
+        "pickupInfo": "Bezpłatny odbiór i powrót do hoteli w całej Hurghadzie.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+        "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+        "labels": {
+          "highlights": "Najważniejsze atrakcje",
+          "itinerary": "Plan wycieczki",
+          "included": "W cenie",
+          "excluded": "Nie w cenie",
+          "faqs": "Najczęstsze pytania",
+          "pickupInfo": "Informacje o odbiorze",
+          "cancellationPolicy": "Zasady anulowania",
+          "ageRestrictions": "Ograniczenia wiekowe",
+          "bookNow": "Rezerwuj teraz",
+          "browseMore": "Zobacz więcej wycieczek"
+        }
+      }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "18375e31-b866-4f07-b3a8-c13b2a5c243b",
+      "source_slug": "el-gouna-desert-quad-safari-bedouin-village-camel-ride",
+      "translated_slug": "el-gouna-safari-quadami-wioska-beduinow-kamel",
+      "locale": "pl",
+      "title": "El Gouna: safari quadami po pustyni, wioska Beduinów i przejażdżka na wielbłądzie",
+      "summary": "Zostaw kurort za sobą i odkryj surowe piękno egipskiej pustyni podczas ekscytującej przygody quadem z El Gouny. Jedź piaszczystymi szlakami z górami Morza Czerwonego w tle, odwiedź tradycyjną wioskę Beduinów, napij się autentycznej herbaty beduińskiej i wybierz się na krótką przejażdżkę na wielbłądzie. Transfer z hotelu i profesjonalny przewodnik po pustyni są wliczone w cenę.",
+      "seo_title": "El Gouna: safari quadami po pustyni, wioska Beduinów i przejażdżka na wielbłądzie | Awesome Adventure Tours",
+      "seo_description": "Zarezerwuj safari po pustyni z El Gouny: około 55 km jazdy quadem, wioska Beduinów, tradycyjna herbata i krótka przejażdżka na wielbłądzie.",
+      "duration": "Pół dnia (około 3 godziny)",
+      "pickup_info": "Bezpłatny odbiór i powrót z hoteli w całej El Gounie.",
+      "cancellation_policy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+      "age_restrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+      "content": {
+        "title": "El Gouna: safari quadami po pustyni, wioska Beduinów i przejażdżka na wielbłądzie",
+        "description": "### Zamień plażę na przygodę na egipskiej pustyni\n\nMasz ochotę na zmianę otoczenia? Na kilka godzin zostaw wybrzeże El Gouny i wyrusz na otwartą pustynię, gdzie czekają surowe góry, rozległe piaszczyste krajobrazy i spora dawka przygody.\n\nPrzygoda rozpoczyna się od odbioru z hotelu w El Gounie. Po przyjeździe do stacji quadów na pustyni w pobliżu Hurghady poznasz zespół, zapoznasz się z pojazdem i otrzymasz instruktaż bezpieczeństwa przed wyjazdem.\n\nGdy będziesz gotowy, ruszysz w trasę. Podążaj za przewodnikiem pustynnymi szlakami i przemierzaj otwarte piaszczyste przestrzenie, mając na horyzoncie imponujące pasmo górskie Morza Czerwonego. Poczuj emocje podczas jazdy, oddychaj świeżym pustynnym powietrzem i podziwiaj krajobrazy po drodze.\n\nPo około godzinie jazdy dotrzesz do tradycyjnej wioski Beduinów. Tutaj tempo zwalnia i poznasz inny sposób życia. Usiądź, napij się tradycyjnej herbaty beduińskiej i dowiedz się czegoś o lokalnych zwyczajach oraz codziennym życiu na pustyni.\n\nWizyta nie byłaby kompletna bez spotkania z wielbłądem. Wybierz się na krótką przejażdżkę i uwiecznij wyjątkowe chwile na zdjęciach przed rozpoczęciem drogi powrotnej.\n\nGdy nadejdzie czas powrotu, ponownie wsiądziesz na quada i pojedziesz pustynnymi szlakami do punktu startowego. Po zakończeniu jazdy transfer wygodnie odwiezie Cię do hotelu w El Gounie.\n\nNiezależnie od tego, czy podróżujesz we dwoje, spędzasz wakacje z przyjaciółmi, czy po prostu chcesz dodać do pobytu ekscytującą aktywność, to safari jest świetnym sposobem na poznanie pełnej przygód strony Egiptu poza plażami.",
+        "durationLabel": "Pół dnia (około 3 godziny)",
+        "highlights": [
+          "Przeżyj ekscytującą przejażdżkę quadem po pięknej egipskiej pustyni",
+          "Pokonaj około 55 km pustynnych szlaków w otoczeniu gór Morza Czerwonego",
+          "Poczuj emocje podczas jazdy po otwartych piaszczystych równinach i surowych trasach pustynnych",
+          "Odwiedź tradycyjną wioskę Beduinów i poznaj lokalne życie na pustyni",
+          "Odpocznij przy świeżo przygotowanej tradycyjnej herbacie beduińskiej",
+          "Wybierz się na krótką przejażdżkę na wielbłądzie i uwiecznij piękne pustynne chwile na zdjęciach",
+          "Podziwiaj spektakularne krajobrazy Pustyni Wschodniej",
+          "Skorzystaj z wygodnego odbioru z hoteli w El Gounie i powrotu",
+          "Wybierz wspólny quad dwuosobowy, pojedynczy quad lub prywatne safari"
+        ],
+        "itinerary": [
+          {
+            "time": "Odbiór z hotelu",
+            "title": "Odbiór z hotelu w El Gounie",
+            "description": "Klimatyzowany transfer z hotelu w El Gounie do stacji quadów na pustyni w pobliżu Hurghady."
+          },
+          {
+            "time": "Przed jazdą",
+            "title": "Instruktaż bezpieczeństwa i jazda próbna",
+            "description": "Poznaj zespół pustynny, zapoznaj się z quadem i weź udział w instruktażu bezpieczeństwa przed wyjazdem."
+          },
+          {
+            "time": "Jazda po pustyni",
+            "title": "Przejazd quadem po pustyni z przewodnikiem",
+            "description": "Podążaj za przewodnikiem pustynnymi szlakami, mając w oddali pasmo górskie Morza Czerwonego."
+          },
+          {
+            "time": "Wioska Beduinów",
+            "title": "Wioska Beduinów i przejażdżka na wielbłądzie",
+            "description": "Odwiedź tradycyjną wioskę Beduinów, napij się herbaty beduińskiej, poznaj lokalne zwyczaje i wybierz się na krótką przejażdżkę na wielbłądzie."
+          },
+          {
+            "time": "Powrót",
+            "title": "Transfer powrotny do El Gouny",
+            "description": "Wróć quadem do punktu startowego, a następnie skorzystaj z transferu do hotelu w El Gounie."
+          }
+        ],
+        "included": [
+          "Odbiór i powrót ze wszystkich hoteli w El Gounie",
+          "Transfer do i ze stacji safari na pustyni",
+          "Safari quadem na dystansie około 55 km",
+          "Quad dwuosobowy lub pojedynczy, zależnie od wybranej opcji",
+          "Profesjonalny przewodnik po pustyni i instrukcje jazdy",
+          "Kask ochronny podczas jazdy quadem",
+          "Wizyta w tradycyjnej wiosce Beduinów",
+          "Krótka przejażdżka na wielbłądzie (około 5 minut)",
+          "Tradycyjna herbata beduińska",
+          "Butelkowana woda pitna",
+          "Podstawowy instruktaż bezpieczeństwa przed przygodą"
+        ],
+        "excluded": [
+          "Chusta beduińska (dostępna opcjonalnie)",
+          "Gogle ochronne (dostępne opcjonalnie)",
+          "Ulepszenie do prywatnego transferu (dostępne opcjonalnie)",
+          "Podatek turystyczny w wysokości $1 za osobę",
+          "Wydatki osobiste i pamiątki",
+          "Napiwki dla przewodnika po pustyni i kierowcy",
+          "Usługi niewymienione wyraźnie w elementach wliczonych w cenę"
+        ],
+        "faqs": [],
+        "pickupInfo": "Bezpłatny odbiór i powrót z hoteli w całej El Gounie.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+        "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+        "labels": {
+          "highlights": "Najważniejsze atrakcje",
+          "itinerary": "Plan wycieczki",
+          "included": "W cenie",
+          "excluded": "Nie w cenie",
+          "faqs": "Najczęstsze pytania",
+          "pickupInfo": "Informacje o odbiorze",
+          "cancellationPolicy": "Zasady anulowania",
+          "ageRestrictions": "Ograniczenia wiekowe",
+          "bookNow": "Rezerwuj teraz",
+          "browseMore": "Zobacz więcej wycieczek"
+        }
+      }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "5a15257b-d664-4957-be77-c2cb87bd174a",
+      "source_slug": "el-gouna-jeep-desert-safari-bbq-dinner-stargazing-experience",
+      "translated_slug": "el-gouna-safari-jeepem-grill-obserwacja-gwiazd",
+      "locale": "pl",
+      "title": "El Gouna: safari jeepem po pustyni, grill i obserwacja gwiazd",
+      "summary": "Ucieknij od świateł El Gouny i przeżyj niezapomniany wieczór w sercu egipskiej pustyni. Wybierz się na ekscytującą przejażdżkę jeepem 4x4 po górach Morza Czerwonego, podziwiaj zachód słońca i poznaj tradycyjną gościnność Beduinów podczas pysznej kolacji z grilla. Po zmroku odkryj magię pustynnego nieba przez profesjonalny teleskop i dowiedz się więcej o gwiazdach i planetach od przewodnika astronomicznego.",
+      "seo_title": "El Gouna: safari jeepem, grill i obserwacja gwiazd na pustyni | Awesome Adventure Tours",
+      "seo_description": "Przeżyj safari jeepem z El Gouny: zachód słońca, obóz beduiński, przejażdżka na wielbłądzie, grill i obserwacja gwiazd przez teleskop.",
+      "duration": "Cały dzień (około 5 godzin)",
+      "pickup_info": "Bezpłatny odbiór i powrót z hoteli w całej El Gounie.",
+      "cancellation_policy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+      "age_restrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+      "content": {
+        "title": "El Gouna: safari jeepem po pustyni, grill i obserwacja gwiazd",
+        "description": "## Wieczór pełen pustynnej przygody, beduińskiej gościnności i rozgwieżdżonego nieba\n\nNiektóre doświadczenia są najpiękniejsze, gdy słońce zaczyna zachodzić. Ta pustynna przygoda jest tego doskonałym przykładem.\n\nZostaw za sobą tętniącą życiem El Gounę i wyrusz w piękną Pustynię Wschodnią na wieczór pełen przygód, lokalnych tradycji i zachwytu. Od emocji podczas jazdy jeepem 4x4 po spokojne piękno rozgwieżdżonego nieba — to strona Egiptu, której wielu odwiedzających nigdy nie poznaje.\n\nWieczór rozpocznie się od odbioru z hotelu w El Gounie, a następnie przejazdu jeepem 4x4 w głąb pustyni. W miarę oddalania się od miasta krajobraz zmieni się w rozległe równiny, surowe góry i niekończące się pustynne przestrzenie.\n\nPo przejechaniu około 26 kilometrów przez pustynię dotrzesz do malowniczego miejsca, z którego można podziwiać zachód słońca. Obserwuj, jak kolory nieba się zmieniają, gdy słońce powoli chowa się za górami. To wspaniały moment na zdjęcia, oddech świeżym pustynnym powietrzem i podziwianie otoczenia.\n\nNastępnie odwiedzisz tradycyjny obóz Beduinów, gdzie zostaniesz powitany lokalną gościnnością. Usiądź, napij się herbaty z beduińskich ziół i poznaj tradycje oraz styl życia pustynnych społeczności. Będziesz mieć również okazję wybrać się na krótką przejażdżkę na wielbłądzie i zrobić piękne zdjęcia.\n\nGdy zapadnie wieczór, będzie czekał pyszny bufet z grilla. Delektuj się świeżo przygotowanymi potrawami, tradycyjnymi smakami i orzeźwiającymi napojami bezalkoholowymi w swobodnej atmosferze beduińskiego obozu, pośród spokojnego pustynnego krajobrazu.\n\nJednak najbardziej magiczna część wieczoru dopiero nadejdzie.\n\nGdy zrobi się ciemno i znajdziesz się daleko od jasnych świateł miasta, spójrz w górę i odkryj zupełnie inny widok nocnego nieba. Z pomocą profesjonalnego przewodnika astronomicznego poznasz gwiazdy, dowiesz się ciekawych faktów o wszechświecie i nauczysz się rozpoznawać różne ciała niebieskie.\n\nSpójrz przez profesjonalny teleskop na widoczne planety i inne fascynujące obiekty na nocnym niebie — ich obserwacja zależy od pogody i warunków astronomicznych.\n\nTo wyjątkowe doświadczenie łączy przygodę, kulturę i astronomię w jeden niezapomniany wieczór.\n\nPo obserwacji gwiazd odpocznij podczas jazdy jeepem z powrotem do El Gouny. Zabierzesz ze sobą wspomnienia pustynnego wieczoru, którego szybko nie zapomnisz.",
+        "durationLabel": "Cały dzień (około 5 godzin)",
+        "highlights": [
+          "Przeżyj ekscytujące safari jeepem 4x4 po pięknej Pustyni Wschodniej",
+          "Przejedź około 26 km w głąb pustyni, w otoczeniu imponujących gór Morza Czerwonego",
+          "Podziwiaj piękny zachód słońca z malowniczego punktu widokowego na pustyni",
+          "Poznaj tradycyjną gościnność Beduinów w pustynnym obozie",
+          "Wybierz się na krótką przejażdżkę na wielbłądzie i zrób piękne zdjęcia",
+          "Spróbuj świeżo przygotowanej herbaty beduińskiej i tradycyjnego chleba",
+          "Delektuj się pysznym bufetem z grilla i napojami bezalkoholowymi",
+          "Odkrywaj nocne niebo z profesjonalnym przewodnikiem astronomicznym",
+          "Obserwuj widoczne planety i ciała niebieskie przez profesjonalny teleskop",
+          "Poznaj fascynujące fakty o gwiazdach, planetach i wszechświecie",
+          "Skorzystaj z wygodnego odbioru z hoteli w El Gounie i powrotu"
+        ],
+        "itinerary": [],
+        "included": [
+          "Odbiór i powrót ze wszystkich hoteli w El Gounie",
+          "Safari jeepem 4x4 po pustyni",
+          "Przejazd przez pustynię na dystansie około 26 km",
+          "Butelka wody mineralnej podczas jazdy jeepem",
+          "Postój w malowniczym miejscu na obserwację zachodu słońca",
+          "Krótka przejażdżka na wielbłądzie i możliwość zrobienia zdjęć",
+          "Tradycyjna herbata beduińska i świeżo wypiekany chleb",
+          "Bufet z grilla w pustynnym obozie beduińskim",
+          "Napoje bezalkoholowe i woda mineralna podczas kolacji",
+          "Obserwacja gwiazd przez profesjonalny teleskop",
+          "Profesjonalny przewodnik astronomiczny"
+        ],
+        "excluded": [
+          "Podatek turystyczny w wysokości $1 za osobę",
+          "Wydatki osobiste i pamiątki",
+          "Dodatkowe jedzenie i napoje niewymienione w elementach wliczonych w cenę",
+          "Napiwki dla przewodnika i kierowcy",
+          "Profesjonalne usługi fotograficzne",
+          "Usługi niewymienione wyraźnie w elementach wliczonych w cenę"
+        ],
+        "faqs": [],
+        "pickupInfo": "Bezpłatny odbiór i powrót z hoteli w całej El Gounie.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+        "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+        "labels": {
+          "highlights": "Najważniejsze atrakcje",
+          "itinerary": "Plan wycieczki",
+          "included": "W cenie",
+          "excluded": "Nie w cenie",
+          "faqs": "Najczęstsze pytania",
+          "pickupInfo": "Informacje o odbiorze",
+          "cancellationPolicy": "Zasady anulowania",
+          "ageRestrictions": "Ograniczenia wiekowe",
+          "bookNow": "Rezerwuj teraz",
+          "browseMore": "Zobacz więcej wycieczek"
+        }
+      }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "cda285d8-1119-4118-bb73-3a3c433f8daf",
+      "source_slug": "from-hurghada-luxor-day-trip-karnak-temple-valley-of-the-kings",
+      "translated_slug": "hurghada-luksor-dzienna-wycieczka-karnak-dolina-krolow",
+      "locale": "pl",
+      "title": "Z Hurghady: jednodniowa wycieczka do Luksoru, świątynia Karnak i Dolina Królów",
+      "summary": "Cofnij się o tysiące lat i odkryj fascynującą historię starożytnego Egiptu podczas jednodniowej wycieczki z Hurghady do Luksoru. Zwiedź majestatyczny kompleks świątynny Karnak, królewskie grobowce w Dolinie Królów i imponującą świątynię królowej Hatszepsut wykutą w skałach Deir el-Bahari. Posłuchaj opowieści profesjonalnego egiptologa, zjedz tradycyjny egipski lunch i podróżuj wygodnie klimatyzowanym pojazdem.",
+      "seo_title": "Jednodniowa wycieczka z Hurghady do Luksoru: Karnak i Dolina Królów | Awesome Adventure Tours",
+      "seo_description": "Zarezerwuj wycieczkę z Hurghady do Luksoru: świątynia Karnak, trzy królewskie grobowce w Dolinie Królów, świątynia Hatszepsut i lunch.",
+      "duration": "Cały dzień",
+      "pickup_info": "Bezpłatny odbiór i powrót do lobby hotelowego w całej Hurghadzie.",
+      "cancellation_policy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+      "age_restrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+      "content": {
+        "title": "Z Hurghady: jednodniowa wycieczka do Luksoru, świątynia Karnak i Dolina Królów",
+        "description": "## Odkryj cuda starożytnych Teb podczas podróży do Luksoru\n\nJeśli kiedykolwiek chciałeś zobaczyć miejsca, w których żyli wielcy faraonowie, czcili swoich bogów i zostali pochowani, dzień w Luksorze to doświadczenie, którego nie można przegapić.\n\nLuksor jest często nazywany największym muzeum na świeżym powietrzu na świecie i mieści jedne z najbardziej niezwykłych zabytków starożytnego Egiptu. Podczas tej jednodniowej wycieczki z Hurghady przemierzysz Pustynię Wschodnią i dotrzesz do serca starożytnych Teb, gdzie każda świątynia i każdy królewski grobowiec opowiada własną historię.\n\nDzień rozpocznie się wcześnie od odbioru z hotelu w Hurghadzie. Usiądź w wygodnym, klimatyzowanym pojeździe i ciesz się podróżą do Luksoru. Po drodze zaplanowane są postoje na odpoczynek, aby podróż była wygodniejsza.\n\nPo przyjeździe najpierw odwiedzisz imponujący kompleks świątynny Karnak. Ten ogromny teren religijny był budowany i rozbudowywany przez wiele pokoleń faraonów. Przejdź pod wysokimi kolumnami Wielkiej Sali Hypostylowej, podziwiaj pięknie rzeźbione hieroglify i odkryj Święte Jezioro, słuchając fascynujących opowieści egiptologa o historii tego niezwykłego miejsca.\n\nJeśli chcesz zobaczyć Luksor z innej perspektywy, możesz dodać tradycyjny rejs feluką po Nilu na Wyspę Bananową. Ciesz się delikatną bryzą, obserwuj codzienne życie nad brzegiem rzeki i zrób sobie spokojną przerwę od zwiedzania.\n\nNastępnie zjesz pyszny egipski lunch w lokalnej restauracji, po czym udasz się na zachodni brzeg Luksoru, gdzie czekają jedne z najsłynniejszych królewskich zabytków starożytnego Egiptu.\n\nKolejnym celem będzie legendarna Dolina Królów. Ukryta wśród pustynnych wzgórz była miejscem spoczynku wielu najpotężniejszych faraonów Egiptu. Odwiedzisz trzy grobowce królewskie wliczone w cenę i zobaczysz kolorowe malowidła ścienne, szczegółowe hieroglify oraz fascynujące sceny, które przetrwały tysiące lat. Możesz również dodać bilet wstępu do słynnego grobowca Tutanchamona, aby jeszcze bardziej wzbogacić wizytę.\n\nNastępnie odwiedzisz wspaniałą świątynię królowej Hatszepsut w Deir el-Bahari. Została ona wzniesiona bezpośrednio przy imponujących wapiennych ścianach skalnych. Eleganckie tarasy i wyjątkowa architektura sprawiają, że jest to jedna z najbardziej rozpoznawalnych świątyń Egiptu. Poznaj niezwykłą królową, która rządziła jako faraon i pozostawiła po sobie jeden z najbardziej pamiętnych zabytków kraju.\n\nPrzed opuszczeniem zachodniego brzegu zatrzymasz się jeszcze przy Kolosach Memnona. Te dwa ogromne posągi Amenhotepa III stoją w krajobrazie Teb od ponad 3 000 lat i nadal należą do najbardziej rozpoznawalnych zabytków Luksoru. To doskonałe miejsce na zdjęcia i podziwianie skali starożytnego egipskiego rzemiosła.\n\nPo zwiedzaniu odpocznij w klimatyzowanym pojeździe podczas podróży powrotnej do Hurghady.\n\nTo długi dzień, ale pełen niezapomnianych miejsc, fascynujących opowieści i głębszego zrozumienia starożytnej cywilizacji egipskiej.\n\nNiezależnie od tego, czy odwiedzasz Egipt po raz pierwszy, czy od dawna fascynuje Cię jego historia, ta wycieczka do Luksoru to wspaniała okazja, aby w ciągu jednego wyjątkowego dnia odkryć najbardziej znane skarby archeologiczne kraju.",
+        "durationLabel": "Cały dzień",
+        "highlights": [
+          "Odkryj Luksor, jedno z najważniejszych miejsc na świecie związanych z historią starożytnego Egiptu",
+          "Zwiedź imponujący kompleks świątynny Karnak i słynną Wielką Salę Hypostylową ze 134 wysokimi kolumnami",
+          "Odwiedź legendarną Dolinę Królów i zobacz trzy pięknie zdobione grobowce królewskie",
+          "Poznaj życie i rytuały pogrzebowe najpotężniejszych faraonów Egiptu",
+          "Odkryj niezwykłą świątynię królowej Hatszepsut zbudowaną przy imponujących skałach Deir el-Bahari",
+          "Zrób zdjęcia przy imponujących Kolosach Memnona",
+          "Opcjonalnie wybierz tradycyjny rejs feluką po Nilu na Wyspę Bananową",
+          "Opcjonalnie dodaj bilet wstępu do grobowca Tutanchamona",
+          "Zjedz świeżo przygotowany egipski lunch w lokalnej restauracji",
+          "Podróżuj wygodnie z Hurghady klimatyzowanym pojazdem i doświadczonym egiptologiem"
+        ],
+        "itinerary": [],
+        "included": [
+          "Odbiór i powrót z hoteli w Hurghadzie",
+          "Transport w obie strony nowoczesnym klimatyzowanym minibusem lub prywatnym pojazdem, zależnie od wybranej opcji",
+          "Profesjonalny przewodnik-egiptolog w wybranym języku",
+          "Bilet wstępu do świątyni Karnak",
+          "Bilet wstępu do Doliny Królów, obejmujący trzy królewskie grobowce (Ramzesa III, Ramzesa IV i Ramzesa I)",
+          "Bilet wstępu do świątyni królowej Hatszepsut",
+          "Postój na zdjęcia przy Kolosach Memnona",
+          "Tradycyjny egipski lunch w lokalnej restauracji",
+          "Butelkowana woda mineralna i napoje bezalkoholowe podczas podróży",
+          "Lekkie przekąski w drodze",
+          "Postoje na odpoczynek na trasie między Hurghadą a Luksorem",
+          "Obowiązujące podatki i opłaty serwisowe"
+        ],
+        "excluded": [
+          "Bilet wstępu do grobowca Tutanchamona (opcjonalnie do dodania lub wliczony w wybrane pakiety)",
+          "Tradycyjny rejs feluką po Nilu na Wyspę Bananową (opcjonalny, chyba że jest wliczony w wybrany pakiet)",
+          "Bilety wstępu do dodatkowych królewskich grobowców poza trzema wliczonymi w cenę",
+          "Napoje w restauracji podczas lunchu",
+          "Odbiór z El Gouny, Makadi Bay, Sahl Hasheesh, Safagi lub Soma Bay (może obowiązywać dodatkowa opłata za transfer)",
+          "Usługi przewodnika w językach niewymienionych w wybranym pakiecie (dostępne na życzenie)",
+          "Wydatki osobiste i pamiątki",
+          "Napiwki dla przewodnika i kierowcy",
+          "Usługi niewymienione wyraźnie w elementach wliczonych w cenę"
+        ],
+        "faqs": [],
+        "pickupInfo": "Bezpłatny odbiór i powrót do lobby hotelowego w całej Hurghadzie.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+        "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+        "labels": {
+          "highlights": "Najważniejsze atrakcje",
+          "itinerary": "Plan wycieczki",
+          "included": "W cenie",
+          "excluded": "Nie w cenie",
+          "faqs": "Najczęstsze pytania",
+          "pickupInfo": "Informacje o odbiorze",
+          "cancellationPolicy": "Zasady anulowania",
+          "ageRestrictions": "Ograniczenia wiekowe",
+          "bookNow": "Rezerwuj teraz",
+          "browseMore": "Zobacz więcej wycieczek"
+        }
+      }
+    }
+  ]
+}
