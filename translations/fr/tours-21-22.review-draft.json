@@ -85,10 +85,7 @@
       "departure_time": "09:00 AM",
       "age_restrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
       "pickup_info": "Prise en charge et retour depuis tous les hôtels de Charm el-Cheikh.",
-      "cancellation_policy": "Annulation gratuite jusqu’à 24 heures avant l’heure de début de l’excursion.",
-      "source_content_warnings": [
-        "Le texte source de la FAQ sur le gilet de sauvetage contient une phrase corrompue fusionnant la réponse sur les gilets de flottaison avec le contenu sur le snorkeling. La traduction de la FAQ a été rédigée à partir du sens cohérent du reste de la fiche ; la FAQ source doit être corrigée avant publication."
-      ]
+      "cancellation_policy": "Annulation gratuite jusqu’à 24 heures avant l’heure de début de l’excursion."
     },
     {
       "entity_type": "tour",
