@@ -48,39 +48,29 @@
         ],
         "itinerary": [
           {
-            "time": "08:00",
-            "title": "Prise en charge à l’hôtel",
-            "description": "Transfert climatisé depuis le hall de votre resort jusqu’à la marina de Hurghada."
+            "time": "Prise en charge",
+            "title": "Transfert depuis votre hôtel à El Gouna",
+            "description": "Transfert climatisé depuis votre hôtel à El Gouna jusqu’à la station de quad dans la zone désertique d’Hurghada."
           },
           {
-            "time": "09:00",
-            "title": "Départ de la marina",
-            "description": "Briefing de sécurité et navigation panoramique sur la mer Rouge."
+            "time": "Avant le départ",
+            "title": "Briefing de sécurité et essai",
+            "description": "Rencontrez l’équipe du désert, familiarisez-vous avec le quad et recevez les consignes de sécurité avant de partir."
           },
           {
-            "time": "10:00",
-            "title": "Premier arrêt snorkeling",
-            "description": "Session guidée de snorkeling sur le récif pour observer les poissons-perroquets, les raies et les coraux."
+            "time": "Parcours dans le désert",
+            "title": "Excursion guidée en quad",
+            "description": "Suivez votre guide sur les pistes du désert et traversez les étendues de sable avec les montagnes de la mer Rouge à l’horizon."
           },
           {
-            "time": "12:30",
-            "title": "Déjeuner à bord",
-            "description": "Déjeuner buffet chaud avec poisson, poulet, riz, salades et fruits."
+            "time": "Village bédouin",
+            "title": "Visite d’un village bédouin et balade à dos de chameau",
+            "description": "Visitez un village bédouin traditionnel, dégustez un thé bédouin, découvrez les coutumes locales et profitez d’une courte balade à dos de chameau."
           },
           {
-            "time": "14:00",
-            "title": "Temps libre sur la plage de l’île",
-            "description": "Débarquement sur la plage pour se détendre, prendre des photos et nager dans les eaux peu profondes."
-          },
-          {
-            "time": "16:30",
-            "title": "Retour à la marina",
-            "description": "Croisière tranquille au retour, tandis que le soleil de l’après-midi se reflète sur les montagnes côtières."
-          },
-          {
-            "time": "17:00",
-            "title": "Retour à l’hôtel",
-            "description": "Transfert de retour jusqu’au hall de votre hôtel."
+            "time": "Retour",
+            "title": "Retour à El Gouna",
+            "description": "Reprenez votre quad pour revenir au point de départ, puis rejoignez votre hôtel à El Gouna en transfert."
           }
         ],
         "faqs": []
@@ -92,8 +82,7 @@
       "departure_time": "13:30 AM",
       "age_restrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
       "pickup_info": "Prise en charge gratuite dans le hall de votre hôtel et retour inclus dans toute la zone d’El Gouna.",
-      "cancellation_policy": "Annulation gratuite jusqu’à 24 heures avant l’heure de début de l’excursion.",
-      "source_content_warnings": []
+      "cancellation_policy": "Annulation gratuite jusqu’à 24 heures avant l’heure de début de l’excursion."
     },
     {
       "entity_type": "tour",

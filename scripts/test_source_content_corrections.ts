@@ -60,4 +60,9 @@ const allTourChunkRecords = tourChunkFiles.flatMap((file: string) => readJson('.
 for (const record of allTourChunkRecords) {
   assert.deepEqual(record.source_content_warnings || [], [], 'Split French tour draft has no unresolved source warning: ' + record.source_slug);
 }
+const correctedQuadChunk = allTourChunkRecords.find((record: any) => record.entity_key === '18375e31-b866-4f07-b3a8-c13b2a5c243b');
+assert.ok(correctedQuadChunk, 'Corrected El Gouna quad safari exists in its split review draft');
+assert.equal(correctedQuadChunk.content.itinerary.length, 5, 'Split El Gouna quad itinerary has five desert-specific steps');
+assert.doesNotMatch(JSON.stringify(correctedQuadChunk.content.itinerary), /marina|snorkeling|bateau|navigation|île|island|à bord/i,
+  'Split El Gouna quad itinerary cannot retain the unrelated boat excursion');
 console.log('Source corrections and production dependency isolation checks passed.');
