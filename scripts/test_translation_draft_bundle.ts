@@ -6,7 +6,7 @@ const doc=read('../docs/LOCALIZATION_WORKFLOW.md');
 const server=read('../server.ts');
 const editor=read('../src/components/admin/AdminTranslationManager.tsx');
 assert.match(script,/LOCALES = new Set<Locale>\(EUROPEAN_LOCALE_ROLLOUT\.filter\(\(locale\) => locale\.code !== 'en'\)\.map\(\(locale\) => locale\.code\)\)/);
-assert.match(script,/ENTITY_TYPES = new Set\(\['tour','destination','blog_post','static_page'\]\)/);
+assert.match(script,/ENTITY_TYPES = new Set\(\['tour','destination','blog_post','static_page','communication_template','ui_catalog'\]\)/);
 assert.match(script,/translation_state:'draft'/);
 assert.match(script,/reviewed_at:null, published_at:null/);
 assert.match(script,/existing\.data\.translation_state!=='draft' \|\| existing\.data\.reviewed_at \|\| existing\.data\.published_at/);
