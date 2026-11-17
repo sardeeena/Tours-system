@@ -406,9 +406,16 @@ assert(
   bookingRepoCode.includes("eventType: 'booking_updated'") && bookingRepoCode.includes('recordActivity'),
   'bookingRepository records immutable audit trails in crm_activities on state changes'
 );
+const cancellationMigrationCode = fs.readFileSync(
+  path.join(rootDir, 'supabase/migrations/20261110000000_booking_lookup_cancellation_hardening.sql'),
+  'utf8'
+);
 assert(
-  bookingRepoCode.includes("Revert capacity in tour_availability") || bookingRepoCode.includes('Math.max(0, (curAvail.booked_count || 0) - partySize)'),
-  'cancelBooking rolls back reserved seats in tour_availability'
+  bookingRepoCode.includes("request_booking_cancellation_secure") &&
+  bookingRepoCode.includes("admin_resolve_booking_cancellation") &&
+  cancellationMigrationCode.includes('UPDATE public.tour_availability') &&
+  cancellationMigrationCode.includes('capacityReleased'),
+  'Cancellation requests and approvals use secure database RPCs that release reserved capacity transactionally'
 );
 
 const commServiceCode = fs.readFileSync(path.join(rootDir, 'src/services/communicationService.ts'), 'utf8');
