@@ -205,11 +205,13 @@
         "faqs": [
           {
             "question": "Is snorkeluitrusting inbegrepen of moet ik die zelf meenemen?",
-            "answer": "Aan boord zijn gratis gereinigde maskers, snorkels en zwemvliezen in volwassen- en kindermaten beschikbaar."
+            "answer": "Aan boord zijn gratis gereinigde maskers, snorkels en zwemvliezen in volwassen- en kindermaten beschikbaar.",
+            "section": "faq"
           },
           {
             "question": "Kunnen mensen die niet kunnen zwemmen veilig deelnemen?",
-            "answer": "Ja. Er zijn door de kustwacht goedgekeurde zwemvesten beschikbaar en gecertificeerde duikinstructeurs begeleiden gasten in het water."
+            "answer": "Ja. Er zijn door de kustwacht goedgekeurde zwemvesten beschikbaar en gecertificeerde duikinstructeurs begeleiden gasten in het water.",
+            "section": "faq"
           }
         ],
         "pickupInfo": "Ophalen en terugbrengen zijn inbegrepen in moderne voertuigen met airconditioning.",
@@ -358,11 +360,13 @@
         "faqs": [
           {
             "question": "Is snorkeluitrusting inbegrepen of moet ik die zelf meenemen?",
-            "answer": "Aan boord zijn gratis gereinigde maskers, snorkels en zwemvliezen in volwassen- en kindermaten beschikbaar."
+            "answer": "Aan boord zijn gratis gereinigde maskers, snorkels en zwemvliezen in volwassen- en kindermaten beschikbaar.",
+            "section": "faq"
           },
           {
             "question": "Kunnen mensen die niet kunnen zwemmen veilig deelnemen?",
-            "answer": "Ja. Er zijn door de kustwacht goedgekeurde zwemvesten beschikbaar en gecertificeerde duikinstructeurs begeleiden gasten in het water."
+            "answer": "Ja. Er zijn door de kustwacht goedgekeurde zwemvesten beschikbaar en gecertificeerde duikinstructeurs begeleiden gasten in het water.",
+            "section": "faq"
           }
         ],
         "pickupInfo": "Ophalen en terugbrengen zijn inbegrepen in moderne voertuigen met airconditioning.",
@@ -435,11 +439,13 @@
         "faqs": [
           {
             "question": "Is snorkeluitrusting inbegrepen of moet ik die zelf meenemen?",
-            "answer": "Aan boord zijn gratis gereinigde maskers, snorkels en zwemvliezen in volwassen- en kindermaten beschikbaar."
+            "answer": "Aan boord zijn gratis gereinigde maskers, snorkels en zwemvliezen in volwassen- en kindermaten beschikbaar.",
+            "section": "faq"
           },
           {
             "question": "Kunnen mensen die niet kunnen zwemmen veilig deelnemen?",
-            "answer": "Ja. Er zijn door de kustwacht goedgekeurde zwemvesten beschikbaar en gecertificeerde duikinstructeurs begeleiden gasten in het water."
+            "answer": "Ja. Er zijn door de kustwacht goedgekeurde zwemvesten beschikbaar en gecertificeerde duikinstructeurs begeleiden gasten in het water.",
+            "section": "faq"
           }
         ],
         "pickupInfo": "Ophalen en terugbrengen van en naar het hotel zijn inbegrepen.",
@@ -511,11 +517,13 @@
         "faqs": [
           {
             "question": "Is snorkeluitrusting inbegrepen of moet ik die zelf meenemen?",
-            "answer": "Aan boord zijn gratis gereinigde maskers, snorkels en zwemvliezen in volwassen- en kindermaten beschikbaar."
+            "answer": "Aan boord zijn gratis gereinigde maskers, snorkels en zwemvliezen in volwassen- en kindermaten beschikbaar.",
+            "section": "faq"
           },
           {
             "question": "Kunnen mensen die niet kunnen zwemmen veilig deelnemen?",
-            "answer": "Ja. Er zijn door de kustwacht goedgekeurde zwemvesten beschikbaar en gecertificeerde duikinstructeurs begeleiden gasten in het water."
+            "answer": "Ja. Er zijn door de kustwacht goedgekeurde zwemvesten beschikbaar en gecertificeerde duikinstructeurs begeleiden gasten in het water.",
+            "section": "faq"
           }
         ],
         "pickupInfo": "Gratis ophalen en terugbrengen bij de hotellobby in heel Hurghada.",
@@ -589,11 +597,13 @@
         "faqs": [
           {
             "question": "Is snorkeluitrusting inbegrepen of moet ik die zelf meenemen?",
-            "answer": "Aan boord zijn gratis gereinigde maskers, snorkels en zwemvliezen in volwassen- en kindermaten beschikbaar."
+            "answer": "Aan boord zijn gratis gereinigde maskers, snorkels en zwemvliezen in volwassen- en kindermaten beschikbaar.",
+            "section": "faq"
           },
           {
             "question": "Kunnen mensen die niet kunnen zwemmen veilig deelnemen?",
-            "answer": "Ja. Er zijn door de kustwacht goedgekeurde zwemvesten beschikbaar en gecertificeerde duikinstructeurs begeleiden gasten in het water."
+            "answer": "Ja. Er zijn door de kustwacht goedgekeurde zwemvesten beschikbaar en gecertificeerde duikinstructeurs begeleiden gasten in het water.",
+            "section": "faq"
           }
         ],
         "pickupInfo": "Gratis ophalen en terugbrengen bij de hotellobby in heel Hurghada.",
@@ -805,27 +815,33 @@
         "faqs": [
           {
             "question": "Hoe lang duurt de Ras Mohammed-tour?",
-            "answer": "De excursie duurt ongeveer 5 uur, inclusief de belangrijkste bezoeken en transfers."
+            "answer": "De excursie duurt ongeveer 5 uur, inclusief de belangrijkste bezoeken en transfers.",
+            "section": "faq"
           },
           {
             "question": "Is snorkelen inbegrepen bij de tour?",
-            "answer": "Het programma bevat een snorkelstop bij Coral Gardens. Of snorkeluitrusting is inbegrepen, hangt af van de gekozen boekingsoptie."
+            "answer": "Het programma bevat een snorkelstop bij Coral Gardens. Of snorkeluitrusting is inbegrepen, hangt af van de gekozen boekingsoptie.",
+            "section": "faq"
           },
           {
             "question": "Moet ik een ervaren zwemmer zijn om mee te doen?",
-            "answer": "Eerdere snorkelervaring is niet noodzakelijk, maar je moet je prettig voelen in het water. Volg altijd de veiligheidsinstructies van je gids."
+            "answer": "Eerdere snorkelervaring is niet noodzakelijk, maar je moet je prettig voelen in het water. Volg altijd de veiligheidsinstructies van je gids.",
+            "section": "faq"
           },
           {
             "question": "Kan ik zwemmen in Magic Lake?",
-            "answer": "Zwemmen kan mogelijk zijn, afhankelijk van de plaatselijke omstandigheden en de regels van het park op de dag van je bezoek."
+            "answer": "Zwemmen kan mogelijk zijn, afhankelijk van de plaatselijke omstandigheden en de regels van het park op de dag van je bezoek.",
+            "section": "faq"
           },
           {
             "question": "Is ophalen bij het hotel inbegrepen?",
-            "answer": "Ja, ophalen en terugbrengen is beschikbaar bij hotels en locaties in Sharm El Sheikh."
+            "answer": "Ja, ophalen en terugbrengen is beschikbaar bij hotels en locaties in Sharm El Sheikh.",
+            "section": "faq"
           },
           {
             "question": "Wat moet ik meenemen?",
-            "answer": "Neem je zwemkleding, handdoek, comfortabele schoenen, zonnebrandcrème, zonnebril en camera mee. Je mag ook je eigen snorkeluitrusting meenemen."
+            "answer": "Neem je zwemkleding, handdoek, comfortabele schoenen, zonnebrandcrème, zonnebril en camera mee. Je mag ook je eigen snorkeluitrusting meenemen.",
+            "section": "faq"
           }
         ],
         "pickupInfo": "Ophalen en terugbrengen bij alle hotels in Sharm El Sheikh.",
@@ -902,11 +918,13 @@
         "faqs": [
           {
             "question": "Is snorkeluitrusting inbegrepen of moet ik mijn eigen uitrusting meenemen?",
-            "answer": "Aan boord zijn gratis ontsmette maskers, snorkels en vinnen in maten voor volwassenen en kinderen beschikbaar."
+            "answer": "Aan boord zijn gratis ontsmette maskers, snorkels en vinnen in maten voor volwassenen en kinderen beschikbaar.",
+            "section": "faq"
           },
           {
             "question": "Kunnen mensen die niet kunnen zwemmen veilig deelnemen?",
-            "answer": "Ja. Er zijn door de kustwacht goedgekeurde drijfvesten beschikbaar en gecertificeerde duikinstructeurs begeleiden gasten in het water."
+            "answer": "Ja. Er zijn door de kustwacht goedgekeurde drijfvesten beschikbaar en gecertificeerde duikinstructeurs begeleiden gasten in het water.",
+            "section": "faq"
           }
         ],
         "pickupInfo": "Gratis ophalen en terugbrengen bij hotels in heel Hurghada.",
@@ -2239,11 +2257,13 @@
         "faqs": [
           {
             "question": "Is snorkeluitrusting inbegrepen of moet ik mijn eigen uitrusting meenemen?",
-            "answer": "Aan boord zijn gratis ontsmette maskers, snorkels en vinnen in maten voor volwassenen en kinderen beschikbaar."
+            "answer": "Aan boord zijn gratis ontsmette maskers, snorkels en vinnen in maten voor volwassenen en kinderen beschikbaar.",
+            "section": "faq"
           },
           {
             "question": "Kunnen mensen die niet kunnen zwemmen veilig deelnemen?",
-            "answer": "Ja. Er zijn door de kustwacht goedgekeurde drijfvesten beschikbaar en gecertificeerde duikinstructeurs begeleiden gasten in het water."
+            "answer": "Ja. Er zijn door de kustwacht goedgekeurde drijfvesten beschikbaar en gecertificeerde duikinstructeurs begeleiden gasten in het water.",
+            "section": "faq"
           }
         ],
         "pickupInfo": "Gratis ophalen en terugbrengen bij hotels in heel Hurghada.",
