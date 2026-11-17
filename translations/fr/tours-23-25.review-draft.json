@@ -99,18 +99,7 @@
           "Pourboires",
           "Tout service non expressément mentionné dans les prestations incluses"
         ],
-        "faqs": [
-          {
-            "question": "L’équipement de snorkeling est-il fourni ou dois-je apporter le mien ?",
-            "answer": "Des masques, tubas et palmes désinfectés, en tailles adulte et enfant, sont fournis gratuitement à bord.",
-            "section": "faq"
-          },
-          {
-            "question": "Les personnes qui ne savent pas nager peuvent-elles participer en toute sécurité ?",
-            "answer": "Oui. Des gilets de flottaison homologués par les garde-côtes sont fournis et des moniteurs de plongée certifiés accompagnent les participants dans l’eau.",
-            "section": "faq"
-          }
-        ]
+        "faqs": []
       },
       "seo_title": "Monastère Sainte-Catherine et Dahab : excursion à la journée depuis Charm el-Cheikh",
       "seo_description": "Visitez le monastère Sainte-Catherine avec un égyptologue, puis profitez d’un déjeuner et de temps libre à Dahab lors d’une excursion depuis Charm el-Cheikh.",
@@ -161,18 +150,7 @@
           "Transfert retour privé en option",
           "Parcours privé en véhicule en option"
         ],
-        "faqs": [
-          {
-            "question": "L’équipement de snorkeling est-il fourni ou dois-je apporter le mien ?",
-            "answer": "Des masques, tubas et palmes désinfectés, en tailles adulte et enfant, sont fournis gratuitement à bord.",
-            "section": "faq"
-          },
-          {
-            "question": "Les personnes qui ne savent pas nager peuvent-elles participer en toute sécurité ?",
-            "answer": "Oui. Des gilets de flottaison homologués par les garde-côtes sont fournis et des moniteurs de plongée certifiés accompagnent les participants dans l’eau.",
-            "section": "faq"
-          }
-        ]
+        "faqs": []
       },
       "seo_title": "Super safari dans le désert du Sinaï avec quad, chameau et barbecue",
       "seo_description": "Vivez une aventure dans le désert du Sinaï avec quad, balade à dos de chameau, camp bédouin, dîner barbecue et spectacles orientaux.",

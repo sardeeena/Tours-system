@@ -41,18 +41,7 @@
           "Achats facultatifs au village bédouin",
           "Tout service non mentionné dans les prestations incluses"
         ],
-        "faqs": [
-          {
-            "question": "L’équipement de snorkeling est-il fourni ou dois-je apporter le mien ?",
-            "answer": "Des masques, tubas et palmes désinfectés, en tailles adulte et enfant, sont fournis gratuitement à bord.",
-            "section": "faq"
-          },
-          {
-            "question": "Les personnes qui ne savent pas nager peuvent-elles participer en toute sécurité ?",
-            "answer": "Oui. Des gilets de flottaison homologués par les garde-côtes sont fournis et des moniteurs de plongée certifiés accompagnent les participants dans l’eau.",
-            "section": "faq"
-          }
-        ]
+        "faqs": []
       },
       "seo_title": "Safari dans le désert de Hurghada avec dîner bédouin et observation des étoiles",
       "seo_description": "Partez en Jeep 4x4 dans le désert de Hurghada, visitez un village bédouin, dégustez un dîner traditionnel et observez les étoiles au télescope.",

@@ -105,18 +105,7 @@
           "Pourboires",
           "Tout service non expressément mentionné dans les prestations incluses"
         ],
-        "faqs": [
-          {
-            "question": "L’équipement de snorkeling est-il fourni ou dois-je apporter le mien ?",
-            "answer": "Des masques, tubas et palmes désinfectés, en tailles adulte et enfant, sont fournis gratuitement à bord.",
-            "section": "faq"
-          },
-          {
-            "question": "Les personnes qui ne savent pas nager peuvent-elles participer en toute sécurité ?",
-            "answer": "Oui. Des gilets de flottaison homologués par les garde-côtes sont fournis et des moniteurs de plongée certifiés accompagnent les participants dans l’eau.",
-            "section": "faq"
-          }
-        ]
+        "faqs": []
       },
       "seo_title": "Randonnée au mont Sinaï au lever du soleil et visite du monastère Sainte-Catherine",
       "seo_description": "Gravissez le mont Sinaï de nuit depuis Charm el-Cheikh pour admirer le lever du soleil, puis visitez le monastère Sainte-Catherine avec un guide.",
