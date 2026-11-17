@@ -38,7 +38,7 @@ DECLARE
   v_availability_status TEXT;
 BEGIN
   IF NOT (
-    auth.role() = 'service_role'
+    coalesce(auth.role(),'') = 'service_role'
     OR (auth.uid() IS NOT NULL AND public.is_admin())
   ) THEN
     RAISE EXCEPTION 'Not authorized to manage departures' USING ERRCODE = '42501';
@@ -252,7 +252,7 @@ SET search_path = ''
 AS $function$
 BEGIN
   IF NOT (
-    auth.role() = 'service_role'
+    coalesce(auth.role(),'') = 'service_role'
     OR (auth.uid() IS NOT NULL AND public.is_admin())
   ) THEN
     RAISE EXCEPTION 'Not authorized to manage departures' USING ERRCODE = '42501';
