@@ -9,10 +9,13 @@ assert.equal(defaults.valid, true);
 assert.equal(selectWhatsAppTemplateLanguage('fr', 'en', defaults.mapping), 'en', 'Unapproved new locales safely fall back to the configured approved language.');
 assert.equal(selectWhatsAppTemplateLanguage('de', 'en', defaults.mapping), 'de', 'Existing approved locales keep their existing Meta language codes.');
 
-const approved = resolveWhatsAppLocaleLanguageMap(JSON.stringify({ fr: 'fr_FR', es: 'es_ES', nl: 'nl', pl: 'pl', pt: 'pt_BR' }), 'en');
+const approved = resolveWhatsAppLocaleLanguageMap(JSON.stringify({ fr: 'fr_FR', es: 'es_ES', nl: 'nl', pl: 'pl', pt: 'pt_BR', ar: 'ar', tr: 'tr', uk: 'uk' }), 'en');
 assert.equal(approved.valid, true);
 assert.equal(selectWhatsAppTemplateLanguage('fr', 'en', approved.mapping), 'fr_FR');
 assert.equal(selectWhatsAppTemplateLanguage('pt', 'en', approved.mapping), 'pt_BR');
+assert.equal(selectWhatsAppTemplateLanguage('ar', 'en', approved.mapping), 'ar', 'Arabic is supported when its Meta template language is explicitly approved.');
+assert.equal(selectWhatsAppTemplateLanguage('tr', 'en', approved.mapping), 'tr');
+assert.equal(selectWhatsAppTemplateLanguage('uk', 'en', approved.mapping), 'uk');
 
 const regionalFallback = resolveWhatsAppLocaleLanguageMap(undefined, 'en_US');
 assert.equal(regionalFallback.valid, true, 'An explicitly configured existing regional fallback remains supported.');
