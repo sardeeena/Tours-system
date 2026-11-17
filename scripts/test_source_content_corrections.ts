@@ -13,13 +13,21 @@ const quadFaqCleanup = readText('../supabase/migrations/20261117213225_remove_un
 const quadFaqCleanupRetry = readText('../supabase/migrations/20261117213227_remove_unrelated_snorkeling_faqs_from_quad_tour.sql');
 const nonMarineFaqCleanup = readText('../supabase/migrations/20261117213351_remove_unrelated_snorkeling_faqs_from_non_marine_tours.sql');
 
-for (const name of ['vite', '@vitejs/plugin-react', '@tailwindcss/vite']) {
+for (const name of ['vite', '@vitejs/plugin-react', '@tailwindcss/vite', 'esbuild', 'tsx']) {
   assert.ok(pkg.devDependencies?.[name], name + ' must remain a development/build dependency');
   assert.equal(pkg.dependencies?.[name], undefined, name + ' must not be installed in the production runtime dependency tree');
 }
 assert.doesNotMatch(server, /from ['"]vite['"]|from ['"]@vitejs\/plugin-react['"]|from ['"]@tailwindcss\/vite['"]/,
   'The production Express server must not import the Vite build toolchain');
 assert.match(pkg.scripts.prebuild || '', /npm install --include=dev/, 'Hostinger production installs must restore build-only dependencies before running the build');
+assert.match(pkg.scripts.prebuild, /NODE_ENV.*production.*npm install --include=dev --no-save/,
+  'Hostinger production builds must temporarily install development build tools before compiling');
+assert.match(pkg.scripts.postbuild, /NODE_ENV.*production.*npm prune --omit=dev/,
+  'Hostinger production builds must prune development tools before the app starts');
+assert.match(workflow, /Verify Hostinger production build lifecycle/,
+  'CI must exercise the same production build lifecycle as Hostinger');
+assert.match(workflow, /npm ls --omit=dev --depth=0/,
+  'CI must verify the post-build production dependency tree');
 assert.match(workflow, /npm audit --omit=dev --audit-level=low/,
   'CI must audit the actual production runtime dependency graph');
 assert.match(workflow, /test:source-content-corrections/,
