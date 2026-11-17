@@ -10,6 +10,4 @@ ALTER TABLE public.staff_notifications
     'followup_due','task_overdue','departure_unassigned','pickup_pending',
     'document_expiring','cancellation','new_review','operational_issue','payment_pending'
   ));
-CREATE INDEX IF NOT EXISTS idx_staff_notifications_dedup_key
-  ON public.staff_notifications(dedup_key) WHERE dedup_key IS NOT NULL;
 COMMIT;
