@@ -16,7 +16,7 @@
 
 ## P0 — Operational booking integrity (requires implementation and operator data)
 
-- [ ] Model the real departure as the capacity authority. Link each bookable availability row and booking to a specific departure; enforce capacity against the assigned vessel/vehicle and block overbooking when no valid assignment exists.
+- [x] Add a staged departure-capacity linkage: operator-created departures are created/updated atomically with the existing `tour_availability` capacity row; new bookings inherit the linked `departure_id`; booking insert/status changes recalculate departure and availability passenger counts. Existing unlinked availability remains untouched until an operator schedules it. Multiple departures for the same tour/date remain blocked because the current availability model has one row per tour/date.
 - [ ] Reconcile the existing availability pool with actual departures before enforcing the new constraint. The current production data has no operational departures/assignments, so a fail-closed cutover must be staged with the operator to avoid unintentionally disabling every booking.
 - [ ] Review vessel maintenance state. The M/Y Red Sea Star VIP maintenance date was 15 November 2026 and is overdue as of the audit date; confirm inspection/maintenance completion before assigning it to any departure.
 - [ ] Populate explicit pickup-zone assignments for all tours where pickup is offered. Current fallback behavior can expose every active zone for tours without explicit mappings; remove that broad fallback after data is reconciled.
@@ -27,12 +27,12 @@
 
 - [ ] Reconcile public claims against the signed supplier agreements and documentary evidence for Egyptian operator licensing, PADI/guide credentials, vessel ownership, crew qualifications, departure frequency and support hours.
 - [ ] Keep the public site explicit that excursions may be delivered by independent local suppliers unless the operator confirms a different legal/contractual relationship.
-- [ ] Complete legal invoice identity: registered legal name, registered address, tax/registration details and required invoice fields. Finance invoice company details are currently incomplete; do not issue legal invoices until owner data is supplied.
+- [ ] Complete legal invoice identity: registered legal name, registered address, tax/registration details and required invoice fields. Finance invoice company details are currently incomplete; do not issue legal invoices until owner data is supplied. Draft previews now carry a clear 'NOT A TAX INVOICE' watermark.
 - [ ] Reconcile paid bookings to invoices and create missing invoices through an auditable workflow. Current invoice UI is not a complete issuance workflow.
 - [ ] Implement cancellation-to-refund orchestration with idempotency, provider reconciliation, audit events and customer/staff notification. Do not automatically refund bookings without an approved business rule and provider support.
 - [ ] Decide whether online payments are required and choose an eligible provider for the business jurisdiction and settlement bank. Stripe/PayPal are not connected; do not expose online payment options until sandbox and production webhooks pass.
-- [ ] Replace localStorage-backed staff notification authority with the database inbox and make notification generation query the same persisted CRM/operations data used by the admin modules.
-- [ ] Add durable producers/consumers for payment, cancellation, departure and CRM follow-up events; add scheduled reminders with retry, idempotency and monitoring.
+- [x] Replace localStorage-backed staff notification authority with a database inbox and SQL scanner over bookings, inquiries, payments, leads, CRM tasks, departures and pickup schedules. A production worker runs the idempotent scan every five minutes; localStorage is development-only.
+- [x] Add durable database-generated staff alerts for payment pending/overdue, cancellation requests, departure assignment gaps, pickup confirmations and CRM follow-ups/tasks, with unique deduplication keys and a five-minute server worker. Customer-facing event delivery and scheduled email/WhatsApp reminders remain separate work.
 - [ ] Configure and test WhatsApp Cloud API only after Meta credentials, approved templates, consent and opt-out rules are supplied.
 
 ## P2 — Catalogue, content, localization and AI
@@ -41,7 +41,7 @@
 - [ ] Improve thin blog posts with original, useful, fact-checked content; do not auto-expand articles with generic filler.
 - [ ] Add itinerary steps to tours after the operator confirms real sequence and times. Do not invent schedules.
 - [ ] Complete destination landing pages only when they have meaningful, accurate excursion inventory and unique content.
-- [ ] Build the AI concierge on current published Supabase catalogue data and live availability/pricing, with policy-aware retrieval. The current static list is deliberately treated as non-authoritative.
+- [x] Build the AI concierge's published-catalogue context from the public RLS-scoped Supabase catalogue on every request. Static legacy catalogue is no longer used for recommendations. Date-specific live availability lookup and provider assignment data remain excluded from the chatbot until explicitly queried.
 - [ ] Configure `GEMINI_API_KEY` in Hostinger server-side environment only, then test rate limits, safety, usage caps, outage behavior and grounded responses.
 - [ ] Publish reviewed translations for the supported locales; static UI dictionaries alone do not mean localized public pages or customer messages are available.
 - [ ] Add real review ingestion and moderation. Keep aggregate ratings hidden unless they are backed by genuine published reviews.
@@ -51,7 +51,7 @@
 - [ ] Enable Supabase leaked-password protection when the current plan supports it; retain strong password policy, rate limits and MFA until then.
 - [ ] Complete verified TOTP MFA for every privileged staff/admin account; the audit found one of two admins without a verified factor.
 - [ ] Review unused-index advisor notices against query plans and workload. Do not drop indexes blindly.
-- [ ] Add dependency-aware service health checks for Supabase, Resend, queue worker and configured messaging providers; distinguish liveness from readiness.
+- [x] Add a database-backed `/api/health/ready` endpoint separate from liveness. It currently checks public catalogue database reachability; provider and queue readiness probes remain to be added.
 - [ ] Add browser end-to-end and mobile acceptance tests for registration, booking, payment, cancellation, invoice, admin navigation, translation and support flows.
 - [ ] Verify the admin interface visually on real mobile/tablet browsers; code-level responsive behavior is not a substitute for device testing.
 - [ ] Continue cleaning active docs of old project references. Keep historical reports clearly marked as historical and never use old seed/bootstrap scripts against production.
@@ -63,6 +63,7 @@
 3. **Credentials:** Gemini API key, WhatsApp Cloud API token/phone-number ID/app secret/webhook verify token, and any chosen payment provider credentials. Add them only in Hostinger server-side environment.
 4. **Business evidence:** current operator licence, supplier agreements, guide/skipper certificates, support hours/languages, and exact weather/cancellation terms.
 5. **Content:** approved translations, verified itinerary details, blog subject-matter review and genuine customer review consent.
+6. **Ground transport:** actual driver roster, vehicle roster/registration/capacity and an owner-approved process for verifying driver identity. The current schema has no normalized driver/vehicle directory; pickup assignments therefore require explicit operator-entered details and do not treat guides as drivers.
 
 ## Release gates
 
