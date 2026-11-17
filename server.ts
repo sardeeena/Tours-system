@@ -3,7 +3,6 @@ import { renderBrandedEmailHtml } from './src/utils/emailTemplate';
 import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import { isIP } from 'node:net';
 import { GoogleGenAI } from '@google/genai';
-import { generateOpenAITranslationBatch } from './src/server/openAiTranslation';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import path from 'path';
 import fs from 'fs';
@@ -3261,7 +3260,7 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
   const offset = Number.isInteger(req.body?.offset) && req.body.offset>=0 ? req.body.offset : 0;
   const limit = Number.isInteger(req.body?.limit) ? Math.min(10,Math.max(1,req.body.limit)) : 10;
   if (!Object.prototype.hasOwnProperty.call(BULK_TRANSLATION_LOCALES,locale)) return res.status(400).json({success:false,error:'Bulk generation supports the configured non-English locales.'});
-  if (!process.env.OPENAI_API_KEY) return res.status(503).json({success:false,error:'Server-side OpenAI translation is not configured.'});
+  if (!ai) return res.status(503).json({success:false,error:'Server-side Gemini translation is not configured.'});
   if (!serverSupabase) return res.status(503).json({success:false,error:'Translation database unavailable.'});
   try {
     const candidates = await getBulkTranslationCandidates();
@@ -3291,8 +3290,8 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
           : 'Use natural, locally fluent language for the target locale. SEO title should be concise; SEO description accurate. No unsupported claims.',
         'INPUT: '+JSON.stringify(work.map(x=>({entity_type:x.type,entity_key:x.key,source:x.payload})))
       ].join('\n');
-      const generatedText = await generateOpenAITranslationBatch(prompt, process.env.OPENAI_API_KEY, process.env.OPENAI_TRANSLATION_MODEL || 'gpt-4o-mini');
-      const parsed = JSON.parse(generatedText.replace(/^\\x60{3}(?:json)?\\s*/i,'').replace(/\\s*\\x60{3}$/,''));
+      const generated = await ai.models.generateContent({model:'gemini-3.8-flash',contents:[{role:'user',parts:[{text:prompt}]}],config:{temperature:0.15,responseMimeType:'application/json'}});
+      const parsed = JSON.parse((generated.text || '').replace(/^\x60{3}(?:json)?\s*/i,'').replace(/\s*\x60{3}$/,''));
       if (!Array.isArray(parsed?.translations)) throw new Error('AI returned an invalid translation batch.');
       const byKey = new Map(parsed.translations.map((x:any)=>[x.entity_type+':'+x.entity_key,x]));
       for (const item of work) {
