@@ -148,8 +148,10 @@ SELECT ok(
 
 SELECT ok(
   POSITION('booked_count = ta.booked_count - v_guest_count' IN
+    PG_GET_FUNCTIONDEF(to_regprocedure('private.admin_resolve_booking_cancellation(text,text,text)'))) > 0
+  AND POSITION('ON CONFLICT DO NOTHING' IN
     PG_GET_FUNCTIONDEF(to_regprocedure('private.admin_resolve_booking_cancellation(text,text,text)'))) > 0,
-  'capacity is released only inside the admin cancellation approval RPC'
+  'cancellation approval releases capacity and tolerates the idempotent cancellation email event'
 );
 
 SELECT ok(
