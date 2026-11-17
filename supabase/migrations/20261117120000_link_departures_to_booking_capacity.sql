@@ -10,6 +10,9 @@ ALTER TABLE public.tour_availability
 ALTER TABLE public.bookings
   ADD COLUMN IF NOT EXISTS departure_id UUID REFERENCES public.departures(id) ON DELETE SET NULL;
 
+ALTER TABLE public.vessels
+  ADD COLUMN IF NOT EXISTS next_maintenance_date DATE;
+
 CREATE INDEX IF NOT EXISTS idx_tour_availability_departure_id
   ON public.tour_availability(departure_id) WHERE departure_id IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_bookings_departure_id
@@ -86,6 +89,11 @@ BEGIN
     IF v_vessel.safety_inspection_expiry IS NOT NULL
        AND v_vessel.safety_inspection_expiry < p_date THEN
       RAISE EXCEPTION 'The selected vessel safety inspection expires before this departure date'
+        USING ERRCODE = '22023';
+    END IF;
+    IF v_vessel.next_maintenance_date IS NOT NULL
+       AND v_vessel.next_maintenance_date <= p_date THEN
+      RAISE EXCEPTION 'The selected vessel is due for maintenance on or before this departure date'
         USING ERRCODE = '22023';
     END IF;
   END IF;
