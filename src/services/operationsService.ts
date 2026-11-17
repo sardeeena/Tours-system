@@ -1285,6 +1285,10 @@ export async function listVessels(): Promise<DbVessel[]> {
   if (error) throw new Error(formatSupabaseError(error));
   const vessels: DbVessel[] = (data || []).map((row: any) => ({
     ...row,
+    // The canonical maintenance date takes precedence; retain the legacy
+    // field as a compatibility alias for the existing fleet editor.
+    next_maintenance: row.next_maintenance_date || row.next_maintenance || null,
+    next_maintenance_date: row.next_maintenance_date || row.next_maintenance || null,
     status: row.status || (row.is_active ? 'active' : 'inactive'),
   }));
   setLocal(LOCAL_VESSELS_KEY, vessels);
@@ -1317,7 +1321,8 @@ export async function saveVessel(vessel: Partial<DbVessel>): Promise<DbVessel> {
           is_active: isActive,
           status,
           maintenance_notes: vessel.maintenance_notes || null,
-          next_maintenance: vessel.next_maintenance || null,
+          next_maintenance: vessel.next_maintenance_date || vessel.next_maintenance || null,
+          next_maintenance_date: vessel.next_maintenance_date || vessel.next_maintenance || null,
           crew: vessel.crew || null,
           created_at: now,
           updated_at: now,
@@ -1330,6 +1335,7 @@ export async function saveVessel(vessel: Partial<DbVessel>): Promise<DbVessel> {
 
   const status = vessel.status || (vessel.is_active !== false ? 'active' : 'inactive');
   const isActive = status === 'active' || status === 'in_service';
+  const maintenanceDate = vessel.next_maintenance_date ?? vessel.next_maintenance ?? null;
   const payload: Record<string, unknown> = {
     name: vessel.name?.trim(),
     vessel_type: vessel.vessel_type || 'motor_yacht',
@@ -1343,7 +1349,9 @@ export async function saveVessel(vessel: Partial<DbVessel>): Promise<DbVessel> {
     is_active: isActive,
     status,
     maintenance_notes: vessel.maintenance_notes || null,
-    next_maintenance: vessel.next_maintenance || null,
+    // Keep both columns synchronized until the legacy column is retired.
+    next_maintenance: maintenanceDate,
+    next_maintenance_date: maintenanceDate,
     crew: vessel.crew || null,
   };
 
