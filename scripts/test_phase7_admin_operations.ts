@@ -148,6 +148,21 @@ assert(
   opsServiceFile.includes('capacity') && opsServiceFile.includes('AssignmentConflict'),
   'Assignment conflict detector validates passenger capacity against vessel capacity'
 );
+const opsVesselsFile = fs.readFileSync(path.join(rootDir, 'src/components/admin/operations/OperationsVessels.tsx'), 'utf8');
+const databaseTypesFile = fs.readFileSync(path.join(rootDir, 'src/types/database.ts'), 'utf8');
+assert(
+  opsVesselsFile.includes('vessel.next_maintenance_date || vessel.next_maintenance') && !opsVesselsFile.includes("next_maintenance: '2026-12-01'"),
+  'Vessel editor reads the canonical maintenance date and does not invent a default due date'
+);
+assert(
+  opsServiceFile.includes('next_maintenance_date: maintenanceDate') && opsServiceFile.includes('row.next_maintenance_date || row.next_maintenance'),
+  'Vessel service reads canonical maintenance dates and dual-writes the legacy compatibility field'
+);
+assert(
+  databaseTypesFile.includes('next_maintenance_date?: string | null'),
+  'DbVessel type includes the canonical maintenance date column'
+);
+
 assert(
   opsServiceFile.includes('getMaritimeWeather') && opsServiceFile.includes('Weather unavailable'),
   'getMaritimeWeather honest fallback: returns "Weather unavailable" when external provider is disconnected'
