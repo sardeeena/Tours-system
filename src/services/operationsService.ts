@@ -482,10 +482,10 @@ export async function createDeparture(data: Partial<DepartureEntity>): Promise<{
     p_end_time: newDeparture.end_time,
     p_capacity: newDeparture.capacity,
     p_status: newDeparture.status,
-    p_vessel_id: newDeparture.vessel_id,
-    p_guide_id: newDeparture.guide_id,
-    p_driver_id: newDeparture.driver_id,
-    p_notes: newDeparture.notes,
+    p_vessel_id: newDeparture.vessel_id ?? null,
+    p_guide_id: newDeparture.guide_id ?? null,
+    p_driver_id: newDeparture.driver_id ?? null,
+    p_notes: newDeparture.notes ?? null,
   });
 
   if (rpcError) {
