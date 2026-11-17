@@ -1,0 +1,21 @@
+import assert from 'node:assert/strict';
+import { generateOpenAITranslationBatch } from '../src/server/openAiTranslation';
+const calls: Array<{ url: string; init?: RequestInit }> = [];
+const fakeFetch = async (input: string | URL | Request, init?: RequestInit) => {
+  calls.push({ url: String(input), init });
+  return new Response(JSON.stringify({ choices: [{ finish_reason: 'stop', message: { content: '{"translations":[]}' } }] }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+};
+const result = await generateOpenAITranslationBatch('Return JSON.', 'test-secret', 'gpt-4o-mini', fakeFetch);
+assert.equal(result, '{"translations":[]}');
+assert.equal(calls[0].url, 'https://api.openai.com/v1/chat/completions');
+assert.equal((calls[0].init?.headers as Record<string,string>).Authorization, 'Bearer test-secret');
+const body = JSON.parse(String(calls[0].init?.body));
+assert.equal(body.model, 'gpt-4o-mini');
+assert.deepEqual(body.response_format, { type: 'json_object' });
+assert.equal(body.messages[1].content, 'Return JSON.');
+await assert.rejects(() => generateOpenAITranslationBatch('Return JSON.', '', 'gpt-4o-mini', fakeFetch), /not configured/);
+const failedFetch = async () => new Response('{}', { status: 429 });
+await assert.rejects(() => generateOpenAITranslationBatch('Return JSON.', 'test-secret', 'gpt-4o-mini', failedFetch), /HTTP 429/);
+const truncatedFetch = async () => new Response(JSON.stringify({ choices: [{ finish_reason: 'length', message: { content: '{}' } }] }), { status: 200 });
+await assert.rejects(() => generateOpenAITranslationBatch('Return JSON.', 'test-secret', 'gpt-4o-mini', truncatedFetch), /truncated/);
+console.log('OpenAI translation provider safety checks passed.');
