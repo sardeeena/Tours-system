@@ -1,0 +1,176 @@
+{
+  "locale": "fr",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "records": [
+    {
+      "entity_type": "static_page",
+      "entity_key": "about",
+      "source_slug": "about",
+      "translated_slug": "a-propos",
+      "title": "À propos d’Awesome Adventure Tours",
+      "summary": "Awesome Adventure Tours vous aide à découvrir les sorties en bateau, les îles, le snorkeling, la plongée, les safaris dans le désert et les excursions culturelles en Égypte. Parcourez les expériences publiées, comparez les informations pratiques et contactez notre équipe de Hurghada avant de réserver.",
+      "seo_title": "À propos d’Awesome Adventure Tours | Excursions en Égypte et mer Rouge",
+      "seo_description": "Découvrez Awesome Adventure Tours à Hurghada, en Égypte. Explorez les sorties en bateau sur la mer Rouge, les îles, le snorkeling, la plongée, les safaris dans le désert et les excursions culturelles.",
+      "content": {
+        "heroHeadline": "Explorez le littoral égyptien de la mer Rouge avec Awesome Adventure Tours",
+        "heroSubtitle": "Awesome Adventure Tours vous aide à découvrir les sorties en bateau, les îles, le snorkeling, la plongée, les safaris dans le désert et les excursions culturelles en Égypte. Parcourez les expériences publiées, comparez les informations pratiques et contactez notre équipe de Hurghada avant de réserver.",
+        "sections": [
+          {
+            "title": "Des expériences dans toute l’Égypte",
+            "content": "Notre catalogue publié rassemble des expériences dans plusieurs destinations, notamment Hurghada, El Gouna, Charm el-Cheikh et d’autres régions d’Égypte. Selon l’excursion, les voyageurs peuvent comparer les sorties en bateau et sur les îles, les activités de snorkeling et de plongée, les safaris dans le désert, les transferts et les visites culturelles."
+          },
+          {
+            "title": "Des informations claires avant de réserver",
+            "content": "Chaque excursion peut avoir ses propres modalités de départ, prix, durées, prestations incluses, conditions d’âge et règles d’annulation. Consultez attentivement la page de l’excursion et le récapitulatif de réservation afin de comprendre ce qui est inclus et les lieux où la prise en charge est disponible."
+          },
+          {
+            "title": "Une assistance locale à Hurghada",
+            "content": "Awesome Adventure Tours est basée à Hurghada, sur la mer Rouge, en Égypte. Notre équipe peut répondre à vos questions sur les excursions publiées, les informations de prise en charge à l’hôtel et les réservations. Si vous avez besoin d’une précision sur une excursion particulière, contactez-nous avant de réserver."
+          },
+          {
+            "title": "Comment choisir votre excursion",
+            "content": "Commencez par sélectionner votre destination ou l’activité qui vous intéresse. Comparez l’itinéraire, la durée, le prix, les prestations incluses et les conditions pratiques sur chaque page d’excursion. Les disponibilités et les conditions opérationnelles peuvent changer, notamment pour les activités en mer : confirmez donc les détails pour la date choisie avant votre départ."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Découvrir davantage",
+          "bookNow": "Réserver"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "contact",
+      "source_slug": "contact",
+      "translated_slug": "contact",
+      "title": "Contacter Awesome Adventure Tours",
+      "summary": "Contactez Awesome Adventure Tours pour comparer les excursions publiées, comprendre les modalités de prise en charge, vérifier les détails d’une réservation et préparer votre séjour en Égypte.",
+      "seo_title": "Contacter Awesome Adventure Tours | Hurghada, Égypte",
+      "seo_description": "Contactez Awesome Adventure Tours à Hurghada pour toute question sur les excursions, les réservations, la prise en charge et l’assistance voyageurs dans la langue de votre choix.",
+      "content": {
+        "heroHeadline": "Contactez notre équipe d’excursions à Hurghada",
+        "heroSubtitle": "Contactez Awesome Adventure Tours pour comparer les excursions publiées, comprendre les modalités de prise en charge, vérifier les détails d’une réservation et préparer votre séjour en Égypte.",
+        "sections": [
+          {
+            "title": "Parlez à notre équipe",
+            "content": "Appelez le +20 151 5212741 pour toute question sur les excursions publiées, les réservations et les informations pratiques de voyage. Si votre demande concerne une excursion précise, indiquez-nous son nom ou partagez sa page, votre date de voyage souhaitée et le nombre de participants. Cela aidera notre équipe à comprendre les informations dont vous avez besoin. Pour une réservation existante, gardez votre référence de réservation à portée de main afin que nous puissions retrouver le bon dossier."
+          },
+          {
+            "title": "Visitez notre bureau à Hurghada",
+            "content": "Notre bureau se trouve au 2e étage du Bostan Cafe, Madres, Hurghada, gouvernorat de la mer Rouge, Égypte. Si vous prévoyez de venir en personne, contactez-nous d’abord pour discuter de votre demande et confirmer les modalités les plus adaptées."
+          },
+          {
+            "title": "Aide pour choisir et préparer une excursion",
+            "content": "Avant de réserver, consultez la page de l’excursion pour connaître son prix de départ actuel, sa durée, son itinéraire, les prestations incluses, les exclusions, les conditions d’âge, les informations de prise en charge et les conditions d’annulation. Ces détails peuvent varier d’une excursion à l’autre et évoluer selon les conditions opérationnelles. Si un point n’est pas clair, posez-nous vos questions sur l’excursion concernée avant de réserver. Pour toute question sur la prise en charge, indiquez votre hôtel ou le lieu de rendez-vous souhaité ainsi que la destination de l’excursion."
+          },
+          {
+            "title": "Assistance aux voyageurs internationaux",
+            "content": "Nous accompagnons les voyageurs internationaux et pouvons communiquer avec les clients dans la langue de leur choix. Indiquez-nous la langue que vous souhaitez utiliser lorsque vous nous contactez. La disponibilité de la langue du guide dépend de chaque excursion et de chaque départ : vérifiez les options indiquées pour votre voyage plutôt que de supposer que toutes les excursions sont proposées dans toutes les langues."
+          },
+          {
+            "title": "Sécurité des réservations et des paiements",
+            "content": "Utilisez le formulaire de réservation et les instructions fournies avec votre réservation pour les détails de paiement. N’envoyez pas de mots de passe, de numéros complets de carte bancaire ni de codes de sécurité par message ordinaire. Vérifiez toujours le récapitulatif final, la date, les informations des participants et le prix avant de confirmer votre réservation."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Découvrir davantage",
+          "bookNow": "Réserver"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "why-us",
+      "source_slug": "why-us",
+      "translated_slug": "pourquoi-nous-choisir",
+      "title": "Pourquoi choisir Awesome Adventure Tours",
+      "summary": "Utilisez les informations publiées sur les excursions pour comparer les expériences disponibles et choisir celle qui correspond à vos projets.",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "heroHeadline": "Préparez votre expérience sur la mer Rouge",
+        "heroSubtitle": "Utilisez les informations publiées sur les excursions pour comparer les expériences disponibles et choisir celle qui correspond à vos projets.",
+        "sections": [
+          {
+            "title": "Les informations sur les excursions au même endroit",
+            "content": "Consultez la description, le prix, la durée, l’itinéraire et les prestations incluses de chaque excursion avant de faire une réservation."
+          },
+          {
+            "title": "Vérifiez les détails importants",
+            "content": "Les options de prise en charge, les conditions d’âge, les disponibilités et les conditions d’annulation peuvent varier selon l’excursion. Consultez la page correspondante et les détails de réservation avant de confirmer."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Découvrir davantage",
+          "bookNow": "Réserver"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "marine-safety",
+      "source_slug": "marine-safety",
+      "translated_slug": "securite-marine-et-depart",
+      "title": "Sécurité maritime et informations de départ",
+      "summary": "Les excursions en mer peuvent être affectées par la météo, l’état de la mer et les restrictions opérationnelles. Consultez les informations fournies pour l’excursion choisie.",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "heroHeadline": "Sécurité et informations de départ",
+        "heroSubtitle": "Les excursions en mer peuvent être affectées par la météo, l’état de la mer et les restrictions opérationnelles. Consultez les informations fournies pour l’excursion choisie.",
+        "sections": [
+          {
+            "title": "Avant le départ",
+            "content": "Lisez les consignes de départ, les conditions de participation et les informations sur l’équipement de l’excursion choisie. Pendant l’activité, suivez les instructions de l’équipage et du personnel encadrant."
+          },
+          {
+            "title": "Météo et changements opérationnels",
+            "content": "Les activités en mer peuvent être modifiées, retardées ou annulées lorsque les conditions ne permettent pas un départ en toute sécurité. Consultez les conditions de réservation fournies pour votre excursion afin de connaître les modalités applicables."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Découvrir davantage",
+          "bookNow": "Réserver"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "booking-conditions",
+      "source_slug": "booking-conditions",
+      "translated_slug": "conditions-de-reservation",
+      "title": "Conditions générales de réservation",
+      "summary": "Consultez les informations et les conditions applicables à l’excursion choisie avant de finaliser votre réservation.",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "heroHeadline": "Informations sur les réservations",
+        "heroSubtitle": "Consultez les informations et les conditions applicables à l’excursion choisie avant de finaliser votre réservation.",
+        "sections": [
+          {
+            "title": "Réservations et confirmation",
+            "content": "Vérifiez la date choisie, le nombre de participants, le prix, les informations de prise en charge et les autres détails de réservation avant d’envoyer votre demande. Conservez les informations de confirmation fournies après la réservation."
+          },
+          {
+            "title": "Prise en charge et départ",
+            "content": "La disponibilité de la prise en charge, les lieux de rendez-vous, les suppléments et les heures de départ peuvent varier selon l’excursion et la destination. Consultez les détails indiqués pour votre voyage avant de confirmer."
+          },
+          {
+            "title": "Modifications et annulations",
+            "content": "Les délais d’annulation, les modalités de remboursement et les conditions de report dépendent des conditions de réservation indiquées pour l’excursion choisie. Consultez-les avant de finaliser votre réservation."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Découvrir davantage",
+          "bookNow": "Réserver"
+        }
+      }
+    }
+  ]
+}
