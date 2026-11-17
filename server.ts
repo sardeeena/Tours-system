@@ -2047,7 +2047,7 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
 
   const cleanEmail = email.trim().toLowerCase();
   const requestedLocale = typeof preferredLanguage === 'string' ? preferredLanguage.trim().toLowerCase() : 'en';
-  const customerLocale = ['en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'].includes(requestedLocale) ? requestedLocale : 'en';
+  const customerLocale = TRANSLATION_LOCALES.has(requestedLocale) ? requestedLocale : 'en';
   const source = typeof req.body?.source === 'string' ? req.body.source.trim().slice(0, 80) || 'website' : 'website';
   let subscriber: { id: string; created_at: string; updated_at: string } | null = null;
   let shouldSendWelcome = false;
