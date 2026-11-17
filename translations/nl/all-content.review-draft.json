@@ -4,9 +4,9 @@
   "status": "translation-review-draft",
   "source_project": "uvtbtpxtrrmaublrztgv",
   "coverage": {
-    "tour": 15,
-    "blog_post": 40,
-    "source_records": 55
+    "tour": 22,
+    "blog_post": 50,
+    "source_records": 72
   },
   "records": [
     {
@@ -949,7 +949,33 @@
           "Profiteer van gemakkelijk ophalen en terugbrengen bij hotels in El Gouna.",
           "Kies tussen een gedeelde dubbele quad, een enkele quad of een privésafari."
         ],
-        "itinerary": [],
+        "itinerary": [
+          {
+            "time": "Ophalen bij het hotel",
+            "title": "Ophalen bij je hotel in El Gouna",
+            "description": "Transfer met airconditioning van je hotel in El Gouna naar het quadstation in de woestijn bij Hurghada."
+          },
+          {
+            "time": "Vóór de rit",
+            "title": "Veiligheidsinstructie en oefening",
+            "description": "Maak kennis met het woestijnteam, raak vertrouwd met de quad en ontvang een veiligheidsinstructie voordat je vertrekt."
+          },
+          {
+            "time": "Woestijnrit",
+            "title": "Begeleide quadtocht door de woestijn",
+            "description": "Volg je gids over de woestijnpaden, met de bergketen van de Rode Zee in de verte."
+          },
+          {
+            "time": "Bedoeïenendorp",
+            "title": "Bedoeïenendorp en kameeltocht",
+            "description": "Bezoek een traditioneel Bedoeïenendorp, geniet van Bedoeïenenthee, leer over lokale gebruiken en maak een korte kameeltocht."
+          },
+          {
+            "time": "Terugkeer",
+            "title": "Transfer terug naar El Gouna",
+            "description": "Rijd met de quad terug naar het vertrekpunt en neem vervolgens de transfer naar je hotel in El Gouna."
+          }
+        ],
         "included": [
           "Ophalen en terugbrengen bij alle hotels in El Gouna.",
           "Vervoer van en naar het woestijnsafaristation.",
@@ -1825,6 +1851,655 @@
         "title": "Wind en weer op de Rode Zee: wanneer kan het programma van een boottocht veranderen?",
         "excerpt": "Ontdek waarom wind, golven en zicht een boottocht kunnen veranderen en hoe je een flexibel programma plant.",
         "content": "Een zonnige weersverwachting betekent niet altijd dat de zee rustig is. De windrichting, golfslag en zichtbaarheid kunnen invloed hebben op de route van een boot, snorkelstops en de beslissing om uit te varen. Het weer is een belangrijke factor om mee te nemen wanneer je een excursie op de Rode Zee kiest.\n\n## Wat je moet weten\n\nDe kapitein en bemanning beoordelen de omstandigheden op de dag zelf. Zij kunnen een stop wijzigen, de route aanpassen, het vertrek uitstellen of een activiteit annuleren als zij die niet veilig vinden. Vraag hoe wijzigingen worden doorgegeven en wat de annulerings- of omboekingsvoorwaarden bepalen. Weerapps zijn nuttig voor globale planning, maar de lokale beoordeling van de kapitein bepaalt de operationele beslissingen.\n\n## Praktische checklist\n\n- Houd een dag flexibel in je planning.\n- Lees de weers- en annuleringsvoorwaarden voordat je betaalt.\n- Vraag hoe wijzigingen worden doorgegeven.\n- Respecteer de beslissing van de bemanning over toegang tot het water.\n\n## Voordat je boekt\n\nGeef veiligheid voorrang boven de garantie van een foto of een specifieke stop. Een betrouwbare aanbieder legt uit wat kan veranderen en hoe reizigers worden geholpen wanneer het programma moet worden aangepast."
+      },
+      "status": "translation-review-draft"
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "86f2d93f-33bf-420a-88a5-4c6035ae05ba",
+      "source_slug": "sharm-el-sheikh-private-city-tour-old-market-mosque-cathedral",
+      "translated_slug": "sharm-el-sheikh-prive-stadstour-oude-markt-moskee-kathedraal",
+      "title": "Privé-stadstour door Sharm El Sheikh: Oude Markt, moskee en kathedraal",
+      "summary": "Ontdek een andere kant van Sharm El Sheikh tijdens een privéstadstour waarin lokale cultuur, prachtige architectuur en levendige winkelstraten samenkomen. Bezoek de indrukwekkende Al Sahaba-moskee, bewonder de kleurrijke muurschilderingen van de Hemelse Kathedraal, geniet van panoramische uitzichten over de Rode Zee en wandel op je gemak over de beroemde Oude Markt. Reis comfortabel met je eigen privégids en voertuig met airconditioning. Optionele stops zijn mogelijk bij Farsha Café, SOHO Square of het Sharm El Sheikh Museum.",
+      "content": {
+        "title": "Privé-stadstour door Sharm El Sheikh: Oude Markt, moskee en kathedraal",
+        "description": "### Ontdek de lokale charme van Sharm El Sheikh, buiten de resorts\n\nSharm El Sheikh staat bekend om zijn prachtige stranden en kristalheldere water, maar de stad heeft nog een andere kant die absoluut de moeite waard is om te ontdekken.\n\nLaat de resortsfeer een paar uur achter je en bezoek de plekken die Sharm zijn eigen karakter geven. Van indrukwekkende religieuze bezienswaardigheden en fraaie architectuur tot panoramische uitzichtpunten en traditionele winkelstraten: deze privéstadstour is een ontspannen manier om de stad buiten je hotel te leren kennen.\n\nJe ervaring begint met ophalen bij je hotel in een comfortabel privévoertuig met airconditioning. Ontmoet je lokale gids en rijd naar het hart van Sharm El Sheikh, waar de eerste stop je kennis laat maken met een van de meest bijzondere bezienswaardigheden van de stad.\n\nDe prachtige Al Sahaba-moskee staat trots in de oude stad, met indrukwekkende koepels, elegante minaretten en verfijnde islamitische architectuur. Neem de tijd om het gebouw te bewonderen, foto's te maken en meer te leren over de betekenis ervan voor de lokale gemeenschap. Wanneer bezoek is toegestaan en buiten gebedstijden kun je ook het rustige interieur bekijken.\n\nVervolgens ontdek je de Hemelse Kathedraal, een prachtige en vaak over het hoofd geziene bezienswaardigheid die bekendstaat om haar kleurrijke handgeschilderde muurschilderingen en indrukwekkende religieuze kunst. De sfeer binnen is heel anders dan in de drukke straten buiten, waardoor dit een fijne plek is om even stil te staan bij een ander onderdeel van de culturele identiteit van de stad.\n\nDaarna neemt je gids je mee naar schilderachtige uitzichtpunten over Sharm El Sheikh. Geniet van prachtige vergezichten over de Rode Zee, de jachthaven en de omliggende bergen van de Sinaï. Deze stops zijn ideaal om foto's te maken en de stad vanuit een ander perspectief te bekijken.\n\nVervolgens is het tijd om een van de levendigste delen van Sharm te ervaren: de Oude Markt. Wandel door smalle straatjes vol kleurrijke specerijen, parfums, traditionele lantaarns, souvenirs en handgemaakte ambachten. Je hebt vrije tijd om de winkels te bekijken, van de lokale sfeer te genieten en iets bijzonders mee naar huis te nemen. Je hoeft niets te kopen; ontdek de markt gewoon op je eigen tempo.\n\nWil je je uitstapje iets verlengen? Dan kun je een optioneel bezoek toevoegen aan het beroemde Farsha Café, dat boven de Rode Zee ligt, of tijd doorbrengen op SOHO Square met zijn restaurants, winkels en avondsfeer. Je kunt er ook voor kiezen het Sharm El Sheikh Museum te bezoeken en meer te ontdekken over de fascinerende geschiedenis van Egypte.\n\nTijdens de hele ervaring geniet je van het comfort en de flexibiliteit van je eigen privévoertuig en gids. Zo kun je elke stop rustig beleven zonder je opgejaagd te voelen.\n\nOf je nu voor het eerst in Sharm bent of al dagen van het strand geniet: deze stadstour is een mooie gelegenheid om meer van de bestemming te zien en het lokale karakter te ervaren.",
+        "durationLabel": "Halve dag (ongeveer 3 uur)",
+        "highlights": [
+          "Ontdek Sharm El Sheikh tijdens een comfortabele privé-sightseeingtour.",
+          "Bezoek de prachtige Al Sahaba-moskee en bewonder de fraaie koepels en hoge minaretten.",
+          "Ontdek de Hemelse Kathedraal en de indrukwekkende handgeschilderde Bijbelse muurschilderingen.",
+          "Geniet van panoramische uitzichten over de Rode Zee, de jachthaven en de omliggende Sinaïbergen.",
+          "Wandel over de beroemde Oude Markt, vol specerijen, parfums, souvenirs en traditionele Egyptische ambachten.",
+          "Neem de tijd om te winkelen zonder enige verplichting iets te kopen.",
+          "Reis met je eigen privégids en voertuig met airconditioning.",
+          "Verleng je uitstapje met optionele bezoeken aan Farsha Café, SOHO Square of het Sharm El Sheikh Museum.",
+          "Geniet van gemakkelijk ophalen en terugbrengen bij elk hotel in Sharm El Sheikh."
+        ],
+        "itinerary": [],
+        "included": [
+          "Ophalen en terugbrengen bij alle hotels in Sharm El Sheikh.",
+          "Privévoertuig met airconditioning gedurende de hele tour.",
+          "Professionele lokale privégids.",
+          "Privé-sightseeingtour door Sharm El Sheikh.",
+          "Bezoek aan de Al Sahaba-moskee.",
+          "Bezoek aan de Hemelse Kathedraal.",
+          "Vrije tijd op de Oude Markt om te winkelen en rond te kijken.",
+          "Stops bij panoramische uitzichtpunten in de stad.",
+          "Alle toepasselijke belastingen en servicekosten."
+        ],
+        "excluded": [
+          "Eten, snacks en drankjes.",
+          "Bezoek aan Farsha Café (optionele transferupgrade).",
+          "Bezoek aan SOHO Square (optionele transferupgrade).",
+          "Bezoek aan het Sharm El Sheikh Museum (optionele extra).",
+          "Lunch of diner in een oosters restaurant (optionele extra).",
+          "Persoonlijke aankopen en souvenirs.",
+          "Fooien voor de gids en chauffeur.",
+          "Diensten die niet uitdrukkelijk bij de inbegrepen onderdelen zijn vermeld."
+        ],
+        "faqs": [],
+        "pickupInfo": "Gratis ophalen en terugbrengen bij hotels in heel Sharm El Sheikh.",
+        "cancellationPolicy": "Gratis annuleren tot 24 uur vóór aanvang van de excursie.",
+        "ageRestrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
+        "labels": {
+          "highlights": "Hoogtepunten",
+          "itinerary": "Reisprogramma",
+          "included": "Inbegrepen",
+          "excluded": "Niet inbegrepen",
+          "faqs": "Veelgestelde vragen",
+          "pickupInfo": "Ophaalinformatie",
+          "cancellationPolicy": "Annuleringsbeleid",
+          "ageRestrictions": "Leeftijdsvoorwaarden",
+          "bookNow": "Boek nu",
+          "browseMore": "Bekijk meer excursies"
+        }
+      },
+      "seo_title": "Privé-stadstour Sharm El Sheikh: Oude Markt, moskee en kathedraal | Awesome Adventure Tours",
+      "seo_description": "Ontdek Sharm El Sheikh met een privégids: bezoek de Al Sahaba-moskee, Hemelse Kathedraal, Oude Markt en panoramische uitzichtpunten.",
+      "duration": "Halve dag (ongeveer 3 uur)",
+      "duration_type": "Halve dag",
+      "departure_time": "11:00, 13:00, 14:00, 15:00, 16:00, 18:00, 20:00",
+      "age_restrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
+      "pickup_info": "Gratis ophalen en terugbrengen bij hotels in heel Sharm El Sheikh.",
+      "cancellation_policy": "Gratis annuleren tot 24 uur vóór aanvang van de excursie.",
+      "locale": "nl"
+    },
+    {
+      "entity_key": "56fdd9fc-3a63-4faf-89b4-ac9e7332b86d",
+      "source_slug": "st-catherine-monastery-dahab-day-trip-from-sharm-el-sheikh",
+      "translated_slug": "sint-catharinaklooster-dahab-dagtocht-vanuit-sharm-el-sheikh",
+      "title": "Dagtocht naar het Sint-Catharinaklooster en Dahab vanuit Sharm El Sheikh",
+      "summary": "Ontdek de geschiedenis en serene sfeer van het Sint-Catharinaklooster, verscholen tussen de indrukwekkende bergen van de Sinaï, en reis daarna naar de kust van de Rode Zee voor een ontspannen middag in Dahab. Bezoek het klooster met een gids, geniet van een heerlijke lunch en verken deze charmante badplaats op je eigen tempo.",
+      "content": {
+        "title": "Dagtocht naar het Sint-Catharinaklooster en Dahab vanuit Sharm El Sheikh",
+        "description": "Laat de drukte van Sharm El Sheikh achter je en ontdek tijdens een bijzondere dagtocht twee van de meest fascinerende bestemmingen van de Sinaï.\n\nJe dag begint met vroeg ophalen bij je hotel en een comfortabele rit door het spectaculaire landschap van de Sinaï. Onderweg naar de bergen passeer je ruige woestijnlandschappen en bijzondere rotsformaties op weg naar het Sint-Catharinaklooster, een van de oudste nog actieve christelijke kloosters ter wereld.\n\nAan de voet van de berg Sinaï ligt dit opmerkelijke monument van geschiedenis, geloof en architectuur. Onder begeleiding van een gekwalificeerde egyptoloog ontdek je het rijke erfgoed, bewonder je eeuwenoude religieuze iconen en manuscripten en bezoek je de kapel die traditioneel met de brandende braamstruik wordt geassocieerd.\n\nNa het bezoek reis je verder naar de kust van de Rode Zee en het ontspannen stadje Dahab. De sfeer verandert hier van bergachtige rust naar mediterrane kustcharme. Geniet van de lunch, het uitzicht op zee en wat vrije tijd om Dahab op je gemak te verkennen.\n\nDeze excursie combineert cultuur, indrukwekkende berglandschappen en een ontspannen uitstapje aan zee en laat je een andere kant van de Sinaï zien, ver weg van de stranden van Sharm El Sheikh.",
+        "durationLabel": "Hele dag (ongeveer 9 uur)",
+        "highlights": [
+          "Verken het Sint-Catharinaklooster, dat op de Werelderfgoedlijst van UNESCO staat.",
+          "Ontdek de bijzondere geschiedenis van het klooster met een gekwalificeerde egyptoloog.",
+          "Bezoek de kapel die traditioneel wordt geassocieerd met de brandende braamstruik.",
+          "Bewonder oude religieuze iconen, historische architectuur en de rustige bergomgeving.",
+          "Geniet van een schilderachtige rit door de spectaculaire woestijn en bergen van de Sinaï.",
+          "Reis naar Dahab voor de lunch en ontspannen vrije tijd aan de Rode Zee.",
+          "Reis comfortabel met retourtransfers vanaf je hotel in Sharm El Sheikh."
+        ],
+        "itinerary": [],
+        "included": [
+          "Ophalen en terugbrengen bij hotels in Sharm El Sheikh.",
+          "Retourvervoer in een modern voertuig met airconditioning.",
+          "Gekwalificeerde egyptoloog als gids.",
+          "Rondleiding door het Sint-Catharinaklooster.",
+          "Lunch in Dahab.",
+          "Vrije tijd om Dahab te verkennen.",
+          "Alle belastingen en servicekosten."
+        ],
+        "excluded": [
+          "Toegang tot het kloostermuseum (Heilige Sacristie), optioneel bij te boeken.",
+          "Drankjes tijdens de lunch.",
+          "Persoonlijke uitgaven en aankopen.",
+          "Fooien en gratificaties.",
+          "Diensten die niet uitdrukkelijk bij de inbegrepen onderdelen zijn vermeld."
+        ],
+        "faqs": [],
+        "pickupInfo": "Gratis ophalen en terugbrengen bij hotels in heel Sharm El Sheikh.",
+        "cancellationPolicy": "Gratis annuleren tot 24 uur vóór aanvang van de excursie.",
+        "ageRestrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
+        "labels": {
+          "highlights": "Hoogtepunten",
+          "itinerary": "Reisprogramma",
+          "included": "Inbegrepen",
+          "excluded": "Niet inbegrepen",
+          "faqs": "Veelgestelde vragen",
+          "pickupInfo": "Ophaalinformatie",
+          "cancellationPolicy": "Annuleringsbeleid",
+          "ageRestrictions": "Leeftijdsvoorwaarden",
+          "bookNow": "Boek nu",
+          "browseMore": "Bekijk meer excursies"
+        }
+      },
+      "seo_title": "Sint-Catharinaklooster en Dahab: dagtocht vanuit Sharm El Sheikh",
+      "seo_description": "Bezoek het Sint-Catharinaklooster in de Sinaï en ontdek Dahab tijdens een dagtocht vanuit Sharm El Sheikh, inclusief gids en lunch.",
+      "duration": "Hele dag (ongeveer 9 uur)",
+      "duration_type": "Hele dag",
+      "departure_time": "05:00 AM",
+      "age_restrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
+      "pickup_info": "Gratis ophalen en terugbrengen bij hotels in heel Sharm El Sheikh.",
+      "cancellation_policy": "Gratis annuleren tot 24 uur vóór aanvang van de excursie.",
+      "entity_type": "tour",
+      "locale": "nl"
+    },
+    {
+      "entity_key": "fb31d1b8-e3ed-4596-afd3-3adc5241111c",
+      "source_slug": "mount-sinai-sunrise-hike-st-catherines-monastery-from-sharm-el-sheikh",
+      "translated_slug": "berg-sinai-zonsopgang-wandeling-sint-catharinaklooster-sharm-el-sheikh",
+      "title": "Wandeling naar de zonsopgang op de berg Sinaï en bezoek aan het Sint-Catharinaklooster",
+      "summary": "Beleef een onvergetelijk nachtelijk avontuur vanuit Sharm El Sheikh. Wandel onder een sterrenhemel naar de top van de berg Sinaï, bereik de top op tijd voor een adembenemende zonsopgang en bezoek daarna het historische Sint-Catharinaklooster aan de voet van de berg.",
+      "content": {
+        "title": "Wandeling naar de zonsopgang op de berg Sinaï en bezoek aan het Sint-Catharinaklooster",
+        "description": "Beleef een van de meest bijzondere avonturen van de Sinaï tijdens een nachtelijke tocht naar de berg Sinaï. Een uitdagende wandeling in het donker brengt je naar een onvergetelijke zonsopgang boven de bergen.\n\nJe ervaring begint 's avonds met ophalen bij je hotel in Sharm El Sheikh. Daarna rijd je comfortabel door het stille woestijnlandschap naar de omgeving van Sint-Catharina. Daar ontmoet je je lokale berggids, maak je je hoofdlamp klaar en begin je onder de sterren aan de klim.\n\nVolg het historische bergpad in een gelijkmatig tempo. Je loopt via het Kameelpad naar de beroemde laatste Trappen van Berouw. Een goede lichamelijke conditie is vereist, maar het indrukwekkende landschap en de serene sfeer maken iedere stap de moeite waard.\n\nBereik de top vóór zonsopgang en zoek een plek om te genieten van de veranderende kleuren aan de hemel terwijl de zon boven de ruige bergtoppen van de Sinaï verschijnt. Met een hoogte van ongeveer 2.285 meter biedt de berg Sinaï een spectaculair panoramisch uitzicht en een bijzonder moment om te koesteren.\n\nNa zonsopgang daal je de berg af en krijg je tijd om uit te rusten voordat je het Sint-Catharinaklooster bezoekt, een UNESCO-werelderfgoedlocatie met een eeuwenoude geschiedenis. Ontdek het religieuze erfgoed en de plek die traditioneel met de brandende braamstruik wordt verbonden.\n\nNa het bezoek ontspan je tijdens de rit terug naar Sharm El Sheikh. Je komt de volgende middag weer aan bij je hotel.\n\nDeze ervaring combineert avontuur, adembenemende natuur en de rijke geschiedenis van een van de belangrijkste bezienswaardigheden van de Sinaï.",
+        "durationLabel": "Hele dag",
+        "highlights": [
+          "Beklim de berg Sinaï onder een prachtige sterrenhemel.",
+          "Bereik de top op 2.285 meter hoogte op tijd voor de zonsopgang.",
+          "Geniet van spectaculaire panoramische uitzichten over het Sinaïgebergte.",
+          "Volg het historische Kameelpad en de beroemde Trappen van Berouw.",
+          "Ontdek de spirituele en historische betekenis van de berg Sinaï.",
+          "Bezoek het Sint-Catharinaklooster, een UNESCO-werelderfgoedlocatie.",
+          "Verken de historische omgeving van het klooster en de traditionele locatie van de brandende braamstruik.",
+          "Geniet van hoteltransfers, professionele begeleiding en een onvergetelijk nachtelijk avontuur."
+        ],
+        "itinerary": [],
+        "included": [
+          "Ophalen en terugbrengen bij alle hotels in Sharm El Sheikh.",
+          "Retourtransfers in een modern voertuig met airconditioning.",
+          "Professionele berggids.",
+          "Wandeltocht naar de zonsopgang op de berg Sinaï.",
+          "Bezoek aan het Sint-Catharinaklooster.",
+          "Hoofdlamp voor de nachtwandeling.",
+          "Alle toepasselijke belastingen en servicekosten."
+        ],
+        "excluded": [
+          "Maaltijden en drankjes.",
+          "Kamelentocht (optioneel bij te boeken).",
+          "Huur van een warme deken (optioneel bij te boeken).",
+          "Persoonlijke uitgaven.",
+          "Fooien en gratificaties.",
+          "Diensten die niet uitdrukkelijk bij de inbegrepen onderdelen zijn vermeld."
+        ],
+        "faqs": [],
+        "pickupInfo": "Gratis ophalen en terugbrengen bij hotels in heel Sharm El Sheikh.",
+        "cancellationPolicy": "Gratis annuleren tot 24 uur vóór aanvang van de excursie.",
+        "ageRestrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
+        "labels": {
+          "highlights": "Hoogtepunten",
+          "itinerary": "Reisprogramma",
+          "included": "Inbegrepen",
+          "excluded": "Niet inbegrepen",
+          "faqs": "Veelgestelde vragen",
+          "pickupInfo": "Ophaalinformatie",
+          "cancellationPolicy": "Annuleringsbeleid",
+          "ageRestrictions": "Leeftijdsvoorwaarden",
+          "bookNow": "Boek nu",
+          "browseMore": "Bekijk meer excursies"
+        }
+      },
+      "seo_title": "Berg Sinaï: zonsopgangwandeling en Sint-Catharinaklooster vanuit Sharm",
+      "seo_description": "Wandel 's nachts naar de top van de berg Sinaï voor de zonsopgang en bezoek het Sint-Catharinaklooster met gids vanuit Sharm El Sheikh.",
+      "duration": "Hele dag",
+      "duration_type": "Hele dag",
+      "departure_time": "20:00",
+      "age_restrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
+      "pickup_info": "Gratis ophalen en terugbrengen bij hotels in heel Sharm El Sheikh.",
+      "cancellation_policy": "Gratis annuleren tot 24 uur vóór aanvang van de excursie.",
+      "entity_type": "tour",
+      "locale": "nl"
+    },
+    {
+      "entity_key": "e2019bda-5664-4dd3-ac21-a38c2fd95c9f",
+      "source_slug": "hurghada-parasailing-banana-boat-adventure-with-hotel-pickup",
+      "translated_slug": "hurghada-parasailen-bananenboot-avontuur-hotelophaalservice",
+      "title": "Hurghada: parasailen en bananenbootavontuur met ophalen bij je hotel",
+      "summary": "Zweef boven de schitterende Rode Zee tijdens een spannende parasailvlucht en geniet daarna van een rit op de bananenboot en een band achter de speedboot. Deze watersportervaring is ideaal voor beginners en omvat comfortabele hoteltransfers in Hurghada.",
+      "content": {
+        "title": "Hurghada: parasailen en bananenbootavontuur met ophalen bij je hotel",
+        "description": "Bekijk Hurghada vanuit een heel nieuw perspectief met een spannende parasail- en watersportervaring boven de prachtige Rode Zee.\n\nJe avontuur begint met ophalen bij je hotel in Hurghada en een comfortabele transfer naar de jachthaven. Daar ontmoet je de bemanning, ontvang je je veiligheidsuitrusting en maak je je klaar voor het hoogtepunt van de ervaring.\n\nStap aan boord van de speedboot en vaar het open water op. Zodra de parasail de wind vangt, stijg je rustig boven de zee uit en geniet je van een prachtig uitzicht op de kustlijn en de verschillende blauwtinten van de Rode Zee. Je kunt alleen vliegen of samen met een reisgenoot. Eerdere ervaring is niet nodig.\n\nNa de landing op de boot gaat het plezier verder met een rit op de bananenboot en een tocht op een opblaasbare band achter de boot. Een leuke manier om samen te lachen en nog meer actie aan je dag op zee toe te voegen.\n\nNa afloop keer je terug naar de jachthaven en brengt een comfortabele transfer je terug naar je hotel.\n\nOf je nu op zoek bent naar wat adrenaline, een nieuw uitzicht op Hurghada of gewoon een leuke activiteit met familie en vrienden: deze ervaring combineert drie plezierige watersportactiviteiten in één gemakkelijk uitstapje.",
+        "durationLabel": "2 uur",
+        "highlights": [
+          "Geniet van een spannende parasailvlucht op 30–40 meter boven de Rode Zee.",
+          "Bewonder vanuit de lucht de kustlijn van Hurghada en het turquoise water.",
+          "Ervaar hoe je door een speedboot zachtjes de lucht in wordt getrokken.",
+          "Maak een leuke rit op een bananenboot over zee.",
+          "Voeg extra spanning toe met een rit op een opblaasbare band.",
+          "Je hebt geen eerdere ervaring met parasailen nodig.",
+          "Geniet van ophalen en terugbrengen bij je hotel in een voertuig met airconditioning."
+        ],
+        "itinerary": [],
+        "included": [
+          "Ophalen en terugbrengen bij hotels in Hurghada.",
+          "Retourtransfers in een modern voertuig met airconditioning.",
+          "Toegang tot de jachthaven van Hurghada.",
+          "Speedboottocht naar de parasailplek.",
+          "Parasailvlucht (ongeveer 5–7 minuten in de lucht).",
+          "Bananenboottocht.",
+          "Rit op een opblaasbare band.",
+          "Veiligheidsuitrusting en reddingsvest.",
+          "Alle toepasselijke belastingen en servicekosten."
+        ],
+        "excluded": [
+          "Foto's en video's van je ervaring.",
+          "Jetboottocht (optioneel bij te boeken).",
+          "Hoteltransfers vanuit Makadi Bay, Sahl Hasheesh, El Gouna, Safaga en Soma Bay (tegen een toeslag).",
+          "Eten en drinken.",
+          "Fooien en persoonlijke uitgaven.",
+          "Diensten die niet uitdrukkelijk bij de inbegrepen onderdelen zijn vermeld."
+        ],
+        "faqs": [],
+        "pickupInfo": "Gratis ophalen en terugbrengen bij hotels in heel Hurghada.",
+        "cancellationPolicy": "Gratis annuleren tot 24 uur vóór aanvang van de excursie.",
+        "ageRestrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
+        "labels": {
+          "highlights": "Hoogtepunten",
+          "itinerary": "Reisprogramma",
+          "included": "Inbegrepen",
+          "excluded": "Niet inbegrepen",
+          "faqs": "Veelgestelde vragen",
+          "pickupInfo": "Ophaalinformatie",
+          "cancellationPolicy": "Annuleringsbeleid",
+          "ageRestrictions": "Leeftijdsvoorwaarden",
+          "bookNow": "Boek nu",
+          "browseMore": "Bekijk meer excursies"
+        }
+      },
+      "seo_title": "Parasailen en bananenboot in Hurghada met hoteltransfers",
+      "seo_description": "Boek parasailen, een bananenboot en een bandrit boven de Rode Zee in Hurghada, inclusief ophalen en terugbrengen bij je hotel.",
+      "duration": "2 uur",
+      "duration_type": "Halve dag",
+      "departure_time": "11:00 AM",
+      "age_restrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
+      "pickup_info": "Gratis ophalen en terugbrengen bij hotels in heel Hurghada.",
+      "cancellation_policy": "Gratis annuleren tot 24 uur vóór aanvang van de excursie.",
+      "entity_type": "tour",
+      "locale": "nl"
+    },
+    {
+      "entity_key": "87f5ab47-2499-4511-9a68-39a279e5bb85",
+      "source_slug": "hurghada-airport-to-hotel-private-arrival-transfer",
+      "translated_slug": "hurghada-luchthaven-naar-hotel-prive-aankomsttransfer",
+      "title": "Hurghada Airport naar hotel – privétransfer bij aankomst",
+      "summary": "Begin je vakantie in Hurghada ontspannen met een vooraf geregelde privé-ophaalservice vanaf de luchthaven. Je chauffeur wacht je op in de aankomsthal met een naambordje en brengt je rechtstreeks naar je hotel in een modern voertuig met airconditioning. 24 uur per dag beschikbaar, zonder andere passagiers of taxiwachtrijen.",
+      "content": {
+        "title": "Hurghada Airport naar hotel – privétransfer bij aankomst",
+        "description": "Maak je aankomst in Hurghada eenvoudig en comfortabel met een privétransfer vanaf de luchthaven die vooraf voor je wordt geregeld.\n\nNadat je je bagage hebt opgehaald en door de douane bent gegaan, staat je chauffeur in de aankomsthal op je te wachten met een bordje met je naam. Je hoeft geen taxi te zoeken, over een prijs te onderhandelen of op andere passagiers te wachten.\n\nGeniet van een rechtstreekse rit naar je hotel in je eigen privévoertuig met airconditioning. Je chauffeur helpt met je bagage en brengt je direct naar je accommodatie, zodat je vakantie ontspannen begint.\n\nDe transferservice is 24 uur per dag beschikbaar. Of je vlucht nu vroeg in de ochtend, 's middags of laat in de avond landt, de ophaaltijd wordt afgestemd op je aankomst.\n\nVoor vertrek ontvang je ook een WhatsApp-contact, zodat je indien nodig eenvoudig met je chauffeur kunt afstemmen. Wil je onderweg kort stoppen bij een winkel om water of andere benodigdheden te kopen? Dan kun je een korte stop aanvragen.\n\nBoek je aankomsttransfer vooraf en geniet zonder onnodige vertragingen van een comfortabele privérit van de luchthaven van Hurghada naar je hotel.",
+        "durationLabel": "30 minuten",
+        "highlights": [
+          "Privé-enkele reis van de luchthaven van Hurghada naar je hotel.",
+          "Ontvangstservice in de aankomsthal.",
+          "Modern voertuig met airconditioning, exclusief voor jouw gezelschap.",
+          "Hulp van de chauffeur met je bagage.",
+          "24-uursservice, ook bij late aankomsten en vroege vluchten.",
+          "Geen gedeelde passagiers, taxiwachtrijen of prijsonderhandelingen."
+        ],
+        "itinerary": [],
+        "included": [
+          "Enkele reis per privétransfer van de luchthaven van Hurghada naar je hotel.",
+          "Privévoertuig met airconditioning, uitsluitend voor jouw gezelschap.",
+          "Ontvangst in de aankomsthal van de luchthaven.",
+          "Hulp met bagage.",
+          "Alle toepasselijke servicekosten."
+        ],
+        "excluded": [
+          "Retourtransfer van je hotel naar de luchthaven van Hurghada.",
+          "Transfers naar resorts buiten de stad Hurghada.",
+          "Extra stops of langere winkeltijd onderweg.",
+          "Eten, drinken en persoonlijke aankopen.",
+          "Diensten die niet uitdrukkelijk bij de inbegrepen onderdelen zijn vermeld."
+        ],
+        "faqs": [],
+        "pickupInfo": "Privé ophalen bij de aankomsthal van Hurghada Airport en rechtstreeks vervoer naar je hotel.",
+        "cancellationPolicy": "Gratis annuleren tot 24 uur vóór aanvang van de transfer.",
+        "ageRestrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
+        "labels": {
+          "highlights": "Hoogtepunten",
+          "itinerary": "Reisprogramma",
+          "included": "Inbegrepen",
+          "excluded": "Niet inbegrepen",
+          "faqs": "Veelgestelde vragen",
+          "pickupInfo": "Ophaalinformatie",
+          "cancellationPolicy": "Annuleringsbeleid",
+          "ageRestrictions": "Leeftijdsvoorwaarden",
+          "bookNow": "Boek nu",
+          "browseMore": "Bekijk meer excursies"
+        }
+      },
+      "seo_title": "Privétransfer van luchthaven Hurghada naar hotel | Awesome Adventure Tours",
+      "seo_description": "Boek een privé-aankomsttransfer van Hurghada Airport naar je hotel met ontvangstservice, bagagehulp en 24-uursbeschikbaarheid.",
+      "duration": "30 minuten",
+      "duration_type": "Halve dag",
+      "departure_time": "09:00 AM",
+      "age_restrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
+      "pickup_info": "Privé ophalen bij de aankomsthal van Hurghada Airport en rechtstreeks vervoer naar je hotel.",
+      "cancellation_policy": "Gratis annuleren tot 24 uur vóór aanvang van de transfer.",
+      "entity_type": "tour",
+      "locale": "nl"
+    },
+    {
+      "entity_key": "1ecd1710-72ff-4903-a88c-bc301b5b2d7f",
+      "source_slug": "giftun-island-orange-bay-yacht-trip-with-snorkeling-lunch",
+      "translated_slug": "giftun-eiland-orange-bay-jachttocht-snorkelen-lunch",
+      "title": "Jachttocht naar Giftun Island en Orange Bay met snorkelen en lunch",
+      "summary": "Breng een prachtige dag door op de Rode Zee tijdens een jachttocht vanuit Hurghada naar Orange Bay en Giftun Island. Ontdek kleurrijke koraalriffen tijdens twee snorkelstops, ontspan op een schitterend wit zandstrand en geniet aan boord van een lunchbuffet met verfrissende drankjes.",
+      "content": {
+        "title": "Jachttocht naar Giftun Island en Orange Bay met snorkelen en lunch",
+        "description": "Ontsnap aan het vasteland en ontdek de schoonheid van de Rode Zee tijdens een dagtocht per boot naar Orange Bay en Giftun Island.\n\nJe dag begint met ophalen bij je hotel in Hurghada en een comfortabele transfer naar de jachthaven. Stap aan boord van een ruim jacht en geniet van een schilderachtige tocht over het heldere blauwe water, met onderweg prachtige uitzichten op de kust.\n\nHet avontuur omvat twee snorkelstops bij verschillende riffen. Ontdek kleurrijke koraalformaties en bewonder het fascinerende onderwaterleven van de Rode Zee. Een professionele snorkelinstructeur begeleidt je, zodat de ervaring geschikt is voor beginners en ervaren zwemmers.\n\nDaarna vaar je naar Orange Bay, bekend om het zachte witte zand en het ondiepe turquoise water. Breng ongeveer twee ontspannen uren door op het eiland: zwem, zonnebaad, maak foto's of geniet gewoon van de rustige strandsfeer.\n\nTerug aan boord staat een vers bereid lunchbuffet klaar, met seizoensfruit en onbeperkt mineraalwater, frisdrank, thee en koffie. Ontspan op het dek en geniet van het uitzicht voordat het jacht terugkeert naar de jachthaven van Hurghada.\n\nMet hoteltransfers, snorkeluitrusting, eilandtoegang, lunch en drankjes inbegrepen is dit een heerlijke manier om de hoogtepunten van de Rode Zee op één onvergetelijke dag te beleven.\n\nWil je iets extra's? Je kunt je ervaring uitbreiden met een introductieduik, een parasailvlucht of een privétocht per speedboot naar Orange Bay.",
+        "durationLabel": "Hele dag (ongeveer 7 uur)",
+        "highlights": [
+          "Vaar over de Rode Zee naar Orange Bay en Giftun Island.",
+          "Geniet van twee begeleide snorkelstops bij prachtige koraalriffen.",
+          "Ontdek kleurrijke vissen en een fascinerende onderwaterwereld.",
+          "Ontspan ongeveer twee uur op het witte zandstrand van Orange Bay.",
+          "Verfris jezelf met onbeperkt mineraalwater, frisdrank, thee en koffie.",
+          "Geniet aan boord van een vers bereid lunchbuffet.",
+          "Reis comfortabel met ophalen en terugbrengen bij je hotel in Hurghada."
+        ],
+        "itinerary": [],
+        "included": [
+          "Ophalen en terugbrengen bij hotels in Hurghada.",
+          "Retourtransfers in een modern voertuig met airconditioning.",
+          "Dagtocht per jacht naar Orange Bay en Giftun Island.",
+          "Toegangsprijzen voor het Nationaal Park Giftun Island en Orange Bay.",
+          "Twee snorkelstops met een professionele instructeur.",
+          "Snorkeluitrusting: masker, vinnen en reddingsvest.",
+          "Lunchbuffet aan boord.",
+          "Vers seizoensfruit.",
+          "Onbeperkt mineraalwater en frisdrank.",
+          "Thee en koffie.",
+          "Douchefaciliteiten met zoet water aan boord.",
+          "Alle toepasselijke servicekosten."
+        ],
+        "excluded": [
+          "Transfer vanuit Makadi Bay, Sahl Hasheesh of El Gouna (tegen betaling beschikbaar).",
+          "Transfer vanuit Safaga of Soma Bay (tegen betaling beschikbaar).",
+          "Introductieduik (beschikbaar bij het duikpakket).",
+          "Parasailen (beschikbaar bij het parasailpakket).",
+          "Foto's en video's.",
+          "Verjaardagstaart en andere optionele extra's.",
+          "Diensten die niet uitdrukkelijk bij de inbegrepen onderdelen zijn vermeld."
+        ],
+        "faqs": [
+          {
+            "question": "Is snorkeluitrusting inbegrepen of moet ik mijn eigen uitrusting meenemen?",
+            "answer": "Aan boord zijn gratis ontsmette maskers, snorkels en vinnen in maten voor volwassenen en kinderen beschikbaar."
+          },
+          {
+            "question": "Kunnen mensen die niet kunnen zwemmen veilig deelnemen?",
+            "answer": "Ja. Er zijn door de kustwacht goedgekeurde drijfvesten beschikbaar en gecertificeerde duikinstructeurs begeleiden gasten in het water."
+          }
+        ],
+        "pickupInfo": "Gratis ophalen en terugbrengen bij hotels in heel Hurghada.",
+        "cancellationPolicy": "Gratis annuleren tot 24 uur vóór aanvang van de excursie.",
+        "ageRestrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
+        "labels": {
+          "highlights": "Hoogtepunten",
+          "itinerary": "Reisprogramma",
+          "included": "Inbegrepen",
+          "excluded": "Niet inbegrepen",
+          "faqs": "Veelgestelde vragen",
+          "pickupInfo": "Ophaalinformatie",
+          "cancellationPolicy": "Annuleringsbeleid",
+          "ageRestrictions": "Leeftijdsvoorwaarden",
+          "bookNow": "Boek nu",
+          "browseMore": "Bekijk meer excursies"
+        }
+      },
+      "seo_title": "Jachttocht naar Orange Bay en Giftun Island met snorkelen en lunch",
+      "seo_description": "Boek een jachttocht vanuit Hurghada naar Orange Bay en Giftun Island met twee snorkelstops, lunchbuffet, drankjes en hoteltransfers.",
+      "duration": "Hele dag (ongeveer 7 uur)",
+      "duration_type": "Hele dag",
+      "departure_time": "08:30 AM",
+      "age_restrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
+      "pickup_info": "Gratis ophalen en terugbrengen bij hotels in heel Hurghada.",
+      "cancellation_policy": "Gratis annuleren tot 24 uur vóór aanvang van de excursie.",
+      "entity_type": "tour",
+      "locale": "nl"
+    },
+    {
+      "entity_key": "17e6cedc-b281-4528-a42b-35faee49ac57",
+      "source_slug": "cairo-pyramids-sphinx-egyptian-museum-day-trip-from-sharm-el-sheikh",
+      "translated_slug": "caïro-piramides-sfinx-egyptisch-museum-dagtocht-vanuit-sharm-el-sheikh",
+      "title": "Dagtocht naar de piramides van Caïro, de Sfinx en het Egyptisch Museum vanuit Sharm El Sheikh",
+      "summary": "Reis vanuit Sharm El Sheikh naar Caïro tijdens een onvergetelijke dagtocht door de geschiedenis van het oude Egypte. Ontdek de legendarische piramides van Gizeh, sta oog in oog met de Grote Sfinx en verken de schatten van het Egyptisch Museum met een gekwalificeerde egyptoloog. Lunch en hoteltransfers zijn inbegrepen.",
+      "content": {
+        "title": "Dagtocht naar de piramides van Caïro, de Sfinx en het Egyptisch Museum vanuit Sharm El Sheikh",
+        "description": "Haal het meeste uit je verblijf in Sharm El Sheikh met een onvergetelijke reis naar de historische hoofdstad van Egypte. Deze dagtocht brengt je vanaf de kust van de Rode Zee naar het hart van de oude Egyptische beschaving, waar enkele van de meest bijzondere monumenten ter wereld op je wachten.\n\nJe avontuur begint met laat op de avond ophalen bij je hotel in Sharm El Sheikh. Maak het jezelf gemakkelijk tijdens de rit naar Caïro. Daar verwelkomt je egyptoloog je en vertelt hij of zij je meer over de fascinerende geschiedenis van de stad en haar oude schatten.\n\nDe eerste grote stop is het Egyptisch Museum in Caïro, met een buitengewone collectie oude voorwerpen uit duizenden jaren geschiedenis. Wandel door de zalen en ontdek bijzondere beelden, koninklijke voorwerpen en archeologische schatten die het verhaal vertellen van de grote beschavingen van Egypte.\n\nVervolgens bezoek je het plateau van Gizeh, waar de indrukwekkende piramides van Cheops, Chefren en Mykerinos boven het woestijnlandschap uittorenen. Bewonder deze uitzonderlijke bouwwerken, leer meer over hun constructie en historische betekenis en neem de tijd voor onvergetelijke foto's.\n\nOok sta je oog in oog met de Grote Sfinx, het legendarische monument met het lichaam van een leeuw en het gezicht van een koning, dat al duizenden jaren over het plateau van Gizeh waakt.\n\nNa het verkennen van de oude monumenten geniet je van de lunch in een lokaal restaurant in Gizeh. Er is ook tijd om de sfeer van de omgeving te ervaren en te winkelen.\n\nAan het einde van deze bijzondere dag begin je aan de terugreis naar Sharm El Sheikh. Je komt terug bij je hotel na een indrukwekkende kennismaking met de geschiedenis en het erfgoed van Caïro.\n\nVan koninklijke schatten uit de oudheid tot de tijdloze piramides van Gizeh: deze excursie brengt enkele van de meest iconische bezienswaardigheden van Egypte samen in één bijzondere dag.",
+        "durationLabel": "Hele dag (ongeveer 24 uur)",
+        "highlights": [
+          "Ontdek Caïro tijdens een dagtocht vanuit Sharm El Sheikh.",
+          "Verken het Egyptisch Museum en de bijzondere collectie oude Egyptische voorwerpen.",
+          "Bezoek de legendarische piramides van Gizeh, een van de beroemdste monumenten uit de oudheid.",
+          "Bekijk de Grote Piramide van Cheops en de piramides van Chefren en Mykerinos.",
+          "Sta oog in oog met de indrukwekkende Grote Sfinx.",
+          "Geniet van de lunch in een lokaal restaurant in Gizeh.",
+          "Leer over de geschiedenis van het oude Egypte met een gekwalificeerde egyptoloog.",
+          "Ervaar de gelegenheid om tijdens je bezoek aan Caïro te winkelen.",
+          "Reis met ophalen en terugbrengen bij hotels in Sharm El Sheikh."
+        ],
+        "itinerary": [],
+        "included": [
+          "Ophalen en terugbrengen bij hotels in Sharm El Sheikh.",
+          "Retourvervoer tussen Sharm El Sheikh en Caïro.",
+          "Vervoer met airconditioning.",
+          "Gekwalificeerde egyptoloog als gids.",
+          "Toegangstickets voor het Egyptisch Museum.",
+          "Toegangstickets voor het piramidegebied van Gizeh en de Grote Sfinx.",
+          "Lunch in een lokaal restaurant in Gizeh.",
+          "Winkelstops als onderdeel van het excursieprogramma."
+        ],
+        "excluded": [
+          "Optionele boottocht over de Nijl.",
+          "Toegang tot het binnenste van de piramide van koning Cheops, indien beschikbaar als extra ticket.",
+          "Egyptisch inreisvisum of vereiste visumregelingen.",
+          "Overheidsbelastingen en servicekosten (€10 per persoon, zoals vermeld door de aanbieder).",
+          "Drankjes tijdens de lunch.",
+          "Persoonlijke uitgaven en aankopen.",
+          "Fooien en gratificaties.",
+          "Diensten die niet uitdrukkelijk bij de inbegrepen onderdelen zijn vermeld."
+        ],
+        "faqs": [],
+        "pickupInfo": "Gratis ophalen en terugbrengen bij hotels in heel Sharm El Sheikh.",
+        "cancellationPolicy": "Gratis annuleren tot 24 uur vóór aanvang van de excursie.",
+        "ageRestrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
+        "labels": {
+          "highlights": "Hoogtepunten",
+          "itinerary": "Reisprogramma",
+          "included": "Inbegrepen",
+          "excluded": "Niet inbegrepen",
+          "faqs": "Veelgestelde vragen",
+          "pickupInfo": "Ophaalinformatie",
+          "cancellationPolicy": "Annuleringsbeleid",
+          "ageRestrictions": "Leeftijdsvoorwaarden",
+          "bookNow": "Boek nu",
+          "browseMore": "Bekijk meer excursies"
+        }
+      },
+      "seo_title": "Caïro: piramides, Sfinx en Egyptisch Museum vanuit Sharm El Sheikh",
+      "seo_description": "Ontdek de piramides van Gizeh, de Grote Sfinx en het Egyptisch Museum tijdens een dagtocht vanuit Sharm El Sheikh, inclusief gids en lunch.",
+      "duration": "Hele dag (ongeveer 24 uur)",
+      "duration_type": "Hele dag",
+      "departure_time": "01:00 AM",
+      "age_restrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
+      "pickup_info": "Gratis ophalen en terugbrengen bij hotels in heel Sharm El Sheikh.",
+      "cancellation_policy": "Gratis annuleren tot 24 uur vóór aanvang van de excursie.",
+      "entity_type": "tour",
+      "locale": "nl"
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "66c1f90d-4fdf-43b7-acbb-98a1f5492d1e",
+      "source_slug": "what-to-wear-luxor-temples-day-trip",
+      "translated_slug": "wat-aantrekken-dagtocht-tempels-luxor",
+      "locale": "nl",
+      "title": "Wat trek je aan voor een dag sightseeing in Luxor?",
+      "summary": "Praktische tips over kleding en schoenen voor een bezoek aan de tempels en archeologische locaties van Luxor.",
+      "seo_title": "Wat trek je aan voor een dag sightseeing in Luxor?",
+      "seo_description": "Praktische tips over kleding en schoenen voor een bezoek aan tempels en archeologische locaties in Luxor.",
+      "content": {
+        "title": "Wat trek je aan voor een dag sightseeing in Luxor?",
+        "excerpt": "Praktische tips over kleding en schoenen voor een bezoek aan de tempels en archeologische locaties van Luxor.",
+        "content": "Een dag sightseeing in Luxor kan lange perioden buiten omvatten, wandelen over stenen oppervlakken en verplaatsen tussen schaduwrijke en zonnige gebieden. Comfortabele kleding is nuttiger dan een ingewikkelde outfit, vooral wanneer je meerdere locaties bezoekt.\n\n## Wat je moet weten\n\nLichte, ademende kleding kan prettig zijn bij warm weer. Een hoed, zonnebril en zonnebrandcrème zijn nuttig, terwijl comfortabele wandelschoenen die gesloten zijn of goed aan de voet blijven zitten het lopen over oneffen terrein gemakkelijker maken. Kies respectvolle kleding voor religieuze of culturele locaties en wees bereid de lokale toegangsregels te volgen. Neem alleen mee wat je nodig hebt en controleer de actuele regels voor tassen, camera's en versnaperingen.\n\n## Praktische checklist\n\n- Draag schoenen met goede grip.\n- Neem een hoed en zonbescherming mee.\n- Houd noodzakelijke medicijnen en een identiteitsbewijs bij je.\n- Controleer vóór vertrek de actuele regels van de locaties.\n\n## Voordat je boekt\n\nMet de juiste kleding kun je je op de geschiedenis richten in plaats van op ongemak. Bevestig het excursieprogramma en de verwachte hoeveelheid wandelen voordat je je spullen inpakt."
+      },
+      "status": "translation-review-draft"
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "cc634029-f2da-4bfc-afee-bb7c9024ccda",
+      "source_slug": "white-island-ras-mohammed-boat-trip-guide",
+      "translated_slug": "white-island-ras-mohammed-boottocht-gids",
+      "locale": "nl",
+      "title": "White Island en Ras Mohammed: wat je moet weten vóór je boottocht",
+      "summary": "Bereid je boottocht naar White Island en Ras Mohammed voor met praktische tips over de toestand van de zee en snorkelen.",
+      "seo_title": "White Island en Ras Mohammed: vóór je boottocht",
+      "seo_description": "Bereid een boottocht naar White Island en Ras Mohammed voor: toestand van de zee, snorkelen en diensten om te controleren.",
+      "content": {
+        "title": "White Island en Ras Mohammed: wat je moet weten vóór je boottocht",
+        "excerpt": "Bereid je boottocht naar White Island en Ras Mohammed voor met praktische tips over de toestand van de zee en snorkelen.",
+        "content": "Een boottocht die White Island en Ras Mohammed combineert, kan een volledige dag op het water bieden, met tijd om te snorkelen en een stop bij een bijzondere kustlocatie. De exacte route en de duur van iedere stop hangen af van de aanbieder en de omstandigheden.\n\n## Wat je moet weten\n\nControleer hoeveel snorkelstops zijn gepland, hoelang de boot bij iedere locatie blijft en of de route lunch, drankjes en uitrusting omvat. Vraag of een eventuele duikoptie een introductieduik is of alleen voor gecertificeerde duikers geldt. Zandbanken, stromingen, wind en de toestand van de zee kunnen invloed hebben op de toegang tot kustlocaties. De kapitein kan de route om veiligheidsredenen aanpassen.\n\n## Praktische checklist\n\n- Neem zwemkleding en een handdoek mee.\n- Vraag welke snorkeluitrusting wordt verstrekt.\n- Bevestig of voor duiken een certificaat nodig is.\n- Respecteer de beslissing van de kapitein als de route verandert.\n\n## Voordat je boekt\n\nBekijk de pagina van de [boottocht naar White Island en Ras Mohammed vanuit Sharm el-Sheikh](https://awesomeadventure.tours/excursions/from-sharm-white-island-ras-mohamed-snorkeling-trip) voor de actuele inbegrepen diensten en deelnamevoorwaarden."
+      },
+      "status": "translation-review-draft"
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "30b82c66-2ce1-49c6-a463-ae19dba9123d",
+      "source_slug": "colored-canyon-sinai-guided-walk-guide",
+      "translated_slug": "colored-canyon-sinai-begeleide-wandeling-gids",
+      "locale": "nl",
+      "title": "Colored Canyon in de Sinaï: wat kun je verwachten van een begeleide wandeling?",
+      "summary": "Bereid je canyonwandeling voor met tips over schoenen, terrein, warmte, fotografie en respect voor het landschap.",
+      "seo_title": "Colored Canyon in de Sinaï: begeleide wandeling en praktische tips",
+      "seo_description": "Bereid je wandeling in Colored Canyon voor: schoenen, terrein, warmte, fotografie en respect voor de omgeving.",
+      "content": {
+        "title": "Colored Canyon in de Sinaï: wat kun je verwachten van een begeleide wandeling?",
+        "excerpt": "Bereid je canyonwandeling voor met tips over schoenen, terrein, warmte, fotografie en respect voor het landschap.",
+        "content": "Colored Canyon staat bekend om zijn zandsteenlagen en smalle doorgangen die door natuurlijke krachten zijn gevormd. Te voet door dit landschap trekken kan een bijzondere ervaring zijn, maar het is geen gewone wandeling over een geplaveid pad. Het terrein en de toestand van de route zijn belangrijk.\n\n## Wat je moet weten\n\nKies goed passende schoenen met voldoende grip en bereid je voor op wandelen over oneffen terrein. Luister naar de aanwijzingen van je gids over smalle doorgangen, trappen en plekken waar je voorzichtig moet lopen. Klim niet op kwetsbare formaties en verlaat de afgesproken route niet om een foto te maken. Kras geen namen in rotsen, neem geen stenen mee en verstoor geen planten of dieren.\n\n## Praktische checklist\n\n- Draag gesloten schoenen met goede grip.\n- Neem water en zonbescherming mee.\n- Blijf met je gids op de afgesproken route.\n- Klim niet, kras niets in rotsen en neem geen natuurlijke materialen mee.\n\n## Voordat je boekt\n\nDe [excursie naar Colored Canyon in de Sinaï en Dahab](https://awesomeadventure.tours/excursions/sinai-adventure-colored-canyon-blue-hole-dahab) combineert woestijnlandschappen met stops aan de kust. Controleer de actuele wandelroute en of deze bij je conditie past."
+      },
+      "status": "translation-review-draft"
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "369637bd-bf30-4a19-a852-5cb868e05ac9",
+      "source_slug": "family-desert-safari-hurghada-guide",
+      "translated_slug": "gezinsgids-woestijnsafari-hurghada",
+      "locale": "nl",
+      "title": "Gezinsgids voor woestijnsafari's in Hurghada",
+      "summary": "Bereid een gezinsuitstap in de woestijn voor met aandacht voor leeftijdsgrenzen, voertuigveiligheid, warmte en realistische verwachtingen.",
+      "seo_title": "Gezinsgids voor woestijnsafari's in Hurghada",
+      "seo_description": "Plan een gezinsuitstap in de woestijn met aandacht voor toegestane leeftijden, voertuigveiligheid en warmte.",
+      "content": {
+        "title": "Gezinsgids voor woestijnsafari's in Hurghada",
+        "excerpt": "Bereid een gezinsuitstap in de woestijn voor met aandacht voor leeftijdsgrenzen, voertuigveiligheid, warmte en realistische verwachtingen.",
+        "content": "Een woestijnsafari kan een prachtige familieherinnering worden, maar niet iedere activiteit is geschikt voor elke leeftijd. Quadrijden, lange ritten in voertuigen en avondprogramma's stellen verschillende eisen. Een goed gezinsprogramma begint daarom met het controleren van de details en niet met aannames.\n\n## Wat je moet weten\n\nVraag de aanbieder naar minimumleeftijden, regels voor passagiers, hoe kinderen worden vastgezet en eventuele gezondheidsbeperkingen. Dat een kind als passagier in een voertuig mag meerijden, betekent niet automatisch dat het zelf mag rijden. Neem zonbescherming, gesloten schoenen en water mee volgens de aanbevelingen. Stof, lawaai en lang wachten kunnen kinderen vermoeien. Vraag daarom hoeveel tijd aan ritten wordt besteed en of er pauzes in de schaduw zijn gepland.\n\n## Praktische checklist\n\n- Bevestig minimumleeftijden en regels voor passagiers.\n- Vraag waar relevant naar kinderzitjes of andere bevestigingsmiddelen.\n- Neem zonbescherming en geschikt schoeisel mee.\n- Kies een route met realistische pauzes.\n\n## Voordat je boekt\n\nVergelijk de gepubliceerde route met de leeftijd en behoeften van je gezinsleden. Veiligheidsvereisten moeten altijd zwaarder wegen dan de activiteit die in de reclame wordt uitgelicht."
+      },
+      "status": "translation-review-draft"
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "63514379-b25f-4fb7-a1b3-fe34b3914d29",
+      "source_slug": "responsible-dolphin-watching-hurghada",
+      "translated_slug": "dolfijnen-kijken-hurghada-verantwoord-gids",
+      "locale": "nl",
+      "title": "Dolfijnen kijken in Hurghada: gids voor verantwoord observeren",
+      "summary": "Ontdek wat je kunt verwachten van een boottocht om dolfijnen te bekijken en hoe je het wilde zeeleven van de Rode Zee respecteert.",
+      "seo_title": "Dolfijnen kijken in Hurghada: een verantwoorde gids",
+      "seo_description": "Lees hoe je dolfijnen in de Rode Zee kunt observeren zonder ze te voeren, aan te raken, op te jagen of hun natuurlijke gedrag te verstoren.",
+      "content": {
+        "title": "Dolfijnen kijken in Hurghada: gids voor verantwoord observeren",
+        "excerpt": "Ontdek wat je kunt verwachten van een boottocht om dolfijnen te bekijken en hoe je het wilde zeeleven van de Rode Zee respecteert.",
+        "content": "Dolfijnen in hun natuurlijke leefomgeving zien, kan een onvergetelijk moment van een verblijf aan de Rode Zee zijn. Een boottocht vanuit Hurghada kan tijd omvatten om naar dolfijnen te zoeken en afzonderlijke snorkelstops, maar wilde dieren zijn nooit een gegarandeerde attractie. Dolfijnen bewegen vrij en waarnemingen kunnen niet worden gegarandeerd.\n\n## Wat je moet weten\n\nVerantwoordelijke aanbieders vermijden het opzettelijk voeren, aanraken, achtervolgen of omsingelen van dolfijnen. Als er dolfijnen verschijnen, volg dan de instructies van de bemanning en bekijk ze op respectvolle afstand. Vraag hoe de bemanning reageert wanneer dolfijnen worden waargenomen en wat er gebeurt als er geen worden gezien. Een betrouwbare beschrijving is eerlijk over deze onzekerheid in plaats van een ontmoeting te beloven.\n\n## Praktische checklist\n\n- Voer of raak wilde dolfijnen nooit aan.\n- Vraag een boot niet om dolfijnen te achtervolgen of hun route te blokkeren.\n- Volg de instructies van de bemanning en blijf rustig.\n- Beschouw het niet zien van dolfijnen als een normale mogelijke uitkomst van een excursie om wilde dieren te bekijken.\n\n## Voordat je boekt\n\nBekijk de [boottocht met dolfijnen kijken en snorkelen in Hurghada](https://awesomeadventure.tours/excursions/hurghada-dolphin-watching-snorkeling-boat-trip) en vraag de aanbieder hoe die het zeeleven beschermt."
+      },
+      "status": "translation-review-draft"
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "a366f8de-d502-45db-ab21-c4184bbb7069",
+      "source_slug": "combine-red-sea-holiday-luxor-cairo-itinerary",
+      "translated_slug": "rode-zee-vakantie-combineren-luxor-cairo-reisroute",
+      "locale": "nl",
+      "title": "Een vakantie aan de Rode Zee combineren met het oude erfgoed van Egypte",
+      "summary": "Stel een evenwichtige reisroute door Egypte samen met ontspanning aan de kust en zorgvuldig gekozen culturele bezoeken aan Luxor en Caïro.",
+      "seo_title": "Een verblijf aan de Rode Zee combineren met het oude erfgoed van Egypte",
+      "seo_description": "Stel een evenwichtige reisroute door Egypte samen met ontspanning aan de kust en culturele bezoeken aan Luxor en Caïro.",
+      "content": {
+        "title": "Een vakantie aan de Rode Zee combineren met het oude erfgoed van Egypte",
+        "excerpt": "Stel een evenwichtige reisroute door Egypte samen met ontspanning aan de kust en zorgvuldig gekozen culturele bezoeken aan Luxor en Caïro.",
+        "content": "Een verblijf aan de Rode Zee kan veel meer zijn dan alleen tijd op het strand. Reizigers die voldoende dagen hebben, kunnen kustervaringen combineren met een bezoek aan Luxor of Caïro voor een evenwichtige reis met ontspanning, natuur en oude geschiedenis.\n\n## Wat je moet weten\n\nHurghada is een praktisch vertrekpunt voor excursies op zee en in de woestijn, terwijl Luxor grote archeologische locaties biedt en Caïro musea en historische wijken heeft. Reizen tussen bestemmingen kost tijd. Behandel lange transfers daarom niet als kleine tussenpozen in je programma. Controleer vervoersmogelijkheden, vertrektijden, openingstijden van locaties en ticketvoorwaarden voordat je bevestigt.\n\n## Praktische checklist\n\n- Groepeer activiteiten per bestemming.\n- Plan realistische reistijden voor transfers en bezoeken.\n- Controleer actuele openingstijden en ticketinformatie.\n- Plan waar mogelijk een rustdag tussen intensieve excursies.\n\n## Voordat je boekt\n\nKies eerst de plaatsen die voor jou het belangrijkst zijn en bouw daarna een realistische reisroute. Vergelijk excursies aan de Rode Zee, in Luxor en in Caïro en bevestig iedere transfer voordat je betaalt."
+      },
+      "status": "translation-review-draft"
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "d7884dfe-1f9d-41de-9174-9a200bf72639",
+      "source_slug": "grand-egyptian-museum-first-time-visitor-guide",
+      "translated_slug": "groot-egyptisch-museum-eerste-bezoek-gids",
+      "locale": "nl",
+      "title": "Groot Egyptisch Museum: praktische gids voor je eerste bezoek",
+      "summary": "Bereid je bezoek aan het Groot Egyptisch Museum voor met tips over tickets, rondleidingen, benodigde tijd en het controleren van bezoekersregels.",
+      "seo_title": "Groot Egyptisch Museum: gids voor je eerste bezoek",
+      "seo_description": "Plan je bezoek aan het Groot Egyptisch Museum: tickets, rondleidingen, benodigde tijd en actuele bezoekersregels.",
+      "content": {
+        "title": "Groot Egyptisch Museum: praktische gids voor je eerste bezoek",
+        "excerpt": "Bereid je bezoek aan het Groot Egyptisch Museum voor met tips over tickets, rondleidingen, benodigde tijd en het controleren van bezoekersregels.",
+        "content": "Het Groot Egyptisch Museum is een belangrijke toevoeging aan het culturele aanbod van Caïro en een bijzondere bestemming voor reizigers die geïnteresseerd zijn in het oude Egypte. De galerijen en monumentale ruimtes verdienen een bezoek dat is afgestemd op je interesses, in plaats van een gehaaste poging om iedere zaal te bekijken.\n\n## Wat je moet weten\n\nSommige bezoekers willen een algemeen overzicht van de faraonische geschiedenis; anderen zijn vooral geïnteresseerd in koninklijke beeldhouwkunst, monumentale architectuur of Toetanchamon. Een professionele egyptoloog kan context bieden en voorwerpen verbinden met de bredere geschiedenis van Egypte. Openingstijden, ticketcategorieën, toegangsregels en beschikbaarheid van galerijen kunnen veranderen. Raadpleeg daarom kort vóór je bezoek de officiële bezoekersinformatie.\n\n## Praktische checklist\n\n- Bevestig tickets en toegangsregelingen.\n- Controleer openingstijden en actuele informatie over galerijen.\n- Vraag of een egyptologische gids is inbegrepen.\n- Plan tijd voor veiligheidscontroles en bezoekersvoorzieningen.\n\n## Voordat je boekt\n\nDe productpagina van de [begeleide tour door het Groot Egyptisch Museum](https://awesomeadventure.tours/excursions/grand-egyptian-museum-guided-tour-with-entry-ticket) beschrijft het aangeboden programma. Controleer de bezoekersregels rechtstreeks bij het museum voordat je vertrekt."
+      },
+      "status": "translation-review-draft"
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "49b0e165-8c27-4984-8470-99e9e58f74b7",
+      "source_slug": "prevent-seasickness-red-sea-boat-trip",
+      "translated_slug": "zeeziekte-voorkomen-boottocht-rode-zee",
+      "locale": "nl",
+      "title": "Zeeziekte voorkomen tijdens een boottocht op de Rode Zee",
+      "summary": "Praktische tips voor reizigers die zich willen voorbereiden op reisziekte tijdens een bootexcursie.",
+      "seo_title": "Zeeziekte voorkomen tijdens een boottocht op de Rode Zee",
+      "seo_description": "Praktische tips om je voor te bereiden op reisziekte tijdens een boottocht op de Rode Zee.",
+      "content": {
+        "title": "Zeeziekte voorkomen tijdens een boottocht op de Rode Zee",
+        "excerpt": "Praktische tips voor reizigers die zich willen voorbereiden op reisziekte tijdens een bootexcursie.",
+        "content": "Een dag op een boot kan ontspannend zijn, maar golven en bewegingen van de boot kunnen sommige reizigers misselijk maken. Zeeziekte verschilt per persoon: de ene reiziger voelt zich prima terwijl een ander tijdens dezelfde tocht last krijgt. Een goede voorbereiding kan de ervaring aangenamer maken.\n\n## Wat je moet weten\n\nRust voldoende uit, eet een lichte maaltijd als dat voor jou prettig is en drink water. Als je eerder last hebt gehad van reisziekte, vraag dan aan een apotheker of zorgprofessional of een geschikt middel voor jou veilig is, vooral als je andere medicijnen gebruikt, zwanger bent of een medische aandoening hebt. Tijdens de vaart kunnen naar de horizon kijken, frisse lucht nemen en telefoonschermen vermijden helpen. Vertel een bemanningslid snel als je je misselijk begint te voelen.\n\n## Praktische checklist\n\n- Rust goed uit vóór vertrek.\n- Vraag een zorgprofessional of een medicijn geschikt voor je is.\n- Kijk naar de horizon en neem waar dat veilig kan frisse lucht.\n- Waarschuw de bemanning zodra de klachten beginnen.\n\n## Voordat je boekt\n\nControleer de verwachte duur en kenmerken van de boot voordat je boekt. Als reisziekte een grote zorg voor je is, vraag dan of een kortere of meer beschutte optie beschikbaar is."
+      },
+      "status": "translation-review-draft"
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "5232c17d-c459-41a4-9cb0-7c0becc2a704",
+      "source_slug": "hurghada-to-luxor-day-trip-preparation",
+      "translated_slug": "hurghada-naar-luxor-dagtocht-voorbereiden",
+      "locale": "nl",
+      "title": "Van Hurghada naar Luxor: bereid je dagtocht naar het oude Egypte voor",
+      "summary": "Wat je moet plannen voor een lange dagtocht van Hurghada naar Luxor, van vroeg vertrek tot comfortabele kleding.",
+      "seo_title": "Van Hurghada naar Luxor: bereid een dag vol oude geschiedenis voor",
+      "seo_description": "Bereid je dagtocht van Hurghada naar Luxor voor: vroeg vertrek, comfortabele schoenen en praktische planning.",
+      "content": {
+        "title": "Van Hurghada naar Luxor: bereid je dagtocht naar het oude Egypte voor",
+        "excerpt": "Wat je moet plannen voor een lange dagtocht van Hurghada naar Luxor, van vroeg vertrek tot comfortabele kleding.",
+        "content": "Een dagtocht van Hurghada naar Luxor brengt je weg van de kust van de Rode Zee om enkele van de belangrijkste oude locaties van Egypte te ontdekken. Het is ook een lange reisdag. Met een goede voorbereiding wordt de ervaring comfortabeler.\n\n## Wat je moet weten\n\nDe gepubliceerde excursie omvat de tempel van Karnak, de Vallei der Koningen en de tempel van Hatsjepsoet, met een egyptologische gids, lunch en hoteltransfers zoals vermeld op de productpagina. Controleer vóór het boeken de meest recente informatie over vertrek, ophaalgebied, inbegrepen diensten en verwachte terugkomsttijd. Bij historische locaties moet je buiten lopen, trappen beklimmen en over oneffen oppervlakken bewegen. Draag daarom comfortabele schoenen en neem zonbescherming mee.\n\n## Praktische checklist\n\n- Bevestig de ophaaltijd en -locatie de dag ervoor.\n- Draag comfortabele wandelschoenen.\n- Neem zonbescherming en water mee, voor zover toegestaan.\n- Lees de details over tickets, lunch en de gids zorgvuldig.\n\n## Voordat je boekt\n\nBekijk de volledige route van de [dagtocht van Hurghada naar Luxor](https://awesomeadventure.tours/excursions/from-hurghada-luxor-day-trip-karnak-temple-valley-of-the-kings) en stel vóór vertrek je vragen."
+      },
+      "status": "translation-review-draft"
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "2fc5f782-535d-4e87-82e3-63aab9754f7c",
+      "source_slug": "underwater-photography-red-sea-reef-safety",
+      "translated_slug": "onderwaterfotografie-rode-zee-rifveiligheid",
+      "locale": "nl",
+      "title": "Maak mooie onderwaterfoto's zonder het rif te beschadigen",
+      "summary": "Eenvoudige tips om met een camera of telefoon mooie onderwaterfoto's te maken en tegelijk afstand te houden van koraal en zeeleven.",
+      "seo_title": "Mooie onderwaterfoto's maken zonder koraalriffen te beschadigen",
+      "seo_description": "Tips om onderwaterfoto's te maken in de Rode Zee zonder koraal aan te raken of zeedieren te verstoren.",
+      "content": {
+        "title": "Maak mooie onderwaterfoto's zonder het rif te beschadigen",
+        "excerpt": "Eenvoudige tips om met een camera of telefoon mooie onderwaterfoto's te maken en tegelijk afstand te houden van koraal en zeeleven.",
+        "content": "De Rode Zee kan prachtige snorkelfoto's opleveren, maar geen enkele foto is het waard om koraal te beschadigen of wilde dieren te verstoren. Je hebt geen dure uitrusting nodig voor een mooie herinnering: voorbereiding en goede controle over je bewegingen in het water zijn belangrijker.\n\n## Wat je moet weten\n\nGebruik een waterdichte behuizing die geschikt is voor de geplande diepte, controleer de afdichtingen vóór de excursie en bevestig de camera met een polsbandje. Water verandert kleuren en vermindert contrast. Beweeg daarom langzaam en houd de camera stabiel in plaats van vissen te achtervolgen. Houd je niet vast aan koraal, loop niet op het rif en blokkeer de route van een dier niet om een foto te maken.\n\n## Praktische checklist\n\n- Test de waterdichte behuizing vóór de excursie.\n- Gebruik een polsbandje.\n- Raak koraal nooit aan om jezelf te stabiliseren.\n- Achtervolg dieren niet om een foto te maken.\n\n## Voordat je boekt\n\nEen rustige snorkelstop onder begeleiding geeft je meer gelegenheid om zonder haast te observeren. Kies een excursie met een duidelijke veiligheidsbriefing en voldoende tijd om van het water te genieten."
       },
       "status": "translation-review-draft"
     }
