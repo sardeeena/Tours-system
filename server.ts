@@ -3267,6 +3267,30 @@ function parseGeminiTranslationJson(rawText: string): any {
   }
 }
 
+async function generateBulkGeminiContentWithRetry(
+  gemini: GoogleGenAI,
+  request: Parameters<GoogleGenAI['models']['generateContent']>[0],
+): Promise<Awaited<ReturnType<GoogleGenAI['models']['generateContent']>>> {
+  const maxAttempts = 4;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      return await gemini.models.generateContent(request);
+    } catch (error: any) {
+      const message = String(error?.message || error || 'Unknown Gemini error');
+      const status = Number(error?.status || error?.code || message.match(/(?:HTTP\\s*)?(429|500|502|503|504)/)?.[1] || 0);
+      const retryable = [429, 500, 502, 503, 504].includes(status)
+        || /UNAVAILABLE|RESOURCE_EXHAUSTED|ECONNRESET|ETIMEDOUT|temporarily unavailable|high demand/i.test(message);
+      if (!retryable || attempt === maxAttempts) throw error;
+      const delayMs = 1500 * (2 ** (attempt - 1));
+      console.warn('[Bulk translation generation] Gemini transient failure; retrying safely.', {
+        attempt, nextAttempt: attempt + 1, maxAttempts, status: status || null, delayMs,
+      });
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+  throw new Error('Gemini translation request failed after retry attempts.');
+}
+
 async function generateBulkTranslationResponse(
   items: BulkTranslationWorkItem[],
   locale: string,
@@ -3286,7 +3310,7 @@ async function generateBulkTranslationResponse(
     'INPUT: ' + JSON.stringify(items.map(x => ({ entity_type: x.type, entity_key: x.key, source: x.payload }))),
   ].join('\n');
 
-  const response = await gemini.models.generateContent({
+  const response = await generateBulkGeminiContentWithRetry(gemini, {
     model: 'gemini-3.8-flash',
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     config: {
@@ -3328,7 +3352,7 @@ async function generateBulkTranslationResponse(
       const right = await generateBulkTranslationResponse(items.slice(midpoint), locale);
       return { translations: [...left.translations, ...right.translations] };
     }
-    const repaired = await gemini.models.generateContent({
+    const repaired = await generateBulkGeminiContentWithRetry(gemini, {
       model: 'gemini-3.8-flash',
       contents: [{ role: 'user', parts: [{ text: [
         'Repair only the JSON syntax of the following model output. Do not rewrite, summarize, translate, add, remove, or alter any values. Return one valid JSON object with the same translations array and exact field values. Return JSON only.',
