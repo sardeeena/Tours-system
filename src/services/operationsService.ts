@@ -544,7 +544,7 @@ export async function updateDepartureStatus(
   if (departureError) return false;
 
   const availabilityStatus =
-    normalized === 'cancelled' || normalized === 'completed'
+    normalized === 'cancelled' || normalized === 'completed' || normalized === 'boarding' || normalized === 'in_progress'
       ? 'unavailable'
       : Number(departure.booked_passengers || 0) >= Number(departure.capacity || 0)
         ? 'sold_out'
