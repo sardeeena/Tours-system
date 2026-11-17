@@ -530,7 +530,7 @@ export async function updateDepartureStatus(
 
   const { data: departure, error: lookupError } = await supabase
     .from('departures')
-    .select('id,tour_id,date')
+    .select('id,tour_id,date,capacity,booked_passengers')
     .eq('id', departureId)
     .maybeSingle();
 
@@ -542,6 +542,18 @@ export async function updateDepartureStatus(
     .eq('id', departureId);
 
   if (departureError) return false;
+
+  const availabilityStatus =
+    normalized === 'cancelled' || normalized === 'completed'
+      ? 'unavailable'
+      : Number(departure.booked_passengers || 0) >= Number(departure.capacity || 0)
+        ? 'sold_out'
+        : 'available';
+  const { error: availabilityError } = await supabase
+    .from('tour_availability')
+    .update({ status: availabilityStatus, updated_at: new Date().toISOString() })
+    .eq('departure_id', departureId);
+  if (availabilityError) return false;
 
   const { error: bookingError } = await supabase
     .from('bookings')
