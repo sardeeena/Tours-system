@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "locale": "nl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "blog_post": 5,
+    "source_records": 5
+  },
+  "records": [
+    {
+      "entity_type": "blog_post",
+      "entity_key": "3e5e60ae-93de-4752-890d-1c6f4935484e",
+      "source_slug": "cairo-first-time-visitor-sightseeing-plan",
+      "translated_slug": "cairo-eerste-bezoek-stadsbezoek-plannen",
+      "locale": "nl",
+      "title": "Caïro voor beginners: plan een ontspannen dag sightseeing",
+      "summary": "Plan een haalbare route door Caïro door bezienswaardigheden in dezelfde buurt te combineren, rekening te houden met verkeer en een begeleide route te kiezen.",
+      "seo_title": "Caïro: plan een sightseeingdag voor je eerste bezoek",
+      "seo_description": "Plan een haalbare dag in Caïro door nabijgelegen bezienswaardigheden te combineren, extra tijd voor verkeer in te calculeren en een begeleide route te kiezen.",
+      "content": {
+        "title": "Caïro voor beginners: plan een ontspannen dag sightseeing",
+        "excerpt": "Plan een haalbare route door Caïro door bezienswaardigheden in dezelfde buurt te combineren, rekening te houden met verkeer en een begeleide route te kiezen.",
+        "content": "Caïro is een grote, levendige stad met een bijzondere verscheidenheid aan musea, historische gebouwen, markten en wijken. Bij een eerste bezoek proberen reizigers vaak te veel in één dag te plannen. Het is verstandiger om je programma rond een paar ervaringen te organiseren die dicht bij elkaar liggen.\n\n## Wat je moet weten\n\nReistijden kunnen aanzienlijk zijn. Stel daarom geen programma samen waarbij je meerdere keren dwars door de stad moet rijden. Kies een hoofdthema — oude geschiedenis, islamitisch en Koptisch erfgoed of museumbezoek — en bouw je route daaromheen. Houd extra tijd vrij voor verkeer, veiligheidscontroles, maaltijden en pauzes. Controleer kort voor je bezoek de openingstijden en ticketregels.\n\n## Praktische checklist\n\n- Kies een beperkt aantal prioriteiten.\n- Controleer de actuele openingstijden en toegangsvoorwaarden.\n- Plan extra tijd voor verkeer en veiligheidscontroles.\n- Spreek duidelijk af waar je elkaar ontmoet en hoe de terugreis is geregeld.\n\n## Voordat je boekt\n\nWil je een dag aan erfgoed besteden? Vergelijk dan de [begeleide tour door Oud-Caïro](https://awesomeadventure.tours/excursions/old-cairo-full-day-tour-islamic-coptic-heritage-with-lunch) met de andere Caïro-excursies in het aanbod."
+      },
+      "status": "translation-review-draft"
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "0a5edd6d-7747-4589-9ca8-3dcd7086476b",
+      "source_slug": "snorkeling-red-sea-non-swimmers",
+      "translated_slug": "snorkelen-rode-zee-zonder-zwemdiploma",
+      "locale": "nl",
+      "title": "Kun je snorkelen in de Rode Zee als je niet kunt zwemmen?",
+      "summary": "Ontdek hoe niet-zwemmers een snorkelexcursie kunnen beoordelen, drijfmiddelen kunnen gebruiken en veiligere keuzes in het water kunnen maken.",
+      "seo_title": "Kun je snorkelen in de Rode Zee als je niet kunt zwemmen?",
+      "seo_description": "Ontdek hoe niet-zwemmers een snorkelexcursie kunnen beoordelen, drijfmiddelen kunnen gebruiken en veiligere keuzes in het water kunnen maken.",
+      "content": {
+        "title": "Kun je snorkelen in de Rode Zee als je niet kunt zwemmen?",
+        "excerpt": "Ontdek hoe niet-zwemmers een snorkelexcursie kunnen beoordelen, drijfmiddelen kunnen gebruiken en veiligere keuzes in het water kunnen maken.",
+        "content": "Als je niet goed kunt zwemmen, hoef je niet automatisch alle boottochten op de Rode Zee uit te sluiten. Het betekent wel dat je vóór het boeken eerlijk moet vertellen wat je kunt en dat je je nooit verplicht moet voelen om het water in te gaan. Snorkelen gebeurt in open water, waar diepte, stroming en omstandigheden kunnen veranderen.\n\n## Wat je moet weten\n\nVraag of goed passende reddingsvesten of andere drijfmiddelen beschikbaar zijn, of een gids deelnemers in het water begeleidt en of er alternatieven in rustigere gebieden zijn. Een drijfmiddel helpt je aan het oppervlak te blijven, maar vervangt geen toezicht of oplettendheid in het water. Vertel de bemanning duidelijk dat je niet kunt zwemmen en ga alleen het water in als zij bevestigen dat de omstandigheden geschikt zijn.\n\n## Praktische checklist\n\n- Vermeld bij het boeken dat je niet kunt zwemmen.\n- Vraag naar reddingsvesten, gidsen en veilige toegangspunten tot het water.\n- Blijf dicht bij de groep.\n- Blijf aan boord als de omstandigheden of je eigen vertrouwen niet geschikt zijn.\n\n## Voordat je boekt\n\nKies een excursie waarvan de bemanning de veiligheidsmaatregelen duidelijk kan uitleggen. Vergelijk het beschikbare [aanbod aan boottochten in Hurghada](https://awesomeadventure.tours/excursions) voordat je beslist."
+      },
+      "status": "translation-review-draft"
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "45b40823-0eae-404f-8b83-1210738be0c9",
+      "source_slug": "hurghada-travel-guide-first-visit",
+      "translated_slug": "hurghada-reisgids-eerste-bezoek",
+      "locale": "nl",
+      "title": "Reisgids Hurghada: wat je moet weten voor je eerste bezoek",
+      "summary": "Plan je eerste verblijf in Hurghada? Deze praktische gids helpt je activiteiten aan de Rode Zee te kiezen, transfers te regelen, je op het weer voor te bereiden en excursiegegevens vóór het boeken te controleren.",
+      "seo_title": "Reisgids Hurghada: bereid je eerste bezoek voor",
+      "seo_description": "Bereid je eerste reis naar Hurghada voor: boottochten, eilandexcursies, woestijnsafari's, luchthaventransfers, bagage en boektips.",
+      "content": {
+        "title": "Reisgids Hurghada: wat je moet weten voor je eerste bezoek",
+        "excerpt": "Plan je eerste verblijf in Hurghada? Deze praktische gids helpt je activiteiten aan de Rode Zee te kiezen, transfers te regelen, je op het weer voor te bereiden en excursiegegevens vóór het boeken te controleren.",
+        "content": "# Reisgids Hurghada: wat je moet weten voor je eerste bezoek\n\nHurghada is een van de bekendste vakantiebestemmingen van Egypte aan de Rode Zee. Het is een fijne plek om aan zee tot rust te komen, een dag op het water door te brengen of andere delen van Egypte te ontdekken. Bij een eerste bezoek kun je het beste eerst bepalen wat voor soort dagen je wilt beleven en daarna de praktische details van elke activiteit controleren voordat je bevestigt.\n\n## 1. Bepaal hoe je je verblijf wilt doorbrengen\n\nEen verblijf in Hurghada betekent niet dat je moet kiezen tussen het strand en excursies. Je kunt ontspannen in je resort afwisselen met een boottocht, een eilandbezoek of een avontuur landinwaarts.\n\n- **Boottochten en eilandexcursies:** Orange Bay, Giftun Island en Hula Hula zijn namen die je tegenkomt wanneer je lokale boottochten vergelijkt. Controleer de exacte route en stops op de pagina van elke excursie.\n- **Snorkelen en zeeleven:** sommige boottochten omvatten snorkelstops. Kies een activiteit die past bij je comfort in het water en volg de instructies van de bemanning.\n- **Ervaringen in de woestijn:** quadrijden, kameelritten en avondexcursies in de woestijn bieden een andere omgeving dan de kust. Lees de activiteitbeschrijving zorgvuldig om te zien wat daadwerkelijk is inbegrepen.\n- **Dagtochten:** als je voldoende tijd hebt, kun je een langere reis overwegen om een andere regio van Egypte te ontdekken. Reistijden kunnen aanzienlijk zijn; vergelijk daarom de volledige route en niet alleen de bestemming.\n\n## 2. Regel transfers en ontmoetingsplaatsen\n\nControleer vóór het boeken of ophalen bij het hotel is inbegrepen, of je accommodatie binnen het servicegebied ligt en hoe laat je klaar moet staan. Als de excursie een ontmoetingspunt gebruikt, sla de locatie dan op en plan voldoende tijd om er te komen.\n\nKom je met het vliegtuig aan? Een privétransfer vanaf de luchthaven kan het begin van je verblijf eenvoudiger maken. Bevestig bij de aanbieder je vluchtgegevens, aankomsttijd, aantal passagiers, bagage en hoteladres.\n\n## 3. Lees de details, niet alleen de titel\n\nTwee excursies met vergelijkbare namen kunnen verschillende routes, duur en inbegrepen diensten hebben. Bekijk het programma, de vertrektijd, het vervoer, maaltijden, uitrusting, extra kosten, leeftijdsvoorwaarden en annuleringsregels. Is een belangrijk punt niet duidelijk? Stel dan vóór betaling je vraag.\n\n## 4. Pak in op basis van de activiteit\n\nNeem voor een bootdag zwemkleding, een handdoek, zonbescherming, schone kleding en een waterdichte tas mee. Voor een woestijnexcursie kunnen praktische kleding, gesloten schoenen wanneer dat passend is en oogbescherming nuttig zijn. Controleer altijd de specifieke aanbevelingen van de aanbieder.\n\n## 5. Houd je planning flexibel\n\nHet weer, de toestand van de zee en operationele beslissingen kunnen invloed hebben op buitenactiviteiten. Houd ruimte voor wijzigingen in je planning en let op de informatie van de aanbieder. Ga er niet van uit dat een activiteit onder alle omstandigheden doorgaat.\n\n## Een eenvoudige manier om je reisroute op te bouwen\n\nKies voor een kort verblijf één belangrijke excursie en houd voldoende tijd over om uit te rusten. Blijf je langer, combineer dan een boottocht of eilandbezoek met een activiteit op het land. Bekijk het actuele aanbod van Awesome Adventure Tours om beschikbare excursies, duur en inbegrepen diensten te vergelijken.\n\n**Klaar om je verblijf in Hurghada te plannen?** Ontdek de excursies en transfers die Awesome Adventure Tours momenteel aanbiedt en controleer vóór het boeken alle details voor de gekozen datum."
+      },
+      "status": "translation-review-draft"
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "eb7be3a9-81bc-4136-86b4-464d3fb48df2",
+      "source_slug": "what-to-pack-red-sea-boat-trip",
+      "translated_slug": "wat-meenemen-boottocht-rode-zee",
+      "locale": "nl",
+      "title": "Wat neem je mee voor een boottocht op de Rode Zee?",
+      "summary": "Bereid je voor op een comfortabele dag op de Rode Zee met deze praktische checklist: zwemkleding, zonbescherming, waterdichte opbergruimte, persoonlijke spullen en punten om bij de aanbieder te controleren.",
+      "seo_title": "Wat neem je mee voor een boottocht op de Rode Zee?",
+      "seo_description": "Gebruik deze checklist voor je boottocht op de Rode Zee: zwemkleding, handdoek, zonbescherming, waterdichte tas, medicijnen en benodigdheden voor het gezin.",
+      "content": {
+        "title": "Wat neem je mee voor een boottocht op de Rode Zee?",
+        "excerpt": "Bereid je voor op een comfortabele dag op de Rode Zee met deze praktische checklist: zwemkleding, zonbescherming, waterdichte opbergruimte, persoonlijke spullen en punten om bij de aanbieder te controleren.",
+        "content": "# Wat neem je mee voor een boottocht op de Rode Zee?\n\nEen boottocht is prettiger wanneer je de belangrijkste spullen bij de hand hebt. Wat je nodig hebt, hangt af van de route, het seizoen en de diensten die bij je excursie zijn inbegrepen. Deze checklist is een goed uitgangspunt voor een dag op de Rode Zee.\n\n## Kleding en comfort\n\nDenk eraan om mee te nemen:\n\n- Zwemkleding en schone, droge kleding.\n- Een handdoek, tenzij de excursie bevestigt dat deze wordt verstrekt.\n- Lichte kleding om aan te trekken wanneer je uit het water komt.\n- Comfortabele schoenen die geschikt zijn voor de boot en eventuele bezoeken aan land.\n- Een hoed en zonnebril.\n\nKies kleding die comfortabel is voor de omstandigheden en waarin je je aan boord gemakkelijk kunt bewegen. Volg eventuele specifieke kledingadviezen van de aanbieder.\n\n## Bescherming tegen de zon\n\nTijd buiten kan tot langdurige blootstelling aan de zon leiden, vooral wanneer er weinig schaduw op het dek is of tijdens een strandstop. Neem geschikte zonbescherming mee en breng deze opnieuw aan volgens de aanwijzingen. Neem pauzes op schaduwrijke plekken wanneer die beschikbaar zijn. Een herbruikbare drinkfles kan handig zijn; controleer vóór vertrek of drinkwater is inbegrepen.\n\n## Bescherm je waardevolle spullen\n\nEen waterdicht hoesje of waterdichte tas kan je telefoon, kamersleutel en kleine persoonlijke spullen tegen spatten beschermen. Beperk het aantal waardevolle spullen en volg de aanwijzingen van de bemanning voor het opbergen van tassen. Ga er niet van uit dat een gewone rugzak of telefoonhoes waterdicht is.\n\n## Persoonlijke benodigdheden en spullen voor het gezin\n\nNeem persoonlijke medicijnen die je mogelijk nodig hebt mee en houd ze toegankelijk. Gezinnen kunnen schone kleding, de eigen benodigdheden van ieder kind en vertrouwde spullen voor een volledige dag buitenshuis meenemen. Controleer de leeftijdsvoorwaarden en beschikbare voorzieningen voordat je boekt.\n\n## Controleer wat bij de excursie wordt verstrekt\n\nNiet alle boottochten omvatten dezelfde uitrusting of diensten. Sommige excursiepagina's vermelden maaltijden, drankjes, snorkeluitrusting, transfers of andere voorzieningen; bij andere excursies kan dit anders zijn. Lees de beschrijving van de specifieke excursie en stel vragen als iets onduidelijk is.\n\nAwesome Adventure Tours biedt bijvoorbeeld verschillende boottochten vanuit Hurghada aan, waaronder tochten naar Orange Bay, Giftun Island en Hula Hula Island. De gepubliceerde routes zijn niet onderling uitwisselbaar. Bekijk de pagina van elk product om de route, stops en inbegrepen diensten te bevestigen.\n\n## Snelle checklist voordat je het hotel verlaat\n\n- Bevestig de ophaaltijd of ontmoetingsplaats.\n- Controleer het weer en eventuele updates van de aanbieder.\n- Neem je boekingsbevestiging mee.\n- Pak zwemkleding, een handdoek en schone kleding in.\n- Neem zonbescherming mee en iets om waardevolle spullen droog te houden.\n- Neem persoonlijke medicijnen en benodigdheden voor het gezin mee.\n- Laat onnodige waardevolle spullen veilig achter in je accommodatie.\n\nMet een beetje voorbereiding kun je van de ervaring genieten zonder te hoeven zoeken naar iets dat je bent vergeten. Raadpleeg bij twijfel de actuele excursiegegevens of neem vóór vertrek contact op met het team."
+      },
+      "status": "translation-review-draft"
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "d45b7b5f-eb81-4d21-b872-277d12d10b45",
+      "source_slug": "dahab-from-sharm-el-sheikh-day-trip-guide",
+      "translated_slug": "dahab-vanuit-sharm-el-sheikh-dagtochtgids",
+      "locale": "nl",
+      "title": "Dahab vanuit Sharm el-Sheikh: Blue Hole, kust en lokale sfeer",
+      "summary": "Ontdek wat een excursie naar Dahab kan omvatten: kustlandschappen, lokale winkels en optionele wateractiviteiten.",
+      "seo_title": "Dahab vanuit Sharm el-Sheikh: Blue Hole en lokale sfeer",
+      "seo_description": "Ontdek wat een dagtocht naar Dahab kan omvatten, van kustlandschappen en lokale winkels tot optionele wateractiviteiten.",
+      "content": {
+        "title": "Dahab vanuit Sharm el-Sheikh: Blue Hole, kust en lokale sfeer",
+        "excerpt": "Ontdek wat een excursie naar Dahab kan omvatten: kustlandschappen, lokale winkels en optionele wateractiviteiten.",
+        "content": "Dahab heeft een ontspannen kustsfeer die anders is dan die van de grotere badplaatsen op de Sinaï. Reizigers die vanuit Sharm el-Sheikh komen, kunnen genieten van het veranderende landschap, tijd aan het water en het verkennen van lokale straten.\n\n## Wat je moet weten\n\nAfhankelijk van het gekozen programma kan een dagtocht tijd in de omgeving van de Blue Hole omvatten, een maaltijd aan zee, een bezoek aan lokale winkels of een kameelrit. Vraag precies welke stops zijn gepland en hoeveel vrije tijd je krijgt. Een dag buiten Sharm el-Sheikh kan meerdere uren reistijd vereisen. Controleer daarom of lunch, uitrusting en optionele activiteiten zijn inbegrepen.\n\n## Praktische checklist\n\n- Bevestig de exacte stops en de duur van de vrije tijd.\n- Vraag naar lunch en de kosten van optionele activiteiten.\n- Neem zonbescherming en comfortabele schoenen mee.\n- Volg de lokale aanwijzingen in de buurt van water en kliffen.\n\n## Voordat je boekt\n\nDe gepubliceerde excursie [Sinaï-avontuur: Dahab, Blue Hole en Colored Canyon](https://awesomeadventure.tours/excursions/sinai-adventure-colored-canyon-blue-hole-dahab) combineert verschillende landschappen. Bekijk de route en duur voordat je een beslissing neemt."
+      },
+      "status": "translation-review-draft"
+    }
+  ]
+}
