@@ -64,7 +64,8 @@ assert.match(server, /xmlns:xhtml="http:\/\/www\.w3\.org\/1999\/xhtml"/, 'Locali
 assert.match(server, /alternatesByUrl\.get\(loc\)[\s\S]*hreflangLinks[\s\S]*hreflang=/, 'Localized sitemap emits reciprocal hreflang links for each translated source record');
 assert.match(server, /alternates\.set\('x-default', englishUrl\)/, 'Localized sitemap includes the English x-default target');
 assert.match(server, /Reviewed localized pages could not be loaded/, 'Sitemap validates localized content before inclusion');
-assert.match(server, /supportedLanguages: \['en', 'de', 'it', 'ro', 'ru'\]/, 'Config advertises only existing UI dictionary locales');
+assert.match(server, /supportedLanguages: \\['en'\\]/, 'Public config advertises English until complete reviewed locales are published');
+assert.match(languageContext, /value\\.code === 'en' \\|\\| publishedUiLocales\\.includes\\(value\\.code\\)/, 'Built-in dictionaries are not advertised as full languages before content publication');
 assert.match(server, /content_translations'[\s\S]*translated_slug[\s\S]*source_checksum/, 'Localized sitemap is based on translation records');
 assert.ok(server.includes("const privateRoute = /^\\/(?:[a-z]{2}\\/)?(?:admin"), 'Localized private routes are matched before public SSR');
 assert.match(server, /body\.confirm_publish !== true/, 'Publishing requires explicit human confirmation');
