@@ -1296,6 +1296,7 @@ export async function listVessels(): Promise<DbVessel[]> {
 }
 
 export async function saveVessel(vessel: Partial<DbVessel>): Promise<DbVessel> {
+  const maintenanceDate = (vessel.next_maintenance_date || vessel.next_maintenance || '').trim() || null;
   if (!isSupabaseConfigured()) {
     if (!import.meta.env.DEV) {
       throw new Error('Vessel management is unavailable because the production database is not configured.');
@@ -1306,7 +1307,7 @@ export async function saveVessel(vessel: Partial<DbVessel>): Promise<DbVessel> {
     const isActive = status === 'active' || status === 'in_service';
     const now = new Date().toISOString();
     const saved: DbVessel = vessel.id
-      ? { ...all.find((item) => item.id === vessel.id)!, ...vessel, status, is_active: isActive, updated_at: now } as DbVessel
+      ? { ...all.find((item) => item.id === vessel.id)!, ...vessel, next_maintenance: maintenanceDate, next_maintenance_date: maintenanceDate, status, is_active: isActive, updated_at: now } as DbVessel
       : {
           id: `ves-${Date.now().toString(36)}`,
           name: vessel.name || 'New Vessel',
@@ -1321,8 +1322,8 @@ export async function saveVessel(vessel: Partial<DbVessel>): Promise<DbVessel> {
           is_active: isActive,
           status,
           maintenance_notes: vessel.maintenance_notes || null,
-          next_maintenance: vessel.next_maintenance_date || vessel.next_maintenance || null,
-          next_maintenance_date: vessel.next_maintenance_date || vessel.next_maintenance || null,
+          next_maintenance: maintenanceDate,
+          next_maintenance_date: maintenanceDate,
           crew: vessel.crew || null,
           created_at: now,
           updated_at: now,
@@ -1335,7 +1336,6 @@ export async function saveVessel(vessel: Partial<DbVessel>): Promise<DbVessel> {
 
   const status = vessel.status || (vessel.is_active !== false ? 'active' : 'inactive');
   const isActive = status === 'active' || status === 'in_service';
-  const maintenanceDate = vessel.next_maintenance_date ?? vessel.next_maintenance ?? null;
   const payload: Record<string, unknown> = {
     name: vessel.name?.trim(),
     vessel_type: vessel.vessel_type || 'motor_yacht',
