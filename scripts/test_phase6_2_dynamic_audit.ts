@@ -16,6 +16,7 @@ import fs from 'fs';
 import path from 'path';
 import {
   getPublishedReviews,
+  getPublishedTours,
   submitTourReview,
   getPublishedPickupLocations,
   getPublishedTourExtras,
@@ -220,8 +221,11 @@ async function runPhase62TestSuite() {
   );
 
   if (isSupabaseConfigured()) {
-    const pickupLocations = await getPublishedPickupLocations('test-tour-id');
-    assert(Array.isArray(pickupLocations), 'getPublishedPickupLocations returns database rows');
+    const publishedToursForPickup = await getPublishedTours();
+    const pickupLocations = publishedToursForPickup.length > 0
+      ? await getPublishedPickupLocations(publishedToursForPickup[0].id)
+      : [];
+    assert(Array.isArray(pickupLocations), 'getPublishedPickupLocations returns database rows for an exact published tour ID');
     if (pickupLocations.length > 0) {
       assert(pickupLocations[0].id !== undefined && pickupLocations[0].name !== undefined, 'Pickup locations have valid id and name attributes');
     }
