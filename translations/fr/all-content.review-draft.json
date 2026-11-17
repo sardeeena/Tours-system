@@ -4550,6 +4550,399 @@
         "channel": "Email",
         "template_key": "ticket_reply"
       }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "about",
+      "source_slug": "about",
+      "translated_slug": "a-propos",
+      "title": "À propos d’Awesome Adventure Tours",
+      "summary": "Awesome Adventure Tours vous aide à découvrir les sorties en bateau, les îles, le snorkeling, la plongée, les safaris dans le désert et les excursions culturelles en Égypte. Parcourez les expériences publiées, comparez les informations pratiques et contactez notre équipe de Hurghada avant de réserver.",
+      "seo_title": "À propos d’Awesome Adventure Tours | Excursions en Égypte et mer Rouge",
+      "seo_description": "Découvrez Awesome Adventure Tours à Hurghada, en Égypte. Explorez les sorties en bateau sur la mer Rouge, les îles, le snorkeling, la plongée, les safaris dans le désert et les excursions culturelles.",
+      "content": {
+        "heroHeadline": "Explorez le littoral égyptien de la mer Rouge avec Awesome Adventure Tours",
+        "heroSubtitle": "Awesome Adventure Tours vous aide à découvrir les sorties en bateau, les îles, le snorkeling, la plongée, les safaris dans le désert et les excursions culturelles en Égypte. Parcourez les expériences publiées, comparez les informations pratiques et contactez notre équipe de Hurghada avant de réserver.",
+        "sections": [
+          {
+            "title": "Des expériences dans toute l’Égypte",
+            "content": "Notre catalogue publié rassemble des expériences dans plusieurs destinations, notamment Hurghada, El Gouna, Charm el-Cheikh et d’autres régions d’Égypte. Selon l’excursion, les voyageurs peuvent comparer les sorties en bateau et sur les îles, les activités de snorkeling et de plongée, les safaris dans le désert, les transferts et les visites culturelles."
+          },
+          {
+            "title": "Des informations claires avant de réserver",
+            "content": "Chaque excursion peut avoir ses propres modalités de départ, prix, durées, prestations incluses, conditions d’âge et règles d’annulation. Consultez attentivement la page de l’excursion et le récapitulatif de réservation afin de comprendre ce qui est inclus et les lieux où la prise en charge est disponible."
+          },
+          {
+            "title": "Une assistance locale à Hurghada",
+            "content": "Awesome Adventure Tours est basée à Hurghada, sur la mer Rouge, en Égypte. Notre équipe peut répondre à vos questions sur les excursions publiées, les informations de prise en charge à l’hôtel et les réservations. Si vous avez besoin d’une précision sur une excursion particulière, contactez-nous avant de réserver."
+          },
+          {
+            "title": "Comment choisir votre excursion",
+            "content": "Commencez par sélectionner votre destination ou l’activité qui vous intéresse. Comparez l’itinéraire, la durée, le prix, les prestations incluses et les conditions pratiques sur chaque page d’excursion. Les disponibilités et les conditions opérationnelles peuvent changer, notamment pour les activités en mer : confirmez donc les détails pour la date choisie avant votre départ."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Découvrir davantage",
+          "bookNow": "Réserver"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "contact",
+      "source_slug": "contact",
+      "translated_slug": "contact",
+      "title": "Contacter Awesome Adventure Tours",
+      "summary": "Contactez Awesome Adventure Tours pour comparer les excursions publiées, comprendre les modalités de prise en charge, vérifier les détails d’une réservation et préparer votre séjour en Égypte.",
+      "seo_title": "Contacter Awesome Adventure Tours | Hurghada, Égypte",
+      "seo_description": "Contactez Awesome Adventure Tours à Hurghada pour toute question sur les excursions, les réservations, la prise en charge et l’assistance voyageurs dans la langue de votre choix.",
+      "content": {
+        "heroHeadline": "Contactez notre équipe d’excursions à Hurghada",
+        "heroSubtitle": "Contactez Awesome Adventure Tours pour comparer les excursions publiées, comprendre les modalités de prise en charge, vérifier les détails d’une réservation et préparer votre séjour en Égypte.",
+        "sections": [
+          {
+            "title": "Parlez à notre équipe",
+            "content": "Appelez le +20 151 5212741 pour toute question sur les excursions publiées, les réservations et les informations pratiques de voyage. Si votre demande concerne une excursion précise, indiquez-nous son nom ou partagez sa page, votre date de voyage souhaitée et le nombre de participants. Cela aidera notre équipe à comprendre les informations dont vous avez besoin. Pour une réservation existante, gardez votre référence de réservation à portée de main afin que nous puissions retrouver le bon dossier."
+          },
+          {
+            "title": "Visitez notre bureau à Hurghada",
+            "content": "Notre bureau se trouve au 2e étage du Bostan Cafe, Madres, Hurghada, gouvernorat de la mer Rouge, Égypte. Si vous prévoyez de venir en personne, contactez-nous d’abord pour discuter de votre demande et confirmer les modalités les plus adaptées."
+          },
+          {
+            "title": "Aide pour choisir et préparer une excursion",
+            "content": "Avant de réserver, consultez la page de l’excursion pour connaître son prix de départ actuel, sa durée, son itinéraire, les prestations incluses, les exclusions, les conditions d’âge, les informations de prise en charge et les conditions d’annulation. Ces détails peuvent varier d’une excursion à l’autre et évoluer selon les conditions opérationnelles. Si un point n’est pas clair, posez-nous vos questions sur l’excursion concernée avant de réserver. Pour toute question sur la prise en charge, indiquez votre hôtel ou le lieu de rendez-vous souhaité ainsi que la destination de l’excursion."
+          },
+          {
+            "title": "Assistance aux voyageurs internationaux",
+            "content": "Nous accompagnons les voyageurs internationaux et pouvons communiquer avec les clients dans la langue de leur choix. Indiquez-nous la langue que vous souhaitez utiliser lorsque vous nous contactez. La disponibilité de la langue du guide dépend de chaque excursion et de chaque départ : vérifiez les options indiquées pour votre voyage plutôt que de supposer que toutes les excursions sont proposées dans toutes les langues."
+          },
+          {
+            "title": "Sécurité des réservations et des paiements",
+            "content": "Utilisez le formulaire de réservation et les instructions fournies avec votre réservation pour les détails de paiement. N’envoyez pas de mots de passe, de numéros complets de carte bancaire ni de codes de sécurité par message ordinaire. Vérifiez toujours le récapitulatif final, la date, les informations des participants et le prix avant de confirmer votre réservation."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Découvrir davantage",
+          "bookNow": "Réserver"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "why-us",
+      "source_slug": "why-us",
+      "translated_slug": "pourquoi-nous-choisir",
+      "title": "Pourquoi choisir Awesome Adventure Tours",
+      "summary": "Utilisez les informations publiées sur les excursions pour comparer les expériences disponibles et choisir celle qui correspond à vos projets.",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "heroHeadline": "Préparez votre expérience sur la mer Rouge",
+        "heroSubtitle": "Utilisez les informations publiées sur les excursions pour comparer les expériences disponibles et choisir celle qui correspond à vos projets.",
+        "sections": [
+          {
+            "title": "Les informations sur les excursions au même endroit",
+            "content": "Consultez la description, le prix, la durée, l’itinéraire et les prestations incluses de chaque excursion avant de faire une réservation."
+          },
+          {
+            "title": "Vérifiez les détails importants",
+            "content": "Les options de prise en charge, les conditions d’âge, les disponibilités et les conditions d’annulation peuvent varier selon l’excursion. Consultez la page correspondante et les détails de réservation avant de confirmer."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Découvrir davantage",
+          "bookNow": "Réserver"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "marine-safety",
+      "source_slug": "marine-safety",
+      "translated_slug": "securite-marine-et-depart",
+      "title": "Sécurité maritime et informations de départ",
+      "summary": "Les excursions en mer peuvent être affectées par la météo, l’état de la mer et les restrictions opérationnelles. Consultez les informations fournies pour l’excursion choisie.",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "heroHeadline": "Sécurité et informations de départ",
+        "heroSubtitle": "Les excursions en mer peuvent être affectées par la météo, l’état de la mer et les restrictions opérationnelles. Consultez les informations fournies pour l’excursion choisie.",
+        "sections": [
+          {
+            "title": "Avant le départ",
+            "content": "Lisez les consignes de départ, les conditions de participation et les informations sur l’équipement de l’excursion choisie. Pendant l’activité, suivez les instructions de l’équipage et du personnel encadrant."
+          },
+          {
+            "title": "Météo et changements opérationnels",
+            "content": "Les activités en mer peuvent être modifiées, retardées ou annulées lorsque les conditions ne permettent pas un départ en toute sécurité. Consultez les conditions de réservation fournies pour votre excursion afin de connaître les modalités applicables."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Découvrir davantage",
+          "bookNow": "Réserver"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "booking-conditions",
+      "source_slug": "booking-conditions",
+      "translated_slug": "conditions-de-reservation",
+      "title": "Conditions générales de réservation",
+      "summary": "Consultez les informations et les conditions applicables à l’excursion choisie avant de finaliser votre réservation.",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "heroHeadline": "Informations sur les réservations",
+        "heroSubtitle": "Consultez les informations et les conditions applicables à l’excursion choisie avant de finaliser votre réservation.",
+        "sections": [
+          {
+            "title": "Réservations et confirmation",
+            "content": "Vérifiez la date choisie, le nombre de participants, le prix, les informations de prise en charge et les autres détails de réservation avant d’envoyer votre demande. Conservez les informations de confirmation fournies après la réservation."
+          },
+          {
+            "title": "Prise en charge et départ",
+            "content": "La disponibilité de la prise en charge, les lieux de rendez-vous, les suppléments et les heures de départ peuvent varier selon l’excursion et la destination. Consultez les détails indiqués pour votre voyage avant de confirmer."
+          },
+          {
+            "title": "Modifications et annulations",
+            "content": "Les délais d’annulation, les modalités de remboursement et les conditions de report dépendent des conditions de réservation indiquées pour l’excursion choisie. Consultez-les avant de finaliser votre réservation."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Découvrir davantage",
+          "bookNow": "Réserver"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "privacy",
+      "source_slug": "privacy",
+      "translated_slug": "politique-de-confidentialite",
+      "title": "Politique de confidentialité",
+      "summary": "Comment Awesome Adventure Tours collecte, utilise, protège et partage les informations lorsque vous consultez le site, nous contactez ou effectuez une réservation.",
+      "seo_title": "Politique de confidentialité | Awesome Adventure Tours",
+      "seo_description": "Découvrez comment Awesome Adventure Tours traite les informations liées aux réservations, aux contacts, aux comptes et au site web, notamment la localisation approximative avec consentement, les données de langue de l’appareil, les prestataires de services et vos droits en matière de confidentialité.",
+      "content": {
+        "heroHeadline": "Votre vie privée compte",
+        "heroSubtitle": "Comment Awesome Adventure Tours collecte, utilise, protège et partage les informations lorsque vous consultez le site, nous contactez ou effectuez une réservation.",
+        "sections": [
+          {
+            "title": "1. Qui sommes-nous et comment nous contacter ?",
+            "content": "Ce site web est exploité sous le nom Awesome Adventure Tours depuis Hurghada, sur la mer Rouge, en Égypte. Notre adresse de contact est : 2e étage, Bostan Cafe, Madres, Hurghada, Égypte. Pour toute question ou demande relative à la confidentialité, contactez-nous via https://awesomeadventure.tours/contact ou appelez le +20 151 5212741. Veuillez fournir suffisamment d’informations pour que nous puissions retrouver votre demande, mais n’envoyez pas de mots de passe ni de données complètes de carte bancaire. Cette notice décrit le site web et les services de réservation ; elle ne remplace pas les conseils relatifs aux lois applicables à un voyageur ou à une transaction en particulier."
+          },
+          {
+            "title": "2. Informations susceptibles d’être collectées",
+            "content": "Selon votre utilisation du site, nous pouvons traiter : des coordonnées et données d’identité telles que votre nom, votre adresse e-mail, votre numéro de téléphone et votre pays ; des informations de réservation telles que l’excursion choisie, la date, le nombre de participants, les âges, la langue sélectionnée pour l’excursion, la référence de réservation, les détails de prise en charge ou du lieu de rendez-vous et les demandes particulières ; les informations de compte nécessaires à l’inscription, à la connexion et à la gestion de votre profil ; les messages et demandes d’assistance que vous nous envoyez ; les informations d’abonnement à la newsletter et son statut ; ainsi que des informations techniques telles que les données de connexion/réseau (y compris l’adresse IP lorsque cela est nécessaire pour la sécurité et la prévention des abus), le navigateur et l’appareil, les langues et paramètres régionaux préférés du navigateur, le fuseau horaire, les catégories de taille d’écran/zone d’affichage, les pages demandées, les horodatages, les événements de sécurité et les préférences de consentement. Si vous activez les statistiques facultatives, nous transmettons également temporairement votre adresse IP de connexion à ipwho.is afin d’estimer votre pays, votre région et votre ville ; il s’agit d’une estimation approximative, et non d’une géolocalisation GPS, qui peut être inexacte. Nous ne stockons pas l’adresse IP brute dans les données analytiques des visiteurs. Ne communiquez pas de données personnelles sensibles, sauf si elles sont réellement nécessaires à votre demande et que vous choisissez de les partager."
+          },
+          {
+            "title": "3. Pourquoi utilisons-nous ces informations ?",
+            "content": "Nous utilisons les informations pour répondre aux demandes de renseignements ; vérifier les disponibilités et préparer, gérer et communiquer les réservations ; fournir des confirmations, des bons, des mises à jour de service et une assistance clientèle ; coordonner l’excursion, le transfert ou l’activité concernée avec le prestataire chargé de sa réalisation ; gérer les comptes et protéger les services de connexion et de réservation ; tenir des dossiers, prévenir la fraude et les utilisations abusives, résoudre les litiges et respecter nos obligations légales ; et, lorsque vous avez choisi de les recevoir, envoyer des newsletters ou des communications promotionnelles. Selon le cas, nous nous appuyons sur les démarches demandées avant la conclusion d’un contrat, l’exécution d’une réservation, nos intérêts légitimes tels que la sécurité du service et l’assistance clientèle, nos obligations légales et le consentement lorsque celui-ci est requis (notamment pour les technologies facultatives d’analyse ou de marketing)."
+          },
+          {
+            "title": "4. À qui les informations peuvent-elles être communiquées ?",
+            "content": "Nous ne partageons que les informations raisonnablement nécessaires à la finalité concernée. Les destinataires peuvent inclure l’opérateur de l’excursion, le prestataire du bateau ou de l’activité, le fournisseur de transfert ou de prise en charge et les autres prestataires participant à l’exécution de votre réservation ; nos fournisseurs d’hébergement du site, de base de données, d’authentification, de stockage et d’envoi d’e-mails (notamment Hostinger, Supabase et Resend lorsqu’ils sont utilisés) ; les fournisseurs d’analyses ou de gestion des balises, uniquement conformément à vos choix de cookies et aux paramètres applicables ; ipwho.is, uniquement lorsque vous avez activé les statistiques, afin de renvoyer une estimation du pays, de la région et de la ville à partir de l’adresse IP de votre connexion (l’adresse IP est transmise temporairement pour la recherche et n’est pas conservée dans notre base de données analytique des visiteurs) ; ainsi que les autorités publiques, organismes de réglementation, tribunaux ou conseillers professionnels lorsque la communication est exigée ou raisonnablement nécessaire pour protéger des droits, la sécurité ou le service. Les prestataires peuvent traiter les informations conformément à leurs propres notices de confidentialité lorsqu’ils fournissent leurs services."
+          },
+          {
+            "title": "5. Traitement international des données",
+            "content": "Certains fournisseurs technologiques et opérationnels peuvent traiter ou stocker des informations dans des pays autres que l’Égypte, notamment dans les pays où se trouvent leurs infrastructures ou leurs équipes d’assistance. Lorsque la législation applicable exige des garanties pour un transfert international, nous utilisons un mécanisme de transfert approprié ou une autre protection reconnue par la loi. Contactez-nous si vous souhaitez obtenir davantage d’informations sur un prestataire ou un transfert particulier."
+          },
+          {
+            "title": "6. Conservation et sécurité",
+            "content": "Nous conservons les informations pendant la durée raisonnablement nécessaire aux finalités décrites ci-dessus, notamment pour effectuer une réservation, fournir une assistance, tenir les dossiers comptables et opérationnels, traiter les réclamations et respecter les obligations légales. Les durées de conservation varient selon le type de dossier et l’obligation légale. Nous utilisons des contrôles d’accès ainsi que des mesures techniques et organisationnelles destinées à protéger les informations, mais aucun site web ni aucune transmission électronique ne peut être garanti comme totalement sécurisé. Utilisez un mot de passe unique et ne partagez pas les identifiants de votre compte."
+          },
+          {
+            "title": "7. Vos choix et vos droits en matière de confidentialité",
+            "content": "Selon la législation qui vous est applicable, vous pouvez avoir le droit de demander l’accès à vos informations personnelles, leur rectification ou leur suppression, de vous opposer à certains traitements ou d’en demander la limitation, de retirer votre consentement ou d’obtenir une copie des informations que vous avez fournies. Vous pouvez vous désabonner des messages marketing au moyen du mécanisme de désabonnement lorsqu’il est proposé ; des messages de service et de réservation peuvent toutefois continuer à être envoyés lorsqu’ils sont nécessaires. Vous pouvez modifier vos choix de cookies facultatifs via « Paramètres des cookies » dans le pied de page du site. Pour exercer un droit relatif à la confidentialité, contactez-nous aux coordonnées indiquées à la section 1. Nous pouvons être amenés à vérifier votre identité et conserver certaines informations lorsque la loi le permet ou l’exige."
+          },
+          {
+            "title": "8. Enfants et sites web tiers",
+            "content": "Le site s’adresse aux personnes qui organisent des voyages et des réservations. Lorsque cela est nécessaire, un parent ou un adulte responsable doit fournir les informations de réservation concernant les enfants et ne doit pas créer de compte pour un enfant sans autorisation appropriée. Notre site peut contenir des liens vers des sites web ou services de messagerie tiers. Nous ne contrôlons ni leur contenu ni leurs pratiques en matière de confidentialité ; consultez leurs notices avant de les utiliser."
+          },
+          {
+            "title": "9. Modifications de cette notice",
+            "content": "Nous pouvons mettre à jour cette politique lorsque nos services, nos technologies ou les exigences légales évoluent. La date indiquée ci-dessus correspond à la dernière mise à jour de cette version. Les modifications importantes seront reflétées sur cette page."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Découvrir davantage",
+          "bookNow": "Réserver"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "terms",
+      "source_slug": "terms",
+      "translated_slug": "conditions-generales",
+      "title": "Conditions générales",
+      "summary": "Veuillez lire ces conditions avant d’utiliser le site web ou de soumettre une demande de réservation d’excursion.",
+      "seo_title": "Conditions générales | Awesome Adventure Tours",
+      "seo_description": "Consultez les conditions d’utilisation du site, les réservations d’excursions, les prix, les responsabilités des prestataires, la sécurité, les modifications et les dispositions applicables d’Awesome Adventure Tours.",
+      "content": {
+        "heroHeadline": "Conditions d’utilisation du site et de réservation",
+        "heroSubtitle": "Veuillez lire ces conditions avant d’utiliser le site web ou de soumettre une demande de réservation d’excursion.",
+        "sections": [
+          {
+            "title": "1. À propos de ces conditions",
+            "content": "Ces conditions s’appliquent à votre utilisation du site awesomeadventure.tours et aux demandes de réservation envoyées par son intermédiaire. Le site est exploité sous le nom Awesome Adventure Tours depuis Hurghada, en Égypte. Certaines excursions peuvent être réalisées par des prestataires indépendants de bateaux, de transport, d’activités ou de destinations. Les détails propres au prestataire et au service indiqués pour une excursion font partie des informations que vous devez consulter avant de réserver."
+          },
+          {
+            "title": "2. Informations du site et disponibilités",
+            "content": "Nous prenons des mesures raisonnables pour maintenir à jour et utiles les descriptions des excursions, les images, les horaires, les prix, les prestations incluses, les informations de prise en charge et les disponibilités. Ces détails peuvent changer en raison des opérations des prestataires, de la météo, des horaires saisonniers ou des disponibilités. Une fiche ne garantit pas qu’un départ aura lieu tant que votre réservation n’est pas confirmée. Si un détail important vous semble incorrect, contactez-nous avant de vous y fier."
+          },
+          {
+            "title": "3. Réservations et confirmation",
+            "content": "Lorsque vous envoyez un formulaire de réservation, vous nous demandez d’organiser l’excursion choisie à partir des informations que vous fournissez. Une demande ne constitue pas une réservation confirmée tant que le site ou notre équipe n’a pas émis une confirmation de réservation ou un bon. Il vous appartient de vérifier la date, l’excursion, le nombre et l’âge des participants, la langue de l’excursion, les informations de prise en charge, les coordonnées, le prix et les conditions particulières. Conservez votre référence et votre confirmation de réservation."
+          },
+          {
+            "title": "4. Prix, devises et paiement",
+            "content": "Le prix et la devise affichés pendant le processus de réservation pour l’excursion choisie constituent les montants proposés applicables, sous réserve des suppléments ou modifications clairement indiqués et confirmés avant l’acceptation de la réservation. Les conversions de devises affichées sont indicatives ; votre banque ou votre prestataire de paiement peut appliquer son propre taux ou ses propres frais. Les modalités de paiement peuvent varier selon l’excursion et seront indiquées pendant la réservation ou dans votre confirmation. N’envoyez jamais de numéros de carte, de codes de sécurité ni de mots de passe par e-mail, chat ou note de réservation ordinaire."
+          },
+          {
+            "title": "5. Langue de l’excursion, participants et prise en charge",
+            "content": "Les langues disponibles pour le guide, le délai minimum de réservation, les limites d’âge, les zones de prise en charge, les lieux de rendez-vous et les suppléments de transfert varient selon l’excursion et la date. Une option de langue correspond à une demande pour l’excursion choisie ; elle reste soumise aux disponibilités indiquées pour ce départ. Fournissez des informations exactes sur les participants et la prise en charge et contactez-nous rapidement si elles changent. Présentez-vous à l’heure au lieu de rendez-vous confirmé et suivez les consignes du prestataire."
+          },
+          {
+            "title": "6. Sécurité et comportement",
+            "content": "Vous devez suivre les consignes de sécurité raisonnables de l’équipage, du guide, du chauffeur et du personnel encadrant, respecter les lois locales ainsi que les autres participants et l’environnement. Informez à l’avance le prestataire concerné de toute condition médicale ou exigence de mobilité susceptible d’affecter la sécurité de votre participation. Le prestataire peut refuser ou interrompre la participation lorsqu’un comportement ou une condition présente un risque pour la sécurité, sous réserve de la législation applicable et des circonstances."
+          },
+          {
+            "title": "7. Modifications, météo et opérations des prestataires",
+            "content": "Les excursions peuvent être retardées, réacheminées, remplacées ou annulées en raison de la météo, de l’état de la mer, de fermetures de ports, d’instructions des autorités, de préoccupations liées à la sécurité, de la disponibilité des prestataires ou d’événements échappant à un contrôle raisonnable. Nous-mêmes ou le prestataire concerné communiquerons les changements importants lorsque cela est possible. Si l’opérateur annule un départ, les options disponibles de report ou de remboursement seront expliquées pour cette réservation. Consultez la Politique d’annulation et de remboursement pour plus de détails."
+          },
+          {
+            "title": "8. Annulations et remboursements",
+            "content": "Les délais d’annulation et les conditions de remboursement ne sont pas identiques pour toutes les excursions. Les conditions affichées sur la page de l’excursion choisie, lors du paiement et dans votre confirmation ou votre bon s’appliquent à cette réservation et prévalent sur les exemples généraux figurant sur le site. Consultez https://awesomeadventure.tours/cancellation-policy avant de réserver."
+          },
+          {
+            "title": "9. Responsabilité et droits impératifs",
+            "content": "Aucune disposition de ces conditions n’exclut ni ne limite une responsabilité lorsque cela serait illégal, notamment les droits ou recours qui ne peuvent être écartés en vertu de la législation applicable en matière de protection des consommateurs. Dans la mesure permise par la loi, la responsabilité de l’exploitation effective et de la réalisation de l’excursion le jour prévu incombe au prestataire qui fournit le service. Nous restons responsables de nos propres obligations dans les limites prévues par la législation applicable."
+          },
+          {
+            "title": "10. Utilisation du site, propriété intellectuelle et sécurité",
+            "content": "Vous pouvez utiliser le site à des fins légales de préparation de voyage et de réservation personnelle. Il est interdit d’utiliser le site de manière abusive, de compromettre sa sécurité, de tenter d’obtenir un accès non autorisé, de soumettre de fausses informations, d’extraire ou de copier du contenu à grande échelle ou de téléverser des éléments malveillants. Les textes, la marque, le design et les médias du site sont protégés par les lois applicables en matière de propriété intellectuelle, sauf indication contraire."
+          },
+          {
+            "title": "11. Droit applicable et contact",
+            "content": "Ces conditions sont destinées à être interprétées conformément au droit égyptien, sans supprimer les protections impératives des consommateurs qui vous sont applicables en vertu du droit de votre pays de résidence. Tout litige sera traité par une juridiction compétente conformément à la législation applicable. Contactez-nous via https://awesomeadventure.tours/contact ou au +20 151 5212741. Si une disposition est inapplicable, les autres dispositions continuent de s’appliquer dans la mesure permise par la loi."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Découvrir davantage",
+          "bookNow": "Réserver"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "cancellation-policy",
+      "source_slug": "cancellation-policy",
+      "translated_slug": "politique-annulation-remboursement",
+      "title": "Politique d’annulation et de remboursement",
+      "summary": "Les conditions d’annulation et de remboursement dépendent de l’excursion et sont confirmées dans les détails de votre réservation.",
+      "seo_title": "Politique d’annulation et de remboursement | Awesome Adventure Tours",
+      "seo_description": "Découvrez comment demander une annulation, comment s’appliquent les délais propres à chaque excursion et ce qui se passe lorsque la météo ou des restrictions opérationnelles empêchent un départ.",
+      "content": {
+        "heroHeadline": "Annulations et remboursements",
+        "heroSubtitle": "Les conditions d’annulation et de remboursement dépendent de l’excursion et sont confirmées dans les détails de votre réservation.",
+        "sections": [
+          {
+            "title": "1. La politique indiquée pour votre excursion s’applique",
+            "content": "Les délais d’annulation et les conditions de remboursement peuvent varier selon les excursions et les prestataires. Avant de payer ou d’envoyer une réservation, lisez les informations d’annulation affichées sur la page de l’excursion choisie, pendant le paiement et dans la confirmation ou le bon. Ces conditions propres à l’excursion régissent votre réservation lorsqu’elles diffèrent de la présente politique générale."
+          },
+          {
+            "title": "2. Délais d’annulation gratuite",
+            "content": "Certaines excursions peuvent proposer une annulation gratuite jusqu’à 24 heures avant l’heure de début prévue. Il ne s’agit pas d’une promesse universelle pour toutes les excursions : le délai de 24 heures ne s’applique que lorsqu’il est expressément indiqué pour l’excursion choisie ou confirmé dans votre bon. Si votre réservation prévoit un autre délai, des frais ou une condition non remboursable, cette condition spécifique s’applique, sous réserve des droits légaux impératifs."
+          },
+          {
+            "title": "3. Comment demander une annulation ou une modification",
+            "content": "Contactez notre équipe dès que possible via https://awesomeadventure.tours/contact ou appelez le +20 151 5212741. Indiquez votre référence de réservation, le nom du voyageur principal et la date de l’excursion. Une annulation n’est pas définitive simplement parce que vous avez envoyé un message ; attendez notre accusé de réception ou notre confirmation écrite. Les demandes reçues peu avant le départ peuvent ne pas être traitées avant l’échéance fixée par le prestataire : n’attendez donc pas."
+          },
+          {
+            "title": "4. Retards et absences",
+            "content": "Si vous manquez la prise en charge ou le départ, arrivez après l’heure de rendez-vous confirmée ou ne vous présentez pas, le prestataire peut considérer la réservation comme une absence et celle-ci peut être non remboursable selon les conditions indiquées. Contactez-nous immédiatement si un retard imprévu survient. Toute exception dépend de la décision du prestataire et de la législation applicable."
+          },
+          {
+            "title": "5. Météo, sécurité et annulation par l’opérateur",
+            "content": "Les sorties en bateau et les activités de plein air peuvent être affectées par la météo, l’état de la mer, la fermeture des ports, les instructions des autorités ou les décisions de sécurité. Si l’opérateur responsable annule le départ ou ne peut pas fournir l’excursion en toute sécurité, nous contacterons les voyageurs concernés pour leur présenter les options disponibles pour cette réservation. Selon les circonstances et les conditions applicables, cela peut comprendre une autre date, une activité de remplacement appropriée ou un remboursement. Nous ne demanderons pas aux voyageurs de participer à une activité que l’opérateur responsable considère comme dangereuse."
+          },
+          {
+            "title": "6. Mode et délai de remboursement",
+            "content": "Lorsqu’un remboursement est dû, son montant et son mode seront confirmés avec vous. Les remboursements sont normalement effectués par le moyen de paiement initial lorsque celui-ci permet un remboursement ; lorsque le paiement a été organisé directement avec un prestataire ou encaissé lors de la prise en charge, l’équipe vous expliquera la procédure applicable. Les banques et les prestataires de paiement peuvent avoir besoin de temps supplémentaire pour créditer le remboursement. Nous ne promettons pas de délai de traitement fixe lorsqu’il dépend d’un tiers."
+          },
+          {
+            "title": "7. Modifications demandées par le voyageur",
+            "content": "Les modifications de date, du nombre de participants, du lieu de prise en charge ou de la langue de l’excursion dépendent des disponibilités et de l’accord du prestataire. Une demande de modification peut être traitée comme une annulation suivie d’une nouvelle réservation si le prestataire ne peut pas modifier la réservation initiale. Toute différence de prix ou tout frais sera expliqué avant la confirmation du changement."
+          },
+          {
+            "title": "8. Questions et contestations",
+            "content": "Conservez votre confirmation de réservation et toute correspondance relative à l’annulation. Si vous estimez qu’une annulation ou un remboursement a été traité de manière incorrecte, contactez-nous en indiquant la référence de réservation et une description claire du problème afin que nous puissions l’examiner avec le prestataire concerné. Aucune disposition de cette politique ne limite les droits des consommateurs qui ne peuvent légalement être exclus."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Découvrir davantage",
+          "bookNow": "Réserver"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "cookie-policy",
+      "source_slug": "cookie-policy",
+      "translated_slug": "politique-cookies-et-stockage",
+      "title": "Politique relative aux cookies et au stockage du site",
+      "summary": "Découvrez comment ce site utilise le stockage du navigateur et les technologies d’analyse facultatives, et comment modifier vos choix.",
+      "seo_title": "Politique relative aux cookies | Awesome Adventure Tours",
+      "seo_description": "Découvrez le stockage essentiel du site, les statistiques et le marketing via Google Tag Manager, ainsi que la manière de modifier vos préférences de cookies sur Awesome Adventure Tours.",
+      "content": {
+        "heroHeadline": "Cookies et vos choix",
+        "heroSubtitle": "Découvrez comment ce site utilise le stockage du navigateur et les technologies d’analyse facultatives, et comment modifier vos choix.",
+        "sections": [
+          {
+            "title": "1. Cookies et technologies similaires",
+            "content": "Les cookies sont de petits fichiers enregistrés dans votre navigateur par un site web. Les sites peuvent également utiliser le stockage local, le stockage de session, des pixels et des scripts à des fins similaires. Ce site utilise le stockage du navigateur pour les fonctions essentielles et les préférences. Google Tag Manager est également installé sur le site ; les balises facultatives d’analyse ou de publicité restent bloquées jusqu’à ce que vous choisissiez une catégorie de consentement facultative dans la bannière de cookies. Lorsque vous activez les statistiques, le serveur transmet aussi temporairement votre adresse IP de connexion à ipwho.is afin d’estimer votre pays, votre région et votre ville ; l’adresse IP elle-même n’est pas stockée dans nos données analytiques des visiteurs."
+          },
+          {
+            "title": "2. Stockage essentiel",
+            "content": "Le stockage essentiel permet de fournir le site que vous demandez à utiliser. Selon les fonctionnalités utilisées, il peut notamment mémoriser votre langue et votre thème clair/sombre, conserver un brouillon de réservation ou des préférences temporaires de l’interface, maintenir l’état d’authentification/de session via notre fournisseur d’authentification et enregistrer votre choix de consentement aux cookies. Ces fonctions ne servent pas à créer des profils publicitaires. Si vous bloquez tout le stockage du navigateur, certaines fonctions de compte, de réservation ou de préférences peuvent ne pas fonctionner correctement."
+          },
+          {
+            "title": "3. Choix concernant les statistiques et le marketing",
+            "content": "Les technologies d’analyse nous aident à comprendre l’utilisation du site et à améliorer la navigation et les parcours de réservation. Les technologies marketing, si elles sont activées dans notre configuration de gestion des balises, peuvent mesurer ou personnaliser les activités promotionnelles. Ces catégories facultatives sont désactivées par défaut. Google Tag Manager n’est chargé qu’après votre choix de consentement aux statistiques ou au marketing ; les signaux de consentement envoyés à Google distinguent les choix relatifs aux statistiques de ceux concernant la publicité. Les balises individuelles du gestionnaire doivent également être configurées pour respecter la catégorie de consentement correspondante."
+          },
+          {
+            "title": "4. Services tiers",
+            "content": "Lorsqu’ils sont activés ou utilisés, des services tiers peuvent déposer ou consulter leurs propres technologies conformément à leurs propres politiques. Il peut s’agir de services Google fournis via notre gestionnaire de balises, de Supabase pour l’authentification et les données de l’application, d’ipwho.is pour la localisation approximative déduite de l’adresse IP lorsque le consentement aux statistiques est activé, ainsi que de services externes ou de contenus que vous choisissez d’ouvrir, tels que WhatsApp. Le chargement d’images, de polices ou de liens externes peut également amener votre navigateur à contacter le fournisseur concerné. Consultez les informations de confidentialité et de cookies de chaque fournisseur pour plus de détails."
+          },
+          {
+            "title": "5. Gestion et retrait du consentement",
+            "content": "Lors de votre première visite, choisissez « Tout accepter », « Refuser les options facultatives » ou « Personnaliser » dans la bannière de cookies. Le stockage nécessaire reste toujours actif, car le site ne peut pas fournir ses fonctions principales sans lui. Vous pouvez rouvrir les commandes à tout moment via « Paramètres des cookies » dans le pied de page et modifier vos choix concernant les statistiques ou le marketing. Toute modification met à jour les signaux de consentement utilisés par le site pour les activités futures des balises. Si un tiers a déjà enregistré un cookie, vous devrez peut-être également le supprimer dans les paramètres de votre navigateur."
+          },
+          {
+            "title": "6. Paramètres du navigateur et durée de conservation",
+            "content": "La plupart des navigateurs permettent de consulter, bloquer ou supprimer les cookies et d’effacer les données d’un site. Le choix de consentement aux cookies est enregistré dans ce navigateur afin que le site puisse mémoriser votre décision ; l’effacement des données du site ou l’utilisation d’un autre navigateur ou appareil peut faire réapparaître la bannière. Les préférences et le stockage de l’application peuvent être conservés jusqu’à ce que vous les supprimiez ou que l’application les remplace. La durée de vie des cookies tiers est contrôlée par le fournisseur concerné."
+          },
+          {
+            "title": "7. Mises à jour et contact",
+            "content": "Nous pouvons mettre à jour cette politique lorsque les fonctionnalités du site ou les fournisseurs changent. Pour toute question sur les cookies ou vos choix, contactez-nous via https://awesomeadventure.tours/contact ou appelez le +20 151 5212741. Consultez notre Politique de confidentialité pour des informations plus générales sur les données personnelles."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Découvrir davantage",
+          "bookNow": "Réserver"
+        }
+      }
     }
   ]
 }
