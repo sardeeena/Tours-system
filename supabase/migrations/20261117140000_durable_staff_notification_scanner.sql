@@ -13,7 +13,7 @@ DECLARE
   v_rows INTEGER := 0;
 BEGIN
   IF NOT (
-    auth.role() = 'service_role'
+    coalesce(auth.role(),'') = 'service_role'
     OR (auth.uid() IS NOT NULL AND public.is_admin())
   ) THEN
     RAISE EXCEPTION 'Not authorized to scan staff notifications' USING ERRCODE = '42501';
