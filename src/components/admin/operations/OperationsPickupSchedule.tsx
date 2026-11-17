@@ -95,21 +95,26 @@ export const OperationsPickupSchedule: React.FC = () => {
 
   const handleOpenEdit = (item: PickupScheduleItem) => {
     setEditingItem(item);
-    setAssignedDriver(item.driverName || 'Captain Mahmoud');
-    setAssignedVehicle(item.driverVehicle || 'Toyota HiAce VIP');
-    setAssignedTime(item.pickupTime || '07:30');
+    setAssignedDriver(item.driverName && item.driverName !== 'Unassigned driver' ? item.driverName : '');
+    setAssignedVehicle(item.driverVehicle && item.driverVehicle !== 'Unassigned vehicle' ? item.driverVehicle : '');
+    setAssignedTime(item.pickupTime && item.pickupTime !== 'Not scheduled' ? item.pickupTime : '');
   };
 
   const handleSaveDriver = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingItem) return;
+    if (!assignedDriver.trim() || !assignedVehicle.trim() || !assignedTime.trim()) {
+      showToast('Enter the actual assigned driver, vehicle and pickup time before saving.', 'error');
+      return;
+    }
     setSavingAction(true);
     try {
       await updatePickupScheduleStatus(
         editingItem.bookingReference,
         editingItem.status,
         assignedVehicle.trim(),
-        assignedDriver.trim()
+        assignedDriver.trim(),
+        assignedTime
       );
       setPickups((prev) =>
         prev.map((p) =>
