@@ -31,7 +31,7 @@ The exact technical and user-management route list is enforced by the automated 
 
 | Area | Routes | Boundary |
 |---|---|---|
-| Public | `/api/chat`, `/api/health`, `/api/config`, `/api/tours` | Public data only; catalogue fails closed |
+| Public | `/api/chat`, `/api/health`, `/api/health/ready`, `/api/config`, `/api/tours` | Public liveness/readiness only; readiness exposes dependency state without secrets; catalogue fails closed |
 | Booking/contact | `/api/bookings/create`, `/api/inquiries*`, `/api/contact` | Input validation, rate limits, booking-specific controls |
 | Newsletter | `/api/newsletter*` | Subscription/unsubscribe validation and rate limits |
 | Visitor privacy | `/api/visitor/consent`, `/api/visitor/events` | Consent-aware, minimized telemetry |
