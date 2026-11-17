@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "locale": "pl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "blog_post": 10,
+    "source_records": 10
+  },
+  "records": [
+    {
+      "entity_type": "blog_post",
+      "entity_key": "0a5edd6d-7747-4589-9ca8-3dcd7086476b",
+      "source_slug": "snorkeling-red-sea-non-swimmers",
+      "translated_slug": "snorkeling-red-sea-non-swimmers",
+      "locale": "pl",
+      "title": "Czy można uprawiać snorkeling w Morzu Czerwonym, nie umiejąc pływać?",
+      "summary": "Dowiedz się, jak osoby nieumiejące pływać mogą ocenić bezpieczeństwo rejsu, korzystać ze sprzętu wypornościowego i podejmować rozsądne decyzje przed wejściem do wody.",
+      "seo_title": "Czy można snorkelować w Morzu Czerwonym bez umiejętności pływania? | Awesome Adventure Tours",
+      "seo_description": "Przeczytaj, o co zapytać przed rejsem, jak działają kamizelki ratunkowe i kiedy lepiej pozostać na pokładzie.",
+      "content": {
+        "title": "Czy można uprawiać snorkeling w Morzu Czerwonym, nie umiejąc pływać?",
+        "excerpt": "Dowiedz się, jak osoby nieumiejące pływać mogą ocenić bezpieczeństwo rejsu, korzystać ze sprzętu wypornościowego i podejmować rozsądne decyzje przed wejściem do wody.",
+        "content": "Brak pewności w wodzie nie oznacza, że musisz rezygnować z każdej wycieczki po Morzu Czerwonym. Oznacza jednak, że przed rezerwacją należy uczciwie ocenić swoje umiejętności i nigdy nie pozwalać nikomu wywierać presji, by wejść do wody. Snorkeling odbywa się na otwartym morzu, gdzie głębokość, prądy i warunki mogą się zmieniać.\n\n## Co warto wiedzieć\n\nZapytaj, czy dostępne są dobrze dopasowane kamizelki ratunkowe lub inne środki wypornościowe, czy przewodnik nadzoruje uczestników w wodzie oraz czy istnieją spokojniejsze alternatywy. Sprzęt wypornościowy pomaga utrzymać się na powierzchni, ale nie zastępuje nadzoru ani świadomości zagrożeń w wodzie. Wyraźnie poinformuj załogę, że nie umiesz pływać, i wchodź do wody tylko wtedy, gdy załoga potwierdzi, że warunki są odpowiednie.\n\n## Praktyczna lista kontrolna\n\n- Poinformuj o braku umiejętności pływania już podczas rezerwacji.\n- Zapytaj o kamizelki ratunkowe, przewodników i miejsca wejścia do wody.\n- Nie oddalaj się od grupy.\n- Pozostań na pokładzie, jeśli warunki lub Twoje samopoczucie nie są odpowiednie.\n\n## Przed rezerwacją\n\nWybierz wycieczkę, której załoga potrafi jasno wyjaśnić zasady bezpieczeństwa. Porównaj opublikowane [wycieczki łodzią z Hurghady](https://awesomeadventure.tours/excursions), zanim podejmiesz decyzję."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "1d7da4b0-6a11-48dc-9728-750f9e841e0e",
+      "source_slug": "orange-bay-vs-hula-hula-island-hurghada",
+      "translated_slug": "orange-bay-vs-hula-hula-island-hurghada",
+      "locale": "pl",
+      "title": "Orange Bay czy Hula Hula Island: którą wycieczkę na wyspę z Hurghady wybrać?",
+      "summary": "Porównaj dwa popularne sposoby spędzania dnia na wyspie podczas rejsu z Hurghady i sprawdź, na co zwrócić uwagę przed wyborem.",
+      "seo_title": "Orange Bay czy Hula Hula Island? Porównanie wycieczek z Hurghady | Awesome Adventure Tours",
+      "seo_description": "Porównaj wycieczki na Orange Bay i Hula Hula Island z Hurghady. Sprawdź czas na wyspie, postoje na rafach, transfery i opłaty.",
+      "content": {
+        "title": "Orange Bay czy Hula Hula Island: którą wycieczkę na wyspę z Hurghady wybrać?",
+        "excerpt": "Porównaj dwa popularne sposoby spędzania dnia na wyspie podczas rejsu z Hurghady i sprawdź, na co zwrócić uwagę przed wyborem.",
+        "content": "Dzień na Morzu Czerwonym może łączyć rejs, odpoczynek nad wodą i możliwość snorkelingu. Jeśli zastanawiasz się między Orange Bay a Hula Hula Island, najlepszy wybór zależy nie tyle od efektownego zdjęcia, ile od tempa wycieczki, czasu na plaży i programu, którego oczekujesz.\n\n## Co warto wiedzieć\n\nOrange Bay często wybierają podróżni, którzy marzą o jasnej, piaszczystej plaży i czasie na relaks na wyspie. Hula Hula to kolejna wyspiarska opcja dostępna w programach rejsów z Hurghady. Udogodnienia, zasady dostępu, czas spędzony na lądzie i atmosfera mogą różnić się w zależności od organizatora i dnia. Sama nazwa wyspy nie mówi, jak długo potrwa postój, ile zaplanowano przystanków na rafach ani co obejmuje cena.\n\n## Praktyczna lista kontrolna\n\n- Potwierdź, na której wyspie odbędzie się postój i ile będzie trwał.\n- Porównaj wszystkie elementy wliczone w cenę.\n- Zapytaj o transfery i dodatkowe opłaty.\n- Sprawdź zasady anulowania i warunki pogodowe.\n\n## Przed rezerwacją\n\nPrzeczytaj pełny program zamiast wybierać wycieczkę wyłącznie na podstawie zdjęcia. Porównaj opublikowany [rejs na wyspę Orange Bay](https://awesomeadventure.tours/excursions/orange-bay-island-boat-trip-from-hurghada) z innymi atrakcjami nad Morzem Czerwonym."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "210e5227-8805-4ae7-bb60-d4954ad3dd95",
+      "source_slug": "red-sea-wind-weather-boat-excursions",
+      "translated_slug": "red-sea-wind-weather-boat-excursions",
+      "locale": "pl",
+      "title": "Wiatr i pogoda nad Morzem Czerwonym: kiedy plany rejsu mogą się zmienić",
+      "summary": "Dowiedz się, dlaczego wiatr, fale i widoczność mogą wpływać na rejs oraz jak elastycznie zaplanować dzień na morzu.",
+      "seo_title": "Pogoda i wiatr nad Morzem Czerwonym: wpływ na rejsy | Awesome Adventure Tours",
+      "seo_description": "Sprawdź, jak wiatr, fale i widoczność wpływają na trasy rejsów, postoje na snorkeling i decyzje o wypłynięciu.",
+      "content": {
+        "title": "Wiatr i pogoda nad Morzem Czerwonym: kiedy plany rejsu mogą się zmienić",
+        "excerpt": "Dowiedz się, dlaczego wiatr, fale i widoczność mogą wpływać na rejs oraz jak elastycznie zaplanować dzień na morzu.",
+        "content": "Słoneczna prognoza nie zawsze oznacza spokojne morze. Kierunek wiatru, wysokość fal i widoczność mogą wpływać na trasę łodzi, postoje na snorkeling oraz decyzję o wypłynięciu. Uwzględnienie pogody jest ważną częścią planowania wycieczki po Morzu Czerwonym.\n\n## Co warto wiedzieć\n\nKapitan i załoga oceniają warunki w dniu rejsu. Jeśli uznają, że jest to konieczne ze względów bezpieczeństwa, mogą zmienić miejsce postoju, dostosować trasę, opóźnić wypłynięcie lub odwołać aktywność. Zapytaj, w jaki sposób przekazywane są informacje o zmianach i jakie zasady anulowania lub zmiany terminu obowiązują. Aplikacje pogodowe pomagają w ogólnym planowaniu, ale o przebiegu rejsu decyduje lokalna ocena kapitana.\n\n## Praktyczna lista kontrolna\n\n- Zostaw w planie podróży miejsce na ewentualne zmiany.\n- Przed płatnością przeczytaj warunki pogodowe i anulowania.\n- Zapytaj, jak będziesz informowany o zmianach.\n- Stosuj się do decyzji załogi dotyczących wejścia do wody.\n\n## Przed rezerwacją\n\nPlanuj z myślą o bezpieczeństwie, a nie o gwarancji konkretnego zdjęcia lub postoju. Rzetelny organizator wyjaśni, co może się zmienić i jakie rozwiązania proponuje gościom, gdy program trzeba dostosować."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "2fc5f782-535d-4e87-82e3-63aab9754f7c",
+      "source_slug": "underwater-photography-red-sea-reef-safety",
+      "translated_slug": "underwater-photography-red-sea-reef-safety",
+      "locale": "pl",
+      "title": "Jak robić lepsze zdjęcia pod wodą, nie niszcząc rafy koralowej",
+      "summary": "Praktyczne wskazówki dotyczące aparatu i telefonu, dzięki którym zrobisz wyraźniejsze zdjęcia, zachowując bezpieczną odległość od koralowców i zwierząt.",
+      "seo_title": "Zdjęcia pod wodą w Morzu Czerwonym bez szkody dla raf | Awesome Adventure Tours",
+      "seo_description": "Poznaj proste wskazówki dotyczące fotografowania pod wodą i ochrony koralowców oraz morskich zwierząt podczas snorkelingu.",
+      "content": {
+        "title": "Jak robić lepsze zdjęcia pod wodą, nie niszcząc rafy koralowej",
+        "excerpt": "Praktyczne wskazówki dotyczące aparatu i telefonu, dzięki którym zrobisz wyraźniejsze zdjęcia, zachowując bezpieczną odległość od koralowców i zwierząt.",
+        "content": "Morze Czerwone może być niezwykłym tłem dla zdjęć ze snorkelingu, ale żadne zdjęcie nie jest warte uszkodzenia koralowców ani niepokojenia zwierząt. Nie potrzebujesz drogiego sprzętu, aby zachować wspomnienia — ważniejsze są przygotowanie i świadomość warunków w wodzie.\n\n## Co warto wiedzieć\n\nUżywaj wodoszczelnego etui przeznaczonego do głębokości, na jaką planujesz zejść, sprawdź uszczelki przed wycieczką i zabezpiecz urządzenie paskiem na nadgarstek. Woda zmienia kolory i zmniejsza kontrast, dlatego poruszaj się powoli i trzymaj aparat stabilnie, zamiast gonić ryby. Nie chwytaj koralowców, nie stawaj na rafie i nie blokuj drogi zwierzętom, aby wykonać zdjęcie.\n\n## Praktyczna lista kontrolna\n\n- Przed wycieczką sprawdź wodoszczelność obudowy.\n- Używaj paska zabezpieczającego na nadgarstek.\n- Nigdy nie dotykaj koralowców, aby się podeprzeć.\n- Nie ścigaj zwierząt w celu zrobienia zdjęcia.\n\n## Przed rezerwacją\n\nSpokojny, nadzorowany postój na snorkeling daje więcej okazji do obserwacji bez pośpiechu. Wybierz wycieczkę z jasnym instruktażem bezpieczeństwa i odpowiednią ilością czasu na wodzie."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "3cb24067-af99-45e3-a7ea-05ab429d0b64",
+      "source_slug": "red-sea-coral-reefs-underwater-world",
+      "translated_slug": "red-sea-coral-reefs-underwater-world",
+      "locale": "pl",
+      "title": "Rafy koralowe Morza Czerwonego: co wyróżnia ten podwodny świat?",
+      "summary": "Poznaj rafy koralowe, ryby rafowe i delikatne siedliska morskie, które można zobaczyć podczas snorkelingu.",
+      "seo_title": "Rafy koralowe Morza Czerwonego: podwodny świat | Awesome Adventure Tours",
+      "seo_description": "Przeczytaj wprowadzenie do raf koralowych Morza Czerwonego, życia morskiego i zasad ochrony środowiska podczas snorkelingu.",
+      "content": {
+        "title": "Rafy koralowe Morza Czerwonego: co wyróżnia ten podwodny świat?",
+        "excerpt": "Poznaj rafy koralowe, ryby rafowe i delikatne siedliska morskie, które można zobaczyć podczas snorkelingu.",
+        "content": "Morze Czerwone słynie z przejrzystej wody, formacji koralowych i barwnego życia morskiego. Dla wielu odwiedzających pierwszy postój na snorkeling jest okazją do poznania ekosystemu rafy. To, co wygląda jak piękny podwodny ogród, jest również żywym siedliskiem, które wymaga ochrony.\n\n## Co warto wiedzieć\n\nKoralowce to zwierzęta, które z czasem budują twarde struktury. Zapewniają one schronienie i miejsca żerowania wielu gatunkom rafowym. Nawet pozornie drobne działania, takie jak stawanie na koralowcach czy zbieranie ich fragmentów, mogą powodować szkody utrzymujące się znacznie dłużej niż wakacje. Zachowuj bezpieczną odległość, nie wzbijaj osadów i nigdy nie goń ani nie karm zwierząt morskich.\n\n## Praktyczna lista kontrolna\n\n- Nie stawaj, nie siadaj ani nie opieraj sprzętu o koralowce.\n- Trzymaj płetwy z dala od rafy.\n- Nie zbieraj muszli ani fragmentów koralowców.\n- Korzystaj z miejsc wejścia i wyjścia wskazanych przez przewodnika.\n\n## Przed rezerwacją\n\nWycieczka łodzią z przewodnikiem może pomóc początkującym poznać zasady odpowiedzialnego snorkelingu. Porównaj opublikowane [wycieczki snorkelingowe po Morzu Czerwonym](https://awesomeadventure.tours/excursions) i wybierz program, który jasno opisuje podejście do ochrony środowiska."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "49b0e165-8c27-4984-8470-99e9e58f74b7",
+      "source_slug": "prevent-seasickness-red-sea-boat-trip",
+      "translated_slug": "prevent-seasickness-red-sea-boat-trip",
+      "locale": "pl",
+      "title": "Jak zapobiegać chorobie morskiej podczas rejsu po Morzu Czerwonym",
+      "summary": "Praktyczne wskazówki dla podróżnych, którzy obawiają się choroby lokomocyjnej podczas wycieczki łodzią.",
+      "seo_title": "Jak uniknąć choroby morskiej podczas rejsu po Morzu Czerwonym | Awesome Adventure Tours",
+      "seo_description": "Dowiedz się, jak przygotować się do rejsu, ograniczyć dyskomfort związany z kołysaniem i kiedy poradzić się specjalisty.",
+      "content": {
+        "title": "Jak zapobiegać chorobie morskiej podczas rejsu po Morzu Czerwonym",
+        "excerpt": "Praktyczne wskazówki dla podróżnych, którzy obawiają się choroby lokomocyjnej podczas wycieczki łodzią.",
+        "content": "Dzień na łodzi może być relaksujący, ale fale i ruch jednostki mogą powodować złe samopoczucie u niektórych podróżnych. Choroba morska jest kwestią indywidualną: jeden gość może czuć się dobrze, podczas gdy inny odczuwa dyskomfort na tym samym rejsie. Odpowiednie przygotowanie może ułatwić podróż.\n\n## Co warto wiedzieć\n\nWyśpij się, zjedz lekki posiłek, jeśli Ci to służy, i pij wodę. Jeśli wcześniej zdarzała Ci się choroba lokomocyjna, zapytaj farmaceutę lub lekarza, czy odpowiedni preparat będzie dla Ciebie bezpieczny — szczególnie jeśli przyjmujesz inne leki, jesteś w ciąży lub masz schorzenie. Podczas rejsu patrzenie na horyzont, świeże powietrze i ograniczenie korzystania z ekranu telefonu mogą pomóc. Jeśli poczujesz się źle, jak najwcześniej poinformuj członka załogi.\n\n## Praktyczna lista kontrolna\n\n- Odpocznij przed wypłynięciem.\n- Zapytaj pracownika ochrony zdrowia o odpowiedni lek.\n- Gdy jest to bezpieczne, patrz na horyzont i korzystaj ze świeżego powietrza.\n- Poinformuj załogę, gdy tylko pojawią się objawy.\n\n## Przed rezerwacją\n\nPrzed dokonaniem rezerwacji sprawdź przewidywany czas trwania i warunki na łodzi. Jeśli obawiasz się choroby morskiej, zapytaj, czy dostępna jest krótsza trasa lub rejs po bardziej osłoniętych wodach."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "63514379-b25f-4fb7-a1b3-fe34b3914d29",
+      "source_slug": "responsible-dolphin-watching-hurghada",
+      "translated_slug": "responsible-dolphin-watching-hurghada",
+      "locale": "pl",
+      "title": "Obserwacja delfinów w Hurghadzie: poradnik odpowiedzialnego turysty",
+      "summary": "Dowiedz się, czego oczekiwać podczas rejsu w poszukiwaniu delfinów i jak szanować dzikie zwierzęta morskie Morza Czerwonego.",
+      "seo_title": "Odpowiedzialna obserwacja delfinów w Hurghadzie | Awesome Adventure Tours",
+      "seo_description": "Sprawdź, jak wygląda rejs w poszukiwaniu delfinów, dlaczego obserwacji nie można zagwarantować i jak szanować dzikie zwierzęta.",
+      "content": {
+        "title": "Obserwacja delfinów w Hurghadzie: poradnik odpowiedzialnego turysty",
+        "excerpt": "Dowiedz się, czego oczekiwać podczas rejsu w poszukiwaniu delfinów i jak szanować dzikie zwierzęta morskie Morza Czerwonego.",
+        "content": "Obserwowanie delfinów na wolności może być niezapomnianą częścią wakacji nad Morzem Czerwonym. Rejs z Hurghady może obejmować poszukiwanie delfinów oraz osobne postoje na snorkeling, ale spotkanie z dzikimi zwierzętami nigdy nie jest zaplanowaną atrakcją. Delfiny poruszają się swobodnie, a ich pojawienia się nie można zagwarantować.\n\n## Co warto wiedzieć\n\nOdpowiedzialni organizatorzy nie powinni karmić, dotykać, ścigać ani celowo otaczać delfinów. Jeśli się pojawią, stosuj się do instrukcji załogi i obserwuj je z odpowiedniej odległości. Zapytaj, jak załoga zachowuje się podczas spotkania i co dzieje się, jeśli delfinów nie uda się zobaczyć. Wiarygodny opis uczciwie informuje o niepewności, zamiast obiecywać spotkanie.\n\n## Praktyczna lista kontrolna\n\n- Nigdy nie karm ani nie dotykaj dzikich delfinów.\n- Nie proś załogi o ściganie zwierząt ani blokowanie im drogi.\n- Zachowaj spokój i stosuj się do instrukcji załogi.\n- Zaakceptuj fakt, że brak obserwacji delfinów jest naturalnym wynikiem wycieczki przyrodniczej.\n\n## Przed rezerwacją\n\nPrzeczytaj opis [rejsu z Hurghady na obserwację delfinów i snorkeling](https://awesomeadventure.tours/excursions/hurghada-dolphin-watching-snorkeling-boat-trip) i zapytaj organizatora o zasady odpowiedzialnego obserwowania zwierząt."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "b7c75969-d8fb-4f62-ba33-6c54ea61df90",
+      "source_slug": "private-yacht-vs-shared-boat-hurghada",
+      "translated_slug": "private-yacht-vs-shared-boat-hurghada",
+      "locale": "pl",
+      "title": "Prywatny jacht czy wspólna łódź w Hurghadzie: jak wybrać?",
+      "summary": "Poznaj praktyczne różnice między prywatnym rejsem a wycieczką grupową po Morzu Czerwonym, zanim wybierzesz pakiet.",
+      "seo_title": "Prywatny jacht czy wspólna łódź w Hurghadzie? | Awesome Adventure Tours",
+      "seo_description": "Porównaj prywatny czarter i wspólny rejs z Hurghady pod kątem elastyczności, liczby gości, ceny, programu i warunków.",
+      "content": {
+        "title": "Prywatny jacht czy wspólna łódź w Hurghadzie: jak wybrać?",
+        "excerpt": "Poznaj praktyczne różnice między prywatnym rejsem a wycieczką grupową po Morzu Czerwonym, zanim wybierzesz pakiet.",
+        "content": "Dzień na prywatnym jachcie i wycieczka wspólną łodzią mogą być równie niezapomniane, ale odpowiadają na różne potrzeby. Wybór nie sprowadza się wyłącznie do luksusu. Liczą się elastyczność, wielkość grupy, budżet, prywatność i zakres kontroli nad przebiegiem dnia.\n\n## Co warto wiedzieć\n\nWspólne wycieczki odbywają się według ustalonej trasy i łączą gości w ramach jednego wypłynięcia. Prywatny czarter może zapewniać większy wpływ na godziny i tempo, z uwzględnieniem pogody, bezpieczeństwa i lokalnych zasad eksploatacji. Zapytaj, czy cena obejmuje łódź, załogę, jedzenie, napoje, dostęp do wyspy i sprzęt do snorkelingu. Potwierdź na piśmie maksymalną liczbę pasażerów oraz warunki anulowania.\n\n## Praktyczna lista kontrolna\n\n- Porównaj program i całkowitą cenę.\n- Potwierdź pojemność prywatnej łodzi i elementy wliczone w cenę.\n- Zapytaj o zmiany pogodowe i elastyczność trasy.\n- Sprawdź miejsce odbioru, godzinę wypłynięcia i powrotu.\n\n## Przed rezerwacją\n\nWybierz formę rejsu, która odpowiada wielkości grupy i Twoim oczekiwaniom. Jasny, pisemny program jest bardziej przydatny niż ogólna obietnica idealnego dnia."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "bc62ae9c-a1ef-46ef-addd-e40514139817",
+      "source_slug": "parasailing-hurghada-first-time-guide",
+      "translated_slug": "parasailing-hurghada-first-time-guide",
+      "locale": "pl",
+      "title": "Parasailing w Hurghadzie: co powinni wiedzieć początkujący",
+      "summary": "Praktyczny przewodnik po instruktażu, uprzęży, pogodzie i pytaniach, które warto zadać przed lotem na spadochronie za motorówką.",
+      "seo_title": "Parasailing w Hurghadzie: poradnik dla początkujących | Awesome Adventure Tours",
+      "seo_description": "Dowiedz się, jak przygotować się do parasailingu, o co zapytać w sprawie uprzęży, ograniczeń uczestników i warunków pogodowych.",
+      "content": {
+        "title": "Parasailing w Hurghadzie: co powinni wiedzieć początkujący",
+        "excerpt": "Praktyczny przewodnik po instruktażu, uprzęży, pogodzie i pytaniach, które warto zadać przed lotem na spadochronie za motorówką.",
+        "content": "Parasailing pozwala podziwiać Morze Czerwone z innej perspektywy — uczestnik unosi się nad wodą, będąc połączonym z systemem holowanym przez łódź. Osoby próbujące tej aktywności po raz pierwszy często chcą wiedzieć, jak wygląda lot i jak się przygotować. Najważniejsze jest wybranie atrakcji prowadzonej przez odpowiedzialnego organizatora.\n\n## Co warto wiedzieć\n\nZałoga powinna wyjaśnić, jak zakłada się uprząż, jak wygląda wejście na pokład i lądowanie, jakich sygnałów używać oraz jakie warunki mogą spowodować przerwanie aktywności. Zapytaj o limity dotyczące uczestników, kontrole sprzętu i to, czy aktywność jest odpowiednia dla Twojego wieku, zdrowia i sprawności ruchowej. Wiatr i stan morza mogą wpływać na możliwość realizacji atrakcji; odpowiedzialny organizator może opóźnić ją lub odwołać, jeśli warunki nie są odpowiednie.\n\n## Praktyczna lista kontrolna\n\n- Zapytaj o limity wieku i masy ciała.\n- Poinformuj o istotnych problemach zdrowotnych lub ograniczeniach ruchowych.\n- Zabezpiecz luźne przedmioty i stosuj się do poleceń załogi.\n- Zaakceptuj przełożenie atrakcji, jeśli warunki są nieodpowiednie.\n\n## Przed rezerwacją\n\nOpis [parasailingu i sportów wodnych w Hurghadzie](https://awesomeadventure.tours/excursions/hurghada-parasailing-banana-boat-adventure-with-hotel-pickup) przedstawia dostępne aktywności. Przed rezerwacją potwierdź aktualne wymagania."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "d46dfb01-8c3e-446d-978a-236b31e4646f",
+      "source_slug": "scuba-diving-vs-snorkeling-hurghada",
+      "translated_slug": "scuba-diving-vs-snorkeling-hurghada",
+      "locale": "pl",
+      "title": "Nurkowanie z butlą czy snorkeling w Hurghadzie: co wybrać?",
+      "summary": "Porównaj snorkeling i nurkowanie z butlą pod względem szkolenia, komfortu, czasu i rodzaju podwodnych wrażeń.",
+      "seo_title": "Nurkowanie z butlą czy snorkeling w Hurghadzie? | Awesome Adventure Tours",
+      "seo_description": "Porównaj snorkeling i nurkowanie z butlą w Hurghadzie. Sprawdź wymagania, nadzór, szkolenie oraz różnice między nurkowaniem próbnym i certyfikowanym.",
+      "content": {
+        "title": "Nurkowanie z butlą czy snorkeling w Hurghadzie: co wybrać?",
+        "excerpt": "Porównaj snorkeling i nurkowanie z butlą pod względem szkolenia, komfortu, czasu i rodzaju podwodnych wrażeń.",
+        "content": "Morze Czerwone oferuje kilka sposobów odkrywania podwodnego świata. Podczas snorkelingu pozostajesz na powierzchni wody, natomiast nurkowanie z butlą wymaga specjalistycznego sprzętu i bardziej szczegółowych procedur bezpieczeństwa. Właściwy wybór zależy od Twojej pewności siebie, stanu zdrowia i doświadczenia.\n\n## Co warto wiedzieć\n\nSnorkeling często jest dobrym wprowadzeniem dla podróżnych, którzy czują się swobodnie w wodzie. Nurkowanie z butlą polega na oddychaniu pod wodą przy użyciu sprzętu i wymaga określonego szkolenia lub nadzoru. Nurkowanie próbne dla początkujących i nurkowanie dla osób z certyfikatem to różne usługi. Sprawdź dokładnie, co obejmuje oferta, kto sprawuje nadzór i jakie oświadczenia zdrowotne są wymagane. Nie ukrywaj problemów zdrowotnych i nigdy nie nurkuj poza zakresem swoich uprawnień.\n\n## Praktyczna lista kontrolna\n\n- Wybierz snorkeling, jeśli wolisz pozostać na powierzchni.\n- Zapytaj, czy nurkowanie jest próbne, czy przeznaczone dla osób z certyfikatem.\n- Uważnie przeczytaj wymagania zdrowotne i wiekowe.\n- Nie nurkuj bez wymaganego instruktażu i nadzoru.\n\n## Przed rezerwacją\n\nPorównaj opis aktywności i nie zakładaj, że każdy rejs obejmuje nurkowanie. Opublikowany program organizatora powinien jasno wskazywać, czy dostępny jest snorkeling, nurkowanie, czy obie aktywności."
+      }
+    }
+  ]
+}
