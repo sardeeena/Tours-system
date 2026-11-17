@@ -1006,7 +1006,7 @@ export async function getPassengerManifest(
         tourId: b.tourId,
         tourTitle: b.tourTitle,
         tourDate: b.date || date,
-        departureTime: (b as any).departureTime || '08:30',
+        departureTime: (b as any).departureTime || 'Not scheduled',
         fullName: `Guest ${idx} (${b.customer.lastName} Party)`,
         nationality: b.customer.country || 'International',
         passportOrId: null,
@@ -1110,9 +1110,9 @@ export async function getDailyPickupSchedule(dateTarget?: string): Promise<Picku
       customerPhone: b.customer.phoneNumber
         ? `${b.customer.countryCode || ''} ${b.customer.phoneNumber}`.trim()
         : null,
-      hotelName: dbItem?.hotel || b.pickup.hotelName || b.customer.hotelName || 'Direct Arrival (Marina)',
+      hotelName: dbItem?.hotel || b.pickup.hotelName || b.customer.hotelName || 'Not provided',
       roomNumber: b.pickup.roomNumber || b.customer.roomNumber || null,
-      pickupArea: dbItem?.location || b.pickup.area || 'Hurghada Central',
+      pickupArea: dbItem?.location || b.pickup.area || 'Not specified',
       pickupTime: dbItem?.pickup_time || extra.pickupTime || (b as any).pickupTime || 'Not scheduled',
       passengerCount: partySize,
       tourTitle: b.tourTitle,
