@@ -601,7 +601,7 @@ ${JSON.stringify(liveCatalogue)}
 
 The catalogue above is current published content, not date-specific inventory. Do not claim a date is available or quote a confirmed departure time. Tell the traveler to check the excursion page for live date availability and exact booking details.`;
 
-    const response = await gemini.models.generateContent({
+    const response = await ai.models.generateContent({
       model: 'gemini-3.8-flash',
       contents: conversationHistory,
       config: {
@@ -3286,7 +3286,7 @@ async function generateBulkTranslationResponse(
     'INPUT: ' + JSON.stringify(items.map(x => ({ entity_type: x.type, entity_key: x.key, source: x.payload }))),
   ].join('\n');
 
-  const response = await ai.models.generateContent({
+  const response = await gemini.models.generateContent({
     model: 'gemini-3.8-flash',
     contents: [{ role: 'user', parts: [{ text: prompt }] }],
     config: {
@@ -3329,7 +3329,7 @@ async function generateBulkTranslationResponse(
       const right = await generateBulkTranslationResponse(items.slice(midpoint), locale);
       return { translations: [...left.translations, ...right.translations] };
     }
-    const repaired = await ai.models.generateContent({
+    const repaired = await gemini.models.generateContent({
       model: 'gemini-3.8-flash',
       contents: [{ role: 'user', parts: [{ text: [
         'Repair only the JSON syntax of the following model output. Do not rewrite, summarize, translate, add, remove, or alter any values. Return one valid JSON object with the same translations array and exact field values. Return JSON only.',
