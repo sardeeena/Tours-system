@@ -3254,6 +3254,99 @@ function normalizedTranslationSlug(value: unknown, fallback: string): string {
   const raw = typeof value==='string' ? value.normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase() : '';
   return raw.replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,160) || fallback.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,160) || 'page';
 }
+
+type BulkTranslationWorkItem = { type: string; key: string; checksum: string; source: any; payload: any };
+
+function parseGeminiTranslationJson(rawText: string): any {
+  const cleaned = rawText.trim().replace(/^\x60{3}(?:json)?\s*/i, '').replace(/\s*\x60{3}$/, '').trim();
+  try { return JSON.parse(cleaned); } catch (firstError) {
+    const start = cleaned.indexOf('{');
+    const end = cleaned.lastIndexOf('}');
+    if (start >= 0 && end > start) return JSON.parse(cleaned.slice(start, end + 1));
+    throw firstError;
+  }
+}
+
+async function generateBulkTranslationResponse(
+  items: BulkTranslationWorkItem[],
+  locale: string,
+  repairAttempt = false,
+): Promise<{ translations: any[] }> {
+  if (!ai || !items.length) throw new Error('Gemini translation service is unavailable.');
+  const prompt = [
+    'You are a professional tourism translator localizing Awesome Adventure Tours, a licensed operator in Hurghada, Egypt.',
+    'Translate every human-facing string recursively into ' + BULK_TRANSLATION_LOCALES[locale] + ' (' + locale + ').',
+    'Return only valid JSON: {"translations":[{"entity_type":"...","entity_key":"...","title":"...","translated_slug":"...","summary":"...","seo_title":"...","seo_description":"...","content":{...}}]}. Return exactly one item per input and preserve entity_type and entity_key exactly.',
+    'Preserve all JSON keys, arrays, order, object shapes and non-string values. Translate all prose, labels, headings, FAQs, itinerary and UI message values.',
+    'Never invent or change prices, currencies, numbers, dates, times, durations, pickup details, age limits, safety requirements, inclusions, exclusions, cancellation terms, legal claims, contacts, URLs, emails, phone numbers, IDs or brand/place names. Copy factual values exactly. In communication templates preserve every {{placeholder}} token byte-for-byte and do not translate variable names.',
+    'translated_slug must be a natural short lowercase ASCII slug using only a-z, 0-9 and hyphens. For ui_catalog use site-ui. For communication templates, preserve template_key and variables exactly; preserve every {{placeholder}} in both subject and body_text exactly. Keep empty source strings empty. Do not omit fields or add commentary.',
+    locale === 'ar'
+      ? 'For Arabic, use clear Modern Standard Arabic suitable for international visitors to Egypt. Preserve official place, vessel and brand names accurately; do not invent local claims. The UI will render right-to-left, so return natural Arabic text without manual visual reordering.'
+      : 'Use natural, locally fluent language for the target locale. SEO title should be concise; SEO description accurate. No unsupported claims.',
+    'INPUT: ' + JSON.stringify(items.map(x => ({ entity_type: x.type, entity_key: x.key, source: x.payload }))),
+  ].join('\\n');
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-3.8-flash',
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    config: {
+      temperature: 0.1,
+      responseMimeType: 'application/json',
+      maxOutputTokens: 65536,
+      thinkingConfig: { thinkingLevel: 'LOW' },
+    },
+  });
+  const finishReason = String(response.candidates?.[0]?.finishReason || '');
+  const responseText = response.text || '';
+
+  if (finishReason.toUpperCase().includes('MAX_TOKENS') || !responseText.trim()) {
+    console.warn('[Bulk translation generation] Gemini response incomplete.', {
+      locale, itemCount: items.length, finishReason, outputChars: responseText.length,
+      modelVersion: response.modelVersion || null, responseId: response.responseId || null,
+      usageMetadata: response.usageMetadata || null,
+    });
+    if (items.length > 1) {
+      const midpoint = Math.ceil(items.length / 2);
+      const left = await generateBulkTranslationResponse(items.slice(0, midpoint), locale);
+      const right = await generateBulkTranslationResponse(items.slice(midpoint), locale);
+      return { translations: [...left.translations, ...right.translations] };
+    }
+    throw new Error('Gemini reached its output limit for one source record. Retry this language batch; no partial result was saved.');
+  }
+
+  let parsed: any;
+  try {
+    parsed = parseGeminiTranslationJson(responseText);
+  } catch (parseError) {
+    console.warn('[Bulk translation generation] Gemini returned malformed JSON; attempting safe recovery.', {
+      locale, itemCount: items.length, finishReason, outputChars: responseText.length,
+      modelVersion: response.modelVersion || null, responseId: response.responseId || null,
+      usageMetadata: response.usageMetadata || null,
+    });
+    if (items.length > 1) {
+      const midpoint = Math.ceil(items.length / 2);
+      const left = await generateBulkTranslationResponse(items.slice(0, midpoint), locale);
+      const right = await generateBulkTranslationResponse(items.slice(midpoint), locale);
+      return { translations: [...left.translations, ...right.translations] };
+    }
+    if (repairAttempt) throw parseError;
+    const repaired = await ai.models.generateContent({
+      model: 'gemini-3.8-flash',
+      contents: [{ role: 'user', parts: [{ text: [
+        'Repair only the JSON syntax of the following model output. Do not rewrite, summarize, translate, add, remove, or alter any values. Return one valid JSON object with the same translations array and exact field values. Return JSON only.',
+        responseText,
+      ].join('\\n') }] }],
+      config: { temperature: 0, responseMimeType: 'application/json', maxOutputTokens: 65536, thinkingConfig: { thinkingLevel: 'LOW' } },
+    });
+    try {
+      parsed = parseGeminiTranslationJson(repaired.text || '');
+    } catch (repairError) {
+      throw new Error('Gemini returned invalid JSON twice. Retry this batch; no translations were saved.');
+    }
+  }
+  if (!Array.isArray(parsed?.translations)) throw new Error('Gemini returned a JSON response without a translations array.');
+  return parsed;
+}
 app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (req: AuthenticatedRequest,res: Response) => {
   if (!requireSuperAdminAal2(req, res)) return;
   const locale = typeof req.body?.locale==='string' ? req.body.locale : '';
@@ -3278,21 +3371,7 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
     const usedSlugs = new Set((existing || []).filter((x:any)=>!workKeys.has(x.entity_type+':'+x.entity_key)).map((x:any)=>x.translated_slug).filter(Boolean));
     let saved=0, skipped=prepared.length-work.length;
     if (work.length) {
-      const prompt = [
-        'You are a professional tourism translator localizing Awesome Adventure Tours, a licensed operator in Hurghada, Egypt.',
-        'Translate every human-facing string recursively into '+BULK_TRANSLATION_LOCALES[locale]+' ('+locale+').',
-        'Return only valid JSON: {"translations":[{"entity_type":"...","entity_key":"...","title":"...","translated_slug":"...","summary":"...","seo_title":"...","seo_description":"...","content":{...}}]}. Return exactly one item per input and preserve entity_type and entity_key exactly.',
-        'Preserve all JSON keys, arrays, order, object shapes and non-string values. Translate all prose, labels, headings, FAQs, itinerary and UI message values.',
-        'Never invent or change prices, currencies, numbers, dates, times, durations, pickup details, age limits, safety requirements, inclusions, exclusions, cancellation terms, legal claims, contacts, URLs, emails, phone numbers, IDs or brand/place names. Copy factual values exactly. In communication templates preserve every {{placeholder}} token byte-for-byte and do not translate variable names.',
-        'translated_slug must be a natural short lowercase ASCII slug using only a-z, 0-9 and hyphens. For ui_catalog use site-ui. For communication templates, preserve template_key and variables exactly; preserve every {{placeholder}} in both subject and body_text exactly. Keep empty source strings empty. Do not omit fields or add commentary.',
-        locale === 'ar'
-          ? 'For Arabic, use clear Modern Standard Arabic suitable for international visitors to Egypt. Preserve official place, vessel and brand names accurately; do not invent local claims. The UI will render right-to-left, so return natural Arabic text without manual visual reordering.'
-          : 'Use natural, locally fluent language for the target locale. SEO title should be concise; SEO description accurate. No unsupported claims.',
-        'INPUT: '+JSON.stringify(work.map(x=>({entity_type:x.type,entity_key:x.key,source:x.payload})))
-      ].join('\n');
-      const generated = await ai.models.generateContent({model:'gemini-3.8-flash',contents:[{role:'user',parts:[{text:prompt}]}],config:{temperature:0.15,responseMimeType:'application/json'}});
-      const parsed = JSON.parse((generated.text || '').replace(/^\x60{3}(?:json)?\s*/i,'').replace(/\s*\x60{3}$/,''));
-      if (!Array.isArray(parsed?.translations)) throw new Error('AI returned an invalid translation batch.');
+      const parsed = await generateBulkTranslationResponse(work, locale);
       const byKey = new Map(parsed.translations.map((x:any)=>[x.entity_type+':'+x.entity_key,x]));
       for (const item of work) {
         const translated:any = byKey.get(item.type+':'+item.key);
@@ -3480,9 +3559,12 @@ app.post('/api/admin/translations', rateLimit(30, 60_000), async (req: Authentic
       entity_type: entityType, entity_key: entityKey, locale, translation_state: state,
     });
     return res.status(200).json({ success: true, translation: data });
-  } catch (error) {
-    console.error('[Translation editor] Could not save translation:', error);
-    return res.status(409).json({ success: false, error: 'The translation could not be saved. Check for a duplicate translated slug or retry.' });
+  } catch (error: any) {
+    if (error?.code === '23505' && error?.constraint === 'content_translations_locale_slug_unique') {
+      return res.status(409).json({ success: false, error: 'This translated slug is already used in this language. Choose a unique slug and save again.' });
+    }
+    console.error('[Translation editor] Could not save translation:', { code: error?.code || null, constraint: error?.constraint || null, message: error?.message || 'unknown error' });
+    return res.status(409).json({ success: false, error: 'The translation could not be saved. Check the source key and checksum, then retry.' });
   }
 });
 
