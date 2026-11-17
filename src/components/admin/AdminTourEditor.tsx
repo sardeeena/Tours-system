@@ -303,7 +303,10 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
         throw new Error('Add at least one tour language before saving.');
       }
       const statusToSave = overrideStatus || tourData.status || 'draft';
-      if (statusToSave === 'published' && tourData.pickup_available !== false && selectedPickupIds.length === 0) {
+      const hasActiveApprovedPickup = selectedPickupIds.some((id) =>
+        pickupLocations.some((location) => location.id === id)
+      );
+      if (statusToSave === 'published' && tourData.pickup_available !== false && !hasActiveApprovedPickup) {
         throw new Error('A published tour that offers pickup must have at least one explicitly approved active pickup location. Configure its pickup points or disable pickup for this tour before publishing.');
       }
 
