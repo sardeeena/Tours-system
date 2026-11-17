@@ -1503,12 +1503,8 @@ export async function adminListTourExtras(): Promise<DbTourExtra[]> {
 }
 
 /**
- * Fetches active pickup locations formatted for client checkout selection
- */
-/**
- * Fetches active pickup locations formatted for client checkout selection.
- * Filters locations by the selected tour's city/hub (e.g. Hurghada vs Marsa Alam vs Sharm El-Sheikh)
- * or explicit tour_pickup_locations.
+ * Fetches only active pickup locations explicitly assigned to a published tour.
+ * There is deliberately no destination-based or global fallback.
  */
 export async function getPublishedPickupLocations(tourIdOrSlug: string): Promise<PickupLocation[]> {
   if (!tourIdOrSlug?.trim()) {
