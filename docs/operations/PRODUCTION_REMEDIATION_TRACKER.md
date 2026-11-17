@@ -9,7 +9,7 @@
 - [x] Replace unsupported homepage trust claims about owning boats/transfers, universal guide credentials, universal free pickup, guaranteed 100% weather/cancellation refunds, and guaranteed multilingual WhatsApp support with qualified, tour-specific wording.
 - [x] Prevent the AI concierge from presenting its legacy static catalogue as live/verified inventory.
 - [x] Fail safely when the AI service is unavailable: no invented excursion cards, prices, availability, inclusions, pickup promises, or payment methods.
-- [x] Add the omitted admin persistence, abuse-prevention, password-recovery, destination, phase, schema-parity, and analytics-boundary test scripts to CI.
+- [x] Add the omitted abuse-prevention, password-recovery, destination, phase, schema-parity, and analytics-boundary test scripts to CI. The legacy `test:admin` script was intentionally excluded after CI exposed that it uses obsolete role assertions and invokes real service mutations with dummy identifiers without an isolated Supabase mock; rewrite it safely before enabling it.
 - [x] Correct current project identity and secret-handling instructions in active operator documentation.
 - [x] Replace obsolete Kemet Spirit catalogue-seed and 33-table Supabase setup instructions with current Awesome Adventure Tours project-scoped guidance.
 - [x] Retain historical audit/phase reports as records; do not rewrite applied migration history.
