@@ -20,7 +20,6 @@ import {
 } from '../types/operations';
 import { bookingRepository } from './bookingRepository';
 import { getPublishedTours } from './tourService';
-import { ALL_TOURS } from '../data/toursData';
 
 // Local storage keys for offline/fallback caching only
 const LOCAL_VESSELS_KEY = 'rse_ops_vessels';
@@ -289,7 +288,7 @@ export async function getTodayDepartures(dateTarget?: string): Promise<Operation
     bookingRepository.listBookings(),
     listVessels(),
     listGuides(),
-    getPublishedTours().catch(() => []),
+    getPublishedTours(),
   ]);
 
   if (departuresError) throw new Error(formatSupabaseError(departuresError));
@@ -313,6 +312,7 @@ export async function getTodayDepartures(dateTarget?: string): Promise<Operation
     const key = `${dbDep.tour_id}_${startTime}`;
     const bookingsForDep = groupedBookings.get(key) || [];
     const tour = dynamicTours.find((item) => item.id === dbDep.tour_id);
+    if (!tour) throw new Error(`Departure ${dbDep.id} references a tour that is not currently published.`);
     const vessel = vessels.find((item) => item.id === dbDep.vessel_id);
     const guide = guides.find((item) => item.id === dbDep.guide_id);
     const captain = guides.find((item) => item.id === dbDep.captain_id);
@@ -634,9 +634,11 @@ export async function detectAssignmentConflicts(params: {
   const targetDeparture = departures.find(
     (d) => d.id === params.departureId || (d.tourId === params.tourId && d.departureTime === params.startTime)
   );
-  const targetTour = ALL_TOURS.find((t) => t.id === params.tourId);
-  const targetDuration = targetTour?.durationHours;
-  const targetEndTime = targetDeparture?.endTime || computeEndTime(params.startTime, targetDuration);
+  const targetTour = dynamicTours.find((t) => t.id === params.tourId);
+  if (!targetTour) throw new Error('The selected tour is not currently published. Refresh the catalogue before assigning resources.');
+  const targetDuration = targetTour.durationHours;
+  const targetEndTime = targetDeparture?.endTime || (targetDuration ? computeEndTime(params.startTime, targetDuration) : null);
+  if (!targetEndTime) throw new Error('A verified tour duration or actual departure end time is required to check resource conflicts.');
 
   const passengerCount = params.bookedPassengers ?? targetDeparture?.passengerCount ?? 0;
 
@@ -669,9 +671,11 @@ export async function detectAssignmentConflicts(params: {
         if (d.id === params.departureId || d.vesselId !== params.vesselId || d.status === 'cancelled') {
           return false;
         }
-        const busyTour = ALL_TOURS.find((t) => t.id === d.tourId);
-        const busyDuration = busyTour?.durationHours;
-        const busyEndTime = d.endTime || computeEndTime(d.startTime || d.departureTime, busyDuration);
+        const busyTour = dynamicTours.find((t) => t.id === d.tourId);
+        if (!busyTour) throw new Error(`Departure ${d.id} references a tour that is no longer published; resource conflicts cannot be verified.`);
+        const busyDuration = busyTour.durationHours;
+        const busyEndTime = d.endTime || (busyDuration ? computeEndTime(d.startTime || d.departureTime, busyDuration) : null);
+        if (!busyEndTime) throw new Error(`Departure ${d.id} has no verified end time or tour duration; resource conflicts cannot be verified.`);
         return isTimeConflicting(
           d.startTime || d.departureTime,
           busyEndTime,
@@ -703,9 +707,11 @@ export async function detectAssignmentConflicts(params: {
         if (d.id === params.departureId || d.guideId !== params.guideId || d.status === 'cancelled') {
           return false;
         }
-        const busyTour = ALL_TOURS.find((t) => t.id === d.tourId);
-        const busyDuration = busyTour?.durationHours;
-        const busyEndTime = d.endTime || computeEndTime(d.startTime || d.departureTime, busyDuration);
+        const busyTour = dynamicTours.find((t) => t.id === d.tourId);
+        if (!busyTour) throw new Error(`Departure ${d.id} references a tour that is no longer published; resource conflicts cannot be verified.`);
+        const busyDuration = busyTour.durationHours;
+        const busyEndTime = d.endTime || (busyDuration ? computeEndTime(d.startTime || d.departureTime, busyDuration) : null);
+        if (!busyEndTime) throw new Error(`Departure ${d.id} has no verified end time or tour duration; resource conflicts cannot be verified.`);
         return isTimeConflicting(
           d.startTime || d.departureTime,
           busyEndTime,
@@ -741,9 +747,11 @@ export async function detectAssignmentConflicts(params: {
         ) {
           return false;
         }
-        const busyTour = ALL_TOURS.find((t) => t.id === d.tourId);
-        const busyDuration = busyTour?.durationHours;
-        const busyEndTime = d.endTime || computeEndTime(d.startTime || d.departureTime, busyDuration);
+        const busyTour = dynamicTours.find((t) => t.id === d.tourId);
+        if (!busyTour) throw new Error(`Departure ${d.id} references a tour that is no longer published; resource conflicts cannot be verified.`);
+        const busyDuration = busyTour.durationHours;
+        const busyEndTime = d.endTime || (busyDuration ? computeEndTime(d.startTime || d.departureTime, busyDuration) : null);
+        if (!busyEndTime) throw new Error(`Departure ${d.id} has no verified end time or tour duration; resource conflicts cannot be verified.`);
         return isTimeConflicting(
           d.startTime || d.departureTime,
           busyEndTime,
@@ -775,9 +783,11 @@ export async function detectAssignmentConflicts(params: {
         if (d.id === params.departureId || d.driverId !== params.driverId || d.status === 'cancelled') {
           return false;
         }
-        const busyTour = ALL_TOURS.find((t) => t.id === d.tourId);
-        const busyDuration = busyTour?.durationHours;
-        const busyEndTime = d.endTime || computeEndTime(d.startTime || d.departureTime, busyDuration);
+        const busyTour = dynamicTours.find((t) => t.id === d.tourId);
+        if (!busyTour) throw new Error(`Departure ${d.id} references a tour that is no longer published; resource conflicts cannot be verified.`);
+        const busyDuration = busyTour.durationHours;
+        const busyEndTime = d.endTime || (busyDuration ? computeEndTime(d.startTime || d.departureTime, busyDuration) : null);
+        if (!busyEndTime) throw new Error(`Departure ${d.id} has no verified end time or tour duration; resource conflicts cannot be verified.`);
         return isTimeConflicting(
           d.startTime || d.departureTime,
           busyEndTime,
