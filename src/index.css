@@ -1109,3 +1109,45 @@ html.aat-motion-active .aat-reveal:nth-of-type(5) { transition-delay: 180ms; }
     transition-duration: .01ms !important;
   }
 }
+
+
+/* =============================================================================
+   ARABIC / RTL PUBLIC EXPERIENCE BASELINE
+   Direction is enabled only after a reviewed Arabic UI catalogue is published.
+   Keep mixed-language values (booking references, email addresses, URLs and
+   phone numbers) explicitly LTR with dir="ltr" or data-ltr.
+   ============================================================================= */
+html[dir="rtl"] body {
+  direction: rtl;
+  font-family: "Noto Sans Arabic", "Noto Naskh Arabic", Tahoma, Arial, sans-serif;
+}
+
+html[dir="rtl"] .public-site:not(.public-site-admin-route) {
+  direction: rtl;
+  font-family: "Noto Sans Arabic", "Noto Naskh Arabic", Tahoma, Arial, sans-serif;
+}
+
+html[dir="rtl"] .public-site:not(.public-site-admin-route) :where(h1, h2, h3, h4) {
+  letter-spacing: normal;
+  line-height: 1.5;
+  text-align: start;
+}
+
+html[dir="rtl"] .public-site:not(.public-site-admin-route) :where(p, li, label, a, button) {
+  text-align: start;
+}
+
+html[dir="rtl"] .public-site:not(.public-site-admin-route) :where(input, select, textarea) {
+  direction: rtl;
+  text-align: start;
+}
+
+html[dir="rtl"] .public-site:not(.public-site-admin-route) :where([dir="ltr"], [data-ltr]) {
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: left;
+}
+
+html[dir="rtl"] .public-site:not(.public-site-admin-route) :where(bdi) {
+  unicode-bidi: isolate;
+}
