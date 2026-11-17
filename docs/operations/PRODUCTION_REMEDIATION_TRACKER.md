@@ -58,7 +58,8 @@
 
 - [ ] Enable Supabase leaked-password protection when the current plan supports it; retain strong password policy, rate limits and MFA until then.
 - [ ] Complete verified TOTP MFA for every privileged staff/admin account; the audit found one of two admins without a verified factor.
-- [ ] Review unused-index advisor notices against query plans and workload. Do not drop indexes blindly.
+- [x] Add the missing covering index for `content_translations.reviewed_by`.
+- [ ] Review the remaining unused-index advisor notices against query plans and workload. The latest advisor reports 138 unused-index notices; do not drop indexes blindly because the production workload is still small and several may be used after traffic grows.
 - [x] Add a database-backed `/api/health/ready` endpoint separate from liveness. It currently checks public catalogue database reachability; provider and queue readiness probes remain to be added.
 - [ ] Add browser end-to-end and mobile acceptance tests for registration, booking, payment, cancellation, invoice, admin navigation, translation and support flows.
 - [ ] Verify the admin interface visually on real mobile/tablet browsers; code-level responsive behavior is not a substitute for device testing.
