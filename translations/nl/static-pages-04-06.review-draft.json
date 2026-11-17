@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "locale": "nl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "static_page": 3,
+    "source_records": 3
+  },
+  "records": [
+    {
+      "entity_type": "static_page",
+      "entity_key": "why-us",
+      "locale": "nl",
+      "source_slug": "why-us",
+      "translated_slug": "waarom-ons-kiezen",
+      "title": "Waarom kiezen voor Awesome Adventure Tours",
+      "summary": "Gebruik de gepubliceerde excursie-informatie om beschikbare ervaringen te vergelijken en de excursie te kiezen die bij je plannen past.",
+      "seo_title": "Waarom kiezen voor Awesome Adventure Tours | Excursies aan de Rode Zee",
+      "seo_description": "Vergelijk excursies aan de Rode Zee op prijs, duur, route, inbegrepen voorzieningen en ophaalvoorwaarden voordat je boekt.",
+      "content": {
+        "heroHeadline": "Bereid je ervaring aan de Rode Zee voor",
+        "heroSubtitle": "Gebruik de gepubliceerde excursie-informatie om beschikbare ervaringen te vergelijken en de excursie te kiezen die bij je plannen past.",
+        "sections": [
+          {
+            "title": "Excursie-informatie op één plek",
+            "content": "Bekijk de beschrijving, prijs, duur, route en inbegrepen voorzieningen van elke excursie voordat je boekt."
+          },
+          {
+            "title": "Controleer de belangrijke details",
+            "content": "Ophaalopties, leeftijdsvoorwaarden, beschikbaarheid en annuleringsvoorwaarden kunnen per excursie verschillen. Bekijk de betreffende pagina en boekingsgegevens voordat je bevestigt."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer",
+          "bookNow": "Boek nu"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "marine-safety",
+      "locale": "nl",
+      "source_slug": "marine-safety",
+      "translated_slug": "veiligheid-op-zee-en-vertrekinfo",
+      "title": "Veiligheid op zee en vertrekgegevens",
+      "summary": "Excursies op zee kunnen worden beïnvloed door het weer, de toestand van de zee en operationele beperkingen. Raadpleeg de informatie voor de excursie die je hebt gekozen.",
+      "seo_title": "Veiligheid op zee en vertrek | Awesome Adventure Tours",
+      "seo_description": "Bekijk veiligheidsrichtlijnen, vertrekgegevens en weersomstandigheden die excursies aan de Rode Zee kunnen wijzigen.",
+      "content": {
+        "heroHeadline": "Veiligheid en vertrekgegevens",
+        "heroSubtitle": "Excursies op zee kunnen worden beïnvloed door het weer, de toestand van de zee en operationele beperkingen. Raadpleeg de informatie voor de excursie die je hebt gekozen.",
+        "sections": [
+          {
+            "title": "Vóór vertrek",
+            "content": "Lees de vertrekgegevens, deelnamevoorwaarden en informatie over de uitrusting voor de excursie die je hebt gekozen. Volg tijdens de activiteit de instructies van de bemanning en het begeleidende personeel."
+          },
+          {
+            "title": "Weer en operationele wijzigingen",
+            "content": "Activiteiten op zee kunnen worden aangepast, vertraagd of geannuleerd wanneer de omstandigheden een veilige afvaart niet toelaten. Raadpleeg de boekingsvoorwaarden van je excursie voor de toepasselijke regelingen."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer",
+          "bookNow": "Boek nu"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "booking-conditions",
+      "locale": "nl",
+      "source_slug": "booking-conditions",
+      "translated_slug": "boekingsvoorwaarden",
+      "title": "Boekingsvoorwaarden",
+      "summary": "Lees de informatie en voorwaarden voor de gekozen excursie voordat je je boeking afrondt.",
+      "seo_title": "Boekingsvoorwaarden | Awesome Adventure Tours",
+      "seo_description": "Controleer bevestigingen, ophalen, vertrektijden, wijzigingen en annuleringen voordat je je excursie aan de Rode Zee boekt.",
+      "content": {
+        "heroHeadline": "Boekingsinformatie",
+        "heroSubtitle": "Lees de informatie en voorwaarden voor de gekozen excursie voordat je je boeking afrondt.",
+        "sections": [
+          {
+            "title": "Boekingen en bevestiging",
+            "content": "Controleer de gekozen datum, het aantal deelnemers, de prijs, de ophaalgegevens en overige boekingsinformatie voordat je je aanvraag verzendt. Bewaar de bevestigingsgegevens die je na het boeken ontvangt."
+          },
+          {
+            "title": "Ophalen en vertrek",
+            "content": "De beschikbaarheid van ophalen, ontmoetingslocaties, toeslagen en vertrektijden kan per excursie en bestemming verschillen. Controleer de gegevens voor je reis voordat je bevestigt."
+          },
+          {
+            "title": "Wijzigingen en annuleringen",
+            "content": "Annuleringstermijnen, terugbetalingsregelingen en voorwaarden voor het verzetten van een excursie zijn afhankelijk van de boekingsvoorwaarden van de gekozen excursie. Lees deze vóór het afronden van je boeking."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer",
+          "bookNow": "Boek nu"
+        }
+      }
+    }
+  ]
+}
