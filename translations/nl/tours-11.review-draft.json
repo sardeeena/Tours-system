@@ -1,0 +1,59 @@
+{
+  "schema_version": 1,
+  "locale": "nl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "tour": 1,
+    "source_records": 1
+  },
+  "records": [
+    {
+      "entity_type": "tour",
+      "entity_key": "b2303c4d-0803-4526-9246-31a19b8901c3",
+      "source_slug": "grand-egyptian-museum-guided-tour-with-entry-ticket",
+      "translated_slug": "grand-egyptisch-museum-rondleiding-toegangsticket",
+      "title": "Rondleiding door het Grand Egyptian Museum met toegangsticket",
+      "summary": "Ontdek de wonderen van het oude Egypte tijdens een rondleiding door het Grand Egyptian Museum in Caïro. Bekijk bijzondere faraonische schatten, bewonder het kolossale standbeeld van Ramses II, wandel over de indrukwekkende Grote Trap en ontdek het fascinerende verhaal van Toetanchamon met een professionele egyptoloog. Je kunt rechtstreeks bij het museum afspreken of kiezen voor comfortabel hotelvervoer vanuit Caïro of Gizeh.",
+      "content": {
+        "short_description": "Ontdek de wonderen van het oude Egypte tijdens een rondleiding door het Grand Egyptian Museum in Caïro. Bekijk bijzondere faraonische schatten, bewonder het kolossale standbeeld van Ramses II, wandel over de indrukwekkende Grote Trap en ontdek het fascinerende verhaal van Toetanchamon met een professionele egyptoloog. Je kunt rechtstreeks bij het museum afspreken of kiezen voor comfortabel hotelvervoer vanuit Caïro of Gizeh.",
+        "description": "### Stap binnen in de wereld van het oude Egypte in het Grand Egyptian Museum\n\nStel je voor dat je oog in oog staat met monumenten die duizenden jaren hebben doorstaan, omringd door verhalen over koningen, koninginnen en goden, uit een van de meest fascinerende beschavingen uit de menselijke geschiedenis.\n\nHet Grand Egyptian Museum is veel meer dan een plek waar je oude voorwerpen kunt bekijken. Het is een kans om dichter bij het verleden van Egypte te komen en de verhalen achter enkele van de meest bijzondere schatten te ontdekken.\n\nJe bezoek begint in het museum, waar je je professionele egyptoloog ontmoet en de indrukwekkende collectie gaat verkennen. Een van de eerste bezienswaardigheden is het enorme standbeeld van Ramses II, dat trots in het prachtige entreeatrium staat.\n\nVervolgens wandel je over de Grote Trap, omringd door beelden en oude monumenten die de macht en artistieke prestaties van de Egyptische farao's weerspiegelen. De museumzalen nemen je mee door verschillende perioden van de oude Egyptische geschiedenis. Bijzondere voorwerpen en verhalen brengen het verleden tot leven.\n\nEen van de meest onvergetelijke onderdelen van het bezoek is de ontdekking van de schatten van Toetanchamon. Van prachtig versierde sieraden en koninklijke bezittingen tot bijzondere grafvoorwerpen: elk object geeft een inkijkje in het leven en de nalatenschap van de jonge koning.\n\nTijdens de rondleiding deelt je egyptoloog interessante details, historische inzichten en minder bekende verhalen. Daardoor wordt het bezoek veel boeiender dan alleen een wandeling door de tentoonstellingszalen.\n\nJe kunt rechtstreeks in het museum met je gids afspreken of je bezoek gemakkelijker maken met ophalen en terugbrengen bij je hotel in Caïro of Gizeh, in een comfortabel voertuig met airconditioning.\n\nWanneer de rondleiding eindigt, hoef je niet meteen te vertrekken. Neem rustig de tijd om je favoriete tentoonstellingen opnieuw te bekijken, van de sfeer in het museum te genieten of nog enkele mooie foto's te maken.\n\nOf je Egypte nu voor het eerst bezoekt of gewoon meer wilt ontdekken over zijn indrukwekkende geschiedenis, deze ervaring is een prachtige manier om enkele uren in Caïro door te brengen.",
+        "highlights": [
+          "Verken het indrukwekkende Grand Egyptian Museum met een professionele egyptoloog.",
+          "Bekijk het majestueuze standbeeld van Ramses II in het grote museumatrium.",
+          "Wandel over de spectaculaire Grote Trap, omringd door monumenten uit het oude Egypte.",
+          "Ontdek bijzondere voorwerpen uit duizenden jaren Egyptische geschiedenis.",
+          "Kom meer te weten over de legendarische schatten van koning Toetanchamon.",
+          "Luister naar boeiende verhalen en historische inzichten van je deskundige gids.",
+          "Kies ervoor rechtstreeks bij het museum af te spreken of gebruik te maken van comfortabel hotelvervoer."
+        ],
+        "included": [
+          "Toegangsticket voor het Grand Egyptian Museum met vooraf gereserveerd tijdslot.",
+          "Rondleiding door het museum met een professionele egyptoloog.",
+          "Live gids in de geselecteerde beschikbare taal.",
+          "Audiogids in geselecteerde talen, indien beschikbaar.",
+          "Ophalen en terugbrengen bij hotels in Caïro of Gizeh (alleen bij opties met vervoer).",
+          "Comfortabel vervoer in een modern voertuig met airconditioning (bij opties met vervoer).",
+          "Alle toepasselijke belastingen en servicekosten."
+        ],
+        "excluded": [
+          "De immersieve tentoonstelling over Toetanchamon (beschikbaar als optionele extra).",
+          "Lunch, drankjes en snacks.",
+          "Persoonlijke uitgaven en souvenirs.",
+          "Fooien voor de gids en chauffeur.",
+          "Vergunningen voor professionele fotografie of filmopnamen.",
+          "Diensten die niet uitdrukkelijk bij de inbegrepen onderdelen zijn vermeld."
+        ],
+        "faqs": []
+      },
+      "seo_title": "Rondleiding Grand Egyptian Museum met toegangsticket | Awesome Adventure Tours",
+      "seo_description": "Boek een rondleiding door het Grand Egyptian Museum in Caïro met een professionele egyptoloog, toegangsticket en optioneel hotelvervoer.",
+      "duration": "Halve dag (ongeveer 3 uur)",
+      "duration_type": "Halve dag",
+      "departure_time": "09:00 AM",
+      "age_restrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
+      "pickup_info": "Gratis ophalen en terugbrengen bij de hotellobby in Caïro en Gizeh inbegrepen.",
+      "cancellation_policy": "Gratis annuleren tot 24 uur vóór aanvang van de excursie."
+    }
+  ]
+}
