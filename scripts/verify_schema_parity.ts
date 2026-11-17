@@ -69,7 +69,12 @@ function runParityCheck() {
     'staff_notifications', 'tour_assigned_extras', 'tour_availability', 'tour_categories',
     'tour_exclusions', 'tour_extras', 'tour_faqs', 'tour_highlights', 'tour_images',
     'tour_inclusions', 'tour_itinerary', 'tour_pickup_locations', 'tour_vessels',
-    'tour_videos', 'tours', 'vessels', 'weather_bulletins'
+    'tour_videos', 'tours', 'vessels', 'weather_bulletins',
+    'access_roles', 'access_permissions', 'user_roles', 'role_permissions',
+    'blog_categories', 'blog_posts', 'support_tickets', 'support_ticket_messages', 'support_ticket_events',
+    'email_provider_events', 'technical_events', 'visitor_sessions', 'visitor_events', 'visitor_consent_records',
+    'visitor_analytics_settings', 'customer_communication_consent_events', 'whatsapp_provider_status_events',
+    'content_translations'
   ];
 
   const missingFromBaseline = REQUIRED_CANONICAL_TABLES.filter((t) => !completeTables.has(t));
