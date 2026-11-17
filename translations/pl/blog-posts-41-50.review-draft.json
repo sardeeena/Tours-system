@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "locale": "pl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "blog_post": 10,
+    "source_records": 10
+  },
+  "records": [
+    {
+      "entity_type": "blog_post",
+      "entity_key": "66c1f90d-4fdf-43b7-acbb-98a1f5492d1e",
+      "source_slug": "what-to-wear-luxor-temples-day-trip",
+      "translated_slug": "what-to-wear-luxor-temples-day-trip",
+      "locale": "pl",
+      "title": "Jak ubrać się na dzień zwiedzania Luksoru",
+      "summary": "Praktyczne wskazówki dotyczące ubioru i obuwia podczas zwiedzania świątyń oraz stanowisk archeologicznych w Luksorze.",
+      "seo_title": "Jak ubrać się na zwiedzanie Luksoru? | Awesome Adventure Tours",
+      "seo_description": "Sprawdź, jakie ubrania i buty wybrać na zwiedzanie świątyń i zabytków Luksoru w ciepłym klimacie.",
+      "content": {
+        "title": "Jak ubrać się na dzień zwiedzania Luksoru",
+        "excerpt": "Praktyczne wskazówki dotyczące ubioru i obuwia podczas zwiedzania świątyń oraz stanowisk archeologicznych w Luksorze.",
+        "content": "Zwiedzanie Luksoru może oznaczać wiele godzin na zewnątrz, spacery po kamiennych nawierzchniach i przemieszczanie się między miejscami zacienionymi a wystawionymi na słońce. Wygodny strój jest bardziej przydatny niż skomplikowana stylizacja, szczególnie gdy planujesz odwiedzić kilka obiektów.\n\n## Co warto wiedzieć\n\nLekkie, przewiewne ubrania pomagają w ciepłe dni. Przydadzą się kapelusz, okulary przeciwsłoneczne i krem z filtrem, a wygodne, zakryte lub dobrze trzymające się stopy buty ułatwią poruszanie się po nierównym terenie. Wybierz strój odpowiedni do miejsc religijnych i kulturowych oraz przygotuj się na przestrzeganie lokalnych zasad dostępu. Zabierz tylko potrzebne rzeczy i sprawdź aktualne zasady dotyczące toreb, aparatów i napojów.\n\n## Praktyczna lista kontrolna\n\n- Załóż buty z dobrą przyczepnością.\n- Zabierz nakrycie głowy i ochronę przeciwsłoneczną.\n- Miej przy sobie niezbędne leki i dokument tożsamości.\n- Przed wyjazdem sprawdź aktualne zasady obowiązujące w obiektach.\n\n## Przed rezerwacją\n\nOdpowiedni strój pozwoli skupić się na historii, zamiast na dyskomforcie. Przed pakowaniem potwierdź harmonogram wycieczki i przewidywany czas chodzenia."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "c72f01f4-d37e-4067-916f-e1a9ea2ea5c2",
+      "source_slug": "old-cairo-one-day-islamic-coptic-heritage",
+      "translated_slug": "old-cairo-one-day-islamic-coptic-heritage",
+      "locale": "pl",
+      "title": "Stary Kair w jeden dzień: meczety, kościoły i Khan el-Khalili",
+      "summary": "Praktyczne wprowadzenie do islamskiego i koptyjskiego dziedzictwa Starego Kairu, zabytkowych ulic i atmosfery tradycyjnego targu.",
+      "seo_title": "Stary Kair w jeden dzień: meczety, kościoły i Khan el-Khalili | Awesome Adventure Tours",
+      "seo_description": "Poznaj islamskie i koptyjskie dziedzictwo Starego Kairu, zabytkowe ulice i tradycyjny targ Khan el-Khalili.",
+      "content": {
+        "title": "Stary Kair w jeden dzień: meczety, kościoły i Khan el-Khalili",
+        "excerpt": "Praktyczne wprowadzenie do islamskiego i koptyjskiego dziedzictwa Starego Kairu, zabytkowych ulic i atmosfery tradycyjnego targu.",
+        "content": "Stary Kair to nie jeden zabytek, lecz zbiór dzielnic, miejsc kultu i historycznych ulic, które odzwierciedlają wiele warstw historii miasta. Wycieczka z przewodnikiem może pomóc osobom odwiedzającym Kair po raz pierwszy zrozumieć, jak te miejsca łączą się ze sobą.\n\n## Co warto wiedzieć\n\nDobrze zaplanowana trasa może obejmować Cytadelę, zabytkowe meczety, kościoły koptyjskie i tętniącą życiem okolicę Khan el-Khalili. Każde z tych miejsc ma własną atmosferę i zasady dla odwiedzających. Ubierz się z szacunkiem, stosuj się do instrukcji w budynkach religijnych i pytaj o zgodę przed fotografowaniem wiernych lub prywatnych przestrzeni. Zostaw sobie czas na spokojne zwiedzanie targu.\n\n## Praktyczna lista kontrolna\n\n- Załóż wygodne obuwie i odpowiedni strój.\n- Zapytaj o zgodę przed fotografowaniem ludzi.\n- Zabezpiecz kosztowności na zatłoczonych ulicach.\n- Z wyprzedzeniem potwierdź, czy lunch i bilety wstępu są wliczone w cenę.\n\n## Przed rezerwacją\n\nOpublikowana [wycieczka po dziedzictwie Starego Kairu](https://awesomeadventure.tours/excursions/old-cairo-full-day-tour-islamic-coptic-heritage-with-lunch) łączy kilka ważnych obszarów ze zwiedzaniem z przewodnikiem i lunchem. Sprawdź dokładne postoje w programie."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "cc634029-f2da-4bfc-afee-bb7c9024ccda",
+      "source_slug": "white-island-ras-mohammed-boat-trip-guide",
+      "translated_slug": "white-island-ras-mohammed-boat-trip-guide",
+      "locale": "pl",
+      "title": "White Island i Ras Mohamed: co warto wiedzieć przed rejsem",
+      "summary": "Przygotuj się do rejsu na White Island i do Ras Mohamed, poznając praktyczne wskazówki dotyczące warunków na morzu i snorkelingu.",
+      "seo_title": "White Island i Ras Mohamed: poradnik przed rejsem | Awesome Adventure Tours",
+      "seo_description": "Dowiedz się, jak przygotować się do rejsu na White Island i do Ras Mohamed, sprawdzając postoje na snorkeling, warunki na morzu i usługi w cenie.",
+      "content": {
+        "title": "White Island i Ras Mohamed: co warto wiedzieć przed rejsem",
+        "excerpt": "Przygotuj się do rejsu na White Island i do Ras Mohamed, poznając praktyczne wskazówki dotyczące warunków na morzu i snorkelingu.",
+        "content": "Rejs łączący White Island i Ras Mohamed może zapewnić cały dzień na wodzie, z czasem na snorkeling i postojem w charakterystycznym nadmorskim miejscu. Dokładna trasa i czas spędzony w poszczególnych lokalizacjach zależą od organizatora i warunków.\n\n## Co warto wiedzieć\n\nSprawdź, ile zaplanowano postojów na snorkeling, jak długo łódź pozostaje w pobliżu każdego miejsca oraz czy program obejmuje lunch, napoje i sprzęt. Zapytaj, czy dostępna opcja nurkowania jest przeznaczona dla początkujących, czy dla osób z certyfikatem. Płycizny, prądy, wiatr i stan morza mogą wpływać na dostęp do nadmorskich miejsc, a kapitan może zmienić trasę ze względów bezpieczeństwa.\n\n## Praktyczna lista kontrolna\n\n- Zabierz strój kąpielowy i ręcznik.\n- Zapytaj, jaki sprzęt do snorkelingu jest zapewniony.\n- Potwierdź, czy nurkowanie wymaga certyfikatu.\n- Stosuj się do decyzji kapitana dotyczących zmian trasy.\n\n## Przed rezerwacją\n\nSprawdź aktualne usługi i zasady uczestnictwa w ofercie [rejsu na White Island i do Ras Mohamed z Sharm](https://awesomeadventure.tours/excursions/from-sharm-white-island-ras-mohamed-snorkeling-trip)."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "d7884dfe-1f9d-41de-9174-9a200bf72639",
+      "source_slug": "grand-egyptian-museum-first-time-visitor-guide",
+      "translated_slug": "grand-egyptian-museum-first-time-visitor-guide",
+      "locale": "pl",
+      "title": "Wielkie Muzeum Egipskie: przewodnik dla osób odwiedzających po raz pierwszy",
+      "summary": "Zaplanuj wizytę w Wielkim Muzeum Egipskim: poznaj wskazówki dotyczące biletów, przewodników, czasu zwiedzania i aktualnych zasad.",
+      "seo_title": "Wielkie Muzeum Egipskie: przewodnik dla odwiedzających | Awesome Adventure Tours",
+      "seo_description": "Zaplanuj wizytę w Wielkim Muzeum Egipskim. Sprawdź bilety, wycieczki z przewodnikiem, czas zwiedzania i aktualne zasady.",
+      "content": {
+        "title": "Wielkie Muzeum Egipskie: przewodnik dla osób odwiedzających po raz pierwszy",
+        "excerpt": "Zaplanuj wizytę w Wielkim Muzeum Egipskim: poznaj wskazówki dotyczące biletów, przewodników, czasu zwiedzania i aktualnych zasad.",
+        "content": "Wielkie Muzeum Egipskie jest ważnym uzupełnieniem oferty kulturalnej Kairu i istotnym punktem dla podróżnych zainteresowanych starożytnym Egiptem. Galerie i monumentalne przestrzenie najlepiej poznawać zgodnie z własnymi zainteresowaniami, zamiast w pośpiechu przechodzić przez każdą salę.\n\n## Co warto wiedzieć\n\nNiektórzy odwiedzający chcą poznać ogólny zarys historii faraonów, inni szczególnie interesują się królewskimi rzeźbami, monumentalną architekturą lub Tutanchamonem. Profesjonalny egiptolog może zapewnić kontekst i połączyć eksponaty z szerszą historią Egiptu. Godziny otwarcia, rodzaje biletów, zasady dostępu i dostępność galerii mogą się zmieniać, dlatego przed wizytą sprawdź oficjalne informacje dla zwiedzających.\n\n## Praktyczna lista kontrolna\n\n- Potwierdź bilety i zasady wejścia.\n- Sprawdź aktualne godziny otwarcia i dostępność galerii.\n- Zapytaj, czy przewodnik-egiptolog jest wliczony w cenę.\n- Zarezerwuj czas na kontrolę bezpieczeństwa i skorzystanie z udogodnień dla zwiedzających.\n\n## Przed rezerwacją\n\nOpis [wycieczki z przewodnikiem po Wielkim Muzeum Egipskim](https://awesomeadventure.tours/excursions/grand-egyptian-museum-guided-tour-with-entry-ticket) przedstawia zakres pakietu. Przed podróżą sprawdź zasady zwiedzania bezpośrednio w muzeum."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "5a1de1c7-d81a-4780-b687-67b154a2894b",
+      "source_slug": "sinai-desert-landscapes-mountains-canyons-coast",
+      "translated_slug": "sinai-desert-landscapes-mountains-canyons-coast",
+      "locale": "pl",
+      "title": "Krajobrazy pustyni Synaj: góry, kaniony i kontrasty wybrzeża",
+      "summary": "Odkryj różnorodność krajobrazów Synaju i dowiedz się, jak zaplanować wycieczkę łączącą góry, pustynię i wybrzeże Morza Czerwonego.",
+      "seo_title": "Synaj: pustynne krajobrazy, góry, kaniony i wybrzeże | Awesome Adventure Tours",
+      "seo_description": "Poznaj różnorodne krajobrazy Synaju i wybierz wycieczkę łączącą góry, kaniony, pustynię oraz wybrzeże Morza Czerwonego.",
+      "content": {
+        "title": "Krajobrazy pustyni Synaj: góry, kaniony i kontrasty wybrzeża",
+        "excerpt": "Odkryj różnorodność krajobrazów Synaju i dowiedz się, jak zaplanować wycieczkę łączącą góry, pustynię i wybrzeże Morza Czerwonego.",
+        "content": "Synaj często kojarzy się z jednym rozległym obszarem pustynnym, ale jego krajobrazy są bardzo zróżnicowane. Pasma górskie, formacje piaskowcowe, równiny przybrzeżne i zatoki z przejrzystą wodą oferują zupełnie różne doświadczenia w obrębie tego samego regionu.\n\n## Co warto wiedzieć\n\nSpacer po kanionie pozwala poznać geologię i poruszać się po naturalnym krajobrazie. Wyprawa na Górę Synaj to wymagająca nocna wędrówka o znaczeniu kulturowym i duchowym. Dahab oferuje natomiast atmosferę nadmorskiego miasteczka. Tych doświadczeń nie należy traktować jako zamiennych. Słuchaj przewodnika, korzystaj z wyznaczonych ścieżek i zabieraj ze sobą wszystkie odpady.\n\n## Praktyczna lista kontrolna\n\n- Sprawdź poziom trudności wybranej trasy.\n- Zabierz wodę i odpowiednie obuwie.\n- Pozostawaj na dozwolonych szlakach i ścieżkach.\n- Zabierz wszystkie śmieci z powrotem.\n\n## Przed rezerwacją\n\nProgram z przewodnikiem może ułatwić zrozumienie regionu. Porównaj opublikowane wycieczki po Synaju i wybierz trasę odpowiednią do ilości czasu oraz poziomu aktywności."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "a366f8de-d502-45db-ab21-c4184bbb7069",
+      "source_slug": "combine-red-sea-holiday-luxor-cairo-itinerary",
+      "translated_slug": "combine-red-sea-holiday-luxor-cairo-itinerary",
+      "locale": "pl",
+      "title": "Jak połączyć wakacje nad Morzem Czerwonym ze zwiedzaniem starożytnego Egiptu",
+      "summary": "Zaplanuj zrównoważoną podróż po Egipcie, łącząc wypoczynek na wybrzeżu z wybranymi atrakcjami kulturalnymi w Luksorze i Kairze.",
+      "seo_title": "Wakacje nad Morzem Czerwonym i starożytny Egipt: plan podróży | Awesome Adventure Tours",
+      "seo_description": "Połącz wypoczynek nad Morzem Czerwonym ze zwiedzaniem Luksoru i Kairu. Zaplanuj realistyczne przejazdy, bilety i czas na odpoczynek.",
+      "content": {
+        "title": "Jak połączyć wakacje nad Morzem Czerwonym ze zwiedzaniem starożytnego Egiptu",
+        "excerpt": "Zaplanuj zrównoważoną podróż po Egipcie, łącząc wypoczynek na wybrzeżu z wybranymi atrakcjami kulturalnymi w Luksorze i Kairze.",
+        "content": "Wakacje nad Morzem Czerwonym mogą oznaczać coś więcej niż tylko plażowanie. Jeśli masz wystarczająco dużo dni, możesz połączyć atrakcje nadmorskie z wizytą w Luksorze lub Kairze, tworząc podróż, która łączy odpoczynek, przyrodę i historię starożytną.\n\n## Co warto wiedzieć\n\nHurghada jest dobrą bazą wypadową na wycieczki morskie i pustynne, Luksor oferuje ważne zabytki starożytności, a Kair — muzea i historyczne dzielnice. Podróże między tymi miejscami wymagają czasu, dlatego nie traktuj długich transferów jak krótkich przerw w harmonogramie. Przed potwierdzeniem sprawdź opcje transportu, godziny wyjazdów, zasady otwarcia obiektów i wymagania dotyczące biletów.\n\n## Praktyczna lista kontrolna\n\n- Grupuj aktywności według miejsca docelowego.\n- Realistycznie zaplanuj czas transferów i zwiedzania.\n- Sprawdź aktualne godziny otwarcia i informacje o biletach.\n- Jeśli to możliwe, zaplanuj dzień odpoczynku między wymagającymi wycieczkami.\n\n## Przed rezerwacją\n\nZacznij od miejsc, które są dla Ciebie najważniejsze, a następnie ułóż realistyczną trasę. Porównaj opublikowane atrakcje nad Morzem Czerwonym, w Luksorze i Kairze oraz potwierdź każdy transfer przed dokonaniem płatności."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "d1a3ce78-82a8-4b9d-80d7-68e4dbcd89b6",
+      "source_slug": "accessible-excursions-egypt-mobility-planning",
+      "translated_slug": "accessible-excursions-egypt-mobility-planning",
+      "locale": "pl",
+      "title": "Dostępne wycieczki w Egipcie: o co zapytać przed rezerwacją",
+      "summary": "Praktyczna lista pytań dla podróżnych z potrzebami dotyczącymi poruszania się, równowagi, zmysłów lub innego rodzaju dostępności.",
+      "seo_title": "Dostępność wycieczek w Egipcie: pytania przed rezerwacją | Awesome Adventure Tours",
+      "seo_description": "Sprawdź, o co zapytać o schody, nawierzchnie, wejście na łódź, transport, przerwy i udogodnienia przed rezerwacją wycieczki.",
+      "content": {
+        "title": "Dostępne wycieczki w Egipcie: o co zapytać przed rezerwacją",
+        "excerpt": "Praktyczna lista pytań dla podróżnych z potrzebami dotyczącymi poruszania się, równowagi, zmysłów lub innego rodzaju dostępności.",
+        "content": "Wycieczka może być przyjemna, jeśli jej praktyczne warunki odpowiadają uczestnikowi. Dostępność nie jest jednakowa dla wszystkich: jedna osoba może bez problemu przejść krótki dystans, ale mieć trudności ze stromymi schodami; inna może potrzebować więcej czasu przy wsiadaniu na łódź.\n\n## Co warto wiedzieć\n\nPrzed rezerwacją opisz wszelkie potrzeby dotyczące poruszania się, równowagi, słuchu, wzroku lub zdrowia, które mogą wpływać na udział w wycieczce. Zapytaj o dostępność pojazdu, długość spacerów, schody, nawierzchnie, toalety, miejsca do siedzenia i sposób wsiadania na łodzie. Nie polegaj wyłącznie na ogólnych określeniach, takich jak „łatwa” lub „odpowiednia dla każdego” — poproś o szczegóły trasy i aktywności.\n\n## Praktyczna lista kontrolna\n\n- Zapytaj o schody, długość spacerów i rodzaj nawierzchni.\n- Potwierdź sposób wsiadania do pojazdu i na łódź.\n- Z wyprzedzeniem omów potrzebną pomoc i miejsca do siedzenia.\n- Poproś o jasne informacje o udogodnieniach i przerwach.\n\n## Przed rezerwacją\n\nPrzekaż swoje wymagania odpowiednio wcześnie, aby organizator mógł ocenić, czy wycieczka będzie odpowiednia. Jeśli nie jest w stanie potwierdzić bezpiecznych warunków, rozważ inną atrakcję."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "d45b7b5f-eb81-4d21-b872-277d12d10b45",
+      "source_slug": "dahab-from-sharm-el-sheikh-day-trip-guide",
+      "translated_slug": "dahab-from-sharm-el-sheikh-day-trip-guide",
+      "locale": "pl",
+      "title": "Dahab z Sharm el-Sheikh: Blue Hole, wybrzeże i lokalna atmosfera",
+      "summary": "Dowiedz się, co może obejmować jednodniowa wycieczka do Dahab: nadmorskie krajobrazy, lokalne sklepy i opcjonalne aktywności wodne.",
+      "seo_title": "Dahab z Sharm el-Sheikh: Blue Hole i nadmorski klimat | Awesome Adventure Tours",
+      "seo_description": "Sprawdź, co może obejmować wycieczka z Sharm el-Sheikh do Dahab: Blue Hole, wybrzeże, lokalne sklepy i opcjonalne aktywności.",
+      "content": {
+        "title": "Dahab z Sharm el-Sheikh: Blue Hole, wybrzeże i lokalna atmosfera",
+        "excerpt": "Dowiedz się, co może obejmować jednodniowa wycieczka do Dahab: nadmorskie krajobrazy, lokalne sklepy i opcjonalne aktywności wodne.",
+        "content": "Dahab ma spokojną, nadmorską atmosferę, która różni się od większych kurortów Synaju. Podróżni odwiedzający je z Sharm el-Sheikh mogą docenić zmianę krajobrazu, czas nad wodą i możliwość odkrywania lokalnych uliczek.\n\n## Co warto wiedzieć\n\nJednodniowa wycieczka może obejmować czas w okolicy Blue Hole, posiłek nad morzem, wizytę w lokalnych sklepach lub przejażdżkę na wielbłądzie — zależnie od wybranego pakietu. Zapytaj dokładnie, które postoje są wliczone w cenę i ile czasu wolnego będzie dostępne. Wyjazd poza Sharm może oznaczać kilka godzin podróży drogą, dlatego sprawdź, czy lunch, sprzęt i opcjonalne aktywności są wliczone w cenę.\n\n## Praktyczna lista kontrolna\n\n- Potwierdź dokładne postoje i ilość czasu wolnego.\n- Zapytaj o lunch i koszty opcjonalnych aktywności.\n- Zabierz ochronę przeciwsłoneczną i wygodne obuwie.\n- Przestrzegaj lokalnych instrukcji w pobliżu wody i klifów.\n\n## Przed rezerwacją\n\nOpublikowana [wycieczka po Synaju do Dahab i Colored Canyon](https://awesomeadventure.tours/excursions/sinai-adventure-colored-canyon-blue-hole-dahab) łączy kilka rodzajów krajobrazu. Przed wyborem sprawdź trasę i czas trwania."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "eda14d13-1b7c-4708-8d6d-1125da736d2a",
+      "source_slug": "sun-protection-red-sea-snorkeling-day",
+      "translated_slug": "sun-protection-red-sea-snorkeling-day",
+      "locale": "pl",
+      "title": "Ochrona przeciwsłoneczna podczas dnia na Morzu Czerwonym",
+      "summary": "Praktyczne wskazówki dotyczące ochrony przed słońcem podczas rejsu i snorkelingu: odzież, cień, nawodnienie i wybór kosmetyków.",
+      "seo_title": "Ochrona przed słońcem i rafy Morza Czerwonego | Awesome Adventure Tours",
+      "seo_description": "Dowiedz się, jak chronić skórę podczas rejsu i snorkelingu, korzystając z odzieży, cienia, nawodnienia i odpowiednich kosmetyków.",
+      "content": {
+        "title": "Ochrona przeciwsłoneczna podczas dnia na Morzu Czerwonym",
+        "excerpt": "Praktyczne wskazówki dotyczące ochrony przed słońcem podczas rejsu i snorkelingu: odzież, cień, nawodnienie i wybór kosmetyków.",
+        "content": "Dzień na wodzie może oznaczać dłuższą ekspozycję na silne słońce, niż się spodziewasz. Odbicia promieni od powierzchni morza i długi czas spędzony na zewnątrz sprawiają, że ochrona przeciwsłoneczna jest ważna nawet wtedy, gdy powietrze wydaje się przyjemne.\n\n## Co warto wiedzieć\n\nKoszulka z długim rękawem do pływania, kapelusz, okulary przeciwsłoneczne i odpoczynek w cieniu mogą ograniczyć bezpośrednią ekspozycję. Stosuj krem z filtrem zgodnie z instrukcją na opakowaniu i ponawiaj aplikację zgodnie z zaleceniami, szczególnie po pływaniu. Niektóre miejsca i organizatorzy mogą zalecać określone produkty lub odzież ochronną. Zapytaj, co będzie odpowiednie w danym miejscu, i nie zostawiaj opakowań ani innych odpadów na łodzi lub plaży.\n\n## Praktyczna lista kontrolna\n\n- Zabierz kapelusz i odzież chroniącą przed promieniowaniem UV.\n- Nakładaj i ponawiaj aplikację kremu zgodnie z instrukcją.\n- Pij wodę i rób przerwy w cieniu.\n- Zabierz ze sobą wszystkie opakowania i śmieci.\n\n## Przed rezerwacją\n\nPrzygotuj ochronę przeciwsłoneczną przed wyjazdem, zamiast liczyć na zakup potrzebnych rzeczy w ostatniej chwili. Dobre przygotowanie pozwoli Ci wygodniej i odpowiedzialniej spędzić dzień."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "fd7a33dd-f388-4169-991f-d5d5007d78af",
+      "source_slug": "red-sea-marine-wildlife-respectful-encounters",
+      "translated_slug": "red-sea-marine-wildlife-respectful-encounters",
+      "locale": "pl",
+      "title": "Spotkania z dzikimi zwierzętami morskimi: zasady szacunku nad Morzem Czerwonym",
+      "summary": "Dowiedz się, dlaczego nie wolno dotykać, karmić ani ścigać zwierząt morskich i jak odpowiedzialnie obserwować przyrodę.",
+      "seo_title": "Dzikie zwierzęta morskie Morza Czerwonego: zasady obserwacji | Awesome Adventure Tours",
+      "seo_description": "Poznaj zasady odpowiedzialnych spotkań z dzikimi zwierzętami Morza Czerwonego: zachowuj dystans, nie karm i nie dotykaj zwierząt.",
+      "content": {
+        "title": "Spotkania z dzikimi zwierzętami morskimi: zasady szacunku nad Morzem Czerwonym",
+        "excerpt": "Dowiedz się, dlaczego nie wolno dotykać, karmić ani ścigać zwierząt morskich i jak odpowiedzialnie obserwować przyrodę.",
+        "content": "Morze Czerwone jest domem dla dzikich zwierząt morskich, które należy obserwować na ich własnych zasadach. Spotkanie z delfinem, żółwiem lub rybą rafową może być wyjątkowym przeżyciem, ale dobro zwierzęcia musi być ważniejsze niż możliwość zrobienia zdjęcia z bliska.\n\n## Co warto wiedzieć\n\nNie dotykaj, nie karm, nie chwytaj ani nie ścigaj zwierząt morskich. Nie blokuj im drogi i nie otaczaj ich grupą pływaków. Jeśli zwierzę odpływa, pozwól mu odejść. Załoga łodzi i przewodnicy oceniają warunki oraz lokalne zasady. Nigdy nie wchodź do wody tylko dlatego, że zrobił to inny uczestnik; zachowuj bezpieczną odległość i nie stawaj na koralowcach.\n\n## Praktyczna lista kontrolna\n\n- Zachowuj odpowiednią odległość od wszystkich dzikich zwierząt.\n- Nigdy nie karm ani nie dotykaj zwierząt.\n- Nie ścigaj zwierząt w celu zrobienia zdjęcia.\n- Przestrzegaj lokalnych zasad i wskazówek przewodnika.\n\n## Przed rezerwacją\n\nWybierz wycieczkę, której organizator odpowiedzialnie traktuje dziką przyrodę i uczciwie informuje, że obserwacji zwierząt nie można zagwarantować. Jakość wycieczki nigdy nie powinna zależeć od niepokojenia zwierząt."
+      }
+    }
+  ]
+}
