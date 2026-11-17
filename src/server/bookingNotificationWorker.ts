@@ -512,12 +512,13 @@ async function processMessage(
     const parsed = new Date(value + 'T00:00:00Z');
     return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' });
   };
+  const isBookingReceivedEvent = event.event_name === 'booking.created';
   const ticketExtras = bookingExtras.map((extra) => ({
     name: String(extra.name || 'Booking extra'),
     quantity: Math.max(1, Number(extra.quantity) || 1),
     total: String(currency) + ' ' + Number(extra.total_price ?? extra.unit_price ?? 0).toFixed(2),
   }));
-  const ticketText = [
+  const ticketText = isBookingReceivedEvent ? [
     content,
     '',
     'OFFICIAL BOOKING TICKET',
@@ -533,31 +534,33 @@ async function processMessage(
     'Payment status: ' + String(row.payment_status || 'pending'),
     'Total: ' + currency + ' ' + amount,
     ...ticketExtras.map((extra) => 'Extra: ' + extra.name + ' × ' + extra.quantity + ' — ' + extra.total),
-  ].join('\n');
-  const ticketHtml = renderBookingTicketEmailHtml({
-    heading: subject,
-    preheader: 'Your Awesome Adventure Tours ticket · ' + row.booking_reference,
-    introText: content,
-    bookingReference: String(row.booking_reference || ''),
-    customerName,
-    customerEmail: recipient,
-    tourName: String(tour?.title || 'your selected tour'),
-    tourDate: formatDate(String(row.booking_date || '')),
-    departureTime: tour?.departure_time ? String(tour.departure_time) : undefined,
-    adultCount: Number(row.adult_count || 0),
-    childCount: Number(row.child_count || 0),
-    infantCount: Number(row.infant_count || 0),
-    pickupLocation: pickup?.name ? String(pickup.name) : undefined,
-    pickupArea: pickup?.area ? String(pickup.area) : undefined,
-    hotelName: String(row.pickup_hotel_name || customer?.hotel || ''),
-    roomNumber: row.pickup_room_number ? String(row.pickup_room_number) : undefined,
-    tourLanguage: row.tour_language ? String(row.tour_language) : undefined,
-    bookingStatus: String(row.status || 'pending').replace(/_/g, ' '),
-    paymentStatus: String(row.payment_status || 'pending').replace(/_/g, ' '),
-    paymentMethod: String(row.payment_method || 'pay_at_pickup').replace(/_/g, ' '),
-    totalAmount: String(currency) + ' ' + amount,
-    extras: ticketExtras,
-  });
+  ].join('\n') : content;
+  const ticketHtml = isBookingReceivedEvent
+    ? renderBookingTicketEmailHtml({
+        heading: subject,
+        preheader: 'Your Awesome Adventure Tours ticket · ' + row.booking_reference,
+        introText: content,
+        bookingReference: String(row.booking_reference || ''),
+        customerName,
+        customerEmail: recipient,
+        tourName: String(tour?.title || 'your selected tour'),
+        tourDate: formatDate(String(row.booking_date || '')),
+        departureTime: tour?.departure_time ? String(tour.departure_time) : undefined,
+        adultCount: Number(row.adult_count || 0),
+        childCount: Number(row.child_count || 0),
+        infantCount: Number(row.infant_count || 0),
+        pickupLocation: pickup?.name ? String(pickup.name) : undefined,
+        pickupArea: pickup?.area ? String(pickup.area) : undefined,
+        hotelName: String(row.pickup_hotel_name || customer?.hotel || ''),
+        roomNumber: row.pickup_room_number ? String(row.pickup_room_number) : undefined,
+        tourLanguage: row.tour_language ? String(row.tour_language) : undefined,
+        bookingStatus: String(row.status || 'pending').replace(/_/g, ' '),
+        paymentStatus: String(row.payment_status || 'pending').replace(/_/g, ' '),
+        paymentMethod: String(row.payment_method || 'pay_at_pickup').replace(/_/g, ' '),
+        totalAmount: String(currency) + ' ' + amount,
+        extras: ticketExtras,
+      })
+    : renderBrandedEmailHtml({ heading: subject, bodyText: content, preheader: 'Booking ' + row.booking_reference });
 
   let logRow: { id: string; status: string } | null = null;
   const { data: existingLog, error: existingLogError } = await client
@@ -573,7 +576,7 @@ async function processMessage(
     await updateEvent(client, eventId, {
       processed: true,
       processed_at: new Date().toISOString(),
-      actions_triggered: ['booking_received_email'],
+      actions_triggered: [transactionalAction],
       error_message: null,
     });
     await acknowledge(client, message.msg_id);
@@ -606,7 +609,7 @@ async function processMessage(
         recipient_address: recipient,
         booking_id: row.id,
         booking_reference: row.booking_reference,
-        template_key: 'booking_received',
+        template_key: transactionalTemplateKey,
         subject,
         content: ticketText,
         status: 'queued',
@@ -620,7 +623,7 @@ async function processMessage(
     logRow = inserted;
   }
 
-  const idempotencyKey = `awesome-adventure-booking-${eventId}-email`;
+  const idempotencyKey = `awesome-adventure-${event.event_name}-${eventId}-email`;
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
