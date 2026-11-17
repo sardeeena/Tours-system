@@ -103,7 +103,12 @@ assert.match(bookingLocaleMigration, /CREATE OR REPLACE FUNCTION public\.create_
 assert.match(bookingLocaleMigration, /customer_locale = p_customer_locale/, 'Booking locale is persisted in the booking transaction');
 assert.match(bookingLocaleMigration, /preferred_locale = p_customer_locale/, 'Customer communication preference is updated with the booking');
 assert.match(bookingLocaleMigration, /NOT IN \('en', 'de', 'it', 'ro', 'ru'\)/, 'Original locale migration establishes the initial allowlist');
-assert.match(expandedBookingLocaleMigration, /NOT IN \('en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'\)/, 'Expanded booking migration accepts all five new customer locales');
+assert.match(expandedBookingLocaleMigration, /NOT IN \\('en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'\\)/, 'Historical migration records the initial ten-locale allowlist');
+assert.match(allCustomerLocalesMigration, /NOT IN[\\s\\S]*'ar'[\\s\\S]*'tr'/, 'Forward migration extends atomic booking locale validation to additional languages.');
+for (const locale of ['ar', 'tr', 'uk', 'sv', 'da', 'nb', 'fi', 'el', 'bg', 'hr', 'cs', 'sk', 'sl', 'hu', 'et', 'lv', 'lt', 'sr', 'sq']) {
+  assert.ok(allCustomerLocalesMigration.includes(`'${locale}'`), `Forward migration allows booking locale ${locale}`);
+}
+assert.match(server, /TRANSLATION_LOCALES\\.has\\(requestedLocale\\)/, 'Newsletter accepts every configured customer locale');
 assert.match(server, /app\.post\('\/api\/admin\/translations\/generate-batch'[\s\S]*requireSuperAdminAal2\(req, res\)/, 'AI bulk generation requires Super Admin AAL2');
 assert.match(server, /translation_state:\s*'draft'[\s\S]*reviewed_by:\s*null,\s*reviewed_at:\s*null,\s*published_at:\s*null/, 'AI bulk generation can only create unreviewed drafts');
 assert.match(server, /BULK_TRANSLATION_LOCALES: Record<string, string> = Object\.fromEntries\([\s\S]*EUROPEAN_LOCALE_ROLLOUT\.filter\(\(locale\) => locale\.code !== 'en'\)/, 'Bulk generator targets every configured non-English locale');
