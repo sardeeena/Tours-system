@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "locale": "nl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "communication_template": 3,
+    "source_records": 3
+  },
+  "records": [
+    {
+      "entity_type": "communication_template",
+      "entity_key": "612bdb2c-703a-4ac3-96d9-3554246b8426",
+      "translated_slug": "template-bedankt-na-de-reis",
+      "title": "Bedankt dat je met ons hebt gereisd",
+      "summary": "Bedankt dat je hebt deelgenomen aan {{tour_name}}",
+      "content": {
+        "name": "Bedankt dat je met ons hebt gereisd",
+        "subject": "Bedankt dat je hebt deelgenomen aan {{tour_name}}",
+        "body_text": "Hallo {{customer_name}},\n\nBedankt dat je hebt deelgenomen aan {{tour_name}}. We hopen dat je van je ervaring aan de Rode Zee hebt genoten en verwelkomen je graag nog eens.",
+        "variables": [
+          "customer_name",
+          "tour_name"
+        ],
+        "channel": "Email",
+        "template_key": "post_trip_thank_you"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "ea7c52e1-5b5e-40a4-8e70-6144b9ae141c",
+      "translated_slug": "template-ondersteuningsverzoek-aangemaakt",
+      "title": "Ondersteuningsverzoek ontvangen",
+      "summary": "We hebben je ondersteuningsverzoek {{ticket_reference}} ontvangen",
+      "content": {
+        "name": "Ondersteuningsverzoek ontvangen",
+        "subject": "We hebben je ondersteuningsverzoek {{ticket_reference}} ontvangen",
+        "body_text": "Hallo {{customer_name}},\n\nWe hebben je ondersteuningsverzoek ({{ticket_reference}}) ontvangen. Ons team zal het bekijken en zo snel mogelijk reageren.",
+        "variables": [
+          "customer_name",
+          "ticket_reference"
+        ],
+        "channel": "Email",
+        "template_key": "ticket_created"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "18b48d44-d030-42de-8a8d-970cf3adc493",
+      "translated_slug": "template-antwoord-op-ondersteuningsticket",
+      "title": "Nieuw antwoord op je ondersteuningsticket {{ticket_reference}}",
+      "summary": "Er is een update over je ondersteuningsverzoek",
+      "content": {
+        "name": "Nieuw antwoord op je ondersteuningsticket {{ticket_reference}}",
+        "subject": "Er is een update over je ondersteuningsverzoek",
+        "body_text": "Hallo {{customer_name}},\n\nOns team heeft gereageerd op je ondersteuningsverzoek ({{ticket_reference}}). Log in op je account om het antwoord te bekijken.",
+        "variables": [
+          "customer_name",
+          "ticket_reference"
+        ],
+        "channel": "Email",
+        "template_key": "ticket_reply"
+      }
+    }
+  ]
+}
