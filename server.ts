@@ -1288,7 +1288,8 @@ app.get('/api/config', rateLimit(120, 60_000), (_req: Request, res: Response) =>
     operatingHours: '06:00 - 22:00 EET (Daily)',
     currencyDefault: 'EUR',
     supportedCurrencies: ['EUR', 'USD', 'GBP', 'EGP'],
-    supportedLanguages: ['en', 'de', 'it', 'ro', 'ru'],
+    // Publicly advertise English until another locale passes the full publication gate.
+    supportedLanguages: ['en'],
     depositRequired: false,
     cancellationFreeNoticeHours: 24,
   });
