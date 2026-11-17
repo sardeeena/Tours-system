@@ -54,4 +54,10 @@ assert.match(nonMarineFaqCleanup, /st-catherine-monastery-dahab-day-trip-from-sh
 assert.match(nonMarineFaqCleanup, /refusing to delete changed FAQ content/);
 assert.match(nonMarineFaqCleanup, /DELETE FROM public\.tour_faqs/);
 
+
+const tourChunkFiles = ['tours-01-02','tours-03-04','tours-05-06','tours-07-08','tours-09-10','tours-11-12','tours-13-14','tours-15-16','tours-17-18','tours-19-20','tours-21-22','tours-23-25'];
+const allTourChunkRecords = tourChunkFiles.flatMap((file: string) => readJson('../translations/fr/' + file + '.review-draft.json').records || []);
+for (const record of allTourChunkRecords) {
+  assert.deepEqual(record.source_content_warnings || [], [], 'Split French tour draft has no unresolved source warning: ' + record.source_slug);
+}
 console.log('Source corrections and production dependency isolation checks passed.');

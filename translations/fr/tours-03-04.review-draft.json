@@ -93,9 +93,7 @@
       "age_restrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
       "pickup_info": "Prise en charge gratuite dans le hall de votre hôtel et retour inclus dans toute la zone d’El Gouna.",
       "cancellation_policy": "Annulation gratuite jusqu’à 24 heures avant l’heure de début de l’excursion.",
-      "source_content_warnings": [
-        "L’itinéraire source de ce produit de safari en quad décrit une journée en bateau au départ de la marina de Hurghada (navigation, snorkeling, déjeuner à bord et plage d’île). Cette incohérence du contenu source a été conservée et traduite fidèlement ; elle doit être vérifiée par l’équipe opérationnelle avant toute publication."
-      ]
+      "source_content_warnings": []
     },
     {
       "entity_type": "tour",
