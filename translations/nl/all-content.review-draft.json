@@ -4821,5 +4821,35 @@
         "private.text.d59d8b58": "Vertrek van de boot rond 08:30–09:00 uur "
       }
     }
+  ],
+  "source_data_warnings": [
+    {
+      "entity_type": "tour",
+      "entity_key": "18375e31-b866-4f07-b3a8-c13b2a5c243b",
+      "field": "departure_time",
+      "source_value": "13:30 AM",
+      "issue": "Source database combines a 24-hour hour with an AM suffix. Preserved unchanged; requires business-owner correction before publication."
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "5a15257b-d664-4957-be77-c2cb87bd174a",
+      "field": "departure_time",
+      "source_value": "13:00 PM",
+      "issue": "Source database combines a 24-hour hour with a PM suffix. Preserved unchanged; requires business-owner correction before publication."
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "0bf0a28b-b49e-4c3e-a076-6d5eb53e8c7d",
+      "field": "departure_time",
+      "source_value": "14:00 ",
+      "issue": "Source database value contains trailing whitespace. Preserved unchanged."
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "fb31d1b8-e3ed-4596-afd3-3adc5241111c",
+      "field": "departure_time",
+      "source_value": "20:00 ",
+      "issue": "Source database value contains trailing whitespace. Preserved unchanged."
+    }
   ]
 }
