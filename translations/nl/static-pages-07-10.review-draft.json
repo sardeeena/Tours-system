@@ -1,0 +1,240 @@
+{
+  "schema_version": 1,
+  "locale": "nl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "static_page": 4,
+    "source_records": 4
+  },
+  "records": [
+    {
+      "entity_type": "static_page",
+      "entity_key": "privacy",
+      "locale": "nl",
+      "source_slug": "privacy",
+      "translated_slug": "privacybeleid",
+      "title": "Privacybeleid",
+      "summary": "Lees hoe Awesome Adventure Tours gegevens verzamelt, gebruikt, beschermt en deelt wanneer je de website bezoekt, contact met ons opneemt of een boeking maakt.",
+      "seo_title": "Privacybeleid | Awesome Adventure Tours",
+      "seo_description": "Lees hoe Awesome Adventure Tours gegevens over boekingen, contact, accounts en websitegebruik verwerkt, inclusief geschatte locatie met toestemming, apparaattaal, dienstverleners en je privacyrechten.",
+      "content": {
+        "heroHeadline": "Jouw privacy is belangrijk",
+        "heroSubtitle": "Lees hoe Awesome Adventure Tours gegevens verzamelt, gebruikt, beschermt en deelt wanneer je de website bezoekt, contact met ons opneemt of een boeking maakt.",
+        "sections": [
+          {
+            "title": "1. Wie zijn wij en hoe kun je contact opnemen?",
+            "content": "Deze website wordt beheerd onder de naam Awesome Adventure Tours vanuit Hurghada aan de Rode Zee in Egypte. Ons contactadres is: 2e verdieping, Bostan Cafe, Madres, Hurghada, Egypte. Voor vragen of verzoeken over privacy kun je contact opnemen via https://awesomeadventure.tours/contact of bellen naar +20 151 5212741. Geef voldoende informatie zodat we je verzoek kunnen terugvinden, maar stuur geen wachtwoorden of volledige betaalkaartgegevens. Dit beleid beschrijft de website en boekingsdiensten; het is geen juridisch advies over de wetten die op een individuele reiziger of transactie van toepassing kunnen zijn."
+          },
+          {
+            "title": "2. Welke informatie kunnen we verzamelen?",
+            "content": "Afhankelijk van hoe je de website gebruikt, kunnen we de volgende gegevens verwerken: contact- en identiteitsgegevens, zoals je naam, e-mailadres, telefoonnummer en land; boekingsgegevens, zoals de gekozen excursie, datum, aantal deelnemers, leeftijden, gekozen excursietaal, boekingsreferentie, ophaal- of ontmoetingsgegevens en bijzondere verzoeken; accountgegevens die nodig zijn om je te registreren, in te loggen en je profiel te beheren; berichten en ondersteuningsverzoeken die je naar ons stuurt; gegevens over je nieuwsbriefinschrijving en de status daarvan; en technische informatie, zoals verbindings- en netwerkgegevens (waaronder het IP-adres wanneer dat nodig is voor beveiliging en misbruikpreventie), browser en apparaat, voorkeurstaal en regio-instellingen van de browser, tijdzone, categorieën voor scherm- en viewportgrootte, opgevraagde pagina's, tijdstempels, beveiligingsgebeurtenissen en toestemmingsvoorkeuren. Als je optionele analyses inschakelt, sturen we je verbindings-IP-adres tijdelijk naar ipwho.is om je land, regio en stad bij benadering vast te stellen. Dit is een globale schatting, geen GPS-locatiebepaling, en kan onnauwkeurig zijn. We bewaren het ruwe IP-adres niet in de bezoekersanalysedatabase. Deel geen gevoelige persoonsgegevens, tenzij die echt nodig zijn voor je verzoek en je ervoor kiest ze te verstrekken."
+          },
+          {
+            "title": "3. Waarom gebruiken we deze informatie?",
+            "content": "We gebruiken gegevens om vragen te beantwoorden; beschikbaarheid te controleren en boekingen voor te bereiden, te beheren en erover te communiceren; bevestigingen, vouchers, service-updates en klantenondersteuning te leveren; de betreffende excursie, transfer of activiteit af te stemmen met de uitvoerende aanbieder; accounts te beheren en inlog- en boekingsdiensten te beveiligen; administratie bij te houden, fraude en misbruik te voorkomen, geschillen op te lossen en aan wettelijke verplichtingen te voldoen; en, wanneer je daarvoor hebt gekozen, nieuwsbrieven of promotionele berichten te versturen. Afhankelijk van de situatie baseren we ons op stappen die op jouw verzoek vóór het sluiten van een overeenkomst worden genomen, de uitvoering van een boeking, onze gerechtvaardigde belangen zoals servicebeveiliging en klantenondersteuning, wettelijke verplichtingen en toestemming wanneer die vereist is (met name voor optionele analyse- of marketingtechnologieën)."
+          },
+          {
+            "title": "4. Met wie kunnen we informatie delen?",
+            "content": "We delen alleen informatie die redelijkerwijs nodig is voor het betreffende doel. Ontvangers kunnen zijn: de excursieaanbieder, boot- of activiteitenexploitant, transfer- of ophaalprovider en andere leveranciers die betrokken zijn bij de uitvoering van je boeking; onze leveranciers voor websitehosting, database, authenticatie, opslag en e-mailbezorging (waaronder Hostinger, Supabase en Resend wanneer deze worden gebruikt); analyse- of tagmanagementproviders, uitsluitend volgens je cookiekeuzes en de toepasselijke instellingen; ipwho.is, alleen wanneer je analyses hebt ingeschakeld, om op basis van je verbindings-IP-adres een schatting van land, regio en stad terug te geven (het IP-adres wordt tijdelijk voor de opzoeking verzonden en niet opgeslagen in onze bezoekersanalysedatabase); en overheidsinstanties, toezichthouders, rechtbanken of professionele adviseurs wanneer openbaarmaking wettelijk verplicht of redelijkerwijs noodzakelijk is om rechten, veiligheid of de dienstverlening te beschermen. Dienstverleners kunnen gegevens verwerken volgens hun eigen privacyverklaringen wanneer zij hun diensten leveren."
+          },
+          {
+            "title": "5. Internationale gegevensverwerking",
+            "content": "Sommige technische en operationele leveranciers kunnen informatie verwerken of opslaan in landen buiten Egypte, waaronder landen waar hun infrastructuur of ondersteuningsteams gevestigd zijn. Wanneer toepasselijke wetgeving waarborgen voor internationale doorgifte vereist, gebruiken we een passende doorgiftemethode of een andere wettelijk erkende bescherming. Neem contact met ons op als je meer informatie wilt over een specifieke leverancier of doorgifte."
+          },
+          {
+            "title": "6. Bewaartermijnen en beveiliging",
+            "content": "We bewaren informatie zolang dat redelijkerwijs nodig is voor de hierboven beschreven doelen, waaronder het uitvoeren van een boeking, het bieden van ondersteuning, het bijhouden van financiële en operationele administratie, het behandelen van klachten en het naleven van wettelijke verplichtingen. Bewaartermijnen verschillen per soort dossier en wettelijke verplichting. We gebruiken toegangscontroles en technische en organisatorische maatregelen om informatie te beschermen, maar geen enkele website of elektronische overdracht kan als volledig veilig worden gegarandeerd. Gebruik een uniek wachtwoord en deel je accountgegevens niet."
+          },
+          {
+            "title": "7. Je privacykeuzes en -rechten",
+            "content": "Afhankelijk van de wetgeving die op jou van toepassing is, kun je het recht hebben om inzage in je persoonsgegevens, correctie of verwijdering ervan te vragen, bezwaar te maken tegen bepaalde verwerkingen of beperking daarvan te verzoeken, je toestemming in te trekken of een kopie te ontvangen van informatie die je hebt verstrekt. Je kunt je afmelden voor marketingberichten via de afmeldmogelijkheid wanneer die wordt aangeboden; service- en boekingsberichten kunnen waar nodig nog steeds worden verzonden. Je kunt je keuzes voor optionele cookies wijzigen via 'Cookie-instellingen' in de voettekst van de website. Om een privacyrecht uit te oefenen, kun je contact opnemen via de gegevens in paragraaf 1. Mogelijk moeten we je identiteit verifiëren en bepaalde informatie bewaren wanneer de wet dat toestaat of vereist."
+          },
+          {
+            "title": "8. Kinderen en websites van derden",
+            "content": "De website is bedoeld voor mensen die reizen en boekingen organiseren. Waar nodig moet een ouder of verantwoordelijke volwassene boekingsinformatie over kinderen verstrekken en mag die geen account voor een kind aanmaken zonder passende toestemming. Onze website kan links bevatten naar websites of berichtendiensten van derden. We hebben geen controle over hun inhoud of privacypraktijken; lees hun privacyverklaringen voordat je ze gebruikt."
+          },
+          {
+            "title": "9. Wijzigingen in dit beleid",
+            "content": "We kunnen dit beleid bijwerken wanneer onze diensten, technologieën of wettelijke vereisten veranderen. De datum die bovenaan wordt weergegeven, is de datum waarop deze versie voor het laatst is bijgewerkt. Belangrijke wijzigingen worden op deze pagina vermeld."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer",
+          "bookNow": "Boek nu"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "terms",
+      "locale": "nl",
+      "source_slug": "terms",
+      "translated_slug": "algemene-voorwaarden",
+      "title": "Algemene voorwaarden",
+      "summary": "Lees deze voorwaarden voordat je de website gebruikt of een boekingsaanvraag voor een excursie indient.",
+      "seo_title": "Algemene voorwaarden | Awesome Adventure Tours",
+      "seo_description": "Lees de voorwaarden voor websitegebruik, excursieboekingen, prijzen, verantwoordelijkheden van aanbieders, veiligheid, wijzigingen en toepasselijke bepalingen van Awesome Adventure Tours.",
+      "content": {
+        "heroHeadline": "Algemene voorwaarden",
+        "heroSubtitle": "Lees deze voorwaarden voordat je de website gebruikt of een boekingsaanvraag voor een excursie indient.",
+        "sections": [
+          {
+            "title": "1. Over deze voorwaarden",
+            "content": "Deze voorwaarden zijn van toepassing op je gebruik van awesomeadventure.tours en op boekingsaanvragen die via de website worden ingediend. De website wordt beheerd onder de naam Awesome Adventure Tours vanuit Hurghada, Egypte. Sommige excursies kunnen worden uitgevoerd door onafhankelijke aanbieders van boten, vervoer, activiteiten of bestemmingen. De aanbieder- en dienstspecifieke informatie die bij een excursie wordt vermeld, maakt deel uit van de informatie die je vóór het boeken moet lezen."
+          },
+          {
+            "title": "2. Website-informatie en beschikbaarheid",
+            "content": "We nemen redelijke maatregelen om excursiebeschrijvingen, afbeeldingen, tijden, prijzen, inbegrepen diensten, ophaalinformatie en beschikbaarheid actueel en bruikbaar te houden. Deze gegevens kunnen veranderen door de bedrijfsvoering van aanbieders, het weer, seizoensschema's of beschikbaarheid. Een vermelding garandeert niet dat een vertrek doorgaat totdat je boeking is bevestigd. Neem contact met ons op voordat je op informatie vertrouwt als een belangrijk detail onjuist lijkt."
+          },
+          {
+            "title": "3. Boekingen en bevestiging",
+            "content": "Wanneer je een boekingsformulier verzendt, vraag je ons de gekozen excursie te regelen op basis van de informatie die je verstrekt. Een aanvraag is pas een bevestigde boeking wanneer de website of ons team een boekingsbevestiging of voucher heeft afgegeven. Je bent verantwoordelijk voor het controleren van de datum, excursie, aantal en leeftijden van deelnemers, excursietaal, ophaalgegevens, contactgegevens, prijs en bijzondere voorwaarden. Bewaar je boekingsreferentie en bevestiging."
+          },
+          {
+            "title": "4. Prijzen, valuta en betaling",
+            "content": "De prijs en valuta die tijdens het boekingsproces voor de gekozen excursie worden weergegeven, zijn de aangeboden bedragen die van toepassing zijn, behoudens toeslagen of wijzigingen die duidelijk worden vermeld en vóór aanvaarding van de boeking worden bevestigd. Weergegeven valutaconversies zijn indicatief; je bank of betalingsprovider kan een eigen wisselkoers of kosten toepassen. Betaalmethoden kunnen per excursie verschillen en worden tijdens het boeken of in je bevestiging vermeld. Verstuur nooit kaartnummers, beveiligingscodes of wachtwoorden via gewone e-mail, chat of boekingsnotities."
+          },
+          {
+            "title": "5. Excursietaal, deelnemers en ophalen",
+            "content": "Beschikbare gidstalen, minimale boekingstermijnen, leeftijdsgrenzen, ophaalgebieden, ontmoetingsplaatsen en eventuele transfertoeslagen verschillen per excursie en datum. Een taaloptie is een verzoek voor de gekozen excursie en blijft afhankelijk van de beschikbaarheid die voor dat vertrek wordt vermeld. Verstrek juiste informatie over deelnemers en ophalen en neem snel contact met ons op als deze gegevens veranderen. Wees op tijd op de bevestigde ontmoetingsplaats en volg de instructies van de aanbieder."
+          },
+          {
+            "title": "6. Veiligheid en gedrag",
+            "content": "Je moet redelijke veiligheidsinstructies van bemanning, gids, chauffeur en begeleidend personeel opvolgen, lokale wetten naleven en respect tonen voor andere deelnemers en het milieu. Informeer de betreffende aanbieder vooraf over medische omstandigheden of mobiliteitsbehoeften die van invloed kunnen zijn op veilige deelname. De aanbieder kan deelname weigeren of beëindigen wanneer gedrag of een omstandigheid een veiligheidsrisico vormt, met inachtneming van toepasselijke wetgeving en de omstandigheden."
+          },
+          {
+            "title": "7. Wijzigingen, weer en werkzaamheden van aanbieders",
+            "content": "Excursies kunnen worden vertraagd, omgeleid, vervangen of geannuleerd vanwege het weer, de toestand van de zee, havensluitingen, instructies van autoriteiten, veiligheidszorgen, beschikbaarheid van aanbieders of gebeurtenissen buiten redelijke controle. Wij of de betreffende aanbieder communiceren belangrijke wijzigingen waar mogelijk. Als de exploitant een vertrek annuleert, worden de beschikbare opties voor omboeken of terugbetaling voor die boeking toegelicht. Raadpleeg het Annulerings- en terugbetalingsbeleid voor meer informatie."
+          },
+          {
+            "title": "8. Annuleringen en terugbetalingen",
+            "content": "Annuleringstermijnen en terugbetalingsvoorwaarden zijn niet voor alle excursies hetzelfde. De voorwaarden op de pagina van de gekozen excursie, tijdens het afrekenen en in je bevestiging of voucher gelden voor die boeking en gaan vóór algemene voorbeelden op de website. Lees https://awesomeadventure.tours/cancellation-policy voordat je boekt."
+          },
+          {
+            "title": "9. Aansprakelijkheid en dwingende rechten",
+            "content": "Niets in deze voorwaarden sluit aansprakelijkheid uit of beperkt die waar dat onwettig zou zijn, waaronder rechten of rechtsmiddelen waarvan onder toepasselijke consumentenwetgeving geen afstand kan worden gedaan. Voor zover wettelijk toegestaan, ligt de verantwoordelijkheid voor de feitelijke exploitatie en uitvoering van de excursie op de geplande dag bij de aanbieder die de dienst levert. Wij blijven verantwoordelijk voor onze eigen verplichtingen binnen de grenzen van toepasselijke wetgeving."
+          },
+          {
+            "title": "10. Websitegebruik, intellectueel eigendom en beveiliging",
+            "content": "Je mag de website gebruiken voor wettige reisvoorbereiding en persoonlijke boekingen. Je mag de website niet misbruiken, de beveiliging ervan niet aantasten, geen ongeautoriseerde toegang proberen te verkrijgen, geen valse informatie indienen, geen grote hoeveelheden inhoud scrapen of kopiëren en geen schadelijke bestanden uploaden. Websitekopij, merk, ontwerp en media worden beschermd door toepasselijke intellectuele-eigendomswetten, tenzij anders vermeld."
+          },
+          {
+            "title": "11. Toepasselijk recht en contact",
+            "content": "Deze voorwaarden zijn bedoeld om te worden uitgelegd volgens Egyptisch recht, zonder dwingende consumentenbescherming weg te nemen die volgens het recht van je woonland op jou van toepassing is. Geschillen worden behandeld door een bevoegde rechtbank overeenkomstig toepasselijke wetgeving. Neem contact met ons op via https://awesomeadventure.tours/contact of +20 151 5212741. Als een bepaling niet afdwingbaar is, blijven de overige bepalingen van kracht voor zover de wet dat toestaat."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer",
+          "bookNow": "Boek nu"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "cancellation-policy",
+      "locale": "nl",
+      "source_slug": "cancellation-policy",
+      "translated_slug": "annulerings-en-terugbetalingsbeleid",
+      "title": "Annulerings- en terugbetalingsbeleid",
+      "summary": "Annulerings- en terugbetalingsvoorwaarden zijn afhankelijk van de excursie en worden bevestigd in je boekingsgegevens.",
+      "seo_title": "Annulerings- en terugbetalingsbeleid | Awesome Adventure Tours",
+      "seo_description": "Lees hoe je een annulering aanvraagt, hoe excursiespecifieke termijnen gelden en wat er gebeurt wanneer het weer of operationele beperkingen een vertrek verhinderen.",
+      "content": {
+        "heroHeadline": "Annuleringen en terugbetalingen",
+        "heroSubtitle": "Annulerings- en terugbetalingsvoorwaarden zijn afhankelijk van de excursie en worden bevestigd in je boekingsgegevens.",
+        "sections": [
+          {
+            "title": "1. Het beleid voor jouw excursie is van toepassing",
+            "content": "Annuleringstermijnen en terugbetalingsvoorwaarden kunnen per excursie en aanbieder verschillen. Lees vóór betaling of het indienen van een boeking de annuleringsinformatie op de pagina van de gekozen excursie, tijdens het afrekenen en in de bevestiging of voucher. Deze excursiespecifieke voorwaarden zijn bepalend voor je boeking wanneer ze afwijken van dit algemene beleid."
+          },
+          {
+            "title": "2. Termijnen voor gratis annuleren",
+            "content": "Sommige excursies bieden mogelijk gratis annulering tot 24 uur vóór de geplande starttijd. Dit is geen algemene toezegging voor alle excursies: de termijn van 24 uur geldt alleen wanneer deze uitdrukkelijk wordt vermeld voor de gekozen excursie of in je voucher wordt bevestigd. Als je boeking een andere termijn, kosten of een niet-restitueerbare voorwaarde vermeldt, geldt die specifieke voorwaarde, met inachtneming van dwingende wettelijke rechten."
+          },
+          {
+            "title": "3. Een annulering of wijziging aanvragen",
+            "content": "Neem zo snel mogelijk contact op met ons team via https://awesomeadventure.tours/contact of bel +20 151 5212741. Vermeld je boekingsreferentie, de naam van de hoofdreiziger en de excursiedatum. Een annulering is niet definitief alleen omdat je een bericht hebt verstuurd; wacht op onze ontvangstbevestiging of schriftelijke bevestiging. Verzoeken die kort vóór vertrek binnenkomen, worden mogelijk niet verwerkt voordat de deadline van de aanbieder verstrijkt. Wacht daarom niet tot het laatste moment."
+          },
+          {
+            "title": "4. Vertragingen en niet komen opdagen",
+            "content": "Als je de ophaalservice of het vertrek mist, na de bevestigde ontmoetings- of ophaaltijd aankomt of niet verschijnt, kan de aanbieder de boeking als een no-show behandelen. Afhankelijk van de vermelde voorwaarden kan de boeking dan niet-restitueerbaar zijn. Neem onmiddellijk contact met ons op als je onverwacht vertraging hebt. Een uitzondering is afhankelijk van de beslissing van de aanbieder en toepasselijke wetgeving."
+          },
+          {
+            "title": "5. Weer, veiligheid en annulering door de exploitant",
+            "content": "Boottochten en buitenactiviteiten kunnen worden beïnvloed door het weer, de toestand van de zee, havensluitingen, instructies van autoriteiten of veiligheidsbeslissingen. Als de verantwoordelijke exploitant het vertrek annuleert of de excursie niet veilig kan uitvoeren, nemen we contact op met de betrokken reizigers om de voor die boeking beschikbare opties toe te lichten. Afhankelijk van de omstandigheden en toepasselijke voorwaarden kan dit een andere datum, een passende vervangende activiteit of een terugbetaling omvatten. We zullen reizigers niet vragen deel te nemen aan een activiteit die de verantwoordelijke exploitant onveilig acht."
+          },
+          {
+            "title": "6. Terugbetalingsmethode en verwerkingstijd",
+            "content": "Wanneer een terugbetaling verschuldigd is, worden het bedrag en de methode met je bevestigd. Terugbetalingen worden normaal gesproken uitgevoerd via de oorspronkelijke betaalmethode wanneer die terugbetalingen ondersteunt. Wanneer de betaling rechtstreeks met een aanbieder is geregeld of bij het ophalen is geïnd, legt het team de toepasselijke procedure uit. Banken en betalingsproviders kunnen extra tijd nodig hebben om het bedrag bij te schrijven. We beloven geen vaste verwerkingstermijn wanneer die afhankelijk is van een derde partij."
+          },
+          {
+            "title": "7. Wijzigingen op verzoek van de reiziger",
+            "content": "Wijzigingen van datum, aantal deelnemers, ophaallocatie of excursietaal zijn afhankelijk van beschikbaarheid en goedkeuring door de aanbieder. Een wijzigingsverzoek kan als annulering en nieuwe boeking worden behandeld wanneer de aanbieder de oorspronkelijke boeking niet kan aanpassen. Eventuele prijsverschillen of kosten worden toegelicht voordat de wijziging wordt bevestigd."
+          },
+          {
+            "title": "8. Vragen en geschillen",
+            "content": "Bewaar je boekingsbevestiging en alle correspondentie over de annulering. Als je denkt dat een annulering of terugbetaling onjuist is afgehandeld, neem dan contact met ons op met je boekingsreferentie en een duidelijke beschrijving van het probleem, zodat we dit met de betreffende aanbieder kunnen onderzoeken. Niets in dit beleid beperkt consumentenrechten waarvan wettelijk geen afstand kan worden gedaan."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer",
+          "bookNow": "Boek nu"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "cookie-policy",
+      "locale": "nl",
+      "source_slug": "cookie-policy",
+      "translated_slug": "cookiebeleid",
+      "title": "Cookiebeleid en opslag op de website",
+      "summary": "Lees hoe deze website browseropslag en optionele analysetechnologieën gebruikt en hoe je je keuzes kunt wijzigen.",
+      "seo_title": "Cookiebeleid | Awesome Adventure Tours",
+      "seo_description": "Lees over essentiële websiteopslag, analyse en marketing via Google Tag Manager en hoe je je cookievoorkeuren op Awesome Adventure Tours kunt wijzigen.",
+      "content": {
+        "heroHeadline": "Cookiebeleid",
+        "heroSubtitle": "Lees hoe deze website browseropslag en optionele analysetechnologieën gebruikt en hoe je je keuzes kunt wijzigen.",
+        "sections": [
+          {
+            "title": "1. Cookies en vergelijkbare technologieën",
+            "content": "Cookies zijn kleine bestanden die een website in je browser opslaat. Websites kunnen ook lokale opslag, sessieopslag, pixels en scripts voor vergelijkbare doeleinden gebruiken. Deze website gebruikt browseropslag voor essentiële functies en voorkeuren. Google Tag Manager is ook op de website geïnstalleerd; optionele analyse- of advertentietags blijven geblokkeerd totdat je in de cookiebanner een optionele toestemmingscategorie kiest. Wanneer je analyses inschakelt, stuurt de server je verbindings-IP-adres ook tijdelijk naar ipwho.is om je land, regio en stad bij benadering vast te stellen. Het IP-adres zelf wordt niet opgeslagen in onze bezoekersanalysedata."
+          },
+          {
+            "title": "2. Essentiële opslag",
+            "content": "Essentiële opslag maakt het mogelijk de website te leveren die je wilt gebruiken. Afhankelijk van de functies kan deze opslag onder meer je taal en lichte/donkere thema onthouden, een boekingsconcept of tijdelijke interfacevoorkeuren bewaren, de authenticatie- en sessiestatus via onze authenticatieprovider behouden en je cookietoestemming opslaan. Deze functies worden niet gebruikt om advertentieprofielen op te bouwen. Als je alle browseropslag blokkeert, werken sommige account-, boekings- of voorkeursfuncties mogelijk niet goed."
+          },
+          {
+            "title": "3. Keuzes voor analyse en marketing",
+            "content": "Analysetechnologieën helpen ons te begrijpen hoe de website wordt gebruikt en hoe we navigatie en boekingsprocessen kunnen verbeteren. Marketingtechnologieën kunnen, indien ingeschakeld in onze tagbeheerconfiguratie, promotionele activiteiten meten of personaliseren. Deze optionele categorieën zijn standaard uitgeschakeld. Google Tag Manager wordt pas geladen nadat je toestemming hebt gegeven voor analyse of marketing; toestemmingssignalen die naar Google worden verzonden, maken onderscheid tussen analysekeuzes en advertentiekeuzes. Ook afzonderlijke tags in de tagmanager moeten zo zijn ingesteld dat ze de bijbehorende toestemmingscategorie respecteren."
+          },
+          {
+            "title": "4. Diensten van derden",
+            "content": "Wanneer ze zijn ingeschakeld of gebruikt, kunnen diensten van derden hun eigen technologieën plaatsen of uitlezen volgens hun eigen beleid. Dit kan bestaan uit Google-diensten via onze tagmanager, Supabase voor authenticatie en applicatiegegevens, ipwho.is voor een geschatte locatie op basis van het IP-adres wanneer analysetoestemming is ingeschakeld, en externe diensten of inhoud die je zelf opent, zoals WhatsApp. Het laden van externe afbeeldingen, lettertypen of links kan er ook toe leiden dat je browser contact maakt met de betreffende aanbieder. Raadpleeg de privacy- en cookie-informatie van elke aanbieder voor meer details."
+          },
+          {
+            "title": "5. Toestemming beheren en intrekken",
+            "content": "Kies bij je eerste bezoek in de cookiebanner 'Alles accepteren', 'Optionele opties weigeren' of 'Aanpassen'. Noodzakelijke opslag blijft altijd actief omdat de website zonder deze opslag de belangrijkste functies niet kan leveren. Je kunt de instellingen op elk moment opnieuw openen via 'Cookie-instellingen' in de voettekst en je keuzes voor analyse of marketing wijzigen. Elke wijziging werkt de toestemmingssignalen bij die de website gebruikt voor toekomstige tagactiviteiten. Als een derde partij al een cookie heeft opgeslagen, moet je die mogelijk ook via de browserinstellingen verwijderen."
+          },
+          {
+            "title": "6. Browserinstellingen en bewaartermijn",
+            "content": "De meeste browsers bieden opties om cookies te bekijken, te blokkeren of te verwijderen en websitegegevens te wissen. De cookietoestemming wordt in die browser opgeslagen zodat de website je keuze kan onthouden; het wissen van websitegegevens of het gebruiken van een andere browser of ander apparaat kan ervoor zorgen dat de banner opnieuw verschijnt. Voorkeuren en applicatieopslag kunnen bewaard blijven totdat je ze verwijdert of de applicatie ze vervangt. De levensduur van cookies van derden wordt bepaald door de betreffende aanbieder."
+          },
+          {
+            "title": "7. Updates en contact",
+            "content": "We kunnen dit beleid bijwerken wanneer websitefuncties of aanbieders veranderen. Neem bij vragen over cookies of je keuzes contact met ons op via https://awesomeadventure.tours/contact of bel +20 151 5212741. Raadpleeg ons Privacybeleid voor algemene informatie over persoonsgegevens."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer",
+          "bookNow": "Boek nu"
+        }
+      }
+    }
+  ]
+}
