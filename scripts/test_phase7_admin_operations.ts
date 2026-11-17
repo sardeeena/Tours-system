@@ -117,8 +117,8 @@ assert(
 
 const adminBookingsFile = fs.readFileSync(path.join(rootDir, 'src/components/admin/AdminBookingsList.tsx'), 'utf8');
 assert(
-  adminBookingsFile.includes('handleUpdatePaymentStatus') && adminBookingsFile.includes('Mark Paid'),
-  'AdminBookingsList.tsx provides payment status update controls (Mark Paid, Refund, Reset Pending)'
+  adminBookingsFile.includes('recordPayment(') && adminBookingsFile.includes('Confirm payment received'),
+  'AdminBookingsList.tsx records payments through the audited finance ledger instead of directly mutating payment status'
 );
 assert(
   adminBookingsFile.includes('exportBookingsCSV') && adminBookingsFile.includes('Booking Reference'),
