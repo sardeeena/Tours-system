@@ -200,7 +200,7 @@ async function processMessage(
     return;
   }
 
-  if (!['booking.created', 'booking.completed'].includes(event.event_name)) {
+  if (!['booking.created', 'booking.completed', 'booking.cancelled', 'payment.received'].includes(event.event_name)) {
     await updateEvent(client, eventId, {
       processed: true,
       processed_at: new Date().toISOString(),
@@ -242,6 +242,63 @@ async function processMessage(
     });
     await acknowledge(client, message.msg_id);
     return;
+  }
+
+  let transactionalTemplateKey: 'booking_received' | 'cancellation' | 'payment_confirmation' = 'booking_received';
+  let transactionalAction = 'booking_received_email';
+  let paymentAmountText = Number(row.total || 0).toFixed(2);
+  let paymentBalanceDueText = '0.00';
+
+  if (event.event_name === 'booking.cancelled') {
+    if (row.status !== 'cancelled') {
+      await updateEvent(client, eventId, {
+        processed: true,
+        processed_at: new Date().toISOString(),
+        actions_triggered: ['cancellation_email_skipped_booking_not_cancelled'],
+        error_message: null,
+      });
+      await acknowledge(client, message.msg_id);
+      return;
+    }
+    transactionalTemplateKey = 'cancellation';
+    transactionalAction = 'booking_cancelled_email';
+  }
+
+  if (event.event_name === 'payment.received') {
+    const paymentId = String(event.payload?.payment_id || '');
+    if (!paymentId) throw new Error('Payment notification event is missing payment_id.');
+
+    const { data: payment, error: paymentError } = await client
+      .from('payment_transactions')
+      .select('id,amount,currency,status')
+      .eq('id', paymentId)
+      .eq('booking_id', bookingId)
+      .maybeSingle();
+    if (paymentError) throw paymentError;
+    if (!payment || !['Paid', 'Partially Paid'].includes(String(payment.status))) {
+      await updateEvent(client, eventId, {
+        processed: true,
+        processed_at: new Date().toISOString(),
+        actions_triggered: ['payment_confirmation_skipped_payment_not_settled'],
+        error_message: null,
+      });
+      await acknowledge(client, message.msg_id);
+      return;
+    }
+
+    const { data: settledPayments, error: settledPaymentsError } = await client
+      .from('payment_transactions')
+      .select('amount')
+      .eq('booking_id', bookingId)
+      .in('status', ['Paid', 'Partially Paid']);
+    if (settledPaymentsError) throw settledPaymentsError;
+
+    const paidTotal = (settledPayments || []).reduce((sum: number, item: any) => sum + Number(item.amount || 0), 0);
+    const bookingTotal = Number(row.total || 0);
+    paymentAmountText = Number(payment.amount || 0).toFixed(2);
+    paymentBalanceDueText = Math.max(0, bookingTotal - paidTotal).toFixed(2);
+    transactionalTemplateKey = 'payment_confirmation';
+    transactionalAction = 'payment_confirmation_email';
   }
 
   if (event.event_name === 'booking.completed') {
@@ -415,12 +472,12 @@ async function processMessage(
     return;
   }
 
-  const template = await getLocalizedCommunicationTemplate(client, 'booking_received', customerLocale);
+  const template = await getLocalizedCommunicationTemplate(client, transactionalTemplateKey, customerLocale);
   if (template && template.is_active === false) {
     await updateEvent(client, eventId, {
       processed: true,
       processed_at: new Date().toISOString(),
-      actions_triggered: ['booking_received_template_disabled'],
+      actions_triggered: [transactionalTemplateKey + '_template_disabled'],
       error_message: null,
     });
     await acknowledge(client, message.msg_id);
@@ -428,7 +485,9 @@ async function processMessage(
   }
 
   const customerName = [customer?.first_name, customer?.last_name].filter(Boolean).join(' ').trim() || 'Customer';
-  const amount = Number(row.total || 0).toFixed(2);
+  const amount = transactionalTemplateKey === 'payment_confirmation'
+    ? paymentAmountText
+    : Number(row.total || 0).toFixed(2);
   const currency = String(row.currency || 'EUR').toUpperCase();
   const variables: Record<string, string> = {
     customer_name: customerName,
@@ -437,15 +496,16 @@ async function processMessage(
     tour_date: String(row.booking_date || '').slice(0, 10),
     booking_status: String(row.status || 'pending').replace(/_/g, ' '),
     currency,
-    amount,
+    amount: currency + ' ' + amount,
+    balance_due: currency + ' ' + paymentBalanceDueText,
   };
 
   const subject = renderTemplate(
-    String(template?.subject || 'We received your booking request {{booking_reference}}'),
+    String(template?.subject || (transactionalTemplateKey === 'cancellation' ? 'Cancellation confirmation {{booking_reference}}' : transactionalTemplateKey === 'payment_confirmation' ? 'Payment confirmation {{booking_reference}}' : 'We received your booking request {{booking_reference}}')),
     variables
   );
   const content = renderTemplate(
-    String(template?.body_text || 'Hello {{customer_name}}, we received your booking request {{booking_reference}} for {{tour_name}} on {{tour_date}}. Our team will review it and send further details.'),
+    String(template?.body_text || (transactionalTemplateKey === 'cancellation' ? 'Hello {{customer_name}}, your reservation {{booking_reference}} for {{tour_name}} on {{tour_date}} has been cancelled. Our team will contact you if a refund is applicable.' : transactionalTemplateKey === 'payment_confirmation' ? 'Hello {{customer_name}}, we received {{amount}} for booking {{booking_reference}}. Remaining balance: {{balance_due}}.' : 'Hello {{customer_name}}, we received your booking request {{booking_reference}} for {{tour_name}} on {{tour_date}}. Our team will review it and send further details.')),
     variables
   );
   const formatDate = (value: string) => {
