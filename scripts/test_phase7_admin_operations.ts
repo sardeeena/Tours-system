@@ -155,7 +155,7 @@ assert(
   'Vessel editor reads the canonical maintenance date and does not invent a default due date'
 );
 assert(
-  opsServiceFile.includes('next_maintenance_date: maintenanceDate') && opsServiceFile.includes('row.next_maintenance_date || row.next_maintenance'),
+  opsServiceFile.includes('next_maintenance_date: maintenanceDate') && opsServiceFile.includes('row.next_maintenance_date || row.next_maintenance') && opsServiceFile.includes("|| '').trim() || null"),
   'Vessel service reads canonical maintenance dates and dual-writes the legacy compatibility field'
 );
 assert(
