@@ -411,9 +411,13 @@ async function runPhase63VerificationSuite() {
     rlsSql.includes('ALTER TABLE IF EXISTS public.bookings ENABLE ROW LEVEL SECURITY;'),
     'Row Level Security is explicitly enabled on public.bookings'
   );
+  const normalizedRbacPath = path.resolve('supabase/migrations/20261114170000_database_rbac_normalized_authority.sql');
+  const normalizedRbacSql = fs.readFileSync(normalizedRbacPath, 'utf8');
   assert(
-    rlsSql.includes("role IN ('admin', 'staff', 'superadmin', 'manager')"),
-    'is_admin function strictly checks administrative role memberships'
+    normalizedRbacSql.includes("public.has_role('super_admin')") &&
+      normalizedRbacSql.includes("public.has_role('admin')") &&
+      normalizedRbacSql.includes("auth.jwt() ->> 'aal' = 'aal2'"),
+    'normalized is_admin authorization requires a database-backed admin role and verified AAL2'
   );
 
   const securityFoundationPath = path.resolve('supabase/migrations/20261008000000_production_foundation_and_security.sql');
