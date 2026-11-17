@@ -189,8 +189,8 @@ jobs:
       - name: Check live-source validation credentials
         id: french-source-credentials
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL || secrets.VITE_SUPABASE_URL }}
-          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_URL: https://uvtbtpxtrrmaublrztgv.supabase.co
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_SERVICE_KEY }}
         run: |
           if [ -n "$SUPABASE_URL" ] && [ -n "$SUPABASE_SECRET_KEY" ]; then
             echo "available=true" >> "$GITHUB_OUTPUT"
@@ -202,8 +202,8 @@ jobs:
       - name: Validate French import bundle against live Supabase sources (read-only)
         if: steps.french-source-credentials.outputs.available == 'true'
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL || secrets.VITE_SUPABASE_URL }}
-          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_URL: https://uvtbtpxtrrmaublrztgv.supabase.co
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_SERVICE_KEY }}
         run: |
           npm run translations:export -- ./translation-source.json
           npm run translations:assemble-fr -- ./translation-source.json ./translations/fr/french-import-bundle.review-draft.json
