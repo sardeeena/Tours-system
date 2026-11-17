@@ -22,7 +22,7 @@ BEGIN
   INSERT INTO public.staff_notifications
     (category,dedup_key,title,message,severity,entity_type,entity_id,link_tab,is_read,created_at)
   SELECT
-    'new_booking','new_booking_' || b.booking_reference,
+    'new_booking','booking-created:' || b.id::TEXT,
     'New Booking: ' || b.booking_reference,
     concat_ws(' ',c.first_name,c.last_name) || ' booked ' || coalesce(t.title,'an excursion') ||
       ' for ' || b.booking_date::TEXT || ' (' || coalesce(b.currency,'EUR') || ' ' || to_char(b.total,'FM999999990.00') || ').',
