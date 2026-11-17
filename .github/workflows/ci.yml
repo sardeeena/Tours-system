@@ -131,6 +131,9 @@ jobs:
       - name: Verify booking identifier and production fallback behavior
         run: npm run test:booking
 
+      - name: Verify strict tour-specific pickup mapping policy
+        run: npm run test:pickup-policy
+
       - name: Verify booking payment status is ledger-authoritative
         run: npm run test:booking-finance-boundary
 

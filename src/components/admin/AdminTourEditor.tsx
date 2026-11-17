@@ -303,6 +303,12 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
         throw new Error('Add at least one tour language before saving.');
       }
       const statusToSave = overrideStatus || tourData.status || 'draft';
+      const hasActiveApprovedPickup = selectedPickupIds.some((id) =>
+        pickupLocations.some((location) => location.id === id)
+      );
+      if (statusToSave === 'published' && tourData.pickup_available !== false && !hasActiveApprovedPickup) {
+        throw new Error('A published tour that offers pickup must have at least one explicitly approved active pickup location. Configure its pickup points or disable pickup for this tour before publishing.');
+      }
 
       const payload = {
         tour: {
@@ -1199,8 +1205,23 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
         <div className="bg-stone-950 p-6 rounded-lg border border-stone-800 space-y-4">
           <h3 className="text-sm font-bold text-white">Supported Pickup Locations & Transfer Fees</h3>
           <p className="text-xs text-stone-400">
-            Pickups enabled for this excursion will appear in the customer multi-step booking wizard with their regional surcharges.
+            Only the locations selected here are offered to customers. Published tours that offer pickup must have at least one explicitly approved active pickup zone. Regional surcharges are calculated from the saved pickup-zone fees.
           </p>
+
+          <label className="flex items-start gap-3 rounded border border-stone-800 bg-stone-900 p-3 text-xs text-stone-200">
+            <input
+              type="checkbox"
+              checked={tourData.pickup_available !== false}
+              onChange={(e) => handleFieldChange('pickup_available', e.target.checked)}
+              className="mt-0.5 rounded text-[#0A6C74] focus:ring-0"
+            />
+            <span>
+              <span className="font-semibold block">This excursion offers hotel pickup</span>
+              <span className="text-[11px] text-stone-400 block mt-1">
+                Turn this off only when the operator confirms that no hotel pickup is offered. Existing pickup mappings are preserved but will not be offered to customers while pickup is disabled.
+              </span>
+            </span>
+          </label>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
             {pickupLocations.map((loc) => {

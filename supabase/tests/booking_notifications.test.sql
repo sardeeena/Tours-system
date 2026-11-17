@@ -42,8 +42,8 @@ SELECT ok(
   'authenticated clients cannot consume notification queue messages'
 );
 
-INSERT INTO public.tours (title, slug, status, price, max_guests)
-VALUES ('pgTAP Notification Test Tour', 'pgtap-notification-test', 'published', 100.00, 10);
+INSERT INTO public.tours (title, slug, status, price, max_guests, pickup_available)
+VALUES ('pgTAP Notification Test Tour', 'pgtap-notification-test', 'published', 100.00, 10, FALSE);
 
 INSERT INTO public.tour_availability (tour_id, date, max_capacity, booked_count, status)
 SELECT id, CURRENT_DATE + 30, 10, 0, 'available'

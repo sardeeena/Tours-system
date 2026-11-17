@@ -2,7 +2,6 @@ import React from 'react';
 import { MapPin, CheckCircle2, ArrowRight, ArrowLeft, MessageCircle, HelpCircle, Building } from 'lucide-react';
 import { PickupLocation } from '../../types/booking';
 import { CurrencyConfig } from '../../types';
-import { STANDARD_PICKUP_LOCATIONS } from '../../data/bookingData';
 import { formatCurrencyAmount } from '../../services/pricingService';
 import { getWhatsAppSupportUrl } from '../../services/exportService';
 
@@ -15,6 +14,9 @@ interface StepPickupProps {
   onNext: () => void;
   onBack: () => void;
   locations?: PickupLocation[];
+  pickupAvailable: boolean;
+  loading?: boolean;
+  error?: string | null;
 }
 
 export const StepPickup: React.FC<StepPickupProps> = ({
@@ -26,9 +28,12 @@ export const StepPickup: React.FC<StepPickupProps> = ({
   onNext,
   onBack,
   locations,
+  pickupAvailable,
+  loading = false,
+  error,
 }) => {
-  const pickupList = locations && locations.length > 0 ? locations : STANDARD_PICKUP_LOCATIONS;
-  const selectedLocation = pickupList.find((l) => l.id === selectedPickupId) || pickupList[0];
+  const pickupList = locations || [];
+  const canContinue = !pickupAvailable || (!loading && !error && pickupList.length > 0 && pickupList.some((location) => location.id === selectedPickupId));
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -41,11 +46,28 @@ export const StepPickup: React.FC<StepPickupProps> = ({
             Choose Your Hotel Transfer Area
           </h2>
           <p className="text-xs text-stone-600 mt-1">
-            We provide direct air-conditioned van transfers from hotel reception lobbies to the departure marina.
+            {pickupAvailable ? 'Choose only a hotel transfer area explicitly approved for this excursion.' : 'Hotel pickup is not offered for this excursion.'}
           </p>
         </div>
 
-        {/* Pickup Location Cards */}
+        {!pickupAvailable ? (
+          <div className="rounded border border-stone-200 bg-stone-50 p-4 text-xs text-stone-700">
+            This excursion does not offer hotel pickup. You can continue without selecting a pickup location.
+          </div>
+        ) : loading ? (
+          <div role="status" className="rounded border border-stone-200 bg-stone-50 p-4 text-xs text-stone-600">
+            Verifying this excursion's approved pickup locations...
+          </div>
+        ) : error || pickupList.length === 0 ? (
+          <div role="alert" className="rounded border border-amber-300 bg-amber-50 p-4 space-y-2 text-xs text-amber-950">
+            <p className="font-semibold">Pickup is not configured for this excursion yet.</p>
+            <p>{error || 'There are no active pickup locations explicitly approved for this excursion.'} Please contact our team before booking.</p>
+            <a href={getWhatsAppSupportUrl()} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-xs font-semibold text-[#0A6C74] underline">
+              <MessageCircle className="w-3.5 h-3.5 mr-1.5" /> Contact our booking team
+            </a>
+          </div>
+        ) : (
+        /* Pickup Location Cards */
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
           {pickupList.map((loc) => {
             const isSelected = selectedPickupId === loc.id;
@@ -99,8 +121,11 @@ export const StepPickup: React.FC<StepPickupProps> = ({
             );
           })}
         </div>
+        )}
 
         {/* Accommodation Name Input */}
+        {pickupAvailable && pickupList.length > 0 && !loading && !error && (
+        <>
         <div className="pt-3 border-t border-stone-200 space-y-2">
           <label htmlFor="hotel-input" className="block text-xs font-bold text-stone-900 flex items-center">
             <Building className="w-3.5 h-3.5 mr-1.5 text-[#0A6C74]" />
@@ -140,6 +165,8 @@ export const StepPickup: React.FC<StepPickupProps> = ({
             <span>Contact Us</span>
           </a>
         </div>
+        </>
+        )}
       </div>
 
       {/* Navigation Buttons */}
@@ -156,7 +183,8 @@ export const StepPickup: React.FC<StepPickupProps> = ({
         <button
           type="button"
           onClick={onNext}
-          className="px-7 py-3 bg-[#0A6C74] hover:bg-[#08565C] text-white text-xs sm:text-sm font-semibold rounded-sm transition-colors shadow-xs flex items-center space-x-2"
+          disabled={!canContinue}
+          className="px-7 py-3 bg-[#0A6C74] hover:bg-[#08565C] disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs sm:text-sm font-semibold rounded-sm transition-colors shadow-xs flex items-center space-x-2"
         >
           <span>Continue</span>
           <ArrowRight className="w-4 h-4" />

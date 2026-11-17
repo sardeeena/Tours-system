@@ -96,8 +96,8 @@ SELECT ok(has_function_privilege('authenticated', 'public.next_invoice_number()'
 SELECT ok(EXISTS (SELECT 1 FROM pg_indexes WHERE schemaname='public' AND indexname='invoices_booking_id_uidx'),
   'a booking cannot receive duplicate invoices');
 
-INSERT INTO public.tours (title, slug, status, price, max_guests)
-VALUES ('pgTAP Finance Test Tour', 'pgtap-finance-test', 'published', 100.00, 10);
+INSERT INTO public.tours (title, slug, status, price, max_guests, pickup_available)
+VALUES ('pgTAP Finance Test Tour', 'pgtap-finance-test', 'published', 100.00, 10, FALSE);
 
 INSERT INTO public.tour_availability (tour_id, date, max_capacity, booked_count, status)
 SELECT id, CURRENT_DATE + 60, 10, 0, 'available'

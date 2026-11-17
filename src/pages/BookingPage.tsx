@@ -3,7 +3,7 @@ import { recordVisitorEvent } from '../services/visitorAnalyticsService';
 import { motion, AnimatePresence } from 'motion/react';
 import { Tour, CurrencyConfig } from '../types';
 import { GuestCounts, BookingExtra, CustomerInfo, Booking, PickupLocation } from '../types/booking';
-import { STANDARD_PICKUP_LOCATIONS, GLOBAL_BOOKING_EXTRAS } from '../data/bookingData';
+import { GLOBAL_BOOKING_EXTRAS } from '../data/bookingData';
 import { getPublishedPickupLocations, getPublishedTourExtras } from '../services/tourService';
 import { calculateBookingPrice } from '../services/pricingService';
 import { bookingRepository, generateBookingReference } from '../services/bookingRepository';
@@ -97,7 +97,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
   const [date, setDate] = useState<string>(initialDraft.date || '');
   const [selectedTourLanguage, setSelectedTourLanguage] = useState<string>(initialDraft.selectedTourLanguage || currentTour?.languages?.[0] || 'English');
   const [guests, setGuests] = useState<GuestCounts>(initialDraft.guests);
-  const [pickupLocationId, setPickupLocationId] = useState<string>(initialDraft.pickupLocationId || 'hurghada');
+  const [pickupLocationId, setPickupLocationId] = useState<string>(initialDraft.pickupLocationId || '');
   const [hotelName, setHotelName] = useState<string>(initialDraft.hotelName || '');
   const [roomNumber, setRoomNumber] = useState<string>(initialDraft.roomNumber || '');
   const [selectedExtraIds, setSelectedExtraIds] = useState<string[]>(initialDraft.selectedExtraIds || []);
@@ -118,7 +118,9 @@ export const BookingPage: React.FC<BookingPageProps> = ({
   }, [currentTour?.slug, currentTour?.languages?.join('|')]);
 
   // Dynamic database-backed pickup locations & extras
-  const [pickupLocations, setPickupLocations] = useState<PickupLocation[]>(STANDARD_PICKUP_LOCATIONS);
+  const [pickupLocations, setPickupLocations] = useState<PickupLocation[]>([]);
+  const [pickupLocationsLoading, setPickupLocationsLoading] = useState(true);
+  const [pickupLocationsError, setPickupLocationsError] = useState<string | null>(null);
   const [availableExtras, setAvailableExtras] = useState<BookingExtra[]>([]);
   const [extraQuantities, setExtraQuantities] = useState<Record<string, number>>({});
 
@@ -126,22 +128,47 @@ export const BookingPage: React.FC<BookingPageProps> = ({
     let isMounted = true;
     async function loadEntities() {
       if (!currentTour) return;
+      setPickupLocationsLoading(true);
+      setPickupLocationsError(null);
       try {
-        const [locs, exts] = await Promise.all([
-          getPublishedPickupLocations(currentTour.destination || currentTour.id),
+        const [pickupResult, extrasResult] = await Promise.allSettled([
+          getPublishedPickupLocations(currentTour.id),
           getPublishedTourExtras(currentTour.id || currentTour.slug),
         ]);
         if (isMounted) {
-          setPickupLocations(locs);
-          if (locs.length > 0 && !locs.some((l) => l.id === pickupLocationId)) {
-            setPickupLocationId(locs[0].id);
+          if (pickupResult.status === 'fulfilled') {
+            const locs = pickupResult.value;
+            setPickupLocations(locs);
+            if (currentTour.pickupAvailable) {
+              if (locs.length === 0) {
+                setPickupLocationId('');
+                setPickupLocationsError('No active pickup zone has been explicitly approved for this tour.');
+              } else {
+                setPickupLocationId((current) => locs.some((location) => location.id === current) ? current : locs[0].id);
+              }
+            } else {
+              setPickupLocationId('');
+            }
+          } else {
+            console.warn('Could not verify approved pickup locations:', pickupResult.reason);
+            setPickupLocations([]);
+            setPickupLocationId('');
+            setPickupLocationsError('We could not verify this excursion\'s approved pickup locations. Please contact our booking team.');
           }
-          setAvailableExtras(exts);
-          // Deselect any extras not assigned to this tour
-          setSelectedExtraIds((prev) => prev.filter((id) => exts.some((e) => e.id === id)));
+
+          if (extrasResult.status === 'fulfilled') {
+            const exts = extrasResult.value;
+            setAvailableExtras(exts);
+            // Deselect any extras not assigned to this tour
+            setSelectedExtraIds((prev) => prev.filter((id) => exts.some((e) => e.id === id)));
+          } else {
+            console.warn('Could not load tour-specific extras:', extrasResult.reason);
+            setAvailableExtras([]);
+            setSelectedExtraIds([]);
+          }
         }
-      } catch (err) {
-        console.warn('Could not load dynamic booking locations/extras:', err);
+      } finally {
+        if (isMounted) setPickupLocationsLoading(false);
       }
     }
     loadEntities();
@@ -229,7 +256,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
 
   // Selected pickup object
   const selectedPickup = useMemo(() => {
-    return pickupLocations.find((p) => p.id === pickupLocationId) || pickupLocations[0];
+    return pickupLocations.find((p) => p.id === pickupLocationId);
   }, [pickupLocations, pickupLocationId]);
 
   // Selected extras objects
@@ -290,6 +317,10 @@ export const BookingPage: React.FC<BookingPageProps> = ({
 
   const handleConfirmBooking = async () => {
     if (!currentTour) return;
+    if (currentTour.pickupAvailable && (!selectedPickup || !pickupLocations.some((location) => location.id === selectedPickup.id))) {
+      setCurrentStep(2);
+      return;
+    }
     setIsSubmitting(true);
 
     try {
@@ -314,10 +345,10 @@ export const BookingPage: React.FC<BookingPageProps> = ({
         date,
         guests,
         pickup: {
-          locationId: selectedPickup.id,
-          locationName: selectedPickup.name,
-          area: selectedPickup.area,
-          feeEur: selectedPickup.feeEurPerPerson,
+          locationId: selectedPickup?.id,
+          locationName: selectedPickup?.name || 'No pickup service',
+          area: selectedPickup?.area || '',
+          feeEur: selectedPickup?.feeEurPerPerson || 0,
           hotelName: effectiveHotel,
           roomNumber: effectiveRoom,
         },
@@ -485,6 +516,9 @@ export const BookingPage: React.FC<BookingPageProps> = ({
                     onHotelNameChange={handleHotelNameChange}
                     currency={currency}
                     locations={pickupLocations}
+                    pickupAvailable={currentTour?.pickupAvailable !== false}
+                    loading={pickupLocationsLoading}
+                    error={pickupLocationsError}
                     onNext={() => setCurrentStep(3)}
                     onBack={() => setCurrentStep(1)}
                   />

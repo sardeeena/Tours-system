@@ -141,7 +141,7 @@ export const StepReview: React.FC<StepReviewProps> = ({
           <div>
             <span className="text-[10px] uppercase font-bold text-stone-400 block">Transfer Region</span>
             <span className="font-semibold text-stone-800">
-              {pickupLocation ? pickupLocation.name : 'Hurghada Standard'}
+              {pickupLocation ? pickupLocation.name : tour.pickupAvailable ? 'Pickup selection required' : 'No pickup service'}
             </span>
             <span className="text-[11px] text-stone-500 block mt-0.5">
               {pickupLocation?.area}

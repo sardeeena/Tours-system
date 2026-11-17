@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { calculateBookingPrice } from '../src/services/pricingService';
-import { getPublishedPickupLocations, getPublishedTourExtras } from '../src/services/tourService';
+import { getPublishedTourExtras } from '../src/services/tourService';
 import { Tour } from '../src/types';
 import { BookingExtra, GuestCounts, PickupLocation } from '../src/types/booking';
 
@@ -53,31 +53,40 @@ async function runTests() {
   );
 
   // ==============================================================================
-  // 2. TEST DESTINATION FILTERING BY TOUR CITY (Requirement 2)
+  // 2. TEST STRICT TOUR-SPECIFIC PICKUP ELIGIBILITY (Requirement 2)
   // ==============================================================================
-  console.log('\n2. Checking Destination Filtering by Tour City/Hub...');
-  const hurghadaPickups = await getPublishedPickupLocations('Hurghada');
-  const marsaPickups = await getPublishedPickupLocations('Marsa Alam');
-  const sharmPickups = await getPublishedPickupLocations('Sharm El-Sheikh');
-
-  assert(
-    hurghadaPickups.some((p) => p.id === 'hurghada' || p.id === 'el-gouna' || p.id === 'makadi-bay'),
-    'Hurghada pickup locations contain regional coastal zones (Hurghada, El Gouna, Makadi)'
+  console.log('\\n2. Checking strict tour-specific pickup eligibility...');
+  const pickupServiceContent = fs.readFileSync(
+    path.resolve(rootDir, 'src/services/tourService.ts'),
+    'utf-8'
+  );
+  const bookingPageContent = fs.readFileSync(
+    path.resolve(rootDir, 'src/pages/BookingPage.tsx'),
+    'utf-8'
+  );
+  const pickupStepContent = fs.readFileSync(
+    path.resolve(rootDir, 'src/components/booking/StepPickup.tsx'),
+    'utf-8'
   );
 
   assert(
-    !hurghadaPickups.some((p) => p.id === 'marsa-alam' || p.id === 'sharm-el-sheikh'),
-    'Hurghada tour strictly excludes Marsa Alam and Sharm El-Sheikh destinations'
+    pickupServiceContent.includes("from('tour_pickup_locations')") &&
+    pickupServiceContent.includes('approvedLocationIds.has(location.id)'),
+    'Pickup locations are filtered by explicit tour-to-zone mappings'
   );
-
   assert(
-    marsaPickups.every((p) => p.id.includes('marsa') || p.area.toLowerCase().includes('marsa')),
-    'Marsa Alam tour displays only Marsa Alam pickup destinations'
+    !pickupServiceContent.includes('Default to Hurghada') &&
+    !pickupServiceContent.includes('marsaList') &&
+    !pickupServiceContent.includes('sharmList'),
+    'Destination-based pickup fallback is removed'
   );
-
   assert(
-    sharmPickups.every((p) => p.id.includes('sharm') || p.area.toLowerCase().includes('sharm') || p.area.toLowerCase().includes('naama')),
-    'Sharm El-Sheikh tour displays only Sharm pickup destinations'
+    bookingPageContent.includes('getPublishedPickupLocations(currentTour.id)'),
+    'Booking page loads pickup eligibility by exact tour ID'
+  );
+  assert(
+    !pickupStepContent.includes('STANDARD_PICKUP_LOCATIONS'),
+    'Checkout never falls back to a global pickup list'
   );
 
   // ==============================================================================

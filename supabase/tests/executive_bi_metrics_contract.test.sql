@@ -56,8 +56,8 @@ SELECT is(
   'custom BI report executes and returns an array for the report builder'
 );
 
-INSERT INTO public.tours (title, slug, status, price, max_guests)
-VALUES ('pgTAP Executive Refund Test Tour', 'pgtap-executive-refund-test', 'published', 100.00, 10);
+INSERT INTO public.tours (title, slug, status, price, max_guests, pickup_available)
+VALUES ('pgTAP Executive Refund Test Tour', 'pgtap-executive-refund-test', 'published', 100.00, 10, FALSE);
 
 INSERT INTO public.tour_availability (tour_id, date, max_capacity, booked_count, status)
 SELECT id, CURRENT_DATE + 45, 10, 0, 'available'

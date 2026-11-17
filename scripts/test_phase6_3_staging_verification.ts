@@ -467,14 +467,17 @@ async function runPhase63VerificationSuite() {
   }
 
   if (isSupabaseConfigured()) {
-    const livePickupLocations = await getPublishedPickupLocations();
-    assert(Array.isArray(livePickupLocations), 'getPublishedPickupLocations returns database operational locations');
+    const publishedToursForPickup = await getPublishedTours();
+    const livePickupLocations = publishedToursForPickup.length > 0
+      ? await getPublishedPickupLocations(publishedToursForPickup[0].id)
+      : [];
+    assert(Array.isArray(livePickupLocations), 'getPublishedPickupLocations returns database operational locations for an exact published tour ID');
     const liveExtras = await getPublishedTourExtras();
     assert(Array.isArray(liveExtras), 'getPublishedTourExtras returns database operational extras');
   } else {
     let pickupFailedClosed = false;
     let extrasFailedClosed = false;
-    try { await getPublishedPickupLocations(); } catch (error) { pickupFailedClosed = String(error).includes('Supabase is not configured'); }
+    try { await getPublishedPickupLocations('test-tour-id'); } catch (error) { pickupFailedClosed = String(error).includes('Supabase is not configured'); }
     try { await getPublishedTourExtras(); } catch (error) { extrasFailedClosed = String(error).includes('Supabase is not configured'); }
     assert(pickupFailedClosed, 'pickup location queries fail closed without Supabase');
     assert(extrasFailedClosed, 'tour extras queries fail closed without Supabase');
