@@ -169,7 +169,7 @@ export const AdminTranslationManager: React.FC = () => {
           <p className="mt-1 text-sm text-stone-400">Super Admin + verified MFA required. Drafts never appear on public pages.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button onClick={() => void generateAllRequestedLocales()} disabled={generating || loading || saving} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{generating ? 'Generating drafts…' : 'Generate all 5 languages'}</button>
+          <button onClick={() => void generateAllRequestedLocales()} disabled={generating || loading || saving} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{generating ? 'Generating drafts…' : 'Generate all 28 languages'}</button>
           <button onClick={() => void load()} disabled={loading || generating} className="rounded border border-stone-700 px-3 py-2 text-sm disabled:opacity-50">{loading ? 'Loading…' : 'Refresh records'}</button>
         </div>
       </header>
