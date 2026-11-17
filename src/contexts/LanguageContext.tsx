@@ -139,7 +139,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     }));
   const supportedLanguages = [
     ...Object.values(SUPPORTED_LANGUAGES).filter(
-      (value): value is LanguageConfig => Boolean(value) && (value.code === 'en' || publishedUiLocales.includes(value.code)),
+      (value): value is LanguageConfig => value !== undefined && (value.code === 'en' || publishedUiLocales.includes(value.code)),
     ),
     ...dynamicConfigs,
   ];
