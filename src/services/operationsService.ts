@@ -1275,116 +1275,127 @@ export async function updatePickupScheduleStatus(
 // ==============================================================================
 
 export async function listVessels(): Promise<DbVessel[]> {
-  let vessels = getLocal<DbVessel[]>(LOCAL_VESSELS_KEY, INITIAL_VESSELS);
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase.from('vessels').select('*').order('name');
-      if (!error && data && data.length > 0) {
-        const dbVessels: DbVessel[] = data.map((d: any) => ({
-          ...d,
-          status: d.status || (d.is_active ? 'active' : 'inactive'),
-        }));
-        const dbIds = new Set(dbVessels.map((v) => v.id));
-        const unsynced = vessels.filter((v) => !dbIds.has(v.id));
-        vessels = [...dbVessels, ...unsynced];
-        setLocal(LOCAL_VESSELS_KEY, vessels);
-      }
-    } catch {
-      // ignore
-    }
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) return [];
+    return getLocal<DbVessel[]>(LOCAL_VESSELS_KEY, INITIAL_VESSELS);
   }
 
+  const { data, error } = await supabase.from('vessels').select('*').order('name');
+  if (error) throw new Error(formatSupabaseError(error));
+  const vessels: DbVessel[] = (data || []).map((row: any) => ({
+    ...row,
+    status: row.status || (row.is_active ? 'active' : 'inactive'),
+  }));
+  setLocal(LOCAL_VESSELS_KEY, vessels);
   return vessels;
 }
 
 export async function saveVessel(vessel: Partial<DbVessel>): Promise<DbVessel> {
-  const all = await listVessels();
-  let saved: DbVessel;
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) {
+      throw new Error('Vessel management is unavailable because the production database is not configured.');
+    }
+
+    const all = getLocal<DbVessel[]>(LOCAL_VESSELS_KEY, INITIAL_VESSELS);
+    const status = vessel.status || (vessel.is_active !== false ? 'active' : 'inactive');
+    const isActive = status === 'active' || status === 'in_service';
+    const now = new Date().toISOString();
+    const saved: DbVessel = vessel.id
+      ? { ...all.find((item) => item.id === vessel.id)!, ...vessel, status, is_active: isActive, updated_at: now } as DbVessel
+      : {
+          id: `ves-${Date.now().toString(36)}`,
+          name: vessel.name || 'New Vessel',
+          vessel_type: vessel.vessel_type || 'motor_yacht',
+          registration_number: vessel.registration_number || null,
+          port_marina: vessel.port_marina || 'Hurghada Marina',
+          passenger_capacity: vessel.passenger_capacity || 35,
+          crew_capacity: vessel.crew_capacity || 4,
+          year_built: vessel.year_built || new Date().getFullYear(),
+          safety_inspection_expiry: vessel.safety_inspection_expiry || '2027-12-31',
+          amenities: vessel.amenities || ['Life Vests', 'First Aid Kit'],
+          is_active: isActive,
+          status,
+          maintenance_notes: vessel.maintenance_notes || null,
+          next_maintenance: vessel.next_maintenance || null,
+          crew: vessel.crew || null,
+          created_at: now,
+          updated_at: now,
+        } as DbVessel;
+    setLocal(LOCAL_VESSELS_KEY, vessel.id
+      ? all.map((item) => item.id === vessel.id ? saved : item)
+      : [saved, ...all]);
+    return saved;
+  }
 
   const status = vessel.status || (vessel.is_active !== false ? 'active' : 'inactive');
   const isActive = status === 'active' || status === 'in_service';
+  const payload: Record<string, unknown> = {
+    name: vessel.name?.trim(),
+    vessel_type: vessel.vessel_type || 'motor_yacht',
+    registration_number: vessel.registration_number || null,
+    port_marina: vessel.port_marina || null,
+    passenger_capacity: vessel.passenger_capacity,
+    crew_capacity: vessel.crew_capacity,
+    year_built: vessel.year_built || null,
+    safety_inspection_expiry: vessel.safety_inspection_expiry || null,
+    amenities: vessel.amenities || [],
+    is_active: isActive,
+    status,
+    maintenance_notes: vessel.maintenance_notes || null,
+    next_maintenance: vessel.next_maintenance || null,
+    crew: vessel.crew || null,
+  };
 
+  if (!payload.name) throw new Error('A vessel name is required.');
+  if (!Number.isInteger(payload.passenger_capacity) || Number(payload.passenger_capacity) < 1) {
+    throw new Error('A valid passenger capacity is required.');
+  }
   if (vessel.id) {
-    saved = {
-      ...all.find((v) => v.id === vessel.id)!,
-      ...vessel,
-      status,
-      is_active: isActive,
-      updated_at: new Date().toISOString(),
-    };
-    const updated = all.map((v) => (v.id === vessel.id ? saved : v));
-    setLocal(LOCAL_VESSELS_KEY, updated);
-  } else {
-    saved = {
-      id: `ves-${Date.now().toString(36)}`,
-      name: vessel.name || 'New Vessel',
-      vessel_type: vessel.vessel_type || 'motor_yacht',
-      registration_number: vessel.registration_number || null,
-      port_marina: vessel.port_marina || 'Hurghada Marina',
-      passenger_capacity: vessel.passenger_capacity || 35,
-      crew_capacity: vessel.crew_capacity || 4,
-      year_built: vessel.year_built || new Date().getFullYear(),
-      safety_inspection_expiry: vessel.safety_inspection_expiry || '2027-12-31',
-      amenities: vessel.amenities || ['Life Vests', 'First Aid Kit'],
-      is_active: isActive,
-      status,
-      maintenance_notes: vessel.maintenance_notes || null,
-      next_maintenance: vessel.next_maintenance || null,
-      crew: vessel.crew || null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-    setLocal(LOCAL_VESSELS_KEY, [saved, ...all]);
-  }
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { error } = await supabase.from('vessels').upsert({
-        id: saved.id.startsWith('ves-') ? undefined : saved.id,
-        name: saved.name,
-        vessel_type: saved.vessel_type,
-        registration_number: saved.registration_number,
-        port_marina: saved.port_marina,
-        passenger_capacity: saved.passenger_capacity,
-        crew_capacity: saved.crew_capacity,
-        year_built: saved.year_built,
-        safety_inspection_expiry: saved.safety_inspection_expiry,
-        amenities: saved.amenities,
-        is_active: saved.is_active,
-        status: saved.status,
-        maintenance_notes: saved.maintenance_notes,
-        next_maintenance: saved.next_maintenance,
-        crew: saved.crew,
-      });
-      if (error) {
-        throw new Error(formatSupabaseError(error));
-      }
-    } catch (err: any) {
-      console.error('Error saving vessel to Supabase:', err);
-      throw err;
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(vessel.id)) {
+      throw new Error('The vessel identifier is invalid. Refresh the fleet list and try again.');
     }
+    payload.id = vessel.id;
   }
 
+  const { data, error } = await supabase
+    .from('vessels')
+    .upsert(payload)
+    .select('*')
+    .single();
+  if (error || !data) {
+    throw new Error(formatSupabaseError(error || new Error('The database did not return the saved vessel.')));
+  }
+
+  const saved: DbVessel = {
+    ...data,
+    status: data.status || (data.is_active ? 'active' : 'inactive'),
+  };
+  const cached = getLocal<DbVessel[]>(LOCAL_VESSELS_KEY, []);
+  setLocal(LOCAL_VESSELS_KEY, [saved, ...cached.filter((item) => item.id !== saved.id)]);
   return saved;
 }
 
 export async function deleteVessel(id: string): Promise<boolean> {
-  const all = await listVessels();
-  setLocal(LOCAL_VESSELS_KEY, all.filter((v) => v.id !== id));
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { error } = await supabase.from('vessels').delete().eq('id', id);
-      if (error) {
-        throw new Error(formatSupabaseError(error));
-      }
-    } catch (err: any) {
-      console.error('Error deleting vessel from Supabase:', err);
-      throw err;
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) {
+      throw new Error('Vessel management is unavailable because the production database is not configured.');
     }
+    const all = getLocal<DbVessel[]>(LOCAL_VESSELS_KEY, INITIAL_VESSELS);
+    setLocal(LOCAL_VESSELS_KEY, all.filter((item) => item.id !== id));
+    return true;
   }
 
+  const { data, error } = await supabase
+    .from('vessels')
+    .delete()
+    .eq('id', id)
+    .select('id')
+    .maybeSingle();
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data?.id) throw new Error('The vessel was not found or could not be deleted.');
+
+  const cached = getLocal<DbVessel[]>(LOCAL_VESSELS_KEY, []);
+  setLocal(LOCAL_VESSELS_KEY, cached.filter((item) => item.id !== id));
   return true;
 }
 
