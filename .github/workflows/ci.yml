@@ -6,6 +6,7 @@ on:
       - main
       - "chatgpt/**"
       - "fix/**"
+      - "i18n/**"
   pull_request:
     branches:
       - main
@@ -182,6 +183,9 @@ jobs:
 
       - name: Run French content draft coverage and catalogue parity
         run: npm run test:french-content-drafts
+
+      - name: Verify Dutch review bundle coverage and publication gates
+        run: npm run test:dutch-content-drafts
 
       - name: Verify French rollout dictionary completeness and publication gates
         run: npm run test:french-rollout
