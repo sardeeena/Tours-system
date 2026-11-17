@@ -36,8 +36,6 @@ jobs:
         run: npm install --no-audit --no-fund
 
 
-      - name: Enforce a clean dependency audit
-        run: npm audit --audit-level=low
 
       - name: Validate first-party PWA assets
         run: |
@@ -196,6 +194,9 @@ jobs:
 
       - name: Verify superadmin technical center security boundaries
         run: npm run test:technical
+
+      - name: Enforce a clean dependency audit
+        run: npm audit --audit-level=low
 
   database:
     name: Supabase migrations and RLS tests
