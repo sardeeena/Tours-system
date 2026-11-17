@@ -1461,6 +1461,269 @@ CREATE TABLE IF NOT EXISTS public.automation_events (
 );
 
 -- ==============================================================================
+-- TABLES ADDED BY POST-BASELINE PRODUCTION MIGRATIONS (RBAC, CMS, SUPPORT, ANALYTICS)
+-- Keep this snapshot aligned with the incremental migration history.
+-- ==============================================================================
+
+CREATE TABLE IF NOT EXISTS public.access_roles (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  slug text NOT NULL UNIQUE CHECK (slug ~ '^[a-z][a-z0-9_]{1,49}$'),
+  name text NOT NULL,
+  description text,
+  is_system boolean NOT NULL DEFAULT false,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.access_permissions (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  permission_key text NOT NULL UNIQUE,
+  module text NOT NULL,
+  action text NOT NULL,
+  description text NOT NULL DEFAULT '',
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.user_roles (
+  user_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  role_id uuid NOT NULL REFERENCES public.access_roles(id) ON DELETE CASCADE,
+  assigned_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  assigned_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY(user_id,role_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.role_permissions (
+  role_id uuid NOT NULL REFERENCES public.access_roles(id) ON DELETE CASCADE,
+  permission_id uuid NOT NULL REFERENCES public.access_permissions(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY(role_id,permission_id)
+);
+
+CREATE TABLE IF NOT EXISTS public.blog_categories (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL UNIQUE CHECK (length(btrim(name)) BETWEEN 1 AND 100),
+  slug text NOT NULL UNIQUE CHECK (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$' AND length(slug) <= 120),
+  description text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.blog_posts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  title text NOT NULL CHECK (length(btrim(title)) BETWEEN 1 AND 180),
+  slug text NOT NULL UNIQUE CHECK (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$' AND length(slug) <= 180),
+  excerpt text CHECK (excerpt IS NULL OR length(excerpt) <= 600),
+  content text NOT NULL DEFAULT '',
+  reading_time_minutes integer NOT NULL DEFAULT 1 CHECK (reading_time_minutes BETWEEN 1 AND 120),
+  cover_image_url text CHECK (cover_image_url IS NULL OR cover_image_url ~* '^https://'),
+  status text NOT NULL DEFAULT 'draft'
+    CHECK (status IN ('draft', 'published', 'scheduled', 'archived')),
+  category_id uuid REFERENCES public.blog_categories(id) ON DELETE SET NULL,
+  author_name text NOT NULL DEFAULT 'Kemet Spirit Editorial Team'
+    CHECK (length(btrim(author_name)) BETWEEN 1 AND 120),
+  seo_title text CHECK (seo_title IS NULL OR length(seo_title) <= 180),
+  seo_description text CHECK (seo_description IS NULL OR length(seo_description) <= 300),
+  published_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT blog_posts_published_requires_date
+    CHECK (status NOT IN ('published', 'scheduled') OR published_at IS NOT NULL)
+);
+
+CREATE TABLE IF NOT EXISTS public.support_tickets (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  ticket_number bigint GENERATED ALWAYS AS IDENTITY UNIQUE,
+  requester_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE RESTRICT,
+  customer_id uuid REFERENCES public.customers(id) ON DELETE SET NULL,
+  booking_id uuid REFERENCES public.bookings(id) ON DELETE SET NULL,
+  subject text NOT NULL CHECK (length(btrim(subject)) BETWEEN 4 AND 180),
+  description text NOT NULL CHECK (length(btrim(description)) BETWEEN 10 AND 10000),
+  category text NOT NULL DEFAULT 'general'
+    CHECK (category IN ('general','booking','payment','refund','tour_operation','pickup','technical','complaint','other')),
+  department text NOT NULL DEFAULT 'support'
+    CHECK (department IN ('support','booking','operations','finance','sales','technical','management')),
+  priority text NOT NULL DEFAULT 'normal'
+    CHECK (priority IN ('low','normal','high','urgent','critical')),
+  status text NOT NULL DEFAULT 'open'
+    CHECK (status IN ('open','assigned','in_progress','waiting_customer','waiting_third_party','resolved','closed','reopened')),
+  assigned_to uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  first_response_at timestamptz,
+  first_response_due_at timestamptz NOT NULL DEFAULT (now() + interval '4 hours'),
+  resolution_due_at timestamptz NOT NULL DEFAULT (now() + interval '2 days'),
+  resolved_at timestamptz,
+  closed_at timestamptz,
+  last_message_at timestamptz NOT NULL DEFAULT now(),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.support_ticket_messages (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  ticket_id uuid NOT NULL REFERENCES public.support_tickets(id) ON DELETE CASCADE,
+  author_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE RESTRICT,
+  body text NOT NULL CHECK (length(btrim(body)) BETWEEN 1 AND 10000),
+  is_internal boolean NOT NULL DEFAULT false,
+  attachments jsonb NOT NULL DEFAULT '[]'::jsonb
+    CHECK (jsonb_typeof(attachments) = 'array' AND jsonb_array_length(attachments) <= 5),
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.support_ticket_events (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  ticket_id uuid NOT NULL REFERENCES public.support_tickets(id) ON DELETE CASCADE,
+  actor_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  event_type text NOT NULL CHECK (length(event_type) BETWEEN 1 AND 80),
+  details jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.email_provider_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  event_id TEXT NOT NULL UNIQUE,
+  event_type TEXT NOT NULL,
+  provider_message_id TEXT NOT NULL,
+  recipient_address TEXT,
+  occurred_at TIMESTAMPTZ NOT NULL,
+  payload JSONB NOT NULL DEFAULT '{}'::jsonb,
+  received_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.technical_events (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  severity text NOT NULL CHECK (severity IN ('info','warning','error')),
+  event_type text NOT NULL,
+  source text NOT NULL,
+  message text NOT NULL,
+  request_method text,
+  request_path text,
+  status_code integer CHECK (status_code IS NULL OR status_code BETWEEN 100 AND 599),
+  duration_ms integer CHECK (duration_ms IS NULL OR duration_ms >= 0),
+  actor_user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  metadata jsonb NOT NULL DEFAULT '{}'::jsonb
+);
+
+CREATE TABLE IF NOT EXISTS public.visitor_sessions (
+  id uuid PRIMARY KEY,
+  visitor_id uuid NOT NULL,
+  user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  started_at timestamptz NOT NULL DEFAULT now(),
+  last_seen_at timestamptz NOT NULL DEFAULT now(),
+  ended_at timestamptz,
+  landing_path text NOT NULL DEFAULT '/',
+  referrer_host text,
+  utm_source text,
+  utm_medium text,
+  utm_campaign text,
+  device_type text CHECK (device_type IS NULL OR device_type IN ('desktop','mobile','tablet','other')),
+  browser_family text,
+  os_family text,
+  screen_bucket text,
+  language text,
+  timezone text,
+  country_code text,
+  region_code text,
+  analytics_consent boolean NOT NULL DEFAULT false,
+  marketing_consent boolean NOT NULL DEFAULT false,
+  consent_updated_at timestamptz,
+  CONSTRAINT visitor_sessions_path_length CHECK (length(landing_path) <= 512)
+);
+
+CREATE TABLE IF NOT EXISTS public.visitor_events (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  occurred_at timestamptz NOT NULL DEFAULT now(),
+  session_id uuid NOT NULL REFERENCES public.visitor_sessions(id) ON DELETE CASCADE,
+  user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  event_name text NOT NULL CHECK (event_name IN (
+    'page_view','page_exit','navigation','tour_view','search',
+    'booking_started','booking_step_completed','booking_submitted',
+    'booking_confirmed','booking_cancelled','custom'
+  )),
+  page_path text,
+  page_title text,
+  duration_ms integer CHECK (duration_ms IS NULL OR duration_ms BETWEEN 0 AND 86400000),
+  event_data jsonb NOT NULL DEFAULT '{}'::jsonb,
+  CONSTRAINT visitor_events_path_length CHECK (page_path IS NULL OR length(page_path) <= 512),
+  CONSTRAINT visitor_events_title_length CHECK (page_title IS NULL OR length(page_title) <= 160),
+  CONSTRAINT visitor_events_payload_size CHECK (pg_column_size(event_data) <= 4096)
+);
+
+CREATE TABLE IF NOT EXISTS public.visitor_consent_records (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  visitor_session_id uuid REFERENCES public.visitor_sessions(id) ON DELETE SET NULL,
+  visitor_id uuid,
+  user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  necessary boolean NOT NULL DEFAULT true CHECK (necessary),
+  analytics boolean NOT NULL DEFAULT false,
+  marketing boolean NOT NULL DEFAULT false,
+  consent_version text NOT NULL DEFAULT '1',
+  consent_source text NOT NULL DEFAULT 'cookie_banner'
+    CHECK (consent_source IN ('cookie_banner','privacy_settings','account_settings')),
+  recorded_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.visitor_analytics_settings (
+  singleton boolean PRIMARY KEY DEFAULT true CHECK (singleton),
+  event_retention_days integer NOT NULL DEFAULT 90 CHECK (event_retention_days BETWEEN 7 AND 730),
+  session_retention_days integer NOT NULL DEFAULT 180 CHECK (session_retention_days BETWEEN 7 AND 1095),
+  consent_retention_days integer NOT NULL DEFAULT 730 CHECK (consent_retention_days BETWEEN 90 AND 3650),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid REFERENCES auth.users(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS public.customer_communication_consent_events (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_id uuid NOT NULL REFERENCES public.customers(id) ON DELETE RESTRICT,
+  channel text NOT NULL CHECK (channel = 'WhatsApp'),
+  purpose text NOT NULL CHECK (purpose IN ('transactional', 'marketing')),
+  phone_e164 text NOT NULL CHECK (phone_e164 ~ '^[0-9]{8,15}$'),
+  consent_action text NOT NULL CHECK (consent_action IN ('granted', 'revoked')),
+  consent_text_version text NOT NULL CHECK (length(btrim(consent_text_version)) BETWEEN 1 AND 80),
+  consent_source text NOT NULL CHECK (consent_source IN ('booking_form', 'account_settings', 'staff_verified_record')),
+  recorded_by uuid NULL,
+  recorded_at timestamptz NOT NULL DEFAULT now(),
+  evidence_reference text NULL CHECK (evidence_reference IS NULL OR length(evidence_reference) <= 200)
+);
+
+CREATE TABLE IF NOT EXISTS public.whatsapp_provider_status_events (
+  event_key text PRIMARY KEY CHECK (event_key ~ '^[a-f0-9]{64}$'),
+  provider_message_id text NOT NULL CHECK (length(provider_message_id) BETWEEN 1 AND 255),
+  status text NOT NULL CHECK (status IN ('sent', 'delivered', 'read', 'failed')),
+  provider_event_at timestamptz NOT NULL,
+  error_code text NULL CHECK (error_code IS NULL OR length(error_code) <= 40),
+  failure_reason text NULL CHECK (failure_reason IS NULL OR length(failure_reason) <= 500),
+  received_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.content_translations (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  entity_type text NOT NULL CHECK (entity_type IN (
+    'tour', 'tour_itinerary', 'tour_highlight', 'tour_inclusion',
+    'tour_exclusion', 'tour_faq', 'destination', 'blog_post', 'static_page', 'ui_catalog'
+  )),
+  entity_key text NOT NULL,
+  locale text NOT NULL CHECK (locale ~ '^[a-z]{2}(-[A-Z]{2})?$'),
+  translated_slug text,
+  title text,
+  summary text,
+  content jsonb NOT NULL DEFAULT '{}'::jsonb,
+  seo_title text,
+  seo_description text,
+  source_checksum text,
+  translation_state text NOT NULL DEFAULT 'draft'
+    CHECK (translation_state IN ('draft', 'review', 'published', 'outdated')),
+  reviewed_by uuid REFERENCES auth.users(id) ON DELETE SET NULL,
+  reviewed_at timestamptz,
+  published_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT content_translations_entity_locale_unique UNIQUE (entity_type, entity_key, locale),
+  CONSTRAINT content_translations_published_timestamp_check
+    CHECK (translation_state <> 'published' OR published_at IS NOT NULL)
+);
+
+
+-- ==============================================================================
 -- SECTION 4: PERFORMANCE INDEXES (ALL APPLICATION ENTITIES)
 -- ==============================================================================
 
