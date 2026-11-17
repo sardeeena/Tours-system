@@ -145,7 +145,7 @@ async function main() {
   const missing = [...sourceKeys].filter((key) => !draftKeys.has(key));
   const unexpected = [...draftKeys].filter((key) => !sourceKeys.has(key));
   if (missing.length || unexpected.length) throw new Error('Coverage mismatch. Missing: ' + missing.join(', ') + '; unexpected: ' + unexpected.join(', '));
-  await writeFile(outputPath, JSON.stringify({ schema_version:1, generated_at:new Date().toISOString(), locales:['fr'], records:output }, null, 2) + '\\n');
+  await writeFile(outputPath, JSON.stringify({ schema_version:1, generated_at:new Date().toISOString(), locales:['fr'], records:output }, null, 2) + '\n');
   console.log('Assembled ' + output.length + ' French draft records with current source checksums. Output: ' + outputPath + '. No database records were changed or published.');
 }
 await main();

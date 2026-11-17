@@ -88,6 +88,15 @@ const structureMatches = (source: any, translated: any): boolean => {
   return source === translated;
 };
 
+for (const [key, source] of Object.entries(TRANSLATIONS.en)) {
+  assert.ok(ui.content[key], 'Public UI key translated: ' + key);
+  assert.ok(structureMatches(source, ui.content[key]), 'Public UI translation preserves source placeholders, links and numbers: ' + key);
+}
+for (const record of records.filter((x) => ['tour','blog_post','destination'].includes(x.entity_type))) {
+  assert.ok(record.seo_title?.trim(), record.entity_type + ' SEO title is translated: ' + record.entity_key);
+  assert.ok(record.seo_description?.trim(), record.entity_type + ' SEO description is translated: ' + record.entity_key);
+}
+
 const staticRecords = records.filter((record) => record.entity_type === 'static_page');
 const homeSource = {
   title:'Explore Egypt’s Red Sea Coast',
@@ -97,16 +106,17 @@ const homeSource = {
 };
 const staticSources = [homeSource, ...INITIAL_STATIC_PAGES];
 for (const source of staticSources) {
-  const key = source.id || source.slug || 'home';
+  const pageSource = source as any;
+  const key = pageSource.id || pageSource.slug || 'home';
   const draft = staticRecords.find((record) => record.entity_key === key);
   assert.ok(draft, 'Static page translated: ' + key);
   const expected = {
-    title:source.title || source.name || 'Explore the Red Sea',
-    summary:source.heroSubtitle || source.description || source.excerpt || '',
+    title:pageSource.title || pageSource.name || 'Explore the Red Sea',
+    summary:pageSource.heroSubtitle || pageSource.description || pageSource.excerpt || '',
     content:{
-      heroHeadline:source.heroHeadline || source.title || '',
-      heroSubtitle:source.heroSubtitle || source.description || '',
-      sections:source.sections || [], paragraphs:[],
+      heroHeadline:pageSource.heroHeadline || pageSource.title || '',
+      heroSubtitle:pageSource.heroSubtitle || pageSource.description || '',
+      sections:pageSource.sections || [], paragraphs:[],
       labels:{browseMore:'Explore more',bookNow:'Book now'},
     },
   };
@@ -116,4 +126,4 @@ for (const source of staticSources) {
 assert.equal(staticSources.length, 10, 'Home plus all nine fallback static pages are covered');
 assert.equal(records.length, 111, 'The full French review bundle contains every known source candidate');
 
-console.log('French draft coverage passed: 25 tours, 50 articles, 7 destinations, 15 communication templates, homepage, public UI and ' + expectedPrivateKeys.length + ' private UI messages.');
+console.log('French draft coverage passed: 25 tours, 50 articles, 7 destinations, 18 communication templates, homepage, public UI and ' + expectedPrivateKeys.length + ' private UI messages.');
