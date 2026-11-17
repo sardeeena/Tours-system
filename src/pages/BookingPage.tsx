@@ -131,32 +131,41 @@ export const BookingPage: React.FC<BookingPageProps> = ({
       setPickupLocationsLoading(true);
       setPickupLocationsError(null);
       try {
-        const [locs, exts] = await Promise.all([
+        const [pickupResult, extrasResult] = await Promise.allSettled([
           getPublishedPickupLocations(currentTour.id),
           getPublishedTourExtras(currentTour.id || currentTour.slug),
         ]);
         if (isMounted) {
-          setPickupLocations(locs);
-          if (currentTour.pickupAvailable) {
-            if (locs.length === 0) {
-              setPickupLocationId('');
-              setPickupLocationsError('No active pickup zone has been explicitly approved for this tour.');
+          if (pickupResult.status === 'fulfilled') {
+            const locs = pickupResult.value;
+            setPickupLocations(locs);
+            if (currentTour.pickupAvailable) {
+              if (locs.length === 0) {
+                setPickupLocationId('');
+                setPickupLocationsError('No active pickup zone has been explicitly approved for this tour.');
+              } else {
+                setPickupLocationId((current) => locs.some((location) => location.id === current) ? current : locs[0].id);
+              }
             } else {
-              setPickupLocationId((current) => locs.some((location) => location.id === current) ? current : locs[0].id);
+              setPickupLocationId('');
             }
           } else {
+            console.warn('Could not verify approved pickup locations:', pickupResult.reason);
+            setPickupLocations([]);
             setPickupLocationId('');
+            setPickupLocationsError('We could not verify this excursion\'s approved pickup locations. Please contact our booking team.');
           }
-          setAvailableExtras(exts);
-          // Deselect any extras not assigned to this tour
-          setSelectedExtraIds((prev) => prev.filter((id) => exts.some((e) => e.id === id)));
-        }
-      } catch (err) {
-        console.warn('Could not load tour-specific booking locations/extras:', err);
-        if (isMounted) {
-          setPickupLocations([]);
-          setPickupLocationId('');
-          setPickupLocationsError(err instanceof Error ? err.message : 'Approved pickup locations could not be verified.');
+
+          if (extrasResult.status === 'fulfilled') {
+            const exts = extrasResult.value;
+            setAvailableExtras(exts);
+            // Deselect any extras not assigned to this tour
+            setSelectedExtraIds((prev) => prev.filter((id) => exts.some((e) => e.id === id)));
+          } else {
+            console.warn('Could not load tour-specific extras:', extrasResult.reason);
+            setAvailableExtras([]);
+            setSelectedExtraIds([]);
+          }
         }
       } finally {
         if (isMounted) setPickupLocationsLoading(false);
