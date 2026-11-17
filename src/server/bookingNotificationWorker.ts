@@ -496,7 +496,7 @@ async function processMessage(
     tour_date: String(row.booking_date || '').slice(0, 10),
     booking_status: String(row.status || 'pending').replace(/_/g, ' '),
     currency,
-    amount: currency + ' ' + amount,
+    amount: transactionalTemplateKey === 'payment_confirmation' ? currency + ' ' + amount : amount,
     balance_due: currency + ' ' + paymentBalanceDueText,
   };
 
