@@ -74,7 +74,7 @@ const structureMatches = (source: any, translated: any): boolean => {
   if (typeof source === 'string') {
     if (typeof translated !== 'string') return false;
     if (!source.trim()) return !translated.trim();
-    const protectedTokens = source.match(/\\{\\{[^{}]+\\}\\}|https?:\\/\\/[^\\s<>"']+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}|\\+?\\d[\\d\\s().-]{4,}\\d|\\b\\d+(?:[.,]\\d+)?\\b/g) || [];
+    const protectedTokens = source.match(/\{\{[^{}]+\}\}|https?:\/\/[^\s<>"']+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|\+?\d[\d\s().-]{4,}\d|\b\d+(?:[.,]\d+)?\b/g) || [];
     return Boolean(translated.trim()) && protectedTokens.every((token) => translated.includes(token));
   }
   if (Array.isArray(source)) return Array.isArray(translated) && source.length === translated.length

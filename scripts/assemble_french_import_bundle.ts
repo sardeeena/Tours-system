@@ -3,7 +3,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 type AnyRecord = Record<string, any>;
 const isObject = (value: unknown): value is AnyRecord => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 function normalizedSlug(value: unknown, fallback: string): string {
-  const raw = typeof value === 'string' ? value.normalize('NFKD').replace(/[\\u0300-\\u036f]/g, '').toLowerCase() : '';
+  const raw = typeof value === 'string' ? value.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase() : '';
   return raw.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 160)
     || fallback.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 160)
     || 'page';
@@ -12,7 +12,7 @@ function translationStructureMatches(source: any, translated: any): boolean {
   if (typeof source === 'string') {
     if (typeof translated !== 'string') return false;
     if (!source.trim()) return !translated.trim();
-    const protectedTokens = source.match(/\\{\\{[^{}]+\\}\\}|https?:\\/\\/[^\\s<>"']+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}|\\+?\\d[\\d\\s().-]{4,}\\d|\\b\\d+(?:[.,]\\d+)?\\b/g) || [];
+    const protectedTokens = source.match(/\{\{[^{}]+\}\}|https?:\/\/[^\s<>"']+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|\+?\d[\d\s().-]{4,}\d|\b\d+(?:[.,]\d+)?\b/g) || [];
     return Boolean(translated.trim()) && protectedTokens.every((token) => translated.includes(token));
   }
   if (Array.isArray(source)) return Array.isArray(translated) && source.length === translated.length
