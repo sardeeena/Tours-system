@@ -277,7 +277,7 @@ export async function getTodayDepartures(dateTarget?: string): Promise<Operation
   const date = dateTarget || localToday;
 
   if (!isSupabaseConfigured()) {
-    if (import.meta.env.DEV) {
+    if (import.meta.env?.DEV) {
       return getLocal<OperationalDeparture[]>(LOCAL_DEPARTURES_KEY, []).filter((departure) => departure.date === date);
     }
     throw new Error('Supabase is not configured; live departures cannot be loaded.');
@@ -465,7 +465,7 @@ export async function createDeparture(data: Partial<DepartureEntity>): Promise<{
   }
 
   if (!isSupabaseConfigured()) {
-    if (import.meta.env.DEV) {
+    if (import.meta.env?.DEV) {
       const cached = getLocal<DepartureEntity[]>(LOCAL_DEPARTURES_KEY, []);
       newDeparture.id = `local-departure-${Date.now()}`;
       setLocal(LOCAL_DEPARTURES_KEY, [newDeparture, ...cached]);
@@ -518,7 +518,7 @@ export async function updateDepartureStatus(
   const normalized = String(newStatus || 'scheduled').toLowerCase() as DepartureStatus;
 
   if (!isSupabaseConfigured()) {
-    if (!import.meta.env.DEV) return false;
+    if (!import.meta.env?.DEV) return false;
     const cached = getLocal<DepartureEntity[]>(LOCAL_DEPARTURES_KEY, []);
     setLocal(LOCAL_DEPARTURES_KEY, cached.map((departure) =>
       departure.id === departureId
@@ -1085,7 +1085,7 @@ export async function getDailyPickupSchedule(dateTarget?: string): Promise<Picku
   }
 
   // Browser-local pickup overrides are restricted to the explicit dev sandbox.
-  const cachedExtras = import.meta.env.DEV
+  const cachedExtras = import.meta.env?.DEV
     ? getLocal<Record<string, Partial<PickupScheduleItem>>>(LOCAL_PICKUPS_KEY, {})
     : {};
 
@@ -1154,7 +1154,7 @@ export async function updatePickupScheduleStatus(
   if (!reference) throw new Error('A booking reference is required.');
 
   if (!isSupabaseConfigured()) {
-    if (!import.meta.env.DEV) {
+    if (!import.meta.env?.DEV) {
       throw new Error('The live pickup scheduling service is unavailable. No changes were saved.');
     }
     const cached = getLocal<Record<string, Partial<PickupScheduleItem>>>(LOCAL_PICKUPS_KEY, {});
@@ -1499,7 +1499,7 @@ export async function deleteGuide(id: string): Promise<boolean> {
 
 export async function listAvailabilitySlots(): Promise<AvailabilitySlot[]> {
   if (!isSupabaseConfigured()) {
-    if (import.meta.env.DEV) return [];
+    if (import.meta.env?.DEV) return [];
     throw new Error('Supabase is not configured; live availability cannot be loaded.');
   }
 
