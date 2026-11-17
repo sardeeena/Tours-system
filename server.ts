@@ -13,7 +13,8 @@ import { startBookingNotificationWorker } from './src/server/bookingNotification
 import { startStaffNotificationWorker } from './src/server/staffNotificationWorker';
 import { INITIAL_STATIC_PAGES } from './src/data/staticPages';
 import { EXPECTED_AWESOME_ADVENTURE_TOURS_SUPABASE_PROJECT_REF, isExpectedAwesomeAdventureToursSupabaseUrl } from './src/lib/supabaseProjectGuard';
-import { parseLocalePath } from './src/i18n/localeRouting';
+import { parseLocalePath, ROUTABLE_LOCALE_CODES } from './src/i18n/localeRouting';
+import { EUROPEAN_LOCALE_ROLLOUT } from './src/types/i18n';
 import { TRANSLATIONS } from './src/i18n/translations';
 import { PRIVATE_UI_SOURCE_CATALOG } from './src/i18n/privateUiCatalog.generated';
 import { resolveWhatsAppLocaleLanguageMap, selectWhatsAppTemplateLanguage } from './src/lib/whatsappLocaleMapping';
@@ -2889,10 +2890,7 @@ async function writeAccountAudit(actorId: string, action: string, targetId: stri
 // Reviewed translation workflow. Translation content is never read directly by browser
 // Supabase clients; all access is mediated by the AAL2 Super Admin API.
 const ENGLISH_UI_CATALOG: Record<string, string> = { ...(TRANSLATIONS.en || {}), ...PRIVATE_UI_SOURCE_CATALOG };
-const TRANSLATION_LOCALES = new Set([
-  'en','de','fr','it','es','nl','pl','pt','ro','ru','sv','da','nb','fi','el',
-  'bg','hr','cs','sk','sl','hu','et','lv','lt','uk','sr','sq','tr','ar',
-]);
+const TRANSLATION_LOCALES = new Set<string>(ROUTABLE_LOCALE_CODES);
 const TRANSLATION_ENTITY_TYPES = new Set([
   'tour','tour_itinerary','tour_highlight','tour_inclusion','tour_exclusion',
   'tour_faq','destination','blog_post','static_page','communication_template','ui_catalog',
@@ -3190,7 +3188,10 @@ app.get('/api/content-translations/resolve', rateLimit(90, 60_000), async (req: 
 
 // Super Admin + AAL2 bulk translation generation. Every generated row is a draft;
 // this endpoint never marks content reviewed or publishes it.
-const BULK_TRANSLATION_LOCALES: Record<string, string> = { fr: 'French', es: 'Spanish', nl: 'Dutch', pl: 'Polish', pt: 'Portuguese' };
+const BULK_TRANSLATION_LOCALES: Record<string, string> = Object.fromEntries(
+  EUROPEAN_LOCALE_ROLLOUT.filter((locale) => locale.code !== 'en')
+    .map((locale) => [locale.code, locale.englishName]),
+);
 async function getBulkTranslationCandidates(): Promise<Array<{ entity_type: string; entity_key: string }>> {
   if (!serverSupabase) throw new Error('Translation database unavailable.');
   const results = await Promise.all([
@@ -3257,7 +3258,7 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
   const locale = typeof req.body?.locale==='string' ? req.body.locale : '';
   const offset = Number.isInteger(req.body?.offset) && req.body.offset>=0 ? req.body.offset : 0;
   const limit = Number.isInteger(req.body?.limit) ? Math.min(10,Math.max(1,req.body.limit)) : 10;
-  if (!Object.prototype.hasOwnProperty.call(BULK_TRANSLATION_LOCALES,locale)) return res.status(400).json({success:false,error:'Bulk generation supports fr, es, nl, pl and pt.'});
+  if (!Object.prototype.hasOwnProperty.call(BULK_TRANSLATION_LOCALES,locale)) return res.status(400).json({success:false,error:'Bulk generation supports the configured non-English locales.'});
   if (!ai) return res.status(503).json({success:false,error:'Server-side Gemini translation is not configured.'});
   if (!serverSupabase) return res.status(503).json({success:false,error:'Translation database unavailable.'});
   try {
