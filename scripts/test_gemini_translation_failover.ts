@@ -75,6 +75,7 @@ async function testSdkErrorCodeShapes() {
   assert.equal(getGeminiProviderErrorDetails({ code: 'RESOURCE_EXHAUSTED', message: 'quota' }).status, 429);
   assert.equal(getGeminiProviderErrorDetails({ status: 504, message: 'deadline' }).status, 504);
   assert.equal(getGeminiProviderErrorDetails({ error: { status: 'UNAVAILABLE', message: 'overloaded' } }).status, 503);
+  assert.equal(getGeminiProviderErrorDetails({ status: 'UNAVAILABLE', message: 'overloaded' }).status, 503);
   assert.equal(getGeminiProviderErrorDetails({ message: 'HTTP 408 request timeout' }).status, 408);
 }
 

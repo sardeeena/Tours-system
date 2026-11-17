@@ -46,7 +46,7 @@ export function getGeminiProviderErrorDetails(error: unknown): GeminiProviderErr
     error?: { status?: unknown; code?: unknown; message?: unknown };
   } | null;
   const nested = value?.error;
-  const code = String(value?.code || nested?.code || '').toUpperCase();
+  const code = String(value?.code || nested?.code || value?.status || nested?.status || '').toUpperCase();
   const message = String(value?.message || nested?.message || error || '');
   const messageStatus = Number(message.match(/\b(408|429|500|502|503|504)\b/)?.[1]) || 0;
   const status = numericStatus(value?.status)
