@@ -19,6 +19,7 @@ for (const name of ['vite', '@vitejs/plugin-react', '@tailwindcss/vite']) {
 }
 assert.doesNotMatch(server, /from ['"]vite['"]|from ['"]@vitejs\/plugin-react['"]|from ['"]@tailwindcss\/vite['"]/,
   'The production Express server must not import the Vite build toolchain');
+assert.match(pkg.scripts.prebuild || '', /npm install --include=dev/, 'Hostinger production installs must restore build-only dependencies before running the build');
 assert.match(workflow, /npm audit --omit=dev --audit-level=low/,
   'CI must audit the actual production runtime dependency graph');
 assert.match(workflow, /test:source-content-corrections/,

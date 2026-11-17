@@ -63,7 +63,8 @@
     "test:pickup-policy": "tsx scripts/test_strict_pickup_policy.ts",
     "test:french-content-drafts": "tsx scripts/test_french_content_drafts.ts",
     "translations:assemble-fr": "tsx scripts/assemble_french_import_bundle.ts",
-    "test:source-content-corrections": "tsx scripts/test_source_content_corrections.ts"
+    "test:source-content-corrections": "tsx scripts/test_source_content_corrections.ts",
+    "prebuild": "npm install --include=dev"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
