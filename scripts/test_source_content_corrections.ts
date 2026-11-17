@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-const read = (path: string) => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
-const pkg = read('../package.json');
-const workflow = read('../.github/workflows/ci.yml');
-const server = read('../server.ts');
-const migration = read('../supabase/migrations/20261117212644_correct_inconsistent_tour_itinerary_and_faq.sql');
-const migrationRetry = read('../supabase/migrations/20261117212701_correct_inconsistent_tour_itinerary_and_faq.sql');
-const migrationRelease = read('../supabase/migrations/20261117233000_correct_inconsistent_tour_itinerary_and_faq.sql');
+const readJson = (path: string) => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8'));
+const readText = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8');
+const pkg = readJson('../package.json');
+const workflow = readText('../.github/workflows/ci.yml');
+const server = readText('../server.ts');
+const migration = readText('../supabase/migrations/20261117212644_correct_inconsistent_tour_itinerary_and_faq.sql');
+const migrationRetry = readText('../supabase/migrations/20261117212701_correct_inconsistent_tour_itinerary_and_faq.sql');
+const migrationRelease = readText('../supabase/migrations/20261117233000_correct_inconsistent_tour_itinerary_and_faq.sql');
 
 for (const name of ['vite', '@vitejs/plugin-react', '@tailwindcss/vite']) {
   assert.ok(pkg.devDependencies?.[name], name + ' must remain a development/build dependency');
