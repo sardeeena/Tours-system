@@ -1,0 +1,376 @@
+{
+  "schema_version": 1,
+  "locale": "pl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "tour": 5,
+    "source_records": 5
+  },
+  "records": [
+    {
+      "entity_type": "tour",
+      "entity_key": "74bfe543-678a-470f-958b-34087125a56b",
+      "source_slug": "sinai-adventure-colored-canyon-blue-hole-dahab",
+      "translated_slug": "przygoda-synaj-colored-canyon-blue-hole-dahab",
+      "locale": "pl",
+      "title": "Przygoda na Synaju: Colored Canyon, Blue Hole i Dahab",
+      "summary": "Od krętych pustynnych wąwozów po krystalicznie czyste wody Dahab — czeka Cię dzień pełen cudów natury, lokalnego uroku i niezapomnianych chwil na Synaju.",
+      "seo_title": "Przygoda na Synaju: Colored Canyon, Blue Hole i Dahab | Awesome Adventure Tours",
+      "seo_description": "Odkryj Colored Canyon, Blue Hole i Dahab podczas jednodniowej wycieczki z Sharm el-Sheikh, z pustynnymi krajobrazami, czasem nad morzem i opcjonalnymi atrakcjami.",
+      "duration": "8 godzin",
+      "pickup_info": "Odbiór z hotelu i powrót są wliczone w cenę.",
+      "cancellation_policy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+      "age_restrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+      "content": {
+        "title": "Przygoda na Synaju: Colored Canyon, Blue Hole i Dahab",
+        "description": "Niektóre miejsca najlepiej odkrywać bez pośpiechu, z odrobiną przygody i czasem na chłonięcie otoczenia. Ta podróż po Synaju łączy imponujące piękno Colored Canyon, spokojne wybrzeże Dahab i niezwykły podwodny świat Morza Czerwonego.\n\nZostaw za sobą ruchliwe ulice Sharm el-Sheikh i wyrusz na pustynię, gdzie warstwy naturalnie zabarwionego piaskowca tworzą krajobraz, którego nie znajdziesz nigdzie indziej. Przejdź między ścianami wąwozu, podziwiaj zmieniające się kolory skał i poczuj, że jesteś blisko natury.\n\nPrzygoda trwa dalej przy Blue Hole w Dahab, gdzie morze ukazuje zupełnie inne oblicze piękna. Spędź trochę czasu nad wodą, wybierz snorkeling, jeśli masz ochotę, i zjedz lunch w otoczeniu nadmorskiego krajobrazu.\n\nBędzie też czas na poznanie spokojniejszej strony Dahab. Wybierz się na tradycyjną przejażdżkę na wielbłądzie wzdłuż wybrzeża, odwiedź lokalne sklepy i poczuj swobodną atmosferę, która wyróżnia to miasteczko. W zależności od wybranego pakietu możesz również dodać przejażdżkę quadem.\n\nNiezależnie od tego, czy podróżujesz we dwoje, z przyjaciółmi czy z rodziną, to okazja, by oderwać się od codziennego planu wakacji i zobaczyć inną stronę Egiptu: rozległe krajobrazy, morską bryzę i wspomnienia, które zabierzesz do domu.",
+        "durationLabel": "8 godzin",
+        "highlights": [
+          "Przejdź przez naturalnie uformowany wąwóz z piaskowca na Synaju",
+          "Przeżyj przygodę off-road przez pustynny krajobraz",
+          "Odwiedź słynne Blue Hole nad Morzem Czerwonym",
+          "Poznaj spokojną atmosferę nadmorskiego Dahab",
+          "Zrób przerwę na lunch z lokalnymi smakami",
+          "Wybierz tradycyjną przejażdżkę na wielbłądzie wzdłuż morza",
+          "Odwiedź małe sklepy i lokalne stragany w Dahab",
+          "Dodaj przejażdżkę quadem, jeśli jest dostępna, aby przeżyć więcej przygód"
+        ],
+        "itinerary": [],
+        "included": [
+          "Odbiór z hotelu i powrót w Sharm el-Sheikh",
+          "Zwiedzanie Colored Canyon z przewodnikiem",
+          "Safari jeepem po pustyni Synaj",
+          "Wizyta w Blue Hole, zależnie od wybranego pakietu",
+          "Przejażdżka na wielbłądzie, jeśli jest wliczona w wybraną opcję",
+          "Czas wolny na zwiedzanie Dahab",
+          "Opieka przewodnika podczas wycieczki",
+          "Lunch w lokalnej restauracji"
+        ],
+        "excluded": [
+          "Wypożyczenie sprzętu do snorkelingu",
+          "Opłaty za wstęp do Blue Hole, jeśli nie są wliczone w pakiet",
+          "Przejażdżka quadem, chyba że została wybrana i opłacona",
+          "Napoje i dodatkowe jedzenie",
+          "Zakupy osobiste i pamiątki",
+          "Napiwki",
+          "Usługi niewymienione wyraźnie w elementach wliczonych w rezerwację"
+        ],
+        "faqs": [
+          {
+            "question": "Czy sprzęt do snorkelingu jest wliczony w cenę, czy muszę zabrać własny?",
+            "answer": "Na pokładzie dostępne są bezpłatne, czyszczone maski, rurki i płetwy w rozmiarach dla dorosłych i dzieci.",
+            "section": "faq"
+          },
+          {
+            "question": "Czy osoby, które nie potrafią pływać, mogą bezpiecznie uczestniczyć?",
+            "answer": "Tak. Dostępne są kamizelki ratunkowe zatwierdzone przez straż przybrzeżną, a certyfikowani instruktorzy nurkowania pomagają gościom w wodzie.",
+            "section": "faq"
+          }
+        ],
+        "pickupInfo": "Odbiór z hotelu i powrót są wliczone w cenę.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+        "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+        "labels": {
+          "highlights": "Najważniejsze atrakcje",
+          "itinerary": "Plan wycieczki",
+          "included": "W cenie",
+          "excluded": "Nie w cenie",
+          "faqs": "Najczęstsze pytania",
+          "pickupInfo": "Informacje o odbiorze",
+          "cancellationPolicy": "Zasady anulowania",
+          "ageRestrictions": "Ograniczenia wiekowe",
+          "bookNow": "Rezerwuj teraz",
+          "browseMore": "Zobacz więcej wycieczek"
+        }
+      }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "d55aaf3f-582c-4207-b7dc-ee67f92a3677",
+      "source_slug": "orange-bay-island-boat-trip-from-hurghada",
+      "translated_slug": "rejs-lodzia-orange-bay-z-hurghady",
+      "locale": "pl",
+      "title": "Rejs łodzią na wyspę Orange Bay z Hurghady",
+      "summary": "Spędź piękny dzień na Orange Bay, gdzie turkusowa woda, miękki piasek i kolorowe rafy koralowe tworzą idealne miejsce na odpoczynek od codzienności.",
+      "seo_title": "Rejs łodzią na Orange Bay z Hurghady | Awesome Adventure Tours",
+      "seo_description": "Wybierz się z Hurghady na Orange Bay: plażowanie, postoje na snorkeling, lunch i napoje podczas rejsu po Morzu Czerwonym.",
+      "duration": "7 godzin",
+      "pickup_info": "Bezpłatny odbiór i powrót do lobby hotelowego w całej Hurghadzie.",
+      "cancellation_policy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+      "age_restrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+      "content": {
+        "title": "Rejs łodzią na wyspę Orange Bay z Hurghady",
+        "description": "Wyobraź sobie, że zostawiasz za sobą wybrzeże, czujesz morską bryzę na twarzy i widzisz turkusowe wody Morza Czerwonego rozciągające się we wszystkich kierunkach. Tak rozpoczyna się Twoja przygoda na Orange Bay.\n\nPo odbiorze z hotelu w Hurghadzie pojedziesz do mariny i wejdziesz na pokład łodzi, która zabierze Cię na Orange Bay na wyspie Giftun. Po przybyciu możesz odpocząć na piaszczystej plaży, popływać w przejrzystej wodzie lub po prostu podziwiać piękny krajobraz wyspy.\n\nPrzygoda będzie kontynuowana na morzu, podczas postojów na snorkeling, gdy odkryjesz kolorowe ogrody koralowe i tropikalne ryby. Niezależnie od tego, czy masz już doświadczenie w snorkelingu, czy próbujesz go po raz pierwszy, podwodny świat ma wiele do zaoferowania.\n\nPodczas rejsu zjedz lunch, odśwież się napojami i spędź miło czas z innymi podróżnymi. Wracając do Hurghady, będziesz mieć za sobą wspaniałe połączenie słońca, morza i wyspiarskiego klimatu — dzień daleki od codziennej rutyny.",
+        "durationLabel": "7 godzin",
+        "highlights": [
+          "Odpocznij na pięknych plażach Orange Bay",
+          "Płyń przez krystalicznie czyste wody Morza Czerwonego",
+          "Odkryj kolorowe rafy koralowe i tropikalne ryby",
+          "Skorzystaj z dwóch postojów na snorkeling w różnych miejscach",
+          "Zrelaksuj się na piaszczystej plaży wyspy",
+          "Podczas rejsu zjedz lunch i napij się orzeźwiających napojów",
+          "Zrób piękne zdjęcia z wycieczki na wyspę",
+          "Przeżyj niezapomniany dzień na morzu z Hurghady"
+        ],
+        "itinerary": [],
+        "included": [
+          "Odbiór z hotelu i powrót, zależnie od wybranej strefy odbioru",
+          "Transport klimatyzowanym pojazdem",
+          "Rejs łodzią na Orange Bay na wyspie Giftun",
+          "Czas na odpoczynek na plaży wyspy",
+          "Sprzęt do snorkelingu",
+          "Dwa postoje na snorkeling, zależnie od pogody i warunków na morzu",
+          "Lunch podczas rejsu",
+          "Ciepłe i zimne napoje na pokładzie",
+          "Korzystanie z parasoli plażowych i miejsc do siedzenia, zależnie od dostępności"
+        ],
+        "excluded": [
+          "Dodatkowe opłaty za transfer z niektórych stref odbioru",
+          "Jedzenie i napoje kupowane na wyspie Orange Bay",
+          "Ręczniki i osobiste akcesoria plażowe",
+          "Zdjęcia i filmy wykonywane przez fotografa na pokładzie",
+          "Wydatki osobiste i napiwki"
+        ],
+        "faqs": [
+          {
+            "question": "Czy sprzęt do snorkelingu jest wliczony w cenę, czy muszę zabrać własny?",
+            "answer": "Na pokładzie dostępne są bezpłatne, czyszczone maski, rurki i płetwy w rozmiarach dla dorosłych i dzieci.",
+            "section": "faq"
+          },
+          {
+            "question": "Czy osoby, które nie potrafią pływać, mogą bezpiecznie uczestniczyć?",
+            "answer": "Tak. Dostępne są kamizelki ratunkowe zatwierdzone przez straż przybrzeżną, a certyfikowani instruktorzy nurkowania pomagają gościom w wodzie.",
+            "section": "faq"
+          }
+        ],
+        "pickupInfo": "Bezpłatny odbiór i powrót do lobby hotelowego w całej Hurghadzie.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+        "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+        "labels": {
+          "highlights": "Najważniejsze atrakcje",
+          "itinerary": "Plan wycieczki",
+          "included": "W cenie",
+          "excluded": "Nie w cenie",
+          "faqs": "Najczęstsze pytania",
+          "pickupInfo": "Informacje o odbiorze",
+          "cancellationPolicy": "Zasady anulowania",
+          "ageRestrictions": "Ograniczenia wiekowe",
+          "bookNow": "Rezerwuj teraz",
+          "browseMore": "Zobacz więcej wycieczek"
+        }
+      }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "59b8ecbd-a2a7-4cbf-bbef-dc6f4f1374be",
+      "source_slug": "hurghada-dolphin-watching-snorkeling-boat-trip",
+      "translated_slug": "hurghada-rejs-obserwacja-delfinow-snorkeling",
+      "locale": "pl",
+      "title": "Rejs z Hurghady: obserwacja delfinów i snorkeling",
+      "summary": "Spędź dzień na Morzu Czerwonym, wypatrując dzikich delfinów, odkrywając kolorowe rafy koralowe i delektując się świeżo przygotowanym lunchem na pokładzie.",
+      "seo_title": "Obserwacja delfinów i snorkeling: rejs z Hurghady | Awesome Adventure Tours",
+      "seo_description": "Wyrusz z Hurghady na poszukiwanie dzikich delfinów w Dolphin House, odwiedź dwie rafy na snorkeling i zjedz lunch oraz napij się na pokładzie.",
+      "duration": "Cały dzień (około 7 godzin)",
+      "pickup_info": "Bezpłatny odbiór i powrót do lobby hotelowego w całej Hurghadzie.",
+      "cancellation_policy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+      "age_restrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+      "content": {
+        "title": "Rejs z Hurghady: obserwacja delfinów i snorkeling",
+        "description": "Jest coś wyjątkowego w obserwowaniu delfinów na otwartym morzu. W jednej chwili odpoczywasz, słuchając spokojnego ruchu łodzi, a w następnej możesz zobaczyć grupę delfinów płynących przez błękitną wodę.\n\nDzień rozpocznie się od odbioru z hotelu w Hurghadzie i transferu do mariny, gdzie będzie czekać łódź. Popłyniesz w kierunku Dolphin House, znanego również jako Sha'ab El Erg — obszaru rafowego słynącego z dzikich delfinów długoszczękich.\n\nObserwuj wodę i ciesz się możliwością podziwiania tych pięknych zwierząt w ich naturalnym środowisku. Delfiny są często widywane, ale ich pojawienia się nie można zagwarantować. Załoga przestrzega odpowiedzialnych zasad obserwacji dzikich zwierząt i pozostawia delfinom przestrzeń do swobodnego poruszania się.\n\nPrzygoda będzie kontynuowana podczas dwóch postojów na snorkeling przy rafach koralowych, gdzie odkryjesz kolorowe ryby i fascynujące podwodne krajobrazy. Niezależnie od tego, czy masz doświadczenie w snorkelingu, czy próbujesz go po raz pierwszy, przewodnicy pomogą Ci poczuć się swobodnie.\n\nMiędzy postojami zjedz lunch w formie bufetu, napij się orzeźwiających napojów i odpocznij na pokładzie słonecznym lub w zacienionej części łodzi.\n\nTo coś więcej niż zwykły rejs. To okazja, by zwolnić tempo, cieszyć się morzem, odkrywać podwodne życie i wrócić na ląd ze wspomnieniami niezapomnianego dnia.",
+        "durationLabel": "Cały dzień (około 7 godzin)",
+        "highlights": [
+          "Wypatruj dzikich delfinów długoszczękich w ich naturalnym środowisku",
+          "Płyń przez piękne wody Morza Czerwonego",
+          "Odwiedź słynny obszar rafowy Dolphin House",
+          "Odkrywaj dwie rafy koralowe podczas snorkelingu z przewodnikiem",
+          "Poznaj kolorowe tropikalne ryby i inne życie morskie",
+          "Zjedz lunch w formie bufetu i napij się na pokładzie",
+          "Odpocznij na pokładzie słonecznym lub w zacienionej części jachtu",
+          "Przeżyj cały dzień morskiej przygody z Hurghady"
+        ],
+        "itinerary": [],
+        "included": [
+          "Odbiór z hotelu i powrót w Hurghadzie",
+          "Transfer w obie strony klimatyzowanym pojazdem",
+          "Rejs jachtem do Dolphin House i pobliskich raf koralowych",
+          "Możliwość obserwacji dzikich delfinów",
+          "Dwa postoje na snorkeling",
+          "Profesjonalni przewodnicy snorkelingowi",
+          "Sprzęt do snorkelingu: maska, płetwy i kamizelka ratunkowa",
+          "Lunch w formie bufetu na pokładzie",
+          "Przekąski i owoce sezonowe",
+          "Napoje bezalkoholowe, gorące napoje i woda mineralna",
+          "Toaleta na pokładzie, prysznic ze słodką wodą i zacieniona strefa wypoczynku",
+          "Obowiązujące podatki i opłaty serwisowe"
+        ],
+        "excluded": [
+          "Transfery hotelowe z Makadi Bay, Sahl Hasheesh, El Gouny, Safagi lub Soma Bay, chyba że zostały dodane do rezerwacji",
+          "Ręczniki",
+          "Wydatki osobiste i napiwki",
+          "Opcjonalne dodatki niewymienione w wybranym pakiecie"
+        ],
+        "faqs": [
+          {
+            "question": "Czy sprzęt do snorkelingu jest wliczony w cenę, czy muszę zabrać własny?",
+            "answer": "Na pokładzie dostępne są bezpłatne, czyszczone maski, rurki i płetwy w rozmiarach dla dorosłych i dzieci.",
+            "section": "faq"
+          },
+          {
+            "question": "Czy osoby, które nie potrafią pływać, mogą bezpiecznie uczestniczyć?",
+            "answer": "Tak. Dostępne są kamizelki ratunkowe zatwierdzone przez straż przybrzeżną, a certyfikowani instruktorzy nurkowania pomagają gościom w wodzie.",
+            "section": "faq"
+          }
+        ],
+        "pickupInfo": "Bezpłatny odbiór i powrót do lobby hotelowego w całej Hurghadzie.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+        "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+        "labels": {
+          "highlights": "Najważniejsze atrakcje",
+          "itinerary": "Plan wycieczki",
+          "included": "W cenie",
+          "excluded": "Nie w cenie",
+          "faqs": "Najczęstsze pytania",
+          "pickupInfo": "Informacje o odbiorze",
+          "cancellationPolicy": "Zasady anulowania",
+          "ageRestrictions": "Ograniczenia wiekowe",
+          "bookNow": "Rezerwuj teraz",
+          "browseMore": "Zobacz więcej wycieczek"
+        }
+      }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "8737c07b-794e-4189-a7d3-401fd9c8c02b",
+      "source_slug": "hurghada-desert-stargazing-safari-jeep-adventure-bedouin-dinner-telescope-experience",
+      "translated_slug": "hurghada-safari-jeepem-pustynia-beduinowie-kolacja-gwiazdy-teleskop",
+      "locale": "pl",
+      "title": "Safari po pustyni z Hurghady: jeep, kolacja beduińska i obserwacja gwiazd przez teleskop",
+      "summary": "Ucieknij od miejskich świateł i odkryj magię egipskiej pustyni podczas niezapomnianej wieczornej przygody z Hurghady. Przeżyj emocjonującą jazdę terenowym jeepem, poznaj tradycyjną gościnność Beduinów, wybierz się na przejażdżkę na wielbłądzie i podziwiaj zachód słońca. Zakończ wieczór pyszną kolacją i obserwacją gwiazd przez teleskop pod opieką przewodnika astronomicznego.",
+      "seo_title": "Safari po pustyni z Hurghady jeepem i obserwacją gwiazd | Awesome Adventure Tours",
+      "seo_description": "Przeżyj wieczorne safari z Hurghady: jeep 4x4, wioska Beduinów, przejażdżka na wielbłądzie, kolacja i obserwacja gwiazd przez teleskop.",
+      "duration": "5 godzin",
+      "pickup_info": "Bezpłatny odbiór i powrót do lobby hotelowego w całej Hurghadzie.",
+      "cancellation_policy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+      "age_restrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+      "content": {
+        "title": "Safari po pustyni z Hurghady: jeep, kolacja beduińska i obserwacja gwiazd przez teleskop",
+        "description": "## Odkryj magię pustyni po zachodzie słońca\n\nZamień gwar Hurghady na spokojne piękno egipskiej pustyni podczas wyjątkowego wieczornego safari pełnego przygód, kultury i niezapomnianych widoków.\n\nWycieczka rozpoczyna się od odbioru z hotelu i przejazdu do punktu startowego na pustyni. Tam wsiądziesz do mocnego jeepa 4x4 i wyruszysz w surowy pustynny krajobraz. Poczuj emocje podczas jazdy po piaszczystych szlakach i podziwiaj imponujące góry oraz rozległe przestrzenie Pustyni Wschodniej.\n\n## Poznaj tradycyjne życie Beduinów\n\nNastępnie odwiedzisz tradycyjną wioskę Beduinów, gdzie poznasz lokalny styl życia i spotkasz się z serdecznym przyjęciem społeczności. Dowiedz się więcej o zwyczajach i tradycjach, odpocznij w spokojnym otoczeniu i skosztuj autentycznej herbaty beduińskiej.\n\nBędziesz mieć również okazję wybrać się na przejażdżkę na wielbłądzie. To piękny sposób, aby w spokojniejszym tempie doświadczyć pustyni i zrobić wyjątkowe zdjęcia z wakacji.\n\n## Podziwiaj piękny zachód słońca na pustyni\n\nGdy popołudnie przechodzi w wieczór, zatrzymaj się na chwilę, aby obserwować zmieniające się kolory nieba, gdy słońce chowa się za pustynnymi górami. Spokojne otoczenie i spektakularny krajobraz tworzą idealne miejsce na odpoczynek i zdjęcia.\n\n## Pyszna kolacja pod pustynnym niebem\n\nPo zachodzie słońca możesz zasiąść do tradycyjnej kolacji w stylu beduińskim. Spróbuj świeżo przygotowanych potraw w gościnnej pustynnej scenerii, otoczony spokojną atmosferą wieczoru.\n\n## Odkryj cuda nocnego nieba\n\nNajważniejszy punkt przygody czeka po zmroku. Z dala od jasnych świateł miasta pustynia zapewnia doskonałe warunki do poznawania nocnego nieba.\n\nPod opieką doświadczonego przewodnika astronomicznego dowiesz się więcej o gwiazdach, gwiazdozbiorach i niezwykłych ciałach niebieskich. Przez teleskop możesz obserwować Księżyc, planety i inne widoczne obiekty na nocnym niebie. To niezapomniane doświadczenie dla ciekawych świata podróżnych i miłośników astronomii.\n\nPo wieczorze pełnym pustynnej przygody, odkrywania lokalnej kultury, pysznego jedzenia i fascynującej obserwacji gwiazd odpocznij podczas powrotu i wygodnie wróć do hotelu w Hurghadzie.",
+        "durationLabel": "5 godzin",
+        "highlights": [
+          "Odkryj egipską pustynię podczas ekscytującego safari jeepem 4x4",
+          "Odwiedź tradycyjną wioskę Beduinów i poznaj lokalną gościnność",
+          "Wybierz się na spokojną przejażdżkę na wielbłądzie",
+          "Podziwiaj piękny zachód słońca nad pustynnymi górami",
+          "Zjedz pyszną tradycyjną kolację beduińską",
+          "Poznaj gwiazdy i gwiazdozbiory z przewodnikiem astronomicznym",
+          "Obserwuj Księżyc, planety i nocne niebo przez profesjonalny teleskop",
+          "Skorzystaj z wygodnego odbioru z hotelu i powrotu w Hurghadzie"
+        ],
+        "itinerary": [],
+        "included": [
+          "Odbiór z hotelu i powrót w Hurghadzie",
+          "Safari jeepem 4x4 po pustyni",
+          "Wizyta w tradycyjnej wiosce Beduinów",
+          "Przejażdżka na wielbłądzie",
+          "Tradycyjna herbata beduińska",
+          "Kolacja w stylu beduińskim",
+          "Profesjonalny przewodnik",
+          "Sesja obserwacji gwiazd z przewodnikiem",
+          "Sesja z teleskopem"
+        ],
+        "excluded": [
+          "Wydatki osobiste",
+          "Napiwki",
+          "Dodatkowe napoje niewliczone w posiłek",
+          "Opcjonalne zakupy w wiosce Beduinów",
+          "Usługi niewymienione w elementach wliczonych w cenę"
+        ],
+        "faqs": [],
+        "pickupInfo": "Bezpłatny odbiór i powrót do lobby hotelowego w całej Hurghadzie.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+        "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+        "labels": {
+          "highlights": "Najważniejsze atrakcje",
+          "itinerary": "Plan wycieczki",
+          "included": "W cenie",
+          "excluded": "Nie w cenie",
+          "faqs": "Najczęstsze pytania",
+          "pickupInfo": "Informacje o odbiorze",
+          "cancellationPolicy": "Zasady anulowania",
+          "ageRestrictions": "Ograniczenia wiekowe",
+          "bookNow": "Rezerwuj teraz",
+          "browseMore": "Zobacz więcej wycieczek"
+        }
+      }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "0bf0a28b-b49e-4c3e-a076-6d5eb53e8c7d",
+      "source_slug": "hurghada-quad-bike-safari-desert-ride-camel-experience-bedouin-village",
+      "translated_slug": "hurghada-safari-quadami-pustynia-wielblad-wioska-beduinow",
+      "locale": "pl",
+      "title": "Hurghada: safari quadami po pustyni, przejażdżka na wielbłądzie i wioska Beduinów",
+      "summary": "Dodaj przygodę do wakacji w Hurghadzie podczas ekscytującego safari po pustyni quadem lub buggy. Przemierzaj piaszczyste tereny, podziwiaj pustynne panoramy i odwiedź tradycyjną wioskę Beduinów. Uzupełnij wycieczkę wyjątkową przejażdżką na wielbłądzie i poznaj autentyczną gościnność Beduinów. Wybierz poranny wyjazd lub safari o zachodzie słońca.",
+      "seo_title": "Safari quadami w Hurghadzie z przejażdżką na wielbłądzie i wioską Beduinów",
+      "seo_description": "Zarezerwuj safari po pustyni z Hurghady quadem lub buggy, z wizytą w wiosce Beduinów, przejażdżką na wielbłądzie i transferem z hotelu.",
+      "duration": "Pół dnia (około 3 godziny)",
+      "pickup_info": "Bezpłatny odbiór i powrót z hoteli w całej Hurghadzie.",
+      "cancellation_policy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+      "age_restrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+      "content": {
+        "title": "Hurghada: safari quadami po pustyni, przejażdżka na wielbłądzie i wioska Beduinów",
+        "description": "## Ekscytująca przygoda na pustyni z Hurghady\n\nPrzygotuj się na niezapomnianą przygodę poza miastem i odkryj fascynujące pustynne krajobrazy wokół Hurghady. Niezależnie od tego, czy wybierzesz poranny przejazd, czy wyjątkową atmosferę zachodu słońca, safari łączy aktywność na świeżym powietrzu z poznawaniem tradycyjnej kultury Beduinów.\n\nWycieczka rozpoczyna się od odbioru z hotelu w Hurghadzie i transferu do stacji safari, gdzie zaczyna się przygoda.\n\n## Przygotuj się na pustynną przejażdżkę\n\nPo przyjeździe poznasz zespół safari i otrzymasz instruktaż bezpieczeństwa oraz wskazówki dotyczące obsługi wybranego pojazdu. Gdy wszystko będzie gotowe, wyruszysz na ekscytującą przejażdżkę po pustynnym terenie.\n\nW zależności od wybranej opcji możesz prowadzić mocny quad lub buggy. Podążaj za przewodnikiem wyznaczonymi trasami i ciesz się otwartymi przestrzeniami, piaszczystymi szlakami i imponującym pustynnym otoczeniem.\n\nW zależności od wybranej trasy safari przejazd może obejmować również odcinki wzdłuż wybrzeża, dzięki czemu zobaczysz region Morza Czerwonego z innej perspektywy.\n\n## Poznaj tradycyjną gościnność Beduinów\n\nPodczas przygody odwiedzisz tradycyjną wioskę Beduinów i poznasz lokalny styl życia oraz zwyczaje. Zrób sobie spokojną przerwę, poczuj gościnną atmosferę i spróbuj tradycyjnej herbaty lub kawy beduińskiej.\n\nBędziesz mieć również okazję wybrać się na przejażdżkę na wielbłądzie. To wyjątkowy sposób, aby poznać tradycyjne podróżowanie po pustyni i zrobić piękne zdjęcia z wakacji.\n\n## Poranna przygoda lub safari o zachodzie słońca\n\nWybierz porę wyjazdu, która najbardziej Ci odpowiada. Poranne safari pozwala odkrywać pustynię w świeżym świetle dnia, a wyjazd o zachodzie słońca oferuje piękne widoki i wyjątkową atmosferę.\n\nPo zakończeniu aktywności wrócisz do stacji safari, a następnie transfer odwiezie Cię do hotelu w Hurghadzie.\n\nNiezależnie od tego, czy podróżujesz z przyjaciółmi, we dwoje czy z rodziną, to safari doda Twoim wakacjom przygody i lokalnej kultury.",
+        "durationLabel": "Pół dnia (około 3 godziny)",
+        "highlights": [
+          "Przeżyj ekscytujące safari po pustyni z Hurghady",
+          "Wybierz przygodę quadem lub buggy",
+          "Jedź malowniczymi pustynnymi szlakami i przez piaszczyste tereny",
+          "Odwiedź tradycyjną wioskę Beduinów",
+          "Poznaj lokalne zwyczaje i autentyczną gościnność Beduinów",
+          "Wybierz się na wyjątkową przejażdżkę na wielbłądzie",
+          "Spróbuj tradycyjnej herbaty lub kawy beduińskiej",
+          "Wybierz poranny wyjazd lub safari o zachodzie słońca",
+          "Skorzystaj z wygodnego odbioru z hotelu i powrotu w Hurghadzie"
+        ],
+        "itinerary": [],
+        "included": [
+          "Odbiór i powrót z hoteli w Hurghadzie",
+          "Transfer klimatyzowanym pojazdem",
+          "Przejażdżka quadem lub buggy, zależnie od wybranej opcji",
+          "Profesjonalny przewodnik safari",
+          "Instruktaż bezpieczeństwa i wskazówki",
+          "Kask ochronny",
+          "Wizyta w tradycyjnej wiosce Beduinów",
+          "Przejażdżka na wielbłądzie",
+          "Tradycyjna herbata lub kawa beduińska"
+        ],
+        "excluded": [
+          "Opłaty za stację safari i obowiązujące podatki, jeśli są naliczane osobno",
+          "Dodatkowe opłaty za transfer z hoteli poza centrum Hurghady, jeśli mają zastosowanie",
+          "Gogle ochronne i chusta, chyba że są wliczone w wybraną opcję",
+          "Profesjonalne usługi fotograficzne i wideo",
+          "Wydatki osobiste",
+          "Napiwki",
+          "Usługi niewymienione w elementach wliczonych w cenę"
+        ],
+        "faqs": [],
+        "pickupInfo": "Bezpłatny odbiór i powrót z hoteli w całej Hurghadzie.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+        "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+        "labels": {
+          "highlights": "Najważniejsze atrakcje",
+          "itinerary": "Plan wycieczki",
+          "included": "W cenie",
+          "excluded": "Nie w cenie",
+          "faqs": "Najczęstsze pytania",
+          "pickupInfo": "Informacje o odbiorze",
+          "cancellationPolicy": "Zasady anulowania",
+          "ageRestrictions": "Ograniczenia wiekowe",
+          "bookNow": "Rezerwuj teraz",
+          "browseMore": "Zobacz więcej wycieczek"
+        }
+      }
+    }
+  ]
+}
