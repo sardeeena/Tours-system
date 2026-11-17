@@ -60,6 +60,15 @@ const allTourChunkRecords = tourChunkFiles.flatMap((file: string) => readJson('.
 for (const record of allTourChunkRecords) {
   assert.deepEqual(record.source_content_warnings || [], [], 'Split French tour draft has no unresolved source warning: ' + record.source_slug);
 }
+const allTourDrafts = readJson('../translations/fr/all-content.review-draft.json').records.filter((record: any) => record.entity_type === 'tour');
+for (const chunkRecord of allTourChunkRecords) {
+  const canonical = allTourDrafts.find((record: any) => record.entity_key === chunkRecord.entity_key);
+  assert.ok(canonical, 'Split tour draft has a canonical full-bundle record: ' + chunkRecord.entity_key);
+  assert.equal(chunkRecord.translated_slug, canonical.translated_slug, 'Split tour draft uses the canonical French slug: ' + chunkRecord.entity_key);
+  for (const field of ['description','highlights','included','excluded','faqs']) {
+    assert.deepEqual(chunkRecord.content?.[field], canonical.content?.[field], 'Split tour draft matches canonical ' + field + ': ' + chunkRecord.entity_key);
+  }
+}
 const correctedQuadChunk = allTourChunkRecords.find((record: any) => record.entity_key === '18375e31-b866-4f07-b3a8-c13b2a5c243b');
 assert.ok(correctedQuadChunk, 'Corrected El Gouna quad safari exists in its split review draft');
 assert.equal(correctedQuadChunk.content.itinerary.length, 5, 'Split El Gouna quad itinerary has five desert-specific steps');
