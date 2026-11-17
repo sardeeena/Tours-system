@@ -20,8 +20,10 @@ assert.match(workflow, /test:source-content-corrections/,
   'CI must execute the source correction and build-toolchain isolation test');
 
 assert.equal(migrationRetry, migration, 'Both already-recorded Supabase migration versions are represented and the correction is idempotent');
-assert.match(migration, /18375e31-b866-4f07-b3a8-c13b2a5c243b/);
-assert.match(migration, /2f7cbd8c-bda2-4915-b5e4-5fc98927a388/);
+assert.match(migration, /el-gouna-desert-quad-safari-bedouin-village-camel-ride/);
+assert.match(migration, /sharm-el-sheikh-ras-mohammed-magic-lake-snorkeling-adventure/);
+assert.doesNotMatch(migration, /[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i,
+  'Data correction migration must resolve records by stable slugs, not generated UUIDs');
 assert.match(migration, /known_old_rows = 7/);
 assert.match(migration, /refusing to overwrite unreviewed content/);
 assert.match(migration, /Guided desert quad ride/);

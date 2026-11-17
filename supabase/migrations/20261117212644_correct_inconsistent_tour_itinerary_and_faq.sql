@@ -1,13 +1,13 @@
 -- Correct two verified English source-content defects before any locale is published.
--- This migration only changes the two identified records. It is safe on clean local
--- databases where these production content records are not seeded.
+-- Resolve records by their unique, human-maintained slugs; do not pin generated UUIDs.
+-- Safe on clean local databases where these production content records are not seeded.
 
 BEGIN;
 
 DO $migration$
 DECLARE
-  target_quad_tour uuid := '18375e31-b866-4f07-b3a8-c13b2a5c243b';
-  target_ras_tour uuid := '2f7cbd8c-bda2-4915-b5e4-5fc98927a388';
+  target_quad_tour uuid;
+  target_ras_tour uuid;
   itinerary_count integer;
   known_old_rows integer;
   corrected_rows integer;
@@ -15,16 +15,20 @@ DECLARE
   corrupted_faq_answer text := 'Yes! Coast Guard approved flotationA: Yes, the itinerary includes a snorkeling stop at Coral Gardens. Snorkeling equipment may depend on the selected booking option.vests are provided and certified dive masters accompany guests in the water.';
   corrected_faq_answer text := 'A: The itinerary includes a snorkeling stop at Coral Gardens. Snorkeling equipment may depend on the selected booking option.';
 BEGIN
-  IF EXISTS (SELECT 1 FROM public.tours WHERE id = target_quad_tour) THEN
+  SELECT id INTO target_quad_tour
+    FROM public.tours
+   WHERE slug = 'el-gouna-desert-quad-safari-bedouin-village-camel-ride';
+
+  IF target_quad_tour IS NOT NULL THEN
     SELECT count(*),
-           count(*) FILTER (WHERE id IN (
-             '84b610b0-f847-45fc-8f7d-635cce8fc0ed',
-             'a6746548-c0ba-4293-9b9e-e04581b43f82',
-             'b1d4d7f0-7d26-4d33-911c-e01b67014bdd',
-             '6dd99cf6-838d-4bf2-a1d8-e1d1e787d041',
-             '99766122-56db-4ecc-a9da-792a9efe7064',
-             '189f04e7-4948-4698-bba0-121c6ec1e363',
-             '708e633b-2a9d-46c2-812e-7dca7a3f7e6f'
+           count(*) FILTER (WHERE (time, title) IN (
+             ('08:00', 'Hotel pickup'),
+             ('09:00', 'Departure from marina'),
+             ('10:00', 'First snorkeling stop'),
+             ('12:30', 'Lunch onboard'),
+             ('14:00', 'Island beach time'),
+             ('16:30', 'Return to marina'),
+             ('17:00', 'Hotel drop-off')
            ))
       INTO itinerary_count, known_old_rows
       FROM public.tour_itinerary
@@ -44,9 +48,9 @@ BEGIN
     IF itinerary_count = 7 AND known_old_rows = 7 THEN
       DELETE FROM public.tour_itinerary WHERE tour_id = target_quad_tour;
     ELSIF itinerary_count = 5 AND corrected_rows = 5 THEN
-      NULL; -- Already corrected; keep the verified rows.
+      NULL;
     ELSIF itinerary_count = 0 THEN
-      NULL; -- Fresh database or an empty itinerary; insert the verified itinerary below.
+      NULL;
     ELSE
       RAISE EXCEPTION 'Unexpected El Gouna quad itinerary state (% rows, % known old rows, % corrected rows); refusing to overwrite unreviewed content.',
         itinerary_count, known_old_rows, corrected_rows;
@@ -68,19 +72,24 @@ BEGIN
     END IF;
   END IF;
 
-  IF EXISTS (SELECT 1 FROM public.tours WHERE id = target_ras_tour) THEN
+  SELECT id INTO target_ras_tour
+    FROM public.tours
+   WHERE slug = 'sharm-el-sheikh-ras-mohammed-magic-lake-snorkeling-adventure';
+
+  IF target_ras_tour IS NOT NULL THEN
     SELECT answer INTO current_faq_answer
       FROM public.tour_faqs
-     WHERE id = '9fef1847-5c71-412a-aa69-cf330bad85db'
-       AND tour_id = target_ras_tour;
+     WHERE tour_id = target_ras_tour
+       AND question = 'Q: Is snorkeling included in the tour?';
 
     IF current_faq_answer = corrupted_faq_answer THEN
       UPDATE public.tour_faqs
          SET answer = corrected_faq_answer
-       WHERE id = '9fef1847-5c71-412a-aa69-cf330bad85db'
-         AND tour_id = target_ras_tour;
+       WHERE tour_id = target_ras_tour
+         AND question = 'Q: Is snorkeling included in the tour?'
+         AND answer = corrupted_faq_answer;
     ELSIF current_faq_answer = corrected_faq_answer THEN
-      NULL; -- Already corrected.
+      NULL;
     ELSIF current_faq_answer IS NULL THEN
       RAISE EXCEPTION 'Expected Ras Mohammed FAQ row was not found; refusing to silently skip the source correction.';
     ELSE
