@@ -132,9 +132,10 @@ assert.match(server, /function translationStructureMatches[\s\S]*protectedTokens
 assert.match(server, /translated\.content\.template_key !== item\.source\.template_key[\s\S]*JSON\.stringify\(translated\.content\.variables/, 'Communication translation cannot alter template keys, channels or variable names');
 assert.match(server, /select\('entity_type,entity_key,translated_slug,translation_state[\s\S]*workKeys\.has\(x\.entity_type\+':'\+x\.entity_key\)/, 'Bulk generation reserves slugs already used by reviewed or published translations');
 const adminTranslations = read('../src/components/admin/AdminTranslationManager.tsx');
-assert.match(adminTranslations, /Generate selected language/, 'Super Admin can generate drafts for only the currently selected language');
-assert.match(adminTranslations, /const targetLocale = locale;/, 'The admin workflow never loops over other locales');
-assert.match(adminTranslations, /JSON\.stringify\(\{ locale: targetLocale, offset, limit: 10 \}\)/, 'Each generation batch carries exactly one selected locale');
+assert.match(adminTranslations, /Generate French drafts/, 'Super Admin can generate French drafts from this language-specific PR');
+assert.match(adminTranslations, /locale !== 'fr'/, 'French draft generation is disabled when another locale is selected');
+assert.match(adminTranslations, /const targetLocale = 'fr';/, 'This PR draft generator is pinned to French and cannot generate another locale');
+assert.match(adminTranslations, /JSON\.stringify\(\{ locale: targetLocale, offset, limit: 10 \}\)/, 'Each generation batch carries only French');
 assert.match(adminTranslations, /'communication_template'/, 'Super Admin can review communication template translations');
 assert.match(adminTranslations, /6500/, 'Bulk generator respects the server generation rate limit');
 assert.match(bookingRepository, /rpc\('create_booking_atomic_with_locale'/, 'Booking client uses the locale-aware atomic RPC');
