@@ -36,6 +36,21 @@ assert.deepEqual([...sourceKeys].filter((item) => !draftKeys.includes(item)), []
 assert.deepEqual(draftKeys.filter((item) => !sourceKeys.has(item)), [], 'No unexpected Dutch records');
 
 const sourceByKey = new Map(refRecords.map((record) => [key(record), record]));
+const assertStructure = (source: any, translated: any, path: string): void => {
+  if (Array.isArray(source)) {
+    assert.ok(Array.isArray(translated), path + ' remains an array');
+    assert.equal(translated.length, source.length, path + ' preserves array length');
+    source.forEach((value, index) => assertStructure(value, translated[index], path + '[' + index + ']'));
+    return;
+  }
+  if (source && typeof source === 'object') {
+    assert.ok(translated && typeof translated === 'object' && !Array.isArray(translated), path + ' remains an object');
+    assert.deepEqual(Object.keys(translated).sort(), Object.keys(source).sort(), path + ' preserves object keys');
+    for (const field of Object.keys(source)) assertStructure(source[field], translated[field], path + '.' + field);
+    return;
+  }
+  assert.equal(typeof translated, typeof source, path + ' preserves value type');
+};
 for (const record of records) {
   const source = sourceByKey.get(key(record)) as any;
   assert.ok(record.translated_slug, key(record) + ' has a translated slug');
@@ -45,7 +60,7 @@ for (const record of records) {
     assert.ok(record.seo_title?.trim(), key(record) + ' has an SEO title');
     assert.ok(record.seo_description?.trim(), key(record) + ' has an SEO description');
   }
-  assert.deepEqual(Object.keys(record.content || {}).sort(), Object.keys(source.content || {}).sort(), key(record) + ' preserves the content schema');
+  assertStructure(source.content, record.content, key(record) + '.content');
   for (const field of ['highlights','itinerary','included','excluded','faqs','sections','paragraphs']) {
     if (Array.isArray(source.content?.[field])) {
       assert.ok(Array.isArray(record.content[field]), key(record) + ' preserves array ' + field);
