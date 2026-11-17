@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(11);
+SELECT plan(16);
 
 SELECT ok(
   (SELECT prosecdef AND proconfig @> ARRAY['search_path=""']
@@ -92,6 +92,92 @@ SELECT ok(
         OR has_function_privilege('authenticated', p.oid, 'EXECUTE'))
   ),
   'strict pickup enforcement does not expose a client-callable public SECURITY DEFINER function'
+);
+
+-- Runtime integration checks: one pickup-enabled tour without mappings must fail,
+-- while a tour with an explicitly mapped active zone must book and charge its configured fee.
+INSERT INTO public.tours (title, slug, status, price, max_guests, pickup_available)
+VALUES
+  ('pgTAP Strict Pickup Unmapped Tour', 'pgtap-strict-pickup-unmapped', 'published', 100.00, 10, TRUE),
+  ('pgTAP Strict Pickup Mapped Tour', 'pgtap-strict-pickup-mapped', 'published', 100.00, 10, TRUE);
+
+INSERT INTO public.pickup_locations (
+  code, name, area, fee_eur_per_person, fee_eur_flat, is_active, sort_order
+)
+VALUES (
+  'pgtap-strict-pickup-zone', 'pgTAP Strict Pickup Zone', 'Test Area', 5.00, 0.00, TRUE, 999
+);
+
+INSERT INTO public.tour_pickup_locations (tour_id, pickup_location_id)
+SELECT t.id, p.id
+FROM public.tours t
+CROSS JOIN public.pickup_locations p
+WHERE t.slug = 'pgtap-strict-pickup-mapped'
+  AND p.code = 'pgtap-strict-pickup-zone';
+
+INSERT INTO public.tour_availability (tour_id, date, max_capacity, booked_count, status)
+SELECT id, CURRENT_DATE + 45, 10, 0, 'available'
+FROM public.tours
+WHERE slug IN ('pgtap-strict-pickup-unmapped', 'pgtap-strict-pickup-mapped');
+
+CREATE TEMP TABLE strict_pickup_test_results (
+  case_name TEXT PRIMARY KEY,
+  result JSONB NOT NULL
+) ON COMMIT DROP;
+
+INSERT INTO strict_pickup_test_results (case_name, result)
+SELECT 'unmapped', public.create_booking_atomic(
+  'pgtap-strict-pickup-unmapped', CURRENT_DATE + 45, 1, 0, 0,
+  'Strict', 'Unmapped', 'strict-unmapped@example.test', '+201000000071', 'Egypt',
+  'Test Hotel', NULL, NULL, '[]'::jsonb, NULL,
+  'pay_at_pickup', 'ROLLBACK TEST ONLY', 'idem_strict_pickup_unmapped_0001'
+);
+
+SELECT is(
+  (SELECT (result->>'success')::boolean FROM strict_pickup_test_results WHERE case_name = 'unmapped'),
+  FALSE,
+  'a pickup-enabled tour with no explicit active mapping cannot create a booking'
+);
+
+SELECT is(
+  (SELECT result->>'error' FROM strict_pickup_test_results WHERE case_name = 'unmapped'),
+  'Pickup is not configured for this excursion. Please contact our booking team.',
+  'unmapped tour booking returns a clear pickup configuration error'
+);
+
+INSERT INTO strict_pickup_test_results (case_name, result)
+SELECT 'mapped', public.create_booking_atomic(
+  'pgtap-strict-pickup-mapped', CURRENT_DATE + 45, 1, 0, 0,
+  'Strict', 'Mapped', 'strict-mapped@example.test', '+201000000072', 'Egypt',
+  'Test Hotel', 'pgtap-strict-pickup-zone', NULL, '[]'::jsonb, NULL,
+  'pay_at_pickup', 'ROLLBACK TEST ONLY', 'idem_strict_pickup_mapped_0001'
+);
+
+SELECT is(
+  (SELECT (result->>'success')::boolean FROM strict_pickup_test_results WHERE case_name = 'mapped'),
+  TRUE,
+  'a tour with an explicitly mapped active pickup zone can create a booking'
+);
+
+SELECT is(
+  (SELECT (result->>'totalEur')::numeric FROM strict_pickup_test_results WHERE case_name = 'mapped'),
+  105.00::numeric,
+  'the booking charges the mapped zone fee using the authoritative database price'
+);
+
+SELECT ok(
+  EXISTS (
+    SELECT 1
+    FROM public.bookings b
+    JOIN public.pickup_locations p ON p.id = b.pickup_location_id
+    WHERE b.booking_reference = (
+      SELECT result->>'bookingReference'
+      FROM strict_pickup_test_results
+      WHERE case_name = 'mapped'
+    )
+      AND p.code = 'pgtap-strict-pickup-zone'
+  ),
+  'the booking persists the exact mapped pickup location ID'
 );
 
 SELECT * FROM finish();
