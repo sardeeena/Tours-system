@@ -26,7 +26,7 @@ import {
   DbSeoMetadata,
 } from '../types/database';
 import { PickupLocation, BookingExtra } from '../types/booking';
-import { ALL_TOURS, POPULAR_DESTINATIONS, TOUR_CATEGORIES } from '../data/toursData';
+import { ALL_TOURS } from '../data/toursData';
 
 /**
  * Transforms database tour record with related collections into the frontend Tour structure
@@ -1309,7 +1309,7 @@ export async function getPublishedCategories(): Promise<Category[]> {
   }
 
   if (!isSupabaseConfigured()) {
-    return import.meta.env.PROD ? [] : TOUR_CATEGORIES;
+    throw new Error('Supabase is not configured. Published categories cannot be loaded.');
   }
 
   // 1. Fetch published categories ordered by sort_order
@@ -1466,299 +1466,70 @@ export async function getCategories(options?: { publishedOnly?: boolean }): Prom
   return (data || []) as DbCategory[];
 }
 
-const DEFAULT_PICKUP_LOCATIONS: DbPickupLocation[] = [
-  {
-    id: 'hurghada',
-    code: 'hurghada',
-    name: 'Hurghada Hotels (Central)',
-    area: 'Hurghada (Mamsha, Dahar, Sheraton, Marina)',
-    fee_eur_per_person: 0,
-    fee_eur_flat: 0,
-    description: 'Complimentary lobby pickup',
-    is_active: true,
-    sort_order: 1,
-    created_at: '',
-    updated_at: '',
-  },
-  {
-    id: 'el-gouna',
-    code: 'el-gouna',
-    name: 'El Gouna Resorts',
-    area: 'El Gouna Peninsula & Lagoons',
-    fee_eur_per_person: 5,
-    fee_eur_flat: 0,
-    description: 'Shuttle transfer to Marina',
-    is_active: true,
-    sort_order: 2,
-    created_at: '',
-    updated_at: '',
-  },
-  {
-    id: 'makadi-bay',
-    code: 'makadi-bay',
-    name: 'Makadi Bay Resorts',
-    area: 'Makadi Bay Coast',
-    fee_eur_per_person: 5,
-    fee_eur_flat: 0,
-    description: 'Shuttle transfer to Marina',
-    is_active: true,
-    sort_order: 3,
-    created_at: '',
-    updated_at: '',
-  },
-  {
-    id: 'sahl-hasheesh',
-    code: 'sahl-hasheesh',
-    name: 'Sahl Hasheesh Resorts',
-    area: 'Sahl Hasheesh Promenade',
-    fee_eur_per_person: 5,
-    fee_eur_flat: 0,
-    description: 'Shuttle transfer to Marina',
-    is_active: true,
-    sort_order: 4,
-    created_at: '',
-    updated_at: '',
-  },
-  {
-    id: 'safaga',
-    code: 'safaga',
-    name: 'Safaga & Soma Bay',
-    area: 'Soma Bay Peninsula & Safaga Port',
-    fee_eur_per_person: 10,
-    fee_eur_flat: 0,
-    description: 'Dedicated long-range transport',
-    is_active: true,
-    sort_order: 5,
-    created_at: '',
-    updated_at: '',
-  },
-  {
-    id: 'marsa-alam',
-    code: 'marsa-alam',
-    name: 'Marsa Alam Resorts',
-    area: 'Marsa Alam & Port Ghalib coastal resorts',
-    fee_eur_per_person: 10,
-    fee_eur_flat: 0,
-    description: 'Regional shuttle service to local departure hub',
-    is_active: true,
-    sort_order: 6,
-    created_at: '',
-    updated_at: '',
-  },
-  {
-    id: 'sharm-el-sheikh',
-    code: 'sharm-el-sheikh',
-    name: 'Sharm El-Sheikh Hotels',
-    area: 'Naama Bay, Nabq, Sharks Bay, Hadaba, Ras Um Sid',
-    fee_eur_per_person: 0,
-    fee_eur_flat: 0,
-    description: 'Complimentary lobby pickup across Sharm El-Sheikh',
-    is_active: true,
-    sort_order: 7,
-    created_at: '',
-    updated_at: '',
-  },
-];
-
 export async function getPickupLocations(): Promise<DbPickupLocation[]> {
-  if (!isSupabaseConfigured() || isSchemaMissing()) {
-    return DEFAULT_PICKUP_LOCATIONS;
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase is not configured. Pickup locations cannot be loaded.');
+  }
+  if (isSchemaMissing()) {
+    throw new Error('The pickup locations schema is unavailable. Apply the required database migrations.');
   }
 
-  try {
-    const { data, error } = await supabase
-      .from('pickup_locations')
-      .select('*')
-      .eq('is_active', true)
-      .order('sort_order', { ascending: true });
+  const { data, error } = await supabase
+    .from('pickup_locations')
+    .select('*')
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true });
 
-    if (error) {
-      if (isSchemaMissingError(error)) {
-        setSchemaMissing(true);
-        return DEFAULT_PICKUP_LOCATIONS;
-      }
-      console.error('Failed to query pickup locations from Supabase:', formatSupabaseError(error));
-      return DEFAULT_PICKUP_LOCATIONS;
-    }
-    if (!data || data.length === 0) {
-      return DEFAULT_PICKUP_LOCATIONS;
-    }
-    return data as DbPickupLocation[];
-  } catch (err) {
-    if (isSchemaMissingError(err)) {
-      setSchemaMissing(true);
-      return DEFAULT_PICKUP_LOCATIONS;
-    }
-    console.error('Pickup locations query exception:', err);
-    return DEFAULT_PICKUP_LOCATIONS;
+  if (error) {
+    if (isSchemaMissingError(error)) setSchemaMissing(true);
+    throw new Error(formatSupabaseError(error));
   }
+  return (data || []) as DbPickupLocation[];
 }
 
-const DEFAULT_TOUR_EXTRAS: DbTourExtra[] = [
-  {
-    id: 'underwater-photos',
-    name: 'Underwater Photos & Video Package',
-    description: 'Professional photographer captures underwater shots of you and your family.',
-    price_eur: 20,
-    currency: 'EUR',
-    pricing_type: 'per_booking',
-    is_active: true,
-    sort_order: 1,
-    created_at: '',
-    updated_at: '',
-  },
-  {
-    id: 'hotel-transfer-vip',
-    name: 'VIP Private Mercedes Van Transfer',
-    description: 'Direct door-to-marina transfer in private luxury air-conditioned van.',
-    price_eur: 30,
-    currency: 'EUR',
-    pricing_type: 'per_booking',
-    is_active: true,
-    sort_order: 2,
-    created_at: '',
-    updated_at: '',
-  },
-  {
-    id: 'seafood-upgrade',
-    name: 'Fresh Grilled Jumbo Seafood Lunch Upgrade',
-    description: 'Fresh Red Sea jumbo prawns and calamari served sizzling hot onboard.',
-    price_eur: 15,
-    currency: 'EUR',
-    pricing_type: 'per_person',
-    is_active: true,
-    sort_order: 3,
-    created_at: '',
-    updated_at: '',
-  },
-  {
-    id: 'intro-scuba-dive',
-    name: 'Introductory 20-Min Guided Scuba Dive',
-    description: 'Breathe underwater with certified PADI dive instructor. No experience needed.',
-    price_eur: 20,
-    currency: 'EUR',
-    pricing_type: 'per_person',
-    is_active: true,
-    sort_order: 4,
-    created_at: '',
-    updated_at: '',
-  },
-  {
-    id: 'single-quad',
-    name: 'Single Quad',
-    description: 'Single-rider 250cc Yamaha/Honda desert quad bike with safety helmet and goggle rental.',
-    price_eur: 35,
-    currency: 'EUR',
-    pricing_type: 'per_vehicle',
-    is_active: true,
-    sort_order: 5,
-    created_at: '',
-    updated_at: '',
-  },
-  {
-    id: 'double-quad',
-    name: 'Double Quad',
-    description: 'Two-seater desert quad bike for driver and passenger with twin helmet sets.',
-    price_eur: 50,
-    currency: 'EUR',
-    pricing_type: 'per_vehicle',
-    is_active: true,
-    sort_order: 6,
-    created_at: '',
-    updated_at: '',
-  },
-  {
-    id: 'buggy',
-    name: 'Buggy',
-    description: 'Heavy-duty desert roll-cage dune buggy designed for rugged sand dune exploration.',
-    price_eur: 65,
-    currency: 'EUR',
-    pricing_type: 'per_vehicle',
-    is_active: true,
-    sort_order: 7,
-    created_at: '',
-    updated_at: '',
-  },
-  {
-    id: 'additional-safari',
-    name: 'Additional Safari Experience',
-    description: 'Extended Bedouin campfire dinner, traditional tea, astronomy telescope session & sunset camel ride.',
-    price_eur: 20,
-    currency: 'EUR',
-    pricing_type: 'per_person',
-    is_active: true,
-    sort_order: 8,
-    created_at: '',
-    updated_at: '',
-  },
-];
-
 export async function getTourExtras(): Promise<DbTourExtra[]> {
-  if (!isSupabaseConfigured() || isSchemaMissing()) {
-    return DEFAULT_TOUR_EXTRAS;
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase is not configured. Tour extras cannot be loaded.');
+  }
+  if (isSchemaMissing()) {
+    throw new Error('The tour extras schema is unavailable. Apply the required database migrations.');
   }
 
-  try {
-    const { data, error } = await supabase
-      .from('tour_extras')
-      .select('*')
-      .eq('is_active', true)
-      .order('sort_order', { ascending: true });
+  const { data, error } = await supabase
+    .from('tour_extras')
+    .select('*')
+    .eq('is_active', true)
+    .order('sort_order', { ascending: true });
 
-    if (error) {
-      if (isSchemaMissingError(error)) {
-        setSchemaMissing(true);
-        return DEFAULT_TOUR_EXTRAS;
-      }
-      console.error('Failed to query tour extras from Supabase:', formatSupabaseError(error));
-      return DEFAULT_TOUR_EXTRAS;
-    }
-    if (!data || data.length === 0) {
-      return DEFAULT_TOUR_EXTRAS;
-    }
-    return data as DbTourExtra[];
-  } catch (err) {
-    if (isSchemaMissingError(err)) {
-      setSchemaMissing(true);
-      return DEFAULT_TOUR_EXTRAS;
-    }
-    console.error('Tour extras query exception:', err);
-    return DEFAULT_TOUR_EXTRAS;
+  if (error) {
+    if (isSchemaMissingError(error)) setSchemaMissing(true);
+    throw new Error(formatSupabaseError(error));
   }
+  return (data || []) as DbTourExtra[];
 }
 
 /**
  * Lists ALL tour extras (both active and inactive) for administrative CRUD and sorting.
  */
 export async function adminListTourExtras(): Promise<DbTourExtra[]> {
-  if (!isSupabaseConfigured() || isSchemaMissing()) {
-    return DEFAULT_TOUR_EXTRAS;
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase is not configured. Admin tour extras cannot be loaded.');
+  }
+  if (isSchemaMissing()) {
+    throw new Error('The tour extras schema is unavailable. Apply the required database migrations.');
   }
 
-  try {
-    const { data, error } = await supabase
-      .from('tour_extras')
-      .select('*')
-      .order('sort_order', { ascending: true })
-      .order('created_at', { ascending: false });
+  const { data, error } = await supabase
+    .from('tour_extras')
+    .select('*')
+    .order('sort_order', { ascending: true })
+    .order('created_at', { ascending: false });
 
-    if (error) {
-      if (isSchemaMissingError(error)) {
-        setSchemaMissing(true);
-        return DEFAULT_TOUR_EXTRAS;
-      }
-      console.error('Failed to query admin tour extras from Supabase:', formatSupabaseError(error));
-      return DEFAULT_TOUR_EXTRAS;
-    }
-    return (data || []) as DbTourExtra[];
-  } catch (err) {
-    if (isSchemaMissingError(err)) {
-      setSchemaMissing(true);
-      return DEFAULT_TOUR_EXTRAS;
-    }
-    console.error('Admin tour extras query exception:', err);
-    return DEFAULT_TOUR_EXTRAS;
+  if (error) {
+    if (isSchemaMissingError(error)) setSchemaMissing(true);
+    throw new Error(formatSupabaseError(error));
   }
+  return (data || []) as DbTourExtra[];
 }
 
 /**
