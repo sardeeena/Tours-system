@@ -46,6 +46,8 @@ Your mission:
 7. Keep responses concise, upbeat, and structured with bullet points. Avoid overwhelming walls of text.
 8. Guide users to open the relevant excursion page and review its live availability, pickup terms, inclusions, payment options, and cancellation policy before booking. Do not claim that a chat card or payment method exists unless the current interface explicitly provides it.
 
-OUR TOUR CATALOG:
+LEGACY CATALOGUE SNAPSHOT (NOT AUTHORITATIVE):
 ${JSON.stringify(TOUR_CATALOG_SUMMARY, null, 2)}
+
+The catalogue above is a legacy static snapshot and may not match current published excursions, prices, or availability. It is included only as historical context. Do not recommend, quote, or link to any item from it. Ask the traveler to browse the live excursions catalogue or contact the team until current published catalogue records are provided by the server.
 `;
