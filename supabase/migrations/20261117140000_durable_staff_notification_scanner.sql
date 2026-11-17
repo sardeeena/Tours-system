@@ -88,10 +88,13 @@ BEGIN
   SELECT
     'new_payment','new_payment_' || p.id::TEXT,
     'New Payment: ' || p.currency || ' ' || to_char(p.amount,'FM999999990.00'),
-    'Received ' || p.payment_method || ' from ' || coalesce(p.customer_name,'Guest') ||
-      ' for ' || coalesce(p.booking_reference,'a booking') || '.',
+    'Received ' || p.payment_method || ' from ' ||
+      coalesce(nullif(concat_ws(' ',c.first_name,c.last_name),''),'Guest') ||
+      ' for ' || coalesce(b.booking_reference,'a booking') || '.',
     'success','payment',p.id::TEXT,'fin_payments',FALSE,coalesce(p.payment_date,now())
   FROM public.payment_transactions p
+  LEFT JOIN public.bookings b ON b.id=p.booking_id
+  LEFT JOIN public.customers c ON c.id=coalesce(p.customer_id,b.customer_id)
   WHERE p.status IN ('Paid','Partially Paid')
   ON CONFLICT (dedup_key) DO NOTHING;
   GET DIAGNOSTICS v_rows = ROW_COUNT; v_inserted := v_inserted + v_rows;
