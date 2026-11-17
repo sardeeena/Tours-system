@@ -21,11 +21,17 @@ Run with a server-only Supabase secret in the environment:
 npm run translations:export -- ./translation-source.json
 ```
 
-The export contains published tours and their itinerary/highlights/inclusions/exclusions/FAQs, published destinations, currently published blog posts, and published CMS pages. AI bulk generation also covers the homepage, English communication templates, and the complete UI catalog. It includes source checksums. Treat the export as confidential operational content; do not commit it to the repository.
+The export contains the exact source records used by the translation workspace: published tours and their full related itinerary/highlights/inclusions/exclusions/FAQs rows, published destinations, currently published blog posts, English communication templates (including inactive templates still present in the source catalogue), the homepage, published CMS pages, fallback static pages, and the complete public plus private UI catalogue. It includes source checksums. Treat the export as confidential operational content; do not commit it to the repository.
 
 ## Translation bundle format
 
-Create `translation-drafts.json` using schema_version `1`. Each record carries the same `entity_type`, `entity_key`, `locale`, and `source_checksum` from the source bundle, plus `title`, `translated_slug`, `summary`, `seo_title`, `seo_description`, and a structured `content` object. Include one record per source record and target locale across the 28 non-English locale codes. Do not omit structured arrays or operational fields. The UI catalog is managed separately through the Super Admin translation workspace because it must translate every English UI key.
+The French review drafts are stored under `translations/fr/`. Once all source records have been translated, assemble an importable bundle against a fresh source export:
+
+```sh
+npm run translations:assemble-fr -- ./translation-source.json ./translation-drafts-fr.json
+```
+
+The assembler requires exact coverage of the live source bundle, attaches current SHA-256 checksums, preserves the original IDs and metadata in nested tour rows, and rejects mismatched arrays, placeholders, URLs, email addresses, phone numbers, numeric facts and duplicate slugs. It does not write to the database. The resulting file can be checked with the dry-run import command below. Do not omit structured arrays or operational fields.
 
 ## Validate and import drafts
 

@@ -61,7 +61,8 @@
     "test:french-rollout": "tsx scripts/test_french_rollout.ts",
     "test:whatsapp-locale-mapping": "tsx scripts/test_whatsapp_locale_mapping.ts",
     "test:pickup-policy": "tsx scripts/test_strict_pickup_policy.ts",
-    "test:french-content-drafts": "tsx scripts/test_french_content_drafts.ts"
+    "test:french-content-drafts": "tsx scripts/test_french_content_drafts.ts",
+    "translations:assemble-fr": "tsx scripts/assemble_french_import_bundle.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
