@@ -109,7 +109,7 @@ assert.match(bookingLocaleMigration, /CREATE OR REPLACE FUNCTION public\.create_
 assert.match(bookingLocaleMigration, /customer_locale = p_customer_locale/, 'Booking locale is persisted in the booking transaction');
 assert.match(bookingLocaleMigration, /preferred_locale = p_customer_locale/, 'Customer communication preference is updated with the booking');
 assert.match(bookingLocaleMigration, /NOT IN \('en', 'de', 'it', 'ro', 'ru'\)/, 'Original locale migration establishes the initial allowlist');
-assert.match(expandedBookingLocaleMigration, /NOT IN \\('en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'\\)/, 'Historical migration records the initial ten-locale allowlist');
+assert.match(expandedBookingLocaleMigration, /NOT IN \('en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'\)/, 'Historical migration records the initial ten-locale allowlist');
 assert.match(allCustomerLocalesMigration, /NOT IN/, 'Forward migration replaces the atomic booking locale allowlist.');
 for (const locale of ['en', 'de', 'fr', 'it', 'es', 'nl', 'pl', 'pt', 'ro', 'ru', 'sv', 'da', 'nb', 'fi', 'el', 'bg', 'hr', 'cs', 'sk', 'sl', 'hu', 'et', 'lv', 'lt', 'uk', 'sr', 'sq', 'tr', 'ar']) {
   assert.ok(allCustomerLocalesMigration.includes(`'${locale}'`), `Forward migration allows booking locale ${locale}`);
