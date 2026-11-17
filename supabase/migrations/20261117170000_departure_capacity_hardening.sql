@@ -54,7 +54,7 @@ BEGIN
   IF p_end_time <= p_start_time THEN
     RAISE EXCEPTION 'Departure end time must be later than its start time' USING ERRCODE = '22023';
   END IF;
-  IF p_departure_id IS NULL AND p_date < current_date THEN
+  IF p_departure_id IS NULL AND p_date < (now() AT TIME ZONE 'Africa/Cairo')::DATE THEN
     RAISE EXCEPTION 'A new departure cannot be scheduled in the past' USING ERRCODE = '22023';
   END IF;
   IF v_status NOT IN ('scheduled','confirmed','boarding','in_progress','completed','cancelled') THEN
