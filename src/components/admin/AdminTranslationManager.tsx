@@ -92,8 +92,7 @@ export const AdminTranslationManager: React.FC = () => {
     let generatedCount = 0;
     let skippedCount = 0;
     try {
-      {
-        let offset = 0;
+      let offset = 0;
         let done = false;
         while (!done) {
           const result = await request('/api/admin/translations/generate-batch', {
@@ -104,12 +103,11 @@ export const AdminTranslationManager: React.FC = () => {
           done = Boolean(result.done);
           generatedCount += Number(result.processed || 0);
           skippedCount += Number(result.skipped || 0);
-          setGenerationProgress(targetLocale.toUpperCase() + ': ' + offset + '/' + result.total + ' source records · ' + generatedCount + ' drafts saved · ' + skippedCount + ' skipped · one selected language);
+          setGenerationProgress(targetLocale.toUpperCase() + ': ' + offset + '/' + result.total + ' source records · ' + generatedCount + ' drafts saved · ' + skippedCount + ' skipped · French only');
           if (!done) {
             await new Promise(resolve => window.setTimeout(resolve, 6500));
           }
         }
-      }
       const result = await request('/api/admin/translations?locale=' + encodeURIComponent(targetLocale));
       setRows(result.translations || []);
       if (skippedCount > 0) {
