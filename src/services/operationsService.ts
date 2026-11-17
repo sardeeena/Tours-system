@@ -474,35 +474,37 @@ export async function createDeparture(data: Partial<DepartureEntity>): Promise<{
     return { success: false, error: 'Supabase is not configured; the departure was not saved.' };
   }
 
-  const payload = {
-    tour_id: newDeparture.tour_id,
-    date: newDeparture.date,
-    start_time: newDeparture.start_time,
-    end_time: newDeparture.end_time,
-    capacity: newDeparture.capacity,
-    booked_passengers: newDeparture.booked_passengers,
-    remaining_capacity: newDeparture.remaining_capacity,
-    status: newDeparture.status,
-    guide_id: newDeparture.guide_id,
-    vessel_id: newDeparture.vessel_id,
-    captain_id: newDeparture.captain_id,
-    driver_id: newDeparture.driver_id,
-    driver_name: newDeparture.driver_name,
-    vehicle_name: newDeparture.vehicle_name,
-    crew_ids: newDeparture.crew_ids,
-    notes: newDeparture.notes,
-  };
+  const { data: rpcData, error: rpcError } = await supabase.rpc('upsert_departure_with_availability', {
+    p_departure_id: data.id || null,
+    p_tour_id: newDeparture.tour_id,
+    p_date: newDeparture.date,
+    p_start_time: newDeparture.start_time,
+    p_end_time: newDeparture.end_time,
+    p_capacity: newDeparture.capacity,
+    p_status: newDeparture.status,
+    p_vessel_id: newDeparture.vessel_id,
+    p_guide_id: newDeparture.guide_id,
+    p_driver_id: newDeparture.driver_id,
+    p_notes: newDeparture.notes,
+  });
 
-  const result = data.id
-    ? await supabase.from('departures').update(payload).eq('id', data.id).select().single()
-    : await supabase.from('departures').insert(payload).select().single();
-
-  if (result.error || !result.data) {
-    return { success: false, error: result.error ? formatSupabaseError(result.error) : 'The departure was not returned after saving.' };
+  if (rpcError) {
+    return { success: false, error: formatSupabaseError(rpcError) };
   }
 
-  newDeparture.id = result.data.id;
-  return { success: true, departure: newDeparture };
+  const result = rpcData as any;
+  if (result?.success !== true || !result?.departure?.id) {
+    return { success: false, error: result?.error || 'The database did not confirm the departure and availability update.' };
+  }
+
+  const savedDeparture: DepartureEntity = {
+    ...newDeparture,
+    ...result.departure,
+    id: result.departure.id,
+    booked_passengers: Number(result.departure.booked_passengers || 0),
+    remaining_capacity: Number(result.departure.remaining_capacity || 0),
+  };
+  return { success: true, departure: savedDeparture };
 }
 
 /**
