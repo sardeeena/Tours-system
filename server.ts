@@ -645,6 +645,37 @@ app.get('/api/health', rateLimit(120, 60_000), (_req: Request, res: Response) =>
   });
 });
 
+// Readiness is separate from liveness: it verifies that the public application
+// can reach its RLS-scoped production catalogue without disclosing credentials.
+app.get('/api/health/ready', rateLimit(30, 60_000), async (_req: Request, res: Response) => {
+  if (!publicSupabase) {
+    return res.status(503).json({
+      status: 'not_ready',
+      checks: { database: 'unavailable' },
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  const { error } = await publicSupabase
+    .from('tours')
+    .select('id', { head: true, count: 'exact' })
+    .eq('status', 'published');
+
+  if (error) {
+    return res.status(503).json({
+      status: 'not_ready',
+      checks: { database: 'unavailable' },
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  return res.json({
+    status: 'ready',
+    checks: { database: 'ok' },
+    timestamp: new Date().toISOString(),
+  });
+});
+
 // ------------------------------------------------------------------------------
 // 2A. Server-side communications status and delivery endpoints
 // Provider secrets are read only from Hostinger/server environment variables.
