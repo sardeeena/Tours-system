@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "locale": "nl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "communication_template": 3,
+    "source_records": 3
+  },
+  "records": [
+    {
+      "entity_type": "communication_template",
+      "entity_key": "f2916b63-45b6-49aa-94a0-180c4ac026dc",
+      "translated_slug": "template-antwoord-informatieverzoek",
+      "title": "Antwoord op informatieverzoek",
+      "summary": "Over je aanvraag - Awesome Adventure Tours",
+      "content": {
+        "name": "Antwoord op informatieverzoek",
+        "subject": "Over je aanvraag - Awesome Adventure Tours",
+        "body_text": "Hallo {{customer_name}},\n\nBedankt voor je interesse in Awesome Adventure Tours. Ons team bekijkt je aanvraag en helpt je graag verder.\n\nMet vriendelijke groet,\nHet reizigerservaringsteam van Awesome Adventure Tours",
+        "variables": [
+          "customer_name"
+        ],
+        "channel": "Both",
+        "template_key": "inquiry_response"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "2fe01cb2-58ed-41f6-aaa0-186fdfb78e5f",
+      "translated_slug": "template-welkom-nieuwsbrief",
+      "title": "Welkom bij de nieuwsbrief",
+      "summary": "Welkom bij Awesome Adventure Tours — je kortingsvoucher van 15%",
+      "content": {
+        "name": "Welkom bij de nieuwsbrief",
+        "subject": "Welkom bij Awesome Adventure Tours — je kortingsvoucher van 15%",
+        "body_text": "Bedankt voor je inschrijving op de nieuwsbrief van Awesome Adventure Tours. Je kortingscode van 15% is {{discount_code}}. Gebruik deze wanneer je informatie opvraagt over je volgende excursie.\n\nJe kunt je op elk moment uitschrijven: {{unsubscribe_url}}",
+        "variables": [
+          "discount_code",
+          "unsubscribe_url"
+        ],
+        "channel": "Email",
+        "template_key": "newsletter_welcome"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "286f3159-e9a2-4038-bcd8-ad2a0ec53079",
+      "translated_slug": "template-betalingsbevestiging",
+      "title": "Betalingsbevestiging",
+      "summary": "Betalingsbevestiging: {{booking_reference}} - Awesome Adventure Tours",
+      "content": {
+        "name": "Betalingsbevestiging",
+        "subject": "Betalingsbevestiging: {{booking_reference}} - Awesome Adventure Tours",
+        "body_text": "Hallo {{customer_name}},\n\nWe hebben je betaling van {{amount}} voor boeking {{booking_reference}} ({{tour_name}}) succesvol verwerkt.\n\nResterend saldo: {{balance_due}}\n\nBedankt,\nDe financiële afdeling van Awesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "amount",
+          "balance_due"
+        ],
+        "channel": "Both",
+        "template_key": "payment_confirmation"
+      }
+    }
+  ]
+}
