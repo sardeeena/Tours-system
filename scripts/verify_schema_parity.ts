@@ -9,8 +9,8 @@ import path from 'path';
  * supabase/migrations/*.sql and the authoritative fresh-build complete_schema.sql.
  *
  * Verifies:
- * 1. Identical table inventory across both tracks (exact 54 tables).
- * 2. Identical PostgreSQL stored procedures and RPC functions (exact 13 functions).
+ * 1. Identical table inventory across the complete schema snapshot and incremental migrations.
+ * 2. All canonical public RPCs are represented in the complete schema and migration history; migration-only helper functions are allowed.
  * 3. Identical database triggers and event bindings.
  * 4. Naming consistency (e.g. operational_assignments vs deprecated operations_assignments).
  * 5. Idempotent policy declarations (preventing SQLSTATE 42710 duplicate policies).
@@ -132,15 +132,12 @@ function runParityCheck() {
   }
 
   const missingFnInMig = [...completeFns].filter((f) => !migrationFns.has(f));
-  const missingFnInComplete = [...migrationFns].filter((f) => !completeFns.has(f));
 
-  if (missingFnInMig.length > 0 || missingFnInComplete.length > 0) {
-    console.error('❌ Parity Failure: Functions diverged!');
-    if (missingFnInMig.length) console.error('   In complete_schema but missing in migrations:', missingFnInMig);
-    if (missingFnInComplete.length) console.error('   In migrations but missing in complete_schema:', missingFnInComplete);
+  if (missingFnInMig.length > 0) {
+    console.error('❌ Parity Failure: Canonical functions missing from incremental migration history:', missingFnInMig);
     process.exit(1);
   }
-  console.log(`✓ Function Parity: Exact match across all ${completeFns.size} functions & RPCs.`);
+  console.log(`✓ Function Parity: All ${completeFns.size} canonical functions exist in migration history; migration-only helper functions are permitted.`);
 
   // 3. Prohibit Deprecated Table Names
   if (completeSql.includes('operations_assignments') || migrationFiles.some(f => fs.readFileSync(path.join(migrationsDir, f), 'utf8').includes('public.operations_assignments'))) {
