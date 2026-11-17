@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(15);
+SELECT plan(16);
 
 SELECT ok(
   position('COALESCE(v_tour.pickup_available, FALSE)' in pg_get_functiondef(
