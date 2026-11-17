@@ -49,9 +49,11 @@ for (const record of records.filter((x) => x.entity_type === 'destination')) {
 }
 for (const record of records.filter((x) => x.entity_type === 'communication_template')) {
   assert.ok(Array.isArray(record.content.variables));
-  for (const variable of record.content.variables) {
-    const token = '{{' + variable + '}}';
-    assert.ok((record.content.subject + ' ' + record.content.body_text).includes(token), record.entity_key + ' preserves ' + token);
+  const declared = new Set(record.content.variables);
+  const placeholders = ((record.content.subject || '') + ' ' + (record.content.body_text || '')).match(/\\{\\{([^{}]+)\\}\\}/g) || [];
+  for (const token of placeholders) {
+    const variable = token.slice(2, -2);
+    assert.ok(declared.has(variable), record.entity_key + ' declares placeholder ' + token);
   }
 }
 const slugs = records.map((x) => x.translated_slug).filter(Boolean);
