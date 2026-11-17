@@ -26,6 +26,12 @@ export const SUPPORTED_LANGUAGES: Partial<Record<LanguageCode, LanguageConfig>> 
     localName: 'Italiano',
     flag: '🇮🇹',
   },
+  nl: {
+    code: 'nl',
+    name: 'Dutch',
+    localName: 'Nederlands',
+    flag: '🇳🇱',
+  },
   ro: {
     code: 'ro',
     name: 'Romanian',
@@ -70,7 +76,7 @@ export const EUROPEAN_LOCALE_ROLLOUT: readonly LocaleRolloutConfig[] = [
   { code: 'ru', englishName: 'Russian', nativeName: 'Русский', region: 'europe', rollout: 'active', direction: 'ltr' },
   { code: 'fr', englishName: 'French', nativeName: 'Français', region: 'europe', rollout: 'planned', direction: 'ltr' },
   { code: 'es', englishName: 'Spanish', nativeName: 'Español', region: 'europe', rollout: 'planned', direction: 'ltr' },
-  { code: 'nl', englishName: 'Dutch', nativeName: 'Nederlands', region: 'europe', rollout: 'planned', direction: 'ltr' },
+  { code: 'nl', englishName: 'Dutch', nativeName: 'Nederlands', region: 'europe', rollout: 'active', direction: 'ltr' },
   { code: 'pl', englishName: 'Polish', nativeName: 'Polski', region: 'europe', rollout: 'planned', direction: 'ltr' },
   { code: 'pt', englishName: 'Portuguese', nativeName: 'Português', region: 'europe', rollout: 'planned', direction: 'ltr' },
   { code: 'sv', englishName: 'Swedish', nativeName: 'Svenska', region: 'europe', rollout: 'planned', direction: 'ltr' },
