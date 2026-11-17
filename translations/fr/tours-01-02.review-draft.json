@@ -1,0 +1,133 @@
+{
+  "locale": "fr",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "records": [
+    {
+      "entity_type": "tour",
+      "entity_key": "b3524f6e-ef5a-4585-ae5a-d6569e3a1468",
+      "source_slug": "afternoon-desert-safari-with-echo-mountains-bedouin-village",
+      "translated_slug": "safari-desert-apres-midi-montagnes-echo-village-bedouin",
+      "title": "Safari dans le désert l’après-midi avec les montagnes de l’Écho et un village bédouin",
+      "summary": "Vivez une aventure en quad au départ de Charm el-Cheikh à travers le désert du Sinaï. Découvrez les montagnes de l’Écho et un village bédouin, dégustez un thé traditionnel et choisissez en option une balade à dos de chameau, un dîner et un spectacle bédouin.",
+      "content": {
+        "short_description": "Vivez une aventure en quad au départ de Charm el-Cheikh. Parcourez le désert du Sinaï, découvrez les montagnes de l’Écho et un village bédouin, dégustez un thé traditionnel et choisissez en option une balade à dos de chameau, un dîner et un spectacle bédouin.",
+        "description": "Échappez à l’agitation des stations balnéaires et plongez au cœur du spectaculaire désert du Sinaï lors d’une aventure palpitante en quad au départ de Charm el-Cheikh.\n\nAprès votre prise en charge à l’hôtel, vous rejoindrez le point de départ dans le désert. Votre guide professionnel vous présentera le quad, vous expliquera les commandes de base et les règles de sécurité, puis vous laissera le temps de vous exercer avant le départ.\n\nLorsque tout le monde sera prêt, l’aventure pourra commencer. Parcourez les vastes étendues désertiques sur des pistes spécialement sélectionnées, entourées par les reliefs accidentés du sud du Sinaï. Les paysages changeants, les formations rocheuses et le calme du désert vous feront découvrir la région sous un tout autre angle.\n\nPendant la randonnée, vous atteindrez les fascinantes montagnes de l’Écho, une formation naturelle où les rochers environnants produisent un remarquable effet d’écho. Prenez le temps de tester cet effet, d’admirer le paysage et de prendre des photos avant de poursuivre votre route.\n\nL’aventure se poursuit vers un village bédouin traditionnel. Vous pourrez y faire une pause, déguster un authentique thé bédouin et découvrir un aperçu de la vie dans le désert.\n\nPour les participants qui choisissent la formule en soirée, l’expérience se prolonge après la randonnée en quad avec des vues sur le coucher du soleil, un dîner et un spectacle traditionnel bédouin.\n\nQue vous choisissiez un quad partagé, votre propre quad ou une formule privée, cette excursion associe aventure, paysages désertiques, culture locale et panoramas montagneux pour une expérience mémorable.",
+        "highlights": [
+          "Parcourez le désert du Sinaï en quad",
+          "Explorez environ 30 km de pistes désertiques",
+          "Découvrez le phénomène naturel de l’écho",
+          "Faites des arrêts dans des lieux panoramiques pour prendre des photos",
+          "Visitez un village bédouin traditionnel",
+          "Dégustez un thé bédouin traditionnel",
+          "Balade à dos de chameau en option",
+          "Transfert aller-retour depuis votre hôtel",
+          "Briefing de sécurité et instructions pour conduire le quad",
+          "Option de visite privée disponible"
+        ],
+        "included": [
+          "Prise en charge et retour à l’hôtel à Charm el-Cheikh",
+          "Quad tout-terrain",
+          "Guide professionnel dans le désert",
+          "Consignes de sécurité",
+          "Séance d’entraînement avant la randonnée",
+          "Visite des montagnes de l’Écho",
+          "Visite d’un village bédouin",
+          "Thé bédouin traditionnel"
+        ],
+        "excluded": [
+          "Lunettes de protection, sauf si sélectionnées",
+          "Foulard du désert, sauf si sélectionné",
+          "Balade à dos de chameau, sauf si sélectionnée",
+          "Photographies professionnelles",
+          "Dépenses personnelles",
+          "Pourboires",
+          "Tout service non expressément mentionné dans l’option sélectionnée"
+        ],
+        "faqs": [
+          {
+            "question": "L’équipement de snorkeling est-il fourni ou dois-je apporter le mien ?",
+            "answer": "Des masques, tubas et palmes désinfectés, en tailles adulte et enfant, sont fournis gratuitement à bord.",
+            "section": "faq"
+          },
+          {
+            "question": "Les personnes qui ne savent pas nager peuvent-elles participer en toute sécurité ?",
+            "answer": "Oui. Des gilets de flottaison homologués par les garde-côtes sont fournis et des moniteurs de plongée certifiés accompagnent les participants dans l’eau.",
+            "section": "faq"
+          }
+        ]
+      },
+      "seo_title": "Safari dans le désert à Charm el-Cheikh : montagnes de l’Écho et village bédouin",
+      "seo_description": "Partez en quad dans le désert du Sinaï, visitez les montagnes de l’Écho et un village bédouin, et choisissez des options comme le chameau et le dîner.",
+      "duration": "3 heures",
+      "duration_type": "Demi-journée",
+      "departure_time": "14:00",
+      "age_restrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
+      "pickup_info": "La prise en charge et le retour sont inclus dans des véhicules modernes et climatisés.",
+      "cancellation_policy": "Annulation gratuite jusqu’à 24 heures avant l’heure de début de l’excursion."
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "17e6cedc-b281-4528-a42b-35faee49ac57",
+      "source_slug": "cairo-pyramids-sphinx-egyptian-museum-day-trip-from-sharm-el-sheikh",
+      "translated_slug": "excursion-le-caire-pyramides-sphinx-musee-egyptien-depuis-charm-el-cheikh",
+      "title": "Excursion d’une journée au Caire depuis Charm el-Cheikh : pyramides, Sphinx et musée égyptien",
+      "summary": "Partez de Charm el-Cheikh pour une journée inoubliable au Caire. Découvrez les pyramides de Gizeh, admirez le Grand Sphinx et explorez les trésors du musée égyptien avec un égyptologue qualifié. Déjeuner et transferts depuis l’hôtel inclus.",
+      "content": {
+        "short_description": "Partez de Charm el-Cheikh pour une journée inoubliable à la découverte de l’histoire de l’Égypte antique au Caire. Découvrez les célèbres pyramides de Gizeh, admirez le Grand Sphinx et explorez les trésors du musée égyptien avec un égyptologue qualifié. Déjeuner et transferts depuis l’hôtel inclus.",
+        "description": "Profitez pleinement de votre séjour à Charm el-Cheikh grâce à un voyage inoubliable vers la capitale historique de l’Égypte. Cette excursion d’une journée vous emmène des rives de la mer Rouge au cœur de la civilisation égyptienne antique, où vous attendent certains des monuments les plus extraordinaires au monde.\n\nVotre aventure commence par une prise en charge tard dans la nuit à votre hôtel de Charm el-Cheikh. Installez-vous confortablement pour le trajet vers Le Caire, où votre guide égyptologue vous accueillera et vous présentera l’histoire fascinante de la ville et ses trésors antiques.\n\nVotre première grande étape est le musée égyptien du Caire, qui abrite une collection exceptionnelle d’objets anciens couvrant plusieurs milliers d’années. Parcourez ses galeries et découvrez des statues remarquables, des objets royaux et des trésors archéologiques qui racontent l’histoire des grandes civilisations égyptiennes.\n\nPoursuivez vers le plateau de Gizeh, où les majestueuses pyramides de Khéops, Khéphren et Mykérinos dominent le paysage désertique. Admirez ces constructions extraordinaires, découvrez leur édification et leur importance historique, et profitez du temps disponible pour prendre des photos mémorables.\n\nVous vous trouverez également face au Grand Sphinx, monument légendaire au corps de lion et au visage royal, qui veille sur le plateau de Gizeh depuis des milliers d’années.\n\nAprès la découverte de ces sites antiques, profitez d’un déjeuner dans un restaurant local à Gizeh et prenez le temps de découvrir l’atmosphère des environs. Des arrêts shopping sont également prévus au programme.\n\nÀ la fin de cette journée mémorable, vous reprendrez la route vers Charm el-Cheikh et regagnerez votre hôtel après une découverte exceptionnelle de l’histoire et du patrimoine du Caire.\n\nDes trésors royaux antiques aux pyramides intemporelles de Gizeh, cette excursion réunit quelques-uns des sites les plus emblématiques d’Égypte en une seule journée remarquable.",
+        "highlights": [
+          "Découvrez Le Caire lors d’une excursion d’une journée au départ de Charm el-Cheikh",
+          "Explorez le musée égyptien et son remarquable ensemble d’objets de l’Égypte antique",
+          "Visitez les légendaires pyramides de Gizeh, parmi les monuments antiques les plus emblématiques au monde",
+          "Admirez la grande pyramide de Khéops ainsi que les pyramides de Khéphren et de Mykérinos",
+          "Tenez-vous devant le majestueux Grand Sphinx",
+          "Profitez d’un déjeuner dans un restaurant local à Gizeh",
+          "Découvrez l’histoire de l’Égypte antique avec un guide égyptologue qualifié",
+          "Profitez des possibilités de shopping pendant votre visite du Caire",
+          "Voyagez avec prise en charge et retour à l’hôtel depuis Charm el-Cheikh"
+        ],
+        "included": [
+          "Prise en charge et retour à l’hôtel à Charm el-Cheikh",
+          "Transport aller-retour entre Charm el-Cheikh et Le Caire",
+          "Transport climatisé",
+          "Guide égyptologue qualifié",
+          "Billets d’entrée au musée égyptien",
+          "Billets d’entrée au site des pyramides de Gizeh et au Grand Sphinx",
+          "Déjeuner dans un restaurant local à Gizeh",
+          "Arrêts shopping prévus au programme de l’excursion"
+        ],
+        "excluded": [
+          "Promenade facultative en bateau sur le Nil",
+          "Entrée à l’intérieur de la pyramide du roi Khéops, si disponible avec un billet supplémentaire",
+          "Visa d’entrée en Égypte ou toute formalité de visa requise",
+          "Taxes gouvernementales et frais de service (10 € par personne, selon les indications de l’opérateur)",
+          "Boissons pendant le déjeuner",
+          "Dépenses personnelles et achats",
+          "Pourboires",
+          "Tout service non expressément mentionné dans les prestations incluses"
+        ],
+        "faqs": [
+          {
+            "question": "L’équipement de snorkeling est-il fourni ou dois-je apporter le mien ?",
+            "answer": "Des masques, tubas et palmes désinfectés, en tailles adulte et enfant, sont fournis gratuitement à bord.",
+            "section": "faq"
+          },
+          {
+            "question": "Les personnes qui ne savent pas nager peuvent-elles participer en toute sécurité ?",
+            "answer": "Oui. Des gilets de flottaison homologués par les garde-côtes sont fournis et des moniteurs de plongée certifiés accompagnent les participants dans l’eau.",
+            "section": "faq"
+          }
+        ]
+      },
+      "seo_title": "Excursion au Caire depuis Charm el-Cheikh : pyramides, Sphinx et musée égyptien",
+      "seo_description": "Découvrez les pyramides de Gizeh, le Grand Sphinx et le musée égyptien lors d’une excursion d’une journée au départ de Charm el-Cheikh avec un guide égyptologue.",
+      "duration": "Journée complète (environ 24 heures)",
+      "duration_type": "Journée complète",
+      "departure_time": "1:00 AM",
+      "age_restrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
+      "pickup_info": "Prise en charge gratuite dans le hall de votre hôtel et retour inclus dans toute la zone de Charm el-Cheikh.",
+      "cancellation_policy": "Annulation gratuite jusqu’à 24 heures avant l’heure de début de l’excursion."
+    }
+  ]
+}
