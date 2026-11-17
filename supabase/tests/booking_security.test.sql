@@ -162,8 +162,8 @@ SELECT ok(
 
 
 -- End-to-end transactional booking, coupon, lookup, and cancellation lifecycle checks.
-INSERT INTO public.tours (title, slug, status, price, max_guests)
-VALUES ('pgTAP Booking Test Tour', 'pgtap-booking-test', 'published', 100.00, 10);
+INSERT INTO public.tours (title, slug, status, price, max_guests, pickup_available)
+VALUES ('pgTAP Booking Test Tour', 'pgtap-booking-test', 'published', 100.00, 10, FALSE);
 
 -- The booking RPC now requires an explicitly configured departure date.
 INSERT INTO public.tour_availability (tour_id, date, max_capacity, booked_count, status)
