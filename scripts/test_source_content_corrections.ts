@@ -9,6 +9,7 @@ const server = readText('../server.ts');
 const migration = readText('../supabase/migrations/20261117212644_correct_inconsistent_tour_itinerary_and_faq.sql');
 const migrationRetry = readText('../supabase/migrations/20261117212701_correct_inconsistent_tour_itinerary_and_faq.sql');
 const migrationRelease = readText('../supabase/migrations/20261117233000_correct_inconsistent_tour_itinerary_and_faq.sql');
+const quadFaqCleanup = readText('../supabase/migrations/20261117235000_remove_unrelated_snorkeling_faqs_from_quad_tour.sql');
 
 for (const name of ['vite', '@vitejs/plugin-react', '@tailwindcss/vite']) {
   assert.ok(pkg.devDependencies?.[name], name + ' must remain a development/build dependency');
@@ -38,5 +39,12 @@ const itineraryInsert = migration.split('INSERT INTO public.tour_itinerary')[1]?
 assert.ok(itineraryInsert, 'The corrected quad itinerary insert is present');
 assert.doesNotMatch(itineraryInsert, /sailing|snorkeling|onboard lunch|island beach|marina/i,
   'The corrected quad itinerary must not retain the unrelated boat excursion');
+
+
+assert.match(quadFaqCleanup, /el-gouna-desert-quad-safari-bedouin-village-camel-ride/);
+assert.match(quadFaqCleanup, /Is snorkeling equipment provided or should I bring my own\?/);
+assert.match(quadFaqCleanup, /Can non-swimmers participate safely\?/);
+assert.match(quadFaqCleanup, /refusing to delete changed FAQ content/);
+assert.match(quadFaqCleanup, /DELETE FROM public\.tour_faqs/);
 
 console.log('Source corrections and production dependency isolation checks passed.');
