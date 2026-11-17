@@ -2,14 +2,15 @@ import 'dotenv/config';
 import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { createClient } from '@supabase/supabase-js';
+import { EUROPEAN_LOCALE_ROLLOUT, EuropeanLocaleCode } from '../src/types/i18n';
 
-type Locale = 'fr' | 'es' | 'nl' | 'pl' | 'pt';
+type Locale = Exclude<EuropeanLocaleCode, 'en'>;
 type Draft = {
   entity_type: string; entity_key: string; locale: Locale; translated_slug?: string;
   title?: string; summary?: string; seo_title?: string; seo_description?: string;
   content: Record<string, unknown>; source_checksum: string;
 };
-const LOCALES = new Set<Locale>(['fr','es','nl','pl','pt']);
+const LOCALES = new Set<Locale>(EUROPEAN_LOCALE_ROLLOUT.filter((locale) => locale.code !== 'en').map((locale) => locale.code));
 const ENTITY_TYPES = new Set(['tour','destination','blog_post','static_page']);
 const stable = (value: any): string => {
   if (Array.isArray(value)) return '[' + value.map(stable).join(',') + ']';
@@ -62,7 +63,7 @@ async function exportBundle(path: string) {
   for (const source of pages.filter((p:any)=>p && p.slug && p.published !== false && !['draft','unpublished'].includes(p.status))) {
     bundle.push({ entity_type:'static_page', entity_key:String(source.id || source.slug), source_checksum:checksum(source), source });
   }
-  await writeFile(path, JSON.stringify({ schema_version:1, generated_at:new Date().toISOString(), locales:['fr','es','nl','pl','pt'], records:bundle }, null, 2) + '\n');
+  await writeFile(path, JSON.stringify({ schema_version:1, generated_at:new Date().toISOString(), locales:[...LOCALES], records:bundle }, null, 2) + '\n');
   console.log('Exported '+bundle.length+' source records to '+path+' (tours '+tours.length+', blog '+posts.length+', destinations '+destinations.length+', CMS pages '+pages.length+').');
 }
 function sortRows(a:any,b:any) { return Number(a.sort_order||0)-Number(b.sort_order||0) || String(a.id||'').localeCompare(String(b.id||'')); }
