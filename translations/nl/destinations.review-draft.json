@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "locale": "nl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "destination": 7,
+    "source_records": 7
+  },
+  "records": [
+    {
+      "entity_type": "destination",
+      "entity_key": "ffcc83a6-2dc4-4990-91bb-1d72450755c2",
+      "locale": "nl",
+      "translated_slug": "sharm-el-sheikh",
+      "title": "Sharm-el-Sheikh",
+      "summary": "Ontdek de magie van de Rode Zee",
+      "seo_title": "Sharm-el-Sheikh: snorkelen, stranden en woestijnsafari's",
+      "seo_description": "Ontdek Sharm-el-Sheikh: koraalriffen, snorkelen, duiken, stranden, woestijnsafari's en zonsondergangen aan de Rode Zee.",
+      "content": {
+        "title": "Sharm-el-Sheikh",
+        "description": "Ontdek Sharm-el-Sheikh, de toonaangevende bestemming aan de Egyptische Rode Zee, bekend om het kristalheldere water, kleurrijke koraalriffen, gouden stranden en luxe resorts. Geniet van onvergetelijke snorkel- en duikervaringen, spannende woestijnsafari's en spectaculaire zonsondergangen. Of je nu op zoek bent naar avontuur of ontspanning, Sharm-el-Sheikh is een ideale bestemming.",
+        "tagline": "Ontdek de magie van de Rode Zee",
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer"
+        }
+      },
+      "source_slug": "sharm-el-sheikh"
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "985fd0a3-6b7a-4e0f-b535-cff4aa4ac0be",
+      "locale": "nl",
+      "translated_slug": "hurghada",
+      "title": "Hurghada",
+      "summary": "Ontdek de schoonheid van de Rode Zee",
+      "seo_title": "Hurghada: excursies, stranden en avonturen aan de Rode Zee",
+      "seo_description": "Plan je verblijf in Hurghada: snorkelen, duiken, woestijnsafari's, eilandexcursies en cruises bij zonsondergang.",
+      "content": {
+        "title": "Hurghada",
+        "description": "Ontdek Hurghada, een van de populairste bestemmingen aan de Egyptische Rode Zee, beroemd om het kristalheldere water, kleurrijke koraalriffen, gouden zandstranden en resorts van wereldklasse. Geniet van onvergetelijke snorkel- en duikavonturen, spannende woestijnsafari's, eilandexcursies en spectaculaire cruises bij zonsondergang. Of je nu ontspanning, avontuur of plezier voor het hele gezin zoekt, Hurghada biedt een onvergetelijke vakantie.",
+        "tagline": "Ontdek de schoonheid van de Rode Zee",
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer"
+        }
+      },
+      "source_slug": "hurghada"
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "88d0f219-2819-4ff8-a6ce-01d7682296d0",
+      "locale": "nl",
+      "translated_slug": "el-gouna",
+      "title": "El Gouna",
+      "summary": "Luxe lagunes, stranden en een levendige jachthaven",
+      "seo_title": "El Gouna: lagunes, stranden en activiteiten aan de Rode Zee",
+      "seo_description": "Ontdek El Gouna met turquoise lagunes, stranden, een jachthaven, snorkelen, kitesurfen en boottochten.",
+      "content": {
+        "title": "El Gouna",
+        "description": "Ontdek El Gouna, een prachtige badplaats aan de Egyptische kust van de Rode Zee, bekend om de turquoise lagunes, zandstranden, luxe resorts, jachthaven, watersporten en levendige restaurantscene. Geniet van boottochten, snorkelen, kitesurfen en ontspannen momenten aan zee.",
+        "tagline": "Luxe lagunes, stranden en een levendige jachthaven",
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer"
+        }
+      },
+      "source_slug": "el-gouna"
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "b58b8665-3870-4674-96ea-e3c22fed426e",
+      "locale": "nl",
+      "translated_slug": "luxor",
+      "title": "Luxor",
+      "summary": "Ontdek het oude Egypte en zijn tijdloze wonderen",
+      "seo_title": "Luxor: oude tempels en de Vallei der Koningen",
+      "seo_description": "Bezoek Luxor, het Karnak-tempelcomplex, de tempel van Hatsjepsoet en de Vallei der Koningen tijdens begeleide excursies in Egypte.",
+      "content": {
+        "title": "Luxor",
+        "description": "Verken Luxor, een van de meest bijzondere historische bestemmingen van Egypte. Ontdek het indrukwekkende tempelcomplex van Karnak, de Luxortempel, de Vallei der Koningen en de tempel van Hatsjepsoet. Geniet van begeleide historische rondleidingen, Nijlcruises en onvergetelijke ballonvaarten boven eeuwenoude monumenten.",
+        "tagline": "Ontdek het oude Egypte en zijn tijdloze wonderen",
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer"
+        }
+      },
+      "source_slug": "luxor"
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "689b5e4f-8168-4713-9181-9ebcbd884a7a",
+      "locale": "nl",
+      "translated_slug": "cairo",
+      "title": "Caïro",
+      "summary": "De piramides, oude geschiedenis en Egyptische cultuur",
+      "seo_title": "Caïro: piramides, geschiedenis en Egyptische cultuur",
+      "seo_description": "Ontdek Caïro, de piramides van Gizeh, de Grote Sfinx, het Grand Egyptian Museum, historische moskeeën en levendige bazaars.",
+      "content": {
+        "title": "Caïro",
+        "description": "Ervaar Caïro, de bruisende hoofdstad van Egypte, waar eeuwenoude wonderen samenkomen met het moderne stadsleven. Bezoek de iconische piramides van Gizeh, de Grote Sfinx, het Grand Egyptian Museum, historische moskeeën en levendige bazaars. Ontdek de Egyptische geschiedenis, de lokale keuken en onvergetelijke culturele ervaringen.",
+        "tagline": "De piramides, oude geschiedenis en Egyptische cultuur",
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer"
+        }
+      },
+      "source_slug": "cairo"
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "16e32986-869a-4bf1-aa2f-aa7552e46b05",
+      "locale": "nl",
+      "translated_slug": "sahl-hasheesh",
+      "title": "Sahl Hasheesh",
+      "summary": "Luxe resorts aan de Rode Zee en ongerepte stranden",
+      "seo_title": "Sahl Hasheesh: luxe resorts en stranden aan de Rode Zee",
+      "seo_description": "Verblijf in Sahl Hasheesh, ten zuiden van Hurghada, en geniet van ongerepte stranden, resorts aan zee, snorkelen en duiken.",
+      "content": {
+        "title": "Sahl Hasheesh",
+        "description": "Ontdek Sahl Hasheesh, een elegante badplaats aan de Rode Zee ten zuiden van Hurghada. Geniet van kristalhelder water, prachtige zandstranden, luxe resorts aan het strand, snorkelen, duiken en romantische wandelingen langs de kust. Het is een ideale bestemming voor stellen, gezinnen en reizigers die op zoek zijn naar ontspanning en een hoogwaardige vakantie.",
+        "tagline": "Luxe resorts aan de Rode Zee en ongerepte stranden",
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer"
+        }
+      },
+      "source_slug": "sahl-hasheesh"
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "ebf085ec-ebaa-4b73-ac66-ebedb34c74f0",
+      "locale": "nl",
+      "translated_slug": "makadi-bay",
+      "title": "Makadi Bay",
+      "summary": "Gezinsvriendelijke resorts, koraalriffen en zeeavonturen",
+      "seo_title": "Makadi Bay: stranden, riffen en excursies",
+      "seo_description": "Ontdek Makadi Bay: all-inclusive resorts, snorkelen, duiken, boottochten, woestijnsafari's en activiteiten voor het hele gezin.",
+      "content": {
+        "title": "Makadi Bay",
+        "description": "Geniet van Makadi Bay, een populaire vakantiebestemming aan de Rode Zee die bekendstaat om all-inclusive resorts, een prachtige kustlijn en kleurrijke koraalriffen. Ontdek snorkelen, duiken, boottochten, woestijnsafari's en activiteiten voor het hele gezin. Makadi Bay biedt een ontspannen verblijf voor stellen, gezinnen en avontuurlijke reizigers.",
+        "tagline": "Gezinsvriendelijke resorts, koraalriffen en zeeavonturen",
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer"
+        }
+      },
+      "source_slug": "makadi-bay"
+    }
+  ]
+}
