@@ -59,8 +59,8 @@ jobs:
       - name: Verify CRM inquiry persistence integrity
         run: npm run test:crm-inquiry-persistence
 
-      # test:admin is a legacy script that calls live service mutations with dummy identifiers
-      # and has no isolated Supabase mock. Keep it out of CI until rewritten safely.
+      - name: Verify isolated admin authorization and error handling
+        run: npm run test:admin
 
       - name: Verify abuse prevention and rate limits
         run: npm run test:abuse
