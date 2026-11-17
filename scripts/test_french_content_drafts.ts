@@ -72,12 +72,16 @@ const protectedTokens = (value: string) => {
   const matches = value.match(/https?:\/\/[^\s)]+|[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}|\+?\d[\d\s()./-]{4,}\d|\d+(?:[.,]\d+)?/g) || [];
   return matches.map((token) => token.replace(/\s+/g, ' ').trim()).sort();
 };
+const privateTokenFailures: Array<{ key: string; source: string; translated: string; sourceTokens: string[]; translatedTokens: string[] }> = [];
 for (const [key, source] of Object.entries(PRIVATE_UI_SOURCE_CATALOG)) {
   const translated = privateDraft.content[key];
   const sourceTokens = protectedTokens(source);
   const translatedTokens = protectedTokens(translated);
-  assert.deepEqual(translatedTokens, sourceTokens, 'Private UI translation preserves numbers, URLs, email addresses and phone numbers: ' + key);
+  if (JSON.stringify(translatedTokens) !== JSON.stringify(sourceTokens)) {
+    privateTokenFailures.push({ key, source, translated, sourceTokens, translatedTokens });
+  }
 }
+assert.deepEqual(privateTokenFailures, [], 'Private UI translations must preserve all source numbers, URLs, email addresses and phone numbers: ' + JSON.stringify(privateTokenFailures));
 
 
 const structureMatches = (source: any, translated: any): boolean => {
