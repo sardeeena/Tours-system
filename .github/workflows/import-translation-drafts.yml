@@ -13,17 +13,17 @@ permissions:
   contents: read
 
 concurrency:
-  group: translation-draft-import-\${{ inputs.locale }}
+  group: translation-draft-import-${{ inputs.locale }}
   cancel-in-progress: false
 
 jobs:
   import-drafts:
-    name: Import \${{ inputs.locale }} drafts only
+    name: Import ${{ inputs.locale }} drafts only
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
       SUPABASE_URL: https://uvtbtpxtrrmaublrztgv.supabase.co
-      SUPABASE_SECRET_KEY: \${{ secrets.SUPABASE_SECRET_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_SERVICE_KEY }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_SERVICE_KEY }}
     steps:
       - name: Check out reviewed source bundles
         uses: actions/checkout@v7
@@ -46,7 +46,7 @@ jobs:
       - name: Assemble and validate the selected locale
         shell: bash
         run: |
-          case "\${{ inputs.locale }}" in
+          case "${{ inputs.locale }}" in
             fr) npm run translations:assemble-fr -- ./translation-source.json ./translation-import-bundle.json ;;
             nl) npm run translations:assemble-nl -- ./translation-source.json ./translation-import-bundle.json ;;
             pl) npm run translations:assemble-pl -- ./translation-source.json ./translation-import-bundle.json ;;
@@ -61,7 +61,7 @@ jobs:
           import { readFile } from 'node:fs/promises';
           import { createClient } from '@supabase/supabase-js';
           const bundle = JSON.parse(await readFile('./translation-import-bundle.json', 'utf8'));
-          const locale = '\${{ inputs.locale }}';
+          const locale = '${{ inputs.locale }}';
           if (bundle.locales?.length !== 1 || bundle.locales[0] !== locale) throw new Error('Bundle locale mismatch.');
           const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SECRET_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
           const { data, error } = await db.from('content_translations').select('entity_type,entity_key,translation_state,source_checksum').eq('locale', locale);
@@ -82,7 +82,7 @@ jobs:
           {
             echo "## Locale draft import"
             echo ""
-            echo "- Locale: **\${{ inputs.locale }}**"
+            echo "- Locale: **${{ inputs.locale }}**"
             echo "- Database writes: drafts only"
             echo "- Publication: **not performed**"
             echo "- Human review: still required"
