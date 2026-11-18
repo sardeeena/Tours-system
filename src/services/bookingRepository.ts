@@ -642,57 +642,87 @@ class SupabaseBookingRepository implements IBookingRepository {
     return updated;
   }
 
+  async getAdminBookingDetails(bookingReference: string): Promise<Booking | null> {
+    if (!isSupabaseConfigured()) {
+      throw new Error('The booking database is unavailable. Passenger details were not loaded.');
+    }
+    const cleanReference = bookingReference.trim().toUpperCase();
+    if (!cleanReference) return null;
+
+    const { data, error } = await supabase
+      .from('bookings')
+      .select(`
+        *,
+        tours (*),
+        customers (*),
+        booking_extras (*),
+        booking_passengers (*)
+      `)
+      .eq('booking_reference', cleanReference)
+      .maybeSingle();
+
+    if (error) throw new Error(formatSupabaseError(error));
+    return data ? this.mapDbToBooking(data) : null;
+  }
+
   async listBookings(filters?: { status?: string; limit?: number }): Promise<Booking[]> {
     const supabaseConfigured = isSupabaseConfigured();
     const schemaMissing = isSchemaMissing();
 
     if (shouldUseLocalBookingCache(isDevelopmentBuild, supabaseConfigured, schemaMissing)) {
       const local = this.getLocalBookings();
-      if (filters?.status && filters.status !== 'all') {
-        return local.filter((b) => b.status === filters.status);
-      }
-      return local;
+      const filtered = filters?.status && filters.status !== 'all'
+        ? local.filter((booking) => booking.status === filters.status)
+        : local;
+      return filters?.limit ? filtered.slice(0, filters.limit) : filtered;
     }
 
-    // In production, a missing connection/schema must never expose stale
-    // per-browser records as authoritative bookings.
+    // A production admin list must never silently show stale browser cache data
+    // or turn a failed query into a misleading empty state.
     if (!supabaseConfigured || schemaMissing) {
-      return [];
+      throw new Error('The booking database is unavailable. No booking data was loaded.');
     }
+
+    const requestedLimit = filters?.limit ? Math.max(1, filters.limit) : undefined;
+    const pageSize = Math.min(requestedLimit || 500, 500);
+    const results: Booking[] = [];
+    let offset = 0;
 
     try {
-      let query = supabase
-        .from('bookings')
-        .select(`
-          *,
-          tours (*),
-          customers (*),
-          booking_extras (*)
-        `)
-        .order('created_at', { ascending: false });
+      while (true) {
+        let query = supabase
+          .from('bookings')
+          .select(`
+            *,
+            tours (*),
+            customers (*),
+            booking_extras (*)
+          `)
+          .order('created_at', { ascending: false })
+          .order('id', { ascending: false })
+          .range(offset, offset + pageSize - 1);
 
-      if (filters?.status && filters.status !== 'all') {
-        query = query.eq('status', filters.status);
-      }
-
-      if (filters?.limit) {
-        query = query.limit(filters.limit);
-      }
-
-      const { data, error } = await query;
-      if (error || !data) {
-        if (error && isSchemaMissingError(error)) {
-          setSchemaMissing(true);
+        if (filters?.status && filters.status !== 'all') {
+          query = query.eq('status', filters.status);
         }
-        return [];
+
+        const { data, error } = await query;
+        if (error) {
+          if (isSchemaMissingError(error)) setSchemaMissing(true);
+          throw new Error(formatSupabaseError(error));
+        }
+
+        const page = data || [];
+        results.push(...page.map((row: any) => this.mapDbToBooking(row)));
+
+        if ((requestedLimit && results.length >= requestedLimit) || page.length < pageSize) break;
+        offset += pageSize;
       }
 
-      return data.map((d: any) => this.mapDbToBooking(d));
+      return results;
     } catch (err) {
-      if (isSchemaMissingError(err)) {
-        setSchemaMissing(true);
-      }
-      return [];
+      if (isSchemaMissingError(err)) setSchemaMissing(true);
+      throw err instanceof Error ? err : new Error('Failed to load bookings from the database.');
     }
   }
 
@@ -720,6 +750,18 @@ class SupabaseBookingRepository implements IBookingRepository {
         children: data.child_count || 0,
         infants: data.infant_count || 0,
       },
+      passengers: (data.booking_passengers || []).map((passenger: any) => ({
+        id: passenger.id,
+        fullName: passenger.full_name || 'Passenger',
+        passengerType: passenger.passenger_type || 'adult',
+        nationality: passenger.nationality || null,
+        isLeadPassenger: Boolean(passenger.is_lead_passenger ?? passenger.is_lead),
+        dateOfBirth: passenger.date_of_birth || null,
+        gender: passenger.gender || null,
+        phone: passenger.phone || null,
+        specialRequests: passenger.special_requests || null,
+        pickupLocation: passenger.pickup_location || null,
+      })),
       pickup: {
         locationId: data.pickup_location_id || 'hurghada',
         locationName: data.pickup_hotel_name || 'Hurghada Hotels',

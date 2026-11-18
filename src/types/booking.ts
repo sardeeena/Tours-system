@@ -6,6 +6,19 @@ export interface GuestCounts {
   infants: number;
 }
 
+export interface BookingPassenger {
+  id: string;
+  fullName: string;
+  passengerType: string;
+  nationality?: string | null;
+  isLeadPassenger: boolean;
+  dateOfBirth?: string | null;
+  gender?: string | null;
+  phone?: string | null;
+  specialRequests?: string | null;
+  pickupLocation?: string | null;
+}
+
 export interface PickupLocation {
   id: string;
   name: string;
@@ -111,6 +124,8 @@ export interface Booking {
   departureTime?: string;
   customerId?: string;
   guests: GuestCounts;
+  /** Passenger manifest returned only to authorized booking readers. Passport/ID numbers are intentionally excluded. */
+  passengers?: BookingPassenger[];
   pickup: {
     locationId?: string;
     locationName: string;

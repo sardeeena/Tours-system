@@ -34,15 +34,44 @@ export const AdminBookingsList: React.FC = () => {
   const [paymentToRecord, setPaymentToRecord] = useState<Booking | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<'Cash' | 'Card' | 'Bank Transfer' | 'Other'>('Cash');
   const [paymentNotes, setPaymentNotes] = useState('');
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [paymentReference, setPaymentReference] = useState('');
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [bookingToRejectCancellation, setBookingToRejectCancellation] = useState<Booking | null>(null);
   const [savingPayment, setSavingPayment] = useState(false);
+  const [page, setPage] = useState(1);
+  const pageSize = 25;
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadingManifest, setLoadingManifest] = useState(false);
+  const [manifestError, setManifestError] = useState<string | null>(null);
+
+  const openBookingDetails = async (booking: Booking) => {
+    setSelectedBooking(booking);
+    setManifestError(null);
+    if (!hasPermission('bookings.manage')) return;
+
+    setLoadingManifest(true);
+    try {
+      const detailed = await bookingRepository.getAdminBookingDetails(booking.bookingReference);
+      if (detailed) setSelectedBooking(detailed);
+    } catch (err: any) {
+      setManifestError(err.message || 'Passenger details could not be loaded.');
+      showToast(err.message || 'Passenger details could not be loaded.', 'error');
+    } finally {
+      setLoadingManifest(false);
+    }
+  };
 
   const loadBookings = async () => {
     setLoading(true);
     try {
+      setLoadError(null);
       const data = await bookingRepository.listBookings();
       setBookings(data);
+      setPage(1);
     } catch (err: any) {
       console.error('Error fetching bookings:', err);
+      setLoadError(err.message || 'Failed to load bookings from database');
       showToast(err.message || 'Failed to load bookings from database', 'error');
     } finally {
       setLoading(false);
@@ -52,6 +81,10 @@ export const AdminBookingsList: React.FC = () => {
   useEffect(() => {
     loadBookings();
   }, []);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, statusFilter]);
 
   const isAdminOrSuperAdmin = user?.role === 'admin' || user?.role === 'super_admin' || Boolean(user?.roles?.some((role) => role === 'admin' || role === 'super_admin'));
 
@@ -107,39 +140,58 @@ export const AdminBookingsList: React.FC = () => {
     if (!paymentToRecord || !hasPermission('finance.create')) return;
     setSavingPayment(true);
     try {
-      const existingPayments = await listPayments({ bookingId: paymentToRecord.bookingReference });
+      const currency = String(paymentToRecord.pricing?.currency || 'EUR').toUpperCase();
+      const existingPayments = await listPayments({ bookingId: paymentToRecord.bookingReference, currency });
       const settled = existingPayments
         .filter((payment) => ['paid', 'partially paid', 'partially_paid'].includes(String(payment.paymentStatus).toLowerCase()))
         .reduce((sum, payment) => sum + payment.amount, 0);
       const existingRefunds = await listRefunds({ bookingId: paymentToRecord.bookingReference });
       const refunded = existingRefunds
-        .filter((refund) => refund.status === 'processed')
+        .filter((refund) => refund.currency === currency && refund.status === 'processed')
         .reduce((sum, refund) => sum + (refund.approvedAmount || refund.amount), 0);
       const netPaid = Math.max(0, settled - refunded);
       const bookingTotal = Number(paymentToRecord.pricing?.totalEur || 0);
       const remaining = Math.max(0, Math.round((bookingTotal - netPaid) * 100) / 100);
       if (remaining <= 0) throw new Error('This booking has no outstanding balance in the payment ledger.');
+      const amount = Number(paymentAmount);
+      if (!Number.isFinite(amount) || amount <= 0 || Math.abs(amount * 100 - Math.round(amount * 100)) > 0.000001) {
+        throw new Error('Enter a valid payment amount with no more than two decimal places.');
+      }
+      if (amount > remaining + 0.00001) {
+        throw new Error(`The payment exceeds the remaining balance of ${currency} ${remaining.toFixed(2)}.`);
+      }
+      if (!paymentReference.trim() || paymentReference.trim().length < 3 || paymentReference.trim().length > 160) {
+        throw new Error('Enter the actual receipt or transaction reference (3–160 characters).');
+      }
       await recordPayment({
         bookingId: paymentToRecord.bookingId || paymentToRecord.bookingReference,
         bookingReference: paymentToRecord.bookingReference,
         customerName: `${paymentToRecord.customer.firstName} ${paymentToRecord.customer.lastName}`,
         customerEmail: paymentToRecord.customer.email,
         customerPhone: paymentToRecord.customer.phoneNumber || null,
-        amount: remaining,
-        currency: 'EUR',
+        amount,
+        currency,
         paymentMethod,
         provider: paymentMethod === 'Cash' ? 'cash' : paymentMethod === 'Card' ? 'pos_terminal' : 'bank_transfer',
         paymentStatus: 'Paid',
-        transactionReference: `AA-MANUAL-${crypto.randomUUID()}`,
+        transactionReference: paymentReference.trim(),
         notes: paymentNotes.trim() || `Manual payment recorded from booking ${paymentToRecord.bookingReference}`,
         recordedBy: user?.email || 'Authenticated staff',
       });
-      showToast(`Payment of €${remaining.toFixed(2)} recorded in the audited ledger.`, 'success');
+      showToast(`Payment of ${currency} ${amount.toFixed(2)} recorded in the audited ledger.`, 'success');
       setPaymentToRecord(null);
-      if (selectedBooking?.bookingReference === paymentToRecord.bookingReference) {
-        setSelectedBooking({ ...selectedBooking, paymentStatus: 'paid' });
+      setPaymentAmount('');
+      setPaymentReference('');
+      try {
+        const refreshedBookings = await bookingRepository.listBookings();
+        setBookings(refreshedBookings);
+        const refreshed = refreshedBookings.find((item) => item.bookingReference === paymentToRecord.bookingReference);
+        if (selectedBooking?.bookingReference === paymentToRecord.bookingReference && refreshed) {
+          setSelectedBooking({ ...selectedBooking, paymentStatus: refreshed.paymentStatus });
+        }
+      } catch (refreshError: any) {
+        showToast('Payment was recorded, but the booking display could not be refreshed. Reload the booking list to see the updated balance.', 'error');
       }
-      await loadBookings();
     } catch (err: any) {
       showToast(err.message || 'Failed to record payment', 'error');
     } finally {
@@ -169,6 +221,33 @@ export const AdminBookingsList: React.FC = () => {
     }
   };
 
+  const confirmRejectCancellation = async () => {
+    if (!hasPermission('bookings.approve')) {
+      showToast('Your role does not permit cancellation decisions.', 'error');
+      return;
+    }
+    if (!bookingToRejectCancellation) return;
+    const reason = rejectionReason.trim();
+    if (reason.length < 5 || reason.length > 500) {
+      showToast('Provide a rejection reason between 5 and 500 characters.', 'error');
+      return;
+    }
+    const ref = bookingToRejectCancellation.bookingReference;
+    try {
+      const resolved = await bookingRepository.resolveBookingCancellation(ref, 'reject', reason);
+      if (!resolved) throw new Error('Booking not found.');
+      showToast(`Cancellation request for ${ref} was rejected.`, 'success');
+      if (selectedBooking?.bookingReference === ref) {
+        setSelectedBooking({ ...selectedBooking, status: resolved.status, cancellationReason: reason });
+      }
+      setBookingToRejectCancellation(null);
+      setRejectionReason('');
+      await loadBookings();
+    } catch (err: any) {
+      showToast(err.message || 'Failed to reject cancellation request.', 'error');
+    }
+  };
+
   const exportBookingsCSV = () => {
     if (!hasPermission('bookings.export')) { showToast('Your role does not permit exporting bookings.', 'error'); return; }
     const headers = [
@@ -183,7 +262,9 @@ export const AdminBookingsList: React.FC = () => {
       'Hotel',
       'Adults',
       'Children',
-      'Total EUR',
+      'Infants',
+      'Total',
+      'Currency',
       'Status',
       'Payment Status',
       'Created At',
@@ -201,7 +282,9 @@ export const AdminBookingsList: React.FC = () => {
       `"${b.pickup.hotelName || ''}"`,
       b.guests.adults,
       b.guests.children,
+      b.guests.infants,
       b.pricing.totalEur,
+      b.pricing.currency || 'EUR',
       `"${b.status}"`,
       `"${b.paymentStatus}"`,
       `"${b.createdAt}"`,
@@ -232,6 +315,8 @@ export const AdminBookingsList: React.FC = () => {
     if (statusFilter === 'all') return true;
     return b.status === statusFilter;
   });
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const paginatedBookings = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <div className="space-y-6">
@@ -300,6 +385,11 @@ export const AdminBookingsList: React.FC = () => {
             <div className="w-6 h-6 border-2 border-[#0A6C74] border-t-transparent rounded-full animate-spin mx-auto" />
             <p>Loading bookings from database...</p>
           </div>
+        ) : loadError ? (
+          <div className="p-8 text-center text-sm text-rose-300 space-y-3">
+            <p>{loadError}</p>
+            <button type="button" onClick={loadBookings} className="rounded border border-rose-500/40 px-3 py-2 text-xs hover:bg-rose-500/10">Retry loading bookings</button>
+          </div>
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center text-xs text-stone-400">
             No booking records match your criteria.
@@ -320,7 +410,7 @@ export const AdminBookingsList: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-800/60 text-stone-300">
-                {filtered.map((b) => (
+                {paginatedBookings.map((b) => (
                   <tr key={b.bookingReference} className="hover:bg-stone-900/40 transition-colors">
                     <td className="py-3 px-4 font-mono font-bold text-white">
                       {b.bookingReference}
@@ -345,10 +435,10 @@ export const AdminBookingsList: React.FC = () => {
                       {b.date}
                     </td>
                     <td className="py-3 px-4 whitespace-nowrap text-stone-400">
-                      {b.guests.adults}A {b.guests.children > 0 ? `+ ${b.guests.children}C` : ''}
+                      {b.guests.adults}A {b.guests.children > 0 ? `+ ${b.guests.children}C` : ''} {b.guests.infants > 0 ? `+ ${b.guests.infants}I` : ''}
                     </td>
                     <td className="py-3 px-4 whitespace-nowrap font-bold text-white">
-                      €{b.pricing.totalEur}
+                      {b.pricing.currency || 'EUR'} {Number(b.pricing.totalEur).toFixed(2)}
                     </td>
                     <td className="py-3 px-4 whitespace-nowrap">
                       <span
@@ -370,7 +460,7 @@ export const AdminBookingsList: React.FC = () => {
                     <td className="py-3 px-4 text-right whitespace-nowrap">
                       <button
                         type="button"
-                        onClick={() => setSelectedBooking(b)}
+                        onClick={() => void openBookingDetails(b)}
                         className="px-2.5 py-1 bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-white rounded border border-stone-800 text-[11px] font-medium transition-colors"
                       >
                         Details
@@ -383,6 +473,16 @@ export const AdminBookingsList: React.FC = () => {
           </div>
         )}
       </div>
+      {!loading && !loadError && filtered.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-400">
+          <span>Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, filtered.length)} of {filtered.length} matching bookings</span>
+          <div className="flex items-center gap-2">
+            <button type="button" disabled={page <= 1} onClick={() => setPage((current) => Math.max(1, current - 1))} className="rounded border border-stone-700 px-3 py-1.5 disabled:opacity-40">Previous</button>
+            <span>Page {page} of {totalPages}</span>
+            <button type="button" disabled={page >= totalPages} onClick={() => setPage((current) => Math.min(totalPages, current + 1))} className="rounded border border-stone-700 px-3 py-1.5 disabled:opacity-40">Next</button>
+          </div>
+        </div>
+      )}
 
       {/* DETAIL MODAL */}
       {selectedBooking && (
@@ -433,7 +533,11 @@ export const AdminBookingsList: React.FC = () => {
                     Complete
                   </button>
                   </>}
-                  {hasPermission('bookings.approve') && (selectedBooking.status !== 'completed' || selectedBooking.paymentStatus !== 'paid' || isAdminOrSuperAdmin) && <button type="button" onClick={() => handleUpdateStatus(selectedBooking.bookingReference, 'cancelled')} className="px-2 py-1 bg-red-600 hover:bg-red-500 text-white rounded font-medium text-[10px]">Cancel</button>}
+                  {hasPermission('bookings.approve') && selectedBooking.status === 'cancellation_requested' && <>
+                    <button type="button" onClick={() => { setBookingToCancel(selectedBooking); setCancelReason(selectedBooking.cancellationReason || 'Customer requested cancellation'); }} className="px-2 py-1 bg-red-600 hover:bg-red-500 text-white rounded font-medium text-[10px]">Approve Request</button>
+                    <button type="button" onClick={() => { setBookingToRejectCancellation(selectedBooking); setRejectionReason(''); }} className="px-2 py-1 bg-amber-600 hover:bg-amber-500 text-white rounded font-medium text-[10px]">Reject Request</button>
+                  </>}
+                  {hasPermission('bookings.approve') && selectedBooking.status !== 'cancellation_requested' && (selectedBooking.status !== 'completed' || selectedBooking.paymentStatus !== 'paid' || isAdminOrSuperAdmin) && <button type="button" onClick={() => handleUpdateStatus(selectedBooking.bookingReference, 'cancelled')} className="px-2 py-1 bg-red-600 hover:bg-red-500 text-white rounded font-medium text-[10px]">Cancel</button>}
                 </div>
               </div>
 
@@ -456,6 +560,8 @@ export const AdminBookingsList: React.FC = () => {
                         setPaymentToRecord(selectedBooking);
                         setPaymentMethod('Cash');
                         setPaymentNotes('');
+                        setPaymentAmount('');
+                        setPaymentReference('');
                       }}
                       className="px-3 py-1.5 bg-teal-600 hover:bg-teal-500 text-white rounded font-medium text-[10px]"
                     >
@@ -494,11 +600,51 @@ export const AdminBookingsList: React.FC = () => {
                   <p><strong>Tour:</strong> {selectedBooking.tourTitle}</p>
                   <p><strong>Tour Language:</strong> {selectedBooking.tourLanguage || 'Not recorded'}</p>
                   <p><strong>Date:</strong> {selectedBooking.date}</p>
-                  <p><strong>Party:</strong> {selectedBooking.guests.adults} Adults, {selectedBooking.guests.children} Children</p>
+                  <p><strong>Party:</strong> {selectedBooking.guests.adults} Adults, {selectedBooking.guests.children} Children, {selectedBooking.guests.infants} Infants</p>
                   <p><strong>Payment Method:</strong> {selectedBooking.paymentMethod.replace('_', ' ')}</p>
-                  <p className="text-sm font-bold text-white pt-1">Total: €{selectedBooking.pricing.totalEur}</p>
+                  <p><strong>Pickup:</strong> {selectedBooking.pickup.locationName} — {selectedBooking.pickup.hotelName || 'Not specified'} (Room {selectedBooking.pickup.roomNumber || 'N/A'})</p>
+                  <p className="text-sm font-bold text-white pt-1">Total: {selectedBooking.pricing.currency || 'EUR'} {Number(selectedBooking.pricing.totalEur).toFixed(2)}</p>
                 </div>
               </div>
+            </div>
+
+            <div className="space-y-3 rounded border border-stone-800 bg-stone-950 p-3">
+              <h4 className="font-semibold uppercase tracking-wider text-[10px] text-stone-400">Passenger Manifest</h4>
+              {!hasPermission('bookings.manage') ? (
+                <p className="text-[11px] text-stone-500">Passenger details are restricted to booking managers. Guest counts remain visible above.</p>
+              ) : loadingManifest ? (
+                <p className="text-[11px] text-stone-400">Loading passenger details…</p>
+              ) : manifestError ? (
+                <p className="text-[11px] text-rose-300">{manifestError}</p>
+              ) : selectedBooking.passengers?.length ? (
+                <div className="space-y-2">
+                  {selectedBooking.passengers.map((passenger) => (
+                    <div key={passenger.id} className="rounded border border-stone-800 p-2 text-stone-300">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <strong>{passenger.fullName}</strong>
+                        <span className="text-[10px] uppercase text-teal-300">{passenger.passengerType}{passenger.isLeadPassenger ? ' · Lead passenger' : ''}</span>
+                      </div>
+                      <p className="text-[11px] text-stone-400">
+                        {[passenger.nationality, passenger.dateOfBirth, passenger.gender, passenger.phone].filter(Boolean).join(' · ') || 'No additional passenger details recorded'}
+                      </p>
+                      {passenger.pickupLocation && <p className="text-[11px]">Pickup: {passenger.pickupLocation}</p>}
+                      {passenger.specialRequests && <p className="text-[11px]">Requests: {passenger.specialRequests}</p>}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[11px] text-stone-500">Individual passenger names were not captured for this reservation. The guest counts above remain authoritative.</p>
+              )}
+            </div>
+
+            <div className="space-y-3 rounded border border-stone-800 bg-stone-950 p-3">
+              <h4 className="font-semibold uppercase tracking-wider text-[10px] text-stone-400">Selected Extras</h4>
+              {selectedBooking.extras.length ? selectedBooking.extras.map((extra) => (
+                <div key={extra.extraId} className="flex items-center justify-between gap-3 text-stone-300">
+                  <span>{extra.name} × {extra.quantity}</span>
+                  <strong>{selectedBooking.pricing.currency || 'EUR'} {Number(extra.amountEur).toFixed(2)}</strong>
+                </div>
+              )) : <p className="text-[11px] text-stone-500">No extras selected.</p>}
             </div>
 
             {selectedBooking.customer.specialRequests && (
@@ -521,8 +667,15 @@ export const AdminBookingsList: React.FC = () => {
             <div className="rounded-lg bg-slate-50 p-3 text-sm">
               <div className="font-semibold">{paymentToRecord.bookingReference}</div>
               <div className="text-slate-600">{paymentToRecord.customer.firstName} {paymentToRecord.customer.lastName}</div>
-              <div className="mt-1 text-lg font-bold">€{Number(paymentToRecord.pricing?.totalEur || 0).toFixed(2)}</div>
+              <div className="mt-1 text-lg font-bold">{paymentToRecord.pricing.currency || 'EUR'} {Number(paymentToRecord.pricing?.totalEur || 0).toFixed(2)}</div>
+              <div className="text-xs text-slate-600">Enter a full or partial amount. The database enforces the remaining balance.</div>
             </div>
+            <label className="block text-sm font-medium text-slate-800">Amount received ({paymentToRecord.pricing.currency || 'EUR'})
+              <input type="number" min="0.01" step="0.01" value={paymentAmount} onChange={(event) => setPaymentAmount(event.target.value)} required className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900" />
+            </label>
+            <label className="block text-sm font-medium text-slate-800">Receipt / transaction reference
+              <input type="text" minLength={3} maxLength={160} value={paymentReference} onChange={(event) => setPaymentReference(event.target.value)} required className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900" placeholder="Enter the actual receipt number" />
+            </label>
             <label className="block text-sm font-medium text-slate-800">Payment method
               <select value={paymentMethod} onChange={(event) => setPaymentMethod(event.target.value as typeof paymentMethod)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900">
                 <option value="Cash">Cash</option><option value="Card">Card terminal</option><option value="Bank Transfer">Bank transfer</option><option value="Other">Other</option>
@@ -534,6 +687,22 @@ export const AdminBookingsList: React.FC = () => {
             <div className="flex justify-end gap-2">
               <button type="button" onClick={() => setPaymentToRecord(null)} disabled={savingPayment} className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700">Cancel</button>
               <button type="button" onClick={confirmRecordPayment} disabled={savingPayment} className="rounded-lg bg-teal-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">{savingPayment ? 'Recording…' : 'Confirm payment received'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {bookingToRejectCancellation && (
+        <div className="fixed inset-0 z-[70] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-md rounded-xl border border-stone-700 bg-stone-900 p-5 text-white shadow-2xl space-y-4">
+            <h3 className="text-base font-bold">Reject cancellation request</h3>
+            <p className="text-xs text-stone-300">Booking {bookingToRejectCancellation.bookingReference} will return to its previous booking status. A reason is required and will be recorded in the audit trail.</p>
+            <label className="block text-xs font-medium text-stone-300">Reason for rejection
+              <textarea value={rejectionReason} onChange={(event) => setRejectionReason(event.target.value)} minLength={5} maxLength={500} rows={3} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-3 text-white" placeholder="Explain why the cancellation request cannot be approved." />
+            </label>
+            <div className="flex justify-end gap-2">
+              <button type="button" onClick={() => setBookingToRejectCancellation(null)} className="rounded border border-stone-700 px-3 py-2 text-xs">Keep request pending</button>
+              <button type="button" onClick={confirmRejectCancellation} disabled={rejectionReason.trim().length < 5} className="rounded bg-amber-600 px-3 py-2 text-xs font-semibold disabled:opacity-40">Confirm rejection</button>
             </div>
           </div>
         </div>
