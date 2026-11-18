@@ -4,6 +4,7 @@ import { createHash, createHmac, randomUUID, timingSafeEqual } from 'node:crypto
 import { isIP } from 'node:net';
 import { GoogleGenAI } from '@google/genai';
 import { generateContentWithModelFallback, getGeminiProviderErrorDetails } from './src/server/geminiTranslationFallback';
+import { validateTranslationBatchResponse } from './src/server/translationBatchResponse';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import path from 'path';
 import fs from 'fs';
@@ -3401,7 +3402,33 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
     let saved=0, skipped=prepared.length-work.length;
     if (work.length) {
       const parsed = await generateBulkTranslationResponse(work, locale);
-      const byKey = new Map(parsed.translations.map((x:any)=>[x.entity_type+':'+x.entity_key,x]));
+      const byKey = validateTranslationBatchResponse(
+        work.map((item) => ({ entity_type: item.type, entity_key: item.key })),
+        parsed.translations,
+      );
+      // Validate the entire model response before the first database write. A malformed
+      // record must fail this batch rather than leave an avoidable partial set of drafts.
+      for (const item of work) {
+        const translated: any = byKey.get(item.type + ':' + item.key);
+        if (!translated.content || typeof translated.content !== 'object' || Array.isArray(translated.content)
+          || !translationStructureMatches(item.payload.content, translated.content)) {
+          throw new Error('Gemini returned incomplete or structurally invalid translation content for ' + item.type + ':' + item.key + '.');
+        }
+        if (item.type !== 'ui_catalog' && item.payload.title && !String(translated.title || '').trim()) {
+          throw new Error('Gemini returned an empty translated title for ' + item.type + ':' + item.key + '.');
+        }
+        if (item.type === 'communication_template' && (translated.content.template_key !== item.source.template_key
+          || translated.content.channel !== item.source.channel
+          || JSON.stringify(translated.content.variables || {}) !== JSON.stringify(item.source.variables || {}))) {
+          throw new Error('Gemini changed communication-template metadata for ' + item.key + '.');
+        }
+        if (item.type === 'ui_catalog') {
+          const keys = Object.keys(ENGLISH_UI_CATALOG);
+          if (!keys.every((key) => typeof translated.content[key] === 'string' && String(translated.content[key]).trim())) {
+            throw new Error('Gemini returned an incomplete interface catalog.');
+          }
+        }
+      }
       for (const item of work) {
         const translated:any = byKey.get(item.type+':'+item.key);
         if (!translated || !translated.content || typeof translated.content!=='object' || Array.isArray(translated.content) || !translationStructureMatches(item.payload.content, translated.content)) {skipped++;continue;}
