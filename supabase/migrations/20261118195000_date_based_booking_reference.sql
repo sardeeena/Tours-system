@@ -1,7 +1,7 @@
 BEGIN;
 
--- A global six-digit sequence guarantees uniqueness even when many guests book
--- concurrently for the same departure date. The date segment is the excursion date.
+-- A per-departure-date counter guarantees uniqueness even when many guests book
+-- concurrently for the same date, without a global lifetime booking limit.
 CREATE TABLE private.booking_reference_counters (
   booking_date date PRIMARY KEY,
   last_value integer NOT NULL DEFAULT 0
