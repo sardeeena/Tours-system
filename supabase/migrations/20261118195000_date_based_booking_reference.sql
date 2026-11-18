@@ -470,8 +470,8 @@ BEGIN
         WHERE id = v_customer_id;
     END IF;
 
-    -- 10. Generate a short, human-friendly, cryptographically random reference.
-    -- The 32-character alphabet excludes visually ambiguous 0/1/I/O; 10 symbols provide 50 bits.
+    -- 10. Generate a compact date-based reference from the private per-date counter.
+    -- Atomic counter increments guarantee distinct six-digit numeric suffixes for concurrent bookings.
     -- Retry only on a booking_reference collision. Other unique violations still surface.
     LOOP
         v_booking_ref := private.generate_booking_reference(p_booking_date);
