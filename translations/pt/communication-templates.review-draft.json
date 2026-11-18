@@ -1,0 +1,423 @@
+{
+  "schema_version": 1,
+  "locale": "pt",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "communication_template": 18,
+    "source_records": 18
+  },
+  "records": [
+    {
+      "entity_type": "communication_template",
+      "entity_key": "9d0afa47-45f6-47b8-8dde-eeae58e45b97",
+      "locale": "pt",
+      "translated_slug": "booking_confirmation",
+      "title": "Confirmação da reserva",
+      "summary": "Confirmação da reserva",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "name": "Confirmação da reserva",
+        "subject": "Confirmação da reserva: {{tour_name}} (ref. {{booking_reference}})",
+        "body_text": "Olá, {{customer_name}},\n\nObrigado por reservar com a Awesome Adventure Tours. A sua reserva para a excursão {{tour_name}}, no dia {{tour_date}}, está confirmada.\n\nReferência da reserva: {{booking_reference}}\nValor total: {{amount}}\nValor em falta: {{balance_due}}\nHora de recolha: {{pickup_time}}\n\nCom os melhores cumprimentos,\nEquipa de Concierge da Awesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "tour_date",
+          "pickup_time",
+          "amount",
+          "balance_due"
+        ],
+        "channel": "Both",
+        "template_key": "booking_confirmation"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "a2067910-50a2-41e4-bb08-80722a0750bf",
+      "locale": "pt",
+      "translated_slug": "booking_received",
+      "title": "Bilhete de reserva",
+      "summary": "Bilhete de reserva",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "name": "Bilhete de reserva",
+        "subject": "O seu bilhete de reserva da Awesome Adventure Tours: {{booking_reference}}",
+        "body_text": "Olá, {{customer_name}},\n\nRecebemos o seu pedido de reserva para a excursão {{tour_name}}, no dia {{tour_date}}. Segue abaixo o seu bilhete de reserva digital.\n\nReferência da reserva: {{booking_reference}}\nEstado da reserva: {{booking_status}}\nValor total: {{currency}} {{amount}}\n\nGuarde a referência da reserva para a poder indicar quando contactar a nossa equipa. A hora de recolha e os detalhes operacionais poderão ser confirmados separadamente.\n\nObrigado,\nAwesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "tour_date",
+          "booking_status",
+          "currency",
+          "amount"
+        ],
+        "channel": "Email",
+        "template_key": "booking_received"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "3f657bd6-15e7-477f-b513-ac9038af2383",
+      "locale": "pt",
+      "translated_slug": "booking_review_request",
+      "title": "Pedido de avaliação após a excursão",
+      "summary": "Pedido de avaliação após a excursão",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "name": "Pedido de avaliação após a excursão",
+        "subject": "O que achou da excursão {{tour_name}}? Gostaríamos de conhecer a sua opinião",
+        "body_text": "Olá, {{customer_name}},\n\nObrigado por participar na excursão {{tour_name}} (reserva {{booking_reference}}). Esperamos que tenha tido uma experiência fantástica.\n\nSe tiver um momento, agradecemos que partilhe uma avaliação sincera:\n\nGoogle: {{google_review_url}}\nTripadvisor: {{tripadvisor_review_url}}\nPágina da sua excursão: {{tour_review_url}}\n\nObrigado por escolher a Awesome Adventure Tours. Esperamos voltar a recebê-lo em breve!",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "google_review_url",
+          "tripadvisor_review_url",
+          "tour_review_url"
+        ],
+        "channel": "Email",
+        "template_key": "booking_review_request"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "9aca4700-542d-4c35-94ef-b0cae8095e19",
+      "locale": "pt",
+      "translated_slug": "booking_update",
+      "title": "Atualização da reserva",
+      "summary": "Atualização da reserva",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "name": "Atualização da reserva",
+        "subject": "Atualização da reserva: {{tour_name}} (ref. {{booking_reference}})",
+        "body_text": "Olá, {{customer_name}},\n\nA sua reserva para a excursão {{tour_name}} (ref. {{booking_reference}}) foi atualizada.\n\nData da excursão: {{tour_date}}\nHora de recolha: {{pickup_time}}\nValor em falta: {{balance_due}}\n\nCom os melhores cumprimentos,\nEquipa de Operações da Awesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "tour_date",
+          "pickup_time",
+          "balance_due"
+        ],
+        "channel": "Both",
+        "template_key": "booking_update"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "ba3bfad1-d02f-4d94-9cb3-be129dde05e0",
+      "locale": "pt",
+      "translated_slug": "cancellation",
+      "title": "Cancelamento da reserva",
+      "summary": "Cancelamento da reserva",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "name": "Cancelamento da reserva",
+        "subject": "Confirmação de cancelamento: {{booking_reference}} - {{tour_name}}",
+        "body_text": "Olá, {{customer_name}},\n\nA sua reserva {{booking_reference}} para a excursão {{tour_name}}, no dia {{tour_date}}, foi cancelada.\n\nA nossa equipa entrará em contacto consigo caso tenha direito a um reembolso.\n\nCom os melhores cumprimentos,\nEquipa de Apoio ao Viajante da Awesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "tour_date"
+        ],
+        "channel": "Both",
+        "template_key": "cancellation"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "2f758e25-31ce-4a32-abaf-0f167c94ac1e",
+      "locale": "pt",
+      "translated_slug": "follow_up",
+      "title": "Contacto de acompanhamento",
+      "summary": "Contacto de acompanhamento",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "name": "Contacto de acompanhamento",
+        "subject": "O seu concierge de férias no Mar Vermelho gostaria de saber como está a correr a sua estadia",
+        "body_text": "Olá, {{customer_name}},\n\nEsperamos que esteja a aproveitar ao máximo a sua estadia na região do Mar Vermelho. A nossa equipa terá todo o gosto em ajudar a planear a sua próxima aventura.\n\nCom os melhores cumprimentos,\nEquipa VIP de Concierge da Awesome Adventure Tours",
+        "variables": [
+          "customer_name"
+        ],
+        "channel": "Both",
+        "template_key": "follow_up"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "f2916b63-45b6-49aa-94a0-180c4ac026dc",
+      "locale": "pt",
+      "translated_slug": "inquiry_response",
+      "title": "Resposta ao seu pedido de informação",
+      "summary": "Resposta ao seu pedido de informação",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "name": "Resposta ao seu pedido de informação",
+        "subject": "Sobre o seu pedido de informação - Awesome Adventure Tours",
+        "body_text": "Olá, {{customer_name}},\n\nObrigado pelo seu interesse na Awesome Adventure Tours. A nossa equipa está a analisar o seu pedido e terá todo o gosto em ajudar.\n\nCom os melhores cumprimentos,\nEquipa de Apoio ao Viajante da Awesome Adventure Tours",
+        "variables": [
+          "customer_name"
+        ],
+        "channel": "Both",
+        "template_key": "inquiry_response"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "2fe01cb2-58ed-41f6-aaa0-186fdfb78e5f",
+      "locale": "pt",
+      "translated_slug": "newsletter_welcome",
+      "title": "Boas-vindas à newsletter",
+      "summary": "Boas-vindas à newsletter",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "name": "Boas-vindas à newsletter",
+        "subject": "Bem-vindo à Awesome Adventure Tours — o seu voucher de desconto de 15%",
+        "body_text": "Obrigado por subscrever a newsletter da Awesome Adventure Tours. O seu código de desconto de 15% é {{discount_code}}. Utilize-o quando solicitar a sua próxima excursão.\n\nPode cancelar a subscrição a qualquer momento: {{unsubscribe_url}}",
+        "variables": [
+          "discount_code",
+          "unsubscribe_url"
+        ],
+        "channel": "Email",
+        "template_key": "newsletter_welcome"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "286f3159-e9a2-4038-bcd8-ad2a0ec53079",
+      "locale": "pt",
+      "translated_slug": "payment_confirmation",
+      "title": "Confirmação de pagamento",
+      "summary": "Confirmação de pagamento",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "name": "Confirmação de pagamento",
+        "subject": "Confirmação de pagamento: {{booking_reference}} - Awesome Adventure Tours",
+        "body_text": "Olá, {{customer_name}},\n\nO seu pagamento de {{amount}} para a reserva {{booking_reference}} ({{tour_name}}) foi processado com sucesso.\n\nValor em falta: {{balance_due}}\n\nObrigado,\nDepartamento Financeiro da Awesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "amount",
+          "balance_due"
+        ],
+        "channel": "Both",
+        "template_key": "payment_confirmation"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "97dcca82-9361-4683-9097-ded3d3bfd338",
+      "locale": "pt",
+      "translated_slug": "payment_reminder",
+      "title": "Lembrete de pagamento",
+      "summary": "Lembrete de pagamento",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "name": "Lembrete de pagamento",
+        "subject": "Lembrete de pagamento: valor em falta para {{tour_name}}",
+        "body_text": "Olá, {{customer_name}},\n\nEste é um lembrete cordial de que a sua excursão {{tour_name}}, marcada para {{tour_date}}, está próxima.\n\nValor em falta: {{balance_due}}\nHora prevista de recolha no hotel: {{pickup_time}}\n\nCom os melhores cumprimentos,\nAwesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "tour_date",
+          "pickup_time",
+          "balance_due"
+        ],
+        "channel": "Both",
+        "template_key": "payment_reminder"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "9143122e-c8e6-4d7b-bb64-ad562d44e8e4",
+      "locale": "pt",
+      "translated_slug": "pickup_reminder",
+      "title": "Lembrete de recolha",
+      "summary": "Lembrete de recolha",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "name": "Lembrete de recolha",
+        "subject": "Lembrete: recolha no hotel amanhã para {{tour_name}}",
+        "body_text": "Olá, {{customer_name}},\n\nEstamos ansiosos por recebê-lo amanhã na excursão {{tour_name}}.\n\nA recolha no hotel está confirmada para as {{pickup_time}}.\nReferência da reserva: {{booking_reference}}\n\nTraga fato de banho, proteção solar, toalha e um documento de identificação ou passaporte válido.",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "pickup_time"
+        ],
+        "channel": "Both",
+        "template_key": "pickup_reminder"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "2e8a1598-4077-45f3-96c7-1c92503d39b3",
+      "locale": "pt",
+      "translated_slug": "refund",
+      "title": "Notificação de reembolso",
+      "summary": "Notificação de reembolso",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "name": "Notificação de reembolso",
+        "subject": "Reembolso processado: {{booking_reference}} - Awesome Adventure Tours",
+        "body_text": "Olá, {{customer_name}},\n\nO reembolso da reserva {{booking_reference}} ({{tour_name}}) foi aprovado e processado.\n\nValor reembolsado: {{amount}}\n\nCom os melhores cumprimentos,\nDepartamento Financeiro da Awesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "amount"
+        ],
+        "channel": "Both",
+        "template_key": "refund"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "d8e61555-7c7b-4286-8923-c78741d9cbf4",
+      "locale": "pt",
+      "translated_slug": "review_request",
+      "title": "Pedido de avaliação",
+      "summary": "Pedido de avaliação",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "name": "Pedido de avaliação",
+        "subject": "Como avalia a excursão {{tour_name}}?",
+        "body_text": "Olá, {{customer_name}},\n\nEsperamos que a excursão {{tour_name}} tenha sido uma experiência maravilhosa. A sua opinião é muito importante para a nossa equipa local.\n\nDeixe a sua avaliação aqui: https://awesomeadventure.tours/review?ref={{booking_reference}}\n\nObrigado por viajar connosco,\nAwesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "tour_name",
+          "booking_reference"
+        ],
+        "channel": "Both",
+        "template_key": "review_request"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "dc0e86c3-edd5-48cc-8cd9-c3c2e7bb8cba",
+      "locale": "pt",
+      "translated_slug": "tour_reminder",
+      "title": "Lembrete de excursão",
+      "summary": "Lembrete de excursão",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "name": "Lembrete de excursão",
+        "subject": "Lembrete da próxima excursão: {{tour_name}} em {{tour_date}}",
+        "body_text": "Olá, {{customer_name}},\n\nA sua excursão {{tour_name}} está a aproximar-se e terá lugar em {{tour_date}}.\n\nReferência da reserva: {{booking_reference}}\nHora prevista de recolha: {{pickup_time}}\nValor em falta: {{balance_due}}\n\nEstamos à sua espera.",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "tour_date",
+          "pickup_time",
+          "balance_due"
+        ],
+        "channel": "Both",
+        "template_key": "tour_reminder"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "83b34c2d-3d1d-4a32-aed8-ae2d2cf35d50",
+      "locale": "pt",
+      "translated_slug": "welcome",
+      "title": "Boas-vindas à Awesome Adventure Tours",
+      "summary": "Boas-vindas à Awesome Adventure Tours",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "name": "Boas-vindas à Awesome Adventure Tours",
+        "subject": "Bem-vindo à Awesome Adventure Tours, {{customer_name}}!",
+        "body_text": "Olá, {{customer_name}},\n\nBem-vindo à Awesome Adventure Tours. É um prazer ajudá-lo a descobrir a costa egípcia do Mar Vermelho.\n\nExplore as nossas excursões: https://awesomeadventure.tours/excursions\n\nCom os melhores cumprimentos,\nEquipa de Relações com Viajantes da Awesome Adventure Tours",
+        "variables": [
+          "customer_name"
+        ],
+        "channel": "Both",
+        "template_key": "welcome"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "612bdb2c-703a-4ac3-96d9-3554246b8426",
+      "locale": "pt",
+      "translated_slug": "post_trip_thank_you",
+      "title": "Obrigado por viajar connosco",
+      "summary": "Obrigado por viajar connosco",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "name": "Obrigado por viajar connosco",
+        "subject": "Obrigado por participar na excursão {{tour_name}}",
+        "body_text": "Olá, {{customer_name}},\n\nObrigado por participar na excursão {{tour_name}}. Esperamos que tenha desfrutado da sua aventura no Mar Vermelho. Será um prazer voltar a recebê-lo.",
+        "variables": [
+          "customer_name",
+          "tour_name"
+        ],
+        "channel": "Email",
+        "template_key": "post_trip_thank_you"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "ea7c52e1-5b5e-40a4-8e70-6144b9ae141c",
+      "locale": "pt",
+      "translated_slug": "ticket_created",
+      "title": "Recebemos o seu pedido de apoio",
+      "summary": "Recebemos o seu pedido de apoio",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "name": "Recebemos o seu pedido de apoio",
+        "subject": "Recebemos o seu pedido de apoio {{ticket_reference}}",
+        "body_text": "Olá, {{customer_name}},\n\nRecebemos o seu pedido de apoio ({{ticket_reference}}). A nossa equipa irá analisá-lo e responder o mais rapidamente possível.",
+        "variables": [
+          "customer_name",
+          "ticket_reference"
+        ],
+        "channel": "Email",
+        "template_key": "ticket_created"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "18b48d44-d030-42de-8a8d-970cf3adc493",
+      "locale": "pt",
+      "translated_slug": "ticket_reply",
+      "title": "Nova resposta ao pedido de apoio {{ticket_reference}}",
+      "summary": "Nova resposta ao pedido de apoio {{ticket_reference}}",
+      "seo_title": null,
+      "seo_description": null,
+      "content": {
+        "name": "Nova resposta ao pedido de apoio {{ticket_reference}}",
+        "subject": "Foi publicada uma atualização sobre o seu pedido de apoio",
+        "body_text": "Olá, {{customer_name}},\n\nA nossa equipa respondeu ao seu pedido de apoio ({{ticket_reference}}). Inicie sessão na sua conta para consultar a resposta.",
+        "variables": [
+          "customer_name",
+          "ticket_reference"
+        ],
+        "channel": "Email",
+        "template_key": "ticket_reply"
+      }
+    }
+  ]
+}
