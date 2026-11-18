@@ -10,7 +10,7 @@ VALUES (
   'Booking Ticket',
   'Email',
   'Your Awesome Adventure Tours booking ticket: {{booking_reference}}',
-  E'Hello {{customer_name}},\n\nWe have received your reservation request for {{tour_name}} on {{tour_date}}. Your digital booking ticket is included below.\n\nBooking reference: {{booking_reference}}\nBooking status: {{booking_status}}\nTotal: {{currency}} {{amount}}\n\nPlease keep your booking reference available when contacting our team. Pickup time and operational details may be confirmed separately.\n\nThank you,\nAwesome Adventure Tours',
+  E'Hello {{customer_name}},\n\nWe have received your reservation request for {{tour_name}} on {{tour_date}}. Your digital booking ticket is included below.\n\nBooking reference (keep this code): {{booking_reference}}\nBooking status: {{booking_status}}\nTotal: {{currency}} {{amount}}\n\nPlease keep your booking reference available when contacting our team. Pickup time and operational details may be confirmed separately.\n\nThank you,\nAwesome Adventure Tours',
   '["customer_name","booking_reference","tour_name","tour_date","booking_status","currency","amount"]'::jsonb,
   TRUE
 )

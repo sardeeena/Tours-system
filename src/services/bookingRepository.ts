@@ -13,7 +13,7 @@ import { bookingRateLimiter } from '../lib/security';
 import { findOrCreateAuthoritativeCustomer } from './platformConsistency';
 import { recordActivity } from './crmService';
 import { publishAutomationEvent } from './communicationService';
-import { resolveBookingTourIdentifier, shouldUseLocalBookingCache } from '../lib/bookingIdentifiers';
+import { generateLocalBookingReference, isValidBookingReference, resolveBookingTourIdentifier, shouldUseLocalBookingCache } from '../lib/bookingIdentifiers';
 import { recordVisitorEvent } from './visitorAnalyticsService';
 
 const isDevelopmentBuild = Boolean((import.meta as any).env?.DEV);
@@ -29,18 +29,13 @@ export interface IBookingRepository {
   listBookings(filters?: { status?: string; limit?: number }): Promise<Booking[]>;
 }
 
-export function generateBookingReference(): string {
-  const currentYear = new Date().getFullYear();
-  const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-  const char1 = letters.charAt(Math.floor(Math.random() * letters.length));
-  const char2 = letters.charAt(Math.floor(Math.random() * letters.length));
-  const digits = Math.floor(1000 + Math.random() * 9000);
-  return `RST-${currentYear}-${char1}${char2}${digits}`;
+export function generateBookingReference(bookingDate: string | Date = new Date()): string {
+  return generateLocalBookingReference(bookingDate);
 }
 
 export function validateBookingPayload(booking: Booking): { isValid: boolean; error?: string } {
-  if (!booking.bookingReference || !booking.bookingReference.startsWith('RST-')) {
-    return { isValid: false, error: 'Invalid booking reference format. Must start with RST-' };
+  if (!isValidBookingReference(booking.bookingReference)) {
+    return { isValid: false, error: 'Invalid booking reference format. Expected AWE-YYYYMMDD-123456.' };
   }
   if (!booking.customer || !booking.customer.email || !booking.customer.email.includes('@')) {
     return { isValid: false, error: 'A valid customer email address is required.' };

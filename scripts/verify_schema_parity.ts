@@ -39,20 +39,25 @@ function runParityCheck() {
   console.log(`Auditing ${migrationFiles.length} incremental migrations against complete_schema.sql...\n`);
 
   // 1. Audit Tables
+  // The baseline tracks public (and legacy unqualified) relations only. Parse
+  // optional schema qualifiers explicitly so private.foo is never mistaken for
+  // a table named "private".
   const completeTables = new Set<string>();
-  const tableRegex = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:public\.)?([a-zA-Z0-9_]+)/gi;
+  const tableRegex = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:(\w+)\.)?(\w+)/gi;
   let m: RegExpExecArray | null;
   while ((m = tableRegex.exec(completeSql)) !== null) {
-    completeTables.add(m[1].toLowerCase());
+    const schema = m[1]?.toLowerCase();
+    if (!schema || schema === 'public') completeTables.add(m[2].toLowerCase());
   }
 
   const migrationTables = new Set<string>();
   for (const f of migrationFiles) {
     const content = fs.readFileSync(path.join(migrationsDir, f), 'utf8');
     let m2: RegExpExecArray | null;
-    const r2 = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:public\.)?([a-zA-Z0-9_]+)/gi;
+    const r2 = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:(\w+)\.)?(\w+)/gi;
     while ((m2 = r2.exec(content)) !== null) {
-      migrationTables.add(m2[1].toLowerCase());
+      const schema = m2[1]?.toLowerCase();
+      if (!schema || schema === 'public') migrationTables.add(m2[2].toLowerCase());
     }
   }
 
