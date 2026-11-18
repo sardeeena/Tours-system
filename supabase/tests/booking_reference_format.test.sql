@@ -8,7 +8,7 @@ SELECT matches(
 SELECT isnt(
   private.generate_booking_reference('2026-11-18'),
   private.generate_booking_reference('2026-11-18'),
-  'concurrent-safe sequence issues distinct references for the same date'
+  'per-date counter issues distinct references for the same date'
 );
 SELECT matches(
   private.generate_booking_reference('2026-12-01'),
