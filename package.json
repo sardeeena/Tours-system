@@ -56,7 +56,7 @@
     "test:localization-foundation": "tsx scripts/generate_private_ui_catalog.ts && tsx scripts/test_localization_foundation.ts",
     "translations:export": "tsx scripts/translation_draft_bundle.ts export",
     "translations:import": "tsx scripts/translation_draft_bundle.ts import",
-    "test:translation-drafts": "tsx scripts/test_translation_draft_bundle.ts && tsx scripts/test_gemini_translation_failover.ts",
+    "test:translation-drafts": "tsx scripts/test_translation_draft_bundle.ts && tsx scripts/test_gemini_translation_failover.ts && tsx scripts/test_translation_batch_response.ts",
     "test:private-ui-localization": "tsx scripts/test_private_ui_translation.ts",
     "test:french-rollout": "tsx scripts/test_french_rollout.ts",
     "test:whatsapp-locale-mapping": "tsx scripts/test_whatsapp_locale_mapping.ts",
