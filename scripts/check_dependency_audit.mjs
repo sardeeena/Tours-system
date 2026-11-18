@@ -24,6 +24,17 @@ const actualPackages = Object.keys(vulnerabilities).sort();
 const summary = report.metadata?.vulnerabilities;
 
 if (!summary) fail('npm audit report has no vulnerability summary.');
+
+// The previously documented Vite toolchain advisory is no longer guaranteed to
+// appear in every registry snapshot. A clean audit is the strongest result and
+// must pass without requiring the old exception packages to remain vulnerable.
+if (summary.total === 0) {
+  if ([summary.high, summary.critical, summary.moderate, summary.low, summary.info].some((count) => count !== 0)) {
+    fail(`Inconsistent clean audit severity totals: ${JSON.stringify(summary)}`);
+  }
+  console.log('Dependency security policy passed: no advisories found.');
+  process.exit(0);
+}
 if (JSON.stringify(actualPackages) !== JSON.stringify(expectedPackages)) {
   fail(`Unexpected vulnerable packages: ${actualPackages.join(', ') || '(none)'}`);
 }

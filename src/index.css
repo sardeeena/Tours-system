@@ -1069,42 +1069,16 @@ html :is(section[id], article[id], [data-scroll-target]) {
   }
 }
 
-/* Reveal only after the motion observer is active; content remains visible without JS. */
-html.aat-motion-active .aat-reveal {
-  opacity: 0;
-  transform: translate3d(0, 18px, 0);
-  transition:
-    opacity 620ms cubic-bezier(.2,.7,.2,1),
-    transform 620ms cubic-bezier(.2,.7,.2,1);
-  will-change: opacity, transform;
-}
+/* Public and admin content must never be hidden while waiting for an observer.
+   Motion is decorative only: reveal targets are visible at every viewport size,
+   including tablets, desktop browsers, and webviews with delayed observers. */
+html.aat-motion-active .aat-reveal,
 html.aat-motion-active .aat-reveal.aat-visible {
-  opacity: 1;
-  transform: translate3d(0, 0, 0);
-  will-change: auto;
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+  will-change: auto !important;
 }
-html.aat-motion-active .aat-reveal:nth-of-type(2) { transition-delay: 45ms; }
-html.aat-motion-active .aat-reveal:nth-of-type(3) { transition-delay: 90ms; }
-html.aat-motion-active .aat-reveal:nth-of-type(4) { transition-delay: 135ms; }
-html.aat-motion-active .aat-reveal:nth-of-type(5) { transition-delay: 180ms; }
-
-/*
- * Mobile fail-open: public page content must never depend on an IntersectionObserver
- * callback to become visible. Some mobile browser/webview combinations can defer or
- * miss intersection notifications while route transitions and dynamic content settle.
- * Keep the motion enhancement on larger viewports, but make every mobile reveal target
- * immediately visible so one missed callback cannot blank an entire page.
- */
-@media (max-width: 767px) {
-  html.aat-motion-active .aat-reveal,
-  html.aat-motion-active .aat-reveal.aat-visible {
-    opacity: 1 !important;
-    transform: none !important;
-    transition: none !important;
-    will-change: auto !important;
-  }
-}
-
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto !important; }
