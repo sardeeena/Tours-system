@@ -52,7 +52,14 @@ jobs:
           }
           NODE
 
+      - name: Type-check with the proposed compatible Vite toolchain
+        run: npm run lint
+
+      - name: Build with the proposed compatible Vite toolchain
+        run: npm run build
+
       - name: Upload full audit report and generated npm lockfile
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: dependency-security-diagnostic
@@ -61,3 +68,6 @@ jobs:
             package-lock.json
           if-no-files-found: error
           retention-days: 7
+
+      - name: Enforce high-severity dependency audit gate
+        run: npm audit --include=dev --audit-level=high
