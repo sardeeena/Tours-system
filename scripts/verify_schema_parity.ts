@@ -43,7 +43,7 @@ function runParityCheck() {
   // optional schema qualifiers explicitly so private.foo is never mistaken for
   // a table named "private".
   const completeTables = new Set<string>();
-  const tableRegex = /CREATE\\s+TABLE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:(\\w+)\\.)?(\\w+)/gi;
+  const tableRegex = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:(\w+)\.)?(\w+)/gi;
   let m: RegExpExecArray | null;
   while ((m = tableRegex.exec(completeSql)) !== null) {
     const schema = m[1]?.toLowerCase();
@@ -54,7 +54,7 @@ function runParityCheck() {
   for (const f of migrationFiles) {
     const content = fs.readFileSync(path.join(migrationsDir, f), 'utf8');
     let m2: RegExpExecArray | null;
-    const r2 = /CREATE\\s+TABLE\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?(?:(\\w+)\\.)?(\\w+)/gi;
+    const r2 = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:(\w+)\.)?(\w+)/gi;
     while ((m2 = r2.exec(content)) !== null) {
       const schema = m2[1]?.toLowerCase();
       if (!schema || schema === 'public') migrationTables.add(m2[2].toLowerCase());
