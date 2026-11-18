@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "locale": "pt",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "tour": 2,
+    "source_records": 2
+  },
+  "records": [
+    {
+      "entity_type": "tour",
+      "entity_key": "5a15257b-d664-4957-be77-c2cb87bd174a",
+      "source_slug": "el-gouna-jeep-desert-safari-bbq-dinner-stargazing-experience",
+      "translated_slug": "el-gouna-safari-jipe-deserto-churrasco-observacao-estrelas",
+      "locale": "pt",
+      "title": "El Gouna: safari de jipe no deserto, churrasco e observação das estrelas",
+      "summary": "Fuja das luzes de El Gouna e viva uma noite inesquecível no coração do deserto egípcio. Desfrute de um emocionante passeio de jipe 4x4 pelas montanhas do Mar Vermelho, admire o pôr do sol e conheça a hospitalidade tradicional dos beduínos durante um delicioso jantar de churrasco. Depois de escurecer, descubra a magia do céu do deserto através de um telescópio profissional e aprenda mais sobre estrelas e planetas com um guia de astronomia.",
+      "seo_title": "El Gouna: safari de jipe, churrasco e observação das estrelas no deserto | Awesome Adventure Tours",
+      "seo_description": "Viva um safari de jipe a partir de El Gouna com pôr do sol, acampamento beduíno, passeio de camelo, churrasco e observação das estrelas com telescópio.",
+      "duration": "Dia inteiro (cerca de 5 horas)",
+      "pickup_info": "Recolha e regresso gratuitos nos hotéis de toda a zona de El Gouna.",
+      "cancellation_policy": "Cancelamento gratuito até 24 horas antes do início da excursão.",
+      "age_restrictions": "Adequado para todas as idades. Crianças com menos de 2 anos participam gratuitamente.",
+      "content": {
+        "title": "El Gouna: safari de jipe no deserto, churrasco e observação das estrelas",
+        "description": "## Uma noite de aventura no deserto, hospitalidade beduína e céu estrelado\n\nAlgumas experiências são mais bonitas quando o sol começa a pôr-se. Esta aventura no deserto é um exemplo perfeito.\n\nDeixe para trás a animada El Gouna e aventure-se pelo belo Deserto Oriental para uma noite de aventura, tradições locais e descoberta. Da emoção de conduzir num jipe 4x4 à beleza tranquila de um céu cheio de estrelas, este é um lado do Egito que muitos visitantes nunca chegam a conhecer.\n\nA noite começa com a recolha no hotel em El Gouna, seguida de uma viagem de jipe 4x4 para o interior do deserto. À medida que se afasta da cidade, a paisagem transforma-se em planícies abertas, montanhas escarpadas e espaços desérticos sem fim.\n\nDepois de percorrer cerca de 26 quilómetros pelo deserto, chegará a um local panorâmico para observar o pôr do sol. Veja as cores do céu mudarem enquanto o sol desaparece lentamente atrás das montanhas. É um momento excelente para fotografias, respirar o ar fresco do deserto e apreciar o ambiente.\n\nEm seguida, visitará um acampamento beduíno tradicional, onde será recebido com hospitalidade local. Sente-se, beba chá de ervas beduínas e conheça as tradições e o estilo de vida das comunidades do deserto. Terá também a oportunidade de fazer um breve passeio de camelo e tirar fotografias bonitas.\n\nQuando a noite chegar, estará à sua espera um delicioso buffet de churrasco. Saboreie pratos acabados de preparar, sabores tradicionais e refrigerantes refrescantes num ambiente descontraído do acampamento beduíno, rodeado pela tranquilidade do deserto.\n\nMas a parte mais mágica da noite ainda está para chegar.\n\nQuando escurecer e estiver longe das luzes brilhantes da cidade, olhe para cima e descubra uma vista completamente diferente do céu noturno. Com a ajuda de um guia profissional de astronomia, conhecerá as estrelas, aprenderá factos interessantes sobre o universo e descobrirá como identificar diferentes corpos celestes.\n\nObserve através de um telescópio profissional os planetas visíveis e outros objetos fascinantes do céu noturno — a observação depende do tempo e das condições astronómicas.\n\nEsta experiência especial combina aventura, cultura e astronomia numa noite inesquecível.\n\nDepois da observação das estrelas, relaxe durante a viagem de jipe de regresso a El Gouna. Levará consigo as recordações de uma noite no deserto que não esquecerá tão cedo.",
+        "durationLabel": "Dia inteiro (cerca de 5 horas)",
+        "highlights": [
+          "Viva um emocionante safari de jipe 4x4 pelo belo Deserto Oriental",
+          "Percorra cerca de 26 km pelo deserto, rodeado pelas impressionantes montanhas do Mar Vermelho",
+          "Admire um belo pôr do sol num ponto panorâmico do deserto",
+          "Conheça a hospitalidade tradicional dos beduínos num acampamento no deserto",
+          "Faça um breve passeio de camelo e tire fotografias bonitas",
+          "Prove chá beduíno acabado de preparar e pão tradicional",
+          "Desfrute de um delicioso buffet de churrasco e refrigerantes",
+          "Explore o céu noturno com um guia profissional de astronomia",
+          "Observe planetas visíveis e corpos celestes através de um telescópio profissional",
+          "Conheça factos fascinantes sobre estrelas, planetas e o universo",
+          "Aproveite a recolha e o regresso aos hotéis em El Gouna"
+        ],
+        "itinerary": [],
+        "included": [
+          "Recolha e regresso a todos os hotéis em El Gouna",
+          "Safari de jipe 4x4 pelo deserto",
+          "Percurso de cerca de 26 km pelo deserto",
+          "Uma garrafa de água mineral durante o passeio de jipe",
+          "Paragem num local panorâmico para observar o pôr do sol",
+          "Breve passeio de camelo e oportunidade para tirar fotografias",
+          "Chá beduíno tradicional e pão acabado de cozer",
+          "Buffet de churrasco num acampamento beduíno no deserto",
+          "Refrigerantes e água mineral durante o jantar",
+          "Observação das estrelas com telescópio profissional",
+          "Guia profissional de astronomia"
+        ],
+        "excluded": [
+          "Imposto turístico de $1 por pessoa",
+          "Despesas pessoais e lembranças",
+          "Comida e bebidas adicionais não indicadas na lista de serviços incluídos",
+          "Gorjetas para o guia e o motorista",
+          "Serviços profissionais de fotografia",
+          "Serviços não indicados expressamente na lista de serviços incluídos"
+        ],
+        "faqs": [],
+        "pickupInfo": "Recolha e regresso gratuitos nos hotéis de toda a zona de El Gouna.",
+        "cancellationPolicy": "Cancelamento gratuito até 24 horas antes do início da excursão.",
+        "ageRestrictions": "Adequado para todas as idades. Crianças com menos de 2 anos participam gratuitamente.",
+        "labels": {
+          "highlights": "Destaques",
+          "itinerary": "Itinerário",
+          "included": "Incluído",
+          "excluded": "Não incluído",
+          "faqs": "Perguntas frequentes",
+          "pickupInfo": "Informações de recolha",
+          "cancellationPolicy": "Política de cancelamento",
+          "ageRestrictions": "Restrições de idade",
+          "bookNow": "Reservar agora",
+          "browseMore": "Ver mais excursões"
+        }
+      }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "cda285d8-1119-4118-bb73-3a3c433f8daf",
+      "source_slug": "from-hurghada-luxor-day-trip-karnak-temple-valley-of-the-kings",
+      "translated_slug": "hurghada-luxor-excursao-dia-templo-karnak-vale-reis",
+      "locale": "pt",
+      "title": "A partir de Hurghada: excursão de um dia a Luxor, Templo de Karnak e Vale dos Reis",
+      "summary": "Viaje milhares de anos atrás e descubra a fascinante história do antigo Egito numa excursão de um dia de Hurghada a Luxor. Explore o majestoso complexo do Templo de Karnak, os túmulos reais no Vale dos Reis e o impressionante templo da Rainha Hatshepsut, esculpido nas falésias de Deir el-Bahari. Ouça as histórias de um egiptólogo profissional, desfrute de um almoço egípcio tradicional e viaje confortavelmente num veículo com ar condicionado.",
+      "seo_title": "Excursão de um dia de Hurghada a Luxor: Karnak e Vale dos Reis | Awesome Adventure Tours",
+      "seo_description": "Reserve uma excursão de Hurghada a Luxor: Templo de Karnak, três túmulos reais no Vale dos Reis, templo de Hatshepsut e almoço.",
+      "duration": "Dia inteiro",
+      "pickup_info": "Recolha e regresso gratuitos no átrio do hotel em toda a zona de Hurghada.",
+      "cancellation_policy": "Cancelamento gratuito até 24 horas antes do início da excursão.",
+      "age_restrictions": "Adequado para todas as idades. Crianças com menos de 2 anos participam gratuitamente.",
+      "content": {
+        "title": "A partir de Hurghada: excursão de um dia a Luxor, Templo de Karnak e Vale dos Reis",
+        "description": "## Descubra as maravilhas da antiga Tebas numa viagem a Luxor\n\nSe alguma vez quis conhecer os lugares onde os grandes faraós viveram, adoraram os seus deuses e foram sepultados, passar um dia em Luxor é uma experiência imperdível.\n\nLuxor é frequentemente chamada o maior museu ao ar livre do mundo e alberga alguns dos monumentos mais extraordinários do antigo Egito. Nesta excursão de um dia a partir de Hurghada, atravessará o Deserto Oriental e chegará ao coração da antiga Tebas, onde cada templo e cada túmulo real contam uma história.\n\nO dia começa cedo com a recolha no hotel em Hurghada. Sente-se num veículo confortável com ar condicionado e desfrute da viagem até Luxor. Estão previstas paragens para descanso ao longo do percurso, para tornar a viagem mais confortável.\n\nÀ chegada, visitará primeiro o impressionante complexo do Templo de Karnak. Este enorme recinto religioso foi construído e ampliado ao longo de muitas gerações de faraós. Caminhe sob as altas colunas da Grande Sala Hipostila, admire os hieróglifos magnificamente esculpidos e descubra o Lago Sagrado enquanto ouve as histórias fascinantes do egiptólogo sobre a história deste local extraordinário.\n\nSe quiser ver Luxor de outra perspetiva, pode acrescentar um passeio tradicional de feluca pelo Nilo até à Ilha das Bananas. Desfrute da brisa suave, observe a vida quotidiana ao longo das margens do rio e faça uma pausa tranquila nas visitas.\n\nEm seguida, desfrutará de um delicioso almoço egípcio num restaurante local, antes de seguir para a margem ocidental de Luxor, onde se encontram alguns dos monumentos reais mais famosos do antigo Egito.\n\nA próxima paragem será o lendário Vale dos Reis. Escondido entre colinas desérticas, foi o local de repouso de muitos dos faraós mais poderosos do Egito. Visitará três túmulos reais incluídos no preço e verá pinturas murais coloridas, hieróglifos detalhados e cenas fascinantes que sobreviveram durante milhares de anos. Também pode acrescentar um bilhete para o famoso túmulo de Tutankhamon para enriquecer ainda mais a visita.\n\nDepois, visitará o magnífico templo da Rainha Hatshepsut em Deir el-Bahari. Foi construído diretamente junto a impressionantes paredes de calcário. Os terraços elegantes e a arquitetura singular fazem dele um dos templos mais reconhecidos do Egito. Conheça a extraordinária rainha que governou como faraó e deixou um dos monumentos mais memoráveis do país.\n\nAntes de deixar a margem ocidental, fará ainda uma paragem junto aos Colossos de Memnon. Estas duas enormes estátuas de Amenhotep III permanecem na paisagem de Tebas há mais de 3.000 anos e continuam a ser dos monumentos mais reconhecidos de Luxor. É um excelente local para fotografias e para admirar a escala da arte egípcia antiga.\n\nDepois das visitas, relaxe no veículo com ar condicionado durante a viagem de regresso a Hurghada.\n\nÉ um dia longo, mas repleto de locais inesquecíveis, histórias fascinantes e uma compreensão mais profunda da antiga civilização egípcia.\n\nQuer visite o Egito pela primeira vez ou tenha um interesse antigo pela sua história, esta excursão a Luxor é uma excelente oportunidade para descobrir os tesouros arqueológicos mais famosos do país num único dia especial.",
+        "durationLabel": "Dia inteiro",
+        "highlights": [
+          "Descubra Luxor, um dos locais mais importantes do mundo para a história do antigo Egito",
+          "Explore o impressionante complexo do Templo de Karnak e a famosa Grande Sala Hipostila com 134 colunas altas",
+          "Visite o lendário Vale dos Reis e veja três túmulos reais magnificamente decorados",
+          "Conheça a vida e os rituais funerários dos faraós mais poderosos do Egito",
+          "Descubra o extraordinário templo da Rainha Hatshepsut, construído junto às falésias de Deir el-Bahari",
+          "Tire fotografias junto aos impressionantes Colossos de Memnon",
+          "Escolha opcionalmente um passeio tradicional de feluca pelo Nilo até à Ilha das Bananas",
+          "Acrescente opcionalmente um bilhete para o túmulo de Tutankhamon",
+          "Desfrute de um almoço egípcio acabado de preparar num restaurante local",
+          "Viaje confortavelmente de Hurghada num veículo com ar condicionado e um egiptólogo experiente"
+        ],
+        "itinerary": [],
+        "included": [
+          "Recolha e regresso aos hotéis em Hurghada",
+          "Transporte de ida e volta em miniautocarro moderno com ar condicionado ou veículo privado, consoante a opção selecionada",
+          "Guia egiptólogo profissional no idioma selecionado",
+          "Bilhete de entrada no Templo de Karnak",
+          "Bilhete de entrada no Vale dos Reis, incluindo três túmulos reais (Ramsés III, Ramsés IV e Ramsés I)",
+          "Bilhete de entrada no templo da Rainha Hatshepsut",
+          "Paragem para fotografias junto aos Colossos de Memnon",
+          "Almoço egípcio tradicional num restaurante local",
+          "Água mineral engarrafada e refrigerantes durante a viagem",
+          "Snacks ligeiros durante o percurso",
+          "Paragens para descanso no trajeto entre Hurghada e Luxor",
+          "Impostos e taxas de serviço aplicáveis"
+        ],
+        "excluded": [
+          "Bilhete de entrada no túmulo de Tutankhamon (pode ser acrescentado opcionalmente ou estar incluído em determinados pacotes)",
+          "Passeio tradicional de feluca pelo Nilo até à Ilha das Bananas (opcional, salvo se incluído no pacote selecionado)",
+          "Bilhetes de entrada para túmulos reais adicionais além dos três incluídos",
+          "Bebidas no restaurante durante o almoço",
+          "Recolha em El Gouna, Makadi Bay, Sahl Hasheesh, Safaga ou Soma Bay (pode aplicar-se um suplemento de transfer)",
+          "Serviços de guia em idiomas não indicados no pacote selecionado (disponíveis mediante pedido)",
+          "Despesas pessoais e lembranças",
+          "Gorjetas para o guia e o motorista",
+          "Serviços não indicados expressamente na lista de serviços incluídos"
+        ],
+        "faqs": [],
+        "pickupInfo": "Recolha e regresso gratuitos no átrio do hotel em toda a zona de Hurghada.",
+        "cancellationPolicy": "Cancelamento gratuito até 24 horas antes do início da excursão.",
+        "ageRestrictions": "Adequado para todas as idades. Crianças com menos de 2 anos participam gratuitamente.",
+        "labels": {
+          "highlights": "Destaques",
+          "itinerary": "Itinerário",
+          "included": "Incluído",
+          "excluded": "Não incluído",
+          "faqs": "Perguntas frequentes",
+          "pickupInfo": "Informações de recolha",
+          "cancellationPolicy": "Política de cancelamento",
+          "ageRestrictions": "Restrições de idade",
+          "bookNow": "Reservar agora",
+          "browseMore": "Ver mais excursões"
+        }
+      }
+    }
+  ]
+}
