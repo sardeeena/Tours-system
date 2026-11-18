@@ -22,7 +22,7 @@ Project scope: Awesome Adventure Tours (uvtbtpxtrrmaublrztgv) only.
 
 The database statistics have been accumulating since 2026-11-03, but the advisory includes primary-key and unique indexes, including indexes that enforce identity and idempotency constraints. The unused list also includes foreign-key and operational indexes on low-volume tables. Dropping all indexes with zero scans would be unsafe and could break constraints, booking/finance queries, webhook deduplication, or future workloads.
 
-One exact duplicate was confirmed and removed: idx_categories_slug duplicated the categories_slug_key unique index on the same slug column. Its own scan count was zero; the unique constraint/index remains intact. Other duplicate-shaped indexes were retained where the non-unique index had real scans (including tour slug, availability, destination slug, and SEO lookup). The remaining notices include primary-key/unique constraint indexes and low-volume operational indexes, so no broad index deletion is safe.
+Five exact duplicate non-unique indexes were confirmed and removed: the categories, destinations, tours, tour-availability (tour_id,date), and SEO lookup indexes duplicated equivalent unique constraint indexes. The unique constraint indexes remain intact and provide the same B-tree lookup keys. The remaining notices include primary-key/unique constraint indexes, foreign-key indexes, and low-volume operational indexes; no broad deletion is safe.
 
 ## Project Auth setting requiring dashboard access
 
