@@ -1,0 +1,120 @@
+name: Import reviewed translation bundles as drafts
+
+on:
+  workflow_dispatch:
+    inputs:
+      locale:
+        description: "Import exactly one completed language"
+        required: true
+        type: choice
+        options:
+          - fr
+          - nl
+          - pl
+
+permissions:
+  contents: read
+
+concurrency:
+  group: translation-draft-import-${{ inputs.locale }}
+  cancel-in-progress: false
+
+jobs:
+  import-drafts:
+    name: Validate and import ${{ inputs.locale }} drafts
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: translation-draft-import
+    steps:
+      - name: Check out the approved repository revision
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Confirm the Awesome Adventure Tours database secret is available
+        env:
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+        run: |
+          test -n "$SUPABASE_SECRET_KEY" || {
+            echo "::error::SUPABASE_SECRET_KEY is not configured for the translation-draft-import environment."
+            exit 1
+          }
+
+      - name: Export current authoritative English source from the pinned production project
+        env:
+          SUPABASE_URL: https://uvtbtpxtrrmaublrztgv.supabase.co
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+        run: npm run translations:export -- ./translation-source.json
+
+      - name: Assemble and validate the selected language against the live source
+        run: |
+          case "${{ inputs.locale }}" in
+            fr)
+              npm run translations:assemble-fr -- ./translation-source.json ./translations/fr/french-import-bundle.workflow.json
+              BUNDLE=./translations/fr/french-import-bundle.workflow.json
+              ;;
+            nl)
+              npm run translations:assemble-nl -- ./translation-source.json ./translations/nl/dutch-import-bundle.workflow.json
+              BUNDLE=./translations/nl/dutch-import-bundle.workflow.json
+              ;;
+            pl)
+              npm run translations:assemble-pl -- ./translation-source.json ./translations/pl/polish-import-bundle.workflow.json
+              BUNDLE=./translations/pl/polish-import-bundle.workflow.json
+              ;;
+            *)
+              echo "::error::Unsupported locale."
+              exit 1
+              ;;
+          esac
+          test -s "$BUNDLE"
+          echo "TRANSLATION_BUNDLE=$BUNDLE" >> "$GITHUB_ENV"
+
+      - name: Import validated translations as unpublished drafts only
+        env:
+          SUPABASE_URL: https://uvtbtpxtrrmaublrztgv.supabase.co
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+        run: npm run translations:import -- "$TRANSLATION_BUNDLE" --apply
+
+      - name: Verify imported rows remain unpublished
+        env:
+          SUPABASE_URL: https://uvtbtpxtrrmaublrztgv.supabase.co
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          LOCALE: ${{ inputs.locale }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { createClient } from '@supabase/supabase-js';
+          const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SECRET_KEY, {
+            auth: { persistSession: false, autoRefreshToken: false }
+          });
+          const { data, error } = await db.from('content_translations')
+            .select('translation_state,reviewed_at,published_at')
+            .eq('locale', process.env.LOCALE)
+            .limit(2000);
+          if (error) throw error;
+          const rows = data || [];
+          const unsafe = rows.filter(row =>
+            row.translation_state === 'published' || row.reviewed_at || row.published_at
+          );
+          console.log(JSON.stringify({
+            locale: process.env.LOCALE,
+            importedRows: rows.length,
+            draftRows: rows.filter(row => row.translation_state === 'draft').length,
+            reviewRows: rows.filter(row => row.translation_state === 'review').length,
+            alreadyPublishedRows: rows.filter(row => row.translation_state === 'published').length,
+          }, null, 2));
+          if (unsafe.length) {
+            throw new Error('Import verification found published/reviewed rows. The importer must never create or alter publication state.');
+          }
+          if (!rows.length) throw new Error('No translation rows were imported.');
+          NODE
+
+      - name: Remove generated source bundle from the runner
+        if: always()
+        run: rm -f ./translation-source.json
