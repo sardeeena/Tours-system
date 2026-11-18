@@ -30,14 +30,14 @@ export function shouldUseLocalBookingCache(
 }
 
 
-const BOOKING_REFERENCE_PATTERN = /^AWE-\\d{8}-\\d{6}$/;
+const BOOKING_REFERENCE_PATTERN = /^AWE-\d{8}-\d{6}$/;
 
 /** Format a booking reference as AWE-YYYYMMDD-123456. */
 export function formatBookingReference(bookingDate: string | Date, sequence: number): string {
   const dateText = bookingDate instanceof Date
     ? bookingDate.toISOString().slice(0, 10)
     : String(bookingDate || '').trim().slice(0, 10);
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(dateText) || Number.isNaN(Date.parse(dateText + 'T00:00:00.000Z'))) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateText) || Number.isNaN(Date.parse(dateText + 'T00:00:00.000Z'))) {
     throw new Error('A valid booking date is required to format a booking reference.');
   }
   if (!Number.isInteger(sequence) || sequence < 1 || sequence > 999999) {
