@@ -3937,7 +3937,6 @@
         "private.text.4233cdd4": "na uczestnika",
         "private.text.426a2e3f": "Potwierdzanie rezerwacji...",
         "private.text.4286c044": "Regulamin ",
-        "private.text.42a4a176": "Obsługa klienta i zgłoszenia",
         "private.text.42c5d4d5": "&rdquo; ",
         "private.text.42db22ac": "Powiązana wycieczka ",
         "private.text.42db61fc": "ANULOWANO",
@@ -4277,7 +4276,6 @@
         "private.text.9602c62f": "Kapitan Farouk",
         "private.text.9637f88f": "Nie udało się odświeżyć statusu. Spróbuj ponownie, wpisując hasło.",
         "private.text.9655974a": "1. Wybierz datę ",
-        "private.text.965bf92f": "Blog i dziennik podróży",
         "private.text.967aa5dd": "Wysyłanie…",
         "private.text.968aed60": " / dorosły",
         "private.text.96a6bc1f": "Wysokość fal",
@@ -4743,7 +4741,9 @@
         "private.text.d59d8b58": "Wypłynięcie łodzi około 08:30 – 09:00 AM ",
         "private.text.2d9bf6ca": "Nie można wyświetlić tej strony",
         "private.text.c3acc0cd": "Odśwież stronę ",
-        "private.text.e2f282f4": "Wystąpił problem z wyświetleniem tej strony. Odśwież ją, aby spróbować ponownie. Szczegóły rezerwacji nie zostały wysłane z tego ekranu odzyskiwania. "
+        "private.text.e2f282f4": "Wystąpił problem z wyświetleniem tej strony. Odśwież ją, aby spróbować ponownie. Szczegóły rezerwacji nie zostały wysłane z tego ekranu odzyskiwania. ",
+        "private.text.94232d59": "Obsługa klienta i zgłoszenia",
+        "private.text.bc40e842": "Blog i dziennik podróży"
       },
       "private_ui_message_count": 650
     }
