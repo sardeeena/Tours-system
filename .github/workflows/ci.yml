@@ -200,10 +200,10 @@ jobs:
             echo "available=true" >> "$GITHUB_OUTPUT"
           else
             echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::Live French and Dutch source-checksum dry run skipped: expected read-only Supabase URL/service-key Actions secrets are not configured."
+            echo "::warning::Live French, Dutch and Polish source-checksum dry run skipped: expected read-only Supabase URL/service-key Actions secrets are not configured."
           fi
 
-      - name: Validate French and Dutch import bundles against live Supabase sources (read-only)
+      - name: Validate French, Dutch and Polish import bundles against live Supabase sources (read-only)
         if: steps.french-source-credentials.outputs.available == 'true'
         env:
           SUPABASE_URL: https://uvtbtpxtrrmaublrztgv.supabase.co
