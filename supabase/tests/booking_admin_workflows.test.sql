@@ -76,7 +76,7 @@ SELECT ok(
     WHERE schemaname = 'public' AND tablename = 'booking_passengers'
       AND policyname = 'rbac_booking_passengers_read'
   )) = 0,
-  'passenger manifests are limited to booking managers and the customer's own booking'
+  'passenger manifests are limited to booking managers and the customer''s own booking'
 );
 SELECT ok(
   NOT has_table_privilege('anon', 'public.bookings', 'SELECT'),
