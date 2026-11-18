@@ -182,10 +182,16 @@ export const AdminBookingsList: React.FC = () => {
       setPaymentToRecord(null);
       setPaymentAmount('');
       setPaymentReference('');
-      if (selectedBooking?.bookingReference === paymentToRecord.bookingReference) {
-        setSelectedBooking({ ...selectedBooking, paymentStatus: 'paid' });
+      try {
+        const refreshedBookings = await bookingRepository.listBookings();
+        setBookings(refreshedBookings);
+        const refreshed = refreshedBookings.find((item) => item.bookingReference === paymentToRecord.bookingReference);
+        if (selectedBooking?.bookingReference === paymentToRecord.bookingReference && refreshed) {
+          setSelectedBooking({ ...selectedBooking, paymentStatus: refreshed.paymentStatus });
+        }
+      } catch (refreshError: any) {
+        showToast('Payment was recorded, but the booking display could not be refreshed. Reload the booking list to see the updated balance.', 'error');
       }
-      await loadBookings();
     } catch (err: any) {
       showToast(err.message || 'Failed to record payment', 'error');
     } finally {
