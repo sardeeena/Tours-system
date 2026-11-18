@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "locale": "pt",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "destination": 7,
+    "source_records": 7
+  },
+  "records": [
+    {
+      "entity_type": "destination",
+      "entity_key": "689b5e4f-8168-4713-9181-9ebcbd884a7a",
+      "source_slug": "cairo",
+      "translated_slug": "cairo",
+      "locale": "pt",
+      "title": "Cairo",
+      "summary": "Pirâmides, história antiga e cultura egípcia",
+      "seo_title": "Cairo: pirâmides, história e cultura egípcia",
+      "seo_description": "Explore Cairo, as Pirâmides de Gizé, a Grande Esfinge, o Grande Museu Egípcio, as mesquitas históricas e os mercados tradicionais.",
+      "content": {
+        "tagline": "Pirâmides, história antiga e cultura egípcia",
+        "description": "Descubra Cairo, a vibrante capital do Egito, onde as maravilhas antigas convivem com a vida urbana moderna. Visite as famosas Pirâmides de Gizé, a Grande Esfinge, o Grande Museu Egípcio, as mesquitas históricas e os mercados movimentados. Conheça a história egípcia, a gastronomia local e experiências culturais inesquecíveis."
+      }
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "88d0f219-2819-4ff8-a6ce-01d7682296d0",
+      "source_slug": "el-gouna",
+      "translated_slug": "el-gouna",
+      "locale": "pt",
+      "title": "El Gouna",
+      "summary": "Lagoas azul-turquesa, praias e vida na marina",
+      "seo_title": "El Gouna: lagoas, praias e atividades no Mar Vermelho",
+      "seo_description": "Descubra El Gouna e as suas lagoas azul-turquesa, praias, marina, snorkeling, kitesurf e passeios de barco.",
+      "content": {
+        "tagline": "Lagoas azul-turquesa, praias e vida na marina",
+        "description": "Descubra El Gouna, uma bela estância balnear na costa egípcia do Mar Vermelho, conhecida pelas lagoas azul-turquesa, praias de areia, resorts de qualidade, marina, desportos aquáticos e restaurantes animados. Desfrute de passeios de barco, snorkeling, kitesurf e momentos de descanso junto ao mar."
+      }
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "985fd0a3-6b7a-4e0f-b535-cff4aa4ac0be",
+      "source_slug": "hurghada",
+      "translated_slug": "hurghada",
+      "locale": "pt",
+      "title": "Hurghada",
+      "summary": "Descubra as maravilhas do Mar Vermelho",
+      "seo_title": "Hurghada: excursões, praias e aventuras no Mar Vermelho",
+      "seo_description": "Planeie a sua estadia em Hurghada: snorkeling, mergulho, safaris no deserto, passeios às ilhas e cruzeiros ao pôr do sol.",
+      "content": {
+        "tagline": "Descubra as maravilhas do Mar Vermelho",
+        "description": "Descubra Hurghada, um dos destinos mais populares do Egito no Mar Vermelho, famoso pelas águas cristalinas, recifes de coral coloridos, praias de areia dourada e resorts reconhecidos internacionalmente. Desfrute de inesquecíveis passeios de snorkeling e mergulho, emocionantes safaris no deserto, excursões às ilhas e cruzeiros ao pôr do sol. Quer procure descanso, aventura ou atividades em família, Hurghada promete umas férias memoráveis."
+      }
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "b58b8665-3870-4674-96ea-e3c22fed426e",
+      "source_slug": "luxor",
+      "translated_slug": "luxor",
+      "locale": "pt",
+      "title": "Luxor",
+      "summary": "Descubra o Egito antigo e as suas maravilhas eternas",
+      "seo_title": "Luxor: templos antigos e Vale dos Reis",
+      "seo_description": "Visite Luxor, o complexo de Karnak, o templo de Hatshepsut e o Vale dos Reis em excursões guiadas pelo Egito.",
+      "content": {
+        "tagline": "Descubra o Egito antigo e as suas maravilhas eternas",
+        "description": "Explore Luxor, um dos destinos históricos mais extraordinários do Egito. Descubra o majestoso complexo de Karnak, o Templo de Luxor, o Vale dos Reis e o templo de Hatshepsut. Desfrute de visitas guiadas dedicadas à história, cruzeiros no Nilo e inesquecíveis voos de balão de ar quente sobre os monumentos antigos."
+      }
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "ebf085ec-ebaa-4b73-ac66-ebedb34c74f0",
+      "source_slug": "makadi-bay",
+      "translated_slug": "makadi-bay",
+      "locale": "pt",
+      "title": "Baía de Makadi",
+      "summary": "Resorts familiares, recifes de coral e aventuras no mar",
+      "seo_title": "Baía de Makadi: praias, recifes e excursões",
+      "seo_description": "Descubra a Baía de Makadi: resorts com tudo incluído, snorkeling, mergulho, passeios de barco, safaris no deserto e atividades para famílias.",
+      "content": {
+        "tagline": "Resorts familiares, recifes de coral e aventuras no mar",
+        "description": "Desfrute da Baía de Makadi, um destino de férias popular no Mar Vermelho, conhecido pelos resorts com tudo incluído, pela bela costa e pelos recifes de coral coloridos. Experimente snorkeling, mergulho, passeios de barco, safaris no deserto e atividades para toda a família. A Baía de Makadi é um refúgio tranquilo para casais, famílias e amantes da aventura."
+      }
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "16e32986-869a-4bf1-aa2f-aa7552e46b05",
+      "source_slug": "sahl-hasheesh",
+      "translated_slug": "sahl-hasheesh",
+      "locale": "pt",
+      "title": "Sahl Hasheesh",
+      "summary": "Resorts de luxo no Mar Vermelho e praias preservadas",
+      "seo_title": "Sahl Hasheesh: resorts de luxo e praias do Mar Vermelho",
+      "seo_description": "Fique em Sahl Hasheesh, a sul de Hurghada, e desfrute de praias preservadas, resorts à beira-mar, snorkeling e mergulho.",
+      "content": {
+        "tagline": "Resorts de luxo no Mar Vermelho e praias preservadas",
+        "description": "Descubra Sahl Hasheesh, uma elegante estância balnear do Mar Vermelho situada a sul de Hurghada. Desfrute de águas cristalinas, belas praias de areia, resorts de luxo à beira-mar, snorkeling, mergulho e passeios românticos pela costa. É um destino ideal para casais, famílias e viajantes que procuram descanso e férias de qualidade."
+      }
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "ffcc83a6-2dc4-4990-91bb-1d72450755c2",
+      "source_slug": "sharm-el-sheikh",
+      "translated_slug": "sharm-el-sheikh",
+      "locale": "pt",
+      "title": "Sharm el-Sheikh",
+      "summary": "Descubra a magia do Mar Vermelho",
+      "seo_title": "Sharm el-Sheikh: mergulho, praias e safaris no deserto",
+      "seo_description": "Explore Sharm el-Sheikh: recifes de coral, snorkeling, mergulho, praias, safaris no deserto e pores do sol sobre o Mar Vermelho.",
+      "content": {
+        "tagline": "Descubra a magia do Mar Vermelho",
+        "description": "Descubra Sharm el-Sheikh, um dos principais destinos do Egito no Mar Vermelho, famoso pelas águas cristalinas, recifes de coral coloridos, praias douradas e resorts de luxo. Desfrute de experiências inesquecíveis de snorkeling e mergulho, emocionantes safaris no deserto e pores do sol espetaculares. Quer procure aventura ou descanso, Sharm el-Sheikh é uma escapadinha ideal."
+      }
+    }
+  ]
+}
