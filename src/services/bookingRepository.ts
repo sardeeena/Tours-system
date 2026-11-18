@@ -683,7 +683,8 @@ class SupabaseBookingRepository implements IBookingRepository {
       throw new Error('The booking database is unavailable. No booking data was loaded.');
     }
 
-    const pageSize = Math.min(Math.max(filters?.limit || 500, 1), 500);
+    const requestedLimit = filters?.limit ? Math.max(1, filters.limit) : undefined;
+    const pageSize = Math.min(requestedLimit || 500, 500);
     const results: Booking[] = [];
     let offset = 0;
 
@@ -714,7 +715,7 @@ class SupabaseBookingRepository implements IBookingRepository {
         const page = data || [];
         results.push(...page.map((row: any) => this.mapDbToBooking(row)));
 
-        if (filters?.limit || page.length < pageSize) break;
+        if ((requestedLimit && results.length >= requestedLimit) || page.length < pageSize) break;
         offset += pageSize;
       }
 
