@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "locale": "pt",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "blog_post": 5,
+    "source_records": 5
+  },
+  "records": [
+    {
+      "entity_type": "blog_post",
+      "entity_key": "0cd117c2-37e2-4990-b183-d88aaebdb214",
+      "source_slug": "hurghada-quad-biking-first-ride-safety",
+      "translated_slug": "quadriciclo-hurghada-seguranca-primeira-volta",
+      "locale": "pt",
+      "title": "Passeio de quadriciclo em Hurghada: segurança na primeira aventura no deserto",
+      "summary": "Prepare-se para um safari guiado de quadriciclo com dicas práticas sobre capacete, instruções, distância de segurança e condições no deserto.",
+      "seo_title": "Passeio de quadriciclo em Hurghada: segurança para principiantes | Awesome Adventure Tours",
+      "seo_description": "Prepare-se para um safari guiado de quadriciclo: capacete, instruções, distância de segurança e condições nos trilhos do deserto.",
+      "content": {
+        "title": "Passeio de quadriciclo em Hurghada: segurança na primeira aventura no deserto",
+        "excerpt": "Prepare-se para um safari guiado de quadriciclo com dicas práticas sobre capacete, instruções, distância de segurança e condições no deserto.",
+        "content": "Um safari de quadriciclo é uma forma ativa de explorar o deserto fora de Hurghada. Na primeira viagem, o passo mais importante acontece antes de ligar o motor: compreender como funciona o veículo, conhecer o percurso e ouvir as instruções de segurança do guia.\n\n## O que deve saber\n\nPeça uma demonstração e certifique-se de que compreende o acelerador, os travões, o procedimento de paragem e os sinais manuais. Coloque corretamente o equipamento de proteção fornecido e informe o guia se nunca tiver conduzido um quadriciclo. Os trilhos do deserto podem ser irregulares e poeirentos. Não faça corridas, não ultrapasse sem autorização e não saia do percurso. Se sentir desconforto, avise o guia e pare no local indicado.\n\n## Lista prática\n\n- Utilize o capacete e o equipamento de proteção fornecidos.\n- Informe o guia sobre a sua experiência.\n- Mantenha uma distância segura do condutor à sua frente.\n- Nunca faça corridas nem abandone o percurso indicado.\n\n## Antes de reservar\n\nA página do [safari de quadriciclo no deserto de Hurghada](https://awesomeadventure.tours/excursions/hurghada-desert-quad-safari-atv-adventure-camel-ride-bedouin-village) descreve a excursão guiada e a visita à aldeia. Verifique os requisitos de idade, saúde e participação."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "dc69e8bf-a556-40e6-aa20-ec1a233f8bd4",
+      "source_slug": "jeep-safari-vs-quad-bike-egypt",
+      "translated_slug": "safari-jipe-ou-quadriciclo-egito-qual-escolher",
+      "locale": "pt",
+      "title": "Safari de jipe ou de quadriciclo no Egito: que aventura no deserto escolher?",
+      "summary": "Compare um safari guiado em jipe 4x4 com um passeio de quadriciclo quanto ao conforto, nível de atividade e necessidades do seu grupo.",
+      "seo_title": "Safari de jipe ou de quadriciclo no Egito: que aventura escolher? | Awesome Adventure Tours",
+      "seo_description": "Compare um safari guiado em jipe 4x4 com um passeio de quadriciclo quanto ao conforto, atividade e necessidades do seu grupo.",
+      "content": {
+        "title": "Safari de jipe ou de quadriciclo no Egito: que aventura no deserto escolher?",
+        "excerpt": "Compare um safari guiado em jipe 4x4 com um passeio de quadriciclo quanto ao conforto, nível de atividade e necessidades do seu grupo.",
+        "content": "Uma excursão ao deserto pode significar uma viagem ativa ou um passeio mais tranquilo pela paisagem. Tanto um safari de jipe como um passeio de quadriciclo permitem sair da zona dos resorts, mas são experiências muito diferentes.\n\n## O que deve saber\n\nNum safari de quadriciclo, conduz o veículo sob a supervisão de um guia. Um safari de jipe ou outro veículo 4x4 é mais adequado para quem prefere viajar como passageiro. Alguns itinerários combinam a condução com uma visita a uma aldeia, uma paragem ao pôr do sol, jantar ou observação das estrelas. Consulte o programa exato, pois nem todos os safaris incluem as mesmas atividades.\n\n## Lista prática\n\n- Escolha o quadriciclo se quiser conduzir ativamente.\n- Escolha um veículo 4x4 se preferir não conduzir.\n- Verifique os requisitos de idade, saúde e acessibilidade.\n- Compare as paragens realmente previstas, bem como as refeições e os transfers incluídos.\n\n## Antes de reservar\n\nCompare o [safari de quadriciclo a partir de Hurghada](https://awesomeadventure.tours/excursions/hurghada-quad-bike-safari-desert-ride-camel-experience-bedouin-village) com os safaris de jipe disponíveis antes de decidir."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "214a49ff-f424-40e1-97a4-a3da99ba693b",
+      "source_slug": "karnak-temple-valley-of-the-kings-guide",
+      "translated_slug": "templo-karnak-vale-reis-dois-lados-tebas",
+      "locale": "pt",
+      "title": "Templo de Karnak e Vale dos Reis: duas faces da antiga Tebas",
+      "summary": "Conheça a diferença entre o vasto complexo de templos de Luxor e as necrópoles reais na margem ocidental.",
+      "seo_title": "Templo de Karnak e Vale dos Reis: duas faces de Tebas | Awesome Adventure Tours",
+      "seo_description": "Conheça a diferença entre o monumental complexo de Karnak e os túmulos reais na margem ocidental de Luxor.",
+      "content": {
+        "title": "Templo de Karnak e Vale dos Reis: duas faces da antiga Tebas",
+        "excerpt": "Conheça a diferença entre o vasto complexo de templos de Luxor e as necrópoles reais na margem ocidental.",
+        "content": "Uma visita a Luxor inclui muitas vezes dois locais que mostram aspetos diferentes da vida no antigo Egito: o Templo de Karnak e o Vale dos Reis. O primeiro é um vasto complexo religioso; o segundo é uma zona de túmulos reais.\n\n## O que deve saber\n\nKarnak foi sendo ampliado ao longo de muitas gerações e inclui salas, pátios, colunas e monumentos ligados ao culto religioso antigo. O Vale dos Reis é conhecido pelos túmulos reais escavados nas colinas da margem ocidental de Luxor. O acesso a cada túmulo pode variar; alguns podem exigir bilhetes separados ou estar sujeitos a restrições. As regras de fotografia e de conservação dos monumentos também podem mudar, por isso siga as indicações atualizadas em cada local.\n\n## Lista prática\n\n- Utilize calçado adequado para caminhos irregulares.\n- Respeite as regras de fotografia em vigor.\n- Pergunte ao guia quais os túmulos que estão abertos.\n- Reserve tempo suficiente para conhecer os locais sem pressa.\n\n## Antes de reservar\n\nA [excursão guiada de Hurghada a Luxor](https://awesomeadventure.tours/excursions/from-hurghada-luxor-day-trip-karnak-temple-valley-of-the-kings) combina estes locais numa experiência histórica coerente."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "01c3aa8c-878d-48c6-aa0c-83bfc889c51c",
+      "source_slug": "mount-sinai-sunrise-hike-preparation-guide",
+      "translated_slug": "monte-sinai-nascer-sol-preparar-caminhada-noturna",
+      "locale": "pt",
+      "title": "Nascer do sol no Monte Sinai: prepare-se para a caminhada noturna",
+      "summary": "Prepare-se para uma caminhada noturna ao Monte Sinai com dicas sobre condição física, roupa quente, calçado, horários e acompanhamento local.",
+      "seo_title": "Nascer do sol no Monte Sinai: prepare-se para a caminhada | Awesome Adventure Tours",
+      "seo_description": "Prepare-se para uma caminhada noturna ao Monte Sinai: condição física, roupa, calçado, horários e orientações locais.",
+      "content": {
+        "title": "Nascer do sol no Monte Sinai: prepare-se para a caminhada noturna",
+        "excerpt": "Prepare-se para uma caminhada noturna ao Monte Sinai com dicas sobre condição física, roupa quente, calçado, horários e acompanhamento local.",
+        "content": "Uma caminhada ao nascer do sol no Monte Sinai é muito diferente de uma excursão normal à praia. A partida costuma acontecer durante a noite para que os participantes cheguem ao cume antes do amanhecer. Esta experiência exige preparação, paciência e respeito pelas regras locais de acesso.\n\n## O que deve saber\n\nO percurso inclui uma caminhada exigente e pode envolver escadas, terreno irregular e temperaturas baixas. Antes de reservar, tenha em conta a sua condição física, saúde e conforto ao caminhar durante a noite. Pergunte sobre o percurso, a duração prevista, as condições de acompanhamento do guia e os troços mais difíceis. Leve botas resistentes, roupa quente em camadas e uma pequena lanterna se for recomendada. Siga as instruções do guia e permaneça com o grupo.\n\n## Lista prática\n\n- Escolha calçado com boa aderência.\n- Leve roupa quente para o cume.\n- Traga água e os medicamentos pessoais necessários.\n- Siga as orientações do guia e as regras locais de acesso em vigor.\n\n## Antes de reservar\n\nA página [Caminhada ao nascer do sol no Monte Sinai e visita ao Mosteiro de Santa Catarina](https://awesomeadventure.tours/excursions/mount-sinai-sunrise-hike-st-catherines-monastery-from-sharm-el-sheikh) descreve a experiência. Verifique as condições atualizadas e confirme que a atividade é adequada para si."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "c72f01f4-d37e-4067-916f-e1a9ea2ea5c2",
+      "source_slug": "old-cairo-one-day-islamic-coptic-heritage",
+      "translated_slug": "cairo-antigo-um-dia-mesquitas-igrejas-khan-el-khalili",
+      "locale": "pt",
+      "title": "Cairo Antigo num dia: mesquitas, igrejas e Khan el-Khalili",
+      "summary": "Uma introdução prática ao património islâmico e copta do Cairo Antigo, às ruas históricas e ao ambiente do bazar tradicional.",
+      "seo_title": "Cairo Antigo num dia: mesquitas, igrejas e Khan el-Khalili | Awesome Adventure Tours",
+      "seo_description": "Descubra o património islâmico e copta do Cairo Antigo, as ruas históricas e o ambiente do bazar tradicional.",
+      "content": {
+        "title": "Cairo Antigo num dia: mesquitas, igrejas e Khan el-Khalili",
+        "excerpt": "Uma introdução prática ao património islâmico e copta do Cairo Antigo, às ruas históricas e ao ambiente do bazar tradicional.",
+        "content": "O Cairo Antigo não é um único monumento. É um conjunto de bairros, locais de culto e ruas históricas que revelam diferentes camadas da história da cidade. Uma visita guiada pode ajudar quem visita o Cairo pela primeira vez a compreender as ligações entre estes locais.\n\n## O que deve saber\n\nUm itinerário bem planeado pode incluir a Cidadela, mesquitas históricas, igrejas coptas e a animada zona de Khan el-Khalili. Cada local tem o seu próprio ambiente e regras para visitantes. Vista-se de forma respeitosa, siga as instruções nos edifícios religiosos e peça autorização antes de fotografar pessoas em oração ou espaços privados. Reserve tempo suficiente para passear pelo bazar sem pressa.\n\n## Lista prática\n\n- Utilize calçado confortável e roupa adequada aos locais visitados.\n- Peça autorização antes de fotografar pessoas.\n- Guarde os objetos de valor em segurança nas ruas movimentadas.\n- Confirme antecipadamente se o almoço e os bilhetes de entrada estão incluídos.\n\n## Antes de reservar\n\nA [excursão pelo património do Cairo Antigo](https://awesomeadventure.tours/excursions/old-cairo-full-day-tour-islamic-coptic-heritage-with-lunch) disponível na oferta combina vários bairros importantes, um guia e almoço. Consulte o itinerário para conhecer as paragens exatas."
+      }
+    }
+  ]
+}
