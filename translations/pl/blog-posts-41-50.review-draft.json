@@ -26,22 +26,6 @@
     },
     {
       "entity_type": "blog_post",
-      "entity_key": "c72f01f4-d37e-4067-916f-e1a9ea2ea5c2",
-      "source_slug": "old-cairo-one-day-islamic-coptic-heritage",
-      "translated_slug": "old-cairo-one-day-islamic-coptic-heritage",
-      "locale": "pl",
-      "title": "Stary Kair w jeden dzień: meczety, kościoły i Khan el-Khalili",
-      "summary": "Praktyczne wprowadzenie do islamskiego i koptyjskiego dziedzictwa Starego Kairu, zabytkowych ulic i atmosfery tradycyjnego targu.",
-      "seo_title": "Stary Kair w jeden dzień: meczety, kościoły i Khan el-Khalili | Awesome Adventure Tours",
-      "seo_description": "Poznaj islamskie i koptyjskie dziedzictwo Starego Kairu, zabytkowe ulice i tradycyjny targ Khan el-Khalili.",
-      "content": {
-        "title": "Stary Kair w jeden dzień: meczety, kościoły i Khan el-Khalili",
-        "excerpt": "Praktyczne wprowadzenie do islamskiego i koptyjskiego dziedzictwa Starego Kairu, zabytkowych ulic i atmosfery tradycyjnego targu.",
-        "content": "Stary Kair to nie jeden zabytek, lecz zbiór dzielnic, miejsc kultu i historycznych ulic, które odzwierciedlają wiele warstw historii miasta. Wycieczka z przewodnikiem może pomóc osobom odwiedzającym Kair po raz pierwszy zrozumieć, jak te miejsca łączą się ze sobą.\n\n## Co warto wiedzieć\n\nDobrze zaplanowana trasa może obejmować Cytadelę, zabytkowe meczety, kościoły koptyjskie i tętniącą życiem okolicę Khan el-Khalili. Każde z tych miejsc ma własną atmosferę i zasady dla odwiedzających. Ubierz się z szacunkiem, stosuj się do instrukcji w budynkach religijnych i pytaj o zgodę przed fotografowaniem wiernych lub prywatnych przestrzeni. Zostaw sobie czas na spokojne zwiedzanie targu.\n\n## Praktyczna lista kontrolna\n\n- Załóż wygodne obuwie i odpowiedni strój.\n- Zapytaj o zgodę przed fotografowaniem ludzi.\n- Zabezpiecz kosztowności na zatłoczonych ulicach.\n- Z wyprzedzeniem potwierdź, czy lunch i bilety wstępu są wliczone w cenę.\n\n## Przed rezerwacją\n\nOpublikowana [wycieczka po dziedzictwie Starego Kairu](https://awesomeadventure.tours/excursions/old-cairo-full-day-tour-islamic-coptic-heritage-with-lunch) łączy kilka ważnych obszarów ze zwiedzaniem z przewodnikiem i lunchem. Sprawdź dokładne postoje w programie."
-      }
-    },
-    {
-      "entity_type": "blog_post",
       "entity_key": "cc634029-f2da-4bfc-afee-bb7c9024ccda",
       "source_slug": "white-island-ras-mohammed-boat-trip-guide",
       "translated_slug": "white-island-ras-mohammed-boat-trip-guide",
@@ -106,38 +90,6 @@
     },
     {
       "entity_type": "blog_post",
-      "entity_key": "d1a3ce78-82a8-4b9d-80d7-68e4dbcd89b6",
-      "source_slug": "accessible-excursions-egypt-mobility-planning",
-      "translated_slug": "accessible-excursions-egypt-mobility-planning",
-      "locale": "pl",
-      "title": "Dostępne wycieczki w Egipcie: o co zapytać przed rezerwacją",
-      "summary": "Praktyczna lista pytań dla podróżnych z potrzebami dotyczącymi poruszania się, równowagi, zmysłów lub innego rodzaju dostępności.",
-      "seo_title": "Dostępność wycieczek w Egipcie: pytania przed rezerwacją | Awesome Adventure Tours",
-      "seo_description": "Sprawdź, o co zapytać o schody, nawierzchnie, wejście na łódź, transport, przerwy i udogodnienia przed rezerwacją wycieczki.",
-      "content": {
-        "title": "Dostępne wycieczki w Egipcie: o co zapytać przed rezerwacją",
-        "excerpt": "Praktyczna lista pytań dla podróżnych z potrzebami dotyczącymi poruszania się, równowagi, zmysłów lub innego rodzaju dostępności.",
-        "content": "Wycieczka może być przyjemna, jeśli jej praktyczne warunki odpowiadają uczestnikowi. Dostępność nie jest jednakowa dla wszystkich: jedna osoba może bez problemu przejść krótki dystans, ale mieć trudności ze stromymi schodami; inna może potrzebować więcej czasu przy wsiadaniu na łódź.\n\n## Co warto wiedzieć\n\nPrzed rezerwacją opisz wszelkie potrzeby dotyczące poruszania się, równowagi, słuchu, wzroku lub zdrowia, które mogą wpływać na udział w wycieczce. Zapytaj o dostępność pojazdu, długość spacerów, schody, nawierzchnie, toalety, miejsca do siedzenia i sposób wsiadania na łodzie. Nie polegaj wyłącznie na ogólnych określeniach, takich jak „łatwa” lub „odpowiednia dla każdego” — poproś o szczegóły trasy i aktywności.\n\n## Praktyczna lista kontrolna\n\n- Zapytaj o schody, długość spacerów i rodzaj nawierzchni.\n- Potwierdź sposób wsiadania do pojazdu i na łódź.\n- Z wyprzedzeniem omów potrzebną pomoc i miejsca do siedzenia.\n- Poproś o jasne informacje o udogodnieniach i przerwach.\n\n## Przed rezerwacją\n\nPrzekaż swoje wymagania odpowiednio wcześnie, aby organizator mógł ocenić, czy wycieczka będzie odpowiednia. Jeśli nie jest w stanie potwierdzić bezpiecznych warunków, rozważ inną atrakcję."
-      }
-    },
-    {
-      "entity_type": "blog_post",
-      "entity_key": "d45b7b5f-eb81-4d21-b872-277d12d10b45",
-      "source_slug": "dahab-from-sharm-el-sheikh-day-trip-guide",
-      "translated_slug": "dahab-from-sharm-el-sheikh-day-trip-guide",
-      "locale": "pl",
-      "title": "Dahab z Sharm el-Sheikh: Blue Hole, wybrzeże i lokalna atmosfera",
-      "summary": "Dowiedz się, co może obejmować jednodniowa wycieczka do Dahab: nadmorskie krajobrazy, lokalne sklepy i opcjonalne aktywności wodne.",
-      "seo_title": "Dahab z Sharm el-Sheikh: Blue Hole i nadmorski klimat | Awesome Adventure Tours",
-      "seo_description": "Sprawdź, co może obejmować wycieczka z Sharm el-Sheikh do Dahab: Blue Hole, wybrzeże, lokalne sklepy i opcjonalne aktywności.",
-      "content": {
-        "title": "Dahab z Sharm el-Sheikh: Blue Hole, wybrzeże i lokalna atmosfera",
-        "excerpt": "Dowiedz się, co może obejmować jednodniowa wycieczka do Dahab: nadmorskie krajobrazy, lokalne sklepy i opcjonalne aktywności wodne.",
-        "content": "Dahab ma spokojną, nadmorską atmosferę, która różni się od większych kurortów Synaju. Podróżni odwiedzający je z Sharm el-Sheikh mogą docenić zmianę krajobrazu, czas nad wodą i możliwość odkrywania lokalnych uliczek.\n\n## Co warto wiedzieć\n\nJednodniowa wycieczka może obejmować czas w okolicy Blue Hole, posiłek nad morzem, wizytę w lokalnych sklepach lub przejażdżkę na wielbłądzie — zależnie od wybranego pakietu. Zapytaj dokładnie, które postoje są wliczone w cenę i ile czasu wolnego będzie dostępne. Wyjazd poza Sharm może oznaczać kilka godzin podróży drogą, dlatego sprawdź, czy lunch, sprzęt i opcjonalne aktywności są wliczone w cenę.\n\n## Praktyczna lista kontrolna\n\n- Potwierdź dokładne postoje i ilość czasu wolnego.\n- Zapytaj o lunch i koszty opcjonalnych aktywności.\n- Zabierz ochronę przeciwsłoneczną i wygodne obuwie.\n- Przestrzegaj lokalnych instrukcji w pobliżu wody i klifów.\n\n## Przed rezerwacją\n\nOpublikowana [wycieczka po Synaju do Dahab i Colored Canyon](https://awesomeadventure.tours/excursions/sinai-adventure-colored-canyon-blue-hole-dahab) łączy kilka rodzajów krajobrazu. Przed wyborem sprawdź trasę i czas trwania."
-      }
-    },
-    {
-      "entity_type": "blog_post",
       "entity_key": "eda14d13-1b7c-4708-8d6d-1125da736d2a",
       "source_slug": "sun-protection-red-sea-snorkeling-day",
       "translated_slug": "sun-protection-red-sea-snorkeling-day",
@@ -166,6 +118,54 @@
         "title": "Spotkania z dzikimi zwierzętami morskimi: zasady szacunku nad Morzem Czerwonym",
         "excerpt": "Dowiedz się, dlaczego nie wolno dotykać, karmić ani ścigać zwierząt morskich i jak odpowiedzialnie obserwować przyrodę.",
         "content": "Morze Czerwone jest domem dla dzikich zwierząt morskich, które należy obserwować na ich własnych zasadach. Spotkanie z delfinem, żółwiem lub rybą rafową może być wyjątkowym przeżyciem, ale dobro zwierzęcia musi być ważniejsze niż możliwość zrobienia zdjęcia z bliska.\n\n## Co warto wiedzieć\n\nNie dotykaj, nie karm, nie chwytaj ani nie ścigaj zwierząt morskich. Nie blokuj im drogi i nie otaczaj ich grupą pływaków. Jeśli zwierzę odpływa, pozwól mu odejść. Załoga łodzi i przewodnicy oceniają warunki oraz lokalne zasady. Nigdy nie wchodź do wody tylko dlatego, że zrobił to inny uczestnik; zachowuj bezpieczną odległość i nie stawaj na koralowcach.\n\n## Praktyczna lista kontrolna\n\n- Zachowuj odpowiednią odległość od wszystkich dzikich zwierząt.\n- Nigdy nie karm ani nie dotykaj zwierząt.\n- Nie ścigaj zwierząt w celu zrobienia zdjęcia.\n- Przestrzegaj lokalnych zasad i wskazówek przewodnika.\n\n## Przed rezerwacją\n\nWybierz wycieczkę, której organizator odpowiedzialnie traktuje dziką przyrodę i uczciwie informuje, że obserwacji zwierząt nie można zagwarantować. Jakość wycieczki nigdy nie powinna zależeć od niepokojenia zwierząt."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "1d480c22-c634-4718-af89-224bddeffedd",
+      "source_slug": "egypt-family-travel-children-sea-sightseeing",
+      "translated_slug": "egypt-family-travel-children-sea-sightseeing",
+      "locale": "pl",
+      "title": "Podróż do Egiptu z dziećmi: planowanie dni nad morzem i zwiedzania",
+      "summary": "Zaplanuj rodzinne wycieczki, uwzględniając realistyczny harmonogram, ograniczenia wiekowe, ochronę przed słońcem i bezpieczeństwo w wodzie.",
+      "seo_title": "Egipt z dziećmi: planowanie wycieczek i zwiedzania | Awesome Adventure Tours",
+      "seo_description": "Zaplanuj rodzinne atrakcje w Egipcie: sprawdź wiek uczestników, sprzęt ochronny, ochronę przeciwsłoneczną i przerwy.",
+      "content": {
+        "title": "Podróż do Egiptu z dziećmi: planowanie dni nad morzem i zwiedzania",
+        "excerpt": "Zaplanuj rodzinne wycieczki, uwzględniając realistyczny harmonogram, ograniczenia wiekowe, ochronę przed słońcem i bezpieczeństwo w wodzie.",
+        "content": "Egipt oferuje rodzinom połączenie plażowania, rejsów, pustynnych krajobrazów i zabytkowych miejsc. Najlepszy plan nie musi być najbardziej napiętym. Dzieci często czerpią więcej radości z wycieczki, gdy harmonogram obejmuje przerwy i aktywności dopasowane do ich wieku.\n\n## Co warto wiedzieć\n\nSprawdź minimalny wiek, zasady przewozu pasażerów i ograniczenia dotyczące każdej aktywności dla wszystkich dzieci. Rejs łodzią, safari quadem i długi dzień przy zabytkach mają różne wymagania. Zabierz ochronę przeciwsłoneczną, przekąski tam, gdzie są dozwolone, niezbędne leki i ubranie na zmianę podczas aktywności wodnych. W razie potrzeby potwierdź transfer i dostępność fotelików dziecięcych.\n\n## Praktyczna lista kontrolna\n\n- Przed płatnością potwierdź ograniczenia wiekowe.\n- Zapytaj o sprzęt ochronny i nadzór nad dziećmi.\n- Zaplanuj przerwy i nie przeładowuj dnia atrakcjami.\n- Miej pod ręką niezbędne leki i dane kontaktowe.\n\n## Przed rezerwacją\n\nWybierz wycieczkę odpowiednią do potrzeb rodziny, a nie tylko na podstawie głównej atrakcji w reklamie. W przypadku dzieci jasna odpowiedź organizatora jest niezbędna."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "2ee2207f-dc77-4a0d-a0c8-61a6c181101a",
+      "source_slug": "responsible-travel-red-sea-coast-practical-guide",
+      "translated_slug": "responsible-travel-red-sea-coast-practical-guide",
+      "locale": "pl",
+      "title": "Odpowiedzialna turystyka nad Morzem Czerwonym: małe wybory, które chronią wybrzeże",
+      "summary": "Poznaj proste sposoby ograniczania odpadów, szanowania lokalnych społeczności i ochrony środowiska morskiego podczas wakacji w Egipcie.",
+      "seo_title": "Odpowiedzialna turystyka nad Morzem Czerwonym | Awesome Adventure Tours",
+      "seo_description": "Dowiedz się, jak ograniczać odpady, szanować lokalne społeczności i chronić środowisko morskie podczas podróży po Egipcie.",
+      "content": {
+        "title": "Odpowiedzialna turystyka nad Morzem Czerwonym: małe wybory, które chronią wybrzeże",
+        "excerpt": "Poznaj proste sposoby ograniczania odpadów, szanowania lokalnych społeczności i ochrony środowiska morskiego podczas wakacji w Egipcie.",
+        "content": "Wakacje nad Morzem Czerwonym zależą od zdrowego wybrzeża, siedlisk morskich i gościnnych społeczności. Nie musisz być ekspertem, aby podróżować bardziej odpowiedzialnie. Kilka przemyślanych decyzji może ograniczyć presję na miejsca, które sprawiają, że ten region jest wyjątkowy.\n\n## Co warto wiedzieć\n\nNie dotykaj koralowców, nie karm ryb i nie zbieraj pamiątek z morza. Korzystaj z koszy na śmieci, ogranicz jednorazowe opakowania, gdy jest to praktyczne, i przestrzegaj instrukcji załogi na obszarach chronionych. Pytaj o zgodę przed fotografowaniem mieszkańców lub pracowników, szanuj lokalne zwyczaje w miejscach religijnych i kulturowych oraz zachowaj cierpliwość, gdy pogoda lub wymogi operacyjne zmienią plany.\n\n## Praktyczna lista kontrolna\n\n- Jeśli to możliwe, zabierz wielorazową butelkę na wodę.\n- Nigdy nie zabieraj koralowców, muszli ani innych elementów przyrody.\n- Pytaj o zgodę przed fotografowaniem ludzi.\n- Wybieraj organizatorów, którzy wyjaśniają zasady ochrony środowiska.\n\n## Przed rezerwacją\n\nDobra wycieczka pozostawia zarówno gości, jak i odwiedzane miejsce w lepszej sytuacji. Przeczytaj program, zadawaj pytania i podejmuj decyzje z szacunkiem dla środowiska Morza Czerwonego."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "30b82c66-2ce1-49c6-a463-ae19dba9123d",
+      "source_slug": "colored-canyon-sinai-guided-walk-guide",
+      "translated_slug": "colored-canyon-sinai-guided-walk-guide",
+      "locale": "pl",
+      "title": "Colored Canyon na Synaju: czego spodziewać się podczas spaceru z przewodnikiem",
+      "summary": "Przygotuj się do spaceru po kanionie: poznaj wskazówki dotyczące obuwia, terenu, upału, fotografowania i ochrony krajobrazu.",
+      "seo_title": "Colored Canyon na Synaju: spacer z przewodnikiem | Awesome Adventure Tours",
+      "seo_description": "Dowiedz się, jak przygotować się do wędrówki po Colored Canyon: obuwie, nierówny teren, ochrona przed słońcem i szacunek dla przyrody.",
+      "content": {
+        "title": "Colored Canyon na Synaju: czego spodziewać się podczas spaceru z przewodnikiem",
+        "excerpt": "Przygotuj się do spaceru po kanionie: poznaj wskazówki dotyczące obuwia, terenu, upału, fotografowania i ochrony krajobrazu.",
+        "content": "Colored Canyon słynie z warstw piaskowca i wąskich przejść ukształtowanych przez siły natury. Spacer po tym krajobrazie może być niezapomnianym przeżyciem, ale nie przypomina przechadzki po utwardzonej promenadzie. Ważne są rodzaj terenu i warunki na trasie.\n\n## Co warto wiedzieć\n\nWybierz stabilne buty z dobrą przyczepnością i przygotuj się na nierówne podłoże. Słuchaj przewodnika w wąskich odcinkach, na schodach i w miejscach wymagających ostrożnego poruszania się. Nie wspinaj się na kruche formacje i nie opuszczaj uzgodnionej trasy, aby zrobić zdjęcie. Nie rzeźb w skałach, nie zbieraj kamieni i nie niepokój roślin ani zwierząt.\n\n## Praktyczna lista kontrolna\n\n- Załóż zakryte buty z dobrą przyczepnością.\n- Zabierz wodę i ochronę przeciwsłoneczną.\n- Trzymaj się uzgodnionej trasy i grupy przewodnika.\n- Nie wspinaj się, nie rzeźb i nie zabieraj elementów przyrody.\n\n## Przed rezerwacją\n\n[Wycieczka po Colored Canyon i Dahab na Synaju](https://awesomeadventure.tours/excursions/sinai-adventure-colored-canyon-blue-hole-dahab) łączy pustynne krajobrazy z postojami nad morzem. Sprawdź aktualną trasę spaceru i jej poziom trudności."
       }
     }
   ]

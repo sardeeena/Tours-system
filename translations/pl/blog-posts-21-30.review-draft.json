@@ -10,22 +10,6 @@
   "records": [
     {
       "entity_type": "blog_post",
-      "entity_key": "0a5edd6d-7747-4589-9ca8-3dcd7086476b",
-      "source_slug": "snorkeling-red-sea-non-swimmers",
-      "translated_slug": "snorkeling-red-sea-non-swimmers",
-      "locale": "pl",
-      "title": "Czy można uprawiać snorkeling w Morzu Czerwonym, nie umiejąc pływać?",
-      "summary": "Dowiedz się, jak osoby nieumiejące pływać mogą ocenić bezpieczeństwo rejsu, korzystać ze sprzętu wypornościowego i podejmować rozsądne decyzje przed wejściem do wody.",
-      "seo_title": "Czy można snorkelować w Morzu Czerwonym bez umiejętności pływania? | Awesome Adventure Tours",
-      "seo_description": "Przeczytaj, o co zapytać przed rejsem, jak działają kamizelki ratunkowe i kiedy lepiej pozostać na pokładzie.",
-      "content": {
-        "title": "Czy można uprawiać snorkeling w Morzu Czerwonym, nie umiejąc pływać?",
-        "excerpt": "Dowiedz się, jak osoby nieumiejące pływać mogą ocenić bezpieczeństwo rejsu, korzystać ze sprzętu wypornościowego i podejmować rozsądne decyzje przed wejściem do wody.",
-        "content": "Brak pewności w wodzie nie oznacza, że musisz rezygnować z każdej wycieczki po Morzu Czerwonym. Oznacza jednak, że przed rezerwacją należy uczciwie ocenić swoje umiejętności i nigdy nie pozwalać nikomu wywierać presji, by wejść do wody. Snorkeling odbywa się na otwartym morzu, gdzie głębokość, prądy i warunki mogą się zmieniać.\n\n## Co warto wiedzieć\n\nZapytaj, czy dostępne są dobrze dopasowane kamizelki ratunkowe lub inne środki wypornościowe, czy przewodnik nadzoruje uczestników w wodzie oraz czy istnieją spokojniejsze alternatywy. Sprzęt wypornościowy pomaga utrzymać się na powierzchni, ale nie zastępuje nadzoru ani świadomości zagrożeń w wodzie. Wyraźnie poinformuj załogę, że nie umiesz pływać, i wchodź do wody tylko wtedy, gdy załoga potwierdzi, że warunki są odpowiednie.\n\n## Praktyczna lista kontrolna\n\n- Poinformuj o braku umiejętności pływania już podczas rezerwacji.\n- Zapytaj o kamizelki ratunkowe, przewodników i miejsca wejścia do wody.\n- Nie oddalaj się od grupy.\n- Pozostań na pokładzie, jeśli warunki lub Twoje samopoczucie nie są odpowiednie.\n\n## Przed rezerwacją\n\nWybierz wycieczkę, której załoga potrafi jasno wyjaśnić zasady bezpieczeństwa. Porównaj opublikowane [wycieczki łodzią z Hurghady](https://awesomeadventure.tours/excursions), zanim podejmiesz decyzję."
-      }
-    },
-    {
-      "entity_type": "blog_post",
       "entity_key": "1d7da4b0-6a11-48dc-9728-750f9e841e0e",
       "source_slug": "orange-bay-vs-hula-hula-island-hurghada",
       "translated_slug": "orange-bay-vs-hula-hula-island-hurghada",
@@ -166,6 +150,22 @@
         "title": "Nurkowanie z butlą czy snorkeling w Hurghadzie: co wybrać?",
         "excerpt": "Porównaj snorkeling i nurkowanie z butlą pod względem szkolenia, komfortu, czasu i rodzaju podwodnych wrażeń.",
         "content": "Morze Czerwone oferuje kilka sposobów odkrywania podwodnego świata. Podczas snorkelingu pozostajesz na powierzchni wody, natomiast nurkowanie z butlą wymaga specjalistycznego sprzętu i bardziej szczegółowych procedur bezpieczeństwa. Właściwy wybór zależy od Twojej pewności siebie, stanu zdrowia i doświadczenia.\n\n## Co warto wiedzieć\n\nSnorkeling często jest dobrym wprowadzeniem dla podróżnych, którzy czują się swobodnie w wodzie. Nurkowanie z butlą polega na oddychaniu pod wodą przy użyciu sprzętu i wymaga określonego szkolenia lub nadzoru. Nurkowanie próbne dla początkujących i nurkowanie dla osób z certyfikatem to różne usługi. Sprawdź dokładnie, co obejmuje oferta, kto sprawuje nadzór i jakie oświadczenia zdrowotne są wymagane. Nie ukrywaj problemów zdrowotnych i nigdy nie nurkuj poza zakresem swoich uprawnień.\n\n## Praktyczna lista kontrolna\n\n- Wybierz snorkeling, jeśli wolisz pozostać na powierzchni.\n- Zapytaj, czy nurkowanie jest próbne, czy przeznaczone dla osób z certyfikatem.\n- Uważnie przeczytaj wymagania zdrowotne i wiekowe.\n- Nie nurkuj bez wymaganego instruktażu i nadzoru.\n\n## Przed rezerwacją\n\nPorównaj opis aktywności i nie zakładaj, że każdy rejs obejmuje nurkowanie. Opublikowany program organizatora powinien jasno wskazywać, czy dostępny jest snorkeling, nurkowanie, czy obie aktywności."
+      }
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "35def44b-0538-493d-ade9-60b2a8466067",
+      "source_slug": "responsible-snorkeling-protect-coral-reefs",
+      "translated_slug": "responsible-snorkeling-protect-coral-reefs",
+      "locale": "pl",
+      "title": "Odpowiedzialny snorkeling: proste sposoby ochrony raf koralowych",
+      "summary": "Pomóż chronić Morze Czerwone podczas snorkelingu: trzymaj się z dala od koralowców, obserwuj zwierzęta bez dotykania i karmienia, przestrzegaj lokalnych wskazówek i nie zostawiaj śmieci.",
+      "seo_title": "Odpowiedzialny snorkeling: chroń rafy koralowe Morza Czerwonego",
+      "seo_description": "Poznaj zasady odpowiedzialnego snorkelingu: nie dotykaj koralowców, zachowuj dystans od zwierząt, nie karm ich i nie zostawiaj śmieci.",
+      "content": {
+        "title": "Odpowiedzialny snorkeling: proste sposoby ochrony raf koralowych",
+        "excerpt": "Pomóż chronić Morze Czerwone podczas snorkelingu: trzymaj się z dala od koralowców, obserwuj zwierzęta bez dotykania i karmienia, przestrzegaj lokalnych wskazówek i nie zostawiaj śmieci.",
+        "content": "Podwodny świat jest częścią tego, co sprawia, że wakacje nad Morzem Czerwonym są wyjątkowe. Rafy koralowe i życie morskie są wrażliwe na zakłócenia, ale odwiedzający mogą podejmować świadome decyzje, które ograniczają możliwe do uniknięcia szkody. Odpowiedzialny snorkeling zaczyna się przed wejściem do wody i trwa aż do opuszczenia miejsca.\n\n## Zachowuj dystans od koralowców\n\nKoralowce są żywymi organizmami morskimi, a nie powierzchnią, na której można stanąć lub się oprzeć. Nigdy nie stawaj na koralowcach, nie siadaj na nich i nie dotykaj ich rękami. Trzymaj płetwy oraz sprzęt z dala od rafy, zachowuj bezpieczną odległość i stosuj się do trasy wskazanej przez przewodnika.\n\nJeśli woda jest płytka, zwracaj szczególną uwagę na ruch płetw. Jeśli nie możesz zachować bezpiecznego odstępu, oddal się od rafy lub pozostań w obszarze wskazanym przez załogę.\n\n## Obserwuj zwierzęta bez ingerencji\n\nObserwuj ryby i inne zwierzęta spokojnie. Nie goń ich, nie dotykaj, nie osaczaj ani nie karm. Nie blokuj im drogi, aby zrobić zdjęcie, i nie próbuj zwabić ich bliżej. Pozwól dzikim zwierzętom poruszać się swobodnie.\n\nDobre zdjęcie nigdy nie jest warte niepokojenia zwierzęcia ani narażania siebie na niebezpieczeństwo.\n\n## Nie zostawiaj po sobie śladów\n\nZabezpiecz luźne przedmioty przed wejściem do wody. Zabierz wszystkie śmieci z powrotem na łódź lub brzeg i nie zostawiaj opakowań po jedzeniu, niedopałków ani plastiku. Nie zbieraj muszli, fragmentów koralowców ani innych elementów przyrody.\n\n## Przestrzegaj lokalnych zasad i wskazówek przewodnika\n\nNa obszarach chronionych mogą obowiązywać szczególne zasady dotyczące dostępu, pływania, kotwiczenia i zachowania odwiedzających. Zasady różnią się w zależności od miejsca i mogą się zmieniać, dlatego stosuj się do aktualnych instrukcji organizatora i lokalnych władz.\n\nWysłuchaj instruktażu bezpieczeństwa, pozostań w dozwolonym obszarze i korzystaj ze sprzętu wypornościowego zalecanego dla Ciebie. Odpowiedzialne zachowanie oznacza również rezygnację z wejścia do wody, gdy załoga uzna warunki za nieodpowiednie.\n\n## Wybierz organizatora, który jasno opisuje aktywność\n\nPrzed rezerwacją sprawdź, jak wygląda postój na snorkeling, jaki sprzęt jest zapewniony i jaki nadzór będzie dostępny. Poinformuj załogę, jeśli dopiero zaczynasz przygodę ze snorkelingiem lub nie czujesz się pewnie w wodzie.\n\nAwesome Adventure Tours prezentuje rejsy po Morzu Czerwonym z możliwością snorkelingu. Dokładne postoje i warunki różnią się w zależności od wycieczki, dlatego przeczytaj aktualny program i zadaj pytania przed potwierdzeniem rezerwacji.\n\nOchrona rafy jest wspólną odpowiedzialnością. Zachowuj dystans od koralowców i zwierząt, przestrzegaj lokalnych wskazówek i pozostaw wodę w takim stanie, w jakim ją zastałeś."
       }
     }
   ]
