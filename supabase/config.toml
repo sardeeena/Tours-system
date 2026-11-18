@@ -23,10 +23,10 @@ enabled = false
 
 [local_smtp]
 enabled = true
-port = 55424
-smtp_port = 55425
-# Keep the optional POP3 listener off the runner's reserved/conflicting port.
-pop3_port = 55427
+port = 56424
+smtp_port = 56425
+# Keep optional local mail listeners in a dedicated high port range to avoid CI runner collisions.
+pop3_port = 56427
 
 [storage]
 enabled = true
