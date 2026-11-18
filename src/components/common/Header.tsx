@@ -135,6 +135,16 @@ export const Header: React.FC<HeaderProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Lock background page scroll while the mobile drawer menu is open so scrolling moves the menu cleanly
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [mobileMenuOpen]);
+
   const handleNavClick = (sectionId: string) => {
     setMobileMenuOpen(false);
     if (onNavigateSection) {
@@ -493,6 +503,7 @@ export const Header: React.FC<HeaderProps> = ({
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 text-stone-800 dark:text-slate-200 hover:bg-stone-200 dark:hover:bg-slate-800 rounded-lg border border-stone-300/70 dark:border-slate-700 bg-stone-200/60 dark:bg-slate-800/80 cursor-pointer min-w-[38px] min-h-[38px] flex items-center justify-center"
             aria-label="Toggle navigation menu"
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -504,13 +515,13 @@ export const Header: React.FC<HeaderProps> = ({
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-            className="xl:hidden border-t border-[#E8E3DA] bg-[#FAF8F5] px-5 py-5 shadow-lg overflow-hidden"
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="xl:hidden border-t border-[#E8E3DA] dark:border-slate-800 bg-[#FAF8F5] dark:bg-[#0E1B2A] px-5 py-5 pb-8 shadow-lg max-h-[calc(100dvh-56px)] overflow-y-auto overscroll-contain touch-pan-y"
           >
-            <nav className="flex flex-col space-y-3.5 text-base font-medium text-[#0E1B2A]">
+            <nav className="flex flex-col space-y-3.5 text-base font-medium text-[#0E1B2A] dark:text-slate-100">
               {/* Mobile User Profile Section */}
               {user ? (
                 <div className="p-3 bg-stone-100 rounded-lg border border-stone-200 space-y-2.5">
@@ -726,7 +737,7 @@ export const Header: React.FC<HeaderProps> = ({
                 {t('mobile.reviews')}
               </button>
               <a href="/blog" onClick={() => setMobileMenuOpen(false)} className="text-left py-2 px-3 rounded hover:bg-stone-100 dark:hover:bg-slate-800/60 font-semibold text-[#0A6C74] dark:text-teal-300 flex items-center justify-between">
-                <span>Blog &amp; Travel Journal</span>
+                <span>Blog & Travel Journal</span>
                 <span className="text-[10px] font-bold uppercase tracking-wider bg-[#0A6C74]/10 text-[#0A6C74] px-2 py-0.5 rounded-full">New</span>
               </a>
               <button
@@ -740,7 +751,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <CalendarCheck className="w-4 h-4 text-[#0A6C74] dark:text-[#2dd4bf]" />
                 <span>{t('nav.findMyBooking')}</span>
               </button>
-              <a href="/support" onClick={() => setMobileMenuOpen(false)} className="text-left py-2 px-3 rounded hover:bg-stone-100 dark:hover:bg-slate-800/60 font-semibold text-[#0A6C74] dark:text-teal-300">Customer Support &amp; Tickets</a>
+              <a href="/support" onClick={() => setMobileMenuOpen(false)} className="text-left py-2 px-3 rounded hover:bg-stone-100 dark:hover:bg-slate-800/60 font-semibold text-[#0A6C74] dark:text-teal-300">Customer Support & Tickets</a>
 
               <div className="pt-3 border-t border-stone-200 flex flex-col space-y-2">
                 <button
