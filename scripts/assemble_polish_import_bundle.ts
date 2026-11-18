@@ -110,7 +110,7 @@ function translatedPayload(type: string, source: AnyRecord, draft: AnyRecord): A
 }
 async function main() {
   const [sourcePath, outputPath = './translations/pl/polish-import-bundle.json'] = process.argv.slice(2);
-  if (!sourcePath) throw new Error('Usage: npm run translations:assemble-nl -- ./translation-source.json [./output.json]');
+  if (!sourcePath) throw new Error('Usage: npm run translations:assemble-pl -- ./translation-source.json [./output.json]');
   const sourceBundle = JSON.parse(await readFile(sourcePath, 'utf8'));
   const draftBundle = JSON.parse(await readFile('./translations/pl/all-content.review-draft.json', 'utf8'));
   if (sourceBundle?.schema_version !== 1 || !Array.isArray(sourceBundle.records)) throw new Error('Unsupported authoritative source bundle.');
@@ -149,7 +149,7 @@ async function main() {
   const missing = [...sourceKeys].filter((key) => !draftKeys.has(key));
   const unexpected = [...draftKeys].filter((key) => !sourceKeys.has(key));
   if (missing.length || unexpected.length) throw new Error('Coverage mismatch. Missing: ' + missing.join(', ') + '; unexpected: ' + unexpected.join(', '));
-  await writeFile(outputPath, JSON.stringify({ schema_version:1, generated_at:new Date().toISOString(), locales:['nl'], records:output }, null, 2) + '\n');
+  await writeFile(outputPath, JSON.stringify({ schema_version:1, generated_at:new Date().toISOString(), locales:['pl'], records:output }, null, 2) + '\n');
   console.log('Assembled ' + output.length + ' Polish draft records with current source checksums. Output: ' + outputPath + '. No database records were changed or published.');
 }
 await main();
