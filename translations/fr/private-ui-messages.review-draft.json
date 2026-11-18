@@ -1080,7 +1080,9 @@
     "private.text.d59d8b58": "Départ du bateau vers 08:30 – 09:00 AM ",
     "private.text.2d9bf6ca": "Cette page n’a pas pu être affichée",
     "private.text.c3acc0cd": "Recharger la page ",
-    "private.text.e2f282f4": "Un problème a interrompu cette page. Rechargez-la pour réessayer. Les détails de votre réservation n’ont pas été envoyés depuis cet écran de récupération. "
+    "private.text.e2f282f4": "Un problème a interrompu cette page. Rechargez-la pour réessayer. Les détails de votre réservation n’ont pas été envoyés depuis cet écran de récupération. ",
+    "private.text.94232d59": "Assistance client et tickets",
+    "private.text.bc40e842": "Blog et carnet de voyage"
   },
-  "coverage": 1078
+  "coverage": 1080
 }
