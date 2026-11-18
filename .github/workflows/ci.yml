@@ -6,6 +6,7 @@ on:
       - main
       - "chatgpt/**"
       - "fix/**"
+      - "i18n/**"
   pull_request:
     branches:
       - main
@@ -183,6 +184,9 @@ jobs:
       - name: Run French content draft coverage and catalogue parity
         run: npm run test:french-content-drafts
 
+      - name: Verify Dutch review bundle coverage and publication gates
+        run: npm run test:dutch-content-drafts
+
       - name: Verify French rollout dictionary completeness and publication gates
         run: npm run test:french-rollout
 
@@ -196,10 +200,10 @@ jobs:
             echo "available=true" >> "$GITHUB_OUTPUT"
           else
             echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::Live French source-checksum dry run skipped: expected read-only Supabase URL/service-key Actions secrets are not configured."
+            echo "::warning::Live French and Dutch source-checksum dry run skipped: expected read-only Supabase URL/service-key Actions secrets are not configured."
           fi
 
-      - name: Validate French import bundle against live Supabase sources (read-only)
+      - name: Validate French and Dutch import bundles against live Supabase sources (read-only)
         if: steps.french-source-credentials.outputs.available == 'true'
         env:
           SUPABASE_URL: https://uvtbtpxtrrmaublrztgv.supabase.co
@@ -208,6 +212,8 @@ jobs:
           npm run translations:export -- ./translation-source.json
           npm run translations:assemble-fr -- ./translation-source.json ./translations/fr/french-import-bundle.review-draft.json
           npm run translations:import -- ./translations/fr/french-import-bundle.review-draft.json
+          npm run translations:assemble-nl -- ./translation-source.json ./translations/nl/dutch-import-bundle.review-draft.json
+          npm run translations:import -- ./translations/nl/dutch-import-bundle.review-draft.json
 
       - name: Verify WhatsApp locale mapping and safe fallback
         run: npm run test:whatsapp-locale-mapping

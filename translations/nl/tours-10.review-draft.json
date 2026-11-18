@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "locale": "nl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "tour": 1,
+    "source_records": 1
+  },
+  "records": [
+    {
+      "entity_type": "tour",
+      "entity_key": "a66d28fb-505c-4cf6-b326-c47bbabe2624",
+      "source_slug": "hurghada-desert-quad-safari-atv-adventure-camel-ride-bedouin-village",
+      "translated_slug": "hurghada-woestijn-quad-safari-atv-avontuur-kameel-bedoeienendorp",
+      "title": "Woestijnsafari met quad in Hurghada: ATV-avontuur, kameeltocht en Bedoeïenendorp",
+      "summary": "Ontdek de avontuurlijke kant van Hurghada tijdens een spannende ATV-tocht door prachtige woestijnlandschappen. Volg je professionele instructeur over gouden zandpaden, bezoek een traditioneel Bedoeïenendorp en geniet van een ontspannen kameeltocht. Neem een pauze met authentieke kruidenthee en ervaar de warme gastvrijheid van het woestijnleven. Kies voor een vertrek in de ochtend, middag of bij zonsondergang en beleef een onvergetelijke ontsnapping aan de stad.",
+      "content": {
+        "short_description": "Ontdek de avontuurlijke kant van Hurghada tijdens een spannende ATV-tocht door prachtige woestijnlandschappen. Volg je professionele instructeur over gouden zandpaden, bezoek een traditioneel Bedoeïenendorp en geniet van een ontspannen kameeltocht. Neem een pauze met authentieke kruidenthee en ervaar de warme gastvrijheid van het woestijnleven. Kies voor een vertrek in de ochtend, middag of bij zonsondergang en beleef een onvergetelijke ontsnapping aan de stad.",
+        "description": "## Ervaar de spanning van de Egyptische woestijn\n\nOp zoek naar iets anders tijdens je vakantie in Hurghada? Laat de drukte van het resort achter je en ontdek de schoonheid van de omliggende woestijn tijdens een spannende ATV-quad-safari.\n\nJe avontuur begint met een comfortabele ophaalservice bij je hotel in Hurghada. Je wordt naar het quadstation aan de rand van de woestijn gebracht, waar je professionele safarigids je verwelkomt en alles voor de rit voorbereidt.\n\n## Maak je klaar voor je quadavontuur\n\nVoordat je vertrekt, krijg je een veiligheidsinstructie en leer je de basisbediening van je ATV. Je hebt ook tijd voor een korte proefrit, zodat je vertrouwd raakt met het voertuig en met meer vertrouwen de woestijn in kunt rijden.\n\nWanneer iedereen klaar is, volg je je instructeur over het open zand tijdens een spannende quadrit van 45 minuten. Voel de frisse woestijnbries, geniet van het steeds veranderende landschap en ervaar de sensatie van rijden door de gouden omgeving van Hurghada.\n\nOf je nu voor het eerst op een quad zit of al ervaring hebt met offroadavonturen, je gids zorgt ervoor dat de tocht prettig verloopt en aansluit bij het tempo van de groep.\n\n## Ontdek de warme gastvrijheid van de Bedoeïenen\n\nNa de rit neem je een pauze in een traditioneel Bedoeïenendorp en maak je kennis met de rustigere kant van het woestijnleven.\n\nGeniet van een vers bereide kruidenthee, ontmoet de lokale bewoners en ontdek meer over de gebruiken en tradities die het leven in de woestijn al generaties lang vormgeven.\n\nHet is een fijn moment om even te ontspannen, van de omgeving te genieten en de gastvrije Bedoeïenencultuur te ervaren.\n\n## Maak een traditionele kameeltocht\n\nEen woestijnervaring is niet compleet zonder kennis te maken met een van de meest kenmerkende dieren van de regio.\n\nStap op een kameel en maak een rustige tocht door het zandlandschap. In tegenstelling tot de snelheid van de quad geeft deze ontspannen ervaring je de kans om de woestijn op een rustiger tempo te bewonderen en mooie foto's te maken.\n\n## Kies het vertrek dat bij je past\n\nMaak de ervaring helemaal naar wens door te kiezen voor een vertrek in de ochtend, middag of bij zonsondergang.\n\nEen ochtendrit is een verfrissende start van de dag, terwijl tochten in de middag en rond zonsondergang een heel andere sfeer bieden wanneer het licht over het woestijnlandschap verandert.\n\nNa afloop van de activiteiten keer je terug naar het safaristation, waarna je comfortabel naar je hotel wordt gebracht.\n\nVan de spanning van het quadrijden tot het eenvoudige plezier van samen thee drinken in een Bedoeïenendorp: deze ervaring brengt avontuur, lokale cultuur en onvergetelijke momenten in de Egyptische woestijn samen.",
+        "highlights": [
+          "Beleef een spannende quadrit van 45 minuten door de woestijn.",
+          "Rijd over de gouden zandlandschappen rond Hurghada.",
+          "Krijg vóór vertrek een veiligheidsinstructie en maak een korte proefrit.",
+          "Bezoek een traditioneel Bedoeïenendorp en ontdek lokale woestijntradities.",
+          "Ervaar authentieke Bedoeïenengastvrijheid met een kop kruidenthee.",
+          "Maak een ontspannen kameeltocht door de woestijn.",
+          "Kies voor een vertrek in de ochtend, middag of bij zonsondergang.",
+          "Reis comfortabel met ophalen en terugbrengen bij je hotel in Hurghada.",
+          "Kies tussen een gedeelde groepssafari of een privéervaring."
+        ],
+        "included": [
+          "Ophalen en terugbrengen bij hotels in Hurghada en omliggende gebieden.",
+          "Vervoer met airconditioning.",
+          "ATV-quadrit van 45 minuten.",
+          "Professionele woestijnsafari-instructeur.",
+          "Veiligheidshelm.",
+          "Veiligheidsinstructie en proefrit.",
+          "Bezoek aan een traditioneel Bedoeïenendorp.",
+          "Kameeltocht.",
+          "Traditionele Bedoeïenenkruidenthee.",
+          "Eén fles mineraalwater."
+        ],
+        "excluded": [
+          "Bedoeïenensjaal (optioneel verkrijgbaar).",
+          "Beschermende bril (optioneel verkrijgbaar).",
+          "Extra transferkosten vanuit bepaalde omliggende gebieden.",
+          "Professionele fotografie- en videoservices.",
+          "Persoonlijke uitgaven.",
+          "Fooien en gratificaties.",
+          "Diensten die niet uitdrukkelijk bij de inbegrepen onderdelen zijn vermeld."
+        ],
+        "faqs": []
+      },
+      "seo_title": "Woestijnsafari in Hurghada met quad, kameeltocht en Bedoeïenendorp | Awesome Adventure Tours",
+      "seo_description": "Boek een quad-safari in Hurghada met 45 minuten ATV-rijden, een Bedoeïenendorp, kruidenthee en een kameeltocht. Kies je vertrektijd.",
+      "duration": "Halve dag (ongeveer 3 uur)",
+      "duration_type": "Halve dag",
+      "departure_time": "08:30 AM",
+      "age_restrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
+      "pickup_info": "Gratis ophalen en terugbrengen bij de hotellobby in heel Hurghada.",
+      "cancellation_policy": "Gratis annuleren tot 24 uur vóór aanvang van de excursie."
+    }
+  ]
+}

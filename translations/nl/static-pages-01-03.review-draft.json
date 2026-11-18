@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "locale": "nl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "static_page": 3,
+    "source_records": 3
+  },
+  "records": [
+    {
+      "entity_type": "static_page",
+      "entity_key": "home",
+      "locale": "nl",
+      "source_slug": "home",
+      "translated_slug": "home",
+      "title": "Ontdek de Egyptische kust van de Rode Zee",
+      "summary": "Boottochten, eilandexcursies, snorkelen, duiken en woestijnsafari's aan de Egyptische kust van de Rode Zee.",
+      "seo_title": "Excursies aan de Rode Zee in Egypte | Awesome Adventure Tours",
+      "seo_description": "Ontdek de Egyptische Rode Zee met boottochten, eilandexcursies, snorkelen, duiken en woestijnsafari's vanuit Hurghada.",
+      "content": {
+        "heroHeadline": "Ontdek de Egyptische kust van de Rode Zee",
+        "heroSubtitle": "Boottochten, eilandexcursies, snorkelen, duiken en woestijnsafari's aan de Egyptische kust van de Rode Zee.",
+        "sections": [],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer",
+          "bookNow": "Boek nu"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "about",
+      "locale": "nl",
+      "source_slug": "about",
+      "translated_slug": "over-ons",
+      "title": "Over Awesome Adventure Tours",
+      "summary": "Awesome Adventure Tours helpt je boottochten, eilanden, snorkelen, duiken, woestijnsafari's en culturele excursies in Egypte te ontdekken. Bekijk de gepubliceerde ervaringen, vergelijk praktische informatie en neem vóór het boeken contact op met ons team in Hurghada.",
+      "seo_title": "Over Awesome Adventure Tours | Excursies in Egypte en aan de Rode Zee",
+      "seo_description": "Ontdek Awesome Adventure Tours in Hurghada, Egypte. Verken boottochten op de Rode Zee, eilanden, snorkelen, duiken, woestijnsafari's en culturele excursies.",
+      "content": {
+        "heroHeadline": "Ontdek de Egyptische kust van de Rode Zee met Awesome Adventure Tours",
+        "heroSubtitle": "Awesome Adventure Tours helpt je boottochten, eilanden, snorkelen, duiken, woestijnsafari's en culturele excursies in Egypte te ontdekken. Bekijk de gepubliceerde ervaringen, vergelijk praktische informatie en neem vóór het boeken contact op met ons team in Hurghada.",
+        "sections": [
+          {
+            "title": "Ervaringen in heel Egypte",
+            "content": "Onze gepubliceerde catalogus bevat ervaringen op verschillende bestemmingen, waaronder Hurghada, El Gouna, Sharm El Sheikh en andere regio's van Egypte. Afhankelijk van de excursie kunnen reizigers boot- en eilandtochten, snorkel- en duikactiviteiten, woestijnsafari's, transfers en culturele bezoeken vergelijken."
+          },
+          {
+            "title": "Duidelijke informatie vóór het boeken",
+            "content": "Elke excursie kan eigen vertrektijden, prijzen, duur, inbegrepen voorzieningen, leeftijdsvoorwaarden en annuleringsregels hebben. Lees de excursiepagina en het boekingsoverzicht zorgvuldig door, zodat je weet wat is inbegrepen en waar ophalen mogelijk is."
+          },
+          {
+            "title": "Lokale ondersteuning in Hurghada",
+            "content": "Awesome Adventure Tours is gevestigd in Hurghada aan de Rode Zee in Egypte. Ons team kan vragen beantwoorden over gepubliceerde excursies, ophaalinformatie bij hotels en boekingen. Wil je iets weten over een specifieke excursie? Neem dan vóór het boeken contact met ons op."
+          },
+          {
+            "title": "Zo kies je je excursie",
+            "content": "Begin met het kiezen van je bestemming of de activiteit die je interesseert. Vergelijk op elke excursiepagina de route, duur, prijs, inbegrepen voorzieningen en praktische voorwaarden. Beschikbaarheid en operationele omstandigheden kunnen veranderen, vooral bij activiteiten op zee. Bevestig daarom de details voor de gekozen datum vóór vertrek."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer",
+          "bookNow": "Boek nu"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "contact",
+      "locale": "nl",
+      "source_slug": "contact",
+      "translated_slug": "contact",
+      "title": "Contact opnemen met Awesome Adventure Tours",
+      "summary": "Neem contact op met Awesome Adventure Tours om gepubliceerde excursies te vergelijken, ophaalregelingen te begrijpen, boekingsgegevens te controleren en je verblijf in Egypte voor te bereiden.",
+      "seo_title": "Contact opnemen met Awesome Adventure Tours | Hurghada, Egypte",
+      "seo_description": "Neem contact op met Awesome Adventure Tours in Hurghada voor vragen over excursies, boekingen, ophalen en reizigersondersteuning in de taal van je voorkeur.",
+      "content": {
+        "heroHeadline": "Neem contact op met ons excursieteam in Hurghada",
+        "heroSubtitle": "Neem contact op met Awesome Adventure Tours om gepubliceerde excursies te vergelijken, ophaalregelingen te begrijpen, boekingsgegevens te controleren en je verblijf in Egypte voor te bereiden.",
+        "sections": [
+          {
+            "title": "Praat met ons team",
+            "content": "Bel +20 151 5212741 voor vragen over gepubliceerde excursies, boekingen en praktische reisinformatie. Gaat je vraag over een specifieke excursie? Vermeld dan de naam of deel de pagina, je gewenste reisdatum en het aantal deelnemers. Zo kan ons team je beter helpen. Houd bij vragen over een bestaande boeking je boekingsreferentie bij de hand, zodat we het juiste dossier kunnen vinden."
+          },
+          {
+            "title": "Bezoek ons kantoor in Hurghada",
+            "content": "Ons kantoor bevindt zich op de 2e verdieping van Bostan Cafe, Madres, Hurghada, gouvernement Rode Zee, Egypte. Wil je persoonlijk langskomen? Neem dan eerst contact met ons op om je vraag te bespreken en de beste bezoekregeling te bevestigen."
+          },
+          {
+            "title": "Hulp bij het kiezen en voorbereiden van een excursie",
+            "content": "Bekijk vóór het boeken de excursiepagina voor de actuele vanafprijs, duur, route, inbegrepen voorzieningen, uitsluitingen, leeftijdsvoorwaarden, ophaalinformatie en annuleringsvoorwaarden. Deze gegevens kunnen per excursie verschillen en door operationele omstandigheden veranderen. Is iets niet duidelijk? Stel ons dan vóór het boeken vragen over de betreffende excursie. Vermeld bij vragen over ophalen je hotel of gewenste ontmoetingslocatie en de bestemming van de excursie."
+          },
+          {
+            "title": "Ondersteuning voor internationale reizigers",
+            "content": "We ondersteunen internationale reizigers en kunnen met klanten communiceren in de taal van hun voorkeur. Geef aan welke taal je wilt gebruiken wanneer je contact met ons opneemt. De beschikbaarheid van een gids in een bepaalde taal verschilt per excursie en vertrekdatum. Controleer de opties voor jouw reis in plaats van ervan uit te gaan dat elke excursie in elke taal beschikbaar is."
+          },
+          {
+            "title": "Veilig boeken en betalen",
+            "content": "Gebruik het boekingsformulier en de instructies bij je boeking voor betalingsgegevens. Stuur geen wachtwoorden, volledige betaalkaartnummers of beveiligingscodes via gewone berichten. Controleer altijd het definitieve overzicht, de datum, de deelnemersgegevens en de prijs voordat je je boeking bevestigt."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Ontdek meer",
+          "bookNow": "Boek nu"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "locale": "nl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "blog_post": 5,
+    "source_records": 5
+  },
+  "records": [
+    {
+      "entity_type": "blog_post",
+      "entity_key": "1d7da4b0-6a11-48dc-9728-750f9e841e0e",
+      "source_slug": "orange-bay-vs-hula-hula-island-hurghada",
+      "translated_slug": "orange-bay-of-hula-hula-eiland-welke-excursie-hurghada",
+      "locale": "nl",
+      "title": "Orange Bay of Hula Hula Island: welke excursie kies je in Hurghada?",
+      "summary": "Vergelijk twee populaire manieren om vanuit Hurghada een dag op een eiland door te brengen en ontdek welke punten je moet controleren voordat je een boottocht kiest.",
+      "seo_title": "Orange Bay of Hula Hula: welke eilandexcursie kies je in Hurghada?",
+      "seo_description": "Vergelijk twee populaire eilandexcursies vanuit Hurghada en ontdek welke punten je moet controleren voordat je een boottocht kiest.",
+      "content": {
+        "title": "Orange Bay of Hula Hula Island: welke excursie kies je in Hurghada?",
+        "excerpt": "Vergelijk twee populaire manieren om vanuit Hurghada een dag op een eiland door te brengen en ontdek welke punten je moet controleren voordat je een boottocht kiest.",
+        "content": "Een dag op de Rode Zee kan een boottocht combineren met tijd aan het water en de mogelijkheid om te snorkelen. Als je twijfelt tussen Orange Bay en Hula Hula Island, hangt de beste keuze minder af van de promotiefoto dan van het gewenste tempo, de tijd op het strand en de route.\n\n## Wat je moet weten\n\nOrange Bay spreekt vaak reizigers aan die denken aan een licht strand en tijd om op het eiland te ontspannen. Hula Hula is een andere eilandoptie in de routes van boottochten vanuit Hurghada. Voorzieningen, toegangsregelingen, tijd aan land en sfeer kunnen per aanbieder en dag verschillen. Alleen de naam van de bestemming vertelt je niet hoelang je er blijft, hoeveel rifstops zijn gepland of wat is inbegrepen.\n\n## Praktische checklist\n\n- Bevestig welk eiland wordt bezocht en hoeveel tijd je daar doorbrengt.\n- Vergelijk de inbegrepen diensten één voor één.\n- Vraag naar transfers en eventuele extra kosten.\n- Controleer het annuleringsbeleid en de regels bij slecht weer.\n\n## Voordat je boekt\n\nLees de volledige route in plaats van alleen op basis van een foto te kiezen. Vergelijk de [boottocht naar Orange Bay Island](https://awesomeadventure.tours/excursions/orange-bay-island-boat-trip-from-hurghada) met de andere beschikbare ervaringen op de Rode Zee."
+      },
+      "status": "translation-review-draft"
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "bc62ae9c-a1ef-46ef-addd-e40514139817",
+      "source_slug": "parasailing-hurghada-first-time-guide",
+      "translated_slug": "parasailen-hurghada-eerste-keer-gids",
+      "locale": "nl",
+      "title": "Parasailen in Hurghada: wat beginners moeten weten",
+      "summary": "Een praktische gids over de veiligheidsbriefing, het harnas, het weer en de vragen die je vóór een parasailervaring moet stellen.",
+      "seo_title": "Parasailen in Hurghada: tips voor je eerste ervaring",
+      "seo_description": "Lees over de briefing, het harnas, weersomstandigheden en vragen die je moet stellen voordat je gaat parasailen.",
+      "content": {
+        "title": "Parasailen in Hurghada: wat beginners moeten weten",
+        "excerpt": "Een praktische gids over de veiligheidsbriefing, het harnas, het weer en de vragen die je vóór een parasailervaring moet stellen.",
+        "content": "Parasailen biedt een ander uitzicht op de Rode Zee: deelnemers stijgen boven het water op met behulp van een systeem dat door een boot wordt voortgetrokken. Wie het voor het eerst probeert, wil vaak weten hoe het voelt en hoe je je voorbereidt. Het belangrijkste is een activiteit te kiezen die door een gekwalificeerde aanbieder wordt begeleid.\n\n## Wat je moet weten\n\nDe bemanning moet uitleggen hoe het harnas wordt afgesteld, hoe het aan boord gaan en landen verloopt, welke signalen je gebruikt en onder welke omstandigheden de activiteit wordt stopgezet. Vraag naar de deelnemerslimieten, controles van de uitrusting en of de activiteit past bij je leeftijd, gezondheid en mobiliteit. Wind en de toestand van de zee kunnen invloed hebben op de activiteit. Een verantwoordelijke aanbieder kan uitstellen of annuleren wanneer de omstandigheden niet geschikt zijn.\n\n## Praktische checklist\n\n- Vraag naar leeftijds- en gewichtslimieten.\n- Meld relevante gezondheids- of mobiliteitsproblemen.\n- Berg spullen die kunnen vallen veilig op en volg de instructies van de bemanning.\n- Accepteer uitstel als de omstandigheden niet geschikt zijn.\n\n## Voordat je boekt\n\nDe pagina van de [parasail- en watersportervaring in Hurghada](https://awesomeadventure.tours/excursions/hurghada-parasailing-banana-boat-adventure-with-hotel-pickup) beschrijft de aangeboden activiteit. Bevestig de actuele voorwaarden voordat je boekt."
+      },
+      "status": "translation-review-draft"
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "b7c75969-d8fb-4f62-ba33-6c54ea61df90",
+      "source_slug": "private-yacht-vs-shared-boat-hurghada",
+      "translated_slug": "privejacht-of-gedeelde-boot-hurghada-kiezen",
+      "locale": "nl",
+      "title": "Privéjacht of gedeelde boot in Hurghada: hoe kies je?",
+      "summary": "Ontdek de praktische verschillen tussen privéboottochten en gedeelde boottochten op de Rode Zee voordat je een optie kiest.",
+      "seo_title": "Privéjacht of gedeelde boot in Hurghada: hoe kies je?",
+      "seo_description": "Vergelijk privéjachttochten met gedeelde bootexcursies op de Rode Zee voordat je een optie kiest.",
+      "content": {
+        "title": "Privéjacht of gedeelde boot in Hurghada: hoe kies je?",
+        "excerpt": "Ontdek de praktische verschillen tussen privéboottochten en gedeelde boottochten op de Rode Zee voordat je een optie kiest.",
+        "content": "Een dag op een privéjacht en een excursie met een gedeelde boot kunnen allebei mooie herinneringen opleveren, maar ze passen bij verschillende prioriteiten. De keuze gaat niet alleen over luxe: ook flexibiliteit, groepsgrootte, budget, privacy en de mate van controle over het dagprogramma spelen een rol.\n\n## Wat je moet weten\n\nGedeelde excursies volgen een geplande route en brengen meerdere reizigers samen tijdens hetzelfde vertrek. Een privécharter kan meer controle bieden over timing en tempo, binnen de grenzen van het weer, veiligheidsregels en lokale voorschriften. Vraag of de boot, bemanning, eten, drinken, toegang tot eilanden en snorkeluitrusting zijn inbegrepen. Bevestig de passagierscapaciteit en annuleringsvoorwaarden schriftelijk.\n\n## Praktische checklist\n\n- Vergelijk de route en de totale prijs.\n- Bevestig de capaciteit van de privéboot en de inbegrepen diensten.\n- Vraag naar weersgerelateerde wijzigingen en flexibiliteit van de route.\n- Controleer de afspraken over ophalen, vertrek en terugkeer.\n\n## Voordat je boekt\n\nKies de optie die bij je groep en verwachtingen past. Een duidelijke, schriftelijke route is nuttiger dan een algemene belofte van een perfecte dag."
+      },
+      "status": "translation-review-draft"
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "26756019-4805-45f5-8c47-5a6f243d80f8",
+      "source_slug": "ras-mohammed-national-park-visitor-guide",
+      "translated_slug": "ras-mohammed-nationaal-park-bezoekersgids",
+      "locale": "nl",
+      "title": "Nationaal park Ras Mohammed: gids voor zee- en kustlandschappen",
+      "summary": "Ontdek wat Ras Mohammed bijzonder maakt: riffen, mangroven, kustgeologie en goede bezoekerspraktijken.",
+      "seo_title": "Nationaal park Ras Mohammed: gids voor zee- en kustlandschappen",
+      "seo_description": "Ontdek de kenmerken van Ras Mohammed, van riffen en mangroven tot kustgeologie en regels voor de bescherming van het gebied.",
+      "content": {
+        "title": "Nationaal park Ras Mohammed: gids voor zee- en kustlandschappen",
+        "excerpt": "Ontdek wat Ras Mohammed bijzonder maakt: riffen, mangroven, kustgeologie en goede bezoekerspraktijken.",
+        "content": "Nationaal park Ras Mohammed staat bekend om zijn kustlandschappen en mariene leefgebieden aan de zuidpunt van het Sinaï-schiereiland. Afhankelijk van de gekozen route en activiteit kunnen bezoekers koraalriffen, mangrovegebieden en bijzondere geologische formaties ontdekken.\n\n## Wat je moet weten\n\nHet park omvat zowel onderwater- als landhabitats. De riffen bieden onderdak aan uiteenlopende zeedieren, terwijl mangroven en kustformaties laten zien hoe verschillende leefgebieden naast elkaar bestaan. Toegangsregels en toegestane activiteiten kunnen veranderen. Blijf in de aangewezen bezoekersgebieden, neem geen natuurlijke materialen mee en raak wilde dieren of koraal niet aan.\n\n## Praktische checklist\n\n- Verzamel geen schelpen, koraal of stenen.\n- Houd veilige afstand tot dieren.\n- Gebruik de aangewezen paden en toegangspunten.\n- Volg de actuele parkregels en aanwijzingen van je gids.\n\n## Voordat je boekt\n\nVergelijk de [boottocht naar Ras Mohammed en White Island](https://awesomeadventure.tours/excursions/from-sharm-white-island-ras-mohamed-snorkeling-trip) met de [natuurexcursie naar Ras Mohammed](https://awesomeadventure.tours/excursions/sharm-el-sheikh-ras-mohammed-magic-lake-snorkeling-adventure), die over land plaatsvindt.\n\nWil je een ervaring op zee vergelijken met een bezoek aan het park over land? Bekijk dan ook onze [natuurexcursie naar Ras Mohammed](https://awesomeadventure.tours/excursions/sharm-el-sheikh-ras-mohammed-magic-lake-snorkeling-adventure)."
+      },
+      "status": "translation-review-draft"
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "3cb24067-af99-45e3-a7ea-05ab429d0b64",
+      "source_slug": "red-sea-coral-reefs-underwater-world",
+      "translated_slug": "koraalriffen-rode-zee-onderwaterwereld",
+      "locale": "nl",
+      "title": "Koraalriffen van de Rode Zee: wat maakt deze onderwaterwereld bijzonder?",
+      "summary": "Een toegankelijke introductie tot koraalriffen, rifvissen en kwetsbare mariene leefgebieden die bezoekers tijdens het snorkelen kunnen ontdekken.",
+      "seo_title": "Koraalriffen van de Rode Zee: geheimen van de onderwaterwereld",
+      "seo_description": "Ontdek koraalriffen, vissen en kwetsbare mariene leefgebieden van de Rode Zee tijdens een snorkeltocht.",
+      "content": {
+        "title": "Koraalriffen van de Rode Zee: wat maakt deze onderwaterwereld bijzonder?",
+        "excerpt": "Een toegankelijke introductie tot koraalriffen, rifvissen en kwetsbare mariene leefgebieden die bezoekers tijdens het snorkelen kunnen ontdekken.",
+        "content": "De Rode Zee staat bekend om haar heldere water, koraalformaties en kleurrijke zeeleven. Voor veel bezoekers is een eerste snorkelstop een kennismaking met een rifecosysteem. Wat eruitziet als een prachtige onderwatertuin, is ook een levend leefgebied dat bescherming nodig heeft.\n\n## Wat je moet weten\n\nKoralen zijn dieren die in de loop van de tijd stevige structuren opbouwen. Deze structuren bieden schuilplaatsen en voedselgebieden voor veel soorten die op het rif leven. Zelfs handelingen die onschuldig lijken, zoals op koraal lopen of stukjes meenemen, kunnen schade veroorzaken die veel langer duurt dan een vakantie. Houd voldoende afstand, voorkom dat je sediment opwervelt en jaag zeedieren nooit op of voer ze niet.\n\n## Praktische checklist\n\n- Loop of zit niet op koraal en laat het anker er niet op vallen.\n- Houd je zwemvliezen uit de buurt van het rif.\n- Neem nooit schelpen of stukjes koraal mee.\n- Gebruik de in- en uitstappunten die je gids aanbeveelt.\n\n## Voordat je boekt\n\nEen begeleide boottocht kan beginners helpen leren hoe ze zich verantwoord bij riffen gedragen. Vergelijk het beschikbare [aanbod aan snorkelexcursies op de Rode Zee](https://awesomeadventure.tours/excursions) en kies een route waarin de omgang met het milieu duidelijk wordt uitgelegd."
+      },
+      "status": "translation-review-draft"
+    }
+  ]
+}

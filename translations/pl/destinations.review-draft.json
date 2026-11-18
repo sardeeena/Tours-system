@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "locale": "pl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "destination": 7,
+    "source_records": 7
+  },
+  "records": [
+    {
+      "entity_type": "destination",
+      "entity_key": "ffcc83a6-2dc4-4990-91bb-1d72450755c2",
+      "locale": "pl",
+      "source_slug": "sharm-el-sheikh",
+      "translated_slug": "sharm-el-sheikh",
+      "title": "Sharm el-Sheikh",
+      "summary": "Odkryj magię Morza Czerwonego",
+      "seo_title": "Sharm el-Sheikh: snorkeling, plaże i safari na pustyni",
+      "seo_description": "Odkryj Sharm el-Sheikh: rafy koralowe, snorkeling, nurkowanie, plaże, safari na pustyni i zachody słońca nad Morzem Czerwonym.",
+      "content": {
+        "title": "Sharm el-Sheikh",
+        "description": "Odkryj Sharm el-Sheikh, jeden z najważniejszych kurortów nad egipskim Morzem Czerwonym, znany z krystalicznie czystej wody, kolorowych raf koralowych, złotych plaż i luksusowych hoteli. Wybierz się na niezapomniany snorkeling i nurkowanie, ekscytujące safari na pustyni oraz podziwiaj spektakularne zachody słońca. Niezależnie od tego, czy szukasz przygody, czy wypoczynku, Sharm el-Sheikh będzie doskonałym wyborem.",
+        "tagline": "Odkryj magię Morza Czerwonego",
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Odkryj więcej"
+        }
+      }
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "985fd0a3-6b7a-4e0f-b535-cff4aa4ac0be",
+      "locale": "pl",
+      "source_slug": "hurghada",
+      "translated_slug": "hurghada",
+      "title": "Hurghada",
+      "summary": "Odkryj piękno Morza Czerwonego",
+      "seo_title": "Hurghada: wycieczki, plaże i przygody nad Morzem Czerwonym",
+      "seo_description": "Zaplanuj pobyt w Hurghadzie: snorkeling, nurkowanie, safari na pustyni, wycieczki na wyspy i rejsy o zachodzie słońca.",
+      "content": {
+        "title": "Hurghada",
+        "description": "Odkryj Hurghadę, jeden z najpopularniejszych kurortów nad egipskim Morzem Czerwonym, słynący z krystalicznie czystej wody, kolorowych raf koralowych, złotych piaszczystych plaż i światowej klasy hoteli. Ciesz się niezapomnianym snorkelingiem i nurkowaniem, ekscytującymi safari na pustyni, wycieczkami na wyspy oraz spektakularnymi rejsami o zachodzie słońca. Niezależnie od tego, czy szukasz relaksu, przygody czy atrakcji dla całej rodziny, Hurghada zapewni niezapomniane wakacje.",
+        "tagline": "Odkryj piękno Morza Czerwonego",
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Odkryj więcej"
+        }
+      }
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "88d0f219-2819-4ff8-a6ce-01d7682296d0",
+      "locale": "pl",
+      "source_slug": "el-gouna",
+      "translated_slug": "el-gouna",
+      "title": "El Gouna",
+      "summary": "Luksusowe laguny, plaże i tętniąca życiem marina",
+      "seo_title": "El Gouna: laguny, plaże i atrakcje nad Morzem Czerwonym",
+      "seo_description": "Odkryj El Gounę: turkusowe laguny, plaże, marinę, snorkeling, kitesurfing i rejsy łodzią.",
+      "content": {
+        "title": "El Gouna",
+        "description": "Odkryj El Gounę, piękny kurort na egipskim wybrzeżu Morza Czerwonego, znany z turkusowych lagun, piaszczystych plaż, luksusowych hoteli, mariny, sportów wodnych i tętniącej życiem sceny restauracyjnej. Wybierz się na rejs łodzią, snorkeling lub kitesurfing albo odpocznij nad morzem.",
+        "tagline": "Luksusowe laguny, plaże i tętniąca życiem marina",
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Odkryj więcej"
+        }
+      }
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "b58b8665-3870-4674-96ea-e3c22fed426e",
+      "locale": "pl",
+      "source_slug": "luxor",
+      "translated_slug": "luksor",
+      "title": "Luksor",
+      "summary": "Odkryj starożytny Egipt i jego ponadczasowe cuda",
+      "seo_title": "Luksor: starożytne świątynie i Dolina Królów",
+      "seo_description": "Odwiedź Luksor, kompleks świątynny w Karnaku, świątynię Hatszepsut i Dolinę Królów podczas wycieczek z przewodnikiem po Egipcie.",
+      "content": {
+        "title": "Luksor",
+        "description": "Odkryj Luksor, jedno z najważniejszych historycznych miejsc w Egipcie. Zobacz imponujący kompleks świątynny w Karnaku, Świątynię Luksorską, Dolinę Królów i świątynię Hatszepsut. Skorzystaj z wycieczek historycznych z przewodnikiem, rejsów po Nilu i niezapomnianych lotów balonem nad starożytnymi zabytkami.",
+        "tagline": "Odkryj starożytny Egipt i jego ponadczasowe cuda",
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Odkryj więcej"
+        }
+      }
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "689b5e4f-8168-4713-9181-9ebcbd884a7a",
+      "locale": "pl",
+      "source_slug": "cairo",
+      "translated_slug": "kair",
+      "title": "Kair",
+      "summary": "Piramidy, starożytna historia i kultura Egiptu",
+      "seo_title": "Kair: piramidy, historia i kultura Egiptu",
+      "seo_description": "Odkryj Kair, piramidy w Gizie, Wielkiego Sfinksa, Wielkie Muzeum Egipskie, zabytkowe meczety i tętniące życiem bazary.",
+      "content": {
+        "title": "Kair",
+        "description": "Poznaj Kair, tętniącą życiem stolicę Egiptu, w której starożytne cuda łączą się z nowoczesnym życiem miasta. Odwiedź słynne piramidy w Gizie, Wielkiego Sfinksa, Wielkie Muzeum Egipskie, zabytkowe meczety i gwarne bazary. Poznaj historię Egiptu, lokalną kuchnię i niezapomniane doświadczenia kulturowe.",
+        "tagline": "Piramidy, starożytna historia i kultura Egiptu",
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Odkryj więcej"
+        }
+      }
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "16e32986-869a-4bf1-aa2f-aa7552e46b05",
+      "locale": "pl",
+      "source_slug": "sahl-hasheesh",
+      "translated_slug": "sahl-hasheesh",
+      "title": "Sahl Hasheesh",
+      "summary": "Luksusowe kurorty nad Morzem Czerwonym i dziewicze plaże",
+      "seo_title": "Sahl Hasheesh: luksusowe kurorty i plaże nad Morzem Czerwonym",
+      "seo_description": "Zatrzymaj się w Sahl Hasheesh na południe od Hurghady i korzystaj z dziewiczych plaż, hoteli przy morzu, snorkelingu i nurkowania.",
+      "content": {
+        "title": "Sahl Hasheesh",
+        "description": "Odkryj Sahl Hasheesh, elegancki kurort nad Morzem Czerwonym na południe od Hurghady. Ciesz się krystalicznie czystą wodą, pięknymi piaszczystymi plażami, luksusowymi hotelami przy plaży, snorkelingiem, nurkowaniem i romantycznymi spacerami wzdłuż wybrzeża. To idealne miejsce dla par, rodzin i podróżnych szukających relaksu oraz wysokiego standardu wypoczynku.",
+        "tagline": "Luksusowe kurorty nad Morzem Czerwonym i dziewicze plaże",
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Odkryj więcej"
+        }
+      }
+    },
+    {
+      "entity_type": "destination",
+      "entity_key": "ebf085ec-ebaa-4b73-ac66-ebedb34c74f0",
+      "locale": "pl",
+      "source_slug": "makadi-bay",
+      "translated_slug": "makadi-bay",
+      "title": "Makadi Bay",
+      "summary": "Rodzinne kurorty, rafy koralowe i morskie przygody",
+      "seo_title": "Makadi Bay: plaże, rafy i wycieczki",
+      "seo_description": "Odkryj Makadi Bay: hotele all-inclusive, snorkeling, nurkowanie, rejsy łodzią, safari na pustyni i atrakcje dla całej rodziny.",
+      "content": {
+        "title": "Makadi Bay",
+        "description": "Odpocznij w Makadi Bay, popularnym kurorcie nad Morzem Czerwonym, znanym z hoteli all-inclusive, pięknego wybrzeża i kolorowych raf koralowych. Odkryj snorkeling, nurkowanie, rejsy łodzią, safari na pustyni i atrakcje dla całej rodziny. Makadi Bay to spokojne miejsce na wakacje dla par, rodzin i miłośników przygód.",
+        "tagline": "Rodzinne kurorty, rafy koralowe i morskie przygody",
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Odkryj więcej"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "locale": "nl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "blog_post": 5,
+    "source_records": 5
+  },
+  "records": [
+    {
+      "entity_type": "blog_post",
+      "entity_key": "0cd117c2-37e2-4990-b183-d88aaebdb214",
+      "source_slug": "hurghada-quad-biking-first-ride-safety",
+      "translated_slug": "quadrijden-hurghada-veiligheid-eerste-rit",
+      "locale": "nl",
+      "title": "Quadrijden in Hurghada: veiligheidstips voor je eerste woestijnrit",
+      "summary": "Bereid je begeleide quadsafari voor met praktische tips over de helm, instructies, veilige afstand en omstandigheden in de woestijn.",
+      "seo_title": "Quadrijden in Hurghada: veiligheidstips voor beginners",
+      "seo_description": "Bereid je begeleide quadsafari voor: helm, instructies, veilige afstand en omstandigheden op woestijnpaden.",
+      "content": {
+        "title": "Quadrijden in Hurghada: veiligheidstips voor je eerste woestijnrit",
+        "excerpt": "Bereid je begeleide quadsafari voor met praktische tips over de helm, instructies, veilige afstand en omstandigheden in de woestijn.",
+        "content": "Een quadsafari is een actieve manier om de woestijn buiten Hurghada te ontdekken. Bij je eerste rit is de belangrijkste stap al gezet voordat de motor start: begrijp de bediening, de route en de veiligheidsinstructies van de gids.\n\n## Wat je moet weten\n\nVraag om een demonstratie en zorg dat je het gaspedaal, de remmen, de stopprocedure en de handsignalen begrijpt. Draag de verstrekte beschermende uitrusting op de juiste manier en vertel de gids als je nog nooit op een quad hebt gereden. Woestijnpaden kunnen oneffen en stoffig zijn. Ga niet racen, haal niemand in zonder toestemming en verlaat de route niet. Als je je ongemakkelijk voelt, geef dit dan aan bij de gids en stop op de aangewezen plek.\n\n## Praktische checklist\n\n- Draag de verstrekte helm en beschermende uitrusting.\n- Vertel de gids hoeveel ervaring je hebt.\n- Houd voldoende afstand tot de bestuurder voor je.\n- Ga nooit racen en verlaat de gemarkeerde route niet.\n\n## Voordat je boekt\n\nDe pagina van de [woestijn-quadsafari in Hurghada](https://awesomeadventure.tours/excursions/hurghada-desert-quad-safari-atv-adventure-camel-ride-bedouin-village) beschrijft een begeleide rit en een bezoek aan een dorp. Controleer de leeftijds-, gezondheids- en deelnamevoorwaarden."
+      },
+      "status": "translation-review-draft"
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "dc69e8bf-a556-40e6-aa20-ec1a233f8bd4",
+      "source_slug": "jeep-safari-vs-quad-bike-egypt",
+      "translated_slug": "jeep-safari-of-quad-egypte-woestijnavontuur-kiezen",
+      "locale": "nl",
+      "title": "Jeep-safari of quad in Egypte: welk woestijnavontuur past bij jou?",
+      "summary": "Vergelijk een begeleide 4x4-woestijnexcursie met een quadsafari op basis van comfort, activiteitenniveau en de behoeften van je groep.",
+      "seo_title": "Jeep-safari of quad in Egypte: welk avontuur kies je?",
+      "seo_description": "Vergelijk een begeleide 4x4-safari in de woestijn met een quadsafari op basis van comfort, activiteit en de behoeften van je groep.",
+      "content": {
+        "title": "Jeep-safari of quad in Egypte: welk woestijnavontuur past bij jou?",
+        "excerpt": "Vergelijk een begeleide 4x4-woestijnexcursie met een quadsafari op basis van comfort, activiteitenniveau en de behoeften van je groep.",
+        "content": "Een woestijnexcursie kan een actieve rit zijn of een rustigere tocht door het landschap. Met zowel Jeep-safari's als quadtochten kun je het resortgebied achter je laten, maar de ervaring is heel verschillend.\n\n## Wat je moet weten\n\nTijdens een quadsafari bestuur je het voertuig zelf onder toezicht van een gids. Een Jeep- of andere 4x4-safari is geschikter voor mensen die liever als passagier meerijden. Sommige routes combineren het landschap met een dorpsbezoek, een stop bij zonsondergang, diner of sterren kijken. Controleer het exacte programma, want niet iedere safari biedt dezelfde activiteiten.\n\n## Praktische checklist\n\n- Kies een quad voor een actieve rijervaring.\n- Kies een 4x4 als je liever niet zelf rijdt.\n- Controleer de leeftijds-, gezondheids- en toegankelijkheidsvoorwaarden.\n- Vergelijk de daadwerkelijk geplande stops en de inbegrepen maaltijden en transfers.\n\n## Voordat je boekt\n\nVergelijk de [quadsafari vanuit Hurghada](https://awesomeadventure.tours/excursions/hurghada-quad-bike-safari-desert-ride-camel-experience-bedouin-village) met de beschikbare Jeep-safari's voordat je een keuze maakt."
+      },
+      "status": "translation-review-draft"
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "214a49ff-f424-40e1-97a4-a3da99ba693b",
+      "source_slug": "karnak-temple-valley-of-the-kings-guide",
+      "translated_slug": "karnak-tempel-vallei-der-koningen-gids",
+      "locale": "nl",
+      "title": "Tempel van Karnak en Vallei der Koningen: twee kanten van het oude Thebe",
+      "summary": "Ontdek het verschil tussen het uitgestrekte tempelcomplex van Luxor en de koninklijke necropolen op de westoever.",
+      "seo_title": "Tempel van Karnak en Vallei der Koningen: twee kanten van Thebe",
+      "seo_description": "Ontdek het verschil tussen het monumentale complex van Karnak en de koninklijke graven op de westoever van Luxor.",
+      "content": {
+        "title": "Tempel van Karnak en Vallei der Koningen: twee kanten van het oude Thebe",
+        "excerpt": "Ontdek het verschil tussen het uitgestrekte tempelcomplex van Luxor en de koninklijke necropolen op de westoever.",
+        "content": "Een bezoek aan Luxor omvat vaak twee locaties die verschillende kanten van het leven in het oude Egypte laten zien: de tempel van Karnak en de Vallei der Koningen. De eerste is een groot religieus complex; de tweede is een gebied met koninklijke graven.\n\n## Wat je moet weten\n\nKarnak groeide gedurende vele generaties en omvat zalen, binnenplaatsen, zuilen en monumenten die verband houden met de eredienst in de oudheid. De Vallei der Koningen staat bekend om de koninklijke graven die in de heuvels op de westoever van Luxor zijn uitgehouwen. De toegang tot afzonderlijke graven kan verschillen en er kunnen speciale tickets of beperkingen gelden. Fotoregels en conserveringsmaatregelen kunnen veranderen; volg daarom de actuele aanwijzingen op iedere locatie.\n\n## Praktische checklist\n\n- Draag geschikte schoenen voor oneffen paden.\n- Houd je aan de geldende fotografieregels.\n- Vraag je gids welke graven geopend zijn.\n- Plan voldoende tijd om de locaties te begrijpen in plaats van er gehaast doorheen te lopen.\n\n## Voordat je boekt\n\nEen [begeleide dagtocht naar Luxor vanuit Hurghada](https://awesomeadventure.tours/excursions/from-hurghada-luxor-day-trip-karnak-temple-valley-of-the-kings) brengt deze plaatsen samen in een samenhangend historisch verhaal."
+      },
+      "status": "translation-review-draft"
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "01c3aa8c-878d-48c6-aa0c-83bfc889c51c",
+      "source_slug": "mount-sinai-sunrise-hike-preparation-guide",
+      "translated_slug": "berg-sinai-zonsopgang-nachthike-voorbereiden",
+      "locale": "nl",
+      "title": "Zonsopgangwandeling op de berg Sinaï: bereid je nachtelijke klim voor",
+      "summary": "Bereid je nachtelijke wandeling op de berg Sinaï voor met tips over conditie, warme kleding, schoenen, timing en lokale begeleiding.",
+      "seo_title": "Zonsopgangwandeling op de berg Sinaï: bereid je klim voor",
+      "seo_description": "Bereid je nachtelijke wandeling op de berg Sinaï voor: conditie, kleding, schoenen, timing en lokale tips.",
+      "content": {
+        "title": "Zonsopgangwandeling op de berg Sinaï: bereid je nachtelijke klim voor",
+        "excerpt": "Bereid je nachtelijke wandeling op de berg Sinaï voor met tips over conditie, warme kleding, schoenen, timing en lokale begeleiding.",
+        "content": "Een wandeling naar de berg Sinaï bij zonsopgang is heel anders dan een gewone strandexcursie. Het vertrek vindt vaak 's nachts plaats, zodat wandelaars de berg vóór zonsopgang kunnen bereiken. Deze ervaring vraagt om voorbereiding, geduld en respect voor de lokale toegangsregels.\n\n## Wat je moet weten\n\nDe route omvat een stevige wandeling en kan trappen, oneffen terrein en koude omstandigheden bevatten. Houd vóór het boeken rekening met je conditie, gezondheid en comfort tijdens een nachtelijke wandeling. Vraag naar de route, de verwachte duur, de begeleidingsregeling en de meest veeleisende gedeelten. Neem stevige schoenen, warme kleding in lagen en een kleine zaklamp mee als dit wordt aanbevolen. Volg je gids en blijf bij de groep.\n\n## Praktische checklist\n\n- Kies schoenen met goede grip.\n- Neem warme kleding mee voor de top.\n- Neem water en noodzakelijke persoonlijke medicijnen mee.\n- Volg de gids en de actuele lokale toegangsregels.\n\n## Voordat je boekt\n\nDe pagina over de [zonsopgangwandeling op de berg Sinaï en het bezoek aan het Sint-Catharinaklooster](https://awesomeadventure.tours/excursions/mount-sinai-sunrise-hike-st-catherines-monastery-from-sharm-el-sheikh) beschrijft de ervaring. Controleer de actuele voorwaarden en ga na of de activiteit bij je past voordat je boekt."
+      },
+      "status": "translation-review-draft"
+    },
+    {
+      "entity_type": "blog_post",
+      "entity_key": "c72f01f4-d37e-4067-916f-e1a9ea2ea5c2",
+      "source_slug": "old-cairo-one-day-islamic-coptic-heritage",
+      "translated_slug": "oud-cairo-in-een-dag-islamitisch-koptisch-erfgoed",
+      "locale": "nl",
+      "title": "Oud-Caïro in één dag: moskeeën, kerken en Khan el-Khalili",
+      "summary": "Een praktische kennismaking met het islamitische en Koptische erfgoed van Oud-Caïro, de historische straten en de sfeer van de traditionele markt.",
+      "seo_title": "Oud-Caïro in één dag: moskeeën, kerken en Khan el-Khalili",
+      "seo_description": "Ontdek het islamitische en Koptische erfgoed van Oud-Caïro, de historische straten en de sfeer van de traditionele markt.",
+      "content": {
+        "title": "Oud-Caïro in één dag: moskeeën, kerken en Khan el-Khalili",
+        "excerpt": "Een praktische kennismaking met het islamitische en Koptische erfgoed van Oud-Caïro, de historische straten en de sfeer van de traditionele markt.",
+        "content": "Oud-Caïro bestaat niet uit één enkel monument. Het omvat wijken, gebedshuizen en historische straten die de vele lagen van de geschiedenis van de stad laten zien. Een begeleide dagtocht kan bezoekers die Caïro voor het eerst ontdekken helpen de verbanden tussen deze plaatsen te begrijpen.\n\n## Wat je moet weten\n\nEen goed geplande route kan de Citadel, historische moskeeën, Koptische kerken en de levendige wijk Khan el-Khalili omvatten. Elke locatie heeft een eigen sfeer en eigen bezoekregels. Kleed je respectvol, volg de aanwijzingen in religieuze gebouwen en vraag toestemming voordat je mensen die bidden of privéruimtes fotografeert. Houd voldoende tijd vrij om rustig over de markt te wandelen.\n\n## Praktische checklist\n\n- Draag comfortabele schoenen en kleding die respectvol is voor de locaties.\n- Vraag toestemming voordat je mensen fotografeert.\n- Bewaar je waardevolle spullen veilig in drukke straten.\n- Bevestig vooraf of lunch en toegangskaarten zijn inbegrepen.\n\n## Voordat je boekt\n\nDe [erfgoedtour door Oud-Caïro](https://awesomeadventure.tours/excursions/old-cairo-full-day-tour-islamic-coptic-heritage-with-lunch) in het aanbod combineert verschillende belangrijke wijken, een gids en lunch. Bekijk de route om de exacte stops te kennen."
+      },
+      "status": "translation-review-draft"
+    }
+  ]
+}

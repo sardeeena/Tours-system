@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "locale": "nl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "communication_template": 3,
+    "source_records": 3
+  },
+  "records": [
+    {
+      "entity_type": "communication_template",
+      "entity_key": "97dcca82-9361-4683-9097-ded3d3bfd338",
+      "translated_slug": "template-betalingsherinnering",
+      "title": "Betalingsherinnering",
+      "summary": "Betalingsherinnering: resterend saldo voor {{tour_name}}",
+      "content": {
+        "name": "Betalingsherinnering",
+        "subject": "Betalingsherinnering: resterend saldo voor {{tour_name}}",
+        "body_text": "Hallo {{customer_name}},\n\nWe sturen je een vriendelijke herinnering voor je aanstaande vertrek voor {{tour_name}} op {{tour_date}}.\n\nResterend saldo: {{balance_due}}\nGeplande ophaaltijd bij het hotel: {{pickup_time}}\n\nMet vriendelijke groet,\nAwesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "tour_date",
+          "pickup_time",
+          "balance_due"
+        ],
+        "channel": "Both",
+        "template_key": "payment_reminder"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "9143122e-c8e6-4d7b-bb64-ad562d44e8e4",
+      "translated_slug": "template-ophaalherinnering",
+      "title": "Ophaalherinnering",
+      "summary": "Herinnering voor ophalen bij het hotel morgen: {{tour_name}}",
+      "content": {
+        "name": "Ophaalherinnering",
+        "subject": "Herinnering voor ophalen bij het hotel morgen: {{tour_name}}",
+        "body_text": "Hallo {{customer_name}},\n\nWe kijken ernaar uit je morgen te verwelkomen voor {{tour_name}}.\n\nJe ophalen bij het hotel is bevestigd voor {{pickup_time}}.\nBoekingsreferentie: {{booking_reference}}\n\nNeem zwemkleding, zonnebescherming, een handdoek en een geldig identiteitsbewijs of paspoort mee.",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "pickup_time"
+        ],
+        "channel": "Both",
+        "template_key": "pickup_reminder"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "2e8a1598-4077-45f3-96c7-1c92503d39b3",
+      "translated_slug": "template-terugbetalingsmelding",
+      "title": "Melding van terugbetaling",
+      "summary": "Terugbetaling uitgevoerd: {{booking_reference}} - Awesome Adventure Tours",
+      "content": {
+        "name": "Melding van terugbetaling",
+        "subject": "Terugbetaling uitgevoerd: {{booking_reference}} - Awesome Adventure Tours",
+        "body_text": "Hallo {{customer_name}},\n\nEr is een terugbetaling goedgekeurd en uitgevoerd voor boeking {{booking_reference}} ({{tour_name}}).\n\nTerugbetaald bedrag: {{amount}}\n\nMet vriendelijke groet,\nDe financiële afdeling van Awesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "amount"
+        ],
+        "channel": "Both",
+        "template_key": "refund"
+      }
+    }
+  ]
+}

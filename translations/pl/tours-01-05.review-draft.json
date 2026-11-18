@@ -1,0 +1,381 @@
+{
+  "schema_version": 1,
+  "locale": "pl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "tour": 5,
+    "source_records": 5
+  },
+  "records": [
+    {
+      "entity_type": "tour",
+      "entity_key": "2f2ca1a1-f0c7-4737-9700-57e801a08d99",
+      "source_slug": "ultimate-sinai-desert-safari-quad-camel-bbq-adventure",
+      "translated_slug": "najlepsze-safari-po-pustyni-synaj-quad-kamel-bbq",
+      "locale": "pl",
+      "title": "Wyjątkowe safari po pustyni Synaj: quady, przejażdżka na wielbłądzie i grill",
+      "summary": "Przeżyj 5-godzinne safari po pustyni z Sharm el-Sheikh: jazda quadem, tradycyjna przejażdżka na wielbłądzie, kultura Beduinów, pyszny grill i orientalne występy w sercu pustyni Synaj.",
+      "seo_title": "Safari po pustyni Synaj: quad, wielbłąd i grill | Awesome Adventure Tours",
+      "seo_description": "Zarezerwuj 5-godzinne safari z Sharm el-Sheikh: quady, przejażdżka na wielbłądzie, obóz beduiński, grill i orientalne występy.",
+      "duration": "5 godzin",
+      "pickup_info": "Odbiór z hotelu i powrót są wliczone w cenę; transfer odbywa się nowoczesnymi pojazdami z klimatyzacją.",
+      "cancellation_policy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+      "age_restrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+      "content": {
+        "title": "Wyjątkowe safari po pustyni Synaj: quady, przejażdżka na wielbłądzie i grill",
+        "description": "Ucieknij od miejskiego zgiełku i odkryj piękno pustyni Synaj podczas niezapomnianego safari z Sharm el-Sheikh.\n\nWybierz się na ekscytującą przejażdżkę quadem przez pustynię, poznaj tradycyjną gościnność Beduinów, przejedź się na wielbłądzie i spędź wieczór w obozie beduińskim, delektując się pysznym grillem i oglądając orientalne występy.\n\nDzięki wygodnemu odbiorowi i powrotowi do hotelu, profesjonalnej opiece przewodnika oraz połączeniu przygody z doświadczeniami kulturowymi to safari pozwala poznać pustynię podczas jednej niezapomnianej wycieczki.",
+        "durationLabel": "5 godzin",
+        "highlights": [
+          "Jazda quadem po pustyni Synaj",
+          "Przejażdżka na wielbłądzie",
+          "Wizyta w obozie beduińskim",
+          "Tradycyjna herbata beduińska",
+          "Echo Valley",
+          "Kolacja z grilla",
+          "Orientalne występy i pokazy na żywo",
+          "Odbiór z hotelu i powrót"
+        ],
+        "itinerary": [],
+        "included": [
+          "Odbiór z hotelu i powrót",
+          "Transport klimatyzowanym pojazdem",
+          "Profesjonalny przewodnik safari",
+          "Kask ochronny i gogle",
+          "Przejażdżka quadem",
+          "Przejażdżka na wielbłądzie",
+          "Herbata beduińska i tradycyjny chleb",
+          "Kolacja z grilla / bufet",
+          "Jedna butelka wody mineralnej",
+          "Orientalne pokazy rozrywkowe"
+        ],
+        "excluded": [
+          "Szisza",
+          "Usługi fotograficzne",
+          "Oleje",
+          "Wydatki osobiste",
+          "Opcjonalny prywatny transfer powrotny",
+          "Opcjonalna prywatna jazda po torze"
+        ],
+        "faqs": [],
+        "pickupInfo": "Odbiór z hotelu i powrót są wliczone w cenę; transfer odbywa się nowoczesnymi pojazdami z klimatyzacją.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+        "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+        "labels": {
+          "highlights": "Najważniejsze atrakcje",
+          "itinerary": "Plan wycieczki",
+          "included": "W cenie",
+          "excluded": "Nie w cenie",
+          "faqs": "Najczęstsze pytania",
+          "pickupInfo": "Informacje o odbiorze",
+          "cancellationPolicy": "Zasady anulowania",
+          "ageRestrictions": "Ograniczenia wiekowe",
+          "bookNow": "Rezerwuj teraz",
+          "browseMore": "Zobacz więcej wycieczek"
+        }
+      }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "b3524f6e-ef5a-4585-ae5a-d6569e3a1468",
+      "source_slug": "afternoon-desert-safari-with-echo-mountains-bedouin-village",
+      "translated_slug": "popoludniowe-safari-pustynne-gory-echo-wioska-beduinow",
+      "locale": "pl",
+      "title": "Popołudniowe safari po pustyni: Góry Echo i wioska Beduinów",
+      "summary": "Przeżyj przygodę na quadzie z Sharm el-Sheikh. Przemierzaj pustynię Synaj, odwiedź Góry Echo i wioskę Beduinów, spróbuj tradycyjnej herbaty i wybierz opcjonalną przejażdżkę na wielbłądzie, kolację oraz pokaz beduiński.",
+      "seo_title": "Popołudniowe safari quadem i Góry Echo | Awesome Adventure Tours",
+      "seo_description": "Odkryj pustynię Synaj podczas przejażdżki quadem z Sharm el-Sheikh, odwiedź Góry Echo i wioskę Beduinów, a wieczorem wybierz dodatkowe atrakcje.",
+      "duration": "3 godziny",
+      "pickup_info": "Odbiór z hotelu i powrót są wliczone w cenę; transfer odbywa się nowoczesnymi pojazdami z klimatyzacją.",
+      "cancellation_policy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+      "age_restrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+      "content": {
+        "title": "Popołudniowe safari po pustyni: Góry Echo i wioska Beduinów",
+        "description": "Zostaw za sobą zgiełk kurortu i wyrusz w głąb imponującej pustyni Synaj podczas ekscytującej przejażdżki quadem z Sharm el-Sheikh.\n\nPo odbiorze z hotelu dotrzesz do punktu startowego na pustyni. Profesjonalny przewodnik wyjaśni podstawową obsługę quada i zasady bezpieczeństwa. Przed rozpoczęciem trasy będzie również czas na krótką jazdę próbną.\n\nGdy wszyscy będą gotowi, rozpocznie się prawdziwa przygoda. Przemierzaj specjalnie wybrane pustynne szlaki, otoczony surowymi górami południowego Synaju. Zmieniający się krajobraz, formacje skalne i spokojna atmosfera pustyni pozwolą Ci odkryć region z zupełnie innej perspektywy.\n\nPo drodze dotrzesz do niezwykłych Gór Echo — naturalnej formacji, w której otaczające skały tworzą wyjątkowy efekt echa. Wypróbuj echo, podziwiaj widoki i zrób zdjęcia przed dalszą jazdą.\n\nNastępnie trasa prowadzi do tradycyjnej wioski Beduinów. Odpocznij, napij się autentycznej herbaty beduińskiej i poznaj życie na pustyni.\n\nGoście, którzy wybiorą pakiet wieczorny, mogą po przejażdżce quadem podziwiać zachód słońca, zjeść kolację i obejrzeć tradycyjny pokaz beduiński.\n\nNiezależnie od tego, czy wybierzesz wspólny quad, własny pojazd ATV czy prywatną wycieczkę, ta atrakcja łączy przygodę, pustynne krajobrazy, lokalną kulturę i panoramy gór w jedno niezapomniane doświadczenie.",
+        "durationLabel": "3 godziny",
+        "highlights": [
+          "Przejedź quadem przez pustynię Synaj",
+          "Pokonaj około 30 km pustynnych szlaków",
+          "Poznaj naturalny efekt echa",
+          "Zatrzymaj się w malowniczych miejscach na zdjęcia",
+          "Odwiedź tradycyjną wioskę Beduinów",
+          "Spróbuj tradycyjnej herbaty beduińskiej",
+          "Opcjonalna przejażdżka na wielbłądzie",
+          "Odbiór z hotelu i powrót",
+          "Otrzymaj instruktaż bezpieczeństwa i naucz się obsługi quada",
+          "Wybierz prywatną wycieczkę, jeśli wolisz"
+        ],
+        "itinerary": [],
+        "included": [
+          "Odbiór z hotelu i powrót w Sharm el-Sheikh",
+          "Quad",
+          "Profesjonalny przewodnik po pustyni",
+          "Instruktaż bezpieczeństwa",
+          "Jazda próbna przed rozpoczęciem trasy",
+          "Wizyta w Górach Echo",
+          "Wizyta w wiosce Beduinów",
+          "Tradycyjna herbata beduińska"
+        ],
+        "excluded": [
+          "Gogle ochronne, chyba że wybrano je jako dodatek",
+          "Chusta pustynna, chyba że wybrano ją jako dodatek",
+          "Przejażdżka na wielbłądzie, chyba że została wybrana",
+          "Profesjonalne zdjęcia",
+          "Wydatki osobiste",
+          "Napiwki",
+          "Usługi niewymienione wyraźnie w wybranej opcji"
+        ],
+        "faqs": [],
+        "pickupInfo": "Odbiór z hotelu i powrót są wliczone w cenę; transfer odbywa się nowoczesnymi pojazdami z klimatyzacją.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+        "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+        "labels": {
+          "highlights": "Najważniejsze atrakcje",
+          "itinerary": "Plan wycieczki",
+          "included": "W cenie",
+          "excluded": "Nie w cenie",
+          "faqs": "Najczęstsze pytania",
+          "pickupInfo": "Informacje o odbiorze",
+          "cancellationPolicy": "Zasady anulowania",
+          "ageRestrictions": "Ograniczenia wiekowe",
+          "bookNow": "Rezerwuj teraz",
+          "browseMore": "Zobacz więcej wycieczek"
+        }
+      }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "686495d5-66bc-4e21-961f-fa26c1f917e7",
+      "source_slug": "ras-mohamed-white-island-diving-snorkeling-boat-trip",
+      "translated_slug": "ras-mohamed-white-island-rejs-nurkowanie-snorkeling",
+      "locale": "pl",
+      "title": "Ras Mohamed i White Island: rejs łodzią z nurkowaniem i snorkelingiem",
+      "summary": "Odkryj niezwykły podwodny świat Morza Czerwonego podczas całodniowego rejsu do Parku Narodowego Ras Mohamed i White Island. Skorzystaj z dwóch przystanków na snorkeling, odpocznij na pięknej White Island i wybierz nurkowanie próbne lub profesjonalne. Na pokładzie czeka pyszny lunch w formie bufetu i orzeźwiające napoje.",
+      "seo_title": "Ras Mohamed i White Island: rejs z nurkowaniem i snorkelingiem | Awesome Adventure Tours",
+      "seo_description": "Zarezerwuj całodniowy rejs z Sharm el-Sheikh do Ras Mohamed i White Island: dwa przystanki na snorkeling, opcjonalne nurkowanie, bufet lunchowy i napoje.",
+      "duration": "7 godzin",
+      "pickup_info": "Odbiór z hotelu i powrót są wliczone w cenę; transfer odbywa się nowoczesnymi pojazdami z klimatyzacją.",
+      "cancellation_policy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+      "age_restrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+      "content": {
+        "title": "Ras Mohamed i White Island: rejs łodzią z nurkowaniem i snorkelingiem",
+        "description": "Dołącz do niezapomnianej morskiej przygody z Sharm el-Sheikh i odkryj dwa z najbardziej spektakularnych miejsc nad Morzem Czerwonym: Park Narodowy Ras Mohamed i White Island.\n\nDzień rozpocznie się od odbioru z hotelu i transferu do mariny. Tam wejdziesz na pokład przestronnej łodzi z kilkoma pokładami, wygodnymi miejscami do siedzenia i zacienionymi strefami wypoczynku.\n\nPopłyniesz w kierunku Parku Narodowego Ras Mohamed, jednego z najbardziej znanych obszarów przyrodniczych regionu, słynącego z krystalicznie czystej wody, kolorowych raf koralowych i różnorodnego życia morskiego.\n\nPodczas rejsu odbędą się dwa postoje na snorkeling. Będziesz mieć okazję pływać wśród kolorowych ryb i odkrywać piękne rafy koralowe Morza Czerwonego.\n\nOdwiedzisz również White Island, zachwycającą piaszczystą wyspę otoczoną turkusową wodą. Znajdź czas na pływanie, odpoczynek, podziwianie krajobrazu i robienie zdjęć.\n\nJeśli chcesz nurkować, możesz wybrać nurkowanie próbne dla początkujących, bez wcześniejszego doświadczenia. Po instruktażu bezpieczeństwa wejdziesz do wody pod opieką profesjonalnego instruktora i odkryjesz podwodny świat Morza Czerwonego.\n\nCertyfikowani nurkowie mogą wybrać również nurkowanie profesjonalne, dopasowane do posiadanych uprawnień i poziomu doświadczenia.\n\nW ciągu dnia na pokładzie będzie serwowany pyszny lunch w formie bufetu, a także woda, napoje bezalkoholowe, herbata i kawa.\n\nPo całym dniu pływania, snorkelingu, nurkowania i odpoczynku na morzu wrócisz do mariny, a następnie do hotelu.",
+        "durationLabel": "7 godzin",
+        "highlights": [
+          "Odkryj Park Narodowy Ras Mohamed",
+          "Odwiedź spektakularną White Island",
+          "Skorzystaj z dwóch postojów na snorkeling",
+          "Poznaj kolorowy podwodny świat Morza Czerwonego",
+          "Wypróbuj nurkowanie próbne z profesjonalnym instruktorem",
+          "Wybierz nurkowanie profesjonalne, jeśli masz certyfikat",
+          "Odpocznij na przestronnej łodzi z kilkoma pokładami",
+          "Zjedz pyszny lunch w formie bufetu na pokładzie",
+          "Korzystaj z nielimitowanych napojów",
+          "Zrób niezapomniane zdjęcia z przygody nad Morzem Czerwonym"
+        ],
+        "itinerary": [],
+        "included": [
+          "Odbiór z hotelu i powrót",
+          "Całodniowy rejs łodzią",
+          "Wizyta w Parku Narodowym Ras Mohamed",
+          "Wizyta na White Island",
+          "Dwa postoje na snorkeling",
+          "Lunch w formie bufetu na pokładzie",
+          "Woda",
+          "Napoje bezalkoholowe",
+          "Herbata i kawa",
+          "Profesjonalna załoga",
+          "Profesjonalny instruktor nurkowania przy wybranych opcjach",
+          "Sprzęt do snorkelingu zgodnie z wybraną opcją",
+          "Jedno nurkowanie próbne",
+          "Nurkowanie profesjonalne zgodnie z wybraną opcją"
+        ],
+        "excluded": [
+          "Wydatki osobiste",
+          "Ręczniki",
+          "Krem z filtrem",
+          "Usługi lub dodatki niewymienione wyraźnie w wybranej opcji rezerwacji",
+          "Opłata za wstęp do Ras Mohamed: € 5 za osobę"
+        ],
+        "faqs": [
+          {
+            "question": "Czy sprzęt do snorkelingu jest wliczony w cenę, czy trzeba zabrać własny?",
+            "answer": "Na pokładzie dostępne są bezpłatne, czyszczone maski, rurki i płetwy w rozmiarach dla dorosłych i dzieci.",
+            "section": "faq"
+          },
+          {
+            "question": "Czy osoby, które nie potrafią pływać, mogą bezpiecznie uczestniczyć?",
+            "answer": "Tak. Dostępne są kamizelki ratunkowe zatwierdzone przez straż przybrzeżną, a certyfikowani instruktorzy nurkowania pomagają gościom w wodzie.",
+            "section": "faq"
+          }
+        ],
+        "pickupInfo": "Odbiór z hotelu i powrót są wliczone w cenę; transfer odbywa się nowoczesnymi pojazdami z klimatyzacją.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+        "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+        "labels": {
+          "highlights": "Najważniejsze atrakcje",
+          "itinerary": "Plan wycieczki",
+          "included": "W cenie",
+          "excluded": "Nie w cenie",
+          "faqs": "Najczęstsze pytania",
+          "pickupInfo": "Informacje o odbiorze",
+          "cancellationPolicy": "Zasady anulowania",
+          "ageRestrictions": "Ograniczenia wiekowe",
+          "bookNow": "Rezerwuj teraz",
+          "browseMore": "Zobacz więcej wycieczek"
+        }
+      }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "66490ba5-3887-4dca-985d-d5f85b7c01e4",
+      "source_slug": "ultimate-sinai-desert-safari-quad-camel-bbq-adventure-copy-757",
+      "translated_slug": "sharm-super-safari-atv-kamel-gwiazdy-grill",
+      "locale": "pl",
+      "title": "Sharm: Super Safari z ATV, przejażdżką na wielbłądzie, obserwacją gwiazd i kolacją z grilla",
+      "summary": "Poznaj magię pustyni Synaj podczas niezapomnianego 5-godzinnego safari: ekscytująca jazda quadem, tradycyjna przejażdżka na wielbłądzie i autentyczne doświadczenie beduińskie. Delektuj się pysznym grillem, orientalnymi występami i wyjątkową obserwacją gwiazd przez teleskop.",
+      "seo_title": "Super safari po pustyni w Sharm: quad, wielbłąd i obserwacja gwiazd | Awesome Adventure Tours",
+      "seo_description": "Zarezerwuj 5-godzinne safari na Synaju z Sharm el-Sheikh: quady, wielbłąd, obóz beduiński, grill, pokazy i obserwacja gwiazd.",
+      "duration": "5 godzin",
+      "pickup_info": "Odbiór z hotelu i powrót są wliczone w cenę; transfer odbywa się nowoczesnymi pojazdami z klimatyzacją.",
+      "cancellation_policy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+      "age_restrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+      "content": {
+        "title": "Sharm: Super Safari z ATV, przejażdżką na wielbłądzie, obserwacją gwiazd i kolacją z grilla",
+        "description": "Zostaw za sobą gwar miasta i zanurz się w zapierających dech krajobrazach pustyni Synaj podczas niezapomnianego safari z Sharm el-Sheikh.\n\nRozpocznij przygodę od ekscytującej jazdy quadem po złotych pustynnych terenach, w otoczeniu imponujących gór i pięknej przyrody. Poznaj tradycyjny styl życia Beduinów, skorzystaj z ich gościnności i wybierz się na niezapomnianą przejażdżkę na wielbłądzie.\n\nGdy zbliży się wieczór, odwiedzisz tradycyjny obóz beduiński i zjesz pyszny grill w autentycznej pustynnej atmosferze. Obejrzyj orientalne występy i poznaj wyjątkowy urok kultury Beduinów.\n\nPo zmroku przygoda będzie kontynuowana podczas specjalnej sesji obserwacji gwiazd. Spójrz na czyste niebo pustyni i użyj teleskopu, aby podziwiać gwiazdy oraz inne ciała niebieskie z dala od miejskich świateł. Ciesz się spokojną atmosferą pustyni Synaj, odkrywając piękno nocnego nieba.\n\nDzięki odbiorowi i powrotowi do hotelu, profesjonalnej opiece przewodnika, ekscytującym aktywnościom na świeżym powietrzu, doświadczeniom kulturowym i wieczorowi pod gwiazdami to safari łączy przygodę, rozrywkę i odkrywanie pustyni.",
+        "durationLabel": "5 godzin",
+        "highlights": [
+          "Jazda quadem po pustyni Synaj",
+          "Przejażdżka na wielbłądzie",
+          "Wizyta w obozie beduińskim",
+          "Tradycyjna herbata beduińska",
+          "Echo Valley",
+          "Kolacja z grilla",
+          "Orientalne występy i pokazy na żywo",
+          "Odbiór z hotelu i powrót",
+          "Specjalna sesja obserwacji gwiazd przez teleskop"
+        ],
+        "itinerary": [],
+        "included": [
+          "Odbiór z hotelu i powrót",
+          "Transport klimatyzowanym pojazdem",
+          "Profesjonalny przewodnik safari",
+          "Kask ochronny i gogle",
+          "Przejażdżka quadem",
+          "Przejażdżka na wielbłądzie",
+          "Herbata beduińska i tradycyjny chleb",
+          "Kolacja z grilla / bufet",
+          "Jedna butelka wody mineralnej",
+          "Orientalne pokazy rozrywkowe",
+          "Specjalna sesja obserwacji gwiazd z teleskopem"
+        ],
+        "excluded": [
+          "Szisza",
+          "Usługi fotograficzne",
+          "Oleje",
+          "Wydatki osobiste",
+          "Opcjonalny prywatny transfer powrotny",
+          "Opcjonalna prywatna jazda po torze"
+        ],
+        "faqs": [],
+        "pickupInfo": "Odbiór z hotelu i powrót są wliczone w cenę; transfer odbywa się nowoczesnymi pojazdami z klimatyzacją.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+        "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+        "labels": {
+          "highlights": "Najważniejsze atrakcje",
+          "itinerary": "Plan wycieczki",
+          "included": "W cenie",
+          "excluded": "Nie w cenie",
+          "faqs": "Najczęstsze pytania",
+          "pickupInfo": "Informacje o odbiorze",
+          "cancellationPolicy": "Zasady anulowania",
+          "ageRestrictions": "Ograniczenia wiekowe",
+          "bookNow": "Rezerwuj teraz",
+          "browseMore": "Zobacz więcej wycieczek"
+        }
+      }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "e604bc06-6f15-4e4b-a3d9-a3b1acbfb36d",
+      "source_slug": "from-sharm-white-island-ras-mohamed-snorkeling-trip",
+      "translated_slug": "sharm-white-island-ras-mohamed-snorkeling-rejs",
+      "locale": "pl",
+      "title": "Z Sharm: rejs na snorkeling do White Island i Ras Mohamed",
+      "summary": "Wybierz się na spektakularny rejs po Morzu Czerwonym do Parku Narodowego Ras Mohamed i White Island. Skorzystaj z dwóch postojów na snorkeling, zanurz się w krystalicznie czystej wodzie i wybierz nurkowanie próbne lub profesjonalne. Na pokładzie czeka smaczny lunch w formie bufetu i orzeźwiające napoje.",
+      "seo_title": "White Island i Ras Mohamed: rejs snorkelingowy z Sharm | Awesome Adventure Tours",
+      "seo_description": "Odkryj Ras Mohamed i White Island podczas rejsu z Sharm el-Sheikh: dwa postoje na snorkeling, opcjonalne nurkowanie, bufet lunchowy i napoje.",
+      "duration": "7 godzin",
+      "pickup_info": "Odbiór z hotelu i powrót są wliczone w cenę; transfer odbywa się nowoczesnymi pojazdami z klimatyzacją.",
+      "cancellation_policy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+      "age_restrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+      "content": {
+        "title": "Z Sharm: rejs na snorkeling do White Island i Ras Mohamed",
+        "description": "Odkryj piękno Morza Czerwonego podczas ekscytującej wycieczki łodzią z Sharm el-Sheikh do Parku Narodowego Ras Mohamed i White Island.\n\nRozpocznij przygodę od wygodnego odbioru z hotelu i transferu do mariny. Tam wejdziesz na pokład przestronnej łodzi z kilkoma pokładami, wygodnymi miejscami do siedzenia i zacienionymi strefami wypoczynku.\n\nPopłyniesz przez zachwycające wody Morza Czerwonego do Parku Narodowego Ras Mohamed, znanego na całym świecie z niezwykłych raf koralowych, bogatej bioróżnorodności morskiej i doskonałych warunków do snorkelingu.\n\nCzekają na Ciebie dwie sesje snorkelingu w starannie wybranych miejscach. Podziwiaj kolorowe ryby, odkrywaj tętniące życiem podwodne krajobrazy i poznaj piękno Morza Czerwonego z bliska.\n\nWycieczka obejmuje również wizytę na White Island, pięknej piaszczystej wyspie otoczonej przejrzystą turkusową wodą. Popływaj, odpocznij na plaży, zrób wspaniałe zdjęcia i naciesz się spokojnym otoczeniem przyrody.\n\nChcesz odkryć świat pod powierzchnią wody? Początkujący mogą wybrać nurkowanie próbne z instruktażem bezpieczeństwa i opieką profesjonalnego instruktora. Doświadczeni nurkowie mogą wybrać profesjonalne nurkowanie dopasowane do posiadanych uprawnień i umiejętności.\n\nGdy nadejdzie czas na odpoczynek, na pokładzie będzie serwowany świeżo przygotowany lunch w formie bufetu, a przez cały rejs dostępne będą woda, napoje bezalkoholowe, herbata i kawa.\n\nPo niezapomnianym dniu pełnym snorkelingu, pływania, opcjonalnego nurkowania i zachwycających widoków na morze odpocznij podczas powrotu do mariny, a następnie do hotelu.",
+        "durationLabel": "7 godzin",
+        "highlights": [
+          "Odkryj Park Narodowy Ras Mohamed",
+          "Odwiedź spektakularną White Island",
+          "Skorzystaj z dwóch postojów na snorkeling",
+          "Poznaj kolorowe życie morskie Morza Czerwonego",
+          "Wypróbuj nurkowanie próbne z profesjonalnym instruktorem",
+          "Wybierz nurkowanie profesjonalne, jeśli masz certyfikat",
+          "Odpocznij na przestronnej łodzi z kilkoma pokładami",
+          "Zjedz pyszny lunch w formie bufetu na pokładzie",
+          "Korzystaj z nielimitowanych napojów",
+          "Zrób niezapomniane zdjęcia z przygody nad Morzem Czerwonym"
+        ],
+        "itinerary": [],
+        "included": [
+          "Odbiór z hotelu i powrót",
+          "Całodniowy rejs łodzią",
+          "Wizyta w Parku Narodowym Ras Mohamed",
+          "Wizyta na White Island",
+          "Dwa postoje na snorkeling",
+          "Lunch w formie bufetu na pokładzie",
+          "Woda",
+          "Napoje bezalkoholowe",
+          "Herbata i kawa",
+          "Profesjonalny instruktor nurkowania przy wybranych opcjach",
+          "Sprzęt do snorkelingu zgodnie z wybraną opcją",
+          "Nurkowanie próbne zgodnie z wybraną opcją",
+          "Nurkowanie profesjonalne zgodnie z wybraną opcją"
+        ],
+        "excluded": [
+          "Wydatki osobiste",
+          "Ręczniki",
+          "Krem z filtrem",
+          "Usługi lub dodatki niewymienione wyraźnie w wybranej opcji rezerwacji",
+          "Opłata za wstęp do Ras Mohamed: € 5 za osobę"
+        ],
+        "faqs": [
+          {
+            "question": "Czy sprzęt do snorkelingu jest wliczony w cenę, czy muszę zabrać własny?",
+            "answer": "Na pokładzie dostępne są bezpłatne, czyszczone maski, rurki i płetwy w rozmiarach dla dorosłych i dzieci.",
+            "section": "faq"
+          },
+          {
+            "question": "Czy osoby, które nie potrafią pływać, mogą bezpiecznie uczestniczyć?",
+            "answer": "Tak. Dostępne są kamizelki ratunkowe zatwierdzone przez straż przybrzeżną, a certyfikowani instruktorzy nurkowania pomagają gościom w wodzie.",
+            "section": "faq"
+          }
+        ],
+        "pickupInfo": "Odbiór z hotelu i powrót są wliczone w cenę; transfer odbywa się nowoczesnymi pojazdami z klimatyzacją.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+        "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+        "labels": {
+          "highlights": "Najważniejsze atrakcje",
+          "itinerary": "Plan wycieczki",
+          "included": "W cenie",
+          "excluded": "Nie w cenie",
+          "faqs": "Najczęstsze pytania",
+          "pickupInfo": "Informacje o odbiorze",
+          "cancellationPolicy": "Zasady anulowania",
+          "ageRestrictions": "Ograniczenia wiekowe",
+          "bookNow": "Rezerwuj teraz",
+          "browseMore": "Zobacz więcej wycieczek"
+        }
+      }
+    }
+  ]
+}

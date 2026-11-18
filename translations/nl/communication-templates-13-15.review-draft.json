@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "locale": "nl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "communication_template": 3,
+    "source_records": 3
+  },
+  "records": [
+    {
+      "entity_type": "communication_template",
+      "entity_key": "d8e61555-7c7b-4286-8923-c78741d9cbf4",
+      "translated_slug": "template-verzoek-beoordeling",
+      "title": "Verzoek om beoordeling",
+      "summary": "Hoe heb je je excursie {{tour_name}} ervaren?",
+      "content": {
+        "name": "Verzoek om beoordeling",
+        "subject": "Hoe heb je je excursie {{tour_name}} ervaren?",
+        "body_text": "Hallo {{customer_name}},\n\nWe hopen dat je een geweldige tijd hebt gehad tijdens je excursie {{tour_name}}. Je mening is erg belangrijk voor ons lokale team.\n\nLink om een beoordeling achter te laten: https://awesomeadventure.tours/review?ref={{booking_reference}}\n\nBedankt dat je met ons hebt gevaren,\nAwesome Adventure Tours",
+        "variables": [
+          "customer_name",
+          "tour_name",
+          "booking_reference"
+        ],
+        "channel": "Both",
+        "template_key": "review_request"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "dc0e86c3-edd5-48cc-8cd9-c3c2e7bb8cba",
+      "translated_slug": "template-excursie-herinnering",
+      "title": "Excursieherinnering",
+      "summary": "Herinnering aan je komende excursie: {{tour_name}} op {{tour_date}}",
+      "content": {
+        "name": "Excursieherinnering",
+        "subject": "Herinnering aan je komende excursie: {{tour_name}} op {{tour_date}}",
+        "body_text": "Hallo {{customer_name}},\n\nJe excursie {{tour_name}} komt eraan: deze vindt plaats op {{tour_date}}.\n\nBoekingsreferentie: {{booking_reference}}\nGeplande ophaaltijd: {{pickup_time}}\nResterend saldo: {{balance_due}}\n\nWe kijken ernaar uit je te verwelkomen.",
+        "variables": [
+          "customer_name",
+          "booking_reference",
+          "tour_name",
+          "tour_date",
+          "pickup_time",
+          "balance_due"
+        ],
+        "channel": "Both",
+        "template_key": "tour_reminder"
+      }
+    },
+    {
+      "entity_type": "communication_template",
+      "entity_key": "83b34c2d-3d1d-4a32-aed8-ae2d2cf35d50",
+      "translated_slug": "template-welkom",
+      "title": "Welkom bij Awesome Adventure Tours",
+      "summary": "Welkom bij Awesome Adventure Tours, {{customer_name}}!",
+      "content": {
+        "name": "Welkom bij Awesome Adventure Tours",
+        "subject": "Welkom bij Awesome Adventure Tours, {{customer_name}}!",
+        "body_text": "Hallo {{customer_name}},\n\nWelkom bij Awesome Adventure Tours. We helpen je graag om de Egyptische Rode Zee te ontdekken.\n\nBekijk ons aanbod aan excursies: https://awesomeadventure.tours/excursions\n\nMet vriendelijke groet,\nHet reizigersrelatieteam van Awesome Adventure Tours",
+        "variables": [
+          "customer_name"
+        ],
+        "channel": "Both",
+        "template_key": "welcome"
+      }
+    }
+  ]
+}

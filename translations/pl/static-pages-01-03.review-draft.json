@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "locale": "pl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "static_page": 3,
+    "source_records": 3
+  },
+  "records": [
+    {
+      "entity_type": "static_page",
+      "entity_key": "home",
+      "locale": "pl",
+      "source_slug": "home",
+      "translated_slug": "home",
+      "title": "Odkryj egipskie wybrzeże Morza Czerwonego",
+      "summary": "Rejsy łodzią, wycieczki na wyspy, snorkeling, nurkowanie i safari na pustyni na egipskim wybrzeżu Morza Czerwonego.",
+      "seo_title": "Wycieczki nad Morzem Czerwonym w Egipcie | Awesome Adventure Tours",
+      "seo_description": "Odkryj egipskie Morze Czerwone podczas rejsów łodzią, wycieczek na wyspy, snorkelingu, nurkowania i safari na pustyni z Hurghady.",
+      "content": {
+        "heroHeadline": "Odkryj egipskie wybrzeże Morza Czerwonego",
+        "heroSubtitle": "Rejsy łodzią, wycieczki na wyspy, snorkeling, nurkowanie i safari na pustyni na egipskim wybrzeżu Morza Czerwonego.",
+        "sections": [],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Odkryj więcej",
+          "bookNow": "Rezerwuj teraz"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "about",
+      "locale": "pl",
+      "source_slug": "about",
+      "translated_slug": "o-nas",
+      "title": "O Awesome Adventure Tours",
+      "summary": "Awesome Adventure Tours pomaga odkrywać rejsy łodzią, wyspy, snorkeling, nurkowanie, safari na pustyni i wycieczki kulturowe w Egipcie. Zobacz opublikowane atrakcje, porównaj praktyczne informacje i skontaktuj się z naszym zespołem w Hurghadzie przed dokonaniem rezerwacji.",
+      "seo_title": "O Awesome Adventure Tours | Wycieczki w Egipcie i nad Morzem Czerwonym",
+      "seo_description": "Poznaj Awesome Adventure Tours w Hurghadzie w Egipcie. Odkrywaj rejsy po Morzu Czerwonym, wyspy, snorkeling, nurkowanie, safari na pustyni i wycieczki kulturowe.",
+      "content": {
+        "heroHeadline": "Odkryj egipskie wybrzeże Morza Czerwonego z Awesome Adventure Tours",
+        "heroSubtitle": "Awesome Adventure Tours pomaga odkrywać rejsy łodzią, wyspy, snorkeling, nurkowanie, safari na pustyni i wycieczki kulturowe w Egipcie. Zobacz opublikowane atrakcje, porównaj praktyczne informacje i skontaktuj się z naszym zespołem w Hurghadzie przed dokonaniem rezerwacji.",
+        "sections": [
+          {
+            "title": "Atrakcje w całym Egipcie",
+            "content": "Nasz opublikowany katalog obejmuje atrakcje w różnych destynacjach, między innymi w Hurghadzie, El Gounie, Sharm el-Sheikh i innych regionach Egiptu. W zależności od wycieczki podróżni mogą porównywać rejsy łodzią i wycieczki na wyspy, snorkeling i nurkowanie, safari na pustyni, transfery oraz zwiedzanie miejsc kulturowych."
+          },
+          {
+            "title": "Jasne informacje przed rezerwacją",
+            "content": "Każda wycieczka może mieć własne godziny wypłynięcia, ceny, czas trwania, usługi wliczone w cenę, ograniczenia wiekowe i zasady anulowania. Uważnie przeczytaj stronę wycieczki i podsumowanie rezerwacji, aby wiedzieć, co obejmuje oferta i gdzie możliwy jest odbiór."
+          },
+          {
+            "title": "Lokalna pomoc w Hurghadzie",
+            "content": "Awesome Adventure Tours ma siedzibę w Hurghadzie nad Morzem Czerwonym w Egipcie. Nasz zespół odpowiada na pytania dotyczące opublikowanych wycieczek, odbioru z hoteli i rezerwacji. Chcesz dowiedzieć się czegoś o konkretnej wycieczce? Skontaktuj się z nami przed dokonaniem rezerwacji."
+          },
+          {
+            "title": "Jak wybrać wycieczkę",
+            "content": "Zacznij od wyboru destynacji lub rodzaju aktywności, która Cię interesuje. Na stronie każdej wycieczki porównaj trasę, czas trwania, cenę, usługi wliczone w cenę i warunki praktyczne. Dostępność i warunki operacyjne mogą się zmieniać, zwłaszcza w przypadku aktywności na morzu. Dlatego przed wyjazdem potwierdź szczegóły dla wybranej daty."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Odkryj więcej",
+          "bookNow": "Rezerwuj teraz"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "contact",
+      "locale": "pl",
+      "source_slug": "contact",
+      "translated_slug": "kontakt",
+      "title": "Skontaktuj się z Awesome Adventure Tours",
+      "summary": "Skontaktuj się z Awesome Adventure Tours, aby porównać opublikowane wycieczki, poznać zasady odbioru, sprawdzić dane rezerwacji i przygotować pobyt w Egipcie.",
+      "seo_title": "Kontakt z Awesome Adventure Tours | Hurghada, Egipt",
+      "seo_description": "Skontaktuj się z Awesome Adventure Tours w Hurghadzie w sprawie wycieczek, rezerwacji, odbioru i obsługi podróżnych w wybranym języku.",
+      "content": {
+        "heroHeadline": "Skontaktuj się z naszym zespołem wycieczek w Hurghadzie",
+        "heroSubtitle": "Skontaktuj się z Awesome Adventure Tours, aby porównać opublikowane wycieczki, poznać zasady odbioru, sprawdzić dane rezerwacji i przygotować pobyt w Egipcie.",
+        "sections": [
+          {
+            "title": "Porozmawiaj z naszym zespołem",
+            "content": "Zadzwoń pod numer +20 151 5212741, jeśli masz pytania dotyczące opublikowanych wycieczek, rezerwacji i praktycznych informacji podróżnych. Jeśli pytanie dotyczy konkretnej wycieczki, podaj jej nazwę lub prześlij link do strony, preferowaną datę podróży i liczbę uczestników. Dzięki temu nasz zespół będzie mógł lepiej Ci pomóc. W sprawach dotyczących istniejącej rezerwacji przygotuj numer rezerwacji, abyśmy mogli znaleźć właściwe zgłoszenie."
+          },
+          {
+            "title": "Odwiedź nasze biuro w Hurghadzie",
+            "content": "Nasze biuro znajduje się na 2. piętrze Bostan Cafe, Madres, Hurghada, gubernatorstwo Morza Czerwonego, Egipt. Jeśli chcesz spotkać się z nami osobiście, skontaktuj się wcześniej, aby omówić sprawę i potwierdzić najdogodniejszy termin wizyty."
+          },
+          {
+            "title": "Pomoc w wyborze i przygotowaniu wycieczki",
+            "content": "Przed rezerwacją sprawdź na stronie wycieczki aktualną cenę początkową, czas trwania, trasę, usługi wliczone w cenę, wyłączenia, ograniczenia wiekowe, informacje o odbiorze i zasady anulowania. Szczegóły mogą różnić się w zależności od wycieczki i zmieniać z przyczyn operacyjnych. Jeśli coś jest niejasne, zadaj nam pytania dotyczące konkretnej wycieczki przed rezerwacją. W sprawach odbioru podaj nazwę hotelu lub preferowane miejsce spotkania oraz destynację wycieczki."
+          },
+          {
+            "title": "Obsługa podróżnych z całego świata",
+            "content": "Obsługujemy podróżnych z różnych krajów i możemy komunikować się z klientami w preferowanym przez nich języku. Podczas kontaktu poinformuj nas, w jakim języku chcesz rozmawiać. Dostępność przewodnika mówiącego w danym języku zależy od wycieczki i daty wypłynięcia. Sprawdź opcje dla swojej podróży, zamiast zakładać, że każda wycieczka jest dostępna we wszystkich językach."
+          },
+          {
+            "title": "Bezpieczna rezerwacja i płatność",
+            "content": "Korzystaj z formularza rezerwacji i instrukcji dotyczących płatności dołączonych do rezerwacji. Nie wysyłaj haseł, pełnych numerów kart płatniczych ani kodów bezpieczeństwa w zwykłych wiadomościach. Przed potwierdzeniem rezerwacji zawsze sprawdź ostateczne podsumowanie, datę, dane uczestników i cenę."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Odkryj więcej",
+          "bookNow": "Rezerwuj teraz"
+        }
+      }
+    }
+  ]
+}

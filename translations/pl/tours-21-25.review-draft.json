@@ -1,0 +1,358 @@
+{
+  "schema_version": 1,
+  "locale": "pl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "tour": 5,
+    "source_records": 5
+  },
+  "records": [
+    {
+      "entity_type": "tour",
+      "entity_key": "1ecd1710-72ff-4903-a88c-bc301b5b2d7f",
+      "source_slug": "giftun-island-orange-bay-yacht-trip-with-snorkeling-lunch",
+      "translated_slug": "giftun-island-orange-bay-rejs-jachtem-snorkeling-lunch",
+      "locale": "pl",
+      "title": "Rejs jachtem na wyspę Giftun i Orange Bay ze snorkelingiem i lunchem",
+      "summary": "Spędź wspaniały dzień na Morzu Czerwonym podczas rejsu jachtem z Hurghady na Orange Bay i wyspę Giftun. Odkryj kolorowe rafy koralowe podczas dwóch postojów na snorkeling, odpocznij na pięknej białej, piaszczystej plaży i delektuj się lunchem w formie bufetu z orzeźwiającymi napojami na pokładzie.",
+      "seo_title": "Rejs jachtem na Orange Bay i wyspę Giftun ze snorkelingiem i lunchem",
+      "seo_description": "Zarezerwuj rejs jachtem z Hurghady na Orange Bay i wyspę Giftun z dwoma postojami na snorkeling, lunchem w formie bufetu, napojami i transferem hotelowym.",
+      "duration": "Cały dzień (około 7 godzin)",
+      "pickup_info": "Bezpłatny odbiór i powrót do hoteli w całej Hurghadzie.",
+      "cancellation_policy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+      "age_restrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+      "content": {
+        "title": "Rejs jachtem na wyspę Giftun i Orange Bay ze snorkelingiem i lunchem",
+        "description": "Ucieknij od stałego lądu i odkryj piękno Morza Czerwonego podczas całodniowej wycieczki łodzią na Orange Bay i wyspę Giftun.\n\nDzień rozpocznie się od odbioru z hotelu w Hurghadzie i komfortowego transferu do mariny. Wejdź na pokład przestronnego jachtu i ciesz się malowniczym rejsem po czystych, błękitnych wodach, podziwiając po drodze piękne widoki wybrzeża.\n\nPrzygoda obejmuje dwa postoje na snorkeling przy różnych rafach. Odkrywaj kolorowe formacje koralowe i podziwiaj fascynujące życie podwodne Morza Czerwonego. Towarzyszyć Ci będzie profesjonalny instruktor snorkelingu, dzięki czemu doświadczenie jest odpowiednie zarówno dla początkujących, jak i doświadczonych pływaków.\n\nNastępnie popłyniesz na Orange Bay, znaną z miękkiego, białego piasku i płytkiej turkusowej wody. Spędź około dwóch spokojnych godzin na wyspie: pływaj, opalaj się, rób zdjęcia lub po prostu ciesz się spokojną atmosferą plaży.\n\nPo powrocie na pokład będzie czekał świeżo przygotowany lunch w formie bufetu, sezonowe owoce oraz nielimitowana woda mineralna, napoje bezalkoholowe, herbata i kawa. Odpocznij na pokładzie i podziwiaj widoki, zanim jacht wróci do mariny w Hurghadzie.\n\nW cenie są transfery hotelowe, sprzęt do snorkelingu, wstęp na wyspę, lunch i napoje — to wspaniały sposób, aby podczas jednego niezapomnianego dnia poznać najważniejsze atrakcje Morza Czerwonego.\n\nChcesz czegoś więcej? Możesz rozszerzyć wycieczkę o nurkowanie próbne, lot parasailingowy lub prywatny rejs motorówką na Orange Bay.",
+        "durationLabel": "Cały dzień (około 7 godzin)",
+        "highlights": [
+          "Popłyń przez Morze Czerwone na Orange Bay i wyspę Giftun.",
+          "Skorzystaj z dwóch postojów na snorkeling z przewodnikiem przy pięknych rafach koralowych.",
+          "Odkryj kolorowe ryby i fascynujący podwodny świat.",
+          "Odpocznij około dwóch godzin na białej, piaszczystej plaży Orange Bay.",
+          "Odśwież się nielimitowaną wodą mineralną, napojami bezalkoholowymi, herbatą i kawą.",
+          "Delektuj się świeżo przygotowanym lunchem w formie bufetu na pokładzie.",
+          "Podróżuj wygodnie dzięki odbiorowi i powrotowi do hotelu w Hurghadzie."
+        ],
+        "itinerary": [],
+        "included": [
+          "Odbiór i powrót do hoteli w Hurghadzie.",
+          "Transfery w obie strony nowoczesnym pojazdem z klimatyzacją.",
+          "Całodniowy rejs jachtem na Orange Bay i wyspę Giftun.",
+          "Opłaty za wstęp do Parku Narodowego Wyspy Giftun i Orange Bay.",
+          "Dwa postoje na snorkeling z profesjonalnym instruktorem.",
+          "Sprzęt do snorkelingu: maska, płetwy i kamizelka ratunkowa.",
+          "Lunch w formie bufetu na pokładzie.",
+          "Świeże owoce sezonowe.",
+          "Nielimitowana woda mineralna i napoje bezalkoholowe.",
+          "Herbata i kawa.",
+          "Prysznice ze słodką wodą na pokładzie.",
+          "Wszystkie obowiązujące opłaty serwisowe."
+        ],
+        "excluded": [
+          "Transfer z Makadi Bay, Sahl Hasheesh lub El Gouny (dostępny za dopłatą).",
+          "Transfer z Safagi lub Soma Bay (dostępny za dopłatą).",
+          "Nurkowanie próbne (dostępne w pakiecie nurkowym).",
+          "Parasailing (dostępny w pakiecie parasailingowym).",
+          "Zdjęcia i filmy.",
+          "Tort urodzinowy i inne opcjonalne dodatki.",
+          "Usługi niewymienione wyraźnie w elementach wliczonych w cenę."
+        ],
+        "faqs": [
+          {
+            "question": "Czy sprzęt do snorkelingu jest wliczony w cenę, czy muszę zabrać własny?",
+            "answer": "Na pokładzie dostępne są bezpłatne, dezynfekowane maski, rurki i płetwy w rozmiarach dla dorosłych i dzieci.",
+            "section": "faq"
+          },
+          {
+            "question": "Czy osoby, które nie potrafią pływać, mogą bezpiecznie uczestniczyć?",
+            "answer": "Tak. Dostępne są kamizelki ratunkowe zatwierdzone przez straż przybrzeżną, a certyfikowani instruktorzy nurkowania pomagają gościom w wodzie.",
+            "section": "faq"
+          }
+        ],
+        "pickupInfo": "Bezpłatny odbiór i powrót do hoteli w całej Hurghadzie.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+        "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+        "labels": {
+          "highlights": "Najważniejsze atrakcje",
+          "itinerary": "Plan wycieczki",
+          "included": "W cenie",
+          "excluded": "Nie w cenie",
+          "faqs": "Najczęstsze pytania",
+          "pickupInfo": "Informacje o odbiorze",
+          "cancellationPolicy": "Zasady anulowania",
+          "ageRestrictions": "Ograniczenia wiekowe",
+          "bookNow": "Rezerwuj teraz",
+          "browseMore": "Zobacz więcej wycieczek"
+        }
+      }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "17e6cedc-b281-4528-a42b-35faee49ac57",
+      "source_slug": "cairo-pyramids-sphinx-egyptian-museum-day-trip-from-sharm-el-sheikh",
+      "translated_slug": "kair-piramidy-sfinks-muzeum-egipskie-wycieczka-sharm",
+      "locale": "pl",
+      "title": "Jednodniowa wycieczka z Sharm el-Sheikh do piramid w Kairze, Sfinksa i Muzeum Egipskiego",
+      "summary": "Wyrusz z Sharm el-Sheikh do Kairu podczas niezapomnianej podróży przez historię starożytnego Egiptu. Odkryj legendarne piramidy w Gizie, stań twarzą w twarz z Wielkim Sfinksem i poznaj skarby Muzeum Egipskiego z wykwalifikowanym egiptologiem. Lunch i transfery hotelowe są wliczone w cenę.",
+      "seo_title": "Kair: piramidy, Sfinks i Muzeum Egipskie z Sharm el-Sheikh",
+      "seo_description": "Odkryj piramidy w Gizie, Wielkiego Sfinksa i Muzeum Egipskie podczas jednodniowej wycieczki z Sharm el-Sheikh z przewodnikiem i lunchem.",
+      "duration": "Cały dzień (około 24 godzin)",
+      "pickup_info": "Bezpłatny odbiór i powrót do hoteli w całym Sharm el-Sheikh.",
+      "cancellation_policy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+      "age_restrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+      "content": {
+        "title": "Jednodniowa wycieczka z Sharm el-Sheikh do piramid w Kairze, Sfinksa i Muzeum Egipskiego",
+        "description": "Wykorzystaj pobyt w Sharm el-Sheikh i wybierz się w niezapomnianą podróż do historycznej stolicy Egiptu. Ta wycieczka prowadzi z wybrzeża Morza Czerwonego do serca starożytnej cywilizacji egipskiej, gdzie czekają jedne z najbardziej niezwykłych zabytków świata.\n\nPrzygoda rozpoczyna się późnym wieczorem od odbioru z hotelu w Sharm el-Sheikh. Rozsiądź się wygodnie podczas podróży do Kairu. Na miejscu powita Cię egiptolog, który opowie o fascynującej historii miasta i jego starożytnych skarbach.\n\nPierwszym ważnym przystankiem będzie Muzeum Egipskie w Kairze, w którym znajduje się niezwykła kolekcja starożytnych przedmiotów z tysięcy lat historii. Przejdź przez sale i odkryj wyjątkowe posągi, przedmioty królewskie oraz skarby archeologiczne opowiadające historię wielkich cywilizacji Egiptu.\n\nNastępnie odwiedzisz płaskowyż w Gizie, gdzie imponujące piramidy Cheopsa, Chefrena i Mykerinosa górują nad pustynnym krajobrazem. Podziwiaj te niezwykłe budowle, poznaj ich konstrukcję i znaczenie historyczne oraz zrób niezapomniane zdjęcia.\n\nStaniesz również twarzą w twarz z Wielkim Sfinksem — legendarnym pomnikiem o ciele lwa i twarzy króla, który od tysięcy lat strzeże płaskowyżu w Gizie.\n\nPo zwiedzaniu starożytnych zabytków zjesz lunch w lokalnej restauracji w Gizie. Będzie też czas, aby poczuć atmosferę okolicy i zrobić zakupy.\n\nPod koniec wyjątkowego dnia rozpoczniesz podróż powrotną do Sharm el-Sheikh. Wrócisz do hotelu po imponującym spotkaniu z historią i dziedzictwem Kairu.\n\nOd królewskich skarbów starożytności po ponadczasowe piramidy w Gizie — ta wycieczka łączy jedne z najbardziej znanych atrakcji Egiptu w jeden niezwykły dzień.",
+        "durationLabel": "Cały dzień (około 24 godzin)",
+        "highlights": [
+          "Odkryj Kair podczas jednodniowej wycieczki z Sharm el-Sheikh.",
+          "Zwiedź Muzeum Egipskie i jego niezwykłą kolekcję starożytnych egipskich przedmiotów.",
+          "Odwiedź legendarne piramidy w Gizie, jeden z najsłynniejszych zabytków starożytności.",
+          "Zobacz Wielką Piramidę Cheopsa oraz piramidy Chefrena i Mykerinosa.",
+          "Stań twarzą w twarz z imponującym Wielkim Sfinksem.",
+          "Zjedz lunch w lokalnej restauracji w Gizie.",
+          "Poznaj historię starożytnego Egiptu z wykwalifikowanym egiptologiem.",
+          "Skorzystaj z okazji do zakupów podczas wizyty w Kairze.",
+          "Podróżuj dzięki odbiorowi i powrotowi do hoteli w Sharm el-Sheikh."
+        ],
+        "itinerary": [],
+        "included": [
+          "Odbiór i powrót do hoteli w Sharm el-Sheikh.",
+          "Transport w obie strony między Sharm el-Sheikh a Kairem.",
+          "Transport klimatyzowanym pojazdem.",
+          "Wykwalifikowany egiptolog jako przewodnik.",
+          "Bilety wstępu do Muzeum Egipskiego.",
+          "Bilety wstępu na teren piramid w Gizie i do Wielkiego Sfinksa.",
+          "Lunch w lokalnej restauracji w Gizie.",
+          "Przystanki na zakupy w ramach programu wycieczki."
+        ],
+        "excluded": [
+          "Opcjonalny rejs łodzią po Nilu.",
+          "Wstęp do wnętrza piramidy króla Cheopsa, jeśli dostępny jako bilet dodatkowy.",
+          "Egipska wiza wjazdowa lub wymagane formalności wizowe.",
+          "Podatki rządowe i opłaty serwisowe (€10 za osobę, zgodnie z informacją organizatora).",
+          "Napoje podczas lunchu.",
+          "Wydatki osobiste i zakupy.",
+          "Napiwki.",
+          "Usługi niewymienione wyraźnie w elementach wliczonych w cenę."
+        ],
+        "faqs": [],
+        "pickupInfo": "Bezpłatny odbiór i powrót do hoteli w całym Sharm el-Sheikh.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+        "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+        "labels": {
+          "highlights": "Najważniejsze atrakcje",
+          "itinerary": "Plan wycieczki",
+          "included": "W cenie",
+          "excluded": "Nie w cenie",
+          "faqs": "Najczęstsze pytania",
+          "pickupInfo": "Informacje o odbiorze",
+          "cancellationPolicy": "Zasady anulowania",
+          "ageRestrictions": "Ograniczenia wiekowe",
+          "bookNow": "Rezerwuj teraz",
+          "browseMore": "Zobacz więcej wycieczek"
+        }
+      }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "a66d28fb-505c-4cf6-b326-c47bbabe2624",
+      "source_slug": "hurghada-desert-quad-safari-atv-adventure-camel-ride-bedouin-village",
+      "translated_slug": "hurghada-safari-quadami-atv-wielblad-wioska-beduinow",
+      "locale": "pl",
+      "title": "Safari quadem po pustyni w Hurghadzie: przygoda ATV, przejażdżka na wielbłądzie i wioska Beduinów",
+      "summary": "Odkryj pełną przygód stronę Hurghady podczas ekscytującej przejażdżki ATV przez piękne pustynne krajobrazy. Podążaj za profesjonalnym instruktorem po złotych, piaszczystych szlakach, odwiedź tradycyjną wioskę Beduinów i wybierz się na spokojną przejażdżkę na wielbłądzie. Zrób przerwę na autentyczną herbatę ziołową i poznaj serdeczną gościnność pustynnego życia. Wybierz wyjazd rano, po południu lub o zachodzie słońca i przeżyj niezapomnianą ucieczkę od miasta.",
+      "seo_title": "Safari po pustyni w Hurghadzie quadem, przejażdżka na wielbłądzie i wioska Beduinów | Awesome Adventure Tours",
+      "seo_description": "Zarezerwuj safari quadem w Hurghadzie z 45-minutową jazdą ATV, wizytą w wiosce Beduinów, herbatą ziołową i przejażdżką na wielbłądzie. Wybierz godzinę wyjazdu.",
+      "duration": "Pół dnia (około 3 godziny)",
+      "pickup_info": "Bezpłatny odbiór i powrót do hotelowego lobby w całej Hurghadzie.",
+      "cancellation_policy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+      "age_restrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+      "content": {
+        "title": "Safari quadem po pustyni w Hurghadzie: przygoda ATV, przejażdżka na wielbłądzie i wioska Beduinów",
+        "description": "## Poczuj dreszczyk emocji na egipskiej pustyni\n\nSzukasz czegoś innego podczas wakacji w Hurghadzie? Zostaw zgiełk kurortu za sobą i odkryj piękno otaczającej pustyni podczas ekscytującego safari quadem ATV.\n\nPrzygoda rozpoczyna się od wygodnego odbioru z hotelu w Hurghadzie. Zostaniesz przewieziony na stację quadów na skraju pustyni, gdzie profesjonalny przewodnik safari powita Cię i przygotuje wszystko do jazdy.\n\n## Przygotuj się na przygodę quadem\n\nPrzed wyjazdem otrzymasz instruktaż bezpieczeństwa i poznasz podstawową obsługę pojazdu ATV. Będzie również czas na krótką jazdę próbną, abyś mógł oswoić się z pojazdem i pewniej wyruszyć na pustynię.\n\nGdy wszyscy będą gotowi, podążysz za instruktorem podczas ekscytującej 45-minutowej przejażdżki quadem po otwartym piasku. Poczuj świeży pustynny wiatr, podziwiaj zmieniający się krajobraz i ciesz się jazdą przez złote tereny wokół Hurghady.\n\nNiezależnie od tego, czy po raz pierwszy wsiadasz na quada, czy masz już doświadczenie w jeździe terenowej, przewodnik zadba o przyjemny przebieg wycieczki i tempo dopasowane do grupy.\n\n## Poznaj serdeczną gościnność Beduinów\n\nPo przejażdżce odpoczniesz w tradycyjnej wiosce Beduinów i poznasz spokojniejszą stronę pustynnego życia.\n\nSkosztuj świeżo przygotowanej herbaty ziołowej, spotkaj lokalnych mieszkańców i dowiedz się więcej o zwyczajach oraz tradycjach, które od pokoleń kształtują życie na pustyni.\n\nTo miły moment, aby się zrelaksować, nacieszyć otoczeniem i poznać gościnną kulturę Beduinów.\n\n## Wybierz się na tradycyjną przejażdżkę na wielbłądzie\n\nDoświadczenie pustyni nie byłoby pełne bez spotkania z jednym z najbardziej charakterystycznych zwierząt tego regionu.\n\nWsiądź na wielbłąda i wybierz się na spokojną przejażdżkę po piaszczystym krajobrazie. W przeciwieństwie do szybkiej jazdy quadem ta relaksująca atrakcja pozwala podziwiać pustynię w wolniejszym tempie i zrobić piękne zdjęcia.\n\n## Wybierz godzinę wyjazdu, która Ci odpowiada\n\nDopasuj wycieczkę do swoich planów, wybierając wyjazd rano, po południu lub o zachodzie słońca.\n\nPoranna przejażdżka to orzeźwiający początek dnia, a popołudniowe i wieczorne safari oferują zupełnie inną atmosferę, gdy światło zmienia się nad pustynnym krajobrazem.\n\nPo zakończeniu atrakcji wrócisz na stację safari, a następnie wygodny transfer odwiezie Cię do hotelu.\n\nOd emocji podczas jazdy quadem po prostą przyjemność picia herbaty w wiosce Beduinów — to doświadczenie łączy przygodę, lokalną kulturę i niezapomniane chwile na egipskiej pustyni.",
+        "durationLabel": "Pół dnia (około 3 godziny)",
+        "highlights": [
+          "Przeżyj ekscytującą 45-minutową przejażdżkę quadem po pustyni.",
+          "Jedź przez złote, piaszczyste krajobrazy wokół Hurghady.",
+          "Przed wyjazdem otrzymaj instruktaż bezpieczeństwa i odbądź krótką jazdę próbną.",
+          "Odwiedź tradycyjną wioskę Beduinów i poznaj lokalne tradycje pustynne.",
+          "Poznaj autentyczną gościnność Beduinów przy filiżance herbaty ziołowej.",
+          "Wybierz się na spokojną przejażdżkę na wielbłądzie po pustyni.",
+          "Wybierz wyjazd rano, po południu lub o zachodzie słońca.",
+          "Podróżuj wygodnie dzięki odbiorowi i powrotowi do hotelu w Hurghadzie.",
+          "Wybierz wspólne safari grupowe lub prywatne doświadczenie."
+        ],
+        "itinerary": [],
+        "included": [
+          "Odbiór i powrót do hoteli w Hurghadzie i okolicznych obszarach.",
+          "Transport klimatyzowanym pojazdem.",
+          "45-minutowa przejażdżka quadem ATV.",
+          "Profesjonalny instruktor safari po pustyni.",
+          "Kask ochronny.",
+          "Instruktaż bezpieczeństwa i jazda próbna.",
+          "Wizyta w tradycyjnej wiosce Beduinów.",
+          "Przejażdżka na wielbłądzie.",
+          "Tradycyjna herbata ziołowa Beduinów.",
+          "Jedna butelka wody mineralnej."
+        ],
+        "excluded": [
+          "Chusta beduińska (dostępna opcjonalnie).",
+          "Gogle ochronne (dostępne opcjonalnie).",
+          "Dodatkowe opłaty za transfer z wybranych okolicznych obszarów.",
+          "Profesjonalne usługi fotograficzne i wideo.",
+          "Wydatki osobiste.",
+          "Napiwki.",
+          "Usługi niewymienione wyraźnie w elementach wliczonych w cenę."
+        ],
+        "faqs": [],
+        "pickupInfo": "Bezpłatny odbiór i powrót do hotelowego lobby w całej Hurghadzie.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+        "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+        "labels": {
+          "highlights": "Najważniejsze atrakcje",
+          "itinerary": "Plan wycieczki",
+          "included": "W cenie",
+          "excluded": "Nie w cenie",
+          "faqs": "Najczęstsze pytania",
+          "pickupInfo": "Informacje o odbiorze",
+          "cancellationPolicy": "Zasady anulowania",
+          "ageRestrictions": "Ograniczenia wiekowe",
+          "bookNow": "Rezerwuj teraz",
+          "browseMore": "Zobacz więcej wycieczek"
+        }
+      }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "b2303c4d-0803-4526-9246-31a19b8901c3",
+      "source_slug": "grand-egyptian-museum-guided-tour-with-entry-ticket",
+      "translated_slug": "wielkie-muzeum-egipskie-zwiedzanie-z-biletem-wstepu",
+      "locale": "pl",
+      "title": "Zwiedzanie Wielkiego Muzeum Egipskiego z biletem wstępu",
+      "summary": "Odkryj cuda starożytnego Egiptu podczas zwiedzania Wielkiego Muzeum Egipskiego w Kairze. Zobacz niezwykłe skarby faraonów, podziwiaj kolosalny posąg Ramzesa II, przejdź się imponującymi Wielkimi Schodami i poznaj fascynującą historię Tutanchamona z profesjonalnym egiptologiem. Możesz spotkać się z przewodnikiem bezpośrednio przy muzeum lub wybrać wygodny transfer z hotelu w Kairze lub Gizie.",
+      "seo_title": "Zwiedzanie Wielkiego Muzeum Egipskiego z biletem wstępu | Awesome Adventure Tours",
+      "seo_description": "Zarezerwuj zwiedzanie Wielkiego Muzeum Egipskiego w Kairze z profesjonalnym egiptologiem, biletem wstępu i opcjonalnym transferem hotelowym.",
+      "duration": "Pół dnia (około 3 godziny)",
+      "pickup_info": "Bezpłatny odbiór i powrót do hotelowego lobby w Kairze i Gizie wliczony w wybrane opcje.",
+      "cancellation_policy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+      "age_restrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+      "content": {
+        "title": "Zwiedzanie Wielkiego Muzeum Egipskiego z biletem wstępu",
+        "description": "### Wejdź do świata starożytnego Egiptu w Wielkim Muzeum Egipskim\n\nWyobraź sobie, że stajesz twarzą w twarz z zabytkami, które przetrwały tysiące lat, otoczony opowieściami o królach, królowych i bogach jednej z najbardziej fascynujących cywilizacji w historii ludzkości.\n\nWielkie Muzeum Egipskie to znacznie więcej niż miejsce, w którym ogląda się starożytne przedmioty. To okazja, by zbliżyć się do przeszłości Egiptu i odkryć historie kryjące się za niektórymi z jego najbardziej niezwykłych skarbów.\n\nWizyta rozpoczyna się w muzeum, gdzie spotkasz profesjonalnego egiptologa i rozpoczniesz zwiedzanie imponującej kolekcji. Jednym z pierwszych zabytków, które zobaczysz, jest ogromny posąg Ramzesa II, dumnie stojący w pięknym atrium wejściowym.\n\nNastępnie przejdziesz Wielkimi Schodami, otoczonymi posągami i starożytnymi zabytkami odzwierciedlającymi potęgę oraz artystyczne osiągnięcia egipskich faraonów. Sale muzealne prowadzą przez różne okresy historii starożytnego Egiptu. Wyjątkowe przedmioty i opowieści ożywiają przeszłość.\n\nJednym z najbardziej niezapomnianych punktów wizyty jest odkrywanie skarbów Tutanchamona. Od pięknie zdobionej biżuterii i królewskich przedmiotów po niezwykłe artefakty grobowe — każdy obiekt pozwala zajrzeć w życie i dziedzictwo młodego króla.\n\nPodczas zwiedzania egiptolog podzieli się ciekawymi szczegółami, wiedzą historyczną i mniej znanymi opowieściami. Dzięki temu wizyta staje się znacznie ciekawsza niż zwykły spacer po salach wystawowych.\n\nMożesz spotkać się z przewodnikiem bezpośrednio przy muzeum lub ułatwić sobie wizytę, wybierając odbiór i powrót do hotelu w Kairze lub Gizie komfortowym pojazdem z klimatyzacją.\n\nPo zakończeniu zwiedzania nie musisz od razu wychodzić. Poświęć chwilę na ponowne obejrzenie ulubionych wystaw, poczuj atmosferę muzeum lub zrób jeszcze kilka pięknych zdjęć.\n\nNiezależnie od tego, czy odwiedzasz Egipt po raz pierwszy, czy po prostu chcesz dowiedzieć się więcej o jego niezwykłej historii, to wspaniały sposób na spędzenie kilku godzin w Kairze.",
+        "durationLabel": "Pół dnia (około 3 godziny)",
+        "highlights": [
+          "Odkryj imponujące Wielkie Muzeum Egipskie z profesjonalnym egiptologiem.",
+          "Zobacz majestatyczny posąg Ramzesa II w wielkim atrium muzeum.",
+          "Przejdź się spektakularnymi Wielkimi Schodami, otoczonymi zabytkami starożytnego Egiptu.",
+          "Odkryj niezwykłe przedmioty z tysięcy lat historii Egiptu.",
+          "Poznaj legendarne skarby króla Tutanchamona.",
+          "Posłuchaj fascynujących opowieści i poznaj historyczne fakty od eksperckiego przewodnika.",
+          "Wybierz spotkanie bezpośrednio przy muzeum lub wygodny transfer z hotelu."
+        ],
+        "itinerary": [],
+        "included": [
+          "Bilet wstępu do Wielkiego Muzeum Egipskiego z wcześniej zarezerwowanym przedziałem czasowym.",
+          "Zwiedzanie muzeum z profesjonalnym egiptologiem.",
+          "Przewodnik na żywo w wybranym dostępnym języku.",
+          "Audioprzewodnik w wybranych językach, jeśli jest dostępny.",
+          "Odbiór i powrót do hoteli w Kairze lub Gizie (tylko w opcjach z transferem).",
+          "Komfortowy transport nowoczesnym pojazdem z klimatyzacją (w opcjach z transferem).",
+          "Wszystkie obowiązujące podatki i opłaty serwisowe."
+        ],
+        "excluded": [
+          "Wystawa immersyjna poświęcona Tutanchamonowi (dostępna jako opcjonalny dodatek).",
+          "Lunch, napoje i przekąski.",
+          "Wydatki osobiste i pamiątki.",
+          "Napiwki dla przewodnika i kierowcy.",
+          "Pozwolenia na profesjonalną fotografię lub filmowanie.",
+          "Usługi niewymienione wyraźnie w elementach wliczonych w cenę."
+        ],
+        "faqs": [],
+        "pickupInfo": "Bezpłatny odbiór i powrót do hotelowego lobby w Kairze i Gizie wliczony w wybrane opcje.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+        "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+        "labels": {
+          "highlights": "Najważniejsze atrakcje",
+          "itinerary": "Plan wycieczki",
+          "included": "W cenie",
+          "excluded": "Nie w cenie",
+          "faqs": "Najczęstsze pytania",
+          "pickupInfo": "Informacje o odbiorze",
+          "cancellationPolicy": "Zasady anulowania",
+          "ageRestrictions": "Ograniczenia wiekowe",
+          "bookNow": "Rezerwuj teraz",
+          "browseMore": "Zobacz więcej wycieczek"
+        }
+      }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "cc09c496-09f9-4036-aa69-fe5f20208a3d",
+      "source_slug": "old-cairo-full-day-tour-islamic-coptic-heritage-with-lunch",
+      "translated_slug": "stary-kair-calodniowa-wycieczka-dziedzictwo-islamskie-koptyjskie",
+      "locale": "pl",
+      "title": "Stary Kair: całodniowa wycieczka po dziedzictwie islamskim i koptyjskim z lunchem",
+      "summary": "Odkryj fascynującą historię Starego Kairu podczas prywatnej wycieczki po islamskim i koptyjskim dziedzictwie miasta. Zwiedź imponującą Cytadelę Saladyna, podziwiaj architekturę zabytkowych meczetów, odwiedź starożytne kościoły koptyjskie i przejdź się tętniącymi życiem uliczkami bazaru Khan El Khalili. Posłuchaj opowieści profesjonalnego egiptologa i delektuj się tradycyjnym egipskim lunchem oraz komfortowym transferem hotelowym.",
+      "seo_title": "Stary Kair: całodniowa wycieczka po dziedzictwie islamskim i koptyjskim z lunchem | Awesome Adventure Tours",
+      "seo_description": "Odkryj Stary Kair podczas prywatnej wycieczki obejmującej Cytadelę Saladyna, zabytkowe meczety, kościoły koptyjskie, Khan El Khalili i egipski lunch.",
+      "duration": "Cały dzień (około 7 godzin)",
+      "pickup_info": "Bezpłatny odbiór i powrót do hoteli w Kairze i Gizie wliczony w cenę.",
+      "cancellation_policy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+      "age_restrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+      "content": {
+        "title": "Stary Kair: całodniowa wycieczka po dziedzictwie islamskim i koptyjskim z lunchem",
+        "description": "## Odkryj opowieści, ulice i dziedzictwo Starego Kairu\n\nKair to miasto o wielu warstwach historii. Niektóre z najbardziej fascynujących opowieści kryją się w starych uliczkach, zabytkowych meczetach i wiekowych kościołach.\n\nTa prywatna całodniowa wycieczka zabierze Cię poza typowe atrakcje turystyczne, do serca bogatego dziedzictwa kulturowego i religijnego miasta. Wraz z własnym profesjonalnym egiptologiem odkryjesz miejsca, które kształtowały Kair przez kolejne pokolenia, i poznasz ludzi, tradycje oraz historie, które się z nimi wiążą.\n\nDzień rozpocznie się od odbioru z hotelu w Kairze lub Gizie. Odpocznij w prywatnym pojeździe z klimatyzacją podczas przejazdu do historycznej Cytadeli Saladyna, jednego z najbardziej niezwykłych zabytków Kairu. Cytadela góruje nad miastem i oferuje piękne panoramiczne widoki. Imponujący Meczet Muhammada Alego zachwyca ogromnymi kopułami, eleganckimi detalami i pięknym wnętrzem.\n\nNastępnie udasz się na historyczne ulice islamskiego Kairu. Spacer ulicą Al-Muizz przypomina podróż w czasie: otaczają Cię stare meczety, tradycyjne budynki, zdobione wejścia i tętniące życiem lokalne sklepy. Przewodnik zwróci Twoją uwagę na drobne szczegóły, które sprawiają, że ta część Kairu jest tak wyjątkowa.\n\nPo poznaniu islamskiej części miasta wycieczka poprowadzi Cię do serca koptyjskiego Kairu, dzielnicy pełnej historii religijnej i spokojnych zakątków. Odwiedź słynny Kościół Zawieszony, znany z niezwykłego położenia nad starożytną rzymską bramą, a także kościół świętych Sergiusza i Bakchusa, tradycyjnie związany z opowieścią o podróży Świętej Rodziny przez Egipt.\n\nJednym z najciekawszych aspektów tej podróży jest możliwość zobaczenia, jak różne tradycje religijne stały się częścią tożsamości Kairu. Kościoły, meczety i historyczne dzielnice znajdują się blisko siebie, a każde z tych miejsc ma własne opowieści i cechy architektoniczne.\n\nW porze lunchu odpoczniesz w lokalnej restauracji i skosztujesz tradycyjnych potraw egipskich, zanim wyruszysz na dalsze zwiedzanie.\n\nDzień zakończy się wizytą na słynnym bazarze Khan El Khalili. Tutaj naprawdę poczujesz codzienną energię Kairu. Przejdź się wąskimi uliczkami targowymi pełnymi kolorowych lampionów, przypraw, ręcznie robionych pamiątek, biżuterii i tradycyjnego rzemiosła. Poświęć czas na zakupy, poczuj atmosferę i być może znajdź wyjątkową pamiątkę z Egiptu.\n\nPrzez cały dzień prywatny przewodnik będzie dzielił się opowieściami i szczegółami historycznymi w przystępny i ciekawy sposób, nadając każdemu przystankowi dodatkowe znaczenie.\n\nNiezależnie od tego, czy interesuje Cię architektura, historia i religia, czy po prostu chcesz poznać inną stronę Kairu, ta wycieczka pozwoli Ci odkryć miasto poza słynnymi piramidami.\n\nPo zakończeniu wycieczki kierowca wygodnie odwiezie Cię do hotelu.",
+        "durationLabel": "Cały dzień (około 7 godzin)",
+        "highlights": [
+          "Wybierz się na prywatną całodniową podróż przez fascynującą historię Starego Kairu.",
+          "Odwiedź historyczną Cytadelę Saladyna i podziwiaj imponującą architekturę.",
+          "Zwiedź piękny Meczet Muhammada Alego, znany z eleganckich kopuł i panoramicznych widoków na miasto.",
+          "Przejdź się ulicą Al-Muizz i odkryj urok średniowiecznego islamskiego Kairu.",
+          "Odwiedź historyczny Kościół Zawieszony, jeden z najbardziej niezwykłych zabytków koptyjskich w dzielnicy.",
+          "Odwiedź kościół świętych Sergiusza i Bakchusa, tradycyjnie związany z podróżą Świętej Rodziny przez Egipt.",
+          "Odkryj wyjątkowe połączenie dziedzictwa islamskiego i koptyjskiego, które czyni Kair tak niezwykłym.",
+          "Delektuj się tradycyjnym egipskim lunchem w lokalnej restauracji.",
+          "Poznaj kolorowe sklepy, przyprawy, lampiony i tradycyjne rzemiosło bazaru Khan El Khalili.",
+          "Podróżuj wygodnie z własnym egiptologiem i prywatnym transportem z klimatyzacją."
+        ],
+        "itinerary": [],
+        "included": [
+          "Prywatny pojazd z klimatyzacją na czas całej wycieczki.",
+          "Profesjonalny kierowca.",
+          "Licencjonowany egiptolog jako przewodnik.",
+          "Odbiór i powrót do hoteli w Kairze i Gizie.",
+          "Tradycyjny lunch w lokalnej restauracji.",
+          "Zimna woda mineralna w butelkach podczas podróży.",
+          "Wszystkie obowiązujące podatki i opłaty serwisowe."
+        ],
+        "excluded": [
+          "Bilety wstępu do zabytków (chyba że wybrano opcję obejmującą opłaty za wstęp).",
+          "Tradycyjny godzinny rejs feluką po Nilu (opcjonalny dodatek).",
+          "Dodatkowe jedzenie i napoje niewliczone w lunch.",
+          "Wydatki osobiste i zakupy.",
+          "Napiwki dla przewodnika i kierowcy.",
+          "Usługi niewymienione wyraźnie w elementach wliczonych w cenę."
+        ],
+        "faqs": [],
+        "pickupInfo": "Bezpłatny odbiór i powrót do hoteli w Kairze i Gizie wliczony w cenę.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.",
+        "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
+        "labels": {
+          "highlights": "Najważniejsze atrakcje",
+          "itinerary": "Plan wycieczki",
+          "included": "W cenie",
+          "excluded": "Nie w cenie",
+          "faqs": "Najczęstsze pytania",
+          "pickupInfo": "Informacje o odbiorze",
+          "cancellationPolicy": "Zasady anulowania",
+          "ageRestrictions": "Ograniczenia wiekowe",
+          "bookNow": "Rezerwuj teraz",
+          "browseMore": "Zobacz więcej wycieczek"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "locale": "nl",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "tour": 1,
+    "source_records": 1
+  },
+  "records": [
+    {
+      "entity_type": "tour",
+      "entity_key": "5a15257b-d664-4957-be77-c2cb87bd174a",
+      "source_slug": "el-gouna-jeep-desert-safari-bbq-dinner-stargazing-experience",
+      "translated_slug": "el-gouna-jeep-woestijnsafari-bbq-diner-sterren-kijken",
+      "title": "El Gouna: jeepsafari door de woestijn, barbecue en sterren kijken",
+      "summary": "Ontsnap aan de lichten van El Gouna en beleef een onvergetelijke avond in het hart van de Egyptische woestijn. Geniet van een spannende 4x4-jeepsafari door de bergen aan de Rode Zee, bekijk hoe de zon achter het woestijnlandschap verdwijnt en ervaar de traditionele Bedoeïenengastvrijheid met een heerlijk barbecuediner. Zodra de avond valt, ontdek je de magie van de woestijnhemel door een professionele telescoop en leer je meer over sterren en planeten van een sterrenkundegids.",
+      "content": {
+        "short_description": "Ontsnap aan de lichten van El Gouna en beleef een onvergetelijke avond in het hart van de Egyptische woestijn. Geniet van een spannende 4x4-jeepsafari door de bergen aan de Rode Zee, bekijk hoe de zon achter het woestijnlandschap verdwijnt en ervaar de traditionele Bedoeïenengastvrijheid met een heerlijk barbecuediner. Zodra de avond valt, ontdek je de magie van de woestijnhemel door een professionele telescoop en leer je meer over sterren en planeten van een sterrenkundegids.",
+        "description": "## Een avond vol woestijnavontuur, Bedoeïenengastvrijheid en een hemel vol sterren\n\nSommige ervaringen zijn het mooist wanneer de zon begint onder te gaan. Dit woestijnavontuur is daar een perfect voorbeeld van.\n\nLaat de levendige sfeer van El Gouna achter je en trek de prachtige Oostelijke Woestijn in voor een avond vol avontuur, lokale tradities en verwondering. Van de spanning van een 4x4-jeeprit tot de rustige schoonheid van een hemel vol sterren: dit is een kant van Egypte die veel bezoekers nooit leren kennen.\n\nJe avond begint met ophalen bij je hotel in El Gouna, gevolgd door een rit in een 4x4-voertuig de woestijn in. Terwijl de stad langzaam achter je verdwijnt, verandert het landschap in uitgestrekte vlaktes, ruige bergen en eindeloze woestijngezichten.\n\nNa een rit van ongeveer 26 kilometer door de woestijn bereik je een schilderachtige plek waar je van de zonsondergang kunt genieten. Bekijk hoe de kleuren van de hemel veranderen terwijl de zon langzaam achter de bergen verdwijnt. Dit is een prachtig moment om foto's te maken, de frisse woestijnlucht in te ademen en van de omgeving te genieten.\n\nHet avontuur gaat verder naar een traditioneel Bedoeïenenkamp, waar je met lokale gastvrijheid wordt verwelkomd. Neem plaats, geniet van een kop Bedoeïenenkruidenthee en maak kennis met de tradities en levenswijze van woestijngemeenschappen. Je krijgt ook de gelegenheid om een korte kameeltocht te maken en mooie foto's te nemen.\n\nWanneer de avond valt, staat er een heerlijk barbecuebuffet voor je klaar. Geniet van vers bereide gerechten, traditionele smaken en verfrissende frisdranken in een ontspannen Bedoeïenensfeer, midden in het vredige woestijnlandschap.\n\nMaar het meest magische deel van de avond moet nog komen.\n\nZodra het donker is en je ver weg bent van de felle stadsverlichting, kijk je omhoog en ontdek je een heel ander uitzicht op de nachtelijke hemel. Met hulp van een professionele sterrenkundegids verken je de sterren, leer je interessante feiten over het heelal en ontdek je hoe je verschillende hemellichamen kunt herkennen.\n\nKijk door een professionele telescoop en bekijk zichtbare planeten en andere fascinerende objecten aan de nachtelijke hemel van dichterbij, afhankelijk van het weer en de astronomische omstandigheden.\n\nHet is een bijzondere ervaring die avontuur, cultuur en sterrenkunde samenbrengt in één onvergetelijke avond.\n\nNa je tijd onder de sterren kun je ontspannen tijdens de jeeprit terug naar El Gouna. Je neemt herinneringen mee aan een woestijnavond die je niet snel zult vergeten.",
+        "highlights": [
+          "Beleef een spannende 4x4-jeepsafari door de prachtige Oostelijke Woestijn.",
+          "Rijd ongeveer 26 km de woestijn in, omringd door de indrukwekkende bergen van de Rode Zee.",
+          "Bekijk een prachtige zonsondergang vanaf een schilderachtig uitzichtpunt in de woestijn.",
+          "Ervaar traditionele Bedoeïenengastvrijheid in een woestijnkamp.",
+          "Maak een korte kameeltocht en leg mooie momenten vast op foto's.",
+          "Proef vers bereide Bedoeïenenthee en traditioneel brood.",
+          "Geniet van een heerlijk barbecuebuffet met frisdrank.",
+          "Verken de nachtelijke hemel met een professionele sterrenkundegids.",
+          "Bekijk zichtbare planeten en hemellichamen door een professionele telescoop.",
+          "Leer fascinerende feiten over sterren, planeten en het heelal.",
+          "Profiteer van gemakkelijk ophalen en terugbrengen bij hotels in El Gouna."
+        ],
+        "included": [
+          "Ophalen en terugbrengen bij alle hotels in El Gouna.",
+          "4x4-jeepsafari door de woestijn.",
+          "Woestijnrit van ongeveer 26 km.",
+          "Fles mineraalwater tijdens de jeeprit.",
+          "Stop op een schilderachtige plek om de zonsondergang te bekijken.",
+          "Korte kameeltocht met gelegenheid om foto's te maken.",
+          "Traditionele Bedoeïenenthee en versgebakken brood.",
+          "Barbecuebuffet in een Bedoeïenenkamp in de woestijn.",
+          "Frisdrank en mineraalwater tijdens het diner.",
+          "Sterren kijken met een professionele telescoop.",
+          "Professionele sterrenkundegids."
+        ],
+        "excluded": [
+          "Toeristenbelasting van $1 per persoon.",
+          "Persoonlijke uitgaven en souvenirs.",
+          "Extra eten en drinken dat niet bij de inbegrepen onderdelen is vermeld.",
+          "Fooien voor de gids en chauffeur.",
+          "Professionele fotografieservices.",
+          "Diensten die niet uitdrukkelijk bij de inbegrepen onderdelen zijn vermeld."
+        ],
+        "faqs": []
+      },
+      "seo_title": "El Gouna: jeepsafari, barbecue en sterren kijken in de woestijn | Awesome Adventure Tours",
+      "seo_description": "Beleef een jeepsafari vanuit El Gouna met zonsondergang, Bedoeïenenkamp, kameeltocht, barbecue en sterren kijken met een telescoop.",
+      "duration": "Hele dag (ongeveer 5 uur)",
+      "duration_type": "Hele dag",
+      "departure_time": "13:00 PM",
+      "age_restrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
+      "pickup_info": "Gratis ophalen en terugbrengen bij hotels in heel El Gouna.",
+      "cancellation_policy": "Gratis annuleren tot 24 uur vóór aanvang van de excursie."
+    }
+  ]
+}
