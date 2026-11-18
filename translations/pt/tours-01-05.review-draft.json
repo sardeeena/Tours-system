@@ -1,0 +1,381 @@
+{
+  "schema_version": 1,
+  "locale": "pt",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "tour": 5,
+    "source_records": 5
+  },
+  "records": [
+    {
+      "entity_type": "tour",
+      "entity_key": "2f2ca1a1-f0c7-4737-9700-57e801a08d99",
+      "source_slug": "ultimate-sinai-desert-safari-quad-camel-bbq-adventure",
+      "translated_slug": "safari-deserto-sinai-quadriciclo-camelo-churrasco",
+      "title": "Safari inesquecível no deserto do Sinai: quadriciclo, camelo e churrasco",
+      "summary": "Desfrute de um safari de 5 horas no deserto a partir de Sharm el-Sheikh, com passeio de quadriciclo, experiência tradicional de camelo, cultura beduína, churrasco e espetáculos orientais no coração do Sinai.",
+      "seo_title": "Safari no deserto do Sinai: quadriciclo, camelo e churrasco | Awesome Adventure Tours",
+      "seo_description": "Reserve um safari de 5 horas a partir de Sharm el-Sheikh com quadriciclos, passeio de camelo, acampamento beduíno, churrasco e espetáculos orientais.",
+      "duration": "5 horas",
+      "pickup_info": "A recolha e o regresso ao hotel estão incluídos; o transfer é realizado em veículos modernos com ar condicionado.",
+      "cancellation_policy": "Cancelamento gratuito até 24 horas antes do início da excursão.",
+      "age_restrictions": "Adequado para todas as idades. Crianças com menos de 2 anos participam gratuitamente.",
+      "content": {
+        "title": "Safari inesquecível no deserto do Sinai: quadriciclo, camelo e churrasco",
+        "description": "Deixe para trás a agitação da cidade e descubra a beleza do deserto do Sinai num safari inesquecível a partir de Sharm el-Sheikh.\n\nDesfrute de um emocionante passeio de quadriciclo pelo deserto, conheça a hospitalidade tradicional dos beduínos, faça um passeio de camelo e passe a noite num acampamento beduíno, saboreando um delicioso churrasco e assistindo a espetáculos orientais.\n\nCom recolha e regresso cómodos ao hotel, acompanhamento de um guia profissional e uma combinação de aventura e experiências culturais, este safari permite descobrir o deserto numa única excursão memorável.",
+        "durationLabel": "5 horas",
+        "highlights": [
+          "Passeio de quadriciclo pelo deserto do Sinai",
+          "Passeio de camelo",
+          "Visita a um acampamento beduíno",
+          "Chá beduíno tradicional",
+          "Vale do Eco",
+          "Jantar de churrasco",
+          "Espetáculos e apresentações orientais ao vivo",
+          "Recolha e regresso ao hotel"
+        ],
+        "itinerary": [],
+        "included": [
+          "Recolha e regresso ao hotel",
+          "Transporte em veículo com ar condicionado",
+          "Guia profissional de safari",
+          "Capacete e óculos de proteção",
+          "Passeio de quadriciclo",
+          "Passeio de camelo",
+          "Chá beduíno e pão tradicional",
+          "Jantar de churrasco / buffet",
+          "Uma garrafa de água mineral",
+          "Espetáculos orientais"
+        ],
+        "excluded": [
+          "Shisha",
+          "Serviços de fotografia",
+          "Óleos",
+          "Despesas pessoais",
+          "Transfer privado de regresso opcional",
+          "Condução privada opcional na pista"
+        ],
+        "faqs": [],
+        "pickupInfo": "A recolha e o regresso ao hotel estão incluídos; o transfer é realizado em veículos modernos com ar condicionado.",
+        "cancellationPolicy": "Cancelamento gratuito até 24 horas antes do início da excursão.",
+        "ageRestrictions": "Adequado para todas as idades. Crianças com menos de 2 anos participam gratuitamente.",
+        "labels": {
+          "highlights": "Destaques",
+          "itinerary": "Itinerário",
+          "included": "Incluído",
+          "excluded": "Não incluído",
+          "faqs": "Perguntas frequentes",
+          "pickupInfo": "Informações de recolha",
+          "cancellationPolicy": "Política de cancelamento",
+          "ageRestrictions": "Restrições de idade",
+          "bookNow": "Reservar agora",
+          "browseMore": "Ver mais excursões"
+        }
+      },
+      "locale": "pt"
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "b3524f6e-ef5a-4585-ae5a-d6569e3a1468",
+      "source_slug": "afternoon-desert-safari-with-echo-mountains-bedouin-village",
+      "translated_slug": "safari-tarde-deserto-montanhas-eco-aldeia-beduina",
+      "title": "Safari da tarde no deserto: Montanhas do Eco e aldeia beduína",
+      "summary": "Viva uma aventura de quadriciclo a partir de Sharm el-Sheikh. Atravesse o deserto do Sinai, visite as Montanhas do Eco e uma aldeia beduína, prove chá tradicional e escolha extras opcionais como passeio de camelo, jantar e espetáculo beduíno.",
+      "seo_title": "Safari da tarde de quadriciclo e Montanhas do Eco | Awesome Adventure Tours",
+      "seo_description": "Explore o deserto do Sinai num passeio de quadriciclo a partir de Sharm el-Sheikh, visite as Montanhas do Eco e uma aldeia beduína e escolha atividades noturnas opcionais.",
+      "duration": "3 horas",
+      "pickup_info": "A recolha e o regresso ao hotel estão incluídos; o transfer é realizado em veículos modernos com ar condicionado.",
+      "cancellation_policy": "Cancelamento gratuito até 24 horas antes do início da excursão.",
+      "age_restrictions": "Adequado para todas as idades. Crianças com menos de 2 anos participam gratuitamente.",
+      "content": {
+        "title": "Safari da tarde no deserto: Montanhas do Eco e aldeia beduína",
+        "description": "Deixe para trás a agitação da estância e aventure-se no impressionante deserto do Sinai num emocionante passeio de quadriciclo a partir de Sharm el-Sheikh.\n\nDepois da recolha no hotel, chegará ao ponto de partida no deserto. Um guia profissional explicará os comandos básicos do quadriciclo e as regras de segurança. Haverá também tempo para um breve teste antes de iniciar o percurso.\n\nQuando todos estiverem preparados, começa a verdadeira aventura. Percorra trilhos selecionados no deserto, rodeado pelas montanhas escarpadas do sul do Sinai. A paisagem em mudança, as formações rochosas e a tranquilidade do deserto permitem descobrir a região de uma perspetiva diferente.\n\nPelo caminho, chegará às extraordinárias Montanhas do Eco, uma formação natural onde as rochas envolventes criam um efeito de eco especial. Experimente o eco, aprecie a paisagem e tire fotografias antes de continuar.\n\nEm seguida, o percurso leva-o a uma aldeia beduína tradicional. Descanse, beba chá beduíno autêntico e conheça melhor a vida no deserto.\n\nOs participantes que escolherem o pacote noturno poderão apreciar o pôr do sol depois do passeio de quadriciclo, jantar e assistir a um espetáculo beduíno tradicional.\n\nQuer escolha um quadriciclo partilhado, o seu próprio veículo ATV ou uma excursão privada, esta experiência combina aventura, paisagens desérticas, cultura local e vistas panorâmicas das montanhas.",
+        "durationLabel": "3 horas",
+        "highlights": [
+          "Conduza um quadriciclo pelo deserto do Sinai",
+          "Percorra cerca de 30 km de trilhos no deserto",
+          "Descubra o fenómeno natural do eco",
+          "Faça paragens panorâmicas para fotografias",
+          "Visite uma aldeia beduína tradicional",
+          "Prove chá beduíno tradicional",
+          "Passeio de camelo opcional",
+          "Recolha e regresso ao hotel",
+          "Receba instruções de segurança e aprenda a utilizar o quadriciclo",
+          "Escolha uma excursão privada, se preferir"
+        ],
+        "itinerary": [],
+        "included": [
+          "Recolha e regresso ao hotel em Sharm el-Sheikh",
+          "Quadriciclo",
+          "Guia profissional do deserto",
+          "Instruções de segurança",
+          "Passeio de teste antes de iniciar o percurso",
+          "Visita às Montanhas do Eco",
+          "Visita à aldeia beduína",
+          "Chá beduíno tradicional"
+        ],
+        "excluded": [
+          "Óculos de proteção, salvo se selecionados como extra",
+          "Lenço para o deserto, salvo se selecionado como extra",
+          "Passeio de camelo, salvo se selecionado",
+          "Fotografias profissionais",
+          "Despesas pessoais",
+          "Gorjetas",
+          "Serviços não indicados expressamente na opção selecionada"
+        ],
+        "faqs": [],
+        "pickupInfo": "A recolha e o regresso ao hotel estão incluídos; o transfer é realizado em veículos modernos com ar condicionado.",
+        "cancellationPolicy": "Cancelamento gratuito até 24 horas antes do início da excursão.",
+        "ageRestrictions": "Adequado para todas as idades. Crianças com menos de 2 anos participam gratuitamente.",
+        "labels": {
+          "highlights": "Destaques",
+          "itinerary": "Itinerário",
+          "included": "Incluído",
+          "excluded": "Não incluído",
+          "faqs": "Perguntas frequentes",
+          "pickupInfo": "Informações de recolha",
+          "cancellationPolicy": "Política de cancelamento",
+          "ageRestrictions": "Restrições de idade",
+          "bookNow": "Reservar agora",
+          "browseMore": "Ver mais excursões"
+        }
+      },
+      "locale": "pt"
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "686495d5-66bc-4e21-961f-fa26c1f917e7",
+      "source_slug": "ras-mohamed-white-island-diving-snorkeling-boat-trip",
+      "translated_slug": "ras-mohamed-white-island-passeio-barco-mergulho-snorkeling",
+      "title": "Ras Mohamed e White Island: passeio de barco com mergulho e snorkeling",
+      "summary": "Descubra o extraordinário mundo subaquático do Mar Vermelho num passeio de barco de dia inteiro ao Parque Nacional Ras Mohamed e à White Island. Desfrute de duas paragens para snorkeling, relaxe na White Island e escolha um mergulho experimental ou profissional. A bordo, será servido um delicioso almoço buffet e bebidas refrescantes.",
+      "seo_title": "Ras Mohamed e White Island: passeio com mergulho e snorkeling | Awesome Adventure Tours",
+      "seo_description": "Reserve um passeio de barco de dia inteiro a partir de Sharm el-Sheikh para Ras Mohamed e White Island, com duas paragens para snorkeling, mergulho opcional, almoço buffet e bebidas.",
+      "duration": "7 horas",
+      "pickup_info": "A recolha e o regresso ao hotel estão incluídos; o transfer é realizado em veículos modernos com ar condicionado.",
+      "cancellation_policy": "Cancelamento gratuito até 24 horas antes do início da excursão.",
+      "age_restrictions": "Adequado para todas as idades. Crianças com menos de 2 anos participam gratuitamente.",
+      "content": {
+        "title": "Ras Mohamed e White Island: passeio de barco com mergulho e snorkeling",
+        "description": "Junte-se a uma aventura marítima inesquecível a partir de Sharm el-Sheikh e descubra dois dos locais mais espetaculares do Mar Vermelho: o Parque Nacional Ras Mohamed e a White Island.\n\nO dia começa com a recolha no hotel e o transfer para a marina. Aí embarcará num barco espaçoso com vários conveses, lugares confortáveis e zonas de descanso à sombra.\n\nNavegará em direção ao Parque Nacional Ras Mohamed, uma das áreas naturais mais conhecidas da região, famosa pelas águas cristalinas, pelos recifes de coral coloridos e pela diversidade da vida marinha.\n\nDurante o passeio haverá duas paragens para snorkeling. Poderá nadar entre peixes coloridos e explorar os belos recifes de coral do Mar Vermelho.\n\nTambém visitará a White Island, uma magnífica ilha de areia rodeada por águas azul-turquesa. Aproveite para nadar, descansar, apreciar a paisagem e tirar fotografias.\n\nSe quiser mergulhar, pode escolher um mergulho experimental para principiantes, sem experiência prévia. Depois das instruções de segurança, entrará na água acompanhado por um instrutor profissional e descobrirá o mundo subaquático do Mar Vermelho.\n\nOs mergulhadores certificados também podem escolher um mergulho profissional, adequado à sua certificação e experiência.\n\nDurante o dia será servido a bordo um delicioso almoço buffet, além de água, refrigerantes, chá e café.\n\nDepois de um dia inteiro de natação, snorkeling, mergulho e descanso no mar, regressará à marina e, em seguida, ao hotel.",
+        "durationLabel": "7 horas",
+        "highlights": [
+          "Explore o Parque Nacional Ras Mohamed",
+          "Visite a espetacular White Island",
+          "Desfrute de duas paragens para snorkeling",
+          "Descubra o mundo subaquático colorido do Mar Vermelho",
+          "Experimente um mergulho para principiantes com um instrutor profissional",
+          "Escolha um mergulho profissional se tiver certificação",
+          "Relaxe num barco espaçoso com vários conveses",
+          "Desfrute de um delicioso almoço buffet a bordo",
+          "Aproveite bebidas ilimitadas",
+          "Tire fotografias inesquecíveis da aventura no Mar Vermelho"
+        ],
+        "itinerary": [],
+        "included": [
+          "Recolha e regresso ao hotel",
+          "Passeio de barco de dia inteiro",
+          "Visita ao Parque Nacional Ras Mohamed",
+          "Visita à White Island",
+          "Duas paragens para snorkeling",
+          "Almoço buffet a bordo",
+          "Água",
+          "Refrigerantes",
+          "Chá e café",
+          "Tripulação profissional",
+          "Instrutor profissional de mergulho nas opções selecionadas",
+          "Equipamento de snorkeling conforme a opção selecionada",
+          "Um mergulho experimental",
+          "Mergulho profissional conforme a opção selecionada"
+        ],
+        "excluded": [
+          "Despesas pessoais",
+          "Toalhas",
+          "Protetor solar",
+          "Serviços ou extras não indicados expressamente na opção de reserva selecionada",
+          "Taxa de entrada em Ras Mohamed: € 5 por pessoa"
+        ],
+        "faqs": [
+          {
+            "question": "O equipamento de snorkeling está incluído ou devo levar o meu?",
+            "answer": "A bordo estão disponíveis gratuitamente máscaras, tubos e barbatanas limpos, em tamanhos para adultos e crianças.",
+            "section": "faq"
+          },
+          {
+            "question": "As pessoas que não sabem nadar podem participar em segurança?",
+            "answer": "Sim. Estão disponíveis coletes salva-vidas aprovados pela guarda costeira, e instrutores de mergulho certificados ajudam os participantes na água.",
+            "section": "faq"
+          }
+        ],
+        "pickupInfo": "A recolha e o regresso ao hotel estão incluídos; o transfer é realizado em veículos modernos com ar condicionado.",
+        "cancellationPolicy": "Cancelamento gratuito até 24 horas antes do início da excursão.",
+        "ageRestrictions": "Adequado para todas as idades. Crianças com menos de 2 anos participam gratuitamente.",
+        "labels": {
+          "highlights": "Destaques",
+          "itinerary": "Itinerário",
+          "included": "Incluído",
+          "excluded": "Não incluído",
+          "faqs": "Perguntas frequentes",
+          "pickupInfo": "Informações de recolha",
+          "cancellationPolicy": "Política de cancelamento",
+          "ageRestrictions": "Restrições de idade",
+          "bookNow": "Reservar agora",
+          "browseMore": "Ver mais excursões"
+        }
+      },
+      "locale": "pt"
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "66490ba5-3887-4dca-985d-d5f85b7c01e4",
+      "source_slug": "ultimate-sinai-desert-safari-quad-camel-bbq-adventure-copy-757",
+      "translated_slug": "super-safari-sharm-atv-camelo-observacao-estrelas-churrasco",
+      "title": "Sharm: Super Safari com ATV, passeio de camelo, observação das estrelas e jantar de churrasco",
+      "summary": "Descubra a magia do deserto do Sinai num safari inesquecível de 5 horas: passeio emocionante de quadriciclo, experiência tradicional de camelo e cultura beduína autêntica. Desfrute de churrasco, espetáculos orientais e uma sessão especial de observação das estrelas com telescópio.",
+      "seo_title": "Super safari no deserto de Sharm: quadriciclo, camelo e estrelas | Awesome Adventure Tours",
+      "seo_description": "Reserve um safari de 5 horas no Sinai a partir de Sharm el-Sheikh, com quadriciclos, camelo, acampamento beduíno, churrasco, espetáculos e observação das estrelas.",
+      "duration": "5 horas",
+      "pickup_info": "A recolha e o regresso ao hotel estão incluídos; o transfer é realizado em veículos modernos com ar condicionado.",
+      "cancellation_policy": "Cancelamento gratuito até 24 horas antes do início da excursão.",
+      "age_restrictions": "Adequado para todas as idades. Crianças com menos de 2 anos participam gratuitamente.",
+      "content": {
+        "title": "Sharm: Super Safari com ATV, passeio de camelo, observação das estrelas e jantar de churrasco",
+        "description": "Deixe para trás a agitação da cidade e mergulhe nas paisagens impressionantes do deserto do Sinai num safari inesquecível a partir de Sharm el-Sheikh.\n\nComece a aventura com um emocionante passeio de quadriciclo pelas areias douradas do deserto, rodeado por montanhas imponentes e belas paisagens naturais. Conheça o estilo de vida tradicional dos beduínos, desfrute da sua hospitalidade e faça um passeio de camelo memorável.\n\nAo aproximar-se a noite, visitará um acampamento beduíno tradicional e saboreará um delicioso churrasco num ambiente autêntico do deserto. Assista a espetáculos orientais e descubra o encanto especial da cultura beduína.\n\nDepois de escurecer, a aventura continua com uma sessão especial de observação das estrelas. Olhe para o céu limpo do deserto e utilize um telescópio para observar estrelas e outros corpos celestes, longe das luzes da cidade. Desfrute da tranquilidade do deserto do Sinai enquanto descobre a beleza do céu noturno.\n\nCom recolha e regresso ao hotel, acompanhamento de um guia profissional, atividades emocionantes ao ar livre, experiências culturais e uma noite sob as estrelas, este safari combina aventura, entretenimento e descoberta do deserto.",
+        "durationLabel": "5 horas",
+        "highlights": [
+          "Passeio de quadriciclo pelo deserto do Sinai",
+          "Passeio de camelo",
+          "Visita a um acampamento beduíno",
+          "Chá beduíno tradicional",
+          "Vale do Eco",
+          "Jantar de churrasco",
+          "Espetáculos e apresentações orientais ao vivo",
+          "Recolha e regresso ao hotel",
+          "Sessão especial de observação das estrelas com telescópio"
+        ],
+        "itinerary": [],
+        "included": [
+          "Recolha e regresso ao hotel",
+          "Transporte em veículo com ar condicionado",
+          "Guia profissional de safari",
+          "Capacete e óculos de proteção",
+          "Passeio de quadriciclo",
+          "Passeio de camelo",
+          "Chá beduíno e pão tradicional",
+          "Jantar de churrasco / buffet",
+          "Uma garrafa de água mineral",
+          "Espetáculos orientais",
+          "Sessão especial de observação das estrelas com telescópio"
+        ],
+        "excluded": [
+          "Shisha",
+          "Serviços de fotografia",
+          "Óleos",
+          "Despesas pessoais",
+          "Transfer privado de regresso opcional",
+          "Condução privada opcional na pista"
+        ],
+        "faqs": [],
+        "pickupInfo": "A recolha e o regresso ao hotel estão incluídos; o transfer é realizado em veículos modernos com ar condicionado.",
+        "cancellationPolicy": "Cancelamento gratuito até 24 horas antes do início da excursão.",
+        "ageRestrictions": "Adequado para todas as idades. Crianças com menos de 2 anos participam gratuitamente.",
+        "labels": {
+          "highlights": "Destaques",
+          "itinerary": "Itinerário",
+          "included": "Incluído",
+          "excluded": "Não incluído",
+          "faqs": "Perguntas frequentes",
+          "pickupInfo": "Informações de recolha",
+          "cancellationPolicy": "Política de cancelamento",
+          "ageRestrictions": "Restrições de idade",
+          "bookNow": "Reservar agora",
+          "browseMore": "Ver mais excursões"
+        }
+      },
+      "locale": "pt"
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "e604bc06-6f15-4e4b-a3d9-a3b1acbfb36d",
+      "source_slug": "from-sharm-white-island-ras-mohamed-snorkeling-trip",
+      "translated_slug": "sharm-white-island-ras-mohamed-passeio-snorkeling",
+      "title": "A partir de Sharm: passeio de snorkeling à White Island e Ras Mohamed",
+      "summary": "Desfrute de um espetacular passeio de barco pelo Mar Vermelho até ao Parque Nacional Ras Mohamed e à White Island. Faça duas paragens para snorkeling, mergulhe em águas cristalinas e escolha um mergulho experimental ou profissional. A bordo, será servido um saboroso almoço buffet e bebidas refrescantes.",
+      "seo_title": "White Island e Ras Mohamed: passeio de snorkeling a partir de Sharm | Awesome Adventure Tours",
+      "seo_description": "Descubra Ras Mohamed e White Island num passeio de barco a partir de Sharm el-Sheikh, com duas paragens para snorkeling, mergulho opcional, almoço buffet e bebidas.",
+      "duration": "7 horas",
+      "pickup_info": "A recolha e o regresso ao hotel estão incluídos; o transfer é realizado em veículos modernos com ar condicionado.",
+      "cancellation_policy": "Cancelamento gratuito até 24 horas antes do início da excursão.",
+      "age_restrictions": "Adequado para todas as idades. Crianças com menos de 2 anos participam gratuitamente.",
+      "content": {
+        "title": "A partir de Sharm: passeio de snorkeling à White Island e Ras Mohamed",
+        "description": "Descubra a beleza do Mar Vermelho num emocionante passeio de barco a partir de Sharm el-Sheikh até ao Parque Nacional Ras Mohamed e à White Island.\n\nComece a aventura com uma cómoda recolha no hotel e o transfer para a marina. Aí embarcará num barco espaçoso com vários conveses, lugares confortáveis e zonas de descanso à sombra.\n\nNavegará pelas águas deslumbrantes do Mar Vermelho até ao Parque Nacional Ras Mohamed, conhecido internacionalmente pelos seus extraordinários recifes de coral, pela rica biodiversidade marinha e pelas excelentes condições para snorkeling.\n\nEstão previstas duas sessões de snorkeling em locais cuidadosamente selecionados. Admire os peixes coloridos, descubra paisagens subaquáticas cheias de vida e conheça de perto a beleza do Mar Vermelho.\n\nA excursão inclui também uma visita à White Island, uma bela ilha de areia rodeada por águas azul-turquesa transparentes. Nade, relaxe na praia, tire fotografias e desfrute da tranquilidade da natureza.\n\nQuer explorar o mundo debaixo de água? Os principiantes podem escolher um mergulho experimental com instruções de segurança e acompanhamento de um instrutor profissional. Os mergulhadores experientes podem optar por um mergulho profissional adequado à sua certificação e experiência.\n\nQuando chegar a altura de descansar, será servido a bordo um almoço buffet preparado na hora. Durante o passeio estarão disponíveis água, refrigerantes, chá e café.\n\nDepois de um dia inesquecível de snorkeling, natação, mergulho opcional e vistas deslumbrantes sobre o mar, relaxe durante a viagem de regresso à marina e, em seguida, ao hotel.",
+        "durationLabel": "7 horas",
+        "highlights": [
+          "Explore o Parque Nacional Ras Mohamed",
+          "Visite a espetacular White Island",
+          "Desfrute de duas paragens para snorkeling",
+          "Descubra a vida marinha colorida do Mar Vermelho",
+          "Experimente um mergulho para principiantes com um instrutor profissional",
+          "Escolha um mergulho profissional se tiver certificação",
+          "Relaxe num barco espaçoso com vários conveses",
+          "Desfrute de um delicioso almoço buffet a bordo",
+          "Aproveite bebidas ilimitadas",
+          "Tire fotografias inesquecíveis da aventura no Mar Vermelho"
+        ],
+        "itinerary": [],
+        "included": [
+          "Recolha e regresso ao hotel",
+          "Passeio de barco de dia inteiro",
+          "Visita ao Parque Nacional Ras Mohamed",
+          "Visita à White Island",
+          "Duas paragens para snorkeling",
+          "Almoço buffet a bordo",
+          "Água",
+          "Refrigerantes",
+          "Chá e café",
+          "Instrutor profissional de mergulho nas opções selecionadas",
+          "Equipamento de snorkeling conforme a opção selecionada",
+          "Mergulho experimental conforme a opção selecionada",
+          "Mergulho profissional conforme a opção selecionada"
+        ],
+        "excluded": [
+          "Despesas pessoais",
+          "Toalhas",
+          "Protetor solar",
+          "Serviços ou extras não indicados expressamente na opção de reserva selecionada",
+          "Taxa de entrada em Ras Mohamed: € 5 por pessoa"
+        ],
+        "faqs": [
+          {
+            "question": "O equipamento de snorkeling está incluído ou devo levar o meu?",
+            "answer": "A bordo estão disponíveis gratuitamente máscaras, tubos e barbatanas limpos, em tamanhos para adultos e crianças.",
+            "section": "faq"
+          },
+          {
+            "question": "As pessoas que não sabem nadar podem participar em segurança?",
+            "answer": "Sim. Estão disponíveis coletes salva-vidas aprovados pela guarda costeira, e instrutores de mergulho certificados ajudam os participantes na água.",
+            "section": "faq"
+          }
+        ],
+        "pickupInfo": "A recolha e o regresso ao hotel estão incluídos; o transfer é realizado em veículos modernos com ar condicionado.",
+        "cancellationPolicy": "Cancelamento gratuito até 24 horas antes do início da excursão.",
+        "ageRestrictions": "Adequado para todas as idades. Crianças com menos de 2 anos participam gratuitamente.",
+        "labels": {
+          "highlights": "Destaques",
+          "itinerary": "Itinerário",
+          "included": "Incluído",
+          "excluded": "Não incluído",
+          "faqs": "Perguntas frequentes",
+          "pickupInfo": "Informações de recolha",
+          "cancellationPolicy": "Política de cancelamento",
+          "ageRestrictions": "Restrições de idade",
+          "bookNow": "Reservar agora",
+          "browseMore": "Ver mais excursões"
+        }
+      },
+      "locale": "pt"
+    }
+  ]
+}
