@@ -11,8 +11,8 @@
     "static_page": 10,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1080,
-    "ui_catalog_messages": 1161,
+    "private_ui_messages": 1078,
+    "ui_catalog_messages": 1159,
     "source_records": 111
   },
   "records": [
@@ -3089,7 +3089,6 @@
         "private.text.4233cdd4": "par participant",
         "private.text.426a2e3f": "Confirmation de votre réservation...",
         "private.text.4286c044": "Conditions générales ",
-        "private.text.42a4a176": "Service client et tickets",
         "private.text.42c5d4d5": "&rdquo; ",
         "private.text.42db22ac": "Excursion associée ",
         "private.text.42db61fc": "ANNULÉ",
@@ -3429,7 +3428,6 @@
         "private.text.9602c62f": "Capitaine Farouk",
         "private.text.9637f88f": "Impossible d’actualiser le statut. Veuillez essayer de saisir votre mot de passe.",
         "private.text.9655974a": "1. Choisissez votre date ",
-        "private.text.965bf92f": "Blog et carnet de voyage",
         "private.text.967aa5dd": "Envoi en cours…",
         "private.text.968aed60": " / adulte",
         "private.text.96a6bc1f": "Hauteur des vagues",
