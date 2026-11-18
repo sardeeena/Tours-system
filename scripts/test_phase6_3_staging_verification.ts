@@ -337,7 +337,7 @@ async function runPhase63VerificationSuite() {
   console.log('\n--- Test Group 4: Reservation Validation & Capacity Integrity ---');
 
   const ref = generateBookingReference();
-  assert(/^AWE-\\d{8}-\\d{6}$/.test(ref), `Generated reference follows AWE-YYYYMMDD-123456 format: ${ref}`);
+  assert(/^AWE-\d{8}-\d{6}$/.test(ref), `Generated reference follows AWE-YYYYMMDD-123456 format: ${ref}`);
 
   const validBookingPayload: Booking = {
     bookingId: 'test-booking-id-1',
