@@ -10,7 +10,7 @@ This document records the controls reviewed alongside the booking-admin implemen
 - Admin booking details include the passenger manifest (excluding passport/identity document numbers), full guest counts, pickup details and extras.
 - Admin booking list has pagination over the complete filtered result set.
 - Partial payment recording accepts an explicit amount and actual receipt/transaction reference; the database remains authoritative for the outstanding balance.
-- Production migration-history reconciliation for the pickup RPC is included in this PR so clean migration replay and the recorded production versions agree.
+- Production migration-history reconciliation for both the pickup RPC and guest-locale trigger fix is included in this PR so clean migration replay and the recorded production versions agree.
 
 ## Deliberately not changed automatically
 
