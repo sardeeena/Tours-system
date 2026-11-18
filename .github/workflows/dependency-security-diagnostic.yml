@@ -1,0 +1,63 @@
+name: Dependency security diagnostic
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Resolve and audit complete npm dependency tree
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Resolve all dependencies including development tools
+        run: npm install --include=dev --no-audit --no-fund
+
+      - name: Produce complete dependency audit report
+        run: |
+          npm audit --include=dev --json > dependency-audit.json || true
+          node --input-type=commonjs <<'NODE'
+          const report = require('./dependency-audit.json');
+          const vulnerabilities = report.vulnerabilities || {};
+          const summary = report.metadata?.vulnerabilities || {};
+          console.log('AUDIT_SUMMARY', JSON.stringify(summary));
+          for (const [name, item] of Object.entries(vulnerabilities)) {
+            console.log('AUDIT_PACKAGE', JSON.stringify({
+              name,
+              severity: item.severity,
+              isDirect: item.isDirect,
+              range: item.range,
+              fixAvailable: item.fixAvailable,
+              via: item.via.map(v => typeof v === 'string' ? v : {
+                name: v.name,
+                title: v.title,
+                url: v.url,
+                range: v.range
+              })
+            }));
+          }
+          NODE
+
+      - name: Upload full audit report and generated npm lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-security-diagnostic
+          path: |
+            dependency-audit.json
+            package-lock.json
+          if-no-files-found: error
+          retention-days: 7
