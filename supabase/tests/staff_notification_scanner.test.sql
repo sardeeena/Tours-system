@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(5);
+SELECT plan(6);
 
 SELECT has_function(
   'public','scan_staff_notifications',ARRAY[]::text[],
@@ -13,8 +13,13 @@ SELECT ok(
 );
 
 SELECT ok(
-  has_function_privilege('authenticated','public.scan_staff_notifications()','EXECUTE'),
-  'authenticated users can invoke the scanner subject to its admin authorization check'
+  NOT has_function_privilege('authenticated','public.scan_staff_notifications()','EXECUTE'),
+  'authenticated users cannot invoke the server-only scanner'
+);
+
+SELECT ok(
+  has_function_privilege('service_role','public.scan_staff_notifications()','EXECUTE'),
+  'the server worker service role can invoke the scanner'
 );
 
 SELECT ok(
