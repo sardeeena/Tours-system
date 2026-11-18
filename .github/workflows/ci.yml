@@ -200,10 +200,10 @@ jobs:
             echo "available=true" >> "$GITHUB_OUTPUT"
           else
             echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::Live French and Dutch source-checksum dry run skipped: expected read-only Supabase URL/service-key Actions secrets are not configured."
+            echo "::warning::Live French, Dutch and Polish source-checksum dry run skipped: expected read-only Supabase URL/service-key Actions secrets are not configured."
           fi
 
-      - name: Validate French and Dutch import bundles against live Supabase sources (read-only)
+      - name: Validate French, Dutch and Polish import bundles against live Supabase sources (read-only)
         if: steps.french-source-credentials.outputs.available == 'true'
         env:
           SUPABASE_URL: https://uvtbtpxtrrmaublrztgv.supabase.co
@@ -214,6 +214,8 @@ jobs:
           npm run translations:import -- ./translations/fr/french-import-bundle.review-draft.json
           npm run translations:assemble-nl -- ./translation-source.json ./translations/nl/dutch-import-bundle.review-draft.json
           npm run translations:import -- ./translations/nl/dutch-import-bundle.review-draft.json
+          npm run translations:assemble-pl -- ./translation-source.json ./translations/pl/polish-import-bundle.review-draft.json
+          npm run translations:import -- ./translations/pl/polish-import-bundle.review-draft.json
 
       - name: Verify WhatsApp locale mapping and safe fallback
         run: npm run test:whatsapp-locale-mapping
