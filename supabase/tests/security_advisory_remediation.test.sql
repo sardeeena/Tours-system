@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(12);
+SELECT plan(14);
 
 SELECT ok(NOT has_function_privilege('authenticated','public.scan_staff_notifications()','EXECUTE'),
   'authenticated users cannot execute the server-only staff notification scanner');
@@ -32,6 +32,34 @@ SELECT ok(NOT has_table_privilege('anon','public.customer_communication_consent_
 SELECT ok(NOT has_table_privilege('anon','public.technical_events','SELECT') AND NOT has_table_privilege('authenticated','public.technical_events','SELECT'), 'technical telemetry remains unreadable directly from browser roles');
 SELECT ok(NOT has_table_privilege('anon','public.visitor_analytics_settings','SELECT') AND NOT has_table_privilege('authenticated','public.visitor_analytics_settings','SELECT'), 'visitor analytics settings remain unreadable directly from browser roles');
 SELECT ok(NOT has_table_privilege('anon','public.visitor_consent_records','SELECT') AND NOT has_table_privilege('authenticated','public.visitor_consent_records','SELECT'), 'visitor consent records remain unreadable directly from browser roles');
+
+SELECT ok(NOT EXISTS (
+  SELECT 1
+  FROM (VALUES
+    ('content_translations'),
+    ('customer_communication_consent_events'),
+    ('technical_events'),
+    ('visitor_analytics_settings'),
+    ('visitor_consent_records'),
+    ('visitor_events'),
+    ('visitor_sessions'),
+    ('whatsapp_provider_status_events')
+  ) AS protected(table_name)
+  CROSS JOIN (VALUES ('SELECT'),('INSERT'),('UPDATE'),('DELETE')) AS privilege(name)
+  WHERE has_table_privilege('anon','public.' || protected.table_name,privilege.name)
+     OR has_table_privilege('authenticated','public.' || protected.table_name,privilege.name)
+), 'anon and authenticated have no direct table privileges on any of the eight protected tables');
+
+SELECT ok(
+  has_table_privilege('service_role','public.content_translations','SELECT')
+  AND has_table_privilege('service_role','public.customer_communication_consent_events','SELECT')
+  AND has_table_privilege('service_role','public.technical_events','SELECT')
+  AND has_table_privilege('service_role','public.visitor_analytics_settings','SELECT')
+  AND has_table_privilege('service_role','public.visitor_consent_records','SELECT')
+  AND has_table_privilege('service_role','public.visitor_events','SELECT')
+  AND has_table_privilege('service_role','public.visitor_sessions','SELECT'),
+  'service-role server access is preserved for the seven server-managed tables'
+);
 
 SELECT * FROM finish();
 ROLLBACK;
