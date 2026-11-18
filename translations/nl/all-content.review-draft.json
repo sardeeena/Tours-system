@@ -11,8 +11,8 @@
     "communication_template": 18,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1075,
-    "ui_catalog_messages": 1156,
+    "private_ui_messages": 1078,
+    "ui_catalog_messages": 1159,
     "source_records": 111
   },
   "records": [
@@ -4838,7 +4838,10 @@
         "private.text.ff566677": "Wachtwoord bijgewerkt",
         "private.text.ff566f40": "Naam ",
         "private.text.8db53650": "Boek nu ",
-        "private.text.d59d8b58": "Vertrek van de boot rond 08:30–09:00 uur "
+        "private.text.d59d8b58": "Vertrek van de boot rond 08:30–09:00 uur ",
+        "private.text.2d9bf6ca": "Deze pagina kon niet worden weergegeven",
+        "private.text.c3acc0cd": "Pagina opnieuw laden ",
+        "private.text.e2f282f4": "Er is iets misgegaan op deze pagina. Laad de pagina opnieuw om het opnieuw te proberen. De gegevens van je reservering zijn niet via dit herstelscherm verzonden. "
       }
     }
   ],
