@@ -1,0 +1,207 @@
+{
+  "schema_version": 1,
+  "locale": "pt",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "static_page": 6,
+    "source_records": 6
+  },
+  "records": [
+    {
+      "entity_type": "static_page",
+      "entity_key": "home",
+      "source_slug": "home",
+      "translated_slug": "home",
+      "locale": "pt",
+      "title": "Descubra a costa egípcia do Mar Vermelho",
+      "summary": "Passeios de barco, visitas a ilhas, snorkeling, mergulho e safaris no deserto na costa egípcia do Mar Vermelho.",
+      "seo_title": "Excursões no Mar Vermelho do Egito | Awesome Adventure Tours",
+      "seo_description": "Descubra o Mar Vermelho do Egito com passeios de barco, visitas a ilhas, snorkeling, mergulho e safaris no deserto a partir de Hurghada.",
+      "content": {
+        "heroHeadline": "Descubra a costa egípcia do Mar Vermelho",
+        "heroSubtitle": "Passeios de barco, visitas a ilhas, snorkeling, mergulho e safaris no deserto na costa egípcia do Mar Vermelho.",
+        "sections": [],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Descobrir mais",
+          "bookNow": "Reservar agora"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "about",
+      "source_slug": "about",
+      "translated_slug": "sobre",
+      "locale": "pt",
+      "title": "Sobre a Awesome Adventure Tours",
+      "summary": "A Awesome Adventure Tours ajuda os viajantes a descobrir passeios de barco, ilhas, snorkeling, mergulho, safaris no deserto e excursões culturais no Egito. Consulte as experiências publicadas, compare os detalhes práticos e contacte a nossa equipa em Hurghada antes de reservar.",
+      "seo_title": "Sobre a Awesome Adventure Tours | Excursões no Egito e no Mar Vermelho",
+      "seo_description": "Conheça a Awesome Adventure Tours em Hurghada, Egito. Descubra passeios de barco no Mar Vermelho, ilhas, snorkeling, mergulho, safaris no deserto e excursões culturais.",
+      "content": {
+        "heroHeadline": "Explore a costa egípcia do Mar Vermelho com a Awesome Adventure Tours",
+        "heroSubtitle": "A Awesome Adventure Tours ajuda os viajantes a descobrir passeios de barco, ilhas, snorkeling, mergulho, safaris no deserto e excursões culturais no Egito. Consulte as experiências publicadas, compare os detalhes práticos e contacte a nossa equipa em Hurghada antes de reservar.",
+        "sections": [
+          {
+            "title": "Experiências por todo o Egito",
+            "content": "O nosso catálogo publicado reúne experiências em destinos como Hurghada, El Gouna, Sharm el-Sheikh e outras regiões do Egito. Consoante a excursão, os viajantes podem comparar passeios de barco e visitas a ilhas, atividades de snorkeling e mergulho, safaris no deserto, transfers e visitas culturais."
+          },
+          {
+            "title": "Informações claras antes de reservar",
+            "content": "Cada excursão pode ter horários de partida, preços, duração, serviços incluídos, requisitos de idade e condições de cancelamento diferentes. Consulte atentamente a página da excursão e o resumo da reserva para compreender o que está incluído e onde a recolha está disponível."
+          },
+          {
+            "title": "Apoio local em Hurghada",
+            "content": "A Awesome Adventure Tours está sediada em Hurghada, no Mar Vermelho, Egito. A nossa equipa pode ajudar com dúvidas sobre as excursões publicadas, informações de recolha nos hotéis e reservas. Se precisar de esclarecer algum detalhe de uma excursão específica, contacte-nos antes de reservar."
+          },
+          {
+            "title": "Como escolher a sua excursão",
+            "content": "Comece por selecionar o destino ou a atividade que prefere. Compare o itinerário, a duração, o preço, os serviços incluídos e os requisitos práticos na página de cada excursão. A disponibilidade e as condições operacionais podem mudar, sobretudo nas atividades marítimas; confirme os detalhes para a data escolhida antes de viajar."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Descobrir mais",
+          "bookNow": "Reservar agora"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "contact",
+      "source_slug": "contact",
+      "translated_slug": "contactos",
+      "locale": "pt",
+      "title": "Contacte a Awesome Adventure Tours",
+      "summary": "Contacte a Awesome Adventure Tours para comparar excursões publicadas, compreender os procedimentos de recolha, verificar os detalhes da reserva e preparar a sua visita ao Egito.",
+      "seo_title": "Contacte a Awesome Adventure Tours | Hurghada, Egito",
+      "seo_description": "Contacte a Awesome Adventure Tours em Hurghada para esclarecer dúvidas sobre excursões, obter apoio com reservas, informações de recolha e assistência no idioma da sua preferência.",
+      "content": {
+        "heroHeadline": "Contacte a nossa equipa de excursões em Hurghada",
+        "heroSubtitle": "Contacte a Awesome Adventure Tours para comparar excursões publicadas, compreender os procedimentos de recolha, verificar os detalhes da reserva e preparar a sua visita ao Egito.",
+        "sections": [
+          {
+            "title": "Fale com a nossa equipa",
+            "content": "Ligue para +20 151 5212741 se tiver dúvidas sobre excursões publicadas, reservas e informações práticas de viagem. Se a sua pergunta for sobre uma excursão específica, indique o nome ou partilhe a página da excursão, a data de viagem pretendida e o número de participantes. Assim, a nossa equipa poderá compreender melhor de que informações precisa. Para uma reserva existente, tenha a referência da reserva à mão para podermos identificar a reserva correta."
+          },
+          {
+            "title": "Visite o nosso escritório em Hurghada",
+            "content": "O nosso escritório fica no 2.º andar do Bostan Cafe, Madres, Hurghada, Governadoria do Mar Vermelho, Egito. Se pretender visitar-nos pessoalmente, contacte-nos primeiro para explicar o assunto e confirmar a melhor forma de organizar a visita."
+          },
+          {
+            "title": "Ajuda para escolher e preparar uma excursão",
+            "content": "Antes de reservar, consulte na página da excursão o preço inicial atual, a duração, o itinerário, os serviços incluídos, as exclusões, os limites de idade, as informações de recolha e as condições de cancelamento. Estes detalhes podem variar entre excursões e mudar devido a condições operacionais. Se algo não estiver claro, pergunte-nos sobre a excursão específica antes de reservar. Para questões sobre a recolha, indique o nome do hotel ou o ponto de encontro preferido e o destino da excursão."
+          },
+          {
+            "title": "Apoio a viajantes internacionais",
+            "content": "Apoiamos viajantes internacionais e podemos comunicar com clientes no idioma da sua preferência. Indique-nos o idioma que gostaria de utilizar quando nos contactar. A disponibilidade de guias que falem determinado idioma depende da excursão e da partida; consulte as opções indicadas para a viagem escolhida, em vez de presumir que todas as excursões estão disponíveis em todos os idiomas."
+          },
+          {
+            "title": "Segurança nas reservas e nos pagamentos",
+            "content": "Utilize o formulário de reserva e as instruções fornecidas com a sua reserva para tratar dos detalhes da reserva e do pagamento. Não envie palavras-passe, números completos de cartões de pagamento nem códigos de segurança em mensagens comuns. Antes de confirmar, verifique sempre o resumo final da reserva, a data, os dados dos participantes e o preço."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Descobrir mais",
+          "bookNow": "Reservar agora"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "why-us",
+      "source_slug": "why-us",
+      "translated_slug": "porque-escolher-nos",
+      "locale": "pt",
+      "title": "Porquê escolher a Awesome Adventure Tours",
+      "summary": "Utilize as informações publicadas sobre as excursões para comparar as experiências disponíveis e escolher a que melhor se adapta aos seus planos.",
+      "seo_title": "Porquê escolher a Awesome Adventure Tours | Excursões no Mar Vermelho",
+      "seo_description": "Compare as excursões no Mar Vermelho quanto ao preço, duração, itinerário, serviços incluídos e condições de recolha antes de reservar.",
+      "content": {
+        "heroHeadline": "Planeie a sua experiência no Mar Vermelho",
+        "heroSubtitle": "Utilize as informações publicadas sobre as excursões para comparar as experiências disponíveis e escolher a que melhor se adapta aos seus planos.",
+        "sections": [
+          {
+            "title": "Informações sobre excursões num só lugar",
+            "content": "Consulte a descrição, o preço, a duração, o itinerário e os serviços incluídos em cada excursão antes de reservar."
+          },
+          {
+            "title": "Verifique os detalhes importantes",
+            "content": "As opções de recolha, os limites de idade, a disponibilidade e as condições de cancelamento podem variar consoante a excursão. Consulte a página da excursão e os detalhes da reserva antes de confirmar."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Descobrir mais",
+          "bookNow": "Reservar agora"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "marine-safety",
+      "source_slug": "marine-safety",
+      "translated_slug": "seguranca-maritima-informacoes-partida",
+      "locale": "pt",
+      "title": "Segurança marítima e informações de partida",
+      "summary": "As excursões marítimas podem ser afetadas pelo tempo, pelo estado do mar e por restrições operacionais. Consulte as informações relativas à excursão escolhida.",
+      "seo_title": "Segurança marítima e informações de partida | Awesome Adventure Tours",
+      "seo_description": "Conheça as informações de segurança, de partida e as condições meteorológicas que podem afetar as excursões no Mar Vermelho.",
+      "content": {
+        "heroHeadline": "Segurança e informações de partida",
+        "heroSubtitle": "As excursões marítimas podem ser afetadas pelo tempo, pelo estado do mar e por restrições operacionais. Consulte as informações relativas à excursão escolhida.",
+        "sections": [
+          {
+            "title": "Antes da partida",
+            "content": "Leia as instruções de partida, os requisitos para os participantes e as informações sobre o equipamento da excursão escolhida. Durante a experiência, siga as instruções da tripulação e dos responsáveis pela atividade."
+          },
+          {
+            "title": "Condições meteorológicas e alterações operacionais",
+            "content": "As atividades marítimas podem ser alteradas, adiadas ou canceladas quando as condições não permitem uma partida segura. Consulte as condições de reserva da excursão específica para conhecer as medidas aplicáveis."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Descobrir mais",
+          "bookNow": "Reservar agora"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "booking-conditions",
+      "source_slug": "booking-conditions",
+      "translated_slug": "condicoes-reserva",
+      "locale": "pt",
+      "title": "Condições de reserva",
+      "summary": "Consulte as informações e condições aplicáveis à excursão escolhida antes de concluir a reserva.",
+      "seo_title": "Condições de reserva | Awesome Adventure Tours",
+      "seo_description": "Antes de reservar uma excursão no Mar Vermelho, consulte as confirmações, a recolha, os horários de partida, as alterações e os cancelamentos.",
+      "content": {
+        "heroHeadline": "Informações sobre reservas",
+        "heroSubtitle": "Consulte as informações e condições aplicáveis à excursão escolhida antes de concluir a reserva.",
+        "sections": [
+          {
+            "title": "Reservas e confirmação",
+            "content": "Verifique a data escolhida, o número de participantes, o preço, as informações de recolha e os restantes detalhes da reserva antes de enviar o pedido. Guarde as informações de confirmação fornecidas após a reserva."
+          },
+          {
+            "title": "Recolha e partida",
+            "content": "A disponibilidade de recolha, os pontos de encontro, os suplementos e os horários de partida podem variar consoante a excursão e o destino. Consulte os detalhes da viagem escolhida antes de confirmar."
+          },
+          {
+            "title": "Alterações e cancelamentos",
+            "content": "Os prazos de cancelamento, as condições de reembolso e as regras de alteração de data dependem das condições de reserva da excursão escolhida. Leia essas condições antes de concluir a reserva."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Descobrir mais",
+          "bookNow": "Reservar agora"
+        }
+      }
+    }
+  ]
+}
