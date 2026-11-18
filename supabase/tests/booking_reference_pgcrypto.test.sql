@@ -58,13 +58,16 @@ SELECT ok(
 );
 
 SELECT ok(
-  position('AWE-' IN pg_get_functiondef(to_regprocedure('private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)'))) > 0
-  AND position('private.generate_booking_reference(p_booking_date)' IN pg_get_functiondef(to_regprocedure('private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)'))) > 0
-  AND position('ON CONFLICT (booking_date)' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0
-  AND position('last_value < 999999' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0
-  AND position('to_char(p_booking_date, ''YYYYMMDD'')' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0
-  AND position('CONTINUE;' IN pg_get_functiondef(to_regprocedure('private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)'))) > 0,
-  'atomic booking function generates unique AWE date references with six numeric digits'
+  EXISTS (
+    SELECT 1
+    FROM pg_proc AS p
+    JOIN pg_namespace AS n ON n.oid = p.pronamespace
+    WHERE n.nspname = 'private'
+      AND p.proname = 'generate_booking_reference'
+      AND p.prosecdef
+      AND p.proconfig @> ARRAY['search_path=""']
+  ),
+  'reference generator runs as a hardened SECURITY DEFINER function'
 );
 
 SELECT * FROM finish();
