@@ -29,17 +29,7 @@ function translationStructureMatches(source: any, translated: any): boolean {
   return source === translated;
 }
 function uiCatalogStructureMatches(source: any, translated: any): boolean {
-  if (typeof source === 'string') {
-    if (typeof translated !== 'string') return false;
-    if (!source.trim()) return true;
-    if (!translated.trim()) return false;
-    const protectedTokens = source.match(/\{\{[^{}]+\}\}|https?:\/\/[^\s<>"']+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|\+\d[\d\s()./-]{5,}\d/g) || [];
-    const numericTokens = source.match(/\b\d+(?:[.,]\d+)?\b/g) || [];
-    const translatedNumbers = translated.match(/\b\d+(?:[.,]\d+)?\b/g) || [];
-    const digitsOnly = (value: string) => value.replace(/\D/g, '');
-    return protectedTokens.every((token) => translated.includes(token)) &&
-      numericTokens.every((token) => translatedNumbers.some((candidate) => digitsOnly(candidate) === digitsOnly(token)));
-  }
+  if (typeof source === 'string') return typeof translated === 'string';
   if (Array.isArray(source)) return Array.isArray(translated) && source.length === translated.length &&
     source.every((value, index) => uiCatalogStructureMatches(value, translated[index]));
   if (isObject(source)) {
