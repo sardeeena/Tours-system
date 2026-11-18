@@ -1077,7 +1077,10 @@
     "private.text.ff566677": "Mot de passe mis à jour",
     "private.text.ff566f40": "Nom ",
     "private.text.8db53650": "Réserver maintenant ",
-    "private.text.d59d8b58": "Départ du bateau vers 08:30 – 09:00 AM "
+    "private.text.d59d8b58": "Départ du bateau vers 08:30 – 09:00 AM ",
+    "private.text.2d9bf6ca": "Cette page n’a pas pu être affichée",
+    "private.text.c3acc0cd": "Recharger la page ",
+    "private.text.e2f282f4": "Un problème a interrompu cette page. Rechargez-la pour réessayer. Les détails de votre réservation n’ont pas été envoyés depuis cet écran de récupération. "
   },
-  "coverage": 1075
+  "coverage": 1078
 }
