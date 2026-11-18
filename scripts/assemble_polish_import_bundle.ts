@@ -28,6 +28,27 @@ function translationStructureMatches(source: any, translated: any): boolean {
   }
   return source === translated;
 }
+function uiCatalogStructureMatches(source: any, translated: any): boolean {
+  if (typeof source === 'string') {
+    if (typeof translated !== 'string') return false;
+    if (!source.trim()) return true;
+    if (!translated.trim()) return false;
+    const protectedTokens = source.match(/\\{\\{[^{}]+\\}\\}|https?:\\/\\/[^\\s<>"']+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}|\\+\\d[\\d\\s()./-]{5,}\\d/g) || [];
+    const numericTokens = source.match(/\\b\\d+(?:[.,]\\d+)?\\b/g) || [];
+    const translatedNumbers = translated.match(/\\b\\d+(?:[.,]\\d+)?\\b/g) || [];
+    const digitsOnly = (value: string) => value.replace(/\\D/g, '');
+    return protectedTokens.every((token) => translated.includes(token)) &&
+      numericTokens.every((token) => translatedNumbers.some((candidate) => digitsOnly(candidate) === digitsOnly(token)));
+  }
+  if (Array.isArray(source)) return Array.isArray(translated) && source.length === translated.length &&
+    source.every((value, index) => uiCatalogStructureMatches(value, translated[index]));
+  if (isObject(source)) {
+    if (!isObject(translated)) return false;
+    const a = Object.keys(source).sort(), b = Object.keys(translated).sort();
+    return a.length === b.length && a.every((key, index) => key === b[index] && uiCatalogStructureMatches(source[key], translated[key]));
+  }
+  return source === translated;
+}
 function mergeRows(sourceRows: any[], translatedRows: any[], fields: string[], label: string): any[] {
   if (!Array.isArray(sourceRows) || !Array.isArray(translatedRows) || sourceRows.length !== translatedRows.length) {
     throw new Error(label + ' row count does not match the live source (' + (sourceRows?.length ?? 'not-array') + ' vs ' + (translatedRows?.length ?? 'not-array') + ').');
@@ -46,7 +67,7 @@ function mergeRows(sourceRows: any[], translatedRows: any[], fields: string[], l
   });
 }
 function expectedPayload(type: string, source: AnyRecord): AnyRecord {
-  if (type === 'ui_catalog') return source.content || {};
+  if (type === 'ui_catalog') return { content: source.content || {} };
   if (type === 'tour') return {
     title: source.title, summary: source.short_description || source.description || '',
     content: {
@@ -131,7 +152,7 @@ async function main() {
     if (expected.summary !== undefined && !translationStructureMatches(expected.summary, payload.summary)) {
       throw new Error('Summary structure/token mismatch: ' + draft.entity_type + ':' + draft.entity_key);
     }
-    if (!translationStructureMatches(expected.content, payload.content)) {
+    if (!(draft.entity_type === 'ui_catalog' ? uiCatalogStructureMatches(expected.content, payload.content) : translationStructureMatches(expected.content, payload.content))) {
       throw new Error('Content structure/token mismatch: ' + draft.entity_type + ':' + draft.entity_key);
     }
     const slug = normalizedSlug(draft.translated_slug, draft.entity_key);
