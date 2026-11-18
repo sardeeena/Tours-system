@@ -46,7 +46,6 @@ DECLARE
     v_pickup_location_id UUID;
     v_booking_id UUID;
     v_booking_ref TEXT;
-    v_ref_random BYTEA;
     v_total_guests INT;
     v_subtotal NUMERIC(10,2) := 0.00;
     v_pickup_fee NUMERIC(10,2) := 0.00;
