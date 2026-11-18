@@ -29,11 +29,13 @@ export interface IBookingRepository {
   listBookings(filters?: { status?: string; limit?: number }): Promise<Booking[]>;
 }
 
-export function generateBookingReference(bookingDate: string | Date = new Date()): string {\n  return generateLocalBookingReference(bookingDate);\n}
+export function generateBookingReference(bookingDate: string | Date = new Date()): string {
+  return generateLocalBookingReference(bookingDate);
+}
 
 export function validateBookingPayload(booking: Booking): { isValid: boolean; error?: string } {
-  if (!booking.bookingReference || !booking.bookingReference.startsWith('RST-')) {
-    return { isValid: false, error: 'Invalid booking reference format. Must start with RST-' };
+  if (!isValidBookingReference(booking.bookingReference)) {
+    return { isValid: false, error: 'Invalid booking reference format. Expected AWE-YYYYMMDD-123456.' };
   }
   if (!booking.customer || !booking.customer.email || !booking.customer.email.includes('@')) {
     return { isValid: false, error: 'A valid customer email address is required.' };
