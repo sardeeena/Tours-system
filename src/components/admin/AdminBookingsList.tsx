@@ -126,9 +126,9 @@ export const AdminBookingsList: React.FC = () => {
       const settled = existingPayments
         .filter((payment) => ['paid', 'partially paid', 'partially_paid'].includes(String(payment.paymentStatus).toLowerCase()))
         .reduce((sum, payment) => sum + payment.amount, 0);
-      const existingRefunds = await listRefunds({ bookingId: paymentToRecord.bookingReference, currency });
+      const existingRefunds = await listRefunds({ bookingId: paymentToRecord.bookingReference });
       const refunded = existingRefunds
-        .filter((refund) => refund.status === 'processed')
+        .filter((refund) => refund.currency === currency && refund.status === 'processed')
         .reduce((sum, refund) => sum + (refund.approvedAmount || refund.amount), 0);
       const netPaid = Math.max(0, settled - refunded);
       const bookingTotal = Number(paymentToRecord.pricing?.totalEur || 0);
@@ -212,7 +212,9 @@ export const AdminBookingsList: React.FC = () => {
       const resolved = await bookingRepository.resolveBookingCancellation(ref, 'reject', reason);
       if (!resolved) throw new Error('Booking not found.');
       showToast(`Cancellation request for ${ref} was rejected.`, 'success');
-      if (selectedBooking?.bookingReference === ref) setSelectedBooking(resolved);
+      if (selectedBooking?.bookingReference === ref) {
+        setSelectedBooking({ ...selectedBooking, status: resolved.status, cancellationReason: reason });
+      }
       setBookingToRejectCancellation(null);
       setRejectionReason('');
       await loadBookings();
