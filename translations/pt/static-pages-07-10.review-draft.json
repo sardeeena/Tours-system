@@ -1,0 +1,236 @@
+{
+  "schema_version": 1,
+  "locale": "pt",
+  "status": "translation-review-draft",
+  "source_project": "uvtbtpxtrrmaublrztgv",
+  "coverage": {
+    "static_page": 4,
+    "source_records": 4
+  },
+  "records": [
+    {
+      "entity_type": "static_page",
+      "entity_key": "privacy",
+      "source_slug": "privacy",
+      "translated_slug": "politica-privacidade",
+      "title": "Política de privacidade",
+      "summary": "Saiba como a Awesome Adventure Tours recolhe, utiliza, protege e partilha informações quando visita o site, nos contacta ou efetua uma reserva.",
+      "seo_title": "Política de privacidade | Awesome Adventure Tours",
+      "seo_description": "Saiba como a Awesome Adventure Tours trata informações de reservas, contactos, contas e utilização do site, incluindo localização aproximada com consentimento, idioma do dispositivo, prestadores de serviços e direitos de privacidade.",
+      "content": {
+        "heroHeadline": "A sua privacidade é importante para nós",
+        "heroSubtitle": "Saiba como a Awesome Adventure Tours recolhe, utiliza, protege e partilha informações quando visita o site, nos contacta ou efetua uma reserva.",
+        "sections": [
+          {
+            "title": "1. Quem somos e como nos pode contactar",
+            "content": "Este site é operado sob o nome Awesome Adventure Tours, a partir de Hurghada, no Mar Vermelho, Egito. A nossa morada de contacto é: 2.º andar, Bostan Cafe, Madres, Hurghada, Egito. Para questões ou pedidos relacionados com privacidade, contacte-nos através de https://awesomeadventure.tours/contact ou ligue para +20 151 5212741. Inclua informações suficientes para podermos localizar o seu pedido, mas não envie palavras-passe nem dados completos de cartões de pagamento. Esta política descreve o site e os serviços de reserva; não substitui aconselhamento jurídico sobre as leis aplicáveis a um viajante ou transação específicos."
+          },
+          {
+            "title": "2. Que informações podemos recolher",
+            "content": "Consoante a forma como utiliza o site, podemos tratar: dados de contacto e identificação, como nome, endereço de e-mail, número de telefone e país; dados da reserva, como excursão selecionada, data, número e idades dos participantes, idioma escolhido para a excursão, referência da reserva, detalhes de recolha ou ponto de encontro e pedidos especiais; informações da conta necessárias para registar-se, iniciar sessão e gerir o perfil; mensagens e pedidos de apoio que nos envia; dados de subscrição da newsletter e respetivo estado; e informações técnicas, como dados de ligação e rede (incluindo o endereço IP quando necessário para segurança e prevenção de abusos), navegador e dispositivo, idiomas e definições regionais preferidos do navegador, fuso horário, categorias de dimensão do ecrã e da área de visualização, páginas solicitadas, marcas temporais, eventos de segurança e preferências de consentimento. Se ativar a análise opcional, também enviamos temporariamente o IP da sua ligação para ipwho.is para estimar o país, a região e a cidade. Trata-se de uma estimativa aproximada, não de localização GPS, e pode estar incorreta. Não armazenamos o endereço IP bruto nos registos de análise de visitantes. Não forneça dados pessoais sensíveis, salvo se forem realmente necessários para tratar o seu pedido e decidir partilhá-los."
+          },
+          {
+            "title": "3. Porque utilizamos as informações",
+            "content": "Utilizamos as informações para responder a pedidos; verificar disponibilidade e preparar, administrar e comunicar reservas; fornecer confirmações, vouchers, atualizações de serviço e apoio ao cliente; coordenar a excursão, o transfer ou a atividade relevante com o fornecedor responsável pela sua realização; gerir contas e proteger os serviços de início de sessão e de reserva; manter registos, prevenir fraude e utilização abusiva, resolver litígios e cumprir obrigações legais; e, quando tiver optado por recebê-las, enviar newsletters ou comunicações promocionais. Conforme aplicável, o tratamento pode basear-se em diligências solicitadas antes da celebração de um contrato, na execução de uma reserva, nos nossos interesses legítimos — como a segurança do serviço e o apoio ao cliente —, em obrigações legais e no consentimento quando exigido, incluindo para tecnologias opcionais de análise ou marketing."
+          },
+          {
+            "title": "4. Com quem podemos partilhar informações",
+            "content": "Partilhamos apenas as informações razoavelmente necessárias para a finalidade relevante. Os destinatários podem incluir o operador da excursão, o fornecedor do barco ou da atividade, o fornecedor do transfer ou da recolha e outros fornecedores envolvidos na execução da reserva; os nossos fornecedores de alojamento do site, base de dados, autenticação, armazenamento e envio de e-mails (incluindo Hostinger, Supabase e Resend, quando utilizados); fornecedores de análise ou gestão de etiquetas, apenas de acordo com as suas escolhas de cookies e as definições aplicáveis; ipwho.is, apenas quando tiver ativado a análise, para estimar o país, a região e a cidade a partir do IP da sua ligação (o IP é enviado temporariamente para a consulta e não é guardado na nossa base de dados de análise de visitantes); e autoridades públicas, reguladores, tribunais ou consultores profissionais, quando a divulgação for exigida por lei ou razoavelmente necessária para proteger direitos, segurança ou o serviço. Os fornecedores podem tratar informações ao abrigo das suas próprias políticas de privacidade quando prestam os respetivos serviços."
+          },
+          {
+            "title": "5. Tratamento internacional de dados",
+            "content": "Alguns fornecedores de serviços técnicos e operacionais podem tratar ou armazenar informações em países fora do Egito, incluindo países onde se encontram as suas infraestruturas ou equipas de apoio. Quando a legislação aplicável exigir salvaguardas para uma transferência internacional, utilizaremos um mecanismo de transferência adequado ou outra proteção legalmente reconhecida. Contacte-nos se precisar de mais informações sobre um fornecedor ou uma transferência específicos."
+          },
+          {
+            "title": "6. Conservação e segurança",
+            "content": "Conservamos as informações durante o período razoavelmente necessário para as finalidades descritas acima, incluindo concluir uma reserva, prestar apoio, manter registos contabilísticos e operacionais, tratar reclamações e cumprir requisitos legais. Os períodos de conservação variam consoante o tipo de registo e a obrigação legal. Utilizamos controlos de acesso e medidas técnicas e organizacionais destinadas a proteger as informações, mas nenhum site ou transmissão eletrónica pode ser garantido como totalmente seguro. Utilize uma palavra-passe única e não partilhe as credenciais da sua conta."
+          },
+          {
+            "title": "7. As suas escolhas e direitos de privacidade",
+            "content": "Consoante a legislação aplicável, poderá ter direito a solicitar acesso aos seus dados pessoais, a sua correção ou eliminação, opor-se a determinados tratamentos ou limitar o seu âmbito, retirar o consentimento ou receber uma cópia das informações que forneceu. Pode cancelar a subscrição de mensagens de marketing através do mecanismo de cancelamento disponibilizado; quando necessário, poderemos continuar a enviar mensagens de serviço e relacionadas com reservas. Pode alterar as escolhas opcionais de cookies através de «Definições de cookies» no rodapé do site. Para exercer os seus direitos de privacidade, contacte-nos através dos dados indicados na secção 1. Poderemos precisar de verificar a sua identidade e conservar determinadas informações quando a lei o permitir ou exigir."
+          },
+          {
+            "title": "8. Crianças e sites de terceiros",
+            "content": "O site destina-se a pessoas que organizam viagens e reservas. Quando necessário, um progenitor ou adulto responsável deve fornecer os dados de reserva relativos a crianças e não deve criar uma conta para uma criança sem a devida autorização. O nosso site pode incluir ligações para sites de terceiros ou serviços de mensagens. Não controlamos o conteúdo nem as práticas de privacidade desses serviços; consulte as respetivas políticas antes de os utilizar."
+          },
+          {
+            "title": "9. Alterações a esta política",
+            "content": "Podemos atualizar esta política quando os nossos serviços, tecnologias ou requisitos legais mudarem. A data indicada no topo da página mostra quando esta versão foi atualizada pela última vez. As alterações importantes serão refletidas nesta página."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Descobrir mais",
+          "bookNow": "Reservar agora"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "terms",
+      "source_slug": "terms",
+      "translated_slug": "termos-condicoes",
+      "title": "Termos e condições",
+      "summary": "Leia estes termos antes de utilizar o site ou enviar um pedido de reserva de excursão.",
+      "seo_title": "Termos e condições | Awesome Adventure Tours",
+      "seo_description": "Consulte as condições de utilização do site, reservas de excursões, preços, responsabilidades dos fornecedores, segurança, alterações e legislação aplicável à Awesome Adventure Tours.",
+      "content": {
+        "heroHeadline": "Termos do site e das reservas",
+        "heroSubtitle": "Leia estes termos antes de utilizar o site ou enviar um pedido de reserva de excursão.",
+        "sections": [
+          {
+            "title": "1. Sobre estes termos",
+            "content": "Estes termos aplicam-se à utilização de awesomeadventure.tours e aos pedidos de reserva enviados através do site. O site é operado sob o nome Awesome Adventure Tours, a partir de Hurghada, Egito. Algumas excursões podem ser realizadas por fornecedores independentes de barcos, transportes, atividades ou destinos. Os detalhes específicos do fornecedor e do serviço apresentados para cada excursão fazem parte das informações que deve consultar antes de reservar."
+          },
+          {
+            "title": "2. Informações do site e disponibilidade",
+            "content": "Tomamos medidas razoáveis para manter úteis e atualizadas as descrições das excursões, imagens, horários, preços, serviços incluídos, detalhes de recolha e informações de disponibilidade. Os detalhes podem mudar devido às operações dos fornecedores, ao tempo, a horários sazonais ou à disponibilidade. Uma oferta não garante que a partida será realizada até a reserva estar confirmada. Se algum detalhe importante parecer incorreto, contacte-nos antes de se basear nessa informação."
+          },
+          {
+            "title": "3. Reservas e confirmação",
+            "content": "Ao enviar um formulário de reserva, está a solicitar que organizemos a excursão selecionada com base nos dados que fornece. O pedido só se torna uma reserva confirmada quando o site ou a nossa equipa emitir uma confirmação de reserva ou voucher. É responsável por verificar a data, a excursão, o número e a idade dos participantes, o idioma da excursão, os dados de recolha, os contactos, o preço e quaisquer condições especiais. Guarde a referência e a confirmação da reserva."
+          },
+          {
+            "title": "4. Preços, moeda e pagamento",
+            "content": "O preço e a moeda apresentados durante o processo de reserva para a excursão selecionada são os valores relevantes da proposta, sujeitos a suplementos ou alterações claramente indicados e confirmados antes da aceitação da reserva. As conversões de moeda apresentadas são indicativas; o seu banco ou fornecedor de pagamentos pode aplicar a própria taxa de câmbio ou comissões. As modalidades de pagamento podem variar consoante a excursão e serão indicadas durante a reserva ou na confirmação. Nunca envie números de cartão, códigos de segurança ou palavras-passe por e-mail comum, chat ou notas de reserva."
+          },
+          {
+            "title": "5. Idioma da excursão, participantes e recolha",
+            "content": "Os idiomas dos guias, o prazo mínimo para reservar, os limites de idade, as zonas de recolha, os pontos de encontro e os suplementos de transfer variam consoante a excursão e a data. A escolha de um idioma é um pedido para a excursão selecionada e depende da disponibilidade indicada para essa partida. Forneça dados corretos dos participantes e da recolha e contacte-nos rapidamente se houver alterações. Chegue a horas ao ponto de encontro confirmado e siga as instruções do fornecedor."
+          },
+          {
+            "title": "6. Segurança e conduta",
+            "content": "Deve seguir as instruções de segurança razoáveis da tripulação, do guia, do motorista e dos responsáveis pela atividade, cumprir a legislação local e respeitar os outros participantes e o ambiente. Informe antecipadamente o operador relevante sobre qualquer condição ou necessidade de mobilidade que possa afetar a participação em segurança. O operador pode recusar ou interromper a participação quando a conduta ou a condição de uma pessoa criar um risco de segurança, tendo em conta a legislação aplicável e as circunstâncias."
+          },
+          {
+            "title": "7. Alterações, condições meteorológicas e operações dos fornecedores",
+            "content": "As excursões podem ser adiadas, alteradas, substituídas ou canceladas devido ao tempo, ao estado do mar, ao encerramento de portos, a instruções das autoridades, a preocupações de segurança, à disponibilidade dos fornecedores ou a acontecimentos fora do controlo razoável. Nós ou o fornecedor relevante comunicaremos alterações importantes quando for possível. Se o operador cancelar uma partida, explicaremos as opções disponíveis de reagendamento ou reembolso para essa reserva. Consulte a Política de cancelamento e reembolso para mais informações."
+          },
+          {
+            "title": "8. Cancelamentos e reembolsos",
+            "content": "Os prazos de cancelamento e as condições de elegibilidade para reembolso não são iguais em todas as excursões. As condições apresentadas na página da excursão selecionada, durante o checkout e na confirmação aplicam-se a essa reserva e prevalecem sobre exemplos gerais do site. Consulte https://awesomeadventure.tours/cancellation-policy antes de reservar."
+          },
+          {
+            "title": "9. Responsabilidade e direitos obrigatórios",
+            "content": "Nada nestes termos exclui ou limita a responsabilidade quando tal seja ilegal, incluindo direitos ou meios de recurso que não possam ser renunciados ao abrigo da legislação de proteção do consumidor aplicável. Na medida permitida por lei, a responsabilidade pela operação efetiva e pela realização da excursão no próprio dia cabe ao fornecedor que presta esse serviço. Continuamos responsáveis pelas nossas próprias obrigações conforme exigido pela legislação aplicável."
+          },
+          {
+            "title": "10. Utilização do site, propriedade intelectual e segurança",
+            "content": "Pode utilizar o site para planeamento de viagens e reservas pessoais lícitas. Não utilize o site de forma abusiva, não interfira com a sua segurança, não tente obter acesso não autorizado, não envie informações falsas, não recolha nem copie conteúdos em grande escala e não carregue material malicioso. Os textos, a marca, o design e os conteúdos multimédia do site estão protegidos pelas leis de propriedade intelectual aplicáveis, salvo indicação em contrário."
+          },
+          {
+            "title": "11. Lei aplicável e contacto",
+            "content": "Estes termos destinam-se a ser interpretados de acordo com a legislação do Egito, sem retirar quaisquer proteções obrigatórias do consumidor que lhe sejam aplicáveis ao abrigo da lei do seu país de residência. Qualquer litígio será tratado pelo foro competente, conforme exigido pela legislação aplicável. Contacte-nos através de https://awesomeadventure.tours/contact ou do número +20 151 5212741. Se alguma disposição não puder ser aplicada, as restantes continuarão em vigor na medida permitida por lei."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Descobrir mais",
+          "bookNow": "Reservar agora"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "cancellation-policy",
+      "source_slug": "cancellation-policy",
+      "translated_slug": "politica-cancelamento-reembolso",
+      "title": "Política de cancelamento e reembolso",
+      "summary": "As condições de cancelamento e reembolso dependem da excursão e são confirmadas nos detalhes da reserva.",
+      "seo_title": "Política de cancelamento e reembolso | Awesome Adventure Tours",
+      "seo_description": "Saiba como solicitar um cancelamento, como se aplicam os prazos específicos de cada excursão e o que acontece quando o tempo ou restrições operacionais impedem uma partida.",
+      "content": {
+        "heroHeadline": "Cancelamentos e reembolsos",
+        "heroSubtitle": "As condições de cancelamento e reembolso dependem da excursão e são confirmadas nos detalhes da reserva.",
+        "sections": [
+          {
+            "title": "1. Aplica-se a política indicada para a sua excursão",
+            "content": "As diferentes excursões e os diferentes fornecedores podem ter prazos de cancelamento e condições de reembolso distintos. Antes de pagar ou enviar uma reserva, leia as informações de cancelamento apresentadas na página da excursão selecionada, durante o checkout e na confirmação ou voucher. Quando forem diferentes desta política geral, as condições específicas da excursão regem a sua reserva."
+          },
+          {
+            "title": "2. Prazos de cancelamento gratuito",
+            "content": "Algumas excursões podem permitir o cancelamento gratuito até 24 horas antes da hora de início prevista. Esta não é uma promessa universal para todas as excursões: o prazo de 24 horas só se aplica quando estiver expressamente indicado para a excursão selecionada ou confirmado no voucher. Se a sua reserva indicar outro prazo, uma taxa ou uma condição não reembolsável, aplica-se essa condição específica, sem prejuízo dos direitos legais obrigatórios."
+          },
+          {
+            "title": "3. Como solicitar um cancelamento ou uma alteração",
+            "content": "Contacte a nossa equipa o mais rapidamente possível através de https://awesomeadventure.tours/contact ou ligue para +20 151 5212741. Indique a referência da reserva, o nome do viajante principal e a data da excursão. O cancelamento não fica concluído apenas por ter enviado uma mensagem; aguarde a confirmação de receção ou uma confirmação escrita do cancelamento. Os pedidos recebidos perto da partida podem não ser processados antes do prazo do fornecedor, por isso não deixe para a última hora."
+          },
+          {
+            "title": "4. Atrasos e faltas",
+            "content": "Se perder a recolha ou a partida, chegar depois da hora de encontro confirmada ou não comparecer, o fornecedor poderá considerar a reserva como falta de comparência, e a reserva poderá não ser reembolsável nos termos indicados. Contacte-nos imediatamente se ocorrer um atraso inesperado. Qualquer exceção depende da decisão do fornecedor e da legislação aplicável."
+          },
+          {
+            "title": "5. Condições meteorológicas, segurança e cancelamentos pelo operador",
+            "content": "Os passeios de barco e as atividades ao ar livre podem ser afetados pelo tempo, pelo estado do mar, pelo encerramento de portos, por instruções das autoridades ou por decisões de segurança. Se o operador responsável cancelar a partida ou não puder realizar a excursão em segurança, contactaremos os viajantes afetados para explicar as opções disponíveis para essa reserva. Consoante as circunstâncias e as condições aplicáveis, estas opções podem incluir outra data, uma atividade alternativa adequada ou um reembolso. Não pediremos aos viajantes que participem numa atividade que o operador responsável considere insegura."
+          },
+          {
+            "title": "6. Método e prazo do reembolso",
+            "content": "Quando houver lugar a reembolso, confirmaremos consigo o montante e o método. Normalmente, os reembolsos são processados pelo método de pagamento original, quando esse método permite reembolsos. Se o pagamento tiver sido combinado diretamente com o fornecedor ou cobrado no momento da recolha, a equipa explicará o procedimento aplicável. Os bancos e os fornecedores de pagamento podem precisar de tempo adicional para creditar o valor. Não garantimos um prazo fixo quando o processamento depende de terceiros."
+          },
+          {
+            "title": "7. Alterações solicitadas pelo viajante",
+            "content": "As alterações de data, número de participantes, local de recolha ou idioma da excursão dependem da disponibilidade e da aprovação do fornecedor. Se o fornecedor não puder alterar a reserva original, o pedido de alteração poderá ser tratado como um cancelamento e uma nova reserva. Qualquer diferença de preço ou taxa será explicada antes de a alteração ser confirmada."
+          },
+          {
+            "title": "8. Dúvidas e litígios",
+            "content": "Guarde a confirmação da reserva e toda a correspondência relativa ao cancelamento. Se considerar que um cancelamento ou reembolso foi tratado incorretamente, contacte-nos com a referência da reserva e uma descrição clara do problema para podermos analisá-lo com o fornecedor relevante. Nada nesta política limita direitos do consumidor que não possam ser legalmente excluídos."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Descobrir mais",
+          "bookNow": "Reservar agora"
+        }
+      }
+    },
+    {
+      "entity_type": "static_page",
+      "entity_key": "cookie-policy",
+      "source_slug": "cookie-policy",
+      "translated_slug": "politica-cookies-armazenamento-site",
+      "title": "Política de cookies e armazenamento no site",
+      "summary": "Saiba como este site utiliza o armazenamento do navegador e tecnologias opcionais de análise e como pode alterar as suas escolhas.",
+      "seo_title": "Política de cookies | Awesome Adventure Tours",
+      "seo_description": "Conheça as regras relativas ao armazenamento essencial, à análise e ao marketing através do Google Tag Manager e saiba como alterar as preferências de cookies na Awesome Adventure Tours.",
+      "content": {
+        "heroHeadline": "Cookies e as suas escolhas",
+        "heroSubtitle": "Saiba como este site utiliza o armazenamento do navegador e tecnologias opcionais de análise e como pode alterar as suas escolhas.",
+        "sections": [
+          {
+            "title": "1. Cookies e tecnologias semelhantes",
+            "content": "Os cookies são pequenos ficheiros guardados pelo site no seu navegador. Os sites também podem utilizar armazenamento local, armazenamento de sessão, píxeis e scripts para finalidades semelhantes. Este site utiliza o armazenamento do navegador para funcionalidades e preferências essenciais. O Google Tag Manager também está instalado no site; as etiquetas opcionais de análise ou publicidade permanecem bloqueadas até escolher a categoria de consentimento opcional relevante no banner de cookies. Quando ativa a análise, o endereço IP da sua ligação também é enviado temporariamente para ipwho.is para estimar o país, a região e a cidade. O endereço IP em si não é guardado nos nossos registos de análise de visitantes."
+          },
+          {
+            "title": "2. Armazenamento essencial",
+            "content": "O armazenamento essencial permite que o site funcione e disponibilize as funcionalidades que pretende utilizar. Consoante as funcionalidades disponíveis, pode memorizar o idioma e o tema claro ou escuro, guardar um rascunho de reserva ou preferências temporárias da interface, manter o estado de autenticação e sessão através do nosso fornecedor de autenticação e guardar o seu consentimento de cookies. Estas funcionalidades não são utilizadas para criar perfis publicitários. Se bloquear todo o armazenamento do navegador, algumas funcionalidades da conta, da reserva ou das preferências poderão não funcionar corretamente."
+          },
+          {
+            "title": "3. Escolhas de análise e marketing",
+            "content": "As tecnologias de análise ajudam-nos a compreender como os visitantes utilizam o site e a melhorar a navegação e os processos de reserva. As tecnologias de marketing, quando ativadas na nossa configuração de gestão de etiquetas, podem medir ou personalizar atividades promocionais. Estas categorias opcionais estão desativadas por predefinição. O Google Tag Manager só é carregado depois de dar consentimento para análise ou marketing; os sinais de consentimento enviados à Google distinguem as escolhas de análise das escolhas de publicidade. As etiquetas individuais no gestor de etiquetas também têm de estar configuradas para respeitar a categoria de consentimento relevante."
+          },
+          {
+            "title": "4. Serviços de terceiros",
+            "content": "Quando ativados ou utilizados, os serviços de terceiros podem guardar ou ler as suas próprias tecnologias de acordo com as respetivas políticas. Estes serviços podem incluir serviços Google através do nosso gestor de etiquetas, Supabase para autenticação e dados da aplicação, ipwho.is para estimar a localização a partir do endereço IP depois de ativar o consentimento para análise e serviços ou conteúdos externos que abra por iniciativa própria, como o WhatsApp. O carregamento de imagens, tipos de letra ou ligações externas também pode fazer com que o navegador estabeleça ligação ao fornecedor relevante. Consulte as políticas de privacidade e cookies dos fornecedores para obter mais informações."
+          },
+          {
+            "title": "5. Gerir e retirar o consentimento",
+            "content": "Na primeira visita, escolha no banner de cookies «Aceitar todos», «Rejeitar opcionais» ou «Personalizar». O armazenamento essencial permanece sempre ativo porque o site precisa dele para disponibilizar as funcionalidades básicas. Pode voltar a abrir as definições em qualquer momento através de «Definições de cookies» no rodapé e alterar as escolhas relativas à análise ou ao marketing. Cada alteração atualiza os sinais de consentimento utilizados pelo site para gerir futuras etiquetas. Se um cookie de terceiros já tiver sido guardado, poderá também ser necessário removê-lo nas definições do navegador."
+          },
+          {
+            "title": "6. Definições do navegador e períodos de conservação",
+            "content": "A maioria dos navegadores permite consultar, bloquear ou eliminar cookies e limpar os dados dos sites. O consentimento de cookies é guardado no navegador para que o site possa recordar a sua escolha; se eliminar os dados do site ou utilizar outro navegador ou dispositivo, o banner poderá voltar a aparecer. As preferências e o armazenamento da aplicação podem permanecer até serem eliminados ou substituídos pela aplicação. O período de conservação dos cookies de terceiros é definido pelo respetivo fornecedor."
+          },
+          {
+            "title": "7. Atualizações e contacto",
+            "content": "Podemos atualizar esta política quando as funcionalidades do site ou os fornecedores de serviços mudarem. Se tiver dúvidas sobre cookies ou sobre as suas escolhas, contacte-nos através de https://awesomeadventure.tours/contact ou ligue para +20 151 5212741. Para informações gerais sobre dados pessoais, consulte a nossa Política de privacidade."
+          }
+        ],
+        "paragraphs": [],
+        "labels": {
+          "browseMore": "Descobrir mais",
+          "bookNow": "Reservar agora"
+        }
+      }
+    }
+  ]
+}
