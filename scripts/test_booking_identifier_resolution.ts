@@ -1,11 +1,19 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
+  formatBookingReference,
+  isValidBookingReference,
   resolveBookingTourIdentifier,
   shouldUseLocalBookingCache,
 } from '../src/lib/bookingIdentifiers';
 
 const databaseId = '8f8c4f5a-1d21-4f1d-a2b8-9e1f4c6a2d10';
+
+assert.equal(formatBookingReference('2026-11-18', 123456), 'AWE-20261118-123456');
+assert.equal(isValidBookingReference('AWE-20261118-123456'), true);
+assert.equal(isValidBookingReference('AWE-20261118-12345'), false);
+assert.equal(isValidBookingReference('RST-2026-AB1234'), false);
+assert.throws(() => formatBookingReference('2026-11-18', 1000000), /between 1 and 999999/);
 
 assert.equal(
   resolveBookingTourIdentifier('tour-1', 'orange-bay-island-snorkeling'),
