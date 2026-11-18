@@ -661,7 +661,7 @@ BEGIN
         'isDuplicate', false
     );
 END;
-$function$
+$function$;
 
 
 -- Make the reference easy to identify and retain in all automated communication
