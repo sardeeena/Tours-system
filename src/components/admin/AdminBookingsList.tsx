@@ -154,7 +154,7 @@ export const AdminBookingsList: React.FC = () => {
       const remaining = Math.max(0, Math.round((bookingTotal - netPaid) * 100) / 100);
       if (remaining <= 0) throw new Error('This booking has no outstanding balance in the payment ledger.');
       const amount = Number(paymentAmount);
-      if (!Number.isFinite(amount) || amount <= 0 || Math.round(amount * 100) !== amount * 100) {
+      if (!Number.isFinite(amount) || amount <= 0 || Math.abs(amount * 100 - Math.round(amount * 100)) > 0.000001) {
         throw new Error('Enter a valid payment amount with no more than two decimal places.');
       }
       if (amount > remaining + 0.00001) {
