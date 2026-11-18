@@ -1,0 +1,97 @@
+name: Dependency security policy
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    name: Resolve and audit complete npm dependency tree
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Resolve all dependencies including development tools
+        run: npm install --include=dev --no-audit --no-fund
+
+      - name: Refresh the Bun lockfile without installing dependencies
+        uses: oven-sh/setup-bun@v2
+
+      - name: Resolve and save the Bun lockfile
+        run: bun install --lockfile-only
+
+      - name: Commit generated npm and Bun lockfiles to this PR branch
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          TARGET_BRANCH: ${{ github.head_ref }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json bun.lock
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(deps): reconcile npm and Bun lockfiles"
+            git push origin "HEAD:${TARGET_BRANCH}"
+          fi
+
+      - name: Produce complete dependency audit report
+        run: |
+          npm audit --include=dev --json > dependency-audit.json || true
+          node --input-type=commonjs <<'NODE'
+          const report = require('./dependency-audit.json');
+          const vulnerabilities = report.vulnerabilities || {};
+          const summary = report.metadata?.vulnerabilities || {};
+          console.log('AUDIT_SUMMARY', JSON.stringify(summary));
+          for (const [name, item] of Object.entries(vulnerabilities)) {
+            console.log('AUDIT_PACKAGE', JSON.stringify({
+              name,
+              severity: item.severity,
+              isDirect: item.isDirect,
+              range: item.range,
+              fixAvailable: item.fixAvailable,
+              via: item.via.map(v => typeof v === 'string' ? v : {
+                name: v.name,
+                title: v.title,
+                url: v.url,
+                range: v.range
+              })
+            }));
+          }
+          NODE
+
+      - name: Type-check with the proposed compatible Vite toolchain
+        run: npm run lint
+
+      - name: Build with the proposed compatible Vite toolchain
+        run: npm run build
+
+      - name: Upload full audit report and generated npm lockfile
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-security-diagnostic
+          path: |
+            dependency-audit.json
+            package-lock.json
+            bun.lock
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Enforce complete dependency audit policy
+        run: |
+          node scripts/check_dependency_audit.mjs dependency-audit.json
+          npm audit --omit=dev --audit-level=low

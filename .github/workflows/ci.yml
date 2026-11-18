@@ -27,6 +27,12 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v7
 
+      - name: Set up Bun for lockfile consistency verification
+        uses: oven-sh/setup-bun@v2
+
+      - name: Verify Bun lockfile matches package.json
+        run: bun install --frozen-lockfile --lockfile-only
+
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
@@ -34,7 +40,13 @@ jobs:
           package-manager-cache: false
 
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --include=dev --no-audit --no-fund
+
+      - name: Audit all dependencies and enforce the documented development-only exception
+        run: |
+          npm audit --include=dev --json > dependency-audit.json || true
+          node scripts/check_dependency_audit.mjs dependency-audit.json
+          npm audit --omit=dev --audit-level=low
 
 
 
