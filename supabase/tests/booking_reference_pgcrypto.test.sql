@@ -2,11 +2,32 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(4);
+SELECT plan(8);
 
 SELECT ok(
-  to_regprocedure('extensions.gen_random_bytes(integer)') IS NOT NULL,
-  'pgcrypto random-byte generator is installed in the extensions schema'
+  position('AWE-' IN pg_get_functiondef(to_regprocedure('private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)'))) > 0
+  AND position('private.generate_booking_reference(p_booking_date)' IN pg_get_functiondef(to_regprocedure('private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)'))) > 0,
+  'atomic booking function delegates to the date-based AWE reference generator'
+);
+
+SELECT ok(
+  position('ON CONFLICT (booking_date)' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0,
+  'reference generator atomically upserts the per-date counter'
+);
+
+SELECT ok(
+  position('last_value < 999999' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0,
+  'reference generator enforces the six-digit per-date capacity'
+);
+
+SELECT ok(
+  position('to_char(p_booking_date' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0,
+  'reference generator embeds the excursion date'
+);
+
+SELECT ok(
+  position('CONTINUE;' IN pg_get_functiondef(to_regprocedure('private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)'))) > 0,
+  'atomic booking retries if a unique reference collision occurs'
 );
 
 SELECT ok(
