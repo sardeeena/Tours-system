@@ -1088,6 +1088,24 @@ html.aat-motion-active .aat-reveal:nth-of-type(3) { transition-delay: 90ms; }
 html.aat-motion-active .aat-reveal:nth-of-type(4) { transition-delay: 135ms; }
 html.aat-motion-active .aat-reveal:nth-of-type(5) { transition-delay: 180ms; }
 
+/*
+ * Mobile fail-open: public page content must never depend on an IntersectionObserver
+ * callback to become visible. Some mobile browser/webview combinations can defer or
+ * miss intersection notifications while route transitions and dynamic content settle.
+ * Keep the motion enhancement on larger viewports, but make every mobile reveal target
+ * immediately visible so one missed callback cannot blank an entire page.
+ */
+@media (max-width: 767px) {
+  html.aat-motion-active .aat-reveal,
+  html.aat-motion-active .aat-reveal.aat-visible {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    will-change: auto !important;
+  }
+}
+
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto !important; }
   html.aat-motion-active .aat-reveal,
