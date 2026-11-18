@@ -34,7 +34,28 @@ if (legacyPayload) {
 if (!supabaseKey.startsWith('sb_secret_') && legacyRole !== 'service_role') {
   throw new Error('A server-only Supabase secret key is required; anon/publishable keys are rejected.');
 }
-const db = createClient(supabaseUrl, supabaseKey, { auth: { persistSession: false, autoRefreshToken: false } });
+// Supabase/CDN gateways can transiently return 502/503/504 during read-only
+// source validation. Retry only transient transport/server failures; never retry
+// ordinary 4xx validation/authentication errors.
+const fetchWithTransientRetry: typeof fetch = async (input, init) => {
+  const retryableStatuses = new Set([408, 429, 500, 502, 503, 504]);
+  const maxAttempts = 4;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const response = await fetch(input, init);
+      if (!retryableStatuses.has(response.status) || attempt === maxAttempts) return response;
+      await response.body?.cancel();
+    } catch (error) {
+      if (attempt === maxAttempts) throw error;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500 * (2 ** (attempt - 1))));
+  }
+  throw new Error('Supabase request retry loop exhausted unexpectedly.');
+};
+const db = createClient(supabaseUrl, supabaseKey, {
+  auth: { persistSession: false, autoRefreshToken: false },
+  global: { fetch: fetchWithTransientRetry },
+});
 
 async function rows(table: string, configure: (q: any) => any = q => q) {
   const { data, error } = await configure(db.from(table).select('*'));
