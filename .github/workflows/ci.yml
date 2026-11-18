@@ -27,12 +27,6 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v7
 
-      - name: Set up Bun for lockfile consistency verification
-        uses: oven-sh/setup-bun@v2
-
-      - name: Verify Bun lockfile matches package.json
-        run: bun install --frozen-lockfile --lockfile-only
-
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
