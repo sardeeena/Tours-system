@@ -34,7 +34,13 @@ jobs:
           package-manager-cache: false
 
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --include=dev --no-audit --no-fund
+
+      - name: Audit all dependencies and enforce the documented development-only exception
+        run: |
+          npm audit --include=dev --json > dependency-audit.json || true
+          node scripts/check_dependency_audit.mjs dependency-audit.json
+          npm audit --omit=dev --audit-level=low
 
 
 
