@@ -237,7 +237,9 @@ export const AdminBookingsList: React.FC = () => {
       'Hotel',
       'Adults',
       'Children',
-      'Total EUR',
+      'Infants',
+      'Total',
+      'Currency',
       'Status',
       'Payment Status',
       'Created At',
@@ -255,7 +257,9 @@ export const AdminBookingsList: React.FC = () => {
       `"${b.pickup.hotelName || ''}"`,
       b.guests.adults,
       b.guests.children,
+      b.guests.infants,
       b.pricing.totalEur,
+      b.pricing.currency || 'EUR',
       `"${b.status}"`,
       `"${b.paymentStatus}"`,
       `"${b.createdAt}"`,
@@ -406,10 +410,10 @@ export const AdminBookingsList: React.FC = () => {
                       {b.date}
                     </td>
                     <td className="py-3 px-4 whitespace-nowrap text-stone-400">
-                      {b.guests.adults}A {b.guests.children > 0 ? `+ ${b.guests.children}C` : ''}
+                      {b.guests.adults}A {b.guests.children > 0 ? `+ ${b.guests.children}C` : ''} {b.guests.infants > 0 ? `+ ${b.guests.infants}I` : ''}
                     </td>
                     <td className="py-3 px-4 whitespace-nowrap font-bold text-white">
-                      €{b.pricing.totalEur}
+                      {b.pricing.currency || 'EUR'} {Number(b.pricing.totalEur).toFixed(2)}
                     </td>
                     <td className="py-3 px-4 whitespace-nowrap">
                       <span
