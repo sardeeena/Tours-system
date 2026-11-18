@@ -2,13 +2,13 @@ BEGIN;
 
 -- A global six-digit sequence guarantees uniqueness even when many guests book
 -- concurrently for the same departure date. The date segment is the excursion date.
-CREATE SEQUENCE private.booking_reference_sequence
-  AS bigint
-  INCREMENT BY 1
-  MINVALUE 1
-  MAXVALUE 999999
-  START WITH 1
-  NO CYCLE;
+CREATE TABLE private.booking_reference_counters (
+  booking_date date PRIMARY KEY,
+  last_value integer NOT NULL DEFAULT 0
+    CHECK (last_value BETWEEN 0 AND 999999)
+);
+
+REVOKE ALL ON TABLE private.booking_reference_counters FROM PUBLIC, anon, authenticated, service_role;
 
 CREATE OR REPLACE FUNCTION private.generate_booking_reference(p_booking_date date)
 RETURNS text
@@ -17,21 +17,35 @@ SECURITY DEFINER
 SET search_path = ''
 AS $function$
 DECLARE
-  v_number bigint;
+  v_number integer;
 BEGIN
   IF p_booking_date IS NULL THEN
     RAISE EXCEPTION 'A departure date is required to generate a booking reference.'
       USING ERRCODE = '22004';
   END IF;
 
-  v_number := nextval('private.booking_reference_sequence'::regclass);
+  -- The upsert locks and increments one row per departure date, so concurrent
+  -- checkouts cannot receive the same six-digit suffix. It also avoids a
+  -- global one-million-booking lifetime ceiling.
+  INSERT INTO private.booking_reference_counters AS counters (booking_date, last_value)
+  VALUES (p_booking_date, 1)
+  ON CONFLICT (booking_date)
+  DO UPDATE SET last_value = counters.last_value + 1
+  WHERE counters.last_value < 999999
+  RETURNING last_value INTO v_number;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'The six-digit booking reference capacity for this departure date has been reached.'
+      USING ERRCODE = '54000';
+  END IF;
+
   RETURN 'AWE-' || to_char(p_booking_date, 'YYYYMMDD') || '-' || lpad(v_number::text, 6, '0');
 END;
 $function$;
 
 REVOKE ALL ON FUNCTION private.generate_booking_reference(date) FROM PUBLIC, anon, authenticated, service_role;
 COMMENT ON FUNCTION private.generate_booking_reference(date) IS
-  'Internal generator for unique AWE-YYYYMMDD-123456 booking references.';
+  'Internal generator for unique per-departure-date AWE-YYYYMMDD-123456 booking references.';
 
 CREATE OR REPLACE FUNCTION private.create_booking_atomic(p_tour_identifier text, p_booking_date date, p_adult_count integer, p_child_count integer DEFAULT 0, p_infant_count integer DEFAULT 0, p_customer_first_name text DEFAULT ''::text, p_customer_last_name text DEFAULT ''::text, p_customer_email text DEFAULT ''::text, p_customer_phone text DEFAULT ''::text, p_customer_country text DEFAULT 'International'::text, p_customer_hotel text DEFAULT NULL::text, p_pickup_location_id text DEFAULT NULL::text, p_pickup_room_number text DEFAULT NULL::text, p_extras jsonb DEFAULT '[]'::jsonb, p_coupon_code text DEFAULT NULL::text, p_payment_method text DEFAULT 'pay_at_pickup'::text, p_special_requests text DEFAULT NULL::text, p_idempotency_key text DEFAULT NULL::text)
  RETURNS jsonb
