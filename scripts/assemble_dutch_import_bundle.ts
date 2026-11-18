@@ -46,7 +46,7 @@ function mergeRows(sourceRows: any[], translatedRows: any[], fields: string[], l
   });
 }
 function expectedPayload(type: string, source: AnyRecord): AnyRecord {
-  if (type === 'ui_catalog') return { content: source.content || {} };
+  if (type === 'ui_catalog') return source.content || {};
   if (type === 'tour') return {
     title: source.title, summary: source.short_description || source.description || '',
     content: {
