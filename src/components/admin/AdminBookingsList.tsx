@@ -42,6 +42,25 @@ export const AdminBookingsList: React.FC = () => {
   const [page, setPage] = useState(1);
   const pageSize = 25;
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadingManifest, setLoadingManifest] = useState(false);
+  const [manifestError, setManifestError] = useState<string | null>(null);
+
+  const openBookingDetails = async (booking: Booking) => {
+    setSelectedBooking(booking);
+    setManifestError(null);
+    if (!hasPermission('bookings.manage')) return;
+
+    setLoadingManifest(true);
+    try {
+      const detailed = await bookingRepository.getAdminBookingDetails(booking.bookingReference);
+      if (detailed) setSelectedBooking(detailed);
+    } catch (err: any) {
+      setManifestError(err.message || 'Passenger details could not be loaded.');
+      showToast(err.message || 'Passenger details could not be loaded.', 'error');
+    } finally {
+      setLoadingManifest(false);
+    }
+  };
 
   const loadBookings = async () => {
     setLoading(true);
@@ -435,7 +454,7 @@ export const AdminBookingsList: React.FC = () => {
                     <td className="py-3 px-4 text-right whitespace-nowrap">
                       <button
                         type="button"
-                        onClick={() => setSelectedBooking(b)}
+                        onClick={() => void openBookingDetails(b)}
                         className="px-2.5 py-1 bg-stone-900 hover:bg-stone-800 text-stone-300 hover:text-white rounded border border-stone-800 text-[11px] font-medium transition-colors"
                       >
                         Details
@@ -585,7 +604,13 @@ export const AdminBookingsList: React.FC = () => {
 
             <div className="space-y-3 rounded border border-stone-800 bg-stone-950 p-3">
               <h4 className="font-semibold uppercase tracking-wider text-[10px] text-stone-400">Passenger Manifest</h4>
-              {selectedBooking.passengers?.length ? (
+              {!hasPermission('bookings.manage') ? (
+                <p className="text-[11px] text-stone-500">Passenger details are restricted to booking managers. Guest counts remain visible above.</p>
+              ) : loadingManifest ? (
+                <p className="text-[11px] text-stone-400">Loading passenger details…</p>
+              ) : manifestError ? (
+                <p className="text-[11px] text-rose-300">{manifestError}</p>
+              ) : selectedBooking.passengers?.length ? (
                 <div className="space-y-2">
                   {selectedBooking.passengers.map((passenger) => (
                     <div key={passenger.id} className="rounded border border-stone-800 p-2 text-stone-300">

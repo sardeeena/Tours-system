@@ -82,5 +82,30 @@ BEGIN
 END;
 $cancellation_rejection_reason$;
 
+-- Passenger identity and manifest data is more sensitive than the booking summary.
+-- Only booking managers can read other customers' manifests; customers retain
+-- access to their own reservation's passenger details.
+DROP POLICY IF EXISTS rbac_booking_passengers_read ON public.booking_passengers;
+CREATE POLICY rbac_booking_passengers_read
+ON public.booking_passengers
+FOR SELECT
+TO authenticated
+USING (
+  private.has_permission('bookings.manage')
+  OR EXISTS (
+    SELECT 1
+    FROM public.bookings AS b
+    WHERE b.id = booking_passengers.booking_id
+      AND (
+        b.user_id = (SELECT auth.uid())
+        OR b.customer_id IN (
+          SELECT c.id FROM public.customers AS c
+          WHERE c.user_id = (SELECT auth.uid())
+        )
+      )
+  )
+  OR (SELECT private.is_admin())
+);
+
 NOTIFY pgrst, 'reload schema';
 COMMIT;

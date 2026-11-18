@@ -642,6 +642,29 @@ class SupabaseBookingRepository implements IBookingRepository {
     return updated;
   }
 
+  async getAdminBookingDetails(bookingReference: string): Promise<Booking | null> {
+    if (!isSupabaseConfigured()) {
+      throw new Error('The booking database is unavailable. Passenger details were not loaded.');
+    }
+    const cleanReference = bookingReference.trim().toUpperCase();
+    if (!cleanReference) return null;
+
+    const { data, error } = await supabase
+      .from('bookings')
+      .select(`
+        *,
+        tours (*),
+        customers (*),
+        booking_extras (*),
+        booking_passengers (*)
+      `)
+      .eq('booking_reference', cleanReference)
+      .maybeSingle();
+
+    if (error) throw new Error(formatSupabaseError(error));
+    return data ? this.mapDbToBooking(data) : null;
+  }
+
   async listBookings(filters?: { status?: string; limit?: number }): Promise<Booking[]> {
     const supabaseConfigured = isSupabaseConfigured();
     const schemaMissing = isSchemaMissing();
@@ -672,8 +695,7 @@ class SupabaseBookingRepository implements IBookingRepository {
             *,
             tours (*),
             customers (*),
-            booking_extras (*),
-            booking_passengers (*)
+            booking_extras (*)
           `)
           .order('created_at', { ascending: false })
           .order('id', { ascending: false })

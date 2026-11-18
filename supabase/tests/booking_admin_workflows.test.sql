@@ -1,7 +1,7 @@
 BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(12);
+SELECT plan(13);
 
 SELECT ok(
   to_regprocedure('private.record_payment_atomic(text,numeric,text,text,text,text,text,text,text,text)') IS NOT NULL,
@@ -64,6 +64,19 @@ SELECT ok(
 SELECT ok(
   NOT has_table_privilege('anon', 'public.booking_passengers', 'SELECT'),
   'anonymous users cannot directly read passenger manifests'
+);
+SELECT ok(
+  POSITION('bookings.manage' IN (
+    SELECT COALESCE(qual, '') FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'booking_passengers'
+      AND policyname = 'rbac_booking_passengers_read'
+  )) > 0
+  AND POSITION('bookings.read' IN (
+    SELECT COALESCE(qual, '') FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'booking_passengers'
+      AND policyname = 'rbac_booking_passengers_read'
+  )) = 0,
+  'passenger manifests are limited to booking managers and the customer's own booking'
 );
 SELECT ok(
   NOT has_table_privilege('anon', 'public.bookings', 'SELECT'),
