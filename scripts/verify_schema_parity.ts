@@ -40,7 +40,9 @@ function runParityCheck() {
 
   // 1. Audit Tables
   const completeTables = new Set<string>();
-  const tableRegex = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:public\.)?([a-zA-Z0-9_]+)/gi;
+  // Compare public (or legacy unqualified) relations only. Internal schemas such as private
+  // intentionally stay outside the public complete_schema.sql inventory.
+  const tableRegex = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:(?:public)\.)?([a-zA-Z0-9_]+)(?!\s*\.)/gi;
   let m: RegExpExecArray | null;
   while ((m = tableRegex.exec(completeSql)) !== null) {
     completeTables.add(m[1].toLowerCase());
@@ -50,7 +52,7 @@ function runParityCheck() {
   for (const f of migrationFiles) {
     const content = fs.readFileSync(path.join(migrationsDir, f), 'utf8');
     let m2: RegExpExecArray | null;
-    const r2 = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:public\.)?([a-zA-Z0-9_]+)/gi;
+    const r2 = /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(?:(?:public)\.)?([a-zA-Z0-9_]+)(?!\s*\.)/gi;
     while ((m2 = r2.exec(content)) !== null) {
       migrationTables.add(m2[1].toLowerCase());
     }
