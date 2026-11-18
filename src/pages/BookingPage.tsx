@@ -324,7 +324,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
     setIsSubmitting(true);
 
     try {
-      const ref = generateBookingReference();
+      const ref = generateBookingReference(date);
       const payingGuests = (guests.adults || 1) + (guests.children || 0);
       const effectiveHotel = customer.hotelName || hotelName || '';
       const effectiveRoom = customer.roomNumber || roomNumber || '';
