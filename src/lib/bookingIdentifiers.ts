@@ -37,7 +37,8 @@ export function formatBookingReference(bookingDate: string | Date, sequence: num
   const dateText = bookingDate instanceof Date
     ? bookingDate.toISOString().slice(0, 10)
     : String(bookingDate || '').trim().slice(0, 10);
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateText) || Number.isNaN(Date.parse(dateText + 'T00:00:00.000Z'))) {
+  const parsedDate = new Date(dateText + 'T00:00:00.000Z');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateText) || Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== dateText) {
     throw new Error('A valid booking date is required to format a booking reference.');
   }
   if (!Number.isInteger(sequence) || sequence < 1 || sequence > 999999) {
