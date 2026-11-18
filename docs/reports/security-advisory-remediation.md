@@ -20,9 +20,9 @@ Project scope: Awesome Adventure Tours (uvtbtpxtrrmaublrztgv) only.
 
 ### 132 unused-index notices
 
-The database statistics have been accumulating since 2026-11-03, but the advisory includes primary-key and unique indexes, including indexes that enforce identity and idempotency constraints. The unused list also includes foreign-key and operational indexes on low-volume tables. Dropping all indexes with zero scans would be unsafe and could break constraints, booking/finance queries, webhook deduplication, or future workloads.
+The database statistics have been accumulating since 2026-11-03. The 132 Supabase unused-index notices are non-unique indexes; a separate count of all index types also includes 50 primary-key and 19 other unique indexes with zero scans, which are not part of that 132-count advisory and must remain because they enforce identity and uniqueness. The non-unique unused list includes foreign-key and operational indexes on low-volume tables. Dropping all 132 would be unsafe and could slow parent-row updates/deletes, booking/finance joins, or infrequent operational workflows.
 
-Five exact duplicate non-unique indexes were confirmed and removed: the categories, destinations, tours, tour-availability (tour_id,date), and SEO lookup indexes duplicated equivalent unique constraint indexes. The unique constraint indexes remain intact and provide the same B-tree lookup keys. The remaining notices include primary-key/unique constraint indexes, foreign-key indexes, and low-volume operational indexes; no broad deletion is safe.
+Five exact duplicate non-unique indexes were confirmed; the PR removes all five: categories, destinations, tours, tour-availability (tour_id,date), and SEO lookup duplicated equivalent unique constraint indexes. The unique constraint indexes remain intact and provide the same B-tree lookup keys. Only the categories duplicate was itself unused; the other four had scans and were not part of the 132 unused-index notices. After removing the categories duplicate, 131 non-unique unused-index notices remain for workload-aware review. Foreign-key and low-volume operational indexes are retained unless query plans and production workload evidence justify removal.
 
 ## Project Auth setting requiring dashboard access
 
