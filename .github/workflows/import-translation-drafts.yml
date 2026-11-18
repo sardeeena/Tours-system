@@ -1,0 +1,89 @@
+name: Import locale translation drafts
+
+on:
+  workflow_dispatch:
+    inputs:
+      locale:
+        description: Import exactly one locale as unpublished drafts
+        required: true
+        type: choice
+        options: [fr, nl, pl]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: translation-draft-import-${{ inputs.locale }}
+  cancel-in-progress: false
+
+jobs:
+  import-drafts:
+    name: Import ${{ inputs.locale }} drafts only
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SUPABASE_URL: https://uvtbtpxtrrmaublrztgv.supabase.co
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY || secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_SERVICE_KEY }}
+    steps:
+      - name: Check out reviewed source bundles
+        uses: actions/checkout@v7
+      - name: Require production database credential
+        shell: bash
+        run: |
+          if [ -z "$SUPABASE_SECRET_KEY" ]; then
+            echo "::error::Configure SUPABASE_SECRET_KEY (or documented legacy service-role secret) in repository Actions secrets."
+            exit 1
+          fi
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          package-manager-cache: false
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Export current production source and checksums
+        run: npm run translations:export -- ./translation-source.json
+      - name: Assemble and validate the selected locale
+        shell: bash
+        run: |
+          case "${{ inputs.locale }}" in
+            fr) npm run translations:assemble-fr -- ./translation-source.json ./translation-import-bundle.json ;;
+            nl) npm run translations:assemble-nl -- ./translation-source.json ./translation-import-bundle.json ;;
+            pl) npm run translations:assemble-pl -- ./translation-source.json ./translation-import-bundle.json ;;
+            *) echo "::error::Unsupported locale."; exit 1 ;;
+          esac
+      - name: Import validated records as unpublished drafts
+        run: npm run translations:import -- ./translation-import-bundle.json --apply
+      - name: Verify imported draft coverage
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import { readFile } from 'node:fs/promises';
+          import { createClient } from '@supabase/supabase-js';
+          const bundle = JSON.parse(await readFile('./translation-import-bundle.json', 'utf8'));
+          const locale = '${{ inputs.locale }}';
+          if (bundle.locales?.length !== 1 || bundle.locales[0] !== locale) throw new Error('Bundle locale mismatch.');
+          const db = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SECRET_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
+          const { data, error } = await db.from('content_translations').select('entity_type,entity_key,translation_state,source_checksum').eq('locale', locale);
+          if (error) throw error;
+          const expected = new Set(bundle.records.map(x => x.entity_type + ':' + x.entity_key));
+          const actual = new Map((data || []).map(x => [x.entity_type + ':' + x.entity_key, x]));
+          const missing = [...expected].filter(key => !actual.has(key));
+          const unsafe = [...expected].filter(key => {
+            const row = actual.get(key);
+            return !row || row.translation_state !== 'draft' || !row.source_checksum;
+          });
+          if (missing.length || unsafe.length) throw new Error('Draft verification failed. Missing: ' + missing.length + '; non-draft or checksum-less: ' + unsafe.length);
+          console.log('Verified ' + expected.size + ' ' + locale.toUpperCase() + ' records are present as drafts. No records were published.');
+          NODE
+      - name: Publish workflow summary
+        if: always()
+        run: |
+          {
+            echo "## Locale draft import"
+            echo ""
+            echo "- Locale: **${{ inputs.locale }}**"
+            echo "- Database writes: drafts only"
+            echo "- Publication: **not performed**"
+            echo "- Human review: still required"
+          } >> "$GITHUB_STEP_SUMMARY"
