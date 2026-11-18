@@ -25,7 +25,8 @@ enabled = false
 enabled = true
 port = 55424
 smtp_port = 55425
-pop3_port = 55426
+# Keep the optional POP3 listener off the runner's reserved/conflicting port.
+pop3_port = 55427
 
 [storage]
 enabled = true
