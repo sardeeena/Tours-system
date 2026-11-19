@@ -50,6 +50,7 @@
     "private.text.0a3274cb": "Rechercher ",
     "private.text.0b3aa6ec": "Filtres",
     "private.text.0b3d4df2": "Enfants",
+    "private.text.0bbe0f5d": "Les possibilités d’annulation dépendent de la politique applicable à l’excursion choisie. ",
     "private.text.0c237be4": "Filtres (",
     "private.text.0c4e712f": "Activer le compte",
     "private.text.0c67ec17": "Parlez-nous du bateau, de l’équipage, des arrêts snorkeling, du déjeuner ou des transferts...",
@@ -148,6 +149,7 @@
     "private.text.2382b720": "Payer lors de la prise en charge à l’hôtel ",
     "private.text.23844ba7": "Recommandations d’excursions en direct",
     "private.text.24498666": "Nom complet (passeport / document de voyage) * ",
+    "private.text.245e34ba": "Les réservations sont envoyées directement à notre équipe de réservation. Consultez les conditions d’annulation de l’excursion choisie avant de confirmer. ",
     "private.text.2526541f": "Politique de confidentialité",
     "private.text.256a7792": "Prix minimum (",
     "private.text.25ff4415": "Choisissez votre mode de paiement. Aucun paiement n’est requis aujourd’hui. ",
@@ -425,7 +427,6 @@
     "private.text.67891694": "Politique d’annulation ",
     "private.text.680695f3": "Avis ",
     "private.text.68470338": "partiellement_payé",
-    "private.text.685bf445": "Les réservations sont transmises directement à l’équipe des opérations de réservation. Annulation gratuite jusqu’à 24 heures avant le départ. ",
     "private.text.6865f2ff": "(Utilisé lors de la réservation)",
     "private.text.68cc88b7": "chargement",
     "private.text.6900fab5": "Toujours activé",
@@ -967,6 +968,7 @@
     "private.text.e60d5cd8": "Détails du profil",
     "private.text.e612c545": "Sécurité et informations sur le départ ",
     "private.text.e674a9cd": "Chargement des détails de l’excursion",
+    "private.text.e67a346a": "Les détails de votre réservation sont enregistrés en toute sécurité. Consultez les conditions d’annulation de l’excursion choisie avant de l’envoyer.",
     "private.text.e68d9f29": "Priorité",
     "private.text.e6b0835a": "Voyageur principal",
     "private.text.e6ee4bf1": "Tout afficher ",
@@ -1083,5 +1085,5 @@
     "private.text.ff566677": "Mot de passe mis à jour",
     "private.text.ff566f40": "Nom "
   },
-  "coverage": 1079
+  "coverage": 1081
 }
