@@ -92,7 +92,7 @@ export const CrmLeadsManager: React.FC = () => {
     interestedTourTitle: '',
     travelDate: '',
     numberOfGuests: 2,
-    estimatedValue: 150,
+    estimatedValue: 0,
     currency: 'EUR',
     stage: 'New',
     notes: '',
@@ -233,7 +233,7 @@ export const CrmLeadsManager: React.FC = () => {
       interestedTourTitle: '',
       travelDate: '',
       numberOfGuests: 2,
-      estimatedValue: 200,
+      estimatedValue: 0,
       currency: 'EUR',
       stage: 'New',
       notes: '',
@@ -380,7 +380,7 @@ export const CrmLeadsManager: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-8 gap-3 overflow-x-auto pb-4">
           {STAGES.map((stage) => {
             const stageLeads = filteredLeads.filter((l) => l.stage === stage);
-            const totalStageValue = stageLeads.reduce((s, l) => s + (l.estimatedValue || 0), 0);
+            const totalStageValue = summarizeStageValues(stageLeads);
 
             return (
               <div
@@ -415,7 +415,7 @@ export const CrmLeadsManager: React.FC = () => {
                               {lead.name}
                             </span>
                             <span className="text-[10px] font-mono text-emerald-400 font-semibold">
-                              €{lead.estimatedValue}
+                              {formatLeadValue(lead.estimatedValue, lead.currency)}
                             </span>
                           </div>
 
