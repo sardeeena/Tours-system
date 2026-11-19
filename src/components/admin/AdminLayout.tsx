@@ -132,10 +132,18 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const { theme, toggleTheme } = useTheme();
   const supabaseConnected = isSupabaseConfigured();
   const [schemaMissing, setSchemaMissingState] = React.useState(isSchemaMissing());
-  const [collapsedSections, setCollapsedSections] = React.useState<Record<string, boolean>>({ header_ops: true, header_finance: true, header_comm: true, header_crm: true, header_cms: true, header_security: true });
+  const [collapsedSections, setCollapsedSections] = React.useState<Record<string, boolean>>({ header_core: false, header_ops: true, header_finance: true, header_comm: true, header_crm: true, header_cms: true, header_security: true });
 
   // Sidebar open/close state (default open on desktop, auto-closed on small screens)
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(() => typeof window === 'undefined' || window.innerWidth >= 1024);
+
+  React.useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && window.innerWidth < 1024) setIsSidebarOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   React.useEffect(() => {
     const handleResize = () => {
@@ -175,6 +183,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     isHeader?: boolean;
     children?: Array<{ id: string; label: string }>;
   }> = [
+    { id: 'header_core', label: 'OVERVIEW & SALES', isHeader: true },
     {
       id: 'dashboard',
       label: 'Executive Dashboard',
@@ -201,7 +210,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'tickets', label: 'Support Tickets', icon: MessageSquare },
 
     // OPERATIONS SECTION
-    { id: 'header_ops', label: 'OPERATIONS & DISPATCH', isHeader: true },
+    { id: 'header_ops', label: 'OPERATIONS', isHeader: true },
     { id: 'ops_departures', label: "Today's Departures", icon: Anchor },
     { id: 'ops_calendar', label: 'Operations Calendar', icon: Calendar },
     { id: 'ops_availability', label: 'Availability & Capacity', icon: CalendarCheck },
@@ -214,7 +223,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'ops_documents', label: 'Operational Documents', icon: Printer },
 
     // FINANCE SECTION
-    { id: 'header_finance', label: 'FINANCE & ACCOUNTING', isHeader: true },
+    { id: 'header_finance', label: 'FINANCE', isHeader: true },
     { id: 'fin_payments', label: 'Payments', icon: CreditCard },
     { id: 'fin_invoices', label: 'Invoices', icon: FileText },
     { id: 'fin_refunds', label: 'Refunds & Returns', icon: RotateCcw },
@@ -223,7 +232,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'fin_reports', label: 'Financial Reports', icon: TrendingUp },
 
     // COMMUNICATIONS SECTION
-    { id: 'header_comm', label: 'COMMUNICATIONS & DISPATCH', isHeader: true },
+    { id: 'header_comm', label: 'MESSAGES & COMMUNICATIONS', isHeader: true },
     { id: 'comm_center', label: 'Email Center', icon: Mail },
     { id: 'comm_email', label: 'Email Dispatcher', icon: Send },
     { id: 'comm_whatsapp', label: 'WhatsApp Console', icon: MessageSquare },
@@ -232,7 +241,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'comm_history', label: 'Communication History', icon: History },
 
     // CRM SECTION
-    { id: 'header_crm', label: 'CRM & TRAVELERS', isHeader: true },
+    { id: 'header_crm', label: 'CUSTOMERS & CRM', isHeader: true },
     { id: 'crm_dashboard', label: 'CRM Dashboard', icon: LayoutDashboard },
     { id: 'crm_leads', label: 'Leads Pipeline', icon: Users },
     { id: 'customers', label: 'Customers Directory', icon: Users },
@@ -244,7 +253,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'crm_timeline', label: 'Activity Timeline', icon: Sparkles },
 
     // CMS & SITE SETTINGS
-    { id: 'header_cms', label: 'CATALOG & CMS', isHeader: true },
+    { id: 'header_cms', label: 'WEBSITE CONTENT', isHeader: true },
     { id: 'destinations', label: 'Destinations', icon: MapPin },
     { id: 'categories', label: 'Categories', icon: Layers },
     { id: 'media', label: 'Media Library', icon: Image },
@@ -259,7 +268,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     { id: 'blog', label: 'Blog & Journal', icon: BookOpen },
     { id: 'newsletter', label: 'Newsletter', icon: Mail },
     // SECURITY & ACCESS CONTROL
-    { id: 'header_security', label: 'SECURITY & ACCESS', isHeader: true },
+    { id: 'header_security', label: 'ADMINISTRATION & SECURITY', isHeader: true },
     { id: 'access_control', label: 'Users, Roles & Permissions', icon: ShieldCheck },
     { id: 'settings', label: 'Site Settings', icon: Settings },
     { id: 'technical', label: 'Technical Control Center', icon: Activity },
@@ -411,7 +420,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                   return (
                     <button key={item.id} type="button" aria-expanded={!isCollapsed}
                       onClick={() => setCollapsedSections((previous) => ({ ...previous, [item.id]: !previous[item.id] }))}
-                      className="w-full flex items-center justify-between text-left pt-3 pb-1 px-3 text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500 border-t border-[#E8E3DA]/80 dark:border-[#1F3854]/80 mt-2 first:mt-0 first:border-0 hover:text-[#0A6C74] dark:hover:text-[#2DD4BF]">
+                      className="w-full min-h-11 flex items-center justify-between text-left pt-3 pb-1 px-3 text-[10px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-500 border-t border-[#E8E3DA]/80 dark:border-[#1F3854]/80 mt-2 first:mt-0 first:border-0 hover:text-[#0A6C74] dark:hover:text-[#2DD4BF]">
                       <span>{item.label}</span>
                       <ChevronDown className={`h-3.5 w-3.5 transition-transform ${isCollapsed ? '-rotate-90' : ''}`} />
                     </button>
@@ -427,7 +436,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                     <button
                       type="button"
                       onClick={() => handleNavSelect((canSeeTab(item.id) ? item.id : (item.children?.[0]?.id || item.id)) as AdminTab)}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl transition-all cursor-pointer ${
+                      className={`w-full min-h-11 flex items-center justify-between px-3 py-2 rounded-xl transition-all cursor-pointer ${
                         isCurrent
                           ? 'bg-[#0A6C74] text-white font-semibold shadow-xs'
                           : 'text-stone-600 dark:text-stone-300 hover:text-[#0A6C74] dark:hover:text-white hover:bg-[#FAF8F5] dark:hover:bg-[#16283D]'
@@ -448,7 +457,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
                             key={sub.id}
                             type="button"
                             onClick={() => handleNavSelect(sub.id as AdminTab)}
-                            className={`w-full text-left py-1.5 px-2.5 rounded-lg text-[11px] transition-colors cursor-pointer ${
+                            className={`w-full min-h-10 text-left py-2 px-2.5 rounded-lg text-[11px] transition-colors cursor-pointer ${
                               activeTab === sub.id
                                 ? 'text-[#0A6C74] dark:text-[#2DD4BF] font-semibold bg-[#E8F3F4] dark:bg-[#0A6C74]/20'
                                 : 'text-stone-500 dark:text-stone-400 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-[#16283D]'
@@ -513,7 +522,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               <button
                 type="button"
                 onClick={() => setIsSidebarOpen((prev) => !prev)}
-                className="flex items-center space-x-2 px-3 py-1.5 bg-[#FAF8F5] dark:bg-[#16283D] hover:bg-white dark:hover:bg-[#1F3854] text-stone-700 dark:text-stone-200 hover:text-[#0A6C74] dark:hover:text-[#2DD4BF] rounded-xl text-xs font-semibold border border-[#E8E3DA] dark:border-[#1F3854] transition-colors shadow-2xs cursor-pointer"
+                className="flex min-h-10 items-center space-x-2 px-3 py-1.5 bg-[#FAF8F5] dark:bg-[#16283D] hover:bg-white dark:hover:bg-[#1F3854] text-stone-700 dark:text-stone-200 hover:text-[#0A6C74] dark:hover:text-[#2DD4BF] rounded-xl text-xs font-semibold border border-[#E8E3DA] dark:border-[#1F3854] transition-colors shadow-2xs cursor-pointer"
                 title={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
                 aria-label={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
               >
@@ -539,8 +548,18 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
               </div>
             </div>
 
-            {/* Right: Theme and Device Controls */}
+            {/* Right: Primary destination and appearance controls */}
             <div className="flex items-center flex-wrap gap-2 sm:gap-3">
+              <button
+                type="button"
+                onClick={onNavigateSite}
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-[#0A6C74] px-3.5 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-[#08565C] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2"
+                title="Open the live public website"
+                aria-label="Go to live website"
+              >
+                <ExternalLink className="h-4 w-4" />
+                <span>Live Website</span>
+              </button>
               <button
                 type="button"
                 onClick={toggleTheme}
