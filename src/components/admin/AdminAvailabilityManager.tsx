@@ -112,26 +112,19 @@ export const AdminAvailabilityManager: React.FC = () => {
   // A date stays closed until an operator enters a real capacity and opens it.
   const handleToggleStatus = (dateStr: string) => {
     const current = availabilityMap[dateStr];
-    const capacity = Math.max(0, Number(current?.max_capacity) || 0);
-    const bookedCount = Math.max(0, Number(current?.booked_count) || 0);
-
-    if (current?.status !== 'available' && capacity <= bookedCount) {
-      showToast('Enter an actual seat capacity greater than the booked count before opening this date.', 'error');
-      return;
-    }
-
-    const nextStatus: 'available' | 'unavailable' =
-      current?.status === 'available' ? 'unavailable' : 'available';
+    const nextBlackout = !Boolean(current?.is_blackout);
     const updatedSlot: DbTourAvailability = {
       id: current?.id || `avail-${selectedTourId}-${dateStr}`,
       tour_id: selectedTourId,
       date: dateStr,
-      max_capacity: capacity,
-      booked_count: bookedCount,
-      status: nextStatus,
-      notes: nextStatus === 'available'
-        ? 'Manual override: operator confirmed this date'
-        : 'Manual blackout: operator closed this date',
+      max_capacity: Math.max(0, Number(current?.max_capacity) || 0),
+      booked_count: Math.max(0, Number(current?.booked_count) || 0),
+      status: current?.status || 'unavailable',
+      is_blackout: nextBlackout,
+      departure_id: current?.departure_id || null,
+      notes: nextBlackout
+        ? 'Manual blackout: operator closed this date'
+        : 'Manual blackout removed; only confirmed departure slots can be booked',
       created_at: current?.created_at || new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -143,58 +136,10 @@ export const AdminAvailabilityManager: React.FC = () => {
     }
   };
 
-  // Capacity entry does not open a date; the operator must explicitly open it.
-  const handleCapacityChange = (dateStr: string, newCap: number) => {
-    const current = availabilityMap[dateStr];
-    const cap = Math.max(0, Math.floor(Number(newCap) || 0));
-    const bookedCount = Math.max(0, Number(current?.booked_count) || 0);
-    const nextStatus: 'available' | 'unavailable' | 'sold_out' =
-      cap <= 0
-        ? 'unavailable'
-        : bookedCount >= cap && bookedCount > 0
-          ? 'sold_out'
-          : current?.status === 'available'
-            ? 'available'
-            : 'unavailable';
-
-    const updatedSlot: DbTourAvailability = {
-      id: current?.id || `avail-${selectedTourId}-${dateStr}`,
-      tour_id: selectedTourId,
-      date: dateStr,
-      max_capacity: cap,
-      booked_count: bookedCount,
-      status: nextStatus,
-      notes: current?.notes || 'Manual override: capacity entered by operator',
-      created_at: current?.created_at || new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
-    const newMap = { ...availabilityMap, [dateStr]: updatedSlot };
-    setAvailabilityMap(newMap);
-    if (import.meta.env.DEV) {
-      localStorage.setItem(`${LOCAL_AVAIL_KEY}_${selectedTourId}`, JSON.stringify(newMap));
-    }
-  };
-
-  // Save availability changes
+  // Save only explicit blackout overrides. Slot capacity is managed per departure.
   const handleSaveToSupabase = async () => {
     setSaving(true);
     setActionMessage(null);
-
-    const slots = Object.values(availabilityMap);
-    if (slots.some((slot) => slot.status === 'available' && Number(slot.max_capacity) <= Number(slot.booked_count || 0))) {
-      showToast('A date cannot be opened without a positive capacity above its booked count.', 'error');
-      setSaving(false);
-      return;
-    }
-    const records = slots.map((slot) => ({
-      tour_id: slot.tour_id,
-      date: slot.date,
-      max_capacity: Math.max(0, Number(slot.max_capacity) || 0),
-      // Never overwrite the live counter from a stale admin-screen snapshot.
-      status: slot.status,
-      notes: slot.notes,
-    }));
 
     if (!isSupabaseConfigured()) {
       showToast('Your changes could not be saved. Please contact your administrator.', 'error');
@@ -202,25 +147,59 @@ export const AdminAvailabilityManager: React.FC = () => {
       return;
     }
 
-    if (records.length === 0) {
+    const slots = Object.values(availabilityMap);
+    if (slots.length === 0) {
       showToast('There are no availability changes to save.', 'info');
       setSaving(false);
       return;
     }
 
-    try {
-      const { error } = await supabase
-        .from('tour_availability')
-        .upsert(records, { onConflict: 'tour_id,date' });
+    const existing = slots.filter((slot) => !slot.id.startsWith('avail-'));
+    const missing = slots.filter((slot) => slot.id.startsWith('avail-'));
 
+    try {
+      const writes = await Promise.all([
+        ...existing.map((slot) =>
+          supabase
+            .from('tour_availability')
+            .update({ is_blackout: Boolean(slot.is_blackout), notes: slot.notes })
+            .eq('tour_id', slot.tour_id)
+            .eq('date', slot.date)
+        ),
+        ...(missing.length > 0
+          ? [supabase.from('tour_availability').insert(missing.map((slot) => ({
+              tour_id: slot.tour_id,
+              date: slot.date,
+              status: 'unavailable',
+              max_capacity: 0,
+              booked_count: 0,
+              is_blackout: Boolean(slot.is_blackout),
+              notes: slot.notes,
+            })))]
+          : []),
+      ]);
+
+      const failed = writes.find((result) => result.error);
+      if (failed?.error) throw failed.error;
+
+      const { data, error } = await supabase
+        .from('tour_availability')
+        .select('*')
+        .eq('tour_id', selectedTourId)
+        .gte('date', dates[0])
+        .lte('date', dates[dates.length - 1]);
       if (error) throw error;
 
+      const map: Record<string, DbTourAvailability> = {};
+      (data || []).forEach((slot: any) => { map[slot.date] = slot; });
+      setAvailabilityMap(map);
+
       showToast('Availability has been saved.', 'success');
-      setActionMessage('Availability and daily capacities have been saved.');
+      setActionMessage('Date blackout overrides have been saved. Per-departure capacity is managed in Departures.');
       notifyCatalogueDataChanged('tours');
       window.setTimeout(() => setActionMessage(null), 3500);
     } catch (err: any) {
-      console.warn('Failed to upsert tour availability in Supabase:', err);
+      console.warn('Failed to save tour blackout overrides in Supabase:', err);
       showToast('We could not save availability. Please try again. If the problem continues, contact your administrator.', 'error');
     } finally {
       setSaving(false);
@@ -236,7 +215,7 @@ export const AdminAvailabilityManager: React.FC = () => {
             Tour Availability & Daily Capacity Calendar
           </h1>
           <p className="text-xs text-stone-400 mt-1">
-            Manage daily passenger quotas, blackout dates, and departure capacity for the next 4 weeks.
+            Manage date blackouts for the next 4 weeks. Departure times and seat capacity are managed separately for each departure.
           </p>
         </div>
 
@@ -332,7 +311,7 @@ export const AdminAvailabilityManager: React.FC = () => {
               const isToday = dateStr === new Date().toISOString().split('T')[0];
 
               const slot = availabilityMap[dateStr];
-              const status = slot?.status || 'unavailable';
+              const status = slot?.is_blackout ? 'unavailable' : (slot?.status || 'unavailable');
               const cap = Number(slot?.max_capacity) || 0;
 
               return (
@@ -366,23 +345,16 @@ export const AdminAvailabilityManager: React.FC = () => {
                           ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
                           : 'bg-red-500/20 text-red-300 border border-red-500/40'
                       }`}
-                      title="Open only after entering an explicit seat capacity; click again to close"
+                      title="Toggle the date blackout; a date is bookable only when it has a confirmed departure"
                     >
                       {status === 'available' ? 'Open' : status === 'sold_out' ? 'Full' : 'Blocked'}
                     </button>
                   </div>
 
-                  {/* Daily Capacity Control */}
+                  {/* Read-only daily total; individual slot capacity is edited in Departures. */}
                   <div className="pt-1 border-t border-stone-850 flex items-center justify-between">
-                    <span className="text-[10px] text-stone-400">Seats:</span>
-                    <input
-                      type="number"
-                      min={0}
-                      max={200}
-                      value={cap}
-                      onChange={(e) => handleCapacityChange(dateStr, Number(e.target.value))}
-                      className="w-14 px-1.5 py-0.5 bg-stone-950 border border-stone-800 rounded text-right text-white font-mono text-[11px] focus:outline-none focus:border-[#0A6C74]"
-                    />
+                    <span className="text-[10px] text-stone-400">Total seats:</span>
+                    <span className="text-[11px] text-white font-mono">{cap || '—'}</span>
                   </div>
                 </div>
               );
