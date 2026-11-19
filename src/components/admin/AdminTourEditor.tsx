@@ -119,8 +119,8 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
     difficulty: 'Easy',
     age_restrictions: 'Suitable for all ages. Children under 2 join free.',
     badge: 'Popular',
-    rating: 4.9,
-    review_count: 24,
+    rating: 0,
+    review_count: 0,
     sort_order: 1,
   });
 
@@ -496,6 +496,19 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
         <div className="p-3 bg-red-950/60 border border-red-800 text-red-300 rounded text-xs flex items-center space-x-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{saveError}</span>
+        </div>
+      )}
+
+      {(!itinerary.length || !faqs.length) && (
+        <div role="status" className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs text-amber-950 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-100">
+          <p className="font-bold">Content readiness review</p>
+          <p className="mt-1">
+            {[
+              !itinerary.length ? 'No itinerary steps are recorded.' : '',
+              !faqs.length ? 'No traveller FAQs are recorded.' : '',
+            ].filter(Boolean).join(' ')}
+            {' '}Add accurate, excursion-specific information before relying on this page for search answers. Do not invent operational, pickup or safety details.
+          </p>
         </div>
       )}
 
