@@ -30,3 +30,23 @@ SELECT ok(
   AND has_function_privilege('authenticated', 'public.convert_inquiry_to_lead(uuid)', 'EXECUTE'),
   'Only authenticated callers can invoke the permission-checked conversion RPC'
 );
+
+SELECT ok(
+  position('150' in pg_get_functiondef('private.convert_inquiry_to_lead(uuid)'::regprocedure)) = 0,
+  'Inquiry conversion does not invent a EUR 150 lead value'
+);
+SELECT ok(
+  position('    0,' in pg_get_functiondef('private.convert_inquiry_to_lead(uuid)'::regprocedure)) > 0,
+  'Unknown estimated value and qualification score initialize to zero'
+);
+SELECT ok(
+  position('    ''New'',' in pg_get_functiondef('private.convert_inquiry_to_lead(uuid)'::regprocedure)) > 0,
+  'Inquiry conversion creates a new lead instead of marking it contacted'
+);
+SELECT ok(
+  position('v_actor' in pg_get_functiondef('private.convert_inquiry_to_lead(uuid)'::regprocedure)) > 0,
+  'Conversion activity is attributed to the authenticated staff profile'
+);
+
+SELECT * FROM finish();
+ROLLBACK;
