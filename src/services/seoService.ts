@@ -14,7 +14,7 @@ export interface SeoMetadata {
   twitterCard?: 'summary' | 'summary_large_image';
   robotsIndex?: boolean;
   robotsFollow?: boolean;
-  schemaJsonLd?: Record<string, unknown>;
+  schemaJsonLd?: Record<string, unknown> | null;
 }
 
 const DEFAULT_TITLE = 'Awesome Adventure Tours | Boat Trips, Island Tours & Safaris';
@@ -203,7 +203,7 @@ export const seoService = {
     // Keep the server-rendered route schema during hydration when a route's
     // client metadata does not define a replacement. Removing it here makes
     // otherwise indexable SSR pages lose their structured data after hydration.
-    if (meta.schemaJsonLd !== undefined) setSchemaJsonLd(meta.schemaJsonLd);
+    if (meta.schemaJsonLd !== undefined) setSchemaJsonLd(meta.schemaJsonLd || undefined);
   },
 
   /**
