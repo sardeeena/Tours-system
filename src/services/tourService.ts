@@ -756,7 +756,7 @@ export async function adminCreateTour(payload: AdminTourPayload): Promise<{ id: 
         destination_id: tourData.destination_id || null,
         duration: tourData.duration || '',
         duration_type: tourData.duration_type || 'Unspecified',
-        duration_hours: Number(tourData.duration_hours ?? 0).0,
+        duration_hours: Number(tourData.duration_hours ?? 0),
         tour_type: tourData.tour_type || 'Shared',
         status: tourData.status || 'draft',
         featured: !!tourData.featured,
