@@ -3,7 +3,6 @@
 -- The locations below are derived from each published tour's existing pickup_info
 -- and inclusion records. Existing paid outer-area zones remain unchanged.
 
-BEGIN;
 
 INSERT INTO public.pickup_locations (
   code,
@@ -132,4 +131,3 @@ BEGIN
 END;
 $$;
 
-COMMIT;
