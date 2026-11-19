@@ -1091,143 +1091,122 @@ export async function fetchFinanceReport(interval: DateRangeInterval): Promise<F
 // ------------------------------------------------------------------------------
 
 export async function runReportBuilder(filters: ReportBuilderFilters): Promise<ReportBuilderRow[]> {
-  // Check if Supabase RPC is available for fast server-side querying
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase.rpc('query_custom_bi_report', {
-        p_filters: filters,
-      });
-      if (!error && Array.isArray(data) && data.length > 0) {
-        return data.map((r: any) => ({
-          bookingId: r.booking_id || r.id,
-          bookingReference: r.booking_reference,
-          customerName: r.customer_name || 'Guest',
-          customerEmail: r.customer_email || '',
-          customerPhone: r.customer_phone || '',
-          tourTitle: r.tour_title || 'Excursion',
-          destination: r.destination_name || 'Hurghada',
-          bookingDate: r.booking_date,
-          travelDate: r.booking_date,
-          totalGuests: Number(r.total_guests || 1),
-          subtotal: Number(r.subtotal || 0),
-          discount: Number(r.discount || 0),
-          total: Number(r.total || 0),
-          currency: r.currency || 'EUR',
-          bookingStatus: r.booking_status || 'confirmed',
-          paymentStatus: r.payment_status || 'pending',
-          paymentMethod: r.payment_method || 'pay_at_pickup',
-          leadSource: r.lead_source || 'Website',
-          staffName: r.staff_name || 'Direct',
-          createdAt: r.created_at || '',
-        }));
-      }
-    } catch {
-      // Fallback to local query engine below
-    }
+  if (filters.startDate && filters.endDate && filters.startDate > filters.endDate) {
+    throw new Error('The report start date must be on or before the end date.');
   }
 
-  // Repository-based filter engine
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase.rpc('query_custom_bi_report', {
+      p_filters: filters,
+    });
+    if (error) throw new Error(`The report query failed: ${error.message}`);
+    if (data === null || data === undefined) return [];
+    if (!Array.isArray(data)) throw new Error('The report query returned an invalid result format.');
+
+    return data.map((row: any) => ({
+      bookingId: String(row.booking_id || row.id || row.booking_reference || ''),
+      bookingReference: String(row.booking_reference || ''),
+      customerName: String(row.customer_name || ''),
+      customerEmail: String(row.customer_email || ''),
+      customerPhone: String(row.customer_phone || ''),
+      tourTitle: String(row.tour_title || ''),
+      destination: String(row.destination_name || ''),
+      bookingDate: String(row.booking_date || ''),
+      travelDate: String(row.travel_date || row.booking_date || ''),
+      totalGuests: Number(row.total_guests ?? 0),
+      subtotal: Number(row.subtotal ?? 0),
+      discount: Number(row.discount ?? 0),
+      total: Number(row.total ?? 0),
+      currency: String(row.currency || 'EUR').toUpperCase(),
+      bookingStatus: String(row.booking_status || 'unknown'),
+      paymentStatus: String(row.payment_status || 'unknown'),
+      paymentMethod: String(row.payment_method || 'unknown'),
+      leadSource: normalizeLeadSource(row.lead_source),
+      staffName: String(row.staff_name || 'Unassigned'),
+      createdAt: String(row.created_at || ''),
+    }));
+  }
+
+  if (!import.meta.env.DEV) {
+    throw new Error('Supabase is not configured; custom reports cannot be generated in production.');
+  }
+
+  // Development-only local query engine. It uses only records actually present
+  // in the local repository; it never invents staff, destinations or booking facts.
   const [allBookings, leads, dynamicTours] = await Promise.all([
     bookingRepository.listBookings(),
     listLeads(),
-    getPublishedTours().catch(() => ALL_TOURS),
+    getPublishedTours(),
   ]);
 
   const leadCustomerMap = new Map<string, { source: string; staff: string }>();
-  leads.forEach((l) => {
-    if (l.email) {
-      leadCustomerMap.set(l.email.toLowerCase(), {
-        source: l.source || 'Website',
-        staff: l.assignedStaffName || 'Tour Desk',
-      });
-    }
+  leads.forEach((lead) => {
+    if (!lead.email) return;
+    leadCustomerMap.set(lead.email.toLowerCase(), {
+      source: normalizeLeadSource(lead.source),
+      staff: lead.assignedStaffName || 'Unassigned',
+    });
   });
 
   return allBookings
-    .filter((b) => {
-      // 1. Date Range
-      const d = b.date || b.createdAt?.split('T')[0] || '';
-      if (filters.startDate && d < filters.startDate) return false;
-      if (filters.endDate && d > filters.endDate) return false;
+    .filter((booking) => {
+      const date = booking.date || booking.createdAt?.split('T')[0] || '';
+      if (filters.startDate && date < filters.startDate) return false;
+      if (filters.endDate && date > filters.endDate) return false;
 
-      // 2. Tour
       if (filters.tourId !== 'all') {
-        const matchId = b.tourId === filters.tourId || b.tourSlug === filters.tourId;
-        const matchingTour = (dynamicTours && dynamicTours.find((t) => t.id === filters.tourId)) || ALL_TOURS.find((t) => t.id === filters.tourId);
-        const matchTitle = matchingTour?.title === b.tourTitle;
-        if (!matchId && !matchTitle) return false;
+        const matchingTour = dynamicTours.find((tour) => tour.id === filters.tourId);
+        const matchId = booking.tourId === filters.tourId || booking.tourSlug === filters.tourId;
+        if (!matchId && matchingTour?.title !== booking.tourTitle) return false;
       }
 
-      // 3. Destination
-      if (filters.destination !== 'all') {
-        const dest = (b.tourDestination || 'Hurghada').toLowerCase();
-        if (dest !== filters.destination.toLowerCase()) return false;
-      }
+      if (filters.destination !== 'all' &&
+        (booking.tourDestination || '').toLowerCase() !== filters.destination.toLowerCase()) return false;
+      if (filters.bookingStatus !== 'all' && booking.status !== filters.bookingStatus) return false;
+      if (filters.paymentStatus !== 'all' && booking.paymentStatus !== filters.paymentStatus) return false;
 
-      // 4. Booking Status
-      if (filters.bookingStatus !== 'all') {
-        if (b.status !== filters.bookingStatus) return false;
-      }
-
-      // 5. Payment Status
-      if (filters.paymentStatus !== 'all') {
-        if (b.paymentStatus !== filters.paymentStatus) return false;
-      }
-
-      // 6. Customer query
       if (filters.customerQuery) {
-        const q = filters.customerQuery.toLowerCase();
-        const refMatch = (b.bookingReference || '').toLowerCase().includes(q);
-        const nameMatch = `${b.customer?.firstName || ''} ${b.customer?.lastName || ''}`.toLowerCase().includes(q);
-        const emailMatch = (b.customer?.email || '').toLowerCase().includes(q);
-        if (!refMatch && !nameMatch && !emailMatch) return false;
+        const query = filters.customerQuery.toLowerCase();
+        const referenceMatch = (booking.bookingReference || '').toLowerCase().includes(query);
+        const nameMatch = `${booking.customer?.firstName || ''} ${booking.customer?.lastName || ''}`.toLowerCase().includes(query);
+        const emailMatch = (booking.customer?.email || '').toLowerCase().includes(query);
+        if (!referenceMatch && !nameMatch && !emailMatch) return false;
       }
 
-      // 7. Lead source & Staff filters
-      const email = b.customer?.email?.toLowerCase() || '';
-      const leadInfo = leadCustomerMap.get(email) || {
-        source: b.paymentMethod === 'pay_at_pickup' ? 'Hotel' : 'Website',
-        staff: 'Mariam Youssef',
-      };
-
-      if (filters.leadSource !== 'all') {
-        if (leadInfo.source.toLowerCase() !== filters.leadSource.toLowerCase()) return false;
-      }
-
-      if (filters.staffName !== 'all') {
-        if (!leadInfo.staff.toLowerCase().includes(filters.staffName.toLowerCase())) return false;
-      }
-
+      const email = booking.customer?.email?.toLowerCase() || '';
+      const leadInfo = leadCustomerMap.get(email);
+      const source = leadInfo?.source || normalizeLeadSource((booking as any).source);
+      const staff = leadInfo?.staff || (booking as any).assignedStaffName || 'Unassigned';
+      if (filters.leadSource !== 'all' && source.toLowerCase() !== filters.leadSource.toLowerCase()) return false;
+      if (filters.staffName !== 'all' && !staff.toLowerCase().includes(filters.staffName.toLowerCase())) return false;
       return true;
     })
-    .map((b) => {
-      const email = b.customer?.email?.toLowerCase() || '';
-      const leadInfo = leadCustomerMap.get(email) || {
-        source: b.paymentMethod === 'pay_at_pickup' ? 'Hotel' : 'Website',
-        staff: 'Mariam Youssef',
-      };
-
+    .map((booking) => {
+      const email = booking.customer?.email?.toLowerCase() || '';
+      const leadInfo = leadCustomerMap.get(email);
       return {
-        bookingId: b.bookingId || b.bookingReference,
-        bookingReference: b.bookingReference,
-        customerName: `${b.customer?.firstName || ''} ${b.customer?.lastName || ''}`.trim() || 'Guest',
-        customerEmail: b.customer?.email || '',
-        customerPhone: b.customer?.phoneNumber || '',
-        tourTitle: b.tourTitle || 'Excursion',
-        destination: b.tourDestination || 'Hurghada',
-        bookingDate: b.date || '',
-        travelDate: b.date || '',
-        totalGuests: (b.guests?.adults || 1) + (b.guests?.children || 0) + (b.guests?.infants || 0),
-        subtotal: b.pricing?.subtotalEur || 0,
-        discount: b.pricing?.discountEur || 0,
-        total: b.pricing?.totalEur || 0,
-        currency: 'EUR',
-        bookingStatus: b.status || 'confirmed',
-        paymentStatus: b.paymentStatus || 'pending',
-        paymentMethod: b.paymentMethod || 'pay_at_pickup',
-        leadSource: leadInfo.source,
-        staffName: leadInfo.staff,
-        createdAt: b.createdAt || '',
+        bookingId: booking.bookingId || booking.bookingReference,
+        bookingReference: booking.bookingReference,
+        customerName: `${booking.customer?.firstName || ''} ${booking.customer?.lastName || ''}`.trim(),
+        customerEmail: booking.customer?.email || '',
+        customerPhone: booking.customer?.phoneNumber || '',
+        tourTitle: booking.tourTitle || '',
+        destination: booking.tourDestination || '',
+        bookingDate: booking.date || '',
+        travelDate: booking.date || '',
+        totalGuests: (Number(booking.guests?.adults) || 0) +
+          (Number(booking.guests?.children) || 0) +
+          (Number(booking.guests?.infants) || 0),
+        subtotal: booking.pricing?.subtotalEur || 0,
+        discount: booking.pricing?.discountEur || 0,
+        total: booking.pricing?.totalEur || 0,
+        currency: String(booking.pricing?.currency || 'EUR').toUpperCase(),
+        bookingStatus: booking.status || 'unknown',
+        paymentStatus: booking.paymentStatus || 'unknown',
+        paymentMethod: booking.paymentMethod || 'unknown',
+        leadSource: leadInfo?.source || normalizeLeadSource((booking as any).source),
+        staffName: leadInfo?.staff || (booking as any).assignedStaffName || 'Unassigned',
+        createdAt: booking.createdAt || '',
       };
     });
 }
