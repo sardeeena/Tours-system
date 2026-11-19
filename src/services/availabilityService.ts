@@ -9,16 +9,22 @@ import { supabase, isSupabaseConfigured, formatSupabaseError } from './supabaseC
  */
 export function getEarliestSelectableDate(minNoticeHours: number = APP_CONFIG.DEFAULT_MIN_BOOKING_NOTICE_HOURS): string {
   const cutoffTime = new Date(Date.now() + minNoticeHours * 60 * 60 * 1000);
-  const year = cutoffTime.getFullYear();
-  const month = String(cutoffTime.getMonth() + 1).padStart(2, '0');
-  const day = String(cutoffTime.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Africa/Cairo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(cutoffTime);
 }
 
 export function isDateInPast(dateStr: string): boolean {
   if (!dateStr) return true;
-  const now = new Date();
-  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const todayStr = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Africa/Cairo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
   return dateStr < todayStr;
 }
 
@@ -38,7 +44,7 @@ function unavailableAvailability(tour: Tour, selectedDate: string, isPastDate: b
     isSoldOut: false,
     isPastDate,
     meetsMinimumNotice,
-    minNoticeHours: APP_CONFIG.DEFAULT_MIN_BOOKING_NOTICE_HOURS,
+    minNoticeHours: Math.max(0, Number(tour.minimumBookingNoticeHours ?? APP_CONFIG.DEFAULT_MIN_BOOKING_NOTICE_HOURS) || APP_CONFIG.DEFAULT_MIN_BOOKING_NOTICE_HOURS),
     status: 'unavailable',
   };
 }
@@ -52,7 +58,7 @@ function unavailableAvailability(tour: Tour, selectedDate: string, isPastDate: b
  * Supabase schedule RPC.
  */
 export function getTourAvailability(tour: Tour, selectedDate: string): Availability {
-  const minNoticeHours = APP_CONFIG.DEFAULT_MIN_BOOKING_NOTICE_HOURS;
+  const minNoticeHours = Math.max(0, Number(tour.minimumBookingNoticeHours ?? APP_CONFIG.DEFAULT_MIN_BOOKING_NOTICE_HOURS) || APP_CONFIG.DEFAULT_MIN_BOOKING_NOTICE_HOURS);
   const isPast = isDateInPast(selectedDate);
   const meetsNotice = meetsNoticeRequirement(selectedDate, minNoticeHours);
 
@@ -164,7 +170,7 @@ export async function getTourAvailabilityFromServer(
     isSoldOut: status === 'sold_out',
     isPastDate: false,
     meetsMinimumNotice: true,
-    minNoticeHours: APP_CONFIG.DEFAULT_MIN_BOOKING_NOTICE_HOURS,
+    minNoticeHours: Math.max(0, Number(tour.minimumBookingNoticeHours ?? APP_CONFIG.DEFAULT_MIN_BOOKING_NOTICE_HOURS) || APP_CONFIG.DEFAULT_MIN_BOOKING_NOTICE_HOURS),
     status,
   };
 }
