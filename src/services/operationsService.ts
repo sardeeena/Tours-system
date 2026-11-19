@@ -1265,14 +1265,33 @@ export async function updatePickupScheduleStatus(
 
   const { data: bookingDetails, error: bookingDetailsError } = await supabase
     .from('bookings')
-    .select('id,booking_date,adult_count,child_count,infant_count,pickup_hotel_name,special_requests,customer_id,customers(first_name,last_name,phone,hotel),pickup_locations(name,area),tours(title)')
+    .select('id,booking_date,adult_count,child_count,infant_count,pickup_hotel_name,special_requests,customer_id,pickup_status,driver_vehicle,customers(first_name,last_name,phone,hotel),pickup_locations(name,area),tours(title)')
     .eq('booking_reference', reference)
     .maybeSingle();
   if (bookingDetailsError) throw new Error(formatSupabaseError(bookingDetailsError));
   if (!bookingDetails?.id) throw new Error('Booking not found. Pickup changes were not saved.');
 
-  // The booking row is the authoritative record for pickup state. Require an
-  // affected row so UI success cannot be reported after a silent database error.
+  const { data: scheduleRows, error: scheduleReadError } = await supabase
+    .from('pickup_schedules')
+    .select('id')
+    .eq('booking_reference', reference)
+    .limit(1);
+  if (scheduleReadError) throw new Error(formatSupabaseError(scheduleReadError));
+
+  const scheduleId = scheduleRows?.[0]?.id;
+  const hasAssignmentInput = driverName !== undefined || driverVehicle !== undefined || pickupTime !== undefined || driverId !== undefined;
+  const customer = Array.isArray(bookingDetails.customers) ? bookingDetails.customers[0] : bookingDetails.customers;
+  const pickupLocation = Array.isArray(bookingDetails.pickup_locations) ? bookingDetails.pickup_locations[0] : bookingDetails.pickup_locations;
+  const tour = Array.isArray(bookingDetails.tours) ? bookingDetails.tours[0] : bookingDetails.tours;
+  const hotel = bookingDetails.pickup_hotel_name || customer?.hotel;
+  const location = pickupLocation?.area || pickupLocation?.name;
+  const customerName = [customer?.first_name, customer?.last_name].filter(Boolean).join(' ').trim();
+
+  if (hasAssignmentInput && !scheduleId &&
+      (!pickupTime || !driverName?.trim() || !driverVehicle?.trim() || !hotel?.trim() || !location?.trim() || !customerName)) {
+    throw new Error('A real pickup time, driver, vehicle, customer and pickup location are required before a pickup schedule can be created.');
+  }
+
   const bookingPatch: Record<string, unknown> = {
     pickup_status: normalized,
     updated_at: new Date().toISOString(),
@@ -1285,69 +1304,64 @@ export async function updatePickupScheduleStatus(
     .eq('booking_reference', reference)
     .select('id')
     .maybeSingle();
-
   if (bookingError) throw new Error(formatSupabaseError(bookingError));
-  if (!savedBooking?.id) {
-    throw new Error('The booking was not found or its pickup update was not confirmed.');
-  }
+  if (!savedBooking?.id) throw new Error('The booking was not found or its pickup update was not confirmed.');
 
-  // Keep an existing dedicated schedule row in sync; do not fabricate one.
-  const { data: scheduleRows, error: scheduleReadError } = await supabase
-    .from('pickup_schedules')
-    .select('id')
-    .eq('booking_reference', reference)
-    .limit(1);
-  if (scheduleReadError) throw new Error(formatSupabaseError(scheduleReadError));
-
-  if ((driverName !== undefined || driverVehicle !== undefined || pickupTime !== undefined || driverId !== undefined) && !scheduleRows?.[0]?.id) {
-    const customer = Array.isArray(bookingDetails.customers) ? bookingDetails.customers[0] : bookingDetails.customers;
-    const pickupLocation = Array.isArray(bookingDetails.pickup_locations) ? bookingDetails.pickup_locations[0] : bookingDetails.pickup_locations;
-    const tour = Array.isArray(bookingDetails.tours) ? bookingDetails.tours[0] : bookingDetails.tours;
-    const hotel = bookingDetails.pickup_hotel_name || customer?.hotel;
-    const location = pickupLocation?.area || pickupLocation?.name;
-    const customerName = [customer?.first_name, customer?.last_name].filter(Boolean).join(' ').trim();
-
-    if (!pickupTime || !driverName?.trim() || !driverVehicle?.trim() || !hotel?.trim() || !location?.trim() || !customerName) {
-      throw new Error('A real pickup time, active driver, vehicle, customer and pickup location are required before a pickup schedule can be created.');
+  try {
+    if (hasAssignmentInput && !scheduleId) {
+      const passengerCount = Number(bookingDetails.adult_count || 0) +
+        Number(bookingDetails.child_count || 0) + Number(bookingDetails.infant_count || 0);
+      const { data, error } = await supabase.from('pickup_schedules').insert({
+        booking_id: bookingDetails.id,
+        booking_reference: reference,
+        customer_name: customerName,
+        customer_phone: customer?.phone || null,
+        hotel,
+        location,
+        pickup_time: pickupTime,
+        driver_id: driverId || null,
+        driver_name: driverName!.trim(),
+        vehicle: driverVehicle!.trim(),
+        passenger_count: passengerCount,
+        tour_title: tour?.title || null,
+        tour_date: bookingDetails.booking_date,
+        departure_time: null,
+        status: normalized,
+        special_requests: bookingDetails.special_requests || null,
+      }).select('id').single();
+      if (error) throw new Error(formatSupabaseError(error));
+      if (!data?.id) throw new Error('Pickup schedule creation returned no database record.');
+    } else if (scheduleId) {
+      const schedulePatch: Record<string, unknown> = {
+        status: normalized,
+        updated_at: new Date().toISOString(),
+      };
+      if (driverVehicle !== undefined) schedulePatch.vehicle = driverVehicle.trim() || null;
+      if (driverName !== undefined) schedulePatch.driver_name = driverName.trim() || null;
+      if (pickupTime !== undefined) schedulePatch.pickup_time = pickupTime;
+      if (driverId !== undefined) schedulePatch.driver_id = driverId || null;
+      const { data, error } = await supabase
+        .from('pickup_schedules')
+        .update(schedulePatch)
+        .eq('id', scheduleId)
+        .select('id')
+        .maybeSingle();
+      if (error) throw new Error(formatSupabaseError(error));
+      if (!data?.id) throw new Error('Pickup schedule was not updated because its record no longer exists.');
     }
-
-    const passengerCount = Number(bookingDetails.adult_count || 0) +
-      Number(bookingDetails.child_count || 0) + Number(bookingDetails.infant_count || 0);
-    const { error: insertScheduleError } = await supabase.from('pickup_schedules').insert({
-      booking_id: bookingDetails.id,
-      booking_reference: reference,
-      customer_name: customerName,
-      customer_phone: customer?.phone || null,
-      hotel,
-      location,
-      pickup_time: pickupTime,
-      driver_id: driverId,
-      driver_name: driverName.trim(),
-      vehicle: driverVehicle.trim(),
-      passenger_count: passengerCount,
-      tour_title: tour?.title || null,
-      tour_date: bookingDetails.booking_date,
-      departure_time: null,
-      status: normalized,
-      special_requests: bookingDetails.special_requests || null,
-    });
-    if (insertScheduleError) throw new Error(formatSupabaseError(insertScheduleError));
-  }
-
-  if (scheduleRows?.[0]?.id) {
-    const schedulePatch: Record<string, unknown> = {
-      status: normalized,
-      updated_at: new Date().toISOString(),
-    };
-    if (driverVehicle !== undefined) schedulePatch.vehicle = driverVehicle.trim() || null;
-    if (driverName !== undefined) schedulePatch.driver_name = driverName.trim() || null;
-    if (pickupTime !== undefined) schedulePatch.pickup_time = pickupTime;
-    if (driverId !== undefined) schedulePatch.driver_id = driverId || null;
-    const { error: scheduleError } = await supabase
-      .from('pickup_schedules')
-      .update(schedulePatch)
-      .eq('id', scheduleRows[0].id);
-    if (scheduleError) throw new Error(formatSupabaseError(scheduleError));
+  } catch (scheduleError) {
+    const { error: rollbackError } = await supabase
+      .from('bookings')
+      .update({
+        pickup_status: bookingDetails.pickup_status,
+        driver_vehicle: bookingDetails.driver_vehicle,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', bookingDetails.id);
+    if (rollbackError) {
+      throw new Error(`Pickup schedule update failed: ${formatSupabaseError(scheduleError)}. Booking status rollback also failed: ${formatSupabaseError(rollbackError)}`);
+    }
+    throw new Error(`Pickup schedule update failed; the booking status was restored: ${formatSupabaseError(scheduleError)}`);
   }
 
   const cached = getLocal<Record<string, Partial<PickupScheduleItem>>>(LOCAL_PICKUPS_KEY, {});
