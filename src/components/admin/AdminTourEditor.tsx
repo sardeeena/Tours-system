@@ -1225,7 +1225,7 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
             <span>
               <span className="font-semibold block">This excursion offers hotel pickup</span>
               <span className="text-[11px] text-stone-400 block mt-1">
-                Enable pickup only after the operator confirms the covered areas, any supplements and the approved pickup points below.
+                Enable pickup only after the operator confirms the covered areas, any supplements and the approved pickup points below. Existing pickup mappings are preserved when pickup is disabled.
               </span>
             </span>
           </label>
