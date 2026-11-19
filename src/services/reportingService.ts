@@ -194,8 +194,12 @@ export async function fetchExecutiveReport(interval: DateRangeInterval): Promise
         p_start_date: interval.startDate,
         p_end_date: interval.endDate,
       });
+      if (error && !['PGRST202', '42883'].includes(String(error.code))) {
+        throw new Error(`Executive report query failed: ${error.message}`);
+      }
       if (!error && data && typeof data === 'object') {
-        const d = data as any;
+        const d = (Array.isArray(data) ? data[0] : data) as any;
+        if (!d) throw new Error('Executive report query returned no metrics object.');
         const revenue = d.revenue && typeof d.revenue === 'object' ? d.revenue : {};
         const bookings = d.bookings && typeof d.bookings === 'object' ? d.bookings : {};
         const passengers = d.passengers && typeof d.passengers === 'object' ? d.passengers : {};
@@ -246,111 +250,92 @@ export async function fetchExecutiveReport(interval: DateRangeInterval): Promise
 
   const activeBookings = filterBookingsByInterval(allBookings, interval);
 
-  // Groupings by status
-  const confirmedBookings = activeBookings.filter(
-    (b) => b.status === 'confirmed' || b.status === 'completed' || b.status === 'pending'
-  );
+  const confirmedStatuses = ['confirmed', 'boarding', 'in_progress', 'completed'];
+  const confirmedBookings = activeBookings.filter((booking) => confirmedStatuses.includes(booking.status));
   const nonCancelledBookings = activeBookings.filter(
-    (b) => b.status !== 'cancelled' && b.status !== 'cancellation_requested'
+    (booking) => booking.status !== 'cancelled' && booking.status !== 'cancellation_requested'
   );
   const cancelledBookings = activeBookings.filter(
-    (b) => b.status === 'cancelled' || b.status === 'cancellation_requested'
+    (booking) => booking.status === 'cancelled' || booking.status === 'cancellation_requested'
   );
 
-  const totalRevenueEur = nonCancelledBookings.reduce((sum, b) => sum + (b.pricing?.totalEur || 0), 0);
+  const totalRevenueEur = nonCancelledBookings.reduce(
+    (sum, booking) => sum + (Number(booking.pricing?.totalEur) || 0),
+    0
+  );
   const bookingsCount = activeBookings.length;
-  const confirmedBookingsCount = nonCancelledBookings.length;
+  const confirmedBookingsCount = confirmedBookings.length;
   const completedBookingsCount = activeBookings.filter((booking) => booking.status === 'completed').length;
   const cancellationsCount = cancelledBookings.length;
 
-  let adultsCount = 0;
-  let childrenCount = 0;
-  let infantsCount = 0;
-
-  nonCancelledBookings.forEach((b) => {
-    adultsCount += b.guests?.adults || 1;
-    childrenCount += b.guests?.children || 0;
-    infantsCount += b.guests?.infants || 0;
-  });
-
+  const passengerBookings = nonCancelledBookings.filter((booking) => booking.status !== 'no_show');
+  const adultsCount = passengerBookings.reduce((sum, booking) => sum + (Number(booking.guests?.adults) || 0), 0);
+  const childrenCount = passengerBookings.reduce((sum, booking) => sum + (Number(booking.guests?.children) || 0), 0);
+  const infantsCount = passengerBookings.reduce((sum, booking) => sum + (Number(booking.guests?.infants) || 0), 0);
   const passengersCount = adultsCount + childrenCount + infantsCount;
 
-  // Net collected revenue is settled payments less completed refunds for this booking cohort.
-  const activeBookingsRefs = new Set(nonCancelledBookings.map((b) => b.bookingReference));
-  const activeBookingIds = new Set(nonCancelledBookings.map((b) => b.bookingId).filter(Boolean));
+  const activeBookingsRefs = new Set(nonCancelledBookings.map((booking) => booking.bookingReference));
+  const activeBookingIds = new Set(nonCancelledBookings.map((booking) => booking.bookingId).filter(Boolean));
   const isForActiveBooking = (record: { bookingReference?: string; bookingId?: string }) =>
     activeBookingsRefs.has(record.bookingReference || '') || activeBookingIds.has(record.bookingId || '');
   const isSettledPayment = (payment: { paymentStatus: unknown }) =>
     ['paid', 'partially paid'].includes(String(payment.paymentStatus).toLowerCase().replace(/_/g, ' '));
-  const collectedPayments = payments.filter((payment) =>
-    isSettledPayment(payment) && isForActiveBooking(payment)
+  const isEur = (record: { currency?: string | null }) => String(record.currency || '').toUpperCase() === 'EUR';
+
+  const collectedPayments = payments.filter(
+    (payment) => isSettledPayment(payment) && isForActiveBooking(payment) && isEur(payment)
   );
-  const processedRefunds = refunds.filter((refund) =>
-    refund.status === 'processed' && isForActiveBooking(refund)
+  const processedRefunds = refunds.filter(
+    (refund) => refund.status === 'processed' && isForActiveBooking(refund) && isEur(refund)
   );
-  const grossCollectedRevenueEur = collectedPayments.reduce((sum, payment) => sum + payment.amount, 0);
+  const grossCollectedRevenueEur = collectedPayments.reduce(
+    (sum, payment) => sum + (Number(payment.amount) || 0),
+    0
+  );
   const refundedRevenueEur = processedRefunds.reduce(
-    (sum, refund) => sum + (refund.approvedAmount || refund.amount || 0),
+    (sum, refund) => sum + (Number(refund.approvedAmount ?? refund.amount) || 0),
     0
   );
   const collectedRevenueEur = Math.max(0, grossCollectedRevenueEur - refundedRevenueEur);
-
-  // Outstanding revenue reflects the amount still retained by the business, not gross payments.
   const outstandingRevenueEur = Math.max(0, totalRevenueEur - collectedRevenueEur);
 
-  // Unique customers & Repeat calculation
   const customerEmailCounts = new Map<string, number>();
-  allBookings.forEach((b) => {
-    const email = b.customer?.email?.toLowerCase();
-    if (email) {
-      customerEmailCounts.set(email, (customerEmailCounts.get(email) || 0) + 1);
-    }
+  nonCancelledBookings.forEach((booking) => {
+    const email = booking.customer?.email?.toLowerCase();
+    if (email) customerEmailCounts.set(email, (customerEmailCounts.get(email) || 0) + 1);
   });
 
-  const intervalCustomers = new Set<string>();
-  let repeatCustomersCount = 0;
-  let newCustomersCount = 0;
+  const customers = allCustomers.filter((customer) => customer.role === 'customer');
+  const totalCustomersCount = customers.length || customerEmailCounts.size;
+  const newCustomersCount = customers.filter((customer) => {
+    const createdDate = (customer.createdAt || '').split('T')[0];
+    return createdDate >= interval.startDate && createdDate <= interval.endDate;
+  }).length;
+  const repeatCustomersCount = customers.length > 0
+    ? customers.filter((customer) => (Number(customer.totalBookings) || 0) > 1).length
+    : Array.from(customerEmailCounts.values()).filter((count) => count > 1).length;
 
-  activeBookings.forEach((b) => {
-    const email = b.customer?.email?.toLowerCase();
-    if (email && !intervalCustomers.has(email)) {
-      intervalCustomers.add(email);
-      const totalLifetime = customerEmailCounts.get(email) || 1;
-      if (totalLifetime > 1) {
-        repeatCustomersCount++;
-      } else {
-        newCustomersCount++;
-      }
-    }
+  const intervalLeads = leads.filter((lead) => {
+    const date = (lead.createdAt || '').split('T')[0];
+    return date >= interval.startDate && date <= interval.endDate;
   });
-
-  const totalCustomersCount = allCustomers.length || customerEmailCounts.size;
-
-  // Filter leads and inquiries in date range
-  const intervalLeads = leads.filter((l) => {
-    const lDate = (l.createdAt || '').split('T')[0];
-    return lDate >= interval.startDate && lDate <= interval.endDate;
-  });
-  const intervalInquiries = inquiries.filter((inq) => {
-    const inqDate = (inq.created_at || '').split('T')[0];
-    return inqDate >= interval.startDate && inqDate <= interval.endDate;
+  const intervalInquiries = inquiries.filter((inquiry) => {
+    const date = (inquiry.created_at || '').split('T')[0];
+    return date >= interval.startDate && date <= interval.endDate && inquiry.status !== 'converted';
   });
   const leadsCount = intervalLeads.length + intervalInquiries.length;
-
-  // Conversion rate: Confirmed bookings divided by (leads + confirmed bookings)
-  const totalDemand = leadsCount + confirmedBookingsCount;
-  const conversionRate = totalDemand > 0
-    ? Math.round((confirmedBookingsCount / totalDemand) * 1000) / 10
+  const convertedLeadCount = intervalLeads.filter(
+    (lead) => ['Won', 'Booked', 'Completed'].includes(lead.stage)
+  ).length;
+  const conversionRate = leadsCount > 0
+    ? Math.round((convertedLeadCount / leadsCount) * 1000) / 10
     : 0;
 
-  // Cancellation rate
   const cancellationRate = bookingsCount > 0
     ? Math.round((cancellationsCount / bookingsCount) * 1000) / 10
     : 0;
-
-  // Average booking value
-  const averageBookingValueEur = confirmedBookingsCount > 0
-    ? Math.round((totalRevenueEur / confirmedBookingsCount) * 100) / 100
+  const averageBookingValueEur = nonCancelledBookings.length > 0
+    ? Math.round((totalRevenueEur / nonCancelledBookings.length) * 100) / 100
     : 0;
 
   return {
