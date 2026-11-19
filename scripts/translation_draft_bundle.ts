@@ -42,7 +42,12 @@ const fetchWithTransientRetry: typeof fetch = async (input, init) => {
   const maxAttempts = 4;
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
-      const response = await fetch(input, init);
+      // Bound each remote read so a stalled Supabase request cannot hang CI indefinitely.
+      const timeoutSignal = AbortSignal.timeout(15_000);
+      const requestSignal = init?.signal
+        ? AbortSignal.any([init.signal, timeoutSignal])
+        : timeoutSignal;
+      const response = await fetch(input, { ...init, signal: requestSignal });
       if (!retryableStatuses.has(response.status) || attempt === maxAttempts) return response;
       await response.body?.cancel();
     } catch (error) {

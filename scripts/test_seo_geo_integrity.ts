@@ -14,6 +14,7 @@ const ratingMigration = readFileSync(new URL('../supabase/migrations/20261119100
 const draftDefaultsMigration = readFileSync(new URL('../supabase/migrations/20261119110000_remove_unverified_tour_draft_defaults.sql', import.meta.url), 'utf8');
 const scheduleMigration = readFileSync(new URL('../supabase/migrations/20261119120000_normalize_tour_schedule_display_data.sql', import.meta.url), 'utf8');
 const destinationSeoMigration = readFileSync(new URL('../supabase/migrations/20261119130000_seed_destination_seo_metadata.sql', import.meta.url), 'utf8');
+const blogSeoTitlesMigration = readFileSync(new URL('../supabase/migrations/20261119180000_refine_blog_seo_titles.sql', import.meta.url), 'utf8');
 const pickupMappingMigration = readFileSync(new URL('../supabase/migrations/20261119140000_reconcile_published_tour_pickup_mappings.sql', import.meta.url), 'utf8');
 const tourCard = readFileSync(new URL('../src/components/tours/TourCard.tsx', import.meta.url), 'utf8');
 const tourDetail = readFileSync(new URL('../src/pages/TourDetailPage.tsx', import.meta.url), 'utf8');
@@ -125,6 +126,8 @@ assert.ok(server.includes('Starting price: ${price}'), 'Homepage Markdown respon
 assert.doesNotMatch(schema, /aggregateRating|reviewRating|openingHoursSpecification|priceRange|geo:/, 'Schema does not invent reviews, hours, prices or geographic coordinates');
 assert.doesNotMatch(schema, /'@type': 'Product'/, 'Excursion TouristTrip schema is not misclassified as a retail Product or merchant listing');
 assert.doesNotMatch(seoConfig, /'@type': 'Product'|'@type': 'Offer'|'@type': 'AggregateRating'/, 'Client-side tour and destination JSON-LD does not emit retail Product, Offer or rating markup');
+assert.match(blogSeoTitlesMigration, /Coral Reef Etiquette: Responsible Snorkeling Guide/, 'Top coral-reef Search Console opportunity is reflected in the article SEO title');
+assert.match(blogSeoTitlesMigration, /char_length\(COALESCE\(seo_title, ''\)\) > 60/, 'Blog SEO title migration guards against title truncation');
 assert.match(adminSeo, /contentLength >= 650/, 'Admin destination indexability threshold matches the public renderer and sitemap');
 assert.doesNotMatch(adminSeo, /contentLength >= 300/, 'Admin does not mark thin destinations indexable below the public threshold');
 assert.match(destinationDetail, /RED_SEA_DESTINATION_SLUGS/, 'Destination detail pages use a destination-aware geographic label');
