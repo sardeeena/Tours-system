@@ -37,9 +37,11 @@ import {
 } from '../../../services/crmService';
 import { CrmCustomerDetail, CrmCommunication, CrmNote, CrmTask, CrmActivity } from '../../../types/crm';
 import { useToast } from '../../../contexts/ToastContext';
+import { useAuth } from '../../../contexts/AuthContext';
 
 export const CrmCustomersManager: React.FC = () => {
   const { showToast } = useToast();
+  const { user } = useAuth();
   const [customers, setCustomers] = useState<CrmCustomerDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -106,7 +108,8 @@ export const CrmCustomersManager: React.FC = () => {
       const note = await addStaffNote({
         customerId: profileCustomer.id,
         content: newNoteContent.trim(),
-        staffName: 'Admin Staff',
+        staffName: user?.fullName || 'Signed-in staff',
+        staffId: user?.id || null,
       });
       setProfileCustomer((prev: CrmCustomerDetail | null) =>
         prev
@@ -137,7 +140,8 @@ export const CrmCustomersManager: React.FC = () => {
         channel: newCommChannel,
         summary: newCommSummary.trim(),
         direction: 'outbound',
-        staffName: 'Concierge Desk',
+        staffName: user?.fullName || 'Signed-in staff',
+        staffId: user?.id || null,
       });
       setProfileCustomer((prev: CrmCustomerDetail | null) =>
         prev
@@ -167,7 +171,8 @@ export const CrmCustomersManager: React.FC = () => {
         customerId: profileCustomer.id,
         customerName: profileCustomer.fullName,
         dueDate: newTaskDueDate || new Date(Date.now() + 86400000).toISOString(),
-        assignedStaffName: 'Captain Tarek',
+        assignedStaffName: user?.fullName || 'Signed-in staff',
+        assignedStaffId: user?.id || null,
         priority: 'High',
         isFollowUp: true,
       });
