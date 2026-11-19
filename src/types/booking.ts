@@ -121,6 +121,7 @@ export interface Booking {
   tourLanguage?: string;
   customerLocale?: string;
   date: string;
+  departureId?: string;
   departureTime?: string;
   customerId?: string;
   guests: GuestCounts;
@@ -167,6 +168,20 @@ export interface CancellationRequest {
   reason: string;
   requestedAt: string;
   status: 'requested' | 'approved' | 'rejected';
+}
+
+export interface DepartureSlot {
+  departureId: string;
+  tourId: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  status: 'scheduled' | 'confirmed' | 'boarding' | 'in_progress' | 'completed' | 'cancelled';
+  capacity: number;
+  bookedCount: number;
+  remainingCapacity: number;
+  isAvailable: boolean;
+  minimumNoticeHours: number;
 }
 
 export interface Availability {
