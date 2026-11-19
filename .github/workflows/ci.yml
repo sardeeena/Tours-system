@@ -64,6 +64,9 @@ jobs:
       - name: Verify CRM inquiry persistence integrity
         run: npm run test:crm-inquiry-persistence
 
+      - name: Verify admin navigation, responsive drawer and live-site shortcut
+        run: npm run test:admin-navigation
+
       - name: Verify isolated admin authorization and error handling
         run: npm run test:admin
 
