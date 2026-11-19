@@ -311,10 +311,10 @@ const financeUi = read('src/components/admin/reporting/FinanceDashboardView.tsx'
 assert.doesNotMatch(financeUi, /CIB central bank fixing rates|1\.08|52\.5/, 'Finance UI must not claim unsupported FX rates');
 assert.match(financeUi, /Non-EUR collections are excluded/, 'Finance UI must explain how non-EUR amounts affect EUR totals');
 
-const customers = read('src/services/customerService.ts');
-assert.match(customers, /if \(import\.meta\.env\.DEV\) saveStoredCustomers\(result\)/, 'Production customer PII must not be cached in browser local storage');
-assert.match(customers, /Registered user accounts cannot be deleted from the customer directory/, 'Registered auth accounts must not be deleted as customer records');
-assert.match(customers, /\.select\('id'\)[\s\S]*?\.maybeSingle\(\)/, 'Customer mutations must confirm a persisted row');
+const customerServiceAudit = read('src/services/customerService.ts');
+assert.match(customerServiceAudit, /if \(import\.meta\.env\.DEV\) saveStoredCustomers\(result\)/, 'Production customer PII must not be cached in browser local storage');
+assert.match(customerServiceAudit, /Registered user accounts cannot be deleted from the customer directory/, 'Registered auth accounts must not be deleted as customer records');
+assert.match(customerServiceAudit, /\.select\('id'\)[\s\S]*?\.maybeSingle\(\)/, 'Customer mutations must confirm a persisted row');
 const customerUi = read('src/components/admin/AdminCustomersList.tsx');
 assert.match(customerUi, /cust\.isRegistered\)[\s\S]*?disabled=\{cust\.isRegistered\}/, 'Registered customer accounts must not expose destructive delete actions');
 assert.match(customerUi, /selectedCustomer\.userId \|\| selectedCustomer\.id/, 'Role updates must target the actual auth user ID');
