@@ -141,7 +141,7 @@ DECLARE
   v_booking_returning_anchor TEXT := E'        RETURNING id INTO v_booking_id;';
   v_booking_returning_replacement TEXT := v_booking_returning_anchor || E'\n' ||
     '        PERFORM set_config(''app.booking_departure_id'', '''', TRUE);';
-  v_duplicate_handler_anchor TEXT := E'        EXCEPTION WHEN unique_violation THEN';
+  v_duplicate_handler_anchor TEXT := E'    EXCEPTION WHEN unique_violation THEN';
   v_duplicate_handler_replacement TEXT := v_duplicate_handler_anchor || E'\n' ||
     '            PERFORM set_config(''app.booking_departure_id'', '''', TRUE);';
   v_old_return TEXT := E'        ''bookingDate'', p_booking_date,' || E'\n' ||
