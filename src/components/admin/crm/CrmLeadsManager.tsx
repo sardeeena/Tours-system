@@ -49,6 +49,20 @@ const STAGES: LeadStage[] = [
   'Lost',
 ];
 
+const formatLeadValue = (amount: number, currency?: string) => {
+  const code = (currency || 'EUR').toUpperCase();
+  return `${code} ${(Number(amount) || 0).toLocaleString()}`;
+};
+
+const summarizeStageValues = (leads: CrmLead[]) => {
+  const totals = new Map<string, number>();
+  leads.forEach((lead) => {
+    const currency = (lead.currency || 'EUR').toUpperCase();
+    totals.set(currency, (totals.get(currency) || 0) + (lead.estimatedValue || 0));
+  });
+  return [...totals.entries()].map(([currency, amount]) => `${currency} ${amount.toLocaleString()}`).join(' · ');
+};
+
 const SOURCES: LeadSource[] = [
   'Website',
   'WhatsApp',
