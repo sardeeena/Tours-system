@@ -286,6 +286,24 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({
             <ImportantInformation tour={tour} />
           </div>
 
+          {/* FREQUENTLY ASKED QUESTIONS */}
+          {tour.faqs && tour.faqs.length > 0 && (
+            <section className="pt-4 border-t border-stone-200" aria-labelledby="tour-faq-heading">
+              <h2 id="tour-faq-heading" className="font-display text-xl font-bold text-[#0E1B2A] mb-3">Frequently Asked Questions</h2>
+              <div className="space-y-2">
+                {tour.faqs.map((faq, index) => (
+                  <details key={index} className="group rounded border border-stone-200 bg-white px-4 py-3">
+                    <summary className="cursor-pointer list-none font-semibold text-sm text-stone-900 flex items-center justify-between gap-3">
+                      <span>{faq.question}</span>
+                      <span aria-hidden="true" className="text-[#0A6C74] group-open:rotate-45 transition-transform">+</span>
+                    </summary>
+                    <p className="mt-3 text-sm leading-relaxed text-stone-600">{faq.answer}</p>
+                  </details>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* REVIEWS SECTION */}
           <div className="pt-4 border-t border-stone-200">
             <TourReviews tour={tour} />
