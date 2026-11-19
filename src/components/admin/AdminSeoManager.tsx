@@ -20,6 +20,7 @@ import { supabase, isSupabaseConfigured } from '../../services/supabaseClient';
 import { adminListTours, getDestinations, getCategories } from '../../services/tourService';
 import { DbTour, DbDestination, DbCategory } from '../../types/database';
 import { useToast } from '../../contexts/ToastContext';
+import { AdminLoadError } from './AdminLoadError';
 
 type SeoScopeType = 'homepage' | 'tours' | 'destinations' | 'categories' | 'pages';
 
@@ -73,6 +74,8 @@ export const AdminSeoManager: React.FC = () => {
 
   // Loading & Saving States
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadRetry, setLoadRetry] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -102,6 +105,7 @@ export const AdminSeoManager: React.FC = () => {
   useEffect(() => {
     async function loadEntities() {
       setLoading(true);
+      setLoadError(null);
       try {
         const [loadedTours, loadedDests, loadedCats] = await Promise.all([
           adminListTours(),
@@ -115,13 +119,14 @@ export const AdminSeoManager: React.FC = () => {
         // Load homepage defaults initially
         await loadEntitySeo('homepage', 'home', loadedTours, loadedDests, loadedCats);
       } catch (err) {
+        setLoadError(err instanceof Error ? err.message : 'SEO entities could not be loaded.');
         console.error('Failed to load SEO entities:', err);
       } finally {
         setLoading(false);
       }
     }
     loadEntities();
-  }, []);
+  }, [loadRetry]);
 
   const loadEntitySeo = async (
     currentScope: SeoScopeType,
@@ -228,7 +233,8 @@ export const AdminSeoManager: React.FC = () => {
 
         const { data, error } = await query.maybeSingle();
 
-        if (!error && data) {
+        if (error) throw error;
+        if (data) {
           setSeoTitle(data.seo_title || defaultTitle);
           setMetaDescription(data.meta_description || defaultDesc);
           setCanonicalUrl(data.canonical_url || defaultCanonical);
@@ -245,13 +251,18 @@ export const AdminSeoManager: React.FC = () => {
           loadedFromDb = true;
         }
       } catch (err) {
+        setLoadError(err instanceof Error ? err.message : 'SEO metadata could not be loaded.');
         console.warn('Error reading seo_metadata from Supabase:', err);
+        return;
       }
+    } else if (!import.meta.env.DEV) {
+      setLoadError('Supabase is not configured; SEO metadata cannot be loaded in production.');
+      return;
     }
 
     if (!loadedFromDb) {
-      // Check local cache
-      const cached = localStorage.getItem(`${LOCAL_SEO_PREFIX}${currentScope}_${entityId}`);
+      // Local SEO cache is development-only; production defaults remain explicit and database-backed.
+      const cached = import.meta.env.DEV ? localStorage.getItem(`${LOCAL_SEO_PREFIX}${currentScope}_${entityId}`) : null;
       if (cached) {
         try {
           const parsed = JSON.parse(cached);
@@ -426,6 +437,7 @@ export const AdminSeoManager: React.FC = () => {
 
   return (
     <div className="space-y-6 max-w-5xl">
+      {loadError && <AdminLoadError message={loadError} onRetry={() => setLoadRetry((value) => value + 1)} />}
       {/* Header */}
       <div>
         <h1 className="text-2xl font-bold font-display text-white tracking-tight flex items-center space-x-2">
