@@ -495,6 +495,11 @@ export async function adminListTours(filters?: {
   };
 
   if (!isSupabaseConfigured() || isSchemaMissing()) {
+    if (import.meta.env.PROD) {
+      throw new Error(!isSupabaseConfigured()
+        ? 'Tour management is unavailable because Supabase is not configured.'
+        : 'Tour management is unavailable because the database schema could not be verified.');
+    }
     return getLocalList();
   }
 
@@ -515,6 +520,7 @@ export async function adminListTours(filters?: {
     if (error) {
       if (isSchemaMissingError(error)) {
         setSchemaMissing(true);
+        if (import.meta.env.PROD) throw new Error('Tour management is unavailable because the database schema could not be verified.');
         return getLocalList();
       }
       console.error('Supabase adminListTours query error:', error.message);
@@ -524,6 +530,7 @@ export async function adminListTours(filters?: {
   } catch (err) {
     if (isSchemaMissingError(err)) {
       setSchemaMissing(true);
+      if (import.meta.env.PROD) throw new Error('Tour management is unavailable because the database schema could not be verified.');
       return getLocalList();
     }
     console.error('Failed to list admin tours:', err);
