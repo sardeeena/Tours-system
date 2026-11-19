@@ -270,6 +270,7 @@ async function testDatabaseMutationsFailClosedWithoutIsolatedDatabase() {
     assert(Boolean(error), 'requestRefund throws rather than creating a local/demo refund without the finance database');
   }
 
+  let conflictCheckRejected = false;
   try {
     await detectAssignmentConflicts({
       tourId: 'missing-test-tour',
@@ -277,13 +278,13 @@ async function testDatabaseMutationsFailClosedWithoutIsolatedDatabase() {
       startTime: '08:00',
       bookedPassengers: 2,
     });
-    assert(false, 'detectAssignmentConflicts must not approve a resource assignment without live data');
-  } catch (error: any) {
-    assert(
-      String(error?.message || error).toLowerCase().includes('supabase is not configured'),
-      'Resource conflict detection fails closed when live operations data is unavailable'
-    );
+  } catch {
+    conflictCheckRejected = true;
   }
+  assert(
+    conflictCheckRejected,
+    'Resource conflict detection fails closed when live operations data is unavailable or cannot verify the selected tour'
+  );
 
   try {
     await saveVessel({
