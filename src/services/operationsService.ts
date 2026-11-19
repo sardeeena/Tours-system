@@ -1806,6 +1806,7 @@ export async function getMaritimeWeather(dateTarget?: string): Promise<WeatherIn
       : Number(value);
   const bulletinWind = bulletin ? bulletinNumber(bulletin.wind_speed_knots) : null;
   const bulletinSwell = bulletin ? bulletinNumber(bulletin.swell_height_m) : null;
+  const bulletinAvailable = Boolean(bulletin);
   const bulletinHasMeasurements = Boolean(bulletin && (
     bulletinWind !== null || bulletinSwell !== null ||
     bulletinNumber(bulletin.air_temperature_c) !== null ||
