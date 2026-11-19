@@ -159,6 +159,7 @@ assert.match(inquiryList, /if \(error\)[\s\S]*?throw new Error/, 'Inquiry read f
 const inquiryDelete = section(inquiryService, 'export async function deleteInquiry(', '');
 assert.match(inquiryDelete, /\.delete\(\)[\s\S]*?\.select\('id'\)[\s\S]*?\.maybeSingle\(\)/, 'Inquiry deletion must confirm the database row was deleted');
 assert.ok(inquiryDelete.indexOf('await supabase') < inquiryDelete.lastIndexOf('saveStoredInquiries'), 'Inquiry cache must update only after the database deletion succeeds');
+assert.match(inquiryDelete, /current\.status === 'converted'[\s\S]*?throw new Error/, 'Converted inquiry source records must be retained for CRM audit history');
 
 const inquiryConvert = section(inquiryService, 'export async function convertInquiryToLead(', '/**\n * Deletes an inquiry');
 assert.match(inquiryConvert, /rpc\('convert_inquiry_to_lead'/, 'Inquiry-to-lead conversion must use the atomic permission-checked RPC');
