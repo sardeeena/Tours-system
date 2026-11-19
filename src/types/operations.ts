@@ -224,8 +224,11 @@ export interface AssignmentConflict {
     | 'vessel_inactive'
     | 'vessel_capacity_exceeded'
     | 'guide_double_booked'
+    | 'guide_unavailable'
     | 'captain_double_booked'
+    | 'captain_unavailable'
     | 'driver_double_booked'
+    | 'driver_unavailable'
     | 'crew_double_booked';
   message: string;
   entityId: string;
