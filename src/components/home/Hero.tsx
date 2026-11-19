@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   ShieldCheck, 
@@ -75,16 +75,48 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
   const { isDark } = useTheme();
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [isDocumentVisible, setIsDocumentVisible] = useState(() => typeof document === 'undefined' || !document.hidden);
+  const [isInViewport, setIsInViewport] = useState(true);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const heroSectionRef = useRef<HTMLElement | null>(null);
+
+  // Avoid downloading successive background slides while the page is hidden
+  // or the hero is outside the viewport. Respect the visitor's motion setting.
+  useEffect(() => {
+    const updateVisibility = () => setIsDocumentVisible(!document.hidden);
+    document.addEventListener('visibilitychange', updateVisibility);
+    updateVisibility();
+    return () => document.removeEventListener('visibilitychange', updateVisibility);
+  }, []);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const updatePreference = () => setPrefersReducedMotion(mediaQuery.matches);
+    updatePreference();
+    mediaQuery.addEventListener?.('change', updatePreference);
+    return () => mediaQuery.removeEventListener?.('change', updatePreference);
+  }, []);
+
+  useEffect(() => {
+    const element = heroSectionRef.current;
+    if (!element || typeof IntersectionObserver === 'undefined') return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      setIsInViewport(entry.isIntersecting);
+    }, { threshold: 0.01 });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   // Auto-advance cinematic background & matching content every 6.5 seconds
   useEffect(() => {
-    if (isPaused) return;
+    if (isPaused || !isDocumentVisible || !isInViewport || prefersReducedMotion) return;
     const interval = setInterval(() => {
       setCurrentSlideIndex((prev) => (prev + 1) % CINEMATIC_SLIDES.length);
     }, 6500);
 
     return () => clearInterval(interval);
-  }, [isPaused]);
+  }, [isPaused, isDocumentVisible, isInViewport, prefersReducedMotion]);
 
   const slide = CINEMATIC_SLIDES[currentSlideIndex];
 
@@ -111,7 +143,8 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
   }, []);
 
   return (
-    <section 
+    <section
+      ref={heroSectionRef}
       className="relative w-full bg-gradient-to-b from-[#E2F1F3] via-[#EFF7F8] to-[#FAF8F5] dark:bg-[#0E1B2A] text-stone-900 dark:text-white overflow-hidden transition-colors duration-300"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
