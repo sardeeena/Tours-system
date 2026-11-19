@@ -94,6 +94,15 @@ assert.match(ratingMigration, /WHERE r\.is_published = TRUE/, 'Tour rating aggre
 assert.match(ratingMigration, /CREATE TRIGGER trg_refresh_tour_review_summary/, 'Published review changes automatically refresh tour rating aggregates');
 assert.match(ratingMigration, /rating = COALESCE\(stats\.average_rating, 0\)/, 'Tours without published reviews receive a zero rating');
 assert.match(ratingMigration, /REVOKE ALL ON FUNCTION public\.refresh_tour_review_summary\(\) FROM PUBLIC, anon, authenticated/, 'Review aggregate trigger function is not directly executable by API roles');
+assert.match(draftDefaultsMigration, /DEFAULT 'Unspecified'/, 'New tour drafts use an explicit unconfigured duration category');
+assert.match(draftDefaultsMigration, /ALTER COLUMN pickup_available SET DEFAULT FALSE/, 'New tours do not assume hotel pickup is available');
+assert.match(draftDefaultsMigration, /ALTER COLUMN languages SET DEFAULT '\{\}'::text\[\]/, 'New tours do not assume language coverage');
+assert.match(tourService, /pickup_available: tourData\.pickup_available \?\? false/, 'Tour persistence preserves the safe no-pickup default');
+assert.match(tourService, /duration_type: tourData\.duration_type \|\| 'Unspecified'/, 'Tour persistence does not invent a duration category');
+assert.ok(!tourEditor.includes('Orange Bay beach') && !tourEditor.includes('Hotel lobby pickup and return transfer across Hurghada included'), 'New tour editor no longer seeds unrelated Hurghada excursion content');
+assert.ok(!tourService.includes("rating: 5.0") && !tourService.includes("destinationName: 'Hurghada'") && !tourService.includes("categories: ['Boat Trip']"), 'New tour local fallback does not invent a rating, destination or category');
+assert.match(tourEditor, /Complete these verified details before publishing/, 'New tour publication requires verified factual details');
+
 
 const markdownHandlerStart = server.indexOf('const acceptsMarkdown');
 const markdownHandlerEnd = server.indexOf("app.get('*'", markdownHandlerStart);
