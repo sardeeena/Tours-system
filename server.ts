@@ -5891,6 +5891,8 @@ async function startServer() {
 
       const privateRoute = /^\/(?:[a-z]{2}\/)?(?:admin(?:\/|$)|booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|support(?:\/|$))/i;
       if (privateRoute.test(req.path)) {
+        // These SPA routes bypass public SSR, so emit a crawler directive at the HTTP layer.
+        res.setHeader('X-Robots-Tag', 'noindex, nofollow');
         return res.sendFile(indexHtmlPath);
       }
 
