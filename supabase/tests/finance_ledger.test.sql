@@ -103,6 +103,20 @@ INSERT INTO public.tour_availability (tour_id, date, max_capacity, booked_count,
 SELECT id, CURRENT_DATE + 60, 10, 0, 'available'
 FROM public.tours WHERE slug = 'pgtap-finance-test';
 
+INSERT INTO public.departures (
+  tour_id, date, start_time, end_time, capacity, booked_passengers, remaining_capacity, status
+)
+SELECT id, CURRENT_DATE + 60, '09:00', '12:00', 10, 0, 10, 'confirmed'
+FROM public.tours WHERE slug = 'pgtap-finance-test';
+
+UPDATE public.tour_availability AS availability
+SET departure_id = departure.id
+FROM public.departures AS departure
+WHERE availability.tour_id = departure.tour_id
+  AND availability.date = departure.date
+  AND departure.tour_id = (SELECT id FROM public.tours WHERE slug = 'pgtap-finance-test')
+  AND departure.date = CURRENT_DATE + 60;
+
 CREATE TEMP TABLE finance_test_state (
   key TEXT PRIMARY KEY,
   value JSONB NOT NULL
