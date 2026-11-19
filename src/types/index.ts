@@ -39,6 +39,7 @@ export interface Tour {
   fullDescription: string;
   highlights: string[];
   itinerary: ItineraryItem[];
+  faqs?: Array<{ question: string; answer: string }>;
   included: string[];
   excluded: string[];
   whatToBring: string[];
