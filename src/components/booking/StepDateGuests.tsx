@@ -60,8 +60,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
         if (!active) return;
         setDepartureSlots(result);
         const current = result.find((slot) => slot.departureId === selectedDepartureId && slot.isAvailable);
-        const next = current || result.find((slot) => slot.isAvailable);
-        onDepartureChange(next?.departureId || '', next?.startTime || '');
+        onDepartureChange(current?.departureId || '', current?.startTime || '');
       })
       .catch((error) => {
         console.warn('Could not load confirmed departure slots:', error);
