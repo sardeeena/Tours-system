@@ -294,8 +294,23 @@ export async function deleteInquiry(id: string): Promise<boolean> {
 
   if (!isSupabaseConfigured()) {
     if (!import.meta.env.DEV) throw new Error('Supabase is not configured; inquiries cannot be deleted in production.');
-    saveStoredInquiries(getStoredInquiries().filter((item) => item.id !== id));
+    const local = getStoredInquiries();
+    const target = local.find((item) => item.id === id);
+    if (!target) throw new Error('Inquiry not found.');
+    if (target.status === 'converted') throw new Error('Converted inquiries are retained to preserve their CRM lead audit trail.');
+    saveStoredInquiries(local.filter((item) => item.id !== id));
     return true;
+  }
+
+  const { data: current, error: readError } = await supabase
+    .from('inquiries')
+    .select('id,status')
+    .eq('id', id)
+    .maybeSingle();
+  if (readError) throw new Error(formatSupabaseError(readError));
+  if (!current?.id) throw new Error('Inquiry not found or not accessible.');
+  if (current.status === 'converted') {
+    throw new Error('Converted inquiries are retained to preserve their CRM lead audit trail.');
   }
 
   const { data, error } = await supabase
