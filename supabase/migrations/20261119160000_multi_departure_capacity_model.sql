@@ -615,6 +615,7 @@ BEGIN
       WHEN coalesce(ta.is_blackout,FALSE) THEN 'unavailable'
       WHEN coalesce(summary.confirmed_count,0) = 0 THEN 'unavailable'
       WHEN coalesce(summary.remaining_capacity,0) <= 0 THEN 'sold_out'
+      WHEN NOT coalesce(summary.has_bookable_slot,FALSE) THEN 'unavailable'
       ELSE 'available'
     END,
     coalesce(summary.max_capacity,0)::INTEGER,
