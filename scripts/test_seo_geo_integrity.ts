@@ -13,6 +13,9 @@ const blogAdmin = readFileSync(new URL('../src/components/admin/AdminBlogManager
 const ratingMigration = readFileSync(new URL('../supabase/migrations/20261119100000_sync_tour_ratings_to_published_reviews.sql', import.meta.url), 'utf8');
 const draftDefaultsMigration = readFileSync(new URL('../supabase/migrations/20261119110000_remove_unverified_tour_draft_defaults.sql', import.meta.url), 'utf8');
 const scheduleMigration = readFileSync(new URL('../supabase/migrations/20261119120000_normalize_tour_schedule_display_data.sql', import.meta.url), 'utf8');
+const destinationSeoMigration = readFileSync(new URL('../supabase/migrations/20261119130000_seed_destination_seo_metadata.sql', import.meta.url), 'utf8');
+const tourCard = readFileSync(new URL('../src/components/tours/TourCard.tsx', import.meta.url), 'utf8');
+const tourDetail = readFileSync(new URL('../src/pages/TourDetailPage.tsx', import.meta.url), 'utf8');
 const tourService = readFileSync(new URL('../src/services/tourService.ts', import.meta.url), 'utf8');
 const sitemapStart = server.indexOf("app.get('/sitemap.xml'");
 const llmsStart = server.indexOf("app.get('/llms.txt'");
@@ -109,6 +112,15 @@ assert.match(scheduleMigration, /13:30 AM/);
 assert.match(scheduleMigration, /01:30 PM/);
 assert.match(scheduleMigration, /13:00 PM/);
 assert.match(scheduleMigration, /01:00 PM/);
+assert.match(destinationSeoMigration, /'destination'/, 'Destination SEO metadata is stored against destination entities');
+assert.match(destinationSeoMigration, /'luxor'.*FALSE/s, 'Destinations without enough published inventory remain noindex');
+assert.match(destinationSeoMigration, /'hurghada'.*TRUE/s, 'Destinations with published excursion inventory are indexable');
+assert.match(destinationSeoMigration, /canonical_url/, 'Destination metadata includes canonical URLs');
+assert.match(tourCard, /No reviews yet/, 'Tour cards do not call unrated products new');
+assert.match(tourDetail, /No customer reviews yet/, 'Tour details explain that no customer reviews exist');
+assert.match(tourDetail, /Hotel Pickup Available/, 'Tour details do not imply pickup is universally free');
+assert.doesNotMatch(tourDetail, /Hotel Pickup Included/, 'Tour details remove the unsupported pickup-included promise');
+
 
 
 
