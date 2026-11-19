@@ -4,7 +4,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
   en: {
     // Header Top Bar
     'top.licensed': 'Licensed Egyptian Tour Operator #2491/ETB',
-    'top.cancellation': 'Cancellation terms vary by excursion; check before booking',
+    'top.cancellation': 'Free cancellation up to 24 hours before excursion start',
     'top.pierDesk': 'Support',
     'top.language': 'Language',
     'top.currency': 'Currency',
@@ -38,8 +38,8 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'hero.subtitle':
       'Explore snorkeling boat trips, island visits, and desert quad safaris from Hurghada and nearby Red Sea destinations. Check each excursion for departure days, pickup options, and availability.',
     'hero.guarantee1': 'Weather may affect departures',
-    'hero.guarantee2': 'Cancellation terms shown before booking',
-    'hero.guarantee3': 'Pickup options vary by excursion',
+    'hero.guarantee2': 'Free cancellation up to 24 hours before start',
+    'hero.guarantee3': 'Pickup zones and supplements shown per tour',
     'hero.guarantee4': 'Local crews and guides on selected tours',
 
     // Search Module
@@ -75,7 +75,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     // Final CTA
     'cta.title': 'Ready to explore the Red Sea?',
     'cta.subtitle':
-      'Book online and review the selected excursion’s cancellation terms and payment options before confirming. Pickup, when available, depends on the tour and hotel area.',
+      'Free cancellation is available up to 24 hours before the excursion start time. Review the pickup zones and any hotel-area supplements for your selected tour before confirming.',
     'cta.browse': 'View All Tours',
     'cta.chat': 'Chat on WhatsApp',
     'cta.lookup': 'Find My Booking',
@@ -112,7 +112,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
 
   fr: {
     "top.licensed": "Opérateur touristique égyptien agréé n° 2491/ETB",
-    "top.cancellation": "Les conditions d’annulation varient selon l’excursion ; vérifiez-les avant de réserver.",
+    "top.cancellation": "Annulation gratuite jusqu’à 24 heures avant le début de l’excursion",
     "top.pierDesk": "Assistance",
     "top.language": "Langue",
     "top.currency": "Devise",
@@ -139,8 +139,8 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     "hero.title2": "avec des capitaines locaux",
     "hero.subtitle": "Excursions en bateau avec snorkeling, visites d’îles et safaris en quad dans le désert, au départ quotidien de Hurghada, El Gouna et Makadi Bay. Opérateur local direct, prise en charge à l’hôtel et tarifs transparents.",
     "hero.guarantee1": "La météo peut modifier les départs",
-    "hero.guarantee2": "Conditions d’annulation affichées avant la réservation",
-    "hero.guarantee3": "Prise en charge selon l’excursion",
+    "hero.guarantee2": "Annulation gratuite jusqu’à 24 h avant le départ",
+    "hero.guarantee3": "Zones de prise en charge et suppléments indiqués par excursion",
     "hero.guarantee4": "Équipes et guides locaux sur certaines excursions",
     "search.destination": "Destination",
     "search.allDestinations": "Toutes les destinations",
@@ -165,7 +165,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     "why.title": "Pourquoi réserver directement avec nous ?",
     "why.subtitle": "Nous travaillons avec des prestataires locaux, des capitaines expérimentés et des guides. Le prestataire et les services inclus sont précisés pour chaque excursion.",
     "cta.title": "Prêt à explorer la mer Rouge ?",
-    "cta.subtitle": "Consultez les conditions d’annulation, les options de prise en charge et les moyens de paiement de l’excursion choisie avant de confirmer. La prise en charge dépend de l’excursion et de la zone de votre hôtel.",
+    "cta.subtitle": "L’annulation est gratuite jusqu’à 24 heures avant le début de l’excursion. Vérifiez les zones de prise en charge et les éventuels suppléments liés à votre hôtel avant de confirmer.",
     "cta.browse": "Voir toutes les excursions",
     "cta.chat": "Discuter sur WhatsApp",
     "cta.lookup": "Retrouver ma réservation",
@@ -196,7 +196,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
 
   nl: {
     "top.licensed": "Erkende Egyptische touroperator #2491/ETB",
-    "top.cancellation": "Annuleringsvoorwaarden verschillen per excursie; controleer ze vóór het boeken.",
+    "top.cancellation": "Gratis annuleren tot 24 uur vóór aanvang van de excursie",
     "top.pierDesk": "Klantenservice",
     "top.language": "Taal",
     "top.currency": "Valuta",
@@ -223,8 +223,8 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     "hero.title2": "met lokale kapiteins",
     "hero.subtitle": "Ontdek snorkelboottochten, eilandexcursies en woestijnsafari's vanuit Hurghada en nabijgelegen bestemmingen aan de Rode Zee. Controleer per excursie de vertrekdagen, ophaalopties en beschikbaarheid.",
     "hero.guarantee1": "Het weer kan vertrek beïnvloeden",
-    "hero.guarantee2": "Annuleringsvoorwaarden vóór het boeken zichtbaar",
-    "hero.guarantee3": "Ophaalopties verschillen per excursie",
+    "hero.guarantee2": "Gratis annuleren tot 24 uur vóór vertrek",
+    "hero.guarantee3": "Ophaalzones en toeslagen per excursie vermeld",
     "hero.guarantee4": "Lokale teams en gidsen bij geselecteerde excursies",
     "search.destination": "Bestemming",
     "search.allDestinations": "Alle bestemmingen",
@@ -249,7 +249,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     "why.title": "Waarom rechtstreeks bij ons boeken?",
     "why.subtitle": "We werken samen met lokale activiteitenaanbieders, ervaren schippers en gidsen. Per excursie vermelden we de uitvoerende aanbieder en de inbegrepen diensten.",
     "cta.title": "Klaar om de Rode Zee te ontdekken?",
-    "cta.subtitle": "Bekijk vóór bevestiging de annuleringsvoorwaarden, ophaalmogelijkheden en betaalopties van de gekozen excursie. Ophalen is alleen beschikbaar bij geselecteerde tours en kan per hotelgebied verschillen.",
+    "cta.subtitle": "Gratis annuleren kan tot 24 uur vóór aanvang van de excursie. Controleer vóór bevestiging de ophaalzones en eventuele toeslagen voor je hotelgebied.",
     "cta.browse": "Bekijk alle tours",
     "cta.chat": "Chat via WhatsApp",
     "cta.lookup": "Mijn boeking zoeken",
@@ -281,7 +281,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
   de: {
     // Header Top Bar
     'top.licensed': 'Lizenzierter ägyptischer Reiseveranstalter #2491/ETB',
-    'top.cancellation': 'Die Stornierungsbedingungen variieren je nach Ausflug; bitte vor der Buchung prüfen.',
+    'top.cancellation': 'Kostenlose Stornierung bis 24 Stunden vor Beginn des Ausflugs',
     'top.pierDesk': 'Support',
     'top.language': 'Sprache',
     'top.currency': 'Währung',
@@ -315,8 +315,8 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'hero.subtitle':
       'Entdecken Sie Schnorchelausflüge, Inseltouren und Quad-Safaris ab Hurghada und in nahegelegenen Reisezielen am Roten Meer. Prüfen Sie bei jedem Ausflug die Abfahrtstage, Abholoptionen und Verfügbarkeit.',
     'hero.guarantee1': 'Wetterbedingungen können Abfahrten beeinflussen',
-    'hero.guarantee2': 'Stornierungsbedingungen vor der Buchung angezeigt',
-    'hero.guarantee3': 'Abholoptionen je Ausflug unterschiedlich',
+    'hero.guarantee2': 'Kostenlose Stornierung bis 24 Stunden vor Beginn',
+    'hero.guarantee3': 'Abholzonen und Zuschläge je Ausflug angegeben',
     'hero.guarantee4': 'Lokale Teams und Guides bei ausgewählten Touren',
 
     // Search Module
@@ -352,7 +352,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     // Final CTA
     'cta.title': 'Bereit für das Rote Meer?',
     'cta.subtitle':
-      'Prüfen Sie vor der Buchung die Stornierungsbedingungen, Abholoptionen und Zahlungsmöglichkeiten des gewählten Ausflugs. Eine Abholung wird nur bei ausgewählten Touren angeboten und kann je nach Hotelgebiet variieren.',
+      'Bis 24 Stunden vor Beginn des Ausflugs ist eine kostenlose Stornierung möglich. Prüfen Sie vor der Bestätigung die Abholzonen und mögliche Zuschläge für Ihr Hotelgebiet.',
     'cta.browse': 'Alle Ausflüge anzeigen',
     'cta.chat': 'Auf WhatsApp chatten',
     'cta.lookup': 'Meine Buchung finden',
@@ -390,7 +390,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
   ru: {
     // Header Top Bar
     'top.licensed': 'Лицензированный туроператор Египта #2491/ETB',
-    'top.cancellation': 'Условия отмены зависят от экскурсии — проверьте их перед бронированием.',
+    'top.cancellation': 'Бесплатная отмена не позднее чем за 24 часа до начала экскурсии',
     'top.pierDesk': 'Поддержка',
     'top.language': 'Язык',
     'top.currency': 'Валюта',
@@ -424,8 +424,8 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'hero.subtitle':
       'Морские прогулки, сноркелинг на рифах и сафари на квадроциклах ежедневно из Хургады, Эль-Гуны и Макади-Бей. Прямой организатор, трансфер из отеля и честные цены без посредников.',
     'hero.guarantee1': 'Погодные условия могут повлиять на отправление',
-    'hero.guarantee2': 'Условия отмены доступны до бронирования',
-    'hero.guarantee3': 'Трансфер зависит от выбранной экскурсии',
+    'hero.guarantee2': 'Бесплатная отмена за 24 часа до начала',
+    'hero.guarantee3': 'Зоны трансфера и доплаты указаны для каждого тура',
     'hero.guarantee4': 'Местные команды и гиды на отдельных экскурсиях',
 
     // Search Module
@@ -461,7 +461,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     // Final CTA
     'cta.title': 'Готовы отправиться на экскурсию?',
     'cta.subtitle':
-      'Перед подтверждением проверьте условия отмены, варианты трансфера и способы оплаты выбранной экскурсии. Трансфер доступен не для всех туров и зависит от района отеля.',
+      'Бесплатная отмена доступна не позднее чем за 24 часа до начала экскурсии. Перед подтверждением проверьте зоны трансфера и возможные доплаты для вашего отеля.',
     'cta.browse': 'Смотреть все экскурсии',
     'cta.chat': 'Чат в WhatsApp',
     'cta.lookup': 'Мое бронирование',
@@ -499,7 +499,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
   it: {
     // Header Top Bar
     'top.licensed': 'Tour Operator Egiziano con Licenza #2491/ETB',
-    'top.cancellation': 'Le condizioni di cancellazione variano in base all’escursione; controllale prima di prenotare.',
+    'top.cancellation': 'Cancellazione gratuita fino a 24 ore prima dell’inizio dell’escursione',
     'top.pierDesk': 'Assistenza',
     'top.language': 'Lingua',
     'top.currency': 'Valuta',
@@ -533,8 +533,8 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'hero.subtitle':
       'Scopri gite in barca con snorkeling, escursioni alle isole e safari in quad da Hurghada e dalle vicine località del Mar Rosso. Controlla per ogni escursione i giorni di partenza, le opzioni di trasferimento e la disponibilità.',
     'hero.guarantee1': 'Il meteo può influire sulle partenze',
-    'hero.guarantee2': 'Condizioni di cancellazione visibili prima della prenotazione',
-    'hero.guarantee3': 'Il trasferimento varia in base all’escursione',
+    'hero.guarantee2': 'Cancellazione gratuita fino a 24 ore prima',
+    'hero.guarantee3': 'Zone di prelievo ed eventuali supplementi indicati per ogni tour',
     'hero.guarantee4': 'Team e guide locali in alcune escursioni',
 
     // Search Module
@@ -570,7 +570,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     // Final CTA
     'cta.title': 'Pronto a vivere la magia del Mar Rosso?',
     'cta.subtitle':
-      'Prima di confermare, consulta le condizioni di cancellazione, le opzioni di trasferimento e i metodi di pagamento dell’escursione scelta. Il trasferimento è disponibile solo per alcune escursioni e può variare in base alla zona dell’hotel.',
+      'La cancellazione è gratuita fino a 24 ore prima dell’inizio dell’escursione. Prima di confermare, verifica le zone di prelievo e gli eventuali supplementi per la tua zona alberghiera.',
     'cta.browse': 'Scopri Tutti i Tour',
     'cta.chat': 'Chatta su WhatsApp',
     'cta.lookup': 'Cerca la Mia Prenotazione',
@@ -608,7 +608,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
   ro: {
     // Header Top Bar
     'top.licensed': 'Operator Turistic Licențiat în Egipt #2491/ETB',
-    'top.cancellation': 'Condițiile de anulare diferă în funcție de excursie; verifică-le înainte de rezervare.',
+    'top.cancellation': 'Anulare gratuită cu până la 24 de ore înainte de începerea excursiei',
     'top.pierDesk': 'Asistență',
     'top.language': 'Limbă',
     'top.currency': 'Monedă',
@@ -642,8 +642,8 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'hero.subtitle':
       'Descoperă excursii cu barca și snorkeling, vizite pe insule și safari cu ATV-ul din Hurghada și din destinațiile apropiate de la Marea Roșie. Verifică zilele de plecare, opțiunile de preluare și disponibilitatea pentru fiecare excursie.',
     'hero.guarantee1': 'Vremea poate influența plecările',
-    'hero.guarantee2': 'Condițiile de anulare sunt afișate înainte de rezervare',
-    'hero.guarantee3': 'Opțiunile de preluare diferă în funcție de excursie',
+    'hero.guarantee2': 'Anulare gratuită cu 24 de ore înainte',
+    'hero.guarantee3': 'Zonele de preluare și suplimentele sunt indicate pentru fiecare excursie',
     'hero.guarantee4': 'Echipe și ghizi locali pentru anumite excursii',
 
     // Search Module
@@ -679,7 +679,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     // Final CTA
     'cta.title': 'Ești pregătit să descoperi Marea Roșie?',
     'cta.subtitle':
-      'Înainte de confirmare, verifică termenii de anulare, opțiunile de preluare și metodele de plată pentru excursia aleasă. Preluarea este disponibilă doar pentru anumite excursii și poate varia în funcție de zona hotelului.',
+      'Anularea este gratuită cu până la 24 de ore înainte de începerea excursiei. Înainte de confirmare, verifică zonele de preluare și eventualele suplimente pentru zona hotelului.',
     'cta.browse': 'Vezi Toate Tururile',
     'cta.chat': 'Scrie-ne pe WhatsApp',
     'cta.lookup': 'Caută Rezervarea Mea',
@@ -716,7 +716,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
   pl: {
     // Górny pasek
     'top.licensed': 'Licencjonowany egipski organizator turystyki nr 2491/ETB',
-    'top.cancellation': 'Warunki anulowania różnią się w zależności od wycieczki; sprawdź je przed rezerwacją.',
+    'top.cancellation': 'Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki',
     'top.pierDesk': 'Pomoc',
     'top.language': 'Język',
     'top.currency': 'Waluta',
@@ -749,8 +749,8 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'hero.title2': 'z lokalnymi kapitanami',
     'hero.subtitle': 'Poznaj rejsy ze snorkelingiem, wycieczki na wyspy i pustynne safari quadami z Hurghady i pobliskich miejscowości nad Morzem Czerwonym. Sprawdź dni wyjazdów, opcje odbioru i dostępność każdej wycieczki.',
     'hero.guarantee1': 'Pogoda może wpłynąć na godziny wyjazdu',
-    'hero.guarantee2': 'Warunki anulowania widoczne przed rezerwacją',
-    'hero.guarantee3': 'Odbiór zależy od wybranej wycieczki',
+    'hero.guarantee2': 'Bezpłatne anulowanie do 24 godzin przed rozpoczęciem',
+    'hero.guarantee3': 'Strefy odbioru i dopłaty podane przy każdej wycieczce',
     'hero.guarantee4': 'Lokalne zespoły i przewodnicy przy wybranych wycieczkach',
 
     // Wyszukiwarka
@@ -783,7 +783,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
 
     // Wezwanie do działania
     'cta.title': 'Gotowy, by odkryć Morze Czerwone?',
-    'cta.subtitle': 'Przed potwierdzeniem sprawdź warunki anulowania, opcje odbioru i metody płatności dla wybranej wycieczki. Odbiór jest dostępny tylko przy wybranych wycieczkach i może zależeć od lokalizacji hotelu.',
+    'cta.subtitle': 'Bezpłatne anulowanie jest możliwe do 24 godzin przed rozpoczęciem wycieczki. Przed potwierdzeniem sprawdź strefy odbioru i ewentualne dopłaty w Twojej lokalizacji.',
     'cta.browse': 'Zobacz wszystkie wycieczki',
     'cta.chat': 'Napisz na WhatsApp',
     'cta.lookup': 'Znajdź moją rezerwację',
