@@ -3334,7 +3334,7 @@
       "content": {
         "name": "Boekingsticket",
         "subject": "Je boekingsticket van Awesome Adventure Tours: {{booking_reference}}",
-        "body_text": "Hallo {{customer_name}},\n\nWe hebben je boekingsaanvraag voor {{tour_name}} op {{tour_date}} ontvangen. Je digitale boekingsticket vind je hieronder.\n\nBoekingsreferentie: {{booking_reference}}\nBoekingsstatus: {{booking_status}}\nTotaal: {{currency}} {{amount}}\n\nHoud je boekingsreferentie bij de hand wanneer je contact opneemt met ons team. De ophaaltijd en praktische details kunnen afzonderlijk worden bevestigd.\n\nBedankt,\nAwesome Adventure Tours",
+        "body_text": "Hallo {{customer_name}},\n\nWe hebben je boekingsaanvraag voor {{tour_name}} op {{tour_date}} ontvangen. Je digitale boekingsticket vind je hieronder.\nVertrektijd: {{departure_time}}\n\nBoekingsreferentie: {{booking_reference}}\nBoekingsstatus: {{booking_status}}\nTotaal: {{currency}} {{amount}}\n\nHoud je boekingsreferentie bij de hand wanneer je contact opneemt met ons team. De ophaaltijd en praktische details kunnen afzonderlijk worden bevestigd.\n\nBedankt,\nAwesome Adventure Tours",
         "variables": [
           "customer_name",
           "booking_reference",
@@ -3342,7 +3342,8 @@
           "tour_date",
           "booking_status",
           "currency",
-          "amount"
+          "amount",
+          "departure_time"
         ],
         "channel": "Email",
         "template_key": "booking_received"
@@ -3381,14 +3382,15 @@
       "content": {
         "name": "Boekingsupdate",
         "subject": "Update van je boeking: {{tour_name}} (ref.: {{booking_reference}})",
-        "body_text": "Hallo {{customer_name}},\n\nJe boeking voor {{tour_name}} (ref.: {{booking_reference}}) is bijgewerkt.\n\nVertrekdatum: {{tour_date}}\nOphaaltijd: {{pickup_time}}\nResterend saldo: {{balance_due}}\n\nMet vriendelijke groet,\nHet coördinatieteam van Awesome Adventure Tours",
+        "body_text": "Hallo {{customer_name}},\n\nJe boeking voor {{tour_name}} (ref.: {{booking_reference}}) is bijgewerkt.\n\nVertrekdatum: {{tour_date}}\nOphaaltijd: {{pickup_time}}\nVertrektijd: {{departure_time}}\nResterend saldo: {{balance_due}}\n\nMet vriendelijke groet,\nHet coördinatieteam van Awesome Adventure Tours",
         "variables": [
           "customer_name",
           "booking_reference",
           "tour_name",
           "tour_date",
           "pickup_time",
-          "balance_due"
+          "balance_due",
+          "departure_time"
         ],
         "channel": "Both",
         "template_key": "booking_update"
