@@ -145,6 +145,29 @@ assert.match(section(crm, 'export async function getCustomerProfile(', 'export a
 assert.match(section(crm, 'export async function getCustomerProfile(', 'export async function createCustomer('), /found\.payments\s*=|found\.reviews\s*=/, 'Customer profiles must populate payment and review panels');
 assert.match(section(crm, 'export async function getCrmDashboardMetrics()', ''), /payment_transactions[\s\S]*?refund_records/, 'CRM outstanding balances must use the finance ledger, not booking status snapshots');
 
+const inquiryService = read('src/services/inquiryService.ts');
+const createInquiry = section(inquiryService, 'export async function createCustomerInquiry(', '/**\n * Lists all inquiries');
+assert.match(createInquiry, /\.from\('inquiries'\)[\s\S]*?\.insert\(/, 'Public inquiry submissions must persist to the inquiries table');
+assert.match(createInquiry, /if \(error\)[\s\S]*?success: false/, 'Inquiry database failures must be reported as failures, not local success');
+assert.doesNotMatch(createInquiry, /estimatedValue:\s*120|createLead\(/, 'Inquiry submissions must not create fake-value CRM leads from the public client');
+assert.ok(createInquiry.indexOf(".insert({") < createInquiry.indexOf('saveStoredInquiries([persistedInquiry'), 'Inquiry browser cache must update only after the database insert succeeds');
+
+const inquiryList = section(inquiryService, 'export async function listInquiries(', '/**\n * Updates inquiry status');
+assert.match(inquiryList, /if \(!import\.meta\.env\.DEV\)\s*\{[\s\S]*?throw new Error/, 'Production inquiry listing must not fall back to browser cache');
+assert.match(inquiryList, /if \(error\)[\s\S]*?throw new Error/, 'Inquiry read failures must be surfaced');
+
+const inquiryDelete = section(inquiryService, 'export async function deleteInquiry(', '');
+assert.match(inquiryDelete, /\.delete\(\)[\s\S]*?\.select\('id'\)[\s\S]*?\.maybeSingle\(\)/, 'Inquiry deletion must confirm the database row was deleted');
+assert.ok(inquiryDelete.indexOf('await supabase') < inquiryDelete.lastIndexOf('saveStoredInquiries'), 'Inquiry cache must update only after the database deletion succeeds');
+
+const inquiryConvert = section(inquiryService, 'export async function convertInquiryToLead(', '/**\n * Deletes an inquiry');
+assert.match(inquiryConvert, /rpc\('convert_inquiry_to_lead'/, 'Inquiry-to-lead conversion must use the atomic permission-checked RPC');
+assert.match(inquiryConvert, /if \(error\) throw new Error/, 'Conversion RPC failures must be surfaced');
+
+const inquiryUi = read('src/components/admin/AdminInquiriesList.tsx');
+assert.match(inquiryUi, /hasPermission\('crm\.manage'\)[\s\S]*?Convert to CRM Lead/, 'Lead conversion must be restricted to CRM managers');
+assert.match(inquiryUi, /'converted'/, 'Converted inquiries must remain filterable and visible');
+
 const customers = read('src/services/customerService.ts');
 const customerList = section(customers, 'export async function listUnifiedCustomers()', '/**\n * Updates a customer\'s role');
 assert.match(customerList, /if \(profilesRes\.error\) throw/, 'Customer directory must surface profile query errors');
