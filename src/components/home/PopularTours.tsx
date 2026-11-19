@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   ArrowRight, 
@@ -10,8 +10,9 @@ import { Tour, CurrencyConfig } from '../../types';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { TourCard } from '../tours/TourCard';
 import { TourCardSkeleton } from '../tours/TourCardSkeleton';
-import { TourPreviewModal } from './TourPreviewModal';
-import { QuickBookModal } from './QuickBookModal';
+// Keep modal workflows out of the initial homepage bundle until requested.
+const TourPreviewModal = lazy(() => import('./TourPreviewModal').then((module) => ({ default: module.TourPreviewModal })));
+const QuickBookModal = lazy(() => import('./QuickBookModal').then((module) => ({ default: module.QuickBookModal })));
 
 interface PopularToursProps {
   tours: Tour[];
@@ -190,27 +191,35 @@ export const PopularTours: React.FC<PopularToursProps> = ({
       </div>
 
       {/* Connected Tour Preview Modal */}
-      <TourPreviewModal
-        tour={previewTour}
-        currency={currency}
-        onClose={() => setPreviewTour(null)}
-        onBookNow={(t) => {
-          setPreviewTour(null);
-          onQuickBook(t);
-        }}
-      />
+      {previewTour && (
+        <Suspense fallback={null}>
+          <TourPreviewModal
+            tour={previewTour}
+            currency={currency}
+            onClose={() => setPreviewTour(null)}
+            onBookNow={(t) => {
+              setPreviewTour(null);
+              onQuickBook(t);
+            }}
+          />
+        </Suspense>
+      )}
 
       {/* Connected Direct Quick Book Modal */}
-      <QuickBookModal
-        tour={quickBookTargetTour}
-        currency={currency}
-        onClose={() => setQuickBookTargetTour(null)}
-        onSuccess={() => {
-          if (quickBookTargetTour) {
-            onQuickBook(quickBookTargetTour);
-          }
-        }}
-      />
+      {quickBookTargetTour && (
+        <Suspense fallback={null}>
+          <QuickBookModal
+            tour={quickBookTargetTour}
+            currency={currency}
+            onClose={() => setQuickBookTargetTour(null)}
+            onSuccess={() => {
+              if (quickBookTargetTour) {
+                onQuickBook(quickBookTargetTour);
+              }
+            }}
+          />
+        </Suspense>
+      )}
     </section>
   );
 };
