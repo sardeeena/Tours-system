@@ -9,7 +9,7 @@ export type UserRole = 'admin' | 'super_admin' | 'manager' | 'staff' | 'customer
 
 export type TourStatus = 'draft' | 'published' | 'archived';
 export type TourType = 'Shared' | 'Private';
-export type DurationCategory = 'Half Day' | 'Full Day' | 'Multi Day';
+export type DurationCategory = 'Half Day' | 'Full Day' | 'Multi Day' | 'Unspecified';
 
 export interface DbProfile {
   id: string;
