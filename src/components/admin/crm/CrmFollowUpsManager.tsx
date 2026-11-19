@@ -20,9 +20,11 @@ import {
   CrmTask,
 } from '../../../services/crmService';
 import { useToast } from '../../../contexts/ToastContext';
+import { useCrmAssignableStaff } from '../../../hooks/useCrmAssignableStaff';
 
 export const CrmFollowUpsManager: React.FC = () => {
   const { showToast } = useToast();
+  const { staffMembers, staffLoading, staffError } = useCrmAssignableStaff();
   const [dueToday, setDueToday] = useState<CrmTask[]>([]);
   const [overdue, setOverdue] = useState<CrmTask[]>([]);
   const [upcoming, setUpcoming] = useState<CrmTask[]>([]);
@@ -33,7 +35,7 @@ export const CrmFollowUpsManager: React.FC = () => {
   const [title, setTitle] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [dueDate, setDueDate] = useState('');
-  const [assignedStaff, setAssignedStaff] = useState('Captain Tarek');
+  const [assignedStaffId, setAssignedStaffId] = useState('');
 
   const loadData = async () => {
     setLoading(true);
@@ -85,7 +87,8 @@ export const CrmFollowUpsManager: React.FC = () => {
         title: title.trim(),
         customerName: customerName.trim() || undefined,
         dueDate: dueDate || new Date(Date.now() + 86400000).toISOString(),
-        assignedStaffName: assignedStaff,
+        assignedStaffId: assignedStaffId || null,
+        assignedStaffName: staffMembers.find((staff) => staff.id === assignedStaffId)?.full_name || null,
         priority: 'High',
         isFollowUp: true,
         status: 'Pending',
@@ -339,15 +342,18 @@ export const CrmFollowUpsManager: React.FC = () => {
                 <div>
                   <label className="block text-stone-300 font-semibold mb-1">Assigned Staff</label>
                   <select
-                    value={assignedStaff}
-                    onChange={(e) => setAssignedStaff(e.target.value)}
+                    value={assignedStaffId}
+                    disabled={staffLoading || Boolean(staffError)}
+                    title={staffError || undefined}
+                    onChange={(e) => setAssignedStaffId(e.target.value)}
                     className="w-full px-3 py-1.5 bg-stone-950 border border-stone-800 rounded text-white"
                   >
-                    <option value="Captain Tarek">Captain Tarek</option>
-                    <option value="Mona Zaki (Concierge)">Mona Zaki (Concierge)</option>
-                    <option value="Ahmed Fathy">Ahmed Fathy</option>
-                    <option value="Captain Farouk">Captain Farouk</option>
+                    <option value="">Unassigned</option>
+                    {staffMembers.map((staff) => (
+                      <option key={staff.id} value={staff.id}>{staff.full_name}</option>
+                    ))}
                   </select>
+                  {staffError && <p role="alert" className="mt-1 text-xs text-red-300">{staffError}</p>}
                 </div>
               </div>
 
