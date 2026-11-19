@@ -90,7 +90,8 @@ export async function createCustomerInquiry(
   const cleanMessage = sanitizeString(input.message);
   const cleanPhone = input.phone ? sanitizeString(input.phone) : null;
   const cleanWhatsapp = input.whatsapp ? sanitizeString(input.whatsapp) : cleanPhone;
-  const source = input.source || 'web';
+  const sourceValue = String(input.source || 'web').toLowerCase();
+  const source: DbInquiry['source'] = sourceValue === 'whatsapp' ? 'whatsapp' : sourceValue === 'email' ? 'email' : sourceValue === 'phone' ? 'phone' : 'web';
 
   if (!cleanName || !cleanEmail || !cleanMessage) {
     return { success: false, error: 'Please fill in your name, email address, and inquiry message.' };
