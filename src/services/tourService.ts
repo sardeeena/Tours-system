@@ -686,8 +686,12 @@ export async function adminGetTourById(id: string): Promise<TourWithRelations | 
       seo: seoData || null,
     };
   } catch (err) {
+    if (isSchemaMissingError(err)) {
+      setSchemaMissing(true);
+      if (!import.meta.env.PROD) return getLocalTour(id);
+    }
     console.error('Error fetching admin tour by id:', err);
-    return null;
+    throw new Error(formatSupabaseError(err));
   }
 }
 
@@ -921,10 +925,18 @@ export async function adminUpdateTour(id: string, payload: AdminTourPayload): Pr
 /**
  * Synchronizes relational tables (itinerary, highlights, inclusions, exclusions, faqs, images, SEO)
  */
+async function ensureTourWrite(
+  operation: PromiseLike<{ error: any }>,
+  description: string
+): Promise<void> {
+  const { error } = await operation;
+  if (error) throw new Error(`${description}: ${formatSupabaseError(error)}`);
+}
+
 async function syncTourRelations(tourId: string, payload: AdminTourPayload): Promise<void> {
   // Itinerary
   if (payload.itinerary !== undefined) {
-    await supabase.from('tour_itinerary').delete().eq('tour_id', tourId);
+    await ensureTourWrite(supabase.from('tour_itinerary').delete().eq('tour_id', tourId), 'Failed to clear tour itinerary');
     if (payload.itinerary.length > 0) {
       const items = payload.itinerary.map((it, idx) => ({
         tour_id: tourId,
@@ -933,52 +945,52 @@ async function syncTourRelations(tourId: string, payload: AdminTourPayload): Pro
         description: it.description || null,
         sort_order: idx + 1,
       }));
-      await supabase.from('tour_itinerary').insert(items);
+      await ensureTourWrite(supabase.from('tour_itinerary').insert(items), 'Failed to save tour itinerary');
     }
   }
 
   // Highlights
   if (payload.highlights !== undefined) {
-    await supabase.from('tour_highlights').delete().eq('tour_id', tourId);
+    await ensureTourWrite(supabase.from('tour_highlights').delete().eq('tour_id', tourId), 'Failed to clear tour highlights');
     if (payload.highlights.length > 0) {
       const items = payload.highlights.map((h, idx) => ({
         tour_id: tourId,
         item: h,
         sort_order: idx + 1,
       }));
-      await supabase.from('tour_highlights').insert(items);
+      await ensureTourWrite(supabase.from('tour_highlights').insert(items), 'Failed to save tour highlights');
     }
   }
 
   // Inclusions
   if (payload.inclusions !== undefined) {
-    await supabase.from('tour_inclusions').delete().eq('tour_id', tourId);
+    await ensureTourWrite(supabase.from('tour_inclusions').delete().eq('tour_id', tourId), 'Failed to clear tour inclusions');
     if (payload.inclusions.length > 0) {
       const items = payload.inclusions.map((inc, idx) => ({
         tour_id: tourId,
         item: inc,
         sort_order: idx + 1,
       }));
-      await supabase.from('tour_inclusions').insert(items);
+      await ensureTourWrite(supabase.from('tour_inclusions').insert(items), 'Failed to save tour inclusions');
     }
   }
 
   // Exclusions
   if (payload.exclusions !== undefined) {
-    await supabase.from('tour_exclusions').delete().eq('tour_id', tourId);
+    await ensureTourWrite(supabase.from('tour_exclusions').delete().eq('tour_id', tourId), 'Failed to clear tour exclusions');
     if (payload.exclusions.length > 0) {
       const items = payload.exclusions.map((exc, idx) => ({
         tour_id: tourId,
         item: exc,
         sort_order: idx + 1,
       }));
-      await supabase.from('tour_exclusions').insert(items);
+      await ensureTourWrite(supabase.from('tour_exclusions').insert(items), 'Failed to save tour exclusions');
     }
   }
 
   // FAQs (preserve preparation sections when normal FAQs are edited)
   if (payload.faqs !== undefined) {
-    await supabase.from('tour_faqs').delete().eq('tour_id', tourId).eq('section', 'faq');
+    await ensureTourWrite(supabase.from('tour_faqs').delete().eq('tour_id', tourId).eq('section', 'faq'), 'Failed to clear tour FAQs');
     if (payload.faqs.length > 0) {
       const items = payload.faqs.map((f, idx) => ({
         tour_id: tourId,
@@ -987,12 +999,12 @@ async function syncTourRelations(tourId: string, payload: AdminTourPayload): Pro
         section: 'faq',
         sort_order: idx + 1,
       }));
-      await supabase.from('tour_faqs').insert(items);
+      await ensureTourWrite(supabase.from('tour_faqs').insert(items), 'Failed to save tour FAQs');
     }
   }
 
   if (payload.whatToBring !== undefined) {
-    await supabase.from('tour_faqs').delete().eq('tour_id', tourId).eq('section', 'what_to_bring');
+    await ensureTourWrite(supabase.from('tour_faqs').delete().eq('tour_id', tourId).eq('section', 'what_to_bring'), 'Failed to clear tour preparation items');
     if (payload.whatToBring.length > 0) {
       const items = payload.whatToBring.map((item, idx) => ({
         tour_id: tourId,
@@ -1001,12 +1013,12 @@ async function syncTourRelations(tourId: string, payload: AdminTourPayload): Pro
         section: 'what_to_bring',
         sort_order: idx + 1,
       }));
-      await supabase.from('tour_faqs').insert(items);
+      await ensureTourWrite(supabase.from('tour_faqs').insert(items), 'Failed to save tour FAQs');
     }
   }
 
   if (payload.importantInformation !== undefined) {
-    await supabase.from('tour_faqs').delete().eq('tour_id', tourId).eq('section', 'important_information');
+    await ensureTourWrite(supabase.from('tour_faqs').delete().eq('tour_id', tourId).eq('section', 'important_information'), 'Failed to clear important tour information');
     if (payload.importantInformation.length > 0) {
       const items = payload.importantInformation.map((item, idx) => ({
         tour_id: tourId,
@@ -1015,13 +1027,13 @@ async function syncTourRelations(tourId: string, payload: AdminTourPayload): Pro
         section: 'important_information',
         sort_order: idx + 1,
       }));
-      await supabase.from('tour_faqs').insert(items);
+      await ensureTourWrite(supabase.from('tour_faqs').insert(items), 'Failed to save tour FAQs');
     }
   }
 
   // Images
   if (payload.images !== undefined) {
-    await supabase.from('tour_images').delete().eq('tour_id', tourId);
+    await ensureTourWrite(supabase.from('tour_images').delete().eq('tour_id', tourId), 'Failed to clear tour images');
     if (payload.images.length > 0) {
       const items = payload.images.map((img, idx) => ({
         tour_id: tourId,
@@ -1032,13 +1044,13 @@ async function syncTourRelations(tourId: string, payload: AdminTourPayload): Pro
         is_primary: idx === 0 || !!img.is_primary,
         sort_order: idx + 1,
       }));
-      await supabase.from('tour_images').insert(items);
+      await ensureTourWrite(supabase.from('tour_images').insert(items), 'Failed to save tour images');
     }
   }
 
   // Videos
   if (payload.videos !== undefined) {
-    await supabase.from('tour_videos').delete().eq('tour_id', tourId);
+    await ensureTourWrite(supabase.from('tour_videos').delete().eq('tour_id', tourId), 'Failed to clear tour videos');
     if (payload.videos.length > 0) {
       const items = payload.videos.map((vid, idx) => ({
         tour_id: tourId,
@@ -1049,32 +1061,32 @@ async function syncTourRelations(tourId: string, payload: AdminTourPayload): Pro
         is_primary: idx === 0,
         sort_order: idx + 1,
       }));
-      await supabase.from('tour_videos').insert(items);
+      await ensureTourWrite(supabase.from('tour_videos').insert(items), 'Failed to save tour videos');
     }
   }
 
   // Categories
   if (payload.categoryIds !== undefined) {
-    await supabase.from('tour_categories').delete().eq('tour_id', tourId);
+    await ensureTourWrite(supabase.from('tour_categories').delete().eq('tour_id', tourId), 'Failed to clear tour categories');
     if (payload.categoryIds.length > 0) {
       const links = payload.categoryIds.map((catId, idx) => ({
         tour_id: tourId,
         category_id: catId,
         sort_order: idx + 1,
       }));
-      await supabase.from('tour_categories').insert(links);
+      await ensureTourWrite(supabase.from('tour_categories').insert(links), 'Failed to save tour categories');
     }
   }
 
   // Pickup Locations
   if (payload.pickupLocationIds !== undefined) {
-    await supabase.from('tour_pickup_locations').delete().eq('tour_id', tourId);
+    await ensureTourWrite(supabase.from('tour_pickup_locations').delete().eq('tour_id', tourId), 'Failed to clear tour pickup locations');
     if (payload.pickupLocationIds.length > 0) {
       const links = payload.pickupLocationIds.map((locId) => ({
         tour_id: tourId,
         pickup_location_id: locId,
       }));
-      await supabase.from('tour_pickup_locations').insert(links);
+      await ensureTourWrite(supabase.from('tour_pickup_locations').insert(links), 'Failed to save tour pickup locations');
     }
   }
 
@@ -1102,7 +1114,7 @@ async function syncTourRelations(tourId: string, payload: AdminTourPayload): Pro
 
   // SEO Metadata
   if (payload.seo !== undefined) {
-    await supabase.from('seo_metadata').upsert({
+    await ensureTourWrite(supabase.from('seo_metadata').upsert({
       entity_type: 'tour',
       entity_id: tourId,
       seo_title: payload.seo.seo_title || null,
@@ -1116,7 +1128,7 @@ async function syncTourRelations(tourId: string, payload: AdminTourPayload): Pro
       robots_index: payload.seo.robots_index ?? true,
       robots_follow: payload.seo.robots_follow ?? true,
       updated_at: new Date().toISOString(),
-    }, { onConflict: 'entity_type,entity_id' });
+    }, { onConflict: 'entity_type,entity_id' }), 'Failed to save tour SEO metadata');
   }
 
   notifyCatalogueDataChanged('tours');
