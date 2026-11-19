@@ -23,11 +23,10 @@ import { bookingRepository } from './bookingRepository';
 import { Booking } from '../types/booking';
 import { listUnifiedCustomers } from './customerService';
 import { listPayments, listRefunds } from './financeService';
-import { listVessels, listAssignments, listGuides, getMaritimeWeather } from './operationsService';
+import { listVessels, listAssignments, listGuides, getMaritimeWeather, getDeparturesForDateRange } from './operationsService';
 import { listInquiries } from './inquiryService';
 import { listLeads } from './crmService';
 import { getPublishedTours } from './tourService';
-import { ALL_TOURS } from '../data/toursData';
 
 /**
  * Calculates normalized date interval boundaries based on range enum
@@ -150,6 +149,37 @@ function filterBookingsByInterval(bookings: Booking[], interval: DateRangeInterv
     const createdMatches = createdDate >= interval.startDate && createdDate <= interval.endDate;
     return departureMatches || createdMatches;
   });
+}
+
+function normalizeLeadSource(source?: string | null): string {
+  const value = String(source || '').trim().toLowerCase();
+  if (['web', 'website', 'online', 'online checkout'].includes(value)) return 'Website';
+  if (value.includes('whatsapp')) return 'WhatsApp';
+  if (['phone', 'call', 'telephone'].includes(value)) return 'Phone';
+  if (value === 'email') return 'Email';
+  if (value === 'hotel') return 'Hotel';
+  if (value === 'referral') return 'Referral';
+  if (value === 'walk-in' || value === 'walkin') return 'Walk-in';
+  if (value.includes('social')) return 'Social Media';
+  return 'Other';
+}
+
+function departureDurationHours(startTime?: string, endTime?: string): number {
+  if (!startTime || !endTime) return 0;
+  const parse = (value: string) => {
+    const match = value.match(/^(\\d{1,2}):(\\d{2})/);
+    if (!match) return null;
+    const hours = Number(match[1]);
+    const minutes = Number(match[2]);
+    if (hours > 23 || minutes > 59) return null;
+    return hours * 60 + minutes;
+  };
+  const start = parse(startTime);
+  const end = parse(endTime);
+  if (start === null || end === null) return 0;
+  let duration = end - start;
+  if (duration < 0) duration += 24 * 60;
+  return Math.round((duration / 60) * 10) / 10;
 }
 
 // ------------------------------------------------------------------------------
@@ -359,194 +389,153 @@ export async function fetchSalesReport(interval: DateRangeInterval): Promise<Sal
   ]);
 
   const activeBookings = filterBookingsByInterval(allBookings, interval);
-  const confirmed = activeBookings.filter(
-    (b) => b.status !== 'cancelled' && b.status !== 'cancellation_requested'
+  const revenueBookings = activeBookings.filter(
+    (booking) => booking.status !== 'cancelled' && booking.status !== 'cancellation_requested'
   );
-
-  const totalRevenueEur = confirmed.reduce((sum, b) => sum + (b.pricing?.totalEur || 0), 0);
-  const totalBookingsCount = confirmed.length;
-
+  const totalRevenueEur = revenueBookings.reduce((sum, booking) => sum + (booking.pricing?.totalEur || 0), 0);
+  const totalBookingsCount = revenueBookings.length;
   const averageBookingValueEur = totalBookingsCount > 0
     ? Math.round((totalRevenueEur / totalBookingsCount) * 100) / 100
     : 0;
 
-  // Filter leads in interval
-  const intervalLeads = leads.filter((l) => {
-    const lDate = (l.createdAt || '').split('T')[0];
-    return lDate >= interval.startDate && lDate <= interval.endDate;
+  const intervalLeads = leads.filter((lead) => {
+    const date = (lead.createdAt || '').split('T')[0];
+    return date >= interval.startDate && date <= interval.endDate;
   });
-  const leadsCount = intervalLeads.length + inquiries.length;
-
-  // 1. Lead Sources Performance
-  const leadSourceMap = new Map<string, { count: number; won: number; revenue: number }>();
-  // Seed with expected standard lead sources
-  ['Website', 'WhatsApp', 'Hotel', 'Referral', 'Walk-in', 'Phone', 'Social Media'].forEach((src) => {
-    leadSourceMap.set(src, { count: 0, won: 0, revenue: 0 });
+  const intervalInquiries = inquiries.filter((inquiry) => {
+    const date = (inquiry.created_at || '').split('T')[0];
+    return date >= interval.startDate && date <= interval.endDate && inquiry.status !== 'converted';
   });
+  const leadsCount = intervalLeads.length + intervalInquiries.length;
 
-  intervalLeads.forEach((l) => {
-    const src = l.source || 'Website';
-    const entry = leadSourceMap.get(src) || { count: 0, won: 0, revenue: 0 };
-    entry.count += 1;
-    if (l.stage === 'Won' || l.stage === 'Booked') {
-      entry.won += 1;
-      entry.revenue += l.estimatedValue || 0;
+  const sourceMap = new Map<string, { count: number; converted: number; revenue: number }>();
+  const addSource = (source: string | null | undefined, converted: boolean, revenue = 0) => {
+    const label = normalizeLeadSource(source);
+    const current = sourceMap.get(label) || { count: 0, converted: 0, revenue: 0 };
+    current.count += 1;
+    if (converted) {
+      current.converted += 1;
+      current.revenue += revenue;
     }
-    leadSourceMap.set(src, entry);
-  });
+    sourceMap.set(label, current);
+  };
 
-  // Also attribute website direct inquiries and bookings
-  confirmed.forEach((b) => {
-    let src = 'Website';
-    if (b.paymentMethod === 'pay_at_pickup') {
-      src = 'Hotel';
-    } else if (b.customer?.specialRequests?.toLowerCase().includes('whatsapp')) {
-      src = 'WhatsApp';
-    }
-    const entry = leadSourceMap.get(src) || { count: 0, won: 0, revenue: 0 };
-    entry.won += 1;
-    entry.revenue += b.pricing?.totalEur || 0;
-    leadSourceMap.set(src, entry);
+  intervalLeads.forEach((lead) => {
+    const won = lead.stage === 'Won' || lead.stage === 'Booked';
+    addSource(lead.source, won, won ? Number(lead.estimatedValue) || 0 : 0);
   });
+  intervalInquiries.forEach((inquiry) => addSource(inquiry.source, false));
 
-  const leadSources: LeadSourcePerformance[] = [];
-  leadSourceMap.forEach((val, src) => {
-    if (val.count > 0 || val.won > 0) {
-      const conv = (val.count + val.won) > 0 ? Math.round((val.won / (val.count + val.won)) * 1000) / 10 : 0;
-      leadSources.push({
-        source: src,
-        count: val.count + val.won,
-        convertedCount: val.won,
-        conversionRate: conv,
-        revenueEur: val.revenue,
-      });
-    }
-  });
-  leadSources.sort((a, b) => b.revenueEur - a.revenueEur);
+  const leadSources: LeadSourcePerformance[] = Array.from(sourceMap.entries())
+    .map(([source, value]) => ({
+      source,
+      count: value.count,
+      convertedCount: value.converted,
+      conversionRate: value.count > 0 ? Math.round((value.converted / value.count) * 1000) / 10 : 0,
+      revenueEur: value.revenue,
+    }))
+    .sort((a, b) => b.revenueEur - a.revenueEur);
 
-  // Overall Conversion
-  const totalLeadsEvaluated = leadSources.reduce((s, ls) => s + ls.count, 0) || (leadsCount + totalBookingsCount);
-  const conversionRate = totalLeadsEvaluated > 0
-    ? Math.round((totalBookingsCount / totalLeadsEvaluated) * 1000) / 10
+  const convertedLeadCount = intervalLeads.filter((lead) => lead.stage === 'Won' || lead.stage === 'Booked').length;
+  const conversionRate = leadsCount > 0
+    ? Math.round((convertedLeadCount / leadsCount) * 1000) / 10
     : 0;
 
-  // 2. Best-Selling Tours
-  const tourMap = new Map<string, { title: string; count: number; revenue: number }>();
-  confirmed.forEach((b) => {
-    const key = b.tourTitle || 'Custom Excursion';
-    const entry = tourMap.get(key) || { title: key, count: 0, revenue: 0 };
-    entry.count += 1;
-    entry.revenue += b.pricing?.totalEur || 0;
-    tourMap.set(key, entry);
+  const tourMap = new Map<string, { count: number; revenue: number }>();
+  revenueBookings.forEach((booking) => {
+    const title = booking.tourTitle || 'Tour not recorded';
+    const current = tourMap.get(title) || { count: 0, revenue: 0 };
+    current.count += 1;
+    current.revenue += booking.pricing?.totalEur || 0;
+    tourMap.set(title, current);
   });
+  const bestSellingTours: BreakdownItem[] = Array.from(tourMap.entries())
+    .map(([name, value]) => ({
+      id: name,
+      name,
+      count: value.count,
+      revenueEur: value.revenue,
+      percentage: totalBookingsCount > 0 ? Math.round((value.count / totalBookingsCount) * 1000) / 10 : 0,
+    }))
+    .sort((a, b) => b.revenueEur - a.revenueEur);
 
-  const bestSellingTours: BreakdownItem[] = [];
-  tourMap.forEach((val, key) => {
-    bestSellingTours.push({
-      id: key,
-      name: val.title,
-      count: val.count,
-      revenueEur: val.revenue,
-      percentage: totalBookingsCount > 0 ? Math.round((val.count / totalBookingsCount) * 1000) / 10 : 0,
-    });
+  const destinationMap = new Map<string, { count: number; revenue: number }>();
+  revenueBookings.forEach((booking) => {
+    const destination = booking.tourDestination || 'Not recorded';
+    const current = destinationMap.get(destination) || { count: 0, revenue: 0 };
+    current.count += 1;
+    current.revenue += booking.pricing?.totalEur || 0;
+    destinationMap.set(destination, current);
   });
-  bestSellingTours.sort((a, b) => b.revenueEur - a.revenueEur);
+  const bestDestinations: BreakdownItem[] = Array.from(destinationMap.entries())
+    .map(([name, value]) => ({
+      id: name,
+      name,
+      count: value.count,
+      revenueEur: value.revenue,
+      percentage: totalRevenueEur > 0 ? Math.round((value.revenue / totalRevenueEur) * 1000) / 10 : 0,
+    }))
+    .sort((a, b) => b.revenueEur - a.revenueEur);
 
-  // 3. Best Destinations
-  const destMap = new Map<string, { count: number; revenue: number }>();
-  confirmed.forEach((b) => {
-    const dest = b.tourDestination || 'Hurghada';
-    const entry = destMap.get(dest) || { count: 0, revenue: 0 };
-    entry.count += 1;
-    entry.revenue += b.pricing?.totalEur || 0;
-    destMap.set(dest, entry);
-  });
-
-  const bestDestinations: BreakdownItem[] = [];
-  destMap.forEach((val, dest) => {
-    bestDestinations.push({
-      id: dest,
-      name: dest,
-      count: val.count,
-      revenueEur: val.revenue,
-      percentage: totalRevenueEur > 0 ? Math.round((val.revenue / totalRevenueEur) * 1000) / 10 : 0,
-    });
-  });
-  bestDestinations.sort((a, b) => b.revenueEur - a.revenueEur);
-
-  // 4. Sales Performance by Staff
-  const staffMap = new Map<
-    string,
-    { id: string; name: string; role: string; leads: number; won: number; bookings: number; revenue: number }
-  >();
-
-  const defaultStaff = [
-    { id: 'stf-1', name: 'Ahmed Hassan', role: 'Senior Tour Concierge' },
-    { id: 'stf-2', name: 'Mariam Youssef', role: 'VIP Excursions Specialist' },
-    { id: 'stf-3', name: 'Karim Adel', role: 'Marina Sales Desk' },
-    { id: 'stf-4', name: 'Sara Mostafa', role: 'Digital Reservations' },
-  ];
-
-  defaultStaff.forEach((s) => {
-    staffMap.set(s.name, {
-      id: s.id,
-      name: s.name,
-      role: s.role,
+  const staffMap = new Map<string, {
+    id: string;
+    name: string;
+    role: string;
+    leads: number;
+    won: number;
+    booked: number;
+    revenue: number;
+  }>();
+  intervalLeads.forEach((lead) => {
+    const staffId = lead.assignedStaffId || 'unassigned';
+    const staffName = lead.assignedStaffName || 'Unassigned';
+    const current = staffMap.get(staffId) || {
+      id: staffId,
+      name: staffName,
+      role: lead.assignedStaffId ? 'CRM staff' : 'Unassigned',
       leads: 0,
       won: 0,
-      bookings: 0,
-      revenue: 0,
-    });
-  });
-
-  // Attribute leads to staff
-  leads.forEach((l) => {
-    const sName = l.assignedStaffName || 'Ahmed Hassan';
-    const cur = staffMap.get(sName) || {
-      id: l.assignedStaffId || 'stf-custom',
-      name: sName,
-      role: 'Tour Consultant',
-      leads: 0,
-      won: 0,
-      bookings: 0,
+      booked: 0,
       revenue: 0,
     };
-    cur.leads += 1;
-    if (l.stage === 'Won' || l.stage === 'Booked') {
-      cur.won += 1;
-      cur.revenue += l.estimatedValue || 0;
+    current.leads += 1;
+    if (lead.stage === 'Won' || lead.stage === 'Booked') {
+      current.won += 1;
+      current.revenue += Number(lead.estimatedValue) || 0;
     }
-    staffMap.set(sName, cur);
+    if (lead.stage === 'Booked') current.booked += 1;
+    staffMap.set(staffId, current);
   });
 
-  // Distribute confirmed bookings among staff for balanced realistic representation
-  confirmed.forEach((b, idx) => {
-    const staffNames = ['Ahmed Hassan', 'Mariam Youssef', 'Karim Adel', 'Sara Mostafa'];
-    const assignedStaffName = staffNames[idx % staffNames.length];
-    const cur = staffMap.get(assignedStaffName);
-    if (cur) {
-      cur.bookings += 1;
-      cur.revenue += b.pricing?.totalEur || 0;
-    }
-  });
+  const staffPerformance: StaffPerformanceItem[] = Array.from(staffMap.values())
+    .map((staff) => ({
+      staffId: staff.id,
+      staffName: staff.name,
+      role: staff.role,
+      leadsHandled: staff.leads,
+      dealsWon: staff.won,
+      bookingsCount: staff.booked,
+      revenueEur: staff.revenue,
+      conversionRate: staff.leads > 0 ? Math.round((staff.won / staff.leads) * 1000) / 10 : 0,
+    }))
+    .sort((a, b) => b.revenueEur - a.revenueEur);
 
-  const staffPerformance: StaffPerformanceItem[] = [];
-  staffMap.forEach((s) => {
-    const totalHandled = Math.max(1, s.leads + s.bookings);
-    const wonCount = s.won + s.bookings;
-    const convRate = Math.min(100, Math.round((wonCount / totalHandled) * 1000) / 10);
-    staffPerformance.push({
-      staffId: s.id,
-      staffName: s.name,
-      role: s.role,
-      leadsHandled: totalHandled,
-      dealsWon: wonCount,
-      bookingsCount: s.bookings,
-      revenueEur: s.revenue,
-      conversionRate: convRate,
-    });
+  const bookingSourceMap = new Map<string, { count: number; revenue: number }>();
+  revenueBookings.forEach((booking) => {
+    const source = normalizeLeadSource((booking as any).source);
+    const current = bookingSourceMap.get(source) || { count: 0, revenue: 0 };
+    current.count += 1;
+    current.revenue += booking.pricing?.totalEur || 0;
+    bookingSourceMap.set(source, current);
   });
-  staffPerformance.sort((a, b) => b.revenueEur - a.revenueEur);
+  const bookingsBySource = Array.from(bookingSourceMap.entries())
+    .map(([source, value]) => ({
+      source,
+      count: value.count,
+      revenueEur: value.revenue,
+      percentage: totalBookingsCount > 0 ? Math.round((value.count / totalBookingsCount) * 1000) / 10 : 0,
+    }))
+    .sort((a, b) => b.revenueEur - a.revenueEur);
 
   return {
     leadsCount,
@@ -561,12 +550,7 @@ export async function fetchSalesReport(interval: DateRangeInterval): Promise<Sal
     bookingsByDestination: bestDestinations,
     revenueByTour: bestSellingTours,
     revenueByDestination: bestDestinations,
-    bookingsBySource: leadSources.map((ls) => ({
-      source: ls.source,
-      count: ls.count,
-      revenueEur: ls.revenueEur,
-      percentage: totalBookingsCount > 0 ? Math.round((ls.convertedCount / totalBookingsCount) * 1000) / 10 : 0,
-    })),
+    bookingsBySource,
     staffPerformance,
   };
 }
