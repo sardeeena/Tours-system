@@ -17,14 +17,15 @@
       "content": {
         "name": "Boekingsupdate",
         "subject": "Update van je boeking: {{tour_name}} (ref.: {{booking_reference}})",
-        "body_text": "Hallo {{customer_name}},\n\nJe boeking voor {{tour_name}} (ref.: {{booking_reference}}) is bijgewerkt.\n\nVertrekdatum: {{tour_date}}\nOphaaltijd: {{pickup_time}}\nResterend saldo: {{balance_due}}\n\nMet vriendelijke groet,\nHet coördinatieteam van Awesome Adventure Tours",
+        "body_text": "Hallo {{customer_name}},\n\nJe boeking voor {{tour_name}} (ref.: {{booking_reference}}) is bijgewerkt.\n\nVertrekdatum: {{tour_date}}\nOphaaltijd: {{pickup_time}}\nVertrektijd: {{departure_time}}\nResterend saldo: {{balance_due}}\n\nMet vriendelijke groet,\nHet coördinatieteam van Awesome Adventure Tours",
         "variables": [
           "customer_name",
           "booking_reference",
           "tour_name",
           "tour_date",
           "pickup_time",
-          "balance_due"
+          "balance_due",
+          "departure_time"
         ],
         "channel": "Both",
         "template_key": "booking_update"
