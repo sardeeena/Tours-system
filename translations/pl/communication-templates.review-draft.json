@@ -43,7 +43,7 @@
       "content": {
         "name": "Bilet rezerwacji",
         "subject": "Twój bilet rezerwacji Awesome Adventure Tours: {{booking_reference}}",
-        "body_text": "Dzień dobry {{customer_name}},\n\nOtrzymaliśmy Twoje zgłoszenie rezerwacji wycieczki {{tour_name}} na dzień {{tour_date}}. Poniżej znajduje się Twój cyfrowy bilet rezerwacji.\n\nNumer rezerwacji: {{booking_reference}}\nStatus rezerwacji: {{booking_status}}\nŁączna kwota: {{currency}} {{amount}}\n\nZachowaj numer rezerwacji, aby móc podać go podczas kontaktu z naszym zespołem. Godzina odbioru i szczegóły organizacyjne mogą zostać potwierdzone osobno.\n\nDziękujemy,\nAwesome Adventure Tours",
+        "body_text": "Dzień dobry {{customer_name}},\n\nOtrzymaliśmy Twoje zgłoszenie rezerwacji wycieczki {{tour_name}} na dzień {{tour_date}}. Poniżej znajduje się Twój cyfrowy bilet rezerwacji.\nGodzina wyjazdu: {{departure_time}}\n\nNumer rezerwacji: {{booking_reference}}\nStatus rezerwacji: {{booking_status}}\nŁączna kwota: {{currency}} {{amount}}\n\nZachowaj numer rezerwacji, aby móc podać go podczas kontaktu z naszym zespołem. Godzina odbioru i szczegóły organizacyjne mogą zostać potwierdzone osobno.\n\nDziękujemy,\nAwesome Adventure Tours",
         "variables": [
           "customer_name",
           "booking_reference",
@@ -51,7 +51,8 @@
           "tour_date",
           "booking_status",
           "currency",
-          "amount"
+          "amount",
+          "departure_time"
         ],
         "channel": "Email",
         "template_key": "booking_received"
@@ -90,14 +91,15 @@
       "content": {
         "name": "Aktualizacja rezerwacji",
         "subject": "Aktualizacja rezerwacji: {{tour_name}} (nr ref.: {{booking_reference}})",
-        "body_text": "Dzień dobry {{customer_name}},\n\nTwoja rezerwacja wycieczki {{tour_name}} (nr ref.: {{booking_reference}}) została zaktualizowana.\n\nData wyjazdu: {{tour_date}}\nGodzina odbioru: {{pickup_time}}\nPozostała do zapłaty kwota: {{balance_due}}\n\nZ poważaniem,\nZespół koordynacyjny Awesome Adventure Tours",
+        "body_text": "Dzień dobry {{customer_name}},\n\nTwoja rezerwacja wycieczki {{tour_name}} (nr ref.: {{booking_reference}}) została zaktualizowana.\n\nData wyjazdu: {{tour_date}}\nGodzina odbioru: {{pickup_time}}\nGodzina wyjazdu: {{departure_time}}\nPozostała do zapłaty kwota: {{balance_due}}\n\nZ poważaniem,\nZespół koordynacyjny Awesome Adventure Tours",
         "variables": [
           "customer_name",
           "booking_reference",
           "tour_name",
           "tour_date",
           "pickup_time",
-          "balance_due"
+          "balance_due",
+          "departure_time"
         ],
         "channel": "Both",
         "template_key": "booking_update"
