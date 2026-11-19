@@ -145,6 +145,18 @@ assert.match(section(crm, 'export async function getCustomerProfile(', 'export a
 assert.match(section(crm, 'export async function getCustomerProfile(', 'export async function createCustomer('), /found\.payments\s*=|found\.reviews\s*=/, 'Customer profiles must populate payment and review panels');
 assert.match(section(crm, 'export async function getCrmDashboardMetrics()', ''), /payment_transactions[\s\S]*?refund_records/, 'CRM outstanding balances must use the finance ledger, not booking status snapshots');
 
+const bookingRepo = read('src/services/bookingRepository.ts');
+const getBooking = section(bookingRepo, '  async getBooking(', '  async findBooking(');
+assert.match(getBooking, /if \(error\) throw new Error/, 'Booking detail query errors must not be returned as not-found');
+assert.match(getBooking, /if \(!isDevelopmentBuild\)[\s\S]*?throw new Error/, 'Production booking lookup must not silently use browser cache');
+const findBooking = section(bookingRepo, '  async findBooking(', '  async getBookingsByEmail(');
+assert.match(findBooking, /if \(error\) throw new Error/, 'Authenticated booking lookup query errors must be surfaced');
+assert.match(findBooking, /throw err instanceof Error/, 'Booking lookup exceptions must not be converted into null');
+const bookingsByEmail = section(bookingRepo, '  async getBookingsByEmail(', '  async updateBooking(');
+assert.match(bookingsByEmail, /if \(profileError\) throw/, 'Booking directory must surface profile authorization query failures');
+assert.match(bookingsByEmail, /if \(userQueryError\) throw/, 'Booking directory must surface fallback query failures');
+assert.match(bookingsByEmail, /if \(!isDevelopmentBuild\) throw/, 'Production customer booking lookup must not use browser cache');
+
 const inquiryService = read('src/services/inquiryService.ts');
 const createInquiry = section(inquiryService, 'export async function createCustomerInquiry(', '/**\n * Lists all inquiries');
 assert.match(createInquiry, /\.from\('inquiries'\)[\s\S]*?\.insert\(/, 'Public inquiry submissions must persist to the inquiries table');
