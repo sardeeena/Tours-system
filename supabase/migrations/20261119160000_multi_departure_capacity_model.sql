@@ -658,7 +658,7 @@ RETURNS TABLE (
   notes TEXT
 )
 LANGUAGE sql
-SECURITY DEFINER
+SECURITY INVOKER
 SET search_path = ''
 AS $function$
   SELECT *
@@ -810,7 +810,7 @@ RETURNS TABLE(
   minimum_notice_hours INTEGER
 )
 LANGUAGE sql
-SECURITY DEFINER
+SECURITY INVOKER
 SET search_path = ''
 AS $function$
   SELECT *
