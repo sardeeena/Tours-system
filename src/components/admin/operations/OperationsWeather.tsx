@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AdminLoadError } from '../AdminLoadError';
 import {
   CloudSun,
   Wind,
@@ -34,6 +35,7 @@ export const OperationsWeather: React.FC = () => {
   const [bulletins, setBulletins] = useState<DbWeatherBulletin[]>([]);
   const [departures, setDepartures] = useState<OperationalDeparture[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // New bulletin modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -65,6 +67,10 @@ export const OperationsWeather: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
+      setWeatherInfo(null);
+      setBulletins([]);
+      setDepartures([]);
     try {
       const [wInfo, bList, deps] = await Promise.all([
         getMaritimeWeather(selectedDate),
@@ -75,8 +81,10 @@ export const OperationsWeather: React.FC = () => {
       setBulletins(bList);
       setDepartures(deps);
     } catch (err) {
-      console.warn('Failed to load weather data:', err);
-      showToast(err instanceof Error ? err.message : 'Failed to load weather data.', 'error');
+      const message = err instanceof Error ? err.message : 'Live operational records could not be loaded.';
+      console.error('Failed to load operational data:', err);
+      setLoadError(message);
+      showToast(message, 'error');
     } finally {
       setLoading(false);
     }
@@ -143,6 +151,8 @@ export const OperationsWeather: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
 
       {/* Linked Departures Overview Banner */}
       <div className="bg-stone-950 border border-stone-800 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
