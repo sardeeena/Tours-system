@@ -411,8 +411,9 @@ export const AdminInquiriesList: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => handleDelete(inq)}
-                          className="p-1.5 hover:bg-red-950/60 text-stone-500 hover:text-red-400 rounded cursor-pointer"
-                          title="Delete Record"
+                          disabled={inq.status === 'converted'}
+                          className="p-1.5 hover:bg-red-950/60 text-stone-500 hover:text-red-400 rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                          title={inq.status === 'converted' ? 'Converted inquiries are retained for CRM audit history' : 'Delete Record'}
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
