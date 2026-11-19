@@ -1875,7 +1875,7 @@ export async function submitTourReview(payload: {
   }
 
   if (!isSupabaseConfigured() || isSchemaMissing()) {
-    return;
+    throw new Error('Customer reviews are temporarily unavailable because the live review database is not connected.');
   }
 
   let resolvedTourId = payload.tourId;
