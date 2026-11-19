@@ -1503,8 +1503,13 @@ app.post('/api/bookings/create', rateLimit(10, 60_000), async (req: Authenticate
   if (Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== date) {
     return res.status(400).json({ success: false, error: 'The excursion date is invalid.' });
   }
-  const todayUtc = new Date().toISOString().slice(0, 10);
-  if (date < todayUtc) {
+  const todayCairo = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Africa/Cairo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+  if (date < todayCairo) {
     return res.status(400).json({ success: false, error: 'Selected excursion date cannot be in the past.' });
   }
   if (!customer || typeof customer.firstName !== 'string' || !customer.firstName.trim() ||
