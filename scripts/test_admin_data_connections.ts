@@ -311,6 +311,10 @@ const notificationsUi = read('src/components/admin/communications/Communications
 assert.match(notificationsUi, /AdminLoadError/, 'Staff notification list must show live database failures');
 assert.match(notificationsUi, /setLoadError/, 'Staff notification load errors must be distinct from an empty alert list');
 assert.match(notificationsUi, /showToast\(err instanceof Error/, 'Notification action failures must be visible to administrators');
+const notificationService = read('src/services/communicationService.ts');
+const notificationList = section(notificationService, 'export async function listStaffNotifications()', 'export async function markNotificationRead(');
+assert.match(notificationList, /\.limit\(1000\)/, 'Notification inbox must load all currently stored operational alerts');
+assert.match(notificationsUi, /option value="payment_pending"/, 'Pending payment notifications must be filterable by category');
 const managementReportUi = read('src/components/admin/reporting/ManagementReportingDashboard.tsx');
 assert.match(managementReportUi, /AdminLoadError/, 'Management reporting must show live metric load failures');
 const financeReportsUi = read('src/components/admin/finance/FinanceReports.tsx');
