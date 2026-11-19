@@ -24,6 +24,7 @@ const homeReviews = readFileSync(new URL('../src/components/home/ReviewsSection.
 const translations = readFileSync(new URL('../src/i18n/translations.ts', import.meta.url), 'utf8');
 const finalCta = readFileSync(new URL('../src/components/home/FinalCTA.tsx', import.meta.url), 'utf8');
 const homeHero = readFileSync(new URL('../src/components/home/Hero.tsx', import.meta.url), 'utf8');
+const stepPickup = readFileSync(new URL('../src/components/booking/StepPickup.tsx', import.meta.url), 'utf8');
 const sitemapStart = server.indexOf("app.get('/sitemap.xml'");
 const llmsStart = server.indexOf("app.get('/llms.txt'");
 const schemaStart = server.indexOf("const organization: Record<string, any>");
@@ -164,6 +165,8 @@ assert.match(finalCta, /Hotel pickup zones and any location-based supplements ar
 assert.doesNotMatch(finalCta, /free cancellation up to 24 hours prior|Hotel pickup from your resort lobby is always included|Direct Booking Guarantee/i, 'Final CTA removes unsupported universal booking promises');
 assert.match(homeHero, /Practical Booking Information/, 'Hero labels conditional terms as booking information rather than guarantees');
 assert.doesNotMatch(homeHero, /certified PADI divemasters|2-tank guided boat dives/, 'Hero does not claim dive certifications or formats without tour-level evidence');
+assert.match(stepPickup, /Airport arrival transfer/, 'Airport pickup explains where to enter the destination hotel and flight details');
+assert.match(stepPickup, /Choose Your Pickup Location/, 'Pickup step uses generic wording that also fits airport transfers');
 
 
 
