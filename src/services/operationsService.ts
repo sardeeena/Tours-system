@@ -1048,9 +1048,12 @@ export async function getPassengerManifest(
     const declaredPartyCount = adultCount + childCount + infantCount;
     const effectiveAdultCount = declaredPartyCount === 0 ? 1 : adultCount;
     const partyCount = Math.max(1, declaredPartyCount, rows.length);
+    const rawPaymentStatus = String(booking.paymentStatus || 'pending').toLowerCase();
     const paymentStatus: PassengerManifestItem['paymentStatus'] =
-      booking.paymentStatus === 'paid' ? 'paid' :
-      booking.paymentStatus === 'deposit_paid' ? 'deposit_paid' : 'pending';
+      rawPaymentStatus === 'paid' ? 'paid' :
+      rawPaymentStatus === 'deposit_paid' ? 'deposit_paid' :
+      rawPaymentStatus === 'partially_paid' ? 'partially_paid' :
+      rawPaymentStatus === 'pay_on_arrival' ? 'pay_on_arrival' : 'pending';
     const extrasList = Array.isArray(booking.extras) && booking.extras.length > 0
       ? booking.extras.map((extra: any) => `${extra.name || extra.id} (x${extra.quantity || 1})`).join(', ')
       : null;
@@ -1065,6 +1068,11 @@ export async function getPassengerManifest(
         ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim()
         : `Guest ${passengerIndex} (${booking.customer.lastName || 'Party'})`;
       const local = localDetails[`${bookingId}:${passengerIndex}`] || {};
+      const rawPassengerType = local.passengerType ?? row?.passenger_type;
+      const passengerType: PassengerManifestItem['passengerType'] =
+        rawPassengerType === 'adult' || rawPassengerType === 'child' || rawPassengerType === 'infant'
+          ? rawPassengerType
+          : fallbackType;
 
       manifest.push({
         id: row?.id || `pass-${booking.bookingReference}-${passengerIndex}`,
@@ -1076,11 +1084,11 @@ export async function getPassengerManifest(
         tourDate: booking.date || date,
         departureTime: (booking as any).departureTime || 'Not scheduled',
         fullName: local.fullName ?? row?.full_name ?? fallbackName ?? 'Guest',
-        nationality: local.nationality ?? row?.nationality ?? booking.customer.country ?? 'International',
+        nationality: local.nationality ?? row?.nationality ?? booking.customer.country ?? null,
         passportOrId: local.passportOrId ?? row?.passport_or_id_number ?? null,
         dateOfBirth: local.dateOfBirth ?? row?.date_of_birth ?? null,
         gender: local.gender ?? row?.gender ?? null,
-        passengerType: local.passengerType ?? row?.passenger_type ?? fallbackType,
+        passengerType,
         phone: local.phone ?? row?.phone ?? (passengerIndex === 0 && booking.customer.phoneNumber
           ? `${booking.customer.countryCode || ''} ${booking.customer.phoneNumber}`.trim()
           : null),
