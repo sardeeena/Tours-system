@@ -10,7 +10,7 @@
       "name": "Confirmation de réservation",
       "channel": "Both",
       "subject": "Confirmation de réservation : {{tour_name}} (réf. : {{booking_reference}})",
-      "body_text": "Bonjour {{customer_name}},\n\nMerci d’avoir réservé auprès d’Awesome Adventure Tours. Votre réservation pour {{tour_name}} le {{tour_date}} est confirmée.\n\nRéférence de réservation : {{booking_reference}}\nMontant total : {{amount}}\nSolde restant dû : {{balance_due}}\nHeure de prise en charge : {{pickup_time}}\n\nBien cordialement,\nLe service conciergerie d’Awesome Adventure Tours",
+      "body_text": "Bonjour {{customer_name}},\n\nMerci d’avoir réservé auprès d’Awesome Adventure Tours. Votre réservation pour {{tour_name}} le {{tour_date}} est confirmée.\n\nRéférence de réservation : {{booking_reference}}\nMontant total : {{amount}}\nSolde restant dû : {{balance_due}}\nHeure de prise en charge : {{pickup_time}}\nHeure de départ : {{departure_time}}\n\nBien cordialement,\nLe service conciergerie d’Awesome Adventure Tours",
       "variables": [
         "customer_name",
         "booking_reference",
@@ -18,7 +18,8 @@
         "tour_date",
         "pickup_time",
         "amount",
-        "balance_due"
+        "balance_due",
+        "departure_time"
       ]
     },
     {
