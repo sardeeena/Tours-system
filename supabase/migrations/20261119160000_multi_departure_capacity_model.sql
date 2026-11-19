@@ -43,9 +43,15 @@ DECLARE
 BEGIN
   IF NOT (
     coalesce(auth.role(),'') = 'service_role'
-    OR (auth.uid() IS NOT NULL AND public.is_admin())
+    OR (
+      auth.uid() IS NOT NULL
+      AND (
+        (p_departure_id IS NULL AND public.has_permission('operations.create'))
+        OR (p_departure_id IS NOT NULL AND public.has_permission('operations.update'))
+      )
+    )
   ) THEN
-    RAISE EXCEPTION 'Not authorized to manage departures' USING ERRCODE = '42501';
+    RAISE EXCEPTION 'Not authorized to create or update this departure' USING ERRCODE = '42501';
   END IF;
 
   IF p_tour_id IS NULL OR p_date IS NULL
