@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AdminLoadError } from '../AdminLoadError';
 import {
   Ship,
   Plus,
@@ -23,6 +24,7 @@ export const OperationsVessels: React.FC = () => {
   const { showToast } = useToast();
   const [vessels, setVessels] = useState<DbVessel[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -49,11 +51,16 @@ export const OperationsVessels: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
+      setVessels([]);
     try {
       const data = await listVessels();
       setVessels(data);
     } catch (err) {
-      console.warn('Failed to load vessels:', err);
+      const message = err instanceof Error ? err.message : 'Live operational records could not be loaded.';
+      console.error('Failed to load operational data:', err);
+      setLoadError(message);
+      
     } finally {
       setLoading(false);
     }
@@ -229,6 +236,8 @@ export const OperationsVessels: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
 
       {/* Filter / Search Bar */}
       <div className="bg-stone-950 border border-stone-800 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
