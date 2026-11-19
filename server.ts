@@ -1345,9 +1345,58 @@ app.get('/api/tours', rateLimit(120, 60_000), async (req: Request, res: Response
       .limit(maxItems);
 
     if (destination && typeof destination === 'string') {
-      const cleanDest = destination.trim().replace(/[%_()]/g, '');
+      const cleanDest = destination.trim().replace(/[%,_()]/g, '');
       if (cleanDest) {
-        query = query.ilike('destination_id', `%${cleanDest}%`);
+        // destination_id is a UUID: resolve a public destination by UUID, slug,
+        // or exact name instead of applying text matching to the UUID column.
+        let destinationLookup = publicSupabase.from('destinations').select('id').limit(1);
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanDest)) {
+          destinationLookup = destinationLookup.eq('id', cleanDest);
+        } else {
+          destinationLookup = destinationLookup.eq('slug', cleanDest.toLowerCase());
+        }
+        let { data: destinationRow, error: destinationError } = await destinationLookup.maybeSingle();
+        if (!destinationRow && !destinationError && !/^[0-9a-f-]{36}$/i.test(cleanDest)) {
+          const fallback = await publicSupabase.from('destinations').select('id').ilike('name', cleanDest).limit(1).maybeSingle();
+          destinationRow = fallback.data;
+          destinationError = fallback.error;
+        }
+        if (destinationError) {
+          console.error('Supabase /api/tours destination filter error:', destinationError.message);
+          return res.status(503).json({ success: false, error: 'The tour catalogue is temporarily unavailable. Please try again later.', tours: [], count: 0, total: 0 });
+        }
+        if (!destinationRow) return res.json({ success: true, tours: [], count: 0, total: 0 });
+        query = query.eq('destination_id', destinationRow.id);
+      }
+    }
+
+    if (category && typeof category === 'string') {
+      const cleanCategory = category.trim().replace(/[%,_()]/g, '');
+      if (cleanCategory) {
+        let categoryLookup = publicSupabase.from('categories').select('id').eq('status', 'published').limit(1);
+        categoryLookup = categoryLookup.eq('slug', cleanCategory.toLowerCase());
+        let { data: categoryRow, error: categoryError } = await categoryLookup.maybeSingle();
+        if (!categoryRow && !categoryError) {
+          const fallback = await publicSupabase.from('categories').select('id').eq('status', 'published').ilike('name', cleanCategory).limit(1).maybeSingle();
+          categoryRow = fallback.data;
+          categoryError = fallback.error;
+        }
+        if (categoryError) {
+          console.error('Supabase /api/tours category filter error:', categoryError.message);
+          return res.status(503).json({ success: false, error: 'The tour catalogue is temporarily unavailable. Please try again later.', tours: [], count: 0, total: 0 });
+        }
+        if (!categoryRow) return res.json({ success: true, tours: [], count: 0, total: 0 });
+        const { data: categoryAssignments, error: assignmentError } = await publicSupabase
+          .from('tour_categories')
+          .select('tour_id')
+          .eq('category_id', categoryRow.id);
+        if (assignmentError) {
+          console.error('Supabase /api/tours category assignment error:', assignmentError.message);
+          return res.status(503).json({ success: false, error: 'The tour catalogue is temporarily unavailable. Please try again later.', tours: [], count: 0, total: 0 });
+        }
+        const matchingTourIds = [...new Set((categoryAssignments || []).map((row: any) => row.tour_id).filter(Boolean))];
+        if (matchingTourIds.length === 0) return res.json({ success: true, tours: [], count: 0, total: 0 });
+        query = query.in('id', matchingTourIds);
       }
     }
 
