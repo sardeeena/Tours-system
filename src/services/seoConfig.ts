@@ -151,7 +151,6 @@ export function generateTourJsonLd(tour: Tour, origin = getAppOrigin()): Record<
     description: tour.fullDescription || tour.shortDescription,
     image: images,
     url: tourUrl,
-    touristType: ['Snorkelers', 'Couples', 'Families', 'Scuba Divers', 'Adventure Travelers'],
     subjectOf: {
       '@type': 'Product',
       name: tour.title,
