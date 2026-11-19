@@ -722,6 +722,7 @@ function MainApp() {
     };
   }, [
     currentPath,
+    currentLocale,
     confirmationReference,
     currentTourDetail,
     liveTours,
