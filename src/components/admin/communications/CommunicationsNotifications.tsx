@@ -49,7 +49,7 @@ const CATEGORY_LABELS: Record<NotificationCategory, { label: string; icon: React
   cancellation: { label: 'Cancellation', icon: AlertTriangle },
   new_review: { label: 'Traveler Review', icon: Star },
   operational_issue: { label: 'Harbor Warning', icon: ShieldAlert },
-  payment_pending: { label: 'Pier Balance Due', icon: CreditCard },
+  payment_pending: { label: 'Payment Pending', icon: CreditCard },
 };
 
 export const CommunicationsNotifications: React.FC<CommunicationsNotificationsProps> = ({ onNavigateTab }) => {
@@ -254,6 +254,7 @@ export const CommunicationsNotifications: React.FC<CommunicationsNotificationsPr
             <option value="new_booking">New Bookings</option>
             <option value="new_inquiry">New Inquiries</option>
             <option value="new_payment">New Payments</option>
+            <option value="payment_pending">Payments Pending</option>
             <option value="payment_overdue">Payment Overdue</option>
             <option value="new_lead">New CRM Leads</option>
             <option value="followup_due">Follow-ups Due</option>
