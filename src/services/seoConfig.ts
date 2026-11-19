@@ -276,6 +276,53 @@ export function generateDestinationJsonLd(
 }
 
 /**
+ * Structured data for public CMS/static pages. Legal and informational pages
+ * remain WebPage entities; About and Contact receive their dedicated Schema.org
+ * subtypes. Content is deliberately limited to the page's visible title and
+ * description rather than inventing ratings, offers, or business claims.
+ */
+export function generateStaticPageJsonLd(
+  slug: string,
+  title: string,
+  description: string,
+  origin = getAppOrigin()
+): Record<string, unknown> {
+  const normalizedSlug = slug.replace(/^\\/+|\\/+$/g, '').toLowerCase();
+  const pageUrl = normalizedSlug ? `${origin}/${encodeURIComponent(normalizedSlug)}` : `${origin}/`;
+  const pageType = normalizedSlug === 'about'
+    ? 'AboutPage'
+    : normalizedSlug === 'contact'
+      ? 'ContactPage'
+      : 'WebPage';
+  const graph: Record<string, unknown>[] = [
+    {
+      '@type': pageType,
+      '@id': `${pageUrl}#webpage`,
+      url: pageUrl,
+      name: title,
+      description,
+      isPartOf: { '@id': `${origin}/#website` },
+      publisher: { '@id': `${origin}/#organization` },
+      ...(normalizedSlug === 'about' ? { about: { '@id': `${origin}/#organization` } } : {}),
+      ...(normalizedSlug === 'contact' ? {
+        mainEntity: {
+          '@id': `${origin}/#organization`,
+        },
+      } : {}),
+    },
+    {
+      '@type': 'BreadcrumbList',
+      '@id': `${pageUrl}#breadcrumb`,
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: `${origin}/` },
+        { '@type': 'ListItem', position: 2, name: title, item: pageUrl },
+      ],
+    },
+  ];
+  return { '@context': 'https://schema.org', '@graph': graph };
+}
+
+/**
  * Static metadata configurations for all primary application routes
  */
 export const STATIC_ROUTE_SEO: Record<string, (origin: string, locale?: string) => SeoMetadata> = {
