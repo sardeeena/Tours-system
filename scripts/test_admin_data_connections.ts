@@ -103,6 +103,35 @@ assert.match(pickupUpdate, /A real pickup time, driver, vehicle, customer and pi
 assert.match(pickupUpdate, /rollbackError/, 'Pickup schedule failures must attempt to restore the booking status');
 assert.match(pickupUpdate, /\.select\('id'\)[\s\S]*?\.maybeSingle\(\)/, 'Pickup updates must confirm affected booking and schedule rows');
 
+const conflictCheck = section(operations, 'export async function detectAssignmentConflicts(', '/**\n * Save operational assignment');
+for (const resource of ['vessel', 'guide', 'captain', 'driver']) {
+  assert.match(conflictCheck, new RegExp(`if \\(!${resource}\\) throw new Error`), `Missing ${resource} records must block resource assignment`);
+}
+assert.match(conflictCheck, /guide_unavailable/, 'Unavailable guides must block assignment');
+assert.match(conflictCheck, /captain_unavailable/, 'Unavailable captains must block assignment');
+assert.match(conflictCheck, /driver_unavailable/, 'Unavailable drivers must block assignment');
+
+const assignmentsUi = read('src/components/admin/operations/OperationsAssignments.tsx');
+assert.match(assignmentsUi, /conflictCheckError/, 'Assignment UI must display conflict verification failures');
+assert.match(assignmentsUi, /if \(validatingConflicts \|\| conflictCheckError \|\| preSaveConflicts\.length > 0\)/, 'Assignment submit handler must fail closed until conflict checks pass');
+assert.match(assignmentsUi, /disabled=\{validatingConflicts \|\| Boolean\(conflictCheckError\) \|\| preSaveConflicts\.length > 0\}/, 'Assignment button must be disabled for conflicts or failed verification');
+
+const loadErrorComponent = read('src/components/admin/AdminLoadError.tsx');
+assert.match(loadErrorComponent, /role="alert"/, 'Shared admin load error must be announced accessibly');
+assert.match(loadErrorComponent, /onRetry/, 'Shared admin load error must provide a working retry action');
+for (const path of [
+  'src/components/admin/operations/OperationsVessels.tsx',
+  'src/components/admin/operations/OperationsWeather.tsx',
+  'src/components/admin/operations/OperationsAvailability.tsx',
+  'src/components/admin/operations/OperationsPickupSchedule.tsx',
+  'src/components/admin/operations/OperationsAssignments.tsx',
+  'src/components/admin/operations/OperationsDepartures.tsx',
+]) {
+  const component = read(path);
+  assert.match(component, /AdminLoadError/, `${path} must show a visible error instead of an empty table on query failure`);
+  assert.match(component, /loadError/, `${path} must keep the live-data error state`);
+}
+
 const staffHook = read('src/hooks/useCrmAssignableStaff.ts');
 assert.match(staffHook, /listInquiryAssignees\(\)/, 'CRM assignment options must come from the permission-filtered live staff RPC');
 for (const path of [
