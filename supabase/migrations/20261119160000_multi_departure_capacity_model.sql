@@ -44,7 +44,7 @@ DECLARE
   v_status TEXT := lower(coalesce(nullif(btrim(p_status), ''), 'scheduled'));
 BEGIN
   IF NOT (
-    coalesce(auth.role(),'') = 'service_role'
+    coalesce(auth.jwt()->>'role','') = 'service_role'
     OR (
       auth.uid() IS NOT NULL
       AND (
@@ -345,7 +345,7 @@ SET search_path = ''
 AS $function$
 BEGIN
   IF NOT (
-    coalesce(auth.role(),'') = 'service_role'
+    coalesce(auth.jwt()->>'role','') = 'service_role'
     OR (
       auth.uid() IS NOT NULL
       AND (
