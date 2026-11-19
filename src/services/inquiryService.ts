@@ -1,7 +1,6 @@
 import { supabase, isSupabaseConfigured, formatSupabaseError, isSchemaMissing, isSchemaMissingError, setSchemaMissing } from './supabaseClient';
 import { DbInquiry } from '../types/database';
 import { sanitizeString, isValidEmail, inquiryRateLimiter } from '../lib/security';
-import { createLead, recordActivity } from './crmService';
 import { publishAutomationEvent } from './communicationService';
 import { recordVisitorEvent } from './visitorAnalyticsService';
 
@@ -55,9 +54,8 @@ function saveStoredInquiries(inquiries: DbInquiry[]) {
 export async function createCustomerInquiry(
   input: CreateInquiryInput
 ): Promise<{ success: boolean; inquiry?: DbInquiry; error?: string }> {
-  // 0. Honeypot check: If the hidden honeypot input is populated by a spam bot, trap and silently drop
+  // Honeypot submissions are silently acknowledged and never persisted.
   if (input.website_url_hp && input.website_url_hp.trim() !== '') {
-    console.warn('Bot submission blocked via honeypot field.');
     return {
       success: true,
       inquiry: {
@@ -94,247 +92,121 @@ export async function createCustomerInquiry(
   const cleanMessage = sanitizeString(input.message);
   const cleanPhone = input.phone ? sanitizeString(input.phone) : null;
   const cleanWhatsapp = input.whatsapp ? sanitizeString(input.whatsapp) : cleanPhone;
+  const source = input.source || 'web';
 
   if (!cleanName || !cleanEmail || !cleanMessage) {
-    return {
-      success: false,
-      error: 'Please fill in your name, email address, and inquiry message.',
-    };
+    return { success: false, error: 'Please fill in your name, email address, and inquiry message.' };
   }
-
   if (!isValidEmail(cleanEmail)) {
-    return {
-      success: false,
-      error: 'Please provide a valid email address.',
-    };
+    return { success: false, error: 'Please provide a valid email address.' };
   }
 
-  const generatedId = `inq-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
   const now = new Date().toISOString();
-
-  const newInquiry: DbInquiry = {
-    id: generatedId,
-    customer_name: cleanName,
-    email: cleanEmail,
-    phone: cleanPhone,
-    whatsapp: cleanWhatsapp,
-    tour_id: input.tour_id || null,
-    subject: cleanSubject || 'General Excursion Assistance',
-    message: cleanMessage,
-    status: 'new',
-    source: input.source || 'web',
-    ip_address: null,
-    admin_notes: input.tour_title ? `Referenced Tour: ${input.tour_title}` : null,
-    assigned_staff_id: null,
-    created_at: now,
-    updated_at: now,
-  };
-
-  // 1. Identify existing customer where possible
-  let identifiedCustomerId: string | null = null;
-  if (isSupabaseConfigured()) {
-    try {
-      const { data: cust } = await supabase
-        .from('customers')
-        .select('id')
-        .eq('email', cleanEmail)
-        .maybeSingle();
-      if (cust) {
-        identifiedCustomerId = cust.id;
-      }
-    } catch {}
-  }
-  if (!identifiedCustomerId) {
-    try {
-      const rawCusts = localStorage.getItem('rse_customers_cache');
-      if (rawCusts) {
-        const custs = JSON.parse(rawCusts);
-        const match = custs.find((c: any) => c.email?.toLowerCase() === cleanEmail);
-        if (match) identifiedCustomerId = match.id;
-      }
-    } catch {}
+  const localMode = !isSupabaseConfigured();
+  if (localMode && !import.meta.env.DEV) {
+    return { success: false, error: 'The inquiry service is temporarily unavailable. Please try again later.' };
   }
 
-  // 2. Automatically create CRM Lead for this inquiry
-  let createdLeadId: string | null = null;
-  try {
-    const lead = await createLead({
+  if (localMode) {
+    const localInquiry: DbInquiry = {
+      id: `inq-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
+      customer_name: cleanName,
+      email: cleanEmail,
+      phone: cleanPhone,
+      whatsapp: cleanWhatsapp,
+      tour_id: input.tour_id || null,
+      subject: cleanSubject || 'General Excursion Assistance',
+      message: cleanMessage,
+      status: 'new',
+      source,
+      ip_address: null,
+      admin_notes: input.tour_title ? `Referenced Tour: ${input.tour_title}` : null,
+      assigned_staff_id: null,
+      created_at: now,
+      updated_at: now,
+    };
+    saveStoredInquiries([localInquiry, ...getStoredInquiries()]);
+    void recordVisitorEvent({ event_name: 'inquiry_submitted', page_path: '/support', event_data: { source } });
+    return { success: true, inquiry: localInquiry };
+  }
+
+  const { data, error } = await supabase
+    .from('inquiries')
+    .insert({
+      customer_name: cleanName,
+      email: cleanEmail,
+      phone: cleanPhone,
+      whatsapp: cleanWhatsapp,
+      tour_id: input.tour_id || null,
+      subject: cleanSubject || 'General Excursion Assistance',
+      message: cleanMessage,
+      status: 'new',
+      source,
+      admin_notes: input.tour_title ? `Referenced Tour: ${input.tour_title}` : null,
+      ...(input.website_url_hp ? { website_url_hp: input.website_url_hp } : {}),
+    })
+    .select('*')
+    .single();
+
+  if (error) {
+    inquiryRateLimiter.recordFailedAttempt();
+    if (error.message?.includes('Rate limit exceeded') || error.code === 'P0001') {
+      return { success: false, error: error.message || 'Rate limit exceeded. Please wait before submitting another inquiry.' };
+    }
+    return { success: false, error: `Your inquiry could not be saved: ${formatSupabaseError(error)}` };
+  }
+  if (!data?.id) {
+    inquiryRateLimiter.recordFailedAttempt();
+    return { success: false, error: 'Your inquiry could not be saved because the database returned no record.' };
+  }
+
+  const persistedInquiry = data as DbInquiry;
+  saveStoredInquiries([persistedInquiry, ...getStoredInquiries().filter((item) => item.id !== persistedInquiry.id)]);
+
+  // These are non-critical follow-up signals. The inquiry itself is already persisted.
+  void publishAutomationEvent(
+    'inquiry.received' as any,
+    {
+      inquiryId: persistedInquiry.id,
+      leadId: null,
+      customerId: null,
       name: cleanName,
       email: cleanEmail,
-      phone: cleanPhone || undefined,
-      whatsapp: cleanWhatsapp || undefined,
-      source: input.source === 'whatsapp' ? 'WhatsApp' : input.source === 'phone' ? 'Phone' : 'Website',
-      interestedTourId: input.tour_id || undefined,
-      interestedTourTitle: input.tour_title || undefined,
-      notes: `Help Inquiry: ${cleanSubject} — ${cleanMessage}`,
-      stage: 'New',
-      customerId: identifiedCustomerId || undefined,
-      estimatedValue: 120,
-    });
-    if (lead) {
-      createdLeadId = lead.id;
-    }
-  } catch (leadErr) {
-    console.warn('Lead creation for inquiry notice:', leadErr);
-  }
+      subject: persistedInquiry.subject,
+      message: cleanMessage,
+      tourId: input.tour_id,
+    },
+    'inquiry',
+    persistedInquiry.id
+  ).catch((eventError) => console.warn('Inquiry automation event was not published:', eventError));
 
-  // 3. Create CRM Timeline Activity Event
-  try {
-    await recordActivity({
-      customerId: identifiedCustomerId || undefined,
-      leadId: createdLeadId || undefined,
-      eventType: 'inquiry_created',
-      title: `Inquiry Received: ${cleanSubject}`,
-      description: cleanMessage,
-      actor: cleanName,
-      metadata: {
-        inquiryId: generatedId,
-        source: input.source || 'web',
-        email: cleanEmail,
-      },
-    });
-  } catch (actErr) {
-    console.warn('CRM activity for inquiry notice:', actErr);
-  }
-
-  // 4. Create Internal Staff Notification
-  try {
-    const notifsRaw = localStorage.getItem('rse_staff_notifications') || '[]';
-    const notifs = JSON.parse(notifsRaw);
-    notifs.unshift({
-      id: `notif-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-      category: 'new_inquiry',
-      dedupKey: `new_inquiry_${generatedId}`,
-      title: `New Inquiry: ${cleanName}`,
-      message: `${cleanName} inquired: "${cleanSubject}". Email: ${cleanEmail}`,
-      severity: 'info',
-      entityType: 'inquiry',
-      entityId: generatedId,
-      linkTab: 'inquiries',
-      isRead: false,
-      createdAt: now,
-    });
-    localStorage.setItem('rse_staff_notifications', JSON.stringify(notifs.slice(0, 100)));
-  } catch {}
-
-  // 5. Trigger Automation Event
-  try {
-    await publishAutomationEvent(
-      'inquiry.received' as any,
-      {
-        inquiryId: generatedId,
-        leadId: createdLeadId,
-        customerId: identifiedCustomerId,
-        name: cleanName,
-        email: cleanEmail,
-        subject: cleanSubject,
-        message: cleanMessage,
-        tourId: input.tour_id,
-      },
-      'inquiry',
-      generatedId
-    );
-  } catch {}
-
-  // 6. Save to local fallback cache immediately
-  const localList = getStoredInquiries();
-  saveStoredInquiries([newInquiry, ...localList]);
-
-  // 7. Persist to Supabase if configured
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('inquiries')
-        .insert({
-          customer_name: cleanName,
-          email: cleanEmail,
-          phone: cleanPhone,
-          whatsapp: cleanWhatsapp,
-          tour_id: input.tour_id || null,
-          subject: cleanSubject || 'General Excursion Assistance',
-          message: cleanMessage,
-          status: 'new',
-          source: input.source || 'web',
-          admin_notes: input.tour_title ? `Referenced Tour: ${input.tour_title}` : null,
-          ...(input.website_url_hp ? { website_url_hp: input.website_url_hp } : {}),
-        })
-        .select('*')
-        .single();
-
-      if (error) {
-        if (error.message?.includes('Rate limit exceeded') || error.code === 'P0001') {
-          return {
-            success: false,
-            error: error.message || 'Rate limit exceeded: Please wait a few minutes before sending another inquiry.',
-          };
-        }
-        console.warn('Notice: Inquiries table insert error (using local state):', error.message);
-      } else if (data) {
-        void recordVisitorEvent({ event_name: 'inquiry_submitted', page_path: '/support', event_data: { source: input.source === 'whatsapp' ? 'whatsapp' : 'website' } });
-        return { success: true, inquiry: data as DbInquiry };
-      }
-    } catch (err: any) {
-      if (err?.message?.includes('Rate limit exceeded')) {
-        return { success: false, error: err.message };
-      }
-      console.warn('Supabase inquiries table connection issue:', err);
-    }
-  }
-
-  inquiryRateLimiter.recordFailedAttempt();
-  void recordVisitorEvent({ event_name: 'inquiry_submitted', page_path: '/support', event_data: { source: input.source === 'whatsapp' ? 'whatsapp' : 'website' } });
-  return { success: true, inquiry: newInquiry };
+  void recordVisitorEvent({ event_name: 'inquiry_submitted', page_path: '/support', event_data: { source } });
+  return { success: true, inquiry: persistedInquiry };
 }
 
 /**
  * Lists all inquiries for the admin dashboard.
  */
 export async function listInquiries(filter?: { status?: string }): Promise<DbInquiry[]> {
-  if (isSupabaseConfigured() && !isSchemaMissing()) {
-    try {
-      let query = supabase
-        .from('inquiries')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (filter?.status && filter.status !== 'all') {
-        query = query.eq('status', filter.status);
-      }
-
-      const { data, error } = await query;
-      if (error) {
-        if (isSchemaMissingError(error)) {
-          setSchemaMissing(true);
-          if (!import.meta.env.DEV) {
-            throw new Error('The inquiries table is unavailable. Cached inquiries are not used in production.');
-          }
-        } else {
-          console.error('Inquiries query error:', formatSupabaseError(error));
-          throw new Error(formatSupabaseError(error));
-        }
-      } else if (data) {
-        return data as DbInquiry[];
-      }
-    } catch (err) {
-      if (isSchemaMissingError(err)) {
-        setSchemaMissing(true);
-        if (!import.meta.env.DEV) {
-          throw new Error('The inquiries table is unavailable. Cached inquiries are not used in production.');
-        }
-      } else {
-        console.error('Failed to list inquiries from Supabase:', err);
-        throw err;
-      }
+  if (!isSupabaseConfigured() || isSchemaMissing()) {
+    if (!import.meta.env.DEV) {
+      throw new Error('The live inquiry database is unavailable. Cached inquiries are not used in production.');
     }
-  } else if (isSupabaseConfigured() && !import.meta.env.DEV) {
-    throw new Error('The inquiries table is unavailable. Cached inquiries are not used in production.');
+    const localList = getStoredInquiries();
+    return filter?.status && filter.status !== 'all'
+      ? localList.filter((item) => item.status === filter.status)
+      : localList;
   }
 
-  const localList = getStoredInquiries();
-  if (filter?.status && filter.status !== 'all') {
-    return localList.filter((item) => item.status === filter.status);
+  const query = supabase.from('inquiries').select('*').order('created_at', { ascending: false });
+  const { data, error } = await (filter?.status && filter.status !== 'all'
+    ? query.eq('status', filter.status)
+    : query);
+  if (error) {
+    if (isSchemaMissingError(error)) setSchemaMissing(true);
+    throw new Error(formatSupabaseError(error));
   }
-  return localList;
+  return (data || []) as DbInquiry[];
 }
 
 /**
@@ -398,10 +270,49 @@ export async function updateInquiryStatus(
   return true;
 }
 
+export async function convertInquiryToLead(inquiryId: string): Promise<{ id: string; name: string }> {
+  if (!inquiryId.trim()) throw new Error('An inquiry ID is required for conversion.');
+  if (!isSupabaseConfigured()) throw new Error('Supabase is not configured; inquiry conversion is unavailable.');
+
+  const { data, error } = await supabase.rpc('convert_inquiry_to_lead', { p_inquiry_id: inquiryId });
+  if (error) throw new Error(formatSupabaseError(error));
+  const lead = Array.isArray(data) ? data[0] : data;
+  if (!lead?.id) throw new Error('The conversion did not return a persisted CRM lead.');
+
+  const cached = getStoredInquiries();
+  saveStoredInquiries(cached.map((item) => item.id === inquiryId
+    ? { ...item, status: 'converted', updated_at: new Date().toISOString() }
+    : item
+  ));
+
+  return { id: lead.id, name: lead.name || 'New CRM lead' };
+}
+
 /**
  * Deletes an inquiry
  */
 export async function deleteInquiry(id: string): Promise<boolean> {
+  if (!id.trim()) throw new Error('An inquiry ID is required.');
+
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; inquiries cannot be deleted in production.');
+    saveStoredInquiries(getStoredInquiries().filter((item) => item.id !== id));
+    return true;
+  }
+
+  const { data, error } = await supabase
+    .from('inquiries')
+    .delete()
+    .eq('id', id)
+    .select('id')
+    .maybeSingle();
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data?.id) throw new Error('Inquiry was not deleted because it no longer exists or is not accessible.');
+
+  saveStoredInquiries(getStoredInquiries().filter((item) => item.id !== id));
+  return true;
+}
+id: string): Promise<boolean> {
   // Local deletion
   const localList = getStoredInquiries();
   saveStoredInquiries(localList.filter((item) => item.id !== id));
