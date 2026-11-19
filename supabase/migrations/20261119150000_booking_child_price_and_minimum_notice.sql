@@ -30,13 +30,13 @@ DECLARE
   v_new_capacity_guard text := '    IF v_avail.departure_id IS NULL OR NOT EXISTS (SELECT 1 FROM public.departures AS d WHERE d.id = v_avail.departure_id AND d.tour_id = v_tour.id AND d.date = p_booking_date AND d.status = ''confirmed'') THEN' || E'\n' ||
     '        RETURN jsonb_build_object(''success'', false, ''error'', ''This date has no operator-confirmed departure. Please choose another date or contact our booking team.'');' || E'\n' ||
     '    END IF;' || E'\n' || v_old_capacity_guard;
-  v_new_pricing text := E'    IF COALESCE(v_tour.tour_type, ''Shared'') = ''Private'' THEN\n' ||
-    '        IF COALESCE(v_tour.private_price, 0) <= 0 THEN\n' ||
-    '            RETURN jsonb_build_object(''success'', false, ''error'', ''The private per-person rate is not configured for this excursion.'');\n' ||
-    '        END IF;\n' ||
-    '        v_subtotal := (p_adult_count + COALESCE(p_child_count, 0)) * v_tour.private_price;\n' ||
-    '    ELSE\n' ||
-    '        v_subtotal := (p_adult_count * v_tour.price) + (COALESCE(p_child_count, 0) * COALESCE(v_tour.child_price, ROUND(v_tour.price * 0.50, 2)));\n' ||
+  v_new_pricing text := E'    IF COALESCE(v_tour.tour_type, ''Shared'') = ''Private'' THEN' || E'\n' ||
+    '        IF COALESCE(v_tour.private_price, 0) <= 0 THEN' || E'\n' ||
+    '            RETURN jsonb_build_object(''success'', false, ''error'', ''The private per-person rate is not configured for this excursion.'');' || E'\n' ||
+    '        END IF;' || E'\n' ||
+    '        v_subtotal := (p_adult_count + COALESCE(p_child_count, 0)) * v_tour.private_price;' || E'\n' ||
+    '    ELSE' || E'\n' ||
+    '        v_subtotal := (p_adult_count * v_tour.price) + (COALESCE(p_child_count, 0) * COALESCE(v_tour.child_price, ROUND(v_tour.price * 0.50, 2)));' || E'\n' ||
     '    END IF;';
   v_patched integer := 0;
 BEGIN
