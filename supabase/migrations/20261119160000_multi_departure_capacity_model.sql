@@ -486,54 +486,59 @@ DECLARE
   v_has_open_confirmed BOOLEAN;
   v_is_blackout BOOLEAN;
 BEGIN
-  v_departure_id := coalesce(NEW.departure_id, OLD.departure_id);
-  IF v_departure_id IS NULL THEN RETURN NEW; END IF;
+  FOR v_departure_id IN
+    SELECT DISTINCT slot_id
+    FROM unnest(ARRAY[OLD.departure_id,NEW.departure_id]) AS slot_ids(slot_id)
+    WHERE slot_id IS NOT NULL
+  LOOP
+    SELECT tour_id,date,capacity
+    INTO v_tour_id,v_date,v_capacity
+    FROM public.departures
+    WHERE id = v_departure_id
+    FOR UPDATE;
 
-  SELECT tour_id,date,capacity
-  INTO v_tour_id,v_date,v_capacity
-  FROM public.departures
-  WHERE id = v_departure_id
-  FOR UPDATE;
+    IF NOT FOUND THEN
+      CONTINUE;
+    END IF;
 
-  IF NOT FOUND THEN RETURN NEW; END IF;
+    SELECT coalesce(sum(adult_count + child_count + infant_count),0)::INTEGER
+    INTO v_booked
+    FROM public.bookings
+    WHERE departure_id = v_departure_id AND status <> 'cancelled';
 
-  SELECT coalesce(sum(adult_count + child_count + infant_count),0)::INTEGER
-  INTO v_booked
-  FROM public.bookings
-  WHERE departure_id = v_departure_id AND status <> 'cancelled';
+    UPDATE public.departures
+    SET booked_passengers = v_booked,
+        remaining_capacity = greatest(0,capacity-v_booked),
+        updated_at = now()
+    WHERE id = v_departure_id;
 
-  UPDATE public.departures
-  SET booked_passengers = v_booked,
-      remaining_capacity = greatest(0,capacity-v_booked),
-      updated_at = now()
-  WHERE id = v_departure_id;
+    SELECT
+      coalesce(sum(d.capacity) FILTER (WHERE d.status NOT IN ('cancelled','completed')), 0)::INTEGER,
+      coalesce(sum(d.booked_passengers) FILTER (WHERE d.status NOT IN ('cancelled','completed')), 0)::INTEGER,
+      coalesce(bool_or(d.status = 'confirmed'), FALSE),
+      coalesce(bool_or(d.status = 'confirmed' AND d.remaining_capacity > 0), FALSE)
+    INTO v_daily_capacity,v_daily_booked,v_has_confirmed,v_has_open_confirmed
+    FROM public.departures AS d
+    WHERE d.tour_id = v_tour_id AND d.date = v_date;
 
-  SELECT
-    coalesce(sum(d.capacity) FILTER (WHERE d.status NOT IN ('cancelled','completed')), 0)::INTEGER,
-    coalesce(sum(d.booked_passengers) FILTER (WHERE d.status NOT IN ('cancelled','completed')), 0)::INTEGER,
-    coalesce(bool_or(d.status = 'confirmed'), FALSE),
-    coalesce(bool_or(d.status = 'confirmed' AND d.remaining_capacity > 0), FALSE)
-  INTO v_daily_capacity,v_daily_booked,v_has_confirmed,v_has_open_confirmed
-  FROM public.departures AS d
-  WHERE d.tour_id = v_tour_id AND d.date = v_date;
+    SELECT coalesce(ta.is_blackout,FALSE)
+    INTO v_is_blackout
+    FROM public.tour_availability AS ta
+    WHERE ta.tour_id = v_tour_id AND ta.date = v_date;
 
-  SELECT coalesce(ta.is_blackout,FALSE)
-  INTO v_is_blackout
-  FROM public.tour_availability AS ta
-  WHERE ta.tour_id = v_tour_id AND ta.date = v_date;
-
-  UPDATE public.tour_availability AS ta
-  SET max_capacity = v_daily_capacity,
-      booked_count = v_daily_booked,
-      status = CASE
-        WHEN coalesce(v_is_blackout,FALSE) THEN 'unavailable'
-        WHEN NOT v_has_confirmed THEN 'unavailable'
-        WHEN v_has_open_confirmed THEN 'available'
-        ELSE 'sold_out'
-      END,
-      departure_id = NULL,
-      updated_at = now()
-  WHERE ta.tour_id = v_tour_id AND ta.date = v_date;
+    UPDATE public.tour_availability AS ta
+    SET max_capacity = v_daily_capacity,
+        booked_count = v_daily_booked,
+        status = CASE
+          WHEN coalesce(v_is_blackout,FALSE) THEN 'unavailable'
+          WHEN NOT v_has_confirmed THEN 'unavailable'
+          WHEN v_has_open_confirmed THEN 'available'
+          ELSE 'sold_out'
+        END,
+        departure_id = NULL,
+        updated_at = now()
+    WHERE ta.tour_id = v_tour_id AND ta.date = v_date;
+  END LOOP;
 
   RETURN NEW;
 END;
