@@ -8,11 +8,6 @@ BEGIN;
 ALTER TABLE public.tour_availability
   ADD COLUMN IF NOT EXISTS is_blackout BOOLEAN NOT NULL DEFAULT FALSE;
 
-UPDATE public.tour_availability
-SET is_blackout = TRUE
-WHERE status = 'unavailable'
-  AND is_blackout = FALSE;
-
 CREATE OR REPLACE FUNCTION private.upsert_departure_with_availability(
   p_departure_id UUID,
   p_tour_id UUID,
@@ -641,6 +636,44 @@ BEGIN
   ORDER BY ds.calendar_date ASC;
 END;
 $function$;
+
+-- Keep the existing public RPC contract while delegating to the new
+-- departure-backed schedule implementation.
+CREATE OR REPLACE FUNCTION public.get_tour_availability_schedule(
+  p_tour_identifier TEXT,
+  p_start_date DATE,
+  p_end_date DATE
+)
+RETURNS TABLE (
+  tour_id UUID,
+  date DATE,
+  status TEXT,
+  max_capacity INT,
+  booked_count INT,
+  remaining_capacity INT,
+  is_available BOOLEAN,
+  is_blackout BOOLEAN,
+  departure_time TEXT,
+  notes TEXT
+)
+LANGUAGE sql
+SET search_path = ''
+AS $function$
+  SELECT *
+  FROM private.get_tour_availability_schedule(
+    p_tour_identifier,
+    p_start_date,
+    p_end_date
+  );
+$function$;
+
+REVOKE ALL ON FUNCTION private.get_tour_availability_schedule(TEXT,DATE,DATE) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION private.get_tour_availability_schedule(TEXT,DATE,DATE) TO anon, authenticated, service_role;
+REVOKE ALL ON FUNCTION public.get_tour_availability_schedule(TEXT,DATE,DATE) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.get_tour_availability_schedule(TEXT,DATE,DATE) TO anon, authenticated, service_role;
+
+COMMENT ON FUNCTION public.get_tour_availability_schedule(TEXT,DATE,DATE)
+IS 'Returns date-level availability aggregated from independently bookable confirmed departure slots.';
 
 CREATE OR REPLACE FUNCTION private.get_tour_departure_slots(
   p_tour_identifier TEXT,
