@@ -140,7 +140,7 @@ BEGIN
     PERFORM 1
     FROM public.departures AS d
     WHERE d.id IS DISTINCT FROM p_departure_id
-      AND d.date BETWEEN p_date - 1 AND p_date
+      AND d.date BETWEEN p_date - 1 AND p_date + 1
       AND d.vessel_id = p_vessel_id
       AND d.status NOT IN ('cancelled','completed')
       AND ((d.date + d.start_time::TIME) AT TIME ZONE 'Africa/Cairo') < v_new_end_at
@@ -161,7 +161,7 @@ BEGIN
     PERFORM 1
     FROM public.departures AS d
     WHERE d.id IS DISTINCT FROM p_departure_id
-      AND d.date BETWEEN p_date - 1 AND p_date
+      AND d.date BETWEEN p_date - 1 AND p_date + 1
       AND d.guide_id = p_guide_id
       AND d.status NOT IN ('cancelled','completed')
       AND ((d.date + d.start_time::TIME) AT TIME ZONE 'Africa/Cairo') < v_new_end_at
@@ -182,7 +182,7 @@ BEGIN
     PERFORM 1
     FROM public.departures AS d
     WHERE d.id IS DISTINCT FROM p_departure_id
-      AND d.date BETWEEN p_date - 1 AND p_date
+      AND d.date BETWEEN p_date - 1 AND p_date + 1
       AND d.driver_id = p_driver_id
       AND d.status NOT IN ('cancelled','completed')
       AND ((d.date + d.start_time::TIME) AT TIME ZONE 'Africa/Cairo') < v_new_end_at
