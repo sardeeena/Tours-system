@@ -33,6 +33,8 @@ DECLARE
   v_existing public.departures%ROWTYPE;
   v_availability public.tour_availability%ROWTYPE;
   v_departure public.departures%ROWTYPE;
+  v_new_start_at TIMESTAMPTZ;
+  v_new_end_at TIMESTAMPTZ;
   v_booked INTEGER := 0;
   v_daily_capacity INTEGER := 0;
   v_daily_booked INTEGER := 0;
@@ -68,6 +70,13 @@ BEGIN
   END IF;
   PERFORM p_start_time::TIME;
   PERFORM p_end_time::TIME;
+  v_new_start_at := ((p_date + p_start_time::TIME) AT TIME ZONE 'Africa/Cairo');
+  v_new_end_at := (
+    (
+      p_date + p_end_time::TIME
+      + CASE WHEN p_end_time::TIME <= p_start_time::TIME THEN INTERVAL '1 day' ELSE INTERVAL '0 day' END
+    ) AT TIME ZONE 'Africa/Cairo'
+  );
 
   IF p_departure_id IS NULL AND p_date < (now() AT TIME ZONE 'Africa/Cairo')::DATE THEN
     RAISE EXCEPTION 'A new departure cannot be scheduled in the past' USING ERRCODE = '22023';
@@ -124,6 +133,69 @@ BEGIN
     SELECT * INTO v_guide FROM public.guides WHERE id = p_driver_id FOR SHARE;
     IF NOT FOUND OR NOT v_guide.is_active THEN
       RAISE EXCEPTION 'The selected driver does not exist or is inactive' USING ERRCODE = '22023';
+    END IF;
+  END IF;
+
+  IF p_vessel_id IS NOT NULL THEN
+    PERFORM 1
+    FROM public.departures AS d
+    WHERE d.id IS DISTINCT FROM p_departure_id
+      AND d.date BETWEEN p_date - 1 AND p_date
+      AND d.vessel_id = p_vessel_id
+      AND d.status NOT IN ('cancelled','completed')
+      AND ((d.date + d.start_time::TIME) AT TIME ZONE 'Africa/Cairo') < v_new_end_at
+      AND (
+        (
+          d.date + d.end_time::TIME
+          + CASE WHEN d.end_time::TIME <= d.start_time::TIME THEN INTERVAL '1 day' ELSE INTERVAL '0 day' END
+        ) AT TIME ZONE 'Africa/Cairo'
+      ) > v_new_start_at
+    FOR UPDATE;
+    IF FOUND THEN
+      RAISE EXCEPTION 'The selected vessel is already assigned to an overlapping departure.'
+        USING ERRCODE = '23514';
+    END IF;
+  END IF;
+
+  IF p_guide_id IS NOT NULL THEN
+    PERFORM 1
+    FROM public.departures AS d
+    WHERE d.id IS DISTINCT FROM p_departure_id
+      AND d.date BETWEEN p_date - 1 AND p_date
+      AND d.guide_id = p_guide_id
+      AND d.status NOT IN ('cancelled','completed')
+      AND ((d.date + d.start_time::TIME) AT TIME ZONE 'Africa/Cairo') < v_new_end_at
+      AND (
+        (
+          d.date + d.end_time::TIME
+          + CASE WHEN d.end_time::TIME <= d.start_time::TIME THEN INTERVAL '1 day' ELSE INTERVAL '0 day' END
+        ) AT TIME ZONE 'Africa/Cairo'
+      ) > v_new_start_at
+    FOR UPDATE;
+    IF FOUND THEN
+      RAISE EXCEPTION 'The selected guide is already assigned to an overlapping departure.'
+        USING ERRCODE = '23514';
+    END IF;
+  END IF;
+
+  IF p_driver_id IS NOT NULL THEN
+    PERFORM 1
+    FROM public.departures AS d
+    WHERE d.id IS DISTINCT FROM p_departure_id
+      AND d.date BETWEEN p_date - 1 AND p_date
+      AND d.driver_id = p_driver_id
+      AND d.status NOT IN ('cancelled','completed')
+      AND ((d.date + d.start_time::TIME) AT TIME ZONE 'Africa/Cairo') < v_new_end_at
+      AND (
+        (
+          d.date + d.end_time::TIME
+          + CASE WHEN d.end_time::TIME <= d.start_time::TIME THEN INTERVAL '1 day' ELSE INTERVAL '0 day' END
+        ) AT TIME ZONE 'Africa/Cairo'
+      ) > v_new_start_at
+    FOR UPDATE;
+    IF FOUND THEN
+      RAISE EXCEPTION 'The selected driver is already assigned to an overlapping departure.'
+        USING ERRCODE = '23514';
     END IF;
   END IF;
 
