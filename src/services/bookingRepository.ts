@@ -429,8 +429,7 @@ class SupabaseBookingRepository implements IBookingRepository {
               tours (*),
               customers (*),
               booking_extras (*),
-              departures (start_time,end_time),
-            departures (start_time,end_time)
+              departures (start_time,end_time)
             `)
             .eq('user_id', user.id)
             .order('created_at', { ascending: false });
@@ -656,7 +655,8 @@ class SupabaseBookingRepository implements IBookingRepository {
         tours (*),
         customers (*),
         booking_extras (*),
-        booking_passengers (*)
+        booking_passengers (*),
+        departures (start_time,end_time)
       `)
       .eq('booking_reference', cleanReference)
       .maybeSingle();
