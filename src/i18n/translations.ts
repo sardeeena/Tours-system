@@ -4,7 +4,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
   en: {
     // Header Top Bar
     'top.licensed': 'Licensed Egyptian Tour Operator #2491/ETB',
-    'top.cancellation': 'Free cancellation up to 24 hours before pickup',
+    'top.cancellation': 'Cancellation terms vary by excursion; check before booking',
     'top.pierDesk': 'Support',
     'top.language': 'Language',
     'top.currency': 'Currency',
@@ -36,11 +36,11 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'hero.title1': 'Explore the Red Sea',
     'hero.title2': 'with Local Captains',
     'hero.subtitle':
-      'Snorkeling boat trips, island visits, and desert quad safaris departing daily from Hurghada, El Gouna, and Makadi Bay. Direct local operator with hotel pickup and clear prices.',
-    'hero.guarantee1': '100% Weather Refund Guarantee',
-    'hero.guarantee2': 'Free 24h Prior Cancellation',
-    'hero.guarantee3': 'Hotel Pickup Included',
-    'hero.guarantee4': 'Licensed Local Guides',
+      'Explore snorkeling boat trips, island visits, and desert quad safaris from Hurghada and nearby Red Sea destinations. Check each excursion for departure days, pickup options, and availability.',
+    'hero.guarantee1': 'Weather terms explained for each excursion',
+    'hero.guarantee2': 'Cancellation terms shown before booking',
+    'hero.guarantee3': 'Pickup options vary by excursion',
+    'hero.guarantee4': 'Local crews and guides on selected tours',
 
     // Search Module
     'search.destination': 'Destination',
@@ -58,7 +58,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     // Popular Tours Section
     'popular.title': 'Popular Tours in the Red Sea',
     'popular.subtitle':
-      'All tours include hotel pickup, snorkeling equipment, and required marine park fees.',
+      'Inclusions, pickup coverage, equipment, and marine park fees are listed on each excursion page.',
     'popular.viewAll': 'View All Tours',
     'popular.quickBook': 'Book Now',
     'popular.viewDetails': 'View Tour',
@@ -70,12 +70,12 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     // Why Choose Us
     'why.title': 'Why Book Directly With Us',
     'why.subtitle':
-      'We run our own boats and vehicles with certified skippers and friendly local guides. You pay local operator prices without agency markups.',
+      'We work with local activity providers, experienced skippers, and guides. The operating provider and included services are identified for each excursion.',
 
     // Final CTA
     'cta.title': 'Ready to explore the Red Sea?',
     'cta.subtitle':
-      'Book online now with free cancellation. You can choose to pay when we pick you up at your hotel.',
+      'Book online and review the selected excursion’s cancellation terms and payment options before confirming. Pickup, when available, depends on the tour and hotel area.',
     'cta.browse': 'View All Tours',
     'cta.chat': 'Chat on WhatsApp',
     'cta.lookup': 'Find My Booking',
@@ -97,7 +97,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'whatsapp.presetBooking': '🎟️ Existing booking: Need help with my reservation',
 
     // Footer
-    'footer.companyDesc': 'Licensed boat tour operator based in Hurghada Marina. Certified by the Egyptian Ministry of Tourism and Chamber of Diving & Watersports (CDWS).',
+    'footer.companyDesc': 'Hurghada-based tour operator offering Red Sea boat trips, island excursions, snorkeling, and desert experiences. Check each excursion for its operator and included services.',
     'footer.destinations': 'Destinations',
     'footer.experiences': 'Experiences',
     'footer.customerCare': 'Customer Support',
@@ -112,7 +112,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
 
   fr: {
     "top.licensed": "Opérateur touristique égyptien agréé n° 2491/ETB",
-    "top.cancellation": "Annulation gratuite jusqu’à 24 heures avant la prise en charge",
+    "top.cancellation": "Les conditions d’annulation varient selon l’excursion ; vérifiez-les avant de réserver.",
     "top.pierDesk": "Assistance",
     "top.language": "Langue",
     "top.currency": "Devise",
@@ -138,10 +138,10 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     "hero.title1": "Explorez la mer Rouge",
     "hero.title2": "avec des capitaines locaux",
     "hero.subtitle": "Excursions en bateau avec snorkeling, visites d’îles et safaris en quad dans le désert, au départ quotidien de Hurghada, El Gouna et Makadi Bay. Opérateur local direct, prise en charge à l’hôtel et tarifs transparents.",
-    "hero.guarantee1": "Garantie de remboursement à 100 % en cas de météo défavorable",
-    "hero.guarantee2": "Annulation gratuite jusqu’à 24 h avant le départ",
-    "hero.guarantee3": "Prise en charge à l’hôtel incluse",
-    "hero.guarantee4": "Guides locaux agréés",
+    "hero.guarantee1": "Conditions météo précisées pour chaque excursion",
+    "hero.guarantee2": "Conditions d’annulation affichées avant la réservation",
+    "hero.guarantee3": "Prise en charge selon l’excursion",
+    "hero.guarantee4": "Équipes et guides locaux sur certaines excursions",
     "search.destination": "Destination",
     "search.allDestinations": "Toutes les destinations",
     "search.activity": "Activité",
@@ -183,7 +183,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     "whatsapp.presetPickup": "🚐 Transfert hôtel : à quelle heure viendra-t-on me chercher à mon hôtel ?",
     "whatsapp.presetPrivate": "🛥️ Bateau privé : demande de tarif pour une famille ou un groupe",
     "whatsapp.presetBooking": "🎟️ Réservation existante : j’ai besoin d’aide concernant ma réservation",
-    "footer.companyDesc": "Opérateur de promenades en bateau agréé, basé à la marina de Hurghada. Certifié par le ministère égyptien du Tourisme et la Chambre de plongée et des sports nautiques (CDWS).",
+    "footer.companyDesc": "Organisateur d’excursions basé à Hurghada, proposant des sorties en bateau en mer Rouge, des visites d’îles, du snorkeling et des expériences dans le désert. Consultez chaque excursion pour connaître l’opérateur et les prestations incluses.",
     "footer.destinations": "Destinations",
     "footer.experiences": "Expériences",
     "footer.customerCare": "Service client",
@@ -196,7 +196,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
 
   nl: {
     "top.licensed": "Erkende Egyptische touroperator #2491/ETB",
-    "top.cancellation": "Gratis annuleren tot 24 uur vóór het ophalen",
+    "top.cancellation": "Annuleringsvoorwaarden verschillen per excursie; controleer ze vóór het boeken.",
     "top.pierDesk": "Klantenservice",
     "top.language": "Taal",
     "top.currency": "Valuta",
@@ -222,10 +222,10 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     "hero.title1": "Ontdek de Rode Zee",
     "hero.title2": "met lokale kapiteins",
     "hero.subtitle": "Snorkelboottochten, eilandbezoeken en quadsafari’s in de woestijn, dagelijks vertrekkend vanuit Hurghada, El Gouna en Makadi Bay. Rechtstreekse lokale aanbieder met hoteltransfer en transparante prijzen.",
-    "hero.guarantee1": "100% terugbetaling bij ongunstig weer",
-    "hero.guarantee2": "Gratis annuleren tot 24 uur vooraf",
-    "hero.guarantee3": "Hoteltransfer inbegrepen",
-    "hero.guarantee4": "Erkende lokale gidsen",
+    "hero.guarantee1": "Weersvoorwaarden per excursie vermeld",
+    "hero.guarantee2": "Annuleringsvoorwaarden vóór het boeken zichtbaar",
+    "hero.guarantee3": "Ophaalopties verschillen per excursie",
+    "hero.guarantee4": "Lokale teams en gidsen bij geselecteerde excursies",
     "search.destination": "Bestemming",
     "search.allDestinations": "Alle bestemmingen",
     "search.activity": "Ervaring",
@@ -267,7 +267,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     "whatsapp.presetPickup": "🚐 Hoteltransfer: Hoe laat word ik bij mijn hotel opgehaald?",
     "whatsapp.presetPrivate": "🛥️ Privéboot: Prijsaanvraag voor familie of groep",
     "whatsapp.presetBooking": "🎟️ Bestaande boeking: Ik heb hulp nodig bij mijn reservering",
-    "footer.companyDesc": "Erkende bootexcursieaanbieder gevestigd in de jachthaven van Hurghada. Gecertificeerd door het Egyptische ministerie van Toerisme en de Kamer voor Duiken en Watersporten (CDWS).",
+    "footer.companyDesc": "Touroperator gevestigd in Hurghada met boottochten op de Rode Zee, eilandexcursies, snorkelactiviteiten en woestijnervaringen. Bekijk per excursie wie de uitvoerder is en wat is inbegrepen.",
     "footer.destinations": "Bestemmingen",
     "footer.experiences": "Ervaringen",
     "footer.customerCare": "Klantenservice",
@@ -281,7 +281,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
   de: {
     // Header Top Bar
     'top.licensed': 'Lizenzierter ägyptischer Reiseveranstalter #2491/ETB',
-    'top.cancellation': 'Kostenlose Stornierung bis 24h vor Abholung',
+    'top.cancellation': 'Die Stornierungsbedingungen variieren je nach Ausflug; bitte vor der Buchung prüfen.',
     'top.pierDesk': 'Support',
     'top.language': 'Sprache',
     'top.currency': 'Währung',
@@ -314,10 +314,10 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'hero.title2': 'mit erfahrenen Kapitänen',
     'hero.subtitle':
       'Schnorchelausflüge, Inseltouren und Quad-Safaris mit täglicher Abfahrt von Hurghada, El Gouna und Makadi Bay. Direkter lokaler Anbieter mit Hotelabholung und fairen Preisen.',
-    'hero.guarantee1': '100% Wetter-Geld-zurück-Garantie',
-    'hero.guarantee2': 'Kostenlose Stornierung bis 24h',
-    'hero.guarantee3': 'Hotelabholung inklusive',
-    'hero.guarantee4': 'Lizenzierte lokale Guides',
+    'hero.guarantee1': 'Wetterbedingungen je Ausflug erklärt',
+    'hero.guarantee2': 'Stornierungsbedingungen vor der Buchung angezeigt',
+    'hero.guarantee3': 'Abholoptionen je Ausflug unterschiedlich',
+    'hero.guarantee4': 'Lokale Teams und Guides bei ausgewählten Touren',
 
     // Search Module
     'search.destination': 'Reiseziel',
@@ -374,7 +374,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'whatsapp.presetBooking': '🎟️ Bestehende Buchung: Frage zu meiner Reservierung',
 
     // Footer
-    'footer.companyDesc': 'Offizieller Boots- und Ausflugsveranstalter in der Hurghada Marina. Zertifiziert vom ägyptischen Tourismusministerium und der CDWS.',
+    'footer.companyDesc': 'Touroperator mit Sitz in Hurghada für Bootstouren im Roten Meer, Insel-Ausflüge, Schnorcheln und Wüstenerlebnisse. Die Angaben zum ausführenden Anbieter und zu den Leistungen finden Sie bei jeder Tour.',
     'footer.destinations': 'Reiseziele',
     'footer.experiences': 'Erlebnisse',
     'footer.customerCare': 'Kundenservice',
@@ -390,7 +390,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
   ru: {
     // Header Top Bar
     'top.licensed': 'Лицензированный туроператор Египта #2491/ETB',
-    'top.cancellation': 'Бесплатная отмена за 24 ч до трансфера',
+    'top.cancellation': 'Условия отмены зависят от экскурсии — проверьте их перед бронированием.',
     'top.pierDesk': 'Поддержка',
     'top.language': 'Язык',
     'top.currency': 'Валюта',
@@ -423,10 +423,10 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'hero.title2': 'с местными капитанами',
     'hero.subtitle':
       'Морские прогулки, сноркелинг на рифах и сафари на квадроциклах ежедневно из Хургады, Эль-Гуны и Макади-Бей. Прямой организатор, трансфер из отеля и честные цены без посредников.',
-    'hero.guarantee1': '100% возврат при плохой погоде',
-    'hero.guarantee2': 'Бесплатная отмена за 24 часа',
-    'hero.guarantee3': 'Трансфер из отеля включен',
-    'hero.guarantee4': 'Лицензированные гиды',
+    'hero.guarantee1': 'Погодные условия указаны для каждой экскурсии',
+    'hero.guarantee2': 'Условия отмены доступны до бронирования',
+    'hero.guarantee3': 'Трансфер зависит от выбранной экскурсии',
+    'hero.guarantee4': 'Местные команды и гиды на отдельных экскурсиях',
 
     // Search Module
     'search.destination': 'Направление',
@@ -483,7 +483,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'whatsapp.presetBooking': '🎟️ Моя бронь: помощь по текущему заказу',
 
     // Footer
-    'footer.companyDesc': 'Официальный организатор морских экскурсий в марине Хургады. Лицензирован Министерством туризма Египта и Палатой дайвинга (CDWS).',
+    'footer.companyDesc': 'Туроператор из Хургады, предлагающий морские прогулки по Красному морю, поездки на острова, снорклинг и экскурсии в пустыню. Информация об организаторе и включённых услугах указана на странице каждой экскурсии.',
     'footer.destinations': 'Направления',
     'footer.experiences': 'Впечатления',
     'footer.customerCare': 'Служба поддержки',
@@ -499,7 +499,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
   it: {
     // Header Top Bar
     'top.licensed': 'Tour Operator Egiziano con Licenza #2491/ETB',
-    'top.cancellation': 'Cancellazione gratuita fino a 24h prima del ritiro',
+    'top.cancellation': 'Le condizioni di cancellazione variano in base all’escursione; controllale prima di prenotare.',
     'top.pierDesk': 'Assistenza',
     'top.language': 'Lingua',
     'top.currency': 'Valuta',
@@ -532,10 +532,10 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'hero.title2': 'con Capitani Locali',
     'hero.subtitle':
       'Gite in barca con snorkeling, escursioni alle isole e safari nel deserto in quad con partenze giornaliere da Hurghada, El Gouna e Makadi Bay. Operatore diretto con transfer dall\'hotel e prezzi chiari.',
-    'hero.guarantee1': 'Garanzia 100% rimborso meteo',
-    'hero.guarantee2': 'Cancellazione gratuita 24h prima',
-    'hero.guarantee3': 'Transfer dall\'hotel incluso',
-    'hero.guarantee4': 'Guide locali certificate',
+    'hero.guarantee1': 'Condizioni meteo indicate per ogni escursione',
+    'hero.guarantee2': 'Condizioni di cancellazione visibili prima della prenotazione',
+    'hero.guarantee3': 'Il trasferimento varia in base all’escursione',
+    'hero.guarantee4': 'Team e guide locali in alcune escursioni',
 
     // Search Module
     'search.destination': 'Destinazione',
@@ -592,7 +592,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'whatsapp.presetBooking': '🎟️ Prenotazione esistente: supporto per il mio ordine',
 
     // Footer
-    'footer.companyDesc': 'Operatore marittimo con licenza con base alla Marina di Hurghada. Certificato dal Ministero del Turismo Egiziano e dalla Camera delle Immersioni (CDWS).',
+    'footer.companyDesc': 'Tour operator con sede a Hurghada che propone gite in barca sul Mar Rosso, escursioni alle isole, snorkeling ed esperienze nel deserto. Verifica nella pagina di ogni escursione chi la organizza e cosa è incluso.',
     'footer.destinations': 'Destinazioni',
     'footer.experiences': 'Esperienze',
     'footer.customerCare': 'Assistenza Clienti',
@@ -608,7 +608,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
   ro: {
     // Header Top Bar
     'top.licensed': 'Operator Turistic Licențiat în Egipt #2491/ETB',
-    'top.cancellation': 'Anulare gratuită cu până la 24h înainte de preluare',
+    'top.cancellation': 'Condițiile de anulare diferă în funcție de excursie; verifică-le înainte de rezervare.',
     'top.pierDesk': 'Asistență',
     'top.language': 'Limbă',
     'top.currency': 'Monedă',
@@ -641,10 +641,10 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'hero.title2': 'cu Căpitani Locali',
     'hero.subtitle':
       'Croaziere cu barca, snorkeling la recife de corali și safari cu ATV-ul în deșert cu plecare zilnică din Hurghada, El Gouna și Makadi Bay. Operator local direct, preluare de la hotel și prețuri corecte fără intermediari.',
-    'hero.guarantee1': 'Garanție 100% rambursare vreme nefavorabilă',
-    'hero.guarantee2': 'Anulare gratuită cu 24h înainte',
-    'hero.guarantee3': 'Preluare inclusă de la hotel',
-    'hero.guarantee4': 'Ghiduri locale autorizate',
+    'hero.guarantee1': 'Condițiile meteo sunt indicate pentru fiecare excursie',
+    'hero.guarantee2': 'Condițiile de anulare sunt afișate înainte de rezervare',
+    'hero.guarantee3': 'Opțiunile de preluare diferă în funcție de excursie',
+    'hero.guarantee4': 'Echipe și ghizi locali pentru anumite excursii',
 
     // Search Module
     'search.destination': 'Destinație',
@@ -701,7 +701,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'whatsapp.presetBooking': '🎟️ Rezervare existentă: asistență pentru comanda mea',
 
     // Footer
-    'footer.companyDesc': 'Operator maritim autorizat cu baza în Marina Hurghada. Certificat de Ministerul Turismului din Egipt și Camera de Scufundări și Sporturi Nautice (CDWS).',
+    'footer.companyDesc': 'Operator turistic cu sediul în Hurghada, care oferă excursii cu barca pe Marea Roșie, vizite pe insule, snorkeling și experiențe în deșert. Verifică pagina fiecărei excursii pentru organizator și serviciile incluse.',
     'footer.destinations': 'Destinații',
     'footer.experiences': 'Experiențe',
     'footer.customerCare': 'Suport Clienți',
@@ -716,7 +716,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
   pl: {
     // Górny pasek
     'top.licensed': 'Licencjonowany egipski organizator turystyki nr 2491/ETB',
-    'top.cancellation': 'Bezpłatne anulowanie do 24 godzin przed odbiorem',
+    'top.cancellation': 'Warunki anulowania różnią się w zależności od wycieczki; sprawdź je przed rezerwacją.',
     'top.pierDesk': 'Pomoc',
     'top.language': 'Język',
     'top.currency': 'Waluta',
@@ -748,10 +748,10 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'hero.title1': 'Odkryj Morze Czerwone',
     'hero.title2': 'z lokalnymi kapitanami',
     'hero.subtitle': 'Rejsy ze snorkelingiem, wycieczki na wyspy i pustynne safari quadami, codziennie z Hurghady, El Gouny i Makadi Bay. Bezpośredni lokalny organizator, odbiór z hotelu i przejrzyste ceny.',
-    'hero.guarantee1': 'Gwarancja 100% zwrotu w przypadku złej pogody',
-    'hero.guarantee2': 'Bezpłatne anulowanie do 24 godzin przed wyjazdem',
-    'hero.guarantee3': 'Odbiór z hotelu w cenie',
-    'hero.guarantee4': 'Licencjonowani lokalni przewodnicy',
+    'hero.guarantee1': 'Zasady dotyczące pogody opisane przy każdej wycieczce',
+    'hero.guarantee2': 'Warunki anulowania widoczne przed rezerwacją',
+    'hero.guarantee3': 'Odbiór zależy od wybranej wycieczki',
+    'hero.guarantee4': 'Lokalne zespoły i przewodnicy przy wybranych wycieczkach',
 
     // Wyszukiwarka
     'search.destination': 'Destynacja',
@@ -805,7 +805,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'whatsapp.presetBooking': '🎟️ Istniejąca rezerwacja: Potrzebuję pomocy z moją rezerwacją',
 
     // Stopka
-    'footer.companyDesc': 'Licencjonowany organizator rejsów z siedzibą w marinie w Hurghadzie. Certyfikowany przez egipskie Ministerstwo Turystyki oraz Izbę Nurkowania i Sportów Wodnych (CDWS).',
+    'footer.companyDesc': 'Organizator wycieczek z siedzibą w Hurghadzie, oferujący rejsy po Morzu Czerwonym, wycieczki na wyspy, snorkeling i atrakcje pustynne. Na stronie każdej wycieczki sprawdź organizatora oraz zakres usług.',
     'footer.destinations': 'Destynacje',
     'footer.experiences': 'Atrakcje',
     'footer.customerCare': 'Obsługa klienta',
