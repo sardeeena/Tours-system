@@ -54,6 +54,7 @@ export const AdminMediaManager: React.FC<AdminMediaManagerProps> = ({
   const [isLibraryModalOpen, setIsLibraryModalOpen] = useState(false);
   const [libraryItems, setLibraryItems] = useState<StorageFileItem[]>([]);
   const [isLoadingLibrary, setIsLoadingLibrary] = useState(false);
+  const [libraryError, setLibraryError] = useState<string | null>(null);
   const [librarySearch, setLibrarySearch] = useState('');
   const [libraryFilter, setLibraryFilter] = useState<'all' | 'not_in_tour' | 'in_tour'>('all');
   const [selectedPaths, setSelectedPaths] = useState<Set<string>>(new Set());
@@ -62,6 +63,7 @@ export const AdminMediaManager: React.FC<AdminMediaManagerProps> = ({
   // Load available media from Media & Storage library
   const fetchLibraryItems = async () => {
     setIsLoadingLibrary(true);
+    setLibraryError(null);
     try {
       const items = await listStorageMedia('tours');
       // Filter image items only for photography gallery
@@ -70,6 +72,8 @@ export const AdminMediaManager: React.FC<AdminMediaManagerProps> = ({
       );
       setLibraryItems(imageItems);
     } catch (err) {
+      setLibraryItems([]);
+      setLibraryError(err instanceof Error ? err.message : 'Media library items could not be loaded.');
       console.warn('Failed to load media library items:', err);
     } finally {
       setIsLoadingLibrary(false);
@@ -807,6 +811,12 @@ export const AdminMediaManager: React.FC<AdminMediaManagerProps> = ({
                 <div className="py-20 text-center text-xs text-stone-400 space-y-2">
                   <div className="w-7 h-7 border-2 border-[#0A6C74] border-t-transparent rounded-full animate-spin mx-auto" />
                   <p>Loading your media library...</p>
+                </div>
+              ) : libraryError ? (
+                <div role="alert" className="py-16 text-center text-xs text-red-300 space-y-3">
+                  <AlertCircle className="w-8 h-8 mx-auto" />
+                  <p>{libraryError}</p>
+                  <button type="button" onClick={() => void fetchLibraryItems()} className="px-3 py-2 rounded-lg bg-stone-800 text-white hover:bg-stone-700">Retry loading media</button>
                 </div>
               ) : filteredLibraryItems.length === 0 ? (
                 <div className="py-16 text-center text-xs text-stone-400 space-y-3">
