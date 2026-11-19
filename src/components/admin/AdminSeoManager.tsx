@@ -130,12 +130,12 @@ export const AdminSeoManager: React.FC = () => {
 
   const loadEntitySeo = async (
     currentScope: SeoScopeType,
-    setLoadError(null);
     entityId: string,
     currentTours = tours,
     currentDests = destinations,
     currentCats = categories
   ) => {
+    setLoadError(null);
     // Generate default baseline
     let defaultTitle = 'Awesome Adventure Tours | Egypt Tours & Experiences in Egypt';
     let defaultDesc = 'Explore published boat trips and experiences across Egypt in Egypt. Review each tour page for its current description, price, duration, inclusions and booking details.';
