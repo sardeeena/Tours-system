@@ -35,6 +35,16 @@ VALUES
     TRUE,
     9,
     'Complimentary hotel pickup for local El Gouna excursions. The separate El Gouna Hotels zone and its €10 per-person supplement remain available for Hurghada-based excursions.'
+  ),
+  (
+    'hurghada-airport',
+    'Hurghada International Airport',
+    'Hurghada International Airport arrivals terminal',
+    0,
+    0,
+    TRUE,
+    10,
+    'Airport arrival pickup with drop-off at the hotel selected for the booking. Add flight number and arrival time to booking notes.'
   )
 ON CONFLICT (code) DO NOTHING;
 
@@ -49,11 +59,14 @@ FROM public.tours AS t
 JOIN public.destinations AS d
   ON d.id = t.destination_id
 JOIN public.pickup_locations AS pl
-  ON pl.code = CASE d.slug
-    WHEN 'hurghada' THEN 'hurghada-city'
-    WHEN 'sharm-el-sheikh' THEN 'sharm-el-sheikh'
-    WHEN 'cairo' THEN 'cairo-giza'
-    WHEN 'el-gouna' THEN 'el-gouna-local-excursions'
+  ON pl.code = CASE
+    WHEN d.slug = 'hurghada'
+      AND t.title = 'Hurghada Airport to Hotel – Private Arrival Transfer'
+      THEN 'hurghada-airport'
+    WHEN d.slug = 'hurghada' THEN 'hurghada-city'
+    WHEN d.slug = 'sharm-el-sheikh' THEN 'sharm-el-sheikh'
+    WHEN d.slug = 'cairo' THEN 'cairo-giza'
+    WHEN d.slug = 'el-gouna' THEN 'el-gouna-local-excursions'
   END
  AND pl.is_active = TRUE
 WHERE t.status = 'published'
@@ -65,6 +78,20 @@ WHERE t.status = 'published'
     WHERE existing_mapping.tour_id = t.id
   )
 ON CONFLICT (tour_id, pickup_location_id) DO NOTHING;
+
+-- Keep the public pickup explanation aligned with the actual mapped zones and
+-- fee table. The airport transfer has a distinct airport pickup point.
+UPDATE public.tours AS t
+SET pickup_info = CASE
+  WHEN t.title = 'Hurghada Airport to Hotel – Private Arrival Transfer'
+    THEN 'Pickup at Hurghada International Airport with drop-off at your selected hotel. Add your flight number and arrival time in the booking notes.'
+  ELSE 'Hotel pickup is available from the active zones listed during booking. Hurghada City Hotels pickup is complimentary; any applicable supplements for additional zones are shown before confirmation.'
+END
+FROM public.destinations AS d
+WHERE t.destination_id = d.id
+  AND d.slug = 'hurghada'
+  AND t.status = 'published'
+  AND t.pickup_available = TRUE;
 
 -- A Sharm pickup zone was accidentally assigned to a Hurghada quad safari.
 -- Keep the correct Hurghada zones and remove only this cross-destination mapping.
