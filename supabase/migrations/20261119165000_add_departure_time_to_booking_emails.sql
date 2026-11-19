@@ -12,11 +12,8 @@ SET
       'Your digital booking ticket is included below.',
       'Your digital booking ticket is included below.' || E'\nDeparture time: {{departure_time}}'
     )
-    WHEN template_key IN ('booking_confirmation','booking_update') THEN replace(
-      body_text,
-      'Tour date: {{tour_date}}',
-      'Tour date: {{tour_date}}' || E'\nDeparture time: {{departure_time}}'
-    )
+    WHEN template_key IN ('booking_confirmation','booking_update') THEN
+      COALESCE(body_text, '') || E'\nDeparture time: {{departure_time}}'
     ELSE body_text
   END,
   variables = CASE
