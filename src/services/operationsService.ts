@@ -28,6 +28,7 @@ const LOCAL_GUIDES_KEY = 'rse_ops_guides';
 const LOCAL_WEATHER_KEY = 'rse_ops_weather';
 const LOCAL_DEPARTURES_KEY = 'rse_ops_departures';
 const LOCAL_PICKUPS_KEY = 'rse_ops_pickups';
+const LOCAL_MANIFEST_PASSENGERS_KEY = 'rse_ops_manifest_passengers';
 
 // Initial maritime fleet (fallback seed)
 const INITIAL_VESSELS: DbVessel[] = [
@@ -1003,91 +1004,92 @@ export async function getPassengerManifest(
 ): Promise<PassengerManifestItem[]> {
   const date = dateFilter || new Date().toISOString().split('T')[0];
   const allBookings = await bookingRepository.listBookings();
-
-  const targetBookings = allBookings.filter((b) => {
-    const bDate = b.date ? b.date.split('T')[0] : '';
-    if (bDate !== date) return false;
-    if (tourIdFilter && tourIdFilter !== 'all' && b.tourId !== tourIdFilter) return false;
-    if (b.status === 'cancelled') return false;
-    return true;
+  const targetBookings = allBookings.filter((booking) => {
+    const bookingDate = booking.date ? booking.date.split('T')[0] : '';
+    if (bookingDate !== date) return false;
+    if (tourIdFilter && tourIdFilter !== 'all' && booking.tourId !== tourIdFilter) return false;
+    return booking.status !== 'cancelled';
   });
 
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const bookingIds = targetBookings.map((booking) => booking.bookingId).filter((id) => uuidPattern.test(id));
+  let storedPassengers: any[] = [];
+  const localMode = !isSupabaseConfigured();
+
+  if (localMode && !import.meta.env.DEV) {
+    throw new Error('Supabase is not configured; passenger manifests cannot be loaded in production.');
+  }
+
+  if (!localMode && bookingIds.length > 0) {
+    if (bookingIds.length !== targetBookings.length) {
+      throw new Error('One or more bookings are missing a database ID; passenger manifest records cannot be matched safely.');
+    }
+    const { data, error } = await supabase
+      .from('booking_passengers')
+      .select('*')
+      .in('booking_id', bookingIds)
+      .order('booking_id', { ascending: true })
+      .order('passenger_index', { ascending: true });
+    if (error) throw new Error(formatSupabaseError(error));
+    storedPassengers = data || [];
+  }
+
+  const localDetails = localMode
+    ? getLocal<Record<string, Partial<PassengerManifestItem>>>(LOCAL_MANIFEST_PASSENGERS_KEY, {})
+    : {};
   const manifest: PassengerManifestItem[] = [];
 
-  targetBookings.forEach((b) => {
-    const leadPartyId = `pass-lead-${b.bookingReference}`;
-    const partyCount = (b.guests.adults || 1) + (b.guests.children || 0) + (b.guests.infants || 0);
-
-    // Safely format payment status without revealing sensitive details
+  targetBookings.forEach((booking) => {
+    const bookingId = booking.bookingId;
+    const rows = storedPassengers.filter((row) => row.booking_id === bookingId);
+    const adultCount = Math.max(0, Number(booking.guests?.adults) || 0);
+    const childCount = Math.max(0, Number(booking.guests?.children) || 0);
+    const infantCount = Math.max(0, Number(booking.guests?.infants) || 0);
+    const partyCount = Math.max(1, adultCount + childCount + infantCount, rows.length);
     const paymentStatus: PassengerManifestItem['paymentStatus'] =
-      (b as any).paymentStatus === 'paid'
-        ? 'paid'
-        : (b as any).paymentStatus === 'deposit_paid'
-        ? 'deposit_paid'
-        : 'pending';
-
-    // Format extras safely
-    const extrasList = b.extras && Array.isArray(b.extras) && b.extras.length > 0
-      ? b.extras.map((e: any) => `${e.name || e.id} (x${e.quantity || 1})`).join(', ')
+      booking.paymentStatus === 'paid' ? 'paid' :
+      booking.paymentStatus === 'deposit_paid' ? 'deposit_paid' : 'pending';
+    const extrasList = Array.isArray(booking.extras) && booking.extras.length > 0
+      ? booking.extras.map((extra: any) => `${extra.name || extra.id} (x${extra.quantity || 1})`).join(', ')
       : null;
 
-    // 1. Lead Passenger
-    manifest.push({
-      id: leadPartyId,
-      bookingId: b.bookingId || b.bookingReference,
-      bookingReference: b.bookingReference,
-      tourId: b.tourId,
-      tourTitle: b.tourTitle,
-      tourDate: b.date || date,
-      departureTime: (b as any).departureTime || 'Not scheduled',
-      fullName: `${b.customer.firstName} ${b.customer.lastName}`,
-      nationality: b.customer.country || 'International',
-      passportOrId: null,
-      dateOfBirth: null,
-      gender: null,
-      passengerType: 'adult',
-      phone: b.customer.phoneNumber
-        ? `${b.customer.countryCode || ''} ${b.customer.phoneNumber}`.trim()
-        : null,
-      hotel: b.pickup.hotelName || b.customer.hotelName || 'Direct Arrival',
-      pickupTime: (b as any).pickupTime || '07:30',
-      specialRequests: b.customer.specialRequests || null,
-      extras: extrasList,
-      paymentStatus,
-      bookingStatus: (b.status as any) || 'confirmed',
-      partySize: partyCount,
-      isLeadPassenger: true,
-    });
-
-    // 2. Accompanying party members
-    const totalAccompanying = partyCount - 1;
-    for (let idx = 1; idx <= totalAccompanying; idx++) {
-      const passId = `pass-${b.bookingReference}-${idx}`;
-      const isChild = idx > Math.max(0, (b.guests.adults || 1) - 1);
+    for (let passengerIndex = 0; passengerIndex < partyCount; passengerIndex++) {
+      const row = rows.find((item) => Number(item.passenger_index) === passengerIndex);
+      const fallbackType: PassengerManifestItem['passengerType'] =
+        passengerIndex < adultCount ? 'adult' :
+        passengerIndex < adultCount + childCount ? 'child' : 'infant';
+      const isLeadPassenger = row?.is_lead_passenger ?? row?.is_lead ?? passengerIndex === 0;
+      const fallbackName = passengerIndex === 0
+        ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim()
+        : `Guest ${passengerIndex} (${booking.customer.lastName || 'Party'})`;
+      const local = localDetails[`${bookingId}:${passengerIndex}`] || {};
 
       manifest.push({
-        id: passId,
-        bookingId: b.bookingId || b.bookingReference,
-        bookingReference: b.bookingReference,
-        tourId: b.tourId,
-        tourTitle: b.tourTitle,
-        tourDate: b.date || date,
-        departureTime: (b as any).departureTime || 'Not scheduled',
-        fullName: `Guest ${idx} (${b.customer.lastName} Party)`,
-        nationality: b.customer.country || 'International',
-        passportOrId: null,
-        dateOfBirth: null,
-        gender: null,
-        passengerType: isChild ? 'child' : 'adult',
-        phone: null,
-        hotel: b.pickup.hotelName || b.customer.hotelName || 'Direct Arrival',
-        pickupTime: (b as any).pickupTime || '07:30',
-        specialRequests: null,
-        extras: null,
+        id: row?.id || `pass-${booking.bookingReference}-${passengerIndex}`,
+        bookingId,
+        passengerIndex,
+        bookingReference: booking.bookingReference,
+        tourId: booking.tourId,
+        tourTitle: booking.tourTitle,
+        tourDate: booking.date || date,
+        departureTime: (booking as any).departureTime || 'Not scheduled',
+        fullName: local.fullName || row?.full_name || fallbackName || 'Guest',
+        nationality: local.nationality || row?.nationality || booking.customer.country || 'International',
+        passportOrId: local.passportOrId || row?.passport_or_id_number || null,
+        dateOfBirth: local.dateOfBirth || row?.date_of_birth || null,
+        gender: local.gender || row?.gender || null,
+        passengerType: local.passengerType || row?.passenger_type || fallbackType,
+        phone: local.phone || row?.phone || (passengerIndex === 0 && booking.customer.phoneNumber
+          ? `${booking.customer.countryCode || ''} ${booking.customer.phoneNumber}`.trim()
+          : null),
+        hotel: local.hotel || row?.pickup_location || booking.pickup.hotelName || booking.customer.hotelName || 'Direct Arrival',
+        pickupTime: (booking as any).pickupTime || 'Not scheduled',
+        specialRequests: local.specialRequests || row?.special_requests || (passengerIndex === 0 ? booking.customer.specialRequests : null) || null,
+        extras: extrasList,
         paymentStatus,
-        bookingStatus: (b.status as any) || 'confirmed',
+        bookingStatus: (booking.status as any) || 'confirmed',
         partySize: partyCount,
-        isLeadPassenger: false,
+        isLeadPassenger,
       });
     }
   });
@@ -1099,20 +1101,52 @@ export async function updateManifestPassenger(
   passengerId: string,
   updates: Partial<PassengerManifestItem>
 ): Promise<boolean> {
-  if (isSupabaseConfigured()) {
-    try {
-      if (updates.passportOrId || updates.nationality || updates.fullName) {
-        await supabase.from('booking_passengers').upsert({
-          id: passengerId.startsWith('pass-') ? undefined : passengerId,
-          full_name: updates.fullName || 'Guest',
-          nationality: updates.nationality,
-          passport_or_id_number: updates.passportOrId,
-        });
-      }
-    } catch {
-      // ignore
-    }
+  const bookingId = updates.bookingId;
+  const passengerIndex = Number(updates.passengerIndex);
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+  if (!bookingId || !uuidPattern.test(bookingId)) {
+    throw new Error('A valid database booking ID is required to save passenger details.');
   }
+  if (!Number.isInteger(passengerIndex) || passengerIndex < 0) {
+    throw new Error('A valid passenger position is required to save passenger details.');
+  }
+  if (!updates.fullName?.trim()) {
+    throw new Error('Passenger full name is required.');
+  }
+
+  const payload = {
+    booking_id: bookingId,
+    passenger_index: passengerIndex,
+    full_name: updates.fullName.trim(),
+    nationality: updates.nationality || null,
+    passport_or_id_number: updates.passportOrId || null,
+    date_of_birth: updates.dateOfBirth || null,
+    gender: updates.gender || null,
+    passenger_type: updates.passengerType || 'adult',
+    is_lead_passenger: updates.isLeadPassenger ?? passengerIndex === 0,
+    is_lead: updates.isLeadPassenger ?? passengerIndex === 0,
+    phone: updates.phone || null,
+    special_requests: updates.specialRequests || null,
+    pickup_location: updates.hotel || null,
+  };
+
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; passenger details cannot be saved in production.');
+    const local = getLocal<Record<string, Partial<PassengerManifestItem>>>(LOCAL_MANIFEST_PASSENGERS_KEY, {});
+    local[`${bookingId}:${passengerIndex}`] = { ...local[`${bookingId}:${passengerIndex}`], ...updates };
+    setLocal(LOCAL_MANIFEST_PASSENGERS_KEY, local);
+    return true;
+  }
+
+  const { data, error } = await supabase
+    .from('booking_passengers')
+    .upsert(payload, { onConflict: 'booking_id,passenger_index' })
+    .select('id')
+    .single();
+
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data?.id) throw new Error('Passenger details were not saved; no database record was returned.');
   return true;
 }
 
