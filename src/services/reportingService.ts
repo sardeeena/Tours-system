@@ -912,8 +912,15 @@ export async function fetchFinanceReport(interval: DateRangeInterval): Promise<F
     ['paid', 'partially paid'].includes(String(payment.paymentStatus).toLowerCase().replace(/_/g, ' '));
   const isEur = (record: { currency?: string | null }) => String(record.currency || '').toUpperCase() === 'EUR';
 
-  const grossRevenueEur = nonCancelled.reduce((sum, booking) => sum + (booking.pricing?.totalEur || 0), 0);
-  const discountsEur = nonCancelled.reduce((sum, booking) => sum + (booking.pricing?.discountEur || 0), 0);
+  const bookingGrossEur = (booking: (typeof nonCancelled)[number]) => {
+    const totalEur = Number(booking.pricing?.totalEur) || 0;
+    const discountEur = Number(booking.pricing?.discountEur) || 0;
+    const subtotalEur = Number(booking.pricing?.subtotalEur);
+    return Number.isFinite(subtotalEur) ? subtotalEur : totalEur + discountEur;
+  };
+  const grossRevenueEur = nonCancelled.reduce((sum, booking) => sum + bookingGrossEur(booking), 0);
+  const discountsEur = nonCancelled.reduce((sum, booking) => sum + (Number(booking.pricing?.discountEur) || 0), 0);
+  const netBookedRevenueEur = Math.max(0, grossRevenueEur - discountsEur);
 
   const intervalPayments = payments.filter((payment) => {
     if (!isSettledPayment(payment) || !allNonCancelledBookingRefs.has(payment.bookingReference)) return false;
@@ -950,10 +957,10 @@ export async function fetchFinanceReport(interval: DateRangeInterval): Promise<F
     0
   );
   const cohortNetCollectedEur = Math.max(0, cohortGrossCollectedEur - cohortRefundedEur);
-  const outstandingEur = Math.max(0, grossRevenueEur - cohortNetCollectedEur);
-  const netRevenueEur = Math.max(0, grossRevenueEur - cohortRefundedEur);
+  const outstandingEur = Math.max(0, netBookedRevenueEur - cohortNetCollectedEur);
+  const netRevenueEur = Math.max(0, netBookedRevenueEur - cohortRefundedEur);
 
-  const netDue = Math.max(1, grossRevenueEur - discountsEur);
+  const netDue = Math.max(1, netBookedRevenueEur);
   const collectionRatePct = Math.min(100, Math.round((collectedPaymentsEur / netDue) * 1000) / 10);
 
   const methodMap = new Map<string, { amount: number; count: number }>();
@@ -979,7 +986,7 @@ export async function fetchFinanceReport(interval: DateRangeInterval): Promise<F
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const currentYear = new Date().getFullYear();
   for (let month = 0; month < 12; month++) {
-    monthMap.set(`${monthNames[month]} ${currentYear}`, { gross: 0, paid: 0, refunds: 0, bookings: 0 });
+    monthMap.set(`${monthNames[month]} ${currentYear}`, { gross: 0, discounts: 0, paid: 0, refunds: 0, bookings: 0 });
   }
 
   allBookings.forEach((booking) => {
@@ -989,7 +996,8 @@ export async function fetchFinanceReport(interval: DateRangeInterval): Promise<F
     if (Number.isNaN(date.getTime()) || date.getFullYear() !== currentYear) return;
     const key = `${monthNames[date.getMonth()]} ${currentYear}`;
     const current = monthMap.get(key)!;
-    current.gross += booking.pricing?.totalEur || 0;
+    current.gross += bookingGrossEur(booking);
+    current.discounts += Number(booking.pricing?.discountEur) || 0;
     current.bookings += 1;
   });
 
@@ -1014,9 +1022,10 @@ export async function fetchFinanceReport(interval: DateRangeInterval): Promise<F
   const monthlyRevenue: MonthlyRevenueItem[] = Array.from(monthMap.entries()).map(([month, value]) => ({
     month,
     grossEur: value.gross,
+    discountsEur: value.discounts,
     paidEur: value.paid,
     refundsEur: value.refunds,
-    netEur: Math.max(0, value.gross - value.refunds),
+    netEur: Math.max(0, value.gross - value.discounts - value.refunds),
     bookingsCount: value.bookings,
   }));
 
