@@ -1987,49 +1987,73 @@ export async function getCrmDashboardMetrics(): Promise<CrmDashboardMetrics> {
 
   const now = new Date();
   const oneWeekAgo = new Date(now.getTime() - 7 * 86400000).toISOString();
-
   const { dueToday, overdue } = await getFollowUpsDue();
+  const newInquiries = inquiries.filter((inquiry) => inquiry.status === 'new').length;
+  const activeBookings = allBookings.filter((booking) => booking.status !== 'cancelled');
 
-  const newInquiries = inquiries.filter((i) => i.status === 'new').length;
-
+  // Lead estimates in different currencies must not be added together and labelled EUR.
   const totalWonLeadsEur = leads
-    .filter((l) => l.stage === 'Won' || l.stage === 'Booked' as any)
-    .reduce((sum, l) => sum + (l.estimatedValue || 0), 0);
+    .filter((lead) => (lead.stage === 'Won' || (lead.stage as any) === 'Booked') && String(lead.currency || 'EUR').toUpperCase() === 'EUR')
+    .reduce((sum, lead) => sum + (lead.estimatedValue || 0), 0);
 
-  const totalRevenueEur = allBookings
-    .filter((b) => b.status !== 'cancelled')
-    .reduce((sum, b) => sum + (b.pricing?.totalEur || 0), 0);
+  // This is gross booked value, not collected cash.
+  const totalRevenueEur = activeBookings.reduce((sum, booking) => sum + (booking.pricing?.totalEur || 0), 0);
+  let outstandingPaymentsEur = totalRevenueEur;
 
-  const outstandingPaymentsEur = allBookings
-    .filter((b) => b.status !== 'cancelled' && b.paymentStatus !== 'paid')
-    .reduce((sum, b) => sum + (b.pricing?.totalEur || 0), 0);
+  if (isSupabaseConfigured()) {
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const bookingIds = activeBookings.map((booking) => booking.bookingId).filter((id) => uuidPattern.test(id));
+    if (bookingIds.length > 0) {
+      const [paymentsResult, refundsResult] = await Promise.all([
+        supabase.from('payment_transactions').select('booking_id,amount,currency,status').in('booking_id', bookingIds),
+        supabase.from('refund_records').select('booking_id,amount,currency,status').in('booking_id', bookingIds),
+      ]);
+      if (paymentsResult.error) throw new Error(formatSupabaseError(paymentsResult.error));
+      if (refundsResult.error) throw new Error(formatSupabaseError(refundsResult.error));
 
-  const wonLeadsCount = leads.filter((l) => l.stage === 'Won' || (l.stage as any) === 'Booked').length;
-  const lostLeadsCount = leads.filter((l) => l.stage === 'Lost').length;
+      const settledPaymentsEur = (paymentsResult.data || [])
+        .filter((payment) => ['paid', 'partially paid', 'partially_paid'].includes(String(payment.status).toLowerCase().replace(/_/g, ' ')) && String(payment.currency || 'EUR').toUpperCase() === 'EUR')
+        .reduce((sum, payment) => sum + (Number(payment.amount) || 0), 0);
+      const processedRefundsEur = (refundsResult.data || [])
+        .filter((refund) => refund.status === 'processed' && String(refund.currency || 'EUR').toUpperCase() === 'EUR')
+        .reduce((sum, refund) => sum + (Number(refund.amount) || 0), 0);
+
+      outstandingPaymentsEur = Math.max(0, totalRevenueEur - settledPaymentsEur + processedRefundsEur);
+    }
+  } else if (import.meta.env.DEV) {
+    outstandingPaymentsEur = activeBookings.reduce((sum, booking) => {
+      const total = booking.pricing?.totalEur || 0;
+      const paid = String(booking.paymentStatus).toLowerCase() === 'paid' ? total : 0;
+      return sum + Math.max(0, total - paid);
+    }, 0);
+  } else {
+    throw new Error('Supabase is not configured; CRM financial metrics cannot be calculated in production.');
+  }
+
+  const wonLeadsCount = leads.filter((lead) => lead.stage === 'Won' || (lead.stage as any) === 'Booked').length;
+  const lostLeadsCount = leads.filter((lead) => lead.stage === 'Lost').length;
   const closedLeads = wonLeadsCount + lostLeadsCount;
   const conversionRate = closedLeads > 0 ? Math.round((wonLeadsCount / closedLeads) * 100) : 0;
-
-  const repeatCustomersCount = customers.filter((c) => c.totalBookings >= 2).length;
-  const customerLifetimeValueAvgEur =
-    customers.length > 0 ? Math.round(totalRevenueEur / customers.length) : 0;
+  const repeatCustomersCount = customers.filter((customer) => customer.totalBookings >= 2).length;
+  const customerLifetimeValueAvgEur = customers.length > 0 ? Math.round(totalRevenueEur / customers.length) : 0;
 
   return {
     totalLeadsCount: leads.length,
-    newLeadsCount: leads.filter((l) => l.stage === 'New').length,
-    qualifiedLeadsCount: leads.filter((l) => l.stage === 'Qualified').length,
+    newLeadsCount: leads.filter((lead) => lead.stage === 'New').length,
+    qualifiedLeadsCount: leads.filter((lead) => lead.stage === 'Qualified').length,
     wonLeadsCount,
     lostLeadsCount,
     conversionRate,
     followUpsDueCount: dueToday.length,
     overdueFollowUpsCount: overdue.length,
-    openTasksCount: tasks.filter((t) => t.status === 'Pending' || t.status === 'In Progress').length,
+    openTasksCount: tasks.filter((task) => task.status === 'Pending' || task.status === 'In Progress').length,
     newInquiriesCount: newInquiries,
-    newCustomersCount: customers.filter((c) => c.createdAt >= oneWeekAgo).length,
+    newCustomersCount: customers.filter((customer) => customer.createdAt >= oneWeekAgo).length,
     repeatCustomersCount,
     customerLifetimeValueAvgEur,
     totalRevenueEur,
     outstandingPaymentsEur,
-    totalActiveLeads: leads.filter((l) => l.stage !== 'Lost' && l.stage !== 'Won').length,
+    totalActiveLeads: leads.filter((lead) => lead.stage !== 'Lost' && lead.stage !== 'Won').length,
     totalWonLeadsEur,
   };
 }
