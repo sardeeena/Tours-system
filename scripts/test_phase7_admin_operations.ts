@@ -85,9 +85,15 @@ assert(
 );
 
 const opsServiceFile = fs.readFileSync(path.join(rootDir, 'src/services/operationsService.ts'), 'utf8');
+const departureRangeStart = opsServiceFile.indexOf('export async function getDeparturesForDateRange(');
+const todayDeparturesStart = opsServiceFile.indexOf('export async function getTodayDepartures(', departureRangeStart);
+const todayDeparturesEnd = opsServiceFile.indexOf('export async function', todayDeparturesStart + 10);
+const departureRangeSource = opsServiceFile.slice(departureRangeStart, todayDeparturesStart);
+const todayDeparturesSource = opsServiceFile.slice(todayDeparturesStart, todayDeparturesEnd);
 assert(
-  opsServiceFile.includes('dynamicTours.find') && opsServiceFile.includes('getTodayDepartures'),
-  'operationsService.ts resolves dynamic tour titles in getTodayDepartures'
+  departureRangeSource.includes("supabase.from('tours').select('id,title,slug')") &&
+  todayDeparturesSource.includes('getDeparturesForDateRange(date, date)'),
+  'operationsService.ts resolves current and historical tour titles for today departures'
 );
 
 const reportingServiceFile = fs.readFileSync(path.join(rootDir, 'src/services/reportingService.ts'), 'utf8');
