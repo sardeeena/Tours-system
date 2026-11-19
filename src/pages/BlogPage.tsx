@@ -73,7 +73,7 @@ export const BlogPage: React.FC<{ slug?: string; onNavigate:(path:string)=>void 
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D8E6E3] bg-[#F0F7F5] px-3 py-1.5 text-xs font-semibold text-[#245B52] dark:border-[#28524C] dark:bg-[#102B28] dark:text-teal-200"><BookOpen size={13}/> Travel Guide</span>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D8E6E3] bg-[#F0F7F5] px-3 py-1.5 text-xs font-semibold text-[#245B52] dark:border-[#28524C] dark:bg-[#102B28] dark:text-teal-200">Practical Travel Information</span>
           <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D8E6E3] bg-[#F0F7F5] px-3 py-1.5 text-xs font-semibold text-[#245B52] dark:border-[#28524C] dark:bg-[#102B28] dark:text-teal-200">Updated {dateLabel(article.updated_at)}</span>
-        </div>}
+        </div>
         {article.excerpt && <p className="text-xl leading-relaxed text-stone-600 dark:text-slate-300 border-l-4 border-[#C28D32] pl-5 mb-10">{article.excerpt}</p>}
         <article className="max-w-none"><BlogContent content={article.content} className="text-lg"/></article>
         <div className="mt-14 p-8 rounded-3xl bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#243447]"><p className="text-xs uppercase tracking-widest text-[#C28D32] font-bold mb-2">Explore the Red Sea</p><h2 className="font-display text-2xl font-bold mb-3">Make your next story an adventure.</h2><button onClick={()=>onNavigate('/excursions')} className="inline-flex items-center gap-2 rounded-xl bg-[#0A6C74] text-white px-5 py-3 font-semibold">Explore excursions <ArrowRight size={16}/></button></div>
