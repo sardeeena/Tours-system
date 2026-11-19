@@ -1870,6 +1870,10 @@ export async function submitTourReview(payload: {
   comment: string;
   travelerType?: 'Couple' | 'Family' | 'Solo' | 'Friends';
 }): Promise<void> {
+  if (!Number.isInteger(payload.rating) || payload.rating < 1 || payload.rating > 5) {
+    throw new Error('A customer review must include a rating from 1 to 5 stars.');
+  }
+
   if (!isSupabaseConfigured() || isSchemaMissing()) {
     return;
   }
