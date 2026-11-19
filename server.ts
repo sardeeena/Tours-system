@@ -4562,7 +4562,7 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
         .select('id,name,slug,tagline,description').eq('status', 'published').order('sort_order', { ascending: true }).limit(100),
       publicSupabase.from('blog_posts')
         .select('title,slug,excerpt,content,seo_title,seo_description,published_at,updated_at,author_name,reading_time_minutes')
-        .eq('status', 'published').not('published_at', 'is', null).lte('published_at', now)
+        .in('status', ['published', 'scheduled']).not('published_at', 'is', null).lte('published_at', now)
         .order('published_at', { ascending: false }).limit(200),
     ]);
 
