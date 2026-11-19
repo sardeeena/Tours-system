@@ -221,7 +221,7 @@ assert.match(uploadMedia, /rollbackError|uploaded object was rolled back/, 'Medi
 const listMedia = section(storage, 'export async function listStorageMedia(', '/**\n * Audits Supabase Storage bucket');
 assert.match(listMedia, /if \(dbError\) throw/, 'Media listing must surface database failures');
 assert.match(listMedia, /if \(storageError\) throw/, 'Media listing must surface storage failures');
-assert.doesNotMatch(listMedia, /return getLocalAssets\(\);\s*\}/, 'Production media listing must not mask storage failures with local assets');
+assert.match(listMedia, /if \(!import\.meta\.env\.DEV\) throw new Error[\s\S]*?return getLocalAssets\(\)/, 'Local media fallback must be limited to development');
 const cleanMedia = section(storage, 'export async function cleanOrphanedStorageFiles(', '/**\n * Generates an optimized image URL');
 assert.match(cleanMedia, /from\('user_roles'\)[\s\S]*?access_roles\(slug\)/, 'Storage cleanup must use the current RBAC role assignments');
 
