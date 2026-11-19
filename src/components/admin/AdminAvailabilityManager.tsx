@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Calendar as CalendarIcon,
   CheckCircle2,
@@ -16,6 +16,7 @@ import { supabase, isSupabaseConfigured } from '../../services/supabaseClient';
 import { adminListTours, notifyCatalogueDataChanged } from '../../services/tourService';
 import { DbTour, DbTourAvailability } from '../../types/database';
 import { useToast } from '../../contexts/ToastContext';
+import { AdminLoadError } from './AdminLoadError';
 
 const LOCAL_AVAIL_KEY = 'rse_admin_availability_cache';
 
@@ -26,6 +27,10 @@ export const AdminAvailabilityManager: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [availabilityRetry, setAvailabilityRetry] = useState(0);
   const [availabilityMap, setAvailabilityMap] = useState<Record<string, DbTourAvailability>>({});
 
   // Generate next 28 days
@@ -40,30 +45,31 @@ export const AdminAvailabilityManager: React.FC = () => {
     return list;
   }, []);
 
-  useEffect(() => {
-    async function loadData() {
-      setLoading(true);
-      try {
-        const loadedTours = await adminListTours();
-        setTours(loadedTours);
-        if (loadedTours.length > 0) {
-          setSelectedTourId(loadedTours[0].id);
-        }
-      } catch (err) {
-        console.warn('Failed to load tours for availability:', err);
-      } finally {
-        setLoading(false);
-      }
+  const loadTours = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const loadedTours = await adminListTours();
+      setTours(loadedTours);
+      if (loadedTours.length > 0) setSelectedTourId((current) => current || loadedTours[0].id);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Tours could not be loaded.';
+      setLoadError(message);
+    } finally {
+      setLoading(false);
     }
-
-    loadData();
   }, []);
+
+  useEffect(() => {
+    void loadTours();
+  }, [loadTours]);
 
   // When selected tour changes, load availability
   useEffect(() => {
     if (!selectedTourId) return;
 
     async function loadSlots() {
+      setAvailabilityError(null);
       if (isSupabaseConfigured()) {
         const { data, error } = await supabase
           .from('tour_availability')
@@ -74,6 +80,7 @@ export const AdminAvailabilityManager: React.FC = () => {
 
         if (error) {
           setAvailabilityMap({});
+          setAvailabilityError(error.message || 'Availability records could not be loaded.');
           console.warn('Failed to load excursion availability:', error);
           showToast('We could not load availability for this excursion. Please refresh and try again.', 'error');
           return;
@@ -101,12 +108,13 @@ export const AdminAvailabilityManager: React.FC = () => {
 
       setAvailabilityMap({});
       if (import.meta.env.PROD) {
+        setAvailabilityError('Supabase is not configured; live availability records cannot be loaded.');
         showToast('Availability is temporarily unavailable. Please contact your administrator.', 'error');
       }
     }
 
     loadSlots();
-  }, [selectedTourId, dates]);
+  }, [selectedTourId, dates, availabilityRetry]);
 
   const selectedTour = tours.find((t) => t.id === selectedTourId);
   const handleToggleStatus = (dateStr: string) => {
@@ -139,8 +147,10 @@ export const AdminAvailabilityManager: React.FC = () => {
   const handleSaveToSupabase = async () => {
     setSaving(true);
     setActionMessage(null);
+    setActionError(null);
 
     if (!isSupabaseConfigured()) {
+      setActionError('Supabase is not configured; availability changes cannot be saved.');
       showToast('Your changes could not be saved. Please contact your administrator.', 'error');
       setSaving(false);
       return;
@@ -198,6 +208,7 @@ export const AdminAvailabilityManager: React.FC = () => {
       notifyCatalogueDataChanged('tours');
       window.setTimeout(() => setActionMessage(null), 3500);
     } catch (err: any) {
+      setActionError(err instanceof Error ? err.message : 'Availability changes could not be saved.');
       console.warn('Failed to save tour blackout overrides in Supabase:', err);
       showToast('We could not save availability. Please try again. If the problem continues, contact your administrator.', 'error');
     } finally {
@@ -207,6 +218,9 @@ export const AdminAvailabilityManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {loadError && <AdminLoadError message={loadError} onRetry={loadTours} />}
+      {availabilityError && <AdminLoadError message={availabilityError} onRetry={() => setAvailabilityRetry((value) => value + 1)} />}
+      {actionError && <AdminLoadError message={actionError} onRetry={handleSaveToSupabase} />}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
