@@ -197,6 +197,7 @@ export const PRIVATE_UI_SOURCE_CATALOG: Record<string, string> = {
   "private.text.2f330d89": "Keep Booking ",
   "private.text.2fab0ccf": "Send Password Reset Email",
   "private.text.301eabdb": "Create a request and keep every reply in one secure place.",
+  "private.text.303b05b6": "Departure time: ",
   "private.text.305aae8d": "Special Requests & Dietary Requirements (Optional) ",
   "private.text.30e1a5fd": "Full Name ",
   "private.text.31925cf5": "sarah@example.com",
