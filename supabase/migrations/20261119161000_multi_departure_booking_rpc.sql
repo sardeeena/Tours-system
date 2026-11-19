@@ -71,6 +71,12 @@ DECLARE
     '        RETURN jsonb_build_object(''success'', false, ''error'', ''The selected departure is no longer available. Please choose another time.'');' || E'\n' ||
     '    END IF;' || E'\n' ||
     '    PERFORM set_config(''app.booking_departure_id'', v_selected_departure_id::TEXT, TRUE);' || E'\n' ||
+    '    IF NOT EXISTS (' || E'\n' ||
+    '        SELECT 1 FROM public.tour_availability AS configured' || E'\n' ||
+    '        WHERE configured.tour_id = v_tour.id AND configured.date = p_booking_date' || E'\n' ||
+    '    ) THEN' || E'\n' ||
+    '        RETURN jsonb_build_object(''success'', false, ''error'', ''No configured availability row exists for this date.'');' || E'\n' ||
+    '    END IF;' || E'\n' ||
     '    IF EXISTS (' || E'\n' ||
     '        SELECT 1 FROM public.tour_availability AS blackout' || E'\n' ||
     '        WHERE blackout.tour_id = v_tour.id AND blackout.date = p_booking_date AND blackout.is_blackout = TRUE' || E'\n' ||
