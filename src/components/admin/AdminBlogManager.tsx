@@ -27,6 +27,11 @@ export const AdminBlogManager:React.FC=()=>{
     <strong>Content quality review:</strong> {posts.filter(p => p.status === 'published' && (p.reading_time_minutes || 0) <= 1).length} published article(s) currently calculate to a one-minute read. Review whether each fully answers its search intent and includes useful, accurate local detail and relevant internal links. Do not add filler just to increase length.
    </div>
   )}
+  {posts.filter(p => p.status === 'published' && (!p.author_name || p.author_name === 'Awesome Adventure Tours Editorial Team')).length > 0 && (
+   <div role="status" className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-xs text-blue-950 dark:border-blue-900 dark:bg-blue-950/30 dark:text-blue-100">
+    <strong>Author credibility review:</strong> {posts.filter(p => p.status === 'published' && (!p.author_name || p.author_name === 'Awesome Adventure Tours Editorial Team')).length} published article(s) use a generic editorial-team byline. Where possible, credit the real local writer or subject-matter reviewer and describe only credentials or experience that can be verified.
+   </div>
+  )}
 
   <div className="grid sm:grid-cols-4 gap-3">{[{label:'Total articles',value:posts.length},{label:'Published',value:posts.filter(p=>p.status==='published').length},{label:'Drafts',value:posts.filter(p=>p.status==='draft').length},{label:'Scheduled',value:posts.filter(p=>p.status==='scheduled').length}].map(x=><div key={x.label} className="rounded-2xl p-5 bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#243447]"><p className="text-xs text-stone-500">{x.label}</p><p className="font-display text-3xl font-bold mt-2">{x.value}</p></div>)}</div>
   <div className="grid xl:grid-cols-[minmax(0,1.4fr)_minmax(300px,1fr)] gap-6">
