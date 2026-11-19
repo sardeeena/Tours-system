@@ -23,17 +23,11 @@ import {
 } from '../../../services/crmService';
 import { TaskStatus, TaskPriority } from '../../../types/crm';
 import { useToast } from '../../../contexts/ToastContext';
-
-const STAFF_MEMBERS = [
-  'Captain Tarek',
-  'Mona Zaki (Concierge)',
-  'Ahmed Fathy',
-  'Captain Farouk',
-  'Youssef Marina Desk',
-];
+import { useCrmAssignableStaff } from '../../../hooks/useCrmAssignableStaff';
 
 export const CrmTasksManager: React.FC = () => {
   const { showToast } = useToast();
+  const { staffMembers, staffLoading, staffError } = useCrmAssignableStaff();
   const [tasks, setTasks] = useState<CrmTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -50,7 +44,8 @@ export const CrmTasksManager: React.FC = () => {
     customerName: '',
     leadName: '',
     bookingReference: '',
-    assignedStaffName: STAFF_MEMBERS[0],
+    assignedStaffName: '',
+    assignedStaffId: null,
     dueDate: '',
     priority: 'Medium',
     status: 'Pending',
@@ -77,7 +72,7 @@ export const CrmTasksManager: React.FC = () => {
     return tasks.filter((t) => {
       if (statusFilter !== 'all' && t.status !== statusFilter) return false;
       if (priorityFilter !== 'all' && t.priority !== priorityFilter) return false;
-      if (staffFilter !== 'all' && t.assignedStaffName !== staffFilter) return false;
+      if (staffFilter !== 'all' && t.assignedStaffId !== staffFilter) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         return (
@@ -148,7 +143,8 @@ export const CrmTasksManager: React.FC = () => {
       customerName: '',
       leadName: '',
       bookingReference: '',
-      assignedStaffName: STAFF_MEMBERS[0],
+      assignedStaffName: '',
+    assignedStaffId: null,
       dueDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
       priority: 'Medium',
       status: 'Pending',
@@ -165,7 +161,8 @@ export const CrmTasksManager: React.FC = () => {
       customerName: task.customerName || '',
       leadName: task.leadName || '',
       bookingReference: task.bookingReference || '',
-      assignedStaffName: task.assignedStaffName || STAFF_MEMBERS[0],
+      assignedStaffName: task.assignedStaffName || '',
+      assignedStaffId: task.assignedStaffId || null,
       dueDate: task.dueDate ? task.dueDate.split('T')[0] : '',
       priority: task.priority,
       status: task.status,
@@ -252,15 +249,15 @@ export const CrmTasksManager: React.FC = () => {
           </select>
 
           <select
+            disabled={staffLoading || Boolean(staffError)}
+            title={staffError || undefined}
             value={staffFilter}
             onChange={(e) => setStaffFilter(e.target.value)}
             className="px-2.5 py-1.5 bg-stone-900 border border-stone-800 rounded text-stone-300 focus:outline-none"
           >
             <option value="all">All Staff</option>
-            {STAFF_MEMBERS.map((st) => (
-              <option key={st} value={st}>
-                {st}
-              </option>
+            {staffMembers.map((staff) => (
+              <option key={staff.id} value={staff.id}>{staff.full_name}</option>
             ))}
           </select>
         </div>
@@ -454,15 +451,24 @@ export const CrmTasksManager: React.FC = () => {
                 <div>
                   <label className="block text-stone-300 font-semibold mb-1">Assigned Staff</label>
                   <select
-                    value={formData.assignedStaffName || STAFF_MEMBERS[0]}
-                    onChange={(e) => setFormData({ ...formData, assignedStaffName: e.target.value })}
+                    disabled={staffLoading || Boolean(staffError)}
+                    title={staffError || undefined}
+                    value={formData.assignedStaffId || (formData.assignedStaffName ? '__legacy__' : '__unassigned__')}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const staff = staffMembers.find((item) => item.id === value);
+                      if (value === '__legacy__') return;
+                      setFormData({
+                        ...formData,
+                        assignedStaffId: staff?.id || null,
+                        assignedStaffName: staff?.full_name || null,
+                      });
+                    }}
                     className="w-full px-3 py-1.5 bg-stone-950 border border-stone-800 rounded text-white"
                   >
-                    {STAFF_MEMBERS.map((st) => (
-                      <option key={st} value={st}>
-                        {st}
-                      </option>
-                    ))}
+                    {staffMembers.map((staff) => (
+              <option key={staff.id} value={staff.id}>{staff.full_name}</option>
+            ))}
                   </select>
                 </div>
 
