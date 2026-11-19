@@ -48,144 +48,127 @@ function saveStoredCustomers(customers: UnifiedCustomer[]) {
  */
 export async function listUnifiedCustomers(): Promise<UnifiedCustomer[]> {
   const customerMap = new Map<string, UnifiedCustomer>();
+  const localMode = !isSupabaseConfigured();
 
-  // 1. If Supabase configured, load profiles and customers tables
-  if (isSupabaseConfigured()) {
-    try {
-      const [profilesRes, customersRes] = await Promise.all([
-        supabase.from('profiles').select('*').order('created_at', { ascending: false }),
-        supabase.from('customers').select('*').order('created_at', { ascending: false }),
-      ]);
-
-      if (profilesRes.data) {
-        profilesRes.data.forEach((p) => {
-          const email = (p.email || '').toLowerCase();
-          if (!email) return;
-          customerMap.set(email, {
-            id: p.id,
-            fullName: p.full_name || email.split('@')[0],
-            email,
-            phone: p.phone,
-            country: p.country,
-            role: (p.role || 'customer') as UserRole,
-            isRegistered: true,
-            totalBookings: 0,
-            totalSpentEur: 0,
-            avatarUrl: p.avatar_url,
-            createdAt: p.created_at || new Date().toISOString(),
-          });
-        });
-      }
-
-      if (customersRes.data) {
-        customersRes.data.forEach((c) => {
-          const email = (c.email || '').toLowerCase();
-          if (!email) return;
-          const existing = customerMap.get(email);
-          const fullName = `${c.first_name || ''} ${c.last_name || ''}`.trim() || email.split('@')[0];
-
-          if (existing) {
-            existing.hotel = existing.hotel || c.hotel;
-            existing.phone = existing.phone || c.phone;
-            existing.country = existing.country || c.country;
-            if (existing.fullName === email.split('@')[0] && fullName) {
-              existing.fullName = fullName;
-            }
-          } else {
-            customerMap.set(email, {
-              id: c.id,
-              fullName,
-              email,
-              phone: c.phone,
-              country: c.country,
-              hotel: c.hotel,
-              role: 'customer',
-              isRegistered: Boolean(c.user_id),
-              totalBookings: 0,
-              totalSpentEur: 0,
-              createdAt: c.created_at || new Date().toISOString(),
-            });
-          }
-        });
-      }
-    } catch (err) {
-      console.warn('Error reading profiles/customers from Supabase:', err);
-    }
+  if (localMode && !import.meta.env.DEV) {
+    throw new Error('Supabase is not configured; the customer directory cannot be loaded in production.');
   }
 
-  // 2. Incorporate locally registered user accounts
-  try {
-    const localUsers = getStoredLocalUsers();
-    localUsers.forEach((stored) => {
-      const u = stored.user;
-      const email = u.email.toLowerCase();
-      if (!customerMap.has(email)) {
-        customerMap.set(email, {
-          id: u.id,
-          fullName: u.fullName,
-          email,
-          phone: u.phoneNumber,
-          country: u.country,
-          role: u.role,
-          isRegistered: true,
-          totalBookings: 0,
-          totalSpentEur: 0,
-          avatarUrl: u.avatarUrl,
-          createdAt: new Date().toISOString(),
-        });
-      }
-    });
-  } catch {
-    // ignore
-  }
+  if (!localMode) {
+    const [profilesRes, customersRes] = await Promise.all([
+      supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+      supabase.from('customers').select('*').order('created_at', { ascending: false }),
+    ]);
+    if (profilesRes.error) throw new Error(formatSupabaseError(profilesRes.error));
+    if (customersRes.error) throw new Error(formatSupabaseError(customersRes.error));
 
-  // 3. Incorporate local customer cache if map is empty
-  if (customerMap.size === 0) {
-    const cached = getStoredCustomers();
-    cached.forEach((s) => customerMap.set(s.email.toLowerCase(), s));
-  }
-
-  // 4. Correlate with all bookings to compute total bookings & lifetime spend
-  try {
-    const allBookings = await bookingRepository.listBookings();
-    allBookings.forEach((b) => {
-      const email = (b.customer?.email || '').toLowerCase();
+    (profilesRes.data || []).forEach((profile) => {
+      const email = (profile.email || '').toLowerCase().trim();
       if (!email) return;
+      customerMap.set(email, {
+        id: profile.id,
+        fullName: profile.full_name || email.split('@')[0],
+        email,
+        phone: profile.phone,
+        country: profile.country,
+        role: (profile.role || 'customer') as UserRole,
+        isRegistered: true,
+        totalBookings: 0,
+        totalSpentEur: 0,
+        avatarUrl: profile.avatar_url,
+        createdAt: profile.created_at || new Date().toISOString(),
+      });
+    });
 
-      let cust = customerMap.get(email);
-      if (!cust) {
-        cust = {
-          id: `cust-bk-${b.bookingReference}`,
-          fullName: `${b.customer.firstName || ''} ${b.customer.lastName || ''}`.trim() || 'Guest Traveler',
+    (customersRes.data || []).forEach((customer) => {
+      const email = (customer.email || '').toLowerCase().trim();
+      if (!email) return;
+      const existing = customerMap.get(email);
+      const fullName = `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || email.split('@')[0];
+
+      if (existing) {
+        existing.hotel = existing.hotel || customer.hotel;
+        existing.phone = existing.phone || customer.phone;
+        existing.country = existing.country || customer.country;
+        if (existing.fullName === email.split('@')[0] && fullName) existing.fullName = fullName;
+      } else {
+        customerMap.set(email, {
+          id: customer.id,
+          fullName,
           email,
-          phone: `${b.customer.countryCode || ''} ${b.customer.phoneNumber || ''}`.trim() || null,
-          country: b.customer.country || null,
-          hotel: b.pickup.hotelName || b.customer.hotelName || null,
+          phone: customer.phone,
+          country: customer.country,
+          hotel: customer.hotel,
           role: 'customer',
-          isRegistered: false,
+          isRegistered: Boolean(customer.user_id),
           totalBookings: 0,
           totalSpentEur: 0,
-          createdAt: b.date || new Date().toISOString(),
-        };
-        customerMap.set(email, cust);
-      }
-
-      cust.totalBookings += 1;
-      cust.totalSpentEur += b.pricing?.totalEur || 0;
-      cust.hotel = cust.hotel || b.pickup.hotelName || b.customer.hotelName;
-
-      if (!cust.lastBookingDate || b.date > cust.lastBookingDate) {
-        cust.lastBookingDate = b.date;
+          createdAt: customer.created_at || new Date().toISOString(),
+        });
       }
     });
-  } catch (err) {
-    console.warn('Error correlating customer booking metrics:', err);
+  } else {
+    getStoredLocalUsers().forEach((stored) => {
+      const user = stored.user;
+      const email = user.email.toLowerCase().trim();
+      if (!email || customerMap.has(email)) return;
+      customerMap.set(email, {
+        id: user.id,
+        fullName: user.fullName,
+        email,
+        phone: user.phoneNumber,
+        country: user.country,
+        role: user.role,
+        isRegistered: true,
+        totalBookings: 0,
+        totalSpentEur: 0,
+        avatarUrl: user.avatarUrl,
+        createdAt: new Date().toISOString(),
+      });
+    });
+
+    getStoredCustomers().forEach((customer) => {
+      if (customer.email && !customerMap.has(customer.email.toLowerCase())) {
+        customerMap.set(customer.email.toLowerCase(), customer);
+      }
+    });
   }
+
+  // Booking aggregation is part of the customer directory contract; do not return a partial directory on query failure.
+  const allBookings = await bookingRepository.listBookings();
+  allBookings.forEach((booking) => {
+    const email = (booking.customer?.email || '').toLowerCase().trim();
+    if (!email) return;
+
+    let customer = customerMap.get(email);
+    if (!customer) {
+      customer = {
+        id: localMode ? `cust-bk-${booking.bookingReference}` : (booking.customerId || `cust-bk-${booking.bookingReference}`),
+        fullName: `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() || 'Guest Traveler',
+        email,
+        phone: `${booking.customer.countryCode || ''} ${booking.customer.phoneNumber || ''}`.trim() || null,
+        country: booking.customer.country || null,
+        hotel: booking.pickup.hotelName || booking.customer.hotelName || null,
+        role: 'customer',
+        isRegistered: false,
+        totalBookings: 0,
+        totalSpentEur: 0,
+        createdAt: booking.date || new Date().toISOString(),
+      };
+      customerMap.set(email, customer);
+    }
+
+    customer.totalBookings += 1;
+    customer.totalSpentEur += booking.pricing?.totalEur || 0;
+    customer.hotel = customer.hotel || booking.pickup.hotelName || booking.customer.hotelName;
+    if (!customer.lastBookingDate || booking.date > customer.lastBookingDate) {
+      customer.lastBookingDate = booking.date;
+    }
+  });
 
   const result = Array.from(customerMap.values()).sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
-
   saveStoredCustomers(result);
   return result;
 }
