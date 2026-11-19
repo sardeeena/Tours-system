@@ -14,6 +14,42 @@ const adminTours = section(tours, 'export async function adminListTours(', 'expo
 assert.match(adminTours, /if \(import\.meta\.env\.PROD\)[\s\S]*?throw new Error/, 'Admin tour listing must fail closed in production when schema/config is unavailable');
 assert.match(adminTours, /if \(isSchemaMissingError\(error\)\)[\s\S]*?import\.meta\.env\.PROD/, 'Schema-missing errors must not silently show local demo tours in production');
 
+const adminTourById = section(tours, 'export async function adminGetTourById(', 'export async function adminCreateTour(');
+assert.match(adminTourById, /if \(import\.meta\.env\.PROD\) throw/, 'Admin tour editor must not silently use local tour data in production');
+assert.match(adminTourById, /if \(error\)[\s\S]*?throw new Error/, 'Tour detail query failures must be surfaced');
+assert.match(adminTourById, /if \(!data\) return null/, 'A real missing tour must remain a not-found result');
+
+const createTour = section(tours, 'export async function adminCreateTour(', 'export async function adminUpdateTour(');
+assert.match(createTour, /if \(import\.meta\.env\.PROD\) throw/, 'Tour creation must fail closed in production');
+assert.match(createTour, /rolled back because related content could not be saved/, 'Incomplete tour creation must attempt a parent rollback');
+
+const updateTour = section(tours, 'export async function adminUpdateTour(', 'export async function adminSetTourStatus(');
+assert.match(updateTour, /if \(import\.meta\.env\.PROD\) throw/, 'Tour updates must fail closed in production');
+
+const statusTour = section(tours, 'export async function adminSetTourStatus(', 'export async function adminCheckTourBookingsCount(');
+assert.match(statusTour, /\.select\('id'\)[\s\S]*?\.maybeSingle\(\)/, 'Tour status changes must confirm an affected database row');
+assert.match(statusTour, /if \(!data\) throw/, 'A zero-row status update must not report success');
+
+const bookingCount = section(tours, 'export async function adminCheckTourBookingsCount(', 'export async function adminDeleteTour(');
+assert.match(bookingCount, /if \(import\.meta\.env\.PROD\) throw/, 'Tour deletion must be blocked if booking history cannot be checked');
+assert.match(bookingCount, /if \(error\)[\s\S]*?throw new Error/, 'Booking count errors must not be converted into zero');
+
+const deleteTour = section(tours, 'export async function adminDeleteTour(', 'export async function getPublishedDestinations(');
+assert.match(deleteTour, /adminCheckTourBookingsCount\(id\)/, 'Tour deletion must verify linked booking count first');
+assert.match(deleteTour, /\.delete\(\)[\s\S]*?\.select\('id'\)/, 'Tour deletion must confirm a database row was deleted');
+
+const relationSync = section(tours, 'async function syncTourRelations(', 'export async function adminCreateTour(');
+assert.match(relationSync, /ensureTourWrite\(/, 'Tour relation writes must check Supabase errors');
+assert.doesNotMatch(relationSync, /await supabase\.from\([^\n]+\)\.(?:delete|insert|upsert)\(/, 'Tour relation writes must not ignore Supabase result errors');
+
+const extraPriceRead = section(tours, 'export async function fetchTourCustomExtraPricesFromDb(', '/**\n * Persists a tour-specific custom price override');
+assert.match(extraPriceRead, /if \(error\) throw/, 'Custom add-on price reads must surface database errors');
+assert.match(extraPriceRead, /import\.meta\.env\.PROD[\s\S]*?throw/, 'Production custom add-on pricing must not fall back to local cache');
+
+const extraPriceWrite = section(tours, 'export async function persistTourCustomExtraPriceToDb(', '/**\n * Fetches active tour extras');
+assert.match(extraPriceWrite, /if \(error\) throw error/, 'Custom add-on price writes must check Supabase errors');
+assert.ok(extraPriceWrite.indexOf('await supabase') < extraPriceWrite.indexOf('saveTourCustomExtraPrices'), 'Custom add-on cache must update only after persistence succeeds');
+
 const operations = read('src/services/operationsService.ts');
 const listGuides = section(operations, 'export async function listGuides()', 'export async function saveGuide(');
 assert.match(listGuides, /if \(!import\.meta\.env\?\.DEV\)[\s\S]*?throw new Error/, 'Production guide listing must not fall back to seeded staff');
