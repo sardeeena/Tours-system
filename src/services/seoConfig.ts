@@ -287,7 +287,7 @@ export function generateStaticPageJsonLd(
   description: string,
   origin = getAppOrigin()
 ): Record<string, unknown> {
-  const normalizedSlug = slug.replace(/^\\/+|\\/+$/g, '').toLowerCase();
+  const normalizedSlug = slug.replace(/^\/+|\/+$/g, '').toLowerCase();
   const pageUrl = normalizedSlug ? `${origin}/${encodeURIComponent(normalizedSlug)}` : `${origin}/`;
   const pageType = normalizedSlug === 'about'
     ? 'AboutPage'
