@@ -73,7 +73,9 @@
             "description": "Reprenez votre quad pour revenir au point de départ, puis rejoignez votre hôtel à El Gouna en transfert."
           }
         ],
-        "faqs": []
+        "faqs": [],
+        "pickupInfo": "Les options de prise en charge, les lieux approuvés et tout supplément applicable sont indiqués pendant la réservation.",
+        "cancellationPolicy": "Veuillez contacter notre équipe de réservation pour confirmer les conditions d’annulation et de remboursement de cette excursion avant de réserver."
       },
       "seo_title": "Safari en quad à El Gouna : village bédouin et balade à dos de chameau",
       "seo_description": "Partez en quad dans le désert depuis El Gouna, visitez un village bédouin et profitez d’un thé traditionnel et d’une balade à dos de chameau.",
@@ -128,7 +130,9 @@
           "Services de photographie professionnelle",
           "Tout service non expressément mentionné dans les prestations incluses"
         ],
-        "faqs": []
+        "faqs": [],
+        "pickupInfo": "Les options de prise en charge, les lieux approuvés et tout supplément applicable sont indiqués pendant la réservation.",
+        "cancellationPolicy": "Veuillez contacter notre équipe de réservation pour confirmer les conditions d’annulation et de remboursement de cette excursion avant de réserver."
       },
       "seo_title": "Safari en Jeep à El Gouna : dîner barbecue et observation des étoiles",
       "seo_description": "Découvrez le désert oriental en Jeep 4x4 depuis El Gouna : coucher de soleil, hospitalité bédouine, dîner barbecue et observation des étoiles au télescope.",

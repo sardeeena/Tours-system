@@ -50,7 +50,9 @@
           "Pourboires pour le guide et le chauffeur",
           "Tout service non expressément mentionné dans les prestations incluses"
         ],
-        "faqs": []
+        "faqs": [],
+        "pickupInfo": "Les options de prise en charge, les lieux approuvés et tout supplément applicable sont indiqués pendant la réservation.",
+        "cancellationPolicy": "Veuillez contacter notre équipe de réservation pour confirmer les conditions d’annulation et de remboursement de cette excursion avant de réserver."
       },
       "seo_title": "Depuis Hurghada : excursion à Louxor, Karnak et Vallée des Rois",
       "seo_description": "Découvrez le temple de Karnak, trois tombeaux de la Vallée des Rois et le temple d’Hatchepsout lors d’une excursion guidée d’une journée depuis Hurghada.",
@@ -116,7 +118,9 @@
             "answer": "Oui. Des gilets de flottaison homologués par les garde-côtes sont fournis et des moniteurs de plongée certifiés accompagnent les participants dans l’eau.",
             "section": "faq"
           }
-        ]
+        ],
+        "pickupInfo": "Les options de prise en charge, les lieux approuvés et tout supplément applicable sont indiqués pendant la réservation.",
+        "cancellationPolicy": "Veuillez contacter notre équipe de réservation pour confirmer les conditions d’annulation et de remboursement de cette excursion avant de réserver."
       },
       "seo_title": "Depuis Charm el-Cheikh : White Island et Ras Mohammed en bateau",
       "seo_description": "Partez en bateau vers Ras Mohammed et White Island depuis Charm el-Cheikh : deux arrêts snorkeling, plongée en option et déjeuner buffet.",
