@@ -147,8 +147,9 @@ assert.match(customerReviews, /const \[rating, setRating\] = useState\(0\)/, 'Cu
 assert.match(customerReviews, /Please select a rating from 1 to 5 stars/, 'Customer review submission validates the selected rating');
 assert.match(tourService, /Customer reviews are temporarily unavailable because the live review database is not connected/, 'Customer review submission fails closed without persistence');
 assert.match(homeReviews, /Booking verification is shown only when a completed booking can be confirmed/, 'Public review section explains verification accurately');
-assert.doesNotMatch(translations, /100% Weather Refund Guarantee|Free 24h Prior Cancellation|Hotel Pickup Included|Licensed Local Guides|free cancellation|own boats and vehicles|All tours include hotel pickup|daily.*Hurghada|Daily Verified Departures/i, 'Translations do not promise universal refunds, cancellation, pickup, fleet ownership or daily departures');
-assert.match(finalCta, /Pickup is offered only on eligible tours and may vary by hotel area/, 'Final booking CTA makes pickup eligibility and location-specific coverage clear');
+assert.doesNotMatch(translations, /100% Weather Refund Guarantee|Free 24h Prior Cancellation|Hotel Pickup Included|Licensed Local Guides|own boats and vehicles|All tours include hotel pickup|daily.*Hurghada|Daily Verified Departures/i, 'Translations do not promise unsupported weather refunds, universal pickup, fleet ownership or daily departures');
+assert.match(translations, /Free cancellation up to 24 hours before excursion start/, 'Cancellation banner matches the policy recorded for all published tours');
+assert.match(finalCta, /Hotel pickup zones and any location-based supplements are shown for the selected tour/, 'Final booking CTA discloses pickup zones and location-based supplements');
 assert.doesNotMatch(finalCta, /free cancellation up to 24 hours prior|Hotel pickup from your resort lobby is always included|Direct Booking Guarantee/i, 'Final CTA removes unsupported universal booking promises');
 assert.match(homeHero, /Practical Booking Information/, 'Hero labels conditional terms as booking information rather than guarantees');
 assert.doesNotMatch(homeHero, /certified PADI divemasters|2-tank guided boat dives/, 'Hero does not claim dive certifications or formats without tour-level evidence');
