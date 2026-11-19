@@ -22,6 +22,7 @@ import {
 } from '../../../services/crmService';
 import { CommChannel } from '../../../types/crm';
 import { useToast } from '../../../contexts/ToastContext';
+import { AdminLoadError } from '../AdminLoadError';
 import { useAuth } from '../../../contexts/AuthContext';
 
 export const CrmConversationsManager: React.FC = () => {
@@ -30,6 +31,7 @@ export const CrmConversationsManager: React.FC = () => {
   const [comms, setComms] = useState<CrmCommunication[]>([]);
   const [customers, setCustomers] = useState<CrmCustomerDetail[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [channelFilter, setChannelFilter] = useState<string>('all');
 
@@ -43,6 +45,7 @@ export const CrmConversationsManager: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const [allComms, allCusts] = await Promise.all([
         listCommunications(),
@@ -51,6 +54,7 @@ export const CrmConversationsManager: React.FC = () => {
       setComms(allComms);
       setCustomers(allCusts);
     } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'CRM conversations could not be loaded.');
       console.warn('Failed to load conversations:', err);
     } finally {
       setLoading(false);
@@ -98,6 +102,7 @@ export const CrmConversationsManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
