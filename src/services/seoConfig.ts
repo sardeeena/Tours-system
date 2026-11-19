@@ -10,7 +10,7 @@ export const SEO_DEFAULTS = {
   DEFAULT_TITLE: 'Awesome Adventure Tours | Boat Trips, Island Tours & Safaris',
   DEFAULT_DESCRIPTION:
     'Discover boat trips, island experiences, snorkeling, diving and desert safaris across Egypt. Compare tour details and book with confidence.',
-  DEFAULT_OG_IMAGE: 'https://awesomeadventure.tours/logo.webp',
+  DEFAULT_OG_IMAGE: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&h=630&q=85',
   DEFAULT_LOCALE: 'en_US',
   KEYWORDS: [
     'Egypt boat trips',
