@@ -47,6 +47,15 @@ The admin application declares 61 tab identifiers. The sidebar exposes the 59 pr
 - `test:admin-data-connections`: checks production fail-closed behavior, live staff assignment, CRM database persistence, customer payment/refund/review reads, tour CRUD safety, settings/content persistence and media metadata/storage handling.
 - Both tests are added to CI alongside the existing authorization, database, finance, operations, localization and dependency-security suites.
 
+## Production read-only verification (20 Nov 2026)
+
+- The admin login route is publicly reachable and renders the expected staff sign-in controls. The protected `/admin` route correctly requires authentication.
+- The production database currently contains 5 bookings, 14 booking-passenger rows, 659 departures, 672 tour-availability rows, 3 payment transactions, 0 refund rows, 5 customers, 69 media-asset records, 15 tour extras and 58 tour-to-extra assignments.
+- Leads, inquiries, CRM tasks, CRM communications and CRM notes currently contain zero rows. These tabs should display truthful empty states; they must not fabricate sample records.
+- The new manifest implementation requires `booking_passengers.passenger_index`, which is not yet present in the production schema. A read-only dry-run of the proposed backfill produced unique zero-based indexes for all 14 existing passenger rows across the 5 bookings, with exactly one current lead-passenger flag per booking. The migration must be applied before deploying the new manifest UI.
+- The production migration history currently reports 154 applied versions. The branch contains three new migrations; current `main` also has a reporting-integrity migration not yet present on this branch. Migration history and actual schema objects must be reconciled after merge before applying any pending migration. Do not blindly replay migrations solely because a version is absent from the history table.
+- Hostinger runtime logs confirm the booking-notification worker starts and polls the durable queue, and the staff-notification worker starts and has persisted an alert. This verifies worker activation, not successful delivery to a real email inbox.
+
 ## Remaining verification
 
 1. CI must pass on this branch before merge.
