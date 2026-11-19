@@ -189,56 +189,9 @@ function departureDurationHours(startTime?: string, endTime?: string): number {
 // ------------------------------------------------------------------------------
 
 export async function fetchExecutiveReport(interval: DateRangeInterval): Promise<ExecutiveMetrics> {
-  // If Supabase RPC is provisioned and available, attempt fast server-side query
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase.rpc('get_executive_bi_metrics', {
-        p_start_date: interval.startDate,
-        p_end_date: interval.endDate,
-      });
-      if (error && !['PGRST202', '42883'].includes(String(error.code))) {
-        throw new Error(`Executive report query failed: ${error.message}`);
-      }
-      if (!error && data && typeof data === 'object') {
-        const d = (Array.isArray(data) ? data[0] : data) as any;
-        if (!d) throw new Error('Executive report query returned no metrics object.');
-        const revenue = d.revenue && typeof d.revenue === 'object' ? d.revenue : {};
-        const bookings = d.bookings && typeof d.bookings === 'object' ? d.bookings : {};
-        const passengers = d.passengers && typeof d.passengers === 'object' ? d.passengers : {};
-        const customers = d.customers && typeof d.customers === 'object' ? d.customers : {};
-        const leads = d.leads && typeof d.leads === 'object' ? d.leads : {};
-
-        const totalRevenueEur = Number(revenue.total ?? d.totalRevenueEur ?? d.revenueEur ?? 0);
-        const collectedRevenueEur = Number(revenue.collected ?? d.collectedRevenueEur ?? 0);
-        const outstandingRevenueEur = Number(revenue.outstanding ?? d.outstandingRevenueEur ?? 0);
-
-        return {
-          totalRevenueEur,
-          revenueEur: totalRevenueEur,
-          collectedRevenueEur,
-          outstandingRevenueEur,
-          outstandingBalancesEur: outstandingRevenueEur,
-          bookingsCount: Number(bookings.total ?? d.bookingsCount ?? 0),
-          confirmedBookingsCount: Number(bookings.confirmed ?? d.confirmedBookingsCount ?? 0),
-          completedBookingsCount: Number(bookings.completed ?? d.completedBookingsCount ?? 0),
-          cancellationsCount: Number(bookings.cancelled ?? d.cancellationsCount ?? 0),
-          passengersCount: Number(passengers.total ?? d.passengersCount ?? 0),
-          adultsCount: Number(passengers.adults ?? d.adultsCount ?? 0),
-          childrenCount: Number(passengers.children ?? d.childrenCount ?? 0),
-          infantsCount: Number(passengers.infants ?? d.infantsCount ?? 0),
-          totalCustomersCount: Number(customers.totalActive ?? d.totalCustomersCount ?? 0),
-          newCustomersCount: Number(customers.new ?? d.newCustomersCount ?? 0),
-          repeatCustomersCount: Number(customers.repeat ?? d.repeatCustomersCount ?? 0),
-          leadsCount: Number(leads.total ?? d.leadsCount ?? 0),
-          conversionRate: Number(bookings.conversionRatePercent ?? d.conversionRate ?? 0),
-          cancellationRate: Number(bookings.cancellationRatePercent ?? d.cancellationRate ?? 0),
-          averageBookingValueEur: Number(revenue.averageBookingValue ?? d.averageBookingValueEur ?? 0),
-        };
-      }
-    } catch {
-      // Fallback to indexed query aggregation below
-    }
-  }
+  // The existing get_executive_bi_metrics RPC reports mixed-currency sums as EUR
+  // and its customer/booking cohort semantics do not match the dashboard filters.
+  // Use the authoritative repositories until a corrected, currency-aware RPC is deployed.
 
   // Pure Database and Repository Calculation
   const [allBookings, allCustomers, inquiries, leads, payments, refunds] = await Promise.all([
