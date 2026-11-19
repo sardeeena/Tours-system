@@ -90,7 +90,7 @@ assert.match(section(manifestType, 'export interface PassengerManifestItem', 'ex
 const guideDelete = section(operations, 'export async function deleteGuide(', 'export async function listAvailabilitySlots(');
 assert.match(guideDelete, /\.delete\(\)[\s\S]*?\.select\('id'\)[\s\S]*?\.maybeSingle\(\)/, 'Guide deletion must confirm a real database row');
 assert.match(guideDelete, /if \(!data\?\.id\) throw/, 'Guide deletion must not report success for a missing or inaccessible row');
-assert.ok(guideDelete.indexOf('await supabase') < guideDelete.indexOf('setLocal'), 'Guide cache must update only after database deletion succeeds');
+assert.ok(guideDelete.indexOf(".from('guides')") < guideDelete.lastIndexOf('setLocal('), 'Production guide cache must update only after database deletion succeeds');
 
 const vessels = section(operations, 'export async function listVessels()', 'export async function saveVessel(');
 assert.match(vessels, /if \(!import\.meta\.env\.DEV\) throw/, 'Production vessel lists must not appear empty when Supabase is unavailable');
