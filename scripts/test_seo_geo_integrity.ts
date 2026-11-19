@@ -138,6 +138,8 @@ assert.match(destinationSeoMigration, /'hurghada'.*TRUE/s, 'Destinations with pu
 assert.match(destinationSeoMigration, /canonical_url/, 'Destination metadata includes canonical URLs');
 assert.match(pickupMappingMigration, /cairo-giza/, 'Cairo tours receive a configured Cairo/Giza pickup zone');
 assert.match(pickupMappingMigration, /el-gouna-local-excursions/, 'Local El Gouna tours receive their complimentary pickup zone without changing the paid Hurghada transfer zone');
+assert.match(pickupMappingMigration, /hurghada-airport/, 'Airport transfer uses a dedicated airport pickup point');
+assert.match(pickupMappingMigration, /Hotel pickup is available from the active zones listed during booking/, 'Hurghada tour copy explains zone-specific pickup fees');
 assert.match(pickupMappingMigration, /Hurghada Quad Bike Safari: Desert Ride, Camel Experience & Bedouin Village/, 'Migration removes the incorrect Sharm pickup assignment from a Hurghada tour');
 assert.match(pickupMappingMigration, /unmapped_count/, 'Migration fails if a published pickup-enabled tour remains without an active mapped zone');
 
