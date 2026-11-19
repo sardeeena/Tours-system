@@ -170,7 +170,7 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
       ]);
       exportReportToCsv(title, headers, rows);
     } else if (activeView === 'customers' && customerData) {
-      const headers = ['Guest Name', 'Email', 'Country', 'Hotel', 'Bookings Count', 'Lifetime Spend (EUR)', 'Tier'];
+      const headers = ['Guest Name', 'Email', 'Country', 'Hotel', 'Bookings Count', 'Lifetime Booked Value (EUR)', 'Tier'];
       const rows = customerData.topCustomers.map((c) => [
         c.name,
         c.email,
