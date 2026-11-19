@@ -66,7 +66,7 @@ DECLARE
     '    WHERE d.id = v_selected_departure_id' || E'\n' ||
     '      AND d.tour_id = v_tour.id' || E'\n' ||
     '      AND d.date = p_booking_date' || E'\n' ||
-    '    FOR UPDATE OF d, ta;' || E'\n\n' ||
+    '    FOR UPDATE OF d;' || E'\n\n' ||
     '    IF NOT FOUND OR v_avail.status <> ''confirmed'' THEN' || E'\n' ||
     '        RETURN jsonb_build_object(''success'', false, ''error'', ''The selected departure is no longer available. Please choose another time.'');' || E'\n' ||
     '    END IF;' || E'\n' ||
