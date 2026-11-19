@@ -200,7 +200,10 @@ export const seoService = {
     setMetaTag('name', 'twitter:image', ogImg);
 
     // 7. Schema.org JSON-LD
-    setSchemaJsonLd(meta.schemaJsonLd);
+    // Keep the server-rendered route schema during hydration when a route's
+    // client metadata does not define a replacement. Removing it here makes
+    // otherwise indexable SSR pages lose their structured data after hydration.
+    if (meta.schemaJsonLd !== undefined) setSchemaJsonLd(meta.schemaJsonLd);
   },
 
   /**
