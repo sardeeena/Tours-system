@@ -66,6 +66,27 @@ const guideUi = read('src/components/admin/operations/OperationsGuides.tsx');
 assert.match(guideUi, /loadError/, 'Guide registry must expose load failures rather than show an empty list');
 assert.match(guideUi, /Operational staff could not be loaded/, 'Guide registry must distinguish errors from empty data');
 
+const operationsService = read('src/services/operationsService.ts');
+const manifestRead = section(operationsService, 'export async function getPassengerManifest(', 'export async function updateManifestPassenger(');
+assert.match(manifestRead, /from\('booking_passengers'\)[\s\S]*?passenger_index/, 'Passenger manifests must read persisted passenger records');
+assert.match(manifestRead, /bookingIds\.length !== targetBookings\.length/, 'Manifest rows must not be matched with non-database booking references');
+assert.match(manifestRead, /passengerIndex,/, 'Every manifest row must carry a stable passenger index');
+
+const manifestWrite = section(operationsService, 'export async function updateManifestPassenger(', '// ==============================================================================\n// 4. PICKUP MANAGEMENT');
+assert.match(manifestWrite, /booking_id: bookingId[\s\S]*?passenger_index: passengerIndex/, 'Passenger edits must be keyed by booking and stable passenger position');
+assert.match(manifestWrite, /onConflict: 'booking_id,passenger_index'/, 'Passenger edits must upsert on the unique booking/index pair');
+assert.match(manifestWrite, /if \(error\) throw new Error/, 'Passenger update failures must not be swallowed');
+assert.match(manifestWrite, /if \(!data\?\.id\) throw/, 'Passenger edits must confirm a persisted database row');
+
+const manifestUi = read('src/components/admin/operations/OperationsManifests.tsx');
+assert.doesNotMatch(manifestUi, /ALL_TOURS/, 'Manifest filters must not fall back to seeded demo tours');
+assert.doesNotMatch(manifestUi, /getPublishedTours\(\)\.catch\(\(\) => \[\]\)/, 'Manifest tour-load errors must not be hidden');
+assert.match(manifestUi, /loadError/, 'Manifest load failures must be displayed distinctly from an empty manifest');
+assert.match(manifestUi, /passengerIndex: editingPassenger\.passengerIndex/, 'Manifest edits must send the passenger index');
+
+const manifestType = read('src/types/operations.ts');
+assert.match(section(manifestType, 'export interface PassengerManifestItem', 'export interface AvailabilitySlot'), /passengerIndex: number/, 'Manifest rows must expose a stable passenger index');
+
 const staffHook = read('src/hooks/useCrmAssignableStaff.ts');
 assert.match(staffHook, /listInquiryAssignees\(\)/, 'CRM assignment options must come from the permission-filtered live staff RPC');
 for (const path of [
