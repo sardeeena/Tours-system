@@ -12,7 +12,7 @@
     "ui_catalog": 1,
     "public_ui_messages": 81,
     "private_ui_messages": 1079,
-    "ui_catalog_messages": 1160,
+    "ui_catalog_messages": 1161,
     "source_records": 111
   },
   "records": [
@@ -3896,7 +3896,8 @@
         "private.text.50226d2d": "Cette excursion ne propose pas de prise en charge. Vous pouvez continuer sans sélectionner de lieu de prise en charge.",
         "private.text.59807ded": "Aucun avis pour le moment",
         "private.text.6c24db84": "Choisissez votre lieu de prise en charge",
-        "private.text.c3ade22b": "Choisissez un lieu de prise en charge expressément autorisé pour cette excursion."
+        "private.text.c3ade22b": "Choisissez un lieu de prise en charge expressément autorisé pour cette excursion.",
+        "private.text.685bf445": "Les réservations sont directement transmises à notre équipe de réservation. Annulation gratuite jusqu’à 24 heures avant le départ. "
       },
       "private_ui_message_count": 1100
     },
