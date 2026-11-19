@@ -116,7 +116,7 @@ export function mapDbTourToFrontendTour(
     cancellationPolicy: dbTour.cancellation_policy || '',
     availableDays: dbTour.available_days || [],
     departureTime: dbTour.departure_time || '',
-    difficulty: dbTour.difficulty || '',
+    difficulty: dbTour.difficulty || undefined,
     ageRestrictions: dbTour.age_restrictions || '',
     reviews: relations.reviews,
     optionalExtras: relations.extras && relations.extras.length > 0 
