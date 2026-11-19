@@ -19,6 +19,7 @@ import {
 interface StepReviewProps {
   tour: Tour;
   date: string;
+  departureTime: string;
   tourLanguage: string;
   guests: GuestCounts;
   pickupLocation?: PickupLocation | null;
@@ -35,6 +36,7 @@ interface StepReviewProps {
 export const StepReview: React.FC<StepReviewProps> = ({
   tour,
   date,
+  departureTime,
   tourLanguage,
   guests,
   pickupLocation,
@@ -97,10 +99,14 @@ export const StepReview: React.FC<StepReviewProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 sm:text-right bg-stone-50 p-2.5 rounded sm:bg-transparent sm:p-0">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:text-right bg-stone-50 p-2.5 rounded sm:bg-transparent sm:p-0">
             <div>
               <span className="text-[10px] uppercase font-bold text-stone-400 block">Travel Date</span>
               <span className="font-semibold text-stone-800">{date}</span>
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold text-stone-400 block">Departure time</span>
+              <span className="font-semibold text-stone-800">{departureTime || '—'}</span>
             </div>
             <div>
               <span className="text-[10px] uppercase font-bold text-stone-400 block">Guests</span>
