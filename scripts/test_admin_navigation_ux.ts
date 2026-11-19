@@ -20,8 +20,8 @@ assert.match(layout, /setCollapsedSections\(\(previous\) => \(\{ \.\.\.previous,
 assert.match(layout, /setCollapsedSections\(\(previous\) => \(\{ \.\.\.previous, \[section\.id\]: false \}\)\)/, 'Navigating directly to a tab expands its parent group');
 
 // The live public site must be reachable even when the mobile/tablet drawer is closed.
-assert.match(layout, /aria-label="Go to live website"[\s\S]*?onClick=\{onNavigateSite\}/, 'The top bar exposes a clearly labelled live-site shortcut');
-assert.match(layout, /title="View Live Website"[\s\S]*?onClick=\{onNavigateSite\}/, 'The sidebar retains its live-site shortcut');
+assert.match(layout, /onClick=\{onNavigateSite\}[\s\S]*?aria-label="Go to live website"/, 'The top bar exposes a clearly labelled live-site shortcut');
+assert.match(layout, /onClick=\{onNavigateSite\}[\s\S]*?title="View Live Website"/, 'The sidebar retains its live-site shortcut');
 assert.match(layout, /aria-label="Open sidebar"/, 'The sidebar can be reopened from the top bar');
 assert.match(layout, /event\.key === 'Escape'[\s\S]*?setIsSidebarOpen\(false\)/, 'Escape closes the mobile/tablet navigation drawer');
 assert.match(layout, /window\.innerWidth < 1024/, 'Touch-sized viewports use the drawer interaction');
