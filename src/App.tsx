@@ -809,6 +809,9 @@ function MainApp() {
         children: bookingState.children,
         infants: 0,
       },
+      // Preserve the visitor's typed hotel name, but still require the approved
+      // pickup-zone selection in the validated booking wizard.
+      hotelName: bookingState.pickupLocation,
       selectedExtraIds: bookingState.selectedExtras,
       currentStep: 1,
     });
