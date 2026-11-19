@@ -412,6 +412,17 @@ SECURITY DEFINER
 SET search_path = ''
 AS $function$
 BEGIN
+  IF TG_OP = 'DELETE' THEN
+    IF EXISTS (
+      SELECT 1 FROM public.bookings AS b
+      WHERE b.departure_id = OLD.id
+    ) THEN
+      RAISE EXCEPTION 'A departure referenced by a booking cannot be deleted; retain it for booking and audit history.'
+        USING ERRCODE = '23514';
+    END IF;
+    RETURN OLD;
+  END IF;
+
   IF NEW.status = 'cancelled'
      AND OLD.status IS DISTINCT FROM 'cancelled'
      AND EXISTS (
@@ -430,7 +441,7 @@ $function$;
 
 DROP TRIGGER IF EXISTS trg_guard_departure_status_change ON public.departures;
 CREATE TRIGGER trg_guard_departure_status_change
-BEFORE UPDATE OF status ON public.departures
+BEFORE UPDATE OF status OR DELETE ON public.departures
 FOR EACH ROW
 EXECUTE FUNCTION private.guard_departure_status_change();
 
