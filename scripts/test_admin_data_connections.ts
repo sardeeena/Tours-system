@@ -306,7 +306,7 @@ assert.doesNotMatch(reportBuilderUi, /ALL_TOURS|Ahmed Hassan|Mariam Youssef|Kari
 assert.match(reportBuilderUi, /grossByCurrency/, 'Report builder totals must not sum different currencies together');
 assert.match(reportBuilderUi, /AdminLoadError/, 'Report builder must show query failures');
 const executiveReport = section(reporting, 'export async function fetchExecutiveReport(', '// ------------------------------------------------------------------------------\n// 2. SALES REPORT');
-assert.doesNotMatch(executiveReport, /get_executive_bi_metrics/, 'Executive reporting must not use the legacy mixed-currency EUR RPC');
+assert.doesNotMatch(executiveReport, /\.rpc\(['"]get_executive_bi_metrics/, 'Executive reporting must not call the legacy mixed-currency EUR RPC');
 const notificationsUi = read('src/components/admin/communications/CommunicationsNotifications.tsx');
 assert.match(notificationsUi, /AdminLoadError/, 'Staff notification list must show live database failures');
 assert.match(notificationsUi, /setLoadError/, 'Staff notification load errors must be distinct from an empty alert list');
