@@ -1266,6 +1266,11 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
               );
             })}
           </div>
+          {tourData.pickup_available === true && selectedPickupIds.length === 0 && (
+            <div role="status" className="rounded-lg border border-amber-700 bg-amber-950/30 p-3 text-xs text-amber-200">
+              <strong>Pickup mapping required:</strong> This excursion is marked as pickup-enabled but has no assigned pickup zone. The guest booking flow cannot continue until at least one active zone is mapped. Select only the areas confirmed by the operator, or disable pickup if it is not offered.
+            </div>
+          )}
         </div>
       )}
 
