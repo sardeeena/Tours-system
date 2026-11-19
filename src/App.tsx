@@ -40,7 +40,7 @@ import { isSupabaseConfigured } from './services/supabaseClient';
 import { getStaticPages, INITIAL_STATIC_PAGES } from './services/siteSettingsService';
 import type { StaticPageContent } from './services/siteSettingsService';
 import { getStoredSeoMetadata, seoService } from './services/seoService';
-import { getPageSeo } from './services/seoConfig';
+import { generateStaticPageJsonLd, getPageSeo } from './services/seoConfig';
 import { sanitizeRedirectUrl } from './lib/security';
 import { TourDetailSkeleton } from './components/tours/TourDetailSkeleton';
 import { BookingPageSkeleton } from './components/booking/BookingPageSkeleton';
@@ -653,6 +653,12 @@ function MainApp() {
           ogType: 'article' as const,
           robotsIndex: staticPage.seoIndexable !== false,
           robotsFollow: staticPage.seoIndexable !== false,
+          schemaJsonLd: generateStaticPageJsonLd(
+            staticPage.slug,
+            staticPage.seoTitle || staticPage.title,
+            staticPage.seoDescription || staticPage.heroSubtitle,
+            'https://awesomeadventure.tours'
+          ),
         }
       : getPageSeo(currentPath, {
           tour: currentTourDetail,
