@@ -83,6 +83,11 @@ function saveLocalCoupons(coupons: DbCoupon[]) {
 
 export async function getCoupons(): Promise<DbCoupon[]> {
   if (!isSupabaseConfigured() || isSchemaMissing()) {
+    if (import.meta.env.PROD) {
+      throw new Error(!isSupabaseConfigured()
+        ? 'Coupon management is unavailable because Supabase is not configured.'
+        : 'Coupon management is unavailable because the database schema could not be verified.');
+    }
     return getLocalCoupons();
   }
 
@@ -95,6 +100,7 @@ export async function getCoupons(): Promise<DbCoupon[]> {
     if (error) {
       if (isSchemaMissingError(error)) {
         setSchemaMissing(true);
+        if (import.meta.env.PROD) throw new Error('Coupon management is unavailable because the database schema could not be verified.');
         return getLocalCoupons();
       }
       console.error('Supabase coupons fetch failed:', error);
@@ -115,6 +121,7 @@ export async function getCoupons(): Promise<DbCoupon[]> {
   } catch (err) {
     if (isSchemaMissingError(err)) {
       setSchemaMissing(true);
+      if (import.meta.env.PROD) throw new Error('Coupon management is unavailable because the database schema could not be verified.');
       return getLocalCoupons();
     }
     console.error('Error fetching coupons:', err);
@@ -128,6 +135,7 @@ export async function createCoupon(
   const cleanCode = payload.code.trim().toUpperCase();
 
   if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; coupon changes cannot be saved in production.');
     const local = getLocalCoupons();
     if (local.some((c) => c.code === cleanCode)) {
       throw new Error(`Coupon with code "${cleanCode}" already exists.`);
@@ -177,6 +185,7 @@ export async function updateCoupon(id: string, updates: Partial<DbCoupon>): Prom
   }
 
   if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; coupon changes cannot be saved in production.');
     const local = getLocalCoupons();
     const updated = local.map((c) => (c.id === id ? { ...c, ...updates, updated_at: new Date().toISOString() } : c));
     saveLocalCoupons(updated);
@@ -197,6 +206,7 @@ export async function updateCoupon(id: string, updates: Partial<DbCoupon>): Prom
 
 export async function deleteCoupon(id: string): Promise<void> {
   if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; coupon changes cannot be saved in production.');
     const local = getLocalCoupons();
     saveLocalCoupons(local.filter((c) => c.id !== id));
     return;
