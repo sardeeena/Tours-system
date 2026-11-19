@@ -27,7 +27,7 @@ assert.match(editor,/To save, select an existing translation or enter its source
 assert.match(editor,/const targetLocale = locale/,'Draft generation uses the selected locale');
 assert.match(editor,/!\['fr','nl','pl'\]\.includes\(locale\)/,'Only prepared French, Dutch and Polish bundles can be generated from this workspace');
 assert.match(editor,/French, Dutch and Polish are enabled here/,'The generation confirmation explains the supported rollout languages');
-assert.match(editor,/targetLocale\.toUpperCase\(\) \+ ' drafts saved · ' \+ skippedCount \+ ' skipped · selected locale'/,'Progress identifies the selected locale rather than incorrectly saying French only');
+assert.match(editor,/setGenerationProgress\(targetLocale\.toUpperCase\(\) \+ ': ' \+ offset \+ '\/' \+ result\.total \+ ' source records · ' \+ generatedCount \+ ' drafts saved · ' \+ skippedCount \+ ' skipped · selected locale'\)/,'Progress identifies the selected locale and batch progress rather than incorrectly saying French only');
 assert.match(editor,/targetLocale\.toUpperCase\(\) \+ ' translation draft generation completed/,'Completion feedback identifies the selected locale');
 assert.doesNotMatch(editor,/French only/,'Progress never mislabels Dutch or Polish batches as French');
 console.log('Bulk localization draft workflow safety checks passed.');
