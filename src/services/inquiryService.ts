@@ -25,8 +25,6 @@ export interface InquiryAssignee {
 
 const LOCAL_INQUIRIES_KEY = 'rse_inquiries_data';
 
-const SEED_INQUIRIES: DbInquiry[] = [];
-
 function getStoredInquiries(): DbInquiry[] {
   try {
     const raw = localStorage.getItem(LOCAL_INQUIRIES_KEY);
@@ -126,7 +124,7 @@ export async function createCustomerInquiry(
       updated_at: now,
     };
     saveStoredInquiries([localInquiry, ...getStoredInquiries()]);
-    void recordVisitorEvent({ event_name: 'inquiry_submitted', page_path: '/support', event_data: { source } });
+    void recordVisitorEvent({ event_name: 'inquiry_submitted', page_path: '/support', event_data: { source } }).catch((error) => console.warn('Inquiry analytics event was not recorded:', error));
     return { success: true, inquiry: localInquiry };
   }
 
