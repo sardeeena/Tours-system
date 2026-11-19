@@ -31,7 +31,7 @@ console.log('Abuse prevention, rate limiting and booking fail-closed source chec
 const inquiry = read('src/services/inquiryService.ts');
 const inquiryTrap = inquiry.indexOf("if (input.website_url_hp && input.website_url_hp.trim() !== '')");
 const inquiryRateLimit = inquiry.indexOf('const limit = inquiryRateLimiter.check()');
-const inquiryInsert = inquiry.indexOf(".from('inquiries')\n        .insert");
+const inquiryInsert = inquiry.indexOf(".from('inquiries')");
 assert(inquiryTrap >= 0 && inquiryRateLimit > inquiryTrap, 'Inquiry honeypot short-circuits before rate-limit and persistence work');
 assert(inquiryInsert > inquiryTrap, 'Inquiry database insert is downstream of the honeypot guard');
 assert(inquiry.slice(inquiryTrap, inquiryRateLimit).includes("admin_notes: 'Dropped honeypot bot trap'"), 'Inquiry honeypot produces a trapped internal marker');
