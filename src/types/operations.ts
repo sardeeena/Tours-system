@@ -259,3 +259,13 @@ export interface OperationalDocument {
   vesselName?: string;
   passengerCount?: number;
 }
+
+
+export interface UnassignedLegacyBooking {
+  id: string;
+  bookingReference: string;
+  tourId: string;
+  tourTitle: string;
+  guestCount: number;
+  status: string;
+}
