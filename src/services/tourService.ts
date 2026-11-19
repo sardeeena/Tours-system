@@ -399,22 +399,21 @@ export async function getTourBySlug(slug: string, allowDraft: boolean = false): 
 /**
  * Fetches SEO metadata for a tour or entity
  */
-export async function getSeoMetadata(entityType: 'tour' | 'destination' | 'category' | 'page', entityId?: string, slug?: string): Promise<DbSeoMetadata | null> {
+export async function getSeoMetadata(entityType: string, entityId: string): Promise<any | null> {
   if (!isSupabaseConfigured()) {
+    if (import.meta.env.PROD) throw new Error('SEO metadata cannot be loaded because Supabase is not configured.');
     return null;
   }
 
-  try {
-    let query = supabase.from('seo_metadata').select('*').eq('entity_type', entityType);
-    if (entityId) query = query.eq('entity_id', entityId);
-    if (slug) query = query.eq('page_slug', slug);
+  const { data, error } = await supabase
+    .from('seo_metadata')
+    .select('*')
+    .eq('entity_type', entityType)
+    .eq('entity_id', entityId)
+    .maybeSingle();
 
-    const { data, error } = await query.maybeSingle();
-    if (error || !data) return null;
-    return data as DbSeoMetadata;
-  } catch {
-    return null;
-  }
+  if (error) throw new Error(formatSupabaseError(error));
+  return data || null;
 }
 
 // ==============================================================================
