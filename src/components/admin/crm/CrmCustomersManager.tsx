@@ -37,6 +37,7 @@ import {
 } from '../../../services/crmService';
 import { CrmCustomerDetail, CrmCommunication, CrmNote, CrmTask, CrmActivity } from '../../../types/crm';
 import { useToast } from '../../../contexts/ToastContext';
+import { AdminLoadError } from '../AdminLoadError';
 import { useAuth } from '../../../contexts/AuthContext';
 
 export const CrmCustomersManager: React.FC = () => {
@@ -44,6 +45,7 @@ export const CrmCustomersManager: React.FC = () => {
   const { user } = useAuth();
   const [customers, setCustomers] = useState<CrmCustomerDetail[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [tagFilter, setTagFilter] = useState<string>('all');
 
@@ -65,10 +67,12 @@ export const CrmCustomersManager: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const data = await listCrmCustomers();
       setCustomers(data);
     } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'CRM customer records could not be loaded.');
       console.warn('Failed to load customers:', err);
     } finally {
       setLoading(false);
@@ -266,6 +270,7 @@ export const CrmCustomersManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
