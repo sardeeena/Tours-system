@@ -17,6 +17,7 @@ import {
   AssignmentConflict,
   DepartureEntity,
   WeatherInfo,
+  UnassignedLegacyBooking,
 } from '../types/operations';
 import { bookingRepository } from './bookingRepository';
 import { getPublishedTours } from './tourService';
@@ -404,6 +405,37 @@ export async function getTodayDepartures(dateTarget?: string): Promise<Operation
   });
 
   return departures.sort((a, b) => a.departureTime.localeCompare(b.departureTime));
+}
+
+/**
+ * Lists active legacy bookings for a date that have no departure assignment.
+ * They are intentionally not attached to any new slot; operations must
+ * reconcile them before creating departures for the same tour/date.
+ */
+export async function getUnassignedLegacyBookings(date: string): Promise<UnassignedLegacyBooking[]> {
+  if (!isSupabaseConfigured()) {
+    if (import.meta.env?.DEV) return [];
+    throw new Error('Supabase is not configured; legacy booking assignments cannot be verified.');
+  }
+
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('id,booking_reference,tour_id,adult_count,child_count,infant_count,status,tours(title)')
+    .eq('booking_date', date)
+    .is('departure_id', null)
+    .neq('status', 'cancelled')
+    .order('created_at', { ascending: true });
+
+  if (error) throw new Error(formatSupabaseError(error));
+
+  return (data || []).map((row: any) => ({
+    id: String(row.id),
+    bookingReference: String(row.booking_reference || ''),
+    tourId: String(row.tour_id),
+    tourTitle: String(row.tours?.title || 'Tour title unavailable'),
+    guestCount: (Number(row.adult_count) || 0) + (Number(row.child_count) || 0) + (Number(row.infant_count) || 0),
+    status: String(row.status || 'pending'),
+  }));
 }
 
 /**
