@@ -12,6 +12,7 @@ const tourEditor = readFileSync(new URL('../src/components/admin/AdminTourEditor
 const blogAdmin = readFileSync(new URL('../src/components/admin/AdminBlogManager.tsx', import.meta.url), 'utf8');
 const ratingMigration = readFileSync(new URL('../supabase/migrations/20261119100000_sync_tour_ratings_to_published_reviews.sql', import.meta.url), 'utf8');
 const draftDefaultsMigration = readFileSync(new URL('../supabase/migrations/20261119110000_remove_unverified_tour_draft_defaults.sql', import.meta.url), 'utf8');
+const scheduleMigration = readFileSync(new URL('../supabase/migrations/20261119120000_normalize_tour_schedule_display_data.sql', import.meta.url), 'utf8');
 const tourService = readFileSync(new URL('../src/services/tourService.ts', import.meta.url), 'utf8');
 const sitemapStart = server.indexOf("app.get('/sitemap.xml'");
 const llmsStart = server.indexOf("app.get('/llms.txt'");
@@ -66,7 +67,7 @@ assert.match(llms, /Office: 2nd floor, Bostan Cafe, Madres, Hurghada, Red Sea Go
 assert.match(llms, /TripAdvisor business listing/, 'llms.txt identifies the official TripAdvisor business listing without implying existing reviews');
 assert.match(footer, /2nd floor, Bostan Cafe, Madres, Hurghada, Egypt/, 'Public footer displays the owner-confirmed office address');
 assert.doesNotMatch(footer, /New Marina|Berth B-14|English, German & Russian/, 'Public footer removes outdated office and language details');
-assert.match(footer, /TripAdvisor Reviews/, 'Public footer links to TripAdvisor reviews');
+assert.match(footer, /TripAdvisor Profile/, 'Public footer labels the TripAdvisor business profile accurately');
 assert.match(footer, /tripadvisor\.co\.uk\/Attraction_Review-g297549-d34759384/, 'Footer uses the verified TripAdvisor listing URL');
 assert.match(staticPages, /2nd floor, Bostan Cafe, Madres, Hurghada, Egypt/, 'Static trust pages use the owner-confirmed office address');
 assert.doesNotMatch(staticPages, /New Marina|Berth B-14/, 'Static trust pages remove the retired office address');
@@ -102,6 +103,13 @@ assert.match(tourService, /duration_type: tourData\.duration_type \|\| 'Unspecif
 assert.ok(!tourEditor.includes('Orange Bay beach') && !tourEditor.includes('Hotel lobby pickup and return transfer across Hurghada included'), 'New tour editor no longer seeds unrelated Hurghada excursion content');
 assert.ok(!tourService.includes("rating: 5.0") && !tourService.includes("destinationName: 'Hurghada'") && !tourService.includes("categories: ['Boat Trip']"), 'New tour local fallback does not invent a rating, destination or category');
 assert.match(tourEditor, /Complete these verified details before publishing/, 'New tour publication requires verified factual details');
+assert.match(tourEditor, /normalizeTourDepartureTimes/, 'Tour editor normalizes departure times before publication');
+assert.ok(tourEditor.includes("entry.match(/^(\\d{1,2}):(\\d{2})\\s*(AM|PM)?$/i)"), 'Departure-time validation accepts only explicit 12-hour or 24-hour clock values');
+assert.match(scheduleMigration, /13:30 AM/);
+assert.match(scheduleMigration, /01:30 PM/);
+assert.match(scheduleMigration, /13:00 PM/);
+assert.match(scheduleMigration, /01:00 PM/);
+
 
 
 const markdownHandlerStart = server.indexOf('const acceptsMarkdown');
