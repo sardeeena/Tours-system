@@ -747,7 +747,7 @@ class SupabaseBookingRepository implements IBookingRepository {
       customerLocale: data.customer_locale || customer.preferred_locale || 'en',
       date: data.booking_date,
       departureId: data.departure_id || undefined,
-      departureTime: data.departures?.start_time || data.departure_time || tour.departure_time || undefined,
+      departureTime: data.departures?.start_time || data.departure_time || undefined,
       guests: {
         adults: data.adult_count || 1,
         children: data.child_count || 0,
