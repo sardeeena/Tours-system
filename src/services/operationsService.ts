@@ -1019,11 +1019,11 @@ export async function getPassengerManifest(
   if (localMode && !import.meta.env.DEV) {
     throw new Error('Supabase is not configured; passenger manifests cannot be loaded in production.');
   }
+  if (!localMode && bookingIds.length !== targetBookings.length) {
+    throw new Error('One or more bookings are missing a database ID; passenger manifest records cannot be matched safely.');
+  }
 
   if (!localMode && bookingIds.length > 0) {
-    if (bookingIds.length !== targetBookings.length) {
-      throw new Error('One or more bookings are missing a database ID; passenger manifest records cannot be matched safely.');
-    }
     const { data, error } = await supabase
       .from('booking_passengers')
       .select('*')
@@ -1045,7 +1045,9 @@ export async function getPassengerManifest(
     const adultCount = Math.max(0, Number(booking.guests?.adults) || 0);
     const childCount = Math.max(0, Number(booking.guests?.children) || 0);
     const infantCount = Math.max(0, Number(booking.guests?.infants) || 0);
-    const partyCount = Math.max(1, adultCount + childCount + infantCount, rows.length);
+    const declaredPartyCount = adultCount + childCount + infantCount;
+    const effectiveAdultCount = declaredPartyCount === 0 ? 1 : adultCount;
+    const partyCount = Math.max(1, declaredPartyCount, rows.length);
     const paymentStatus: PassengerManifestItem['paymentStatus'] =
       booking.paymentStatus === 'paid' ? 'paid' :
       booking.paymentStatus === 'deposit_paid' ? 'deposit_paid' : 'pending';
@@ -1056,8 +1058,8 @@ export async function getPassengerManifest(
     for (let passengerIndex = 0; passengerIndex < partyCount; passengerIndex++) {
       const row = rows.find((item) => Number(item.passenger_index) === passengerIndex);
       const fallbackType: PassengerManifestItem['passengerType'] =
-        passengerIndex < adultCount ? 'adult' :
-        passengerIndex < adultCount + childCount ? 'child' : 'infant';
+        passengerIndex < effectiveAdultCount ? 'adult' :
+        passengerIndex < effectiveAdultCount + childCount ? 'child' : 'infant';
       const isLeadPassenger = row?.is_lead_passenger ?? row?.is_lead ?? passengerIndex === 0;
       const fallbackName = passengerIndex === 0
         ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim()
@@ -1073,18 +1075,18 @@ export async function getPassengerManifest(
         tourTitle: booking.tourTitle,
         tourDate: booking.date || date,
         departureTime: (booking as any).departureTime || 'Not scheduled',
-        fullName: local.fullName || row?.full_name || fallbackName || 'Guest',
-        nationality: local.nationality || row?.nationality || booking.customer.country || 'International',
-        passportOrId: local.passportOrId || row?.passport_or_id_number || null,
-        dateOfBirth: local.dateOfBirth || row?.date_of_birth || null,
-        gender: local.gender || row?.gender || null,
-        passengerType: local.passengerType || row?.passenger_type || fallbackType,
-        phone: local.phone || row?.phone || (passengerIndex === 0 && booking.customer.phoneNumber
+        fullName: local.fullName ?? row?.full_name ?? fallbackName ?? 'Guest',
+        nationality: local.nationality ?? row?.nationality ?? booking.customer.country ?? 'International',
+        passportOrId: local.passportOrId ?? row?.passport_or_id_number ?? null,
+        dateOfBirth: local.dateOfBirth ?? row?.date_of_birth ?? null,
+        gender: local.gender ?? row?.gender ?? null,
+        passengerType: local.passengerType ?? row?.passenger_type ?? fallbackType,
+        phone: local.phone ?? row?.phone ?? (passengerIndex === 0 && booking.customer.phoneNumber
           ? `${booking.customer.countryCode || ''} ${booking.customer.phoneNumber}`.trim()
           : null),
-        hotel: local.hotel || row?.pickup_location || booking.pickup.hotelName || booking.customer.hotelName || 'Direct Arrival',
+        hotel: local.hotel ?? row?.pickup_location ?? booking.pickup.hotelName ?? booking.customer.hotelName ?? 'Direct Arrival',
         pickupTime: (booking as any).pickupTime || 'Not scheduled',
-        specialRequests: local.specialRequests || row?.special_requests || (passengerIndex === 0 ? booking.customer.specialRequests : null) || null,
+        specialRequests: local.specialRequests ?? row?.special_requests ?? (passengerIndex === 0 ? booking.customer.specialRequests : null) ?? null,
         extras: extrasList,
         paymentStatus,
         bookingStatus: (booking.status as any) || 'confirmed',
@@ -1101,6 +1103,7 @@ export async function updateManifestPassenger(
   passengerId: string,
   updates: Partial<PassengerManifestItem>
 ): Promise<boolean> {
+  void passengerId;
   const bookingId = updates.bookingId;
   const passengerIndex = Number(updates.passengerIndex);
   const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
