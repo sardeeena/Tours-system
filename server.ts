@@ -4532,6 +4532,9 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
     '',
     '## Sitemap',
     '- https://awesomeadventure.tours/sitemap.xml',
+    '',
+    '## Full public content',
+    '- https://awesomeadventure.tours/llms-full.txt',
     ''
   );
 
@@ -4541,6 +4544,203 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
   return res.send(lines.join('\n'));
 });
 
+
+app.get('/llms-full.txt', async (_req: Request, res: Response) => {
+  if (!publicSupabase) {
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(503).type('text/plain; charset=utf-8').send('The public catalogue is temporarily unavailable. Please retry later.');
+  }
+
+  try {
+    const seoExclusions = await loadAwesomeAdventureToursSeoIndexExclusions();
+    const now = new Date().toISOString();
+    const [tourResult, destinationResult, postResult] = await Promise.all([
+      publicSupabase.from('tours')
+        .select('id,title,slug,short_description,description,duration,duration_type,duration_hours,tour_type,price,currency,pickup_available,pickup_info,cancellation_policy,departure_time,languages,difficulty,age_restrictions')
+        .eq('status', 'published').order('sort_order', { ascending: true }).limit(500),
+      publicSupabase.from('destinations')
+        .select('id,name,slug,tagline,description').eq('status', 'published').order('sort_order', { ascending: true }).limit(100),
+      publicSupabase.from('blog_posts')
+        .select('title,slug,excerpt,content,seo_title,seo_description,published_at,updated_at,author_name,reading_time_minutes')
+        .eq('status', 'published').not('published_at', 'is', null).lte('published_at', now)
+        .order('published_at', { ascending: false }).limit(200),
+    ]);
+
+    const failedQuery = [tourResult, destinationResult, postResult].find((result) => result.error);
+    if (failedQuery?.error) throw failedQuery.error;
+
+    const tours = (tourResult.data || []).filter((tour: any) => {
+      const slug = typeof tour.slug === 'string' ? tour.slug.trim() : '';
+      return !!tour.title && !seoExclusions.entityIds.has('tour:' + String(tour.id))
+        && /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug);
+    });
+    const tourIds = tours.map((tour: any) => tour.id);
+    const [highlightResult, itineraryResult, inclusionResult, exclusionResult, faqResult] = tourIds.length
+      ? await Promise.all([
+          publicSupabase.from('tour_highlights').select('tour_id,item,sort_order').in('tour_id', tourIds).order('sort_order', { ascending: true }),
+          publicSupabase.from('tour_itinerary').select('tour_id,time,title,description,sort_order').in('tour_id', tourIds).order('sort_order', { ascending: true }),
+          publicSupabase.from('tour_inclusions').select('tour_id,item,sort_order').in('tour_id', tourIds).order('sort_order', { ascending: true }),
+          publicSupabase.from('tour_exclusions').select('tour_id,item,sort_order').in('tour_id', tourIds).order('sort_order', { ascending: true }),
+          publicSupabase.from('tour_faqs').select('tour_id,question,answer,sort_order').in('tour_id', tourIds).order('sort_order', { ascending: true }),
+        ])
+      : [null, null, null, null, null];
+
+    const relatedErrors = [highlightResult, itineraryResult, inclusionResult, exclusionResult, faqResult]
+      .filter((result: any) => result?.error);
+    if (relatedErrors.length) throw relatedErrors[0].error;
+
+    const groupByTour = (rows: any[] | null | undefined) => {
+      const grouped = new Map<string, any[]>();
+      for (const row of rows || []) {
+        const key = String(row.tour_id);
+        const values = grouped.get(key) || [];
+        values.push(row);
+        grouped.set(key, values);
+      }
+      return grouped;
+    };
+    const highlightsByTour = groupByTour(highlightResult?.data);
+    const itineraryByTour = groupByTour(itineraryResult?.data);
+    const inclusionsByTour = groupByTour(inclusionResult?.data);
+    const exclusionsByTour = groupByTour(exclusionResult?.data);
+    const faqsByTour = groupByTour(faqResult?.data);
+
+    const destinationTourCounts = new Map<string, number>();
+    for (const tour of tours) {
+      if (!tour.destination_id) continue;
+      const key = String(tour.destination_id);
+      destinationTourCounts.set(key, (destinationTourCounts.get(key) || 0) + 1);
+    }
+
+    const lines = [
+      '# Awesome Adventure Tours — Full Public Information',
+      '',
+      '> Machine-readable reference for the public business identity, published destinations, excursions and travel articles. Live excursion pages remain authoritative for current prices, availability, pickup and booking conditions.',
+      '',
+      '## Business identity',
+      '- Business: Awesome Adventure Tours',
+      '- Telephone: +20 151 5212741',
+      '- Office: 2nd floor, Bostan Cafe, Madres, Hurghada, Red Sea Governorate, Egypt',
+      '- Service area: Hurghada, Egypt’s Red Sea coast and selected destinations across Egypt',
+      '- Customer service: Multilingual support for international travellers',
+      '- Website: https://awesomeadventure.tours/',
+      '- TripAdvisor business listing: https://www.tripadvisor.co.uk/Attraction_Review-g297549-d34759384-Reviews-Awesome_Adventure_Tours-Hurghada_Red_Sea_and_Sinai.html',
+      '',
+      '## Published destinations',
+    ];
+
+    for (const destination of destinationResult.data || []) {
+      const slug = typeof destination.slug === 'string' ? destination.slug.trim() : '';
+      const name = cleanPublicText(destination.name, 120);
+      const description = cleanPublicText(destination.description, 4000);
+      const tagline = cleanPublicText(destination.tagline, 500);
+      const tourCount = destinationTourCounts.get(String(destination.id)) || 0;
+      if (!name || !slug || seoExclusions.entityIds.has('destination:' + String(destination.id))
+        || (tourCount < 2 && description.length + tagline.length < 650)
+        || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+      lines.push('', `### ${name}`, `URL: https://awesomeadventure.tours/destinations/${encodeURIComponent(slug)}`);
+      if (tagline) lines.push(tagline);
+      if (description) lines.push(description);
+      lines.push(`Published excursions: ${tourCount}`);
+    }
+
+    lines.push('', '## Published excursions');
+    for (const tour of tours) {
+      const id = String(tour.id);
+      const slug = String(tour.slug).trim();
+      const title = cleanPublicText(tour.title, 160);
+      const description = cleanPublicText(tour.description, 7000);
+      const shortDescription = cleanPublicText(tour.short_description, 700);
+      const price = Number(tour.price);
+      const currency = typeof tour.currency === 'string' && /^[A-Z]{3}$/i.test(tour.currency) ? tour.currency.toUpperCase() : 'EUR';
+      const priceText = Number.isFinite(price) && price > 0 ? `${price.toFixed(2)} ${currency}` : 'Contact us for current pricing';
+      lines.push('', `### ${title}`, `URL: https://awesomeadventure.tours/excursions/${encodeURIComponent(slug)}`);
+      if (shortDescription) lines.push(shortDescription);
+      if (description) lines.push('', description);
+      lines.push(
+        `Price shown in catalogue: ${priceText}`,
+        `Duration: ${cleanPublicText(tour.duration, 120) || cleanPublicText(tour.duration_type, 80) || 'See excursion page'}`,
+        `Tour type: ${cleanPublicText(tour.tour_type, 60) || 'See excursion page'}`,
+        `Pickup available: ${tour.pickup_available === true ? 'Yes' : tour.pickup_available === false ? 'No' : 'Check excursion page'}`
+      );
+      const pickupInfo = cleanPublicText(tour.pickup_info, 800);
+      const cancellation = cleanPublicText(tour.cancellation_policy, 800);
+      const languages = Array.isArray(tour.languages) ? tour.languages.map((value: unknown) => cleanPublicText(value, 40)).filter(Boolean) : [];
+      if (pickupInfo) lines.push(`Pickup details: ${pickupInfo}`);
+      if (cancellation) lines.push(`Cancellation terms: ${cancellation}`);
+      if (tour.departure_time) lines.push(`Departure time: ${cleanPublicText(tour.departure_time, 120)}`);
+      if (languages.length) lines.push(`Languages: ${languages.join(', ')}`);
+      if (tour.difficulty) lines.push(`Difficulty: ${cleanPublicText(tour.difficulty, 80)}`);
+      if (tour.age_restrictions) lines.push(`Age guidance: ${cleanPublicText(tour.age_restrictions, 300)}`);
+
+      const listSection = (label: string, rows: any[] | undefined) => {
+        const values = (rows || []).map((row) => cleanPublicText(row.item, 300)).filter(Boolean);
+        if (values.length) lines.push('', `**${label}**`, ...values.map((value) => `- ${value}`));
+      };
+      listSection('Highlights', highlightsByTour.get(id));
+      const itinerary = itineraryByTour.get(id) || [];
+      if (itinerary.length) {
+        lines.push('', '**Itinerary**');
+        for (const item of itinerary) {
+          const time = cleanPublicText(item.time, 80);
+          const itemTitle = cleanPublicText(item.title, 180);
+          const itemDescription = cleanPublicText(item.description, 700);
+          lines.push(`- ${[time, itemTitle].filter(Boolean).join(' — ')}${itemDescription ? `: ${itemDescription}` : ''}`);
+        }
+      }
+      listSection('Included', inclusionsByTour.get(id));
+      listSection('Not included', exclusionsByTour.get(id));
+      const faqs = faqsByTour.get(id) || [];
+      if (faqs.length) {
+        lines.push('', '**Frequently asked questions**');
+        for (const faq of faqs) {
+          const question = cleanPublicText(faq.question, 400);
+          const answer = cleanPublicText(faq.answer, 1200);
+          if (question && answer) lines.push(`- Q: ${question}`, `  A: ${answer}`);
+        }
+      }
+    }
+
+    lines.push('', '## Published travel articles');
+    for (const post of postResult.data || []) {
+      const slug = typeof post.slug === 'string' ? post.slug.trim() : '';
+      const title = cleanPublicText(post.title, 180);
+      if (!title || !slug || seoExclusions.pageSlugs.has(slug)
+        || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+      lines.push('', `### ${title}`, `URL: https://awesomeadventure.tours/blog/${encodeURIComponent(slug)}`);
+      const excerpt = cleanPublicText(post.excerpt, 700);
+      const content = cleanPublicText(post.content, 7000);
+      if (excerpt) lines.push(excerpt);
+      if (content) lines.push('', content);
+      if (post.published_at) lines.push(`Published: ${String(post.published_at)}`);
+      if (post.author_name) lines.push(`Author: ${cleanPublicText(post.author_name, 120)}`);
+    }
+
+    lines.push(
+      '',
+      '## Booking and safety guidance',
+      '- Check the live excursion page for current pricing, availability, departure details, pickup eligibility, inclusions and cancellation terms.',
+      '- Pickup availability and any transfer supplements vary by excursion and hotel area.',
+      '- Weather, sea conditions and operational decisions may affect departure plans. Follow the excursion operator’s current instructions.',
+      '- This file contains public catalogue information only. It does not expose customer, booking, payment or administrative records.',
+      '',
+      '## Sitemap',
+      '- https://awesomeadventure.tours/sitemap.xml',
+      ''
+    );
+
+    res.status(200);
+    res.type('text/plain; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
+    return res.send(lines.join('\n'));
+  } catch (error) {
+    console.error('[SEO llms-full.txt] Public content generation failed:', error);
+    res.setHeader('Cache-Control', 'no-store');
+    res.setHeader('Retry-After', '60');
+    return res.status(503).type('text/plain; charset=utf-8')
+      .send('The full public content index is temporarily unavailable. Please retry later.');
+  }
+});
 
 const AWESOME_ADVENTURE_TOURS_MCP_TOOLS = [
   {
