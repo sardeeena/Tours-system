@@ -300,17 +300,18 @@ export async function getTodayDepartures(dateTarget?: string): Promise<Operation
 
   const groupedBookings = new Map<string, typeof dayBookings>();
   dayBookings.forEach((booking) => {
-    const time = normalizeDepartureTime((booking as any).departureTime);
-    const key = `${booking.tourId}_${time}`;
-    const group = groupedBookings.get(key) || [];
+    const departureId = String((booking as any).departureId || '').trim();
+    // Legacy bookings without a departure assignment remain visible in the
+    // legacy booking list; never guess which new slot they belong to.
+    if (!departureId) return;
+    const group = groupedBookings.get(departureId) || [];
     group.push(booking);
-    groupedBookings.set(key, group);
+    groupedBookings.set(departureId, group);
   });
 
   const departures: OperationalDeparture[] = (dbDepartures || []).map((dbDep: any) => {
     const startTime = normalizeDepartureTime(dbDep.start_time);
-    const key = `${dbDep.tour_id}_${startTime}`;
-    const bookingsForDep = groupedBookings.get(key) || [];
+    const bookingsForDep = groupedBookings.get(String(dbDep.id)) || [];
     const tour = dynamicTours.find((item) => item.id === dbDep.tour_id);
     if (!tour) throw new Error(`Departure ${dbDep.id} references a tour that is not currently published.`);
     const vessel = vessels.find((item) => item.id === dbDep.vessel_id);
@@ -421,8 +422,12 @@ export async function createDeparture(data: Partial<DepartureEntity>): Promise<{
   if (!data.tour_id || !data.date || !startTime || !endTime || capacity <= 0) {
     return { success: false, error: 'Tour, date, actual start time, end time, and positive capacity are required.' };
   }
-  if (endTime <= startTime) {
-    return { success: false, error: 'End time must be later than the start time.' };
+  const durationHours = Math.max(0, Number((data as any).duration_hours) || 0);
+  if (endTime === startTime && durationHours < 24) {
+    return { success: false, error: 'Equal start and end times require a tour duration of at least 24 hours.' };
+  }
+  if (endTime < startTime && durationHours <= 0) {
+    return { success: false, error: 'An overnight departure requires a configured tour duration.' };
   }
   if (bookedPassengers > capacity) {
     return { success: false, error: 'Booked passengers cannot exceed the configured departure capacity.' };
@@ -543,23 +548,12 @@ export async function updateDepartureStatus(
 
   if (departureError) return false;
 
-  const availabilityStatus =
-    normalized === 'cancelled' || normalized === 'completed' || normalized === 'boarding' || normalized === 'in_progress'
-      ? 'unavailable'
-      : Number(departure.booked_passengers || 0) >= Number(departure.capacity || 0)
-        ? 'sold_out'
-        : 'available';
-  const { error: availabilityError } = await supabase
-    .from('tour_availability')
-    .update({ status: availabilityStatus, updated_at: new Date().toISOString() })
-    .eq('departure_id', departureId);
-  if (availabilityError) return false;
-
+  // The database trigger recalculates the daily summary from all slots.
+  // Only bookings assigned to this exact departure may inherit its status.
   const { error: bookingError } = await supabase
     .from('bookings')
     .update({ operational_status: normalized })
-    .eq('tour_id', departure.tour_id)
-    .eq('booking_date', departure.date)
+    .eq('departure_id', departureId)
     .neq('status', 'cancelled');
 
   if (bookingError) return false;
