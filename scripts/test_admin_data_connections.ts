@@ -305,6 +305,12 @@ const reportBuilderUi = read('src/components/admin/reporting/ReportBuilderView.t
 assert.doesNotMatch(reportBuilderUi, /ALL_TOURS|Ahmed Hassan|Mariam Youssef|Karim Adel|Sara Mostafa/, 'Report builder filters must use live tours and staff records');
 assert.match(reportBuilderUi, /grossByCurrency/, 'Report builder totals must not sum different currencies together');
 assert.match(reportBuilderUi, /AdminLoadError/, 'Report builder must show query failures');
+const executiveReport = section(reporting, 'export async function fetchExecutiveReport(', '// ------------------------------------------------------------------------------\n// 2. SALES REPORT');
+assert.doesNotMatch(executiveReport, /get_executive_bi_metrics/, 'Executive reporting must not use the legacy mixed-currency EUR RPC');
+const notificationsUi = read('src/components/admin/communications/CommunicationsNotifications.tsx');
+assert.match(notificationsUi, /AdminLoadError/, 'Staff notification list must show live database failures');
+assert.match(notificationsUi, /setLoadError/, 'Staff notification load errors must be distinct from an empty alert list');
+assert.match(notificationsUi, /showToast\(err instanceof Error/, 'Notification action failures must be visible to administrators');
 const managementReportUi = read('src/components/admin/reporting/ManagementReportingDashboard.tsx');
 assert.match(managementReportUi, /AdminLoadError/, 'Management reporting must show live metric load failures');
 const financeUi = read('src/components/admin/reporting/FinanceDashboardView.tsx');
