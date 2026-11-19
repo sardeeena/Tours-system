@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AdminLoadError } from '../AdminLoadError';
 import {
   Compass,
   Ship,
@@ -46,6 +47,7 @@ export const OperationsAssignments: React.FC = () => {
   const [guides, setGuides] = useState<DbGuide[]>([]);
   const [tours, setTours] = useState<Tour[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Assignment Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -63,6 +65,11 @@ export const OperationsAssignments: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
+      setAssignments([]);
+      setVessels([]);
+      setGuides([]);
+      setTours([]);
     try {
       const [assigns, ves, gui, loadedTours] = await Promise.all([
         listAssignments(selectedDate),
@@ -76,8 +83,10 @@ export const OperationsAssignments: React.FC = () => {
       setTours(loadedTours);
       if (!tourId && loadedTours?.length) setTourId(loadedTours[0].id);
     } catch (err) {
-      console.warn('Failed to load assignments:', err);
-      showToast(err instanceof Error ? err.message : 'Failed to load live assignments.', 'error');
+      const message = err instanceof Error ? err.message : 'Live operational records could not be loaded.';
+      console.error('Failed to load operational data:', err);
+      setLoadError(message);
+      showToast(message, 'error');
     } finally {
       setLoading(false);
     }
@@ -236,6 +245,8 @@ export const OperationsAssignments: React.FC = () => {
           </button>}
         </div>
       </div>
+
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
 
       {/* Assignments Table */}
       {loading ? (
