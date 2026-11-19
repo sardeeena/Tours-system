@@ -11,8 +11,8 @@
     "static_page": 10,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1079,
-    "ui_catalog_messages": 1160,
+    "private_ui_messages": 1081,
+    "ui_catalog_messages": 1162,
     "source_records": 111
   },
   "records": [
@@ -3887,7 +3887,6 @@
         "private.text.59807ded": "Aucun avis pour le moment",
         "private.text.6c24db84": "Choisissez votre lieu de prise en charge",
         "private.text.c3ade22b": "Choisissez un lieu de prise en charge expressément autorisé pour cette excursion.",
-        "private.text.685bf445": "Les réservations sont transmises directement à l’équipe des opérations de réservation. Annulation gratuite jusqu’à 24 heures avant le départ. ",
         "private.text.ae24f1dc": "Heure de départ",
         "private.text.72740b67": "Complet",
         "private.text.0ca80178": "Réservez au moins ",
@@ -3896,7 +3895,10 @@
         "private.text.87edc0fd": " heures à l’avance ",
         "private.text.8da29c3d": " pour le départ sélectionné ",
         "private.text.94bf73ed": "* 1 adulte minimum requis. ",
-        "private.text.d01f2cac": "Privé"
+        "private.text.d01f2cac": "Privé",
+        "private.text.0bbe0f5d": "Les possibilités d’annulation dépendent de la politique applicable à l’excursion choisie. ",
+        "private.text.245e34ba": "Les réservations sont envoyées directement à notre équipe de réservation. Consultez les conditions d’annulation de l’excursion choisie avant de confirmer. ",
+        "private.text.e67a346a": "Les détails de votre réservation sont enregistrés en toute sécurité. Consultez les conditions d’annulation de l’excursion choisie avant de l’envoyer."
       },
       "private_ui_message_count": 1100
     },
