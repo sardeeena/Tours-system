@@ -86,7 +86,7 @@ export const FinanceDashboardView: React.FC<FinanceDashboardViewProps> = ({
           <div className="text-xl lg:text-2xl font-bold text-sky-600 dark:text-sky-400 mt-2 font-mono">
             €{metrics.netRevenueEur.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
-          <span className="text-[10px] text-stone-500 dark:text-stone-400 mt-1 block">Gross bookings less processed refunds</span>
+          <span className="text-[10px] text-stone-500 dark:text-stone-400 mt-1 block">Gross bookings less discounts and processed refunds</span>
         </div>
       </div>
 
