@@ -85,63 +85,49 @@ const DEFAULT_FOOTER_CONTENT: FooterContentSettings = {
 const LOCAL_PREFIX = 'rse_settings_';
 
 export async function getSetting<T>(key: string, defaultValue: T): Promise<T> {
-  // Try Supabase first if configured
-  if (isSupabaseConfigured()) {
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; site settings cannot be loaded in production.');
     try {
-      const { data, error } = await supabase
-        .from('site_settings')
-        .select('value')
-        .eq('key', key)
-        .maybeSingle();
-
-      if (!error && data?.value) {
-        return data.value as unknown as T;
-      }
-    } catch (err) {
-      console.warn(`Supabase setting read error for ${key}:`, err);
+      const raw = localStorage.getItem(`${LOCAL_PREFIX}${key}`);
+      return raw ? JSON.parse(raw) as T : defaultValue;
+    } catch {
+      return defaultValue;
     }
   }
 
-  // Fallback to local storage
-  try {
-    const raw = localStorage.getItem(`${LOCAL_PREFIX}${key}`);
-    if (raw) {
-      return JSON.parse(raw) as T;
-    }
-  } catch {
-    // ignore
-  }
-
-  return defaultValue;
+  const { data, error } = await supabase
+    .from('site_settings')
+    .select('value')
+    .eq('key', key)
+    .maybeSingle();
+  if (error) throw new Error(formatSupabaseError(error));
+  return data?.value !== undefined && data?.value !== null ? data.value as unknown as T : defaultValue;
 }
 
 export async function saveSetting<T>(key: string, value: T, description?: string): Promise<void> {
-  // Always update local cache
-  try {
-    localStorage.setItem(`${LOCAL_PREFIX}${key}`, JSON.stringify(value));
-  } catch {
-    // ignore
-  }
-
   if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; site settings cannot be saved in production.');
+    try {
+      localStorage.setItem(`${LOCAL_PREFIX}${key}`, JSON.stringify(value));
+    } catch {
+      throw new Error('The development setting could not be saved to local storage.');
+    }
     return;
   }
 
-  try {
-    const { error } = await supabase.from('site_settings').upsert({
-      key,
-      value: value as any,
-      description: description || null,
-      updated_at: new Date().toISOString(),
-    });
+  const { error } = await supabase.from('site_settings').upsert({
+    key,
+    value: value as any,
+    description: description || null,
+    updated_at: new Date().toISOString(),
+  });
+  if (error) throw new Error(formatSupabaseError(error));
 
-    if (error) {
-      console.warn(`Supabase setting write warning for ${key}:`, error);
-      throw new Error(formatSupabaseError(error));
-    }
-  } catch (err: any) {
-    console.error(`Error writing setting ${key} to Supabase:`, err);
-    throw err;
+  // Cache only after the authoritative database write succeeds.
+  try {
+    localStorage.setItem(`${LOCAL_PREFIX}${key}`, JSON.stringify(value));
+  } catch {
+    // The cache is optional; the database write already succeeded.
   }
 }
 
