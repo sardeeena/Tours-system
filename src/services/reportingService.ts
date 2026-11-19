@@ -685,197 +685,215 @@ export async function fetchCustomerReport(interval: DateRangeInterval): Promise<
 // ------------------------------------------------------------------------------
 
 export async function fetchOperationsReport(interval: DateRangeInterval): Promise<OperationsMetrics> {
-  const [allBookings, vessels, assignments, guides, weather] = await Promise.all([
+  const [allBookings, vessels, assignments, guides, departures, weather] = await Promise.all([
     bookingRepository.listBookings(),
     listVessels(),
     listAssignments(),
     listGuides(),
+    getDeparturesForDateRange(interval.startDate, interval.endDate),
     getMaritimeWeather(interval.startDate),
   ]);
 
-  const activeBookings = filterBookingsByInterval(allBookings, interval);
+  const rangeBookings = filterBookingsByInterval(allBookings, interval);
+  const cancellations = rangeBookings.filter(
+    (booking) => booking.status === 'cancelled' || booking.status === 'cancellation_requested'
+  );
+  const noShows = rangeBookings.filter((booking) => booking.status === 'no_show');
+  const passengerBookings = rangeBookings.filter(
+    (booking) => !['cancelled', 'cancellation_requested', 'no_show'].includes(booking.status)
+  );
 
-  const departureKeys = new Set<string>();
-  let adults = 0;
-  let children = 0;
-  let infants = 0;
-  let cancellations = 0;
-  let noShows = 0;
-
-  activeBookings.forEach((b) => {
-    const depKey = `${b.date}_${b.tourTitle}`;
-    departureKeys.add(depKey);
-
-    if (b.status === 'cancelled' || b.status === 'cancellation_requested') {
-      cancellations++;
-    } else if (b.status === 'no_show') {
-      noShows++;
-    } else {
-      adults += b.guests?.adults || 1;
-      children += b.guests?.children || 0;
-      infants += b.guests?.infants || 0;
-    }
-  });
-
+  const adults = passengerBookings.reduce((sum, booking) => sum + (Number(booking.guests?.adults) || 0), 0);
+  const children = passengerBookings.reduce((sum, booking) => sum + (Number(booking.guests?.children) || 0), 0);
+  const infants = passengerBookings.reduce((sum, booking) => sum + (Number(booking.guests?.infants) || 0), 0);
   const totalPassengers = adults + children + infants;
-  const departuresCount = departureKeys.size || (activeBookings.length > 0 ? 1 : 0);
 
-  // Total theoretical capacity
-  const totalOfferedCapacity = departuresCount * 30; // average boat capacity
-  const capacityUtilizationPct = totalOfferedCapacity > 0
-    ? Math.min(100, Math.round((totalPassengers / totalOfferedCapacity) * 1000) / 10)
+  const activeDepartures = departures.filter((departure) => departure.status !== 'cancelled');
+  const assignedDepartures = activeDepartures.filter((departure) =>
+    Boolean(departure.vesselId || departure.guideId || departure.captainId || departure.driverId)
+  );
+  const unassignedDepartures = activeDepartures.filter((departure) =>
+    !departure.vesselId && !departure.guideId && !departure.captainId && !departure.driverId
+  );
+
+  const departurePassengerCount = activeDepartures.reduce(
+    (sum, departure) => sum + (Number(departure.passengerCount) || 0),
+    0
+  );
+  const departureCapacity = activeDepartures.reduce(
+    (sum, departure) => sum + (Number(departure.capacity) || 0),
+    0
+  );
+  const capacityUtilizationPct = departureCapacity > 0
+    ? Math.round((departurePassengerCount / departureCapacity) * 1000) / 10
     : 0;
 
-  const cancellationRatePct = activeBookings.length > 0
-    ? Math.round((cancellations / activeBookings.length) * 1000) / 10
-    : 0;
-
-  // Pickup Distribution
-  const pickupCounts = new Map<string, { guests: number; area: string }>();
-  activeBookings
-    .filter((b) => b.status !== 'cancelled')
-    .forEach((b) => {
-      const loc = b.pickup?.hotelName || b.customer?.hotelName || b.pickup?.locationName || 'Hurghada Center';
-      const area = b.pickup?.area || 'Hurghada Coast';
-      const guests = (b.guests?.adults || 1) + (b.guests?.children || 0);
-
-      const entry = pickupCounts.get(loc) || { guests: 0, area };
-      entry.guests += guests;
-      pickupCounts.set(loc, entry);
-    });
-
-  const pickupDistribution: Array<{ locationName: string; area: string; guestsCount: number; percentage: number }> = [];
-  pickupCounts.forEach((val, loc) => {
-    pickupDistribution.push({
-      locationName: loc,
-      area: val.area,
-      guestsCount: val.guests,
-      percentage: totalPassengers > 0 ? Math.round((val.guests / totalPassengers) * 1000) / 10 : 0,
-    });
+  const totalGuestsForPickup = passengerBookings.reduce(
+    (sum, booking) =>
+      sum +
+      (Number(booking.guests?.adults) || 0) +
+      (Number(booking.guests?.children) || 0) +
+      (Number(booking.guests?.infants) || 0),
+    0
+  );
+  const pickupMap = new Map<string, { area: string; guests: number }>();
+  passengerBookings.forEach((booking) => {
+    const locationName = booking.pickup?.locationName || booking.pickup?.hotelName ||
+      booking.customer?.hotelName || 'Not recorded';
+    const area = booking.pickup?.area || 'Not recorded';
+    const guests =
+      (Number(booking.guests?.adults) || 0) +
+      (Number(booking.guests?.children) || 0) +
+      (Number(booking.guests?.infants) || 0);
+    const current = pickupMap.get(locationName) || { area, guests: 0 };
+    current.guests += guests;
+    if (current.area === 'Not recorded' && area !== 'Not recorded') current.area = area;
+    pickupMap.set(locationName, current);
   });
-  pickupDistribution.sort((a, b) => b.guestsCount - a.guestsCount);
+  const pickupDistribution = Array.from(pickupMap.entries())
+    .map(([locationName, value]) => ({
+      locationName,
+      area: value.area,
+      guestsCount: value.guests,
+      percentage: totalGuestsForPickup > 0
+        ? Math.round((value.guests / totalGuestsForPickup) * 1000) / 10
+        : 0,
+    }))
+    .sort((a, b) => b.guestsCount - a.guestsCount);
 
-  // Vessel Utilization
-  const vesselUtilization: VesselUtilizationItem[] = vessels.map((ves) => {
-    const vesAssignments = assignments.filter((a) => {
-      const aDate = a.date || '';
-      return a.vesselId === ves.id && aDate >= interval.startDate && aDate <= interval.endDate;
-    });
-
-    const tripsCount = vesAssignments.length || 1;
-    let carried = 0;
-    vesAssignments.forEach((va) => {
-      const matched = activeBookings.filter(
-        (b) => b.date === va.date && (b.tourId === va.tourId || b.tourSlug === va.tourId) && b.status !== 'cancelled'
-      );
-      matched.forEach((b) => {
-        carried += (b.guests?.adults || 1) + (b.guests?.children || 0) + (b.guests?.infants || 0);
-      });
-    });
-
-    // If direct assignments match 0 but vessel is active, compute realistic capacity load
-    if (carried === 0 && activeBookings.length > 0) {
-      carried = Math.min(ves.passenger_capacity, Math.round(totalPassengers / Math.max(1, vessels.length)));
-    }
-
-    const totalCap = tripsCount * ves.passenger_capacity;
-    const utilPct = totalCap > 0 ? Math.min(100, Math.round((carried / totalCap) * 100)) : 0;
-
+  const vesselUtilization: VesselUtilizationItem[] = vessels.map((vessel) => {
+    const vesselDepartures = activeDepartures.filter((departure) => departure.vesselId === vessel.id);
+    const passengersCarried = vesselDepartures.reduce(
+      (sum, departure) => sum + (Number(departure.passengerCount) || 0),
+      0
+    );
+    const capacityForTrips = vesselDepartures.reduce(
+      (sum, departure) => sum + (Number(departure.capacity) || 0),
+      0
+    );
     return {
-      vesselId: ves.id,
-      vesselName: ves.name,
-      vesselType: ves.vessel_type,
-      maxCapacity: ves.passenger_capacity,
-      tripsCount,
-      passengersCarried: carried,
-      utilizationPct: utilPct,
+      vesselId: vessel.id,
+      vesselName: vessel.name,
+      vesselType: vessel.vessel_type || 'Not recorded',
+      maxCapacity: Number(vessel.passenger_capacity) || 0,
+      tripsCount: vesselDepartures.length,
+      passengersCarried,
+      utilizationPct: capacityForTrips > 0
+        ? Math.round((passengersCarried / capacityForTrips) * 1000) / 10
+        : 0,
     };
-  });
+  }).filter((vessel) => vessel.tripsCount > 0);
 
-  // Guide Assignments
-  const activeGuides = guides.filter((g) => g.is_active);
-  const guideWorkload = activeGuides.map((g) => {
-    const gAssignments = assignments.filter((a) => a.guideId === g.id);
+  const activeGuides = guides.filter((guide) => guide.is_active);
+  const guideWorkload: GuideAssignmentItem[] = activeGuides.map((guide) => {
+    const guideDepartures = activeDepartures.filter((departure) => departure.guideId === guide.id);
+    const hoursLogged = guideDepartures.reduce(
+      (sum, departure) => sum + departureDurationHours(departure.startTime || departure.departureTime, departure.endTime),
+      0
+    );
     return {
-      guideId: g.id,
-      guideName: g.full_name,
-      assignedCount: gAssignments.length,
-      hoursLogged: gAssignments.length * 7,
+      guideId: guide.id,
+      guideName: guide.full_name,
+      assignedCount: guideDepartures.length,
+      hoursLogged,
     };
-  });
+  }).sort((a, b) => b.assignedCount - a.assignedCount);
 
-  const totalAssignmentsCount = assignments.length;
-  const assignedToursCount = assignments.filter((a) => a.guideId && a.vesselId).length;
-  const unassignedToursCount = Math.max(0, departuresCount - assignedToursCount);
-
-  // Operational Issues List
-  const operationalIssues: OperationsMetrics['operationalIssues'] = [];
-
-  if (unassignedToursCount > 0) {
+  const timestamp = new Date().toISOString();
+  const operationalIssues: OperationalIssueItem[] = [];
+  if (activeDepartures.length === 0) {
     operationalIssues.push({
-      id: 'iss-unassigned',
+      id: 'no-departures-in-period',
+      severity: 'info',
+      category: 'schedule',
+      title: 'No departure records in the selected period',
+      description: 'No departure rows were found for this date range. Capacity and assignment metrics are therefore unavailable for this period.',
+      timestamp,
+    });
+  }
+  if (unassignedDepartures.length > 0) {
+    operationalIssues.push({
+      id: 'unassigned-departures',
       severity: 'warning',
-      category: 'Dispatch Alert',
-      title: `${unassignedToursCount} Unassigned Excursion Departure${unassignedToursCount > 1 ? 's' : ''}`,
-      description: 'Scheduled departures require captain or guide roster confirmation in operations manager.',
-      timestamp: new Date().toISOString(),
+      category: 'staffing',
+      title: 'Unassigned departures',
+      description: `${unassignedDepartures.length} departure record(s) have no vessel, guide, captain or driver assignment.`,
+      timestamp,
     });
   }
 
-  const windKnots = weather?.windSpeedKnots ?? 0;
-  const swellM = weather?.swellHeightM ?? 0;
-
-  if (windKnots > 20 || swellM > 1.8) {
+  const maintenanceVessels = vessels.filter((vessel) =>
+    ['maintenance', 'dry_dock'].includes(String(vessel.status || '').toLowerCase())
+  );
+  if (maintenanceVessels.length > 0) {
     operationalIssues.push({
-      id: 'iss-weather',
+      id: 'vessel-maintenance',
       severity: 'warning',
-      category: 'Maritime Weather',
-      title: 'Red Sea Coast Guard Advisory Notice',
-      description: `Winds at ${windKnots} knots with ${swellM}m waves. Offshore catamaran trips require safety check.`,
-      timestamp: new Date().toISOString(),
+      category: 'fleet',
+      title: 'Vessels under maintenance',
+      description: maintenanceVessels.map((vessel) => vessel.name).join(', '),
+      timestamp,
+    });
+  }
+
+  const hasLiveWeather = Boolean(
+    weather &&
+    (weather.windSpeedKnots !== null && weather.windSpeedKnots !== undefined ||
+      weather.swellHeightM !== null && weather.swellHeightM !== undefined)
+  );
+  if (!hasLiveWeather) {
+    operationalIssues.push({
+      id: 'weather-unavailable',
+      severity: 'warning',
+      category: 'weather',
+      title: 'Live maritime weather readings unavailable',
+      description: 'No current wind or swell observation is available. Verify local marine conditions and official Coast Guard notices before any departure; this dashboard cannot confirm clearance.',
+      timestamp,
     });
   } else {
-    operationalIssues.push({
-      id: 'iss-weather-ok',
-      severity: 'info',
-      category: 'Weather Clear',
-      title: 'Maritime Conditions Favorable',
-      description: 'Calm waters across Giftun Island and Makadi reefs; all commercial permits clear for departure.',
-      timestamp: new Date().toISOString(),
-    });
+    const wind = Number(weather.windSpeedKnots) || 0;
+    const swell = Number(weather.swellHeightM) || 0;
+    if (wind > 20 || swell > 1.8) {
+      operationalIssues.push({
+        id: 'weather-threshold',
+        severity: 'critical',
+        category: 'weather',
+        title: 'Weather readings exceed configured thresholds',
+        description: `Recorded wind: ${wind} knots; recorded swell: ${swell} m. Confirm the latest official marine advisories and operator clearance before departure.`,
+        timestamp,
+      });
+    } else {
+      operationalIssues.push({
+        id: 'weather-within-threshold',
+        severity: 'info',
+        category: 'weather',
+        title: 'Recorded weather readings within configured thresholds',
+        description: 'These readings are not a Coast Guard clearance or a substitute for checking current official marine advisories.',
+        timestamp,
+      });
+    }
   }
 
-  // Vessel maintenance reminder
-  const maintenancePending = vessels.filter((v) => v.status === 'maintenance');
-  if (maintenancePending.length > 0) {
-    operationalIssues.push({
-      id: 'iss-vessel-maint',
-      severity: 'critical',
-      category: 'Fleet Maintenance',
-      title: `${maintenancePending[0].name} in Dry Dock Inspection`,
-      description: `Vessel registration ${maintenancePending[0].registration_number} scheduled for marine surveyor sign-off.`,
-      timestamp: new Date().toISOString(),
-    });
-  }
+  const cancellationRatePct = rangeBookings.length > 0
+    ? Math.round((cancellations.length / rangeBookings.length) * 1000) / 10
+    : 0;
 
   return {
-    departuresCount,
-    passengerCounts: {
-      adults,
-      children,
-      infants,
-      total: totalPassengers,
-    },
+    departuresCount: activeDepartures.length,
+    passengerCounts: { adults, children, infants, total: totalPassengers },
     capacityUtilizationPct,
-    cancellationsCount: cancellations,
+    cancellationsCount: cancellations.length,
     cancellationRatePct,
-    noShowsCount: noShows,
+    noShowsCount: noShows.length,
     pickupDistribution,
     vesselUtilization,
     guideAssignments: {
-      totalAssignments: totalAssignmentsCount,
-      assignedTours: assignedToursCount,
-      unassignedTours: unassignedToursCount,
+      totalAssignments: assignments.filter((assignment) => {
+        const date = String((assignment as any).date || '');
+        return date >= interval.startDate && date <= interval.endDate;
+      }).length,
+      assignedTours: assignedDepartures.length,
+      unassignedTours: unassignedDepartures.length,
       activeGuidesCount: activeGuides.length,
       guides: guideWorkload,
     },
