@@ -53,7 +53,7 @@ WITH destination_seo AS (
       ARRAY['Makadi Bay excursions', 'Makadi Bay tours', 'Red Sea experiences']::text[],
       FALSE
     )
-  ) AS values(slug, seo_title, meta_description, seo_keywords, robots_index)
+  ) AS v(slug, seo_title, meta_description, seo_keywords, robots_index)
 )
 UPDATE public.destinations AS d
 SET
@@ -73,7 +73,7 @@ WITH destination_seo AS (
     ('luxor', 'Luxor Tours & Day Trips | Awesome Adventure Tours', 'Explore Luxor temples and ancient sites. Check this page for verified, published day trips and current availability before planning your visit.', ARRAY['Luxor tours', 'Luxor day trips', 'Karnak Temple', 'Valley of the Kings']::text[], FALSE),
     ('sahl-hasheesh', 'Sahl Hasheesh Excursions | Awesome Adventure Tours', 'Explore Sahl Hasheesh and nearby Red Sea experiences. Bookable excursions will appear here when verified destination inventory is available.', ARRAY['Sahl Hasheesh excursions', 'Sahl Hasheesh tours', 'Red Sea experiences']::text[], FALSE),
     ('makadi-bay', 'Makadi Bay Excursions | Awesome Adventure Tours', 'Explore Makadi Bay and nearby Red Sea experiences. Bookable excursions will appear here when verified destination inventory is available.', ARRAY['Makadi Bay excursions', 'Makadi Bay tours', 'Red Sea experiences']::text[], FALSE)
-  ) AS values(slug, seo_title, meta_description, seo_keywords, robots_index)
+  ) AS v(slug, seo_title, meta_description, seo_keywords, robots_index)
 )
 INSERT INTO public.seo_metadata (
   entity_type, entity_id, page_slug, seo_title, meta_description, seo_keywords,
