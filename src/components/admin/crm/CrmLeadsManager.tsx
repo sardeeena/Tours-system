@@ -37,6 +37,7 @@ import { LeadStage, LeadSource } from '../../../types/crm';
 import { useToast } from '../../../contexts/ToastContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useCrmAssignableStaff } from '../../../hooks/useCrmAssignableStaff';
+import { AdminLoadError } from '../AdminLoadError';
 
 const STAGES: LeadStage[] = [
   'New',
@@ -83,6 +84,7 @@ export const CrmLeadsManager: React.FC = () => {
   const { staffMembers, staffLoading, staffError } = useCrmAssignableStaff();
   const [leads, setLeads] = useState<CrmLead[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [searchQuery, setSearchQuery] = useState('');
   const [stageFilter, setStageFilter] = useState<'all' | LeadStage>('all');
@@ -117,10 +119,12 @@ export const CrmLeadsManager: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const data = await listLeads();
       setLeads(data);
     } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'CRM leads could not be loaded.');
       console.warn('Failed to load leads:', err);
     } finally {
       setLoading(false);
@@ -260,6 +264,7 @@ export const CrmLeadsManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
