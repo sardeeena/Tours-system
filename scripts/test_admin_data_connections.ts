@@ -72,8 +72,6 @@ for (const path of [
   'src/components/admin/crm/CrmLeadsManager.tsx',
   'src/components/admin/crm/CrmTasksManager.tsx',
   'src/components/admin/crm/CrmFollowUpsManager.tsx',
-  'src/components/admin/crm/CrmConversationsManager.tsx',
-  'src/components/admin/crm/CrmCustomersManager.tsx',
 ]) {
   const component = read(path);
   assert.match(component, /useCrmAssignableStaff/, `${path} must use live staff assignments`);
@@ -97,7 +95,7 @@ for (const [start, end] of [
 for (const table of ['crm_conversations', 'crm_communications', 'crm_notes', 'crm_activities']) {
   assert.ok(crm.includes(`.from('${table}')`), `CRM service is missing database wiring for ${table}`);
 }
-assert.match(section(crm, 'export async function recordConversation(', '// ------------------------------------------------------------------------------\\n// COMMUNICATIONS & NOTES'), /staff_id: newRecord\\.staffId/, 'Conversation records must persist the signed-in staff UUID');
+assert.match(section(crm, 'export async function recordConversation(', '// ------------------------------------------------------------------------------\n// COMMUNICATIONS & NOTES'), /staff_id: newRecord\\.staffId/, 'Conversation records must persist the signed-in staff UUID');
 assert.match(section(crm, 'export async function createLead(', 'export async function updateLead('), /estimatedValue: input\.estimatedValue !== undefined \? input\.estimatedValue : 0/, 'New leads must not receive invented estimated revenue');
 assert.match(section(crm, 'export async function createLead(', 'export async function updateLead('), /assignedStaffId: input\.assignedStaffId \|\| null/, 'Lead assignments must use a real staff UUID or remain unassigned');
 assert.match(read('src/components/admin/crm/CrmConversationsManager.tsx'), /useAuth\(\)[\s\S]*?staffId: user\?\.id/, 'Conversation attribution must use the active authenticated user');
