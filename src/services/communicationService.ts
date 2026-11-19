@@ -526,7 +526,7 @@ export const DEFAULT_PROVIDER_CONFIG: ProviderConfig = {
     apiKey: '',
     phoneNumberId: '',
     businessAccountId: '',
-    fromNumber: '+20 100 456 7890',
+    fromNumber: '',
     isConfigured: false,
   },
 };
