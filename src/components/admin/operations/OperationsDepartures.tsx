@@ -117,14 +117,19 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
       showToast('Select a real tour and date, then enter the actual start time, end time, and positive capacity.', 'error');
       return;
     }
-    if (newEndTime <= newStartTime) {
-      showToast('End time must be later than start time.', 'error');
-      return;
-    }
-
     const selectedTour = tours.find((tour) => tour.id === newTourId);
     if (!selectedTour) {
       showToast('The selected tour is not available in the live database.', 'error');
+      return;
+    }
+
+    const durationHours = Number(selectedTour.durationHours || 0);
+    if (newEndTime === newStartTime && durationHours < 24) {
+      showToast('Equal start and end times require a tour duration of at least 24 hours.', 'error');
+      return;
+    }
+    if (newEndTime < newStartTime && durationHours <= 0) {
+      showToast('An overnight departure requires a configured tour duration.', 'error');
       return;
     }
 
@@ -136,6 +141,7 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
       date: selectedDate,
       start_time: newStartTime,
       end_time: newEndTime,
+      duration_hours: durationHours,
       capacity: newCapacity,
       status: newStatus,
       vessel_id: newVesselId || null,
