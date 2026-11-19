@@ -4,7 +4,7 @@ import fs from 'node:fs';
 const read = (path: string) => fs.readFileSync(path, 'utf8');
 const section = (source: string, start: string, end: string) => {
   const a = source.indexOf(start);
-  const b = source.indexOf(end, a + start.length);
+  const b = end ? source.indexOf(end, a + start.length) : source.length;
   assert.ok(a >= 0 && b > a, `Could not inspect source section: ${start}`);
   return source.slice(a, b);
 };
