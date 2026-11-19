@@ -18,34 +18,43 @@ import {
   Send,
   Calendar,
   AlertTriangle,
+  UserCheck,
 } from 'lucide-react';
 import {
   listInquiries,
   updateInquiryStatus,
   deleteInquiry,
+  convertInquiryToLead,
 } from '../../services/inquiryService';
 import { DbInquiry } from '../../types/database';
 import { useToast } from '../../contexts/ToastContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 export const AdminInquiriesList: React.FC = () => {
   const { showToast } = useToast();
+  const { hasPermission } = useAuth();
   const [inquiries, setInquiries] = useState<DbInquiry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'new' | 'contacted' | 'resolved'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'new' | 'contacted' | 'resolved' | 'converted'>('all');
   const [selectedInquiry, setSelectedInquiry] = useState<DbInquiry | null>(null);
   const [adminNoteInput, setAdminNoteInput] = useState('');
   const [updating, setUpdating] = useState(false);
+  const [converting, setConverting] = useState(false);
   const [inquiryToDelete, setInquiryToDelete] = useState<DbInquiry | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const data = await listInquiries();
       setInquiries(data);
     } catch (err) {
+      const message = err instanceof Error ? err.message : 'Could not load inquiry records.';
       console.error('Failed to load inquiries:', err);
+      setLoadError(message);
     } finally {
       setLoading(false);
     }
@@ -88,6 +97,27 @@ export const AdminInquiriesList: React.FC = () => {
       showToast(err.message || 'Failed to update inquiry status', 'error');
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const handleConvertToLead = async () => {
+    if (!selectedInquiry || selectedInquiry.status === 'converted') return;
+    setConverting(true);
+    try {
+      const lead = await convertInquiryToLead(selectedInquiry.id);
+      const updatedAt = new Date().toISOString();
+      setInquiries((previous) => previous.map((item) =>
+        item.id === selectedInquiry.id ? { ...item, status: 'converted', updated_at: updatedAt } : item
+      ));
+      setSelectedInquiry((previous) => previous
+        ? { ...previous, status: 'converted', updated_at: updatedAt }
+        : null
+      );
+      showToast(`Inquiry converted to CRM lead: ${lead.name}.`, 'success');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Inquiry conversion failed.', 'error');
+    } finally {
+      setConverting(false);
     }
   };
 
@@ -222,7 +252,7 @@ export const AdminInquiriesList: React.FC = () => {
         <div className="flex items-center space-x-2 w-full sm:w-auto">
           <Filter className="w-3.5 h-3.5 text-stone-400 shrink-0" />
           <div className="flex rounded-lg bg-stone-900 p-1 border border-stone-800 text-xs w-full sm:w-auto">
-            {(['all', 'new', 'contacted', 'resolved'] as const).map((status) => (
+            {(['all', 'new', 'contacted', 'resolved', 'converted'] as const).map((status) => (
               <button
                 key={status}
                 type="button"
@@ -246,6 +276,13 @@ export const AdminInquiriesList: React.FC = () => {
           <div className="p-12 text-center text-stone-400">
             <RefreshCw className="w-6 h-6 animate-spin mx-auto text-[#0A6C74] mb-2" />
             <p className="text-xs">Loading inquiries from database...</p>
+          </div>
+        ) : loadError ? (
+          <div role="alert" className="p-10 text-center">
+            <AlertCircle className="w-8 h-8 text-red-400 mx-auto mb-2" />
+            <p className="text-sm font-semibold text-red-200">Inquiry records could not be loaded</p>
+            <p className="text-xs text-red-300/80 mt-2">{loadError}</p>
+            <button type="button" onClick={loadData} className="mt-4 px-3 py-2 rounded-lg bg-[#0A6C74] text-white text-xs font-semibold">Retry</button>
           </div>
         ) : filteredInquiries.length === 0 ? (
           <div className="p-12 text-center text-stone-500 space-y-2">
@@ -302,6 +339,12 @@ export const AdminInquiriesList: React.FC = () => {
                           <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                             <CheckCircle2 className="w-3 h-3" />
                             <span>Resolved</span>
+                          </span>
+                        )}
+                        {inq.status === 'converted' && (
+                          <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-violet-500/20 text-violet-300 border border-violet-500/30">
+                            <UserCheck className="w-3 h-3" />
+                            <span>Converted</span>
                           </span>
                         )}
                       </td>
@@ -427,6 +470,7 @@ export const AdminInquiriesList: React.FC = () => {
                 <div className="mt-1">
                   <select
                     value={selectedInquiry.status}
+                    disabled={updating || selectedInquiry.status === 'converted'}
                     onChange={(e) =>
                       handleStatusChange(
                         selectedInquiry.id,
@@ -438,10 +482,23 @@ export const AdminInquiriesList: React.FC = () => {
                     <option value="new">New (Awaiting Reply)</option>
                     <option value="contacted">Contacted / In Progress</option>
                     <option value="resolved">Resolved</option>
+                    <option value="converted" disabled>Converted to Lead</option>
                   </select>
                 </div>
               </div>
             </div>
+
+            {hasPermission('crm.manage') && selectedInquiry.status !== 'converted' && (
+              <button
+                type="button"
+                onClick={handleConvertToLead}
+                disabled={converting || updating}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-violet-700 hover:bg-violet-600 disabled:opacity-50 text-white text-xs font-semibold"
+              >
+                <UserCheck className="w-4 h-4" />
+                {converting ? 'Converting…' : 'Convert to CRM Lead'}
+              </button>
+            )}
 
             {/* Message Body */}
             <div>
