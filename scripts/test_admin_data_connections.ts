@@ -38,7 +38,7 @@ const deleteTour = section(tours, 'export async function adminDeleteTour(', 'exp
 assert.match(deleteTour, /adminCheckTourBookingsCount\(id\)/, 'Tour deletion must verify linked booking count first');
 assert.match(deleteTour, /\.delete\(\)[\s\S]*?\.select\('id'\)/, 'Tour deletion must confirm a database row was deleted');
 
-const relationSync = section(tours, 'async function syncTourRelations(', 'export async function adminCreateTour(');
+const relationSync = section(tours, 'async function syncTourRelations(', 'export async function fetchTourCustomExtraPricesFromDb(');
 assert.match(relationSync, /ensureTourWrite\(/, 'Tour relation writes must check Supabase errors');
 assert.doesNotMatch(relationSync, /await supabase\.from\([^\n]+\)\.(?:delete|insert|upsert)\(/, 'Tour relation writes must not ignore Supabase result errors');
 
