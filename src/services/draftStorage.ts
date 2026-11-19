@@ -6,6 +6,8 @@ export interface BookingDraftState {
   selectedTourLanguage: string;
   currentStep: number;
   date: string;
+  departureId: string;
+  departureTime: string;
   guests: GuestCounts;
   pickupLocationId: string;
   hotelName: string;
@@ -23,6 +25,8 @@ export const INITIAL_DRAFT_STATE: BookingDraftState = {
   selectedTourLanguage: '',
   currentStep: 1,
   date: '',
+  departureId: '',
+  departureTime: '',
   guests: {
     adults: 2,
     children: 0,
