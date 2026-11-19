@@ -47,6 +47,8 @@ assert.match(llmsFull, /blog_posts/, 'Full AI index includes published travel ar
 assert.match(llmsFull, /\.in\('status', \['published', 'scheduled'\]\)/, 'Full AI index matches public scheduled-article visibility rules');
 assert.match(llmsFull, /booking-conditions/, 'Full AI index links to the official booking conditions');
 assert.match(llmsFull, /marine-safety/, 'Full AI index links to the official marine safety guidance');
+assert.match(llmsFull, /tour_pickup_locations/, 'Full AI index reads the approved tour-specific pickup mappings');
+assert.match(llmsFull, /Approved pickup zones and fees/, 'Full AI index exposes approved pickup zones and their actual supplements');
 assert.doesNotMatch(llmsFull, /from\('bookings'\)|from\('customers'\)|from\('payment_transactions'\)/, 'Full AI index excludes private booking, customer and payment records');
 
 assert.match(server, /from\('seo_metadata'\)[\s\S]*?eq\('robots_index', false\)/, 'SEO index exclusions are loaded from the authoritative metadata table');
