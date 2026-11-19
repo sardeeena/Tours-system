@@ -721,6 +721,8 @@ export interface Database {
           id: string;
           tour_id: string;
           date: string;
+          departure_id: string | null;
+          is_blackout: boolean;
           status: AvailabilityStatus;
           max_capacity: number;
           booked_count: number;
@@ -732,6 +734,8 @@ export interface Database {
           id?: string;
           tour_id: string;
           date: string;
+          departure_id?: string | null;
+          is_blackout?: boolean;
           status?: AvailabilityStatus;
           max_capacity?: number;
           booked_count?: number;
@@ -743,6 +747,8 @@ export interface Database {
           id?: string;
           tour_id?: string;
           date?: string;
+          departure_id?: string | null;
+          is_blackout?: boolean;
           status?: AvailabilityStatus;
           max_capacity?: number;
           booked_count?: number;
@@ -756,6 +762,13 @@ export interface Database {
             columns: ['tour_id'];
             isOneToOne: false;
             referencedRelation: 'tours';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'tour_availability_departure_id_fkey';
+            columns: ['departure_id'];
+            isOneToOne: false;
+            referencedRelation: 'departures';
             referencedColumns: ['id'];
           },
         ];
@@ -810,6 +823,10 @@ export interface Database {
           customer_id: string | null;
           tour_language: string | null;
           booking_date: string;
+          departure_id: string | null;
+          unit_price_adult: number;
+          unit_price_child: number;
+          customer_locale: string | null;
           status: BookingStatus;
           payment_status: PaymentStatus;
           payment_method: PaymentMethod;
@@ -840,6 +857,10 @@ export interface Database {
           customer_id?: string | null;
           tour_language?: string | null;
           booking_date: string;
+          departure_id?: string | null;
+          unit_price_adult?: number;
+          unit_price_child?: number;
+          customer_locale?: string | null;
           status?: BookingStatus;
           payment_status?: PaymentStatus;
           payment_method?: PaymentMethod;
@@ -870,6 +891,10 @@ export interface Database {
           customer_id?: string | null;
           tour_language?: string | null;
           booking_date?: string;
+          departure_id?: string | null;
+          unit_price_adult?: number;
+          unit_price_child?: number;
+          customer_locale?: string | null;
           status?: BookingStatus;
           payment_status?: PaymentStatus;
           payment_method?: PaymentMethod;
@@ -899,6 +924,13 @@ export interface Database {
             columns: ['tour_id'];
             isOneToOne: false;
             referencedRelation: 'tours';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'bookings_departure_id_fkey';
+            columns: ['departure_id'];
+            isOneToOne: false;
+            referencedRelation: 'departures';
             referencedColumns: ['id'];
           },
           {
@@ -1544,6 +1576,62 @@ export interface Database {
           p_special_requests: string | null;
           p_idempotency_key: string;
           p_tour_language: string;
+        };
+        Returns: Json;
+      };
+      create_booking_atomic_with_departure: {
+        Args: {
+          p_tour_identifier: string;
+          p_booking_date: string;
+          p_adult_count: number;
+          p_child_count: number;
+          p_infant_count: number;
+          p_customer_first_name: string;
+          p_customer_last_name: string;
+          p_customer_email: string;
+          p_customer_phone: string;
+          p_customer_country: string;
+          p_customer_hotel: string | null;
+          p_pickup_location_id: string | null;
+          p_pickup_room_number: string | null;
+          p_extras: Json;
+          p_coupon_code: string | null;
+          p_payment_method: string;
+          p_special_requests: string | null;
+          p_idempotency_key: string;
+          p_tour_language: string;
+          p_customer_locale: string;
+          p_departure_id: string;
+        };
+        Returns: Json;
+      };
+      get_tour_departure_slots: {
+        Args: { p_tour_identifier: string; p_date: string };
+        Returns: {
+          departure_id: string;
+          start_time: string;
+          end_time: string;
+          capacity: number;
+          booked_count: number;
+          remaining_capacity: number;
+          status: string;
+          is_available: boolean;
+          minimum_notice_hours: number;
+        }[];
+      };
+      upsert_departure_with_availability: {
+        Args: {
+          p_departure_id: string | null;
+          p_tour_id: string;
+          p_date: string;
+          p_start_time: string;
+          p_end_time: string;
+          p_capacity: number;
+          p_status: string;
+          p_vessel_id: string | null;
+          p_guide_id: string | null;
+          p_driver_id: string | null;
+          p_notes: string | null;
         };
         Returns: Json;
       };
