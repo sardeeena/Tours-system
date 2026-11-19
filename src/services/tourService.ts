@@ -628,6 +628,7 @@ export async function adminGetTourById(id: string): Promise<TourWithRelations | 
   };
 
   if (!isSupabaseConfigured() || isSchemaMissing()) {
+    if (import.meta.env.PROD) throw new Error('Tour editor is unavailable because the live tour database could not be verified.');
     return getLocalTour(id);
   }
 
@@ -651,20 +652,23 @@ export async function adminGetTourById(id: string): Promise<TourWithRelations | 
       .eq('id', id)
       .maybeSingle();
 
-    if (error || !data) {
-      if (error && isSchemaMissingError(error)) {
+    if (error) {
+      if (isSchemaMissingError(error)) {
         setSchemaMissing(true);
+        if (!import.meta.env.PROD) return getLocalTour(id);
       }
-      return getLocalTour(id);
+      throw new Error(formatSupabaseError(error));
     }
+    if (!data) return null;
 
     // Fetch SEO metadata
-    const { data: seoData } = await supabase
+    const { data: seoData, error: seoError } = await supabase
       .from('seo_metadata')
       .select('*')
       .eq('entity_type', 'tour')
       .eq('entity_id', id)
       .maybeSingle();
+    if (seoError) throw new Error(formatSupabaseError(seoError));
 
     return {
       ...data,
@@ -754,6 +758,7 @@ export async function adminCreateTour(payload: AdminTourPayload): Promise<{ id: 
   };
 
   if (!isSupabaseConfigured() || isSchemaMissing()) {
+    if (import.meta.env.PROD) throw new Error('Tour creation is unavailable because the live tour database could not be verified.');
     return createLocalTour();
   }
 
@@ -806,7 +811,7 @@ export async function adminCreateTour(payload: AdminTourPayload): Promise<{ id: 
   } catch (err) {
     if (isSchemaMissingError(err)) {
       setSchemaMissing(true);
-      console.warn('Supabase tours table not found in schema cache. Saved tour to local storage.');
+      if (import.meta.env.PROD) throw new Error('Tour creation failed because the live tour database schema could not be verified.');
       return createLocalTour();
     }
     console.error('Failed to create tour in Supabase:', err);
@@ -852,6 +857,7 @@ export async function adminUpdateTour(id: string, payload: AdminTourPayload): Pr
   };
 
   if (!isSupabaseConfigured() || isSchemaMissing()) {
+    if (import.meta.env.PROD) throw new Error('Tour updates are unavailable because the live tour database could not be verified.');
     return updateLocalTour();
   }
 
@@ -904,7 +910,7 @@ export async function adminUpdateTour(id: string, payload: AdminTourPayload): Pr
   } catch (err) {
     if (isSchemaMissingError(err)) {
       setSchemaMissing(true);
-      console.warn('Supabase tours table not found in schema cache. Updated tour in local storage.');
+      if (import.meta.env.PROD) throw new Error('Tour update failed because the live tour database schema could not be verified.');
       return updateLocalTour();
     }
     console.error('Failed to update tour in Supabase:', err);
@@ -1121,38 +1127,26 @@ async function syncTourRelations(tourId: string, payload: AdminTourPayload): Pro
  */
 export async function adminSetTourStatus(id: string, status: 'draft' | 'published' | 'archived'): Promise<void> {
   if (!isSupabaseConfigured() || isSchemaMissing()) {
-    const t = localTours.find((item) => item.id === id);
-    if (t) (t as any).status = status;
+    if (import.meta.env.PROD) throw new Error('Tour status cannot be changed because the live tour database could not be verified.');
+    const tour = localTours.find((item) => item.id === id);
+    if (tour) (tour as any).status = status;
     notifyCatalogueDataChanged('tours');
     return;
   }
 
-  try {
-    const { error } = await supabase
-      .from('tours')
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq('id', id);
+  const { data, error } = await supabase
+    .from('tours')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select('id')
+    .maybeSingle();
 
-    if (error) {
-      if (isSchemaMissingError(error)) {
-        setSchemaMissing(true);
-        const t = localTours.find((item) => item.id === id);
-        if (t) (t as any).status = status;
-        notifyCatalogueDataChanged('tours');
-        return;
-      }
-      throw new Error(formatSupabaseError(error));
-    }
-    notifyCatalogueDataChanged('tours');
-  } catch (err) {
-    if (isSchemaMissingError(err)) {
-      setSchemaMissing(true);
-      const t = localTours.find((item) => item.id === id);
-      if (t) (t as any).status = status;
-      return;
-    }
-    throw err;
+  if (error) {
+    if (isSchemaMissingError(error)) setSchemaMissing(true);
+    throw new Error(formatSupabaseError(error));
   }
+  if (!data) throw new Error('Tour status was not changed because the tour no longer exists or is not accessible.');
+  notifyCatalogueDataChanged('tours');
 }
 
 /**
@@ -1161,25 +1155,23 @@ export async function adminSetTourStatus(id: string, status: 'draft' | 'publishe
  */
 export async function adminCheckTourBookingsCount(id: string): Promise<number> {
   if (!isSupabaseConfigured() || isSchemaMissing()) {
+    if (import.meta.env.PROD) throw new Error('Cannot verify booking history; tour deletion is blocked until the live database is available.');
     return id.includes('orange-bay') || id.includes('tour-1') ? 1 : 0;
   }
 
-  try {
-    const { count, error } = await supabase
-      .from('bookings')
-      .select('*', { count: 'exact', head: true })
-      .eq('tour_id', id);
+  const { count, error } = await supabase
+    .from('bookings')
+    .select('id', { count: 'exact', head: true })
+    .eq('tour_id', id);
 
-    if (error) {
-      if (isSchemaMissingError(error)) {
-        setSchemaMissing(true);
-      }
-      return 0;
-    }
-    return count || 0;
-  } catch {
-    return 0;
+  if (error) {
+    if (isSchemaMissingError(error)) setSchemaMissing(true);
+    throw new Error(`Could not verify existing bookings for this tour: ${formatSupabaseError(error)}`);
   }
+  if (count === null || count === undefined) {
+    throw new Error('Could not verify existing bookings for this tour. Deletion is blocked for safety.');
+  }
+  return count;
 }
 
 /**
@@ -1194,25 +1186,29 @@ export async function adminDeleteTour(id: string): Promise<void> {
   }
 
   if (!isSupabaseConfigured() || isSchemaMissing()) {
+    if (import.meta.env.PROD) throw new Error('Tour deletion is unavailable because the live tour database could not be verified.');
     localTours = localTours.filter((t) => t.id !== id);
     return;
   }
 
   try {
-    const { error } = await supabase.from('tours').delete().eq('id', id);
+    const { data, error } = await supabase.from('tours').delete().eq('id', id).select('id').maybeSingle();
     if (error) {
       if (isSchemaMissingError(error)) {
         setSchemaMissing(true);
+        if (import.meta.env.PROD) throw new Error('Tour deletion failed because the live tour database schema could not be verified.');
         localTours = localTours.filter((t) => t.id !== id);
         notifyCatalogueDataChanged('tours');
         return;
       }
       throw new Error(formatSupabaseError(error));
     }
+    if (!data) throw new Error('Tour was not deleted because it no longer exists or is not accessible.');
     notifyCatalogueDataChanged('tours');
   } catch (err) {
     if (isSchemaMissingError(err)) {
       setSchemaMissing(true);
+      if (import.meta.env.PROD) throw new Error('Tour deletion failed because the live tour database schema could not be verified.');
       localTours = localTours.filter((t) => t.id !== id);
       notifyCatalogueDataChanged('tours');
       return;
@@ -1405,7 +1401,10 @@ export async function getPublishedCategories(): Promise<Category[]> {
  * Lists destinations for admin management or selective filtering
  */
 export async function getDestinations(options?: { publishedOnly?: boolean }): Promise<DbDestination[]> {
-  if (!isSupabaseConfigured()) return [];
+  if (!isSupabaseConfigured()) {
+    if (import.meta.env.PROD) throw new Error('Supabase is not configured; destination records cannot be loaded in production.');
+    return [];
+  }
 
   let query = supabase
     .from('destinations')
@@ -1429,7 +1428,10 @@ export async function getDestinations(options?: { publishedOnly?: boolean }): Pr
  * Lists categories for admin management or selective filtering
  */
 export async function getCategories(options?: { publishedOnly?: boolean }): Promise<DbCategory[]> {
-  if (!isSupabaseConfigured()) return [];
+  if (!isSupabaseConfigured()) {
+    if (import.meta.env.PROD) throw new Error('Supabase is not configured; category records cannot be loaded in production.');
+    return [];
+  }
 
   let query = supabase
     .from('categories')
