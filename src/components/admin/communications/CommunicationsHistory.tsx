@@ -35,6 +35,7 @@ import {
   AutomationEventType,
 } from '../../../types/communication';
 import { useToast } from '../../../contexts/ToastContext';
+import { AdminLoadError } from '../AdminLoadError';
 import { useAuth } from '../../../contexts/AuthContext';
 
 interface CommunicationsHistoryProps {
@@ -50,6 +51,7 @@ export const CommunicationsHistory: React.FC<CommunicationsHistoryProps> = ({ on
   const [messages, setMessages] = useState<CommunicationMessage[]>([]);
   const [automationEvents, setAutomationEvents] = useState<AutomationEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,6 +66,7 @@ export const CommunicationsHistory: React.FC<CommunicationsHistoryProps> = ({ on
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const [allMsgs, allEvents] = await Promise.all([
         listCommunicationMessages(),
@@ -72,6 +75,7 @@ export const CommunicationsHistory: React.FC<CommunicationsHistoryProps> = ({ on
       setMessages(allMsgs);
       setAutomationEvents(allEvents);
     } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'Communication history could not be loaded.');
       console.error('Failed to load communication history:', err);
     } finally {
       setLoading(false);
@@ -188,6 +192,7 @@ export const CommunicationsHistory: React.FC<CommunicationsHistoryProps> = ({ on
 
   return (
     <div className="space-y-6">
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-stone-900 border border-stone-800 p-5 rounded-xl shadow-lg">
         <div className="flex items-center space-x-3">
