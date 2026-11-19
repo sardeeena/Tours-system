@@ -168,7 +168,7 @@ class SupabaseBookingRepository implements IBookingRepository {
       // 1. Authoritative Primary Path: create_booking_atomic RPC
       // Executes single PostgreSQL transaction with row-level capacity lock, server-side pricing,
       // passenger manifest creation, extras persistence, genuine request idempotency, and audit logging.
-      const { data: atomicRes, error: rpcErr } = await supabase.rpc('create_booking_atomic_with_locale', {
+      const { data: atomicRes, error: rpcErr } = await supabase.rpc('create_booking_atomic_with_departure', {
         p_tour_identifier: resolveBookingTourIdentifier(booking.tourId, booking.tourSlug),
         p_booking_date: bookingDateStr,
         p_adult_count: adults,
@@ -740,6 +740,8 @@ class SupabaseBookingRepository implements IBookingRepository {
       tourLanguage: data.tour_language || undefined,
       customerLocale: data.customer_locale || customer.preferred_locale || 'en',
       date: data.booking_date,
+      departureId: data.departure_id || undefined,
+      departureTime: data.departures?.start_time || data.departure_time || tour.departure_time || undefined,
       guests: {
         adults: data.adult_count || 1,
         children: data.child_count || 0,
@@ -846,6 +848,8 @@ class SupabaseBookingRepository implements IBookingRepository {
       tourDuration: tour.duration || 'Full Day (approx. 7 hours)',
       tourLanguage: sec.tourLanguage || undefined,
       date: sec.bookingDate,
+      departureId: sec.departureId || sec.departure?.id || undefined,
+      departureTime: sec.departureTime || sec.departure?.startTime || sec.departure?.start_time || undefined,
       guests: {
         adults: guests.adults || 1,
         children: guests.children || 0,
