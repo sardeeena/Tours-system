@@ -157,6 +157,14 @@ assert.match(bookingsByEmail, /if \(profileError\) throw/, 'Booking directory mu
 assert.match(bookingsByEmail, /if \(userQueryError\) throw/, 'Booking directory must surface fallback query failures');
 assert.match(bookingsByEmail, /if \(!isDevelopmentBuild\) throw/, 'Production customer booking lookup must not use browser cache');
 
+const newsletter = read('src/services/newsletterService.ts');
+const updateSubscriber = section(newsletter, 'export async function updateSubscriberStatus(', 'export async function deleteSubscriber(');
+assert.match(updateSubscriber, /\.select\('id'\)[\s\S]*?\.maybeSingle\(\)/, 'Newsletter status updates must confirm an affected subscriber row');
+assert.match(updateSubscriber, /if \(!result\.data\?\.id\) throw/, 'Newsletter status updates must not report success for a missing subscriber');
+const deleteSubscriber = section(newsletter, 'export async function deleteSubscriber(', '');
+assert.match(deleteSubscriber, /\.select\('id'\)[\s\S]*?\.maybeSingle\(\)/, 'Newsletter deletion must confirm an affected subscriber row');
+assert.match(deleteSubscriber, /if \(!result\.data\?\.id\) throw/, 'Newsletter deletion must not report success for a missing subscriber');
+
 const inquiryService = read('src/services/inquiryService.ts');
 const createInquiry = section(inquiryService, 'export async function createCustomerInquiry(', '/**\n * Lists all inquiries');
 assert.match(createInquiry, /\.from\('inquiries'\)[\s\S]*?\.insert\(/, 'Public inquiry submissions must persist to the inquiries table');
