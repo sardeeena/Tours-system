@@ -468,7 +468,7 @@ export async function adminListTours(filters?: {
       departure_time: t.departureTime,
       available_days: t.availableDays,
       languages: t.languages,
-      difficulty: t.difficulty || 'Easy',
+      difficulty: t.difficulty || null,
       age_restrictions: t.ageRestrictions || null,
       badge: t.badge || null,
       rating: t.rating,
