@@ -310,7 +310,7 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <a href="/about" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">About Awesome Adventure Tours</a>
               <li>
-                <a href="https://www.tripadvisor.co.uk/Attraction_Review-g297549-d34759384-Reviews-Awesome_Adventure_Tours-Hurghada_Red_Sea_and_Sinai.html" target="_blank" rel="noopener noreferrer" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">TripAdvisor Reviews</a>
+                <a href="https://www.tripadvisor.co.uk/Attraction_Review-g297549-d34759384-Reviews-Awesome_Adventure_Tours-Hurghada_Red_Sea_and_Sinai.html" target="_blank" rel="noopener noreferrer" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">TripAdvisor Profile</a>
               </li>
               </li>
               <li>
