@@ -11,8 +11,8 @@
     "static_page": 10,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1081,
-    "ui_catalog_messages": 1162,
+    "private_ui_messages": 1079,
+    "ui_catalog_messages": 1160,
     "source_records": 111
   },
   "records": [
@@ -2860,7 +2860,6 @@
         "private.text.097d9e8d": "Annulations et remboursements ",
         "private.text.09d26e8d": "Envoi en cours...",
         "private.text.09d80116": "Vous n’avez pas encore de compte ?",
-        "private.text.09d906fe": "Annulation gratuite jusqu’à 24 heures avant la prise en charge. ",
         "private.text.09f3c039": "Client",
         "private.text.0a3274cb": "Rechercher ",
         "private.text.0b3aa6ec": "Filtres",
@@ -3797,7 +3796,6 @@
         "private.text.ecbba0e5": "Le service d’assistance est temporairement indisponible. Veuillez réessayer plus tard.",
         "private.text.ecc43bc2": "Mes réservations et bons",
         "private.text.ecd582c2": "Réservation confirmée et transmise",
-        "private.text.ed17c2d9": "Confirmation instantanée de réservation. Annulation gratuite jusqu’à 24 heures avant la prise en charge.",
         "private.text.ed9a36fb": "Posez vos questions sur les sorties dauphins, les bancs de sable des îles, les enfants...",
         "private.text.ee888e84": "Nom de l’hôtel / du resort",
         "private.text.eefe12e8": "Assistance WhatsApp",
