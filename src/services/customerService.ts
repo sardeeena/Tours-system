@@ -5,6 +5,7 @@ import { getStoredLocalUsers, LOCAL_USERS_KEY } from './authService';
 
 export interface UnifiedCustomer {
   id: string;
+  customerRecordId?: string | null;
   fullName: string;
   email: string;
   phone?: string | null;
@@ -18,8 +19,6 @@ export interface UnifiedCustomer {
   createdAt: string;
   avatarUrl?: string | null;
 }
-
-const SEED_CUSTOMERS: UnifiedCustomer[] = [];
 
 const LOCAL_CUSTOMERS_KEY = 'rse_customers_cache';
 
@@ -67,7 +66,7 @@ export async function listUnifiedCustomers(): Promise<UnifiedCustomer[]> {
       if (!email) return;
       customerMap.set(email, {
         id: profile.id,
-        fullName: profile.full_name || email.split('@')[0],
+        fullName: profile.full_name || 'Not provided',
         email,
         phone: profile.phone,
         country: profile.country,
@@ -76,7 +75,7 @@ export async function listUnifiedCustomers(): Promise<UnifiedCustomer[]> {
         totalBookings: 0,
         totalSpentEur: 0,
         avatarUrl: profile.avatar_url,
-        createdAt: profile.created_at || new Date().toISOString(),
+        createdAt: profile.created_at || '',
       });
     });
 
@@ -84,16 +83,18 @@ export async function listUnifiedCustomers(): Promise<UnifiedCustomer[]> {
       const email = (customer.email || '').toLowerCase().trim();
       if (!email) return;
       const existing = customerMap.get(email);
-      const fullName = `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || email.split('@')[0];
+      const fullName = `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Not provided';
 
       if (existing) {
+        existing.customerRecordId = customer.id;
         existing.hotel = existing.hotel || customer.hotel;
         existing.phone = existing.phone || customer.phone;
         existing.country = existing.country || customer.country;
-        if (existing.fullName === email.split('@')[0] && fullName) existing.fullName = fullName;
+        if (existing.fullName === 'Not provided' && fullName !== 'Not provided') existing.fullName = fullName;
       } else {
         customerMap.set(email, {
           id: customer.id,
+          customerRecordId: customer.id,
           fullName,
           email,
           phone: customer.phone,
@@ -103,7 +104,7 @@ export async function listUnifiedCustomers(): Promise<UnifiedCustomer[]> {
           isRegistered: Boolean(customer.user_id),
           totalBookings: 0,
           totalSpentEur: 0,
-          createdAt: customer.created_at || new Date().toISOString(),
+          createdAt: customer.created_at || '',
         });
       }
     });
@@ -123,7 +124,7 @@ export async function listUnifiedCustomers(): Promise<UnifiedCustomer[]> {
         totalBookings: 0,
         totalSpentEur: 0,
         avatarUrl: user.avatarUrl,
-        createdAt: new Date().toISOString(),
+        createdAt: '',
       });
     });
 
@@ -143,8 +144,9 @@ export async function listUnifiedCustomers(): Promise<UnifiedCustomer[]> {
     let customer = customerMap.get(email);
     if (!customer) {
       customer = {
-        id: localMode ? `cust-bk-${booking.bookingReference}` : (booking.customerId || `cust-bk-${booking.bookingReference}`),
-        fullName: `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() || 'Guest Traveler',
+        id: booking.customerId || `booking-customer:${booking.bookingReference}`,
+        customerRecordId: null,
+        fullName: `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() || 'Not provided',
         email,
         phone: `${booking.customer.countryCode || ''} ${booking.customer.phoneNumber || ''}`.trim() || null,
         country: booking.customer.country || null,
@@ -153,23 +155,24 @@ export async function listUnifiedCustomers(): Promise<UnifiedCustomer[]> {
         isRegistered: false,
         totalBookings: 0,
         totalSpentEur: 0,
-        createdAt: booking.date || new Date().toISOString(),
+        createdAt: booking.createdAt || booking.date || '',
       };
       customerMap.set(email, customer);
     }
 
+    if (booking.status === 'cancelled' || booking.status === 'cancellation_requested') return;
     customer.totalBookings += 1;
-    customer.totalSpentEur += booking.pricing?.totalEur || 0;
+    customer.totalSpentEur += Number(booking.pricing?.totalEur) || 0;
     customer.hotel = customer.hotel || booking.pickup.hotelName || booking.customer.hotelName;
-    if (!customer.lastBookingDate || booking.date > customer.lastBookingDate) {
-      customer.lastBookingDate = booking.date;
+    if (!customer.lastBookingDate || (booking.date && booking.date > customer.lastBookingDate)) {
+      customer.lastBookingDate = booking.date || null;
     }
   });
 
   const result = Array.from(customerMap.values()).sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
-  saveStoredCustomers(result);
+  if (import.meta.env.DEV) saveStoredCustomers(result);
   return result;
 }
 
