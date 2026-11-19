@@ -232,6 +232,44 @@ BEGIN
 END;
 $function$;
 
+CREATE OR REPLACE FUNCTION private.sync_tour_availability_blackout_status()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $function$
+DECLARE
+  v_has_confirmed BOOLEAN := FALSE;
+  v_has_open_confirmed BOOLEAN := FALSE;
+BEGIN
+  IF NEW.is_blackout THEN
+    NEW.status := 'unavailable';
+    RETURN NEW;
+  END IF;
+
+  SELECT
+    coalesce(bool_or(d.status = 'confirmed'),FALSE),
+    coalesce(bool_or(d.status = 'confirmed' AND d.remaining_capacity > 0),FALSE)
+  INTO v_has_confirmed,v_has_open_confirmed
+  FROM public.departures AS d
+  WHERE d.tour_id = NEW.tour_id AND d.date = NEW.date;
+
+  NEW.status := CASE
+    WHEN NOT v_has_confirmed THEN 'unavailable'
+    WHEN v_has_open_confirmed THEN 'available'
+    ELSE 'sold_out'
+  END;
+  RETURN NEW;
+END;
+$function$;
+
+DROP TRIGGER IF EXISTS trg_sync_tour_availability_blackout_status ON public.tour_availability;
+CREATE TRIGGER trg_sync_tour_availability_blackout_status
+BEFORE INSERT OR UPDATE OF is_blackout
+ON public.tour_availability
+FOR EACH ROW
+EXECUTE FUNCTION private.sync_tour_availability_blackout_status();
+
 CREATE OR REPLACE FUNCTION private.assign_booking_to_scheduled_departure()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -427,6 +465,7 @@ EXECUTE FUNCTION private.sync_departure_availability_status();
 REVOKE ALL ON FUNCTION private.upsert_departure_with_availability(UUID,UUID,DATE,TEXT,TEXT,INTEGER,TEXT,UUID,UUID,UUID,TEXT) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION private.upsert_departure_with_availability(UUID,UUID,DATE,TEXT,TEXT,INTEGER,TEXT,UUID,UUID,UUID,TEXT) TO service_role;
 
+REVOKE ALL ON FUNCTION private.sync_tour_availability_blackout_status() FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION private.assign_booking_to_scheduled_departure() FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION private.sync_scheduled_departure_capacity() FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION private.sync_departure_availability_status() FROM PUBLIC, anon, authenticated;
@@ -686,6 +725,7 @@ BEGIN
   WHERE d.tour_id = v_tour.id
     AND d.date = p_date
     AND d.status = 'confirmed'
+    AND ta.id IS NOT NULL
     AND NOT coalesce(ta.is_blackout,FALSE)
   ORDER BY d.start_time,d.id;
 END;
@@ -709,7 +749,6 @@ RETURNS TABLE(
   minimum_notice_hours INTEGER
 )
 LANGUAGE sql
-STABLE
 SET search_path = ''
 AS $function$
   SELECT *
