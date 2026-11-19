@@ -24,7 +24,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'mobile.popularTours': 'Popular Tours & Island Trips',
     'mobile.destinationsDetailed': 'Destinations (Hurghada, El Gouna, Marsa Alam)',
     'mobile.categories': 'Tour Categories',
-    'mobile.safety': 'Safety & Guarantees',
+    'mobile.safety': 'Safety & Booking Information',
     'mobile.reviews': 'Customer Reviews',
     'mobile.findBookingSubtitle': 'My Booking (View & Cancel)',
     'mobile.contactWhatsApp': 'Contact us on WhatsApp',
@@ -128,16 +128,16 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     "mobile.popularTours": "Excursions populaires et sorties sur les îles",
     "mobile.destinationsDetailed": "Destinations (Hurghada, El Gouna, Marsa Alam)",
     "mobile.categories": "Catégories d’excursions",
-    "mobile.safety": "Sécurité et garanties",
+    "mobile.safety": "Sécurité et informations de réservation",
     "mobile.reviews": "Avis des clients",
     "mobile.findBookingSubtitle": "Ma réservation (consulter et annuler)",
     "mobile.contactWhatsApp": "Contactez-nous sur WhatsApp",
     "mobile.selectLanguage": "Choisir la langue",
     "hero.badge": "Opérateur local à Hurghada et El Gouna",
-    "hero.guestsHosted": "Départs vérifiés chaque jour",
+    "hero.guestsHosted": "Consultez les dates de départ disponibles",
     "hero.title1": "Explorez la mer Rouge",
     "hero.title2": "avec des capitaines locaux",
-    "hero.subtitle": "Excursions en bateau avec snorkeling, visites d’îles et safaris en quad dans le désert, au départ quotidien de Hurghada, El Gouna et Makadi Bay. Opérateur local direct, prise en charge à l’hôtel et tarifs transparents.",
+    "hero.subtitle": "Découvrez des sorties en bateau avec snorkeling, des excursions sur les îles et des safaris dans le désert au départ de Hurghada et des destinations voisines de la mer Rouge. Vérifiez les jours de départ, les options de prise en charge et les disponibilités pour chaque excursion.",
     "hero.guarantee1": "La météo peut modifier les départs",
     "hero.guarantee2": "Annulation gratuite jusqu’à 24 h avant le départ",
     "hero.guarantee3": "Zones de prise en charge et suppléments indiqués par excursion",
@@ -154,7 +154,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     "search.ageAdult": "12 ans et plus",
     "search.ageChild": "De 4 à 11 ans",
     "popular.title": "Excursions populaires en mer Rouge",
-    "popular.subtitle": "Toutes les excursions comprennent la prise en charge à l’hôtel, l’équipement de snorkeling et les frais obligatoires du parc marin.",
+    "popular.subtitle": "Pour chaque excursion, consultez les prestations incluses, les options de prise en charge et les éventuels frais de parc marin.",
     "popular.viewAll": "Voir toutes les excursions",
     "popular.quickBook": "Réserver",
     "popular.viewDetails": "Voir l’excursion",
@@ -212,13 +212,13 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     "mobile.popularTours": "Populaire tours en eilandtrips",
     "mobile.destinationsDetailed": "Bestemmingen (Hurghada, El Gouna, Marsa Alam)",
     "mobile.categories": "Tourcategorieën",
-    "mobile.safety": "Veiligheid en garanties",
+    "mobile.safety": "Veiligheid en boekingsinformatie",
     "mobile.reviews": "Klantbeoordelingen",
     "mobile.findBookingSubtitle": "Mijn boeking (bekijken en annuleren)",
     "mobile.contactWhatsApp": "Neem contact met ons op via WhatsApp",
     "mobile.selectLanguage": "Selecteer taal",
     "hero.badge": "Rechtstreekse touroperator in Hurghada en El Gouna",
-    "hero.guestsHosted": "Dagelijks gecontroleerde vertrekken",
+    "hero.guestsHosted": "Bekijk beschikbare vertrekdata",
     "hero.title1": "Ontdek de Rode Zee",
     "hero.title2": "met lokale kapiteins",
     "hero.subtitle": "Ontdek snorkelboottochten, eilandexcursies en woestijnsafari's vanuit Hurghada en nabijgelegen bestemmingen aan de Rode Zee. Controleer per excursie de vertrekdagen, ophaalopties en beschikbaarheid.",
@@ -301,7 +301,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'mobile.popularTours': 'Beliebte Touren & Inselfahrten',
     'mobile.destinationsDetailed': 'Reiseziele (Hurghada, El Gouna, Marsa Alam)',
     'mobile.categories': 'Erlebniskategorien',
-    'mobile.safety': 'Sicherheits- & Garantiestandards',
+    'mobile.safety': 'Sicherheit und Buchungsinformationen',
     'mobile.reviews': 'Kundenbewertungen',
     'mobile.findBookingSubtitle': 'Meine Buchung (Einsehen & Stornieren)',
     'mobile.contactWhatsApp': 'Kontaktieren Sie uns auf WhatsApp',
@@ -309,7 +309,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
 
     // Hero Section
     'hero.badge': 'Direkter Bootsveranstalter in Hurghada & El Gouna',
-    'hero.guestsHosted': 'Tägliche verifizierte Abfahrten',
+    'hero.guestsHosted': 'Verfügbare Abfahrtsdaten prüfen',
     'hero.title1': 'Erkunden Sie das Rote Meer',
     'hero.title2': 'mit erfahrenen Kapitänen',
     'hero.subtitle':
@@ -410,7 +410,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'mobile.popularTours': 'Популярные экскурсии и острова',
     'mobile.destinationsDetailed': 'Направления (Хургада, Эль-Гуна, Марса-Алам)',
     'mobile.categories': 'Категории экскурсий',
-    'mobile.safety': 'Стандарты безопасности и гарантии',
+    'mobile.safety': 'Безопасность и информация о бронировании',
     'mobile.reviews': 'Отзывы гостей',
     'mobile.findBookingSubtitle': 'Мое бронирование (просмотр и отмена)',
     'mobile.contactWhatsApp': 'Написать нам в WhatsApp',
@@ -418,11 +418,11 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
 
     // Hero Section
     'hero.badge': 'Прямой оператор в Хургаде и Эль-Гуне',
-    'hero.guestsHosted': 'Ежедневные гарантированные отправления',
+    'hero.guestsHosted': 'Проверьте доступные даты отправления',
     'hero.title1': 'Откройте Красное море',
     'hero.title2': 'с местными капитанами',
     'hero.subtitle':
-      'Морские прогулки, сноркелинг на рифах и сафари на квадроциклах ежедневно из Хургады, Эль-Гуны и Макади-Бей. Прямой организатор, трансфер из отеля и честные цены без посредников.',
+      'Откройте для себя морские прогулки со снорклингом, поездки на острова и сафари на квадроциклах в пустыне из Хургады и ближайших курортов Красного моря. Для каждой экскурсии проверьте дни отправления, варианты трансфера и наличие мест.',
     'hero.guarantee1': 'Погодные условия могут повлиять на отправление',
     'hero.guarantee2': 'Бесплатная отмена за 24 часа до начала',
     'hero.guarantee3': 'Зоны трансфера и доплаты указаны для каждого тура',
@@ -444,7 +444,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     // Popular Tours Section
     'popular.title': 'Популярные экскурсии на Красном море',
     'popular.subtitle':
-      'Все экскурсии включают трансфер от отеля, снаряжение для сноркелинга и сборы заповедников.',
+      'Для каждой экскурсии указаны включённые услуги, варианты трансфера и возможные сборы за посещение морских заповедников.',
     'popular.viewAll': 'Смотреть все экскурсии',
     'popular.quickBook': 'Забронировать',
     'popular.viewDetails': 'Смотреть тур',
@@ -519,7 +519,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'mobile.popularTours': 'Tour Popolari & Isole',
     'mobile.destinationsDetailed': 'Destinazioni (Hurghada, El Gouna, Marsa Alam)',
     'mobile.categories': 'Categorie di Tour',
-    'mobile.safety': 'Sicurezza & Garanzie',
+    'mobile.safety': 'Sicurezza e informazioni sulla prenotazione',
     'mobile.reviews': 'Recensioni dei Clienti',
     'mobile.findBookingSubtitle': 'La Mia Prenotazione (Vedi & Annulla)',
     'mobile.contactWhatsApp': 'Contattaci su WhatsApp',
@@ -527,7 +527,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
 
     // Hero Section
     'hero.badge': 'Operatore Diretto a Hurghada & El Gouna',
-    'hero.guestsHosted': 'Partenze Giornaliere Garantite',
+    'hero.guestsHosted': 'Verifica le date di partenza disponibili',
     'hero.title1': 'Esplora il Mar Rosso',
     'hero.title2': 'con Capitani Locali',
     'hero.subtitle':
@@ -628,7 +628,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'mobile.popularTours': 'Tururi Populare & Insule',
     'mobile.destinationsDetailed': 'Destinații (Hurghada, El Gouna, Marsa Alam)',
     'mobile.categories': 'Categorii de Excursii',
-    'mobile.safety': 'Siguranță & Garanții',
+    'mobile.safety': 'Siguranță și informații despre rezervare',
     'mobile.reviews': 'Recenzii Clienți',
     'mobile.findBookingSubtitle': 'Rezervarea Mea (Vizualizează & Anulează)',
     'mobile.contactWhatsApp': 'Contactează-ne pe WhatsApp',
@@ -636,7 +636,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
 
     // Hero Section
     'hero.badge': 'Operator Direct în Hurghada & El Gouna',
-    'hero.guestsHosted': 'Plecări Zilnice Verificate',
+    'hero.guestsHosted': 'Verifică datele de plecare disponibile',
     'hero.title1': 'Explorează Marea Roșie',
     'hero.title2': 'cu Căpitani Locali',
     'hero.subtitle':
@@ -736,7 +736,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'mobile.popularTours': 'Popularne wycieczki i rejsy na wyspy',
     'mobile.destinationsDetailed': 'Destynacje (Hurghada, El Gouna, Marsa Alam)',
     'mobile.categories': 'Kategorie wycieczek',
-    'mobile.safety': 'Bezpieczeństwo i gwarancje',
+    'mobile.safety': 'Bezpieczeństwo i informacje o rezerwacji',
     'mobile.reviews': 'Opinie klientów',
     'mobile.findBookingSubtitle': 'Moja rezerwacja (sprawdź i anuluj)',
     'mobile.contactWhatsApp': 'Skontaktuj się z nami przez WhatsApp',
@@ -744,7 +744,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
 
     // Sekcja główna
     'hero.badge': 'Bezpośredni organizator wycieczek w Hurghadzie i El Gounie',
-    'hero.guestsHosted': 'Codziennie potwierdzane wypłynięcia',
+    'hero.guestsHosted': 'Sprawdź dostępne terminy wyjazdów',
     'hero.title1': 'Odkryj Morze Czerwone',
     'hero.title2': 'z lokalnymi kapitanami',
     'hero.subtitle': 'Poznaj rejsy ze snorkelingiem, wycieczki na wyspy i pustynne safari quadami z Hurghady i pobliskich miejscowości nad Morzem Czerwonym. Sprawdź dni wyjazdów, opcje odbioru i dostępność każdej wycieczki.',
