@@ -5744,10 +5744,11 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       url: canonical,
       image: pageImage !== `${origin}/logo.webp` ? [pageImage] : undefined,
       provider: { '@id': `${origin}/#organization` },
-      ...(Number.isFinite(price) && price > 0 ? {
-        subjectOf: { '@type': 'Product', name: seoPlainText(currentTour.title, 160),
-          offers: { '@type': 'Offer', url: canonical, price, priceCurrency: currency, seller: { '@id': `${origin}/#organization` } } },
-      } : {}),
+      // Excursions are TouristTrip entities, not retail Products. Nesting a
+      // Product/Offer here makes Google classify tours as merchant listings and
+      // demand retail-only fields (GTIN, shipping and return policies). Keep the
+      // real price visible in page content; do not emit unsupported retail schema
+      // or invent availability while departures remain unconfirmed.
     });
   } else if (pageKind === 'blog' && currentBlogPost) {
     graph.push({

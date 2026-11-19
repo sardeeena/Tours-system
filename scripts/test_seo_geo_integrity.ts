@@ -123,6 +123,7 @@ assert.match(server, /Office: 2nd floor, Bostan Cafe, Madres, Hurghada, Red Sea 
 assert.doesNotMatch(server, /Hurghada New Marina, Berth B-14/, 'Homepage Markdown response does not expose the retired office address');
 assert.ok(server.includes('Starting price: ${price}'), 'Homepage Markdown response exposes verified published tour prices');
 assert.doesNotMatch(schema, /aggregateRating|reviewRating|openingHoursSpecification|priceRange|geo:/, 'Schema does not invent reviews, hours, prices or geographic coordinates');
+assert.doesNotMatch(schema, /'@type': 'Product'/, 'Excursion TouristTrip schema is not misclassified as a retail Product or merchant listing');
 assert.match(adminSeo, /contentLength >= 650/, 'Admin destination indexability threshold matches the public renderer and sitemap');
 assert.doesNotMatch(adminSeo, /contentLength >= 300/, 'Admin does not mark thin destinations indexable below the public threshold');
 assert.match(destinationDetail, /RED_SEA_DESTINATION_SLUGS/, 'Destination detail pages use a destination-aware geographic label');
