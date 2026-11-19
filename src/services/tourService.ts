@@ -105,6 +105,7 @@ export function mapDbTourToFrontendTour(
     fullDescription: dbTour.description || '',
     highlights: sortedHighlights,
     itinerary: sortedItinerary,
+    faqs: sortedFaqs.filter((faq) => faq.section === 'faq').map((faq) => ({ question: faq.question, answer: faq.answer })),
     included: sortedInclusions,
     excluded: sortedExclusions,
     whatToBring,
