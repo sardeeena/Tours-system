@@ -224,12 +224,16 @@ export const AdminExtrasList: React.FC<AdminExtrasListProps> = ({ onNavigateTab 
 
     if (isSupabaseConfigured()) {
       try {
-        await Promise.all([
+        const results = await Promise.all([
           supabase.from('tour_extras').update({ sort_order: targetSort }).eq('id', extra.id),
           supabase.from('tour_extras').update({ sort_order: currentSort }).eq('id', targetExtra.id),
         ]);
+        const failed = results.find((result) => result.error);
+        if (failed?.error) throw new Error(formatSupabaseError(failed.error));
         notifyCatalogueDataChanged('extras');
       } catch (err) {
+        setExtras(extras);
+        showToast(err instanceof Error ? err.message : 'The add-on order could not be saved.', 'error');
         console.warn('Failed to persist reorder in Supabase:', err);
       }
     }
@@ -306,6 +310,7 @@ export const AdminExtrasList: React.FC<AdminExtrasListProps> = ({ onNavigateTab 
       const combined = [...extrasFolder, ...toursFolder.filter((t) => !extrasFolder.some((e) => e.url === t.url))];
       setMediaAssets(combined);
     } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Media assets could not be loaded.', 'error');
       console.warn('Failed to load media assets:', err);
     } finally {
       setLoadingMedia(false);
