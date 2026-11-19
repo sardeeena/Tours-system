@@ -180,7 +180,7 @@ function applyLeadClientFilters(
     if (filter?.stage && filter.stage !== 'all' && l.stage !== filter.stage) return false;
     if (filter?.source && filter.source !== 'all' && l.source !== filter.source) return false;
     if (filter?.status && filter.status !== 'all' && l.status !== filter.status) return false;
-    if (filter?.staff && filter.staff !== 'all' && l.assignedStaffName !== filter.staff) return false;
+    if (filter?.staff && filter.staff !== 'all' && l.assignedStaffId !== filter.staff) return false;
     if (filter?.tourId && filter.tourId !== 'all' && l.interestedTourId !== filter.tourId) return false;
     if (filter?.search) {
       const q = filter.search.toLowerCase();
