@@ -105,6 +105,7 @@ assert.doesNotMatch(destinationsSection, /Complimentary hotel pickup from all ma
 assert.match(tourEditor, /rating: 0,\s*review_count: 0/, 'New excursions start with no unverified rating or review count');
 assert.match(tourEditor, /Content readiness review/, 'Tour editor flags missing itineraries and FAQs');
 assert.match(blogAdmin, /calculate to a one-minute read/, 'Blog editor flags short published articles for editorial review');
+assert.match(blogAdmin, /Author credibility review/, 'Blog editor flags generic bylines for factual author attribution review');
 assert.match(ratingMigration, /WHERE r\.is_published = TRUE/, 'Tour rating aggregates use published reviews only');
 assert.match(ratingMigration, /CREATE TRIGGER trg_refresh_tour_review_summary/, 'Published review changes automatically refresh tour rating aggregates');
 assert.match(ratingMigration, /rating = COALESCE\(stats\.average_rating, 0\)/, 'Tours without published reviews receive a zero rating');
