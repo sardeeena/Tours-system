@@ -79,19 +79,36 @@ $seed$;
 -- confirms at least one slot. Explicit blackout overrides remain untouched.
 UPDATE public.tour_availability AS ta
 SET
-  max_capacity = coalesce((
-    SELECT sum(d.capacity)::INTEGER
-    FROM public.departures AS d
-    WHERE d.tour_id = ta.tour_id
-      AND d.date = ta.date
-      AND d.status NOT IN ('cancelled','completed')
-  ),0),
+  max_capacity = CASE
+    WHEN EXISTS (
+      SELECT 1 FROM public.departures AS d
+      WHERE d.tour_id = ta.tour_id AND d.date = ta.date
+        AND d.status NOT IN ('cancelled','completed')
+    ) THEN coalesce((
+      SELECT sum(d.capacity)::INTEGER
+      FROM public.departures AS d
+      WHERE d.tour_id = ta.tour_id
+        AND d.date = ta.date
+        AND d.status NOT IN ('cancelled','completed')
+    ),0)
+    WHEN EXISTS (
+      SELECT 1 FROM public.bookings AS b
+      WHERE b.tour_id = ta.tour_id AND b.booking_date = ta.date
+        AND b.departure_id IS NULL AND b.status <> 'cancelled'
+    ) THEN ta.max_capacity
+    ELSE 0
+  END,
   booked_count = coalesce((
     SELECT sum(d.booked_passengers)::INTEGER
     FROM public.departures AS d
     WHERE d.tour_id = ta.tour_id
       AND d.date = ta.date
       AND d.status NOT IN ('cancelled','completed')
+  ),0) + coalesce((
+    SELECT sum(b.adult_count + b.child_count + b.infant_count)::INTEGER
+    FROM public.bookings AS b
+    WHERE b.tour_id = ta.tour_id AND b.booking_date = ta.date
+      AND b.departure_id IS NULL AND b.status <> 'cancelled'
   ),0),
   status = CASE
     WHEN ta.is_blackout THEN 'unavailable'
@@ -109,11 +126,15 @@ SET
   departure_id = NULL,
   notes = CASE
     WHEN EXISTS (
+      SELECT 1 FROM public.bookings AS b
+      WHERE b.tour_id = ta.tour_id AND b.booking_date = ta.date
+        AND b.departure_id IS NULL AND b.status <> 'cancelled'
+    ) THEN concat_ws(' ', nullif(ta.notes,''), 'Legacy bookings remain unassigned; departure slots were not created for this date.')
+    WHEN EXISTS (
       SELECT 1 FROM public.departures AS d
       WHERE d.tour_id = ta.tour_id AND d.date = ta.date
         AND d.notes LIKE 'PROVISIONAL:%'
-    )
-    THEN concat_ws(' ', nullif(ta.notes,''), 'Daily capacity is the sum of provisional departure slots; operator confirmation is required.')
+    ) THEN concat_ws(' ', nullif(ta.notes,''), 'Daily capacity is the sum of provisional departure slots; operator confirmation is required.')
     ELSE ta.notes
   END,
   updated_at = now()
