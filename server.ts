@@ -4686,8 +4686,8 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
       const pickupInfo = cleanPublicText(tour.pickup_info, 800);
       const cancellation = cleanPublicText(tour.cancellation_policy, 800);
       const languages = Array.isArray(tour.languages) ? tour.languages.map((value: unknown) => cleanPublicText(value, 40)).filter(Boolean) : [];
-      if (pickupInfo) lines.push(`Pickup details: ${pickupInfo}`);
-      const pickupZones = pickupZonesByTour.get(id) || [];
+      if (tour.pickup_available && pickupInfo) lines.push(`Pickup details: ${pickupInfo}`);
+      const pickupZones = tour.pickup_available ? (pickupZonesByTour.get(id) || []) : [];
       if (pickupZones.length) {
         const pickupZoneDetails = pickupZones.map((mapping: any) => {
           const location = mapping.pickup_location;
