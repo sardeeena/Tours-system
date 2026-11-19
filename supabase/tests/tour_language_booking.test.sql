@@ -94,6 +94,13 @@ SELECT id, CURRENT_DATE + 40, 10, 0, 'available'
 FROM public.tours
 WHERE slug = 'pgtap-language-test-tour';
 
+INSERT INTO public.departures (
+  tour_id,date,start_time,end_time,capacity,booked_passengers,remaining_capacity,status
+)
+SELECT id,CURRENT_DATE + 40,'09:00','12:00',10,0,10,'confirmed'
+FROM public.tours
+WHERE slug = 'pgtap-language-test-tour';
+
 SET LOCAL request.jwt.claims = '{"role":"anon"}';
 SET LOCAL request.jwt.claim.role = 'anon';
 SET LOCAL ROLE anon;
