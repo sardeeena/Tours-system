@@ -3938,7 +3938,7 @@
       "content": {
         "name": "Billet de réservation",
         "subject": "Votre billet de réservation Awesome Adventure Tours : {{booking_reference}}",
-        "body_text": "Bonjour {{customer_name}},\n\nNous avons bien reçu votre demande de réservation pour {{tour_name}} le {{tour_date}}. Votre billet de réservation numérique figure ci-dessous.\n\nRéférence de réservation : {{booking_reference}}\nStatut de la réservation : {{booking_status}}\nTotal : {{currency}} {{amount}}\n\nVeuillez conserver votre référence de réservation à portée de main lorsque vous contactez notre équipe. L’heure de prise en charge et les détails opérationnels pourront être confirmés séparément.\n\nMerci,\nAwesome Adventure Tours",
+        "body_text": "Bonjour {{customer_name}},\n\nNous avons bien reçu votre demande de réservation pour {{tour_name}} le {{tour_date}}. Votre billet de réservation numérique figure ci-dessous.\nHeure de départ : {{departure_time}}\n\nRéférence de réservation : {{booking_reference}}\nStatut de la réservation : {{booking_status}}\nTotal : {{currency}} {{amount}}\n\nVeuillez conserver votre référence de réservation à portée de main lorsque vous contactez notre équipe. L’heure de prise en charge et les détails opérationnels pourront être confirmés séparément.\n\nMerci,\nAwesome Adventure Tours",
         "variables": [
           "customer_name",
           "booking_reference",
@@ -3946,7 +3946,8 @@
           "tour_date",
           "booking_status",
           "currency",
-          "amount"
+          "amount",
+          "departure_time"
         ],
         "channel": "Email",
         "template_key": "booking_received"
@@ -3989,14 +3990,15 @@
       "content": {
         "name": "Mise à jour de réservation",
         "subject": "Mise à jour de votre réservation : {{tour_name}} (réf. : {{booking_reference}})",
-        "body_text": "Bonjour {{customer_name}},\n\nVotre réservation pour {{tour_name}} (réf. : {{booking_reference}}) a été mise à jour.\n\nDate de départ : {{tour_date}}\nHeure de prise en charge : {{pickup_time}}\nSolde restant dû : {{balance_due}}\n\nCordialement,\nL’équipe de coordination d’Awesome Adventure Tours",
+        "body_text": "Bonjour {{customer_name}},\n\nVotre réservation pour {{tour_name}} (réf. : {{booking_reference}}) a été mise à jour.\n\nDate de départ : {{tour_date}}\nHeure de prise en charge : {{pickup_time}}\nHeure de départ : {{departure_time}}\nSolde restant dû : {{balance_due}}\n\nCordialement,\nL’équipe de coordination d’Awesome Adventure Tours",
         "variables": [
           "customer_name",
           "booking_reference",
           "tour_name",
           "tour_date",
           "pickup_time",
-          "balance_due"
+          "balance_due",
+          "departure_time"
         ],
         "channel": "Both",
         "template_key": "booking_update"
