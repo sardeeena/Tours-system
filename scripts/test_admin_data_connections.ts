@@ -138,7 +138,7 @@ const vesselUi = read('src/components/admin/operations/OperationsVessels.tsx');
 assert.doesNotMatch(vesselUi, /port_marina: 'Hurghada Marina'|passenger_capacity: 35|crew_capacity: 4|year_built: 2022|safety_inspection_expiry: '2027-12-31'/, 'New vessel forms must not prefill invented operational facts');
 assert.match(vesselUi, /active vessel must have a verified safety inspection expiry date/, 'Vessel UI must require safety verification before activation');
 const availabilityUi = read('src/components/admin/operations/OperationsAvailability.tsx');
-assert.match(availabilityUi, /setBlackoutNotes\(''\)/, 'Blackout form must start without a fabricated reason');
+assert.match(availabilityUi, /useState<string>\(''\)/, 'Blackout form must start without a fabricated reason');
 assert.match(availabilityUi, /verified operational reason for this blackout date/, 'Blackout form must require a real reason');
 
 const loadErrorComponent = read('src/components/admin/AdminLoadError.tsx');
