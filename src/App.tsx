@@ -14,6 +14,7 @@ import { DestinationsSection } from './components/home/DestinationsSection';
 import { WhyChooseUs } from './components/home/WhyChooseUs';
 import { ReviewsSection } from './components/home/ReviewsSection';
 import { FinalCTA } from './components/home/FinalCTA';
+import { HomeFAQ } from './components/home/HomeFAQ';
 import { NotFoundPage } from './components/common/NotFoundPage';
 const ExcursionsPage = lazy(() => import('./pages/ExcursionsPage').then(m => ({ default: m.ExcursionsPage })));
 const TourDetailPage = lazy(() => import('./pages/TourDetailPage').then(m => ({ default: m.TourDetailPage })));
@@ -657,6 +658,7 @@ function MainApp() {
           tour: currentTourDetail,
           tours: liveTours,
           destination: currentDestination,
+          locale: currentLocale,
         });
 
     seoService.apply(baseSeoMetadata);
@@ -1668,6 +1670,9 @@ function MainApp() {
 
           {/* Reviews */}
           <ReviewsSection />
+
+          {/* English homepage FAQ content and matching FAQPage structured data */}
+          {currentLocale === 'en' && <HomeFAQ />}
 
           {/* Final CTA */}
           <FinalCTA
