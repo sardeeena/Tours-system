@@ -91,7 +91,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
   const [tempWaProvider, setTempWaProvider] = useState<'meta_cloud' | 'none'>('meta_cloud');
   const [tempPhoneNumberId, setTempPhoneNumberId] = useState('');
   const [tempBusinessAccountId, setTempBusinessAccountId] = useState('');
-  const [tempFromNumber, setTempFromNumber] = useState('+20 100 456 7890');
+  const [tempFromNumber, setTempFromNumber] = useState('');
 
   // Message Detail Drawer
   const [selectedMessage, setSelectedMessage] = useState<CommunicationMessage | null>(null);
@@ -270,7 +270,7 @@ export const CommunicationsWhatsApp: React.FC<CommunicationsWhatsAppProps> = ({ 
     setTempWaProvider(providerConfig.whatsapp.provider === 'meta_cloud' ? 'meta_cloud' : 'none');
     setTempPhoneNumberId(providerConfig.whatsapp.phoneNumberId || '');
     setTempBusinessAccountId(providerConfig.whatsapp.businessAccountId || '');
-    setTempFromNumber(providerConfig.whatsapp.fromNumber || '+20 100 456 7890');
+    setTempFromNumber(providerConfig.whatsapp.fromNumber || '');
     setIsSettingsOpen(true);
   };
 
