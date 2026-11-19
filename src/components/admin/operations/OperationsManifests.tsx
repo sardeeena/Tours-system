@@ -27,7 +27,6 @@ import {
 } from '../../../services/operationsService';
 import { PassengerManifestItem } from '../../../types/operations';
 import { Tour } from '../../../types';
-import { ALL_TOURS } from '../../../data/toursData';
 import { getPublishedTours } from '../../../services/tourService';
 import { useToast } from '../../../contexts/ToastContext';
 
@@ -37,10 +36,11 @@ export const OperationsManifests: React.FC = () => {
     () => new Date().toISOString().split('T')[0]
   );
   const [tourFilter, setTourFilter] = useState<string>('all');
-  const [tours, setTours] = useState<Tour[]>(ALL_TOURS);
+  const [tours, setTours] = useState<Tour[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [passengers, setPassengers] = useState<PassengerManifestItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [showSensitiveData, setShowSensitiveData] = useState(false);
 
   // Edit passenger modal
@@ -54,20 +54,21 @@ export const OperationsManifests: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const [data, loadedTours] = await Promise.all([
         getPassengerManifest(
           selectedDate,
           tourFilter === 'all' ? undefined : tourFilter
         ),
-        getPublishedTours().catch(() => []),
+        getPublishedTours(),
       ]);
       setPassengers(data);
-      if (loadedTours && loadedTours.length > 0) {
-        setTours(loadedTours);
-      }
+      setTours(loadedTours);
     } catch (err) {
-      console.warn('Failed to load passenger manifest:', err);
+      const message = err instanceof Error ? err.message : 'Could not load passenger manifest records.';
+      console.error('Failed to load passenger manifest:', err);
+      setLoadError(message);
     } finally {
       setLoading(false);
     }
@@ -109,6 +110,13 @@ export const OperationsManifests: React.FC = () => {
     setSavingAction(true);
     try {
       await updateManifestPassenger(editingPassenger.id, {
+        bookingId: editingPassenger.bookingId,
+        passengerIndex: editingPassenger.passengerIndex,
+        passengerType: editingPassenger.passengerType,
+        isLeadPassenger: editingPassenger.isLeadPassenger,
+        phone: editingPassenger.phone,
+        hotel: editingPassenger.hotel,
+        specialRequests: editingPassenger.specialRequests,
         fullName: editFullName.trim(),
         nationality: editNationality.trim(),
         passportOrId: editPassport.trim(),
@@ -133,8 +141,8 @@ export const OperationsManifests: React.FC = () => {
 
       showToast(`Passenger details for ${editFullName} updated.`, 'success');
       setEditingPassenger(null);
-    } catch {
-      showToast('Failed to update passenger record.', 'error');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to update passenger record.', 'error');
     } finally {
       setSavingAction(false);
     }
@@ -322,6 +330,14 @@ export const OperationsManifests: React.FC = () => {
         <div className="p-16 text-center text-stone-400 print:hidden">
           <div className="w-8 h-8 border-2 border-[#0A6C74] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-xs">Compiling manifest records...</p>
+        </div>
+      ) : loadError ? (
+        <div role="alert" className="bg-red-950/30 border border-red-500/30 rounded-xl p-8 text-center print:hidden">
+          <p className="text-sm font-semibold text-red-200">Passenger manifest could not be loaded</p>
+          <p className="text-xs text-red-200/80 mt-2">{loadError}</p>
+          <button type="button" onClick={loadData} className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#0A6C74] text-white text-xs font-semibold">
+            <RefreshCw className="w-3.5 h-3.5" /> Retry
+          </button>
         </div>
       ) : filteredPassengers.length === 0 ? (
         <div className="bg-stone-950 border border-stone-800 rounded-xl p-12 text-center text-stone-400 print:hidden">
