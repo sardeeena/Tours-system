@@ -1468,84 +1468,87 @@ export async function deleteVessel(id: string): Promise<boolean> {
 // ==============================================================================
 
 export async function listGuides(): Promise<DbGuide[]> {
-  let guides = getLocal<DbGuide[]>(LOCAL_GUIDES_KEY, INITIAL_GUIDES);
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase.from('guides').select('*').order('full_name');
-      if (!error && data && data.length > 0) {
-        guides = data.map((d: any) => ({
-          ...d,
-          availability_status: d.availability_status || (d.is_active ? 'available' : 'unavailable'),
-        }));
-        setLocal(LOCAL_GUIDES_KEY, guides);
-      }
-    } catch {
-      // ignore
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env?.DEV) {
+      throw new Error('Supabase is not configured; operational staff records cannot be loaded in production.');
     }
+    return getLocal<DbGuide[]>(LOCAL_GUIDES_KEY, INITIAL_GUIDES);
   }
 
+  const { data, error } = await supabase.from('guides').select('*').order('full_name');
+  if (error) throw new Error(formatSupabaseError(error));
+
+  const guides: DbGuide[] = (data || []).map((row: any) => ({
+    ...row,
+    availability_status: row.availability_status || (row.is_active ? 'available' : 'unavailable'),
+  }));
+  setLocal(LOCAL_GUIDES_KEY, guides);
   return guides;
 }
 
 export async function saveGuide(guide: Partial<DbGuide>): Promise<DbGuide> {
-  const all = await listGuides();
-  let saved: DbGuide;
-
   const avail = guide.availability_status || (guide.is_active !== false ? 'available' : 'unavailable');
   const isActive = avail === 'available' || avail === 'on_duty';
+  const now = new Date().toISOString();
 
-  if (guide.id) {
-    saved = {
-      ...all.find((g) => g.id === guide.id)!,
-      ...guide,
-      availability_status: avail,
-      is_active: isActive,
-    };
-    const updated = all.map((g) => (g.id === guide.id ? saved : g));
-    setLocal(LOCAL_GUIDES_KEY, updated);
-  } else {
-    saved = {
-      id: `gui-${Date.now().toString(36)}`,
-      full_name: guide.full_name || 'Staff Member',
-      role: guide.role || 'guide',
-      languages: guide.languages || ['English', 'Arabic'],
-      phone: guide.phone || null,
-      email: guide.email || null,
-      license_number: guide.license_number || null,
-      rating: guide.rating || 5.0,
-      is_active: isActive,
-      availability_status: avail,
-      notes: guide.notes || null,
-      created_at: new Date().toISOString(),
-    };
-    setLocal(LOCAL_GUIDES_KEY, [saved, ...all]);
-  }
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { error } = await supabase.from('guides').upsert({
-        id: saved.id.startsWith('gui-') ? undefined : saved.id,
-        full_name: saved.full_name,
-        role: saved.role,
-        languages: saved.languages,
-        phone: saved.phone,
-        email: saved.email,
-        license_number: saved.license_number,
-        rating: saved.rating,
-        is_active: saved.is_active,
-        availability_status: saved.availability_status,
-        notes: saved.notes,
-      });
-      if (error) {
-        throw new Error(formatSupabaseError(error));
-      }
-    } catch (err: any) {
-      console.error('Error saving guide to Supabase:', err);
-      throw err;
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env?.DEV) {
+      throw new Error('Supabase is not configured; staff profiles cannot be saved in production.');
     }
+
+    const all = getLocal<DbGuide[]>(LOCAL_GUIDES_KEY, INITIAL_GUIDES);
+    const existing = guide.id ? all.find((item) => item.id === guide.id) : undefined;
+    if (guide.id && !existing) throw new Error('The selected staff profile no longer exists.');
+    const saved: DbGuide = {
+      ...(existing || {}),
+      ...guide,
+      id: guide.id || `gui-${Date.now().toString(36)}`,
+      full_name: guide.full_name?.trim() || existing?.full_name || 'Staff Member',
+      role: guide.role || existing?.role || 'guide',
+      languages: guide.languages || existing?.languages || ['English', 'Arabic'],
+      phone: guide.phone ?? existing?.phone ?? null,
+      email: guide.email ?? existing?.email ?? null,
+      license_number: guide.license_number ?? existing?.license_number ?? null,
+      rating: guide.rating ?? existing?.rating ?? 5,
+      is_active: isActive,
+      availability_status: avail,
+      notes: guide.notes ?? existing?.notes ?? null,
+      created_at: existing?.created_at || now,
+      updated_at: now,
+    } as DbGuide;
+    setLocal(LOCAL_GUIDES_KEY, guide.id
+      ? all.map((item) => item.id === guide.id ? saved : item)
+      : [saved, ...all]);
+    return saved;
   }
 
+  const payload = {
+    full_name: guide.full_name?.trim(),
+    role: guide.role || 'guide',
+    languages: guide.languages || ['English', 'Arabic'],
+    phone: guide.phone || null,
+    email: guide.email || null,
+    license_number: guide.license_number || null,
+    rating: guide.rating ?? 5,
+    is_active: isActive,
+    availability_status: avail,
+    notes: guide.notes || null,
+    updated_at: now,
+  };
+
+  const result = guide.id
+    ? await supabase.from('guides').update(payload).eq('id', guide.id).select('*').maybeSingle()
+    : await supabase.from('guides').insert(payload).select('*').single();
+
+  if (result.error) throw new Error(formatSupabaseError(result.error));
+  if (!result.data) throw new Error('The staff profile was not saved or is no longer accessible.');
+
+  const saved = {
+    ...result.data,
+    availability_status: result.data.availability_status || (result.data.is_active ? 'available' : 'unavailable'),
+  } as DbGuide;
+  const all = await listGuides();
+  setLocal(LOCAL_GUIDES_KEY, all);
   return saved;
 }
 
