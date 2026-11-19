@@ -313,6 +313,18 @@ assert.match(notificationsUi, /setLoadError/, 'Staff notification load errors mu
 assert.match(notificationsUi, /showToast\(err instanceof Error/, 'Notification action failures must be visible to administrators');
 const managementReportUi = read('src/components/admin/reporting/ManagementReportingDashboard.tsx');
 assert.match(managementReportUi, /AdminLoadError/, 'Management reporting must show live metric load failures');
+const financeReportsUi = read('src/components/admin/finance/FinanceReports.tsx');
+assert.doesNotMatch(financeReportsUi, /ALL_TOURS|getPublishedTours\(\)\.catch\(\(\) => \[\]\)/, 'Finance reports must not replace live tour filters with demo catalogue data');
+const operationsDocumentsUi = read('src/components/admin/operations/OperationsDocuments.tsx');
+assert.doesNotMatch(operationsDocumentsUi, /ALL_TOURS|getPublishedTours\(\)\.catch\(\(\) => \[\]\)/, 'Operations documents must use live tour records and surface failures');
+const availabilityUi = read('src/components/admin/AdminAvailabilityManager.tsx');
+assert.match(availabilityUi, /AdminLoadError/, 'Availability screen must surface tour, slot and save failures');
+const reviewsUi = read('src/components/admin/AdminReviewsList.tsx');
+assert.match(reviewsUi, /AdminLoadError/, 'Reviews screen must surface database load failures');
+assert.match(reviewsUi, /import\.meta\.env\.DEV \? localStorage\.getItem/, 'Reviews must not use stale local storage as a production fallback');
+const seoUi = read('src/components/admin/AdminSeoManager.tsx');
+assert.match(seoUi, /AdminLoadError/, 'SEO manager must surface live data failures');
+assert.match(seoUi, /import\.meta\.env\.DEV \? localStorage\.getItem/, 'SEO manager must not use stale local cache as a production fallback');
 const financeUi = read('src/components/admin/reporting/FinanceDashboardView.tsx');
 assert.doesNotMatch(financeUi, /CIB central bank fixing rates|1\.08|52\.5/, 'Finance UI must not claim unsupported FX rates');
 assert.match(financeUi, /Non-EUR collections are excluded/, 'Finance UI must explain how non-EUR amounts affect EUR totals');
