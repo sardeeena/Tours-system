@@ -837,10 +837,30 @@ export async function fetchOperationsReport(interval: DateRangeInterval): Promis
   }
 
   const hasLiveWeather = Boolean(
-    weather &&
+    weather?.isAvailable &&
     (weather.windSpeedKnots !== null && weather.windSpeedKnots !== undefined ||
       weather.swellHeightM !== null && weather.swellHeightM !== undefined)
   );
+  if (weather?.coastGuardCleared === false) {
+    operationalIssues.push({
+      id: 'coast-guard-not-cleared',
+      severity: 'critical',
+      category: 'clearance',
+      title: 'Operator bulletin records no Coast Guard clearance',
+      description: 'The recorded operator bulletin does not indicate clearance. Do not treat this dashboard as authorization to sail; follow the harbor authority and operator decision.',
+      timestamp,
+    });
+  } else if (weather?.coastGuardCleared === null || weather?.coastGuardCleared === undefined) {
+    operationalIssues.push({
+      id: 'coast-guard-not-recorded',
+      severity: 'warning',
+      category: 'clearance',
+      title: 'Coast Guard clearance is not recorded',
+      description: 'No operator-recorded clearance is available for this date. Verify sailing permission with the harbor authority before departure.',
+      timestamp,
+    });
+  }
+
   if (!hasLiveWeather) {
     operationalIssues.push({
       id: 'weather-unavailable',
