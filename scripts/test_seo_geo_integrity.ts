@@ -108,7 +108,7 @@ assert.match(schema, /'@type': 'WebPage'/, 'Every indexable public route receive
 assert.match(schema, /pageSchemaType/, 'SSR selects a page-specific schema type for public informational pages');
 assert.match(schema, /'AboutPage'/, 'About page receives the AboutPage structured-data type');
 assert.match(schema, /'ContactPage'/, 'Contact page receives the ContactPage structured-data type');
-assert.match(schema, /publisher: \{ '@id': `${origin}\\/#organization` \}/, 'SSR page entities identify the verified site publisher');
+assert.ok(server.includes("publisher: { '@id': `${origin}/#organization` }"), 'SSR page entities identify the verified site publisher');
 assert.match(seoConfig, /export function generateStaticPageJsonLd/, 'Client-side static CMS routes have a dedicated JSON-LD generator');
 assert.match(seoConfig, /normalizedSlug === 'about'[\s\S]*?'AboutPage'/, 'Client-side About page uses AboutPage structured data');
 assert.match(seoConfig, /normalizedSlug === 'contact'[\s\S]*?'ContactPage'/, 'Client-side Contact page uses ContactPage structured data');
