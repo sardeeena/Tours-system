@@ -103,7 +103,7 @@ export const AdminTranslationManager: React.FC = () => {
         done = Boolean(result.done);
         generatedCount += Number(result.processed || 0);
         skippedCount += Number(result.skipped || 0);
-        setGenerationProgress(targetLocale.toUpperCase() + ': ' + offset + '/' + result.total + ' source records · ' + generatedCount + ' drafts saved · ' + skippedCount + ' skipped · French only');
+        setGenerationProgress(targetLocale.toUpperCase() + ': ' + offset + '/' + result.total + ' source records · ' + generatedCount + ' drafts saved · ' + skippedCount + ' skipped · selected locale');
         if (!done) {
           await new Promise(resolve => window.setTimeout(resolve, 6500));
         }
@@ -114,7 +114,7 @@ export const AdminTranslationManager: React.FC = () => {
         showToast('Draft generation finished with ' + skippedCount + ' skipped records. Retry to fill any missing items; nothing was published.', 'info');
         setGenerationProgress('Finished: ' + generatedCount + ' ' + targetLocale.toUpperCase() + ' drafts saved, ' + skippedCount + ' skipped. Retry if any records are missing; review all drafts before publication.');
       } else {
-        showToast('French translation draft generation completed. All generated records remain drafts pending human review.', 'success');
+        showToast(targetLocale.toUpperCase() + ' translation draft generation completed. All generated records remain drafts pending human review.', 'success');
         setGenerationProgress('Completed ' + targetLocale.toUpperCase() + ': ' + generatedCount + ' drafts saved. Review before publication.');
       }
     } catch (error: any) {
