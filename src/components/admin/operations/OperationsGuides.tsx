@@ -33,6 +33,7 @@ export const OperationsGuides: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [availFilter, setAvailFilter] = useState('all');
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -53,6 +54,7 @@ export const OperationsGuides: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const todayStr = new Date().toISOString().split('T')[0];
       const [data, deps] = await Promise.all([
@@ -62,7 +64,9 @@ export const OperationsGuides: React.FC = () => {
       setGuides(data);
       setDepartures(deps);
     } catch (err) {
-      console.warn('Failed to load operational staff:', err);
+      const message = err instanceof Error ? err.message : 'Could not load operational staff.';
+      console.error('Failed to load operational staff:', err);
+      setLoadError(message);
     } finally {
       setLoading(false);
     }
@@ -306,6 +310,12 @@ export const OperationsGuides: React.FC = () => {
         <div className="p-16 text-center text-stone-400">
           <div className="w-8 h-8 border-2 border-[#0A6C74] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-xs">Loading operational staff registry...</p>
+        </div>
+      ) : loadError ? (
+        <div role="alert" className="bg-red-950/30 border border-red-500/30 rounded-xl p-6 text-center">
+          <p className="text-sm font-semibold text-red-200">Operational staff could not be loaded</p>
+          <p className="text-xs text-red-200/80 mt-2">{loadError}</p>
+          <button type="button" onClick={loadData} className="mt-4 px-4 py-2 rounded-lg bg-[#0A6C74] text-white text-xs font-semibold">Retry</button>
         </div>
       ) : filteredGuides.length === 0 ? (
         <div className="bg-stone-950 border border-stone-800 rounded-xl p-12 text-center text-stone-400">
