@@ -68,7 +68,8 @@
     "postbuild": "if [ \"$NODE_ENV\" = \"production\" ]; then npm prune --omit=dev; fi",
     "test:dutch-content-drafts": "tsx scripts/test_dutch_content_drafts.ts",
     "translations:assemble-nl": "tsx scripts/assemble_dutch_import_bundle.ts",
-    "translations:assemble-pl": "tsx scripts/assemble_polish_import_bundle.ts"
+    "translations:assemble-pl": "tsx scripts/assemble_polish_import_bundle.ts",
+    "test:admin-navigation": "tsx scripts/test_admin_navigation_ux.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
