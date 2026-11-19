@@ -1199,7 +1199,7 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
             <span>
               <span className="font-semibold block">This excursion offers hotel pickup</span>
               <span className="text-[11px] text-stone-400 block mt-1">
-                Turn this off only when the operator confirms that no hotel pickup is offered. Existing pickup mappings are preserved but will not be offered to customers while pickup is disabled.
+                Enable pickup only after the operator confirms the covered areas, any supplements and the approved pickup points below.
               </span>
             </span>
           </label>
