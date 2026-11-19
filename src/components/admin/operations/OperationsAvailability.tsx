@@ -489,7 +489,6 @@ export const OperationsAvailability: React.FC = () => {
                   value={blackoutNotes}
                   onChange={(e) => setBlackoutNotes(e.target.value)}
                   placeholder="Enter verified operational reason (required)"
-                  placeholder="e.g. Vessel maintenance, Coast Guard harbor closure"
                   className="w-full px-3 py-1.5 bg-stone-950 border border-stone-800 rounded text-white"
                 />
               </div>
