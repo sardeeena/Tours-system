@@ -69,6 +69,30 @@ type EditorTab =
   | 'seo'
   | 'settings';
 
+const normalizeTourDepartureTimes = (value: string): string | null => {
+  const entries = value.split(',').map((entry) => entry.trim()).filter(Boolean);
+  if (entries.length === 0) return null;
+
+  const normalized: string[] = [];
+  for (const entry of entries) {
+    const match = entry.match(/^(\\d{1,2}):(\\d{2})\\s*(AM|PM)?$/i);
+    if (!match) return null;
+
+    const enteredHour = Number(match[1]);
+    const minute = Number(match[2]);
+    const meridiem = match[3]?.toUpperCase();
+    if (minute > 59 || enteredHour > (meridiem ? 12 : 23) || enteredHour < (meridiem ? 1 : 0)) return null;
+
+    const hour24 = meridiem
+      ? (enteredHour % 12) + (meridiem === 'PM' ? 12 : 0)
+      : enteredHour;
+    const displayHour = hour24 % 12 || 12;
+    normalized.push(`${String(displayHour).padStart(2, '0')}:${String(minute).padStart(2, '0')} ${hour24 >= 12 ? 'PM' : 'AM'}`);
+  }
+
+  return normalized.join(', ');
+};
+
 export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
   tourId,
   onNavigateTab,
@@ -252,6 +276,7 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
 
     try {
       const configuredLanguages = Array.from(new Set((tourData.languages || []).map((language) => String(language).trim()).filter(Boolean)));
+      const normalizedDepartureTime = normalizeTourDepartureTimes(tourData.departure_time || '');
       const statusToSave = overrideStatus || tourData.status || 'draft';
       if (statusToSave === 'published') {
         const missingDetails: string[] = [];
@@ -261,7 +286,7 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
         if (!tourData.duration?.trim() || !['Half Day', 'Full Day', 'Multi Day'].includes(String(tourData.duration_type)) || !(Number(tourData.duration_hours) > 0)) missingDetails.push('a confirmed duration and duration category');
         if (!(Number(tourData.price) > 0)) missingDetails.push('a confirmed price');
         if (!(Number(tourData.max_guests) > 0)) missingDetails.push('the actual guest capacity');
-        if (!tourData.departure_time?.trim()) missingDetails.push('the actual departure time');
+        if (!normalizedDepartureTime) missingDetails.push('departure times in a valid 24-hour or AM/PM format');
         if (!tourData.cancellation_policy?.trim()) missingDetails.push('the excursion-specific cancellation policy');
         if (configuredLanguages.length === 0) missingDetails.push('at least one confirmed tour language');
         if (tourData.pickup_available === true && !tourData.pickup_info?.trim()) missingDetails.push('accurate pickup details');
@@ -281,6 +306,7 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
         tour: {
           ...tourData,
           languages: configuredLanguages,
+          departure_time: normalizedDepartureTime || tourData.departure_time || '',
           status: statusToSave,
           price: Number(tourData.price) || 0,
           child_price: Number(tourData.child_price) || 0,
@@ -620,7 +646,7 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
                 type="text"
                 value={tourData.departure_time || ''}
                 onChange={(e) => handleFieldChange('departure_time', e.target.value)}
-                placeholder="08:30 AM"
+                placeholder="08:30 AM; separate multiple times with commas"
                 className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-xs text-white focus:outline-none focus:border-[#0A6C74]"
               />
             </div>
