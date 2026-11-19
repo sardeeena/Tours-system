@@ -1800,15 +1800,25 @@ export async function getMaritimeWeather(dateTarget?: string): Promise<WeatherIn
     console.warn('Live marine forecast unavailable:', error);
   }
 
-  const bulletinAvailable = Boolean(bulletin);
+  const bulletinNumber = (value: unknown): number | null =>
+    value === null || value === undefined || value === '' || Number.isNaN(Number(value))
+      ? null
+      : Number(value);
+  const bulletinWind = bulletin ? bulletinNumber(bulletin.wind_speed_knots) : null;
+  const bulletinSwell = bulletin ? bulletinNumber(bulletin.swell_height_m) : null;
+  const bulletinHasMeasurements = Boolean(bulletin && (
+    bulletinWind !== null || bulletinSwell !== null ||
+    bulletinNumber(bulletin.air_temperature_c) !== null ||
+    bulletinNumber(bulletin.water_temperature_c) !== null
+  ));
   const liveAvailable =
     airTemperatureC !== null ||
     liveWindKnots !== null ||
     liveSwellHeightM !== null;
 
-  const isAvailable = bulletinAvailable || liveAvailable;
-  const windSpeedKnots = liveWindKnots ?? (bulletin ? Number(bulletin.wind_speed_knots) : null);
-  const swellHeightM = liveSwellHeightM ?? (bulletin ? Number(bulletin.swell_height_m) : null);
+  const isAvailable = bulletinHasMeasurements || liveAvailable;
+  const windSpeedKnots = liveWindKnots ?? bulletinWind;
+  const swellHeightM = liveSwellHeightM ?? bulletinSwell;
 
   return {
     connected: isAvailable,
@@ -1821,12 +1831,12 @@ export async function getMaritimeWeather(dateTarget?: string): Promise<WeatherIn
           : 'Unavailable',
     isAvailable,
     harborLocation: bulletin?.harbor_location || 'Hurghada Marina & Giftun Marine Reserve',
-    waterTemperatureC: bulletin ? Number(bulletin.water_temperature_c) : null,
-    airTemperatureC: airTemperatureC ?? (bulletin ? Number(bulletin.air_temperature_c) : null),
+    waterTemperatureC: bulletin ? bulletinNumber(bulletin.water_temperature_c) : null,
+    airTemperatureC: airTemperatureC ?? (bulletin ? bulletinNumber(bulletin.air_temperature_c) : null),
     swellHeightM,
     windSpeedKnots,
     windDirection: liveWindDirection ?? bulletin?.wind_direction ?? null,
-    visibilityMeters: bulletin ? Number(bulletin.visibility_meters) : null,
+    visibilityMeters: bulletin ? bulletinNumber(bulletin.visibility_meters) : null,
     // Forecast data cannot establish official harbor or Coast Guard clearance.
     coastGuardCleared: bulletin?.coast_guard_cleared ?? null,
     advisoryNotes: bulletin?.advisory_notes || (
