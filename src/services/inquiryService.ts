@@ -312,23 +312,3 @@ export async function deleteInquiry(id: string): Promise<boolean> {
   saveStoredInquiries(getStoredInquiries().filter((item) => item.id !== id));
   return true;
 }
-id: string): Promise<boolean> {
-  // Local deletion
-  const localList = getStoredInquiries();
-  saveStoredInquiries(localList.filter((item) => item.id !== id));
-
-  // Supabase deletion
-  if (isSupabaseConfigured()) {
-    try {
-      const { error } = await supabase.from('inquiries').delete().eq('id', id);
-      if (error) {
-        throw new Error(formatSupabaseError(error));
-      }
-    } catch (err: any) {
-      console.error('Failed to delete inquiry from Supabase:', err);
-      throw err;
-    }
-  }
-
-  return true;
-}
