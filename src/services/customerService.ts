@@ -6,6 +6,8 @@ import { getStoredLocalUsers, LOCAL_USERS_KEY } from './authService';
 export interface UnifiedCustomer {
   id: string;
   customerRecordId?: string | null;
+  userId?: string | null;
+  isRegisteredUser?: boolean;
   fullName: string;
   email: string;
   phone?: string | null;
@@ -87,6 +89,8 @@ export async function listUnifiedCustomers(): Promise<UnifiedCustomer[]> {
 
       if (existing) {
         existing.customerRecordId = customer.id;
+        existing.userId = customer.user_id || existing.userId || null;
+        existing.isRegisteredUser = Boolean(customer.user_id) || existing.isRegisteredUser || false;
         existing.hotel = existing.hotel || customer.hotel;
         existing.phone = existing.phone || customer.phone;
         existing.country = existing.country || customer.country;
@@ -95,6 +99,8 @@ export async function listUnifiedCustomers(): Promise<UnifiedCustomer[]> {
         customerMap.set(email, {
           id: customer.id,
           customerRecordId: customer.id,
+          userId: customer.user_id || null,
+          isRegisteredUser: Boolean(customer.user_id),
           fullName,
           email,
           phone: customer.phone,
@@ -146,6 +152,8 @@ export async function listUnifiedCustomers(): Promise<UnifiedCustomer[]> {
       customer = {
         id: booking.customerId || `booking-customer:${booking.bookingReference}`,
         customerRecordId: null,
+        userId: null,
+        isRegisteredUser: false,
         fullName: `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() || 'Not provided',
         email,
         phone: `${booking.customer.countryCode || ''} ${booking.customer.phoneNumber || ''}`.trim() || null,
