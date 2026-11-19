@@ -28,8 +28,8 @@ WITH destination_seo AS (
     (
       'cairo',
       'Cairo Tours & Excursions | Awesome Adventure Tours',
-      'Discover Cairo sightseeing tours, the Giza Pyramids, the Sphinx, museums and Old Cairo heritage experiences. Review inclusions and departure details.',
-      ARRAY['Cairo tours', 'Giza Pyramids tour', 'Old Cairo tour', 'Cairo sightseeing']::text[],
+      'Discover Cairo experiences at the Grand Egyptian Museum and historic Old Cairo. Explore pharaonic collections, Islamic and Coptic heritage, and guided city tours.',
+      ARRAY['Cairo tours', 'Grand Egyptian Museum tour', 'Old Cairo tour', 'Islamic and Coptic Cairo']::text[],
       TRUE
     ),
     (
@@ -69,7 +69,7 @@ WITH destination_seo AS (
     ('hurghada', 'Hurghada Excursions & Boat Trips | Awesome Adventure Tours', 'Explore Hurghada boat trips, Red Sea island excursions, snorkeling, diving and desert safaris. Compare tour details, pickup options and booking terms.', ARRAY['Hurghada boat trips', 'Hurghada excursions', 'Red Sea snorkeling', 'Hurghada desert safari']::text[], TRUE),
     ('sharm-el-sheikh', 'Sharm El Sheikh Excursions | Awesome Adventure Tours', 'Discover Sharm El Sheikh excursions, Ras Mohammed boat trips, White Island, Sinai desert safaris and day tours. Check itineraries, pickup and booking terms.', ARRAY['Sharm El Sheikh excursions', 'Ras Mohammed tours', 'White Island boat trip', 'Sinai desert safari']::text[], TRUE),
     ('el-gouna', 'El Gouna Tours & Excursions | Awesome Adventure Tours', 'Explore El Gouna excursions, desert safaris and nearby Red Sea experiences. Compare available trips, transfer details and current booking conditions.', ARRAY['El Gouna excursions', 'El Gouna desert safari', 'Red Sea tours']::text[], TRUE),
-    ('cairo', 'Cairo Tours & Excursions | Awesome Adventure Tours', 'Discover Cairo sightseeing tours, the Giza Pyramids, the Sphinx, museums and Old Cairo heritage experiences. Review inclusions and departure details.', ARRAY['Cairo tours', 'Giza Pyramids tour', 'Old Cairo tour', 'Cairo sightseeing']::text[], TRUE),
+    ('cairo', 'Cairo Tours & Excursions | Awesome Adventure Tours', 'Discover Cairo experiences at the Grand Egyptian Museum and historic Old Cairo. Explore pharaonic collections, Islamic and Coptic heritage, and guided city tours.', ARRAY['Cairo tours', 'Grand Egyptian Museum tour', 'Old Cairo tour', 'Islamic and Coptic Cairo']::text[], TRUE),
     ('luxor', 'Luxor Tours & Day Trips | Awesome Adventure Tours', 'Explore Luxor temples and ancient sites. Check this page for verified, published day trips and current availability before planning your visit.', ARRAY['Luxor tours', 'Luxor day trips', 'Karnak Temple', 'Valley of the Kings']::text[], FALSE),
     ('sahl-hasheesh', 'Sahl Hasheesh Excursions | Awesome Adventure Tours', 'Explore Sahl Hasheesh and nearby Red Sea experiences. Bookable excursions will appear here when verified destination inventory is available.', ARRAY['Sahl Hasheesh excursions', 'Sahl Hasheesh tours', 'Red Sea experiences']::text[], FALSE),
     ('makadi-bay', 'Makadi Bay Excursions | Awesome Adventure Tours', 'Explore Makadi Bay and nearby Red Sea experiences. Bookable excursions will appear here when verified destination inventory is available.', ARRAY['Makadi Bay excursions', 'Makadi Bay tours', 'Red Sea experiences']::text[], FALSE)
