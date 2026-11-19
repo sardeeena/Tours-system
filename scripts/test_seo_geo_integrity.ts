@@ -5,6 +5,9 @@ const server = readFileSync(new URL('../server.ts', import.meta.url), 'utf8');
 const robots = readFileSync(new URL('../public/robots.txt', import.meta.url), 'utf8');
 const footer = readFileSync(new URL('../src/components/common/Footer.tsx', import.meta.url), 'utf8');
 const staticPages = readFileSync(new URL('../src/data/staticPages.ts', import.meta.url), 'utf8');
+const adminSeo = readFileSync(new URL('../src/components/admin/AdminSeoManager.tsx', import.meta.url), 'utf8');
+const destinationDetail = readFileSync(new URL('../src/pages/DestinationDetailPage.tsx', import.meta.url), 'utf8');
+const destinationsSection = readFileSync(new URL('../src/components/home/DestinationsSection.tsx', import.meta.url), 'utf8');
 const sitemapStart = server.indexOf("app.get('/sitemap.xml'");
 const llmsStart = server.indexOf("app.get('/llms.txt'");
 const schemaStart = server.indexOf("const organization: Record<string, any>");
@@ -14,6 +17,13 @@ assert.ok(sitemapStart >= 0 && llmsStart > sitemapStart && schemaStart > llmsSta
 const sitemap = server.slice(sitemapStart, llmsStart);
 const llms = server.slice(llmsStart, schemaStart);
 const schema = server.slice(schemaStart, schemaEnd);
+const llmsFullStart = server.indexOf("app.get('/llms-full.txt'");
+const llmsFull = llmsFullStart >= 0 ? server.slice(llmsFullStart, schemaStart) : '';
+assert.ok(llmsFullStart > llmsStart && llmsFullStart < schemaStart, 'Full public content index is registered after llms.txt');
+assert.match(llmsFull, /tour_faqs/, 'Full AI index includes published excursion FAQs');
+assert.match(llmsFull, /tour_itinerary/, 'Full AI index includes published excursion itineraries');
+assert.match(llmsFull, /blog_posts/, 'Full AI index includes published travel articles');
+assert.doesNotMatch(llmsFull, /from\\('bookings'\\)|from\\('customers'\\)|from\\('payment_transactions'\\)/, 'Full AI index excludes private booking, customer and payment records');
 
 assert.match(server, /from\('seo_metadata'\)[\s\S]*?eq\('robots_index', false\)/, 'SEO index exclusions are loaded from the authoritative metadata table');
 assert.match(sitemap, /loadAwesomeAdventureToursSeoIndexExclusions\(\)/, 'Sitemap applies SEO index exclusions');
@@ -48,7 +58,7 @@ assert.match(schema, /availableLanguage: 'Multilingual'/, 'Business entity repre
 assert.match(schema, /tripadvisor\.co\.uk\/Attraction_Review-g297549-d34759384/, 'Business sameAs links to the verified TripAdvisor listing');
 assert.match(llms, /Customer-service languages: Multilingual support/, 'llms.txt describes international multilingual customer support');
 assert.match(llms, /Office: 2nd floor, Bostan Cafe, Madres, Hurghada, Red Sea Governorate, Egypt/, 'llms.txt publishes the owner-confirmed office address');
-assert.match(llms, /TripAdvisor listing and traveller feedback/, 'llms.txt links to the official TripAdvisor listing');
+assert.match(llms, /TripAdvisor business listing/, 'llms.txt identifies the official TripAdvisor business listing without implying existing reviews');
 assert.match(footer, /2nd floor, Bostan Cafe, Madres, Hurghada, Egypt/, 'Public footer displays the owner-confirmed office address');
 assert.doesNotMatch(footer, /New Marina|Berth B-14|English, German & Russian/, 'Public footer removes outdated office and language details');
 assert.match(footer, /TripAdvisor Reviews/, 'Public footer links to TripAdvisor reviews');
@@ -65,6 +75,13 @@ assert.match(server, /Office: 2nd floor, Bostan Cafe, Madres, Hurghada, Red Sea 
 assert.doesNotMatch(server, /Hurghada New Marina, Berth B-14/, 'Homepage Markdown response does not expose the retired office address');
 assert.ok(server.includes('Starting price: ${price}'), 'Homepage Markdown response exposes verified published tour prices');
 assert.doesNotMatch(schema, /aggregateRating|reviewRating|openingHoursSpecification|priceRange|geo:/, 'Schema does not invent reviews, hours, prices or geographic coordinates');
+assert.match(adminSeo, /contentLength >= 650/, 'Admin destination indexability threshold matches the public renderer and sitemap');
+assert.doesNotMatch(adminSeo, /contentLength >= 300/, 'Admin does not mark thin destinations indexable below the public threshold');
+assert.match(destinationDetail, /RED_SEA_DESTINATION_SLUGS/, 'Destination detail pages use a destination-aware geographic label');
+assert.match(destinationDetail, /RED_SEA_DESTINATION_SLUGS\\.has\\(destination\\.slug\\.toLowerCase\\(\\)\\)/, 'Only Red Sea destinations receive the Red Sea label');
+assert.match(destinationsSection, /Explore Egypt/, 'Destination discovery covers Egypt beyond Red Sea locations');
+assert.match(destinationsSection, /Check pickup availability and any supplements on each excursion/, 'Homepage avoids promising universal complimentary hotel pickup');
+assert.doesNotMatch(destinationsSection, /Complimentary hotel pickup from all main resorts/, 'Homepage removes the unsupported universal pickup claim');
 
 const markdownHandlerStart = server.indexOf('const acceptsMarkdown');
 const markdownHandlerEnd = server.indexOf("app.get('*'", markdownHandlerStart);
