@@ -177,6 +177,7 @@ assert.match(seoConfig, /'@type': 'FAQPage'/, 'Homepage JSON-LD includes a visib
 assert.match(seoConfig, /acceptedAnswer/, 'FAQPage schema includes the answers visible to visitors');
 assert.match(seoConfig, /telephone: APP_CONFIG\.SUPPORT_PHONE/, 'TravelAgency schema includes the public support phone');
 assert.match(seoConfig, /addressLocality: 'Hurghada'/, 'TravelAgency schema includes the public Hurghada address');
+assert.match(seoConfig, /images\.unsplash\.com\/photo-1544551763-46a013bb70d5[^']*w=1200/, 'Default social preview uses a representative excursion image rather than the company logo');
 assert.match(seoConfig, /generateHomeJsonLd\(origin, locale === 'en'\)/, 'FAQ schema is limited to the English homepage where the FAQ is visible');
 assert.match(app, /currentLocale === 'en' && <HomeFAQ \/>/, 'English FAQ section is not shown as untranslated content on other locales');
 assert.match(app, /locale: currentLocale/, 'SEO metadata receives the active locale for language-specific schema');
