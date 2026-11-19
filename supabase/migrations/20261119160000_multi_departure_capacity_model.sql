@@ -325,6 +325,48 @@ BEGIN
 END;
 $function$;
 
+CREATE OR REPLACE FUNCTION public.upsert_departure_with_availability(
+  p_departure_id UUID,
+  p_tour_id UUID,
+  p_date DATE,
+  p_start_time TEXT,
+  p_end_time TEXT,
+  p_capacity INTEGER,
+  p_status TEXT,
+  p_vessel_id UUID,
+  p_guide_id UUID,
+  p_driver_id UUID,
+  p_notes TEXT
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $function$
+BEGIN
+  IF NOT (
+    coalesce(auth.role(),'') = 'service_role'
+    OR (
+      auth.uid() IS NOT NULL
+      AND (
+        (p_departure_id IS NULL AND public.has_permission('operations.create'))
+        OR (p_departure_id IS NOT NULL AND public.has_permission('operations.update'))
+      )
+    )
+  ) THEN
+    RAISE EXCEPTION 'Not authorized to create or update this departure' USING ERRCODE = '42501';
+  END IF;
+
+  RETURN private.upsert_departure_with_availability(
+    p_departure_id,p_tour_id,p_date,p_start_time,p_end_time,p_capacity,
+    p_status,p_vessel_id,p_guide_id,p_driver_id,p_notes
+  );
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.upsert_departure_with_availability(UUID,UUID,DATE,TEXT,TEXT,INTEGER,TEXT,UUID,UUID,UUID,TEXT) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.upsert_departure_with_availability(UUID,UUID,DATE,TEXT,TEXT,INTEGER,TEXT,UUID,UUID,UUID,TEXT) TO authenticated, service_role;
+
 CREATE OR REPLACE FUNCTION private.sync_tour_availability_blackout_status()
 RETURNS TRIGGER
 LANGUAGE plpgsql
