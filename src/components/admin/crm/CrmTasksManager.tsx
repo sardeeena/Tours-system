@@ -24,12 +24,14 @@ import {
 import { TaskStatus, TaskPriority } from '../../../types/crm';
 import { useToast } from '../../../contexts/ToastContext';
 import { useCrmAssignableStaff } from '../../../hooks/useCrmAssignableStaff';
+import { AdminLoadError } from '../AdminLoadError';
 
 export const CrmTasksManager: React.FC = () => {
   const { showToast } = useToast();
   const { staffMembers, staffLoading, staffError } = useCrmAssignableStaff();
   const [tasks, setTasks] = useState<CrmTask[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [priorityFilter, setPriorityFilter] = useState<string>('all');
   const [staffFilter, setStaffFilter] = useState<string>('all');
@@ -54,10 +56,12 @@ export const CrmTasksManager: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const data = await listTasks();
       setTasks(data);
     } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'CRM tasks could not be loaded.');
       console.warn('Failed to load tasks:', err);
     } finally {
       setLoading(false);
@@ -173,6 +177,7 @@ export const CrmTasksManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
