@@ -414,7 +414,7 @@ export const AdminCustomersList: React.FC = () => {
                 <span className="text-stone-200">{selectedCustomer.hotel || 'Not specified'}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-stone-900">
-                <span className="text-stone-500">Total Bookings Completed:</span>
+                <span className="text-stone-500">Non-cancelled bookings:</span>
                 <span className="text-emerald-400 font-semibold">{selectedCustomer.totalBookings}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-stone-900">
