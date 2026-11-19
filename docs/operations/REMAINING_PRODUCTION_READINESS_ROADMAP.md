@@ -82,15 +82,19 @@ These items require real business decisions or credentials. Do not fabricate val
 
 **Acceptance criteria:** operational assignments reference verified resources and enforce capacity/eligibility; no invented names, times, vehicles or pickup promises are displayed.
 
-## Release 5 — Capacity model evolution (separate design decision)
+## Release 5 — Capacity model evolution
 
-The current model intentionally supports one capacity row/departure per tour/date and rejects a second same-day departure. Multiple daily departures require a deliberate schema and UI migration.
+<badge>Implementation in PR #206</badge>
 
-- [ ] Confirm business need and rules for multiple departures per tour/date.
-- [ ] Design a departure-centric availability model, uniqueness constraints and booking allocation rules.
-- [ ] Define safe migration/backfill for existing availability and bookings, including ambiguous historical records.
-- [ ] Update operator scheduling, customer booking selection, capacity checks, notifications and reporting.
-- [ ] Add concurrency tests for simultaneous bookings and oversell prevention.
+The multi-departure schema and booking flow are implemented. Each confirmed `departures` row is an independent slot. `tour_availability` remains a daily summary, with the original daily capacity preserved across the configured times. New bookings store the selected departure and its per-person prices; notifications and secure booking lookup return that exact slot.
+
+- [x] Confirm the requirement for multiple departures per tour/date.
+- [x] Implement departure-centric slots, unique tour/date/start-time constraints, daily summaries and selected-departure booking allocation.
+- [x] Backfill future configured times without modifying historical bookings. Existing daily capacity is split across slots; dates with active unassigned legacy bookings are excluded.
+- [x] Update operator scheduling, customer booking selection, capacity checks, booking notifications and secure booking lookup.
+- [x] Add regression coverage for multiple same-day slots, independent capacities, private per-person pricing, and fail-closed ambiguous legacy booking calls.
+- [ ] Complete operator verification of provisional slot capacities, actual times and resource assignments before confirming slots for public booking.
+- [ ] Add a true multi-session concurrency test for simultaneous reservations against the same final available places.
 - [ ] Run migration against a production-like copy and obtain owner sign-off before rollout.
 
 **Acceptance criteria:** multiple departures can be independently booked and managed without overselling, cross-departure count leakage or loss of historical booking integrity. If the business does not need this capability, explicitly defer it and retain the current limitation.
