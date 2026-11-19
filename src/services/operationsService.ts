@@ -285,15 +285,25 @@ export async function getDeparturesForDateRange(startDate: string, endDate: stri
     throw new Error('Supabase is not configured; live departures cannot be loaded.');
   }
 
-  const [{ data: dbDepartures, error: departuresError }, allBookings, vessels, guides, dynamicTours] = await Promise.all([
+  const [
+    { data: dbDepartures, error: departuresError },
+    allBookings,
+    vessels,
+    guides,
+    { data: tourRows, error: toursError },
+  ] = await Promise.all([
     supabase.from('departures').select('*').gte('date', startDate).lte('date', endDate),
     bookingRepository.listBookings(),
     listVessels(),
     listGuides(),
-    getPublishedTours(),
+    // Departures are historical operational records and must still resolve
+    // their tour after it has been unpublished or archived.
+    supabase.from('tours').select('id,title,slug'),
   ]);
 
   if (departuresError) throw new Error(formatSupabaseError(departuresError));
+  if (toursError) throw new Error(formatSupabaseError(toursError));
+  const toursById = new Map((tourRows || []).map((tour: any) => [tour.id, tour]));
 
   const dayBookings = allBookings.filter((booking) => {
     const bookingDate = booking.date ? booking.date.split('T')[0] : '';
@@ -314,7 +324,7 @@ export async function getDeparturesForDateRange(startDate: string, endDate: stri
   const departures: OperationalDeparture[] = (dbDepartures || []).map((dbDep: any) => {
     const startTime = normalizeDepartureTime(dbDep.start_time);
     const bookingsForDep = groupedBookings.get(String(dbDep.id)) || [];
-    const tour = dynamicTours.find((item) => item.id === dbDep.tour_id);
+    const tour = toursById.get(dbDep.tour_id);
     if (!tour) throw new Error(`Departure ${dbDep.id} references a tour that is not currently published.`);
     const vessel = vessels.find((item) => item.id === dbDep.vessel_id);
     const guide = guides.find((item) => item.id === dbDep.guide_id);
