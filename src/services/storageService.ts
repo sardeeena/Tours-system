@@ -428,12 +428,12 @@ export async function cleanOrphanedStorageFiles(orphanedPaths: string[]): Promis
 
   const { data: assignedRoles, error: roleError } = await supabase
     .from('user_roles')
-    .select('access_roles(name)')
+    .select('access_roles(slug)')
     .eq('user_id', user.id);
   if (roleError) throw new Error(formatSupabaseError(roleError));
   const roleNames = (assignedRoles || []).flatMap((row: any) => {
     const roles = Array.isArray(row.access_roles) ? row.access_roles : [row.access_roles];
-    return roles.filter(Boolean).map((role: any) => role.name);
+    return roles.filter(Boolean).map((role: any) => role.slug);
   });
   if (!roleNames.some((role) => role === 'admin' || role === 'super_admin')) {
     throw new Error('Forbidden: Administrative privileges required to delete storage files.');
