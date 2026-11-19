@@ -1445,7 +1445,7 @@ export async function saveVessel(vessel: Partial<DbVessel>): Promise<DbVessel> {
     }
 
     const all = getLocal<DbVessel[]>(LOCAL_VESSELS_KEY, INITIAL_VESSELS);
-    const status = vessel.status || (vessel.is_active !== false ? 'active' : 'inactive');
+    const status = vessel.status || (vessel.is_active === true ? 'active' : 'inactive');
     const isActive = status === 'active' || status === 'in_service';
     const now = new Date().toISOString();
     const saved: DbVessel = vessel.id
@@ -1476,7 +1476,7 @@ export async function saveVessel(vessel: Partial<DbVessel>): Promise<DbVessel> {
     return saved;
   }
 
-  const status = vessel.status || (vessel.is_active !== false ? 'active' : 'inactive');
+  const status = vessel.status || (vessel.is_active === true ? 'active' : 'inactive');
   const isActive = status === 'active' || status === 'in_service';
   const payload: Record<string, unknown> = {
     name: vessel.name?.trim(),
@@ -1498,8 +1498,25 @@ export async function saveVessel(vessel: Partial<DbVessel>): Promise<DbVessel> {
   };
 
   if (!payload.name) throw new Error('A vessel name is required.');
+  if (!payload.registration_number) throw new Error('A verified vessel registration number is required.');
+  if (!payload.port_marina) throw new Error('A verified home port or marina is required.');
   if (!Number.isInteger(payload.passenger_capacity) || Number(payload.passenger_capacity) < 1) {
     throw new Error('A valid passenger capacity is required.');
+  }
+  if (!Number.isInteger(payload.crew_capacity) || Number(payload.crew_capacity) < 1) {
+    throw new Error('A valid crew capacity is required.');
+  }
+  if (vessel.year_built !== undefined && vessel.year_built !== null) {
+    const year = Number(vessel.year_built);
+    if (!Number.isInteger(year) || year < 1900 || year > new Date().getFullYear()) {
+      throw new Error('Enter a valid vessel build year.');
+    }
+  }
+  if (isActive) {
+    const inspectionExpiry = payload.safety_inspection_expiry ? new Date(`${payload.safety_inspection_expiry}T23:59:59`) : null;
+    if (!inspectionExpiry || Number.isNaN(inspectionExpiry.getTime()) || inspectionExpiry.getTime() < Date.now()) {
+      throw new Error('An active vessel must have a valid, unexpired safety inspection date.');
+    }
   }
   if (vessel.id) {
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(vessel.id)) {
@@ -1534,6 +1551,15 @@ export async function deleteVessel(id: string): Promise<boolean> {
     const all = getLocal<DbVessel[]>(LOCAL_VESSELS_KEY, INITIAL_VESSELS);
     setLocal(LOCAL_VESSELS_KEY, all.filter((item) => item.id !== id));
     return true;
+  }
+
+  const { count: assignedDepartureCount, error: assignmentError } = await supabase
+    .from('departures')
+    .select('id', { count: 'exact', head: true })
+    .eq('vessel_id', id);
+  if (assignmentError) throw new Error(formatSupabaseError(assignmentError));
+  if ((assignedDepartureCount || 0) > 0) {
+    throw new Error('This vessel is referenced by departure history. Mark it inactive or under maintenance instead of deleting it.');
   }
 
   const { data, error } = await supabase
@@ -1768,8 +1794,11 @@ export async function updateAvailabilitySlot(
   if (status === 'available' && maxCapacity <= bookedCount) {
     throw new Error('A date needs an explicit capacity greater than its booked count before it can be opened.');
   }
+  if (status === 'unavailable' && !updates.notes?.trim() && !existing?.notes?.trim()) {
+    throw new Error('A verified operational reason is required before marking a date unavailable.');
+  }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('tour_availability')
     .upsert({
       tour_id: tourId,
@@ -1777,9 +1806,12 @@ export async function updateAvailabilitySlot(
       max_capacity: maxCapacity,
       status,
       notes: updates.notes ?? existing?.notes ?? 'Manual override: updated by operations',
-    }, { onConflict: 'tour_id,date' });
+    }, { onConflict: 'tour_id,date' })
+    .select('tour_id')
+    .single();
 
   if (error) throw new Error(formatSupabaseError(error));
+  if (!data?.tour_id) throw new Error('Availability update was not confirmed by the database.');
   return true;
 }
 
@@ -1791,6 +1823,9 @@ export async function setBlackoutDate(
 ): Promise<boolean> {
   if (!isSupabaseConfigured()) {
     throw new Error('Supabase is not configured; blackout changes were not saved.');
+  }
+  if (isBlackout && !notes?.trim()) {
+    throw new Error('A verified operational reason is required before blacking out a date.');
   }
 
   const { data: existing, error: readError } = await supabase
@@ -1808,7 +1843,7 @@ export async function setBlackoutDate(
     throw new Error('This date cannot be reopened until an actual capacity greater than its booked count is configured.');
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('tour_availability')
     .upsert({
       tour_id: tourId,
@@ -1816,11 +1851,14 @@ export async function setBlackoutDate(
       max_capacity: maxCapacity,
       status: isBlackout ? 'unavailable' : 'available',
       notes: isBlackout
-        ? `Manual blackout: ${notes || 'Closed by operations'}`
-        : `Manual override: ${notes || 'Reopened by operations'}`,
-    }, { onConflict: 'tour_id,date' });
+        ? `Manual blackout: ${notes!.trim()}`
+        : `Manual override: ${notes?.trim() || 'Reopened by operations'}`,
+    }, { onConflict: 'tour_id,date' })
+    .select('tour_id')
+    .single();
 
   if (error) throw new Error(formatSupabaseError(error));
+  if (!data?.tour_id) throw new Error('The blackout change was not confirmed by the database.');
   return true;
 }
 
