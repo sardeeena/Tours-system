@@ -609,7 +609,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
                 <span>Operator Direct Guarantee</span>
               </div>
               <p className="text-stone-600 text-[11px] leading-relaxed">
-                Reservations are transmitted directly to the marine fleet operations center in Hurghada. Free cancellation up to 24 hours prior.
+                Reservations are transmitted directly to the booking operations team. Free cancellation up to 24 hours prior.
               </p>
             </div>
           </div>
