@@ -53,8 +53,10 @@ const isDestinationIndexable = (destination: DbDestination, tours: DbTour[]): bo
   const publishedTourCount = tours.filter(
     (tour) => tour.destination_id === destination.id && tour.status === 'published'
   ).length;
-  const contentLength = `${destination.description || ''} ${destination.tagline || ''}`.trim().length;
-  return publishedTourCount >= 2 || contentLength >= 300;
+  const contentLength = `${destination.description || ''} ${destination.tagline || ''}`
+    .replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().length;
+  // Keep the admin's indexability guidance aligned with the public renderer and sitemap.
+  return publishedTourCount >= 2 || contentLength >= 650;
 };
 
 export const AdminSeoManager: React.FC = () => {
