@@ -1481,8 +1481,8 @@ export async function saveVessel(vessel: Partial<DbVessel>): Promise<DbVessel> {
   const payload: Record<string, unknown> = {
     name: vessel.name?.trim(),
     vessel_type: vessel.vessel_type || 'motor_yacht',
-    registration_number: vessel.registration_number || null,
-    port_marina: vessel.port_marina || null,
+    registration_number: vessel.registration_number?.trim() || null,
+    port_marina: vessel.port_marina?.trim() || null,
     passenger_capacity: vessel.passenger_capacity,
     crew_capacity: vessel.crew_capacity,
     year_built: vessel.year_built || null,
@@ -1513,7 +1513,7 @@ export async function saveVessel(vessel: Partial<DbVessel>): Promise<DbVessel> {
     }
   }
   if (isActive) {
-    const inspectionExpiry = payload.safety_inspection_expiry ? new Date(`${payload.safety_inspection_expiry}T23:59:59`) : null;
+    const inspectionExpiry = payload.safety_inspection_expiry ? new Date(`${String(payload.safety_inspection_expiry)}T23:59:59`) : null;
     if (!inspectionExpiry || Number.isNaN(inspectionExpiry.getTime()) || inspectionExpiry.getTime() < Date.now()) {
       throw new Error('An active vessel must have a valid, unexpired safety inspection date.');
     }
