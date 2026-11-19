@@ -42,7 +42,7 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onExploreTours, onOpenMyBook
             </h2>
 
             <p className="text-sm sm:text-base text-stone-600 dark:text-slate-300 leading-relaxed max-w-xl">
-              Free cancellation is available up to 24 hours before the excursion start time. Hotel pickup zones and any location-based supplements are shown for the selected tour before you confirm.
+              Review the cancellation terms for your selected excursion before confirming. Hotel pickup zones and any location-based supplements are shown for the selected tour.
             </p>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
