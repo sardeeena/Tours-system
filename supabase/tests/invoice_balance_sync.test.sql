@@ -14,6 +14,16 @@ VALUES (
   12
 );
 
+INSERT INTO public.tour_availability (tour_id, date, max_capacity, booked_count, status)
+SELECT id, CURRENT_DATE + 1, 12, 0, 'available'
+FROM public.tours WHERE slug = 'invoice-sync-test-tour';
+
+INSERT INTO public.departures (
+  tour_id, date, start_time, end_time, capacity, booked_passengers, remaining_capacity, status
+)
+SELECT id, CURRENT_DATE + 1, '09:00', '12:00', 12, 0, 12, 'confirmed'
+FROM public.tours WHERE slug = 'invoice-sync-test-tour';
+
 INSERT INTO public.bookings (
   id, booking_reference, tour_id, booking_date, total, currency
 )
