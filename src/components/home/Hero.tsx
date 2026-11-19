@@ -182,7 +182,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
           <SearchModule onSearch={onSearch} resultCount={resultCount} destinations={destinations} categories={categories} />
         </motion.div>
 
-        {/* Practical Trust Guarantees */}
+        {/* Practical Booking Information */}
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
