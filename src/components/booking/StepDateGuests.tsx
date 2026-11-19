@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Calendar, Users, MapPin, Clock, AlertCircle, CheckCircle2, ShieldAlert, Plus, Minus, ArrowRight } from 'lucide-react';
+import { Calendar, Users, MapPin, Clock, AlertCircle, CheckCircle2, Plus, Minus, ArrowRight } from 'lucide-react';
 import { Tour, CurrencyConfig } from '../../types';
 import { GuestCounts, DepartureSlot } from '../../types/booking';
 import { getEarliestSelectableDate, getTourDepartureSlotsFromServer } from '../../services/availabilityService';
@@ -221,7 +221,6 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {departureSlots.map((slot) => {
                     const selected = slot.departureId === selectedDepartureId;
-                    const canBook = slot.isAvailable && totalPartySize <= slot.remainingCapacity;
                     return (
                       <button
                         key={slot.departureId}
