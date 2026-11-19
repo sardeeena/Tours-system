@@ -151,6 +151,7 @@ assert.doesNotMatch(translations, /100% Weather Refund Guarantee|Free 24h Prior 
 assert.match(finalCta, /Pickup is offered only on eligible tours and may vary by hotel area/, 'Final booking CTA makes pickup eligibility and location-specific coverage clear');
 assert.doesNotMatch(finalCta, /free cancellation up to 24 hours prior|Hotel pickup from your resort lobby is always included|Direct Booking Guarantee/i, 'Final CTA removes unsupported universal booking promises');
 assert.match(homeHero, /Practical Booking Information/, 'Hero labels conditional terms as booking information rather than guarantees');
+assert.doesNotMatch(homeHero, /certified PADI divemasters|2-tank guided boat dives/, 'Hero does not claim dive certifications or formats without tour-level evidence');
 
 
 
