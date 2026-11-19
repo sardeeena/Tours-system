@@ -27,7 +27,8 @@ export const SEO_DEFAULTS = {
 };
 
 /**
- * Standard FAQs for Schema.org FAQPage rich snippets on Google Search
+ * Visible English homepage FAQ content, reused by the FAQPage structured data.
+ * Structured data does not guarantee Google rich-result display.
  */
 export const HOMEPAGE_FAQS = [
   {
