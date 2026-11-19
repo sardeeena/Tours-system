@@ -27,6 +27,10 @@ DECLARE
     '        RETURN jsonb_build_object(''success'', false, ''error'', ''This departure is inside the minimum booking notice period. Please choose a later date.'');' || E'\n' ||
     '    END IF;';
   v_old_pricing text := '    v_subtotal := (p_adult_count * v_tour.price) + (COALESCE(p_child_count, 0) * (v_tour.price * 0.50));';
+  v_old_capacity_guard text := '    IF v_avail.status IN (''unavailable'', ''sold_out'') THEN';
+  v_new_capacity_guard text := '    IF v_avail.departure_id IS NULL OR NOT EXISTS (SELECT 1 FROM public.departures AS d WHERE d.id = v_avail.departure_id AND d.tour_id = v_tour.id AND d.date = p_booking_date AND d.status NOT IN (''cancelled'', ''completed'')) THEN' || E'\n' ||
+    '        RETURN jsonb_build_object(''success'', false, ''error'', ''This date has no operator-confirmed departure. Please choose another date or contact our booking team.'');' || E'\n' ||
+    '    END IF;' || E'\n' || v_old_capacity_guard;
   v_new_pricing text := '    v_subtotal := (p_adult_count * v_tour.price) + (COALESCE(p_child_count, 0) * COALESCE(v_tour.child_price, ROUND(v_tour.price * 0.50, 2)));';
 BEGIN
   IF v_signature IS NULL THEN
@@ -37,13 +41,15 @@ BEGIN
 
   IF position(v_old_declaration in v_definition) = 0
      OR position(v_old_lookup in v_definition) = 0
-     OR position(v_old_pricing in v_definition) = 0 THEN
+     OR position(v_old_pricing in v_definition) = 0
+     OR position(v_old_capacity_guard in v_definition) = 0 THEN
     RAISE EXCEPTION 'Booking function source no longer matches the reviewed migration anchors; stop and review manually.';
   END IF;
 
   v_definition := replace(v_definition, v_old_declaration, v_new_declaration);
   v_definition := replace(v_definition, v_old_lookup, v_new_lookup);
   v_definition := replace(v_definition, v_old_pricing, v_new_pricing);
+  v_definition := replace(v_definition, v_old_capacity_guard, v_new_capacity_guard);
 
   EXECUTE v_definition;
 END;
