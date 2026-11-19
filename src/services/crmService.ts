@@ -730,106 +730,94 @@ export async function listConversations(filter?: {
   bookingId?: string;
   channel?: string;
 }): Promise<CrmConversationRecord[]> {
-  let conversations: CrmConversationRecord[] = [];
-
-  if (isSupabaseConfigured()) {
-    try {
-      let query = supabase
-        .from('crm_conversations')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (filter?.customerId) query = query.eq('customer_id', filter.customerId);
-      if (filter?.leadId) query = query.eq('lead_id', filter.leadId);
-      if (filter?.bookingId) query = query.eq('booking_id', filter.bookingId);
-      if (filter?.channel && filter.channel !== 'all') query = query.eq('channel', filter.channel);
-
-      const { data, error } = await query;
-      if (!error && data) {
-        conversations = data.map((d) => ({
-          id: d.id,
-          customerId: d.customer_id,
-          leadId: d.lead_id,
-          bookingId: d.booking_id,
-          channel: d.channel,
-          direction: d.direction,
-          senderIdentifier: d.sender_identifier,
-          recipientIdentifier: d.recipient_identifier,
-          subject: d.subject,
-          messageBody: d.message_body,
-          provider: d.provider as ConversationProvider,
-          providerMessageId: d.provider_message_id,
-          providerStatus: d.provider_status as ConversationProviderStatus,
-          errorDetails: d.error_details,
-          staffId: d.staff_id,
-          staffName: d.staff_name,
-          metadata: d.metadata,
-          createdAt: d.created_at,
-        }));
-        setLocal(LOCAL_CONVERSATIONS_KEY, conversations);
-        return conversations;
-      }
-    } catch {
-      // ignore
-    }
+  if (useLocalCrmData('Supabase is not configured; CRM conversations cannot be loaded in production.')) {
+    return getLocal<CrmConversationRecord[]>(LOCAL_CONVERSATIONS_KEY, []).filter((item) => {
+      if (filter?.customerId && item.customerId !== filter.customerId) return false;
+      if (filter?.leadId && item.leadId !== filter.leadId) return false;
+      if (filter?.bookingId && item.bookingId !== filter.bookingId) return false;
+      if (filter?.channel && filter.channel !== 'all' && item.channel !== filter.channel) return false;
+      return true;
+    });
   }
 
-  conversations = getLocal<CrmConversationRecord[]>(LOCAL_CONVERSATIONS_KEY, []);
-  return conversations.filter((c) => {
-    if (filter?.customerId && c.customerId !== filter.customerId) return false;
-    if (filter?.leadId && c.leadId !== filter.leadId) return false;
-    if (filter?.bookingId && c.bookingId !== filter.bookingId) return false;
-    if (filter?.channel && filter.channel !== 'all' && c.channel !== filter.channel) return false;
-    return true;
-  });
+  let query = supabase.from('crm_conversations').select('*').order('created_at', { ascending: false });
+  if (filter?.customerId) query = query.eq('customer_id', filter.customerId);
+  if (filter?.leadId) query = query.eq('lead_id', filter.leadId);
+  if (filter?.bookingId) query = query.eq('booking_id', filter.bookingId);
+  if (filter?.channel && filter.channel !== 'all') query = query.eq('channel', filter.channel);
+
+  const { data, error } = await query;
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data) throw new Error('CRM conversations could not be loaded from the database.');
+
+  const conversations: CrmConversationRecord[] = data.map((d) => ({
+    id: d.id,
+    customerId: d.customer_id,
+    leadId: d.lead_id,
+    bookingId: d.booking_id,
+    channel: d.channel,
+    direction: d.direction,
+    senderIdentifier: d.sender_identifier,
+    recipientIdentifier: d.recipient_identifier,
+    subject: d.subject,
+    messageBody: d.message_body,
+    provider: d.provider as ConversationProvider,
+    providerMessageId: d.provider_message_id,
+    providerStatus: d.provider_status as ConversationProviderStatus,
+    errorDetails: d.error_details,
+    staffId: d.staff_id,
+    staffName: d.staff_name,
+    metadata: d.metadata,
+    createdAt: d.created_at,
+  }));
+  setLocal(LOCAL_CONVERSATIONS_KEY, conversations);
+  return conversations;
 }
 
 export async function recordConversation(
   input: Omit<CrmConversationRecord, 'id' | 'createdAt'>
 ): Promise<CrmConversationRecord> {
+  const localMode = useLocalCrmData('Supabase is not configured; CRM conversations cannot be saved in production.');
+  const now = new Date().toISOString();
   const newRecord: CrmConversationRecord = {
     ...input,
     id: `conv-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-    createdAt: new Date().toISOString(),
+    createdAt: now,
   };
+
+  if (!localMode) {
+    const { data, error } = await supabase
+      .from('crm_conversations')
+      .insert({
+        customer_id: newRecord.customerId,
+        lead_id: newRecord.leadId,
+        booking_id: newRecord.bookingId,
+        channel: newRecord.channel,
+        direction: newRecord.direction,
+        sender_identifier: newRecord.senderIdentifier,
+        recipient_identifier: newRecord.recipientIdentifier,
+        subject: newRecord.subject,
+        message_body: newRecord.messageBody,
+        provider: newRecord.provider,
+        provider_message_id: newRecord.providerMessageId,
+        provider_status: newRecord.providerStatus,
+        error_details: newRecord.errorDetails,
+        staff_name: newRecord.staffName,
+        staff_id: newRecord.staffId,
+        metadata: newRecord.metadata || {},
+      })
+      .select('*')
+      .single();
+
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The CRM conversation was not saved; no database record was returned.');
+    newRecord.id = data.id;
+    newRecord.createdAt = data.created_at || now;
+  }
 
   const list = getLocal<CrmConversationRecord[]>(LOCAL_CONVERSATIONS_KEY, []);
   setLocal(LOCAL_CONVERSATIONS_KEY, [newRecord, ...list]);
 
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('crm_conversations')
-        .insert({
-          customer_id: newRecord.customerId,
-          lead_id: newRecord.leadId,
-          booking_id: newRecord.bookingId,
-          channel: newRecord.channel,
-          direction: newRecord.direction,
-          sender_identifier: newRecord.senderIdentifier,
-          recipient_identifier: newRecord.recipientIdentifier,
-          subject: newRecord.subject,
-          message_body: newRecord.messageBody,
-          provider: newRecord.provider,
-          provider_message_id: newRecord.providerMessageId,
-          provider_status: newRecord.providerStatus,
-          error_details: newRecord.errorDetails,
-          staff_name: newRecord.staffName,
-          staff_id: newRecord.staffId,
-          metadata: newRecord.metadata || {},
-        })
-        .select('*')
-        .maybeSingle();
-
-      if (!error && data) {
-        newRecord.id = data.id;
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  // Also log to communications and activity
   await recordActivity({
     customerId: newRecord.customerId,
     leadId: newRecord.leadId,
@@ -851,53 +839,45 @@ export async function listCommunications(filter?: {
   customerId?: string;
   leadId?: string;
 }): Promise<CrmCommunication[]> {
-  let comms: CrmCommunication[] = [];
-
-  if (isSupabaseConfigured()) {
-    try {
-      let query = supabase
-        .from('crm_communications')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (filter?.customerId) query = query.eq('customer_id', filter.customerId);
-      if (filter?.leadId) query = query.eq('lead_id', filter.leadId);
-
-      const { data, error } = await query;
-      if (!error && data) {
-        comms = data.map((d) => ({
-          id: d.id,
-          customerId: d.customer_id,
-          customerName: d.customer_name,
-          leadId: d.lead_id,
-          bookingId: d.booking_id,
-          channel: (d.channel as CommChannel) || 'WhatsApp',
-          direction: (d.direction as 'inbound' | 'outbound') || 'outbound',
-          summary: d.summary,
-          content: d.content,
-          staffName: d.staff_name,
-          staffId: d.staff_id,
-          createdAt: d.created_at,
-        }));
-        setLocal(LOCAL_COMMS_KEY, comms);
-        return comms;
-      }
-    } catch {
-      // ignore
-    }
+  if (useLocalCrmData('Supabase is not configured; CRM communication logs cannot be loaded in production.')) {
+    return getLocal<CrmCommunication[]>(LOCAL_COMMS_KEY, []).filter((item) => {
+      if (filter?.customerId && item.customerId !== filter.customerId) return false;
+      if (filter?.leadId && item.leadId !== filter.leadId) return false;
+      return true;
+    });
   }
 
-  comms = getLocal<CrmCommunication[]>(LOCAL_COMMS_KEY, []);
-  return comms.filter((c) => {
-    if (filter?.customerId && c.customerId !== filter.customerId) return false;
-    if (filter?.leadId && c.leadId !== filter.leadId) return false;
-    return true;
-  });
+  let query = supabase.from('crm_communications').select('*').order('created_at', { ascending: false });
+  if (filter?.customerId) query = query.eq('customer_id', filter.customerId);
+  if (filter?.leadId) query = query.eq('lead_id', filter.leadId);
+
+  const { data, error } = await query;
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data) throw new Error('CRM communication logs could not be loaded from the database.');
+
+  const comms: CrmCommunication[] = data.map((d) => ({
+    id: d.id,
+    customerId: d.customer_id,
+    customerName: d.customer_name,
+    leadId: d.lead_id,
+    bookingId: d.booking_id,
+    channel: (d.channel as CommChannel) || 'WhatsApp',
+    direction: (d.direction as 'inbound' | 'outbound') || 'outbound',
+    summary: d.summary,
+    content: d.content,
+    staffName: d.staff_name,
+    staffId: d.staff_id,
+    createdAt: d.created_at,
+  }));
+  setLocal(LOCAL_COMMS_KEY, comms);
+  return comms;
 }
 
 export async function recordCommunication(
   input: Partial<CrmCommunication>
 ): Promise<CrmCommunication> {
+  const localMode = useLocalCrmData('Supabase is not configured; CRM communication logs cannot be saved in production.');
+  const now = new Date().toISOString();
   const newComm: CrmCommunication = {
     id: `comm-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
     customerId: input.customerId || null,
@@ -908,39 +888,37 @@ export async function recordCommunication(
     direction: input.direction || 'outbound',
     summary: input.summary || 'Client Contact',
     content: input.content || null,
-    staffName: input.staffName || 'Admin Staff',
+    staffName: input.staffName || 'Signed-in staff',
     staffId: input.staffId || null,
-    createdAt: new Date().toISOString(),
+    createdAt: now,
   };
+
+  if (!localMode) {
+    const { data, error } = await supabase
+      .from('crm_communications')
+      .insert({
+        customer_id: newComm.customerId,
+        customer_name: newComm.customerName,
+        lead_id: newComm.leadId,
+        booking_id: newComm.bookingId,
+        channel: newComm.channel,
+        direction: newComm.direction,
+        summary: newComm.summary,
+        content: newComm.content,
+        staff_name: newComm.staffName,
+        staff_id: newComm.staffId,
+      })
+      .select('*')
+      .single();
+
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The CRM communication was not saved; no database record was returned.');
+    newComm.id = data.id;
+    newComm.createdAt = data.created_at || now;
+  }
 
   const comms = getLocal<CrmCommunication[]>(LOCAL_COMMS_KEY, []);
   setLocal(LOCAL_COMMS_KEY, [newComm, ...comms]);
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('crm_communications')
-        .insert({
-          customer_id: newComm.customerId,
-          customer_name: newComm.customerName,
-          lead_id: newComm.leadId,
-          booking_id: newComm.bookingId,
-          channel: newComm.channel,
-          direction: newComm.direction,
-          summary: newComm.summary,
-          content: newComm.content,
-          staff_name: newComm.staffName,
-        })
-        .select('*')
-        .maybeSingle();
-
-      if (!error && data) {
-        newComm.id = data.id;
-      }
-    } catch {
-      // ignore
-    }
-  }
 
   await recordActivity({
     customerId: newComm.customerId,
@@ -958,45 +936,35 @@ export async function listNotes(filter?: {
   customerId?: string;
   leadId?: string;
 }): Promise<CrmNote[]> {
-  let notes: CrmNote[] = [];
-
-  if (isSupabaseConfigured()) {
-    try {
-      let query = supabase
-        .from('crm_notes')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (filter?.customerId) query = query.eq('customer_id', filter.customerId);
-      if (filter?.leadId) query = query.eq('lead_id', filter.leadId);
-
-      const { data, error } = await query;
-      if (!error && data) {
-        notes = data.map((d) => ({
-          id: d.id,
-          customerId: d.customer_id,
-          leadId: d.lead_id,
-          bookingId: d.booking_id,
-          content: d.content,
-          staffName: d.staff_name,
-          staffId: d.staff_id,
-          isPinned: Boolean(d.is_pinned),
-          createdAt: d.created_at,
-        }));
-        setLocal(LOCAL_NOTES_KEY, notes);
-        return notes;
-      }
-    } catch {
-      // ignore
-    }
+  if (useLocalCrmData('Supabase is not configured; CRM notes cannot be loaded in production.')) {
+    return getLocal<CrmNote[]>(LOCAL_NOTES_KEY, []).filter((item) => {
+      if (filter?.customerId && item.customerId !== filter.customerId) return false;
+      if (filter?.leadId && item.leadId !== filter.leadId) return false;
+      return true;
+    });
   }
 
-  notes = getLocal<CrmNote[]>(LOCAL_NOTES_KEY, []);
-  return notes.filter((n) => {
-    if (filter?.customerId && n.customerId !== filter.customerId) return false;
-    if (filter?.leadId && n.leadId !== filter.leadId) return false;
-    return true;
-  });
+  let query = supabase.from('crm_notes').select('*').order('created_at', { ascending: false });
+  if (filter?.customerId) query = query.eq('customer_id', filter.customerId);
+  if (filter?.leadId) query = query.eq('lead_id', filter.leadId);
+
+  const { data, error } = await query;
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data) throw new Error('CRM notes could not be loaded from the database.');
+
+  const notes: CrmNote[] = data.map((d) => ({
+    id: d.id,
+    customerId: d.customer_id,
+    leadId: d.lead_id,
+    bookingId: d.booking_id,
+    content: d.content,
+    staffName: d.staff_name,
+    staffId: d.staff_id,
+    isPinned: Boolean(d.is_pinned),
+    createdAt: d.created_at,
+  }));
+  setLocal(LOCAL_NOTES_KEY, notes);
+  return notes;
 }
 
 export async function addStaffNote(input: {
@@ -1005,44 +973,46 @@ export async function addStaffNote(input: {
   bookingId?: string;
   content: string;
   staffName?: string;
+  staffId?: string | null;
   isPinned?: boolean;
 }): Promise<CrmNote> {
+  const localMode = useLocalCrmData('Supabase is not configured; CRM notes cannot be saved in production.');
+  const now = new Date().toISOString();
   const newNote: CrmNote = {
     id: `note-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
     customerId: input.customerId || null,
     leadId: input.leadId || null,
     bookingId: input.bookingId || null,
     content: input.content,
-    staffName: input.staffName || 'Staff Member',
+    staffName: input.staffName || 'Signed-in staff',
+    staffId: input.staffId || null,
     isPinned: Boolean(input.isPinned),
-    createdAt: new Date().toISOString(),
+    createdAt: now,
   };
+
+  if (!localMode) {
+    const { data, error } = await supabase
+      .from('crm_notes')
+      .insert({
+        customer_id: newNote.customerId,
+        lead_id: newNote.leadId,
+        booking_id: newNote.bookingId,
+        content: newNote.content,
+        staff_name: newNote.staffName,
+        staff_id: newNote.staffId,
+        is_pinned: newNote.isPinned,
+      })
+      .select('*')
+      .single();
+
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The CRM note was not saved; no database record was returned.');
+    newNote.id = data.id;
+    newNote.createdAt = data.created_at || now;
+  }
 
   const notes = getLocal<CrmNote[]>(LOCAL_NOTES_KEY, []);
   setLocal(LOCAL_NOTES_KEY, [newNote, ...notes]);
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('crm_notes')
-        .insert({
-          customer_id: newNote.customerId,
-          lead_id: newNote.leadId,
-          booking_id: newNote.bookingId,
-          content: newNote.content,
-          staff_name: newNote.staffName,
-          is_pinned: newNote.isPinned,
-        })
-        .select('*')
-        .maybeSingle();
-
-      if (!error && data) {
-        newNote.id = data.id;
-      }
-    } catch {
-      // ignore
-    }
-  }
 
   await recordActivity({
     customerId: newNote.customerId,
@@ -1061,6 +1031,8 @@ export async function addStaffNote(input: {
 // ------------------------------------------------------------------------------
 
 export async function recordActivity(input: Partial<CrmActivity>): Promise<CrmActivity> {
+  const localMode = useLocalCrmData('Supabase is not configured; CRM activity cannot be recorded in production.');
+  const now = new Date().toISOString();
   const newAct: CrmActivity = {
     id: `act-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
     customerId: input.customerId || null,
@@ -1071,76 +1043,66 @@ export async function recordActivity(input: Partial<CrmActivity>): Promise<CrmAc
     description: input.description || null,
     actor: input.actor || 'System',
     metadata: input.metadata || {},
-    createdAt: new Date().toISOString(),
+    createdAt: now,
   };
+
+  if (!localMode) {
+    const { data, error } = await supabase
+      .from('crm_activities')
+      .insert({
+        customer_id: newAct.customerId,
+        lead_id: newAct.leadId,
+        booking_id: newAct.bookingId,
+        event_type: newAct.eventType,
+        title: newAct.title,
+        description: newAct.description,
+        actor: newAct.actor,
+        metadata: newAct.metadata,
+      })
+      .select('*')
+      .single();
+
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The CRM activity was not saved; no database record was returned.');
+    newAct.id = data.id;
+    newAct.createdAt = data.created_at || now;
+  }
 
   const activities = getLocal<CrmActivity[]>(LOCAL_ACTIVITIES_KEY, []);
   setLocal(LOCAL_ACTIVITIES_KEY, [newAct, ...activities]);
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('crm_activities')
-        .insert({
-          customer_id: newAct.customerId,
-          lead_id: newAct.leadId,
-          booking_id: newAct.bookingId,
-          event_type: newAct.eventType,
-          title: newAct.title,
-          description: newAct.description,
-          actor: newAct.actor,
-          metadata: newAct.metadata,
-        })
-        .select('*')
-        .maybeSingle();
-
-      if (!error && data) {
-        newAct.id = data.id;
-      }
-    } catch {
-      // ignore
-    }
-  }
-
   return newAct;
 }
 
 export const logActivity = recordActivity;
 
 export async function getGlobalActivityTimeline(limit: number = 60): Promise<CrmActivity[]> {
-  let activities: CrmActivity[] = [];
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('crm_activities')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(limit);
-
-      if (!error && data) {
-        activities = data.map((d) => ({
-          id: d.id,
-          customerId: d.customer_id,
-          leadId: d.lead_id,
-          bookingId: d.booking_id,
-          eventType: d.event_type,
-          title: d.title,
-          description: d.description,
-          actor: d.actor,
-          metadata: d.metadata,
-          createdAt: d.created_at,
-        }));
-        setLocal(LOCAL_ACTIVITIES_KEY, activities);
-        return activities;
-      }
-    } catch {
-      // ignore
-    }
+  if (useLocalCrmData('Supabase is not configured; CRM activity cannot be loaded in production.')) {
+    return getLocal<CrmActivity[]>(LOCAL_ACTIVITIES_KEY, []).slice(0, limit);
   }
 
-  activities = getLocal<CrmActivity[]>(LOCAL_ACTIVITIES_KEY, []);
-  return activities.slice(0, limit);
+  const { data, error } = await supabase
+    .from('crm_activities')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data) throw new Error('CRM activity could not be loaded from the database.');
+
+  const activities: CrmActivity[] = data.map((d) => ({
+    id: d.id,
+    customerId: d.customer_id,
+    leadId: d.lead_id,
+    bookingId: d.booking_id,
+    eventType: d.event_type,
+    title: d.title,
+    description: d.description,
+    actor: d.actor,
+    metadata: d.metadata,
+    createdAt: d.created_at,
+  }));
+  setLocal(LOCAL_ACTIVITIES_KEY, activities);
+  return activities;
 }
 
 // ------------------------------------------------------------------------------
