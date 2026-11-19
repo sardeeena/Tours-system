@@ -45,6 +45,7 @@ import { CustomerDashboardView } from './CustomerDashboardView';
 import { FinanceDashboardView } from './FinanceDashboardView';
 import { ReportBuilderView } from './ReportBuilderView';
 import { useToast } from '../../../contexts/ToastContext';
+import { AdminLoadError } from '../AdminLoadError';
 import { AdminTab } from '../AdminLayout';
 
 interface ManagementReportingDashboardProps {
@@ -67,6 +68,7 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
   const [customEndDate, setCustomEndDate] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Loaded Metrics Data
   const [executiveData, setExecutiveData] = useState<ExecutiveMetrics | null>(null);
@@ -93,6 +95,7 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
 
     const reportKey = `${activeView}:${currentInterval.startDate}:${currentInterval.endDate}`;
     setLoading(!loadedReportKeys.current.has(reportKey));
+    setLoadError(null);
     try {
       if (activeView === 'executive') {
         const data = await fetchExecutiveReport(currentInterval);
@@ -112,8 +115,10 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
       }
       loadedReportKeys.current.add(reportKey);
     } catch (err) {
+      const message = err instanceof Error ? err.message : 'Could not refresh report data from the database.';
       console.error('Failed to query reporting metrics:', err);
-      showToast('Could not refresh report data from Supabase', 'error');
+      setLoadError(message);
+      showToast(message, 'error');
     } finally {
       setLoading(false);
       setIsRefreshing(false);
@@ -307,6 +312,8 @@ export const ManagementReportingDashboard: React.FC<ManagementReportingDashboard
           </button>
         </div>
       </div>
+
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
 
       {/* Compact dashboard section menu */}
       <div className="relative print:hidden">
