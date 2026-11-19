@@ -71,7 +71,7 @@ export function getAppOrigin(): string {
  * Generates comprehensive Schema.org JSON-LD structured data for the Homepage
  * Combines TravelAgency Organization, WebSite with SearchAction, and FAQPage schemas
  */
-export function generateHomeJsonLd(origin = getAppOrigin(), includeFaq = true): Record<string, unknown> {
+export function generateHomeJsonLd(origin = getAppOrigin(), includeFaq = false): Record<string, unknown> {
   const organization = {
     '@type': 'TravelAgency',
     '@id': `${origin}/#organization`,
