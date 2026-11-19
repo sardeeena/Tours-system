@@ -1641,7 +1641,9 @@ export async function createCustomer(input: {
 
     if (error) throw new Error(formatSupabaseError(error));
     if (!data?.id) throw new Error('The customer was not saved; no database record was returned.');
-    return await getCustomerProfile(data.id) || Promise.reject(new Error('The customer was saved but could not be reloaded.'));
+    const profile = await getCustomerProfile(data.id);
+    if (!profile) throw new Error('The customer was saved but could not be reloaded.');
+    return profile;
   }
 
   await updateCustomerMetadata(email, {
@@ -1670,6 +1672,7 @@ export async function updateCustomerMetadata(
         tags: updates.tags,
         hotel: updates.hotel,
         country: updates.country,
+        source: updates.source,
         updated_at: new Date().toISOString(),
       })
       .eq('email', cleanEmail)
