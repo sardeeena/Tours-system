@@ -340,53 +340,37 @@ export async function updateLeadStage(
   newStage: LeadStage,
   lostReason?: string
 ): Promise<boolean> {
-  const leads = getLocal<CrmLead[]>(LOCAL_LEADS_KEY, []);
-  const target = leads.find((l) => l.id === leadId);
-  const oldStage = target?.stage || 'Unknown';
+  const leads = await listLeads();
+  const target = leads.find((lead) => lead.id === leadId);
+  if (!target) throw new Error('Lead not found or no longer accessible.');
+  const oldStage = target.stage;
   const status = newStage === 'Won' ? 'converted' : newStage === 'Lost' ? 'lost' : 'active';
+  const localMode = useLocalCrmData('Supabase is not configured; CRM lead stages cannot be updated in production.');
+  const now = new Date().toISOString();
 
-  const updated = leads.map((l) =>
-    l.id === leadId
-      ? {
-          ...l,
-          stage: newStage,
-          status: status as any,
-          lostReason: newStage === 'Lost' ? lostReason || l.lostReason : null,
-          updatedAt: new Date().toISOString(),
-        }
-      : l
-  );
-  setLocal(LOCAL_LEADS_KEY, updated);
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { error } = await supabase
-        .from('leads')
-        .update({
-          stage: newStage,
-          status,
-          lost_reason: newStage === 'Lost' ? lostReason : null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', leadId);
-
-      if (error) {
-        throw new Error(formatSupabaseError(error));
-      }
-    } catch (err: any) {
-      console.error('Error updating lead stage in Supabase:', err);
-      throw err;
-    }
+  if (!localMode) {
+    const { data, error } = await supabase
+      .from('leads')
+      .update({ stage: newStage, status, lost_reason: newStage === 'Lost' ? lostReason : null, updated_at: now })
+      .eq('id', leadId)
+      .select('id')
+      .maybeSingle();
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The lead stage was not updated because the lead no longer exists or is not accessible.');
   }
+
+  setLocal(LOCAL_LEADS_KEY, leads.map((lead) => lead.id === leadId
+    ? { ...lead, stage: newStage, status: status as any, lostReason: newStage === 'Lost' ? lostReason || lead.lostReason : null, updatedAt: now }
+    : lead
+  ));
 
   await recordActivity({
     leadId,
     eventType: 'stage_changed',
     title: `Stage Changed: ${newStage}`,
     description: `Lead moved from "${oldStage}" to "${newStage}"${lostReason ? ` (Reason: ${lostReason})` : ''}.`,
-    actor: 'Admin Staff',
+    actor: 'Signed-in staff',
   });
-
   return true;
 }
 
@@ -394,7 +378,7 @@ export async function recordLeadContactAttempt(
   leadId: string,
   channel: FollowUpChannel,
   notes: string,
-  staffName: string = 'Admin Staff'
+  staffName: string = 'Signed-in staff'
 ): Promise<boolean> {
   const leads = getLocal<CrmLead[]>(LOCAL_LEADS_KEY, []);
   const target = leads.find((l) => l.id === leadId);
@@ -418,24 +402,22 @@ export async function recordLeadContactAttempt(
 }
 
 export async function deleteLead(leadId: string): Promise<boolean> {
-  const leads = getLocal<CrmLead[]>(LOCAL_LEADS_KEY, []);
-  setLocal(
-    LOCAL_LEADS_KEY,
-    leads.filter((l) => l.id !== leadId)
-  );
+  if (!leadId.trim()) throw new Error('A lead ID is required.');
+  const localMode = useLocalCrmData('Supabase is not configured; CRM leads cannot be deleted in production.');
 
-  if (isSupabaseConfigured()) {
-    try {
-      const { error } = await supabase.from('leads').delete().eq('id', leadId);
-      if (error) {
-        throw new Error(formatSupabaseError(error));
-      }
-    } catch (err: any) {
-      console.error('Error deleting lead from Supabase:', err);
-      throw err;
-    }
+  if (!localMode) {
+    const { data, error } = await supabase
+      .from('leads')
+      .delete()
+      .eq('id', leadId)
+      .select('id')
+      .maybeSingle();
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The lead was not deleted because it no longer exists or is not accessible.');
   }
 
+  const leads = getLocal<CrmLead[]>(LOCAL_LEADS_KEY, []);
+  setLocal(LOCAL_LEADS_KEY, leads.filter((lead) => lead.id !== leadId));
   return true;
 }
 
@@ -1857,82 +1839,66 @@ export async function convertInquiryToLead(inquiry: any): Promise<CrmLead> {
 
 export async function convertLeadToCustomer(leadId: string): Promise<string> {
   const leads = await listLeads();
-  const lead = leads.find((l) => l.id === leadId);
-  if (!lead) throw new Error('Lead not found');
+  const lead = leads.find((item) => item.id === leadId);
+  if (!lead) throw new Error('Lead not found.');
 
   const cleanEmail = lead.email.trim().toLowerCase();
   const cleanPhone = lead.phone?.trim() || null;
   let customerId: string | null = lead.customerId || null;
+  const localMode = useLocalCrmData('Supabase is not configured; lead conversion cannot run in production.');
 
-  // 1. Deduplication: Check if customer already exists in database or cache
-  if (!customerId && isSupabaseConfigured()) {
-    try {
-      const { data: existingCust } = await supabase
-        .from('customers')
-        .select('id, hotel, phone')
-        .eq('email', cleanEmail)
-        .maybeSingle();
-
-      if (existingCust?.id) {
-        customerId = existingCust.id;
-      } else if (cleanPhone) {
-        const { data: byPhone } = await supabase
-          .from('customers')
-          .select('id')
-          .eq('phone', cleanPhone)
-          .maybeSingle();
-        if (byPhone?.id) customerId = byPhone.id;
-      }
-    } catch {}
-  }
-
-  // Check local cache if not found in Supabase
-  if (!customerId) {
-    const rawLocal = localStorage.getItem('rse_customers_cache');
-    if (rawLocal) {
-      try {
-        const localList = JSON.parse(rawLocal);
-        const match = localList.find(
-          (c: any) =>
-            c.email?.toLowerCase() === cleanEmail ||
-            (cleanPhone && c.phone && c.phone.replace(/\s+/g, '') === cleanPhone.replace(/\s+/g, ''))
-        );
-        if (match) customerId = match.id;
-      } catch {}
+  if (!customerId && !localMode) {
+    if (cleanEmail) {
+      const { data, error } = await supabase.from('customers').select('id').eq('email', cleanEmail).maybeSingle();
+      if (error) throw new Error(formatSupabaseError(error));
+      if (data?.id) customerId = data.id;
+    }
+    if (!customerId && cleanPhone) {
+      const { data, error } = await supabase.from('customers').select('id').eq('phone', cleanPhone).maybeSingle();
+      if (error) throw new Error(formatSupabaseError(error));
+      if (data?.id) customerId = data.id;
     }
   }
 
-  // 2. Only create new customer if not already existing
+  if (!customerId && localMode) {
+    const rawLocal = localStorage.getItem('rse_customers_cache');
+    if (rawLocal) {
+      const localList = JSON.parse(rawLocal);
+      const match = localList.find((customer: any) =>
+        customer.email?.toLowerCase() === cleanEmail ||
+        (cleanPhone && customer.phone && customer.phone.replace(/\s+/g, '') === cleanPhone.replace(/\s+/g, ''))
+      );
+      if (match) customerId = match.id;
+    }
+  }
+
   if (!customerId) {
-    const createdCust = await createCustomer({
+    if (!cleanEmail && !cleanPhone) throw new Error('A lead needs an email address or phone number before conversion.');
+    const created = await createCustomer({
       firstName: lead.name.split(' ')[0] || lead.name,
       lastName: lead.name.split(' ').slice(1).join(' ') || '',
-      email: lead.email,
-      phone: lead.phone || '',
+      email: cleanEmail,
+      phone: cleanPhone || '',
       whatsapp: lead.whatsapp || undefined,
       country: lead.country || 'International',
       hotel: lead.hotel || undefined,
       notes: lead.notes || undefined,
       tags: ['Converted Lead', 'Active Customer'],
     });
-    customerId = createdCust.id;
+    customerId = created.id;
   }
 
-  // 3. Preserve Lead History & Link to Customer
   await updateLeadStage(leadId, 'Won');
   await updateLead(leadId, { customerId });
-
-  // 4. Record Activity Timeline Event
   await recordActivity({
     customerId,
     leadId,
     eventType: 'lead_converted',
     title: 'Lead Converted to Customer',
     description: `${lead.name} (${lead.source}) successfully converted to verified customer. Preserved lead value: €${lead.estimatedValue || 0}.`,
-    actor: 'Sales Team',
+    actor: 'Signed-in staff',
   });
-
-  return lead.email;
+  return customerId;
 }
 
 // ------------------------------------------------------------------------------
