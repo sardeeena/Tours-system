@@ -637,7 +637,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
                 <span>Operator Direct Guarantee</span>
               </div>
               <p className="text-stone-600 text-[11px] leading-relaxed">
-                Reservations are transmitted directly to the booking operations team. Free cancellation up to 24 hours prior.
+                Reservations are sent directly to our booking operations team. Review the cancellation terms for your selected excursion before confirming.
               </p>
             </div>
           </div>
