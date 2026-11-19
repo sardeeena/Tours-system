@@ -3309,7 +3309,7 @@
       "content": {
         "name": "Boekingsbevestiging",
         "subject": "Boekingsbevestiging: {{tour_name}} (ref.: {{booking_reference}})",
-        "body_text": "Hallo {{customer_name}},\n\nBedankt voor je boeking bij Awesome Adventure Tours. Je boeking voor {{tour_name}} op {{tour_date}} is bevestigd.\n\nBoekingsreferentie: {{booking_reference}}\nTotaalbedrag: {{amount}}\nResterend saldo: {{balance_due}}\nOphaaltijd: {{pickup_time}}\n\nMet vriendelijke groet,\nDe conciërgeservice van Awesome Adventure Tours",
+        "body_text": "Hallo {{customer_name}},\n\nBedankt voor je boeking bij Awesome Adventure Tours. Je boeking voor {{tour_name}} op {{tour_date}} is bevestigd.\n\nBoekingsreferentie: {{booking_reference}}\nTotaalbedrag: {{amount}}\nResterend saldo: {{balance_due}}\nOphaaltijd: {{pickup_time}}\nVertrektijd: {{departure_time}}\n\nMet vriendelijke groet,\nDe conciërgeservice van Awesome Adventure Tours",
         "variables": [
           "customer_name",
           "booking_reference",
@@ -3317,7 +3317,8 @@
           "tour_date",
           "pickup_time",
           "amount",
-          "balance_due"
+          "balance_due",
+          "departure_time"
         ],
         "channel": "Both",
         "template_key": "booking_confirmation"
