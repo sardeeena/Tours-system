@@ -24,4 +24,7 @@ assert.match(editor,/role="dialog"[\s\S]*Start generating drafts/, 'Generation u
 assert.match(editor,/onClick=\{\(\) => setConfirmGenerate\(true\)\}/, 'The Generate button opens the in-page confirmation directly');
 assert.match(editor,/disabled=\{saving \|\| !entityKey\.trim\(\) \|\| !sourceChecksum\.trim\(\)\}/, 'Save actions stay disabled until a verified source key and checksum are loaded');
 assert.match(editor,/To save, select an existing translation or enter its source record key/, 'The editor explains how to enable saving');
+assert.match(editor,/const targetLocale = locale/,'Draft generation uses the selected locale');
+assert.match(editor,/!\['fr','nl','pl'\]\.includes\(locale\)/,'Only prepared French, Dutch and Polish bundles can be generated from this workspace');
+assert.match(editor,/French, Dutch and Polish are enabled here/,'The generation confirmation explains the supported rollout languages');
 console.log('Bulk localization draft workflow safety checks passed.');
