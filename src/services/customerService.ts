@@ -124,7 +124,7 @@ export async function listUnifiedCustomers(): Promise<UnifiedCustomer[]> {
         totalBookings: 0,
         totalSpentEur: 0,
         avatarUrl: user.avatarUrl,
-        createdAt: '',
+        createdAt: user.createdAt || '',
       });
     });
 
@@ -183,55 +183,54 @@ export async function updateCustomerRole(
   userId: string,
   newRole: UserRole
 ): Promise<boolean> {
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
-
-  if (isSupabaseConfigured() && isUuid) {
-    try {
-      // Authorization check: Verify caller is an authenticated administrator
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error('Authentication required: You must be signed in as an administrator to change user roles.');
-      }
-      const { data: callerProfile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      const callerRole = callerProfile?.role;
-      if (callerRole !== 'admin' && callerRole !== 'super_admin' && callerRole !== 'manager') {
-        throw new Error('Permission denied: Only system administrators have authorization to modify account roles.');
-      }
-
-      // Privilege escalation protection: Users cannot self-promote to admin/super_admin
-      if (user.id === userId && (newRole === 'admin' || newRole === 'super_admin')) {
-        throw new Error('Permission denied: Self-promotion to administrative roles is strictly prohibited.');
-      }
-
-      // Only existing super_admin can delegate super_admin privileges
-      if (newRole === 'super_admin' && callerRole !== 'super_admin') {
-        throw new Error('Permission denied: Only super administrators can grant the super_admin role.');
-      }
-
-      const { error } = await supabase
-        .from('profiles')
-        .update({ role: newRole, updated_at: new Date().toISOString() })
-        .eq('id', userId);
-
-      if (error) {
-        throw new Error(formatSupabaseError(error));
-      }
-    } catch (err: any) {
-      console.error('Exception updating customer role in Supabase:', err);
-      throw err;
-    }
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; customer roles cannot be changed in production.');
+    const localList = getStoredCustomers();
+    const updated = localList.map((customer) => customer.id === userId ? { ...customer, role: newRole } : customer);
+    if (!updated.some((customer) => customer.id === userId)) throw new Error('Customer profile was not found in the local development directory.');
+    saveStoredCustomers(updated);
+    return true;
   }
 
-  // Update local cache
-  const localList = getStoredCustomers();
-  const updated = localList.map((c) => (c.id === userId ? { ...c, role: newRole } : c));
-  saveStoredCustomers(updated);
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+  if (!isUuid) throw new Error('Role changes require a registered Supabase user profile.');
 
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError) throw new Error(formatSupabaseError(authError));
+  if (!user) throw new Error('Authentication required: sign in as an administrator to change user roles.');
+
+  const { data: callerProfile, error: callerProfileError } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle();
+  if (callerProfileError) throw new Error(formatSupabaseError(callerProfileError));
+
+  const callerRole = callerProfile?.role;
+  if (callerRole !== 'admin' && callerRole !== 'super_admin' && callerRole !== 'manager') {
+    throw new Error('Permission denied: only authorized administrators can modify account roles.');
+  }
+  if (user.id === userId && (newRole === 'admin' || newRole === 'super_admin')) {
+    throw new Error('Self-promotion to administrative roles is prohibited.');
+  }
+  if (newRole === 'super_admin' && callerRole !== 'super_admin') {
+    throw new Error('Only a super administrator can grant super administrator privileges.');
+  }
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ role: newRole, updated_at: new Date().toISOString() })
+    .eq('id', userId)
+    .select('id')
+    .maybeSingle();
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data?.id) throw new Error('The profile role was not changed because the profile was not found or is not accessible.');
+
+  if (import.meta.env.DEV) {
+    saveStoredCustomers(getStoredCustomers().map((customer) =>
+      customer.id === userId ? { ...customer, role: newRole } : customer
+    ));
+  }
   return true;
 }
 
@@ -242,44 +241,66 @@ export async function updateCustomerDetails(
   id: string,
   updates: Partial<UnifiedCustomer>
 ): Promise<boolean> {
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-
-  if (isSupabaseConfigured() && isUuid) {
-    try {
-      const { error: profError } = await supabase
-        .from('profiles')
-        .update({
-          full_name: updates.fullName,
-          phone: updates.phone,
-          country: updates.country,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id);
-
-      if (profError) {
-        throw new Error(formatSupabaseError(profError));
-      }
-
-      await supabase
-        .from('customers')
-        .update({
-          first_name: updates.fullName?.split(' ')[0],
-          last_name: updates.fullName?.split(' ').slice(1).join(' '),
-          phone: updates.phone,
-          country: updates.country,
-          hotel: updates.hotel,
-        })
-        .eq('id', id);
-    } catch (err: any) {
-      console.error('Exception updating customer details in Supabase:', err);
-      throw err;
-    }
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; customer details cannot be changed in production.');
+    const localList = getStoredCustomers();
+    if (!localList.some((customer) => customer.id === id)) throw new Error('Customer was not found in the local development directory.');
+    saveStoredCustomers(localList.map((customer) => customer.id === id ? { ...customer, ...updates } : customer));
+    return true;
   }
 
-  const localList = getStoredCustomers();
-  const updated = localList.map((c) => (c.id === id ? { ...c, ...updates } : c));
-  saveStoredCustomers(updated);
+  const isUuid = (value: string | null | undefined): value is string =>
+    Boolean(value && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value));
 
+  const profilePayload: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (updates.fullName !== undefined) profilePayload.full_name = updates.fullName;
+  if (updates.phone !== undefined) profilePayload.phone = updates.phone;
+  if (updates.country !== undefined) profilePayload.country = updates.country;
+
+  const customerPayload: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (updates.fullName !== undefined) {
+    customerPayload.first_name = updates.fullName.trim().split(/\s+/)[0] || '';
+    customerPayload.last_name = updates.fullName.trim().split(/\s+/).slice(1).join(' ');
+  }
+  if (updates.phone !== undefined) customerPayload.phone = updates.phone;
+  if (updates.country !== undefined) customerPayload.country = updates.country;
+  if (updates.hotel !== undefined) customerPayload.hotel = updates.hotel;
+
+  let profileUpdated = false;
+  let customerUpdated = false;
+
+  if (isUuid(id) && Object.keys(profilePayload).length > 1) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(profilePayload)
+      .eq('id', id)
+      .select('id')
+      .maybeSingle();
+    if (error) throw new Error(formatSupabaseError(error));
+    profileUpdated = Boolean(data?.id);
+  }
+
+  const customerId = updates.customerRecordId || (isUuid(id) ? id : null);
+  if (isUuid(customerId) && Object.keys(customerPayload).length > 1) {
+    const { data, error } = await supabase
+      .from('customers')
+      .update(customerPayload)
+      .eq('id', customerId)
+      .select('id')
+      .maybeSingle();
+    if (error) throw new Error(formatSupabaseError(error));
+    customerUpdated = Boolean(data?.id);
+  }
+
+  if (!profileUpdated && !customerUpdated) {
+    throw new Error('Customer details were not changed because no matching accessible profile or customer record was found.');
+  }
+
+  if (import.meta.env.DEV) {
+    saveStoredCustomers(getStoredCustomers().map((customer) =>
+      customer.id === id ? { ...customer, ...updates } : customer
+    ));
+  }
   return true;
 }
 
@@ -287,22 +308,49 @@ export async function updateCustomerDetails(
  * Deletes or archives a customer record
  */
 export async function deleteCustomerRecord(id: string): Promise<boolean> {
-  const localList = getStoredCustomers();
-  saveStoredCustomers(localList.filter((c) => c.id !== id));
-
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-
-  if (isSupabaseConfigured() && isUuid) {
-    try {
-      const { error: custErr } = await supabase.from('customers').delete().eq('id', id);
-      if (custErr) throw new Error(formatSupabaseError(custErr));
-      const { error: profErr } = await supabase.from('profiles').delete().eq('id', id);
-      if (profErr) throw new Error(formatSupabaseError(profErr));
-    } catch (err: any) {
-      console.error('Error deleting customer in Supabase:', err);
-      throw err;
-    }
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; customer records cannot be deleted in production.');
+    const localList = getStoredCustomers();
+    if (!localList.some((customer) => customer.id === id)) throw new Error('Customer record was not found.');
+    saveStoredCustomers(localList.filter((customer) => customer.id !== id));
+    return true;
   }
 
+  const { data: customer, error: customerReadError } = await supabase
+    .from('customers')
+    .select('id,user_id')
+    .eq('id', id)
+    .maybeSingle();
+  if (customerReadError) throw new Error(formatSupabaseError(customerReadError));
+
+  if (!customer?.id) {
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', id)
+      .maybeSingle();
+    if (profileError) throw new Error(formatSupabaseError(profileError));
+    if (profile?.id) {
+      throw new Error('Registered user accounts cannot be deleted from the customer directory. Manage access through Security & Access instead.');
+    }
+    throw new Error('Customer record was not found or is not accessible.');
+  }
+
+  if (customer.user_id) {
+    throw new Error('This customer record is linked to a registered user account. Manage account access separately; the customer record is retained.');
+  }
+
+  const { data: deleted, error: deleteError } = await supabase
+    .from('customers')
+    .delete()
+    .eq('id', id)
+    .select('id')
+    .maybeSingle();
+  if (deleteError) throw new Error(formatSupabaseError(deleteError));
+  if (!deleted?.id) throw new Error('Customer record was not deleted because it no longer exists or is not accessible.');
+
+  if (import.meta.env.DEV) {
+    saveStoredCustomers(getStoredCustomers().filter((customer) => customer.id !== id));
+  }
   return true;
 }
