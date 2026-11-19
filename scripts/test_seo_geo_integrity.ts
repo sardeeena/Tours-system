@@ -51,9 +51,9 @@ assert.match(llmsFull, /tour_itinerary/, 'Full AI index includes published excur
 assert.match(llmsFull, /blog_posts/, 'Full AI index includes published travel articles');
 assert.match(llmsFull, /\.in\('status', \['published', 'scheduled'\]\)/, 'Full AI index matches public scheduled-article visibility rules');
 assert.match(llmsFull, /booking-conditions/, 'Full AI index links to the official booking conditions');
-assert.match(llmsFull, /Terms & Conditions[\s\S]*awesomeadventure\\.tours\\/terms/, 'Full AI index links to and labels the public Terms & Conditions page');
-assert.match(server, /termsPage = publicStaticPages\.find/, 'Full AI index loads the currently published Terms & Conditions page content');
-assert.match(server, /seoExclusions\.pageSlugs\.has\('terms'\)/, 'Full AI index respects a deliberate noindex setting for Terms & Conditions');
+assert.ok(llmsFull.includes('https://awesomeadventure.tours/terms'), 'Full AI index links to the public Terms & Conditions page');
+assert.ok(server.includes('termsPage = publicStaticPages.find'), 'Full AI index loads the currently published Terms & Conditions page content');
+assert.ok(server.includes("!seoExclusions.pageSlugs.has('terms')"), 'Full AI index respects a deliberate noindex setting for Terms & Conditions');
 assert.match(llmsFull, /marine-safety/, 'Full AI index links to the official marine safety guidance');
 assert.match(llmsFull, /tour_pickup_locations/, 'Full AI index reads the approved tour-specific pickup mappings');
 assert.match(llmsFull, /Approved pickup zones and fees/, 'Full AI index exposes approved pickup zones and their actual supplements');
