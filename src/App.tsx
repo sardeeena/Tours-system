@@ -573,6 +573,7 @@ function MainApp() {
         description: 'Private Awesome Adventure Tours administration portal.',
         robotsIndex: false,
         robotsFollow: false,
+        schemaJsonLd: null,
       });
       return;
     }
@@ -585,6 +586,11 @@ function MainApp() {
         ogType: 'website',
         robotsIndex: true,
         robotsFollow: true,
+        schemaJsonLd: generateStaticPageJsonLd(
+          'blog',
+          'Awesome Adventure Tours Travel Journal | Red Sea Guides & Egypt Travel Stories',
+          'Discover Red Sea travel guides, local insights and inspiration for exploring Hurghada and Egypt with Awesome Adventure Tours.'
+        ),
       });
       return;
     }
@@ -603,6 +609,7 @@ function MainApp() {
         canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
         robotsIndex: false,
         robotsFollow: false,
+        schemaJsonLd: null,
       });
       return;
     }
@@ -616,6 +623,7 @@ function MainApp() {
         canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
         robotsIndex: false,
         robotsFollow: false,
+        schemaJsonLd: null,
       });
       return;
     }
@@ -627,6 +635,7 @@ function MainApp() {
         canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
         robotsIndex: false,
         robotsFollow: false,
+        schemaJsonLd: null,
       });
       return;
     }
@@ -638,6 +647,7 @@ function MainApp() {
         canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
         robotsIndex: false,
         robotsFollow: true,
+        schemaJsonLd: null,
       });
       return;
     }
