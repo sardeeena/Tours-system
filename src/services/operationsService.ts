@@ -517,6 +517,7 @@ export async function createDeparture(data: Partial<DepartureEntity>): Promise<{
       tourId: newDeparture.tour_id,
       date: newDeparture.date,
       startTime: newDeparture.start_time,
+      endTime: newDeparture.end_time,
       vesselId: newDeparture.vessel_id,
       guideId: newDeparture.guide_id,
       driverId: newDeparture.driver_id,
@@ -670,6 +671,7 @@ export async function detectAssignmentConflicts(params: {
   tourId: string;
   date: string;
   startTime: string;
+  endTime?: string;
   vesselId?: string | null;
   guideId?: string | null;
   captainId?: string | null;
@@ -691,7 +693,7 @@ export async function detectAssignmentConflicts(params: {
   const targetTour = dynamicTours.find((t) => t.id === params.tourId);
   if (!targetTour) throw new Error('The selected tour is not currently published. Refresh the catalogue before assigning resources.');
   const targetDuration = targetTour.durationHours;
-  const targetEndTime = targetDeparture?.endTime || (targetDuration ? computeEndTime(params.startTime, targetDuration) : null);
+  const targetEndTime = params.endTime || targetDeparture?.endTime || (targetDuration ? computeEndTime(params.startTime, targetDuration) : null);
   if (!targetEndTime) throw new Error('A verified tour duration or actual departure end time is required to check resource conflicts.');
 
   const passengerCount = params.bookedPassengers ?? targetDeparture?.passengerCount ?? 0;
