@@ -114,6 +114,7 @@ export interface DepartureEntity {
   date: string;
   start_time: string;
   end_time: string;
+  duration_hours?: number;
   capacity: number;
   booked_passengers: number;
   remaining_capacity: number;
