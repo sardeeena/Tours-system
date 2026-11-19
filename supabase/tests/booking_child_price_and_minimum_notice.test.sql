@@ -14,8 +14,12 @@ BEGIN
      OR position('Africa/Cairo' in v_definition) = 0 THEN
     RAISE EXCEPTION 'Atomic booking must enforce the configured Egypt-local minimum booking notice.';
   END IF;
-  IF position('v_tour.price * 0.50' in v_definition) > 0 THEN
+  IF position('COALESCE(p_child_count, 0) * (v_tour.price * 0.50)' in v_definition) > 0 THEN
     RAISE EXCEPTION 'Atomic booking must not use the adult-price 50 percent rule when child_price is configured.';
+  END IF;
+  IF position('v_avail.departure_id IS NULL' in v_definition) = 0
+     OR position('public.departures' in v_definition) = 0 THEN
+    RAISE EXCEPTION 'Atomic booking must require a linked, operator-confirmed departure.';
   END IF;
 END;
 $test$;
