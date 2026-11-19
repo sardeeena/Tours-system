@@ -317,8 +317,8 @@ const financeReportsUi = read('src/components/admin/finance/FinanceReports.tsx')
 assert.doesNotMatch(financeReportsUi, /ALL_TOURS|getPublishedTours\(\)\.catch\(\(\) => \[\]\)/, 'Finance reports must not replace live tour filters with demo catalogue data');
 const operationsDocumentsUi = read('src/components/admin/operations/OperationsDocuments.tsx');
 assert.doesNotMatch(operationsDocumentsUi, /ALL_TOURS|getPublishedTours\(\)\.catch\(\(\) => \[\]\)/, 'Operations documents must use live tour records and surface failures');
-const availabilityUi = read('src/components/admin/AdminAvailabilityManager.tsx');
-assert.match(availabilityUi, /AdminLoadError/, 'Availability screen must surface tour, slot and save failures');
+const adminAvailabilityUi = read('src/components/admin/AdminAvailabilityManager.tsx');
+assert.match(adminAvailabilityUi, /AdminLoadError/, 'Availability screen must surface tour, slot and save failures');
 const reviewsUi = read('src/components/admin/AdminReviewsList.tsx');
 assert.match(reviewsUi, /AdminLoadError/, 'Reviews screen must surface database load failures');
 assert.match(reviewsUi, /import\.meta\.env\.DEV \? localStorage\.getItem/, 'Reviews must not use stale local storage as a production fallback');
