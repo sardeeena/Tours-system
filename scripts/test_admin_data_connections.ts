@@ -43,7 +43,7 @@ assert.match(relationSync, /ensureTourWrite\(/, 'Tour relation writes must check
 assert.doesNotMatch(relationSync, /await supabase\.from\([^\n]+\)\.(?:delete|insert|upsert)\(/, 'Tour relation writes must not ignore Supabase result errors');
 
 const extraPriceRead = section(tours, 'export async function fetchTourCustomExtraPricesFromDb(', '/**\n * Persists a tour-specific custom price override');
-assert.match(extraPriceRead, /if \(error\) throw/, 'Custom add-on price reads must surface database errors');
+assert.match(extraPriceRead, /if \(error\) \{[\s\S]*?throw new Error/, 'Custom add-on price reads must surface database errors');
 assert.match(extraPriceRead, /import\.meta\.env\.PROD[\s\S]*?throw/, 'Production custom add-on pricing must not fall back to local cache');
 
 const extraPriceWrite = section(tours, 'export async function persistTourCustomExtraPriceToDb(', '/**\n * Fetches active tour extras');
