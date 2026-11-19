@@ -80,7 +80,7 @@ assert(
 
 const reportBuilderFile = fs.readFileSync(path.join(rootDir, 'src/components/admin/reporting/ReportBuilderView.tsx'), 'utf8');
 assert(
-  reportBuilderFile.includes('getPublishedTours') && reportBuilderFile.includes('(tours.length > 0 ? tours : ALL_TOURS).map'),
+  reportBuilderFile.includes('getPublishedTours') && reportBuilderFile.includes('tours.map((t) => ('),
   'ReportBuilderView.tsx excursion filter dynamically iterates over active database tours'
 );
 
