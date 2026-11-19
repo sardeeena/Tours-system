@@ -25,6 +25,9 @@ const translations = readFileSync(new URL('../src/i18n/translations.ts', import.
 const finalCta = readFileSync(new URL('../src/components/home/FinalCTA.tsx', import.meta.url), 'utf8');
 const homeHero = readFileSync(new URL('../src/components/home/Hero.tsx', import.meta.url), 'utf8');
 const stepPickup = readFileSync(new URL('../src/components/booking/StepPickup.tsx', import.meta.url), 'utf8');
+const homeFaq = readFileSync(new URL('../src/components/home/HomeFAQ.tsx', import.meta.url), 'utf8');
+const seoConfig = readFileSync(new URL('../src/services/seoConfig.ts', import.meta.url), 'utf8');
+const app = readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8');
 const sitemapStart = server.indexOf("app.get('/sitemap.xml'");
 const llmsStart = server.indexOf("app.get('/llms.txt'");
 const schemaStart = server.indexOf("const organization: Record<string, any>");
@@ -168,6 +171,15 @@ assert.match(homeHero, /Practical Booking Information/, 'Hero labels conditional
 assert.doesNotMatch(homeHero, /certified PADI divemasters|2-tank guided boat dives/, 'Hero does not claim dive certifications or formats without tour-level evidence');
 assert.match(stepPickup, /Airport arrival transfer/, 'Airport pickup explains where to enter the destination hotel and flight details');
 assert.match(stepPickup, /Choose Your Pickup Location/, 'Pickup step uses generic wording that also fits airport transfers');
+assert.match(homeFaq, /HOMEPAGE_FAQS\.map/, 'Homepage renders the FAQ content that supports its structured data');
+assert.match(seoConfig, /'@type': 'FAQPage'/, 'Homepage JSON-LD includes a visible FAQPage');
+assert.match(seoConfig, /acceptedAnswer/, 'FAQPage schema includes the answers visible to visitors');
+assert.match(seoConfig, /telephone: APP_CONFIG\.SUPPORT_PHONE/, 'TravelAgency schema includes the public support phone');
+assert.match(seoConfig, /addressLocality: 'Hurghada'/, 'TravelAgency schema includes the public Hurghada address');
+assert.match(seoConfig, /generateHomeJsonLd\(origin, locale === 'en'\)/, 'FAQ schema is limited to the English homepage where the FAQ is visible');
+assert.match(app, /currentLocale === 'en' && <HomeFAQ \/>/, 'English FAQ section is not shown as untranslated content on other locales');
+assert.match(app, /locale: currentLocale/, 'SEO metadata receives the active locale for language-specific schema');
+
 
 
 
