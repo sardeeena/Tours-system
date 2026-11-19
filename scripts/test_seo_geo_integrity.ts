@@ -34,8 +34,9 @@ const tourMappingEnd = tourService.indexOf('export async function', tourMappingS
 const tourMapping = tourMappingStart >= 0 ? tourService.slice(tourMappingStart, tourMappingEnd) : '';
 
 const llmsFullStart = server.indexOf("app.get('/llms-full.txt'");
-const llmsFull = llmsFullStart >= 0 ? server.slice(llmsFullStart, schemaStart) : '';
-assert.ok(llmsFullStart > llmsStart && llmsFullStart < schemaStart, 'Full public content index is registered after llms.txt');
+const llmsFullEnd = server.indexOf('const AWESOME_ADVENTURE_TOURS_MCP_TOOLS', llmsFullStart);
+const llmsFull = llmsFullStart >= 0 && llmsFullEnd > llmsFullStart ? server.slice(llmsFullStart, llmsFullEnd) : '';
+assert.ok(llmsFullStart > llmsStart && llmsFullEnd > llmsFullStart, 'Full public content index is registered after llms.txt and before MCP routes');
 assert.match(llmsFull, /tour_faqs/, 'Full AI index includes published excursion FAQs');
 assert.match(llmsFull, /tour_itinerary/, 'Full AI index includes published excursion itineraries');
 assert.match(llmsFull, /blog_posts/, 'Full AI index includes published travel articles');
