@@ -41,7 +41,7 @@ BEGIN
       to_char(
         (
           to_timestamp(btrim(slot_time),'HH12:MI AM')::TIME
-          + make_interval(hours => greatest(1,coalesce(d.duration_hours,1)))
+          + make_interval(secs => (greatest(1,coalesce(d.duration_hours,1)) * 3600)::DOUBLE PRECISION)
         ),
         'HH24:MI'
       ) AS end_time
