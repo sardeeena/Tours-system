@@ -11,8 +11,8 @@
     "static_page": 10,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1079,
-    "ui_catalog_messages": 1161,
+    "private_ui_messages": 1082,
+    "ui_catalog_messages": 1163,
     "source_records": 111
   },
   "records": [
@@ -2824,7 +2824,6 @@
         "private.text.005ef20f": "Statut",
         "private.text.009da50c": "Assistant IA pour les excursions",
         "private.text.00dd93ad": "Rechercher une autre réservation",
-        "private.text.0117cf65": "Entrée au parc marin incluse",
         "private.text.014aeeca": "lien de récupération",
         "private.text.016f7992": "ABSENT",
         "private.text.0200885a": "Nous avons envoyé un lien de vérification à",
@@ -3589,7 +3588,6 @@
         "private.text.ba569f2d": "Politique de confidentialité ",
         "private.text.ba88f635": "Visiter le blog d’Awesome Adventure Tours",
         "private.text.bae8addb": " pour le traitement de l’e-mail. Si vous ne le recevez pas, vérifiez votre dossier de courriers indésirables ou contactez notre équipe de réservation. ",
-        "private.text.bb7b5db6": "Réservez au moins 24 heures à l’avance ",
         "private.text.bbcb951b": "Date ",
         "private.text.bbf9687a": "Mon profil",
         "private.text.bc6fa169": "Créez un mot de passe pour accéder à tous vos bons, gérer vos dates et recevoir des mises à jour WhatsApp en temps réel à tout moment. ",
@@ -3822,7 +3820,6 @@
         "private.text.f263abb5": "Vous avez sélectionné ",
         "private.text.f2774631": "Comment notre équipe peut-elle vous aider ? ",
         "private.text.f2a25179": "Billet officiel d’excursion et bon de prise en charge à l’hôtel • Mer Rouge, Égypte ",
-        "private.text.f2e092c0": "* Au moins 1 adulte est requis. Tous les bateaux disposent de gilets de flottaison certifiés pour les enfants et les nourrissons. ",
         "private.text.f2e0c2e7": "Mot de passe oublié",
         "private.text.f302d004": "Recommandé ",
         "private.text.f3a1cc5a": "Votre réservation est confirmée",
@@ -3884,7 +3881,6 @@
         "private.text.ff566677": "Mot de passe mis à jour",
         "private.text.ff566f40": "Nom ",
         "private.text.8db53650": "Réserver maintenant ",
-        "private.text.d59d8b58": "Départ du bateau vers 08:30 – 09:00 AM ",
         "private.text.2d9bf6ca": "Cette page n’a pas pu être affichée",
         "private.text.c3acc0cd": "Recharger la page ",
         "private.text.e2f282f4": "Un problème a interrompu cette page. Rechargez-la pour réessayer. Les détails de votre réservation n’ont pas été envoyés depuis cet écran de récupération. ",
@@ -3897,7 +3893,13 @@
         "private.text.59807ded": "Aucun avis pour le moment",
         "private.text.6c24db84": "Choisissez votre lieu de prise en charge",
         "private.text.c3ade22b": "Choisissez un lieu de prise en charge expressément autorisé pour cette excursion.",
-        "private.text.685bf445": "Les réservations sont directement transmises à notre équipe de réservation. Annulation gratuite jusqu’à 24 heures avant le départ. "
+        "private.text.685bf445": "Les réservations sont transmises directement à l’équipe des opérations de réservation. Annulation gratuite jusqu’à 24 heures avant le départ. ",
+        "private.text.ae24f1dc": "Heure de départ",
+        "private.text.0a28cd12": "Heure de départ :",
+        "private.text.72740b67": "Complet",
+        "private.text.0ca80178": "Réservez au moins ",
+        "private.text.f63ec249": "heures à l’avance",
+        "private.text.7e20d5e7": "Veuillez sélectionner une heure de départ confirmée avant de continuer."
       },
       "private_ui_message_count": 1100
     },
