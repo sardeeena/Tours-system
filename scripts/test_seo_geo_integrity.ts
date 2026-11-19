@@ -23,7 +23,7 @@ assert.ok(llmsFullStart > llmsStart && llmsFullStart < schemaStart, 'Full public
 assert.match(llmsFull, /tour_faqs/, 'Full AI index includes published excursion FAQs');
 assert.match(llmsFull, /tour_itinerary/, 'Full AI index includes published excursion itineraries');
 assert.match(llmsFull, /blog_posts/, 'Full AI index includes published travel articles');
-assert.doesNotMatch(llmsFull, /from\\('bookings'\\)|from\\('customers'\\)|from\\('payment_transactions'\\)/, 'Full AI index excludes private booking, customer and payment records');
+assert.doesNotMatch(llmsFull, /from\('bookings'\)|from\('customers'\)|from\('payment_transactions'\)/, 'Full AI index excludes private booking, customer and payment records');
 
 assert.match(server, /from\('seo_metadata'\)[\s\S]*?eq\('robots_index', false\)/, 'SEO index exclusions are loaded from the authoritative metadata table');
 assert.match(sitemap, /loadAwesomeAdventureToursSeoIndexExclusions\(\)/, 'Sitemap applies SEO index exclusions');
@@ -78,7 +78,7 @@ assert.doesNotMatch(schema, /aggregateRating|reviewRating|openingHoursSpecificat
 assert.match(adminSeo, /contentLength >= 650/, 'Admin destination indexability threshold matches the public renderer and sitemap');
 assert.doesNotMatch(adminSeo, /contentLength >= 300/, 'Admin does not mark thin destinations indexable below the public threshold');
 assert.match(destinationDetail, /RED_SEA_DESTINATION_SLUGS/, 'Destination detail pages use a destination-aware geographic label');
-assert.match(destinationDetail, /RED_SEA_DESTINATION_SLUGS\\.has\\(destination\\.slug\\.toLowerCase\\(\\)\\)/, 'Only Red Sea destinations receive the Red Sea label');
+assert.ok(destinationDetail.includes("RED_SEA_DESTINATION_SLUGS.has(destination.slug.toLowerCase())"), 'Only Red Sea destinations receive the Red Sea label');
 assert.match(destinationsSection, /Explore Egypt/, 'Destination discovery covers Egypt beyond Red Sea locations');
 assert.match(destinationsSection, /Check pickup availability and any supplements on each excursion/, 'Homepage avoids promising universal complimentary hotel pickup');
 assert.doesNotMatch(destinationsSection, /Complimentary hotel pickup from all main resorts/, 'Homepage removes the unsupported universal pickup claim');
