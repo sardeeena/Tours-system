@@ -933,149 +933,142 @@ export async function fetchFinanceReport(interval: DateRangeInterval): Promise<F
   ]);
 
   const activeBookings = filterBookingsByInterval(allBookings, interval);
-
-  // Gross contracted revenue excludes cancelled bookings.
   const nonCancelled = activeBookings.filter(
-    (b) => b.status !== 'cancelled' && b.status !== 'cancellation_requested'
+    (booking) => booking.status !== 'cancelled' && booking.status !== 'cancellation_requested'
   );
-  const activeBookingsRefs = new Set(nonCancelled.map((b) => b.bookingReference));
-  const activeBookingIds = new Set(nonCancelled.map((b) => b.bookingId).filter(Boolean));
+  const activeBookingRefs = new Set(nonCancelled.map((booking) => booking.bookingReference));
+  const activeBookingIds = new Set(nonCancelled.map((booking) => booking.bookingId).filter(Boolean));
   const allNonCancelledBookingRefs = new Set(
     allBookings
       .filter((booking) => booking.status !== 'cancelled' && booking.status !== 'cancellation_requested')
       .map((booking) => booking.bookingReference)
   );
   const matchesActiveBooking = (record: { bookingReference?: string; bookingId?: string }) =>
-    activeBookingsRefs.has(record.bookingReference || '') || activeBookingIds.has(record.bookingId || '');
+    activeBookingRefs.has(record.bookingReference || '') || activeBookingIds.has(record.bookingId || '');
   const isSettledPayment = (payment: { paymentStatus: unknown }) =>
     ['paid', 'partially paid'].includes(String(payment.paymentStatus).toLowerCase().replace(/_/g, ' '));
-  const grossRevenueEur = nonCancelled.reduce((sum, b) => sum + (b.pricing?.totalEur || 0), 0);
+  const isEur = (record: { currency?: string | null }) => String(record.currency || '').toUpperCase() === 'EUR';
 
-  // Discounts
-  const discountsEur = nonCancelled.reduce((sum, b) => sum + (b.pricing?.discountEur || 0), 0);
+  const grossRevenueEur = nonCancelled.reduce((sum, booking) => sum + (booking.pricing?.totalEur || 0), 0);
+  const discountsEur = nonCancelled.reduce((sum, booking) => sum + (booking.pricing?.discountEur || 0), 0);
 
-  // Filter payments within interval
   const intervalPayments = payments.filter((payment) => {
     if (!isSettledPayment(payment) || !allNonCancelledBookingRefs.has(payment.bookingReference)) return false;
     const paymentDate = (payment.paymentDate || payment.createdAt || '').split('T')[0];
     return (paymentDate >= interval.startDate && paymentDate <= interval.endDate) || matchesActiveBooking(payment);
   });
 
-  const collectedPaymentsEur = intervalPayments.reduce((sum, p) => sum + p.amount, 0);
+  const eurIntervalPayments = intervalPayments.filter(isEur);
+  const collectedPaymentsEur = eurIntervalPayments.reduce((sum, payment) => sum + (Number(payment.amount) || 0), 0);
 
-  // Filter refunds
   const intervalRefunds = refunds.filter((refund) => {
     if (refund.status !== 'processed') return false;
     const refundDate = (refund.processedDate || refund.createdAt || '').split('T')[0];
-    return refundDate >= interval.startDate && refundDate <= interval.endDate;
+    return matchesActiveBooking(refund) || (
+      refundDate >= interval.startDate &&
+      refundDate <= interval.endDate &&
+      allNonCancelledBookingRefs.has(refund.bookingReference)
+    );
   });
-
-  const refundsEur = intervalRefunds.reduce((sum, r) => sum + (r.approvedAmount || r.amount || 0), 0);
-
-  // Outstanding balances are based on net collections for this booking cohort.
-  const cohortPayments = payments.filter((payment) =>
-    isSettledPayment(payment) && matchesActiveBooking(payment)
-  );
-  const cohortRefunds = refunds.filter((refund) =>
-    refund.status === 'processed' && matchesActiveBooking(refund)
-  );
-  const cohortGrossCollected = cohortPayments.reduce((sum, payment) => sum + payment.amount, 0);
-  const cohortRefunded = cohortRefunds.reduce(
-    (sum, refund) => sum + (refund.approvedAmount || refund.amount || 0),
+  const eurIntervalRefunds = intervalRefunds.filter(isEur);
+  const refundsEur = eurIntervalRefunds.reduce(
+    (sum, refund) => sum + (Number(refund.approvedAmount ?? refund.amount) || 0),
     0
   );
-  const cohortNetCollected = Math.max(0, cohortGrossCollected - cohortRefunded);
-  const outstandingEur = Math.max(0, grossRevenueEur - cohortNetCollected);
 
-  // Net booked revenue deducts completed refunds, not merely approved requests.
-  const netRevenueEur = Math.max(0, grossRevenueEur - cohortRefunded);
+  const cohortPayments = payments.filter((payment) => isSettledPayment(payment) && matchesActiveBooking(payment));
+  const cohortRefunds = refunds.filter((refund) => refund.status === 'processed' && matchesActiveBooking(refund));
+  const cohortGrossCollectedEur = cohortPayments.filter(isEur).reduce(
+    (sum, payment) => sum + (Number(payment.amount) || 0),
+    0
+  );
+  const cohortRefundedEur = cohortRefunds.filter(isEur).reduce(
+    (sum, refund) => sum + (Number(refund.approvedAmount ?? refund.amount) || 0),
+    0
+  );
+  const cohortNetCollectedEur = Math.max(0, cohortGrossCollectedEur - cohortRefundedEur);
+  const outstandingEur = Math.max(0, grossRevenueEur - cohortNetCollectedEur);
+  const netRevenueEur = Math.max(0, grossRevenueEur - cohortRefundedEur);
 
-  // Collection Rate
   const netDue = Math.max(1, grossRevenueEur - discountsEur);
   const collectionRatePct = Math.min(100, Math.round((collectedPaymentsEur / netDue) * 1000) / 10);
 
-  // Payment Methods Breakdown
   const methodMap = new Map<string, { amount: number; count: number }>();
-  intervalPayments.forEach((p) => {
-    const m = p.paymentMethod || 'Online Card / Gateway';
-    const cur = methodMap.get(m) || { amount: 0, count: 0 };
-    cur.amount += p.amount;
-    cur.count += 1;
-    methodMap.set(m, cur);
+  eurIntervalPayments.forEach((payment) => {
+    const method = payment.paymentMethod || 'Unknown';
+    const current = methodMap.get(method) || { amount: 0, count: 0 };
+    current.amount += Number(payment.amount) || 0;
+    current.count += 1;
+    methodMap.set(method, current);
   });
+  const paymentMethods: PaymentMethodBreakdown[] = Array.from(methodMap.entries())
+    .map(([method, value]) => ({
+      method,
+      amountEur: value.amount,
+      count: value.count,
+      percentage: collectedPaymentsEur > 0
+        ? Math.round((value.amount / collectedPaymentsEur) * 1000) / 10
+        : 0,
+    }))
+    .sort((a, b) => b.amountEur - a.amountEur);
 
-  const paymentMethods: PaymentMethodBreakdown[] = [];
-  methodMap.forEach((val, m) => {
-    paymentMethods.push({
-      method: m,
-      amountEur: val.amount,
-      count: val.count,
-      percentage: collectedPaymentsEur > 0 ? Math.round((val.amount / collectedPaymentsEur) * 1000) / 10 : 0,
-    });
-  });
-  paymentMethods.sort((a, b) => b.amountEur - a.amountEur);
-
-  // Monthly Revenue (12-month rolling breakdown)
   const monthMap = new Map<string, { gross: number; paid: number; refunds: number; bookings: number }>();
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const curYear = new Date().getFullYear();
-
-  // Initialize 12 months
-  for (let m = 0; m < 12; m++) {
-    const key = `${monthNames[m]} ${curYear}`;
-    monthMap.set(key, { gross: 0, paid: 0, refunds: 0, bookings: 0 });
+  const currentYear = new Date().getFullYear();
+  for (let month = 0; month < 12; month++) {
+    monthMap.set(`${monthNames[month]} ${currentYear}`, { gross: 0, paid: 0, refunds: 0, bookings: 0 });
   }
 
-  // Aggregate bookings by month
-  allBookings.forEach((b) => {
-    const dStr = b.date || b.createdAt;
-    if (!dStr) return;
-    const d = new Date(dStr);
-    if (d.getFullYear() === curYear && b.status !== 'cancelled') {
-      const key = `${monthNames[d.getMonth()]} ${curYear}`;
-      const cur = monthMap.get(key) || { gross: 0, paid: 0, refunds: 0, bookings: 0 };
-      cur.gross += b.pricing?.totalEur || 0;
-      cur.bookings += 1;
-      monthMap.set(key, cur);
-    }
+  allBookings.forEach((booking) => {
+    const dateValue = booking.date || booking.createdAt;
+    if (!dateValue || ['cancelled', 'cancellation_requested'].includes(booking.status)) return;
+    const date = new Date(dateValue);
+    if (Number.isNaN(date.getTime()) || date.getFullYear() !== currentYear) return;
+    const key = `${monthNames[date.getMonth()]} ${currentYear}`;
+    const current = monthMap.get(key)!;
+    current.gross += booking.pricing?.totalEur || 0;
+    current.bookings += 1;
   });
 
-  // Aggregate payments by month
-  payments.forEach((p) => {
-    if (isSettledPayment(p)) {
-      const d = new Date(p.paymentDate || p.createdAt || '');
-      if (d.getFullYear() === curYear) {
-        const key = `${monthNames[d.getMonth()]} ${curYear}`;
-        const cur = monthMap.get(key) || { gross: 0, paid: 0, refunds: 0, bookings: 0 };
-        cur.paid += p.amount;
-        monthMap.set(key, cur);
-      }
-    }
+  payments.forEach((payment) => {
+    if (!isSettledPayment(payment) || !isEur(payment)) return;
+    const date = new Date(payment.paymentDate || payment.createdAt || '');
+    if (Number.isNaN(date.getTime()) || date.getFullYear() !== currentYear) return;
+    const key = `${monthNames[date.getMonth()]} ${currentYear}`;
+    const current = monthMap.get(key)!;
+    current.paid += Number(payment.amount) || 0;
   });
 
-  // Aggregate refunds by month
   refunds.forEach((refund) => {
-    if (refund.status !== 'processed') return;
-    const processedDate = new Date(refund.processedDate || refund.createdAt || '');
-    if (processedDate.getFullYear() === curYear) {
-      const key = `${monthNames[processedDate.getMonth()]} ${curYear}`;
-      const cur = monthMap.get(key) || { gross: 0, paid: 0, refunds: 0, bookings: 0 };
-      cur.refunds += refund.approvedAmount || refund.amount || 0;
-      monthMap.set(key, cur);
-    }
+    if (refund.status !== 'processed' || !isEur(refund)) return;
+    const date = new Date(refund.processedDate || refund.createdAt || '');
+    if (Number.isNaN(date.getTime()) || date.getFullYear() !== currentYear) return;
+    const key = `${monthNames[date.getMonth()]} ${currentYear}`;
+    const current = monthMap.get(key)!;
+    current.refunds += Number(refund.approvedAmount ?? refund.amount) || 0;
   });
 
-  const monthlyRevenue: MonthlyRevenueItem[] = [];
-  monthMap.forEach((val, m) => {
-    monthlyRevenue.push({
-      month: m,
-      grossEur: val.gross,
-      paidEur: val.paid,
-      refundsEur: val.refunds,
-      netEur: Math.max(0, val.gross - val.refunds),
-      bookingsCount: val.bookings,
-    });
+  const monthlyRevenue: MonthlyRevenueItem[] = Array.from(monthMap.entries()).map(([month, value]) => ({
+    month,
+    grossEur: value.gross,
+    paidEur: value.paid,
+    refundsEur: value.refunds,
+    netEur: Math.max(0, value.gross - value.refunds),
+    bookingsCount: value.bookings,
+  }));
+
+  const currencyMap = new Map<string, number>();
+  intervalPayments.forEach((payment) => {
+    const currency = String(payment.currency || 'UNKNOWN').toUpperCase();
+    currencyMap.set(currency, (currencyMap.get(currency) || 0) + (Number(payment.amount) || 0));
   });
+  const currencyBreakdown = Array.from(currencyMap.entries())
+    .map(([currency, amount]) => ({
+      currency,
+      amount,
+      convertedEur: currency === 'EUR' ? amount : null,
+    }))
+    .sort((a, b) => b.amount - a.amount);
 
   return {
     grossRevenueEur,
@@ -1089,11 +1082,7 @@ export async function fetchFinanceReport(interval: DateRangeInterval): Promise<F
     collectionRatePct,
     paymentMethods,
     monthlyRevenue,
-    currencyBreakdown: [
-      { currency: 'EUR', amount: collectedPaymentsEur, convertedEur: collectedPaymentsEur },
-      { currency: 'USD', amount: Math.round(collectedPaymentsEur * 1.08), convertedEur: collectedPaymentsEur },
-      { currency: 'EGP', amount: Math.round(collectedPaymentsEur * 52.5), convertedEur: collectedPaymentsEur },
-    ],
+    currencyBreakdown,
   };
 }
 
