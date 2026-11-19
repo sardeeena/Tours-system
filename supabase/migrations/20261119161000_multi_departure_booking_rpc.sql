@@ -96,11 +96,11 @@ DECLARE
     '        RETURN jsonb_build_object(''success'', false, ''error'', ''This departure is inside the minimum booking notice period. Please choose a later date.'');' || E'\n' ||
     '    END IF;';
   v_new_notice_block TEXT := E'    -- Enforce minimum notice against the selected slot, not the first tour-level time.' || E'\n' ||
-    '    IF NULLIF(TRIM(v_avail.start_time), '''') IS NULL THEN' || E'\n' ||
+    '    IF v_avail.start_time IS NULL THEN' || E'\n' ||
     '        RETURN jsonb_build_object(''success'', false, ''error'', ''This departure time needs operator verification. Please contact our booking team.'');' || E'\n' ||
     '    END IF;' || E'\n' ||
     '    BEGIN' || E'\n' ||
-    '        v_departure_at := (p_booking_date::text || '' '' || TRIM(v_avail.start_time))::timestamp AT TIME ZONE ''Africa/Cairo'';' || E'\n' ||
+    '        v_departure_at := (p_booking_date::text || '' '' || TRIM(v_avail.start_time::TEXT))::timestamp AT TIME ZONE ''Africa/Cairo'';' || E'\n' ||
     '    EXCEPTION WHEN OTHERS THEN' || E'\n' ||
     '        RETURN jsonb_build_object(''success'', false, ''error'', ''This departure time needs operator verification. Please contact our booking team.'');' || E'\n' ||
     '    END;' || E'\n' ||
