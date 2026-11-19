@@ -52,9 +52,9 @@ export const CustomerDashboardView: React.FC<CustomerDashboardViewProps> = ({
           </span>
         </div>
 
-        {/* Customer Lifetime Value */}
+        {/* Customer Booked Value */}
         <div className="bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854] rounded-2xl p-5 shadow-xs hover:border-emerald-500/50 transition-colors">
-          <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">Lifetime Value (LTV)</span>
+          <span className="text-xs text-stone-500 dark:text-stone-400 font-medium">Average Booked Value per Customer</span>
           <div className="text-2xl lg:text-3xl font-bold text-emerald-600 dark:text-emerald-400 mt-1 font-mono">
             €{metrics.customerLifetimeValueEur.toFixed(2)}
           </div>
@@ -146,7 +146,7 @@ export const CustomerDashboardView: React.FC<CustomerDashboardViewProps> = ({
                   </div>
                   <div className="flex items-center justify-between text-[11px] text-stone-500 dark:text-stone-400">
                     <span>{cust.email}</span>
-                    <span className="font-mono text-stone-700 dark:text-stone-300">Lifetime: €{cust.totalSpentEur.toLocaleString()}</span>
+                    <span className="font-mono text-stone-700 dark:text-stone-300">Booked value: €{cust.totalSpentEur.toLocaleString()}</span>
                   </div>
                   <div className="text-[10px] text-stone-400">
                     Last booking: {cust.lastBookingDate}
@@ -233,7 +233,7 @@ export const CustomerDashboardView: React.FC<CustomerDashboardViewProps> = ({
         <div className="flex items-center justify-between border-b border-[#E8E3DA] dark:border-[#1F3854] pb-3">
           <div className="flex items-center space-x-2">
             <Crown className="w-4 h-4 text-amber-500" />
-            <h3 className="text-sm font-bold text-[#0E1B2A] dark:text-white font-display">Top Customers &amp; Highest Lifetime Spenders</h3>
+            <h3 className="text-sm font-bold text-[#0E1B2A] dark:text-white font-display">Top Customers by Booked Value</h3>
           </div>
           <button
             type="button"
@@ -252,7 +252,7 @@ export const CustomerDashboardView: React.FC<CustomerDashboardViewProps> = ({
                 <th className="py-3 px-3.5">Country</th>
                 <th className="py-3 px-3.5">Resort Hotel</th>
                 <th className="py-3 px-3.5 text-center">Bookings</th>
-                <th className="py-3 px-3.5 text-right">Lifetime Spend</th>
+                <th className="py-3 px-3.5 text-right">Booked Value</th>
                 <th className="py-3 px-3.5 text-center">Tier</th>
               </tr>
             </thead>
