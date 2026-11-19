@@ -810,7 +810,7 @@ function MainApp() {
         infants: 0,
       },
       selectedExtraIds: bookingState.selectedExtras,
-      currentStep: 2,
+      currentStep: 1,
     });
 
     navigate(`/booking?tour=${bookingState.tour.slug}`);
