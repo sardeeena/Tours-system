@@ -152,7 +152,6 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
   const [languagesInput, setLanguagesInput] = useState('');
 
   // Availability Form State
-  const [availabilityMaxCapacity, setAvailabilityMaxCapacity] = useState(0);
 
   // Load existing tour if editing
   useEffect(() => {
@@ -216,7 +215,6 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
         } else {
           // New excursions intentionally start without assumed destinations, prices,
           // pickup promises, language coverage, images or itinerary content.
-          setAvailabilityMaxCapacity(0);
         }
       } catch (err) {
         console.error('Failed to initialize editor data:', err);
@@ -260,7 +258,7 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
         if (!tourData.title?.trim() || !tourData.slug?.trim()) missingDetails.push('a title and URL slug');
         if (!tourData.destination_id) missingDetails.push('a destination');
         if (!tourData.short_description?.trim() || !tourData.description?.trim()) missingDetails.push('short and full descriptions');
-        if (!tourData.duration?.trim() || tourData.duration_type === 'Unspecified' || !(Number(tourData.duration_hours) > 0)) missingDetails.push('a confirmed duration and duration category');
+        if (!tourData.duration?.trim() || !['Half Day', 'Full Day', 'Multi Day'].includes(String(tourData.duration_type)) || !(Number(tourData.duration_hours) > 0)) missingDetails.push('a confirmed duration and duration category');
         if (!(Number(tourData.price) > 0)) missingDetails.push('a confirmed price');
         if (!(Number(tourData.max_guests) > 0)) missingDetails.push('the actual guest capacity');
         if (!tourData.departure_time?.trim()) missingDetails.push('the actual departure time');
@@ -275,7 +273,7 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
       const hasActiveApprovedPickup = selectedPickupIds.some((id) =>
         pickupLocations.some((location) => location.id === id)
       );
-      if (statusToSave === 'published' && tourData.pickup_available !== false && !hasActiveApprovedPickup) {
+      if (statusToSave === 'published' && tourData.pickup_available === true && !hasActiveApprovedPickup) {
         throw new Error('A published tour that offers pickup must have at least one explicitly approved active pickup location. Configure its pickup points or disable pickup for this tour before publishing.');
       }
 
@@ -608,7 +606,7 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
                   type="number"
                   step="0.5"
                   value={tourData.duration_hours ?? 0}
-                  onChange={(e) => handleFieldChange('duration_hours', parseFloat(e.target.value))}
+                  onChange={(e) => handleFieldChange('duration_hours', parseFloat(e.target.value) || 0)}
                   className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-xs text-white focus:outline-none focus:border-[#0A6C74]"
                 />
               </div>
