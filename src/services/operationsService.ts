@@ -1369,7 +1369,7 @@ export async function updatePickupScheduleStatus(
 
 export async function listVessels(): Promise<DbVessel[]> {
   if (!isSupabaseConfigured()) {
-    if (!import.meta.env.DEV) return [];
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; the production vessel fleet cannot be loaded.');
     return getLocal<DbVessel[]>(LOCAL_VESSELS_KEY, INITIAL_VESSELS);
   }
 
@@ -1590,21 +1590,25 @@ export async function saveGuide(guide: Partial<DbGuide>): Promise<DbGuide> {
 }
 
 export async function deleteGuide(id: string): Promise<boolean> {
+  if (!id.trim()) throw new Error('A staff profile ID is required.');
   const all = await listGuides();
-  setLocal(LOCAL_GUIDES_KEY, all.filter((g) => g.id !== id));
 
-  if (isSupabaseConfigured()) {
-    try {
-      const { error } = await supabase.from('guides').delete().eq('id', id);
-      if (error) {
-        throw new Error(formatSupabaseError(error));
-      }
-    } catch (err: any) {
-      console.error('Error deleting guide from Supabase:', err);
-      throw err;
-    }
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; staff profiles cannot be deleted in production.');
+    setLocal(LOCAL_GUIDES_KEY, all.filter((guide) => guide.id !== id));
+    return true;
   }
 
+  const { data, error } = await supabase
+    .from('guides')
+    .delete()
+    .eq('id', id)
+    .select('id')
+    .maybeSingle();
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data?.id) throw new Error('The staff profile was not deleted because it no longer exists or is not accessible.');
+
+  setLocal(LOCAL_GUIDES_KEY, all.filter((guide) => guide.id !== id));
   return true;
 }
 
@@ -1883,7 +1887,10 @@ export async function getMaritimeWeather(dateTarget?: string): Promise<WeatherIn
 }
 
 export async function listWeatherBulletins(): Promise<DbWeatherBulletin[]> {
-  if (!isSupabaseConfigured()) return [];
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; operator weather bulletins cannot be loaded in production.');
+    return [];
+  }
   const { data, error } = await supabase
     .from('weather_bulletins')
     .select('*')
