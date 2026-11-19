@@ -109,7 +109,6 @@ export const AdminAvailabilityManager: React.FC = () => {
   }, [selectedTourId, dates]);
 
   const selectedTour = tours.find((t) => t.id === selectedTourId);
-  // A date stays closed until an operator enters a real capacity and opens it.
   const handleToggleStatus = (dateStr: string) => {
     const current = availabilityMap[dateStr];
     const nextBlackout = !Boolean(current?.is_blackout);
@@ -212,7 +211,7 @@ export const AdminAvailabilityManager: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold font-display text-white tracking-tight">
-            Tour Availability & Daily Capacity Calendar
+            Tour Date Blackout Calendar
           </h1>
           <p className="text-xs text-stone-400 mt-1">
             Manage date blackouts for the next 4 weeks. Departure times and seat capacity are managed separately for each departure.
@@ -278,7 +277,7 @@ export const AdminAvailabilityManager: React.FC = () => {
         <div className="flex items-center justify-between pb-3 border-b border-stone-850">
           <h2 className="text-sm font-semibold text-white flex items-center space-x-2">
             <CalendarIcon className="w-4 h-4 text-[#0A6C74]" />
-            <span>4-Week Capacity Manifest</span>
+            <span>4-Week Date Calendar</span>
           </h2>
           <div className="flex items-center space-x-4 text-[11px] text-stone-400">
             <span className="flex items-center space-x-1.5">
@@ -311,7 +310,9 @@ export const AdminAvailabilityManager: React.FC = () => {
               const isToday = dateStr === new Date().toISOString().split('T')[0];
 
               const slot = availabilityMap[dateStr];
-              const status = slot?.is_blackout ? 'unavailable' : (slot?.status || 'unavailable');
+              const isBlackout = Boolean(slot?.is_blackout);
+              const status = isBlackout ? 'unavailable' : (slot?.status || 'unavailable');
+              const canToggleBlackout = isBlackout || status === 'available' || status === 'sold_out';
               const cap = Number(slot?.max_capacity) || 0;
 
               return (
@@ -338,8 +339,11 @@ export const AdminAvailabilityManager: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleToggleStatus(dateStr)}
+                      disabled={!canToggleBlackout}
                       className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase transition-colors cursor-pointer ${
-                        status === 'available'
+                        isBlackout
+                          ? 'bg-red-500/20 text-red-300 border border-red-500/40'
+                          : status === 'available'
                           ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
                           : status === 'sold_out'
                           ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
@@ -347,7 +351,7 @@ export const AdminAvailabilityManager: React.FC = () => {
                       }`}
                       title="Toggle the date blackout; a date is bookable only when it has a confirmed departure"
                     >
-                      {status === 'available' ? 'Open' : status === 'sold_out' ? 'Full' : 'Blocked'}
+                      {isBlackout ? 'Blackout' : status === 'available' ? 'Open' : status === 'sold_out' ? 'Full' : 'No confirmed slot'}
                     </button>
                   </div>
 
