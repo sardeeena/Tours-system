@@ -55,7 +55,7 @@ function setCanonicalUrl(url: string): void {
 /**
  * Injects or updates Schema.org JSON-LD structured data in the document head
  */
-function setSchemaJsonLd(schemaData?: Record<string, unknown>): void {
+function setSchemaJsonLd(schemaData?: Record<string, unknown> | null): void {
   if (typeof document === 'undefined') return;
 
   const SCRIPT_ID = 'rse-schema-jsonld';
@@ -203,7 +203,7 @@ export const seoService = {
     // Keep the server-rendered route schema during hydration when a route's
     // client metadata does not define a replacement. Removing it here makes
     // otherwise indexable SSR pages lose their structured data after hydration.
-    if (meta.schemaJsonLd !== undefined) setSchemaJsonLd(meta.schemaJsonLd || undefined);
+    if (meta.schemaJsonLd !== undefined) setSchemaJsonLd(meta.schemaJsonLd);
   },
 
   /**
