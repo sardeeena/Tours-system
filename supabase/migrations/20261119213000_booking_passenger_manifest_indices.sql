@@ -49,5 +49,39 @@ SET
 WHERE is_lead_passenger IS DISTINCT FROM (passenger_index = 0)
    OR is_lead IS DISTINCT FROM (passenger_index = 0);
 
+-- Older atomic booking RPCs intentionally omit passenger_index. Assign a
+-- stable next index server-side while serializing writes for each booking.
+CREATE OR REPLACE FUNCTION public.assign_booking_passenger_index()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = ''
+AS $function$
+DECLARE
+  v_next_index integer;
+BEGIN
+  IF NEW.passenger_index IS NULL THEN
+    PERFORM 1
+    FROM public.bookings
+    WHERE id = NEW.booking_id
+    FOR UPDATE;
+
+    SELECT COALESCE(MAX(passenger_index) + 1, 0)
+    INTO v_next_index
+    FROM public.booking_passengers
+    WHERE booking_id = NEW.booking_id;
+
+    NEW.passenger_index := v_next_index;
+  END IF;
+
+  RETURN NEW;
+END;
+$function$;
+
+DROP TRIGGER IF EXISTS trg_assign_booking_passenger_index ON public.booking_passengers;
+CREATE TRIGGER trg_assign_booking_passenger_index
+BEFORE INSERT ON public.booking_passengers
+FOR EACH ROW
+EXECUTE FUNCTION public.assign_booking_passenger_index();
+
 COMMENT ON COLUMN public.booking_passengers.passenger_index IS
   'Stable zero-based passenger position within a booking; unique with booking_id for manifest upserts.';
