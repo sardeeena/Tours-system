@@ -340,7 +340,7 @@ CREATE OR REPLACE FUNCTION public.upsert_departure_with_availability(
 )
 RETURNS JSONB
 LANGUAGE plpgsql
-SECURITY DEFINER
+SECURITY INVOKER
 SET search_path = ''
 AS $function$
 BEGIN
@@ -642,8 +642,8 @@ ON public.departures
 FOR EACH ROW
 EXECUTE FUNCTION private.sync_departure_availability_status();
 
-REVOKE ALL ON FUNCTION private.upsert_departure_with_availability(UUID,UUID,DATE,TEXT,TEXT,INTEGER,TEXT,UUID,UUID,UUID,TEXT) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION private.upsert_departure_with_availability(UUID,UUID,DATE,TEXT,TEXT,INTEGER,TEXT,UUID,UUID,UUID,TEXT) TO service_role;
+REVOKE ALL ON FUNCTION private.upsert_departure_with_availability(UUID,UUID,DATE,TEXT,TEXT,INTEGER,TEXT,UUID,UUID,UUID,TEXT) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION private.upsert_departure_with_availability(UUID,UUID,DATE,TEXT,TEXT,INTEGER,TEXT,UUID,UUID,UUID,TEXT) TO authenticated, service_role;
 
 REVOKE ALL ON FUNCTION private.sync_tour_availability_blackout_status() FROM PUBLIC, anon, authenticated;
 REVOKE ALL ON FUNCTION private.assign_booking_to_scheduled_departure() FROM PUBLIC, anon, authenticated;
