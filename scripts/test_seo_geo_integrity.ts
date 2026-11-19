@@ -8,6 +8,9 @@ const staticPages = readFileSync(new URL('../src/data/staticPages.ts', import.me
 const adminSeo = readFileSync(new URL('../src/components/admin/AdminSeoManager.tsx', import.meta.url), 'utf8');
 const destinationDetail = readFileSync(new URL('../src/pages/DestinationDetailPage.tsx', import.meta.url), 'utf8');
 const destinationsSection = readFileSync(new URL('../src/components/home/DestinationsSection.tsx', import.meta.url), 'utf8');
+const tourEditor = readFileSync(new URL('../src/components/admin/AdminTourEditor.tsx', import.meta.url), 'utf8');
+const blogAdmin = readFileSync(new URL('../src/components/admin/AdminBlogManager.tsx', import.meta.url), 'utf8');
+const ratingMigration = readFileSync(new URL('../supabase/migrations/20261119100000_sync_tour_ratings_to_published_reviews.sql', import.meta.url), 'utf8');
 const sitemapStart = server.indexOf("app.get('/sitemap.xml'");
 const llmsStart = server.indexOf("app.get('/llms.txt'");
 const schemaStart = server.indexOf("const organization: Record<string, any>");
@@ -82,6 +85,13 @@ assert.ok(destinationDetail.includes("RED_SEA_DESTINATION_SLUGS.has(destination.
 assert.match(destinationsSection, /Explore Egypt/, 'Destination discovery covers Egypt beyond Red Sea locations');
 assert.match(destinationsSection, /Check pickup availability and any supplements on each excursion/, 'Homepage avoids promising universal complimentary hotel pickup');
 assert.doesNotMatch(destinationsSection, /Complimentary hotel pickup from all main resorts/, 'Homepage removes the unsupported universal pickup claim');
+assert.match(tourEditor, /rating: 0,\s*review_count: 0/, 'New excursions start with no unverified rating or review count');
+assert.match(tourEditor, /Content readiness review/, 'Tour editor flags missing itineraries and FAQs');
+assert.match(blogAdmin, /calculate to a one-minute read/, 'Blog editor flags short published articles for editorial review');
+assert.match(ratingMigration, /WHERE r\.is_published = TRUE/, 'Tour rating aggregates use published reviews only');
+assert.match(ratingMigration, /CREATE TRIGGER trg_refresh_tour_review_summary/, 'Published review changes automatically refresh tour rating aggregates');
+assert.match(ratingMigration, /rating = COALESCE\(stats\.average_rating, 0\)/, 'Tours without published reviews receive a zero rating');
+assert.match(ratingMigration, /REVOKE ALL ON FUNCTION public\.refresh_tour_review_summary\(\) FROM PUBLIC, anon, authenticated/, 'Review aggregate trigger function is not directly executable by API roles');
 
 const markdownHandlerStart = server.indexOf('const acceptsMarkdown');
 const markdownHandlerEnd = server.indexOf("app.get('*'", markdownHandlerStart);
