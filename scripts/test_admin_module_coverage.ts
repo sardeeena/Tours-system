@@ -16,7 +16,9 @@ const navIds = [...navBlock.matchAll(/id:\s*'([^']+)'/g)]
   .map((match) => match[1])
   .filter((id) => !id.startsWith('header_'));
 assert.ok(navIds.length >= 55, 'Expected all primary admin destinations to remain visible');
-assert.equal(new Set(navIds).size, navIds.length, 'Sidebar contains duplicate destination IDs');
+const repeatedNavigationIds = [...new Set(navIds.filter((id, index) => navIds.indexOf(id) !== index))].sort();
+assert.deepEqual(repeatedNavigationIds, ['dashboard', 'tours'], 'Only the two expandable parent rows may share their destination ID with their first child.');
+assert.equal(new Set(navIds).size, navIds.length - 2, 'Unexpected duplicate sidebar destination IDs were introduced.');
 assert.deepEqual(navIds.filter((id) => !tabs.includes(id)), [], 'Sidebar points to an unknown tab');
 
 const routedTabs = new Set([...app.matchAll(/activeAdminTab\s*===\s*'([^']+)'/g)].map((match) => match[1]));
