@@ -95,6 +95,12 @@ function setLocal<T>(key: string, data: T) {
   }
 }
 
+function useLocalCrmData(message: string): boolean {
+  if (isSupabaseConfigured()) return false;
+  if (import.meta.env.DEV) return true;
+  throw new Error(message);
+}
+
 // ------------------------------------------------------------------------------
 // LEADS SERVICE
 // ------------------------------------------------------------------------------
@@ -107,68 +113,55 @@ export async function listLeads(filter?: {
   tourId?: string;
   status?: string;
 }): Promise<CrmLead[]> {
-  let leads: CrmLead[] = [];
-
-  if (isSupabaseConfigured()) {
-    try {
-      let query = supabase
-        .from('leads')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (filter?.stage && filter.stage !== 'all') {
-        query = query.eq('stage', filter.stage);
-      }
-      if (filter?.source && filter.source !== 'all') {
-        query = query.eq('source', filter.source);
-      }
-      if (filter?.status && filter.status !== 'all') {
-        query = query.eq('status', filter.status);
-      }
-
-      const { data, error } = await query;
-
-      if (!error && data) {
-        leads = data.map((d) => ({
-          id: d.id,
-          name: d.name,
-          email: d.email || '',
-          phone: d.phone,
-          whatsapp: d.whatsapp,
-          country: d.country,
-          hotel: d.hotel,
-          source: (d.source as LeadSource) || 'Website',
-          interestedTourId: d.interested_tour_id,
-          interestedTourTitle: d.interested_tour_title,
-          destination: d.destination,
-          travelDate: d.travel_date,
-          numberOfGuests: d.number_of_guests || 1,
-          estimatedValue: Number(d.estimated_value) || 0,
-          currency: d.currency || 'EUR',
-          stage: (d.stage as LeadStage) || 'New',
-          status: d.status || 'active',
-          score: d.score !== undefined ? d.score : 50,
-          notes: d.notes,
-          tags: d.tags || [],
-          assignedStaffId: d.assigned_staff_id,
-          assignedStaffName: d.assigned_staff_name,
-          customerId: d.customer_id,
-          followUpDate: d.follow_up_date,
-          lastContactAt: d.last_contact_at,
-          contactAttemptsCount: d.contact_attempts_count || 0,
-          lostReason: d.lost_reason,
-          createdAt: d.created_at,
-          updatedAt: d.updated_at,
-        }));
-        setLocal(LOCAL_LEADS_KEY, leads);
-        return applyLeadClientFilters(leads, filter);
-      }
-    } catch {
-      // fallback to cached leads below
-    }
+  if (useLocalCrmData('Supabase is not configured; CRM leads cannot be loaded in production.')) {
+    return applyLeadClientFilters(getLocal<CrmLead[]>(LOCAL_LEADS_KEY, []), filter);
   }
 
-  leads = getLocal<CrmLead[]>(LOCAL_LEADS_KEY, []);
+  let query = supabase
+    .from('leads')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (filter?.stage && filter.stage !== 'all') query = query.eq('stage', filter.stage);
+  if (filter?.source && filter.source !== 'all') query = query.eq('source', filter.source);
+  if (filter?.status && filter.status !== 'all') query = query.eq('status', filter.status);
+
+  const { data, error } = await query;
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data) throw new Error('CRM leads could not be loaded from the database.');
+
+  const leads: CrmLead[] = data.map((d) => ({
+    id: d.id,
+    name: d.name,
+    email: d.email || '',
+    phone: d.phone,
+    whatsapp: d.whatsapp,
+    country: d.country,
+    hotel: d.hotel,
+    source: (d.source as LeadSource) || 'Website',
+    interestedTourId: d.interested_tour_id,
+    interestedTourTitle: d.interested_tour_title,
+    destination: d.destination,
+    travelDate: d.travel_date,
+    numberOfGuests: d.number_of_guests || 1,
+    estimatedValue: Number(d.estimated_value) || 0,
+    currency: d.currency || 'EUR',
+    stage: (d.stage as LeadStage) || 'New',
+    status: d.status || 'active',
+    score: d.score !== undefined ? d.score : 50,
+    notes: d.notes,
+    tags: d.tags || [],
+    assignedStaffId: d.assigned_staff_id,
+    assignedStaffName: d.assigned_staff_name,
+    customerId: d.customer_id,
+    followUpDate: d.follow_up_date,
+    lastContactAt: d.last_contact_at,
+    contactAttemptsCount: d.contact_attempts_count || 0,
+    lostReason: d.lost_reason,
+    createdAt: d.created_at,
+    updatedAt: d.updated_at,
+  }));
+  setLocal(LOCAL_LEADS_KEY, leads);
   return applyLeadClientFilters(leads, filter);
 }
 
@@ -205,6 +198,8 @@ function applyLeadClientFilters(
 }
 
 export async function createLead(input: Partial<CrmLead>): Promise<CrmLead> {
+  const localMode = useLocalCrmData('Supabase is not configured; CRM leads cannot be created in production.');
+  const now = new Date().toISOString();
   const newLead: CrmLead = {
     id: `lead-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
     name: input.name || 'Anonymous Inquiry',
@@ -219,7 +214,7 @@ export async function createLead(input: Partial<CrmLead>): Promise<CrmLead> {
     destination: input.destination || null,
     travelDate: input.travelDate || null,
     numberOfGuests: input.numberOfGuests || 2,
-    estimatedValue: input.estimatedValue !== undefined ? input.estimatedValue : 150,
+    estimatedValue: input.estimatedValue !== undefined ? input.estimatedValue : 0,
     currency: input.currency || 'EUR',
     stage: input.stage || 'New',
     status: 'active',
@@ -227,126 +222,116 @@ export async function createLead(input: Partial<CrmLead>): Promise<CrmLead> {
     notes: input.notes || null,
     tags: input.tags || [],
     assignedStaffId: input.assignedStaffId || null,
-    assignedStaffName: input.assignedStaffName || 'Captain Tarek',
+    assignedStaffName: input.assignedStaffName || null,
     customerId: input.customerId || null,
     followUpDate: input.followUpDate || null,
     lastContactAt: null,
     contactAttemptsCount: 0,
     lostReason: input.lostReason || null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: now,
+    updatedAt: now,
   };
+
+  if (!localMode) {
+    const { data, error } = await supabase
+      .from('leads')
+      .insert({
+        name: newLead.name,
+        email: newLead.email,
+        phone: newLead.phone,
+        whatsapp: newLead.whatsapp,
+        country: newLead.country,
+        hotel: newLead.hotel,
+        source: newLead.source,
+        interested_tour_id: newLead.interestedTourId,
+        interested_tour_title: newLead.interestedTourTitle,
+        destination: newLead.destination,
+        travel_date: newLead.travelDate,
+        number_of_guests: newLead.numberOfGuests,
+        estimated_value: newLead.estimatedValue,
+        currency: newLead.currency,
+        stage: newLead.stage,
+        status: newLead.status,
+        score: newLead.score,
+        notes: newLead.notes,
+        tags: newLead.tags,
+        assigned_staff_name: newLead.assignedStaffName,
+        assigned_staff_id: newLead.assignedStaffId,
+        customer_id: newLead.customerId,
+        follow_up_date: newLead.followUpDate,
+      })
+      .select('*')
+      .single();
+
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The CRM lead was not saved; no database record was returned.');
+    newLead.id = data.id;
+    newLead.createdAt = data.created_at || now;
+    newLead.updatedAt = data.updated_at || now;
+  }
 
   const leads = getLocal<CrmLead[]>(LOCAL_LEADS_KEY, []);
   setLocal(LOCAL_LEADS_KEY, [newLead, ...leads]);
 
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('leads')
-        .insert({
-          name: newLead.name,
-          email: newLead.email,
-          phone: newLead.phone,
-          whatsapp: newLead.whatsapp,
-          country: newLead.country,
-          hotel: newLead.hotel,
-          source: newLead.source,
-          interested_tour_id: newLead.interestedTourId,
-          interested_tour_title: newLead.interestedTourTitle,
-          destination: newLead.destination,
-          travel_date: newLead.travelDate,
-          number_of_guests: newLead.numberOfGuests,
-          estimated_value: newLead.estimatedValue,
-          currency: newLead.currency,
-          stage: newLead.stage,
-          status: newLead.status,
-          score: newLead.score,
-          notes: newLead.notes,
-          tags: newLead.tags,
-          assigned_staff_name: newLead.assignedStaffName,
-          assigned_staff_id: newLead.assignedStaffId,
-          customer_id: newLead.customerId,
-          follow_up_date: newLead.followUpDate,
-        })
-        .select('*')
-        .maybeSingle();
-
-      if (error) {
-        throw new Error(formatSupabaseError(error));
-      }
-      if (data) {
-        newLead.id = data.id;
-      }
-    } catch (err: any) {
-      console.error('Error creating lead in Supabase:', err);
-      throw err;
-    }
-  }
-
-  // Record timeline activity
   await recordActivity({
     leadId: newLead.id,
     eventType: 'lead_created',
     title: 'Lead Created',
     description: `${newLead.name} added via ${newLead.source} for ${newLead.interestedTourTitle || 'excursion inquiry'}.`,
-    actor: newLead.assignedStaffName || 'Staff Member',
+    actor: newLead.assignedStaffName || 'Signed-in staff',
   });
 
   return newLead;
 }
 
 export async function updateLead(leadId: string, updates: Partial<CrmLead>): Promise<boolean> {
-  const leads = getLocal<CrmLead[]>(LOCAL_LEADS_KEY, []);
-  const updated = leads.map((l) =>
-    l.id === leadId
-      ? { ...l, ...updates, updatedAt: new Date().toISOString() }
-      : l
-  );
-  setLocal(LOCAL_LEADS_KEY, updated);
+  if (!leadId.trim()) throw new Error('A lead ID is required.');
+  const localMode = useLocalCrmData('Supabase is not configured; CRM leads cannot be updated in production.');
+  const now = new Date().toISOString();
 
-  if (isSupabaseConfigured()) {
-    try {
-      const { error } = await supabase
-        .from('leads')
-        .update({
-          name: updates.name,
-          email: updates.email,
-          phone: updates.phone,
-          whatsapp: updates.whatsapp,
-          country: updates.country,
-          hotel: updates.hotel,
-          source: updates.source,
-          interested_tour_id: updates.interestedTourId,
-          interested_tour_title: updates.interestedTourTitle,
-          destination: updates.destination,
-          travel_date: updates.travelDate,
-          number_of_guests: updates.numberOfGuests,
-          estimated_value: updates.estimatedValue,
-          currency: updates.currency,
-          stage: updates.stage,
-          status: updates.status,
-          score: updates.score,
-          notes: updates.notes,
-          tags: updates.tags,
-          assigned_staff_name: updates.assignedStaffName,
-          assigned_staff_id: updates.assignedStaffId,
-          customer_id: updates.customerId,
-          follow_up_date: updates.followUpDate,
-          lost_reason: updates.lostReason,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', leadId);
+  if (!localMode) {
+    const { data, error } = await supabase
+      .from('leads')
+      .update({
+        name: updates.name,
+        email: updates.email,
+        phone: updates.phone,
+        whatsapp: updates.whatsapp,
+        country: updates.country,
+        hotel: updates.hotel,
+        source: updates.source,
+        interested_tour_id: updates.interestedTourId,
+        interested_tour_title: updates.interestedTourTitle,
+        destination: updates.destination,
+        travel_date: updates.travelDate,
+        number_of_guests: updates.numberOfGuests,
+        estimated_value: updates.estimatedValue,
+        currency: updates.currency,
+        stage: updates.stage,
+        status: updates.status,
+        score: updates.score,
+        notes: updates.notes,
+        tags: updates.tags,
+        assigned_staff_name: updates.assignedStaffName,
+        assigned_staff_id: updates.assignedStaffId,
+        customer_id: updates.customerId,
+        follow_up_date: updates.followUpDate,
+        lost_reason: updates.lostReason,
+        updated_at: now,
+      })
+      .eq('id', leadId)
+      .select('id')
+      .maybeSingle();
 
-      if (error) {
-        throw new Error(formatSupabaseError(error));
-      }
-    } catch (err: any) {
-      console.error('Error updating lead in Supabase:', err);
-      throw err;
-    }
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The CRM lead was not updated because it no longer exists or is not accessible.');
   }
 
+  const leads = getLocal<CrmLead[]>(LOCAL_LEADS_KEY, []);
+  const updated = leads.map((lead) =>
+    lead.id === leadId ? { ...lead, ...updates, updatedAt: now } : lead
+  );
+  setLocal(LOCAL_LEADS_KEY, updated);
   return true;
 }
 
