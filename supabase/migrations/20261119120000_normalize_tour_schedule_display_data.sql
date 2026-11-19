@@ -28,14 +28,14 @@ WHERE departure_time IS NOT NULL
 UPDATE public.tours
 SET duration = regexp_replace(
   replace(trim(duration), 'approx.24', 'approx. 24'),
-  '\s+',
+  '[[:space:]]+',
   ' ',
   'g'
 )
 WHERE duration IS NOT NULL
   AND duration IS DISTINCT FROM regexp_replace(
     replace(trim(duration), 'approx.24', 'approx. 24'),
-    '\s+',
+    '[[:space:]]+',
     ' ',
     'g'
   );
