@@ -200,6 +200,8 @@ export interface DbTourAvailability {
   max_capacity: number;
   booked_count: number;
   notes: string | null;
+  departure_id?: string | null;
+  is_blackout: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -225,6 +227,10 @@ export interface DbBooking {
   customer_id: string | null;
   tour_language: string | null;
   booking_date: string;
+  departure_id: string | null;
+  unit_price_adult: number;
+  unit_price_child: number;
+  customer_locale?: string | null;
   status: 'pending' | 'confirmed' | 'cancellation_requested' | 'cancelled' | 'completed' | 'no_show';
   payment_status: 'pending' | 'paid' | 'partially_paid' | 'refunded' | 'failed';
   payment_method: 'pay_at_pickup' | 'pay_online';

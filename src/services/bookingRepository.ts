@@ -165,10 +165,14 @@ class SupabaseBookingRepository implements IBookingRepository {
     }
 
     try {
-      // 1. Authoritative Primary Path: create_booking_atomic RPC
-      // Executes single PostgreSQL transaction with row-level capacity lock, server-side pricing,
-      // passenger manifest creation, extras persistence, genuine request idempotency, and audit logging.
-      const { data: atomicRes, error: rpcErr } = await supabase.rpc('create_booking_atomic_with_locale', {
+      if (!booking.departureId) {
+        throw new Error('Please select a confirmed departure time before completing this booking.');
+      }
+
+      // Authoritative path: atomically reserve the exact selected departure slot.
+      // Pricing, capacity locking, passenger manifests, extras, idempotency and audit logging
+      // are handled in the database transaction.
+      const { data: atomicRes, error: rpcErr } = await supabase.rpc('create_booking_atomic_with_departure', {
         p_tour_identifier: resolveBookingTourIdentifier(booking.tourId, booking.tourSlug),
         p_booking_date: bookingDateStr,
         p_adult_count: adults,
@@ -193,6 +197,7 @@ class SupabaseBookingRepository implements IBookingRepository {
         p_idempotency_key: idempotencyKey,
         p_tour_language: booking.tourLanguage || 'English',
         p_customer_locale: booking.customerLocale || 'en',
+        p_departure_id: booking.departureId,
       });
 
       if (!rpcErr && atomicRes && typeof atomicRes === 'object') {
@@ -257,7 +262,8 @@ class SupabaseBookingRepository implements IBookingRepository {
             *,
             tours (*),
             customers (*),
-            booking_extras (*)
+            booking_extras (*),
+            departures (start_time,end_time)
           `)
           .eq('booking_reference', cleanRef)
           .maybeSingle();
@@ -319,7 +325,8 @@ class SupabaseBookingRepository implements IBookingRepository {
             *,
             tours (*),
             customers (*),
-            booking_extras (*)
+            booking_extras (*),
+            departures (start_time,end_time)
           `)
           .eq('booking_reference', cleanRef)
           .maybeSingle();
@@ -412,7 +419,8 @@ class SupabaseBookingRepository implements IBookingRepository {
             *,
             tours (*),
             customers!inner (*),
-            booking_extras (*)
+            booking_extras (*),
+            departures (start_time,end_time)
           `)
           .eq('customers.email', cleanEmail)
           .order('created_at', { ascending: false });
@@ -425,7 +433,8 @@ class SupabaseBookingRepository implements IBookingRepository {
               *,
               tours (*),
               customers (*),
-              booking_extras (*)
+              booking_extras (*),
+              departures (start_time,end_time)
             `)
             .eq('user_id', user.id)
             .order('created_at', { ascending: false });
@@ -651,7 +660,8 @@ class SupabaseBookingRepository implements IBookingRepository {
         tours (*),
         customers (*),
         booking_extras (*),
-        booking_passengers (*)
+        booking_passengers (*),
+        departures (start_time,end_time)
       `)
       .eq('booking_reference', cleanReference)
       .maybeSingle();
@@ -691,7 +701,8 @@ class SupabaseBookingRepository implements IBookingRepository {
             *,
             tours (*),
             customers (*),
-            booking_extras (*)
+            booking_extras (*),
+            departures (start_time,end_time)
           `)
           .order('created_at', { ascending: false })
           .order('id', { ascending: false })
@@ -740,6 +751,8 @@ class SupabaseBookingRepository implements IBookingRepository {
       tourLanguage: data.tour_language || undefined,
       customerLocale: data.customer_locale || customer.preferred_locale || 'en',
       date: data.booking_date,
+      departureId: data.departure_id || undefined,
+      departureTime: data.departures?.start_time || data.departure_time || undefined,
       guests: {
         adults: data.adult_count || 1,
         children: data.child_count || 0,
@@ -774,10 +787,18 @@ class SupabaseBookingRepository implements IBookingRepository {
         amountEur: Number(ex.total_price),
       })),
       pricing: {
-        basePricePerAdultEur: Number(tour.price) || 35,
-        basePricePerChildEur: Number(tour.child_price) || 18,
-        adultSubtotalEur: (data.adult_count || 1) * (Number(tour.price) || 35),
-        childSubtotalEur: (data.child_count || 0) * (Number(tour.child_price) || 18),
+        basePricePerAdultEur: Number(data.unit_price_adult) > 0
+          ? Number(data.unit_price_adult)
+          : String(tour.tour_type || '').toLowerCase() === 'private' ? 0 : Number(tour.price) || 0,
+        basePricePerChildEur: Number(data.unit_price_child) > 0
+          ? Number(data.unit_price_child)
+          : String(tour.tour_type || '').toLowerCase() === 'private' ? 0 : Number(tour.child_price) || 0,
+        adultSubtotalEur: (data.adult_count || 1) * (Number(data.unit_price_adult) > 0
+          ? Number(data.unit_price_adult)
+          : String(tour.tour_type || '').toLowerCase() === 'private' ? 0 : Number(tour.price) || 0),
+        childSubtotalEur: (data.child_count || 0) * (Number(data.unit_price_child) > 0
+          ? Number(data.unit_price_child)
+          : String(tour.tour_type || '').toLowerCase() === 'private' ? 0 : Number(tour.child_price) || 0),
         infantSubtotalEur: 0,
         pickupSubtotalEur: 0,
         pickupFeePerPersonEur: 0,
@@ -846,6 +867,8 @@ class SupabaseBookingRepository implements IBookingRepository {
       tourDuration: tour.duration || 'Full Day (approx. 7 hours)',
       tourLanguage: sec.tourLanguage || undefined,
       date: sec.bookingDate,
+      departureId: sec.departureId || sec.departure?.id || undefined,
+      departureTime: sec.departureTime || sec.departure?.startTime || sec.departure?.start_time || undefined,
       guests: {
         adults: guests.adults || 1,
         children: guests.children || 0,
@@ -868,10 +891,10 @@ class SupabaseBookingRepository implements IBookingRepository {
         amountEur: Number(ex.totalPrice) || 0,
       })),
       pricing: {
-        basePricePerAdultEur: Number(pricing.subtotal) || 35,
-        basePricePerChildEur: 18,
-        adultSubtotalEur: Number(pricing.subtotal) || 35,
-        childSubtotalEur: 0,
+        basePricePerAdultEur: Number(pricing.basePricePerAdultEur) || 0,
+        basePricePerChildEur: Number(pricing.basePricePerChildEur) || 0,
+        adultSubtotalEur: (Number(pricing.basePricePerAdultEur) || 0) * (Number(guests.adults) || 0),
+        childSubtotalEur: (Number(pricing.basePricePerChildEur) || 0) * (Number(guests.children) || 0),
         infantSubtotalEur: 0,
         pickupSubtotalEur: 0,
         pickupFeePerPersonEur: 0,

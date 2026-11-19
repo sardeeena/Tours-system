@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { recordVisitorEvent } from '../services/visitorAnalyticsService';
 import { motion, AnimatePresence } from 'motion/react';
 import { Tour, CurrencyConfig } from '../types';
@@ -95,6 +95,17 @@ export const BookingPage: React.FC<BookingPageProps> = ({
   }, [currentStep, currentTour?.slug]);
 
   const [date, setDate] = useState<string>(initialDraft.date || '');
+  const [selectedDepartureId, setSelectedDepartureId] = useState<string>(initialDraft.departureId || '');
+  const [selectedDepartureTime, setSelectedDepartureTime] = useState<string>(initialDraft.departureTime || '');
+  const handleDateChange = useCallback((nextDate: string) => {
+    setDate(nextDate);
+    setSelectedDepartureId('');
+    setSelectedDepartureTime('');
+  }, []);
+  const handleDepartureChange = useCallback((departureId: string, departureTime: string) => {
+    setSelectedDepartureId(departureId);
+    setSelectedDepartureTime(departureTime);
+  }, []);
   const [selectedTourLanguage, setSelectedTourLanguage] = useState<string>(initialDraft.selectedTourLanguage || currentTour?.languages?.[0] || 'English');
   const [guests, setGuests] = useState<GuestCounts>(initialDraft.guests);
   const [pickupLocationId, setPickupLocationId] = useState<string>(initialDraft.pickupLocationId || '');
@@ -190,6 +201,8 @@ export const BookingPage: React.FC<BookingPageProps> = ({
   const draftFingerprint = useMemo(() => JSON.stringify({
     tourSlug: currentTour?.slug,
     date,
+    selectedDepartureId,
+    selectedDepartureTime,
     selectedTourLanguage,
     guests,
     pickupLocationId,
@@ -200,7 +213,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
     customer,
     paymentMethod,
     couponCode,
-  }), [currentTour?.slug, date, guests, pickupLocationId, hotelName, roomNumber, selectedExtraIds, extraQuantities, customer, paymentMethod, couponCode]);
+  }), [currentTour?.slug, date, selectedDepartureId, selectedDepartureTime, guests, pickupLocationId, hotelName, roomNumber, selectedExtraIds, extraQuantities, customer, paymentMethod, couponCode]);
 
   useEffect(() => {
     if (lastDraftFingerprint.current === null) {
@@ -221,6 +234,8 @@ export const BookingPage: React.FC<BookingPageProps> = ({
       selectedTourLanguage,
       currentStep,
       date,
+      departureId: selectedDepartureId,
+      departureTime: selectedDepartureTime,
       guests,
       pickupLocationId,
       hotelName: hotelName || customer.hotelName || '',
@@ -241,6 +256,8 @@ export const BookingPage: React.FC<BookingPageProps> = ({
     currentTour,
     currentStep,
     date,
+    selectedDepartureId,
+    selectedDepartureTime,
     selectedTourLanguage,
     guests,
     pickupLocationId,
@@ -317,6 +334,11 @@ export const BookingPage: React.FC<BookingPageProps> = ({
 
   const handleConfirmBooking = async () => {
     if (!currentTour) return;
+    if (!selectedDepartureId || !selectedDepartureTime) {
+      setCurrentStep(1);
+      showToast('Please select a confirmed departure time before continuing.', 'error');
+      return;
+    }
     if (currentTour.pickupAvailable && (!selectedPickup || !pickupLocations.some((location) => location.id === selectedPickup.id))) {
       setCurrentStep(2);
       return;
@@ -343,6 +365,8 @@ export const BookingPage: React.FC<BookingPageProps> = ({
         tourLanguage: selectedTourLanguage,
         customerLocale,
         date,
+        departureId: selectedDepartureId,
+        departureTime: selectedDepartureTime,
         guests,
         pickup: {
           locationId: selectedPickup?.id,
@@ -497,7 +521,9 @@ export const BookingPage: React.FC<BookingPageProps> = ({
                   <StepDateGuests
                     tour={currentTour}
                     date={date}
-                    onDateChange={setDate}
+                    onDateChange={handleDateChange}
+                    selectedDepartureId={selectedDepartureId}
+                    onDepartureChange={handleDepartureChange}
                     tourLanguage={selectedTourLanguage}
                     onTourLanguageChange={setSelectedTourLanguage}
                     guests={guests}
@@ -554,6 +580,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
                   <StepReview
                     tour={currentTour}
                     date={date}
+                    departureTime={selectedDepartureTime}
                     tourLanguage={selectedTourLanguage}
                     guests={guests}
                     pickupLocation={selectedPickup}
@@ -593,6 +620,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
             <BookingSummary
               tour={currentTour}
               date={date}
+              departureTime={selectedDepartureTime}
               tourLanguage={selectedTourLanguage}
               guests={guests}
               pickupLocation={selectedPickup}
@@ -609,7 +637,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
                 <span>Operator Direct Guarantee</span>
               </div>
               <p className="text-stone-600 text-[11px] leading-relaxed">
-                Reservations are transmitted directly to the marine fleet operations center in Hurghada. Free cancellation up to 24 hours prior.
+                Reservations are sent directly to our booking operations team. Review the cancellation terms for your selected excursion before confirming.
               </p>
             </div>
           </div>

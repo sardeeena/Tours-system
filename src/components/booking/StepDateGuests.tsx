@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
-import { Calendar, Users, MapPin, Clock, AlertCircle, CheckCircle2, ShieldAlert, Plus, Minus, ArrowRight } from 'lucide-react';
+import { Calendar, Users, MapPin, Clock, AlertCircle, CheckCircle2, Plus, Minus, ArrowRight } from 'lucide-react';
 import { Tour, CurrencyConfig } from '../../types';
-import { GuestCounts, Availability } from '../../types/booking';
-import { getEarliestSelectableDate, getTourAvailability, getTourAvailabilityFromServer } from '../../services/availabilityService';
+import { GuestCounts, DepartureSlot } from '../../types/booking';
+import { getEarliestSelectableDate, getTourDepartureSlotsFromServer } from '../../services/availabilityService';
 import { formatCurrencyAmount } from '../../services/pricingService';
 import { useToast } from '../../contexts/ToastContext';
 
@@ -10,6 +10,8 @@ interface StepDateGuestsProps {
   tour: Tour;
   date: string;
   onDateChange: (date: string) => void;
+  selectedDepartureId: string;
+  onDepartureChange: (departureId: string, departureTime: string) => void;
   tourLanguage: string;
   onTourLanguageChange: (language: string) => void;
   guests: GuestCounts;
@@ -22,6 +24,8 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
   tour,
   date,
   onDateChange,
+  selectedDepartureId,
+  onDepartureChange,
   tourLanguage,
   onTourLanguageChange,
   guests,
@@ -29,7 +33,9 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
   currency,
   onNext,
 }) => {
-  const earliestDate = useMemo(() => getEarliestSelectableDate(24), []);
+  const configuredNoticeHours = Number(tour.minimumBookingNoticeHours);
+  const minimumNoticeHours = Number.isFinite(configuredNoticeHours) ? Math.max(0, configuredNoticeHours) : 12;
+  const earliestDate = useMemo(() => getEarliestSelectableDate(minimumNoticeHours), [minimumNoticeHours]);
   const { showToast } = useToast();
 
   // Set default date to earliestDate if none set
@@ -39,9 +45,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
     }
   }, [date, earliestDate, onDateChange]);
 
-  const [availability, setAvailability] = React.useState<Availability>(() =>
-    getTourAvailability(tour, date || earliestDate)
-  );
+  const [departureSlots, setDepartureSlots] = React.useState<DepartureSlot[]>([]);
   const [availabilityLoading, setAvailabilityLoading] = React.useState(true);
   const [availabilityError, setAvailabilityError] = React.useState(false);
 
@@ -52,20 +56,19 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
     setAvailabilityLoading(true);
     setAvailabilityError(false);
 
-    getTourAvailabilityFromServer(tour, selectedDate)
+    getTourDepartureSlotsFromServer(tour, selectedDate)
       .then((result) => {
-        if (active) setAvailability(result);
+        if (!active) return;
+        setDepartureSlots(result);
+        const current = result.find((slot) => slot.departureId === selectedDepartureId && slot.isAvailable);
+        onDepartureChange(current?.departureId || '', current?.startTime || '');
       })
       .catch((error) => {
-        console.warn('Could not load authoritative tour availability:', error);
+        console.warn('Could not load confirmed departure slots:', error);
         if (active) {
           showToast('We could not verify availability for this date. Please try again before continuing.', 'error');
-          setAvailability({
-            ...getTourAvailability(tour, selectedDate),
-            isAvailable: false,
-            isSoldOut: false,
-            remaining: 0,
-          });
+          setDepartureSlots([]);
+          onDepartureChange('', '');
           setAvailabilityError(true);
         }
       })
@@ -76,7 +79,9 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
     return () => {
       active = false;
     };
-  }, [tour, date, earliestDate, showToast]);
+  }, [tour, date, earliestDate, selectedDepartureId, onDepartureChange, showToast]);
+
+  const selectedDeparture = departureSlots.find((slot) => slot.departureId === selectedDepartureId) || null;
 
   const handleAdultsChange = (delta: number) => {
     const next = Math.max(1, guests.adults + delta);
@@ -97,8 +102,20 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
   const availableLanguages = languageOptions.length > 0 ? languageOptions : ['English'];
 
   const totalPartySize = guests.adults + guests.children + guests.infants;
-  const exceedsCapacity = availability.isAvailable && totalPartySize > availability.remaining;
-  const isFormValid = Boolean(date && !availabilityLoading && !availabilityError && availability.isAvailable && !availability.isSoldOut && !exceedsCapacity);
+  const exceedsCapacity = Boolean(selectedDeparture?.isAvailable && totalPartySize > selectedDeparture.remainingCapacity);
+  const isFormValid = Boolean(
+    date &&
+    !availabilityLoading &&
+    !availabilityError &&
+    selectedDeparture?.isAvailable &&
+    !exceedsCapacity
+  );
+  const adultRate = tour.tourType === 'Private'
+    ? Math.max(0, Number(tour.privatePriceEur) || 0)
+    : tour.priceEur;
+  const childRate = tour.tourType === 'Private'
+    ? adultRate
+    : (tour.childPriceEur || Math.round(tour.priceEur * 0.5));
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -135,7 +152,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
         <div className="sm:text-right border-t sm:border-t-0 pt-2 sm:pt-0 w-full sm:w-auto flex sm:flex-col justify-between sm:justify-center items-baseline sm:items-end">
           <span className="text-[10px] uppercase font-bold text-stone-400 block">Starting from</span>
           <span className="font-display text-xl font-bold text-[#0A6C74]">
-            {formatCurrencyAmount(tour.priceEur, currency)}
+            {formatCurrencyAmount(adultRate, currency)}
             <span className="text-xs text-stone-500 font-normal"> / adult</span>
           </span>
         </div>
@@ -170,7 +187,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
             1. Choose your date
           </label>
           <span className="text-[11px] text-stone-500">
-            Book at least 24 hours in advance
+            Book at least {minimumNoticeHours} hours in advance
           </span>
         </div>
 
@@ -185,8 +202,9 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
             className="w-full px-3.5 py-2.5 rounded border border-stone-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A6C74] bg-stone-50/50"
           />
 
-          {/* Availability Status Notification */}
-          <div className="pt-1">
+          {/* Independently bookable departure times */}
+          <div className="pt-2 space-y-2">
+            <span className="font-bold text-stone-900 text-sm block">Departure time</span>
             {availabilityLoading ? (
               <div className="p-3 bg-stone-50 border border-stone-200 rounded text-xs text-stone-600">
                 Checking live departure availability…
@@ -195,42 +213,67 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
               <div className="p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-900">
                 Live availability is temporarily unavailable. Please try again in a moment.
               </div>
-            ) : availability.isSoldOut ? (
-              <div className="p-3 bg-red-50 border border-red-200 rounded text-xs text-red-800 flex items-center space-x-2">
-                <ShieldAlert className="w-4 h-4 text-red-600 shrink-0" />
-                <div>
-                  <span className="font-bold block">Sold Out for this date</span>
-                  <span>All passenger seats are fully booked. Please select another date.</span>
-                </div>
-              </div>
-            ) : !availability.isAvailable ? (
+            ) : departureSlots.length === 0 ? (
               <div className="p-3 bg-stone-50 border border-stone-200 rounded text-xs text-stone-700">
                 This departure is currently closed. Please choose another date.
               </div>
-            ) : exceedsCapacity ? (
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-900 flex items-center space-x-2">
-                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                <div>
-                  <span className="font-bold block">Party size exceeds available capacity</span>
-                  <span>
-                    You have selected {totalPartySize} guests, but only {availability.remaining} spots remain on this departure. Please reduce group size or choose another date.
-                  </span>
-                </div>
-              </div>
             ) : (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded text-xs text-emerald-950 flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>
-                    <strong className="font-semibold text-emerald-950">
-                      {availability.remaining} spots available
-                    </strong> for selected date
-                  </span>
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {departureSlots.map((slot) => {
+                    const selected = slot.departureId === selectedDepartureId;
+                    return (
+                      <button
+                        key={slot.departureId}
+                        type="button"
+                        disabled={!slot.isAvailable}
+                        onClick={() => onDepartureChange(slot.departureId, slot.startTime)}
+                        className={`rounded border px-3 py-2 text-left transition-colors ${
+                          selected
+                            ? 'border-[#0A6C74] bg-[#0A6C74]/10 text-[#0A6C74]'
+                            : slot.isAvailable
+                              ? 'border-stone-300 bg-stone-50 text-stone-800 hover:border-[#0A6C74]'
+                              : 'border-stone-200 bg-stone-100 text-stone-400 cursor-not-allowed'
+                        }`}
+                      >
+                        <span className="font-semibold text-sm block">{slot.startTime}</span>
+                        <span className="text-[10px] block">
+                          {slot.isAvailable ? `${slot.remainingCapacity} spots` : 'Sold Out'}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
-                <span className="text-[10px] text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded font-mono">
-                  Live Availability
-                </span>
-              </div>
+                {selectedDeparture?.isAvailable && exceedsCapacity ? (
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-900 flex items-center space-x-2">
+                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                    <div>
+                      <span className="font-bold block">Party size exceeds available capacity</span>
+                      <span>
+                        You have selected {totalPartySize} guests, but only {selectedDeparture.remainingCapacity} spots remain on this departure. Please reduce group size or choose another date.
+                      </span>
+                    </div>
+                  </div>
+                ) : selectedDeparture?.isAvailable ? (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded text-xs text-emerald-950 flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>
+                        <strong className="font-semibold text-emerald-950">
+                          {selectedDeparture.remainingCapacity} spots available
+                        </strong> for selected departure
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded font-mono">
+                      Live Availability
+                    </span>
+                  </div>
+                ) : (
+                  <div className="p-3 bg-stone-50 border border-stone-200 rounded text-xs text-stone-700">
+                    This departure is currently closed. Please choose another date.
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -294,7 +337,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
               </div>
               <span className="font-semibold text-xs text-[#0A6C74]">
                 {formatCurrencyAmount(
-                  tour.childPriceEur || Math.round(tour.priceEur * 0.5),
+                  childRate,
                   currency
                 )}
               </span>
@@ -359,7 +402,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
         </div>
 
         <p className="text-[11px] text-stone-500">
-          * Minimum 1 adult required. Flotation vests for children and infants are certified and stocked on all vessels.
+          * Minimum 1 adult required.
         </p>
       </div>
 

@@ -462,7 +462,7 @@ export const MyBookingPage: React.FC<MyBookingPageProps> = ({
                 <div className="flex items-start space-x-2 text-stone-600">
                   <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                   <span>
-                    Free cancellation up to 24 hours before pickup.
+                    Cancellation eligibility depends on the policy for your selected excursion.
                   </span>
                 </div>
 

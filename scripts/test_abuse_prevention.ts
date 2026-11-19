@@ -62,7 +62,7 @@ assert(migration.includes('REVOKE ALL ON TABLE public.rate_limit_buckets FROM PU
 
 // Booking test is source-only: never create a test booking against a configured database.
 const booking = read('src/services/bookingRepository.ts');
-assert(booking.includes("supabase.rpc('create_booking_atomic_with_locale'"), 'Booking creation uses the authoritative atomic database RPC');
+assert(booking.includes("supabase.rpc('create_booking_atomic_with_departure'") && booking.includes('p_departure_id: booking.departureId'), 'Booking creation uses the authoritative atomic database RPC with an explicitly selected departure');
 assert(booking.includes("if (res.success === false)"), 'A database rejection cannot be treated as a successful booking');
 assert(booking.includes("if (!import.meta.env.DEV)"), 'Offline browser booking fallback is restricted to development');
 assert(booking.includes("bookingId: booking.bookingId || `dev_bk_${Date.now()}`"), 'Development-only bookings are unmistakably marked as local sandbox records');

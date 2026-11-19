@@ -81,6 +81,10 @@ export function mapDbTourToFrontendTour(
     .map((faq) => faq.answer);
 
   const cats = relations.categories && relations.categories.length > 0 ? relations.categories : [];
+  const configuredNoticeHours = Number(dbTour.minimum_booking_notice_hours);
+  const minimumBookingNoticeHours = Number.isFinite(configuredNoticeHours)
+    ? Math.max(0, configuredNoticeHours)
+    : 12;
 
   return {
     id: dbTour.id,
@@ -96,6 +100,7 @@ export function mapDbTourToFrontendTour(
     priceEur: Number(dbTour.price) || 0,
     childPriceEur: dbTour.child_price !== null && dbTour.child_price !== undefined ? Number(dbTour.child_price) : undefined,
     privatePriceEur: dbTour.private_price !== null && dbTour.private_price !== undefined && Number(dbTour.private_price) > 0 ? Number(dbTour.private_price) : undefined,
+    minimumBookingNoticeHours,
     rating: Number(dbTour.rating) || 0,
     reviewCount: Number(dbTour.review_count) || 0,
     badge: dbTour.badge || (dbTour.featured ? 'Popular' : undefined),
@@ -105,6 +110,7 @@ export function mapDbTourToFrontendTour(
     fullDescription: dbTour.description || '',
     highlights: sortedHighlights,
     itinerary: sortedItinerary,
+    faqs: sortedFaqs.filter((faq) => faq.section === 'faq').map((faq) => ({ question: faq.question, answer: faq.answer })),
     included: sortedInclusions,
     excluded: sortedExclusions,
     whatToBring,

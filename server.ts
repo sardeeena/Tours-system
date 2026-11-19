@@ -1345,9 +1345,58 @@ app.get('/api/tours', rateLimit(120, 60_000), async (req: Request, res: Response
       .limit(maxItems);
 
     if (destination && typeof destination === 'string') {
-      const cleanDest = destination.trim().replace(/[%_()]/g, '');
+      const cleanDest = destination.trim().replace(/[%,_()]/g, '');
       if (cleanDest) {
-        query = query.ilike('destination_id', `%${cleanDest}%`);
+        // destination_id is a UUID: resolve a public destination by UUID, slug,
+        // or exact name instead of applying text matching to the UUID column.
+        let destinationLookup = publicSupabase.from('destinations').select('id').limit(1);
+        if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(cleanDest)) {
+          destinationLookup = destinationLookup.eq('id', cleanDest);
+        } else {
+          destinationLookup = destinationLookup.eq('slug', cleanDest.toLowerCase());
+        }
+        let { data: destinationRow, error: destinationError } = await destinationLookup.maybeSingle();
+        if (!destinationRow && !destinationError && !/^[0-9a-f-]{36}$/i.test(cleanDest)) {
+          const fallback = await publicSupabase.from('destinations').select('id').ilike('name', cleanDest).limit(1).maybeSingle();
+          destinationRow = fallback.data;
+          destinationError = fallback.error;
+        }
+        if (destinationError) {
+          console.error('Supabase /api/tours destination filter error:', destinationError.message);
+          return res.status(503).json({ success: false, error: 'The tour catalogue is temporarily unavailable. Please try again later.', tours: [], count: 0, total: 0 });
+        }
+        if (!destinationRow) return res.json({ success: true, tours: [], count: 0, total: 0 });
+        query = query.eq('destination_id', destinationRow.id);
+      }
+    }
+
+    if (category && typeof category === 'string') {
+      const cleanCategory = category.trim().replace(/[%,_()]/g, '');
+      if (cleanCategory) {
+        let categoryLookup = publicSupabase.from('categories').select('id').eq('status', 'published').limit(1);
+        categoryLookup = categoryLookup.eq('slug', cleanCategory.toLowerCase());
+        let { data: categoryRow, error: categoryError } = await categoryLookup.maybeSingle();
+        if (!categoryRow && !categoryError) {
+          const fallback = await publicSupabase.from('categories').select('id').eq('status', 'published').ilike('name', cleanCategory).limit(1).maybeSingle();
+          categoryRow = fallback.data;
+          categoryError = fallback.error;
+        }
+        if (categoryError) {
+          console.error('Supabase /api/tours category filter error:', categoryError.message);
+          return res.status(503).json({ success: false, error: 'The tour catalogue is temporarily unavailable. Please try again later.', tours: [], count: 0, total: 0 });
+        }
+        if (!categoryRow) return res.json({ success: true, tours: [], count: 0, total: 0 });
+        const { data: categoryAssignments, error: assignmentError } = await publicSupabase
+          .from('tour_categories')
+          .select('tour_id')
+          .eq('category_id', categoryRow.id);
+        if (assignmentError) {
+          console.error('Supabase /api/tours category assignment error:', assignmentError.message);
+          return res.status(503).json({ success: false, error: 'The tour catalogue is temporarily unavailable. Please try again later.', tours: [], count: 0, total: 0 });
+        }
+        const matchingTourIds = [...new Set((categoryAssignments || []).map((row: any) => row.tour_id).filter(Boolean))];
+        if (matchingTourIds.length === 0) return res.json({ success: true, tours: [], count: 0, total: 0 });
+        query = query.in('id', matchingTourIds);
       }
     }
 
@@ -1420,6 +1469,9 @@ app.post('/api/bookings/create', rateLimit(10, 60_000), async (req: Authenticate
   const {
     tourSlug,
     date,
+    departureId,
+    tourLanguage = 'English',
+    customerLocale = 'en',
     guests,
     customer,
     pickupLocationId,
@@ -1444,12 +1496,20 @@ app.post('/api/bookings/create', rateLimit(10, 60_000), async (req: Authenticate
   if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return res.status(400).json({ success: false, error: 'A valid excursion date (YYYY-MM-DD) is required.' });
   }
+  if (typeof departureId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(departureId)) {
+    return res.status(400).json({ success: false, error: 'A confirmed departure time must be selected.' });
+  }
   const parsedDate = new Date(`${date}T00:00:00.000Z`);
   if (Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== date) {
     return res.status(400).json({ success: false, error: 'The excursion date is invalid.' });
   }
-  const todayUtc = new Date().toISOString().slice(0, 10);
-  if (date < todayUtc) {
+  const todayCairo = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Africa/Cairo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
+  if (date < todayCairo) {
     return res.status(400).json({ success: false, error: 'Selected excursion date cannot be in the past.' });
   }
   if (!customer || typeof customer.firstName !== 'string' || !customer.firstName.trim() ||
@@ -1489,7 +1549,7 @@ app.post('/api/bookings/create', rateLimit(10, 60_000), async (req: Authenticate
       global: authorization ? { headers: { Authorization: authorization } } : undefined,
     });
 
-    const { data, error } = await requestClient.rpc('create_booking_atomic', {
+    const { data, error } = await requestClient.rpc('create_booking_atomic_with_departure', {
       p_tour_identifier: tourSlug.trim(),
       p_booking_date: date,
       p_adult_count: adults,
@@ -1512,6 +1572,9 @@ app.post('/api/bookings/create', rateLimit(10, 60_000), async (req: Authenticate
       p_payment_method: paymentMethod,
       p_special_requests: specialRequests || null,
       p_idempotency_key: idempotencyKey,
+      p_tour_language: typeof tourLanguage === 'string' ? tourLanguage : 'English',
+      p_customer_locale: typeof customerLocale === 'string' ? customerLocale : 'en',
+      p_departure_id: departureId,
     });
 
     if (error) {
@@ -1538,6 +1601,8 @@ app.post('/api/bookings/create', rateLimit(10, 60_000), async (req: Authenticate
       idempotencyKey,
       tour: { slug: tourSlug.trim() },
       date,
+      departureId: result.departureId || departureId,
+      departureTime: result.departureTime || null,
       guests: { adults, children, infants, total: adults + children + infants },
       pricing: {
         totalEur: total,
@@ -1593,7 +1658,7 @@ app.all(['/api/bookings/lookup', '/api/booking/lookup'], rateLimit(10, 60_000), 
     if (isStaff) {
       const { data, error } = await serverSupabase
         .from('bookings')
-        .select('id, booking_reference, booking_date, status, payment_status, payment_method, subtotal, extras_total, discount, total, currency, special_requests, customers(*), tours(title, slug, primary_image, duration)')
+        .select('id, booking_reference, booking_date, departure_id, status, payment_status, payment_method, subtotal, extras_total, discount, total, currency, special_requests, customers(*), tours(title, slug, primary_image, duration), departures(start_time,end_time)')
         .eq('booking_reference', cleanRef)
         .maybeSingle();
 
@@ -3998,7 +4063,7 @@ app.all('/api/db/query', rateLimit(60, 60_000), async (req: AuthenticatedRequest
         // Strictly scoped to the authenticated user's ID
         const { data, error } = await serverSupabase
           .from('bookings')
-          .select('id, booking_reference, booking_date, status, payment_status, total, currency, created_at, tours(title, slug, primary_image)')
+          .select('id, booking_reference, booking_date, departure_id, departures(start_time,end_time), status, payment_status, total, currency, created_at, tours(title, slug, primary_image)')
           .eq('user_id', req.user.id)
           .order('created_at', { ascending: false })
           .limit(50);
@@ -4036,7 +4101,7 @@ app.all('/api/db/query', rateLimit(60, 60_000), async (req: AuthenticatedRequest
         if (isStaff) {
           const { data: staffBooking, error: staffError } = await serverSupabase
             .from('bookings')
-            .select('id, booking_reference, booking_date, status, payment_status, payment_method, total, currency, customers(*), tours(*)')
+            .select('id, booking_reference, booking_date, departure_id, departures(start_time,end_time), status, payment_status, payment_method, total, currency, customers(*), tours(*)')
             .eq('booking_reference', reference)
             .maybeSingle();
 

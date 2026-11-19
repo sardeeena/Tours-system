@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import {
   getTodayDepartures,
+  getUnassignedLegacyBookings,
   updateDepartureStatus,
   createDeparture,
   getMaritimeWeather,
@@ -28,6 +29,7 @@ import {
   OperationalDeparture,
   DepartureStatus,
   WeatherInfo,
+  UnassignedLegacyBooking,
 } from '../../../types/operations';
 import { DbVessel, DbGuide } from '../../../types/database';
 import { Tour } from '../../../types';
@@ -43,9 +45,10 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
   const { showToast } = useToast();
   const { hasPermission } = useAuth();
   const [selectedDate, setSelectedDate] = useState<string>(
-    () => new Date().toISOString().split('T')[0]
+    () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo' }).format(new Date())
   );
   const [departures, setDepartures] = useState<OperationalDeparture[]>([]);
+  const [unassignedLegacyBookings, setUnassignedLegacyBookings] = useState<UnassignedLegacyBooking[]>([]);
   const [weather, setWeather] = useState<WeatherInfo | null>(null);
   const [vessels, setVessels] = useState<DbVessel[]>([]);
   const [guides, setGuides] = useState<DbGuide[]>([]);
@@ -68,14 +71,16 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
   const loadData = async () => {
     setLoading(true);
     try {
-      const [deps, wea, ves, gui, loadedTours] = await Promise.all([
+      const [deps, legacy, wea, ves, gui, loadedTours] = await Promise.all([
         getTodayDepartures(selectedDate),
+        getUnassignedLegacyBookings(selectedDate),
         getMaritimeWeather(selectedDate),
         listVessels(),
         listGuides(),
         getPublishedTours(),
       ]);
       setDepartures(deps);
+      setUnassignedLegacyBookings(legacy);
       setWeather(wea);
       setVessels(ves);
       setGuides(gui);
@@ -117,14 +122,27 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
       showToast('Select a real tour and date, then enter the actual start time, end time, and positive capacity.', 'error');
       return;
     }
-    if (newEndTime <= newStartTime) {
-      showToast('End time must be later than start time.', 'error');
-      return;
-    }
-
     const selectedTour = tours.find((tour) => tour.id === newTourId);
     if (!selectedTour) {
       showToast('The selected tour is not available in the live database.', 'error');
+      return;
+    }
+    const unassignedLegacy = unassignedLegacyBookings.find((booking) => booking.tourId === newTourId);
+    if (unassignedLegacy) {
+      showToast(
+        `Cannot create a departure for this tour/date while legacy booking ${unassignedLegacy.bookingReference || unassignedLegacy.id.slice(0, 8)} remains unassigned. Reconcile it first; the existing booking has not been changed.`,
+        'error'
+      );
+      return;
+    }
+
+    const durationHours = Number(selectedTour.durationHours || 0);
+    if (newEndTime === newStartTime && durationHours < 24) {
+      showToast('Equal start and end times require a tour duration of at least 24 hours.', 'error');
+      return;
+    }
+    if (newEndTime < newStartTime && durationHours <= 0) {
+      showToast('An overnight departure requires a configured tour duration.', 'error');
       return;
     }
 
@@ -136,6 +154,7 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
       date: selectedDate,
       start_time: newStartTime,
       end_time: newEndTime,
+      duration_hours: durationHours,
       capacity: newCapacity,
       status: newStatus,
       vessel_id: newVesselId || null,
@@ -228,6 +247,27 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
           </button>}
         </div>
       </div>
+
+      {unassignedLegacyBookings.length > 0 && (
+        <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 space-y-3">
+          <div className="flex items-center gap-2 text-amber-300 font-bold">
+            <AlertTriangle size={18} />
+            Unassigned legacy bookings ({unassignedLegacyBookings.length})
+          </div>
+          <p className="text-sm text-amber-100/80">
+            These existing reservations have no departure assignment. They have not been modified.
+            Creating a departure for the same tour/date is blocked until an operator reconciles them.
+          </p>
+          <ul className="space-y-1 text-sm text-amber-100">
+            {unassignedLegacyBookings.map((booking) => (
+              <li key={booking.id}>
+                <span className="font-mono">{booking.bookingReference || booking.id.slice(0, 8)}</span>
+                {' — '}{booking.tourTitle}{' — '}{booking.guestCount} guests
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Maritime Clearance / Weather Banner */}
       <div className="bg-stone-950 border border-stone-800 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">

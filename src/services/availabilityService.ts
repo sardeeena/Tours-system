@@ -1,5 +1,5 @@
 import { Tour } from '../types';
-import { Availability } from '../types/booking';
+import { Availability, DepartureSlot } from '../types/booking';
 import { APP_CONFIG } from '../config/appConfig';
 import { supabase, isSupabaseConfigured, formatSupabaseError } from './supabaseClient';
 
@@ -9,22 +9,35 @@ import { supabase, isSupabaseConfigured, formatSupabaseError } from './supabaseC
  */
 export function getEarliestSelectableDate(minNoticeHours: number = APP_CONFIG.DEFAULT_MIN_BOOKING_NOTICE_HOURS): string {
   const cutoffTime = new Date(Date.now() + minNoticeHours * 60 * 60 * 1000);
-  const year = cutoffTime.getFullYear();
-  const month = String(cutoffTime.getMonth() + 1).padStart(2, '0');
-  const day = String(cutoffTime.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Africa/Cairo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(cutoffTime);
 }
 
 export function isDateInPast(dateStr: string): boolean {
   if (!dateStr) return true;
-  const now = new Date();
-  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const todayStr = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Africa/Cairo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
   return dateStr < todayStr;
 }
 
 export function meetsNoticeRequirement(dateStr: string, minNoticeHours: number): boolean {
   if (!dateStr) return false;
   return dateStr >= getEarliestSelectableDate(minNoticeHours);
+}
+
+function getTourMinimumNoticeHours(tour: Tour): number {
+  const configured = Number(tour.minimumBookingNoticeHours);
+  return Number.isFinite(configured)
+    ? Math.max(0, configured)
+    : APP_CONFIG.DEFAULT_MIN_BOOKING_NOTICE_HOURS;
 }
 
 function unavailableAvailability(tour: Tour, selectedDate: string, isPastDate: boolean, meetsMinimumNotice: boolean): Availability {
@@ -38,7 +51,7 @@ function unavailableAvailability(tour: Tour, selectedDate: string, isPastDate: b
     isSoldOut: false,
     isPastDate,
     meetsMinimumNotice,
-    minNoticeHours: APP_CONFIG.DEFAULT_MIN_BOOKING_NOTICE_HOURS,
+    minNoticeHours: getTourMinimumNoticeHours(tour),
     status: 'unavailable',
   };
 }
@@ -52,7 +65,7 @@ function unavailableAvailability(tour: Tour, selectedDate: string, isPastDate: b
  * Supabase schedule RPC.
  */
 export function getTourAvailability(tour: Tour, selectedDate: string): Availability {
-  const minNoticeHours = APP_CONFIG.DEFAULT_MIN_BOOKING_NOTICE_HOURS;
+  const minNoticeHours = getTourMinimumNoticeHours(tour);
   const isPast = isDateInPast(selectedDate);
   const meetsNotice = meetsNoticeRequirement(selectedDate, minNoticeHours);
 
@@ -164,7 +177,45 @@ export async function getTourAvailabilityFromServer(
     isSoldOut: status === 'sold_out',
     isPastDate: false,
     meetsMinimumNotice: true,
-    minNoticeHours: APP_CONFIG.DEFAULT_MIN_BOOKING_NOTICE_HOURS,
+    minNoticeHours: getTourMinimumNoticeHours(tour),
     status,
   };
+}
+
+
+/**
+ * Returns the real confirmed departure slots for one date. Capacity and
+ * minimum-notice eligibility are evaluated independently for every slot.
+ */
+export async function getTourDepartureSlotsFromServer(
+  tour: Tour,
+  selectedDate: string
+): Promise<DepartureSlot[]> {
+  if (!selectedDate || isDateInPast(selectedDate)) return [];
+
+  if (!isSupabaseConfigured()) {
+    if (import.meta.env.DEV) return [];
+    throw new Error('Live departure times are temporarily unavailable.');
+  }
+
+  const { data, error } = await supabase.rpc('get_tour_departure_slots', {
+    p_tour_identifier: tour.id,
+    p_date: selectedDate,
+  });
+
+  if (error) throw new Error(formatSupabaseError(error));
+
+  return (Array.isArray(data) ? data : []).map((slot: any) => ({
+    departureId: String(slot.departure_id),
+    tourId: String(slot.tour_id),
+    date: String(slot.date),
+    startTime: String(slot.start_time || ''),
+    endTime: String(slot.end_time || ''),
+    status: slot.status,
+    capacity: Math.max(0, Number(slot.capacity) || 0),
+    bookedCount: Math.max(0, Number(slot.booked_count) || 0),
+    remainingCapacity: Math.max(0, Number(slot.remaining_capacity) || 0),
+    isAvailable: slot.is_available === true,
+    minimumNoticeHours: Math.max(0, Number(slot.minimum_notice_hours) || 0),
+  }));
 }

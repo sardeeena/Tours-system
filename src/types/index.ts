@@ -39,6 +39,7 @@ export interface Tour {
   fullDescription: string;
   highlights: string[];
   itinerary: ItineraryItem[];
+  faqs?: Array<{ question: string; answer: string }>;
   included: string[];
   excluded: string[];
   whatToBring: string[];
@@ -47,6 +48,7 @@ export interface Tour {
   priceEur: number;
   childPriceEur?: number;
   privatePriceEur?: number;
+  minimumBookingNoticeHours?: number;
   rating: number;
   reviewCount: number;
   ratingBreakdown?: { 5: number; 4: number; 3: number; 2: number; 1: number };

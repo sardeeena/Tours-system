@@ -70,14 +70,23 @@ export function calculateBookingPrice({
   const infants = Math.max(0, guests.infants || 0);
   const payingPassengers = adults + children;
 
+  // Private tour pricing is a per-person rate for every paying passenger.
+  // Infants retain the existing free policy; shared tours keep their own child rate.
+  const isPrivateTour = tour.tourType === 'Private';
+  const privateRate = Number(tour.privatePriceEur);
+  if (isPrivateTour && (!Number.isFinite(privateRate) || privateRate <= 0)) {
+    throw new Error('The private per-person rate is not configured for this excursion.');
+  }
+
   // 1. Adult Base Pricing
-  const basePricePerAdultEur = tour.priceEur;
+  const basePricePerAdultEur = isPrivateTour ? privateRate : tour.priceEur;
   const adultSubtotalEur = adults * basePricePerAdultEur;
 
-  // 2. Child Pricing (use tour's configured child price or rule of 50%)
-  const basePricePerChildEur = 
-    typeof tour.childPriceEur === 'number' 
-      ? tour.childPriceEur 
+  // 2. Child Pricing
+  const basePricePerChildEur = isPrivateTour
+    ? privateRate
+    : typeof tour.childPriceEur === 'number'
+      ? tour.childPriceEur
       : Math.round(tour.priceEur * 0.5);
   const childSubtotalEur = children * basePricePerChildEur;
 

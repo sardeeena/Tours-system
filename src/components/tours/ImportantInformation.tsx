@@ -49,9 +49,6 @@ export const ImportantInformation: React.FC<ImportantInformationProps> = ({ tour
           <p className="text-stone-600 leading-relaxed mb-2">
             {tour.pickupInfo}
           </p>
-          <div className="bg-white/80 p-2 rounded border border-stone-200 text-[11px] text-stone-500">
-            Please be in your hotel lobby 10 minutes prior to scheduled pickup time. Your driver or coordinator will call or WhatsApp upon arrival.
-          </div>
         </div>
 
         {/* Cancellation Policy */}
@@ -63,9 +60,6 @@ export const ImportantInformation: React.FC<ImportantInformationProps> = ({ tour
           <p className="text-stone-600 leading-relaxed mb-2">
             {tour.cancellationPolicy}
           </p>
-          <span className="text-[11px] text-emerald-700 font-semibold block">
-            100% weather refund guarantee: If the Egyptian Coast Guard restricts maritime navigation due to heavy winds, trips are rescheduled or fully refunded immediately.
-          </span>
         </div>
 
         {/* Health, Safety & Restrictions */}

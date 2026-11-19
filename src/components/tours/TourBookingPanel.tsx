@@ -35,9 +35,11 @@ export const TourBookingPanel: React.FC<TourBookingPanelProps> = ({
     );
   };
 
-  // Price calculations
-  const adultSubtotal = adults * tour.priceEur;
-  const childSubtotal = children * (tour.childPriceEur || tour.priceEur * 0.5);
+  // Private tours use one configured per-person rate for all paying guests.
+  const adultRate = tour.tourType === 'Private' ? (Number(tour.privatePriceEur) || 0) : tour.priceEur;
+  const childRate = tour.tourType === 'Private' ? adultRate : (tour.childPriceEur || tour.priceEur * 0.5);
+  const adultSubtotal = adults * adultRate;
+  const childSubtotal = children * childRate;
   
   const extrasSubtotal = (tour.optionalExtras || []).reduce((acc, extra) => {
     return selectedExtras.includes(extra.id) ? acc + extra.priceEur : acc;
@@ -67,12 +69,12 @@ export const TourBookingPanel: React.FC<TourBookingPanelProps> = ({
             <span className="text-[10px] uppercase font-bold text-stone-600 block">From</span>
             <div className="flex items-baseline space-x-1">
               <span className="font-display text-2xl sm:text-3xl font-bold text-[#0E1B2A]">
-                {formatPrice(tour.priceEur, currency)}
+                {formatPrice(adultRate, currency)}
               </span>
               <span className="text-xs text-stone-600 font-medium">/ person</span>
             </div>
           </div>
-          {tour.childPriceEur && (
+          {tour.tourType !== 'Private' && tour.childPriceEur && (
             <span className="text-[11px] text-stone-500">
               Child: {formatPrice(tour.childPriceEur, currency)}
             </span>
@@ -222,7 +224,7 @@ export const TourBookingPanel: React.FC<TourBookingPanelProps> = ({
         {/* Price Breakdown */}
         <div className="p-3.5 bg-[#FAF8F5] border border-[#E8E3DA] rounded space-y-1.5 text-xs">
           <div className="flex justify-between text-stone-600">
-            <span>{adults} Adult(s) × {formatPrice(tour.priceEur, currency)}:</span>
+            <span>{adults} Adult(s) × {formatPrice(adultRate, currency)}:</span>
             <span className="font-semibold">{formatPrice(adultSubtotal, currency)}</span>
           </div>
 

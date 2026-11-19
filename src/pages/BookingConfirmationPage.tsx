@@ -181,9 +181,12 @@ export const BookingConfirmationPage: React.FC<BookingConfirmationPageProps> = (
             <div className="p-3.5 bg-stone-50 border border-stone-200 rounded space-y-1">
               <span className="text-[10px] uppercase font-bold text-stone-400 block">Date of Excursion</span>
               <span className="font-bold text-stone-900 text-sm">{booking.date}</span>
-              <span className="text-[11px] text-stone-500 block">
-                Vessel departure approx. 08:30 – 09:00 AM
-              </span>
+              {booking.departureTime && (
+                <>
+                  <span className="text-[10px] uppercase font-bold text-stone-400 block pt-2">Departure time</span>
+                  <span className="font-bold text-stone-900 text-sm">{booking.departureTime}</span>
+                </>
+              )}
             </div>
 
             <div className="p-3.5 bg-stone-50 border border-stone-200 rounded space-y-1">
@@ -192,9 +195,6 @@ export const BookingConfirmationPage: React.FC<BookingConfirmationPageProps> = (
                 {booking.guests.adults} Adult(s)
                 {booking.guests.children > 0 && `, ${booking.guests.children} Child(ren)`}
                 {booking.guests.infants > 0 && `, ${booking.guests.infants} Infant(s)`}
-              </span>
-              <span className="text-[11px] text-stone-500 block">
-                Marine park admission pass included
               </span>
             </div>
 

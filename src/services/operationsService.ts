@@ -17,6 +17,7 @@ import {
   AssignmentConflict,
   DepartureEntity,
   WeatherInfo,
+  UnassignedLegacyBooking,
 } from '../types/operations';
 import { bookingRepository } from './bookingRepository';
 import { getPublishedTours } from './tourService';
@@ -300,17 +301,18 @@ export async function getTodayDepartures(dateTarget?: string): Promise<Operation
 
   const groupedBookings = new Map<string, typeof dayBookings>();
   dayBookings.forEach((booking) => {
-    const time = normalizeDepartureTime((booking as any).departureTime);
-    const key = `${booking.tourId}_${time}`;
-    const group = groupedBookings.get(key) || [];
+    const departureId = String((booking as any).departureId || '').trim();
+    // Legacy bookings without a departure assignment remain visible in the
+    // legacy booking list; never guess which new slot they belong to.
+    if (!departureId) return;
+    const group = groupedBookings.get(departureId) || [];
     group.push(booking);
-    groupedBookings.set(key, group);
+    groupedBookings.set(departureId, group);
   });
 
   const departures: OperationalDeparture[] = (dbDepartures || []).map((dbDep: any) => {
     const startTime = normalizeDepartureTime(dbDep.start_time);
-    const key = `${dbDep.tour_id}_${startTime}`;
-    const bookingsForDep = groupedBookings.get(key) || [];
+    const bookingsForDep = groupedBookings.get(String(dbDep.id)) || [];
     const tour = dynamicTours.find((item) => item.id === dbDep.tour_id);
     if (!tour) throw new Error(`Departure ${dbDep.id} references a tour that is not currently published.`);
     const vessel = vessels.find((item) => item.id === dbDep.vessel_id);
@@ -406,6 +408,37 @@ export async function getTodayDepartures(dateTarget?: string): Promise<Operation
 }
 
 /**
+ * Lists active legacy bookings for a date that have no departure assignment.
+ * They are intentionally not attached to any new slot; operations must
+ * reconcile them before creating departures for the same tour/date.
+ */
+export async function getUnassignedLegacyBookings(date: string): Promise<UnassignedLegacyBooking[]> {
+  if (!isSupabaseConfigured()) {
+    if (import.meta.env?.DEV) return [];
+    throw new Error('Supabase is not configured; legacy booking assignments cannot be verified.');
+  }
+
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('id,booking_reference,tour_id,adult_count,child_count,infant_count,status,tours(title)')
+    .eq('booking_date', date)
+    .is('departure_id', null)
+    .neq('status', 'cancelled')
+    .order('created_at', { ascending: true });
+
+  if (error) throw new Error(formatSupabaseError(error));
+
+  return (data || []).map((row: any) => ({
+    id: String(row.id),
+    bookingReference: String(row.booking_reference || ''),
+    tourId: String(row.tour_id),
+    tourTitle: String(row.tours?.title || 'Tour title unavailable'),
+    guestCount: (Number(row.adult_count) || 0) + (Number(row.child_count) || 0) + (Number(row.infant_count) || 0),
+    status: String(row.status || 'pending'),
+  }));
+}
+
+/**
  * Create or save a scheduled tour departure in Supabase
  */
 export async function createDeparture(data: Partial<DepartureEntity>): Promise<{
@@ -421,8 +454,12 @@ export async function createDeparture(data: Partial<DepartureEntity>): Promise<{
   if (!data.tour_id || !data.date || !startTime || !endTime || capacity <= 0) {
     return { success: false, error: 'Tour, date, actual start time, end time, and positive capacity are required.' };
   }
-  if (endTime <= startTime) {
-    return { success: false, error: 'End time must be later than the start time.' };
+  const durationHours = Math.max(0, Number((data as any).duration_hours) || 0);
+  if (endTime === startTime && durationHours < 24) {
+    return { success: false, error: 'Equal start and end times require a tour duration of at least 24 hours.' };
+  }
+  if (endTime < startTime && durationHours <= 0) {
+    return { success: false, error: 'An overnight departure requires a configured tour duration.' };
   }
   if (bookedPassengers > capacity) {
     return { success: false, error: 'Booked passengers cannot exceed the configured departure capacity.' };
@@ -472,6 +509,30 @@ export async function createDeparture(data: Partial<DepartureEntity>): Promise<{
       return { success: true, departure: newDeparture };
     }
     return { success: false, error: 'Supabase is not configured; the departure was not saved.' };
+  }
+
+  try {
+    const conflicts = await detectAssignmentConflicts({
+      departureId: data.id,
+      tourId: newDeparture.tour_id,
+      date: newDeparture.date,
+      startTime: newDeparture.start_time,
+      endTime: newDeparture.end_time,
+      vesselId: newDeparture.vessel_id,
+      guideId: newDeparture.guide_id,
+      driverId: newDeparture.driver_id,
+      bookedPassengers,
+    });
+    if (conflicts.length > 0) {
+      return { success: false, error: conflicts[0].message };
+    }
+  } catch (conflictError) {
+    return {
+      success: false,
+      error: conflictError instanceof Error
+        ? conflictError.message
+        : 'Resource conflicts could not be verified; no departure was saved.',
+    };
   }
 
   const { data: rpcData, error: rpcError } = await supabase.rpc('upsert_departure_with_availability', {
@@ -543,23 +604,12 @@ export async function updateDepartureStatus(
 
   if (departureError) return false;
 
-  const availabilityStatus =
-    normalized === 'cancelled' || normalized === 'completed' || normalized === 'boarding' || normalized === 'in_progress'
-      ? 'unavailable'
-      : Number(departure.booked_passengers || 0) >= Number(departure.capacity || 0)
-        ? 'sold_out'
-        : 'available';
-  const { error: availabilityError } = await supabase
-    .from('tour_availability')
-    .update({ status: availabilityStatus, updated_at: new Date().toISOString() })
-    .eq('departure_id', departureId);
-  if (availabilityError) return false;
-
+  // The database trigger recalculates the daily summary from all slots.
+  // Only bookings assigned to this exact departure may inherit its status.
   const { error: bookingError } = await supabase
     .from('bookings')
     .update({ operational_status: normalized })
-    .eq('tour_id', departure.tour_id)
-    .eq('booking_date', departure.date)
+    .eq('departure_id', departureId)
     .neq('status', 'cancelled');
 
   if (bookingError) return false;
@@ -574,8 +624,8 @@ function computeEndTime(startTime: string, durationHours?: number): string {
   const parts = (startTime || '08:30').split(':').map(Number);
   const dur = durationHours && durationHours > 0 ? durationHours : 8;
   const startMins = (parts[0] || 0) * 60 + (parts[1] || 0);
-  const totalMins = startMins + Math.round(dur * 60);
-  const endH = Math.min(23, Math.floor(totalMins / 60));
+  const totalMins = (startMins + Math.round(dur * 60)) % (24 * 60);
+  const endH = Math.floor(totalMins / 60);
   const endM = totalMins % 60;
   return `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
 }
@@ -599,13 +649,17 @@ function isTimeConflicting(
 
   const sA = toMins(startA, 510);
   const durMinsA = durA && durA > 0 ? Math.round(durA * 60) : 480;
-  const eA = endA ? toMins(endA, sA + durMinsA) : sA + durMinsA;
+  let eA = endA ? toMins(endA, sA + durMinsA) : sA + durMinsA;
+  if (eA <= sA) eA += 24 * 60;
 
   const sB = toMins(startB, 510);
   const durMinsB = durB && durB > 0 ? Math.round(durB * 60) : 480;
-  const eB = endB ? toMins(endB, sB + durMinsB) : sB + durMinsB;
+  let eB = endB ? toMins(endB, sB + durMinsB) : sB + durMinsB;
+  if (eB <= sB) eB += 24 * 60;
 
-  return Math.max(sA, sB) < Math.min(eA, eB);
+  return [-1440, 0, 1440].some((shift) =>
+    Math.max(sA, sB + shift) < Math.min(eA, eB + shift)
+  );
 }
 
 /**
@@ -617,6 +671,7 @@ export async function detectAssignmentConflicts(params: {
   tourId: string;
   date: string;
   startTime: string;
+  endTime?: string;
   vesselId?: string | null;
   guideId?: string | null;
   captainId?: string | null;
@@ -632,13 +687,13 @@ export async function detectAssignmentConflicts(params: {
     getPublishedTours(),
   ]);
 
-  const targetDeparture = departures.find(
-    (d) => d.id === params.departureId || (d.tourId === params.tourId && d.departureTime === params.startTime)
-  );
+  const targetDeparture = params.departureId
+    ? departures.find((d) => d.id === params.departureId)
+    : undefined;
   const targetTour = dynamicTours.find((t) => t.id === params.tourId);
   if (!targetTour) throw new Error('The selected tour is not currently published. Refresh the catalogue before assigning resources.');
   const targetDuration = targetTour.durationHours;
-  const targetEndTime = targetDeparture?.endTime || (targetDuration ? computeEndTime(params.startTime, targetDuration) : null);
+  const targetEndTime = params.endTime || targetDeparture?.endTime || (targetDuration ? computeEndTime(params.startTime, targetDuration) : null);
   if (!targetEndTime) throw new Error('A verified tour duration or actual departure end time is required to check resource conflicts.');
 
   const passengerCount = params.bookedPassengers ?? targetDeparture?.passengerCount ?? 0;

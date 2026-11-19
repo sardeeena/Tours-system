@@ -120,6 +120,24 @@ SELECT id, CURRENT_DATE + 45, 10, 0, 'available'
 FROM public.tours
 WHERE slug IN ('pgtap-strict-pickup-unmapped', 'pgtap-strict-pickup-mapped');
 
+INSERT INTO public.departures (
+  tour_id, date, start_time, end_time, capacity, booked_passengers, remaining_capacity, status
+)
+SELECT id, CURRENT_DATE + 45, '09:00', '12:00', 10, 0, 10, 'confirmed'
+FROM public.tours
+WHERE slug IN ('pgtap-strict-pickup-unmapped', 'pgtap-strict-pickup-mapped');
+
+UPDATE public.tour_availability AS availability
+SET departure_id = departure.id
+FROM public.departures AS departure
+WHERE availability.tour_id = departure.tour_id
+  AND availability.date = departure.date
+  AND departure.date = CURRENT_DATE + 45
+  AND departure.tour_id IN (
+    SELECT id FROM public.tours
+    WHERE slug IN ('pgtap-strict-pickup-unmapped', 'pgtap-strict-pickup-mapped')
+  );
+
 CREATE TEMP TABLE strict_pickup_test_results (
   case_name TEXT PRIMARY KEY,
   result JSONB NOT NULL
