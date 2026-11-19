@@ -78,18 +78,18 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
           <div>
             <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#0A6C74] dark:text-[#60C3CC] mb-2">
               <span className="w-5 h-0.5 bg-[#0A6C74] dark:bg-[#60C3CC] rounded-full"></span>
-              <span>Red Sea Coastal Regions</span>
+              <span>Explore Egypt</span>
             </div>
             <h2 className="font-display text-2xl sm:text-4xl text-[#0E1B2A] dark:text-white tracking-tight">
               Destinations We Serve
             </h2>
             <p className="text-stone-600 dark:text-slate-300 text-sm sm:text-base mt-2 max-w-xl leading-relaxed">
-              Daily scheduled boat departures and door-to-door hotel transfers covering the premier coastal hubs of the Egyptian Red Sea.
+              Discover excursions across Egypt’s Red Sea coast and historic destinations. Each excursion page explains its own departure, transfer and booking arrangements.
             </p>
           </div>
           <div className="text-xs text-stone-500 dark:text-slate-300 flex items-center bg-white dark:bg-[#132235] px-3.5 py-2 rounded-xl border border-stone-200/80 dark:border-slate-700 shadow-2xs">
             <Navigation className="w-4 h-4 text-[#0A6C74] dark:text-[#60C3CC] mr-2 shrink-0" />
-            <span>Complimentary hotel pickup from all main resorts</span>
+            <span>Check pickup availability and any supplements on each excursion</span>
           </div>
         </div>
 
