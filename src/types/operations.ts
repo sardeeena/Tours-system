@@ -160,6 +160,7 @@ export interface PickupScheduleItem {
 export interface PassengerManifestItem {
   id: string;
   bookingId: string;
+  passengerIndex: number;
   bookingReference: string;
   tourId: string;
   tourTitle: string;
