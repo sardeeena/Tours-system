@@ -107,6 +107,7 @@ export const FinanceDashboardView: React.FC<FinanceDashboardViewProps> = ({
                 <th className="py-3 px-3.5">Month</th>
                 <th className="py-3 px-3.5 text-center">Bookings Count</th>
                 <th className="py-3 px-3.5 text-right">Gross Contracted</th>
+                <th className="py-3 px-3.5 text-right">Discounts</th>
                 <th className="py-3 px-3.5 text-right">Payments Collected</th>
                 <th className="py-3 px-3.5 text-right">Refunds Processed</th>
                 <th className="py-3 px-3.5 text-right">Net Revenue</th>
@@ -119,6 +120,9 @@ export const FinanceDashboardView: React.FC<FinanceDashboardViewProps> = ({
                   <td className="py-3 px-3.5 text-center text-stone-600 dark:text-stone-300">{m.bookingsCount}</td>
                   <td className="py-3 px-3.5 text-right font-mono text-[#0E1B2A] dark:text-white">
                     €{m.grossEur.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </td>
+                  <td className="py-3 px-3.5 text-right font-mono text-amber-600 dark:text-amber-400">
+                    €{m.discountsEur.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </td>
                   <td className="py-3 px-3.5 text-right font-mono text-emerald-600 dark:text-emerald-400">
                     €{m.paidEur.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
