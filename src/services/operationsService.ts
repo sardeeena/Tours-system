@@ -702,6 +702,7 @@ export async function detectAssignmentConflicts(params: {
   // 1. Vessel Checks
   if (params.vesselId) {
     const vessel = vessels.find((v) => v.id === params.vesselId);
+    if (!vessel) throw new Error('The selected vessel could not be verified in the live fleet registry; assignment is blocked.');
     if (vessel) {
       // Check active status
       if (!vessel.is_active || vessel.status === 'maintenance' || vessel.status === 'dry_dock' || vessel.status === 'inactive') {
@@ -759,7 +760,16 @@ export async function detectAssignmentConflicts(params: {
   // 2. Guide Checks
   if (params.guideId) {
     const guide = guides.find((g) => g.id === params.guideId);
+    if (!guide) throw new Error('The selected tour guide could not be verified in the live staff registry; assignment is blocked.');
     if (guide) {
+      if (!guide.is_active || ['day_off', 'leave', 'unavailable', 'inactive'].includes(String(guide.availability_status || '').toLowerCase())) {
+        conflicts.push({
+          type: 'guide_unavailable',
+          entityId: guide.id,
+          entityName: guide.full_name,
+          message: `Tour Guide "${guide.full_name}" is not currently available for assignment.`,
+        });
+      }
       const busyDep = departures.find((d) => {
         if (d.id === params.departureId || d.guideId !== params.guideId || d.status === 'cancelled') {
           return false;
@@ -795,7 +805,16 @@ export async function detectAssignmentConflicts(params: {
   // 3. Captain Checks
   if (params.captainId) {
     const captain = guides.find((g) => g.id === params.captainId);
+    if (!captain) throw new Error('The selected captain could not be verified in the live staff registry; assignment is blocked.');
     if (captain) {
+      if (!captain.is_active || ['day_off', 'leave', 'unavailable', 'inactive'].includes(String(captain.availability_status || '').toLowerCase())) {
+        conflicts.push({
+          type: 'captain_unavailable',
+          entityId: captain.id,
+          entityName: captain.full_name,
+          message: `Captain "${captain.full_name}" is not currently available for assignment.`,
+        });
+      }
       const busyDep = departures.find((d) => {
         if (
           d.id === params.departureId ||
@@ -835,7 +854,16 @@ export async function detectAssignmentConflicts(params: {
   // 4. Driver Checks
   if (params.driverId) {
     const driver = guides.find((g) => g.id === params.driverId);
+    if (!driver) throw new Error('The selected transfer driver could not be verified in the live staff registry; assignment is blocked.');
     if (driver) {
+      if (!driver.is_active || ['day_off', 'leave', 'unavailable', 'inactive'].includes(String(driver.availability_status || '').toLowerCase())) {
+        conflicts.push({
+          type: 'driver_unavailable',
+          entityId: driver.id,
+          entityName: driver.full_name,
+          message: `Transfer Driver "${driver.full_name}" is not currently available for assignment.`,
+        });
+      }
       const busyDep = departures.find((d) => {
         if (d.id === params.departureId || d.driverId !== params.driverId || d.status === 'cancelled') {
           return false;
