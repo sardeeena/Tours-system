@@ -124,6 +124,7 @@ assert.doesNotMatch(server, /Hurghada New Marina, Berth B-14/, 'Homepage Markdow
 assert.ok(server.includes('Starting price: ${price}'), 'Homepage Markdown response exposes verified published tour prices');
 assert.doesNotMatch(schema, /aggregateRating|reviewRating|openingHoursSpecification|priceRange|geo:/, 'Schema does not invent reviews, hours, prices or geographic coordinates');
 assert.doesNotMatch(schema, /'@type': 'Product'/, 'Excursion TouristTrip schema is not misclassified as a retail Product or merchant listing');
+assert.doesNotMatch(seoConfig, /'@type': 'Product'|'@type': 'Offer'|'@type': 'AggregateRating'/, 'Client-side tour and destination JSON-LD does not emit retail Product, Offer or rating markup');
 assert.match(adminSeo, /contentLength >= 650/, 'Admin destination indexability threshold matches the public renderer and sitemap');
 assert.doesNotMatch(adminSeo, /contentLength >= 300/, 'Admin does not mark thin destinations indexable below the public threshold');
 assert.match(destinationDetail, /RED_SEA_DESTINATION_SLUGS/, 'Destination detail pages use a destination-aware geographic label');
