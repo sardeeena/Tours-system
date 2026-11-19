@@ -64,6 +64,19 @@ INSERT INTO public.tour_availability (tour_id, date, max_capacity, booked_count,
 SELECT tour_id, test_date, 2, 0, 'available'
 FROM booking_availability_test_context;
 
+INSERT INTO public.departures (
+  tour_id, date, start_time, end_time, capacity, booked_passengers, remaining_capacity, status
+)
+SELECT tour_id, test_date, '09:00', '12:00', 2, 0, 2, 'confirmed'
+FROM booking_availability_test_context;
+
+UPDATE public.tour_availability AS availability
+SET departure_id = departure.id
+FROM public.departures AS departure
+JOIN booking_availability_test_context AS context
+  ON context.tour_id = departure.tour_id AND context.test_date = departure.date
+WHERE availability.tour_id = context.tour_id AND availability.date = context.test_date;
+
 SELECT is(
   (SELECT is_available
    FROM public.get_tour_availability_schedule(
