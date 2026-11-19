@@ -25,6 +25,7 @@ import { Tour } from '../../../types';
 import { ALL_TOURS } from '../../../data/toursData';
 import { getPublishedTours } from '../../../services/tourService';
 import { useToast } from '../../../contexts/ToastContext';
+import { AdminLoadError } from '../AdminLoadError';
 
 type ReportTab =
   | 'by_date'
@@ -50,9 +51,11 @@ export const FinanceReports: React.FC = () => {
   const [payments, setPayments] = useState<FinancePayment[]>([]);
   const [tours, setTours] = useState<Tour[]>(ALL_TOURS);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const [rData, bData, pData, loadedTours] = await Promise.all([
         getFinancialReports(
@@ -70,6 +73,7 @@ export const FinanceReports: React.FC = () => {
         setTours(loadedTours);
       }
     } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'Financial reports could not be loaded.');
       console.warn('Failed to load financial reports:', err);
     } finally {
       setLoading(false);
@@ -208,6 +212,7 @@ export const FinanceReports: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
