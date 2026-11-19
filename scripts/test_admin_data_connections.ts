@@ -116,6 +116,31 @@ assert.match(assignmentsUi, /conflictCheckError/, 'Assignment UI must display co
 assert.match(assignmentsUi, /if \(validatingConflicts \|\| conflictCheckError \|\| preSaveConflicts\.length > 0\)/, 'Assignment submit handler must fail closed until conflict checks pass');
 assert.match(assignmentsUi, /disabled=\{validatingConflicts \|\| Boolean\(conflictCheckError\) \|\| preSaveConflicts\.length > 0\}/, 'Assignment button must be disabled for conflicts or failed verification');
 
+const vesselSave = section(operations, 'export async function saveVessel(', 'export async function deleteGuide(');
+assert.match(vesselSave, /vessel\.is_active === true \? 'active' : 'inactive'/, 'New vessels default to inactive unless explicitly activated');
+assert.match(vesselSave, /verified vessel registration number/, 'Vessel saves require a real registration number');
+assert.match(vesselSave, /verified home port or marina/, 'Vessel saves require a real home port');
+assert.match(vesselSave, /crew capacity is required/, 'Vessel saves require a verified crew capacity');
+assert.match(vesselSave, /unexpired safety inspection date/, 'Active vessels require a current safety inspection');
+const vesselDelete = section(operations, 'export async function deleteVessel(', '// ==============================================================================\n// 6. GUIDES');
+assert.match(vesselDelete, /from\('departures'\)[\s\S]*?count: 'exact'/, 'Vessel deletion must check departure history first');
+assert.match(vesselDelete, /Mark it inactive or under maintenance/, 'Vessels with departure history must be retained');
+
+const availabilityWrite = section(operations, 'export async function updateAvailabilitySlot(', 'export async function setBlackoutDate(');
+assert.match(availabilityWrite, /maxCapacity < bookedCount/, 'Availability capacity cannot be reduced below bookings');
+assert.match(availabilityWrite, /status === 'unavailable'[\s\S]*?verified operational reason/, 'Availability closures require a reason');
+assert.match(availabilityWrite, /\.select\('tour_id'\)[\s\S]*?\.single\(\)/, 'Availability writes must confirm a persisted row');
+const blackoutWrite = section(operations, 'export async function setBlackoutDate(', '// ==============================================================================\n// 8. WEATHER');
+assert.match(blackoutWrite, /if \(isBlackout && !notes\?\.trim\(\)\)/, 'Blackout dates require an actual operational reason');
+assert.match(blackoutWrite, /\.select\('tour_id'\)[\s\S]*?\.single\(\)/, 'Blackout writes must confirm a persisted row');
+
+const vesselUi = read('src/components/admin/operations/OperationsVessels.tsx');
+assert.doesNotMatch(vesselUi, /port_marina: 'Hurghada Marina'|passenger_capacity: 35|crew_capacity: 4|year_built: 2022|safety_inspection_expiry: '2027-12-31'/, 'New vessel forms must not prefill invented operational facts');
+assert.match(vesselUi, /active vessel must have a verified safety inspection expiry date/, 'Vessel UI must require safety verification before activation');
+const availabilityUi = read('src/components/admin/operations/OperationsAvailability.tsx');
+assert.match(availabilityUi, /setBlackoutNotes\(''\)/, 'Blackout form must start without a fabricated reason');
+assert.match(availabilityUi, /verified operational reason for this blackout date/, 'Blackout form must require a real reason');
+
 const loadErrorComponent = read('src/components/admin/AdminLoadError.tsx');
 assert.match(loadErrorComponent, /role="alert"/, 'Shared admin load error must be announced accessibly');
 assert.match(loadErrorComponent, /onRetry/, 'Shared admin load error must provide a working retry action');
