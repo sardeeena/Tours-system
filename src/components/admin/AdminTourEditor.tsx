@@ -154,6 +154,8 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
   const [exclusions, setExclusions] = useState<string[]>([]);
   const [itinerary, setItinerary] = useState<Array<{ time: string; title: string; description: string }>>([]);
   const [faqs, setFaqs] = useState<Array<{ question: string; answer: string }>>([]);
+  const [whatToBring, setWhatToBring] = useState<string[]>([]);
+  const [importantInformation, setImportantInformation] = useState<string[]>([]);
   const [images, setImages] = useState<any[]>([]);
   const [videos, setVideos] = useState<any[]>([]);
   const [selectedPickupIds, setSelectedPickupIds] = useState<string[]>([]);
@@ -209,11 +211,13 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
               })) || []
             );
             setFaqs(
-              fullTour.faqs?.map((f) => ({
+              fullTour.faqs?.filter((f) => f.section === 'faq').map((f) => ({
                 question: f.question,
                 answer: f.answer,
               })) || []
             );
+            setWhatToBring(fullTour.faqs?.filter((f) => f.section === 'what_to_bring').map((f) => f.answer) || []);
+            setImportantInformation(fullTour.faqs?.filter((f) => f.section === 'important_information').map((f) => f.answer) || []);
             setImages(fullTour.images || []);
             setVideos(fullTour.videos || []);
             setSelectedPickupIds(fullTour.pickup_locations?.map((p) => p.id) || []);
@@ -322,6 +326,8 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
         exclusions,
         itinerary,
         faqs,
+        whatToBring,
+        importantInformation,
         images,
         videos,
         pickupLocationIds: selectedPickupIds,
@@ -749,6 +755,29 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
               placeholder="Describe the entire experience, maritime sights, coral gardens, and onboard amenities..."
               className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-xs text-white focus:outline-none focus:border-[#0A6C74]"
             />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-semibold text-stone-300 block mb-1">What to Bring (one item per line)</label>
+              <textarea
+                rows={5}
+                value={whatToBring.join('\n')}
+                onChange={(e) => { setWhatToBring(e.target.value.split('\n').map((item) => item.trim()).filter(Boolean)); setHasUnsavedChanges(true); }}
+                placeholder="Add only operator-confirmed items travellers should bring."
+                className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-xs text-white focus:outline-none focus:border-[#0A6C74]"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-stone-300 block mb-1">Important Information & Safety (one item per line)</label>
+              <textarea
+                rows={5}
+                value={importantInformation.join('\n')}
+                onChange={(e) => { setImportantInformation(e.target.value.split('\n').map((item) => item.trim()).filter(Boolean)); setHasUnsavedChanges(true); }}
+                placeholder="Add verified age, health, safety and operating restrictions."
+                className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-xs text-white focus:outline-none focus:border-[#0A6C74]"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
