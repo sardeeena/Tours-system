@@ -682,7 +682,6 @@ export const CrmCustomersManager: React.FC = () => {
                           ))
                         )}
                       </div>
-</div>
                     </div>
                   )}
 
