@@ -200,6 +200,8 @@ export interface DbTourAvailability {
   max_capacity: number;
   booked_count: number;
   notes: string | null;
+  departure_id?: string | null;
+  is_blackout: boolean;
   created_at: string;
   updated_at: string;
 }
