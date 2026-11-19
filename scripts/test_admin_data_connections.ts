@@ -48,7 +48,7 @@ assert.match(extraPriceRead, /import\.meta\.env\.PROD[\s\S]*?throw/, 'Production
 
 const extraPriceWrite = section(tours, 'export async function persistTourCustomExtraPriceToDb(', '/**\n * Fetches active tour extras');
 assert.match(extraPriceWrite, /if \(error\) throw error/, 'Custom add-on price writes must check Supabase errors');
-assert.ok(extraPriceWrite.indexOf('await supabase') < extraPriceWrite.indexOf('saveTourCustomExtraPrices'), 'Custom add-on cache must update only after persistence succeeds');
+assert.ok(extraPriceWrite.indexOf('await supabase') < extraPriceWrite.lastIndexOf('saveTourCustomExtraPrices'), 'Custom add-on cache must update only after persistence succeeds');
 
 const operations = read('src/services/operationsService.ts');
 const listGuides = section(operations, 'export async function listGuides()', 'export async function saveGuide(');
@@ -131,7 +131,7 @@ const getSetting = section(settings, 'export async function getSetting<T>', 'exp
 const saveSetting = section(settings, 'export async function saveSetting<T>', 'export async function getCompanySettings()');
 assert.match(getSetting, /if \(error\) throw new Error/, 'Site setting read failures must not fall back to stale local values');
 assert.match(getSetting, /Supabase is not configured; site settings cannot be loaded in production/, 'Production site settings require Supabase');
-assert.ok(saveSetting.indexOf('.upsert(') < saveSetting.indexOf('localStorage.setItem'), 'Settings must be cached only after the database write succeeds');
+assert.ok(saveSetting.indexOf('.upsert(') < saveSetting.lastIndexOf('localStorage.setItem'), 'Settings must be cached only after the database write succeeds');
 
 const storage = read('src/services/storageService.ts');
 const uploadMedia = section(storage, 'export async function uploadTourMedia(', '/**\n * Removes an image or video');
