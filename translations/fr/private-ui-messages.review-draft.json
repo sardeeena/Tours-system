@@ -1080,7 +1080,14 @@
     "private.text.c3acc0cd": "Recharger la page ",
     "private.text.e2f282f4": "Un problème a interrompu cette page. Rechargez-la pour réessayer. Les détails de votre réservation n’ont pas été envoyés depuis cet écran de récupération. ",
     "private.text.94232d59": "Assistance client et tickets",
-    "private.text.bc40e842": "Blog et carnet de voyage"
+    "private.text.bc40e842": "Blog et carnet de voyage",
+    "private.text.111a4eef": "Profil TripAdvisor",
+    "private.text.2b1ff5b8": "Aucun service de prise en charge n’est proposé pour cette excursion.",
+    "private.text.2e3a33f0": "Transfert à l’arrivée à l’aéroport : indiquez ci-dessus votre hôtel de destination, puis ajoutez votre numéro de vol et votre heure d’arrivée dans le champ « Demandes particulières » à l’étape suivante.",
+    "private.text.50226d2d": "Cette excursion ne propose pas de prise en charge. Vous pouvez continuer sans sélectionner de lieu de prise en charge.",
+    "private.text.59807ded": "Aucun avis pour le moment",
+    "private.text.6c24db84": "Choisissez votre lieu de prise en charge",
+    "private.text.c3ade22b": "Choisissez un lieu de prise en charge expressément autorisé pour cette excursion."
   },
-  "coverage": 1078
+  "coverage": 1085
 }
