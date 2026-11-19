@@ -46,6 +46,7 @@ import {
 import { AdminMediaManager } from './AdminMediaManager';
 import { AdminTab } from './AdminLayout';
 import { useAuth } from '../../contexts/AuthContext';
+import { AdminLoadError } from './AdminLoadError';
 
 interface AdminTourEditorProps {
   tourId?: string; // If undefined, we are creating a new tour
