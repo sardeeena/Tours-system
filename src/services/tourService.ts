@@ -808,8 +808,17 @@ export async function adminCreateTour(payload: AdminTourPayload): Promise<{ id: 
 
     const tourId = tourRecord.id;
 
-    // 2. Child tables insertion
-    await syncTourRelations(tourId, payload);
+    // 2. Child tables insertion. If any relation fails, remove the new parent
+    // record so a partially-created tour is not reported as successful.
+    try {
+      await syncTourRelations(tourId, payload);
+    } catch (relationError) {
+      const { error: rollbackError } = await supabase.from('tours').delete().eq('id', tourId);
+      if (rollbackError) {
+        throw new Error(`Tour relations failed: ${formatSupabaseError(relationError)}. The parent tour rollback also failed: ${formatSupabaseError(rollbackError)}`);
+      }
+      throw new Error(`Tour creation was rolled back because related content could not be saved: ${formatSupabaseError(relationError)}`);
+    }
 
     return { id: tourId, slug: tourRecord.slug };
   } catch (err) {
