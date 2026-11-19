@@ -74,39 +74,22 @@ function saveLocalFaqs(faqs: DbFaq[]) {
 
 export async function getFaqs(category?: string): Promise<DbFaq[]> {
   if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; FAQ records cannot be loaded in production.');
     const all = getLocalFaqs();
-    if (category && category !== 'all') {
-      return all.filter((f) => f.category === category);
-    }
-    return all.sort((a, b) => a.sort_order - b.sort_order);
+    return category && category !== 'all'
+      ? all.filter((faq) => faq.category === category)
+      : all.sort((a, b) => a.sort_order - b.sort_order);
   }
 
-  try {
-    let query = supabase.from('faqs').select('*').order('sort_order', { ascending: true });
-
-    if (category && category !== 'all') {
-      query = query.eq('category', category);
-    }
-
-    const { data, error } = await query;
-    if (error) {
-      console.warn('Supabase faqs fetch error, falling back to local cache:', error);
-      return getLocalFaqs();
-    }
-
-    if (!data || data.length === 0) {
-      return getLocalFaqs();
-    }
-
-    return data;
-  } catch (err) {
-    console.warn('Error fetching faqs:', err);
-    return getLocalFaqs();
-  }
+  const query = supabase.from('faqs').select('*').order('sort_order', { ascending: true });
+  const { data, error } = await (category && category !== 'all' ? query.eq('category', category) : query);
+  if (error) throw new Error(formatSupabaseError(error));
+  return data || [];
 }
 
 export async function createFaq(payload: Omit<DbFaq, 'id' | 'created_at'>): Promise<DbFaq> {
   if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; FAQ changes cannot be saved in production.');
     const local = getLocalFaqs();
     const newFaq: DbFaq = {
       ...payload,
@@ -139,6 +122,7 @@ export async function createFaq(payload: Omit<DbFaq, 'id' | 'created_at'>): Prom
 
 export async function updateFaq(id: string, updates: Partial<DbFaq>): Promise<void> {
   if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; FAQ changes cannot be saved in production.');
     const local = getLocalFaqs();
     saveLocalFaqs(local.map((f) => (f.id === id ? { ...f, ...updates } : f)));
     return;
@@ -161,6 +145,7 @@ export async function updateFaq(id: string, updates: Partial<DbFaq>): Promise<vo
 
 export async function deleteFaq(id: string): Promise<void> {
   if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; FAQ changes cannot be saved in production.');
     const local = getLocalFaqs();
     saveLocalFaqs(local.filter((f) => f.id !== id));
     return;
