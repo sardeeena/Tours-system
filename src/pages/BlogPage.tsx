@@ -6,10 +6,10 @@ import { BlogContent } from '../components/blog/BlogContent';
 const dateLabel = (value?: string | null) => value ? new Date(value).toLocaleDateString('en',{month:'long',day:'numeric',year:'numeric'}) : '';
 const readingTime = (content: string) => Math.max(1,Math.ceil(content.trim().split(/\s+/).length/220));
 const getCitedSources = (content: string) => {
-  const section = content.split(/^##\\s+Sources\\s+&\\s+Further\\s+Reading\\s*$/im)[1] || '';
-  return Array.from(section.matchAll(/\\[[^\\]]+\\]\\((https:\\/\\/[^)]+)\\)/g), match => match[1]);
+  const section = content.split(/^##\s+Sources\s+&\s+Further\s+Reading\s*$/im)[1] || '';
+  return Array.from(section.matchAll(/\[[^\]]+\]\((https:\/\/[^)]+)\)/g), match => match[1]);
 };
-const hasRecognizedAuthority = (urls: string[]) => urls.some(url => /(^|\\.)(gov\\.uk|gov\\.eg|eeaa\\.gov\\.eg|noaa\\.gov|metoffice\\.gov\\.uk|gem\\.eg)(\\/|$)/i.test(new URL(url).hostname));
+const hasRecognizedAuthority = (urls: string[]) => urls.some(url => /(^|\.)(gov\.uk|gov\.eg|eeaa\.gov\.eg|noaa\.gov|metoffice\.gov\.uk|gem\.eg)(\/|$)/i.test(new URL(url).hostname));
 
 export const BlogPage: React.FC<{ slug?: string; onNavigate:(path:string)=>void }> = ({slug,onNavigate}) => {
   const [posts,setPosts] = useState<BlogPost[]>([]);
