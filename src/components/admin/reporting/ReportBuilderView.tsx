@@ -479,6 +479,8 @@ export const ReportBuilderView: React.FC<ReportBuilderViewProps> = ({ onNavigate
                 </tr>
               ) : loadError ? (
                 <tr><td colSpan={10} className="py-12 text-center text-red-400">Report results are unavailable. See the error above and retry.</td></tr>
+              ) : loadError ? (
+                <tr><td colSpan={10} className="py-12 text-center text-red-400">Report results are unavailable. See the error above and retry.</td></tr>
               ) : rows.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="py-12 text-center text-stone-400">
@@ -506,7 +508,7 @@ export const ReportBuilderView: React.FC<ReportBuilderViewProps> = ({ onNavigate
                       {row.totalGuests}
                     </td>
                     <td className="py-3 px-3.5 text-right font-mono font-bold text-[#0A6C74] dark:text-[#2DD4BF] print:text-black">
-                      €{row.total.toFixed(2)}
+                      {row.currency} {row.total.toFixed(2)}
                     </td>
                     <td className="py-3 px-3.5 text-center">
                       <span
