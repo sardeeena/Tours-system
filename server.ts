@@ -4417,9 +4417,9 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
     '- Operator: Awesome Adventure Tours',
     '- Telephone: +20 151 5212741',
     '- Office: 2nd floor, Bostan Cafe, Madres, Hurghada, Red Sea Governorate, Egypt',
-    '- Service area: Hurghada and Egypt’s Red Sea coast',
+    '- Service area: Hurghada, Egypt’s Red Sea coast and selected destinations across Egypt',
     '- Customer-service languages: Multilingual support for international travellers; contact us in your preferred language',
-    '- TripAdvisor listing and traveller feedback: https://www.tripadvisor.co.uk/Attraction_Review-g297549-d34759384-Reviews-Awesome_Adventure_Tours-Hurghada_Red_Sea_and_Sinai.html',
+    '- TripAdvisor business listing: https://www.tripadvisor.co.uk/Attraction_Review-g297549-d34759384-Reviews-Awesome_Adventure_Tours-Hurghada_Red_Sea_and_Sinai.html',
     '',
     '## Main pages',
     '- [Homepage](https://awesomeadventure.tours/)',
@@ -4556,7 +4556,7 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
     const now = new Date().toISOString();
     const [tourResult, destinationResult, postResult] = await Promise.all([
       publicSupabase.from('tours')
-        .select('id,title,slug,short_description,description,duration,duration_type,duration_hours,tour_type,price,currency,pickup_available,pickup_info,cancellation_policy,departure_time,languages,difficulty,age_restrictions')
+        .select('id,destination_id,title,slug,short_description,description,duration,duration_type,duration_hours,tour_type,price,currency,pickup_available,pickup_info,cancellation_policy,departure_time,languages,difficulty,age_restrictions')
         .eq('status', 'published').order('sort_order', { ascending: true }).limit(500),
       publicSupabase.from('destinations')
         .select('id,name,slug,tagline,description').eq('status', 'published').order('sort_order', { ascending: true }).limit(100),
@@ -4606,7 +4606,7 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
     const faqsByTour = groupByTour(faqResult?.data);
 
     const destinationTourCounts = new Map<string, number>();
-    for (const tour of tours) {
+    for (const tour of tourResult.data || []) {
       if (!tour.destination_id) continue;
       const key = String(tour.destination_id);
       destinationTourCounts.set(key, (destinationTourCounts.get(key) || 0) + 1);
@@ -4632,7 +4632,7 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
     for (const destination of destinationResult.data || []) {
       const slug = typeof destination.slug === 'string' ? destination.slug.trim() : '';
       const name = cleanPublicText(destination.name, 120);
-      const description = cleanPublicText(destination.description, 4000);
+      const description = seoPlainText(destination.description, 4000);
       const tagline = cleanPublicText(destination.tagline, 500);
       const tourCount = destinationTourCounts.get(String(destination.id)) || 0;
       if (!name || !slug || seoExclusions.entityIds.has('destination:' + String(destination.id))
@@ -4649,7 +4649,7 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
       const id = String(tour.id);
       const slug = String(tour.slug).trim();
       const title = cleanPublicText(tour.title, 160);
-      const description = cleanPublicText(tour.description, 7000);
+      const description = seoPlainText(tour.description, 7000);
       const shortDescription = cleanPublicText(tour.short_description, 700);
       const price = Number(tour.price);
       const currency = typeof tour.currency === 'string' && /^[A-Z]{3}$/i.test(tour.currency) ? tour.currency.toUpperCase() : 'EUR';
@@ -4695,7 +4695,7 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
         lines.push('', '**Frequently asked questions**');
         for (const faq of faqs) {
           const question = cleanPublicText(faq.question, 400);
-          const answer = cleanPublicText(faq.answer, 1200);
+          const answer = seoPlainText(faq.answer, 1200);
           if (question && answer) lines.push(`- Q: ${question}`, `  A: ${answer}`);
         }
       }
@@ -4709,7 +4709,7 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
         || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
       lines.push('', `### ${title}`, `URL: https://awesomeadventure.tours/blog/${encodeURIComponent(slug)}`);
       const excerpt = cleanPublicText(post.excerpt, 700);
-      const content = cleanPublicText(post.content, 7000);
+      const content = seoPlainText(post.content, 7000);
       if (excerpt) lines.push(excerpt);
       if (content) lines.push('', content);
       if (post.published_at) lines.push(`Published: ${String(post.published_at)}`);
