@@ -202,7 +202,7 @@ export const TourCard: React.FC<TourCardProps> = ({
               <span className="block text-[10px] uppercase font-bold text-stone-400 tracking-wider">From</span>
               <div className="flex items-baseline space-x-1">
                 <span className="text-base sm:text-lg font-bold text-[#0E1B2A] font-mono">
-                  {formatPrice(tour.priceEur, currency)}
+                  {formatPrice(tour.tourType === 'Private' ? (tour.privatePriceEur || 0) : tour.priceEur, currency)}
                 </span>
                 <span className="text-[11px] text-stone-500 font-medium">/ person</span>
               </div>
