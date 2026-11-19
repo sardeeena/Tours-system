@@ -5726,7 +5726,14 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
     else if (path === '/blog') breadcrumbItems.push({ name: 'Travel Journal', url: canonical });
     else if (path !== '/') breadcrumbItems.push({ name: seoPlainText(title.replace(/ \\| Awesome Adventure Tours.*$/, ''), 160) || title, url: canonical });
     const hasBreadcrumb = breadcrumbItems.length > 1;
-    graph.push({ '@type': pageKind === 'catalogue' || pageKind === 'destinations' || pageKind === 'experiences' || pageKind === 'home' || pageKind === 'blog-index' ? 'CollectionPage' : 'WebPage', '@id': `${canonical}#webpage`, url: canonical, name: title, description, isPartOf: { '@id': `${origin}/#website` }, ...(mainEntityId ? { mainEntity: { '@id': mainEntityId } } : {}), ...(pageImage !== `${origin}/logo.webp` ? { primaryImageOfPage: { '@type': 'ImageObject', url: pageImage } } : {}), ...(hasBreadcrumb ? { breadcrumb: { '@id': `${canonical}#breadcrumb` } } : {}) });
+    const pageSchemaType = pageKind === 'catalogue' || pageKind === 'destinations' || pageKind === 'experiences' || pageKind === 'home' || pageKind === 'blog-index'
+      ? 'CollectionPage'
+      : pageKind === 'static' && path === '/about'
+        ? 'AboutPage'
+        : pageKind === 'static' && path === '/contact'
+          ? 'ContactPage'
+          : 'WebPage';
+    graph.push({ '@type': pageSchemaType, '@id': `${canonical}#webpage`, url: canonical, name: title, description, isPartOf: { '@id': `${origin}/#website` }, publisher: { '@id': `${origin}/#organization` }, ...(path === '/about' ? { about: { '@id': `${origin}/#organization` } } : {}), ...(mainEntityId ? { mainEntity: { '@id': mainEntityId } } : {}), ...(pageImage !== `${origin}/logo.webp` ? { primaryImageOfPage: { '@type': 'ImageObject', url: pageImage } } : {}), ...(hasBreadcrumb ? { breadcrumb: { '@id': `${canonical}#breadcrumb` } } : {}) });
     if (hasBreadcrumb) graph.push({ '@type': 'BreadcrumbList', '@id': `${canonical}#breadcrumb`, itemListElement: breadcrumbItems.map((item, index) => ({ '@type': 'ListItem', position: index + 1, name: item.name, item: item.url })) });
   }
 
