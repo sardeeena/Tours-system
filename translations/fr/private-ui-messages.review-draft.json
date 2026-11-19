@@ -557,6 +557,7 @@
     "private.text.873244cb": "Awesome Adventure Tours",
     "private.text.87569fc6": "Pays de résidence",
     "private.text.87e54fac": "Recherchez une confirmation de réservation, imprimez les bons des garde-côtes et vérifiez les heures de prise en charge. ",
+    "private.text.87edc0fd": " heures à l’avance ",
     "private.text.87fb1c0a": "Impossible de vérifier les disponibilités pour cette date. Veuillez réessayer avant de continuer.",
     "private.text.885a1c6f": "Choisissez un ticket dans la file d’attente pour consulter la conversation et suivre son traitement.",
     "private.text.8864c00e": "L’heure de prise en charge sera confirmée sur votre bon. ",
@@ -580,6 +581,7 @@
     "private.text.8d3c5071": "Envoyer les instructions de réinitialisation",
     "private.text.8d77fe73": "Retrouvez votre réservation, téléchargez votre bon ou annulez-la si vos projets ont changé. ",
     "private.text.8d9cc812": "Mot de passe * ",
+    "private.text.8da29c3d": " pour le départ sélectionné ",
     "private.text.8db53650": "Réserver maintenant ",
     "private.text.8dc21305": "Copié",
     "private.text.8dcb8f66": "Maître marin • Autorisé par les garde-côtes",
@@ -621,6 +623,7 @@
     "private.text.93f5aa61": "Modifier le mot de passe du compte ",
     "private.text.94232d59": "Assistance client et tickets",
     "private.text.945c48c8": "Prénom ",
+    "private.text.94bf73ed": "* 1 adulte minimum requis. ",
     "private.text.95a21692": "Votre nom complet ",
     "private.text.9602c62f": "Capitaine Farouk",
     "private.text.9637f88f": "Impossible d’actualiser le statut. Veuillez essayer de saisir votre mot de passe.",
@@ -881,6 +884,7 @@
     "private.text.cf82f7c6": "Logo Awesome Adventure Tours",
     "private.text.cfde7062": "Thème clair (par défaut)",
     "private.text.cffaecfd": "Icône des excursions en mer Rouge",
+    "private.text.d01f2cac": "Privé",
     "private.text.d02b5d18": "Locations privées",
     "private.text.d03c4dd9": "CLIENT",
     "private.text.d0aabc19": "Saisissez le code actuel à 6 chiffres de votre application d’authentification.",
@@ -1087,5 +1091,5 @@
     "private.text.ff566677": "Mot de passe mis à jour",
     "private.text.ff566f40": "Nom "
   },
-  "coverage": 1083
+  "coverage": 1087
 }
