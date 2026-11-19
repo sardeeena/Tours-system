@@ -32,7 +32,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
 
     // Hero Section
     'hero.badge': 'Direct Tour Operator in Hurghada & El Gouna',
-    'hero.guestsHosted': 'Daily Verified Departures',
+    'hero.guestsHosted': 'Check Available Departure Dates',
     'hero.title1': 'Explore the Red Sea',
     'hero.title2': 'with Local Captains',
     'hero.subtitle':
@@ -221,7 +221,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     "hero.guestsHosted": "Dagelijks gecontroleerde vertrekken",
     "hero.title1": "Ontdek de Rode Zee",
     "hero.title2": "met lokale kapiteins",
-    "hero.subtitle": "Snorkelboottochten, eilandbezoeken en quadsafari’s in de woestijn, dagelijks vertrekkend vanuit Hurghada, El Gouna en Makadi Bay. Rechtstreekse lokale aanbieder met hoteltransfer en transparante prijzen.",
+    "hero.subtitle": "Ontdek snorkelboottochten, eilandexcursies en woestijnsafari's vanuit Hurghada en nabijgelegen bestemmingen aan de Rode Zee. Controleer per excursie de vertrekdagen, ophaalopties en beschikbaarheid.",
     "hero.guarantee1": "Het weer kan vertrek beïnvloeden",
     "hero.guarantee2": "Annuleringsvoorwaarden vóór het boeken zichtbaar",
     "hero.guarantee3": "Ophaalopties verschillen per excursie",
@@ -238,7 +238,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     "search.ageAdult": "12 jaar en ouder",
     "search.ageChild": "4–11 jaar",
     "popular.title": "Populaire tours aan de Rode Zee",
-    "popular.subtitle": "Alle tours zijn inclusief hoteltransfer, snorkeluitrusting en verplichte kosten voor het marinepark.",
+    "popular.subtitle": "Bekijk per excursie welke voorzieningen, ophaalopties en eventuele kosten voor het zeereservaat zijn inbegrepen.",
     "popular.viewAll": "Bekijk alle tours",
     "popular.quickBook": "Boek nu",
     "popular.viewDetails": "Bekijk tour",
@@ -313,7 +313,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'hero.title1': 'Erkunden Sie das Rote Meer',
     'hero.title2': 'mit erfahrenen Kapitänen',
     'hero.subtitle':
-      'Schnorchelausflüge, Inseltouren und Quad-Safaris mit täglicher Abfahrt von Hurghada, El Gouna und Makadi Bay. Direkter lokaler Anbieter mit Hotelabholung und fairen Preisen.',
+      'Entdecken Sie Schnorchelausflüge, Inseltouren und Quad-Safaris ab Hurghada und in nahegelegenen Reisezielen am Roten Meer. Prüfen Sie bei jedem Ausflug die Abfahrtstage, Abholoptionen und Verfügbarkeit.',
     'hero.guarantee1': 'Wetterbedingungen können Abfahrten beeinflussen',
     'hero.guarantee2': 'Stornierungsbedingungen vor der Buchung angezeigt',
     'hero.guarantee3': 'Abholoptionen je Ausflug unterschiedlich',
@@ -335,7 +335,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     // Popular Tours Section
     'popular.title': 'Beliebte Rote-Meer-Ausflüge',
     'popular.subtitle':
-      'Alle Touren enthalten Hotelabholung, Schnorchelausrüstung und Nationalparkgebühren.',
+      'Bei jedem Ausflug finden Sie Angaben zu Leistungen, Abholung und eventuell anfallenden Gebühren für Meeresschutzgebiete.',
     'popular.viewAll': 'Alle Ausflüge anzeigen',
     'popular.quickBook': 'Jetzt buchen',
     'popular.viewDetails': 'Tour ansehen',
@@ -531,7 +531,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'hero.title1': 'Esplora il Mar Rosso',
     'hero.title2': 'con Capitani Locali',
     'hero.subtitle':
-      'Gite in barca con snorkeling, escursioni alle isole e safari nel deserto in quad con partenze giornaliere da Hurghada, El Gouna e Makadi Bay. Operatore diretto con transfer dall\'hotel e prezzi chiari.',
+      'Scopri gite in barca con snorkeling, escursioni alle isole e safari in quad da Hurghada e dalle vicine località del Mar Rosso. Controlla per ogni escursione i giorni di partenza, le opzioni di trasferimento e la disponibilità.',
     'hero.guarantee1': 'Il meteo può influire sulle partenze',
     'hero.guarantee2': 'Condizioni di cancellazione visibili prima della prenotazione',
     'hero.guarantee3': 'Il trasferimento varia in base all’escursione',
@@ -553,7 +553,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     // Popular Tours Section
     'popular.title': 'Escursioni Più Richieste nel Mar Rosso',
     'popular.subtitle':
-      'Tutti i tour includono transfer dall\'hotel, attrezzatura da snorkeling e ingressi ai parchi marini protetti.',
+      'Per ogni escursione sono indicati i servizi inclusi, le opzioni di trasferimento e gli eventuali costi dei parchi marini.',
     'popular.viewAll': 'Vedi Tutte le Escursioni',
     'popular.quickBook': 'Prenota Ora',
     'popular.viewDetails': 'Dettagli Tour',
@@ -640,7 +640,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'hero.title1': 'Explorează Marea Roșie',
     'hero.title2': 'cu Căpitani Locali',
     'hero.subtitle':
-      'Croaziere cu barca, snorkeling la recife de corali și safari cu ATV-ul în deșert cu plecare zilnică din Hurghada, El Gouna și Makadi Bay. Operator local direct, preluare de la hotel și prețuri corecte fără intermediari.',
+      'Descoperă excursii cu barca și snorkeling, vizite pe insule și safari cu ATV-ul din Hurghada și din destinațiile apropiate de la Marea Roșie. Verifică zilele de plecare, opțiunile de preluare și disponibilitatea pentru fiecare excursie.',
     'hero.guarantee1': 'Vremea poate influența plecările',
     'hero.guarantee2': 'Condițiile de anulare sunt afișate înainte de rezervare',
     'hero.guarantee3': 'Opțiunile de preluare diferă în funcție de excursie',
@@ -662,7 +662,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     // Popular Tours Section
     'popular.title': 'Excursii Populare la Marea Roșie',
     'popular.subtitle':
-      'Toate excursiile includ transfer dus-întors de la hotel, echipament complet de snorkeling și taxele de parc marin.',
+      'Pentru fiecare excursie sunt indicate serviciile incluse, opțiunile de preluare și eventualele taxe pentru parcurile marine.',
     'popular.viewAll': 'Vezi Toate Excursiile',
     'popular.quickBook': 'Rezervă Acum',
     'popular.viewDetails': 'Detalii Tur',
@@ -747,7 +747,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'hero.guestsHosted': 'Codziennie potwierdzane wypłynięcia',
     'hero.title1': 'Odkryj Morze Czerwone',
     'hero.title2': 'z lokalnymi kapitanami',
-    'hero.subtitle': 'Rejsy ze snorkelingiem, wycieczki na wyspy i pustynne safari quadami, codziennie z Hurghady, El Gouny i Makadi Bay. Bezpośredni lokalny organizator, odbiór z hotelu i przejrzyste ceny.',
+    'hero.subtitle': 'Poznaj rejsy ze snorkelingiem, wycieczki na wyspy i pustynne safari quadami z Hurghady i pobliskich miejscowości nad Morzem Czerwonym. Sprawdź dni wyjazdów, opcje odbioru i dostępność każdej wycieczki.',
     'hero.guarantee1': 'Pogoda może wpłynąć na godziny wyjazdu',
     'hero.guarantee2': 'Warunki anulowania widoczne przed rezerwacją',
     'hero.guarantee3': 'Odbiór zależy od wybranej wycieczki',
@@ -768,7 +768,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
 
     // Popularne wycieczki
     'popular.title': 'Popularne wycieczki nad Morzem Czerwonym',
-    'popular.subtitle': 'Wszystkie wycieczki obejmują odbiór z hotelu, sprzęt do snorkelingu i wymagane opłaty za park morski.',
+    'popular.subtitle': 'Przy każdej wycieczce podano zakres usług, opcje odbioru oraz ewentualne opłaty za park morski.',
     'popular.viewAll': 'Zobacz wszystkie wycieczki',
     'popular.quickBook': 'Rezerwuj teraz',
     'popular.viewDetails': 'Zobacz wycieczkę',
