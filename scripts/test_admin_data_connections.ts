@@ -279,4 +279,50 @@ assert.match(listMedia, /if \(!import\.meta\.env\.DEV\) throw new Error[\s\S]*?r
 const cleanMedia = section(storage, 'export async function cleanOrphanedStorageFiles(', '/**\n * Generates an optimized image URL');
 assert.match(cleanMedia, /from\('user_roles'\)[\s\S]*?access_roles\(slug\)/, 'Storage cleanup must use the current RBAC role assignments');
 
+const reporting = read('src/services/reportingService.ts');
+const salesReport = section(reporting, 'export async function fetchSalesReport(', '// ------------------------------------------------------------------------------\n// 3. CUSTOMER REPORT');
+assert.doesNotMatch(salesReport, /defaultStaff|Ahmed Hassan|Mariam Youssef|Karim Adel|Sara Mostafa/, 'Sales reporting must not invent staff or distribute bookings to them');
+assert.match(salesReport, /inquiry\.status !== 'converted'/, 'Converted inquiries must not be counted twice as new leads');
+assert.match(salesReport, /lead\.assignedStaffName \|\| 'Unassigned'/, 'Staff performance must use real assignments or an unassigned bucket');
+const customerReport = section(reporting, 'export async function fetchCustomerReport(', '// ------------------------------------------------------------------------------\n// 4. OPERATIONS REPORT');
+assert.doesNotMatch(customerReport, /ALL_TOURS|Hurghada Resort|International|Direct Marina Pier/, 'Customer reporting must not invent tours, countries or hotels');
+assert.match(customerReport, /customer\.createdAt/, 'New customer counts must use stored customer registration dates');
+const operationsReport = section(reporting, 'export async function fetchOperationsReport(', '// ------------------------------------------------------------------------------\n// 5. FINANCE REPORT');
+assert.match(operationsReport, /getDeparturesForDateRange/, 'Operations metrics must use actual departure records for the selected period');
+assert.doesNotMatch(operationsReport, /averageBoatCapacity\s*=\s*30|tripsCount\s*\|\|\s*1|totalPassengers\s*\/\s*vessels\.length|Direct Marina Pier|all commercial permits clear/i, 'Operations reporting must not invent capacity, trips, passenger distribution or clearance');
+assert.match(operationsReport, /coastGuardCleared === false/, 'Recorded lack of clearance must be surfaced as a critical issue');
+assert.match(operationsReport, /coastGuardCleared === null/, 'Missing Coast Guard clearance must not be treated as approval');
+const financeReport = section(reporting, 'export async function fetchFinanceReport(', '// ------------------------------------------------------------------------------\n// 6. REPORT BUILDER ENGINE');
+assert.doesNotMatch(financeReport, /1\.08|52\.5|Online Card \/ Gateway/, 'Finance reporting must not invent exchange rates or payment methods');
+assert.match(financeReport, /currency === 'EUR' \? amount : null/, 'Non-EUR collections must remain unconverted');
+assert.match(financeReport, /filter\(isEur\)/, 'EUR financial totals must exclude transactions in other currencies');
+const customReport = section(reporting, 'export async function runReportBuilder(', '// ------------------------------------------------------------------------------\n// EXPORT UTILITIES');
+assert.match(customReport, /if \(error\) throw new Error/, 'Custom report RPC failures must be visible');
+assert.match(customReport, /data === null \|\| data === undefined\) return \[\]/, 'A valid empty report must remain empty');
+assert.doesNotMatch(customReport, /ALL_TOURS|Mariam Youssef|Guest Traveler|Hurghada Resort|bookingStatus: 'confirmed'/, 'Custom reports must not use static tours, fake staff or invented booking defaults');
+
+const reportBuilderUi = read('src/components/admin/reporting/ReportBuilderView.tsx');
+assert.doesNotMatch(reportBuilderUi, /ALL_TOURS|Ahmed Hassan|Mariam Youssef|Karim Adel|Sara Mostafa/, 'Report builder filters must use live tours and staff records');
+assert.match(reportBuilderUi, /grossByCurrency/, 'Report builder totals must not sum different currencies together');
+assert.match(reportBuilderUi, /AdminLoadError/, 'Report builder must show query failures');
+const managementReportUi = read('src/components/admin/reporting/ManagementReportingDashboard.tsx');
+assert.match(managementReportUi, /AdminLoadError/, 'Management reporting must show live metric load failures');
+const financeUi = read('src/components/admin/reporting/FinanceDashboardView.tsx');
+assert.doesNotMatch(financeUi, /CIB central bank fixing rates|1\.08|52\.5/, 'Finance UI must not claim unsupported FX rates');
+assert.match(financeUi, /Non-EUR collections are excluded/, 'Finance UI must explain how non-EUR amounts affect EUR totals');
+
+const customers = read('src/services/customerService.ts');
+assert.match(customers, /if \(import\.meta\.env\.DEV\) saveStoredCustomers\(result\)/, 'Production customer PII must not be cached in browser local storage');
+assert.match(customers, /Registered user accounts cannot be deleted from the customer directory/, 'Registered auth accounts must not be deleted as customer records');
+assert.match(customers, /\.select\('id'\)[\s\S]*?\.maybeSingle\(\)/, 'Customer mutations must confirm a persisted row');
+const customerUi = read('src/components/admin/AdminCustomersList.tsx');
+assert.match(customerUi, /cust\.isRegistered\)[\s\S]*?disabled=\{cust\.isRegistered\}/, 'Registered customer accounts must not expose destructive delete actions');
+assert.match(customerUi, /selectedCustomer\.userId \|\| selectedCustomer\.id/, 'Role updates must target the actual auth user ID');
+
+const departureRange = section(operations, 'export async function getDeparturesForDateRange(', 'export async function getTodayDepartures(');
+assert.match(departureRange, /\.gte\('date', startDate\)\.lte\('date', endDate\)/, 'Operations reports must query the actual selected departure date range');
+assert.match(departureRange, /from\('tours'\)\.select\('id,title,slug'\)/, 'Operations must resolve historical tours even when they are no longer published');
+const weatherService = section(operations, 'export async function getMaritimeWeather(', 'export async function listWeatherBulletins(');
+assert.match(weatherService, /value === null \|\| value === undefined/, 'Missing weather readings must remain null rather than becoming zero');
+
 console.log('Admin data wiring regression checks passed: production fallbacks, staff IDs, CRM persistence, customer financial/review records and dashboard ledger calculations.');
