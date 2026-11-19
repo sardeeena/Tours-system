@@ -15,6 +15,8 @@ import {
   LeadSourcePerformance,
   InactiveCustomerItem,
   PopularTourInterestItem,
+  GuideAssignmentItem,
+  OperationalIssueItem,
   MonthlyRevenueItem,
   ReportBuilderFilters,
   ReportBuilderRow,
@@ -597,17 +599,18 @@ export async function fetchCustomerReport(interval: DateRangeInterval): Promise<
   });
 
   const tourMap = new Map(dynamicTours.map((tour) => [tour.id, tour.title]));
-  const interestMap = new Map<string, { bookings: number; inquiries: number; revenue: number }>();
+  const interestMap = new Map<string, { bookings: number; inquiries: number; revenue: number; totalGuests: number }>();
   activeBookings.forEach((booking) => {
     const name = booking.tourTitle || tourMap.get(booking.tourId) || 'Tour not recorded';
-    const current = interestMap.get(name) || { bookings: 0, inquiries: 0, revenue: 0 };
+    const current = interestMap.get(name) || { bookings: 0, inquiries: 0, revenue: 0, totalGuests: 0 };
     current.bookings += 1;
     current.revenue += booking.pricing?.totalEur || 0;
+    current.totalGuests += (Number(booking.guests?.adults) || 0) + (Number(booking.guests?.children) || 0) + (Number(booking.guests?.infants) || 0);
     interestMap.set(name, current);
   });
   intervalInquiries.forEach((inquiry) => {
     const name = (inquiry.tour_id && tourMap.get(inquiry.tour_id)) || inquiry.subject || 'Tour not specified';
-    const current = interestMap.get(name) || { bookings: 0, inquiries: 0, revenue: 0 };
+    const current = interestMap.get(name) || { bookings: 0, inquiries: 0, revenue: 0, totalGuests: 0 };
     current.inquiries += 1;
     interestMap.set(name, current);
   });
@@ -616,38 +619,59 @@ export async function fetchCustomerReport(interval: DateRangeInterval): Promise<
     (sum, item) => sum + item.bookings + item.inquiries,
     0
   );
-  const popularTourInterests: TourInterestItem[] = Array.from(interestMap.entries())
+  const popularTourInterests: PopularTourInterestItem[] = Array.from(interestMap.entries())
     .map(([tourTitle, value]) => ({
       tourTitle,
-      bookings: value.bookings,
-      inquiries: value.inquiries,
+      inquiriesCount: value.inquiries,
+      bookingsCount: value.bookings,
+      totalGuests: value.totalGuests,
       sharePct: totalInterests > 0
         ? Math.round(((value.bookings + value.inquiries) / totalInterests) * 1000) / 10
         : 0,
-      revenueEur: value.revenue,
     }))
-    .sort((a, b) => (b.bookings + b.inquiries) - (a.bookings + a.inquiries));
+    .sort((a, b) => (b.bookingsCount + b.inquiriesCount) - (a.bookingsCount + a.inquiriesCount));
 
-  const countryMap = new Map<string, number>();
+  const countryMap = new Map<string, { count: number; revenueEur: number }>();
   const hotelMap = new Map<string, number>();
   customerList.forEach((customer) => {
     const country = customer.country || 'Not recorded';
     const hotel = customer.hotel || 'Not recorded';
-    countryMap.set(country, (countryMap.get(country) || 0) + 1);
+    const countryValue = countryMap.get(country) || { count: 0, revenueEur: 0 };
+    countryValue.count += 1;
+    countryValue.revenueEur += Number(customer.totalSpentEur) || 0;
+    countryMap.set(country, countryValue);
     hotelMap.set(hotel, (hotelMap.get(hotel) || 0) + 1);
   });
   const countriesDistribution = Array.from(countryMap.entries())
-    .map(([country, count]) => ({ country, count }))
+    .map(([country, value]) => ({
+      country,
+      count: value.count,
+      percentage: totalCustomersCount > 0 ? Math.round((value.count / totalCustomersCount) * 1000) / 10 : 0,
+      revenueEur: value.revenueEur,
+    }))
     .sort((a, b) => b.count - a.count);
   const hotelsDistribution = Array.from(hotelMap.entries())
-    .map(([hotel, count]) => ({ hotel, count }))
+    .map(([hotel, count]) => ({
+      hotel,
+      count,
+      percentage: totalCustomersCount > 0 ? Math.round((count / totalCustomersCount) * 1000) / 10 : 0,
+    }))
     .sort((a, b) => b.count - a.count);
 
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - 90);
-  const inactiveCustomers = customerList.filter((customer) => {
-    if (!customer.lastBookingDate || customer.totalBookings === 0) return false;
-    return new Date(customer.lastBookingDate) < cutoffDate;
+  const inactiveCustomers: InactiveCustomerItem[] = customerList.flatMap((customer) => {
+    if (!customer.lastBookingDate || customer.totalBookings === 0) return [];
+    const lastBookingDate = new Date(customer.lastBookingDate);
+    if (Number.isNaN(lastBookingDate.getTime()) || lastBookingDate >= cutoffDate) return [];
+    return [{
+      id: customer.id,
+      name: customer.name,
+      email: customer.email,
+      daysSinceLastBooking: Math.max(0, Math.floor((Date.now() - lastBookingDate.getTime()) / 86_400_000)),
+      lastBookingDate: customer.lastBookingDate,
+      totalSpentEur: customer.totalSpentEur,
+    }];
   });
 
   return {
@@ -657,6 +681,7 @@ export async function fetchCustomerReport(interval: DateRangeInterval): Promise<
     customerLifetimeValueEur,
     repeatRatePct,
     customerRetentionRatePct: repeatRatePct,
+    inactiveCustomersCount: inactiveCustomers.length,
     popularTourInterests,
     countriesDistribution,
     hotelsDistribution,
