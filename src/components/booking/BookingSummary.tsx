@@ -6,6 +6,7 @@ import { GuestCounts, PickupLocation, BookingExtra, BookingPricing } from '../..
 interface BookingSummaryProps {
   tour: Tour;
   date?: string;
+  departureTime?: string;
   tourLanguage?: string;
   guests: GuestCounts;
   pickupLocation?: PickupLocation | null;
@@ -22,6 +23,7 @@ interface BookingSummaryProps {
 export const BookingSummary: React.FC<BookingSummaryProps> = ({
   tour,
   date,
+  departureTime,
   tourLanguage,
   guests,
   pickupLocation,
@@ -95,6 +97,16 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
               {date ? date : 'Select a date in Step 1'}
             </span>
           </div>
+
+          {departureTime && (
+            <div className="flex items-center justify-between text-stone-700">
+              <span className="flex items-center text-stone-600 font-medium">
+                <Clock className="w-3.5 h-3.5 mr-1.5 text-[#0A6C74]" />
+                Departure time:
+              </span>
+              <span className="font-semibold text-stone-900">{departureTime}</span>
+            </div>
+          )}
 
           <div className="flex items-center justify-between text-stone-700">
             <span className="flex items-center text-stone-600 font-medium">
