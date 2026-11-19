@@ -75,7 +75,7 @@ const normalizeTourDepartureTimes = (value: string): string | null => {
 
   const normalized: string[] = [];
   for (const entry of entries) {
-    const match = entry.match(/^(\\d{1,2}):(\\d{2})\\s*(AM|PM)?$/i);
+    const match = entry.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
     if (!match) return null;
 
     const enteredHour = Number(match[1]);
