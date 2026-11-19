@@ -14,6 +14,7 @@ const ratingMigration = readFileSync(new URL('../supabase/migrations/20261119100
 const draftDefaultsMigration = readFileSync(new URL('../supabase/migrations/20261119110000_remove_unverified_tour_draft_defaults.sql', import.meta.url), 'utf8');
 const scheduleMigration = readFileSync(new URL('../supabase/migrations/20261119120000_normalize_tour_schedule_display_data.sql', import.meta.url), 'utf8');
 const destinationSeoMigration = readFileSync(new URL('../supabase/migrations/20261119130000_seed_destination_seo_metadata.sql', import.meta.url), 'utf8');
+const pickupMappingMigration = readFileSync(new URL('../supabase/migrations/20261119140000_reconcile_published_tour_pickup_mappings.sql', import.meta.url), 'utf8');
 const tourCard = readFileSync(new URL('../src/components/tours/TourCard.tsx', import.meta.url), 'utf8');
 const tourDetail = readFileSync(new URL('../src/pages/TourDetailPage.tsx', import.meta.url), 'utf8');
 const tourService = readFileSync(new URL('../src/services/tourService.ts', import.meta.url), 'utf8');
@@ -124,6 +125,7 @@ assert.doesNotMatch(tourMapping, /Standard cancellation policy applies|Pickup no
 assert.match(tourMapping, /durationCategory: dbTour\.duration_type \|\| 'Unspecified'/, 'Unconfigured draft duration remains explicit in the catalogue mapping');
 
 assert.match(tourEditor, /Complete these verified details before publishing/, 'New tour publication requires verified factual details');
+assert.match(tourEditor, /Pickup mapping required/, 'Admin editor warns when pickup is enabled without mapped active zones');
 assert.match(tourEditor, /normalizeTourDepartureTimes/, 'Tour editor normalizes departure times before publication');
 assert.ok(tourEditor.includes("entry.match(/^(\\d{1,2}):(\\d{2})\\s*(AM|PM)?$/i)"), 'Departure-time validation accepts only explicit 12-hour or 24-hour clock values');
 assert.match(scheduleMigration, /13:30 AM/);
@@ -134,6 +136,11 @@ assert.match(destinationSeoMigration, /'destination'/, 'Destination SEO metadata
 assert.match(destinationSeoMigration, /'luxor'.*FALSE/s, 'Destinations without enough published inventory remain noindex');
 assert.match(destinationSeoMigration, /'hurghada'.*TRUE/s, 'Destinations with published excursion inventory are indexable');
 assert.match(destinationSeoMigration, /canonical_url/, 'Destination metadata includes canonical URLs');
+assert.match(pickupMappingMigration, /cairo-giza/, 'Cairo tours receive a configured Cairo/Giza pickup zone');
+assert.match(pickupMappingMigration, /el-gouna-local-excursions/, 'Local El Gouna tours receive their complimentary pickup zone without changing the paid Hurghada transfer zone');
+assert.match(pickupMappingMigration, /Hurghada Quad Bike Safari: Desert Ride, Camel Experience & Bedouin Village/, 'Migration removes the incorrect Sharm pickup assignment from a Hurghada tour');
+assert.match(pickupMappingMigration, /unmapped_count/, 'Migration fails if a published pickup-enabled tour remains without an active mapped zone');
+
 assert.doesNotMatch(destinationSeoMigration, /Giza Pyramids|Sphinx/, 'Cairo metadata does not claim attractions absent from the published Cairo tours');
 assert.match(tourCard, /No reviews yet/, 'Tour cards do not call unrated products new');
 assert.match(tourDetail, /No customer reviews yet/, 'Tour details explain that no customer reviews exist');
