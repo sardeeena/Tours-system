@@ -27,6 +27,7 @@ const homeHero = readFileSync(new URL('../src/components/home/Hero.tsx', import.
 const stepPickup = readFileSync(new URL('../src/components/booking/StepPickup.tsx', import.meta.url), 'utf8');
 const homeFaq = readFileSync(new URL('../src/components/home/HomeFAQ.tsx', import.meta.url), 'utf8');
 const seoConfig = readFileSync(new URL('../src/services/seoConfig.ts', import.meta.url), 'utf8');
+const seoService = readFileSync(new URL('../src/services/seoService.ts', import.meta.url), 'utf8');
 const app = readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8');
 const appConfig = readFileSync(new URL('../src/config/appConfig.ts', import.meta.url), 'utf8');
 const sitemapStart = server.indexOf("app.get('/sitemap.xml'");
@@ -104,6 +105,15 @@ assert.match(schema, /knowsAbout:/, 'Business entity declares its visible servic
 assert.match(schema, /'@type': 'BreadcrumbList'/, 'Public pages expose breadcrumb structured data');
 assert.match(schema, /mainEntityId/, 'Page entities link to their primary tour, destination or article entity');
 assert.match(schema, /'@type': 'WebPage'/, 'Every indexable public route receives a WebPage node');
+assert.match(schema, /pageSchemaType/, 'SSR selects a page-specific schema type for public informational pages');
+assert.match(schema, /'AboutPage'/, 'About page receives the AboutPage structured-data type');
+assert.match(schema, /'ContactPage'/, 'Contact page receives the ContactPage structured-data type');
+assert.match(schema, /publisher: \{ '@id': `${origin}\\/#organization` \}/, 'SSR page entities identify the verified site publisher');
+assert.match(seoConfig, /export function generateStaticPageJsonLd/, 'Client-side static CMS routes have a dedicated JSON-LD generator');
+assert.match(seoConfig, /normalizedSlug === 'about'[\s\S]*?'AboutPage'/, 'Client-side About page uses AboutPage structured data');
+assert.match(seoConfig, /normalizedSlug === 'contact'[\s\S]*?'ContactPage'/, 'Client-side Contact page uses ContactPage structured data');
+assert.match(app, /schemaJsonLd: generateStaticPageJsonLd\(/, 'Client router applies structured data to static CMS pages');
+assert.match(seoService, /if \(meta\.schemaJsonLd !== undefined\) setSchemaJsonLd\(meta\.schemaJsonLd\)/, 'Client SEO hydration preserves server-rendered JSON-LD when no replacement is supplied');
 assert.match(server, /slug && slug !== 'about'/, 'Sitemap and llms discovery preserve the explicitly indexable About page');
 assert.match(server, /Office: 2nd floor, Bostan Cafe, Madres, Hurghada, Red Sea Governorate, Egypt/, 'Homepage Markdown response uses the canonical owner-confirmed office address');
 assert.doesNotMatch(server, /Hurghada New Marina, Berth B-14/, 'Homepage Markdown response does not expose the retired office address');
