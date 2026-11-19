@@ -511,6 +511,29 @@ export async function createDeparture(data: Partial<DepartureEntity>): Promise<{
     return { success: false, error: 'Supabase is not configured; the departure was not saved.' };
   }
 
+  try {
+    const conflicts = await detectAssignmentConflicts({
+      departureId: data.id,
+      tourId: newDeparture.tour_id,
+      date: newDeparture.date,
+      startTime: newDeparture.start_time,
+      vesselId: newDeparture.vessel_id,
+      guideId: newDeparture.guide_id,
+      driverId: newDeparture.driver_id,
+      bookedPassengers,
+    });
+    if (conflicts.length > 0) {
+      return { success: false, error: conflicts[0].message };
+    }
+  } catch (conflictError) {
+    return {
+      success: false,
+      error: conflictError instanceof Error
+        ? conflictError.message
+        : 'Resource conflicts could not be verified; no departure was saved.',
+    };
+  }
+
   const { data: rpcData, error: rpcError } = await supabase.rpc('upsert_departure_with_availability', {
     p_departure_id: data.id || null,
     p_tour_id: newDeparture.tour_id,
@@ -600,8 +623,8 @@ function computeEndTime(startTime: string, durationHours?: number): string {
   const parts = (startTime || '08:30').split(':').map(Number);
   const dur = durationHours && durationHours > 0 ? durationHours : 8;
   const startMins = (parts[0] || 0) * 60 + (parts[1] || 0);
-  const totalMins = startMins + Math.round(dur * 60);
-  const endH = Math.min(23, Math.floor(totalMins / 60));
+  const totalMins = (startMins + Math.round(dur * 60)) % (24 * 60);
+  const endH = Math.floor(totalMins / 60);
   const endM = totalMins % 60;
   return `${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}`;
 }
@@ -625,13 +648,17 @@ function isTimeConflicting(
 
   const sA = toMins(startA, 510);
   const durMinsA = durA && durA > 0 ? Math.round(durA * 60) : 480;
-  const eA = endA ? toMins(endA, sA + durMinsA) : sA + durMinsA;
+  let eA = endA ? toMins(endA, sA + durMinsA) : sA + durMinsA;
+  if (eA <= sA) eA += 24 * 60;
 
   const sB = toMins(startB, 510);
   const durMinsB = durB && durB > 0 ? Math.round(durB * 60) : 480;
-  const eB = endB ? toMins(endB, sB + durMinsB) : sB + durMinsB;
+  let eB = endB ? toMins(endB, sB + durMinsB) : sB + durMinsB;
+  if (eB <= sB) eB += 24 * 60;
 
-  return Math.max(sA, sB) < Math.min(eA, eB);
+  return [-1440, 0, 1440].some((shift) =>
+    Math.max(sA, sB + shift) < Math.min(eA, eB + shift)
+  );
 }
 
 /**
@@ -658,9 +685,9 @@ export async function detectAssignmentConflicts(params: {
     getPublishedTours(),
   ]);
 
-  const targetDeparture = departures.find(
-    (d) => d.id === params.departureId || (d.tourId === params.tourId && d.departureTime === params.startTime)
-  );
+  const targetDeparture = params.departureId
+    ? departures.find((d) => d.id === params.departureId)
+    : undefined;
   const targetTour = dynamicTours.find((t) => t.id === params.tourId);
   if (!targetTour) throw new Error('The selected tour is not currently published. Refresh the catalogue before assigning resources.');
   const targetDuration = targetTour.durationHours;
