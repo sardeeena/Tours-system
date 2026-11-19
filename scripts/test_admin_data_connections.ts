@@ -71,4 +71,34 @@ assert.match(customerList, /if \(profilesRes\.error\) throw/, 'Customer director
 assert.match(customerList, /if \(customersRes\.error\) throw/, 'Customer directory must surface customer query errors');
 assert.doesNotMatch(customerList, /catch\s*\(err\)\s*\{\s*console\.warn/, 'Customer directory must not return partial local data after production DB failures');
 
+const coupons = read('src/services/couponService.ts');
+const couponList = section(coupons, 'export async function getCoupons()', 'export async function createCoupon(');
+assert.match(couponList, /import\.meta\.env\.PROD[\s\S]*?throw new Error/, 'Coupon admin reads must not return seeded coupons in production');
+assert.match(couponList, /if \(error\)[\s\S]*?throw new Error/, 'Coupon query failures must be visible');
+assert.match(coupons, /if \(!import\.meta\.env\.DEV\) throw new Error\('Supabase is not configured; coupon changes cannot be saved in production\.'\)/, 'Coupon writes must be database-only in production');
+
+const faqs = read('src/services/faqService.ts');
+const faqList = section(faqs, 'export async function getFaqs(', 'export async function createFaq(');
+assert.match(faqList, /if \(!import\.meta\.env\.DEV\) throw new Error/, 'FAQ admin reads must not use local seed data in production');
+assert.match(faqList, /if \(error\) throw new Error/, 'FAQ query failures must be visible');
+assert.match(faqList, /return data \|\| \[\]/, 'An empty FAQ table must be shown as empty, not replaced with sample FAQs');
+
+const settings = read('src/services/siteSettingsService.ts');
+const getSetting = section(settings, 'export async function getSetting<T>', 'export async function saveSetting<T>');
+const saveSetting = section(settings, 'export async function saveSetting<T>', 'export async function getCompanySettings()');
+assert.match(getSetting, /if \(error\) throw new Error/, 'Site setting read failures must not fall back to stale local values');
+assert.match(getSetting, /Supabase is not configured; site settings cannot be loaded in production/, 'Production site settings require Supabase');
+assert.ok(saveSetting.indexOf('.upsert(') < saveSetting.indexOf('localStorage.setItem'), 'Settings must be cached only after the database write succeeds');
+
+const storage = read('src/services/storageService.ts');
+const uploadMedia = section(storage, 'export async function uploadTourMedia(', '/**\n * Removes an image or video');
+assert.match(uploadMedia, /from\('media_assets'\)[\s\S]*?\.select\('id,created_at'\)/, 'Media uploads must create an authoritative metadata record');
+assert.match(uploadMedia, /rollbackError|uploaded object was rolled back/, 'Media uploads must roll back storage objects if metadata persistence fails');
+const listMedia = section(storage, 'export async function listStorageMedia(', '/**\n * Audits Supabase Storage bucket');
+assert.match(listMedia, /if \(dbError\) throw/, 'Media listing must surface database failures');
+assert.match(listMedia, /if \(storageError\) throw/, 'Media listing must surface storage failures');
+assert.doesNotMatch(listMedia, /return getLocalAssets\(\);\s*\}/, 'Production media listing must not mask storage failures with local assets');
+const cleanMedia = section(storage, 'export async function cleanOrphanedStorageFiles(', '/**\n * Generates an optimized image URL');
+assert.match(cleanMedia, /from\('user_roles'\)[\s\S]*?access_roles\(name\)/, 'Storage cleanup must use the current RBAC role assignments');
+
 console.log('Admin data wiring regression checks passed: production fallbacks, staff IDs, CRM persistence, customer financial/review records and dashboard ledger calculations.');
