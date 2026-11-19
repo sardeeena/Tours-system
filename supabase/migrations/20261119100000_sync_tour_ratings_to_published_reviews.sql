@@ -4,6 +4,12 @@ ALTER TABLE public.tours
   ALTER COLUMN rating SET DEFAULT 0,
   ALTER COLUMN review_count SET DEFAULT 0;
 
+ALTER TABLE public.reviews
+  ALTER COLUMN verified_booking SET DEFAULT FALSE;
+
+COMMENT ON COLUMN public.reviews.verified_booking IS
+  'True only when a completed booking has been independently confirmed; manual entries and customer submissions default to false.';
+
 WITH review_stats AS (
   SELECT
     r.tour_id,
