@@ -181,7 +181,7 @@ jobs:
         run: npm run test:private-ui-localization
 
       - name: Upload extracted private customer UI source catalog for translation audit
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: private-ui-source-catalog
           path: src/i18n/privateUiCatalog.generated.ts
