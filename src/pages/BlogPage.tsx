@@ -1,10 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowRight, CalendarDays, Clock3, BookOpen, Search } from 'lucide-react';
+import { ArrowRight, CalendarDays, Clock3, BookOpen, Search, BadgeCheck, ExternalLink } from 'lucide-react';
 import { BlogCategory, BlogPost, getBlogCategories, getPublishedBlogPost, getPublishedBlogPosts } from '../services/blogService';
 import { BlogContent } from '../components/blog/BlogContent';
 
 const dateLabel = (value?: string | null) => value ? new Date(value).toLocaleDateString('en',{month:'long',day:'numeric',year:'numeric'}) : '';
 const readingTime = (content: string) => Math.max(1,Math.ceil(content.trim().split(/\s+/).length/220));
+const getCitedSources = (content: string) => {
+  const section = content.split(/^##\\s+Sources\\s+&\\s+Further\\s+Reading\\s*$/im)[1] || '';
+  return Array.from(section.matchAll(/\\[[^\\]]+\\]\\((https:\\/\\/[^)]+)\\)/g), match => match[1]);
+};
+const hasRecognizedAuthority = (urls: string[]) => urls.some(url => /(^|\\.)(gov\\.uk|gov\\.eg|eeaa\\.gov\\.eg|noaa\\.gov|metoffice\\.gov\\.uk|gem\\.eg)(\\/|$)/i.test(new URL(url).hostname));
 
 export const BlogPage: React.FC<{ slug?: string; onNavigate:(path:string)=>void }> = ({slug,onNavigate}) => {
   const [posts,setPosts] = useState<BlogPost[]>([]);
@@ -51,7 +56,7 @@ export const BlogPage: React.FC<{ slug?: string; onNavigate:(path:string)=>void 
     schema.textContent = JSON.stringify({
       '@context':'https://schema.org','@type':'BlogPosting',headline:article.title,
       description,image:article.cover_image_url || undefined,datePublished:article.published_at,
-      dateModified:article.updated_at,author:{'@type':'Organization',name:article.author_name},
+      dateModified:article.updated_at,citation:getCitedSources(article.content),author:{'@type':'Organization',name:article.author_name},
       publisher:{'@type':'Organization',name:'Awesome Adventure Tours',url:'https://awesomeadventure.tours'},
       mainEntityOfPage:`https://awesomeadventure.tours/blog/${article.slug}`
     });
@@ -68,7 +73,16 @@ export const BlogPage: React.FC<{ slug?: string; onNavigate:(path:string)=>void 
         {article.cover_image_url && <img src={article.cover_image_url} alt={article.title} className="w-full max-h-[520px] object-cover rounded-3xl mb-10"/>}
         <div className="text-xs uppercase tracking-[.2em] text-[#0A6C74] dark:text-teal-300 font-bold mb-4">{article.category?.name||'Awesome Adventure Tours Journal'}</div>
         <h1 className="font-display text-4xl sm:text-6xl leading-tight font-bold mb-6">{article.title}</h1>
-        <div className="flex flex-wrap gap-5 text-sm text-stone-500 dark:text-slate-400 mb-10"><span>{article.author_name}</span><span>{dateLabel(article.published_at)}</span><span>{article.reading_time_minutes || 1} min read</span></div>
+        <div className="flex flex-wrap gap-5 text-sm text-stone-500 dark:text-slate-400 mb-5"><span>{article.author_name}</span><span>{dateLabel(article.published_at)}</span><span>{article.reading_time_minutes || 1} min read</span></div>
+        {(() => {
+          const sources = getCitedSources(article.content);
+          const authorityCited = hasRecognizedAuthority(sources);
+          return <div className="flex flex-wrap items-center gap-2 mb-8" aria-label="Article sourcing and editorial information">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D8E6E3] bg-[#F0F7F5] px-3 py-1.5 text-xs font-semibold text-[#245B52] dark:border-[#28524C] dark:bg-[#102B28] dark:text-teal-200"><BookOpen size={13}/> Editorial guide</span>
+            {sources.length > 0 && <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D8E6E3] bg-[#F0F7F5] px-3 py-1.5 text-xs font-semibold text-[#245B52] dark:border-[#28524C] dark:bg-[#102B28] dark:text-teal-200"><ExternalLink size={13}/> {sources.length} sources cited</span>}
+            {authorityCited && <span className="inline-flex items-center gap-1.5 rounded-full border border-[#D8E6E3] bg-[#F0F7F5] px-3 py-1.5 text-xs font-semibold text-[#245B52] dark:border-[#28524C] dark:bg-[#102B28] dark:text-teal-200"><BadgeCheck size={13}/> Official / specialist references</span>}
+          </div>;
+        })()}
         {article.excerpt && <p className="text-xl leading-relaxed text-stone-600 dark:text-slate-300 border-l-4 border-[#C28D32] pl-5 mb-10">{article.excerpt}</p>}
         <article className="max-w-none"><BlogContent content={article.content} className="text-lg"/></article>
         <div className="mt-14 p-8 rounded-3xl bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#243447]"><p className="text-xs uppercase tracking-widest text-[#C28D32] font-bold mb-2">Explore the Red Sea</p><h2 className="font-display text-2xl font-bold mb-3">Make your next story an adventure.</h2><button onClick={()=>onNavigate('/excursions')} className="inline-flex items-center gap-2 rounded-xl bg-[#0A6C74] text-white px-5 py-3 font-semibold">Explore excursions <ArrowRight size={16}/></button></div>
