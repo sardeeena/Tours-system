@@ -228,7 +228,11 @@ SET
     ELSE ta.notes
   END,
   updated_at = now()
-WHERE ta.date > (now() AT TIME ZONE 'Africa/Cairo')::DATE;
+WHERE ta.date > (now() AT TIME ZONE 'Africa/Cairo')::DATE
+  AND EXISTS (
+    SELECT 1 FROM public.tours AS published
+    WHERE published.id = ta.tour_id AND published.status = 'published'
+  );
 
 NOTIFY pgrst, 'reload schema';
 COMMIT;
