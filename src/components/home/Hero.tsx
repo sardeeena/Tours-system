@@ -48,7 +48,7 @@ const CINEMATIC_SLIDES: TourSlide[] = [
     id: 'padi-scuba-diving',
     title1: 'Unrivaled Coral Drop-Offs &',
     title2: 'Scuba Encounters',
-    subtitle: 'Beginner intro discovery dives and 2-tank guided boat dives led by certified PADI divemasters across the Red Sea.',
+    subtitle: 'Selected trips in Egypt offer introductory scuba dives and guided diving experiences. Check each tour page for dive format, instructor qualifications, equipment and inclusions.',
     imageUrl: 'https://images.unsplash.com/photo-1544551763-92ab472cad5d?auto=format&fit=crop&w=2400&q=85',
     accentGradient: 'from-[#0F766E] via-[#0D9488] to-[#0F766E] dark:from-[#2DD4BF] dark:via-[#5EEAD4] dark:to-[#99F6E4]',
   },
@@ -182,7 +182,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
           <SearchModule onSearch={onSearch} resultCount={resultCount} destinations={destinations} categories={categories} />
         </motion.div>
 
-        {/* Practical Trust Guarantees */}
+        {/* Practical Booking Information */}
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

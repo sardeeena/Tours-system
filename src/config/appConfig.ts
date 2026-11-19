@@ -40,5 +40,5 @@ export const APP_CONFIG = {
   },
 
   // Policies
-  CANCELLATION_POLICY_SUMMARY: 'Free cancellation up to 24 hours prior to scheduled departure. Cancellations within 24 hours or no-shows are subject to individual operator terms. 100% weather refund guarantee if Egyptian Coast Guard restricts harbor departure.',
+  CANCELLATION_POLICY_SUMMARY: 'Cancellation and refund terms vary by excursion. Review the selected tour page and booking confirmation. Weather or operational cancellations are handled according to the applicable booking terms and the responsible operator’s decision.',
 };

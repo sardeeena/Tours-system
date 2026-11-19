@@ -42,7 +42,7 @@ export const AdminReviewsList: React.FC = () => {
   const [newTourId, setNewTourId] = useState('');
   const [newAuthorName, setNewAuthorName] = useState('');
   const [newCountry, setNewCountry] = useState('Germany');
-  const [newRating, setNewRating] = useState(5);
+  const [newRating, setNewRating] = useState(0);
   const [newTravelerType, setNewTravelerType] = useState<string>('Couple');
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -168,8 +168,13 @@ export const AdminReviewsList: React.FC = () => {
   // Create new review
   const handleCreateReview = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTourId || !newAuthorName.trim() || !newComment.trim()) {
-      showToast('Please fill out all required fields (tour, author name, and feedback comment).', 'error');
+    if (!newTourId || !newAuthorName.trim() || !newComment.trim() || newRating < 1 || newRating > 5) {
+      showToast('Choose an excursion, enter the guest name and feedback, and select a 1–5 star rating.', 'error');
+      return;
+    }
+
+    if (!isSupabaseConfigured()) {
+      showToast('A live Supabase connection is required. No local-only review was created.', 'error');
       return;
     }
 
@@ -198,7 +203,7 @@ export const AdminReviewsList: React.FC = () => {
       comment: newComment.trim(),
       date: dateFormatted,
       traveler_type: newTravelerType,
-      verified_booking: true,
+      verified_booking: false,
       is_published: true,
       created_at: new Date().toISOString(),
     };
@@ -213,7 +218,7 @@ export const AdminReviewsList: React.FC = () => {
           comment: newRev.comment,
           date: newRev.date,
           traveler_type: newRev.traveler_type,
-          verified_booking: true,
+          verified_booking: false,
           is_published: true,
         };
         if (targetTourId) {
@@ -246,16 +251,17 @@ export const AdminReviewsList: React.FC = () => {
     setNewAuthorName('');
     setNewComment('');
     notifyCatalogueDataChanged('reviews');
-    showToast('New verified guest review published successfully.', 'success');
+    showToast('Guest review published. Booking verification has not been claimed.', 'success');
   };
 
   // Metrics calculation
   const totalReviews = reviews.length;
   const publishedCount = reviews.filter((r) => r.is_published).length;
   const pendingCount = reviews.filter((r) => !r.is_published).length;
-  const avgRating = totalReviews > 0
-    ? (reviews.reduce((acc, r) => acc + (r.rating || 5), 0) / totalReviews).toFixed(1)
-    : '5.0';
+  const publishedRatings = reviews.filter((review) => review.is_published && Number(review.rating) >= 1 && Number(review.rating) <= 5);
+  const avgRating = publishedRatings.length > 0
+    ? (publishedRatings.reduce((sum, review) => sum + Number(review.rating), 0) / publishedRatings.length).toFixed(1)
+    : '—';
 
   // Filtered reviews list
   const filteredReviews = useMemo(() => {
@@ -302,7 +308,7 @@ export const AdminReviewsList: React.FC = () => {
           className="inline-flex items-center space-x-1.5 px-4 py-2 bg-[#0A6C74] hover:bg-[#08565C] text-white rounded text-xs font-semibold shadow transition-colors cursor-pointer self-start sm:self-auto"
         >
           <Plus className="w-4 h-4" />
-          <span>Add Verified Review</span>
+          <span>Add Guest Review</span>
         </button>
       </div>
 
@@ -334,7 +340,7 @@ export const AdminReviewsList: React.FC = () => {
             <MessageSquare className="w-4 h-4 text-[#2dd4bf]" />
           </div>
           <div className="text-2xl font-bold text-white">{totalReviews}</div>
-          <p className="text-[10px] text-stone-400 mt-1">Verified traveler entries</p>
+          <p className="text-[10px] text-stone-400 mt-1">Customer-submitted entries</p>
         </div>
 
         <div className="bg-stone-950 border border-stone-800 rounded-lg p-4">
@@ -548,7 +554,7 @@ export const AdminReviewsList: React.FC = () => {
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
           <div className="bg-stone-900 border border-stone-800 rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
             <div className="flex items-center justify-between pb-3 border-b border-stone-800">
-              <h2 className="text-base font-bold text-white">Add Verified Guest Review</h2>
+              <h2 className="text-base font-bold text-white">Add Guest Review</h2>
               <button
                 type="button"
                 onClick={() => setIsAddModalOpen(false)}
@@ -557,6 +563,8 @@ export const AdminReviewsList: React.FC = () => {
                 <X className="w-4 h-4" />
               </button>
             </div>
+
+            <p className="text-[11px] leading-relaxed text-amber-200 bg-amber-950/30 border border-amber-800 rounded-lg p-3">Manual review entries are published as unverified. Only mark a review as booking-verified when a completed booking has been independently confirmed.</p>
 
             <form onSubmit={handleCreateReview} className="space-y-4 text-xs">
               <div>

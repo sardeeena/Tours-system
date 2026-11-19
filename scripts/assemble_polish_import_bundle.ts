@@ -143,6 +143,13 @@ async function main() {
       throw new Error('Summary structure/token mismatch: ' + draft.entity_type + ':' + draft.entity_key);
     }
     if (!(draft.entity_type === 'ui_catalog' ? uiCatalogStructureMatches(expected.content, payload.content) : translationStructureMatches(expected.content, payload.content))) {
+      if (draft.entity_type === 'ui_catalog' && isObject(expected.content) && isObject(payload.content)) {
+        const sourceKeys = Object.keys(expected.content).sort();
+        const translatedKeys = Object.keys(payload.content).sort();
+        const missingKeys = sourceKeys.filter((key) => !Object.prototype.hasOwnProperty.call(payload.content, key));
+        const extraKeys = translatedKeys.filter((key) => !Object.prototype.hasOwnProperty.call(expected.content, key));
+        throw new Error('UI catalogue structure mismatch: ' + draft.entity_key + '; missing keys (' + missingKeys.length + '): ' + missingKeys.join(', ') + '; extra keys (' + extraKeys.length + '): ' + extraKeys.join(', '));
+      }
       throw new Error('Content structure/token mismatch: ' + draft.entity_type + ':' + draft.entity_key);
     }
     const slug = normalizedSlug(draft.translated_slug, draft.entity_key);

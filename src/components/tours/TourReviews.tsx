@@ -16,7 +16,7 @@ export const TourReviews: React.FC<TourReviewsProps> = ({ tour }) => {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Form states
-  const [rating, setRating] = useState(5);
+  const [rating, setRating] = useState(0);
   const [authorName, setAuthorName] = useState('');
   const [country, setCountry] = useState('Germany');
   const [travelerType, setTravelerType] = useState<'Couple' | 'Family' | 'Solo' | 'Friends'>('Couple');
@@ -74,6 +74,11 @@ export const TourReviews: React.FC<TourReviewsProps> = ({ tour }) => {
     e.preventDefault();
     if (!authorName.trim() || !comment.trim()) {
       setSubmitError('Please provide your name and review comments.');
+      return;
+    }
+
+    if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+      setSubmitError('Please select a rating from 1 to 5 stars.');
       return;
     }
 

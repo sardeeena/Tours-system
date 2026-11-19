@@ -21,7 +21,7 @@ export interface OptionalExtra {
 }
 
 export type TourDifficulty = 'Easy' | 'Moderate' | 'Adventurous';
-export type TourDurationCategory = 'Half Day' | 'Full Day' | 'Multi Day';
+export type TourDurationCategory = 'Half Day' | 'Full Day' | 'Multi Day' | 'Unspecified';
 export type TourType = 'Shared' | 'Private';
 
 export interface Tour {

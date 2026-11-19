@@ -157,7 +157,7 @@ export const TourCard: React.FC<TourCardProps> = ({
                 <span className="text-stone-500 text-[11px]">({tour.reviewCount} reviews)</span>
               </>
             ) : (
-              <span className="text-stone-500 text-[11px] font-medium">New Excursion</span>
+              <span className="text-stone-500 text-[11px] font-medium">No reviews yet</span>
             )}
           </div>
 

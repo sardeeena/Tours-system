@@ -14,6 +14,7 @@ import { DestinationsSection } from './components/home/DestinationsSection';
 import { WhyChooseUs } from './components/home/WhyChooseUs';
 import { ReviewsSection } from './components/home/ReviewsSection';
 import { FinalCTA } from './components/home/FinalCTA';
+import { HomeFAQ } from './components/home/HomeFAQ';
 import { NotFoundPage } from './components/common/NotFoundPage';
 const ExcursionsPage = lazy(() => import('./pages/ExcursionsPage').then(m => ({ default: m.ExcursionsPage })));
 const TourDetailPage = lazy(() => import('./pages/TourDetailPage').then(m => ({ default: m.TourDetailPage })));
@@ -39,7 +40,7 @@ import { isSupabaseConfigured } from './services/supabaseClient';
 import { getStaticPages, INITIAL_STATIC_PAGES } from './services/siteSettingsService';
 import type { StaticPageContent } from './services/siteSettingsService';
 import { getStoredSeoMetadata, seoService } from './services/seoService';
-import { getPageSeo } from './services/seoConfig';
+import { generateStaticPageJsonLd, getPageSeo } from './services/seoConfig';
 import { sanitizeRedirectUrl } from './lib/security';
 import { TourDetailSkeleton } from './components/tours/TourDetailSkeleton';
 import { BookingPageSkeleton } from './components/booking/BookingPageSkeleton';
@@ -572,6 +573,7 @@ function MainApp() {
         description: 'Private Awesome Adventure Tours administration portal.',
         robotsIndex: false,
         robotsFollow: false,
+        schemaJsonLd: null,
       });
       return;
     }
@@ -584,6 +586,11 @@ function MainApp() {
         ogType: 'website',
         robotsIndex: true,
         robotsFollow: true,
+        schemaJsonLd: generateStaticPageJsonLd(
+          'blog',
+          'Awesome Adventure Tours Travel Journal | Red Sea Guides & Egypt Travel Stories',
+          'Discover Red Sea travel guides, local insights and inspiration for exploring Hurghada and Egypt with Awesome Adventure Tours.'
+        ),
       });
       return;
     }
@@ -602,6 +609,7 @@ function MainApp() {
         canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
         robotsIndex: false,
         robotsFollow: false,
+        schemaJsonLd: null,
       });
       return;
     }
@@ -615,6 +623,7 @@ function MainApp() {
         canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
         robotsIndex: false,
         robotsFollow: false,
+        schemaJsonLd: null,
       });
       return;
     }
@@ -626,6 +635,7 @@ function MainApp() {
         canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
         robotsIndex: false,
         robotsFollow: false,
+        schemaJsonLd: null,
       });
       return;
     }
@@ -637,6 +647,7 @@ function MainApp() {
         canonicalUrl: typeof window !== 'undefined' ? `${window.location.origin}${currentPath}` : undefined,
         robotsIndex: false,
         robotsFollow: true,
+        schemaJsonLd: null,
       });
       return;
     }
@@ -652,11 +663,18 @@ function MainApp() {
           ogType: 'article' as const,
           robotsIndex: staticPage.seoIndexable !== false,
           robotsFollow: staticPage.seoIndexable !== false,
+          schemaJsonLd: generateStaticPageJsonLd(
+            staticPage.slug,
+            staticPage.seoTitle || staticPage.title,
+            staticPage.seoDescription || staticPage.heroSubtitle,
+            'https://awesomeadventure.tours'
+          ),
         }
       : getPageSeo(currentPath, {
           tour: currentTourDetail,
           tours: liveTours,
           destination: currentDestination,
+          locale: currentLocale,
         });
 
     seoService.apply(baseSeoMetadata);
@@ -720,6 +738,7 @@ function MainApp() {
     };
   }, [
     currentPath,
+    currentLocale,
     confirmationReference,
     currentTourDetail,
     liveTours,
@@ -1668,6 +1687,9 @@ function MainApp() {
 
           {/* Reviews */}
           <ReviewsSection />
+
+          {/* English homepage FAQ content and matching FAQPage structured data */}
+          {currentLocale === 'en' && <HomeFAQ />}
 
           {/* Final CTA */}
           <FinalCTA

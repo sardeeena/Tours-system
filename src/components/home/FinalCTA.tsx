@@ -34,7 +34,7 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onExploreTours, onOpenMyBook
           <div className="relative z-10 max-w-2xl space-y-4">
             <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#0A6C74] dark:text-[#60C3CC] bg-[#0A6C74]/10 dark:bg-white/5 border border-[#0A6C74]/20 dark:border-white/10 px-3.5 py-1.5 rounded-full backdrop-blur-md">
               <Sparkles className="w-3.5 h-3.5 text-[#0A6C74] dark:text-[#60C3CC]" />
-              <span>Direct Booking Guarantee</span>
+              <span>Clear Booking Details</span>
             </div>
 
             <h2 className="font-display text-3xl sm:text-5xl text-stone-900 dark:text-white font-normal tracking-tight leading-[1.15]">
@@ -42,7 +42,7 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onExploreTours, onOpenMyBook
             </h2>
 
             <p className="text-sm sm:text-base text-stone-600 dark:text-slate-300 leading-relaxed max-w-xl">
-              Reserve your excursion date online with free cancellation up to 24 hours prior. Hotel pickup from your resort lobby is always included, with option to pay cash on pickup.
+              Review the cancellation terms for your selected excursion before confirming. Hotel pickup zones and any location-based supplements are shown for the selected tour.
             </p>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">

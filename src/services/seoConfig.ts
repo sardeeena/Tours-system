@@ -10,7 +10,7 @@ export const SEO_DEFAULTS = {
   DEFAULT_TITLE: 'Awesome Adventure Tours | Boat Trips, Island Tours & Safaris',
   DEFAULT_DESCRIPTION:
     'Discover boat trips, island experiences, snorkeling, diving and desert safaris across Egypt. Compare tour details and book with confidence.',
-  DEFAULT_OG_IMAGE: 'https://awesomeadventure.tours/logo.webp',
+  DEFAULT_OG_IMAGE: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&h=630&q=85',
   DEFAULT_LOCALE: 'en_US',
   KEYWORDS: [
     'Egypt boat trips',
@@ -27,7 +27,8 @@ export const SEO_DEFAULTS = {
 };
 
 /**
- * Standard FAQs for Schema.org FAQPage rich snippets on Google Search
+ * Visible English homepage FAQ content, reused by the FAQPage structured data.
+ * Structured data does not guarantee Google rich-result display.
  */
 export const HOMEPAGE_FAQS = [
   {
@@ -38,7 +39,7 @@ export const HOMEPAGE_FAQS = [
   {
     question: 'Can I pay upon hotel pickup rather than paying in advance online?',
     answer:
-      'Yes! We offer a flexible "Pay at Hotel Pickup" reservation option. You can book your excursion seats today to secure your departure and pay in cash (EUR, USD, GBP, or EGP) when our transfer vehicle arrives at your resort.',
+      'Some excursions offer "Pay at Hotel Pickup." The available payment method and accepted currency are shown during booking before you submit your reservation.',
   },
   {
     question: 'What is your cancellation and weather refund policy?',
@@ -70,7 +71,7 @@ export function getAppOrigin(): string {
  * Generates comprehensive Schema.org JSON-LD structured data for the Homepage
  * Combines TravelAgency Organization, WebSite with SearchAction, and FAQPage schemas
  */
-export function generateHomeJsonLd(origin = getAppOrigin()): Record<string, unknown> {
+export function generateHomeJsonLd(origin = getAppOrigin(), includeFaq = false): Record<string, unknown> {
   const organization = {
     '@type': 'TravelAgency',
     '@id': `${origin}/#organization`,
@@ -82,6 +83,19 @@ export function generateHomeJsonLd(origin = getAppOrigin()): Record<string, unkn
     },
     image: SEO_DEFAULTS.DEFAULT_OG_IMAGE,
     description: SEO_DEFAULTS.DEFAULT_DESCRIPTION,
+    telephone: APP_CONFIG.SUPPORT_PHONE,
+    email: APP_CONFIG.SUPPORT_EMAIL,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: '2nd floor, Bostan Cafe, Madres',
+      addressLocality: 'Hurghada',
+      addressRegion: 'Red Sea Governorate',
+      addressCountry: 'EG',
+    },
+    areaServed: ['Hurghada', 'El Gouna', 'Makadi Bay', 'Sharm El Sheikh', 'Cairo', 'Giza', 'Luxor'],
+    sameAs: [
+      'https://www.tripadvisor.co.uk/Attraction_Review-g297549-d34759384-Reviews-Awesome_Adventure_Tours-Hurghada_Red_Sea_and_Sinai.html',
+    ],
   };
 
   const website = {
@@ -94,9 +108,24 @@ export function generateHomeJsonLd(origin = getAppOrigin()): Record<string, unkn
     inLanguage: 'en',
   };
 
+  const faqPage = includeFaq
+    ? {
+        '@type': 'FAQPage',
+        '@id': `${origin}/#faq`,
+        mainEntity: HOMEPAGE_FAQS.map(({ question, answer }) => ({
+          '@type': 'Question',
+          name: question,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: answer,
+          },
+        })),
+      }
+    : null;
+
   return {
     '@context': 'https://schema.org',
-    '@graph': [organization, website],
+    '@graph': [organization, website, ...(faqPage ? [faqPage] : [])],
   };
 }
 
@@ -247,10 +276,57 @@ export function generateDestinationJsonLd(
 }
 
 /**
+ * Structured data for public CMS/static pages. Legal and informational pages
+ * remain WebPage entities; About and Contact receive their dedicated Schema.org
+ * subtypes. Content is deliberately limited to the page's visible title and
+ * description rather than inventing ratings, offers, or business claims.
+ */
+export function generateStaticPageJsonLd(
+  slug: string,
+  title: string,
+  description: string,
+  origin = getAppOrigin()
+): Record<string, unknown> {
+  const normalizedSlug = slug.replace(/^\/+|\/+$/g, '').toLowerCase();
+  const pageUrl = normalizedSlug ? `${origin}/${encodeURIComponent(normalizedSlug)}` : `${origin}/`;
+  const pageType = normalizedSlug === 'about'
+    ? 'AboutPage'
+    : normalizedSlug === 'contact'
+      ? 'ContactPage'
+      : 'WebPage';
+  const graph: Record<string, unknown>[] = [
+    {
+      '@type': pageType,
+      '@id': `${pageUrl}#webpage`,
+      url: pageUrl,
+      name: title,
+      description,
+      isPartOf: { '@id': `${origin}/#website` },
+      publisher: { '@id': `${origin}/#organization` },
+      ...(normalizedSlug === 'about' ? { about: { '@id': `${origin}/#organization` } } : {}),
+      ...(normalizedSlug === 'contact' ? {
+        mainEntity: {
+          '@id': `${origin}/#organization`,
+        },
+      } : {}),
+    },
+    {
+      '@type': 'BreadcrumbList',
+      '@id': `${pageUrl}#breadcrumb`,
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Home', item: `${origin}/` },
+        { '@type': 'ListItem', position: 2, name: title, item: pageUrl },
+      ],
+    },
+  ];
+  return { '@context': 'https://schema.org', '@graph': graph };
+}
+
+/**
  * Static metadata configurations for all primary application routes
  */
-export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> = {
-  '/': (origin) => ({
+export const STATIC_ROUTE_SEO: Record<string, (origin: string, locale?: string) => SeoMetadata> = {
+  '/': (origin, locale = 'en') => ({
     title: 'Awesome Adventure Tours | Boat Trips, Island Tours & Safaris',
     description:
       'Explore Red Sea boat trips to Orange Bay, Giftun Island, Ras Mohammed, and desert safaris. Compare tour details, pickup arrangements, inclusions, and cancellation terms.',
@@ -260,7 +336,7 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string) => SeoMetadata> =
     ogImage: SEO_DEFAULTS.DEFAULT_OG_IMAGE,
     ogImageAlt: 'Red Sea yacht sailing towards turquoise island reefs',
     twitterCard: 'summary_large_image',
-    schemaJsonLd: generateHomeJsonLd(origin),
+    schemaJsonLd: generateHomeJsonLd(origin, locale === 'en'),
   }),
 
   '/excursions': (origin) => ({
@@ -403,6 +479,7 @@ export function getPageSeo(
     tour?: Tour | null;
     tours?: Tour[];
     destination?: Destination | null;
+    locale?: string;
   }
 ): SeoMetadata {
   const origin = getAppOrigin();
@@ -457,7 +534,7 @@ export function getPageSeo(
   // 3. Static defined routes
   const cleanPath = path.split('?')[0].replace(/\/$/, '') || '/';
   if (STATIC_ROUTE_SEO[cleanPath]) {
-    return STATIC_ROUTE_SEO[cleanPath](origin);
+    return STATIC_ROUTE_SEO[cleanPath](origin, context?.locale ?? 'en');
   }
 
   // 4. Fallback default
@@ -469,6 +546,6 @@ export function getPageSeo(
     ogType: 'website',
     ogImage: SEO_DEFAULTS.DEFAULT_OG_IMAGE,
     twitterCard: 'summary_large_image',
-    schemaJsonLd: generateHomeJsonLd(origin),
+    schemaJsonLd: generateHomeJsonLd(origin, false),
   };
 }

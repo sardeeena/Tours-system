@@ -58,7 +58,7 @@ export const ReviewsSection: React.FC = () => {
               What Travelers Say
             </h2>
             <p className="text-stone-600 dark:text-slate-300 text-sm sm:text-base mt-2 max-w-xl leading-relaxed">
-              Guest feedback shared after completed excursions across our Red Sea destinations.
+              Guest feedback about excursions across our Red Sea destinations.
             </p>
           </div>
 
@@ -108,7 +108,7 @@ export const ReviewsSection: React.FC = () => {
             id="review-loading"
             data-testid="review-loading"
             aria-busy="true"
-            aria-label="Loading verified traveler reviews"
+            aria-label="Loading traveler reviews"
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
           >
             {[...Array(3)].map((_, idx) => (
@@ -171,7 +171,7 @@ export const ReviewsSection: React.FC = () => {
               No Guest Reviews Published Yet
             </h3>
             <p className="text-xs text-stone-500 dark:text-slate-400 leading-relaxed">
-              Real reviews from verified travelers are reviewed and published here following completed excursions.
+              Guest reviews are moderated before publication. Booking verification is shown only when a completed booking can be confirmed.
             </p>
           </div>
         )}

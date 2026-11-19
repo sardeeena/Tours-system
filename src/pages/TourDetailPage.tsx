@@ -219,7 +219,7 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({
                 </>
               ) : (
                 <span className="text-stone-500 font-medium">
-                  New Excursion · No reviews yet
+                  No customer reviews yet
                 </span>
               )}
               {tour.pickupAvailable && (
@@ -227,7 +227,7 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({
                   <span className="text-stone-400">•</span>
                   <span className="text-emerald-700 font-semibold flex items-center">
                     <CheckCircle2 className="w-3.5 h-3.5 mr-1" />
-                    Hotel Pickup Included
+                    Hotel Pickup Available
                   </span>
                 </>
               )}

@@ -43,16 +43,16 @@ export const StepPickup: React.FC<StepPickupProps> = ({
         <div>
           <h2 className="font-display text-base sm:text-lg font-bold text-[#0E1B2A] flex items-center">
             <MapPin className="w-4 h-4 mr-2 text-[#0A6C74]" />
-            Choose Your Hotel Transfer Area
+            Choose Your Pickup Location
           </h2>
           <p className="text-xs text-stone-600 mt-1">
-            {pickupAvailable ? 'Choose only a hotel transfer area explicitly approved for this excursion.' : 'Hotel pickup is not offered for this excursion.'}
+            {pickupAvailable ? 'Choose a pickup location explicitly approved for this excursion.' : 'Pickup is not offered for this excursion.'}
           </p>
         </div>
 
         {!pickupAvailable ? (
           <div className="rounded border border-stone-200 bg-stone-50 p-4 text-xs text-stone-700">
-            This excursion does not offer hotel pickup. You can continue without selecting a pickup location.
+            This excursion does not offer pickup. You can continue without selecting a pickup location.
           </div>
         ) : loading ? (
           <div role="status" className="rounded border border-stone-200 bg-stone-50 p-4 text-xs text-stone-600">
@@ -121,6 +121,12 @@ export const StepPickup: React.FC<StepPickupProps> = ({
             );
           })}
         </div>
+        )}
+
+        {selectedPickupId === 'hurghada-airport' && (
+          <div role="note" className="rounded border border-sky-200 bg-sky-50 p-3 text-xs text-sky-900">
+            Airport arrival transfer: enter your destination hotel above, then add your flight number and arrival time in Special Requests on the next step.
+          </div>
         )}
 
         {/* Accommodation Name Input */}

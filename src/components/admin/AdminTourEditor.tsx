@@ -69,6 +69,30 @@ type EditorTab =
   | 'seo'
   | 'settings';
 
+const normalizeTourDepartureTimes = (value: string): string | null => {
+  const entries = value.split(',').map((entry) => entry.trim()).filter(Boolean);
+  if (entries.length === 0) return null;
+
+  const normalized: string[] = [];
+  for (const entry of entries) {
+    const match = entry.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+    if (!match) return null;
+
+    const enteredHour = Number(match[1]);
+    const minute = Number(match[2]);
+    const meridiem = match[3]?.toUpperCase();
+    if (minute > 59 || enteredHour > (meridiem ? 12 : 23) || enteredHour < (meridiem ? 1 : 0)) return null;
+
+    const hour24 = meridiem
+      ? (enteredHour % 12) + (meridiem === 'PM' ? 12 : 0)
+      : enteredHour;
+    const displayHour = hour24 % 12 || 12;
+    normalized.push(`${String(displayHour).padStart(2, '0')}:${String(minute).padStart(2, '0')} ${hour24 >= 12 ? 'PM' : 'AM'}`);
+  }
+
+  return normalized.join(', ');
+};
+
 export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
   tourId,
   onNavigateTab,
@@ -97,31 +121,31 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
     short_description: '',
     description: '',
     destination_id: '',
-    duration: 'Full Day (approx. 7 hours)',
-    duration_type: 'Full Day',
-    duration_hours: 7.0,
+    duration: '',
+    duration_type: 'Unspecified',
+    duration_hours: 0,
     tour_type: 'Shared',
     status: 'draft',
     featured: false,
-    price: 35.0,
-    child_price: 18.0,
+    price: 0,
+    child_price: 0,
     infant_price: 0.0,
-    private_price: 250.0,
+    private_price: 0,
     currency: 'EUR',
-    max_guests: 35,
-    minimum_booking_notice_hours: 12,
-    pickup_available: true,
-    pickup_info: 'Complimentary lobby pickup and return across Hurghada included.',
-    cancellation_policy: 'Free cancellation up to 24 hours before excursion start time.',
-    departure_time: '08:30 AM',
-    available_days: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-    languages: ['English', 'German'],
-    difficulty: 'Easy',
-    age_restrictions: 'Suitable for all ages. Children under 2 join free.',
-    badge: 'Popular',
-    rating: 4.9,
-    review_count: 24,
-    sort_order: 1,
+    max_guests: 0,
+    minimum_booking_notice_hours: 0,
+    pickup_available: false,
+    pickup_info: '',
+    cancellation_policy: '',
+    departure_time: '',
+    available_days: [],
+    languages: [],
+    difficulty: null,
+    age_restrictions: '',
+    badge: null,
+    rating: 0,
+    review_count: 0,
+    sort_order: 0,
   });
 
   const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
@@ -149,10 +173,9 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
     robots_follow: true,
   });
   const [newKeywordInput, setNewKeywordInput] = useState('');
-  const [languagesInput, setLanguagesInput] = useState('English, German');
+  const [languagesInput, setLanguagesInput] = useState('');
 
   // Availability Form State
-  const [availabilityMaxCapacity, setAvailabilityMaxCapacity] = useState(35);
 
   // Load existing tour if editing
   useEffect(() => {
@@ -214,54 +237,8 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
             }
           }
         } else {
-          // Defaults for new tour
-          if (dests.length > 0) {
-            setTourData((prev) => ({ ...prev, destination_id: dests[0].id }));
-          }
-          if (cats.length > 0) {
-            setSelectedCategoryIds([cats[0].id]);
-          }
-          setHighlights([
-            '2 hours on pristine beach with shaded loungers & shallow turquoise lagoon',
-            'Two 45-minute guided snorkeling stops at vibrant offshore reefs',
-            'Fresh open buffet lunch served onboard with soft drinks & bottled water',
-            'Complimentary snorkeling equipment and flotation jackets provided',
-            'Hotel lobby pickup and return transfer across Hurghada included',
-          ]);
-          setInclusions([
-            'Hotel pickup and return transfer in air-conditioned vehicle',
-            'Full-day boat cruise on passenger yacht with sun decks',
-            'Snorkeling equipment (mask, snorkel, fins)',
-            'Buffet lunch prepared fresh onboard',
-            'Unlimited soft drinks, mineral water, tea & coffee',
-          ]);
-          setExclusions([
-            'Personal expenses & souvenir shopping on island',
-            'Underwater photography package (available as optional extra)',
-            'Gratuities for yacht crew & dive masters',
-          ]);
-          setItinerary([
-            { time: '08:00', title: 'Hotel pickup', description: 'Air-conditioned transfer from your resort lobby to Hurghada Marina.' },
-            { time: '09:00', title: 'Departure from marina', description: 'Safety briefing and scenic sail across the Red Sea.' },
-            { time: '10:00', title: 'First snorkeling stop', description: 'Guided reef snorkeling session observing parrotfish, rays, and corals.' },
-            { time: '12:30', title: 'Lunch onboard', description: 'Warm buffet lunch with fish, chicken, rice, salads, and fruits.' },
-            { time: '14:00', title: 'Island beach time', description: 'Disembark at beach for relaxation, photography, and shallow swimming.' },
-            { time: '16:30', title: 'Return to marina', description: 'Leisurely cruise back as afternoon sun reflects on coastal mountains.' },
-            { time: '17:00', title: 'Hotel drop-off', description: 'Return transfer back to your hotel lobby.' },
-          ]);
-          setFaqs([
-            { question: 'Is snorkeling equipment provided or should I bring my own?', answer: 'Sanitized masks, snorkels, and fins in adult and child sizes are provided onboard free of charge.' },
-            { question: 'Can non-swimmers participate safely?', answer: 'Yes! Coast Guard approved flotation vests are provided and certified dive masters accompany guests in the water.' },
-          ]);
-          setImages([
-            {
-              id: 'seed-img-1',
-              image_url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
-              alt_text: 'Orange Bay beach',
-              is_primary: true,
-              sort_order: 1,
-            },
-          ]);
+          // New excursions intentionally start without assumed destinations, prices,
+          // pickup promises, language coverage, images or itinerary content.
         }
       } catch (err) {
         console.error('Failed to initialize editor data:', err);
@@ -299,14 +276,29 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
 
     try {
       const configuredLanguages = Array.from(new Set((tourData.languages || []).map((language) => String(language).trim()).filter(Boolean)));
-      if (configuredLanguages.length === 0) {
-        throw new Error('Add at least one tour language before saving.');
-      }
+      const normalizedDepartureTime = normalizeTourDepartureTimes(tourData.departure_time || '');
       const statusToSave = overrideStatus || tourData.status || 'draft';
+      if (statusToSave === 'published') {
+        const missingDetails: string[] = [];
+        if (!tourData.title?.trim() || !tourData.slug?.trim()) missingDetails.push('a title and URL slug');
+        if (!tourData.destination_id) missingDetails.push('a destination');
+        if (!tourData.short_description?.trim() || !tourData.description?.trim()) missingDetails.push('short and full descriptions');
+        if (!tourData.duration?.trim() || !['Half Day', 'Full Day', 'Multi Day'].includes(String(tourData.duration_type)) || !(Number(tourData.duration_hours) > 0)) missingDetails.push('a confirmed duration and duration category');
+        if (!(Number(tourData.price) > 0)) missingDetails.push('a confirmed price');
+        if (!(Number(tourData.max_guests) > 0)) missingDetails.push('the actual guest capacity');
+        if (!normalizedDepartureTime) missingDetails.push('departure times in a valid 24-hour or AM/PM format');
+        if (!tourData.cancellation_policy?.trim()) missingDetails.push('the excursion-specific cancellation policy');
+        if (configuredLanguages.length === 0) missingDetails.push('at least one confirmed tour language');
+        if (tourData.pickup_available === true && !tourData.pickup_info?.trim()) missingDetails.push('accurate pickup details');
+        if (!images.some((image) => typeof image?.image_url === 'string' && image.image_url.trim())) missingDetails.push('at least one genuine excursion image');
+        if (missingDetails.length) {
+          throw new Error(`Complete these verified details before publishing: ${missingDetails.join(', ')}.`);
+        }
+      }
       const hasActiveApprovedPickup = selectedPickupIds.some((id) =>
         pickupLocations.some((location) => location.id === id)
       );
-      if (statusToSave === 'published' && tourData.pickup_available !== false && !hasActiveApprovedPickup) {
+      if (statusToSave === 'published' && tourData.pickup_available === true && !hasActiveApprovedPickup) {
         throw new Error('A published tour that offers pickup must have at least one explicitly approved active pickup location. Configure its pickup points or disable pickup for this tour before publishing.');
       }
 
@@ -314,14 +306,15 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
         tour: {
           ...tourData,
           languages: configuredLanguages,
+          departure_time: normalizedDepartureTime || tourData.departure_time || '',
           status: statusToSave,
           price: Number(tourData.price) || 0,
           child_price: Number(tourData.child_price) || 0,
           infant_price: Number(tourData.infant_price) || 0,
           private_price: Number(tourData.private_price) || 0,
-          duration_hours: Number(tourData.duration_hours) || 7,
-          max_guests: Number(tourData.max_guests) || 35,
-          minimum_booking_notice_hours: Number(tourData.minimum_booking_notice_hours) || 12,
+          duration_hours: Math.max(0, Number(tourData.duration_hours ?? 0)),
+          max_guests: Math.max(0, Number(tourData.max_guests ?? 0)),
+          minimum_booking_notice_hours: Math.max(0, Number(tourData.minimum_booking_notice_hours ?? 0)),
         },
         categoryIds: selectedCategoryIds,
         highlights,
@@ -499,6 +492,19 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
         </div>
       )}
 
+      {(!itinerary.length || !faqs.length) && (
+        <div role="status" className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs text-amber-950 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-100">
+          <p className="font-bold">Content readiness review</p>
+          <p className="mt-1">
+            {[
+              !itinerary.length ? 'No itinerary steps are recorded.' : '',
+              !faqs.length ? 'No traveller FAQs are recorded.' : '',
+            ].filter(Boolean).join(' ')}
+            {' '}Add accurate, excursion-specific information before relying on this page for search answers. Do not invent operational, pickup or safety details.
+          </p>
+        </div>
+      )}
+
       {/* Tab Navigation Strip */}
       <div className="flex items-center space-x-1 border-b border-stone-800 overflow-x-auto pb-1 text-xs">
         {tabsList.map((tab) => {
@@ -607,10 +613,11 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
                   Duration Category
                 </label>
                 <select
-                  value={tourData.duration_type || 'Full Day'}
+                  value={tourData.duration_type || 'Unspecified'}
                   onChange={(e) => handleFieldChange('duration_type', e.target.value as any)}
                   className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-xs text-white focus:outline-none focus:border-[#0A6C74]"
                 >
+                  <option value="Unspecified">Select duration category</option>
                   <option value="Half Day">Half Day</option>
                   <option value="Full Day">Full Day</option>
                   <option value="Multi Day">Multi Day</option>
@@ -624,8 +631,8 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
                 <input
                   type="number"
                   step="0.5"
-                  value={tourData.duration_hours || 7}
-                  onChange={(e) => handleFieldChange('duration_hours', parseFloat(e.target.value))}
+                  value={tourData.duration_hours ?? 0}
+                  onChange={(e) => handleFieldChange('duration_hours', parseFloat(e.target.value) || 0)}
                   className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-xs text-white focus:outline-none focus:border-[#0A6C74]"
                 />
               </div>
@@ -637,9 +644,9 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
               </label>
               <input
                 type="text"
-                value={tourData.departure_time || '08:30 AM'}
+                value={tourData.departure_time || ''}
                 onChange={(e) => handleFieldChange('departure_time', e.target.value)}
-                placeholder="08:30 AM"
+                placeholder="08:30 AM; separate multiple times with commas"
                 className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-xs text-white focus:outline-none focus:border-[#0A6C74]"
               />
             </div>
@@ -1211,14 +1218,14 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
           <label className="flex items-start gap-3 rounded border border-stone-800 bg-stone-900 p-3 text-xs text-stone-200">
             <input
               type="checkbox"
-              checked={tourData.pickup_available !== false}
+              checked={tourData.pickup_available === true}
               onChange={(e) => handleFieldChange('pickup_available', e.target.checked)}
               className="mt-0.5 rounded text-[#0A6C74] focus:ring-0"
             />
             <span>
               <span className="font-semibold block">This excursion offers hotel pickup</span>
               <span className="text-[11px] text-stone-400 block mt-1">
-                Turn this off only when the operator confirms that no hotel pickup is offered. Existing pickup mappings are preserved but will not be offered to customers while pickup is disabled.
+                Enable pickup only after the operator confirms the covered areas, any supplements and the approved pickup points below. Existing pickup mappings are preserved when pickup is disabled.
               </span>
             </span>
           </label>
@@ -1259,6 +1266,11 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
               );
             })}
           </div>
+          {tourData.pickup_available === true && !selectedPickupIds.some((id) => pickupLocations.some((location) => location.id === id)) && (
+            <div role="status" className="rounded-lg border border-amber-700 bg-amber-950/30 p-3 text-xs text-amber-200">
+              <strong>Pickup mapping required:</strong> This excursion is marked as pickup-enabled but has no assigned pickup zone. The guest booking flow cannot continue until at least one active zone is mapped. Select only the areas confirmed by the operator, or disable pickup if it is not offered.
+            </div>
+          )}
         </div>
       )}
 
@@ -1397,8 +1409,8 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
               </label>
               <input
                 type="number"
-                value={tourData.max_guests ?? 35}
-                onChange={(e) => handleFieldChange('max_guests', parseInt(e.target.value) || 35)}
+                value={tourData.max_guests ?? 0}
+                onChange={(e) => handleFieldChange('max_guests', parseInt(e.target.value) || 0)}
                 className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-xs text-white"
               />
             </div>
@@ -1409,8 +1421,8 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
               </label>
               <input
                 type="number"
-                value={tourData.minimum_booking_notice_hours ?? 12}
-                onChange={(e) => handleFieldChange('minimum_booking_notice_hours', parseInt(e.target.value) || 12)}
+                value={tourData.minimum_booking_notice_hours ?? 0}
+                onChange={(e) => handleFieldChange('minimum_booking_notice_hours', parseInt(e.target.value) || 0)}
                 className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-xs text-white"
               />
             </div>

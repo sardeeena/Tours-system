@@ -1,6 +1,8 @@
 import React from 'react';
 import { Destination, Tour, CurrencyConfig } from '../types';
 
+const RED_SEA_DESTINATION_SLUGS = new Set(['hurghada', 'sharm-el-sheikh', 'el-gouna', 'sahl-hasheesh', 'makadi-bay']);
+
 interface DestinationDetailPageProps {
   destination: Destination;
   tours: Tour[];
@@ -50,7 +52,7 @@ export const DestinationDetailPage: React.FC<DestinationDetailPageProps> = ({
             <span aria-current="page">{destination.name}</span>
           </nav>
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#A9D8D8]">
-            Egypt · Red Sea
+            {RED_SEA_DESTINATION_SLUGS.has(destination.slug.toLowerCase()) ? 'Egypt · Red Sea' : 'Egypt'}
           </p>
           <h1 className="max-w-3xl font-display text-4xl font-bold leading-tight sm:text-6xl">
             {title}
