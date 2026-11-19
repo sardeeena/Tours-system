@@ -659,28 +659,30 @@ export const CrmCustomersManager: React.FC = () => {
                       </div>
 
                       <div className="space-y-2">
-                        {profileCustomer.bookings.map((b) => (
-                          <div
-                            key={b.bookingReference}
-                            className="p-3 bg-stone-950 rounded-lg border border-stone-800 flex items-center justify-between"
-                          >
-                            <div>
-                              <span className="font-bold text-white">{b.bookingReference}</span>
-                              <span className="text-stone-400 block text-[11px]">{b.tourTitle}</span>
-                            </div>
-                            <div className="text-right">
-                              <span className="font-mono font-bold text-white">€{b.pricing.totalEur}</span>
-                              <span
-                                className={`block text-[10px] uppercase font-semibold ${
-                                  b.paymentStatus === 'paid' ? 'text-emerald-400' : 'text-amber-400'
-                                }`}
-                              >
-                                {b.paymentStatus || 'Pending'} ({b.paymentMethod === 'pay_online' ? 'Card' : 'Cash on Pier'})
-                              </span>
-                            </div>
+                        {(profileCustomer.payments || []).length === 0 ? (
+                          <div className="rounded-lg border border-stone-800 bg-stone-950 p-6 text-center text-xs text-stone-400">
+                            No payment transactions are recorded for this customer yet.
                           </div>
-                        ))}
+                        ) : (
+                          (profileCustomer.payments || []).map((payment: any) => (
+                            <div key={payment.id} className="p-3 bg-stone-950 rounded-lg border border-stone-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                              <div>
+                                <span className="font-bold text-white">{payment.bookingReference || 'Booking payment'}</span>
+                                <span className="text-stone-400 block text-[11px]">{payment.paymentMethod || 'Payment method not specified'} · {payment.provider || 'Manual provider'}</span>
+                                <span className="text-stone-500 block text-[10px] font-mono">{payment.transactionReference || 'No transaction reference'}</span>
+                              </div>
+                              <div className="text-left sm:text-right">
+                                <span className="font-mono font-bold text-white">{payment.amount.toLocaleString()} {payment.currency}</span>
+                                <span className={`block text-[10px] uppercase font-semibold ${['paid', 'partially paid', 'partially_paid'].includes(String(payment.paymentStatus).toLowerCase()) ? 'text-emerald-400' : 'text-amber-400'}`}>
+                                  {payment.paymentStatus}
+                                </span>
+                                <span className="block text-[10px] text-stone-500">{payment.paymentDate ? new Date(payment.paymentDate).toLocaleString() : 'Date unavailable'}</span>
+                              </div>
+                            </div>
+                          ))
+                        )}
                       </div>
+</div>
                     </div>
                   )}
 
