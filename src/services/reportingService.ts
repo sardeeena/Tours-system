@@ -982,7 +982,7 @@ export async function fetchFinanceReport(interval: DateRangeInterval): Promise<F
     }))
     .sort((a, b) => b.amountEur - a.amountEur);
 
-  const monthMap = new Map<string, { gross: number; paid: number; refunds: number; bookings: number }>();
+  const monthMap = new Map<string, { gross: number; discounts: number; paid: number; refunds: number; bookings: number }>();
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const currentYear = new Date().getFullYear();
   for (let month = 0; month < 12; month++) {
