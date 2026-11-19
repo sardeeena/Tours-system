@@ -16,6 +16,8 @@ type BookingRow = {
   id: string;
   booking_reference: string;
   booking_date: string;
+  departure_id: string | null;
+  departures: any;
   total: number | string | null;
   currency: string | null;
   status: string;
@@ -220,7 +222,7 @@ async function processMessage(
 
   const { data: booking, error: bookingError } = await client
     .from('bookings')
-    .select('id,booking_reference,booking_date,total,currency,status,payment_status,payment_method,adult_count,child_count,infant_count,pickup_hotel_name,pickup_room_number,tour_language,customer_locale,customer_id,customers(first_name,last_name,email,phone,country,hotel,preferred_locale),tours(title,departure_time,slug),pickup_locations(name,area),booking_extras(name,quantity,unit_price,total_price,pricing_type)')
+    .select('id,booking_reference,booking_date,departure_id,total,currency,status,payment_status,payment_method,adult_count,child_count,infant_count,pickup_hotel_name,pickup_room_number,tour_language,customer_locale,customer_id,customers(first_name,last_name,email,phone,country,hotel,preferred_locale),tours(title,departure_time,slug),departures(start_time,end_time),pickup_locations(name,area),booking_extras(name,quantity,unit_price,total_price,pricing_type)')
     .eq('id', bookingId)
     .maybeSingle();
 
@@ -230,6 +232,7 @@ async function processMessage(
   const row = booking as unknown as BookingRow;
   const customer = normalizeRelation(row.customers);
   const tour = normalizeRelation(row.tours);
+  const departure = normalizeRelation(row.departures);
   const pickup = normalizeRelation(row.pickup_locations);
   const bookingExtras = Array.isArray(row.booking_extras) ? row.booking_extras : [];
   const recipient = String(customer?.email || '').trim().toLowerCase();
@@ -496,6 +499,7 @@ async function processMessage(
     booking_reference: String(row.booking_reference || ''),
     tour_name: String(tour?.title || 'your selected tour'),
     tour_date: String(row.booking_date || '').slice(0, 10),
+    departure_time: departure?.start_time ? String(departure.start_time) : 'To be confirmed',
     booking_status: String(row.status || 'pending').replace(/_/g, ' '),
     currency,
     amount: transactionalTemplateKey === 'payment_confirmation' ? currency + ' ' + amount : amount,
@@ -527,6 +531,7 @@ async function processMessage(
     'Booking reference: ' + row.booking_reference,
     'Excursion: ' + String(tour?.title || 'your selected tour'),
     'Date: ' + formatDate(String(row.booking_date || '')),
+    ...(departure?.start_time ? ['Departure time: ' + String(departure.start_time)] : ['Departure time: To be confirmed']),
     'Guests: ' + Number(row.adult_count || 0) + ' adults, ' + Number(row.child_count || 0) + ' children, ' + Number(row.infant_count || 0) + ' infants',
     'Pickup: ' + String(pickup?.name || 'To be confirmed') + (pickup?.area ? ' (' + String(pickup.area) + ')' : ''),
     'Hotel: ' + String(row.pickup_hotel_name || customer?.hotel || 'To be confirmed'),
@@ -547,7 +552,7 @@ async function processMessage(
         customerEmail: recipient,
         tourName: String(tour?.title || 'your selected tour'),
         tourDate: formatDate(String(row.booking_date || '')),
-        departureTime: tour?.departure_time ? String(tour.departure_time) : undefined,
+        departureTime: departure?.start_time ? String(departure.start_time) : undefined,
         adultCount: Number(row.adult_count || 0),
         childCount: Number(row.child_count || 0),
         infantCount: Number(row.infant_count || 0),
