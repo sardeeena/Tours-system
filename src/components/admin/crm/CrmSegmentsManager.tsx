@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { listCrmCustomers, CrmCustomerDetail } from '../../../services/crmService';
 import { useToast } from '../../../contexts/ToastContext';
+import { AdminLoadError } from '../AdminLoadError';
 
 interface SegmentDef {
   id: string;
@@ -31,14 +32,17 @@ export const CrmSegmentsManager: React.FC = () => {
   const { showToast } = useToast();
   const [customers, setCustomers] = useState<CrmCustomerDetail[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [activeSegmentId, setActiveSegmentId] = useState<string>('vip');
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const data = await listCrmCustomers();
       setCustomers(data);
     } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'Customer segment data could not be loaded.');
       console.warn('Failed to load customers for segments:', err);
     } finally {
       setLoading(false);
@@ -136,6 +140,7 @@ export const CrmSegmentsManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
