@@ -4575,17 +4575,18 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
         && /^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug);
     });
     const tourIds = tours.map((tour: any) => tour.id);
-    const [highlightResult, itineraryResult, inclusionResult, exclusionResult, faqResult] = tourIds.length
+    const [highlightResult, itineraryResult, inclusionResult, exclusionResult, faqResult, pickupMappingResult] = tourIds.length
       ? await Promise.all([
           publicSupabase.from('tour_highlights').select('tour_id,item,sort_order').in('tour_id', tourIds).order('sort_order', { ascending: true }),
           publicSupabase.from('tour_itinerary').select('tour_id,time,title,description,sort_order').in('tour_id', tourIds).order('sort_order', { ascending: true }),
           publicSupabase.from('tour_inclusions').select('tour_id,item,sort_order').in('tour_id', tourIds).order('sort_order', { ascending: true }),
           publicSupabase.from('tour_exclusions').select('tour_id,item,sort_order').in('tour_id', tourIds).order('sort_order', { ascending: true }),
           publicSupabase.from('tour_faqs').select('tour_id,question,answer,sort_order').in('tour_id', tourIds).order('sort_order', { ascending: true }),
+          publicSupabase.from('tour_pickup_locations').select('tour_id,pickup_location_id').in('tour_id', tourIds),
         ])
-      : [null, null, null, null, null];
+      : [null, null, null, null, null, null];
 
-    const relatedErrors = [highlightResult, itineraryResult, inclusionResult, exclusionResult, faqResult]
+    const relatedErrors = [highlightResult, itineraryResult, inclusionResult, exclusionResult, faqResult, pickupMappingResult]
       .filter((result: any) => result?.error);
     const firstRelatedError = relatedErrors[0];
     if (firstRelatedError?.error) throw firstRelatedError.error;
@@ -4605,6 +4606,24 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
     const inclusionsByTour = groupByTour(inclusionResult?.data);
     const exclusionsByTour = groupByTour(exclusionResult?.data);
     const faqsByTour = groupByTour(faqResult?.data);
+    const pickupLocationIds = [...new Set((pickupMappingResult?.data || [])
+      .map((mapping: any) => String(mapping.pickup_location_id))
+      .filter(Boolean))];
+    const pickupLocationResult = pickupLocationIds.length
+      ? await publicSupabase.from('pickup_locations')
+          .select('id,code,name,area,fee_eur_per_person,fee_eur_flat,is_active')
+          .in('id', pickupLocationIds)
+          .eq('is_active', true)
+      : { data: [], error: null };
+    if (pickupLocationResult.error) throw pickupLocationResult.error;
+    const pickupLocationsById = new Map((pickupLocationResult.data || [])
+      .map((location: any) => [String(location.id), location]));
+    const pickupZonesByTour = groupByTour((pickupMappingResult?.data || [])
+      .map((mapping: any) => ({
+        ...mapping,
+        pickup_location: pickupLocationsById.get(String(mapping.pickup_location_id)),
+      }))
+      .filter((mapping: any) => mapping.pickup_location));
 
     const destinationTourCounts = new Map<string, number>();
     for (const tour of tourResult.data || []) {
@@ -4668,6 +4687,22 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
       const cancellation = cleanPublicText(tour.cancellation_policy, 800);
       const languages = Array.isArray(tour.languages) ? tour.languages.map((value: unknown) => cleanPublicText(value, 40)).filter(Boolean) : [];
       if (pickupInfo) lines.push(`Pickup details: ${pickupInfo}`);
+      const pickupZones = pickupZonesByTour.get(id) || [];
+      if (pickupZones.length) {
+        const pickupZoneDetails = pickupZones.map((mapping: any) => {
+          const location = mapping.pickup_location;
+          const name = cleanPublicText(location.name, 120);
+          const area = cleanPublicText(location.area, 300);
+          const perPersonFee = Number(location.fee_eur_per_person) || 0;
+          const flatFee = Number(location.fee_eur_flat) || 0;
+          const fees = [
+            perPersonFee > 0 ? `€${perPersonFee.toFixed(2)} per person` : '',
+            flatFee > 0 ? `€${flatFee.toFixed(2)} per booking` : '',
+          ].filter(Boolean);
+          return `${name}${area ? ` (${area})` : ''}: ${fees.length ? fees.join(', ') : 'Complimentary'}`;
+        }).filter(Boolean);
+        if (pickupZoneDetails.length) lines.push(`Approved pickup zones and fees: ${pickupZoneDetails.join('; ')}`);
+      }
       if (cancellation) lines.push(`Cancellation terms: ${cancellation}`);
       if (tour.departure_time) lines.push(`Departure time: ${cleanPublicText(tour.departure_time, 120)}`);
       if (languages.length) lines.push(`Languages: ${languages.join(', ')}`);
