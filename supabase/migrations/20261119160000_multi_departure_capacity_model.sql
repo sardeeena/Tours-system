@@ -164,6 +164,26 @@ BEGIN
     FROM public.bookings
     WHERE departure_id = p_departure_id AND status <> 'cancelled';
 
+    IF coalesce(v_existing.booked_passengers,0) <> v_booked THEN
+      RAISE EXCEPTION 'Departure capacity ledger and assigned booking passenger totals do not match. Reconcile this slot before changing it.'
+        USING ERRCODE = '23514';
+    END IF;
+
+    IF EXISTS (
+      SELECT 1
+      FROM public.bookings AS b
+      WHERE b.departure_id = p_departure_id
+        AND b.status <> 'cancelled'
+        AND (
+          v_existing.vessel_id IS DISTINCT FROM p_vessel_id
+          OR v_existing.guide_id IS DISTINCT FROM p_guide_id
+          OR v_existing.driver_id IS DISTINCT FROM p_driver_id
+        )
+    ) THEN
+      RAISE EXCEPTION 'Resource assignments cannot be changed on a departure with active bookings. Reconcile the manifest first.'
+        USING ERRCODE = '23514';
+    END IF;
+
     IF v_booked > p_capacity THEN
       RAISE EXCEPTION 'New capacity is below the current booked passenger count (%)', v_booked
         USING ERRCODE = '22023';
