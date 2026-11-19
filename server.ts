@@ -4058,7 +4058,7 @@ app.all('/api/db/query', rateLimit(60, 60_000), async (req: AuthenticatedRequest
         // Strictly scoped to the authenticated user's ID
         const { data, error } = await serverSupabase
           .from('bookings')
-          .select('id, booking_reference, booking_date, status, payment_status, total, currency, created_at, tours(title, slug, primary_image)')
+          .select('id, booking_reference, booking_date, departure_id, departures(start_time,end_time), status, payment_status, total, currency, created_at, tours(title, slug, primary_image)')
           .eq('user_id', req.user.id)
           .order('created_at', { ascending: false })
           .limit(50);
@@ -4096,7 +4096,7 @@ app.all('/api/db/query', rateLimit(60, 60_000), async (req: AuthenticatedRequest
         if (isStaff) {
           const { data: staffBooking, error: staffError } = await serverSupabase
             .from('bookings')
-            .select('id, booking_reference, booking_date, status, payment_status, payment_method, total, currency, customers(*), tours(*)')
+            .select('id, booking_reference, booking_date, departure_id, departures(start_time,end_time), status, payment_status, payment_method, total, currency, customers(*), tours(*)')
             .eq('booking_reference', reference)
             .maybeSingle();
 
