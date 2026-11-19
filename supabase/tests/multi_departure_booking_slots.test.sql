@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(15);
+SELECT plan(18);
 
 SELECT has_function(
   'public','get_tour_departure_slots',ARRAY['text','date'],
@@ -180,6 +180,26 @@ SELECT is(
    )),
   3,
   'daily remaining capacity aggregates the independent slots'
+);
+
+SELECT throws_ok(
+  'UPDATE public.departures SET status = ''cancelled'' WHERE id = (SELECT first_departure_id FROM multi_departure_context)',
+  '23514',
+  'A departure with active bookings cannot be cancelled until its bookings are resolved.',
+  'a departure with active bookings cannot be cancelled'
+);
+
+SELECT throws_ok(
+  'DELETE FROM public.departures WHERE id = (SELECT first_departure_id FROM multi_departure_context)',
+  '23514',
+  'A departure referenced by a booking cannot be deleted; retain it for booking and audit history.',
+  'a departure referenced by any booking cannot be deleted'
+);
+
+SELECT is(
+  (SELECT status FROM public.departures WHERE id = (SELECT first_departure_id FROM multi_departure_context)),
+  'confirmed',
+  'failed cancellation leaves the booked departure unchanged'
 );
 
 SELECT is(
