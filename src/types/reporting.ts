@@ -226,6 +226,7 @@ export interface PaymentMethodBreakdown {
 export interface MonthlyRevenueItem {
   month: string; // "Jan 2026"
   grossEur: number;
+  discountsEur: number;
   paidEur: number;
   refundsEur: number;
   netEur: number;
