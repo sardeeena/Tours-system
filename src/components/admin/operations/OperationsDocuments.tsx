@@ -32,7 +32,6 @@ import {
 } from '../../../types/operations';
 import { DbVessel, DbGuide, DbWeatherBulletin } from '../../../types/database';
 import { Tour } from '../../../types';
-import { ALL_TOURS } from '../../../data/toursData';
 import { getPublishedTours } from '../../../services/tourService';
 import { useToast } from '../../../contexts/ToastContext';
 import { AdminLoadError } from '../AdminLoadError';
@@ -54,7 +53,7 @@ export const OperationsDocuments: React.FC<OperationsDocumentsProps> = ({ onNavi
   );
   const [docType, setDocType] = useState<DocumentType>('coast_guard_manifest');
   const [selectedTourId, setSelectedTourId] = useState<string>('all');
-  const [tours, setTours] = useState<Tour[]>(ALL_TOURS);
+  const [tours, setTours] = useState<Tour[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -77,7 +76,7 @@ export const OperationsDocuments: React.FC<OperationsDocumentsProps> = ({ onNavi
         listVessels(),
         listGuides(),
         getLatestWeatherBulletin(),
-        getPublishedTours().catch(() => []),
+        getPublishedTours(),
       ]);
       setDepartures(deps);
       setPassengers(pass);
@@ -113,7 +112,7 @@ export const OperationsDocuments: React.FC<OperationsDocumentsProps> = ({ onNavi
 
   const filteredPickups = useMemo(() => {
     if (selectedTourId === 'all') return pickups;
-    const tourTitle = tours.find((t) => t.id === selectedTourId)?.title || ALL_TOURS.find((t) => t.id === selectedTourId)?.title;
+    const tourTitle = tours.find((t) => t.id === selectedTourId)?.title;
     if (!tourTitle) return pickups;
     return pickups.filter((p) => p.tourTitle.toLowerCase().includes(tourTitle.toLowerCase()));
   }, [pickups, selectedTourId, tours]);
