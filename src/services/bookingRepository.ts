@@ -257,7 +257,8 @@ class SupabaseBookingRepository implements IBookingRepository {
             *,
             tours (*),
             customers (*),
-            booking_extras (*)
+            booking_extras (*),
+            departures (start_time,end_time)
           `)
           .eq('booking_reference', cleanRef)
           .maybeSingle();
@@ -319,7 +320,8 @@ class SupabaseBookingRepository implements IBookingRepository {
             *,
             tours (*),
             customers (*),
-            booking_extras (*)
+            booking_extras (*),
+            departures (start_time,end_time)
           `)
           .eq('booking_reference', cleanRef)
           .maybeSingle();
@@ -412,7 +414,8 @@ class SupabaseBookingRepository implements IBookingRepository {
             *,
             tours (*),
             customers!inner (*),
-            booking_extras (*)
+            booking_extras (*),
+            departures (start_time,end_time)
           `)
           .eq('customers.email', cleanEmail)
           .order('created_at', { ascending: false });
@@ -425,7 +428,9 @@ class SupabaseBookingRepository implements IBookingRepository {
               *,
               tours (*),
               customers (*),
-              booking_extras (*)
+              booking_extras (*),
+              departures (start_time,end_time),
+            departures (start_time,end_time)
             `)
             .eq('user_id', user.id)
             .order('created_at', { ascending: false });
@@ -691,7 +696,8 @@ class SupabaseBookingRepository implements IBookingRepository {
             *,
             tours (*),
             customers (*),
-            booking_extras (*)
+            booking_extras (*),
+            departures (start_time,end_time)
           `)
           .order('created_at', { ascending: false })
           .order('id', { ascending: false })
