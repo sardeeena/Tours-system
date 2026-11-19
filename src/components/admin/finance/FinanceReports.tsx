@@ -22,7 +22,6 @@ import {
 } from '../../../services/financeService';
 import { FinancialReportData, OutstandingBalanceItem, FinanceRefund, FinancePayment } from '../../../types/finance';
 import { Tour } from '../../../types';
-import { ALL_TOURS } from '../../../data/toursData';
 import { getPublishedTours } from '../../../services/tourService';
 import { useToast } from '../../../contexts/ToastContext';
 import { AdminLoadError } from '../AdminLoadError';
@@ -49,7 +48,7 @@ export const FinanceReports: React.FC = () => {
   const [report, setReport] = useState<FinancialReportData | null>(null);
   const [balances, setBalances] = useState<OutstandingBalanceItem[]>([]);
   const [payments, setPayments] = useState<FinancePayment[]>([]);
-  const [tours, setTours] = useState<Tour[]>(ALL_TOURS);
+  const [tours, setTours] = useState<Tour[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
 
@@ -64,14 +63,12 @@ export const FinanceReports: React.FC = () => {
         ),
         getOutstandingBalances(),
         listPayments(),
-        getPublishedTours().catch(() => []),
+        getPublishedTours(),
       ]);
       setReport(rData);
       setBalances(bData);
       setPayments(pData);
-      if (loadedTours && loadedTours.length > 0) {
-        setTours(loadedTours);
-      }
+      setTours(loadedTours);
     } catch (err) {
       setLoadError(err instanceof Error ? err.message : 'Financial reports could not be loaded.');
       console.warn('Failed to load financial reports:', err);
@@ -118,8 +115,8 @@ export const FinanceReports: React.FC = () => {
     return balances.filter((b) => {
       if (statusFilter !== 'all' && b.status !== statusFilter) return false;
       if (tourFilter !== 'all') {
-        const matchingTour = tours.find((t) => t.id === tourFilter) || ALL_TOURS.find((t) => t.id === tourFilter);
-        if (matchingTour && !b.tourTitle.toLowerCase().includes(matchingTour.title.toLowerCase())) return false;
+        const matchingTour = tours.find((t) => t.id === tourFilter);
+        if (!matchingTour || !b.tourTitle.toLowerCase().includes(matchingTour.title.toLowerCase())) return false;
       }
       return true;
     });
@@ -294,7 +291,7 @@ export const FinanceReports: React.FC = () => {
               className="w-full bg-stone-900 border border-stone-800 rounded px-2.5 py-1.5 text-stone-200 focus:outline-hidden truncate"
             >
               <option value="all">All Excursions</option>
-              {(tours.length > 0 ? tours : ALL_TOURS).map((t) => (
+              {tours.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.title}
                 </option>
