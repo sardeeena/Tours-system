@@ -1350,6 +1350,96 @@ export async function getCustomerProfile(idOrEmail: string): Promise<CrmCustomer
     (l) => l.customerId === found.id || l.email.toLowerCase() === found.email.toLowerCase()
   );
 
+  const localMode = useLocalCrmData('Supabase is not configured; the customer financial and review history cannot be loaded in production.');
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const bookingIds = found.bookings
+    .map((booking) => booking.bookingId)
+    .filter((id): id is string => Boolean(id && uuidPattern.test(id)));
+  let payments: any[] = [];
+  let refunds: any[] = [];
+  let reviews: any[] = [];
+
+  if (!localMode) {
+    let paymentQuery = supabase.from('payment_transactions').select('*').order('payment_date', { ascending: false });
+    let refundQuery = supabase.from('refund_records').select('*').order('created_at', { ascending: false });
+    const customerUuid = uuidPattern.test(found.id) ? found.id : null;
+    const bookingFilter = bookingIds.length ? `booking_id.in.(${bookingIds.join(',')})` : '';
+
+    if (customerUuid && bookingFilter) {
+      paymentQuery = paymentQuery.or(`customer_id.eq.${customerUuid},${bookingFilter}`);
+      refundQuery = refundQuery.or(`customer_id.eq.${customerUuid},${bookingFilter}`);
+    } else if (customerUuid) {
+      paymentQuery = paymentQuery.eq('customer_id', customerUuid);
+      refundQuery = refundQuery.eq('customer_id', customerUuid);
+    } else if (bookingIds.length) {
+      paymentQuery = paymentQuery.in('booking_id', bookingIds);
+      refundQuery = refundQuery.in('booking_id', bookingIds);
+    } else {
+      paymentQuery = paymentQuery.eq('customer_email', found.email);
+      refundQuery = refundQuery.eq('customer_email', found.email);
+    }
+
+    const [paymentResult, refundResult, reviewResult] = await Promise.all([
+      paymentQuery,
+      refundQuery,
+      supabase.from('reviews').select('*').ilike('author_name', found.fullName).order('created_at', { ascending: false }),
+    ]);
+    if (paymentResult.error) throw new Error(formatSupabaseError(paymentResult.error));
+    if (refundResult.error) throw new Error(formatSupabaseError(refundResult.error));
+    if (reviewResult.error) throw new Error(formatSupabaseError(reviewResult.error));
+    payments = paymentResult.data || [];
+    refunds = refundResult.data || [];
+    reviews = reviewResult.data || [];
+  } else {
+    const parseLocal = (keys: string[]) => {
+      for (const key of keys) {
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          try { return JSON.parse(raw); } catch { return []; }
+        }
+      }
+      return [];
+    };
+    const matchesBooking = (item: any) =>
+      item.customerId === found.id ||
+      item.customerEmail?.toLowerCase() === found.email.toLowerCase() ||
+      found.bookings.some((booking) => booking.bookingReference === item.bookingReference || booking.bookingId === item.bookingId);
+    payments = parseLocal(['rse_fin_payments', 'rse_finance_payments']).filter(matchesBooking);
+    refunds = parseLocal(['rse_fin_refunds', 'rse_finance_refunds']).filter(matchesBooking);
+    reviews = parseLocal(['rse_tour_reviews']).filter((review: any) =>
+      review.authorName?.toLowerCase() === found.fullName.toLowerCase() ||
+      review.authorEmail?.toLowerCase() === found.email.toLowerCase()
+    );
+  }
+
+  found.payments = payments.map((row) => ({
+    id: row.id,
+    bookingId: row.booking_id || row.bookingId,
+    bookingReference: row.booking_reference || row.bookingReference,
+    amount: Number(row.amount) || 0,
+    currency: row.currency || 'EUR',
+    paymentMethod: row.payment_method || row.paymentMethod,
+    paymentStatus: row.status || row.paymentStatus || 'pending',
+    transactionReference: row.transaction_reference || row.transactionReference,
+    paymentDate: row.payment_date || row.paymentDate || row.created_at || row.createdAt,
+    provider: row.provider,
+    isManual: row.is_manual ?? row.isManual,
+    recordedBy: row.recorded_by || row.recordedBy,
+    notes: row.notes,
+  }));
+  found.reviews = reviews.map((row) => ({
+    id: row.id,
+    tourId: row.tour_id || row.tourId,
+    tourTitle: found.bookings.find((booking) => booking.tourId === (row.tour_id || row.tourId))?.tourTitle || row.tourTitle || 'Tour Experience',
+    authorName: row.author_name || row.authorName || found.fullName,
+    country: row.country,
+    rating: Number(row.rating) || 0,
+    comment: row.comment || '',
+    date: row.date || row.created_at || row.createdAt,
+    verifiedBooking: row.verified_booking ?? row.verifiedBooking ?? false,
+    isPublished: row.is_published ?? row.isPublished ?? false,
+  }));
+
   // Synthesize complete unified chronological timeline covering all 11 categories:
   // Inquiry, Lead, Booking, Payment, Communication, Task, Follow-up, Departure, Cancellation, Refund, Review
   const customerActivities: CrmActivity[] = [...activities.filter((a) => a.customerId === found.id)];
@@ -1422,20 +1512,6 @@ export async function getCustomerProfile(idOrEmail: string): Promise<CrmCustomer
       createdAt: b.date || b.createdAt,
     });
 
-    // 4. PAYMENT EVENT
-    if (b.paymentStatus === 'paid' || b.paymentStatus === 'partially_paid') {
-      customerActivities.push({
-        id: `act-pay-${b.bookingReference}`,
-        customerId: found.id,
-        bookingId: b.bookingId || b.bookingReference,
-        eventType: 'payment_recorded',
-        title: `Payment Settled: €${b.pricing?.totalEur || 0}`,
-        description: `Settled via ${b.paymentMethod === 'pay_online' ? 'Online Card' : 'Pier Cash/Mobile POS'}.`,
-        actor: 'Accounting Desk',
-        createdAt: b.date || b.createdAt,
-      });
-    }
-
     // 9. CANCELLATION EVENT
     if (b.status === 'cancelled' || b.status === 'cancellation_requested') {
       customerActivities.push({
@@ -1477,51 +1553,46 @@ export async function getCustomerProfile(idOrEmail: string): Promise<CrmCustomer
     });
   });
 
-  // 10. REFUNDS
-  try {
-    const rawRefunds = localStorage.getItem('rse_fin_refunds') || localStorage.getItem('rse_finance_refunds');
-    if (rawRefunds) {
-      const refunds = JSON.parse(rawRefunds);
-      refunds.forEach((r: any) => {
-        if (
-          r.customerId === found.id ||
-          found.bookings.some((b) => b.bookingReference === r.bookingReference || b.bookingId === r.bookingId)
-        ) {
-          customerActivities.push({
-            id: `act-ref-${r.id}`,
-            customerId: found.id,
-            bookingId: r.bookingId,
-            eventType: 'refund',
-            title: `Refund (${r.status}): €${r.approvedAmount || r.amount}`,
-            description: `Reason: ${r.reason}. Method: ${r.paymentMethod || 'Original Method'}.`,
-            actor: 'Finance Dept',
-            createdAt: r.createdAt || new Date().toISOString(),
-          });
-        }
-      });
-    }
-  } catch {}
+  // 4. PAYMENTS: use actual payment transactions, not booking payment-status snapshots.
+  payments.forEach((payment) => {
+    customerActivities.push({
+      id: `act-pay-${payment.id}`,
+      customerId: found.id,
+      bookingId: payment.booking_id || payment.bookingId,
+      eventType: 'payment_recorded',
+      title: `Payment ${payment.status || payment.paymentStatus || 'recorded'}: ${payment.amount} ${payment.currency || 'EUR'}`,
+      description: `Method: ${payment.payment_method || payment.paymentMethod || 'Not specified'}. Reference: ${payment.transaction_reference || payment.transactionReference || 'Not provided'}.`,
+      actor: payment.recorded_by || payment.recordedBy || 'Finance',
+      createdAt: payment.payment_date || payment.paymentDate || payment.created_at || payment.createdAt || new Date().toISOString(),
+    });
+  });
 
-  // 11. REVIEWS
-  try {
-    const rawReviews = localStorage.getItem('rse_tour_reviews');
-    if (rawReviews) {
-      const revs = JSON.parse(rawReviews);
-      revs.forEach((rv: any) => {
-        if (rv.authorName?.toLowerCase() === found.fullName.toLowerCase() || rv.authorEmail?.toLowerCase() === found.email.toLowerCase()) {
-          customerActivities.push({
-            id: `act-rev-${rv.id}`,
-            customerId: found.id,
-            eventType: 'review',
-            title: `Customer Review (${rv.rating}★): ${rv.tourTitle || 'Tour Experience'}`,
-            description: rv.comment || 'Verified traveler feedback.',
-            actor: found.fullName,
-            createdAt: rv.date || rv.createdAt || new Date().toISOString(),
-          });
-        }
-      });
-    }
-  } catch {}
+  // 10. REFUNDS: load the authoritative refund ledger from Supabase in production.
+  refunds.forEach((refund) => {
+    customerActivities.push({
+      id: `act-ref-${refund.id}`,
+      customerId: found.id,
+      bookingId: refund.booking_id || refund.bookingId,
+      eventType: 'refund',
+      title: `Refund (${refund.status}): ${refund.approved_amount ?? refund.approvedAmount ?? refund.requested_amount ?? refund.amount} ${refund.currency || 'EUR'}`,
+      description: `Reason: ${refund.reason}. Method: ${refund.refund_method || refund.paymentMethod || 'Original Method'}.`,
+      actor: refund.processed_by || refund.processedBy || refund.requested_by || 'Finance',
+      createdAt: refund.processed_date || refund.processedDate || refund.created_at || refund.createdAt || new Date().toISOString(),
+    });
+  });
+
+  // 11. REVIEWS: expose the actual review rows on the customer profile and timeline.
+  found.reviews.forEach((review: any) => {
+    customerActivities.push({
+      id: `act-rev-${review.id}`,
+      customerId: found.id,
+      eventType: 'review',
+      title: `Customer Review (${review.rating}★): ${review.tourTitle || 'Tour Experience'}`,
+      description: review.comment || 'Verified traveler feedback.',
+      actor: review.authorName || found.fullName,
+      createdAt: review.date || new Date().toISOString(),
+    });
+  });
 
   // Deduplicate activities by id and sort in descending chronological order
   const seenIds = new Set<string>();
