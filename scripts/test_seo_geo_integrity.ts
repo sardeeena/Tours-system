@@ -114,6 +114,10 @@ assert.match(seoConfig, /normalizedSlug === 'about'[\s\S]*?'AboutPage'/, 'Client
 assert.match(seoConfig, /normalizedSlug === 'contact'[\s\S]*?'ContactPage'/, 'Client-side Contact page uses ContactPage structured data');
 assert.match(app, /schemaJsonLd: generateStaticPageJsonLd\(/, 'Client router applies structured data to static CMS pages');
 assert.match(seoService, /if \(meta\.schemaJsonLd !== undefined\) setSchemaJsonLd\(meta\.schemaJsonLd\)/, 'Client SEO hydration preserves server-rendered JSON-LD when no replacement is supplied');
+assert.match(seoService, /schemaJsonLd\?: Record<string, unknown> \| null/, 'SEO metadata supports explicit structured-data removal');
+assert.match(app, /schemaJsonLd: null/, 'Private customer and admin routes clear stale public JSON-LD during SPA navigation');
+assert.match(app, /'blog',[\s\S]*?generateStaticPageJsonLd/, 'The blog index replaces stale route schema with its own page schema');
+assert.match(server, /if \(privateRoute\.test\(req\.path\)\)[\s\S]*?X-Robots-Tag', 'noindex, nofollow'/, 'Private SPA routes receive an HTTP-level noindex directive before HTML is served');
 assert.match(server, /slug && slug !== 'about'/, 'Sitemap and llms discovery preserve the explicitly indexable About page');
 assert.match(server, /Office: 2nd floor, Bostan Cafe, Madres, Hurghada, Red Sea Governorate, Egypt/, 'Homepage Markdown response uses the canonical owner-confirmed office address');
 assert.doesNotMatch(server, /Hurghada New Marina, Berth B-14/, 'Homepage Markdown response does not expose the retired office address');
