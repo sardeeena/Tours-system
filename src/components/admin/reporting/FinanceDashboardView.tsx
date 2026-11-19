@@ -202,24 +202,31 @@ export const FinanceDashboardView: React.FC<FinanceDashboardViewProps> = ({
               />
             </div>
             <p className="text-[11px] text-stone-500 dark:text-stone-400 leading-relaxed">
-              Currencies are kept separate and auditable. Converted equivalents are calculated at official CIB central bank fixing rates for executive reference without corrupting the historical cash ledger.
+              EUR collection metrics include EUR transactions only. Non-EUR collections remain in their original currency until an approved FX source is connected.
             </p>
           </div>
 
           <div className="space-y-2">
-            <span className="text-xs font-medium text-stone-600 dark:text-stone-400">Currency Exposure (Collected Equivalent):</span>
+            <span className="text-xs font-medium text-stone-600 dark:text-stone-400">Collected Amounts by Currency:</span>
             <div className="grid grid-cols-3 gap-2.5 text-xs">
               {metrics.currencyBreakdown.map((cb) => (
                 <div key={cb.currency} className="p-2.5 bg-[#FAF8F5] dark:bg-[#0E1B2A] rounded-xl border border-[#E8E3DA] dark:border-[#1F3854] text-center">
                   <span className="text-[10px] text-stone-500 dark:text-stone-400 block uppercase font-bold">{cb.currency}</span>
                   <span className="font-mono text-[#0E1B2A] dark:text-white font-bold text-xs mt-0.5 block">
-                    {cb.currency === 'EUR' ? '€' : cb.currency === 'USD' ? '$' : 'E£'}
-                    {cb.amount.toLocaleString()}
+                    {cb.currency} {cb.amount.toLocaleString()}
+                  </span>
+                  <span className="text-[9px] text-stone-500 dark:text-stone-400 mt-1 block">
+                    {cb.convertedEur === null ? 'Not converted to EUR' : `EUR equivalent €${cb.convertedEur.toLocaleString()}`}
                   </span>
                 </div>
               ))}
             </div>
           </div>
+          {metrics.currencyBreakdown.some((item) => item.currency !== 'EUR') && (
+            <p className="text-[10px] text-amber-600 dark:text-amber-300 mt-2">
+              Non-EUR collections are excluded from EUR collected, outstanding and collection-rate totals until a verified exchange-rate source is configured.
+            </p>
+          )}
         </div>
       </div>
     </div>
