@@ -28,6 +28,7 @@ const stepPickup = readFileSync(new URL('../src/components/booking/StepPickup.ts
 const homeFaq = readFileSync(new URL('../src/components/home/HomeFAQ.tsx', import.meta.url), 'utf8');
 const seoConfig = readFileSync(new URL('../src/services/seoConfig.ts', import.meta.url), 'utf8');
 const app = readFileSync(new URL('../src/App.tsx', import.meta.url), 'utf8');
+const appConfig = readFileSync(new URL('../src/config/appConfig.ts', import.meta.url), 'utf8');
 const sitemapStart = server.indexOf("app.get('/sitemap.xml'");
 const llmsStart = server.indexOf("app.get('/llms.txt'");
 const schemaStart = server.indexOf("const organization: Record<string, any>");
@@ -179,6 +180,8 @@ assert.match(seoConfig, /addressLocality: 'Hurghada'/, 'TravelAgency schema incl
 assert.match(seoConfig, /generateHomeJsonLd\(origin, locale === 'en'\)/, 'FAQ schema is limited to the English homepage where the FAQ is visible');
 assert.match(app, /currentLocale === 'en' && <HomeFAQ \/>/, 'English FAQ section is not shown as untranslated content on other locales');
 assert.match(app, /locale: currentLocale/, 'SEO metadata receives the active locale for language-specific schema');
+assert.doesNotMatch(appConfig, /100% weather refund guarantee|Free cancellation up to 24 hours prior/i, 'Shared application configuration does not promise universal cancellation or weather refunds');
+assert.match(appConfig, /Cancellation and refund terms vary by excursion/, 'Shared cancellation summary defers to the selected excursion terms');
 
 
 
