@@ -1237,7 +1237,7 @@ export async function listStaffNotifications(): Promise<StaffNotification[]> {
     .from('staff_notifications')
     .select('id,category,dedup_key,title,message,severity,entity_type,entity_id,link_tab,is_read,read_at,created_at')
     .order('created_at', { ascending: false })
-    .limit(250);
+    .limit(1000);
   if (error) throw new Error(error.message || 'Could not load the staff notification inbox.');
   return (data || []).map(mapStaffNotification);
 }
