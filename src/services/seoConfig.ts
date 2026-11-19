@@ -131,18 +131,11 @@ export function generateHomeJsonLd(origin = getAppOrigin(), includeFaq = false):
 
 /**
  * Generates rich Schema.org structured data for an individual excursion detail page
- * Combines TouristTrip, Product, Offer, AggregateRating, and Itinerary ItemList
+ * Combines TouristTrip, provider, and itinerary ItemList
  */
 export function generateTourJsonLd(tour: Tour, origin = getAppOrigin()): Record<string, unknown> {
   const tourUrl = `${origin}/excursions/${encodeURIComponent(tour.slug)}`;
   const images = [tour.primaryImage, ...(tour.galleryImages || [])].filter(Boolean);
-  const verifiedReviews = (tour.reviews || []).filter(
-    (review) => review.verifiedBooking && Number.isFinite(review.rating) && review.rating >= 1 && review.rating <= 5
-  );
-  const verifiedAverage = verifiedReviews.length
-    ? verifiedReviews.reduce((total, review) => total + review.rating, 0) / verifiedReviews.length
-    : null;
-
   return {
     '@context': 'https://schema.org',
     '@type': 'TouristTrip',
@@ -151,35 +144,6 @@ export function generateTourJsonLd(tour: Tour, origin = getAppOrigin()): Record<
     description: tour.fullDescription || tour.shortDescription,
     image: images,
     url: tourUrl,
-    subjectOf: {
-      '@type': 'Product',
-      name: tour.title,
-      image: images,
-      description: tour.shortDescription,
-      sku: `AAT-${tour.id}`,
-      offers: {
-        '@type': 'Offer',
-        url: tourUrl,
-        price: tour.priceEur,
-        priceCurrency: 'EUR',
-        seller: {
-          '@type': 'TravelAgency',
-          name: SEO_DEFAULTS.SITE_NAME,
-          url: origin,
-        },
-      },
-      ...(verifiedReviews.length > 0 && verifiedAverage !== null
-        ? {
-            aggregateRating: {
-              '@type': 'AggregateRating',
-              ratingValue: verifiedAverage.toFixed(1),
-              reviewCount: verifiedReviews.length,
-              bestRating: 5,
-              worstRating: 1,
-            },
-          }
-        : {}),
-    },
     provider: {
       '@type': 'TravelAgency',
       name: SEO_DEFAULTS.SITE_NAME,
@@ -250,16 +214,6 @@ export function generateDestinationJsonLd(
           '@type': 'TouristTrip',
           name: tour.title,
           url: `${origin}/excursions/${encodeURIComponent(tour.slug)}`,
-          subjectOf: {
-            '@type': 'Product',
-            name: tour.title,
-            offers: {
-              '@type': 'Offer',
-              price: tour.priceEur,
-              priceCurrency: 'EUR',
-              url: `${origin}/excursions/${encodeURIComponent(tour.slug)}`,
-            },
-          },
         })),
       },
       {
