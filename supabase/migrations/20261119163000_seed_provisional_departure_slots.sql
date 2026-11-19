@@ -186,7 +186,7 @@ SET
       WHERE b.tour_id = ta.tour_id AND b.booking_date = ta.date
         AND b.departure_id IS NULL AND b.status <> 'cancelled'
     ) THEN ta.max_capacity
-    ELSE 0
+    ELSE ta.max_capacity
   END,
   booked_count = coalesce((
     SELECT sum(d.booked_passengers)::INTEGER
