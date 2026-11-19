@@ -33,7 +33,8 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
   currency,
   onNext,
 }) => {
-  const minimumNoticeHours = Math.max(0, Number(tour.minimumBookingNoticeHours ?? 12) || 12);
+  const configuredNoticeHours = Number(tour.minimumBookingNoticeHours);
+  const minimumNoticeHours = Number.isFinite(configuredNoticeHours) ? Math.max(0, configuredNoticeHours) : 12;
   const earliestDate = useMemo(() => getEarliestSelectableDate(minimumNoticeHours), [minimumNoticeHours]);
   const { showToast } = useToast();
 
