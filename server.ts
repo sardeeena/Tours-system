@@ -4752,11 +4752,22 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
       if (post.author_name) lines.push(`Author: ${cleanPublicText(post.author_name, 120)}`);
     }
 
+    const publicStaticPages = await loadAwesomeAdventureToursPages();
+    const termsPage = publicStaticPages.find((page: any) =>
+      page?.slug === 'terms'
+      && page?.published !== false
+      && page?.status !== 'draft'
+      && page?.status !== 'unpublished'
+      && page?.seoIndexable !== false
+      && !seoExclusions.pageSlugs.has('terms')
+    );
+
     lines.push(
       '',
       '## Booking and safety guidance',
       '- Check the live excursion page for current pricing, availability, departure details, pickup eligibility, inclusions and cancellation terms.',
       '- Booking conditions: https://awesomeadventure.tours/booking-conditions',
+      '- Terms & Conditions: https://awesomeadventure.tours/terms',
       '- Marine safety information: https://awesomeadventure.tours/marine-safety',
       '- About Awesome Adventure Tours: https://awesomeadventure.tours/about',
       '- Pickup availability and any transfer supplements vary by excursion and hotel area.',
@@ -4767,6 +4778,19 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
       '- https://awesomeadventure.tours/sitemap.xml',
       ''
     );
+
+    if (termsPage) {
+      lines.push('', '## Terms & Conditions', 'URL: https://awesomeadventure.tours/terms');
+      const termsTitle = cleanPublicText(termsPage.title, 160);
+      const termsSummary = seoPlainText(termsPage.heroSubtitle || termsPage.seoDescription || termsPage.seo_description, 1200);
+      if (termsTitle) lines.push(termsTitle);
+      if (termsSummary) lines.push(termsSummary);
+      for (const section of Array.isArray(termsPage.sections) ? termsPage.sections : []) {
+        const heading = cleanPublicText(section?.title, 180);
+        const content = seoPlainText(section?.content, 5000);
+        if (heading || content) lines.push('', heading ? '### ' + heading : '### Booking terms', content);
+      }
+    }
 
     res.status(200);
     res.type('text/plain; charset=utf-8');
