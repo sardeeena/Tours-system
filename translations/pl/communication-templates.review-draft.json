@@ -18,7 +18,7 @@
       "content": {
         "name": "Potwierdzenie rezerwacji",
         "subject": "Potwierdzenie rezerwacji: {{tour_name}} (nr ref.: {{booking_reference}})",
-        "body_text": "Dzień dobry {{customer_name}},\n\nDziękujemy za rezerwację w Awesome Adventure Tours. Twoja rezerwacja wycieczki {{tour_name}} na dzień {{tour_date}} została potwierdzona.\n\nNumer rezerwacji: {{booking_reference}}\nŁączna kwota: {{amount}}\nPozostała do zapłaty kwota: {{balance_due}}\nGodzina odbioru: {{pickup_time}}\n\nZ poważaniem,\nZespół concierge Awesome Adventure Tours",
+        "body_text": "Dzień dobry {{customer_name}},\n\nDziękujemy za rezerwację w Awesome Adventure Tours. Twoja rezerwacja wycieczki {{tour_name}} na dzień {{tour_date}} została potwierdzona.\n\nNumer rezerwacji: {{booking_reference}}\nŁączna kwota: {{amount}}\nPozostała do zapłaty kwota: {{balance_due}}\nGodzina odbioru: {{pickup_time}}\nGodzina wyjazdu: {{departure_time}}\n\nZ poważaniem,\nZespół concierge Awesome Adventure Tours",
         "variables": [
           "customer_name",
           "booking_reference",
@@ -26,7 +26,8 @@
           "tour_date",
           "pickup_time",
           "amount",
-          "balance_due"
+          "balance_due",
+          "departure_time"
         ],
         "channel": "Both",
         "template_key": "booking_confirmation"
