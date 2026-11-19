@@ -6,31 +6,37 @@ SELECT ok(
   position('public.departures' IN pg_get_functiondef(
     'private.get_tour_availability_schedule(text,date,date)'::regprocedure
   )) > 0
-  AND position('ta.departure_id' IN pg_get_functiondef(
+  AND position('d.status = ''confirmed''' IN pg_get_functiondef(
     'private.get_tour_availability_schedule(text,date,date)'::regprocedure
   )) > 0,
-  'public availability joins the actual departure linked to each date row'
+  'public availability is derived from confirmed departure slots'
 );
 
 SELECT ok(
-  position('d.id IS NULL THEN ''unavailable''' IN pg_get_functiondef(
+  position('coalesce(summary.confirmed_count,0) = 0 THEN ''unavailable''' IN pg_get_functiondef(
     'private.get_tour_availability_schedule(text,date,date)'::regprocedure
   )) > 0,
-  'dates without a matching departure are returned as unavailable'
+  'dates without a confirmed departure are returned as unavailable'
 );
 
 SELECT ok(
-  position('d.id IS NULL THEN FALSE' IN pg_get_functiondef(
+  position('summary.has_bookable_slot' IN pg_get_functiondef(
+    'private.get_tour_availability_schedule(text,date,date)'::regprocedure
+  )) > 0
+  AND position('ta.is_blackout' IN pg_get_functiondef(
     'private.get_tour_availability_schedule(text,date,date)'::regprocedure
   )) > 0,
-  'dates without a matching departure cannot be advertised as bookable'
+  'bookability is slot-specific and respects an explicit date blackout'
 );
 
 SELECT ok(
-  position('d.id IS NULL THEN 0' IN pg_get_functiondef(
+  position('coalesce(summary.max_capacity,0)' IN pg_get_functiondef(
+    'private.get_tour_availability_schedule(text,date,date)'::regprocedure
+  )) > 0
+  AND position('summary.departure_times' IN pg_get_functiondef(
     'private.get_tour_availability_schedule(text,date,date)'::regprocedure
   )) > 0,
-  'dates without a matching departure expose zero capacity'
+  'date capacity and displayed departure times aggregate all confirmed slots'
 );
 
 SELECT * FROM finish();
