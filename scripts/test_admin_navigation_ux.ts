@@ -22,7 +22,7 @@ assert.match(layout, /setCollapsedSections\(\(previous\) => \(\{ \.\.\.previous,
 // The live public site must be reachable even when the mobile/tablet drawer is closed.
 assert.match(layout, /onClick=\{onNavigateSite\}[\s\S]*?aria-label="Go to live website"/, 'The top bar exposes a clearly labelled live-site shortcut');
 assert.match(layout, /onClick=\{onNavigateSite\}[\s\S]*?title="View Live Website"/, 'The sidebar retains its live-site shortcut');
-assert.match(layout, /aria-label="Open sidebar"/, 'The sidebar can be reopened from the top bar');
+assert.match(layout, /aria-label=\{isSidebarOpen \? 'Close sidebar' : 'Open sidebar'\}/, 'The sidebar can be reopened from the top bar');
 assert.match(layout, /event\.key === 'Escape'[\s\S]*?setIsSidebarOpen\(false\)/, 'Escape closes the mobile/tablet navigation drawer');
 assert.match(layout, /window\.innerWidth < 1024/, 'Touch-sized viewports use the drawer interaction');
 assert.match(layout, /max-w-\[88vw\]/, 'The drawer leaves room for the page backdrop on narrow screens');
