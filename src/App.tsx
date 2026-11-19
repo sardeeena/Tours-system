@@ -4,8 +4,8 @@ import { Header } from './components/common/Header';
 import { Footer } from './components/common/Footer';
 import { CookieConsent } from './components/common/CookieConsent';
 import { VisitorAnalyticsTracker } from './components/common/VisitorAnalyticsTracker';
-import { WishlistDrawer } from './components/common/WishlistDrawer';
-import { CompareModal } from './components/common/CompareModal';
+const WishlistDrawer = lazy(() => import('./components/common/WishlistDrawer').then(m => ({ default: m.WishlistDrawer })));
+const CompareModal = lazy(() => import('./components/common/CompareModal').then(m => ({ default: m.CompareModal })));
 import { CompareFloatingBar } from './components/common/CompareFloatingBar';
 import { Hero } from './components/home/Hero';
 import { PopularTours } from './components/home/PopularTours';
@@ -84,7 +84,7 @@ const AdminAccessControl = lazy(() => import('./components/admin/AdminAccessCont
 const AdminBlogManager = lazy(() => import('./components/admin/AdminBlogManager').then(m => ({ default: m.AdminBlogManager })));
 const AdminTickets = lazy(() => import('./components/admin/AdminTickets').then(m => ({ default: m.AdminTickets })));
 const AdminLoginPage = lazy(() => import('./components/admin/AdminLoginPage').then(m => ({ default: m.AdminLoginPage })));
-import { HelpInquiryModal } from './components/common/HelpInquiryModal';
+const HelpInquiryModal = lazy(() => import('./components/common/HelpInquiryModal').then(m => ({ default: m.HelpInquiryModal })));
 import { SiteMotionSystem } from './components/common/SiteMotionSystem';
 
 // CRM Modules (Lazy-Loaded)
@@ -1778,24 +1778,32 @@ function MainApp() {
 
 
       {/* Slide-over Saved Excursions (Wishlist) Drawer */}
-      <WishlistDrawer
-        isOpen={isWishlistOpen}
-        onClose={() => setIsWishlistOpen(false)}
-        allTours={liveTours}
-        currency={currentCurrency}
-        onSelectTour={handleViewTour}
-        onBookTour={handleStartBooking}
-      />
+      {isWishlistOpen && (
+        <Suspense fallback={null}>
+          <WishlistDrawer
+            isOpen={isWishlistOpen}
+            onClose={() => setIsWishlistOpen(false)}
+            allTours={liveTours}
+            currency={currentCurrency}
+            onSelectTour={handleViewTour}
+            onBookTour={handleStartBooking}
+          />
+        </Suspense>
+      )}
 
       {/* Side-by-Side Excursions Comparison Modal */}
-      <CompareModal
-        isOpen={isCompareOpen}
-        onClose={() => setIsCompareOpen(false)}
-        allTours={liveTours}
-        currency={currentCurrency}
-        onSelectTour={handleViewTour}
-        onBookTour={handleStartBooking}
-      />
+      {isCompareOpen && (
+        <Suspense fallback={null}>
+          <CompareModal
+            isOpen={isCompareOpen}
+            onClose={() => setIsCompareOpen(false)}
+            allTours={liveTours}
+            currency={currentCurrency}
+            onSelectTour={handleViewTour}
+            onBookTour={handleStartBooking}
+          />
+        </Suspense>
+      )}
 
       {/* Floating Comparison Sticky Trigger Bar */}
       {!isAdminRoute && (
@@ -1806,15 +1814,19 @@ function MainApp() {
       )}
 
       {/* Global Help & Support Inquiry Modal */}
-      <HelpInquiryModal
-        isOpen={isHelpInquiryOpen}
-        onClose={() => {
-          setIsHelpInquiryOpen(false);
-          setHelpSelectedTour(null);
-        }}
-        selectedTour={helpSelectedTour}
-        tours={liveTours}
-      />
+      {isHelpInquiryOpen && (
+        <Suspense fallback={null}>
+          <HelpInquiryModal
+            isOpen={isHelpInquiryOpen}
+            onClose={() => {
+              setIsHelpInquiryOpen(false);
+              setHelpSelectedTour(null);
+            }}
+            selectedTour={helpSelectedTour}
+            tours={liveTours}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }
