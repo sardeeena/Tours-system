@@ -138,7 +138,8 @@ assert.match(adminTranslations, /const targetLocale = 'fr';/, 'This PR draft gen
 assert.match(adminTranslations, /JSON\.stringify\(\{ locale: targetLocale, offset, limit: 10 \}\)/, 'Each generation batch carries only French');
 assert.match(adminTranslations, /'communication_template'/, 'Super Admin can review communication template translations');
 assert.match(adminTranslations, /6500/, 'Bulk generator respects the server generation rate limit');
-assert.match(bookingRepository, /rpc\('create_booking_atomic_with_locale'/, 'Booking client uses the locale-aware atomic RPC');
+assert.match(bookingRepository, /rpc\('create_booking_atomic_with_departure'/, 'Booking client uses the selected-departure atomic RPC');
+assert.match(bookingRepository, /p_departure_id: booking\.departureId/, 'Booking client passes the explicitly selected departure to the atomic RPC');
 assert.match(bookingRepository, /p_customer_locale: booking\.customerLocale \|\| 'en'/, 'Booking client passes customer locale with safe English fallback');
 assert.match(bookingRepository, /customerLocale: data\.customer_locale \|\| customer\.preferred_locale \|\| 'en'/, 'Saved booking restores its customer locale');
 assert.match(bookingPage, /customerLocale,/, 'Booking captures the selected customer locale, including the public-language fallback');
