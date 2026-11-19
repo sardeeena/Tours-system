@@ -26,6 +26,7 @@ import {
   AvailabilitySlot,
 } from '../../../types/operations';
 import { DbVessel, DbGuide } from '../../../types/database';
+import { AdminLoadError } from '../AdminLoadError';
 
 interface OperationsCalendarProps {
   onSelectDepartureDate?: (date: string) => void;
@@ -39,6 +40,7 @@ export const OperationsCalendar: React.FC<OperationsCalendarProps> = ({
   const [viewMode, setViewMode] = useState<CalendarViewMode>('month');
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Real operational datasets
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
@@ -51,6 +53,7 @@ export const OperationsCalendar: React.FC<OperationsCalendarProps> = ({
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const [allSlots, deps, pUps, ves, gui] = await Promise.all([
         listAvailabilitySlots(),
@@ -65,6 +68,7 @@ export const OperationsCalendar: React.FC<OperationsCalendarProps> = ({
       setVessels(ves);
       setGuides(gui);
     } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'Operational calendar data could not be loaded.');
       console.warn('Failed to load operational calendar data:', err);
     } finally {
       setLoading(false);
@@ -148,6 +152,7 @@ export const OperationsCalendar: React.FC<OperationsCalendarProps> = ({
 
   return (
     <div className="space-y-6">
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
       {/* Top Header & Navigation */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
