@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Users, MapPin, CheckCircle2, ShieldCheck, ArrowRight, Plus, Minus, Info } from 'lucide-react';
+import { Calendar, Users, MapPin, CheckCircle2, ArrowRight, Plus, Minus, Info } from 'lucide-react';
 import { Tour, CurrencyConfig } from '../../types';
 import { formatPrice } from '../../data/toursData';
 
@@ -250,9 +250,9 @@ export const TourBookingPanel: React.FC<TourBookingPanelProps> = ({
           </div>
         </div>
 
-        {/* Free cancellation guarantee badge */}
-        <div className="flex items-center text-[11px] text-emerald-800 bg-emerald-50 p-2.5 rounded border border-emerald-200">
-          <ShieldCheck className="w-4 h-4 text-emerald-600 mr-2 shrink-0" />
+        {/* Cancellation terms notice */}
+        <div className="flex items-center text-[11px] text-slate-700 bg-slate-50 p-2.5 rounded border border-slate-200">
+          <Info className="w-4 h-4 text-slate-500 mr-2 shrink-0" />
           <span>{tour.cancellationPolicy || 'Cancellation terms are shown on your booking voucher.'}</span>
         </div>
 
