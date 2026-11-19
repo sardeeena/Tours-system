@@ -99,6 +99,6 @@ assert.match(listMedia, /if \(dbError\) throw/, 'Media listing must surface data
 assert.match(listMedia, /if \(storageError\) throw/, 'Media listing must surface storage failures');
 assert.doesNotMatch(listMedia, /return getLocalAssets\(\);\s*\}/, 'Production media listing must not mask storage failures with local assets');
 const cleanMedia = section(storage, 'export async function cleanOrphanedStorageFiles(', '/**\n * Generates an optimized image URL');
-assert.match(cleanMedia, /from\('user_roles'\)[\s\S]*?access_roles\(name\)/, 'Storage cleanup must use the current RBAC role assignments');
+assert.match(cleanMedia, /from\('user_roles'\)[\s\S]*?access_roles\(slug\)/, 'Storage cleanup must use the current RBAC role assignments');
 
 console.log('Admin data wiring regression checks passed: production fallbacks, staff IDs, CRM persistence, customer financial/review records and dashboard ledger calculations.');
