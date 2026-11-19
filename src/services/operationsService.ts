@@ -269,17 +269,12 @@ function normalizeDepartureTime(value: unknown): string {
 }
 
 /**
- * Lists only explicit database departures for the selected date.
+ * Lists only explicit database departures in the selected inclusive date range.
  * Bookings are attached to real departure rows; bookings never synthesize
  * departures, capacities, times, vessels, or weather clearance.
  */
-undefined/**
- * Lists active legacy bookings for a date that have no departure assignment.
- * They are intentionally not attached to any new slot; operations must
- * reconcile them before creating departures for the same tour/date.
- */
 export async function getDeparturesForDateRange(startDate: string, endDate: string): Promise<OperationalDeparture[]> {
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(startDate) || !/^\\d{4}-\\d{2}-\\d{2}$/.test(endDate) || startDate > endDate) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate) || !/^\d{4}-\d{2}-\d{2}$/.test(endDate) || startDate > endDate) {
     throw new Error('A valid inclusive departure date range is required.');
   }
 
@@ -413,11 +408,6 @@ export async function getDeparturesForDateRange(startDate: string, endDate: stri
   return departures.sort((a, b) => a.date.localeCompare(b.date) || a.departureTime.localeCompare(b.departureTime));
 }
 
-/**
- * Lists active legacy bookings for a date that have no departure assignment.
- * They are intentionally not attached to any new slot; operations must
- * reconcile them before creating departures for the same tour/date.
- */
 export async function getTodayDepartures(dateTarget?: string): Promise<OperationalDeparture[]> {
   const now = new Date();
   const localToday = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -425,6 +415,11 @@ export async function getTodayDepartures(dateTarget?: string): Promise<Operation
   return getDeparturesForDateRange(date, date);
 }
 
+/**
+ * Lists active legacy bookings for a date that have no departure assignment.
+ * They are intentionally not attached to any new slot; operations must
+ * reconcile them before creating departures for the same tour/date.
+ */
 export async function getUnassignedLegacyBookings(date: string): Promise<UnassignedLegacyBooking[]> {
   if (!isSupabaseConfigured()) {
     if (import.meta.env?.DEV) return [];
