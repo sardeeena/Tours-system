@@ -33,7 +33,8 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
   currency,
   onNext,
 }) => {
-  const earliestDate = useMemo(() => getEarliestSelectableDate(24), []);
+  const minimumNoticeHours = Math.max(0, Number(tour.minimumBookingNoticeHours ?? 12) || 12);
+  const earliestDate = useMemo(() => getEarliestSelectableDate(minimumNoticeHours), [minimumNoticeHours]);
   const { showToast } = useToast();
 
   // Set default date to earliestDate if none set
@@ -186,7 +187,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
             1. Choose your date
           </label>
           <span className="text-[11px] text-stone-500">
-            Book at least 24 hours in advance
+            Book at least {minimumNoticeHours} hours in advance
           </span>
         </div>
 
