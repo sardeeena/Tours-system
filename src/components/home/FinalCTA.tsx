@@ -26,7 +26,7 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onExploreTours, onOpenMyBook
           <div 
             className="absolute inset-0 bg-cover bg-center opacity-10 dark:opacity-15 mix-blend-overlay pointer-events-none"
             style={{
-              backgroundImage: `url('https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1600&q=80')`,
+              backgroundImage: `url('https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1600&q=75')`,
             }}
             aria-hidden="true"
           />
