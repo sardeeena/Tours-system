@@ -84,7 +84,7 @@ These items require real business decisions or credentials. Do not fabricate val
 
 ## Release 5 — Capacity model evolution
 
-<badge>Implementation in PR #206</badge>
+**Implementation status:** Prepared in PR #206; pending CI and merge.
 
 The multi-departure schema and booking flow are implemented. Each confirmed `departures` row is an independent slot. `tour_availability` remains a daily summary, with the original daily capacity preserved across the configured times. New bookings store the selected departure and its per-person prices; notifications and secure booking lookup return that exact slot.
 
