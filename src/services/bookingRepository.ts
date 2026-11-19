@@ -782,10 +782,18 @@ class SupabaseBookingRepository implements IBookingRepository {
         amountEur: Number(ex.total_price),
       })),
       pricing: {
-        basePricePerAdultEur: Number(tour.price) || 35,
-        basePricePerChildEur: Number(tour.child_price) || 18,
-        adultSubtotalEur: (data.adult_count || 1) * (Number(tour.price) || 35),
-        childSubtotalEur: (data.child_count || 0) * (Number(tour.child_price) || 18),
+        basePricePerAdultEur: Number(data.unit_price_adult) > 0
+          ? Number(data.unit_price_adult)
+          : String(tour.tour_type || '').toLowerCase() === 'private' ? 0 : Number(tour.price) || 0,
+        basePricePerChildEur: Number(data.unit_price_child) > 0
+          ? Number(data.unit_price_child)
+          : String(tour.tour_type || '').toLowerCase() === 'private' ? 0 : Number(tour.child_price) || 0,
+        adultSubtotalEur: (data.adult_count || 1) * (Number(data.unit_price_adult) > 0
+          ? Number(data.unit_price_adult)
+          : String(tour.tour_type || '').toLowerCase() === 'private' ? 0 : Number(tour.price) || 0),
+        childSubtotalEur: (data.child_count || 0) * (Number(data.unit_price_child) > 0
+          ? Number(data.unit_price_child)
+          : String(tour.tour_type || '').toLowerCase() === 'private' ? 0 : Number(tour.child_price) || 0),
         infantSubtotalEur: 0,
         pickupSubtotalEur: 0,
         pickupFeePerPersonEur: 0,
@@ -878,10 +886,10 @@ class SupabaseBookingRepository implements IBookingRepository {
         amountEur: Number(ex.totalPrice) || 0,
       })),
       pricing: {
-        basePricePerAdultEur: Number(pricing.subtotal) || 35,
-        basePricePerChildEur: 18,
-        adultSubtotalEur: Number(pricing.subtotal) || 35,
-        childSubtotalEur: 0,
+        basePricePerAdultEur: Number(pricing.basePricePerAdultEur) || 0,
+        basePricePerChildEur: Number(pricing.basePricePerChildEur) || 0,
+        adultSubtotalEur: (Number(pricing.basePricePerAdultEur) || 0) * (Number(guests.adults) || 0),
+        childSubtotalEur: (Number(pricing.basePricePerChildEur) || 0) * (Number(guests.children) || 0),
         infantSubtotalEur: 0,
         pickupSubtotalEur: 0,
         pickupFeePerPersonEur: 0,
