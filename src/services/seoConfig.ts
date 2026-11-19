@@ -498,6 +498,6 @@ export function getPageSeo(
     ogType: 'website',
     ogImage: SEO_DEFAULTS.DEFAULT_OG_IMAGE,
     twitterCard: 'summary_large_image',
-    schemaJsonLd: generateHomeJsonLd(origin, (context?.locale ?? 'en') === 'en'),
+    schemaJsonLd: generateHomeJsonLd(origin, false),
   };
 }
