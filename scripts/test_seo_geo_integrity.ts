@@ -17,6 +17,9 @@ const destinationSeoMigration = readFileSync(new URL('../supabase/migrations/202
 const tourCard = readFileSync(new URL('../src/components/tours/TourCard.tsx', import.meta.url), 'utf8');
 const tourDetail = readFileSync(new URL('../src/pages/TourDetailPage.tsx', import.meta.url), 'utf8');
 const tourService = readFileSync(new URL('../src/services/tourService.ts', import.meta.url), 'utf8');
+const adminReviews = readFileSync(new URL('../src/components/admin/AdminReviewsList.tsx', import.meta.url), 'utf8');
+const customerReviews = readFileSync(new URL('../src/components/tours/TourReviews.tsx', import.meta.url), 'utf8');
+const homeReviews = readFileSync(new URL('../src/components/home/ReviewsSection.tsx', import.meta.url), 'utf8');
 const sitemapStart = server.indexOf("app.get('/sitemap.xml'");
 const llmsStart = server.indexOf("app.get('/llms.txt'");
 const schemaStart = server.indexOf("const organization: Record<string, any>");
@@ -127,6 +130,15 @@ assert.match(tourCard, /No reviews yet/, 'Tour cards do not call unrated product
 assert.match(tourDetail, /No customer reviews yet/, 'Tour details explain that no customer reviews exist');
 assert.match(tourDetail, /Hotel Pickup Available/, 'Tour details do not imply pickup is universally free');
 assert.doesNotMatch(tourDetail, /Hotel Pickup Included/, 'Tour details remove the unsupported pickup-included promise');
+assert.match(ratingMigration, /ALTER COLUMN verified_booking SET DEFAULT FALSE/, 'Review records are not presumed booking-verified');
+assert.match(adminReviews, /verified_booking: false/, 'Manually entered reviews remain unverified');
+assert.doesNotMatch(adminReviews, /verified_booking: true|Add Verified Review|Add Verified Guest Review|New verified guest review published/, 'Admin review tools do not claim verification without booking evidence');
+assert.match(adminReviews, /: '—'/, 'Review dashboard does not invent a 5.0 average when there are no published reviews');
+assert.match(customerReviews, /const \[rating, setRating\] = useState\(0\)/, 'Customer review form requires an explicit star selection');
+assert.match(customerReviews, /Please select a rating from 1 to 5 stars/, 'Customer review submission validates the selected rating');
+assert.match(tourService, /Customer reviews are temporarily unavailable because the live review database is not connected/, 'Customer review submission fails closed without persistence');
+assert.match(homeReviews, /Booking verification is shown only when a completed booking can be confirmed/, 'Public review section explains verification accurately');
+
 
 
 
