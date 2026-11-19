@@ -26,6 +26,10 @@ assert.ok(sitemapStart >= 0 && llmsStart > sitemapStart && schemaStart > llmsSta
 const sitemap = server.slice(sitemapStart, llmsStart);
 const llms = server.slice(llmsStart, schemaStart);
 const schema = server.slice(schemaStart, schemaEnd);
+const tourMappingStart = tourService.indexOf('function mapDbTourToFrontendTour');
+const tourMappingEnd = tourService.indexOf('export async function', tourMappingStart);
+const tourMapping = tourMappingStart >= 0 ? tourService.slice(tourMappingStart, tourMappingEnd) : '';
+
 const llmsFullStart = server.indexOf("app.get('/llms-full.txt'");
 const llmsFull = llmsFullStart >= 0 ? server.slice(llmsFullStart, schemaStart) : '';
 assert.ok(llmsFullStart > llmsStart && llmsFullStart < schemaStart, 'Full public content index is registered after llms.txt');
@@ -105,6 +109,9 @@ assert.match(tourService, /pickup_available: tourData\.pickup_available \?\? fal
 assert.match(tourService, /duration_type: tourData\.duration_type \|\| 'Unspecified'/, 'Tour persistence does not invent a duration category');
 assert.ok(!tourEditor.includes('Orange Bay beach') && !tourEditor.includes('Hotel lobby pickup and return transfer across Hurghada included'), 'New tour editor no longer seeds unrelated Hurghada excursion content');
 assert.ok(!tourService.includes("rating: 5.0") && !tourService.includes("destinationName: 'Hurghada'") && !tourService.includes("categories: ['Boat Trip']"), 'New tour local fallback does not invent a rating, destination or category');
+assert.doesNotMatch(tourMapping, /Standard cancellation policy applies|Pickup not included|Hotel pickup available\.|languages:.*\['English'\]|difficulty:.*'Easy'/, 'Tour mapping does not invent pickup, cancellation, language or difficulty details');
+assert.match(tourMapping, /durationCategory: dbTour\.duration_type \|\| 'Unspecified'/, 'Unconfigured draft duration remains explicit in the catalogue mapping');
+
 assert.match(tourEditor, /Complete these verified details before publishing/, 'New tour publication requires verified factual details');
 assert.match(tourEditor, /normalizeTourDepartureTimes/, 'Tour editor normalizes departure times before publication');
 assert.ok(tourEditor.includes("entry.match(/^(\\d{1,2}):(\\d{2})\\s*(AM|PM)?$/i)"), 'Departure-time validation accepts only explicit 12-hour or 24-hour clock values');
