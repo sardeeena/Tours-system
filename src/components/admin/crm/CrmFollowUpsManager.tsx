@@ -21,6 +21,7 @@ import {
 } from '../../../services/crmService';
 import { useToast } from '../../../contexts/ToastContext';
 import { useCrmAssignableStaff } from '../../../hooks/useCrmAssignableStaff';
+import { AdminLoadError } from '../AdminLoadError';
 
 export const CrmFollowUpsManager: React.FC = () => {
   const { showToast } = useToast();
@@ -29,6 +30,7 @@ export const CrmFollowUpsManager: React.FC = () => {
   const [overdue, setOverdue] = useState<CrmTask[]>([]);
   const [upcoming, setUpcoming] = useState<CrmTask[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Quick schedule modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,12 +41,14 @@ export const CrmFollowUpsManager: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const data = await getFollowUpsDue();
       setDueToday(data.dueToday);
       setOverdue(data.overdue);
       setUpcoming(data.upcoming);
     } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'CRM follow-ups could not be loaded.');
       console.warn('Failed to load follow-ups:', err);
     } finally {
       setLoading(false);
@@ -108,6 +112,7 @@ export const CrmFollowUpsManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
