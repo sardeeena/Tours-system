@@ -58,7 +58,7 @@ export const ReviewsSection: React.FC = () => {
               What Travelers Say
             </h2>
             <p className="text-stone-600 dark:text-slate-300 text-sm sm:text-base mt-2 max-w-xl leading-relaxed">
-              Guest feedback shared after completed excursions across our Red Sea destinations.
+              Guest feedback about excursions across our Red Sea destinations.
             </p>
           </div>
 
