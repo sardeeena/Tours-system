@@ -247,7 +247,7 @@ export interface FinanceMetrics {
   currencyBreakdown: Array<{
     currency: string;
     amount: number;
-    convertedEur: number;
+    convertedEur: number | null;
   }>;
 }
 
