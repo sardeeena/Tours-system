@@ -37,7 +37,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'hero.title2': 'with Local Captains',
     'hero.subtitle':
       'Explore snorkeling boat trips, island visits, and desert quad safaris from Hurghada and nearby Red Sea destinations. Check each excursion for departure days, pickup options, and availability.',
-    'hero.guarantee1': 'Weather terms explained for each excursion',
+    'hero.guarantee1': 'Weather may affect departures',
     'hero.guarantee2': 'Cancellation terms shown before booking',
     'hero.guarantee3': 'Pickup options vary by excursion',
     'hero.guarantee4': 'Local crews and guides on selected tours',
@@ -138,7 +138,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     "hero.title1": "Explorez la mer Rouge",
     "hero.title2": "avec des capitaines locaux",
     "hero.subtitle": "Excursions en bateau avec snorkeling, visites d’îles et safaris en quad dans le désert, au départ quotidien de Hurghada, El Gouna et Makadi Bay. Opérateur local direct, prise en charge à l’hôtel et tarifs transparents.",
-    "hero.guarantee1": "Conditions météo précisées pour chaque excursion",
+    "hero.guarantee1": "La météo peut modifier les départs",
     "hero.guarantee2": "Conditions d’annulation affichées avant la réservation",
     "hero.guarantee3": "Prise en charge selon l’excursion",
     "hero.guarantee4": "Équipes et guides locaux sur certaines excursions",
@@ -163,9 +163,9 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     "popular.instantConfirmation": "Confirmation immédiate",
     "popular.verified": "Opérateur officiel",
     "why.title": "Pourquoi réserver directement avec nous ?",
-    "why.subtitle": "Nous exploitons nos propres bateaux et véhicules avec des capitaines certifiés et des guides locaux accueillants. Vous bénéficiez de tarifs d’opérateur local, sans majoration d’agence.",
+    "why.subtitle": "Nous travaillons avec des prestataires locaux, des capitaines expérimentés et des guides. Le prestataire et les services inclus sont précisés pour chaque excursion.",
     "cta.title": "Prêt à explorer la mer Rouge ?",
-    "cta.subtitle": "Réservez en ligne dès maintenant avec annulation gratuite. Vous pouvez choisir de payer au moment de la prise en charge à votre hôtel.",
+    "cta.subtitle": "Consultez les conditions d’annulation, les options de prise en charge et les moyens de paiement de l’excursion choisie avant de confirmer. La prise en charge dépend de l’excursion et de la zone de votre hôtel.",
     "cta.browse": "Voir toutes les excursions",
     "cta.chat": "Discuter sur WhatsApp",
     "cta.lookup": "Retrouver ma réservation",
@@ -222,7 +222,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     "hero.title1": "Ontdek de Rode Zee",
     "hero.title2": "met lokale kapiteins",
     "hero.subtitle": "Snorkelboottochten, eilandbezoeken en quadsafari’s in de woestijn, dagelijks vertrekkend vanuit Hurghada, El Gouna en Makadi Bay. Rechtstreekse lokale aanbieder met hoteltransfer en transparante prijzen.",
-    "hero.guarantee1": "Weersvoorwaarden per excursie vermeld",
+    "hero.guarantee1": "Het weer kan vertrek beïnvloeden",
     "hero.guarantee2": "Annuleringsvoorwaarden vóór het boeken zichtbaar",
     "hero.guarantee3": "Ophaalopties verschillen per excursie",
     "hero.guarantee4": "Lokale teams en gidsen bij geselecteerde excursies",
@@ -247,9 +247,9 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     "popular.instantConfirmation": "Directe bevestiging",
     "popular.verified": "Officiële aanbieder",
     "why.title": "Waarom rechtstreeks bij ons boeken?",
-    "why.subtitle": "We beheren onze eigen boten en voertuigen met gecertificeerde kapiteins en vriendelijke lokale gidsen. Je betaalt lokale aanbiedersprijzen zonder toeslagen van tussenpersonen.",
+    "why.subtitle": "We werken samen met lokale activiteitenaanbieders, ervaren schippers en gidsen. Per excursie vermelden we de uitvoerende aanbieder en de inbegrepen diensten.",
     "cta.title": "Klaar om de Rode Zee te ontdekken?",
-    "cta.subtitle": "Boek nu online met gratis annulering. Je kunt ervoor kiezen om te betalen wanneer we je bij je hotel ophalen.",
+    "cta.subtitle": "Bekijk vóór bevestiging de annuleringsvoorwaarden, ophaalmogelijkheden en betaalopties van de gekozen excursie. Ophalen is alleen beschikbaar bij geselecteerde tours en kan per hotelgebied verschillen.",
     "cta.browse": "Bekijk alle tours",
     "cta.chat": "Chat via WhatsApp",
     "cta.lookup": "Mijn boeking zoeken",
@@ -314,7 +314,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'hero.title2': 'mit erfahrenen Kapitänen',
     'hero.subtitle':
       'Schnorchelausflüge, Inseltouren und Quad-Safaris mit täglicher Abfahrt von Hurghada, El Gouna und Makadi Bay. Direkter lokaler Anbieter mit Hotelabholung und fairen Preisen.',
-    'hero.guarantee1': 'Wetterbedingungen je Ausflug erklärt',
+    'hero.guarantee1': 'Wetterbedingungen können Abfahrten beeinflussen',
     'hero.guarantee2': 'Stornierungsbedingungen vor der Buchung angezeigt',
     'hero.guarantee3': 'Abholoptionen je Ausflug unterschiedlich',
     'hero.guarantee4': 'Lokale Teams und Guides bei ausgewählten Touren',
@@ -347,12 +347,12 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     // Why Choose Us
     'why.title': 'Warum direkt bei uns buchen?',
     'why.subtitle':
-      'Wir besitzen unsere eigenen Boote und Fahrzeuge und beschäftigen erfahrene Kapitäne und Guides. Sie zahlen faire Preise ohne Vermittlergebühren.',
+      'Wir arbeiten mit lokalen Erlebnisanbietern, erfahrenen Skippern und Guides zusammen. Der ausführende Anbieter und die enthaltenen Leistungen sind bei jedem Ausflug angegeben.',
 
     // Final CTA
     'cta.title': 'Bereit für das Rote Meer?',
     'cta.subtitle':
-      'Buchen Sie online mit kostenloser Stornierung. Sie können auch erst bequem bei der Abholung am Hotel bezahlen.',
+      'Prüfen Sie vor der Buchung die Stornierungsbedingungen, Abholoptionen und Zahlungsmöglichkeiten des gewählten Ausflugs. Eine Abholung wird nur bei ausgewählten Touren angeboten und kann je nach Hotelgebiet variieren.',
     'cta.browse': 'Alle Ausflüge anzeigen',
     'cta.chat': 'Auf WhatsApp chatten',
     'cta.lookup': 'Meine Buchung finden',
@@ -423,7 +423,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'hero.title2': 'с местными капитанами',
     'hero.subtitle':
       'Морские прогулки, сноркелинг на рифах и сафари на квадроциклах ежедневно из Хургады, Эль-Гуны и Макади-Бей. Прямой организатор, трансфер из отеля и честные цены без посредников.',
-    'hero.guarantee1': 'Погодные условия указаны для каждой экскурсии',
+    'hero.guarantee1': 'Погодные условия могут повлиять на отправление',
     'hero.guarantee2': 'Условия отмены доступны до бронирования',
     'hero.guarantee3': 'Трансфер зависит от выбранной экскурсии',
     'hero.guarantee4': 'Местные команды и гиды на отдельных экскурсиях',
@@ -456,12 +456,12 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     // Why Choose Us
     'why.title': 'Почему выгодно бронировать напрямую',
     'why.subtitle':
-      'У нас собственные комфортабельные катера, надежные квадроциклы и опытные капитаны. Вы получаете честную цену без переплат агентствам.',
+      'Мы сотрудничаем с местными организаторами, опытными капитанами и гидами. Исполнитель и включённые услуги указаны на странице каждой экскурсии.',
 
     // Final CTA
     'cta.title': 'Готовы отправиться на экскурсию?',
     'cta.subtitle':
-      'Бронируйте онлайн с бесплатной отменой. Вы можете оплатить тур наличными при посадке в трансфер у отеля.',
+      'Перед подтверждением проверьте условия отмены, варианты трансфера и способы оплаты выбранной экскурсии. Трансфер доступен не для всех туров и зависит от района отеля.',
     'cta.browse': 'Смотреть все экскурсии',
     'cta.chat': 'Чат в WhatsApp',
     'cta.lookup': 'Мое бронирование',
@@ -532,7 +532,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'hero.title2': 'con Capitani Locali',
     'hero.subtitle':
       'Gite in barca con snorkeling, escursioni alle isole e safari nel deserto in quad con partenze giornaliere da Hurghada, El Gouna e Makadi Bay. Operatore diretto con transfer dall\'hotel e prezzi chiari.',
-    'hero.guarantee1': 'Condizioni meteo indicate per ogni escursione',
+    'hero.guarantee1': 'Il meteo può influire sulle partenze',
     'hero.guarantee2': 'Condizioni di cancellazione visibili prima della prenotazione',
     'hero.guarantee3': 'Il trasferimento varia in base all’escursione',
     'hero.guarantee4': 'Team e guide locali in alcune escursioni',
@@ -565,12 +565,12 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     // Why Choose Us
     'why.title': 'Perché Prenotare Direttamente con Noi',
     'why.subtitle':
-      'Disponiamo di imbarcazioni e mezzi propri, con skipper qualificati e guide locali esperte. Tariffe dirette senza intermediari o commissioni d\'agenzia.',
+      'Collaboriamo con operatori locali, skipper esperti e guide. L’operatore responsabile e i servizi inclusi sono indicati nella pagina di ogni escursione.',
 
     // Final CTA
     'cta.title': 'Pronto a vivere la magia del Mar Rosso?',
     'cta.subtitle':
-      'Prenota online in tutta sicurezza con cancellazione gratuita. Puoi scegliere di pagare comodamente in contanti al momento del prelievo in hotel.',
+      'Prima di confermare, consulta le condizioni di cancellazione, le opzioni di trasferimento e i metodi di pagamento dell’escursione scelta. Il trasferimento è disponibile solo per alcune escursioni e può variare in base alla zona dell’hotel.',
     'cta.browse': 'Scopri Tutti i Tour',
     'cta.chat': 'Chatta su WhatsApp',
     'cta.lookup': 'Cerca la Mia Prenotazione',
@@ -641,7 +641,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'hero.title2': 'cu Căpitani Locali',
     'hero.subtitle':
       'Croaziere cu barca, snorkeling la recife de corali și safari cu ATV-ul în deșert cu plecare zilnică din Hurghada, El Gouna și Makadi Bay. Operator local direct, preluare de la hotel și prețuri corecte fără intermediari.',
-    'hero.guarantee1': 'Condițiile meteo sunt indicate pentru fiecare excursie',
+    'hero.guarantee1': 'Vremea poate influența plecările',
     'hero.guarantee2': 'Condițiile de anulare sunt afișate înainte de rezervare',
     'hero.guarantee3': 'Opțiunile de preluare diferă în funcție de excursie',
     'hero.guarantee4': 'Echipe și ghizi locali pentru anumite excursii',
@@ -674,12 +674,12 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     // Why Choose Us
     'why.title': 'De ce să Rezervați Direct cu Noi',
     'why.subtitle':
-      'Operăm propriile ambarcațiuni și vehicule de safari, cu căpitani experimentați și ghizi locali prietenoși. Plătiți prețuri directe de operator local, fără adaosuri de agenție.',
+      'Colaborăm cu furnizori locali de activități, căpitani experimentați și ghizi. Operatorul și serviciile incluse sunt indicate pentru fiecare excursie.',
 
     // Final CTA
     'cta.title': 'Ești pregătit să descoperi Marea Roșie?',
     'cta.subtitle':
-      'Rezervă online cu anulare gratuită. Poți opta să plătești numerar la preluarea din fața hotelului.',
+      'Înainte de confirmare, verifică termenii de anulare, opțiunile de preluare și metodele de plată pentru excursia aleasă. Preluarea este disponibilă doar pentru anumite excursii și poate varia în funcție de zona hotelului.',
     'cta.browse': 'Vezi Toate Tururile',
     'cta.chat': 'Scrie-ne pe WhatsApp',
     'cta.lookup': 'Caută Rezervarea Mea',
@@ -748,7 +748,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'hero.title1': 'Odkryj Morze Czerwone',
     'hero.title2': 'z lokalnymi kapitanami',
     'hero.subtitle': 'Rejsy ze snorkelingiem, wycieczki na wyspy i pustynne safari quadami, codziennie z Hurghady, El Gouny i Makadi Bay. Bezpośredni lokalny organizator, odbiór z hotelu i przejrzyste ceny.',
-    'hero.guarantee1': 'Zasady dotyczące pogody opisane przy każdej wycieczce',
+    'hero.guarantee1': 'Pogoda może wpłynąć na godziny wyjazdu',
     'hero.guarantee2': 'Warunki anulowania widoczne przed rezerwacją',
     'hero.guarantee3': 'Odbiór zależy od wybranej wycieczki',
     'hero.guarantee4': 'Lokalne zespoły i przewodnicy przy wybranych wycieczkach',
@@ -779,11 +779,11 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
 
     // Dlaczego warto wybrać nas
     'why.title': 'Dlaczego warto rezerwować bezpośrednio u nas?',
-    'why.subtitle': 'Korzystamy z własnych łodzi i pojazdów, z certyfikowanymi kapitanami i przyjaznymi lokalnymi przewodnikami. Płacisz lokalne ceny organizatora, bez marży agencji.',
+    'why.subtitle': 'Współpracujemy z lokalnymi operatorami, doświadczonymi kapitanami i przewodnikami. Przy każdej wycieczce podajemy wykonawcę i zakres usług.',
 
     // Wezwanie do działania
     'cta.title': 'Gotowy, by odkryć Morze Czerwone?',
-    'cta.subtitle': 'Zarezerwuj online już teraz z bezpłatnym anulowaniem. Możesz zapłacić podczas odbioru z hotelu.',
+    'cta.subtitle': 'Przed potwierdzeniem sprawdź warunki anulowania, opcje odbioru i metody płatności dla wybranej wycieczki. Odbiór jest dostępny tylko przy wybranych wycieczkach i może zależeć od lokalizacji hotelu.',
     'cta.browse': 'Zobacz wszystkie wycieczki',
     'cta.chat': 'Napisz na WhatsApp',
     'cta.lookup': 'Znajdź moją rezerwację',
