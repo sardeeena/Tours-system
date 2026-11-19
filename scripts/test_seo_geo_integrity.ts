@@ -41,6 +41,8 @@ assert.match(llmsFull, /tour_faqs/, 'Full AI index includes published excursion 
 assert.match(llmsFull, /tour_itinerary/, 'Full AI index includes published excursion itineraries');
 assert.match(llmsFull, /blog_posts/, 'Full AI index includes published travel articles');
 assert.match(llmsFull, /\.in\('status', \['published', 'scheduled'\]\)/, 'Full AI index matches public scheduled-article visibility rules');
+assert.match(llmsFull, /booking-conditions/, 'Full AI index links to the official booking conditions');
+assert.match(llmsFull, /marine-safety/, 'Full AI index links to the official marine safety guidance');
 assert.doesNotMatch(llmsFull, /from\('bookings'\)|from\('customers'\)|from\('payment_transactions'\)/, 'Full AI index excludes private booking, customer and payment records');
 
 assert.match(server, /from\('seo_metadata'\)[\s\S]*?eq\('robots_index', false\)/, 'SEO index exclusions are loaded from the authoritative metadata table');
