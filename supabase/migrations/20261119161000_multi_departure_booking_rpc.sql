@@ -70,7 +70,6 @@ DECLARE
     '    IF NOT FOUND OR v_avail.status <> ''confirmed'' THEN' || E'\n' ||
     '        RETURN jsonb_build_object(''success'', false, ''error'', ''The selected departure is no longer available. Please choose another time.'');' || E'\n' ||
     '    END IF;' || E'\n' ||
-    '    PERFORM set_config(''app.booking_departure_id'', v_selected_departure_id::TEXT, TRUE);' || E'\n' ||
     '    IF NOT EXISTS (' || E'\n' ||
     '        SELECT 1 FROM public.tour_availability AS configured' || E'\n' ||
     '        WHERE configured.tour_id = v_tour.id AND configured.date = p_booking_date' || E'\n' ||
@@ -136,6 +135,15 @@ DECLARE
     '        departure_id = NULL,' || E'\n' ||
     '        updated_at = NOW()' || E'\n' ||
     '    WHERE daily.tour_id = v_tour.id AND daily.date = p_booking_date;';
+  v_booking_insert_anchor TEXT := E'        INSERT INTO public.bookings (';
+  v_booking_insert_replacement TEXT := E'        PERFORM set_config(''app.booking_departure_id'', v_selected_departure_id::TEXT, TRUE);' || E'\n' ||
+    '        INSERT INTO public.bookings (';
+  v_booking_returning_anchor TEXT := E'        RETURNING id INTO v_booking_id;';
+  v_booking_returning_replacement TEXT := v_booking_returning_anchor || E'\n' ||
+    '        PERFORM set_config(''app.booking_departure_id'', '''', TRUE);';
+  v_duplicate_handler_anchor TEXT := E'        EXCEPTION WHEN unique_violation THEN';
+  v_duplicate_handler_replacement TEXT := v_duplicate_handler_anchor || E'\n' ||
+    '            PERFORM set_config(''app.booking_departure_id'', '''', TRUE);';
   v_old_return TEXT := E'        ''bookingDate'', p_booking_date,' || E'\n' ||
     '        ''isDuplicate'', false';
   v_new_return TEXT := E'        ''bookingDate'', p_booking_date,' || E'\n' ||
@@ -160,7 +168,10 @@ BEGIN
        OR position(v_notice_anchor in v_definition) = 0
        OR position(v_old_capacity_status in v_definition) = 0
        OR position(v_old_final_capacity in v_definition) = 0
-       OR position(v_old_return in v_definition) = 0 THEN
+       OR position(v_old_return in v_definition) = 0
+       OR position(v_booking_insert_anchor in v_definition) = 0
+       OR position(v_booking_returning_anchor in v_definition) = 0
+       OR position(v_duplicate_handler_anchor in v_definition) = 0 THEN
       RAISE EXCEPTION 'Booking function % no longer matches the reviewed multi-departure anchors.', v_signature;
     END IF;
 
@@ -172,6 +183,9 @@ BEGIN
     v_definition := replace(v_definition, v_old_capacity_status, v_new_capacity_status);
     v_definition := replace(v_definition, v_old_final_capacity, v_new_final_capacity);
     v_definition := replace(v_definition, v_old_return, v_new_return);
+    v_definition := replace(v_definition, v_booking_insert_anchor, v_booking_insert_replacement);
+    v_definition := replace(v_definition, v_booking_returning_anchor, v_booking_returning_replacement);
+    v_definition := replace(v_definition, v_duplicate_handler_anchor, v_duplicate_handler_replacement);
 
     EXECUTE v_definition;
     v_patched := v_patched + 1;
@@ -210,6 +224,8 @@ RETURNS JSONB
 LANGUAGE plpgsql
 SET search_path = ''
 AS $function$
+DECLARE
+  v_result JSONB;
 BEGIN
   IF p_departure_id IS NULL THEN
     RETURN jsonb_build_object('success', false, 'error', 'Please select a departure time before completing this booking.');
@@ -217,7 +233,7 @@ BEGIN
 
   PERFORM set_config('app.booking_departure_id', p_departure_id::TEXT, TRUE);
 
-  RETURN public.create_booking_atomic_with_locale(
+  v_result := public.create_booking_atomic_with_locale(
     p_tour_identifier,
     p_booking_date,
     p_adult_count,
@@ -239,6 +255,11 @@ BEGIN
     p_tour_language,
     p_customer_locale
   );
+  PERFORM set_config('app.booking_departure_id', '', TRUE);
+  RETURN v_result;
+EXCEPTION WHEN OTHERS THEN
+  PERFORM set_config('app.booking_departure_id', '', TRUE);
+  RAISE;
 END;
 $function$;
 
