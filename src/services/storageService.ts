@@ -175,15 +175,29 @@ export async function uploadTourMedia(
     tour_id: meta?.tourId || null,
   };
 
-  const { data: insertedAsset, error: dbError } = await supabase
-    .from('media_assets')
-    .insert(assetPayload)
-    .select('id,created_at')
-    .single();
+  let insertedAsset: { id: string; created_at?: string } | null = null;
+  let metadataError: unknown = null;
+  try {
+    const result = await supabase
+      .from('media_assets')
+      .insert(assetPayload)
+      .select('id,created_at')
+      .single();
+    insertedAsset = result.data;
+    metadataError = result.error;
+  } catch (error) {
+    metadataError = error;
+  }
 
-  if (dbError || !insertedAsset?.id) {
-    const { error: rollbackError } = await supabase.storage.from(MEDIA_BUCKET).remove([storagePath]);
-    const reason = dbError ? formatSupabaseError(dbError) : 'No media metadata record was returned.';
+  if (metadataError || !insertedAsset?.id) {
+    let rollbackError: unknown = null;
+    try {
+      const rollback = await supabase.storage.from(MEDIA_BUCKET).remove([storagePath]);
+      rollbackError = rollback.error;
+    } catch (error) {
+      rollbackError = error;
+    }
+    const reason = metadataError ? formatSupabaseError(metadataError) : 'No media metadata record was returned.';
     const rollback = rollbackError ? ` Storage rollback also failed: ${formatSupabaseError(rollbackError)}` : ' The uploaded object was rolled back.';
     return { url: '', storagePath: '', error: `Media metadata could not be saved: ${reason}.${rollback}` };
   }
