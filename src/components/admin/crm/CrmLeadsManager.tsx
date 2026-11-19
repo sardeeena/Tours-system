@@ -36,6 +36,7 @@ import {
 import { LeadStage, LeadSource } from '../../../types/crm';
 import { useToast } from '../../../contexts/ToastContext';
 import { useAuth } from '../../../contexts/AuthContext';
+import { useCrmAssignableStaff } from '../../../hooks/useCrmAssignableStaff';
 
 const STAGES: LeadStage[] = [
   'New',
@@ -62,17 +63,10 @@ const SOURCES: LeadSource[] = [
   'Other',
 ];
 
-const STAFF_MEMBERS = [
-  'Captain Tarek',
-  'Mona Zaki (Concierge)',
-  'Ahmed Fathy',
-  'Captain Farouk',
-  'Youssef Marina Desk',
-];
-
 export const CrmLeadsManager: React.FC = () => {
   const { showToast } = useToast();
   const { hasPermission } = useAuth();
+  const { staffMembers, staffLoading, staffError } = useCrmAssignableStaff();
   const [leads, setLeads] = useState<CrmLead[]>([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
@@ -102,7 +96,8 @@ export const CrmLeadsManager: React.FC = () => {
     currency: 'EUR',
     stage: 'New',
     notes: '',
-    assignedStaffName: STAFF_MEMBERS[0],
+    assignedStaffName: '',
+    assignedStaffId: null,
     followUpDate: '',
   });
 
@@ -126,7 +121,7 @@ export const CrmLeadsManager: React.FC = () => {
     return leads.filter((l) => {
       if (stageFilter !== 'all' && l.stage !== stageFilter) return false;
       if (sourceFilter !== 'all' && l.source !== sourceFilter) return false;
-      if (staffFilter !== 'all' && l.assignedStaffName !== staffFilter) return false;
+      if (staffFilter !== 'all' && l.assignedStaffId !== staffFilter) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         return (
@@ -217,7 +212,8 @@ export const CrmLeadsManager: React.FC = () => {
       currency: lead.currency,
       stage: lead.stage,
       notes: lead.notes || '',
-      assignedStaffName: lead.assignedStaffName || STAFF_MEMBERS[0],
+      assignedStaffName: lead.assignedStaffName || '',
+      assignedStaffId: lead.assignedStaffId || null,
       followUpDate: lead.followUpDate || '',
     });
     setIsNewLeadOpen(true);
@@ -241,7 +237,8 @@ export const CrmLeadsManager: React.FC = () => {
       currency: 'EUR',
       stage: 'New',
       notes: '',
-      assignedStaffName: STAFF_MEMBERS[0],
+      assignedStaffName: '',
+    assignedStaffId: null,
       followUpDate: new Date(Date.now() + 86400000).toISOString().split('T')[0],
     });
     setIsNewLeadOpen(true);
@@ -358,15 +355,15 @@ export const CrmLeadsManager: React.FC = () => {
 
           {/* Staff Filter */}
           <select
+            disabled={staffLoading || Boolean(staffError)}
+            title={staffError || undefined}
             value={staffFilter}
             onChange={(e) => setStaffFilter(e.target.value)}
             className="px-2.5 py-1.5 bg-stone-900 border border-stone-800 rounded text-stone-300 focus:outline-none focus:border-[#0A6C74]"
           >
             <option value="all">All Staff</option>
-            {STAFF_MEMBERS.map((st) => (
-              <option key={st} value={st}>
-                {st}
-              </option>
+            {staffMembers.map((staff) => (
+              <option key={staff.id} value={staff.id}>{staff.full_name}</option>
             ))}
           </select>
         </div>
@@ -738,15 +735,24 @@ export const CrmLeadsManager: React.FC = () => {
                 <div>
                   <label className="block text-stone-300 font-semibold mb-1">Assigned Staff</label>
                   <select
-                    value={formData.assignedStaffName || STAFF_MEMBERS[0]}
-                    onChange={(e) => setFormData({ ...formData, assignedStaffName: e.target.value })}
+                    disabled={staffLoading || Boolean(staffError)}
+                    title={staffError || undefined}
+                    value={formData.assignedStaffId || (formData.assignedStaffName ? '__legacy__' : '__unassigned__')}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const staff = staffMembers.find((item) => item.id === value);
+                      if (value === '__legacy__') return;
+                      setFormData({
+                        ...formData,
+                        assignedStaffId: staff?.id || null,
+                        assignedStaffName: staff?.full_name || null,
+                      });
+                    }}
                     className="w-full px-3 py-1.5 bg-stone-950 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]"
                   >
-                    {STAFF_MEMBERS.map((st) => (
-                      <option key={st} value={st}>
-                        {st}
-                      </option>
-                    ))}
+                    {staffMembers.map((staff) => (
+              <option key={staff.id} value={staff.id}>{staff.full_name}</option>
+            ))}
                   </select>
                 </div>
               </div>
