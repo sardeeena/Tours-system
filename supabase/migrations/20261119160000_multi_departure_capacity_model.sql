@@ -610,7 +610,7 @@ BEGIN
       AND ds.calendar_date >= v_today
       AND coalesce(summary.has_bookable_slot,FALSE)
     ),
-    (coalesce(ta.is_blackout,FALSE) OR coalesce(summary.confirmed_count,0) = 0),
+    coalesce(ta.is_blackout,FALSE),
     summary.departure_times,
     CASE WHEN v_is_admin THEN ta.notes ELSE NULL END
   FROM date_series AS ds
@@ -727,6 +727,12 @@ BEGIN
     AND d.status = 'confirmed'
     AND ta.id IS NOT NULL
     AND NOT coalesce(ta.is_blackout,FALSE)
+    -- Keep the public selector from labelling a still-closed-by-notice slot as sold out.
+    AND (
+      greatest(0,d.capacity-greatest(coalesce(d.booked_passengers,0),coalesce(booked.reserved_count,0))) = 0
+      OR ((d.date + d.start_time::TIME) AT TIME ZONE 'Africa/Cairo')
+        >= now() + make_interval(hours => greatest(0,coalesce(v_tour.minimum_booking_notice_hours,12)))
+    )
   ORDER BY d.start_time,d.id;
 END;
 $function$;
