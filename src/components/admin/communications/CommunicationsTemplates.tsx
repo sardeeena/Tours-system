@@ -26,6 +26,7 @@ import {
   TemplateKey,
 } from '../../../types/communication';
 import { useToast } from '../../../contexts/ToastContext';
+import { AdminLoadError } from '../AdminLoadError';
 
 interface CommunicationsTemplatesProps {
   onNavigateTab?: (tabId: string, param?: string) => void;
@@ -83,6 +84,7 @@ export const CommunicationsTemplates: React.FC<CommunicationsTemplatesProps> = (
 
   const [templates, setTemplates] = useState<CommunicationTemplate[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [selectedTemplateKey, setSelectedTemplateKey] = useState<string>('booking_confirmation');
   const [searchQuery, setSearchQuery] = useState('');
   const [channelFilter, setChannelFilter] = useState<string>('all');
@@ -107,6 +109,7 @@ export const CommunicationsTemplates: React.FC<CommunicationsTemplatesProps> = (
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const all = await listTemplates();
       setTemplates(all);
@@ -120,6 +123,7 @@ export const CommunicationsTemplates: React.FC<CommunicationsTemplatesProps> = (
         setEditingIsActive(active.isActive);
       }
     } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'Template records could not be loaded.');
       console.error('Error loading templates:', err);
     } finally {
       setLoading(false);
@@ -252,6 +256,7 @@ export const CommunicationsTemplates: React.FC<CommunicationsTemplatesProps> = (
 
   return (
     <div className="space-y-6">
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
       {/* Top Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-stone-900 border border-stone-800 p-5 rounded-xl shadow-lg">
         <div className="flex items-center space-x-3">
