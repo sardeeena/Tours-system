@@ -1121,58 +1121,54 @@ export async function listCrmCustomers(
 
   const customerMap = new Map<string, CrmCustomerDetail>();
 
-  // Fetch registered customers from Supabase if configured
-  if (isSupabaseConfigured()) {
-    try {
-      const { data: dbCustomers } = await supabase
-        .from('customers')
-        .select('*')
-        .order('created_at', { ascending: false });
+  // Registered customer records are authoritative; database failures are never hidden by browser cache data.
+  if (!useLocalCrmData('Supabase is not configured; CRM customer records cannot be loaded in production.')) {
+    const { data: dbCustomers, error } = await supabase
+      .from('customers')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!dbCustomers) throw new Error('CRM customer records could not be loaded from the database.');
 
-      if (dbCustomers) {
-        dbCustomers.forEach((c) => {
-          const email = (c.email || '').toLowerCase().trim();
-          if (!email) return;
+    dbCustomers.forEach((c) => {
+      const email = (c.email || '').toLowerCase().trim();
+      if (!email) return;
 
-          customerMap.set(email, {
-            id: c.id,
-            fullName: `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Traveler',
-            firstName: c.first_name,
-            lastName: c.last_name,
-            email,
-            phone: c.phone || null,
-            whatsapp: c.whatsapp || null,
-            country: c.country || null,
-            hotel: c.hotel || null,
-            notes: c.notes || null,
-            tags: c.tags || ['Customer'],
-            status: (c.status as any) || 'active',
-            firstBookingDate: c.first_booking_date || null,
-            latestBookingDate: c.latest_booking_date || null,
-            upcomingBookingDate: c.upcoming_booking_date || null,
-            totalBookings: c.total_bookings_count || 0,
-            completedBookings: c.completed_bookings_count || 0,
-            cancelledBookings: c.cancelled_bookings_count || 0,
-            totalRevenue: Number(c.total_revenue) || 0,
-            outstandingAmount: Number(c.outstanding_amount) || 0,
-            lastContactDate: c.last_contact_at || c.created_at,
-            source: c.source || 'Website Booking',
-            createdAt: c.created_at || new Date().toISOString(),
-            role: 'customer',
-            isRegistered: Boolean(c.user_id),
-            bookings: [],
-            inquiries: [],
-            communications: [],
-            staffNotes: [],
-            tasks: [],
-            activities: [],
-            reviews: [],
-          });
-        });
-      }
-    } catch {
-      // continue with bookings aggregation
-    }
+      customerMap.set(email, {
+        id: c.id,
+        fullName: `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Traveler',
+        firstName: c.first_name,
+        lastName: c.last_name,
+        email,
+        phone: c.phone || null,
+        whatsapp: c.whatsapp || null,
+        country: c.country || null,
+        hotel: c.hotel || null,
+        notes: c.notes || null,
+        tags: c.tags || ['Customer'],
+        status: (c.status as any) || 'active',
+        firstBookingDate: c.first_booking_date || null,
+        latestBookingDate: c.latest_booking_date || null,
+        upcomingBookingDate: c.upcoming_booking_date || null,
+        totalBookings: c.total_bookings_count || 0,
+        completedBookings: c.completed_bookings_count || 0,
+        cancelledBookings: c.cancelled_bookings_count || 0,
+        totalRevenue: Number(c.total_revenue) || 0,
+        outstandingAmount: Number(c.outstanding_amount) || 0,
+        lastContactDate: c.last_contact_at || c.created_at,
+        source: c.source || 'Website Booking',
+        createdAt: c.created_at || new Date().toISOString(),
+        role: 'customer',
+        isRegistered: Boolean(c.user_id),
+        bookings: [],
+        inquiries: [],
+        communications: [],
+        staffNotes: [],
+        tasks: [],
+        activities: [],
+        reviews: [],
+      });
+    });
   }
 
   // Correlate Bookings
@@ -1570,71 +1566,70 @@ export async function createCustomer(input: {
   tags?: string[];
 }): Promise<CrmCustomerDetail> {
   const email = input.email.toLowerCase().trim();
+  const localMode = useLocalCrmData('Supabase is not configured; CRM customers cannot be created in production.');
 
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('customers')
-        .insert({
-          first_name: input.firstName,
-          last_name: input.lastName,
-          email,
-          phone: input.phone,
-          whatsapp: input.whatsapp,
-          country: input.country,
-          hotel: input.hotel,
-          notes: input.notes,
-          tags: input.tags || ['Customer'],
-          source: 'Manual Admin Entry',
-        })
-        .select('*')
-        .maybeSingle();
+  if (!localMode) {
+    const { data, error } = await supabase
+      .from('customers')
+      .insert({
+        first_name: input.firstName,
+        last_name: input.lastName,
+        email,
+        phone: input.phone,
+        whatsapp: input.whatsapp,
+        country: input.country,
+        hotel: input.hotel,
+        notes: input.notes,
+        tags: input.tags || ['Customer'],
+        source: 'Manual Admin Entry',
+      })
+      .select('id')
+      .single();
 
-      if (!error && data) {
-        return (await getCustomerProfile(data.id))!;
-      }
-    } catch {
-      // ignore
-    }
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data?.id) throw new Error('The customer was not saved; no database record was returned.');
+    return await getCustomerProfile(data.id) || Promise.reject(new Error('The customer was saved but could not be reloaded.'));
   }
 
-  // Update local extra
   await updateCustomerMetadata(email, {
     notes: input.notes,
     tags: input.tags || ['Customer'],
     source: 'Manual Admin Entry',
   });
-
-  return (await getCustomerProfile(email))!;
+  const profile = await getCustomerProfile(email);
+  if (!profile) throw new Error('The customer profile could not be created in the development data store.');
+  return profile;
 }
 
 export async function updateCustomerMetadata(
   email: string,
   updates: { notes?: string; tags?: string[]; source?: string; hotel?: string; country?: string }
 ): Promise<void> {
-  const extra = getLocal<Record<string, any>>(LOCAL_CUSTOMERS_EXTRA_KEY, {});
-  extra[email.toLowerCase()] = {
-    ...(extra[email.toLowerCase()] || {}),
-    ...updates,
-  };
-  setLocal(LOCAL_CUSTOMERS_EXTRA_KEY, extra);
+  const cleanEmail = email.toLowerCase().trim();
+  if (!cleanEmail) throw new Error('A customer email is required to update CRM metadata.');
+  const localMode = useLocalCrmData('Supabase is not configured; CRM customer metadata cannot be saved in production.');
 
-  if (isSupabaseConfigured()) {
-    try {
-      await supabase
-        .from('customers')
-        .update({
-          notes: updates.notes,
-          tags: updates.tags,
-          hotel: updates.hotel,
-          country: updates.country,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('email', email.toLowerCase());
-    } catch {
-      // ignore
-    }
+  if (!localMode) {
+    const { data, error } = await supabase
+      .from('customers')
+      .update({
+        notes: updates.notes,
+        tags: updates.tags,
+        hotel: updates.hotel,
+        country: updates.country,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('email', cleanEmail)
+      .select('id')
+      .maybeSingle();
+
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The customer metadata was not saved because the customer record was not found or is not accessible.');
   }
+
+  const extra = getLocal<Record<string, any>>(LOCAL_CUSTOMERS_EXTRA_KEY, {});
+  extra[cleanEmail] = { ...(extra[cleanEmail] || {}), ...updates };
+  setLocal(LOCAL_CUSTOMERS_EXTRA_KEY, extra);
 }
 
 // ------------------------------------------------------------------------------
@@ -1642,26 +1637,24 @@ export async function updateCustomerMetadata(
 // ------------------------------------------------------------------------------
 
 export async function listCrmTags(): Promise<CrmTag[]> {
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase.from('crm_tags').select('*').order('name');
-      if (!error && data && data.length > 0) {
-        return data.map((d) => ({
-          id: d.id,
-          name: d.name,
-          description: d.description,
-          color: d.color,
-          category: d.category,
-          usageCount: d.usage_count || 0,
-          createdAt: d.created_at,
-        }));
-      }
-    } catch {
-      // ignore
-    }
+  if (useLocalCrmData('Supabase is not configured; CRM tags cannot be loaded in production.')) {
+    return getLocal<CrmTag[]>(LOCAL_TAGS_KEY, DEFAULT_TAGS);
   }
 
-  return getLocal<CrmTag[]>(LOCAL_TAGS_KEY, DEFAULT_TAGS);
+  const { data, error } = await supabase.from('crm_tags').select('*').order('name');
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data) throw new Error('CRM tags could not be loaded from the database.');
+  const tags = data.map((d) => ({
+    id: d.id,
+    name: d.name,
+    description: d.description,
+    color: d.color,
+    category: d.category,
+    usageCount: d.usage_count || 0,
+    createdAt: d.created_at,
+  }));
+  setLocal(LOCAL_TAGS_KEY, tags);
+  return tags;
 }
 
 export async function createCrmTag(input: {
@@ -1670,6 +1663,7 @@ export async function createCrmTag(input: {
   color?: string;
   category?: 'tier' | 'loyalty' | 'interest' | 'general';
 }): Promise<CrmTag> {
+  const localMode = useLocalCrmData('Supabase is not configured; CRM tags cannot be created in production.');
   const newTag: CrmTag = {
     id: `tag-${Date.now().toString(36)}`,
     name: input.name.toLowerCase().replace(/\s+/g, '_'),
@@ -1680,30 +1674,25 @@ export async function createCrmTag(input: {
     createdAt: new Date().toISOString(),
   };
 
-  const tags = getLocal<CrmTag[]>(LOCAL_TAGS_KEY, DEFAULT_TAGS);
-  setLocal(LOCAL_TAGS_KEY, [newTag, ...tags]);
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('crm_tags')
-        .insert({
-          name: newTag.name,
-          description: newTag.description,
-          color: newTag.color,
-          category: newTag.category,
-        })
-        .select('*')
-        .maybeSingle();
-
-      if (!error && data) {
-        newTag.id = data.id;
-      }
-    } catch {
-      // ignore
-    }
+  if (!localMode) {
+    const { data, error } = await supabase
+      .from('crm_tags')
+      .insert({
+        name: newTag.name,
+        description: newTag.description,
+        color: newTag.color,
+        category: newTag.category,
+      })
+      .select('*')
+      .single();
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The CRM tag was not saved; no database record was returned.');
+    newTag.id = data.id;
+    newTag.createdAt = data.created_at || newTag.createdAt;
   }
 
+  const tags = getLocal<CrmTag[]>(LOCAL_TAGS_KEY, []);
+  setLocal(LOCAL_TAGS_KEY, [newTag, ...tags]);
   return newTag;
 }
 
