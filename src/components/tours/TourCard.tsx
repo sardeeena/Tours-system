@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Star, Clock, MapPin, CheckCircle2, ArrowRight, Heart, Eye, Scale, Sparkles, Compass } from 'lucide-react';
+import { Star, Clock, MapPin, ArrowRight, Heart, Eye, Scale, Sparkles, Compass } from 'lucide-react';
 import { Tour, CurrencyConfig } from '../../types';
 import { formatPrice } from '../../data/toursData';
 import { useWishlist } from '../../contexts/WishlistContext';
@@ -101,11 +101,6 @@ export const TourCard: React.FC<TourCardProps> = ({
           <Heart className={`w-4 h-4 ${favorite ? 'fill-current text-rose-600' : ''}`} />
         </motion.button>
 
-        {/* Free Cancellation Tag */}
-        <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-md text-emerald-900 text-[10px] font-semibold px-2.5 py-0.5 rounded-full shadow-sm flex items-center border border-emerald-200/50">
-          <CheckCircle2 className="w-3 h-3 mr-1 text-emerald-600 shrink-0" />
-          <span>Free Cancellation</span>
-        </div>
       </div>
 
       {/* Content */}
