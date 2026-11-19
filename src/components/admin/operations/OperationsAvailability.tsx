@@ -47,7 +47,7 @@ export const OperationsAvailability: React.FC = () => {
   const [isBlackoutModalOpen, setIsBlackoutModalOpen] = useState(false);
   const [blackoutTourId, setBlackoutTourId] = useState<string>('');
   const [blackoutDateVal, setBlackoutDateVal] = useState<string>('');
-  const [blackoutNotes, setBlackoutNotes] = useState<string>('Annual vessel drydock & Coast Guard inspection');
+  const [blackoutNotes, setBlackoutNotes] = useState<string>('');
 
   const loadData = async () => {
     setLoading(true);
@@ -153,6 +153,10 @@ export const OperationsAvailability: React.FC = () => {
   const handleApplyBlackout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!blackoutTourId || !blackoutDateVal) return;
+    if (!blackoutNotes.trim()) {
+      showToast('Enter the verified operational reason for this blackout date.', 'error');
+      return;
+    }
 
     try {
       await setBlackoutDate(blackoutTourId, blackoutDateVal, true, blackoutNotes);
@@ -484,6 +488,7 @@ export const OperationsAvailability: React.FC = () => {
                   type="text"
                   value={blackoutNotes}
                   onChange={(e) => setBlackoutNotes(e.target.value)}
+                  placeholder="Enter verified operational reason (required)"
                   placeholder="e.g. Vessel maintenance, Coast Guard harbor closure"
                   className="w-full px-3 py-1.5 bg-stone-950 border border-stone-800 rounded text-white"
                 />
