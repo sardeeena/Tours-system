@@ -165,9 +165,13 @@ class SupabaseBookingRepository implements IBookingRepository {
     }
 
     try {
-      // 1. Authoritative Primary Path: create_booking_atomic RPC
-      // Executes single PostgreSQL transaction with row-level capacity lock, server-side pricing,
-      // passenger manifest creation, extras persistence, genuine request idempotency, and audit logging.
+      if (!booking.departureId) {
+        throw new Error('Please select a confirmed departure time before completing this booking.');
+      }
+
+      // Authoritative path: atomically reserve the exact selected departure slot.
+      // Pricing, capacity locking, passenger manifests, extras, idempotency and audit logging
+      // are handled in the database transaction.
       const { data: atomicRes, error: rpcErr } = await supabase.rpc('create_booking_atomic_with_departure', {
         p_tour_identifier: resolveBookingTourIdentifier(booking.tourId, booking.tourSlug),
         p_booking_date: bookingDateStr,
@@ -193,6 +197,7 @@ class SupabaseBookingRepository implements IBookingRepository {
         p_idempotency_key: idempotencyKey,
         p_tour_language: booking.tourLanguage || 'English',
         p_customer_locale: booking.customerLocale || 'en',
+        p_departure_id: booking.departureId,
       });
 
       if (!rpcErr && atomicRes && typeof atomicRes === 'object') {
