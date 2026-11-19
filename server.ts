@@ -1469,6 +1469,9 @@ app.post('/api/bookings/create', rateLimit(10, 60_000), async (req: Authenticate
   const {
     tourSlug,
     date,
+    departureId,
+    tourLanguage = 'English',
+    customerLocale = 'en',
     guests,
     customer,
     pickupLocationId,
@@ -1492,6 +1495,9 @@ app.post('/api/bookings/create', rateLimit(10, 60_000), async (req: Authenticate
   }
   if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return res.status(400).json({ success: false, error: 'A valid excursion date (YYYY-MM-DD) is required.' });
+  }
+  if (typeof departureId !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(departureId)) {
+    return res.status(400).json({ success: false, error: 'A confirmed departure time must be selected.' });
   }
   const parsedDate = new Date(`${date}T00:00:00.000Z`);
   if (Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== date) {
@@ -1538,7 +1544,7 @@ app.post('/api/bookings/create', rateLimit(10, 60_000), async (req: Authenticate
       global: authorization ? { headers: { Authorization: authorization } } : undefined,
     });
 
-    const { data, error } = await requestClient.rpc('create_booking_atomic', {
+    const { data, error } = await requestClient.rpc('create_booking_atomic_with_departure', {
       p_tour_identifier: tourSlug.trim(),
       p_booking_date: date,
       p_adult_count: adults,
@@ -1561,6 +1567,9 @@ app.post('/api/bookings/create', rateLimit(10, 60_000), async (req: Authenticate
       p_payment_method: paymentMethod,
       p_special_requests: specialRequests || null,
       p_idempotency_key: idempotencyKey,
+      p_tour_language: typeof tourLanguage === 'string' ? tourLanguage : 'English',
+      p_customer_locale: typeof customerLocale === 'string' ? customerLocale : 'en',
+      p_departure_id: departureId,
     });
 
     if (error) {
@@ -1587,6 +1596,8 @@ app.post('/api/bookings/create', rateLimit(10, 60_000), async (req: Authenticate
       idempotencyKey,
       tour: { slug: tourSlug.trim() },
       date,
+      departureId: result.departureId || departureId,
+      departureTime: result.departureTime || null,
       guests: { adults, children, infants, total: adults + children + infants },
       pricing: {
         totalEur: total,
@@ -1642,7 +1653,7 @@ app.all(['/api/bookings/lookup', '/api/booking/lookup'], rateLimit(10, 60_000), 
     if (isStaff) {
       const { data, error } = await serverSupabase
         .from('bookings')
-        .select('id, booking_reference, booking_date, status, payment_status, payment_method, subtotal, extras_total, discount, total, currency, special_requests, customers(*), tours(title, slug, primary_image, duration)')
+        .select('id, booking_reference, booking_date, departure_id, status, payment_status, payment_method, subtotal, extras_total, discount, total, currency, special_requests, customers(*), tours(title, slug, primary_image, duration), departures(start_time,end_time)')
         .eq('booking_reference', cleanRef)
         .maybeSingle();
 
