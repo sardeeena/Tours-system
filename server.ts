@@ -4587,7 +4587,8 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
 
     const relatedErrors = [highlightResult, itineraryResult, inclusionResult, exclusionResult, faqResult]
       .filter((result: any) => result?.error);
-    if (relatedErrors.length) throw relatedErrors[0].error;
+    const firstRelatedError = relatedErrors[0];
+    if (firstRelatedError?.error) throw firstRelatedError.error;
 
     const groupByTour = (rows: any[] | null | undefined) => {
       const grouped = new Map<string, any[]>();
