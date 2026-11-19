@@ -130,6 +130,7 @@ export const AdminSeoManager: React.FC = () => {
 
   const loadEntitySeo = async (
     currentScope: SeoScopeType,
+    setLoadError(null);
     entityId: string,
     currentTours = tours,
     currentDests = destinations,
