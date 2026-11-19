@@ -173,6 +173,11 @@ export const AdminReviewsList: React.FC = () => {
       return;
     }
 
+    if (!isSupabaseConfigured()) {
+      showToast('A live Supabase connection is required. No local-only review was created.', 'error');
+      return;
+    }
+
     setIsSubmitting(true);
     const dateFormatted = new Date().toISOString().split('T')[0];
 
