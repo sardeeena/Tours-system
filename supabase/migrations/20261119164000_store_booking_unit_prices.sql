@@ -1,6 +1,7 @@
--- Persist the actual per-person rates captured at booking time. Existing
--- bookings receive zero-valued defaults only; their historical totals and
--- all other fields remain untouched.
+-- Persist the authoritative per-person tour rates on each newly created booking.
+-- A BEFORE INSERT trigger is used instead of rewriting booking RPC source text:
+-- both legacy and locale-aware RPCs receive identical price snapshots, while
+-- existing bookings remain untouched (their historical totals are preserved).
 
 BEGIN;
 
@@ -8,47 +9,65 @@ ALTER TABLE public.bookings
   ADD COLUMN IF NOT EXISTS unit_price_adult NUMERIC(12,2) NOT NULL DEFAULT 0,
   ADD COLUMN IF NOT EXISTS unit_price_child NUMERIC(12,2) NOT NULL DEFAULT 0;
 
-DO $migration$
+CREATE OR REPLACE FUNCTION private.set_booking_unit_prices()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $function$
 DECLARE
-  v_signature REGPROCEDURE;
-  v_definition TEXT;
-  v_old_columns TEXT := E'    idempotency_key, idempotency_payload, tour_language, customer_locale';
-  v_new_columns TEXT := v_old_columns || E',\n    unit_price_adult, unit_price_child';
-  v_old_values TEXT := E'    p_idempotency_key, v_idempotency_payload, v_tour_language, v_customer_locale';
-  v_new_values TEXT := v_old_values || E',\n' ||
-    '    CASE WHEN COALESCE(v_tour.tour_type, ''Shared'') = ''Private'' THEN v_tour.private_price ELSE v_tour.price END,' || E'\n' ||
-    '    CASE WHEN COALESCE(v_tour.tour_type, ''Shared'') = ''Private'' THEN v_tour.private_price ELSE COALESCE(v_tour.child_price, ROUND(v_tour.price * 0.50, 2)) END';
-  v_patched INTEGER := 0;
+  v_tour_type TEXT;
+  v_adult_price NUMERIC(12,2);
+  v_child_price NUMERIC(12,2);
+  v_private_price NUMERIC(12,2);
 BEGIN
-  FOR v_signature IN
-    SELECT p.oid::regprocedure
-    FROM pg_proc AS p
-    WHERE p.pronamespace = 'private'::regnamespace
-      AND p.proname = 'create_booking_atomic'
-      AND p.pronargs IN (18,19)
-  LOOP
-    v_definition := pg_get_functiondef(v_signature);
-    IF position(v_old_columns in v_definition) = 0
-       OR position(v_old_values in v_definition) = 0 THEN
-      RAISE EXCEPTION 'Booking function % no longer matches the reviewed unit-price insert anchors.', v_signature;
-    END IF;
+  SELECT
+    t.tour_type,
+    t.price,
+    t.child_price,
+    t.private_price
+  INTO
+    v_tour_type,
+    v_adult_price,
+    v_child_price,
+    v_private_price
+  FROM public.tours AS t
+  WHERE t.id = NEW.tour_id
+    AND t.status = 'published';
 
-    v_definition := replace(v_definition,v_old_columns,v_new_columns);
-    v_definition := replace(v_definition,v_old_values,v_new_values);
-    EXECUTE v_definition;
-    v_patched := v_patched + 1;
-  END LOOP;
-
-  IF v_patched <> 2 THEN
-    RAISE EXCEPTION 'Expected to patch both booking implementations with stored unit prices; patched %.', v_patched;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'A published tour is required to snapshot booking unit prices.'
+      USING ERRCODE = '23503';
   END IF;
+
+  IF COALESCE(v_tour_type, 'Shared') = 'Private' THEN
+    IF v_private_price IS NULL OR v_private_price <= 0 THEN
+      RAISE EXCEPTION 'The private per-person rate is not configured for this excursion.'
+        USING ERRCODE = '23514';
+    END IF;
+    NEW.unit_price_adult := v_private_price;
+    NEW.unit_price_child := v_private_price;
+  ELSE
+    NEW.unit_price_adult := COALESCE(v_adult_price, 0);
+    NEW.unit_price_child := COALESCE(v_child_price, ROUND(COALESCE(v_adult_price, 0) * 0.50, 2));
+  END IF;
+
+  RETURN NEW;
 END;
-$migration$;
+$function$;
+
+REVOKE ALL ON FUNCTION private.set_booking_unit_prices() FROM PUBLIC, anon, authenticated;
+
+DROP TRIGGER IF EXISTS trg_set_booking_unit_prices ON public.bookings;
+CREATE TRIGGER trg_set_booking_unit_prices
+BEFORE INSERT ON public.bookings
+FOR EACH ROW
+EXECUTE FUNCTION private.set_booking_unit_prices();
 
 COMMENT ON COLUMN public.bookings.unit_price_adult
-IS 'Adult per-person rate captured when this booking was created; legacy rows remain zero until explicitly reconciled.';
+IS 'Adult per-person rate captured at booking creation. Existing legacy rows remain zero and are not rewritten.';
 COMMENT ON COLUMN public.bookings.unit_price_child
-IS 'Child per-person rate captured when this booking was created; private tours store the same per-person rate for adults and children.';
+IS 'Child per-person rate captured at booking creation; private tours use the same per-person rate for adults and children.';
 
 NOTIFY pgrst, 'reload schema';
 COMMIT;
