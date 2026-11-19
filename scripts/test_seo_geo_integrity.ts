@@ -130,6 +130,7 @@ assert.match(destinationSeoMigration, /'destination'/, 'Destination SEO metadata
 assert.match(destinationSeoMigration, /'luxor'.*FALSE/s, 'Destinations without enough published inventory remain noindex');
 assert.match(destinationSeoMigration, /'hurghada'.*TRUE/s, 'Destinations with published excursion inventory are indexable');
 assert.match(destinationSeoMigration, /canonical_url/, 'Destination metadata includes canonical URLs');
+assert.doesNotMatch(destinationSeoMigration, /Giza Pyramids|Sphinx/, 'Cairo metadata does not claim attractions absent from the published Cairo tours');
 assert.match(tourCard, /No reviews yet/, 'Tour cards do not call unrated products new');
 assert.match(tourDetail, /No customer reviews yet/, 'Tour details explain that no customer reviews exist');
 assert.match(tourDetail, /Hotel Pickup Available/, 'Tour details do not imply pickup is universally free');
