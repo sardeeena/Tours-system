@@ -302,8 +302,6 @@ export const CrmConversationsManager: React.FC = () => {
                 <p className="mt-1 text-[10px] text-stone-500">The active account is recorded automatically.</p>
               </div>
 
-div>
-
               <div className="flex items-center justify-end space-x-2 pt-3 border-t border-stone-800">
                 <button
                   type="button"
