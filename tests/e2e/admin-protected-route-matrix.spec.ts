@@ -1,12 +1,14 @@
 import { test, expect } from '@playwright/test';
 
+// Use canonical routes understood by App.tsx's admin route parser. These
+// paths map to real modules rather than falling back to the default dashboard.
 const protectedAdminRoutes = [
   '/admin',
   '/admin/tours',
   '/admin/bookings',
-  '/admin/ops-manifests',
-  '/admin/fin-refunds',
-  '/admin/crm-leads',
+  '/admin/operations/manifests',
+  '/admin/finance/refunds',
+  '/admin/crm/leads',
   '/admin/access-control',
   '/admin/technical',
 ];
