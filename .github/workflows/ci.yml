@@ -148,6 +148,9 @@ jobs:
       - name: Verify secure customer booking lookup RPC contract
         run: npm run test:booking-lookup-rpc
 
+      - name: Verify customer cancellation feedback and notification retry safety
+        run: npm run test:booking-cancellation-feedback
+
       - name: Verify booking identifier and production fallback behavior
         run: npm run test:booking
 
