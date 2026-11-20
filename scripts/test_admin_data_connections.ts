@@ -245,10 +245,10 @@ assert.match(deleteSubscriber, /if \(!result\.data\?\.id\) throw/, 'Newsletter d
 
 const inquiryService = read('src/services/inquiryService.ts');
 const createInquiry = section(inquiryService, 'export async function createCustomerInquiry(', '/**\n * Lists all inquiries');
-assert.match(createInquiry, /\.from\('inquiries'\)[\s\S]*?\.insert\(/, 'Public inquiry submissions must persist to the inquiries table');
+assert.match(createInquiry, /fetch\('\/api\/inquiries\/submit'[\s\S]*?result\?\.inquiryId/, 'Public inquiry submissions must persist through the server-side endpoint');
 assert.match(createInquiry, /if \(error\)[\s\S]*?success: false/, 'Inquiry database failures must be reported as failures, not local success');
 assert.doesNotMatch(createInquiry, /estimatedValue:\s*120|createLead\(/, 'Inquiry submissions must not create fake-value CRM leads from the public client');
-assert.ok(createInquiry.indexOf(".insert({") < createInquiry.indexOf('saveStoredInquiries([persistedInquiry'), 'Inquiry browser cache must update only after the database insert succeeds');
+assert.ok(createInquiry.indexOf('result?.inquiryId') < createInquiry.indexOf('saveStoredInquiries([persistedInquiry'), 'Inquiry browser cache must update only after server persistence succeeds');
 
 const inquiryList = section(inquiryService, 'export async function listInquiries(', '/**\n * Updates inquiry status');
 assert.match(inquiryList, /if \(!import\.meta\.env\.DEV\)\s*\{[\s\S]*?throw new Error/, 'Production inquiry listing must not fall back to browser cache');
