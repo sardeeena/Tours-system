@@ -1966,7 +1966,11 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
   const cleanName = String(name).trim().slice(0, 100);
   const cleanEmail = String(email).trim().toLowerCase();
   const cleanMessage = String(message).trim().slice(0, 2000);
-  const cleanPhone = phone ? String(phone).trim().slice(0, 30) : null;\n  const cleanWhatsapp = whatsapp ? String(whatsapp).trim().slice(0, 30) : cleanPhone;\n  const cleanTourId = typeof tour_id === 'string' && tour_id.trim() ? tour_id.trim() : null;\n  const cleanTourTitle = typeof tour_title === 'string' ? tour_title.trim().slice(0, 160) : '';\n  const inquirySubject = String(inquiryType).trim().slice(0, 120) || 'General Excursion Question';
+  const cleanPhone = phone ? String(phone).trim().slice(0, 30) : null;
+  const cleanWhatsapp = whatsapp ? String(whatsapp).trim().slice(0, 30) : cleanPhone;
+  const cleanTourId = typeof tour_id === 'string' && tour_id.trim() ? tour_id.trim() : null;
+  const cleanTourTitle = typeof tour_title === 'string' ? tour_title.trim().slice(0, 160) : '';
+  const inquirySubject = String(inquiryType).trim().slice(0, 120) || 'General Excursion Question';
   const currentYear = new Date().getFullYear();
   const ticketNumber = `INQ-${currentYear}-${Math.floor(1000 + Math.random() * 9000)}`;
 
