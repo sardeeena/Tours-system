@@ -82,7 +82,7 @@ assert(inquiryRoute.includes("catch (error: any)"), 'Inquiry endpoint catches as
 // CSV exports must quote every value and neutralise spreadsheet formulas.
 const communicationsCsv = read('src/components/admin/communications/CommunicationsHistory.tsx');
 assert(communicationsCsv.includes("const csvCell = (value: unknown): string =>"), 'Communications CSV uses one shared safe-cell serializer');
-assert(communicationsCsv.includes("/^[\\\\u0000-\\\\u0020]*[=+\\\\-@]/.test(raw)"), 'Communications CSV neutralizes formula prefixes after leading whitespace/control characters');
+assert(communicationsCsv.includes("/^[\\u0000-\\u0020]*[=+\\-@]/.test(raw)"), 'Communications CSV neutralizes formula prefixes after leading whitespace/control characters');
 assert(communicationsCsv.includes("safe.replace(/\\\"/g, '\\\"\\\"')"), 'Communications CSV escapes embedded quotes using RFC 4180 doubling');
 assert(communicationsCsv.includes("].map(csvCell)"), 'Every communications export column passes through the safe-cell serializer');
 
