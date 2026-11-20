@@ -289,7 +289,7 @@ class SupabaseBookingRepository implements IBookingRepository {
     if (isSupabaseConfigured()) {
       try {
         if (cleanContact) {
-          const { data: rpcRes, error: rpcErr } = await supabase.rpc('lookup_booking_secure_with_language', {
+          const { data: rpcRes, error: rpcErr } = await supabase.rpc('lookup_booking_secure', {
             p_reference: cleanRef,
             p_verification: cleanContact,
           });
