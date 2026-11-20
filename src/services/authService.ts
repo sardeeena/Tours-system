@@ -1,6 +1,7 @@
 import { supabase, isSupabaseConfigured, formatSupabaseError } from './supabaseClient';
 import { UserRole } from '../types/database';
 import { recordVisitorEvent } from './visitorAnalyticsService';
+import { validatePasswordStrength as validatePasswordPolicy } from '../lib/security';
 
 export interface AppUser {
   id: string;
@@ -532,8 +533,9 @@ export async function updateUserPassword(
   newPassword: string,
   email?: string
 ): Promise<{ success: boolean; error?: string }> {
-  if (!newPassword || newPassword.length < 6) {
-    return { success: false, error: 'Password must be at least 6 characters long.' };
+  const passwordStrength = validatePasswordPolicy(newPassword);
+  if (!passwordStrength.isValid) {
+    return { success: false, error: passwordStrength.errors[0] || 'Password does not meet security requirements.' };
   }
 
   if (isSupabaseConfigured()) {
