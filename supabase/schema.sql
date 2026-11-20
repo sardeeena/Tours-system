@@ -662,6 +662,7 @@ CREATE TABLE IF NOT EXISTS public.inquiries (
     ip_address TEXT,
     admin_notes TEXT,
     website_url_hp TEXT,
+    assigned_staff_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -1762,50 +1763,45 @@ CREATE POLICY "Admins manage booking extras"
 
 -- ------------------------------------------------------------------------------
 -- 5.6 NEWSLETTER SUBSCRIPTIONS POLICIES
--- ------------------------------------------------------------------------------
 DROP POLICY IF EXISTS "Public can insert newsletter subscription" ON public.newsletter_subscriptions;
 DROP POLICY IF EXISTS "Public can view own newsletter status" ON public.newsletter_subscriptions;
 DROP POLICY IF EXISTS "Public can update own subscription" ON public.newsletter_subscriptions;
 DROP POLICY IF EXISTS "Admins can manage newsletter subscriptions" ON public.newsletter_subscriptions;
+DROP POLICY IF EXISTS "rbac_newsletter_subscriptions_create" ON public.newsletter_subscriptions;
 
-CREATE POLICY "Public can insert newsletter subscription"
-    ON public.newsletter_subscriptions FOR INSERT
-    WITH CHECK (TRUE);
+CREATE POLICY "rbac_newsletter_subscriptions_create"
+    ON public.newsletter_subscriptions FOR INSERT TO authenticated
+    WITH CHECK (private.has_permission('content.create'::text));
+CREATE POLICY "rbac_newsletter_subscriptions_read"
+    ON public.newsletter_subscriptions FOR SELECT TO authenticated
+    USING (private.has_permission('content.read'::text));
+CREATE POLICY "rbac_newsletter_subscriptions_update"
+    ON public.newsletter_subscriptions FOR UPDATE TO authenticated
+    USING (private.has_permission('content.update'::text))
+    WITH CHECK (private.has_permission('content.update'::text));
+CREATE POLICY "rbac_newsletter_subscriptions_delete"
+    ON public.newsletter_subscriptions FOR DELETE TO authenticated
+    USING (private.has_permission('content.delete'::text));
 
-CREATE POLICY "Public can view own newsletter status"
-    ON public.newsletter_subscriptions FOR SELECT
-    USING (TRUE);
-
-CREATE POLICY "Public can update own subscription"
-    ON public.newsletter_subscriptions FOR UPDATE
-    USING (TRUE)
-    WITH CHECK (TRUE);
-
-CREATE POLICY "Admins can manage newsletter subscriptions"
-    ON public.newsletter_subscriptions FOR ALL
-    TO authenticated
-    USING (public.is_admin())
-    WITH CHECK (public.is_admin());
-
-
--- ------------------------------------------------------------------------------
 -- 5.7 INQUIRIES & CONCIERGE REQUESTS POLICIES
--- ------------------------------------------------------------------------------
 DROP POLICY IF EXISTS "Public can insert inquiry" ON public.inquiries;
 DROP POLICY IF EXISTS "Admins can manage inquiries" ON public.inquiries;
+DROP POLICY IF EXISTS "rbac_inquiries_create" ON public.inquiries;
 
-CREATE POLICY "Public can insert inquiry"
-    ON public.inquiries FOR INSERT
-    WITH CHECK (TRUE);
+CREATE POLICY "rbac_inquiries_create"
+    ON public.inquiries FOR INSERT TO authenticated
+    WITH CHECK (private.has_permission('crm.create'::text));
+CREATE POLICY "rbac_inquiries_read"
+    ON public.inquiries FOR SELECT TO authenticated
+    USING (private.has_permission('crm.read'::text));
+CREATE POLICY "rbac_inquiries_update"
+    ON public.inquiries FOR UPDATE TO authenticated
+    USING (private.has_permission('crm.update'::text))
+    WITH CHECK (private.has_permission('crm.update'::text));
+CREATE POLICY "rbac_inquiries_delete"
+    ON public.inquiries FOR DELETE TO authenticated
+    USING (private.has_permission('crm.delete'::text));
 
-CREATE POLICY "Admins can manage inquiries"
-    ON public.inquiries FOR ALL
-    TO authenticated
-    USING (public.is_admin())
-    WITH CHECK (public.is_admin());
-
-
--- ------------------------------------------------------------------------------
 -- 5.8 COUPONS & PROMO CODES POLICIES
 -- ------------------------------------------------------------------------------
 DROP POLICY IF EXISTS "Public can read active coupons" ON public.coupons;
@@ -1947,6 +1943,10 @@ GRANT ALL ON ALL ROUTINES IN SCHEMA public TO anon, authenticated;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO anon, authenticated;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO anon, authenticated;
 ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON ROUTINES TO anon, authenticated;
+
+-- Public forms use same-origin server endpoints with the service role; no direct anonymous table access.
+REVOKE ALL ON TABLE public.inquiries FROM PUBLIC, anon;
+REVOKE ALL ON TABLE public.newsletter_subscriptions FROM PUBLIC, anon;
 
 
 -- ==============================================================================
