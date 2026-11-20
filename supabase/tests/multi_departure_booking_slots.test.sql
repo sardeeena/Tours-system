@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(18);
+SELECT plan(21);
 
 SELECT has_function(
   'public','get_tour_departure_slots',ARRAY['text','date'],
@@ -169,6 +169,78 @@ SELECT is(
    WHERE id = (SELECT second_departure_id FROM multi_departure_context)),
   3,
   'the other departure retains its independent capacity'
+);
+
+SELECT is(
+  (public.create_booking_atomic_with_departure(
+    'pgtap-multi-departure-private',
+    (SELECT test_date FROM multi_departure_context),
+    1,0,0,
+    'Capacity','Overflow',
+    'multi-slot-overflow@example.test',
+    '+201000000084',
+    'Egypt',
+    'Test Hotel',
+    NULL,NULL,
+    '[]'::jsonb,
+    NULL,
+    'pay_at_pickup',
+    'ROLLBACK TEST ONLY',
+    'idem_multi_departure_overflow_0001',
+    'English',
+    'en',
+    (SELECT first_departure_id FROM multi_departure_context)
+  )->>'success')::BOOLEAN,
+  FALSE,
+  'a booking that exceeds the selected departure capacity is rejected'
+);
+
+SELECT is(
+  (public.create_booking_atomic_with_departure(
+    'pgtap-multi-departure-private',
+    (SELECT test_date FROM multi_departure_context),
+    1,0,0,
+    'Invalid','Departure',
+    'multi-slot-invalid-departure@example.test',
+    '+201000000085',
+    'Egypt',
+    'Test Hotel',
+    NULL,NULL,
+    '[]'::jsonb,
+    NULL,
+    'pay_at_pickup',
+    'ROLLBACK TEST ONLY',
+    'idem_multi_departure_invalid_0001',
+    'English',
+    'en',
+    'ffffffff-ffff-4fff-8fff-ffffffffffff'::UUID
+  )->>'success')::BOOLEAN,
+  FALSE,
+  'a departure ID that does not belong to the selected tour and date is rejected'
+);
+
+SELECT is(
+  (public.create_booking_atomic_with_departure(
+    'pgtap-multi-departure-private',
+    (SELECT test_date FROM multi_departure_context),
+    1,0,0,
+    'Missing','Departure',
+    'multi-slot-missing-departure@example.test',
+    '+201000000086',
+    'Egypt',
+    'Test Hotel',
+    NULL,NULL,
+    '[]'::jsonb,
+    NULL,
+    'pay_at_pickup',
+    'ROLLBACK TEST ONLY',
+    'idem_multi_departure_missing_0001',
+    'English',
+    'en',
+    NULL
+  )->>'success')::BOOLEAN,
+  FALSE,
+  'a booking without an explicitly selected departure is rejected'
 );
 
 SELECT is(
