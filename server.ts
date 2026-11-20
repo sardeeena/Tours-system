@@ -1942,104 +1942,140 @@ async function sendInquiryNotificationEmail(params: {
 }
 
 app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(5, 10 * 60_000), async (req: Request, res: Response) => {
-  const { name, email, phone, inquiryType = 'general_question', message, website_url_hp } = req.body;
-
-  // Bot honeypot check
-  if (website_url_hp && String(website_url_hp).trim() !== '') {
-    return res.status(200).json({ success: true, status: 'received' });
+  const body = req.body || {};
+  const honeypot = typeof body.website_url_hp === 'string' ? body.website_url_hp.trim() : '';
+  if (honeypot) {
+    return res.status(200).json({ success: true, status: 'received', message: 'Thank you for contacting us.' });
   }
 
-  if (!name || !email || !message) {
-    return res.status(400).json({
-      success: false,
-      error: 'Name, valid email, and message are required',
+  const rawName = typeof body.name === 'string' ? body.name.trim() : '';
+  const rawEmail = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+  const rawMessage = typeof body.message === 'string' ? body.message.trim() : '';
+  if (!rawName || !rawEmail || !rawMessage) {
+    return res.status(400).json({ success: false, error: 'Name, valid email, and message are required.' });
+  }
+  if (rawEmail.length > 254 || !isValidEmail(rawEmail)) {
+    return res.status(400).json({ success: false, error: 'Please enter a valid email address.' });
+  }
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
+    return res.status(503).json({ success: false, error: 'Inquiry database service is not configured. Please try again later.' });
+  }
+
+  const cleanName = rawName.slice(0, 100);
+  const cleanEmail = rawEmail;
+  const cleanMessage = rawMessage.slice(0, 2000);
+  const cleanPhone = typeof body.phone === 'string' ? body.phone.trim().slice(0, 30) || null : null;
+  const cleanWhatsapp = typeof body.whatsapp === 'string' ? body.whatsapp.trim().slice(0, 30) || null : cleanPhone;
+  const rawSubject = typeof body.subject === 'string'
+    ? body.subject
+    : typeof body.inquiryType === 'string'
+      ? body.inquiryType
+      : '';
+  const cleanSubject = rawSubject.trim().slice(0, 120) || 'General Excursion Assistance';
+  const sourceValue = typeof body.source === 'string' ? body.source.trim().toLowerCase() : 'web';
+  const cleanSource = (['web', 'whatsapp', 'email', 'phone'].includes(sourceValue) ? sourceValue : 'web') as 'web' | 'whatsapp' | 'email' | 'phone';
+  const cleanTourId = typeof body.tour_id === 'string' ? body.tour_id.trim().slice(0, 100) || null : null;
+  const cleanTourTitle = typeof body.tour_title === 'string' ? body.tour_title.trim().slice(0, 160) || null : null;
+  const clientIp = typeof req.ip === 'string' ? req.ip.slice(0, 64) : null;
+  const ticketNumber = `INQ-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+  try {
+    const { error: emailRateLimitError } = await serverSupabase.rpc('check_atomic_rate_limit', {
+      p_action: 'public_inquiry_email',
+      p_identifier: cleanEmail,
+      p_window_interval: '10 minutes',
+      p_max_hits: 5,
+      p_error_message: 'Too many inquiries from this email address. Please wait before trying again.',
     });
-  }
-
-  if (!isValidEmail(email)) {
-    return res.status(400).json({
-      success: false,
-      error: 'Please enter a valid email address',
-    });
-  }
-
-  const cleanName = String(name).trim().slice(0, 100);
-  const cleanEmail = String(email).trim().toLowerCase();
-  const cleanMessage = String(message).trim().slice(0, 2000);
-  const cleanPhone = phone ? String(phone).slice(0, 30) : null;
-  const currentYear = new Date().getFullYear();
-  const ticketNumber = `INQ-${currentYear}-${Math.floor(1000 + Math.random() * 9000)}`;
-
-  if (serverSupabase) {
-    try {
-      const { data, error } = await serverSupabase
-        .from('inquiries')
-        .insert({
-          customer_name: cleanName,
-          email: cleanEmail,
-          phone: cleanPhone,
-          subject: inquiryType === 'general_question' ? 'General Excursion Question' : String(inquiryType),
-          message: cleanMessage,
-          status: 'new',
-          source: 'web',
-        })
-        .select('id, created_at')
-        .single();
-
-      if (!error && data) {
-        const inquirySubject = inquiryType === 'general_question' ? 'General Excursion Question' : String(inquiryType).slice(0, 120);
-        const reservationEmail = process.env.BOOKING_NOTIFICATION_EMAIL?.trim() || 'reservation@awesomeadventure.tours';
-        await Promise.all([
-          sendInquiryNotificationEmail({
-            recipientEmail: reservationEmail,
-            customerName: cleanName,
-            templateKey: 'inquiry_staff_notification',
-            subject: `New website inquiry: ${inquirySubject}`,
-            replyTo: cleanEmail,
-            content: [
-              'A new inquiry was submitted on Awesome Adventure Tours.',
-              `Inquiry ID: ${data.id}`,
-              `Name: ${cleanName}`,
-              `Email: ${cleanEmail}`,
-              `Phone: ${cleanPhone || 'Not provided'}`,
-              `Subject: ${inquirySubject}`,
-              '',
-              'Message:',
-              cleanMessage,
-            ].join('\n'),
-          }),
-          sendInquiryNotificationEmail({
-            recipientEmail: cleanEmail,
-            customerName: cleanName,
-            templateKey: 'inquiry_customer_confirmation',
-            subject: 'We received your message — Awesome Adventure Tours',
-            content: `Hello ${cleanName},\n\nThank you for contacting Awesome Adventure Tours. We have received your inquiry (reference ${data.id}) and our team will respond within 2 hours during Egypt Pier Desk hours.\n\nIf your question is urgent, you can contact our reservations team at reservation@awesomeadventure.tours.\n\nAwesome Adventure Tours`,
-          }),
-        ]);
-        return res.status(201).json({
-          success: true,
-          inquiryId: data.id,
-          ticketNumber,
-          status: 'received',
-          estimatedResponseTime: 'Within 2 hours (Egypt Pier Desk hours)',
-          receivedAt: data.created_at,
-        });
+    if (emailRateLimitError) {
+      if (emailRateLimitError.code === 'P0001') {
+        return res.status(429).json({ success: false, error: emailRateLimitError.message });
       }
-      if (error) {
-        console.error('Supabase inquiries insert error:', error.message);
-      }
-    } catch (dbErr) {
-      console.warn('Supabase inquiries insert exception:', dbErr);
+      console.error('Inquiry email rate-limit check failed:', emailRateLimitError.message);
+      return res.status(503).json({ success: false, error: 'Inquiry service is temporarily unavailable. Please try again later.' });
     }
-  }
 
-  return res.status(503).json({
-    success: false,
-    error: 'Inquiry service is currently unconfigured or database is unreachable.',
-  });
+    const { data, error } = await serverSupabase
+      .from('inquiries')
+      .insert({
+        customer_name: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone,
+        whatsapp: cleanWhatsapp,
+        tour_id: cleanTourId,
+        tour_title: cleanTourTitle,
+        subject: cleanSubject,
+        message: cleanMessage,
+        status: 'new',
+        source: cleanSource,
+        ip_address: clientIp,
+      })
+      .select('id,customer_name,email,phone,whatsapp,tour_id,tour_title,subject,message,status,source,created_at,updated_at')
+      .single();
+
+    if (error || !data) {
+      console.error('Supabase inquiries insert error:', error?.message || 'No inquiry row returned');
+      return res.status(503).json({ success: false, error: 'We could not save your inquiry. Please try again later.' });
+    }
+
+    const reservationEmail = process.env.BOOKING_NOTIFICATION_EMAIL?.trim() || 'reservation@awesomeadventure.tours';
+    const inquiryEmailContent = [
+      'A new inquiry was submitted on Awesome Adventure Tours.',
+      `Inquiry ID: ${data.id}`,
+      `Name: ${cleanName}`,
+      `Email: ${cleanEmail}`,
+      `Phone: ${cleanPhone || 'Not provided'}`,
+      `WhatsApp: ${cleanWhatsapp || 'Not provided'}`,
+      `Tour: ${cleanTourTitle || cleanTourId || 'Not specified'}`,
+      `Subject: ${cleanSubject}`,
+      '',
+      'Message:',
+      cleanMessage,
+    ].join('\n');
+
+    try {
+      await Promise.all([
+        sendInquiryNotificationEmail({
+          recipientEmail: reservationEmail,
+          customerName: cleanName,
+          templateKey: 'inquiry_staff_notification',
+          subject: `New website inquiry: ${cleanSubject}`,
+          replyTo: cleanEmail,
+          content: inquiryEmailContent,
+        }),
+        sendInquiryNotificationEmail({
+          recipientEmail: cleanEmail,
+          customerName: cleanName,
+          templateKey: 'inquiry_customer_confirmation',
+          subject: 'We received your message — Awesome Adventure Tours',
+          content: `Hello ${cleanName},\n\nThank you for contacting Awesome Adventure Tours. We have received your inquiry (reference ${data.id}) and our team will respond within 2 hours during Egypt Pier Desk hours.\n\nIf your question is urgent, contact reservations at reservation@awesomeadventure.tours.\n\nAwesome Adventure Tours`,
+        }),
+      ]);
+    } catch (emailError) {
+      // The inquiry is already safely persisted; email failure must not cause a duplicate retry.
+      console.error('Inquiry notification email failed after persistence:', emailError);
+    }
+
+    return res.status(201).json({
+      success: true,
+      inquiryId: data.id,
+      ticketNumber,
+      status: 'received',
+      estimatedResponseTime: 'Within 2 hours (Egypt Pier Desk hours)',
+      receivedAt: data.created_at,
+      inquiry: {
+        ...data,
+        ip_address: null,
+        admin_notes: null,
+        assigned_staff_id: null,
+      },
+    });
+  } catch (dbErr) {
+    console.error('Inquiry service exception:', dbErr);
+    return res.status(503).json({ success: false, error: 'Inquiry service is currently unavailable. Please try again later.' });
+  }
 });
 
-// ------------------------------------------------------------------------------
 // 8. Newsletter Subscription API
 // ------------------------------------------------------------------------------
 function createNewsletterUnsubscribeToken(subscriberId: string, email: string): string {
@@ -2139,6 +2175,20 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
         emailStatus: 'not_sent',
         message: 'You are already subscribed. Your REDSEA15 voucher is ready.',
       });
+    }
+
+    const { error: emailRateLimitError } = await serverSupabase.rpc('check_atomic_rate_limit', {
+      p_action: 'public_newsletter_email',
+      p_identifier: cleanEmail,
+      p_window_interval: '10 minutes',
+      p_max_hits: 3,
+      p_error_message: 'Too many subscription attempts for this email address. Please wait before trying again.',
+    });
+    if (emailRateLimitError) {
+      if (emailRateLimitError.code === 'P0001') {
+        return res.status(429).json({ success: false, error: emailRateLimitError.message });
+      }
+      throw emailRateLimitError;
     }
 
     if (existing) {
