@@ -3228,7 +3228,6 @@ CREATE POLICY "Staff manage passengers" ON public.booking_passengers FOR ALL TO 
 CREATE POLICY "Public can view published reviews" ON public.reviews FOR SELECT USING (is_published = true OR public.is_admin());
 CREATE POLICY "Admins manage reviews" ON public.reviews FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 
-CREATE POLICY "Admins manage coupons" ON public.coupons FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 CREATE POLICY rbac_inquiries_create ON public.inquiries FOR INSERT TO authenticated WITH CHECK (private.has_permission('crm.create'::text));
 CREATE POLICY "Admins can manage inquiries" ON public.inquiries FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
