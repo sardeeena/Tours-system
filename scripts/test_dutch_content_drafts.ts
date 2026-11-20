@@ -25,8 +25,8 @@ assert.equal(records.length, 111);
 assert.deepEqual(nl.coverage, {
   tour: 25, blog_post: 50, destination: 7, static_page: 10,
   communication_template: 18, ui_catalog: 1,
-  public_ui_messages: 81, private_ui_messages: 1077,
-  ui_catalog_messages: 1158, source_records: 111,
+  public_ui_messages: 81, private_ui_messages: 1078,
+  ui_catalog_messages: 1159, source_records: 111,
 });
 
 const sourceKeys = new Set(refRecords.map(key));
