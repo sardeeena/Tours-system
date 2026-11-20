@@ -95,14 +95,15 @@ export async function signInUser(
       });
 
       if (!error && data.user) {
-        // Check if account email is verified
+        // A session only proves that credentials were accepted; it does not prove
+        // that the email address was confirmed. Require Supabase's verified user
+        // timestamp and never infer confirmation from the presence of a session.
         const isEmailConfirmed = Boolean(
-          data.user.email_confirmed_at ||
-          (data.user as any)?.confirmed_at ||
-          data.session
+          data.user.email_confirmed_at || (data.user as any)?.confirmed_at
         );
 
         if (!isEmailConfirmed) {
+          await supabase.auth.signOut();
           void recordVisitorEvent({ event_name: 'auth_sign_in_failed', page_path: '/login', event_data: { outcome: 'email_unconfirmed' } });
           return {
             user: null,
@@ -622,9 +623,13 @@ export async function getCurrentAdminUser(): Promise<AppUser | null> {
     const permissions = Array.isArray(accessContext.permissions)
       ? accessContext.permissions.filter((permission: unknown): permission is string => typeof permission === 'string')
       : [];
-    const hasStaffRole = roles.some((role: string) => role !== 'customer' && role !== 'guide');
-    if (hasStaffRole && !user.email_confirmed_at) return null;
-    if (!profile.is_confirmed && !user.email_confirmed_at) return null;
+    // Do not restore any authenticated app state for an unconfirmed account,
+    // regardless of its cached/profile role or is_confirmed flag.
+    if (!user.email_confirmed_at) {
+      await supabase.auth.signOut();
+      localStorage.removeItem(LOCAL_ACTIVE_USER_KEY);
+      return null;
+    }
 
     const authedUser: AppUser = {
       id: user.id,

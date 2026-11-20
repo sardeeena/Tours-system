@@ -46,6 +46,33 @@ async function runRecoveryTests() {
   const testEmail = 'traveler-recovery-test@example.com';
   const authServiceSource = fs.readFileSync(path.resolve(process.cwd(), 'src/services/authService.ts'), 'utf8');
 
+  // Email confirmation must be based on the verified Auth user timestamp, not
+  // merely on a session (which can exist when confirmation is disabled).
+  const signInConfirmationBlock = authServiceSource.slice(
+    authServiceSource.indexOf('// A session only proves that credentials were accepted'),
+    authServiceSource.indexOf('// The live profiles row is the only authorization source')
+  );
+  assert(
+    signInConfirmationBlock.includes('data.user.email_confirmed_at') &&
+      signInConfirmationBlock.includes('confirmed_at') &&
+      !signInConfirmationBlock.includes('data.session'),
+    'Sign-in requires Supabase verified email timestamps and never treats a session as confirmation'
+  );
+  assert(
+    signInConfirmationBlock.includes('await supabase.auth.signOut()'),
+    'Unconfirmed sign-in immediately clears the Supabase session'
+  );
+
+  const sessionRestorationBlock = authServiceSource.slice(
+    authServiceSource.indexOf('export async function getCurrentAdminUser'),
+    authServiceSource.indexOf('export async function verifyAdminAccess')
+  );
+  assert(
+    sessionRestorationBlock.includes('if (!user.email_confirmed_at)') &&
+      sessionRestorationBlock.includes('await supabase.auth.signOut()'),
+    'Session restoration rejects and signs out unconfirmed accounts regardless of profile flags'
+  );
+
   // Never send real password-recovery emails from CI or a developer test run.
   if (isSupabaseConfigured()) {
     assert(
