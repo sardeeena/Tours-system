@@ -164,19 +164,6 @@ export async function createCustomerInquiry(
     updated_at: result.receivedAt || now,
   };
 
-  if (error) {
-    inquiryRateLimiter.recordFailedAttempt();
-    if (error.message?.includes('Rate limit exceeded') || error.code === 'P0001') {
-      return { success: false, error: error.message || 'Rate limit exceeded. Please wait before submitting another inquiry.' };
-    }
-    return { success: false, error: `Your inquiry could not be saved: ${formatSupabaseError(error)}` };
-  }
-  if (!data?.id) {
-    inquiryRateLimiter.recordFailedAttempt();
-    return { success: false, error: 'Your inquiry could not be saved because the database returned no record.' };
-  }
-
-  const persistedInquiry = data as DbInquiry;
   saveStoredInquiries([persistedInquiry, ...getStoredInquiries().filter((item) => item.id !== persistedInquiry.id)]);
 
   // These are non-critical follow-up signals. The inquiry itself is already persisted.
