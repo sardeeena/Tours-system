@@ -1,3 +1,5 @@
+-- HISTORICAL REFERENCE SNAPSHOT: production schema is defined by supabase/migrations/.
+-- Do not apply this file to provision or update an environment; use `supabase db reset` and the migration chain.
 -- ==============================================================================
 -- RED SEA VOYAGES & MARITIME EXCURSIONS - CANONICAL COMPLETE DATABASE SCHEMA
 -- Authoritative Supabase Database Schema: "complete_schema.sql"
