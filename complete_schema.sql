@@ -3228,8 +3228,17 @@ CREATE POLICY "Staff manage passengers" ON public.booking_passengers FOR ALL TO 
 CREATE POLICY "Public can view published reviews" ON public.reviews FOR SELECT USING (is_published = true OR public.is_admin());
 CREATE POLICY "Admins manage reviews" ON public.reviews FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 
-CREATE POLICY "Public validate coupons" ON public.coupons FOR SELECT USING (is_active = true OR public.is_admin());
-CREATE POLICY "Admins manage coupons" ON public.coupons FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY rbac_coupons_read ON public.coupons
+  FOR SELECT TO authenticated USING (public.has_permission('content.read'::text));
+CREATE POLICY rbac_coupons_create ON public.coupons
+  FOR INSERT TO authenticated WITH CHECK (public.has_permission('content.create'::text));
+CREATE POLICY rbac_coupons_update ON public.coupons
+  FOR UPDATE TO authenticated
+  USING (public.has_permission('content.update'::text))
+  WITH CHECK (public.has_permission('content.update'::text));
+CREATE POLICY rbac_coupons_delete ON public.coupons
+  FOR DELETE TO authenticated USING (public.has_permission('content.delete'::text));
+
 
 CREATE POLICY rbac_inquiries_create ON public.inquiries FOR INSERT TO authenticated WITH CHECK (private.has_permission('crm.create'::text));
 CREATE POLICY "Admins can manage inquiries" ON public.inquiries FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
@@ -3249,7 +3258,7 @@ CREATE POLICY "Admins manage site settings" ON public.site_settings FOR ALL TO a
 CREATE POLICY "Admins view audit logs" ON public.audit_logs FOR SELECT TO authenticated USING (public.is_admin());
 CREATE POLICY "System insert audit logs" ON public.audit_logs FOR INSERT WITH CHECK (true);
 
-CREATE POLICY rbac_newsletter_subscriptions_create ON public.newsletter_subscriptions FOR INSERT TO authenticated WITH CHECK (private.has_permission('content.create'::text));
+CREATE POLICY rbac_newsletter_subscriptions_create ON public.newsletter_subscriptions FOR INSERT TO authenticated WITH CHECK (public.has_permission('content.create'::text));
 CREATE POLICY "Admins manage newsletter" ON public.newsletter_subscriptions FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 
 CREATE POLICY "Public can view media assets" ON public.media_assets FOR SELECT USING (true);
@@ -3353,3 +3362,4 @@ VALUES
 ON CONFLICT (key) DO NOTHING;
 
 COMMIT;
+

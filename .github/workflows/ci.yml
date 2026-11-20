@@ -142,6 +142,9 @@ jobs:
       - name: Verify normalized RBAC authority in client authorization gates
         run: npm run test:normalized-rbac-client-boundary
 
+      - name: Verify coupon administration requires content permissions
+        run: npm run test:coupon-rbac
+
       - name: Verify departure slot capacity normalization fails closed
         run: npm run test:departure-slots
 

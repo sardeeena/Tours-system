@@ -4,6 +4,8 @@ BEGIN;
 
 DROP POLICY IF EXISTS "Public validate coupons" ON public.coupons;
 DROP POLICY IF EXISTS "Public can read active coupons" ON public.coupons;
+DROP POLICY IF EXISTS "Admins manage coupons" ON public.coupons;
+DROP POLICY IF EXISTS "Admins can manage coupons" ON public.coupons;
 DROP POLICY IF EXISTS rbac_coupons_read ON public.coupons;
 DROP POLICY IF EXISTS rbac_coupons_create ON public.coupons;
 DROP POLICY IF EXISTS rbac_coupons_update ON public.coupons;
