@@ -25,6 +25,7 @@ assert.match(createInquiry, /tour_title: cleanTourTitle/);
 const inquiryApi = section(server, "app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact']", '// 8. Newsletter Subscription API');
 assert.match(inquiryApi, /rpc\('check_atomic_rate_limit'/);
 assert.match(inquiryApi, /p_action: 'public_inquiry_email'/);
+assert.match(inquiryApi, /createHash\('sha256'\)\.update\(cleanEmail\)\.digest\('hex'\)/);
 assert.match(inquiryApi, /tour_title: cleanTourTitle/);
 assert.match(inquiryApi, /\.select\('id,customer_name,email,phone,whatsapp,tour_id,tour_title,subject,message,status,source,created_at,updated_at'\)/);
 
