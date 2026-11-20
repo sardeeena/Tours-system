@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(24);
+SELECT plan(26);
 
 SELECT has_function(
   'public','get_tour_departure_slots',ARRAY['text','date'],
@@ -34,7 +34,8 @@ CREATE TEMP TABLE multi_departure_context (
   first_departure_id UUID,
   second_departure_id UUID,
   booking_result JSONB,
-  retry_result JSONB
+  retry_result JSONB,
+  mismatched_retry_result JSONB
 ) ON COMMIT DROP;
 
 INSERT INTO multi_departure_context (tour_id,test_date)
@@ -147,6 +148,42 @@ SELECT is(
   (SELECT (retry_result->>'bookingId')::UUID FROM multi_departure_context),
   (SELECT (booking_result->>'bookingId')::UUID FROM multi_departure_context),
   'an idempotent retry returns the original booking ID'
+);
+
+-- The same idempotency key cannot be replayed against another departure.
+UPDATE multi_departure_context
+SET mismatched_retry_result = public.create_booking_atomic_with_departure(
+  'pgtap-multi-departure-private',
+  test_date,
+  1,1,0,
+  'Multi','Slot',
+  'multi-slot-private@example.test',
+  '+201000000081',
+  'Egypt',
+  'Test Hotel',
+  NULL,NULL,
+  '[]'::jsonb,
+  NULL,
+  'pay_at_pickup',
+  'ROLLBACK TEST ONLY',
+  'idem_multi_departure_private_slot_0001',
+  'English',
+  'en',
+  second_departure_id
+);
+
+SELECT is(
+  (SELECT (mismatched_retry_result->>'success')::BOOLEAN FROM multi_departure_context),
+  FALSE,
+  'reusing an idempotency key with a different departure is rejected'
+);
+
+SELECT is(
+  (SELECT booked_passengers
+   FROM public.departures
+   WHERE id = (SELECT second_departure_id FROM multi_departure_context)),
+  0,
+  'a mismatched idempotency replay does not consume the newly selected departure capacity'
 );
 
 SELECT is(
