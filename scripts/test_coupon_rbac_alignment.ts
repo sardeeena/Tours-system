@@ -18,8 +18,10 @@ for (const action of ['read', 'create', 'update', 'delete']) {
   assert.ok(schemaSnapshots[0].includes(`public.has_permission('content.${action}'::text)`), `Canonical schema must mirror content.${action}`);
 }
 assert.ok(migration.includes('DROP POLICY IF EXISTS "Public validate coupons"'), 'Migration must remove the legacy PUBLIC coupon-read policy.');
+assert.ok(migration.includes('DROP POLICY IF EXISTS "Admins manage coupons"'), 'Migration must remove the legacy profile-role admin bypass policy.');
 for (const [index, snapshot] of schemaSnapshots.entries()) {
   assert.ok(!/CREATE POLICY "Public (?:validate coupons|can read active coupons)"/i.test(snapshot), `Schema snapshot ${index} must not expose coupon rows to PUBLIC.`);
+  assert.ok(!/CREATE POLICY "Admins (?:manage coupons|can manage coupons)"/i.test(snapshot), `Schema snapshot ${index} must not retain the legacy profile-role coupon admin bypass.`);
 }
 assert.match(databaseTest, /coupon reads require content\.read rather than bookings\.read/);
 console.log('Coupon RBAC alignment passed: UI and database writes require content permissions.');
