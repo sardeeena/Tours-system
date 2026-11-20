@@ -31,10 +31,18 @@ console.log('Abuse prevention, rate limiting and booking fail-closed source chec
 const inquiry = read('src/services/inquiryService.ts');
 const inquiryTrap = inquiry.indexOf("if (input.website_url_hp && input.website_url_hp.trim() !== '')");
 const inquiryRateLimit = inquiry.indexOf('const limit = inquiryRateLimiter.check()');
-const inquiryInsert = inquiry.indexOf(".from('inquiries')");
+const inquiryCreateStart = inquiry.indexOf('export async function createCustomerInquiry');
+const inquiryCreateEnd = inquiry.indexOf('export async function listInquiries', inquiryCreateStart);
+const inquiryCreate = inquiry.slice(inquiryCreateStart, inquiryCreateEnd);
+const inquiryApiFetch = inquiryCreate.indexOf("fetch('/api/inquiries'");
 assert(inquiryTrap >= 0 && inquiryRateLimit > inquiryTrap, 'Inquiry honeypot short-circuits before rate-limit and persistence work');
-assert(inquiryInsert > inquiryTrap, 'Inquiry database insert is downstream of the honeypot guard');
+assert(inquiryApiFetch > inquiryTrap, 'Inquiry persistence uses the same-origin server API after the honeypot and rate-limit guards');
+assert(!inquiryCreate.includes(".from('inquiries')"), 'Public inquiry creation never writes directly to the exposed table');
 assert(inquiry.slice(inquiryTrap, inquiryRateLimit).includes("admin_notes: 'Dropped honeypot bot trap'"), 'Inquiry honeypot produces a trapped internal marker');
+const server = read('server.ts');
+assert(server.includes("p_action: 'public_inquiry_email'"), 'Inquiry API enforces a database-backed per-email rate limit');
+assert(server.includes("p_action: 'public_newsletter_email'"), 'Newsletter API enforces a database-backed per-email rate limit');
+assert(server.includes('tour_title: cleanTourTitle'), 'Inquiry API persists the referenced tour title separately from internal notes');
 
 // Newsletter honeypot must short-circuit before the network request.
 const newsletter = read('src/services/newsletterService.ts');
