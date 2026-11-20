@@ -148,6 +148,9 @@ jobs:
       - name: Verify secure customer booking lookup RPC contract
         run: npm run test:booking-lookup-rpc
 
+      - name: Verify customer profile persistence reports database write failures
+        run: npm run test:customer-profile-persistence
+
       - name: Verify booking identifier and production fallback behavior
         run: npm run test:booking
 
