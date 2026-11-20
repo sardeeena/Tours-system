@@ -39,7 +39,8 @@ CREATE TEMP TABLE multi_departure_context (
   cancellation_result JSONB,
   repeated_cancellation_result JSONB,
   second_booking_result JSONB,
-  rejection_result JSONB
+  rejection_result JSONB,
+  rejection_previous_status TEXT
 ) ON COMMIT DROP;
 
 INSERT INTO multi_departure_context (tour_id,test_date)
@@ -465,6 +466,11 @@ SET second_booking_result = public.create_booking_atomic_with_departure(
   'en',
   second_departure_id
 );
+UPDATE multi_departure_context
+SET rejection_previous_status = (
+  SELECT status FROM public.bookings
+  WHERE id = (second_booking_result->>'bookingId')::UUID
+);
 UPDATE public.bookings
 SET cancellation_previous_status = status,
     status = 'cancellation_requested'
@@ -480,8 +486,8 @@ SELECT is(
 );
 SELECT is(
   (SELECT status FROM public.bookings WHERE id = (SELECT (second_booking_result->>'bookingId')::UUID FROM multi_departure_context)),
-  'confirmed',
-  'rejected cancellation restores the booking''s prior confirmed status'
+  (SELECT rejection_previous_status FROM multi_departure_context),
+  'rejected cancellation restores the booking''s exact prior status'
 );
 SELECT is(
   (SELECT booked_passengers FROM public.departures WHERE id = (SELECT second_departure_id FROM multi_departure_context)),
