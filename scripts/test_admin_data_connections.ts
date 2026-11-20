@@ -67,22 +67,22 @@ assert.match(guideUi, /loadError/, 'Guide registry must expose load failures rat
 assert.match(guideUi, /Operational staff could not be loaded/, 'Guide registry must distinguish errors from empty data');
 
 const operationsService = read('src/services/operationsService.ts');
-const availabilityRead = section(operationsService, 'export async function listAvailabilitySlots()', 'export async function updateAvailabilitySlot(');
-assert.match(availabilityRead, /rpc\('get_tour_availability_schedule'/, 'Admin availability must use the authoritative confirmed-departure schedule');
-assert.match(availabilityRead, /availabilityByKey\.get\(/, 'Admin availability must map the authoritative schedule by tour and date');
-assert.match(availabilityRead, /isBlackout: Boolean\(authoritative\?\.is_blackout/, 'Admin availability must distinguish real blackouts from dates without confirmed slots');
-assert.doesNotMatch(availabilityRead, /row\.status\s*===/, 'Stale daily summary status must not determine bookability');
-assert.doesNotMatch(availabilityRead, /bookingRepository\.listBookings\(\)/, 'Availability counts must come from the departure-capacity authority');
+const authoritativeAvailabilityRead = section(operationsService, 'export async function listAvailabilitySlots()', 'export async function updateAvailabilitySlot(');
+assert.match(authoritativeAvailabilityRead, /rpc\('get_tour_availability_schedule'/, 'Admin availability must use the authoritative confirmed-departure schedule');
+assert.match(authoritativeAvailabilityRead, /availabilityByKey\.get\(/, 'Admin availability must map the authoritative schedule by tour and date');
+assert.match(authoritativeAvailabilityRead, /isBlackout: Boolean\(authoritative\?\.is_blackout/, 'Admin availability must distinguish real blackouts from dates without confirmed slots');
+assert.doesNotMatch(authoritativeAvailabilityRead, /row\.status\s*===/, 'Stale daily summary status must not determine bookability');
+assert.doesNotMatch(authoritativeAvailabilityRead, /bookingRepository\.listBookings\(\)/, 'Availability counts must come from the departure-capacity authority');
 
-const availabilityWrite = section(operationsService, 'export async function updateAvailabilitySlot(', 'export async function setBlackoutDate(');
-assert.match(availabilityWrite, /is_blackout:\s*isBlackout/, 'Availability status toggles must persist the blackout flag used by booking RPCs');
-assert.match(availabilityWrite, /existing\?\.is_blackout/, 'Capacity-only updates must preserve the existing blackout state');
+const availabilityPersistenceWrite = section(operationsService, 'export async function updateAvailabilitySlot(', 'export async function setBlackoutDate(');
+assert.match(availabilityPersistenceWrite, /is_blackout:\s*isBlackout/, 'Availability status toggles must persist the blackout flag used by booking RPCs');
+assert.match(availabilityPersistenceWrite, /existing\?\.is_blackout/, 'Capacity-only updates must preserve the existing blackout state');
 
-const blackoutWrite = section(operationsService, 'export async function setBlackoutDate(', 'export async function getMaritimeWeather(');
-assert.match(blackoutWrite, /is_blackout:\s*isBlackout/, 'Explicit blackout operations must persist is_blackout');
+const blackoutPersistenceWrite = section(operationsService, 'export async function setBlackoutDate(', 'export async function getMaritimeWeather(');
+assert.match(blackoutPersistenceWrite, /is_blackout:\s*isBlackout/, 'Explicit blackout operations must persist is_blackout');
 
-const availabilityUi = read('src/components/admin/operations/OperationsAvailability.tsx');
-assert.match(availabilityUi, /isBlackout:\s*nextStatus === 'unavailable'/, 'Availability controls must pass explicit blackout intent to the persistence layer');
+const availabilityToggleUi = read('src/components/admin/operations/OperationsAvailability.tsx');
+assert.match(availabilityToggleUi, /isBlackout:\s*nextStatus === 'unavailable'/, 'Availability controls must pass explicit blackout intent to the persistence layer');
 const manifestRead = section(operationsService, 'export async function getPassengerManifest(', 'export async function updateManifestPassenger(');
 assert.match(manifestRead, /from\('booking_passengers'\)[\s\S]*?passenger_index/, 'Passenger manifests must read persisted passenger records');
 assert.match(manifestRead, /bookingIds\.length !== targetBookings\.length/, 'Manifest rows must not be matched with non-database booking references');
@@ -142,20 +142,20 @@ const vesselDelete = section(operations, 'export async function deleteVessel(', 
 assert.match(vesselDelete, /from\('departures'\)[\s\S]*?count: 'exact'/, 'Vessel deletion must check departure history first');
 assert.match(vesselDelete, /Mark it inactive or under maintenance/, 'Vessels with departure history must be retained');
 
-const availabilityWrite = section(operations, 'export async function updateAvailabilitySlot(', 'export async function setBlackoutDate(');
-assert.match(availabilityWrite, /maxCapacity < bookedCount/, 'Availability capacity cannot be reduced below bookings');
-assert.match(availabilityWrite, /status === 'unavailable'[\s\S]*?verified operational reason/, 'Availability closures require a reason');
-assert.match(availabilityWrite, /\.select\('tour_id'\)[\s\S]*?\.single\(\)/, 'Availability writes must confirm a persisted row');
-const blackoutWrite = section(operations, 'export async function setBlackoutDate(', '// ==============================================================================\n// 8. WEATHER');
-assert.match(blackoutWrite, /if \(isBlackout && !notes\?\.trim\(\)\)/, 'Blackout dates require an actual operational reason');
-assert.match(blackoutWrite, /\.select\('tour_id'\)[\s\S]*?\.single\(\)/, 'Blackout writes must confirm a persisted row');
+const availabilityPersistenceWrite = section(operations, 'export async function updateAvailabilitySlot(', 'export async function setBlackoutDate(');
+assert.match(availabilityPersistenceWrite, /maxCapacity < bookedCount/, 'Availability capacity cannot be reduced below bookings');
+assert.match(availabilityPersistenceWrite, /status === 'unavailable'[\s\S]*?verified operational reason/, 'Availability closures require a reason');
+assert.match(availabilityPersistenceWrite, /\.select\('tour_id'\)[\s\S]*?\.single\(\)/, 'Availability writes must confirm a persisted row');
+const blackoutPersistenceWrite = section(operations, 'export async function setBlackoutDate(', '// ==============================================================================\n// 8. WEATHER');
+assert.match(blackoutPersistenceWrite, /if \(isBlackout && !notes\?\.trim\(\)\)/, 'Blackout dates require an actual operational reason');
+assert.match(blackoutPersistenceWrite, /\.select\('tour_id'\)[\s\S]*?\.single\(\)/, 'Blackout writes must confirm a persisted row');
 
 const vesselUi = read('src/components/admin/operations/OperationsVessels.tsx');
 assert.doesNotMatch(vesselUi, /port_marina: 'Hurghada Marina'|passenger_capacity: 35|crew_capacity: 4|year_built: 2022|safety_inspection_expiry: '2027-12-31'/, 'New vessel forms must not prefill invented operational facts');
 assert.match(vesselUi, /active vessel must have a verified safety inspection expiry date/, 'Vessel UI must require safety verification before activation');
-const availabilityUi = read('src/components/admin/operations/OperationsAvailability.tsx');
-assert.match(availabilityUi, /useState<string>\(''\)/, 'Blackout form must start without a fabricated reason');
-assert.match(availabilityUi, /verified operational reason for this blackout date/, 'Blackout form must require a real reason');
+const availabilityToggleUi = read('src/components/admin/operations/OperationsAvailability.tsx');
+assert.match(availabilityToggleUi, /useState<string>\(''\)/, 'Blackout form must start without a fabricated reason');
+assert.match(availabilityToggleUi, /verified operational reason for this blackout date/, 'Blackout form must require a real reason');
 
 const loadErrorComponent = read('src/components/admin/AdminLoadError.tsx');
 assert.match(loadErrorComponent, /role="alert"/, 'Shared admin load error must be announced accessibly');
