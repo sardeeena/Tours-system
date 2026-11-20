@@ -1717,69 +1717,89 @@ export async function listAvailabilitySlots(): Promise<AvailabilitySlot[]> {
 
   const { data: rows, error } = await supabase
     .from('tour_availability')
-    .select('id,tour_id,date,max_capacity,booked_count,status,notes')
+    .select('id,tour_id,date,max_capacity,booked_count,status,notes,is_blackout')
     .order('date', { ascending: true });
 
   if (error) throw new Error(formatSupabaseError(error));
   if (!rows?.length) return [];
 
   const tourIds = [...new Set(rows.map((row: any) => row.tour_id).filter(Boolean))];
-  const [{ data: tours, error: toursError }, allBookings] = await Promise.all([
+  const dates = [...new Set(rows.map((row: any) => String(row.date).slice(0, 10)))].sort();
+  const startDate = dates[0];
+  const endDate = dates[dates.length - 1];
+  if (!startDate || !endDate || tourIds.length === 0) return [];
+
+  // The public availability RPC is the source of truth: a date is open only
+  // when it has a confirmed, non-blackout departure with bookable capacity.
+  // Read it for each tour so the admin screen cannot display stale daily
+  // summary flags as bookable inventory.
+  const start = new Date(`${startDate}T00:00:00.000Z`);
+  const finish = new Date(`${endDate}T00:00:00.000Z`);
+  const dateRanges: Array<{ startDate: string; endDate: string }> = [];
+  for (let cursor = new Date(start); cursor <= finish;) {
+    const chunkEnd = new Date(cursor);
+    chunkEnd.setUTCDate(chunkEnd.getUTCDate() + 365);
+    if (chunkEnd > finish) chunkEnd.setTime(finish.getTime());
+    dateRanges.push({
+      startDate: cursor.toISOString().slice(0, 10),
+      endDate: chunkEnd.toISOString().slice(0, 10),
+    });
+    cursor = new Date(chunkEnd);
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+
+  const [{ data: tours, error: toursError }, scheduleGroups] = await Promise.all([
     supabase.from('tours').select('id,title,slug,departure_time').in('id', tourIds),
-    bookingRepository.listBookings(),
+    Promise.all(tourIds.map(async (tourId) => {
+      const chunks = await Promise.all(dateRanges.map(async (range) => {
+        const { data, error: scheduleError } = await supabase.rpc('get_tour_availability_schedule', {
+          p_tour_identifier: String(tourId),
+          p_start_date: range.startDate,
+          p_end_date: range.endDate,
+        });
+        if (scheduleError) throw new Error(formatSupabaseError(scheduleError));
+        return data || [];
+      }));
+      return chunks.flat();
+    })),
   ]);
 
   if (toursError) throw new Error(formatSupabaseError(toursError));
 
   const tourMap = new Map((tours || []).map((tour: any) => [tour.id, tour]));
-  const bookedByDate = new Map<string, number>();
-
-  allBookings.forEach((booking) => {
-    if (booking.status === 'cancelled') return;
-    const date = booking.date?.split('T')[0];
-    if (!date) return;
-    const key = `${booking.tourId}_${date}`;
-    const passengers =
-      (booking.guests.adults || 0) +
-      (booking.guests.children || 0) +
-      (booking.guests.infants || 0);
-    bookedByDate.set(key, (bookedByDate.get(key) || 0) + passengers);
-  });
+  const availabilityByKey = new Map<string, any>();
+  scheduleGroups.forEach((group) => group.forEach((slot: any) => {
+    availabilityByKey.set(`${slot.tour_id}_${String(slot.date).slice(0, 10)}`, slot);
+  }));
 
   return rows.map((row: any) => {
     const tour = tourMap.get(row.tour_id);
-    const maxCapacity = Math.max(0, Number(row.max_capacity) || 0);
-    const bookedCount = Math.max(
-      0,
-      Number(row.booked_count) || 0,
-      bookedByDate.get(`${row.tour_id}_${row.date}`) || 0
-    );
-    const remainingCapacity = Math.max(0, maxCapacity - bookedCount);
+    const authoritative = availabilityByKey.get(`${row.tour_id}_${String(row.date).slice(0, 10)}`);
     const status: AvailabilitySlot['status'] =
-      row.status === 'unavailable'
-        ? 'unavailable'
-        : row.status === 'sold_out' || (row.status === 'available' && remainingCapacity === 0)
+      authoritative?.status === 'available'
+        ? 'available'
+        : authoritative?.status === 'sold_out'
           ? 'sold_out'
-          : row.status === 'available'
-            ? 'available'
-            : 'unavailable';
+          : 'unavailable';
+    const maxCapacity = Math.max(0, Number(authoritative?.max_capacity) || 0);
+    const bookedCount = Math.max(0, Number(authoritative?.booked_count) || 0);
+    const remainingCapacity = Math.max(0, Number(authoritative?.remaining_capacity) || 0);
 
     return {
       id: row.id,
       tourId: row.tour_id,
       tourTitle: tour?.title || 'Tour record unavailable',
-      date: row.date,
+      date: String(row.date).slice(0, 10),
       maxCapacity,
       bookedCount,
       remainingCapacity,
       status,
-      departureTime: tour?.departure_time || '',
-      notes: row.notes || null,
-      isBlackout: status === 'unavailable',
+      departureTime: authoritative?.departure_time || tour?.departure_time || '',
+      notes: authoritative?.notes ?? row.notes ?? null,
+      isBlackout: Boolean(authoritative?.is_blackout ?? row.is_blackout),
     };
   });
 }
-
 export async function updateAvailabilitySlot(
   tourId: string,
   date: string,
@@ -1791,7 +1811,7 @@ export async function updateAvailabilitySlot(
 
   const { data: existing, error: readError } = await supabase
     .from('tour_availability')
-    .select('max_capacity,booked_count,status,notes')
+    .select('max_capacity,booked_count,status,notes,is_blackout')
     .eq('tour_id', tourId)
     .eq('date', date)
     .maybeSingle();
@@ -1804,6 +1824,7 @@ export async function updateAvailabilitySlot(
   );
   const bookedCount = Math.max(0, Number(existing?.booked_count) || 0);
   const status = updates.status ?? existing?.status ?? 'unavailable';
+  const isBlackout = updates.isBlackout ?? (updates.status !== undefined ? status === 'unavailable' : Boolean(existing?.is_blackout));
 
   if (maxCapacity < bookedCount) {
     throw new Error('Capacity cannot be reduced below the number of passengers already booked.');
@@ -1822,6 +1843,7 @@ export async function updateAvailabilitySlot(
       date,
       max_capacity: maxCapacity,
       status,
+      is_blackout: isBlackout,
       notes: updates.notes ?? existing?.notes ?? 'Manual override: updated by operations',
     }, { onConflict: 'tour_id,date' })
     .select('tour_id')
@@ -1867,6 +1889,7 @@ export async function setBlackoutDate(
       date,
       max_capacity: maxCapacity,
       status: isBlackout ? 'unavailable' : 'available',
+      is_blackout: isBlackout,
       notes: isBlackout
         ? `Manual blackout: ${notes!.trim()}`
         : `Manual override: ${notes?.trim() || 'Reopened by operations'}`,
