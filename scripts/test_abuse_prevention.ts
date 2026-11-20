@@ -73,6 +73,11 @@ assert(inquiryRoute.includes("req.body && typeof req.body === 'object' && !Array
 assert(inquiryRoute.includes("typeof email !== 'string'"), 'Inquiry endpoint rejects non-string email values before validation');
 assert(inquiryRoute.includes("typeof phone !== 'undefined' && phone !== null && typeof phone !== 'string'"), 'Inquiry endpoint rejects non-string phone values');
 assert(inquiryRoute.includes("isIP(clientIp)"), 'Inquiry endpoint requires a valid resolved client IP');
+assert(inquiryRoute.includes("p_action: 'public_inquiry_email'"), 'Inquiry endpoint applies a database-backed per-email rate limit');
+assert(inquiryRoute.includes("createHash('sha256').update(cleanEmail).digest('hex')"), 'Inquiry email rate-limit identifiers are hashed before persistence');
+assert(inquiryRoute.includes("p_max_hits: 5"), 'Inquiry email rate limit caps submissions at five per ten-minute window');
+assert(inquiryRoute.includes('tour_title: cleanTourTitle'), 'Inquiry endpoint persists referenced tour context separately');
+assert(inquiry.includes('tour_title: input.tour_title || null'), 'Inquiry client forwards referenced tour title to the server');
 assert(inquiryRoute.includes("p_action: 'public_inquiry_ip'"), 'Inquiry endpoint applies a database-backed per-IP rate limit');
 assert(inquiryRoute.includes("createHash('sha256').update(clientIp).digest('hex')"), 'Inquiry IP rate-limit identifiers are hashed before persistence');
 assert(inquiryRoute.includes("p_max_hits: 10"), 'Inquiry endpoint caps submissions at ten per IP per ten-minute window');
