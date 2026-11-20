@@ -11,8 +11,8 @@
     "static_page": 10,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1078,
-    "ui_catalog_messages": 1159,
+    "private_ui_messages": 1077,
+    "ui_catalog_messages": 1158,
     "source_records": 111
   },
   "records": [
@@ -4189,7 +4189,6 @@
         "private.text.83524862": " Actualiser",
         "private.text.839930ce": "Continuer vers la connexion ",
         "private.text.844aecbf": "Quad et buggy dans le désert",
-        "private.text.844e6efc": "Se souvenir de moi",
         "private.text.845df81c": "annulé",
         "private.text.84984536": "Mode de paiement ",
         "private.text.8579fc12": "ex. : markus.weber@example.com",
