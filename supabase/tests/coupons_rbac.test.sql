@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(5);
+SELECT plan(6);
 
 SELECT ok(
   (SELECT qual FROM pg_policies WHERE schemaname='public' AND tablename='coupons' AND policyname='rbac_coupons_read') LIKE '%content.read%'
@@ -29,6 +29,16 @@ SELECT ok(
       AND cmd='SELECT' AND 'public'=ANY(roles)
   ),
   'anonymous and PUBLIC roles cannot read coupon rows directly'
+);
+
+
+SELECT ok(
+  NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname='public' AND tablename='coupons'
+      AND policyname IN ('Admins manage coupons','Admins can manage coupons')
+  ),
+  'legacy profile-role admin policies cannot bypass normalized coupon permissions'
 );
 
 SELECT * FROM finish();
