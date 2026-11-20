@@ -251,57 +251,48 @@ class SupabaseBookingRepository implements IBookingRepository {
 
   async getBooking(bookingReference: string): Promise<Booking | null> {
     const cleanRef = bookingReference.trim().toUpperCase();
+    if (!cleanRef) return null;
 
-    // When Supabase is configured, Supabase is the sole authoritative source of truth.
-    // Never fall back to mock data if a reference does not exist in the database.
     if (isSupabaseConfigured()) {
-      try {
-        const { data, error } = await supabase
-          .from('bookings')
-          .select(`
-            *,
-            tours (*),
-            customers (*),
-            booking_extras (*),
-            departures (start_time,end_time)
-          `)
-          .eq('booking_reference', cleanRef)
-          .maybeSingle();
+      const { data, error } = await supabase
+        .from('bookings')
+        .select(`
+          *,
+          tours (*),
+          customers (*),
+          booking_extras (*),
+          departures (start_time,end_time)
+        `)
+        .eq('booking_reference', cleanRef)
+        .maybeSingle();
 
-        if (error || !data) {
-          return null;
-        }
-
-        return this.mapDbToBooking(data);
-      } catch (err) {
-        console.error('Supabase getBooking error:', err);
-        return null;
-      }
+      if (error) throw new Error(formatSupabaseError(error));
+      if (!data) return null;
+      return this.mapDbToBooking(data);
     }
 
-    if (!isDevelopmentBuild) return null;
+    if (!isDevelopmentBuild) {
+      throw new Error('Supabase is not configured; booking records cannot be loaded in production.');
+    }
 
     const local = this.getLocalBookings();
-    const found = local.find((b) => b.bookingReference === cleanRef);
-    return found || null;
+    return local.find((booking) => booking.bookingReference === cleanRef) || null;
   }
 
   async findBooking(bookingReference: string, emailOrPhone: string): Promise<Booking | null> {
-    void recordVisitorEvent({ event_name: 'booking_lookup', page_path: '/my-booking' });
+    void recordVisitorEvent({ event_name: 'booking_lookup', page_path: '/my-booking' })
+      .catch((error) => console.warn('Booking lookup analytics event was not recorded:', error));
     const cleanRef = (bookingReference || '').trim().toUpperCase();
     const cleanContact = (emailOrPhone || '').trim();
-
     if (!cleanRef) return null;
 
     if (isSupabaseConfigured()) {
       try {
-        // 1. If contact verification is supplied, attempt the secure two-factor RPC first
         if (cleanContact) {
           const { data: rpcRes, error: rpcErr } = await supabase.rpc('lookup_booking_secure_with_language', {
             p_reference: cleanRef,
             p_verification: cleanContact,
           });
-
           const rawBooking = (rpcRes && typeof rpcRes === 'object')
             ? ((rpcRes as any).booking || ((rpcRes as any).bookingReference ? rpcRes : null))
             : null;
@@ -311,13 +302,9 @@ class SupabaseBookingRepository implements IBookingRepository {
           }
         }
 
-        // 2. Direct scoped query: retrieve the single booking record by reference
-        // Unauthenticated callers without valid two-factor verification cannot browse bookings table directly.
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          // Anonymous visitors MUST provide valid verification and succeed through lookup_booking_secure
-          return null;
-        }
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError) throw new Error(formatSupabaseError(authError));
+        if (!user) return null;
 
         const { data, error } = await supabase
           .from('bookings')
@@ -331,127 +318,122 @@ class SupabaseBookingRepository implements IBookingRepository {
           .eq('booking_reference', cleanRef)
           .maybeSingle();
 
-        if (error || !data) {
-          return null;
-        }
+        if (error) throw new Error(formatSupabaseError(error));
+        if (!data) return null;
 
-        // If contact verification was provided, verify it strictly matches this booking
         if (cleanContact) {
-          const custEmail = (data.customers?.email || '').trim().toLowerCase();
-          const queryLower = cleanContact.trim().toLowerCase();
-          const emailMatch = custEmail === queryLower;
-
-          // Normalized phone comparison: require at least 8 digits and exact match
-          const custDigits = (data.customers?.phone || '').replace(/\D/g, '');
+          const customerEmail = (data.customers?.email || '').trim().toLowerCase();
+          const queryLower = cleanContact.toLowerCase();
+          const emailMatch = customerEmail === queryLower;
+          const customerDigits = (data.customers?.phone || '').replace(/\D/g, '');
           const queryDigits = cleanContact.replace(/\D/g, '');
-          const phoneMatch = queryDigits.length >= 8 && custDigits.length >= 8 && custDigits === queryDigits;
-
-          if (!emailMatch && !phoneMatch) {
-            return null;
-          }
+          const phoneMatch = queryDigits.length >= 8 && customerDigits.length >= 8 && customerDigits === queryDigits;
+          if (!emailMatch && !phoneMatch) return null;
         } else {
-          // If no contact verification provided, verify user is administrator or booking owner
-          const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle();
-          const isStaff = profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'manager' || profile?.role === 'staff';
-          if (!isStaff && data.user_id !== user.id) {
-            return null;
-          }
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .maybeSingle();
+          if (profileError) throw new Error(formatSupabaseError(profileError));
+          const isStaff = profile?.role === 'admin' || profile?.role === 'super_admin' ||
+            profile?.role === 'manager' || profile?.role === 'staff';
+          if (!isStaff && data.user_id !== user.id) return null;
         }
 
         return this.mapDbToBooking(data);
       } catch (err) {
         console.error('Supabase findBooking error:', err);
-        return null;
+        throw err instanceof Error ? err : new Error(formatSupabaseError(err));
       }
     }
 
-    // Browser-local lookup is permitted only in the explicit development sandbox.
-    if (!isDevelopmentBuild) return null;
-
-    // Dev sandbox fallback: require exact email or normalized phone match (>= 8 digits)
-    const b = await this.getBooking(bookingReference);
-    if (!b || !cleanContact) return null;
-
-    const queryLower = cleanContact.trim().toLowerCase();
-    const emailMatch = b.customer.email.trim().toLowerCase() === queryLower;
-    const custDigits = (b.customer.phoneNumber || '').replace(/\D/g, '');
-    const queryDigits = cleanContact.replace(/\D/g, '');
-    const phoneMatch = queryDigits.length >= 8 && custDigits.length >= 8 && custDigits === queryDigits;
-
-    if (emailMatch || phoneMatch) {
-      return b;
+    if (!isDevelopmentBuild) {
+      throw new Error('Supabase is not configured; secure booking lookup is unavailable in production.');
     }
 
-    return null;
+    const booking = await this.getBooking(cleanRef);
+    if (!booking || !cleanContact) return null;
+
+    const queryLower = cleanContact.toLowerCase();
+    const emailMatch = booking.customer.email.trim().toLowerCase() === queryLower;
+    const customerDigits = (booking.customer.phoneNumber || '').replace(/\D/g, '');
+    const queryDigits = cleanContact.replace(/\D/g, '');
+    const phoneMatch = queryDigits.length >= 8 && customerDigits.length >= 8 && customerDigits === queryDigits;
+    return emailMatch || phoneMatch ? booking : null;
   }
 
   async getBookingsByEmail(email: string): Promise<Booking[]> {
     const cleanEmail = email.trim().toLowerCase();
     if (!cleanEmail) return [];
 
-    if (isSupabaseConfigured()) {
-      try {
-        // Enforce session check: Ensure caller is authenticated
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          // Unauthenticated requests cannot browse customer bookings by email
-          return [];
-        }
-
-        // Ensure user is querying their own email or possesses admin/staff privileges
-        const isOwnEmail = (user.email || '').toLowerCase() === cleanEmail;
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .maybeSingle();
-
-        const isStaff = profile?.role === 'admin' || profile?.role === 'super_admin' || profile?.role === 'manager' || profile?.role === 'staff';
-        if (!isOwnEmail && !isStaff) {
-          // Cross-customer boundary: Reject unprivileged requests for another customer's bookings
-          return [];
-        }
-
-        // Query database scoped by user ID or customer email
-        const { data, error } = await supabase
-          .from('bookings')
-          .select(`
-            *,
-            tours (*),
-            customers!inner (*),
-            booking_extras (*),
-            departures (start_time,end_time)
-          `)
-          .eq('customers.email', cleanEmail)
-          .order('created_at', { ascending: false });
-
-        if (error || !data) {
-          // Fallback scoped to user_id directly
-          const { data: byUserId } = await supabase
-            .from('bookings')
-            .select(`
-              *,
-              tours (*),
-              customers (*),
-              booking_extras (*),
-              departures (start_time,end_time)
-            `)
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: false });
-
-          return (byUserId || []).map((d: any) => this.mapDbToBooking(d));
-        }
-
-        return data.map((d: any) => this.mapDbToBooking(d));
-      } catch (err) {
-        console.error('Supabase getBookingsByEmail error:', err);
-        return [];
-      }
+    if (!isSupabaseConfigured()) {
+      if (!isDevelopmentBuild) throw new Error('Supabase is not configured; customer bookings cannot be loaded in production.');
+      return this.getLocalBookings().filter((booking) => booking.customer.email.toLowerCase() === cleanEmail);
     }
 
-    // Dev sandbox fallback only; production never reads browser-local bookings.
-    if (!isDevelopmentBuild) return [];
-    return this.getLocalBookings().filter((b) => b.customer.email.toLowerCase() === cleanEmail);
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError) throw new Error(formatSupabaseError(authError));
+    if (!user) return [];
+
+    const isOwnEmail = (user.email || '').toLowerCase() === cleanEmail;
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+    if (profileError) throw new Error(formatSupabaseError(profileError));
+
+    const isStaff = profile?.role === 'admin' || profile?.role === 'super_admin' ||
+      profile?.role === 'manager' || profile?.role === 'staff';
+    if (!isOwnEmail && !isStaff) return [];
+
+    const { data, error } = await supabase
+      .from('bookings')
+      .select(`
+        *,
+        tours (*),
+        customers!inner (*),
+        booking_extras (*),
+        departures (start_time,end_time)
+      `)
+      .eq('customers.email', cleanEmail)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      if (!isOwnEmail) throw new Error(formatSupabaseError(error));
+      const { data: byUserId, error: userQueryError } = await supabase
+        .from('bookings')
+        .select(`
+          *,
+          tours (*),
+          customers (*),
+          booking_extras (*),
+          departures (start_time,end_time)
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      if (userQueryError) throw new Error(formatSupabaseError(userQueryError));
+      return (byUserId || []).map((row: any) => this.mapDbToBooking(row));
+    }
+
+    if ((!data || data.length === 0) && isOwnEmail) {
+      const { data: byUserId, error: userQueryError } = await supabase
+        .from('bookings')
+        .select(`
+          *,
+          tours (*),
+          customers (*),
+          booking_extras (*),
+          departures (start_time,end_time)
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      if (userQueryError) throw new Error(formatSupabaseError(userQueryError));
+      return (byUserId || []).map((row: any) => this.mapDbToBooking(row));
+    }
+
+    return (data || []).map((row: any) => this.mapDbToBooking(row));
   }
 
   async updateBooking(booking: Booking): Promise<Booking> {

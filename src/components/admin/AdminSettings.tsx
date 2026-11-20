@@ -48,6 +48,7 @@ import {
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { SuperAdminMfaPanel } from './SuperAdminMfaPanel';
+import { AdminLoadError } from './AdminLoadError';
 
 export interface TableHealthCheck {
   table: string;
@@ -82,6 +83,8 @@ export const AdminSettings: React.FC = () => {
   const { user } = useAuth();
   const isSuperAdmin = Boolean(user?.roles?.includes('super_admin'));
   const [activeTab, setActiveTab] = useState<'company' | 'policies' | 'social_footer' | 'supabase' | 'security'>('company');
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadRetry, setLoadRetry] = useState(0);
 
   // Company Settings
   const [company, setCompany] = useState<CompanySettings>({
@@ -147,6 +150,7 @@ export const AdminSettings: React.FC = () => {
   // Load all settings on mount
   useEffect(() => {
     async function loadAllSettings() {
+      setLoadError(null);
       try {
         const [loadedCompany, loadedPolicies, loadedSocial, loadedFooter] = await Promise.all([
           getCompanySettings(),
@@ -159,11 +163,12 @@ export const AdminSettings: React.FC = () => {
         if (loadedSocial) setSocial(loadedSocial);
         if (loadedFooter) setFooter(loadedFooter);
       } catch (err) {
+        setLoadError(err instanceof Error ? err.message : 'Site settings could not be loaded.');
         console.warn('Failed to load settings:', err);
       }
     }
     loadAllSettings();
-  }, []);
+  }, [loadRetry]);
 
   const handleSaveCompany = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -353,6 +358,10 @@ export const AdminSettings: React.FC = () => {
         <p className="text-sm text-stone-600 dark:text-stone-300 mt-2">Only Superadmins can access Site Settings.</p>
       </div>
     );
+  }
+
+  if (loadError) {
+    return <div className="max-w-3xl mx-auto my-10"><AdminLoadError message={loadError} onRetry={() => setLoadRetry((value) => value + 1)} /></div>;
   }
 
   return (

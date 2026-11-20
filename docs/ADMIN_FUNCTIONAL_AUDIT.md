@@ -1,0 +1,68 @@
+# Admin Functional Audit
+
+## Scope and safety
+
+This audit covers the admin application only. It does not change production records, booking statuses, departures, capacity, pricing, translations, or customer data. GA4/GTM remains deferred. WhatsApp and online payment gateway setup are intentionally excluded because they are not configured yet.
+
+## Route inventory
+
+The admin application declares 61 tab identifiers. The sidebar exposes the 59 primary destinations; four identifiers are internal/legacy routes rather than separate sidebar destinations: `availability`, `crm_customers`, `crm_inquiries`, and `tour_edit`.
+
+| Admin section | Tabs included | Automated coverage |
+|---|---|---|
+| Overview & Sales | Main dashboard, sales, operations, customers, finance, dashboard builder, tours, new tour, bookings, support tickets | Route-to-component coverage; existing dashboard, booking, reporting, and server authorization tests |
+| Operations | Departures, calendar, availability, manifests, pickup schedules, vessels, guides, assignments, weather, documents | Route coverage; operations service and RLS tests; live staff registry and database-generated guide IDs |
+| Finance | Payments, invoices, refunds, balances, revenue, reports | Route coverage; ledger, refund, finance workflow and reporting consistency tests |
+| Messages & Communications | Communication center, email, WhatsApp, templates, notifications, history | Route coverage; provider status and communication validation tests; external sends require configured providers |
+| Customers & CRM | CRM dashboard, leads, customers, inquiries, tasks, follow-ups, conversations, segments, timeline | Route coverage; database-backed staff assignment, lead/task persistence, communications, customer history and finance ledger checks |
+| Website Content | Newsletter, destinations, categories, pickup locations, extras, coupons, FAQs, reviews, media, SEO, pages, translations, blog | Route coverage; database-backed service checks, media metadata/storage consistency and existing content/localization tests |
+| Administration & Security | Settings, access control, technical control center | Route coverage; RBAC, MFA, admin authorization and technical-control tests |
+
+## Issues found and addressed in this branch
+
+- **Tour management:** production no longer silently falls back to browser-local demo tours when Supabase or the schema is unavailable. Tour status changes and deletes require a confirmed database row. Booking-count lookup now fails closed, so an unknown booking count cannot be treated as zero. Child relation write errors are surfaced, and a newly created parent tour is rolled back if its related content cannot be saved.
+- **Tour add-on pricing:** production reads and writes use the database; local cache updates happen only after successful persistence.
+- **Operations staff:** guide listing no longer returns seeded demo guides in production. New guide saves return the actual database-generated ID. Guide deletion confirms a database row before updating cache. The guide registry displays load errors separately from an empty staff list.
+- **Passenger manifests:** manifest rows now read from `booking_passengers`, carry a stable booking/passenger index, and save through a database upsert. A migration backfills existing passenger indexes. Manifest tour lists no longer fall back to demo tours, and load failures are visible. Pickup schedule updates validate required assignment details before changing the booking and attempt to roll back the booking status if the schedule write fails.
+- **Operations conflict checks:** missing vessels or staff records now block assignment. Inactive, day-off, leave and unavailable crew are treated as conflicts. If the conflict-check query itself fails, the assignment form displays the error and disables saving rather than treating the result as conflict-free.
+- **Operations data states:** departures, assignments, pickups, availability, weather and vessel tabs now show a visible retryable error state instead of appearing empty when a live query fails.
+- **Vessel safety:** new vessels default to inactive with blank capacities, registration, port and inspection fields. Activating a vessel requires verified capacity, registration, home port and a current safety inspection. Vessels referenced by departure history cannot be deleted; they must be retired or marked under maintenance.
+- **Availability controls:** blackout dates require an actual operational reason. Capacity cannot be reduced below booked passengers, and availability writes must be confirmed by the database.
+- **CRM assignments:** lead, task and follow-up assignment choices now come from the permission-filtered staff directory. Customer actions and conversation logs are attributed to the signed-in user. Staff UUIDs are persisted with communications and notes. Hard-coded sample staff names were removed.
+- **CRM data integrity:** lead reads/writes, conversations, communications, notes, activities, customer records and tags no longer treat local browser cache as a production fallback. New leads default to zero estimated value rather than an invented amount; stage totals respect each lead's currency.
+- **Customer profile:** payment transactions, refunds and reviews are loaded from their database tables instead of browser-local history. The payment panel displays actual payment transaction records.
+- **CRM dashboard:** outstanding balances are calculated from payment and processed-refund ledger rows; non-EUR lead estimates are not added into an EUR total.
+- **Customer directory:** profile/customer query errors are surfaced instead of returning a partial directory assembled from stale local cache.
+- **Inquiries:** public submissions report failure if the database insert fails instead of claiming local-only success. Inquiry-to-lead conversion now has a permission-gated UI action backed by the atomic conversion RPC. Conversion creates a genuinely new lead with zero estimated value and attributes the activity to the signed-in staff profile; it no longer invents a €150 estimate or marks the lead as already contacted. Converted inquiries are retained as source audit records.
+- **Booking lookup:** database and authorization errors are no longer returned as false 'booking not found' results, and production booking lookup cannot fall back to browser-local records.
+- **Newsletter:** subscriber status updates and deletion confirm that a real database row was affected.
+- **Inquiries:** public submissions report failure if the database insert fails instead of claiming local-only success. Inquiry-to-lead conversion now has a permission-gated UI action backed by the atomic conversion RPC. Conversion creates a genuinely new lead with zero estimated value and attributes the activity to the signed-in staff profile; it no longer invents a €150 estimate or marks the lead as already contacted.
+- **Coupons, FAQs and site settings:** production reads/writes no longer silently use local seeded data or stale browser settings when the database is unavailable.
+- **Media library:** uploads require a persisted `media_assets` row; failed metadata writes trigger storage rollback. Metadata edits, listing, audits and cleanup surface errors. Storage cleanup checks current role assignments rather than a legacy profile role field.
+- **WhatsApp UI:** removed the fabricated default sender phone number. Provider readiness continues to come from the server-side status endpoint.
+
+## Automated checks added
+
+- `test:admin-module-coverage`: verifies all 61 typed admin tabs are routed, all primary sidebar destinations map to known tabs, and the four internal aliases remain explicitly documented.
+- `test:admin-data-connections`: checks production fail-closed behavior, live staff assignment, CRM database persistence, customer payment/refund/review reads, tour CRUD safety, settings/content persistence and media metadata/storage handling.
+- Both tests are added to CI alongside the existing authorization, database, finance, operations, localization and dependency-security suites.
+
+## Production read-only verification (20 Nov 2026)
+
+- The admin login route is publicly reachable and renders the expected staff sign-in controls. The protected `/admin` route correctly requires authentication.
+- The production database currently contains 5 bookings, 14 booking-passenger rows, 659 departures, 672 tour-availability rows, 3 payment transactions, 0 refund rows, 5 customers, 69 media-asset records, 15 tour extras and 58 tour-to-extra assignments.
+- Leads, inquiries, CRM tasks, CRM communications and CRM notes currently contain zero rows. These tabs should display truthful empty states; they must not fabricate sample records.
+- The new manifest implementation requires `booking_passengers.passenger_index`, which is not yet present in the production schema. A read-only dry-run of the proposed backfill produced unique zero-based indexes for all 14 existing passenger rows across the 5 bookings, with exactly one current lead-passenger flag per booking. The migration must be applied before deploying the new manifest UI.
+- The production migration history currently reports 154 applied versions. Comparing the version table with current `main` plus this PR identifies six migration versions not recorded as applied: `20261119180000`, `20261119210000`, `20261119213000`, `20261119220000`, `20261119234000` (current `main` only), and `20261119235000`. Before applying them, reconcile each migration with the live schema because some functions may have been changed outside the tracked migration history. Do not blindly replay migrations solely because a version is absent from the history table.
+- Read-only inspection confirms the production private inquiry-conversion function still has the legacy defaults of estimated value 150 EUR, two guests, stage "Contacted", score 60 and a generic actor. The PR's `20261119220000` migration changes this to zero estimated value, one guest, stage "New", score zero and the signed-in staff actor. There are currently no inquiry rows, so no existing inquiry-to-lead conversions would be altered.
+- Read-only inspection also confirms the production private BI aggregation function still contains the older mixed-currency logic and fabricated fallback labels. The current `main` migration `20261119234000` corrects the source aggregation; the PR's `20261119235000` migration then tightens the public RPC surface. Both are required in timestamp order.
+- The notification table contains 671 unread rows: 659 critical unassigned-departure alerts, 5 new-booking alerts, 3 new-payment alerts, 2 overdue-payment alerts and 2 pending-payment alerts. The previous 250-row inbox cap could hide older booking/payment alerts behind the unassigned-departure backlog. This PR now loads up to 1,000 current records and exposes the pending-payment category filter; it does not mark any alerts read or clear them.
+- Hostinger runtime logs confirm the booking-notification worker starts and polls the durable queue, and the staff-notification worker starts and has persisted an alert. This verifies worker activation, not successful delivery to a real email inbox.
+
+## Remaining verification
+
+1. CI must pass on this branch before merge.
+2. A signed-in Super Admin browser session is needed for real click-through testing of each rendered tab, dialogs, create/edit/delete controls and live API responses. No credentials should be sent in chat.
+3. WhatsApp sends and online gateway payment flows remain untestable until their providers are configured. Manual payment recording and provider-disabled states will still be tested without creating production transactions.
+4. Any production write test will use disposable test records only after an isolated/staging environment is available; production customer, booking, departure and payment data will not be used as test fixtures.
+5. Production runtime logs confirm that the server-side booking notification worker starts successfully and polls the durable Supabase queue. This proves worker activation, not successful delivery of a real email; delivery still requires a controlled staging test and provider webhook/reconciliation verification.

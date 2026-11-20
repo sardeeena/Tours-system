@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { AdminLoadError } from '../AdminLoadError';
 import {
   Calendar,
   Clock,
@@ -31,6 +32,7 @@ export const OperationsAvailability: React.FC = () => {
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
   const [tours, setTours] = useState<Tour[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [tourFilter, setTourFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -45,10 +47,13 @@ export const OperationsAvailability: React.FC = () => {
   const [isBlackoutModalOpen, setIsBlackoutModalOpen] = useState(false);
   const [blackoutTourId, setBlackoutTourId] = useState<string>('');
   const [blackoutDateVal, setBlackoutDateVal] = useState<string>('');
-  const [blackoutNotes, setBlackoutNotes] = useState<string>('Annual vessel drydock & Coast Guard inspection');
+  const [blackoutNotes, setBlackoutNotes] = useState<string>('');
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
+      setSlots([]);
+      setTours([]);
     try {
       const [data, loadedTours] = await Promise.all([
         listAvailabilitySlots(),
@@ -58,8 +63,10 @@ export const OperationsAvailability: React.FC = () => {
       setTours(loadedTours);
       if (!blackoutTourId && loadedTours?.length) setBlackoutTourId(loadedTours[0].id);
     } catch (err) {
-      console.warn('Failed to load availability slots:', err);
-      showToast(err instanceof Error ? err.message : 'Failed to load live availability.', 'error');
+      const message = err instanceof Error ? err.message : 'Live operational records could not be loaded.';
+      console.error('Failed to load operational data:', err);
+      setLoadError(message);
+      showToast(message, 'error');
     } finally {
       setLoading(false);
     }
@@ -146,6 +153,10 @@ export const OperationsAvailability: React.FC = () => {
   const handleApplyBlackout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!blackoutTourId || !blackoutDateVal) return;
+    if (!blackoutNotes.trim()) {
+      showToast('Enter the verified operational reason for this blackout date.', 'error');
+      return;
+    }
 
     try {
       await setBlackoutDate(blackoutTourId, blackoutDateVal, true, blackoutNotes);
@@ -198,6 +209,8 @@ export const OperationsAvailability: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
 
       {/* Filters Bar */}
       <div className="bg-stone-950 border border-stone-800 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
@@ -475,7 +488,7 @@ export const OperationsAvailability: React.FC = () => {
                   type="text"
                   value={blackoutNotes}
                   onChange={(e) => setBlackoutNotes(e.target.value)}
-                  placeholder="e.g. Vessel maintenance, Coast Guard harbor closure"
+                  placeholder="Enter verified operational reason (required)"
                   className="w-full px-3 py-1.5 bg-stone-950 border border-stone-800 rounded text-white"
                 />
               </div>

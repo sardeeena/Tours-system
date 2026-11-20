@@ -29,6 +29,7 @@ import {
 } from '../../../services/communicationService';
 import { StaffNotification, NotificationCategory } from '../../../types/communication';
 import { useToast } from '../../../contexts/ToastContext';
+import { AdminLoadError } from '../AdminLoadError';
 
 interface CommunicationsNotificationsProps {
   onNavigateTab?: (tabId: string, param?: string) => void;
@@ -48,7 +49,7 @@ const CATEGORY_LABELS: Record<NotificationCategory, { label: string; icon: React
   cancellation: { label: 'Cancellation', icon: AlertTriangle },
   new_review: { label: 'Traveler Review', icon: Star },
   operational_issue: { label: 'Harbor Warning', icon: ShieldAlert },
-  payment_pending: { label: 'Pier Balance Due', icon: CreditCard },
+  payment_pending: { label: 'Payment Pending', icon: CreditCard },
 };
 
 export const CommunicationsNotifications: React.FC<CommunicationsNotificationsProps> = ({ onNavigateTab }) => {
@@ -60,13 +61,17 @@ export const CommunicationsNotifications: React.FC<CommunicationsNotificationsPr
   const [filterSeverity, setFilterSeverity] = useState<string>('all');
   const [onlyUnread, setOnlyUnread] = useState(false);
   const [scanning, setScanning] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadNotifications = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const items = await listStaffNotifications();
       setNotifications(items);
     } catch (err) {
+      const message = err instanceof Error ? err.message : 'Staff notifications could not be loaded.';
+      setLoadError(message);
       console.error('Failed to load notifications:', err);
     } finally {
       setLoading(false);
@@ -84,7 +89,8 @@ export const CommunicationsNotifications: React.FC<CommunicationsNotificationsPr
       await loadNotifications();
       showToast('Intelligent scan completed. Anti-spam deduplication active.', 'info');
     } catch (err) {
-      console.error('Scan error:', err);
+      const message = err instanceof Error ? err.message : 'Notification scan failed.';
+      showToast(message, 'error');
     } finally {
       setScanning(false);
     }
@@ -98,7 +104,7 @@ export const CommunicationsNotifications: React.FC<CommunicationsNotificationsPr
         prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
       );
     } catch (err) {
-      console.error('Mark read error:', err);
+      showToast(err instanceof Error ? err.message : 'Notification could not be marked as read.', 'error');
     }
   };
 
@@ -108,7 +114,7 @@ export const CommunicationsNotifications: React.FC<CommunicationsNotificationsPr
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       showToast('All notifications marked as read', 'success');
     } catch (err) {
-      console.error('Mark all read error:', err);
+      showToast(err instanceof Error ? err.message : 'Notifications could not be marked as read.', 'error');
     }
   };
 
@@ -137,6 +143,7 @@ export const CommunicationsNotifications: React.FC<CommunicationsNotificationsPr
 
   return (
     <div className="space-y-6">
+      {loadError && <AdminLoadError message={loadError} onRetry={loadNotifications} />}
       {/* Top Banner & Stats */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-stone-900 border border-stone-800 p-5 rounded-xl shadow-lg">
         <div className="flex items-center space-x-3">
@@ -247,6 +254,7 @@ export const CommunicationsNotifications: React.FC<CommunicationsNotificationsPr
             <option value="new_booking">New Bookings</option>
             <option value="new_inquiry">New Inquiries</option>
             <option value="new_payment">New Payments</option>
+            <option value="payment_pending">Payments Pending</option>
             <option value="payment_overdue">Payment Overdue</option>
             <option value="new_lead">New CRM Leads</option>
             <option value="followup_due">Follow-ups Due</option>

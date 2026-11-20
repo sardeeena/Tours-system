@@ -25,6 +25,7 @@ import { bookingRepository } from '../../../services/bookingRepository';
 import { Booking } from '../../../types/booking';
 import { useToast } from '../../../contexts/ToastContext';
 import { useAuth } from '../../../contexts/AuthContext';
+import { AdminLoadError } from '../AdminLoadError';
 
 interface FinanceInvoicesProps {
   onNavigateTab?: (tabId: string, param?: string) => void;
@@ -36,6 +37,7 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
   const [invoices, setInvoices] = useState<FinanceInvoice[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -51,6 +53,7 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const [allInv, allB] = await Promise.all([
         listInvoices(),
@@ -62,6 +65,7 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
         setSelectedBookingRef(allB[0].bookingReference);
       }
     } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'Invoices could not be loaded.');
       console.warn('Failed to load invoices:', err);
     } finally {
       setLoading(false);
@@ -140,6 +144,7 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
 
   return (
     <div className="space-y-6">
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 print:hidden">
         <div>

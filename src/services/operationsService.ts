@@ -28,6 +28,7 @@ const LOCAL_GUIDES_KEY = 'rse_ops_guides';
 const LOCAL_WEATHER_KEY = 'rse_ops_weather';
 const LOCAL_DEPARTURES_KEY = 'rse_ops_departures';
 const LOCAL_PICKUPS_KEY = 'rse_ops_pickups';
+const LOCAL_MANIFEST_PASSENGERS_KEY = 'rse_ops_manifest_passengers';
 
 // Initial maritime fleet (fallback seed)
 const INITIAL_VESSELS: DbVessel[] = [
@@ -268,35 +269,45 @@ function normalizeDepartureTime(value: unknown): string {
 }
 
 /**
- * Lists only explicit database departures for the selected date.
+ * Lists only explicit database departures in the selected inclusive date range.
  * Bookings are attached to real departure rows; bookings never synthesize
  * departures, capacities, times, vessels, or weather clearance.
  */
-export async function getTodayDepartures(dateTarget?: string): Promise<OperationalDeparture[]> {
-  const now = new Date();
-  const localToday = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-  const date = dateTarget || localToday;
+export async function getDeparturesForDateRange(startDate: string, endDate: string): Promise<OperationalDeparture[]> {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(startDate) || !/^\d{4}-\d{2}-\d{2}$/.test(endDate) || startDate > endDate) {
+    throw new Error('A valid inclusive departure date range is required.');
+  }
 
   if (!isSupabaseConfigured()) {
     if (import.meta.env?.DEV) {
-      return getLocal<OperationalDeparture[]>(LOCAL_DEPARTURES_KEY, []).filter((departure) => departure.date === date);
+      return getLocal<OperationalDeparture[]>(LOCAL_DEPARTURES_KEY, []).filter((departure) => departure.date >= startDate && departure.date <= endDate);
     }
     throw new Error('Supabase is not configured; live departures cannot be loaded.');
   }
 
-  const [{ data: dbDepartures, error: departuresError }, allBookings, vessels, guides, dynamicTours] = await Promise.all([
-    supabase.from('departures').select('*').eq('date', date),
+  const [
+    { data: dbDepartures, error: departuresError },
+    allBookings,
+    vessels,
+    guides,
+    { data: tourRows, error: toursError },
+  ] = await Promise.all([
+    supabase.from('departures').select('*').gte('date', startDate).lte('date', endDate),
     bookingRepository.listBookings(),
     listVessels(),
     listGuides(),
-    getPublishedTours(),
+    // Departures are historical operational records and must still resolve
+    // their tour after it has been unpublished or archived.
+    supabase.from('tours').select('id,title,slug'),
   ]);
 
   if (departuresError) throw new Error(formatSupabaseError(departuresError));
+  if (toursError) throw new Error(formatSupabaseError(toursError));
+  const toursById = new Map((tourRows || []).map((tour: any) => [tour.id, tour]));
 
   const dayBookings = allBookings.filter((booking) => {
     const bookingDate = booking.date ? booking.date.split('T')[0] : '';
-    return bookingDate === date && booking.status !== 'cancelled';
+    return bookingDate >= startDate && bookingDate <= endDate && booking.status !== 'cancelled';
   });
 
   const groupedBookings = new Map<string, typeof dayBookings>();
@@ -313,7 +324,7 @@ export async function getTodayDepartures(dateTarget?: string): Promise<Operation
   const departures: OperationalDeparture[] = (dbDepartures || []).map((dbDep: any) => {
     const startTime = normalizeDepartureTime(dbDep.start_time);
     const bookingsForDep = groupedBookings.get(String(dbDep.id)) || [];
-    const tour = dynamicTours.find((item) => item.id === dbDep.tour_id);
+    const tour = toursById.get(dbDep.tour_id);
     if (!tour) throw new Error(`Departure ${dbDep.id} references a tour that is not currently published.`);
     const vessel = vessels.find((item) => item.id === dbDep.vessel_id);
     const guide = guides.find((item) => item.id === dbDep.guide_id);
@@ -366,7 +377,7 @@ export async function getTodayDepartures(dateTarget?: string): Promise<Operation
       tourId: dbDep.tour_id,
       tourTitle: tour?.title || 'Tour record unavailable',
       tourSlug: tour?.slug || '',
-      date,
+      date: String(dbDep.date).split('T')[0],
       departureTime: startTime,
       startTime,
       endTime: normalizeDepartureTime(dbDep.end_time),
@@ -404,7 +415,14 @@ export async function getTodayDepartures(dateTarget?: string): Promise<Operation
     };
   });
 
-  return departures.sort((a, b) => a.departureTime.localeCompare(b.departureTime));
+  return departures.sort((a, b) => a.date.localeCompare(b.date) || a.departureTime.localeCompare(b.departureTime));
+}
+
+export async function getTodayDepartures(dateTarget?: string): Promise<OperationalDeparture[]> {
+  const now = new Date();
+  const localToday = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const date = dateTarget || localToday;
+  return getDeparturesForDateRange(date, date);
 }
 
 /**
@@ -701,6 +719,7 @@ export async function detectAssignmentConflicts(params: {
   // 1. Vessel Checks
   if (params.vesselId) {
     const vessel = vessels.find((v) => v.id === params.vesselId);
+    if (!vessel) throw new Error('The selected vessel could not be verified in the live fleet registry; assignment is blocked.');
     if (vessel) {
       // Check active status
       if (!vessel.is_active || vessel.status === 'maintenance' || vessel.status === 'dry_dock' || vessel.status === 'inactive') {
@@ -758,7 +777,16 @@ export async function detectAssignmentConflicts(params: {
   // 2. Guide Checks
   if (params.guideId) {
     const guide = guides.find((g) => g.id === params.guideId);
+    if (!guide) throw new Error('The selected tour guide could not be verified in the live staff registry; assignment is blocked.');
     if (guide) {
+      if (!guide.is_active || ['day_off', 'leave', 'unavailable', 'inactive'].includes(String(guide.availability_status || '').toLowerCase())) {
+        conflicts.push({
+          type: 'guide_unavailable',
+          entityId: guide.id,
+          entityName: guide.full_name,
+          message: `Tour Guide "${guide.full_name}" is not currently available for assignment.`,
+        });
+      }
       const busyDep = departures.find((d) => {
         if (d.id === params.departureId || d.guideId !== params.guideId || d.status === 'cancelled') {
           return false;
@@ -794,7 +822,16 @@ export async function detectAssignmentConflicts(params: {
   // 3. Captain Checks
   if (params.captainId) {
     const captain = guides.find((g) => g.id === params.captainId);
+    if (!captain) throw new Error('The selected captain could not be verified in the live staff registry; assignment is blocked.');
     if (captain) {
+      if (!captain.is_active || ['day_off', 'leave', 'unavailable', 'inactive'].includes(String(captain.availability_status || '').toLowerCase())) {
+        conflicts.push({
+          type: 'captain_unavailable',
+          entityId: captain.id,
+          entityName: captain.full_name,
+          message: `Captain "${captain.full_name}" is not currently available for assignment.`,
+        });
+      }
       const busyDep = departures.find((d) => {
         if (
           d.id === params.departureId ||
@@ -834,7 +871,16 @@ export async function detectAssignmentConflicts(params: {
   // 4. Driver Checks
   if (params.driverId) {
     const driver = guides.find((g) => g.id === params.driverId);
+    if (!driver) throw new Error('The selected transfer driver could not be verified in the live staff registry; assignment is blocked.');
     if (driver) {
+      if (!driver.is_active || ['day_off', 'leave', 'unavailable', 'inactive'].includes(String(driver.availability_status || '').toLowerCase())) {
+        conflicts.push({
+          type: 'driver_unavailable',
+          entityId: driver.id,
+          entityName: driver.full_name,
+          message: `Transfer Driver "${driver.full_name}" is not currently available for assignment.`,
+        });
+      }
       const busyDep = departures.find((d) => {
         if (d.id === params.departureId || d.driverId !== params.driverId || d.status === 'cancelled') {
           return false;
@@ -1003,91 +1049,102 @@ export async function getPassengerManifest(
 ): Promise<PassengerManifestItem[]> {
   const date = dateFilter || new Date().toISOString().split('T')[0];
   const allBookings = await bookingRepository.listBookings();
-
-  const targetBookings = allBookings.filter((b) => {
-    const bDate = b.date ? b.date.split('T')[0] : '';
-    if (bDate !== date) return false;
-    if (tourIdFilter && tourIdFilter !== 'all' && b.tourId !== tourIdFilter) return false;
-    if (b.status === 'cancelled') return false;
-    return true;
+  const targetBookings = allBookings.filter((booking) => {
+    const bookingDate = booking.date ? booking.date.split('T')[0] : '';
+    if (bookingDate !== date) return false;
+    if (tourIdFilter && tourIdFilter !== 'all' && booking.tourId !== tourIdFilter) return false;
+    return booking.status !== 'cancelled';
   });
 
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const bookingIds = targetBookings.map((booking) => booking.bookingId).filter((id) => uuidPattern.test(id));
+  let storedPassengers: any[] = [];
+  const localMode = !isSupabaseConfigured();
+
+  if (localMode && !import.meta.env.DEV) {
+    throw new Error('Supabase is not configured; passenger manifests cannot be loaded in production.');
+  }
+  if (!localMode && bookingIds.length !== targetBookings.length) {
+    throw new Error('One or more bookings are missing a database ID; passenger manifest records cannot be matched safely.');
+  }
+
+  if (!localMode && bookingIds.length > 0) {
+    const { data, error } = await supabase
+      .from('booking_passengers')
+      .select('*')
+      .in('booking_id', bookingIds)
+      .order('booking_id', { ascending: true })
+      .order('passenger_index', { ascending: true });
+    if (error) throw new Error(formatSupabaseError(error));
+    storedPassengers = data || [];
+  }
+
+  const localDetails = localMode
+    ? getLocal<Record<string, Partial<PassengerManifestItem>>>(LOCAL_MANIFEST_PASSENGERS_KEY, {})
+    : {};
   const manifest: PassengerManifestItem[] = [];
 
-  targetBookings.forEach((b) => {
-    const leadPartyId = `pass-lead-${b.bookingReference}`;
-    const partyCount = (b.guests.adults || 1) + (b.guests.children || 0) + (b.guests.infants || 0);
-
-    // Safely format payment status without revealing sensitive details
+  targetBookings.forEach((booking) => {
+    const bookingId = booking.bookingId;
+    const rows = storedPassengers.filter((row) => row.booking_id === bookingId);
+    const adultCount = Math.max(0, Number(booking.guests?.adults) || 0);
+    const childCount = Math.max(0, Number(booking.guests?.children) || 0);
+    const infantCount = Math.max(0, Number(booking.guests?.infants) || 0);
+    const declaredPartyCount = adultCount + childCount + infantCount;
+    const effectiveAdultCount = declaredPartyCount === 0 ? 1 : adultCount;
+    const partyCount = Math.max(1, declaredPartyCount, rows.length);
+    const rawPaymentStatus = String(booking.paymentStatus || 'pending').toLowerCase();
     const paymentStatus: PassengerManifestItem['paymentStatus'] =
-      (b as any).paymentStatus === 'paid'
-        ? 'paid'
-        : (b as any).paymentStatus === 'deposit_paid'
-        ? 'deposit_paid'
-        : 'pending';
-
-    // Format extras safely
-    const extrasList = b.extras && Array.isArray(b.extras) && b.extras.length > 0
-      ? b.extras.map((e: any) => `${e.name || e.id} (x${e.quantity || 1})`).join(', ')
+      rawPaymentStatus === 'paid' ? 'paid' :
+      rawPaymentStatus === 'deposit_paid' ? 'deposit_paid' :
+      rawPaymentStatus === 'partially_paid' ? 'partially_paid' :
+      rawPaymentStatus === 'pay_on_arrival' ? 'pay_on_arrival' : 'pending';
+    const extrasList = Array.isArray(booking.extras) && booking.extras.length > 0
+      ? booking.extras.map((extra: any) => `${extra.name || extra.id} (x${extra.quantity || 1})`).join(', ')
       : null;
 
-    // 1. Lead Passenger
-    manifest.push({
-      id: leadPartyId,
-      bookingId: b.bookingId || b.bookingReference,
-      bookingReference: b.bookingReference,
-      tourId: b.tourId,
-      tourTitle: b.tourTitle,
-      tourDate: b.date || date,
-      departureTime: (b as any).departureTime || 'Not scheduled',
-      fullName: `${b.customer.firstName} ${b.customer.lastName}`,
-      nationality: b.customer.country || 'International',
-      passportOrId: null,
-      dateOfBirth: null,
-      gender: null,
-      passengerType: 'adult',
-      phone: b.customer.phoneNumber
-        ? `${b.customer.countryCode || ''} ${b.customer.phoneNumber}`.trim()
-        : null,
-      hotel: b.pickup.hotelName || b.customer.hotelName || 'Direct Arrival',
-      pickupTime: (b as any).pickupTime || '07:30',
-      specialRequests: b.customer.specialRequests || null,
-      extras: extrasList,
-      paymentStatus,
-      bookingStatus: (b.status as any) || 'confirmed',
-      partySize: partyCount,
-      isLeadPassenger: true,
-    });
-
-    // 2. Accompanying party members
-    const totalAccompanying = partyCount - 1;
-    for (let idx = 1; idx <= totalAccompanying; idx++) {
-      const passId = `pass-${b.bookingReference}-${idx}`;
-      const isChild = idx > Math.max(0, (b.guests.adults || 1) - 1);
+    for (let passengerIndex = 0; passengerIndex < partyCount; passengerIndex++) {
+      const row = rows.find((item) => Number(item.passenger_index) === passengerIndex);
+      const fallbackType: PassengerManifestItem['passengerType'] =
+        passengerIndex < effectiveAdultCount ? 'adult' :
+        passengerIndex < effectiveAdultCount + childCount ? 'child' : 'infant';
+      const isLeadPassenger = row?.is_lead_passenger ?? row?.is_lead ?? passengerIndex === 0;
+      const fallbackName = passengerIndex === 0
+        ? `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim()
+        : `Guest ${passengerIndex} (${booking.customer.lastName || 'Party'})`;
+      const local = localDetails[`${bookingId}:${passengerIndex}`] || {};
+      const rawPassengerType = local.passengerType ?? row?.passenger_type;
+      const passengerType: PassengerManifestItem['passengerType'] =
+        rawPassengerType === 'adult' || rawPassengerType === 'child' || rawPassengerType === 'infant'
+          ? rawPassengerType
+          : fallbackType;
 
       manifest.push({
-        id: passId,
-        bookingId: b.bookingId || b.bookingReference,
-        bookingReference: b.bookingReference,
-        tourId: b.tourId,
-        tourTitle: b.tourTitle,
-        tourDate: b.date || date,
-        departureTime: (b as any).departureTime || 'Not scheduled',
-        fullName: `Guest ${idx} (${b.customer.lastName} Party)`,
-        nationality: b.customer.country || 'International',
-        passportOrId: null,
-        dateOfBirth: null,
-        gender: null,
-        passengerType: isChild ? 'child' : 'adult',
-        phone: null,
-        hotel: b.pickup.hotelName || b.customer.hotelName || 'Direct Arrival',
-        pickupTime: (b as any).pickupTime || '07:30',
-        specialRequests: null,
-        extras: null,
+        id: row?.id || `pass-${booking.bookingReference}-${passengerIndex}`,
+        bookingId,
+        passengerIndex,
+        bookingReference: booking.bookingReference,
+        tourId: booking.tourId,
+        tourTitle: booking.tourTitle,
+        tourDate: booking.date || date,
+        departureTime: (booking as any).departureTime || 'Not scheduled',
+        fullName: local.fullName ?? row?.full_name ?? fallbackName ?? 'Guest',
+        nationality: local.nationality ?? row?.nationality ?? booking.customer.country ?? null,
+        passportOrId: local.passportOrId ?? row?.passport_or_id_number ?? null,
+        dateOfBirth: local.dateOfBirth ?? row?.date_of_birth ?? null,
+        gender: local.gender ?? row?.gender ?? null,
+        passengerType,
+        phone: local.phone ?? row?.phone ?? (passengerIndex === 0 && booking.customer.phoneNumber
+          ? `${booking.customer.countryCode || ''} ${booking.customer.phoneNumber}`.trim()
+          : null),
+        hotel: local.hotel ?? row?.pickup_location ?? booking.pickup.hotelName ?? booking.customer.hotelName ?? 'Direct Arrival',
+        pickupTime: (booking as any).pickupTime || 'Not scheduled',
+        specialRequests: local.specialRequests ?? row?.special_requests ?? (passengerIndex === 0 ? booking.customer.specialRequests : null) ?? null,
+        extras: extrasList,
         paymentStatus,
-        bookingStatus: (b.status as any) || 'confirmed',
+        bookingStatus: (booking.status as any) || 'confirmed',
         partySize: partyCount,
-        isLeadPassenger: false,
+        isLeadPassenger,
       });
     }
   });
@@ -1099,20 +1156,53 @@ export async function updateManifestPassenger(
   passengerId: string,
   updates: Partial<PassengerManifestItem>
 ): Promise<boolean> {
-  if (isSupabaseConfigured()) {
-    try {
-      if (updates.passportOrId || updates.nationality || updates.fullName) {
-        await supabase.from('booking_passengers').upsert({
-          id: passengerId.startsWith('pass-') ? undefined : passengerId,
-          full_name: updates.fullName || 'Guest',
-          nationality: updates.nationality,
-          passport_or_id_number: updates.passportOrId,
-        });
-      }
-    } catch {
-      // ignore
-    }
+  void passengerId;
+  const bookingId = updates.bookingId;
+  const passengerIndex = Number(updates.passengerIndex);
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+  if (!bookingId || !uuidPattern.test(bookingId)) {
+    throw new Error('A valid database booking ID is required to save passenger details.');
   }
+  if (!Number.isInteger(passengerIndex) || passengerIndex < 0) {
+    throw new Error('A valid passenger position is required to save passenger details.');
+  }
+  if (!updates.fullName?.trim()) {
+    throw new Error('Passenger full name is required.');
+  }
+
+  const payload = {
+    booking_id: bookingId,
+    passenger_index: passengerIndex,
+    full_name: updates.fullName.trim(),
+    nationality: updates.nationality || null,
+    passport_or_id_number: updates.passportOrId || null,
+    date_of_birth: updates.dateOfBirth || null,
+    gender: updates.gender || null,
+    passenger_type: updates.passengerType || 'adult',
+    is_lead_passenger: updates.isLeadPassenger ?? passengerIndex === 0,
+    is_lead: updates.isLeadPassenger ?? passengerIndex === 0,
+    phone: updates.phone || null,
+    special_requests: updates.specialRequests || null,
+    pickup_location: updates.hotel || null,
+  };
+
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; passenger details cannot be saved in production.');
+    const local = getLocal<Record<string, Partial<PassengerManifestItem>>>(LOCAL_MANIFEST_PASSENGERS_KEY, {});
+    local[`${bookingId}:${passengerIndex}`] = { ...local[`${bookingId}:${passengerIndex}`], ...updates };
+    setLocal(LOCAL_MANIFEST_PASSENGERS_KEY, local);
+    return true;
+  }
+
+  const { data, error } = await supabase
+    .from('booking_passengers')
+    .upsert(payload, { onConflict: 'booking_id,passenger_index' })
+    .select('id')
+    .single();
+
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data?.id) throw new Error('Passenger details were not saved; no database record was returned.');
   return true;
 }
 
@@ -1228,14 +1318,33 @@ export async function updatePickupScheduleStatus(
 
   const { data: bookingDetails, error: bookingDetailsError } = await supabase
     .from('bookings')
-    .select('id,booking_date,adult_count,child_count,infant_count,pickup_hotel_name,special_requests,customer_id,customers(first_name,last_name,phone,hotel),pickup_locations(name,area),tours(title)')
+    .select('id,booking_date,adult_count,child_count,infant_count,pickup_hotel_name,special_requests,customer_id,pickup_status,driver_vehicle,customers(first_name,last_name,phone,hotel),pickup_locations(name,area),tours(title)')
     .eq('booking_reference', reference)
     .maybeSingle();
   if (bookingDetailsError) throw new Error(formatSupabaseError(bookingDetailsError));
   if (!bookingDetails?.id) throw new Error('Booking not found. Pickup changes were not saved.');
 
-  // The booking row is the authoritative record for pickup state. Require an
-  // affected row so UI success cannot be reported after a silent database error.
+  const { data: scheduleRows, error: scheduleReadError } = await supabase
+    .from('pickup_schedules')
+    .select('id')
+    .eq('booking_reference', reference)
+    .limit(1);
+  if (scheduleReadError) throw new Error(formatSupabaseError(scheduleReadError));
+
+  const scheduleId = scheduleRows?.[0]?.id;
+  const hasAssignmentInput = driverName !== undefined || driverVehicle !== undefined || pickupTime !== undefined || driverId !== undefined;
+  const customer = Array.isArray(bookingDetails.customers) ? bookingDetails.customers[0] : bookingDetails.customers;
+  const pickupLocation = Array.isArray(bookingDetails.pickup_locations) ? bookingDetails.pickup_locations[0] : bookingDetails.pickup_locations;
+  const tour = Array.isArray(bookingDetails.tours) ? bookingDetails.tours[0] : bookingDetails.tours;
+  const hotel = bookingDetails.pickup_hotel_name || customer?.hotel;
+  const location = pickupLocation?.area || pickupLocation?.name;
+  const customerName = [customer?.first_name, customer?.last_name].filter(Boolean).join(' ').trim();
+
+  if (hasAssignmentInput && !scheduleId &&
+      (!pickupTime || !driverName?.trim() || !driverVehicle?.trim() || !hotel?.trim() || !location?.trim() || !customerName)) {
+    throw new Error('A real pickup time, driver, vehicle, customer and pickup location are required before a pickup schedule can be created.');
+  }
+
   const bookingPatch: Record<string, unknown> = {
     pickup_status: normalized,
     updated_at: new Date().toISOString(),
@@ -1248,69 +1357,64 @@ export async function updatePickupScheduleStatus(
     .eq('booking_reference', reference)
     .select('id')
     .maybeSingle();
-
   if (bookingError) throw new Error(formatSupabaseError(bookingError));
-  if (!savedBooking?.id) {
-    throw new Error('The booking was not found or its pickup update was not confirmed.');
-  }
+  if (!savedBooking?.id) throw new Error('The booking was not found or its pickup update was not confirmed.');
 
-  // Keep an existing dedicated schedule row in sync; do not fabricate one.
-  const { data: scheduleRows, error: scheduleReadError } = await supabase
-    .from('pickup_schedules')
-    .select('id')
-    .eq('booking_reference', reference)
-    .limit(1);
-  if (scheduleReadError) throw new Error(formatSupabaseError(scheduleReadError));
-
-  if ((driverName !== undefined || driverVehicle !== undefined || pickupTime !== undefined || driverId !== undefined) && !scheduleRows?.[0]?.id) {
-    const customer = Array.isArray(bookingDetails.customers) ? bookingDetails.customers[0] : bookingDetails.customers;
-    const pickupLocation = Array.isArray(bookingDetails.pickup_locations) ? bookingDetails.pickup_locations[0] : bookingDetails.pickup_locations;
-    const tour = Array.isArray(bookingDetails.tours) ? bookingDetails.tours[0] : bookingDetails.tours;
-    const hotel = bookingDetails.pickup_hotel_name || customer?.hotel;
-    const location = pickupLocation?.area || pickupLocation?.name;
-    const customerName = [customer?.first_name, customer?.last_name].filter(Boolean).join(' ').trim();
-
-    if (!pickupTime || !driverName?.trim() || !driverVehicle?.trim() || !hotel?.trim() || !location?.trim() || !customerName) {
-      throw new Error('A real pickup time, active driver, vehicle, customer and pickup location are required before a pickup schedule can be created.');
+  try {
+    if (hasAssignmentInput && !scheduleId) {
+      const passengerCount = Number(bookingDetails.adult_count || 0) +
+        Number(bookingDetails.child_count || 0) + Number(bookingDetails.infant_count || 0);
+      const { data, error } = await supabase.from('pickup_schedules').insert({
+        booking_id: bookingDetails.id,
+        booking_reference: reference,
+        customer_name: customerName,
+        customer_phone: customer?.phone || null,
+        hotel,
+        location,
+        pickup_time: pickupTime,
+        driver_id: driverId || null,
+        driver_name: driverName!.trim(),
+        vehicle: driverVehicle!.trim(),
+        passenger_count: passengerCount,
+        tour_title: tour?.title || null,
+        tour_date: bookingDetails.booking_date,
+        departure_time: null,
+        status: normalized,
+        special_requests: bookingDetails.special_requests || null,
+      }).select('id').single();
+      if (error) throw new Error(formatSupabaseError(error));
+      if (!data?.id) throw new Error('Pickup schedule creation returned no database record.');
+    } else if (scheduleId) {
+      const schedulePatch: Record<string, unknown> = {
+        status: normalized,
+        updated_at: new Date().toISOString(),
+      };
+      if (driverVehicle !== undefined) schedulePatch.vehicle = driverVehicle.trim() || null;
+      if (driverName !== undefined) schedulePatch.driver_name = driverName.trim() || null;
+      if (pickupTime !== undefined) schedulePatch.pickup_time = pickupTime;
+      if (driverId !== undefined) schedulePatch.driver_id = driverId || null;
+      const { data, error } = await supabase
+        .from('pickup_schedules')
+        .update(schedulePatch)
+        .eq('id', scheduleId)
+        .select('id')
+        .maybeSingle();
+      if (error) throw new Error(formatSupabaseError(error));
+      if (!data?.id) throw new Error('Pickup schedule was not updated because its record no longer exists.');
     }
-
-    const passengerCount = Number(bookingDetails.adult_count || 0) +
-      Number(bookingDetails.child_count || 0) + Number(bookingDetails.infant_count || 0);
-    const { error: insertScheduleError } = await supabase.from('pickup_schedules').insert({
-      booking_id: bookingDetails.id,
-      booking_reference: reference,
-      customer_name: customerName,
-      customer_phone: customer?.phone || null,
-      hotel,
-      location,
-      pickup_time: pickupTime,
-      driver_id: driverId,
-      driver_name: driverName.trim(),
-      vehicle: driverVehicle.trim(),
-      passenger_count: passengerCount,
-      tour_title: tour?.title || null,
-      tour_date: bookingDetails.booking_date,
-      departure_time: null,
-      status: normalized,
-      special_requests: bookingDetails.special_requests || null,
-    });
-    if (insertScheduleError) throw new Error(formatSupabaseError(insertScheduleError));
-  }
-
-  if (scheduleRows?.[0]?.id) {
-    const schedulePatch: Record<string, unknown> = {
-      status: normalized,
-      updated_at: new Date().toISOString(),
-    };
-    if (driverVehicle !== undefined) schedulePatch.vehicle = driverVehicle.trim() || null;
-    if (driverName !== undefined) schedulePatch.driver_name = driverName.trim() || null;
-    if (pickupTime !== undefined) schedulePatch.pickup_time = pickupTime;
-    if (driverId !== undefined) schedulePatch.driver_id = driverId || null;
-    const { error: scheduleError } = await supabase
-      .from('pickup_schedules')
-      .update(schedulePatch)
-      .eq('id', scheduleRows[0].id);
-    if (scheduleError) throw new Error(formatSupabaseError(scheduleError));
+  } catch (scheduleError) {
+    const { error: rollbackError } = await supabase
+      .from('bookings')
+      .update({
+        pickup_status: bookingDetails.pickup_status,
+        driver_vehicle: bookingDetails.driver_vehicle,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', bookingDetails.id);
+    if (rollbackError) {
+      throw new Error(`Pickup schedule update failed: ${formatSupabaseError(scheduleError)}. Booking status rollback also failed: ${formatSupabaseError(rollbackError)}`);
+    }
+    throw new Error(`Pickup schedule update failed; the booking status was restored: ${formatSupabaseError(scheduleError)}`);
   }
 
   const cached = getLocal<Record<string, Partial<PickupScheduleItem>>>(LOCAL_PICKUPS_KEY, {});
@@ -1332,7 +1436,7 @@ export async function updatePickupScheduleStatus(
 
 export async function listVessels(): Promise<DbVessel[]> {
   if (!isSupabaseConfigured()) {
-    if (!import.meta.env.DEV) return [];
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; the production vessel fleet cannot be loaded.');
     return getLocal<DbVessel[]>(LOCAL_VESSELS_KEY, INITIAL_VESSELS);
   }
 
@@ -1358,7 +1462,7 @@ export async function saveVessel(vessel: Partial<DbVessel>): Promise<DbVessel> {
     }
 
     const all = getLocal<DbVessel[]>(LOCAL_VESSELS_KEY, INITIAL_VESSELS);
-    const status = vessel.status || (vessel.is_active !== false ? 'active' : 'inactive');
+    const status = vessel.status || (vessel.is_active === true ? 'active' : 'inactive');
     const isActive = status === 'active' || status === 'in_service';
     const now = new Date().toISOString();
     const saved: DbVessel = vessel.id
@@ -1389,13 +1493,13 @@ export async function saveVessel(vessel: Partial<DbVessel>): Promise<DbVessel> {
     return saved;
   }
 
-  const status = vessel.status || (vessel.is_active !== false ? 'active' : 'inactive');
+  const status = vessel.status || (vessel.is_active === true ? 'active' : 'inactive');
   const isActive = status === 'active' || status === 'in_service';
   const payload: Record<string, unknown> = {
     name: vessel.name?.trim(),
     vessel_type: vessel.vessel_type || 'motor_yacht',
-    registration_number: vessel.registration_number || null,
-    port_marina: vessel.port_marina || null,
+    registration_number: vessel.registration_number?.trim() || null,
+    port_marina: vessel.port_marina?.trim() || null,
     passenger_capacity: vessel.passenger_capacity,
     crew_capacity: vessel.crew_capacity,
     year_built: vessel.year_built || null,
@@ -1411,8 +1515,25 @@ export async function saveVessel(vessel: Partial<DbVessel>): Promise<DbVessel> {
   };
 
   if (!payload.name) throw new Error('A vessel name is required.');
+  if (!payload.registration_number) throw new Error('A verified vessel registration number is required.');
+  if (!payload.port_marina) throw new Error('A verified home port or marina is required.');
   if (!Number.isInteger(payload.passenger_capacity) || Number(payload.passenger_capacity) < 1) {
     throw new Error('A valid passenger capacity is required.');
+  }
+  if (!Number.isInteger(payload.crew_capacity) || Number(payload.crew_capacity) < 1) {
+    throw new Error('A valid crew capacity is required.');
+  }
+  if (vessel.year_built !== undefined && vessel.year_built !== null) {
+    const year = Number(vessel.year_built);
+    if (!Number.isInteger(year) || year < 1900 || year > new Date().getFullYear()) {
+      throw new Error('Enter a valid vessel build year.');
+    }
+  }
+  if (isActive) {
+    const inspectionExpiry = payload.safety_inspection_expiry ? new Date(`${String(payload.safety_inspection_expiry)}T23:59:59`) : null;
+    if (!inspectionExpiry || Number.isNaN(inspectionExpiry.getTime()) || inspectionExpiry.getTime() < Date.now()) {
+      throw new Error('An active vessel must have a valid, unexpired safety inspection date.');
+    }
   }
   if (vessel.id) {
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(vessel.id)) {
@@ -1449,6 +1570,15 @@ export async function deleteVessel(id: string): Promise<boolean> {
     return true;
   }
 
+  const { count: assignedDepartureCount, error: assignmentError } = await supabase
+    .from('departures')
+    .select('id', { count: 'exact', head: true })
+    .eq('vessel_id', id);
+  if (assignmentError) throw new Error(formatSupabaseError(assignmentError));
+  if ((assignedDepartureCount || 0) > 0) {
+    throw new Error('This vessel is referenced by departure history. Mark it inactive or under maintenance instead of deleting it.');
+  }
+
   const { data, error } = await supabase
     .from('vessels')
     .delete()
@@ -1468,103 +1598,110 @@ export async function deleteVessel(id: string): Promise<boolean> {
 // ==============================================================================
 
 export async function listGuides(): Promise<DbGuide[]> {
-  let guides = getLocal<DbGuide[]>(LOCAL_GUIDES_KEY, INITIAL_GUIDES);
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase.from('guides').select('*').order('full_name');
-      if (!error && data && data.length > 0) {
-        guides = data.map((d: any) => ({
-          ...d,
-          availability_status: d.availability_status || (d.is_active ? 'available' : 'unavailable'),
-        }));
-        setLocal(LOCAL_GUIDES_KEY, guides);
-      }
-    } catch {
-      // ignore
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env?.DEV) {
+      throw new Error('Supabase is not configured; operational staff records cannot be loaded in production.');
     }
+    return getLocal<DbGuide[]>(LOCAL_GUIDES_KEY, INITIAL_GUIDES);
   }
 
+  const { data, error } = await supabase.from('guides').select('*').order('full_name');
+  if (error) throw new Error(formatSupabaseError(error));
+
+  const guides: DbGuide[] = (data || []).map((row: any) => ({
+    ...row,
+    availability_status: row.availability_status || (row.is_active ? 'available' : 'unavailable'),
+  }));
+  setLocal(LOCAL_GUIDES_KEY, guides);
   return guides;
 }
 
 export async function saveGuide(guide: Partial<DbGuide>): Promise<DbGuide> {
-  const all = await listGuides();
-  let saved: DbGuide;
-
   const avail = guide.availability_status || (guide.is_active !== false ? 'available' : 'unavailable');
   const isActive = avail === 'available' || avail === 'on_duty';
+  const now = new Date().toISOString();
 
-  if (guide.id) {
-    saved = {
-      ...all.find((g) => g.id === guide.id)!,
-      ...guide,
-      availability_status: avail,
-      is_active: isActive,
-    };
-    const updated = all.map((g) => (g.id === guide.id ? saved : g));
-    setLocal(LOCAL_GUIDES_KEY, updated);
-  } else {
-    saved = {
-      id: `gui-${Date.now().toString(36)}`,
-      full_name: guide.full_name || 'Staff Member',
-      role: guide.role || 'guide',
-      languages: guide.languages || ['English', 'Arabic'],
-      phone: guide.phone || null,
-      email: guide.email || null,
-      license_number: guide.license_number || null,
-      rating: guide.rating || 5.0,
-      is_active: isActive,
-      availability_status: avail,
-      notes: guide.notes || null,
-      created_at: new Date().toISOString(),
-    };
-    setLocal(LOCAL_GUIDES_KEY, [saved, ...all]);
-  }
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { error } = await supabase.from('guides').upsert({
-        id: saved.id.startsWith('gui-') ? undefined : saved.id,
-        full_name: saved.full_name,
-        role: saved.role,
-        languages: saved.languages,
-        phone: saved.phone,
-        email: saved.email,
-        license_number: saved.license_number,
-        rating: saved.rating,
-        is_active: saved.is_active,
-        availability_status: saved.availability_status,
-        notes: saved.notes,
-      });
-      if (error) {
-        throw new Error(formatSupabaseError(error));
-      }
-    } catch (err: any) {
-      console.error('Error saving guide to Supabase:', err);
-      throw err;
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env?.DEV) {
+      throw new Error('Supabase is not configured; staff profiles cannot be saved in production.');
     }
+
+    const all = getLocal<DbGuide[]>(LOCAL_GUIDES_KEY, INITIAL_GUIDES);
+    const existing = guide.id ? all.find((item) => item.id === guide.id) : undefined;
+    if (guide.id && !existing) throw new Error('The selected staff profile no longer exists.');
+    const saved: DbGuide = {
+      ...(existing || {}),
+      ...guide,
+      id: guide.id || `gui-${Date.now().toString(36)}`,
+      full_name: guide.full_name?.trim() || existing?.full_name || 'Staff Member',
+      role: guide.role || existing?.role || 'guide',
+      languages: guide.languages || existing?.languages || ['English', 'Arabic'],
+      phone: guide.phone ?? existing?.phone ?? null,
+      email: guide.email ?? existing?.email ?? null,
+      license_number: guide.license_number ?? existing?.license_number ?? null,
+      rating: guide.rating ?? existing?.rating ?? 5,
+      is_active: isActive,
+      availability_status: avail,
+      notes: guide.notes ?? existing?.notes ?? null,
+      created_at: existing?.created_at || now,
+      updated_at: now,
+    } as DbGuide;
+    setLocal(LOCAL_GUIDES_KEY, guide.id
+      ? all.map((item) => item.id === guide.id ? saved : item)
+      : [saved, ...all]);
+    return saved;
   }
 
+  const payload = {
+    full_name: guide.full_name?.trim(),
+    role: guide.role || 'guide',
+    languages: guide.languages || ['English', 'Arabic'],
+    phone: guide.phone || null,
+    email: guide.email || null,
+    license_number: guide.license_number || null,
+    rating: guide.rating ?? 5,
+    is_active: isActive,
+    availability_status: avail,
+    notes: guide.notes || null,
+    updated_at: now,
+  };
+
+  const result = guide.id
+    ? await supabase.from('guides').update(payload).eq('id', guide.id).select('*').maybeSingle()
+    : await supabase.from('guides').insert(payload).select('*').single();
+
+  if (result.error) throw new Error(formatSupabaseError(result.error));
+  if (!result.data) throw new Error('The staff profile was not saved or is no longer accessible.');
+
+  const saved = {
+    ...result.data,
+    availability_status: result.data.availability_status || (result.data.is_active ? 'available' : 'unavailable'),
+  } as DbGuide;
+  const all = await listGuides();
+  setLocal(LOCAL_GUIDES_KEY, all);
   return saved;
 }
 
 export async function deleteGuide(id: string): Promise<boolean> {
+  if (!id.trim()) throw new Error('A staff profile ID is required.');
   const all = await listGuides();
-  setLocal(LOCAL_GUIDES_KEY, all.filter((g) => g.id !== id));
 
-  if (isSupabaseConfigured()) {
-    try {
-      const { error } = await supabase.from('guides').delete().eq('id', id);
-      if (error) {
-        throw new Error(formatSupabaseError(error));
-      }
-    } catch (err: any) {
-      console.error('Error deleting guide from Supabase:', err);
-      throw err;
-    }
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; staff profiles cannot be deleted in production.');
+    setLocal(LOCAL_GUIDES_KEY, all.filter((guide) => guide.id !== id));
+    return true;
   }
 
+  const { data, error } = await supabase
+    .from('guides')
+    .delete()
+    .eq('id', id)
+    .select('id')
+    .maybeSingle();
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data?.id) throw new Error('The staff profile was not deleted because it no longer exists or is not accessible.');
+
+  setLocal(LOCAL_GUIDES_KEY, all.filter((guide) => guide.id !== id));
   return true;
 }
 
@@ -1674,8 +1811,11 @@ export async function updateAvailabilitySlot(
   if (status === 'available' && maxCapacity <= bookedCount) {
     throw new Error('A date needs an explicit capacity greater than its booked count before it can be opened.');
   }
+  if (status === 'unavailable' && !updates.notes?.trim() && !existing?.notes?.trim()) {
+    throw new Error('A verified operational reason is required before marking a date unavailable.');
+  }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('tour_availability')
     .upsert({
       tour_id: tourId,
@@ -1683,9 +1823,12 @@ export async function updateAvailabilitySlot(
       max_capacity: maxCapacity,
       status,
       notes: updates.notes ?? existing?.notes ?? 'Manual override: updated by operations',
-    }, { onConflict: 'tour_id,date' });
+    }, { onConflict: 'tour_id,date' })
+    .select('tour_id')
+    .single();
 
   if (error) throw new Error(formatSupabaseError(error));
+  if (!data?.tour_id) throw new Error('Availability update was not confirmed by the database.');
   return true;
 }
 
@@ -1697,6 +1840,9 @@ export async function setBlackoutDate(
 ): Promise<boolean> {
   if (!isSupabaseConfigured()) {
     throw new Error('Supabase is not configured; blackout changes were not saved.');
+  }
+  if (isBlackout && !notes?.trim()) {
+    throw new Error('A verified operational reason is required before blacking out a date.');
   }
 
   const { data: existing, error: readError } = await supabase
@@ -1714,7 +1860,7 @@ export async function setBlackoutDate(
     throw new Error('This date cannot be reopened until an actual capacity greater than its booked count is configured.');
   }
 
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('tour_availability')
     .upsert({
       tour_id: tourId,
@@ -1722,11 +1868,14 @@ export async function setBlackoutDate(
       max_capacity: maxCapacity,
       status: isBlackout ? 'unavailable' : 'available',
       notes: isBlackout
-        ? `Manual blackout: ${notes || 'Closed by operations'}`
-        : `Manual override: ${notes || 'Reopened by operations'}`,
-    }, { onConflict: 'tour_id,date' });
+        ? `Manual blackout: ${notes!.trim()}`
+        : `Manual override: ${notes?.trim() || 'Reopened by operations'}`,
+    }, { onConflict: 'tour_id,date' })
+    .select('tour_id')
+    .single();
 
   if (error) throw new Error(formatSupabaseError(error));
+  if (!data?.tour_id) throw new Error('The blackout change was not confirmed by the database.');
   return true;
 }
 
@@ -1803,15 +1952,26 @@ export async function getMaritimeWeather(dateTarget?: string): Promise<WeatherIn
     console.warn('Live marine forecast unavailable:', error);
   }
 
+  const bulletinNumber = (value: unknown): number | null =>
+    value === null || value === undefined || value === '' || Number.isNaN(Number(value))
+      ? null
+      : Number(value);
+  const bulletinWind = bulletin ? bulletinNumber(bulletin.wind_speed_knots) : null;
+  const bulletinSwell = bulletin ? bulletinNumber(bulletin.swell_height_m) : null;
   const bulletinAvailable = Boolean(bulletin);
+  const bulletinHasMeasurements = Boolean(bulletin && (
+    bulletinWind !== null || bulletinSwell !== null ||
+    bulletinNumber(bulletin.air_temperature_c) !== null ||
+    bulletinNumber(bulletin.water_temperature_c) !== null
+  ));
   const liveAvailable =
     airTemperatureC !== null ||
     liveWindKnots !== null ||
     liveSwellHeightM !== null;
 
-  const isAvailable = bulletinAvailable || liveAvailable;
-  const windSpeedKnots = liveWindKnots ?? (bulletin ? Number(bulletin.wind_speed_knots) : null);
-  const swellHeightM = liveSwellHeightM ?? (bulletin ? Number(bulletin.swell_height_m) : null);
+  const isAvailable = bulletinHasMeasurements || liveAvailable;
+  const windSpeedKnots = liveWindKnots ?? bulletinWind;
+  const swellHeightM = liveSwellHeightM ?? bulletinSwell;
 
   return {
     connected: isAvailable,
@@ -1824,12 +1984,12 @@ export async function getMaritimeWeather(dateTarget?: string): Promise<WeatherIn
           : 'Unavailable',
     isAvailable,
     harborLocation: bulletin?.harbor_location || 'Hurghada Marina & Giftun Marine Reserve',
-    waterTemperatureC: bulletin ? Number(bulletin.water_temperature_c) : null,
-    airTemperatureC: airTemperatureC ?? (bulletin ? Number(bulletin.air_temperature_c) : null),
+    waterTemperatureC: bulletin ? bulletinNumber(bulletin.water_temperature_c) : null,
+    airTemperatureC: airTemperatureC ?? (bulletin ? bulletinNumber(bulletin.air_temperature_c) : null),
     swellHeightM,
     windSpeedKnots,
     windDirection: liveWindDirection ?? bulletin?.wind_direction ?? null,
-    visibilityMeters: bulletin ? Number(bulletin.visibility_meters) : null,
+    visibilityMeters: bulletin ? bulletinNumber(bulletin.visibility_meters) : null,
     // Forecast data cannot establish official harbor or Coast Guard clearance.
     coastGuardCleared: bulletin?.coast_guard_cleared ?? null,
     advisoryNotes: bulletin?.advisory_notes || (
@@ -1843,7 +2003,10 @@ export async function getMaritimeWeather(dateTarget?: string): Promise<WeatherIn
 }
 
 export async function listWeatherBulletins(): Promise<DbWeatherBulletin[]> {
-  if (!isSupabaseConfigured()) return [];
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; operator weather bulletins cannot be loaded in production.');
+    return [];
+  }
   const { data, error } = await supabase
     .from('weather_bulletins')
     .select('*')

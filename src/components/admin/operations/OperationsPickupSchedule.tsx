@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { AdminLoadError } from '../AdminLoadError';
 import {
   Car,
   Search,
@@ -33,6 +34,7 @@ export const OperationsPickupSchedule: React.FC = () => {
   );
   const [pickups, setPickups] = useState<PickupScheduleItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'board' | 'list'>('board');
@@ -46,11 +48,16 @@ export const OperationsPickupSchedule: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
+      setPickups([]);
     try {
       const data = await getDailyPickupSchedule(selectedDate);
       setPickups(data);
     } catch (err) {
-      console.warn('Failed to load pickup schedule:', err);
+      const message = err instanceof Error ? err.message : 'Live operational records could not be loaded.';
+      console.error('Failed to load operational data:', err);
+      setLoadError(message);
+      
     } finally {
       setLoading(false);
     }
@@ -189,7 +196,9 @@ export const OperationsPickupSchedule: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* View toggle */}
+          {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
+
+      {/* View toggle */}
           <div className="bg-stone-900 border border-stone-800 rounded-lg p-0.5 flex items-center text-xs">
             <button
               type="button"

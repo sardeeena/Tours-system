@@ -22,12 +22,16 @@ import {
 } from '../../../services/crmService';
 import { CommChannel } from '../../../types/crm';
 import { useToast } from '../../../contexts/ToastContext';
+import { AdminLoadError } from '../AdminLoadError';
+import { useAuth } from '../../../contexts/AuthContext';
 
 export const CrmConversationsManager: React.FC = () => {
   const { showToast } = useToast();
+  const { user } = useAuth();
   const [comms, setComms] = useState<CrmCommunication[]>([]);
   const [customers, setCustomers] = useState<CrmCustomerDetail[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [channelFilter, setChannelFilter] = useState<string>('all');
 
@@ -38,10 +42,10 @@ export const CrmConversationsManager: React.FC = () => {
   const [customerName, setCustomerName] = useState('');
   const [summary, setSummary] = useState('');
   const [content, setContent] = useState('');
-  const [staffName, setStaffName] = useState('Captain Tarek');
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const [allComms, allCusts] = await Promise.all([
         listCommunications(),
@@ -50,6 +54,7 @@ export const CrmConversationsManager: React.FC = () => {
       setComms(allComms);
       setCustomers(allCusts);
     } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'CRM conversations could not be loaded.');
       console.warn('Failed to load conversations:', err);
     } finally {
       setLoading(false);
@@ -83,7 +88,8 @@ export const CrmConversationsManager: React.FC = () => {
       customerName: customerName.trim() || 'Traveler',
       summary: summary.trim(),
       content: content.trim() || null,
-      staffName,
+      staffName: user?.fullName || 'Signed-in staff',
+      staffId: user?.id || null,
     });
 
     showToast('Communication logged successfully.', 'success');
@@ -96,6 +102,7 @@ export const CrmConversationsManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -293,17 +300,11 @@ export const CrmConversationsManager: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-stone-300 font-semibold mb-1">Staff Member</label>
-                <select
-                  value={staffName}
-                  onChange={(e) => setStaffName(e.target.value)}
-                  className="w-full px-3 py-1.5 bg-stone-950 border border-stone-800 rounded text-white"
-                >
-                  <option value="Captain Tarek">Captain Tarek</option>
-                  <option value="Mona Zaki (Concierge)">Mona Zaki (Concierge)</option>
-                  <option value="Ahmed Fathy">Ahmed Fathy</option>
-                  <option value="Captain Farouk">Captain Farouk</option>
-                </select>
+                <label className="block text-stone-300 font-semibold mb-1">Logged by</label>
+                <div className="w-full px-3 py-2 bg-stone-950 border border-stone-800 rounded text-stone-200 text-sm">
+                  {user?.fullName || user?.email || 'Signed-in staff'}
+                </div>
+                <p className="mt-1 text-[10px] text-stone-500">The active account is recorded automatically.</p>
               </div>
 
               <div className="flex items-center justify-end space-x-2 pt-3 border-t border-stone-800">

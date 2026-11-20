@@ -95,6 +95,12 @@ function setLocal<T>(key: string, data: T) {
   }
 }
 
+function useLocalCrmData(message: string): boolean {
+  if (isSupabaseConfigured()) return false;
+  if (import.meta.env.DEV) return true;
+  throw new Error(message);
+}
+
 // ------------------------------------------------------------------------------
 // LEADS SERVICE
 // ------------------------------------------------------------------------------
@@ -107,68 +113,55 @@ export async function listLeads(filter?: {
   tourId?: string;
   status?: string;
 }): Promise<CrmLead[]> {
-  let leads: CrmLead[] = [];
-
-  if (isSupabaseConfigured()) {
-    try {
-      let query = supabase
-        .from('leads')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (filter?.stage && filter.stage !== 'all') {
-        query = query.eq('stage', filter.stage);
-      }
-      if (filter?.source && filter.source !== 'all') {
-        query = query.eq('source', filter.source);
-      }
-      if (filter?.status && filter.status !== 'all') {
-        query = query.eq('status', filter.status);
-      }
-
-      const { data, error } = await query;
-
-      if (!error && data) {
-        leads = data.map((d) => ({
-          id: d.id,
-          name: d.name,
-          email: d.email || '',
-          phone: d.phone,
-          whatsapp: d.whatsapp,
-          country: d.country,
-          hotel: d.hotel,
-          source: (d.source as LeadSource) || 'Website',
-          interestedTourId: d.interested_tour_id,
-          interestedTourTitle: d.interested_tour_title,
-          destination: d.destination,
-          travelDate: d.travel_date,
-          numberOfGuests: d.number_of_guests || 1,
-          estimatedValue: Number(d.estimated_value) || 0,
-          currency: d.currency || 'EUR',
-          stage: (d.stage as LeadStage) || 'New',
-          status: d.status || 'active',
-          score: d.score !== undefined ? d.score : 50,
-          notes: d.notes,
-          tags: d.tags || [],
-          assignedStaffId: d.assigned_staff_id,
-          assignedStaffName: d.assigned_staff_name,
-          customerId: d.customer_id,
-          followUpDate: d.follow_up_date,
-          lastContactAt: d.last_contact_at,
-          contactAttemptsCount: d.contact_attempts_count || 0,
-          lostReason: d.lost_reason,
-          createdAt: d.created_at,
-          updatedAt: d.updated_at,
-        }));
-        setLocal(LOCAL_LEADS_KEY, leads);
-        return applyLeadClientFilters(leads, filter);
-      }
-    } catch {
-      // fallback to cached leads below
-    }
+  if (useLocalCrmData('Supabase is not configured; CRM leads cannot be loaded in production.')) {
+    return applyLeadClientFilters(getLocal<CrmLead[]>(LOCAL_LEADS_KEY, []), filter);
   }
 
-  leads = getLocal<CrmLead[]>(LOCAL_LEADS_KEY, []);
+  let query = supabase
+    .from('leads')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (filter?.stage && filter.stage !== 'all') query = query.eq('stage', filter.stage);
+  if (filter?.source && filter.source !== 'all') query = query.eq('source', filter.source);
+  if (filter?.status && filter.status !== 'all') query = query.eq('status', filter.status);
+
+  const { data, error } = await query;
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data) throw new Error('CRM leads could not be loaded from the database.');
+
+  const leads: CrmLead[] = data.map((d) => ({
+    id: d.id,
+    name: d.name,
+    email: d.email || '',
+    phone: d.phone,
+    whatsapp: d.whatsapp,
+    country: d.country,
+    hotel: d.hotel,
+    source: (d.source as LeadSource) || 'Website',
+    interestedTourId: d.interested_tour_id,
+    interestedTourTitle: d.interested_tour_title,
+    destination: d.destination,
+    travelDate: d.travel_date,
+    numberOfGuests: d.number_of_guests || 1,
+    estimatedValue: Number(d.estimated_value) || 0,
+    currency: d.currency || 'EUR',
+    stage: (d.stage as LeadStage) || 'New',
+    status: d.status || 'active',
+    score: d.score !== undefined ? d.score : 50,
+    notes: d.notes,
+    tags: d.tags || [],
+    assignedStaffId: d.assigned_staff_id,
+    assignedStaffName: d.assigned_staff_name,
+    customerId: d.customer_id,
+    followUpDate: d.follow_up_date,
+    lastContactAt: d.last_contact_at,
+    contactAttemptsCount: d.contact_attempts_count || 0,
+    lostReason: d.lost_reason,
+    createdAt: d.created_at,
+    updatedAt: d.updated_at,
+  }));
+  setLocal(LOCAL_LEADS_KEY, leads);
   return applyLeadClientFilters(leads, filter);
 }
 
@@ -187,7 +180,7 @@ function applyLeadClientFilters(
     if (filter?.stage && filter.stage !== 'all' && l.stage !== filter.stage) return false;
     if (filter?.source && filter.source !== 'all' && l.source !== filter.source) return false;
     if (filter?.status && filter.status !== 'all' && l.status !== filter.status) return false;
-    if (filter?.staff && filter.staff !== 'all' && l.assignedStaffName !== filter.staff) return false;
+    if (filter?.staff && filter.staff !== 'all' && l.assignedStaffId !== filter.staff) return false;
     if (filter?.tourId && filter.tourId !== 'all' && l.interestedTourId !== filter.tourId) return false;
     if (filter?.search) {
       const q = filter.search.toLowerCase();
@@ -205,6 +198,8 @@ function applyLeadClientFilters(
 }
 
 export async function createLead(input: Partial<CrmLead>): Promise<CrmLead> {
+  const localMode = useLocalCrmData('Supabase is not configured; CRM leads cannot be created in production.');
+  const now = new Date().toISOString();
   const newLead: CrmLead = {
     id: `lead-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
     name: input.name || 'Anonymous Inquiry',
@@ -219,7 +214,7 @@ export async function createLead(input: Partial<CrmLead>): Promise<CrmLead> {
     destination: input.destination || null,
     travelDate: input.travelDate || null,
     numberOfGuests: input.numberOfGuests || 2,
-    estimatedValue: input.estimatedValue !== undefined ? input.estimatedValue : 150,
+    estimatedValue: input.estimatedValue !== undefined ? input.estimatedValue : 0,
     currency: input.currency || 'EUR',
     stage: input.stage || 'New',
     status: 'active',
@@ -227,126 +222,116 @@ export async function createLead(input: Partial<CrmLead>): Promise<CrmLead> {
     notes: input.notes || null,
     tags: input.tags || [],
     assignedStaffId: input.assignedStaffId || null,
-    assignedStaffName: input.assignedStaffName || 'Captain Tarek',
+    assignedStaffName: input.assignedStaffName || null,
     customerId: input.customerId || null,
     followUpDate: input.followUpDate || null,
     lastContactAt: null,
     contactAttemptsCount: 0,
     lostReason: input.lostReason || null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
+    createdAt: now,
+    updatedAt: now,
   };
+
+  if (!localMode) {
+    const { data, error } = await supabase
+      .from('leads')
+      .insert({
+        name: newLead.name,
+        email: newLead.email,
+        phone: newLead.phone,
+        whatsapp: newLead.whatsapp,
+        country: newLead.country,
+        hotel: newLead.hotel,
+        source: newLead.source,
+        interested_tour_id: newLead.interestedTourId,
+        interested_tour_title: newLead.interestedTourTitle,
+        destination: newLead.destination,
+        travel_date: newLead.travelDate,
+        number_of_guests: newLead.numberOfGuests,
+        estimated_value: newLead.estimatedValue,
+        currency: newLead.currency,
+        stage: newLead.stage,
+        status: newLead.status,
+        score: newLead.score,
+        notes: newLead.notes,
+        tags: newLead.tags,
+        assigned_staff_name: newLead.assignedStaffName,
+        assigned_staff_id: newLead.assignedStaffId,
+        customer_id: newLead.customerId,
+        follow_up_date: newLead.followUpDate,
+      })
+      .select('*')
+      .single();
+
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The CRM lead was not saved; no database record was returned.');
+    newLead.id = data.id;
+    newLead.createdAt = data.created_at || now;
+    newLead.updatedAt = data.updated_at || now;
+  }
 
   const leads = getLocal<CrmLead[]>(LOCAL_LEADS_KEY, []);
   setLocal(LOCAL_LEADS_KEY, [newLead, ...leads]);
 
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('leads')
-        .insert({
-          name: newLead.name,
-          email: newLead.email,
-          phone: newLead.phone,
-          whatsapp: newLead.whatsapp,
-          country: newLead.country,
-          hotel: newLead.hotel,
-          source: newLead.source,
-          interested_tour_id: newLead.interestedTourId,
-          interested_tour_title: newLead.interestedTourTitle,
-          destination: newLead.destination,
-          travel_date: newLead.travelDate,
-          number_of_guests: newLead.numberOfGuests,
-          estimated_value: newLead.estimatedValue,
-          currency: newLead.currency,
-          stage: newLead.stage,
-          status: newLead.status,
-          score: newLead.score,
-          notes: newLead.notes,
-          tags: newLead.tags,
-          assigned_staff_name: newLead.assignedStaffName,
-          assigned_staff_id: newLead.assignedStaffId,
-          customer_id: newLead.customerId,
-          follow_up_date: newLead.followUpDate,
-        })
-        .select('*')
-        .maybeSingle();
-
-      if (error) {
-        throw new Error(formatSupabaseError(error));
-      }
-      if (data) {
-        newLead.id = data.id;
-      }
-    } catch (err: any) {
-      console.error('Error creating lead in Supabase:', err);
-      throw err;
-    }
-  }
-
-  // Record timeline activity
   await recordActivity({
     leadId: newLead.id,
     eventType: 'lead_created',
     title: 'Lead Created',
     description: `${newLead.name} added via ${newLead.source} for ${newLead.interestedTourTitle || 'excursion inquiry'}.`,
-    actor: newLead.assignedStaffName || 'Staff Member',
+    actor: newLead.assignedStaffName || 'Signed-in staff',
   });
 
   return newLead;
 }
 
 export async function updateLead(leadId: string, updates: Partial<CrmLead>): Promise<boolean> {
-  const leads = getLocal<CrmLead[]>(LOCAL_LEADS_KEY, []);
-  const updated = leads.map((l) =>
-    l.id === leadId
-      ? { ...l, ...updates, updatedAt: new Date().toISOString() }
-      : l
-  );
-  setLocal(LOCAL_LEADS_KEY, updated);
+  if (!leadId.trim()) throw new Error('A lead ID is required.');
+  const localMode = useLocalCrmData('Supabase is not configured; CRM leads cannot be updated in production.');
+  const now = new Date().toISOString();
 
-  if (isSupabaseConfigured()) {
-    try {
-      const { error } = await supabase
-        .from('leads')
-        .update({
-          name: updates.name,
-          email: updates.email,
-          phone: updates.phone,
-          whatsapp: updates.whatsapp,
-          country: updates.country,
-          hotel: updates.hotel,
-          source: updates.source,
-          interested_tour_id: updates.interestedTourId,
-          interested_tour_title: updates.interestedTourTitle,
-          destination: updates.destination,
-          travel_date: updates.travelDate,
-          number_of_guests: updates.numberOfGuests,
-          estimated_value: updates.estimatedValue,
-          currency: updates.currency,
-          stage: updates.stage,
-          status: updates.status,
-          score: updates.score,
-          notes: updates.notes,
-          tags: updates.tags,
-          assigned_staff_name: updates.assignedStaffName,
-          assigned_staff_id: updates.assignedStaffId,
-          customer_id: updates.customerId,
-          follow_up_date: updates.followUpDate,
-          lost_reason: updates.lostReason,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', leadId);
+  if (!localMode) {
+    const { data, error } = await supabase
+      .from('leads')
+      .update({
+        name: updates.name,
+        email: updates.email,
+        phone: updates.phone,
+        whatsapp: updates.whatsapp,
+        country: updates.country,
+        hotel: updates.hotel,
+        source: updates.source,
+        interested_tour_id: updates.interestedTourId,
+        interested_tour_title: updates.interestedTourTitle,
+        destination: updates.destination,
+        travel_date: updates.travelDate,
+        number_of_guests: updates.numberOfGuests,
+        estimated_value: updates.estimatedValue,
+        currency: updates.currency,
+        stage: updates.stage,
+        status: updates.status,
+        score: updates.score,
+        notes: updates.notes,
+        tags: updates.tags,
+        assigned_staff_name: updates.assignedStaffName,
+        assigned_staff_id: updates.assignedStaffId,
+        customer_id: updates.customerId,
+        follow_up_date: updates.followUpDate,
+        lost_reason: updates.lostReason,
+        updated_at: now,
+      })
+      .eq('id', leadId)
+      .select('id')
+      .maybeSingle();
 
-      if (error) {
-        throw new Error(formatSupabaseError(error));
-      }
-    } catch (err: any) {
-      console.error('Error updating lead in Supabase:', err);
-      throw err;
-    }
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The CRM lead was not updated because it no longer exists or is not accessible.');
   }
 
+  const leads = getLocal<CrmLead[]>(LOCAL_LEADS_KEY, []);
+  const updated = leads.map((lead) =>
+    lead.id === leadId ? { ...lead, ...updates, updatedAt: now } : lead
+  );
+  setLocal(LOCAL_LEADS_KEY, updated);
   return true;
 }
 
@@ -355,53 +340,37 @@ export async function updateLeadStage(
   newStage: LeadStage,
   lostReason?: string
 ): Promise<boolean> {
-  const leads = getLocal<CrmLead[]>(LOCAL_LEADS_KEY, []);
-  const target = leads.find((l) => l.id === leadId);
-  const oldStage = target?.stage || 'Unknown';
+  const leads = await listLeads();
+  const target = leads.find((lead) => lead.id === leadId);
+  if (!target) throw new Error('Lead not found or no longer accessible.');
+  const oldStage = target.stage;
   const status = newStage === 'Won' ? 'converted' : newStage === 'Lost' ? 'lost' : 'active';
+  const localMode = useLocalCrmData('Supabase is not configured; CRM lead stages cannot be updated in production.');
+  const now = new Date().toISOString();
 
-  const updated = leads.map((l) =>
-    l.id === leadId
-      ? {
-          ...l,
-          stage: newStage,
-          status: status as any,
-          lostReason: newStage === 'Lost' ? lostReason || l.lostReason : null,
-          updatedAt: new Date().toISOString(),
-        }
-      : l
-  );
-  setLocal(LOCAL_LEADS_KEY, updated);
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { error } = await supabase
-        .from('leads')
-        .update({
-          stage: newStage,
-          status,
-          lost_reason: newStage === 'Lost' ? lostReason : null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', leadId);
-
-      if (error) {
-        throw new Error(formatSupabaseError(error));
-      }
-    } catch (err: any) {
-      console.error('Error updating lead stage in Supabase:', err);
-      throw err;
-    }
+  if (!localMode) {
+    const { data, error } = await supabase
+      .from('leads')
+      .update({ stage: newStage, status, lost_reason: newStage === 'Lost' ? lostReason : null, updated_at: now })
+      .eq('id', leadId)
+      .select('id')
+      .maybeSingle();
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The lead stage was not updated because the lead no longer exists or is not accessible.');
   }
+
+  setLocal(LOCAL_LEADS_KEY, leads.map((lead) => lead.id === leadId
+    ? { ...lead, stage: newStage, status: status as any, lostReason: newStage === 'Lost' ? lostReason || lead.lostReason : null, updatedAt: now }
+    : lead
+  ));
 
   await recordActivity({
     leadId,
     eventType: 'stage_changed',
     title: `Stage Changed: ${newStage}`,
     description: `Lead moved from "${oldStage}" to "${newStage}"${lostReason ? ` (Reason: ${lostReason})` : ''}.`,
-    actor: 'Admin Staff',
+    actor: 'Signed-in staff',
   });
-
   return true;
 }
 
@@ -409,7 +378,7 @@ export async function recordLeadContactAttempt(
   leadId: string,
   channel: FollowUpChannel,
   notes: string,
-  staffName: string = 'Admin Staff'
+  staffName: string = 'Signed-in staff'
 ): Promise<boolean> {
   const leads = getLocal<CrmLead[]>(LOCAL_LEADS_KEY, []);
   const target = leads.find((l) => l.id === leadId);
@@ -433,24 +402,22 @@ export async function recordLeadContactAttempt(
 }
 
 export async function deleteLead(leadId: string): Promise<boolean> {
-  const leads = getLocal<CrmLead[]>(LOCAL_LEADS_KEY, []);
-  setLocal(
-    LOCAL_LEADS_KEY,
-    leads.filter((l) => l.id !== leadId)
-  );
+  if (!leadId.trim()) throw new Error('A lead ID is required.');
+  const localMode = useLocalCrmData('Supabase is not configured; CRM leads cannot be deleted in production.');
 
-  if (isSupabaseConfigured()) {
-    try {
-      const { error } = await supabase.from('leads').delete().eq('id', leadId);
-      if (error) {
-        throw new Error(formatSupabaseError(error));
-      }
-    } catch (err: any) {
-      console.error('Error deleting lead from Supabase:', err);
-      throw err;
-    }
+  if (!localMode) {
+    const { data, error } = await supabase
+      .from('leads')
+      .delete()
+      .eq('id', leadId)
+      .select('id')
+      .maybeSingle();
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The lead was not deleted because it no longer exists or is not accessible.');
   }
 
+  const leads = getLocal<CrmLead[]>(LOCAL_LEADS_KEY, []);
+  setLocal(LOCAL_LEADS_KEY, leads.filter((lead) => lead.id !== leadId));
   return true;
 }
 
@@ -745,106 +712,94 @@ export async function listConversations(filter?: {
   bookingId?: string;
   channel?: string;
 }): Promise<CrmConversationRecord[]> {
-  let conversations: CrmConversationRecord[] = [];
-
-  if (isSupabaseConfigured()) {
-    try {
-      let query = supabase
-        .from('crm_conversations')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (filter?.customerId) query = query.eq('customer_id', filter.customerId);
-      if (filter?.leadId) query = query.eq('lead_id', filter.leadId);
-      if (filter?.bookingId) query = query.eq('booking_id', filter.bookingId);
-      if (filter?.channel && filter.channel !== 'all') query = query.eq('channel', filter.channel);
-
-      const { data, error } = await query;
-      if (!error && data) {
-        conversations = data.map((d) => ({
-          id: d.id,
-          customerId: d.customer_id,
-          leadId: d.lead_id,
-          bookingId: d.booking_id,
-          channel: d.channel,
-          direction: d.direction,
-          senderIdentifier: d.sender_identifier,
-          recipientIdentifier: d.recipient_identifier,
-          subject: d.subject,
-          messageBody: d.message_body,
-          provider: d.provider as ConversationProvider,
-          providerMessageId: d.provider_message_id,
-          providerStatus: d.provider_status as ConversationProviderStatus,
-          errorDetails: d.error_details,
-          staffId: d.staff_id,
-          staffName: d.staff_name,
-          metadata: d.metadata,
-          createdAt: d.created_at,
-        }));
-        setLocal(LOCAL_CONVERSATIONS_KEY, conversations);
-        return conversations;
-      }
-    } catch {
-      // ignore
-    }
+  if (useLocalCrmData('Supabase is not configured; CRM conversations cannot be loaded in production.')) {
+    return getLocal<CrmConversationRecord[]>(LOCAL_CONVERSATIONS_KEY, []).filter((item) => {
+      if (filter?.customerId && item.customerId !== filter.customerId) return false;
+      if (filter?.leadId && item.leadId !== filter.leadId) return false;
+      if (filter?.bookingId && item.bookingId !== filter.bookingId) return false;
+      if (filter?.channel && filter.channel !== 'all' && item.channel !== filter.channel) return false;
+      return true;
+    });
   }
 
-  conversations = getLocal<CrmConversationRecord[]>(LOCAL_CONVERSATIONS_KEY, []);
-  return conversations.filter((c) => {
-    if (filter?.customerId && c.customerId !== filter.customerId) return false;
-    if (filter?.leadId && c.leadId !== filter.leadId) return false;
-    if (filter?.bookingId && c.bookingId !== filter.bookingId) return false;
-    if (filter?.channel && filter.channel !== 'all' && c.channel !== filter.channel) return false;
-    return true;
-  });
+  let query = supabase.from('crm_conversations').select('*').order('created_at', { ascending: false });
+  if (filter?.customerId) query = query.eq('customer_id', filter.customerId);
+  if (filter?.leadId) query = query.eq('lead_id', filter.leadId);
+  if (filter?.bookingId) query = query.eq('booking_id', filter.bookingId);
+  if (filter?.channel && filter.channel !== 'all') query = query.eq('channel', filter.channel);
+
+  const { data, error } = await query;
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data) throw new Error('CRM conversations could not be loaded from the database.');
+
+  const conversations: CrmConversationRecord[] = data.map((d) => ({
+    id: d.id,
+    customerId: d.customer_id,
+    leadId: d.lead_id,
+    bookingId: d.booking_id,
+    channel: d.channel,
+    direction: d.direction,
+    senderIdentifier: d.sender_identifier,
+    recipientIdentifier: d.recipient_identifier,
+    subject: d.subject,
+    messageBody: d.message_body,
+    provider: d.provider as ConversationProvider,
+    providerMessageId: d.provider_message_id,
+    providerStatus: d.provider_status as ConversationProviderStatus,
+    errorDetails: d.error_details,
+    staffId: d.staff_id,
+    staffName: d.staff_name,
+    metadata: d.metadata,
+    createdAt: d.created_at,
+  }));
+  setLocal(LOCAL_CONVERSATIONS_KEY, conversations);
+  return conversations;
 }
 
 export async function recordConversation(
   input: Omit<CrmConversationRecord, 'id' | 'createdAt'>
 ): Promise<CrmConversationRecord> {
+  const localMode = useLocalCrmData('Supabase is not configured; CRM conversations cannot be saved in production.');
+  const now = new Date().toISOString();
   const newRecord: CrmConversationRecord = {
     ...input,
     id: `conv-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
-    createdAt: new Date().toISOString(),
+    createdAt: now,
   };
+
+  if (!localMode) {
+    const { data, error } = await supabase
+      .from('crm_conversations')
+      .insert({
+        customer_id: newRecord.customerId,
+        lead_id: newRecord.leadId,
+        booking_id: newRecord.bookingId,
+        channel: newRecord.channel,
+        direction: newRecord.direction,
+        sender_identifier: newRecord.senderIdentifier,
+        recipient_identifier: newRecord.recipientIdentifier,
+        subject: newRecord.subject,
+        message_body: newRecord.messageBody,
+        provider: newRecord.provider,
+        provider_message_id: newRecord.providerMessageId,
+        provider_status: newRecord.providerStatus,
+        error_details: newRecord.errorDetails,
+        staff_name: newRecord.staffName,
+        staff_id: newRecord.staffId,
+        metadata: newRecord.metadata || {},
+      })
+      .select('*')
+      .single();
+
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The CRM conversation was not saved; no database record was returned.');
+    newRecord.id = data.id;
+    newRecord.createdAt = data.created_at || now;
+  }
 
   const list = getLocal<CrmConversationRecord[]>(LOCAL_CONVERSATIONS_KEY, []);
   setLocal(LOCAL_CONVERSATIONS_KEY, [newRecord, ...list]);
 
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('crm_conversations')
-        .insert({
-          customer_id: newRecord.customerId,
-          lead_id: newRecord.leadId,
-          booking_id: newRecord.bookingId,
-          channel: newRecord.channel,
-          direction: newRecord.direction,
-          sender_identifier: newRecord.senderIdentifier,
-          recipient_identifier: newRecord.recipientIdentifier,
-          subject: newRecord.subject,
-          message_body: newRecord.messageBody,
-          provider: newRecord.provider,
-          provider_message_id: newRecord.providerMessageId,
-          provider_status: newRecord.providerStatus,
-          error_details: newRecord.errorDetails,
-          staff_name: newRecord.staffName,
-          staff_id: newRecord.staffId,
-          metadata: newRecord.metadata || {},
-        })
-        .select('*')
-        .maybeSingle();
-
-      if (!error && data) {
-        newRecord.id = data.id;
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  // Also log to communications and activity
   await recordActivity({
     customerId: newRecord.customerId,
     leadId: newRecord.leadId,
@@ -866,53 +821,45 @@ export async function listCommunications(filter?: {
   customerId?: string;
   leadId?: string;
 }): Promise<CrmCommunication[]> {
-  let comms: CrmCommunication[] = [];
-
-  if (isSupabaseConfigured()) {
-    try {
-      let query = supabase
-        .from('crm_communications')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (filter?.customerId) query = query.eq('customer_id', filter.customerId);
-      if (filter?.leadId) query = query.eq('lead_id', filter.leadId);
-
-      const { data, error } = await query;
-      if (!error && data) {
-        comms = data.map((d) => ({
-          id: d.id,
-          customerId: d.customer_id,
-          customerName: d.customer_name,
-          leadId: d.lead_id,
-          bookingId: d.booking_id,
-          channel: (d.channel as CommChannel) || 'WhatsApp',
-          direction: (d.direction as 'inbound' | 'outbound') || 'outbound',
-          summary: d.summary,
-          content: d.content,
-          staffName: d.staff_name,
-          staffId: d.staff_id,
-          createdAt: d.created_at,
-        }));
-        setLocal(LOCAL_COMMS_KEY, comms);
-        return comms;
-      }
-    } catch {
-      // ignore
-    }
+  if (useLocalCrmData('Supabase is not configured; CRM communication logs cannot be loaded in production.')) {
+    return getLocal<CrmCommunication[]>(LOCAL_COMMS_KEY, []).filter((item) => {
+      if (filter?.customerId && item.customerId !== filter.customerId) return false;
+      if (filter?.leadId && item.leadId !== filter.leadId) return false;
+      return true;
+    });
   }
 
-  comms = getLocal<CrmCommunication[]>(LOCAL_COMMS_KEY, []);
-  return comms.filter((c) => {
-    if (filter?.customerId && c.customerId !== filter.customerId) return false;
-    if (filter?.leadId && c.leadId !== filter.leadId) return false;
-    return true;
-  });
+  let query = supabase.from('crm_communications').select('*').order('created_at', { ascending: false });
+  if (filter?.customerId) query = query.eq('customer_id', filter.customerId);
+  if (filter?.leadId) query = query.eq('lead_id', filter.leadId);
+
+  const { data, error } = await query;
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data) throw new Error('CRM communication logs could not be loaded from the database.');
+
+  const comms: CrmCommunication[] = data.map((d) => ({
+    id: d.id,
+    customerId: d.customer_id,
+    customerName: d.customer_name,
+    leadId: d.lead_id,
+    bookingId: d.booking_id,
+    channel: (d.channel as CommChannel) || 'WhatsApp',
+    direction: (d.direction as 'inbound' | 'outbound') || 'outbound',
+    summary: d.summary,
+    content: d.content,
+    staffName: d.staff_name,
+    staffId: d.staff_id,
+    createdAt: d.created_at,
+  }));
+  setLocal(LOCAL_COMMS_KEY, comms);
+  return comms;
 }
 
 export async function recordCommunication(
   input: Partial<CrmCommunication>
 ): Promise<CrmCommunication> {
+  const localMode = useLocalCrmData('Supabase is not configured; CRM communication logs cannot be saved in production.');
+  const now = new Date().toISOString();
   const newComm: CrmCommunication = {
     id: `comm-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
     customerId: input.customerId || null,
@@ -923,39 +870,37 @@ export async function recordCommunication(
     direction: input.direction || 'outbound',
     summary: input.summary || 'Client Contact',
     content: input.content || null,
-    staffName: input.staffName || 'Admin Staff',
+    staffName: input.staffName || 'Signed-in staff',
     staffId: input.staffId || null,
-    createdAt: new Date().toISOString(),
+    createdAt: now,
   };
+
+  if (!localMode) {
+    const { data, error } = await supabase
+      .from('crm_communications')
+      .insert({
+        customer_id: newComm.customerId,
+        customer_name: newComm.customerName,
+        lead_id: newComm.leadId,
+        booking_id: newComm.bookingId,
+        channel: newComm.channel,
+        direction: newComm.direction,
+        summary: newComm.summary,
+        content: newComm.content,
+        staff_name: newComm.staffName,
+        staff_id: newComm.staffId,
+      })
+      .select('*')
+      .single();
+
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The CRM communication was not saved; no database record was returned.');
+    newComm.id = data.id;
+    newComm.createdAt = data.created_at || now;
+  }
 
   const comms = getLocal<CrmCommunication[]>(LOCAL_COMMS_KEY, []);
   setLocal(LOCAL_COMMS_KEY, [newComm, ...comms]);
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('crm_communications')
-        .insert({
-          customer_id: newComm.customerId,
-          customer_name: newComm.customerName,
-          lead_id: newComm.leadId,
-          booking_id: newComm.bookingId,
-          channel: newComm.channel,
-          direction: newComm.direction,
-          summary: newComm.summary,
-          content: newComm.content,
-          staff_name: newComm.staffName,
-        })
-        .select('*')
-        .maybeSingle();
-
-      if (!error && data) {
-        newComm.id = data.id;
-      }
-    } catch {
-      // ignore
-    }
-  }
 
   await recordActivity({
     customerId: newComm.customerId,
@@ -973,45 +918,35 @@ export async function listNotes(filter?: {
   customerId?: string;
   leadId?: string;
 }): Promise<CrmNote[]> {
-  let notes: CrmNote[] = [];
-
-  if (isSupabaseConfigured()) {
-    try {
-      let query = supabase
-        .from('crm_notes')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (filter?.customerId) query = query.eq('customer_id', filter.customerId);
-      if (filter?.leadId) query = query.eq('lead_id', filter.leadId);
-
-      const { data, error } = await query;
-      if (!error && data) {
-        notes = data.map((d) => ({
-          id: d.id,
-          customerId: d.customer_id,
-          leadId: d.lead_id,
-          bookingId: d.booking_id,
-          content: d.content,
-          staffName: d.staff_name,
-          staffId: d.staff_id,
-          isPinned: Boolean(d.is_pinned),
-          createdAt: d.created_at,
-        }));
-        setLocal(LOCAL_NOTES_KEY, notes);
-        return notes;
-      }
-    } catch {
-      // ignore
-    }
+  if (useLocalCrmData('Supabase is not configured; CRM notes cannot be loaded in production.')) {
+    return getLocal<CrmNote[]>(LOCAL_NOTES_KEY, []).filter((item) => {
+      if (filter?.customerId && item.customerId !== filter.customerId) return false;
+      if (filter?.leadId && item.leadId !== filter.leadId) return false;
+      return true;
+    });
   }
 
-  notes = getLocal<CrmNote[]>(LOCAL_NOTES_KEY, []);
-  return notes.filter((n) => {
-    if (filter?.customerId && n.customerId !== filter.customerId) return false;
-    if (filter?.leadId && n.leadId !== filter.leadId) return false;
-    return true;
-  });
+  let query = supabase.from('crm_notes').select('*').order('created_at', { ascending: false });
+  if (filter?.customerId) query = query.eq('customer_id', filter.customerId);
+  if (filter?.leadId) query = query.eq('lead_id', filter.leadId);
+
+  const { data, error } = await query;
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data) throw new Error('CRM notes could not be loaded from the database.');
+
+  const notes: CrmNote[] = data.map((d) => ({
+    id: d.id,
+    customerId: d.customer_id,
+    leadId: d.lead_id,
+    bookingId: d.booking_id,
+    content: d.content,
+    staffName: d.staff_name,
+    staffId: d.staff_id,
+    isPinned: Boolean(d.is_pinned),
+    createdAt: d.created_at,
+  }));
+  setLocal(LOCAL_NOTES_KEY, notes);
+  return notes;
 }
 
 export async function addStaffNote(input: {
@@ -1020,44 +955,46 @@ export async function addStaffNote(input: {
   bookingId?: string;
   content: string;
   staffName?: string;
+  staffId?: string | null;
   isPinned?: boolean;
 }): Promise<CrmNote> {
+  const localMode = useLocalCrmData('Supabase is not configured; CRM notes cannot be saved in production.');
+  const now = new Date().toISOString();
   const newNote: CrmNote = {
     id: `note-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
     customerId: input.customerId || null,
     leadId: input.leadId || null,
     bookingId: input.bookingId || null,
     content: input.content,
-    staffName: input.staffName || 'Staff Member',
+    staffName: input.staffName || 'Signed-in staff',
+    staffId: input.staffId || null,
     isPinned: Boolean(input.isPinned),
-    createdAt: new Date().toISOString(),
+    createdAt: now,
   };
+
+  if (!localMode) {
+    const { data, error } = await supabase
+      .from('crm_notes')
+      .insert({
+        customer_id: newNote.customerId,
+        lead_id: newNote.leadId,
+        booking_id: newNote.bookingId,
+        content: newNote.content,
+        staff_name: newNote.staffName,
+        staff_id: newNote.staffId,
+        is_pinned: newNote.isPinned,
+      })
+      .select('*')
+      .single();
+
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The CRM note was not saved; no database record was returned.');
+    newNote.id = data.id;
+    newNote.createdAt = data.created_at || now;
+  }
 
   const notes = getLocal<CrmNote[]>(LOCAL_NOTES_KEY, []);
   setLocal(LOCAL_NOTES_KEY, [newNote, ...notes]);
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('crm_notes')
-        .insert({
-          customer_id: newNote.customerId,
-          lead_id: newNote.leadId,
-          booking_id: newNote.bookingId,
-          content: newNote.content,
-          staff_name: newNote.staffName,
-          is_pinned: newNote.isPinned,
-        })
-        .select('*')
-        .maybeSingle();
-
-      if (!error && data) {
-        newNote.id = data.id;
-      }
-    } catch {
-      // ignore
-    }
-  }
 
   await recordActivity({
     customerId: newNote.customerId,
@@ -1076,6 +1013,8 @@ export async function addStaffNote(input: {
 // ------------------------------------------------------------------------------
 
 export async function recordActivity(input: Partial<CrmActivity>): Promise<CrmActivity> {
+  const localMode = useLocalCrmData('Supabase is not configured; CRM activity cannot be recorded in production.');
+  const now = new Date().toISOString();
   const newAct: CrmActivity = {
     id: `act-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
     customerId: input.customerId || null,
@@ -1086,76 +1025,66 @@ export async function recordActivity(input: Partial<CrmActivity>): Promise<CrmAc
     description: input.description || null,
     actor: input.actor || 'System',
     metadata: input.metadata || {},
-    createdAt: new Date().toISOString(),
+    createdAt: now,
   };
+
+  if (!localMode) {
+    const { data, error } = await supabase
+      .from('crm_activities')
+      .insert({
+        customer_id: newAct.customerId,
+        lead_id: newAct.leadId,
+        booking_id: newAct.bookingId,
+        event_type: newAct.eventType,
+        title: newAct.title,
+        description: newAct.description,
+        actor: newAct.actor,
+        metadata: newAct.metadata,
+      })
+      .select('*')
+      .single();
+
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The CRM activity was not saved; no database record was returned.');
+    newAct.id = data.id;
+    newAct.createdAt = data.created_at || now;
+  }
 
   const activities = getLocal<CrmActivity[]>(LOCAL_ACTIVITIES_KEY, []);
   setLocal(LOCAL_ACTIVITIES_KEY, [newAct, ...activities]);
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('crm_activities')
-        .insert({
-          customer_id: newAct.customerId,
-          lead_id: newAct.leadId,
-          booking_id: newAct.bookingId,
-          event_type: newAct.eventType,
-          title: newAct.title,
-          description: newAct.description,
-          actor: newAct.actor,
-          metadata: newAct.metadata,
-        })
-        .select('*')
-        .maybeSingle();
-
-      if (!error && data) {
-        newAct.id = data.id;
-      }
-    } catch {
-      // ignore
-    }
-  }
-
   return newAct;
 }
 
 export const logActivity = recordActivity;
 
 export async function getGlobalActivityTimeline(limit: number = 60): Promise<CrmActivity[]> {
-  let activities: CrmActivity[] = [];
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('crm_activities')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(limit);
-
-      if (!error && data) {
-        activities = data.map((d) => ({
-          id: d.id,
-          customerId: d.customer_id,
-          leadId: d.lead_id,
-          bookingId: d.booking_id,
-          eventType: d.event_type,
-          title: d.title,
-          description: d.description,
-          actor: d.actor,
-          metadata: d.metadata,
-          createdAt: d.created_at,
-        }));
-        setLocal(LOCAL_ACTIVITIES_KEY, activities);
-        return activities;
-      }
-    } catch {
-      // ignore
-    }
+  if (useLocalCrmData('Supabase is not configured; CRM activity cannot be loaded in production.')) {
+    return getLocal<CrmActivity[]>(LOCAL_ACTIVITIES_KEY, []).slice(0, limit);
   }
 
-  activities = getLocal<CrmActivity[]>(LOCAL_ACTIVITIES_KEY, []);
-  return activities.slice(0, limit);
+  const { data, error } = await supabase
+    .from('crm_activities')
+    .select('*')
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data) throw new Error('CRM activity could not be loaded from the database.');
+
+  const activities: CrmActivity[] = data.map((d) => ({
+    id: d.id,
+    customerId: d.customer_id,
+    leadId: d.lead_id,
+    bookingId: d.booking_id,
+    eventType: d.event_type,
+    title: d.title,
+    description: d.description,
+    actor: d.actor,
+    metadata: d.metadata,
+    createdAt: d.created_at,
+  }));
+  setLocal(LOCAL_ACTIVITIES_KEY, activities);
+  return activities;
 }
 
 // ------------------------------------------------------------------------------
@@ -1174,58 +1103,54 @@ export async function listCrmCustomers(
 
   const customerMap = new Map<string, CrmCustomerDetail>();
 
-  // Fetch registered customers from Supabase if configured
-  if (isSupabaseConfigured()) {
-    try {
-      const { data: dbCustomers } = await supabase
-        .from('customers')
-        .select('*')
-        .order('created_at', { ascending: false });
+  // Registered customer records are authoritative; database failures are never hidden by browser cache data.
+  if (!useLocalCrmData('Supabase is not configured; CRM customer records cannot be loaded in production.')) {
+    const { data: dbCustomers, error } = await supabase
+      .from('customers')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!dbCustomers) throw new Error('CRM customer records could not be loaded from the database.');
 
-      if (dbCustomers) {
-        dbCustomers.forEach((c) => {
-          const email = (c.email || '').toLowerCase().trim();
-          if (!email) return;
+    dbCustomers.forEach((c) => {
+      const email = (c.email || '').toLowerCase().trim();
+      if (!email) return;
 
-          customerMap.set(email, {
-            id: c.id,
-            fullName: `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Traveler',
-            firstName: c.first_name,
-            lastName: c.last_name,
-            email,
-            phone: c.phone || null,
-            whatsapp: c.whatsapp || null,
-            country: c.country || null,
-            hotel: c.hotel || null,
-            notes: c.notes || null,
-            tags: c.tags || ['Customer'],
-            status: (c.status as any) || 'active',
-            firstBookingDate: c.first_booking_date || null,
-            latestBookingDate: c.latest_booking_date || null,
-            upcomingBookingDate: c.upcoming_booking_date || null,
-            totalBookings: c.total_bookings_count || 0,
-            completedBookings: c.completed_bookings_count || 0,
-            cancelledBookings: c.cancelled_bookings_count || 0,
-            totalRevenue: Number(c.total_revenue) || 0,
-            outstandingAmount: Number(c.outstanding_amount) || 0,
-            lastContactDate: c.last_contact_at || c.created_at,
-            source: c.source || 'Website Booking',
-            createdAt: c.created_at || new Date().toISOString(),
-            role: 'customer',
-            isRegistered: Boolean(c.user_id),
-            bookings: [],
-            inquiries: [],
-            communications: [],
-            staffNotes: [],
-            tasks: [],
-            activities: [],
-            reviews: [],
-          });
-        });
-      }
-    } catch {
-      // continue with bookings aggregation
-    }
+      customerMap.set(email, {
+        id: c.id,
+        fullName: `${c.first_name || ''} ${c.last_name || ''}`.trim() || 'Traveler',
+        firstName: c.first_name,
+        lastName: c.last_name,
+        email,
+        phone: c.phone || null,
+        whatsapp: c.whatsapp || null,
+        country: c.country || null,
+        hotel: c.hotel || null,
+        notes: c.notes || null,
+        tags: c.tags || ['Customer'],
+        status: (c.status as any) || 'active',
+        firstBookingDate: c.first_booking_date || null,
+        latestBookingDate: c.latest_booking_date || null,
+        upcomingBookingDate: c.upcoming_booking_date || null,
+        totalBookings: c.total_bookings_count || 0,
+        completedBookings: c.completed_bookings_count || 0,
+        cancelledBookings: c.cancelled_bookings_count || 0,
+        totalRevenue: Number(c.total_revenue) || 0,
+        outstandingAmount: Number(c.outstanding_amount) || 0,
+        lastContactDate: c.last_contact_at || c.created_at,
+        source: c.source || 'Website Booking',
+        createdAt: c.created_at || new Date().toISOString(),
+        role: 'customer',
+        isRegistered: Boolean(c.user_id),
+        bookings: [],
+        inquiries: [],
+        communications: [],
+        staffNotes: [],
+        tasks: [],
+        activities: [],
+        reviews: [],
+      });
+    });
   }
 
   // Correlate Bookings
@@ -1425,6 +1350,96 @@ export async function getCustomerProfile(idOrEmail: string): Promise<CrmCustomer
     (l) => l.customerId === found.id || l.email.toLowerCase() === found.email.toLowerCase()
   );
 
+  const localMode = useLocalCrmData('Supabase is not configured; the customer financial and review history cannot be loaded in production.');
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  const bookingIds = found.bookings
+    .map((booking) => booking.bookingId)
+    .filter((id): id is string => Boolean(id && uuidPattern.test(id)));
+  let payments: any[] = [];
+  let refunds: any[] = [];
+  let reviews: any[] = [];
+
+  if (!localMode) {
+    let paymentQuery = supabase.from('payment_transactions').select('*').order('payment_date', { ascending: false });
+    let refundQuery = supabase.from('refund_records').select('*').order('created_at', { ascending: false });
+    const customerUuid = uuidPattern.test(found.id) ? found.id : null;
+    const bookingFilter = bookingIds.length ? `booking_id.in.(${bookingIds.join(',')})` : '';
+
+    if (customerUuid && bookingFilter) {
+      paymentQuery = paymentQuery.or(`customer_id.eq.${customerUuid},${bookingFilter}`);
+      refundQuery = refundQuery.or(`customer_id.eq.${customerUuid},${bookingFilter}`);
+    } else if (customerUuid) {
+      paymentQuery = paymentQuery.eq('customer_id', customerUuid);
+      refundQuery = refundQuery.eq('customer_id', customerUuid);
+    } else if (bookingIds.length) {
+      paymentQuery = paymentQuery.in('booking_id', bookingIds);
+      refundQuery = refundQuery.in('booking_id', bookingIds);
+    } else {
+      paymentQuery = paymentQuery.eq('customer_email', found.email);
+      refundQuery = refundQuery.eq('customer_email', found.email);
+    }
+
+    const [paymentResult, refundResult, reviewResult] = await Promise.all([
+      paymentQuery,
+      refundQuery,
+      supabase.from('reviews').select('*').ilike('author_name', found.fullName).order('created_at', { ascending: false }),
+    ]);
+    if (paymentResult.error) throw new Error(formatSupabaseError(paymentResult.error));
+    if (refundResult.error) throw new Error(formatSupabaseError(refundResult.error));
+    if (reviewResult.error) throw new Error(formatSupabaseError(reviewResult.error));
+    payments = paymentResult.data || [];
+    refunds = refundResult.data || [];
+    reviews = reviewResult.data || [];
+  } else {
+    const parseLocal = (keys: string[]) => {
+      for (const key of keys) {
+        const raw = localStorage.getItem(key);
+        if (raw) {
+          try { return JSON.parse(raw); } catch { return []; }
+        }
+      }
+      return [];
+    };
+    const matchesBooking = (item: any) =>
+      item.customerId === found.id ||
+      item.customerEmail?.toLowerCase() === found.email.toLowerCase() ||
+      found.bookings.some((booking) => booking.bookingReference === item.bookingReference || booking.bookingId === item.bookingId);
+    payments = parseLocal(['rse_fin_payments', 'rse_finance_payments']).filter(matchesBooking);
+    refunds = parseLocal(['rse_fin_refunds', 'rse_finance_refunds']).filter(matchesBooking);
+    reviews = parseLocal(['rse_tour_reviews']).filter((review: any) =>
+      review.authorName?.toLowerCase() === found.fullName.toLowerCase() ||
+      review.authorEmail?.toLowerCase() === found.email.toLowerCase()
+    );
+  }
+
+  found.payments = payments.map((row) => ({
+    id: row.id,
+    bookingId: row.booking_id || row.bookingId,
+    bookingReference: row.booking_reference || row.bookingReference,
+    amount: Number(row.amount) || 0,
+    currency: row.currency || 'EUR',
+    paymentMethod: row.payment_method || row.paymentMethod,
+    paymentStatus: row.status || row.paymentStatus || 'pending',
+    transactionReference: row.transaction_reference || row.transactionReference,
+    paymentDate: row.payment_date || row.paymentDate || row.created_at || row.createdAt,
+    provider: row.provider,
+    isManual: row.is_manual ?? row.isManual,
+    recordedBy: row.recorded_by || row.recordedBy,
+    notes: row.notes,
+  }));
+  found.reviews = reviews.map((row) => ({
+    id: row.id,
+    tourId: row.tour_id || row.tourId,
+    tourTitle: found.bookings.find((booking) => booking.tourId === (row.tour_id || row.tourId))?.tourTitle || row.tourTitle || 'Tour Experience',
+    authorName: row.author_name || row.authorName || found.fullName,
+    country: row.country,
+    rating: Number(row.rating) || 0,
+    comment: row.comment || '',
+    date: row.date || row.created_at || row.createdAt,
+    verifiedBooking: row.verified_booking ?? row.verifiedBooking ?? false,
+    isPublished: row.is_published ?? row.isPublished ?? false,
+  }));
+
   // Synthesize complete unified chronological timeline covering all 11 categories:
   // Inquiry, Lead, Booking, Payment, Communication, Task, Follow-up, Departure, Cancellation, Refund, Review
   const customerActivities: CrmActivity[] = [...activities.filter((a) => a.customerId === found.id)];
@@ -1497,20 +1512,6 @@ export async function getCustomerProfile(idOrEmail: string): Promise<CrmCustomer
       createdAt: b.date || b.createdAt,
     });
 
-    // 4. PAYMENT EVENT
-    if (b.paymentStatus === 'paid' || b.paymentStatus === 'partially_paid') {
-      customerActivities.push({
-        id: `act-pay-${b.bookingReference}`,
-        customerId: found.id,
-        bookingId: b.bookingId || b.bookingReference,
-        eventType: 'payment_recorded',
-        title: `Payment Settled: €${b.pricing?.totalEur || 0}`,
-        description: `Settled via ${b.paymentMethod === 'pay_online' ? 'Online Card' : 'Pier Cash/Mobile POS'}.`,
-        actor: 'Accounting Desk',
-        createdAt: b.date || b.createdAt,
-      });
-    }
-
     // 9. CANCELLATION EVENT
     if (b.status === 'cancelled' || b.status === 'cancellation_requested') {
       customerActivities.push({
@@ -1552,51 +1553,46 @@ export async function getCustomerProfile(idOrEmail: string): Promise<CrmCustomer
     });
   });
 
-  // 10. REFUNDS
-  try {
-    const rawRefunds = localStorage.getItem('rse_fin_refunds') || localStorage.getItem('rse_finance_refunds');
-    if (rawRefunds) {
-      const refunds = JSON.parse(rawRefunds);
-      refunds.forEach((r: any) => {
-        if (
-          r.customerId === found.id ||
-          found.bookings.some((b) => b.bookingReference === r.bookingReference || b.bookingId === r.bookingId)
-        ) {
-          customerActivities.push({
-            id: `act-ref-${r.id}`,
-            customerId: found.id,
-            bookingId: r.bookingId,
-            eventType: 'refund',
-            title: `Refund (${r.status}): €${r.approvedAmount || r.amount}`,
-            description: `Reason: ${r.reason}. Method: ${r.paymentMethod || 'Original Method'}.`,
-            actor: 'Finance Dept',
-            createdAt: r.createdAt || new Date().toISOString(),
-          });
-        }
-      });
-    }
-  } catch {}
+  // 4. PAYMENTS: use actual payment transactions, not booking payment-status snapshots.
+  payments.forEach((payment) => {
+    customerActivities.push({
+      id: `act-pay-${payment.id}`,
+      customerId: found.id,
+      bookingId: payment.booking_id || payment.bookingId,
+      eventType: 'payment_recorded',
+      title: `Payment ${payment.status || payment.paymentStatus || 'recorded'}: ${payment.amount} ${payment.currency || 'EUR'}`,
+      description: `Method: ${payment.payment_method || payment.paymentMethod || 'Not specified'}. Reference: ${payment.transaction_reference || payment.transactionReference || 'Not provided'}.`,
+      actor: payment.recorded_by || payment.recordedBy || 'Finance',
+      createdAt: payment.payment_date || payment.paymentDate || payment.created_at || payment.createdAt || new Date().toISOString(),
+    });
+  });
 
-  // 11. REVIEWS
-  try {
-    const rawReviews = localStorage.getItem('rse_tour_reviews');
-    if (rawReviews) {
-      const revs = JSON.parse(rawReviews);
-      revs.forEach((rv: any) => {
-        if (rv.authorName?.toLowerCase() === found.fullName.toLowerCase() || rv.authorEmail?.toLowerCase() === found.email.toLowerCase()) {
-          customerActivities.push({
-            id: `act-rev-${rv.id}`,
-            customerId: found.id,
-            eventType: 'review',
-            title: `Customer Review (${rv.rating}★): ${rv.tourTitle || 'Tour Experience'}`,
-            description: rv.comment || 'Verified traveler feedback.',
-            actor: found.fullName,
-            createdAt: rv.date || rv.createdAt || new Date().toISOString(),
-          });
-        }
-      });
-    }
-  } catch {}
+  // 10. REFUNDS: load the authoritative refund ledger from Supabase in production.
+  refunds.forEach((refund) => {
+    customerActivities.push({
+      id: `act-ref-${refund.id}`,
+      customerId: found.id,
+      bookingId: refund.booking_id || refund.bookingId,
+      eventType: 'refund',
+      title: `Refund (${refund.status}): ${refund.approved_amount ?? refund.approvedAmount ?? refund.requested_amount ?? refund.amount} ${refund.currency || 'EUR'}`,
+      description: `Reason: ${refund.reason}. Method: ${refund.refund_method || refund.paymentMethod || 'Original Method'}.`,
+      actor: refund.processed_by || refund.processedBy || refund.requested_by || 'Finance',
+      createdAt: refund.processed_date || refund.processedDate || refund.created_at || refund.createdAt || new Date().toISOString(),
+    });
+  });
+
+  // 11. REVIEWS: expose the actual review rows on the customer profile and timeline.
+  found.reviews.forEach((review: any) => {
+    customerActivities.push({
+      id: `act-rev-${review.id}`,
+      customerId: found.id,
+      eventType: 'review',
+      title: `Customer Review (${review.rating}★): ${review.tourTitle || 'Tour Experience'}`,
+      description: review.comment || 'Verified traveler feedback.',
+      actor: review.authorName || found.fullName,
+      createdAt: review.date || new Date().toISOString(),
+    });
+  });
 
   // Deduplicate activities by id and sort in descending chronological order
   const seenIds = new Set<string>();
@@ -1623,71 +1619,73 @@ export async function createCustomer(input: {
   tags?: string[];
 }): Promise<CrmCustomerDetail> {
   const email = input.email.toLowerCase().trim();
+  const localMode = useLocalCrmData('Supabase is not configured; CRM customers cannot be created in production.');
 
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('customers')
-        .insert({
-          first_name: input.firstName,
-          last_name: input.lastName,
-          email,
-          phone: input.phone,
-          whatsapp: input.whatsapp,
-          country: input.country,
-          hotel: input.hotel,
-          notes: input.notes,
-          tags: input.tags || ['Customer'],
-          source: 'Manual Admin Entry',
-        })
-        .select('*')
-        .maybeSingle();
+  if (!localMode) {
+    const { data, error } = await supabase
+      .from('customers')
+      .insert({
+        first_name: input.firstName,
+        last_name: input.lastName,
+        email,
+        phone: input.phone,
+        whatsapp: input.whatsapp,
+        country: input.country,
+        hotel: input.hotel,
+        notes: input.notes,
+        tags: input.tags || ['Customer'],
+        source: 'Manual Admin Entry',
+      })
+      .select('id')
+      .single();
 
-      if (!error && data) {
-        return (await getCustomerProfile(data.id))!;
-      }
-    } catch {
-      // ignore
-    }
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data?.id) throw new Error('The customer was not saved; no database record was returned.');
+    const profile = await getCustomerProfile(data.id);
+    if (!profile) throw new Error('The customer was saved but could not be reloaded.');
+    return profile;
   }
 
-  // Update local extra
   await updateCustomerMetadata(email, {
     notes: input.notes,
     tags: input.tags || ['Customer'],
     source: 'Manual Admin Entry',
   });
-
-  return (await getCustomerProfile(email))!;
+  const profile = await getCustomerProfile(email);
+  if (!profile) throw new Error('The customer profile could not be created in the development data store.');
+  return profile;
 }
 
 export async function updateCustomerMetadata(
   email: string,
   updates: { notes?: string; tags?: string[]; source?: string; hotel?: string; country?: string }
 ): Promise<void> {
-  const extra = getLocal<Record<string, any>>(LOCAL_CUSTOMERS_EXTRA_KEY, {});
-  extra[email.toLowerCase()] = {
-    ...(extra[email.toLowerCase()] || {}),
-    ...updates,
-  };
-  setLocal(LOCAL_CUSTOMERS_EXTRA_KEY, extra);
+  const cleanEmail = email.toLowerCase().trim();
+  if (!cleanEmail) throw new Error('A customer email is required to update CRM metadata.');
+  const localMode = useLocalCrmData('Supabase is not configured; CRM customer metadata cannot be saved in production.');
 
-  if (isSupabaseConfigured()) {
-    try {
-      await supabase
-        .from('customers')
-        .update({
-          notes: updates.notes,
-          tags: updates.tags,
-          hotel: updates.hotel,
-          country: updates.country,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('email', email.toLowerCase());
-    } catch {
-      // ignore
-    }
+  if (!localMode) {
+    const { data, error } = await supabase
+      .from('customers')
+      .update({
+        notes: updates.notes,
+        tags: updates.tags,
+        hotel: updates.hotel,
+        country: updates.country,
+        source: updates.source,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('email', cleanEmail)
+      .select('id')
+      .maybeSingle();
+
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The customer metadata was not saved because the customer record was not found or is not accessible.');
   }
+
+  const extra = getLocal<Record<string, any>>(LOCAL_CUSTOMERS_EXTRA_KEY, {});
+  extra[cleanEmail] = { ...(extra[cleanEmail] || {}), ...updates };
+  setLocal(LOCAL_CUSTOMERS_EXTRA_KEY, extra);
 }
 
 // ------------------------------------------------------------------------------
@@ -1695,26 +1693,24 @@ export async function updateCustomerMetadata(
 // ------------------------------------------------------------------------------
 
 export async function listCrmTags(): Promise<CrmTag[]> {
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase.from('crm_tags').select('*').order('name');
-      if (!error && data && data.length > 0) {
-        return data.map((d) => ({
-          id: d.id,
-          name: d.name,
-          description: d.description,
-          color: d.color,
-          category: d.category,
-          usageCount: d.usage_count || 0,
-          createdAt: d.created_at,
-        }));
-      }
-    } catch {
-      // ignore
-    }
+  if (useLocalCrmData('Supabase is not configured; CRM tags cannot be loaded in production.')) {
+    return getLocal<CrmTag[]>(LOCAL_TAGS_KEY, DEFAULT_TAGS);
   }
 
-  return getLocal<CrmTag[]>(LOCAL_TAGS_KEY, DEFAULT_TAGS);
+  const { data, error } = await supabase.from('crm_tags').select('*').order('name');
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data) throw new Error('CRM tags could not be loaded from the database.');
+  const tags = data.map((d) => ({
+    id: d.id,
+    name: d.name,
+    description: d.description,
+    color: d.color,
+    category: d.category,
+    usageCount: d.usage_count || 0,
+    createdAt: d.created_at,
+  }));
+  setLocal(LOCAL_TAGS_KEY, tags);
+  return tags;
 }
 
 export async function createCrmTag(input: {
@@ -1723,6 +1719,7 @@ export async function createCrmTag(input: {
   color?: string;
   category?: 'tier' | 'loyalty' | 'interest' | 'general';
 }): Promise<CrmTag> {
+  const localMode = useLocalCrmData('Supabase is not configured; CRM tags cannot be created in production.');
   const newTag: CrmTag = {
     id: `tag-${Date.now().toString(36)}`,
     name: input.name.toLowerCase().replace(/\s+/g, '_'),
@@ -1733,30 +1730,25 @@ export async function createCrmTag(input: {
     createdAt: new Date().toISOString(),
   };
 
-  const tags = getLocal<CrmTag[]>(LOCAL_TAGS_KEY, DEFAULT_TAGS);
-  setLocal(LOCAL_TAGS_KEY, [newTag, ...tags]);
-
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase
-        .from('crm_tags')
-        .insert({
-          name: newTag.name,
-          description: newTag.description,
-          color: newTag.color,
-          category: newTag.category,
-        })
-        .select('*')
-        .maybeSingle();
-
-      if (!error && data) {
-        newTag.id = data.id;
-      }
-    } catch {
-      // ignore
-    }
+  if (!localMode) {
+    const { data, error } = await supabase
+      .from('crm_tags')
+      .insert({
+        name: newTag.name,
+        description: newTag.description,
+        color: newTag.color,
+        category: newTag.category,
+      })
+      .select('*')
+      .single();
+    if (error) throw new Error(formatSupabaseError(error));
+    if (!data) throw new Error('The CRM tag was not saved; no database record was returned.');
+    newTag.id = data.id;
+    newTag.createdAt = data.created_at || newTag.createdAt;
   }
 
+  const tags = getLocal<CrmTag[]>(LOCAL_TAGS_KEY, []);
+  setLocal(LOCAL_TAGS_KEY, [newTag, ...tags]);
   return newTag;
 }
 
@@ -1921,82 +1913,66 @@ export async function convertInquiryToLead(inquiry: any): Promise<CrmLead> {
 
 export async function convertLeadToCustomer(leadId: string): Promise<string> {
   const leads = await listLeads();
-  const lead = leads.find((l) => l.id === leadId);
-  if (!lead) throw new Error('Lead not found');
+  const lead = leads.find((item) => item.id === leadId);
+  if (!lead) throw new Error('Lead not found.');
 
   const cleanEmail = lead.email.trim().toLowerCase();
   const cleanPhone = lead.phone?.trim() || null;
   let customerId: string | null = lead.customerId || null;
+  const localMode = useLocalCrmData('Supabase is not configured; lead conversion cannot run in production.');
 
-  // 1. Deduplication: Check if customer already exists in database or cache
-  if (!customerId && isSupabaseConfigured()) {
-    try {
-      const { data: existingCust } = await supabase
-        .from('customers')
-        .select('id, hotel, phone')
-        .eq('email', cleanEmail)
-        .maybeSingle();
-
-      if (existingCust?.id) {
-        customerId = existingCust.id;
-      } else if (cleanPhone) {
-        const { data: byPhone } = await supabase
-          .from('customers')
-          .select('id')
-          .eq('phone', cleanPhone)
-          .maybeSingle();
-        if (byPhone?.id) customerId = byPhone.id;
-      }
-    } catch {}
-  }
-
-  // Check local cache if not found in Supabase
-  if (!customerId) {
-    const rawLocal = localStorage.getItem('rse_customers_cache');
-    if (rawLocal) {
-      try {
-        const localList = JSON.parse(rawLocal);
-        const match = localList.find(
-          (c: any) =>
-            c.email?.toLowerCase() === cleanEmail ||
-            (cleanPhone && c.phone && c.phone.replace(/\s+/g, '') === cleanPhone.replace(/\s+/g, ''))
-        );
-        if (match) customerId = match.id;
-      } catch {}
+  if (!customerId && !localMode) {
+    if (cleanEmail) {
+      const { data, error } = await supabase.from('customers').select('id').eq('email', cleanEmail).maybeSingle();
+      if (error) throw new Error(formatSupabaseError(error));
+      if (data?.id) customerId = data.id;
+    }
+    if (!customerId && cleanPhone) {
+      const { data, error } = await supabase.from('customers').select('id').eq('phone', cleanPhone).maybeSingle();
+      if (error) throw new Error(formatSupabaseError(error));
+      if (data?.id) customerId = data.id;
     }
   }
 
-  // 2. Only create new customer if not already existing
+  if (!customerId && localMode) {
+    const rawLocal = localStorage.getItem('rse_customers_cache');
+    if (rawLocal) {
+      const localList = JSON.parse(rawLocal);
+      const match = localList.find((customer: any) =>
+        customer.email?.toLowerCase() === cleanEmail ||
+        (cleanPhone && customer.phone && customer.phone.replace(/\s+/g, '') === cleanPhone.replace(/\s+/g, ''))
+      );
+      if (match) customerId = match.id;
+    }
+  }
+
   if (!customerId) {
-    const createdCust = await createCustomer({
+    if (!cleanEmail && !cleanPhone) throw new Error('A lead needs an email address or phone number before conversion.');
+    const created = await createCustomer({
       firstName: lead.name.split(' ')[0] || lead.name,
       lastName: lead.name.split(' ').slice(1).join(' ') || '',
-      email: lead.email,
-      phone: lead.phone || '',
+      email: cleanEmail,
+      phone: cleanPhone || '',
       whatsapp: lead.whatsapp || undefined,
       country: lead.country || 'International',
       hotel: lead.hotel || undefined,
       notes: lead.notes || undefined,
       tags: ['Converted Lead', 'Active Customer'],
     });
-    customerId = createdCust.id;
+    customerId = created.id;
   }
 
-  // 3. Preserve Lead History & Link to Customer
   await updateLeadStage(leadId, 'Won');
   await updateLead(leadId, { customerId });
-
-  // 4. Record Activity Timeline Event
   await recordActivity({
     customerId,
     leadId,
     eventType: 'lead_converted',
     title: 'Lead Converted to Customer',
     description: `${lead.name} (${lead.source}) successfully converted to verified customer. Preserved lead value: €${lead.estimatedValue || 0}.`,
-    actor: 'Sales Team',
+    actor: 'Signed-in staff',
   });
-
-  return lead.email;
+  return customerId;
 }
 
 // ------------------------------------------------------------------------------
@@ -2014,49 +1990,73 @@ export async function getCrmDashboardMetrics(): Promise<CrmDashboardMetrics> {
 
   const now = new Date();
   const oneWeekAgo = new Date(now.getTime() - 7 * 86400000).toISOString();
-
   const { dueToday, overdue } = await getFollowUpsDue();
+  const newInquiries = inquiries.filter((inquiry) => inquiry.status === 'new').length;
+  const activeBookings = allBookings.filter((booking) => booking.status !== 'cancelled');
 
-  const newInquiries = inquiries.filter((i) => i.status === 'new').length;
-
+  // Lead estimates in different currencies must not be added together and labelled EUR.
   const totalWonLeadsEur = leads
-    .filter((l) => l.stage === 'Won' || l.stage === 'Booked' as any)
-    .reduce((sum, l) => sum + (l.estimatedValue || 0), 0);
+    .filter((lead) => (lead.stage === 'Won' || (lead.stage as any) === 'Booked') && String(lead.currency || 'EUR').toUpperCase() === 'EUR')
+    .reduce((sum, lead) => sum + (lead.estimatedValue || 0), 0);
 
-  const totalRevenueEur = allBookings
-    .filter((b) => b.status !== 'cancelled')
-    .reduce((sum, b) => sum + (b.pricing?.totalEur || 0), 0);
+  // This is gross booked value, not collected cash.
+  const totalRevenueEur = activeBookings.reduce((sum, booking) => sum + (booking.pricing?.totalEur || 0), 0);
+  let outstandingPaymentsEur = totalRevenueEur;
 
-  const outstandingPaymentsEur = allBookings
-    .filter((b) => b.status !== 'cancelled' && b.paymentStatus !== 'paid')
-    .reduce((sum, b) => sum + (b.pricing?.totalEur || 0), 0);
+  if (isSupabaseConfigured()) {
+    const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const bookingIds = activeBookings.map((booking) => booking.bookingId).filter((id) => uuidPattern.test(id));
+    if (bookingIds.length > 0) {
+      const [paymentsResult, refundsResult] = await Promise.all([
+        supabase.from('payment_transactions').select('booking_id,amount,currency,status').in('booking_id', bookingIds),
+        supabase.from('refund_records').select('booking_id,amount,currency,status').in('booking_id', bookingIds),
+      ]);
+      if (paymentsResult.error) throw new Error(formatSupabaseError(paymentsResult.error));
+      if (refundsResult.error) throw new Error(formatSupabaseError(refundsResult.error));
 
-  const wonLeadsCount = leads.filter((l) => l.stage === 'Won' || (l.stage as any) === 'Booked').length;
-  const lostLeadsCount = leads.filter((l) => l.stage === 'Lost').length;
+      const settledPaymentsEur = (paymentsResult.data || [])
+        .filter((payment) => ['paid', 'partially paid', 'partially_paid'].includes(String(payment.status).toLowerCase().replace(/_/g, ' ')) && String(payment.currency || 'EUR').toUpperCase() === 'EUR')
+        .reduce((sum, payment) => sum + (Number(payment.amount) || 0), 0);
+      const processedRefundsEur = (refundsResult.data || [])
+        .filter((refund) => refund.status === 'processed' && String(refund.currency || 'EUR').toUpperCase() === 'EUR')
+        .reduce((sum, refund) => sum + (Number(refund.amount) || 0), 0);
+
+      outstandingPaymentsEur = Math.max(0, totalRevenueEur - settledPaymentsEur + processedRefundsEur);
+    }
+  } else if (import.meta.env.DEV) {
+    outstandingPaymentsEur = activeBookings.reduce((sum, booking) => {
+      const total = booking.pricing?.totalEur || 0;
+      const paid = String(booking.paymentStatus).toLowerCase() === 'paid' ? total : 0;
+      return sum + Math.max(0, total - paid);
+    }, 0);
+  } else {
+    throw new Error('Supabase is not configured; CRM financial metrics cannot be calculated in production.');
+  }
+
+  const wonLeadsCount = leads.filter((lead) => lead.stage === 'Won' || (lead.stage as any) === 'Booked').length;
+  const lostLeadsCount = leads.filter((lead) => lead.stage === 'Lost').length;
   const closedLeads = wonLeadsCount + lostLeadsCount;
   const conversionRate = closedLeads > 0 ? Math.round((wonLeadsCount / closedLeads) * 100) : 0;
-
-  const repeatCustomersCount = customers.filter((c) => c.totalBookings >= 2).length;
-  const customerLifetimeValueAvgEur =
-    customers.length > 0 ? Math.round(totalRevenueEur / customers.length) : 0;
+  const repeatCustomersCount = customers.filter((customer) => customer.totalBookings >= 2).length;
+  const customerLifetimeValueAvgEur = customers.length > 0 ? Math.round(totalRevenueEur / customers.length) : 0;
 
   return {
     totalLeadsCount: leads.length,
-    newLeadsCount: leads.filter((l) => l.stage === 'New').length,
-    qualifiedLeadsCount: leads.filter((l) => l.stage === 'Qualified').length,
+    newLeadsCount: leads.filter((lead) => lead.stage === 'New').length,
+    qualifiedLeadsCount: leads.filter((lead) => lead.stage === 'Qualified').length,
     wonLeadsCount,
     lostLeadsCount,
     conversionRate,
     followUpsDueCount: dueToday.length,
     overdueFollowUpsCount: overdue.length,
-    openTasksCount: tasks.filter((t) => t.status === 'Pending' || t.status === 'In Progress').length,
+    openTasksCount: tasks.filter((task) => task.status === 'Pending' || task.status === 'In Progress').length,
     newInquiriesCount: newInquiries,
-    newCustomersCount: customers.filter((c) => c.createdAt >= oneWeekAgo).length,
+    newCustomersCount: customers.filter((customer) => customer.createdAt >= oneWeekAgo).length,
     repeatCustomersCount,
     customerLifetimeValueAvgEur,
     totalRevenueEur,
     outstandingPaymentsEur,
-    totalActiveLeads: leads.filter((l) => l.stage !== 'Lost' && l.stage !== 'Won').length,
+    totalActiveLeads: leads.filter((lead) => lead.stage !== 'Lost' && lead.stage !== 'Won').length,
     totalWonLeadsEur,
   };
 }

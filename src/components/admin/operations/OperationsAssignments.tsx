@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AdminLoadError } from '../AdminLoadError';
 import {
   Compass,
   Ship,
@@ -46,6 +47,7 @@ export const OperationsAssignments: React.FC = () => {
   const [guides, setGuides] = useState<DbGuide[]>([]);
   const [tours, setTours] = useState<Tour[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Assignment Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -60,9 +62,15 @@ export const OperationsAssignments: React.FC = () => {
   const [notes, setNotes] = useState<string>('');
   const [preSaveConflicts, setPreSaveConflicts] = useState<AssignmentConflict[]>([]);
   const [validatingConflicts, setValidatingConflicts] = useState(false);
+  const [conflictCheckError, setConflictCheckError] = useState<string | null>(null);
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
+      setAssignments([]);
+      setVessels([]);
+      setGuides([]);
+      setTours([]);
     try {
       const [assigns, ves, gui, loadedTours] = await Promise.all([
         listAssignments(selectedDate),
@@ -76,8 +84,10 @@ export const OperationsAssignments: React.FC = () => {
       setTours(loadedTours);
       if (!tourId && loadedTours?.length) setTourId(loadedTours[0].id);
     } catch (err) {
-      console.warn('Failed to load assignments:', err);
-      showToast(err instanceof Error ? err.message : 'Failed to load live assignments.', 'error');
+      const message = err instanceof Error ? err.message : 'Live operational records could not be loaded.';
+      console.error('Failed to load operational data:', err);
+      setLoadError(message);
+      showToast(message, 'error');
     } finally {
       setLoading(false);
     }
@@ -91,10 +101,12 @@ export const OperationsAssignments: React.FC = () => {
   useEffect(() => {
     if (!isModalOpen || !tourId || !selectedDate || !departureTime) {
       setPreSaveConflicts([]);
+      setConflictCheckError(null);
       return;
     }
 
     let active = true;
+    setConflictCheckError(null);
     setValidatingConflicts(true);
 
     const timer = setTimeout(async () => {
@@ -112,8 +124,11 @@ export const OperationsAssignments: React.FC = () => {
         if (active) {
           setPreSaveConflicts(found);
         }
-      } catch {
-        // ignore
+      } catch (err) {
+        if (active) {
+          setPreSaveConflicts([]);
+          setConflictCheckError(err instanceof Error ? err.message : 'Assignment conflicts could not be verified. Saving is blocked.');
+        }
       } finally {
         if (active) setValidatingConflicts(false);
       }
@@ -160,6 +175,10 @@ export const OperationsAssignments: React.FC = () => {
     if (!hasPermission(editingId ? 'operations.update' : 'operations.create')) { showToast('Your role does not permit saving assignments.', 'error'); return; }
     if (!tourId || !selectedDate || !departureTime) {
       showToast('Select a real tour and date, then enter the actual departure time.', 'error');
+      return;
+    }
+    if (validatingConflicts || conflictCheckError || preSaveConflicts.length > 0) {
+      showToast(conflictCheckError || 'Resolve all scheduling conflicts and wait for verification before saving.', 'error');
       return;
     }
 
@@ -236,6 +255,8 @@ export const OperationsAssignments: React.FC = () => {
           </button>}
         </div>
       </div>
+
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
 
       {/* Assignments Table */}
       {loading ? (
@@ -379,6 +400,16 @@ export const OperationsAssignments: React.FC = () => {
                 &times;
               </button>
             </div>
+
+            {conflictCheckError && (
+              <div role="alert" className="p-3 bg-red-950/40 border border-red-500/50 rounded-lg text-xs text-red-200">
+                <div className="flex items-center gap-2 font-bold mb-1">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>Conflict verification failed — saving is blocked</span>
+                </div>
+                <p>{conflictCheckError}</p>
+              </div>
+            )}
 
             {/* PRE-SAVE CONFLICT WARNING BOX */}
             {preSaveConflicts.length > 0 && (
@@ -557,7 +588,7 @@ export const OperationsAssignments: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={preSaveConflicts.some((c) => c.type === 'vessel_inactive' || c.type === 'vessel_capacity_exceeded')}
+                  disabled={validatingConflicts || Boolean(conflictCheckError) || preSaveConflicts.length > 0}
                   className="px-4 py-1.5 bg-[#0A6C74] hover:bg-[#08565C] text-white rounded font-semibold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Confirm Assignment

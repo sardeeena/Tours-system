@@ -21,6 +21,7 @@ import {
   SimulationStepResult
 } from '../../services/platformIntegrationSimulator';
 import { isSupabaseConfigured } from '../../services/supabaseClient';
+import { useToast } from '../../contexts/ToastContext';
 
 interface PlatformIntegrationModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export const PlatformIntegrationModal: React.FC<PlatformIntegrationModalProps> =
   isOpen,
   onClose,
 }) => {
+  const { showToast } = useToast();
   const [isRunning, setIsRunning] = useState(false);
   const [report, setReport] = useState<SimulationReport | null>(null);
   const [expandedSteps, setExpandedSteps] = useState<Record<number, boolean>>({});
@@ -70,6 +72,7 @@ export const PlatformIntegrationModal: React.FC<PlatformIntegrationModalProps> =
       });
       setReport(res);
     } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Integration simulation failed.', 'error');
       console.error('Simulation run failed:', err);
     } finally {
       setIsRunning(false);

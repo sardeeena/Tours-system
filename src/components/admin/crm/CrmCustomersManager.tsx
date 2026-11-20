@@ -37,11 +37,15 @@ import {
 } from '../../../services/crmService';
 import { CrmCustomerDetail, CrmCommunication, CrmNote, CrmTask, CrmActivity } from '../../../types/crm';
 import { useToast } from '../../../contexts/ToastContext';
+import { AdminLoadError } from '../AdminLoadError';
+import { useAuth } from '../../../contexts/AuthContext';
 
 export const CrmCustomersManager: React.FC = () => {
   const { showToast } = useToast();
+  const { user } = useAuth();
   const [customers, setCustomers] = useState<CrmCustomerDetail[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [tagFilter, setTagFilter] = useState<string>('all');
 
@@ -63,10 +67,12 @@ export const CrmCustomersManager: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const data = await listCrmCustomers();
       setCustomers(data);
     } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'CRM customer records could not be loaded.');
       console.warn('Failed to load customers:', err);
     } finally {
       setLoading(false);
@@ -106,7 +112,8 @@ export const CrmCustomersManager: React.FC = () => {
       const note = await addStaffNote({
         customerId: profileCustomer.id,
         content: newNoteContent.trim(),
-        staffName: 'Admin Staff',
+        staffName: user?.fullName || 'Signed-in staff',
+        staffId: user?.id || null,
       });
       setProfileCustomer((prev: CrmCustomerDetail | null) =>
         prev
@@ -137,7 +144,8 @@ export const CrmCustomersManager: React.FC = () => {
         channel: newCommChannel,
         summary: newCommSummary.trim(),
         direction: 'outbound',
-        staffName: 'Concierge Desk',
+        staffName: user?.fullName || 'Signed-in staff',
+        staffId: user?.id || null,
       });
       setProfileCustomer((prev: CrmCustomerDetail | null) =>
         prev
@@ -167,7 +175,8 @@ export const CrmCustomersManager: React.FC = () => {
         customerId: profileCustomer.id,
         customerName: profileCustomer.fullName,
         dueDate: newTaskDueDate || new Date(Date.now() + 86400000).toISOString(),
-        assignedStaffName: 'Captain Tarek',
+        assignedStaffName: user?.fullName || 'Signed-in staff',
+        assignedStaffId: user?.id || null,
         priority: 'High',
         isFollowUp: true,
       });
@@ -261,6 +270,7 @@ export const CrmCustomersManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -654,27 +664,28 @@ export const CrmCustomersManager: React.FC = () => {
                       </div>
 
                       <div className="space-y-2">
-                        {profileCustomer.bookings.map((b) => (
-                          <div
-                            key={b.bookingReference}
-                            className="p-3 bg-stone-950 rounded-lg border border-stone-800 flex items-center justify-between"
-                          >
-                            <div>
-                              <span className="font-bold text-white">{b.bookingReference}</span>
-                              <span className="text-stone-400 block text-[11px]">{b.tourTitle}</span>
-                            </div>
-                            <div className="text-right">
-                              <span className="font-mono font-bold text-white">€{b.pricing.totalEur}</span>
-                              <span
-                                className={`block text-[10px] uppercase font-semibold ${
-                                  b.paymentStatus === 'paid' ? 'text-emerald-400' : 'text-amber-400'
-                                }`}
-                              >
-                                {b.paymentStatus || 'Pending'} ({b.paymentMethod === 'pay_online' ? 'Card' : 'Cash on Pier'})
-                              </span>
-                            </div>
+                        {(profileCustomer.payments || []).length === 0 ? (
+                          <div className="rounded-lg border border-stone-800 bg-stone-950 p-6 text-center text-xs text-stone-400">
+                            No payment transactions are recorded for this customer yet.
                           </div>
-                        ))}
+                        ) : (
+                          (profileCustomer.payments || []).map((payment: any) => (
+                            <div key={payment.id} className="p-3 bg-stone-950 rounded-lg border border-stone-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                              <div>
+                                <span className="font-bold text-white">{payment.bookingReference || 'Booking payment'}</span>
+                                <span className="text-stone-400 block text-[11px]">{payment.paymentMethod || 'Payment method not specified'} · {payment.provider || 'Manual provider'}</span>
+                                <span className="text-stone-500 block text-[10px] font-mono">{payment.transactionReference || 'No transaction reference'}</span>
+                              </div>
+                              <div className="text-left sm:text-right">
+                                <span className="font-mono font-bold text-white">{payment.amount.toLocaleString()} {payment.currency}</span>
+                                <span className={`block text-[10px] uppercase font-semibold ${['paid', 'partially paid', 'partially_paid'].includes(String(payment.paymentStatus).toLowerCase()) ? 'text-emerald-400' : 'text-amber-400'}`}>
+                                  {payment.paymentStatus}
+                                </span>
+                                <span className="block text-[10px] text-stone-500">{payment.paymentDate ? new Date(payment.paymentDate).toLocaleString() : 'Date unavailable'}</span>
+                              </div>
+                            </div>
+                          ))
+                        )}
                       </div>
                     </div>
                   )}

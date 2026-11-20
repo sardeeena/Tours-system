@@ -69,7 +69,7 @@ export async function subscribeToNewsletter(
       createdAt: result.createdAt || new Date().toISOString(),
     };
     notifyNewsletterUpdated(subscriber);
-    void recordVisitorEvent({ event_name: 'newsletter_subscribed', page_path: window.location.pathname, event_data: { source: source.slice(0, 40) } });
+    void recordVisitorEvent({ event_name: 'newsletter_subscribed', page_path: window.location.pathname, event_data: { source: source.slice(0, 40) } }).catch((error) => console.warn('Newsletter analytics event was not recorded:', error));
     return {
       success: true,
       alreadySubscribed: result.alreadySubscribed === true,
@@ -139,8 +139,11 @@ export async function updateSubscriberStatus(
   if (!isSupabaseConfigured()) throw new Error('Supabase is not configured.');
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrEmail);
   let query = supabase.from('newsletter_subscriptions').update({ status, updated_at: new Date().toISOString() });
-  const result = isUuid ? await query.eq('id', idOrEmail) : await query.eq('email', idOrEmail.trim().toLowerCase());
+  const result = isUuid
+    ? await query.eq('id', idOrEmail).select('id').maybeSingle()
+    : await query.eq('email', idOrEmail.trim().toLowerCase()).select('id').maybeSingle();
   if (result.error) throw new Error(formatSupabaseError(result.error));
+  if (!result.data?.id) throw new Error('Newsletter subscriber was not found or could not be updated.');
   notifyNewsletterUpdated();
   return true;
 }
@@ -149,8 +152,11 @@ export async function deleteSubscriber(idOrEmail: string): Promise<boolean> {
   if (!isSupabaseConfigured()) throw new Error('Supabase is not configured.');
   const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrEmail);
   let query = supabase.from('newsletter_subscriptions').delete();
-  const result = isUuid ? await query.eq('id', idOrEmail) : await query.eq('email', idOrEmail.trim().toLowerCase());
+  const result = isUuid
+    ? await query.eq('id', idOrEmail).select('id').maybeSingle()
+    : await query.eq('email', idOrEmail.trim().toLowerCase()).select('id').maybeSingle();
   if (result.error) throw new Error(formatSupabaseError(result.error));
+  if (!result.data?.id) throw new Error('Newsletter subscriber was not found or could not be deleted.');
   notifyNewsletterUpdated();
   return true;
 }

@@ -37,6 +37,7 @@ import {
 import { bookingRepository } from '../../../services/bookingRepository';
 import { Booking } from '../../../types/booking';
 import { useToast } from '../../../contexts/ToastContext';
+import { AdminLoadError } from '../AdminLoadError';
 import { useAuth } from '../../../contexts/AuthContext';
 
 interface CommunicationsEmailProps {
@@ -53,6 +54,7 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [providerConfig, setProviderConfig] = useState<ProviderConfig>(getProviderConfig());
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -79,6 +81,7 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const [msgs, tmpls, bks] = await Promise.all([
         listCommunicationMessages({ channel: 'Email' }),
@@ -90,6 +93,7 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
       setBookings(bks);
       setProviderConfig(await refreshProviderConfigFromServer());
     } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'Email communication data could not be loaded.');
       console.error('Failed to load email comms data:', err);
     } finally {
       setLoading(false);
@@ -249,6 +253,7 @@ export const CommunicationsEmail: React.FC<CommunicationsEmailProps> = ({ onNavi
 
   return (
     <div className="space-y-6">
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
       {/* Top Header & Provider Status Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-stone-900 border border-stone-800 p-5 rounded-xl shadow-lg">
         <div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AdminLoadError } from '../AdminLoadError';
 import {
   Anchor,
   Ship,
@@ -54,6 +55,7 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
   const [guides, setGuides] = useState<DbGuide[]>([]);
   const [tours, setTours] = useState<Tour[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // New Departure Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -70,6 +72,13 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
+      setDepartures([]);
+      setUnassignedLegacyBookings([]);
+      setWeather(null);
+      setVessels([]);
+      setGuides([]);
+      setTours([]);
     try {
       const [deps, legacy, wea, ves, gui, loadedTours] = await Promise.all([
         getTodayDepartures(selectedDate),
@@ -87,8 +96,10 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
       setTours(loadedTours);
       if (!newTourId && loadedTours?.length) setNewTourId(loadedTours[0].id);
     } catch (err) {
-      console.warn('Failed to load departures:', err);
-      showToast(err instanceof Error ? err.message : 'Failed to load live departures.', 'error');
+      const message = err instanceof Error ? err.message : 'Live operational records could not be loaded.';
+      console.error('Failed to load operational data:', err);
+      setLoadError(message);
+      showToast(message, 'error');
     } finally {
       setLoading(false);
     }
@@ -268,6 +279,8 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
           </ul>
         </div>
       )}
+
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
 
       {/* Maritime Clearance / Weather Banner */}
       <div className="bg-stone-950 border border-stone-800 rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">

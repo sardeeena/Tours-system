@@ -5,6 +5,9 @@ import { getStoredLocalUsers, LOCAL_USERS_KEY } from './authService';
 
 export interface UnifiedCustomer {
   id: string;
+  customerRecordId?: string | null;
+  userId?: string | null;
+  isRegisteredUser?: boolean;
   fullName: string;
   email: string;
   phone?: string | null;
@@ -18,8 +21,6 @@ export interface UnifiedCustomer {
   createdAt: string;
   avatarUrl?: string | null;
 }
-
-const SEED_CUSTOMERS: UnifiedCustomer[] = [];
 
 const LOCAL_CUSTOMERS_KEY = 'rse_customers_cache';
 
@@ -48,145 +49,138 @@ function saveStoredCustomers(customers: UnifiedCustomer[]) {
  */
 export async function listUnifiedCustomers(): Promise<UnifiedCustomer[]> {
   const customerMap = new Map<string, UnifiedCustomer>();
+  const localMode = !isSupabaseConfigured();
 
-  // 1. If Supabase configured, load profiles and customers tables
-  if (isSupabaseConfigured()) {
-    try {
-      const [profilesRes, customersRes] = await Promise.all([
-        supabase.from('profiles').select('*').order('created_at', { ascending: false }),
-        supabase.from('customers').select('*').order('created_at', { ascending: false }),
-      ]);
-
-      if (profilesRes.data) {
-        profilesRes.data.forEach((p) => {
-          const email = (p.email || '').toLowerCase();
-          if (!email) return;
-          customerMap.set(email, {
-            id: p.id,
-            fullName: p.full_name || email.split('@')[0],
-            email,
-            phone: p.phone,
-            country: p.country,
-            role: (p.role || 'customer') as UserRole,
-            isRegistered: true,
-            totalBookings: 0,
-            totalSpentEur: 0,
-            avatarUrl: p.avatar_url,
-            createdAt: p.created_at || new Date().toISOString(),
-          });
-        });
-      }
-
-      if (customersRes.data) {
-        customersRes.data.forEach((c) => {
-          const email = (c.email || '').toLowerCase();
-          if (!email) return;
-          const existing = customerMap.get(email);
-          const fullName = `${c.first_name || ''} ${c.last_name || ''}`.trim() || email.split('@')[0];
-
-          if (existing) {
-            existing.hotel = existing.hotel || c.hotel;
-            existing.phone = existing.phone || c.phone;
-            existing.country = existing.country || c.country;
-            if (existing.fullName === email.split('@')[0] && fullName) {
-              existing.fullName = fullName;
-            }
-          } else {
-            customerMap.set(email, {
-              id: c.id,
-              fullName,
-              email,
-              phone: c.phone,
-              country: c.country,
-              hotel: c.hotel,
-              role: 'customer',
-              isRegistered: Boolean(c.user_id),
-              totalBookings: 0,
-              totalSpentEur: 0,
-              createdAt: c.created_at || new Date().toISOString(),
-            });
-          }
-        });
-      }
-    } catch (err) {
-      console.warn('Error reading profiles/customers from Supabase:', err);
-    }
+  if (localMode && !import.meta.env.DEV) {
+    throw new Error('Supabase is not configured; the customer directory cannot be loaded in production.');
   }
 
-  // 2. Incorporate locally registered user accounts
-  try {
-    const localUsers = getStoredLocalUsers();
-    localUsers.forEach((stored) => {
-      const u = stored.user;
-      const email = u.email.toLowerCase();
-      if (!customerMap.has(email)) {
-        customerMap.set(email, {
-          id: u.id,
-          fullName: u.fullName,
-          email,
-          phone: u.phoneNumber,
-          country: u.country,
-          role: u.role,
-          isRegistered: true,
-          totalBookings: 0,
-          totalSpentEur: 0,
-          avatarUrl: u.avatarUrl,
-          createdAt: new Date().toISOString(),
-        });
-      }
-    });
-  } catch {
-    // ignore
-  }
+  if (!localMode) {
+    const [profilesRes, customersRes] = await Promise.all([
+      supabase.from('profiles').select('*').order('created_at', { ascending: false }),
+      supabase.from('customers').select('*').order('created_at', { ascending: false }),
+    ]);
+    if (profilesRes.error) throw new Error(formatSupabaseError(profilesRes.error));
+    if (customersRes.error) throw new Error(formatSupabaseError(customersRes.error));
 
-  // 3. Incorporate local customer cache if map is empty
-  if (customerMap.size === 0) {
-    const cached = getStoredCustomers();
-    cached.forEach((s) => customerMap.set(s.email.toLowerCase(), s));
-  }
-
-  // 4. Correlate with all bookings to compute total bookings & lifetime spend
-  try {
-    const allBookings = await bookingRepository.listBookings();
-    allBookings.forEach((b) => {
-      const email = (b.customer?.email || '').toLowerCase();
+    (profilesRes.data || []).forEach((profile) => {
+      const email = (profile.email || '').toLowerCase().trim();
       if (!email) return;
+      customerMap.set(email, {
+        id: profile.id,
+        fullName: profile.full_name || 'Not provided',
+        email,
+        phone: profile.phone,
+        country: profile.country,
+        role: (profile.role || 'customer') as UserRole,
+        isRegistered: true,
+        totalBookings: 0,
+        totalSpentEur: 0,
+        avatarUrl: profile.avatar_url,
+        createdAt: profile.created_at || '',
+      });
+    });
 
-      let cust = customerMap.get(email);
-      if (!cust) {
-        cust = {
-          id: `cust-bk-${b.bookingReference}`,
-          fullName: `${b.customer.firstName || ''} ${b.customer.lastName || ''}`.trim() || 'Guest Traveler',
+    (customersRes.data || []).forEach((customer) => {
+      const email = (customer.email || '').toLowerCase().trim();
+      if (!email) return;
+      const existing = customerMap.get(email);
+      const fullName = `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Not provided';
+
+      if (existing) {
+        existing.customerRecordId = customer.id;
+        existing.userId = customer.user_id || existing.userId || null;
+        existing.isRegisteredUser = Boolean(customer.user_id) || existing.isRegisteredUser || false;
+        existing.hotel = existing.hotel || customer.hotel;
+        existing.phone = existing.phone || customer.phone;
+        existing.country = existing.country || customer.country;
+        if (existing.fullName === 'Not provided' && fullName !== 'Not provided') existing.fullName = fullName;
+      } else {
+        customerMap.set(email, {
+          id: customer.id,
+          customerRecordId: customer.id,
+          userId: customer.user_id || null,
+          isRegisteredUser: Boolean(customer.user_id),
+          fullName,
           email,
-          phone: `${b.customer.countryCode || ''} ${b.customer.phoneNumber || ''}`.trim() || null,
-          country: b.customer.country || null,
-          hotel: b.pickup.hotelName || b.customer.hotelName || null,
+          phone: customer.phone,
+          country: customer.country,
+          hotel: customer.hotel,
           role: 'customer',
-          isRegistered: false,
+          isRegistered: Boolean(customer.user_id),
           totalBookings: 0,
           totalSpentEur: 0,
-          createdAt: b.date || new Date().toISOString(),
-        };
-        customerMap.set(email, cust);
-      }
-
-      cust.totalBookings += 1;
-      cust.totalSpentEur += b.pricing?.totalEur || 0;
-      cust.hotel = cust.hotel || b.pickup.hotelName || b.customer.hotelName;
-
-      if (!cust.lastBookingDate || b.date > cust.lastBookingDate) {
-        cust.lastBookingDate = b.date;
+          createdAt: customer.created_at || '',
+        });
       }
     });
-  } catch (err) {
-    console.warn('Error correlating customer booking metrics:', err);
+  } else {
+    getStoredLocalUsers().forEach((stored) => {
+      const user = stored.user;
+      const email = user.email.toLowerCase().trim();
+      if (!email || customerMap.has(email)) return;
+      customerMap.set(email, {
+        id: user.id,
+        fullName: user.fullName,
+        email,
+        phone: user.phoneNumber,
+        country: user.country,
+        role: user.role,
+        isRegistered: true,
+        totalBookings: 0,
+        totalSpentEur: 0,
+        avatarUrl: user.avatarUrl,
+        createdAt: user.createdAt || '',
+      });
+    });
+
+    getStoredCustomers().forEach((customer) => {
+      if (customer.email && !customerMap.has(customer.email.toLowerCase())) {
+        customerMap.set(customer.email.toLowerCase(), customer);
+      }
+    });
   }
+
+  // Booking aggregation is part of the customer directory contract; do not return a partial directory on query failure.
+  const allBookings = await bookingRepository.listBookings();
+  allBookings.forEach((booking) => {
+    const email = (booking.customer?.email || '').toLowerCase().trim();
+    if (!email) return;
+
+    let customer = customerMap.get(email);
+    if (!customer) {
+      customer = {
+        id: booking.customerId || `booking-customer:${booking.bookingReference}`,
+        customerRecordId: null,
+        userId: null,
+        isRegisteredUser: false,
+        fullName: `${booking.customer.firstName || ''} ${booking.customer.lastName || ''}`.trim() || 'Not provided',
+        email,
+        phone: `${booking.customer.countryCode || ''} ${booking.customer.phoneNumber || ''}`.trim() || null,
+        country: booking.customer.country || null,
+        hotel: booking.pickup.hotelName || booking.customer.hotelName || null,
+        role: 'customer',
+        isRegistered: false,
+        totalBookings: 0,
+        totalSpentEur: 0,
+        createdAt: booking.createdAt || booking.date || '',
+      };
+      customerMap.set(email, customer);
+    }
+
+    if (booking.status === 'cancelled' || booking.status === 'cancellation_requested') return;
+    customer.totalBookings += 1;
+    customer.totalSpentEur += Number(booking.pricing?.totalEur) || 0;
+    customer.hotel = customer.hotel || booking.pickup.hotelName || booking.customer.hotelName;
+    if (!customer.lastBookingDate || (booking.date && booking.date > customer.lastBookingDate)) {
+      customer.lastBookingDate = booking.date || null;
+    }
+  });
 
   const result = Array.from(customerMap.values()).sort(
     (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   );
-
-  saveStoredCustomers(result);
+  if (import.meta.env.DEV) saveStoredCustomers(result);
   return result;
 }
 
@@ -197,55 +191,54 @@ export async function updateCustomerRole(
   userId: string,
   newRole: UserRole
 ): Promise<boolean> {
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
-
-  if (isSupabaseConfigured() && isUuid) {
-    try {
-      // Authorization check: Verify caller is an authenticated administrator
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error('Authentication required: You must be signed in as an administrator to change user roles.');
-      }
-      const { data: callerProfile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      const callerRole = callerProfile?.role;
-      if (callerRole !== 'admin' && callerRole !== 'super_admin' && callerRole !== 'manager') {
-        throw new Error('Permission denied: Only system administrators have authorization to modify account roles.');
-      }
-
-      // Privilege escalation protection: Users cannot self-promote to admin/super_admin
-      if (user.id === userId && (newRole === 'admin' || newRole === 'super_admin')) {
-        throw new Error('Permission denied: Self-promotion to administrative roles is strictly prohibited.');
-      }
-
-      // Only existing super_admin can delegate super_admin privileges
-      if (newRole === 'super_admin' && callerRole !== 'super_admin') {
-        throw new Error('Permission denied: Only super administrators can grant the super_admin role.');
-      }
-
-      const { error } = await supabase
-        .from('profiles')
-        .update({ role: newRole, updated_at: new Date().toISOString() })
-        .eq('id', userId);
-
-      if (error) {
-        throw new Error(formatSupabaseError(error));
-      }
-    } catch (err: any) {
-      console.error('Exception updating customer role in Supabase:', err);
-      throw err;
-    }
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; customer roles cannot be changed in production.');
+    const localList = getStoredCustomers();
+    const updated = localList.map((customer) => customer.id === userId ? { ...customer, role: newRole } : customer);
+    if (!updated.some((customer) => customer.id === userId)) throw new Error('Customer profile was not found in the local development directory.');
+    saveStoredCustomers(updated);
+    return true;
   }
 
-  // Update local cache
-  const localList = getStoredCustomers();
-  const updated = localList.map((c) => (c.id === userId ? { ...c, role: newRole } : c));
-  saveStoredCustomers(updated);
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId);
+  if (!isUuid) throw new Error('Role changes require a registered Supabase user profile.');
 
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError) throw new Error(formatSupabaseError(authError));
+  if (!user) throw new Error('Authentication required: sign in as an administrator to change user roles.');
+
+  const { data: callerProfile, error: callerProfileError } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle();
+  if (callerProfileError) throw new Error(formatSupabaseError(callerProfileError));
+
+  const callerRole = callerProfile?.role;
+  if (callerRole !== 'admin' && callerRole !== 'super_admin' && callerRole !== 'manager') {
+    throw new Error('Permission denied: only authorized administrators can modify account roles.');
+  }
+  if (user.id === userId && (newRole === 'admin' || newRole === 'super_admin')) {
+    throw new Error('Self-promotion to administrative roles is prohibited.');
+  }
+  if (newRole === 'super_admin' && callerRole !== 'super_admin') {
+    throw new Error('Only a super administrator can grant super administrator privileges.');
+  }
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({ role: newRole, updated_at: new Date().toISOString() })
+    .eq('id', userId)
+    .select('id')
+    .maybeSingle();
+  if (error) throw new Error(formatSupabaseError(error));
+  if (!data?.id) throw new Error('The profile role was not changed because the profile was not found or is not accessible.');
+
+  if (import.meta.env.DEV) {
+    saveStoredCustomers(getStoredCustomers().map((customer) =>
+      customer.id === userId ? { ...customer, role: newRole } : customer
+    ));
+  }
   return true;
 }
 
@@ -256,44 +249,66 @@ export async function updateCustomerDetails(
   id: string,
   updates: Partial<UnifiedCustomer>
 ): Promise<boolean> {
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-
-  if (isSupabaseConfigured() && isUuid) {
-    try {
-      const { error: profError } = await supabase
-        .from('profiles')
-        .update({
-          full_name: updates.fullName,
-          phone: updates.phone,
-          country: updates.country,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id);
-
-      if (profError) {
-        throw new Error(formatSupabaseError(profError));
-      }
-
-      await supabase
-        .from('customers')
-        .update({
-          first_name: updates.fullName?.split(' ')[0],
-          last_name: updates.fullName?.split(' ').slice(1).join(' '),
-          phone: updates.phone,
-          country: updates.country,
-          hotel: updates.hotel,
-        })
-        .eq('id', id);
-    } catch (err: any) {
-      console.error('Exception updating customer details in Supabase:', err);
-      throw err;
-    }
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; customer details cannot be changed in production.');
+    const localList = getStoredCustomers();
+    if (!localList.some((customer) => customer.id === id)) throw new Error('Customer was not found in the local development directory.');
+    saveStoredCustomers(localList.map((customer) => customer.id === id ? { ...customer, ...updates } : customer));
+    return true;
   }
 
-  const localList = getStoredCustomers();
-  const updated = localList.map((c) => (c.id === id ? { ...c, ...updates } : c));
-  saveStoredCustomers(updated);
+  const isUuid = (value: string | null | undefined): value is string =>
+    Boolean(value && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value));
 
+  const profilePayload: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (updates.fullName !== undefined) profilePayload.full_name = updates.fullName;
+  if (updates.phone !== undefined) profilePayload.phone = updates.phone;
+  if (updates.country !== undefined) profilePayload.country = updates.country;
+
+  const customerPayload: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (updates.fullName !== undefined) {
+    customerPayload.first_name = updates.fullName.trim().split(/\s+/)[0] || '';
+    customerPayload.last_name = updates.fullName.trim().split(/\s+/).slice(1).join(' ');
+  }
+  if (updates.phone !== undefined) customerPayload.phone = updates.phone;
+  if (updates.country !== undefined) customerPayload.country = updates.country;
+  if (updates.hotel !== undefined) customerPayload.hotel = updates.hotel;
+
+  let profileUpdated = false;
+  let customerUpdated = false;
+
+  if (isUuid(id) && Object.keys(profilePayload).length > 1) {
+    const { data, error } = await supabase
+      .from('profiles')
+      .update(profilePayload)
+      .eq('id', id)
+      .select('id')
+      .maybeSingle();
+    if (error) throw new Error(formatSupabaseError(error));
+    profileUpdated = Boolean(data?.id);
+  }
+
+  const customerId = updates.customerRecordId || (isUuid(id) ? id : null);
+  if (isUuid(customerId) && Object.keys(customerPayload).length > 1) {
+    const { data, error } = await supabase
+      .from('customers')
+      .update(customerPayload)
+      .eq('id', customerId)
+      .select('id')
+      .maybeSingle();
+    if (error) throw new Error(formatSupabaseError(error));
+    customerUpdated = Boolean(data?.id);
+  }
+
+  if (!profileUpdated && !customerUpdated) {
+    throw new Error('Customer details were not changed because no matching accessible profile or customer record was found.');
+  }
+
+  if (import.meta.env.DEV) {
+    saveStoredCustomers(getStoredCustomers().map((customer) =>
+      customer.id === id ? { ...customer, ...updates } : customer
+    ));
+  }
   return true;
 }
 
@@ -301,22 +316,49 @@ export async function updateCustomerDetails(
  * Deletes or archives a customer record
  */
 export async function deleteCustomerRecord(id: string): Promise<boolean> {
-  const localList = getStoredCustomers();
-  saveStoredCustomers(localList.filter((c) => c.id !== id));
-
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-
-  if (isSupabaseConfigured() && isUuid) {
-    try {
-      const { error: custErr } = await supabase.from('customers').delete().eq('id', id);
-      if (custErr) throw new Error(formatSupabaseError(custErr));
-      const { error: profErr } = await supabase.from('profiles').delete().eq('id', id);
-      if (profErr) throw new Error(formatSupabaseError(profErr));
-    } catch (err: any) {
-      console.error('Error deleting customer in Supabase:', err);
-      throw err;
-    }
+  if (!isSupabaseConfigured()) {
+    if (!import.meta.env.DEV) throw new Error('Supabase is not configured; customer records cannot be deleted in production.');
+    const localList = getStoredCustomers();
+    if (!localList.some((customer) => customer.id === id)) throw new Error('Customer record was not found.');
+    saveStoredCustomers(localList.filter((customer) => customer.id !== id));
+    return true;
   }
 
+  const { data: customer, error: customerReadError } = await supabase
+    .from('customers')
+    .select('id,user_id')
+    .eq('id', id)
+    .maybeSingle();
+  if (customerReadError) throw new Error(formatSupabaseError(customerReadError));
+
+  if (!customer?.id) {
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('id', id)
+      .maybeSingle();
+    if (profileError) throw new Error(formatSupabaseError(profileError));
+    if (profile?.id) {
+      throw new Error('Registered user accounts cannot be deleted from the customer directory. Manage access through Security & Access instead.');
+    }
+    throw new Error('Customer record was not found or is not accessible.');
+  }
+
+  if (customer.user_id) {
+    throw new Error('This customer record is linked to a registered user account. Manage account access separately; the customer record is retained.');
+  }
+
+  const { data: deleted, error: deleteError } = await supabase
+    .from('customers')
+    .delete()
+    .eq('id', id)
+    .select('id')
+    .maybeSingle();
+  if (deleteError) throw new Error(formatSupabaseError(deleteError));
+  if (!deleted?.id) throw new Error('Customer record was not deleted because it no longer exists or is not accessible.');
+
+  if (import.meta.env.DEV) {
+    saveStoredCustomers(getStoredCustomers().filter((customer) => customer.id !== id));
+  }
   return true;
 }

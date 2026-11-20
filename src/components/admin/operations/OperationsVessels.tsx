@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AdminLoadError } from '../AdminLoadError';
 import {
   Ship,
   Plus,
@@ -23,6 +24,7 @@ export const OperationsVessels: React.FC = () => {
   const { showToast } = useToast();
   const [vessels, setVessels] = useState<DbVessel[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
@@ -33,14 +35,14 @@ export const OperationsVessels: React.FC = () => {
     name: '',
     vessel_type: 'motor_yacht',
     registration_number: '',
-    port_marina: 'Hurghada Marina',
-    passenger_capacity: 35,
-    crew_capacity: 4,
-    year_built: 2022,
-    safety_inspection_expiry: '2027-12-31',
-    amenities: ['Life Vests', 'First Aid Kit', 'Sundeck'],
-    is_active: true,
-    status: 'active',
+    port_marina: '',
+    passenger_capacity: 0,
+    crew_capacity: 0,
+    year_built: undefined,
+    safety_inspection_expiry: '',
+    amenities: [],
+    is_active: false,
+    status: 'inactive',
     maintenance_notes: '',
     next_maintenance: '',
     crew: '',
@@ -49,11 +51,16 @@ export const OperationsVessels: React.FC = () => {
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
+      setVessels([]);
     try {
       const data = await listVessels();
       setVessels(data);
     } catch (err) {
-      console.warn('Failed to load vessels:', err);
+      const message = err instanceof Error ? err.message : 'Live operational records could not be loaded.';
+      console.error('Failed to load operational data:', err);
+      setLoadError(message);
+      
     } finally {
       setLoading(false);
     }
@@ -86,14 +93,14 @@ export const OperationsVessels: React.FC = () => {
       name: '',
       vessel_type: 'motor_yacht',
       registration_number: '',
-      port_marina: 'Hurghada Marina',
-      passenger_capacity: 35,
-      crew_capacity: 4,
-      year_built: 2022,
-      safety_inspection_expiry: '2027-12-31',
-      amenities: ['Life Vests', 'First Aid Kit', 'Sundeck'],
-      is_active: true,
-      status: 'active',
+      port_marina: '',
+      passenger_capacity: 0,
+      crew_capacity: 0,
+      year_built: undefined,
+      safety_inspection_expiry: '',
+      amenities: [],
+      is_active: false,
+      status: 'inactive',
       maintenance_notes: '',
       next_maintenance: '',
       crew: '',
@@ -110,8 +117,8 @@ export const OperationsVessels: React.FC = () => {
       registration_number: vessel.registration_number || '',
       port_marina: vessel.port_marina,
       passenger_capacity: vessel.passenger_capacity,
-      crew_capacity: vessel.crew_capacity || 4,
-      year_built: vessel.year_built || 2022,
+      crew_capacity: vessel.crew_capacity ?? 0,
+      year_built: vessel.year_built ?? undefined,
       safety_inspection_expiry: vessel.safety_inspection_expiry || '',
       amenities: vessel.amenities || [],
       is_active: vessel.is_active,
@@ -126,9 +133,20 @@ export const OperationsVessels: React.FC = () => {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name) return;
+    if (!formData.name?.trim() || !formData.registration_number?.trim() || !formData.port_marina?.trim()) {
+      showToast('Enter the vessel name, registration number and actual home port.', 'error');
+      return;
+    }
+    if (Number(formData.passenger_capacity) <= 0 || Number(formData.crew_capacity) <= 0) {
+      showToast('Enter verified positive passenger and crew capacities.', 'error');
+      return;
+    }
 
     const isActive = formData.status === 'active' || formData.status === 'in_service';
+    if (isActive && !formData.safety_inspection_expiry) {
+      showToast('An active vessel must have a verified safety inspection expiry date.', 'error');
+      return;
+    }
 
     const payload: Partial<DbVessel> = {
       ...formData,
@@ -146,8 +164,8 @@ export const OperationsVessels: React.FC = () => {
       );
       setIsModalOpen(false);
       await loadData();
-    } catch {
-      showToast('Failed to save vessel details.', 'error');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Failed to save vessel details.', 'error');
     }
   };
 
@@ -155,9 +173,13 @@ export const OperationsVessels: React.FC = () => {
     if (!window.confirm(`Are you sure you want to decommission/remove "${name}" from the active fleet?`)) {
       return;
     }
-    await deleteVessel(id);
-    showToast(`Vessel "${name}" removed.`, 'success');
-    await loadData();
+    try {
+      await deleteVessel(id);
+      showToast(`Vessel "${name}" removed.`, 'success');
+      await loadData();
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Vessel could not be removed.', 'error');
+    }
   };
 
   const handleAddAmenity = () => {
@@ -229,6 +251,8 @@ export const OperationsVessels: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
 
       {/* Filter / Search Bar */}
       <div className="bg-stone-950 border border-stone-800 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs">

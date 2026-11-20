@@ -51,6 +51,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { isSupabaseConfigured, isSchemaMissing, subscribeSchemaMissing } from '../../services/supabaseClient';
+import { AdminSectionManual } from './AdminSectionManual';
 
 export type AdminTab =
   | 'dashboard'
@@ -550,6 +551,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
             {/* Right: Primary destination and appearance controls */}
             <div className="flex items-center flex-wrap gap-2 sm:gap-3">
+              <AdminSectionManual activeTab={activeTab} />
               <button
                 type="button"
                 onClick={onNavigateSite}

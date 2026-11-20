@@ -21,6 +21,7 @@ import { supabase, isSupabaseConfigured, formatSupabaseError } from '../../servi
 import { adminListTours, notifyCatalogueDataChanged } from '../../services/tourService';
 import { DbTour, DbReview } from '../../types/database';
 import { useToast } from '../../contexts/ToastContext';
+import { AdminLoadError } from './AdminLoadError';
 
 const LOCAL_REVIEWS_KEY = 'rse_admin_reviews_cache';
 
@@ -29,6 +30,8 @@ export const AdminReviewsList: React.FC = () => {
   const [reviews, setReviews] = useState<DbReview[]>([]);
   const [tours, setTours] = useState<DbTour[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadRetry, setLoadRetry] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'pending'>('all');
   const [tourFilter, setTourFilter] = useState<string>('all');
@@ -53,6 +56,7 @@ export const AdminReviewsList: React.FC = () => {
 
     async function loadInitialData() {
       setLoading(true);
+      setLoadError(null);
       try {
         const loadedTours = await adminListTours();
         if (!isCancelled) {
@@ -68,7 +72,8 @@ export const AdminReviewsList: React.FC = () => {
             .select('*')
             .order('created_at', { ascending: false });
 
-          if (!error && data) {
+          if (error) throw new Error(formatSupabaseError(error));
+          if (data) {
             if (!isCancelled) {
               setReviews(data as DbReview[]);
               setLoading(false);
@@ -77,8 +82,8 @@ export const AdminReviewsList: React.FC = () => {
           }
         }
 
-        // Fallback / cached reviews
-        const cached = localStorage.getItem(LOCAL_REVIEWS_KEY);
+        // Only development builds may use a local review cache; production reads are database-authoritative.
+        const cached = import.meta.env.DEV ? localStorage.getItem(LOCAL_REVIEWS_KEY) : null;
         if (cached) {
           if (!isCancelled) {
             setReviews(JSON.parse(cached));
@@ -91,6 +96,7 @@ export const AdminReviewsList: React.FC = () => {
           setReviews([]);
         }
       } catch (err) {
+        setLoadError(err instanceof Error ? err.message : 'Reviews could not be loaded.');
         console.error('Failed to load reviews:', err);
       } finally {
         if (!isCancelled) {
@@ -104,7 +110,7 @@ export const AdminReviewsList: React.FC = () => {
     return () => {
       isCancelled = true;
     };
-  }, []);
+  }, [loadRetry]);
 
   // Update status (Approve / Unpublish)
   const handleTogglePublished = async (reviewId: string, shouldPublish: boolean) => {
@@ -291,6 +297,7 @@ export const AdminReviewsList: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {loadError && <AdminLoadError message={loadError} onRetry={() => setLoadRetry((value) => value + 1)} />}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

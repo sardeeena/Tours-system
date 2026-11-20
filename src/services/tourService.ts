@@ -399,22 +399,21 @@ export async function getTourBySlug(slug: string, allowDraft: boolean = false): 
 /**
  * Fetches SEO metadata for a tour or entity
  */
-export async function getSeoMetadata(entityType: 'tour' | 'destination' | 'category' | 'page', entityId?: string, slug?: string): Promise<DbSeoMetadata | null> {
+export async function getSeoMetadata(entityType: string, entityId: string): Promise<any | null> {
   if (!isSupabaseConfigured()) {
+    if (import.meta.env.PROD) throw new Error('SEO metadata cannot be loaded because Supabase is not configured.');
     return null;
   }
 
-  try {
-    let query = supabase.from('seo_metadata').select('*').eq('entity_type', entityType);
-    if (entityId) query = query.eq('entity_id', entityId);
-    if (slug) query = query.eq('page_slug', slug);
+  const { data, error } = await supabase
+    .from('seo_metadata')
+    .select('*')
+    .eq('entity_type', entityType)
+    .eq('entity_id', entityId)
+    .maybeSingle();
 
-    const { data, error } = await query.maybeSingle();
-    if (error || !data) return null;
-    return data as DbSeoMetadata;
-  } catch {
-    return null;
-  }
+  if (error) throw new Error(formatSupabaseError(error));
+  return data || null;
 }
 
 // ==============================================================================
@@ -495,6 +494,11 @@ export async function adminListTours(filters?: {
   };
 
   if (!isSupabaseConfigured() || isSchemaMissing()) {
+    if (import.meta.env.PROD) {
+      throw new Error(!isSupabaseConfigured()
+        ? 'Tour management is unavailable because Supabase is not configured.'
+        : 'Tour management is unavailable because the database schema could not be verified.');
+    }
     return getLocalList();
   }
 
@@ -515,6 +519,7 @@ export async function adminListTours(filters?: {
     if (error) {
       if (isSchemaMissingError(error)) {
         setSchemaMissing(true);
+        if (import.meta.env.PROD) throw new Error('Tour management is unavailable because the database schema could not be verified.');
         return getLocalList();
       }
       console.error('Supabase adminListTours query error:', error.message);
@@ -524,6 +529,7 @@ export async function adminListTours(filters?: {
   } catch (err) {
     if (isSchemaMissingError(err)) {
       setSchemaMissing(true);
+      if (import.meta.env.PROD) throw new Error('Tour management is unavailable because the database schema could not be verified.');
       return getLocalList();
     }
     console.error('Failed to list admin tours:', err);
@@ -621,6 +627,7 @@ export async function adminGetTourById(id: string): Promise<TourWithRelations | 
   };
 
   if (!isSupabaseConfigured() || isSchemaMissing()) {
+    if (import.meta.env.PROD) throw new Error('Tour editor is unavailable because the live tour database could not be verified.');
     return getLocalTour(id);
   }
 
@@ -644,20 +651,23 @@ export async function adminGetTourById(id: string): Promise<TourWithRelations | 
       .eq('id', id)
       .maybeSingle();
 
-    if (error || !data) {
-      if (error && isSchemaMissingError(error)) {
+    if (error) {
+      if (isSchemaMissingError(error)) {
         setSchemaMissing(true);
+        if (!import.meta.env.PROD) return getLocalTour(id);
       }
-      return getLocalTour(id);
+      throw new Error(formatSupabaseError(error));
     }
+    if (!data) return null;
 
     // Fetch SEO metadata
-    const { data: seoData } = await supabase
+    const { data: seoData, error: seoError } = await supabase
       .from('seo_metadata')
       .select('*')
       .eq('entity_type', 'tour')
       .eq('entity_id', id)
       .maybeSingle();
+    if (seoError) throw new Error(formatSupabaseError(seoError));
 
     return {
       ...data,
@@ -675,8 +685,12 @@ export async function adminGetTourById(id: string): Promise<TourWithRelations | 
       seo: seoData || null,
     };
   } catch (err) {
+    if (isSchemaMissingError(err)) {
+      setSchemaMissing(true);
+      if (!import.meta.env.PROD) return getLocalTour(id);
+    }
     console.error('Error fetching admin tour by id:', err);
-    return null;
+    throw new Error(formatSupabaseError(err));
   }
 }
 
@@ -747,6 +761,7 @@ export async function adminCreateTour(payload: AdminTourPayload): Promise<{ id: 
   };
 
   if (!isSupabaseConfigured() || isSchemaMissing()) {
+    if (import.meta.env.PROD) throw new Error('Tour creation is unavailable because the live tour database could not be verified.');
     return createLocalTour();
   }
 
@@ -792,14 +807,23 @@ export async function adminCreateTour(payload: AdminTourPayload): Promise<{ id: 
 
     const tourId = tourRecord.id;
 
-    // 2. Child tables insertion
-    await syncTourRelations(tourId, payload);
+    // 2. Child tables insertion. If any relation fails, remove the new parent
+    // record so a partially-created tour is not reported as successful.
+    try {
+      await syncTourRelations(tourId, payload);
+    } catch (relationError) {
+      const { error: rollbackError } = await supabase.from('tours').delete().eq('id', tourId);
+      if (rollbackError) {
+        throw new Error(`Tour relations failed: ${formatSupabaseError(relationError)}. The parent tour rollback also failed: ${formatSupabaseError(rollbackError)}`);
+      }
+      throw new Error(`Tour creation was rolled back because related content could not be saved: ${formatSupabaseError(relationError)}`);
+    }
 
     return { id: tourId, slug: tourRecord.slug };
   } catch (err) {
     if (isSchemaMissingError(err)) {
       setSchemaMissing(true);
-      console.warn('Supabase tours table not found in schema cache. Saved tour to local storage.');
+      if (import.meta.env.PROD) throw new Error('Tour creation failed because the live tour database schema could not be verified.');
       return createLocalTour();
     }
     console.error('Failed to create tour in Supabase:', err);
@@ -845,6 +869,7 @@ export async function adminUpdateTour(id: string, payload: AdminTourPayload): Pr
   };
 
   if (!isSupabaseConfigured() || isSchemaMissing()) {
+    if (import.meta.env.PROD) throw new Error('Tour updates are unavailable because the live tour database could not be verified.');
     return updateLocalTour();
   }
 
@@ -897,7 +922,7 @@ export async function adminUpdateTour(id: string, payload: AdminTourPayload): Pr
   } catch (err) {
     if (isSchemaMissingError(err)) {
       setSchemaMissing(true);
-      console.warn('Supabase tours table not found in schema cache. Updated tour in local storage.');
+      if (import.meta.env.PROD) throw new Error('Tour update failed because the live tour database schema could not be verified.');
       return updateLocalTour();
     }
     console.error('Failed to update tour in Supabase:', err);
@@ -908,10 +933,18 @@ export async function adminUpdateTour(id: string, payload: AdminTourPayload): Pr
 /**
  * Synchronizes relational tables (itinerary, highlights, inclusions, exclusions, faqs, images, SEO)
  */
+async function ensureTourWrite(
+  operation: PromiseLike<{ error: any }>,
+  description: string
+): Promise<void> {
+  const { error } = await operation;
+  if (error) throw new Error(`${description}: ${formatSupabaseError(error)}`);
+}
+
 async function syncTourRelations(tourId: string, payload: AdminTourPayload): Promise<void> {
   // Itinerary
   if (payload.itinerary !== undefined) {
-    await supabase.from('tour_itinerary').delete().eq('tour_id', tourId);
+    await ensureTourWrite(supabase.from('tour_itinerary').delete().eq('tour_id', tourId), 'Failed to clear tour itinerary');
     if (payload.itinerary.length > 0) {
       const items = payload.itinerary.map((it, idx) => ({
         tour_id: tourId,
@@ -920,52 +953,52 @@ async function syncTourRelations(tourId: string, payload: AdminTourPayload): Pro
         description: it.description || null,
         sort_order: idx + 1,
       }));
-      await supabase.from('tour_itinerary').insert(items);
+      await ensureTourWrite(supabase.from('tour_itinerary').insert(items), 'Failed to save tour itinerary');
     }
   }
 
   // Highlights
   if (payload.highlights !== undefined) {
-    await supabase.from('tour_highlights').delete().eq('tour_id', tourId);
+    await ensureTourWrite(supabase.from('tour_highlights').delete().eq('tour_id', tourId), 'Failed to clear tour highlights');
     if (payload.highlights.length > 0) {
       const items = payload.highlights.map((h, idx) => ({
         tour_id: tourId,
         item: h,
         sort_order: idx + 1,
       }));
-      await supabase.from('tour_highlights').insert(items);
+      await ensureTourWrite(supabase.from('tour_highlights').insert(items), 'Failed to save tour highlights');
     }
   }
 
   // Inclusions
   if (payload.inclusions !== undefined) {
-    await supabase.from('tour_inclusions').delete().eq('tour_id', tourId);
+    await ensureTourWrite(supabase.from('tour_inclusions').delete().eq('tour_id', tourId), 'Failed to clear tour inclusions');
     if (payload.inclusions.length > 0) {
       const items = payload.inclusions.map((inc, idx) => ({
         tour_id: tourId,
         item: inc,
         sort_order: idx + 1,
       }));
-      await supabase.from('tour_inclusions').insert(items);
+      await ensureTourWrite(supabase.from('tour_inclusions').insert(items), 'Failed to save tour inclusions');
     }
   }
 
   // Exclusions
   if (payload.exclusions !== undefined) {
-    await supabase.from('tour_exclusions').delete().eq('tour_id', tourId);
+    await ensureTourWrite(supabase.from('tour_exclusions').delete().eq('tour_id', tourId), 'Failed to clear tour exclusions');
     if (payload.exclusions.length > 0) {
       const items = payload.exclusions.map((exc, idx) => ({
         tour_id: tourId,
         item: exc,
         sort_order: idx + 1,
       }));
-      await supabase.from('tour_exclusions').insert(items);
+      await ensureTourWrite(supabase.from('tour_exclusions').insert(items), 'Failed to save tour exclusions');
     }
   }
 
   // FAQs (preserve preparation sections when normal FAQs are edited)
   if (payload.faqs !== undefined) {
-    await supabase.from('tour_faqs').delete().eq('tour_id', tourId).eq('section', 'faq');
+    await ensureTourWrite(supabase.from('tour_faqs').delete().eq('tour_id', tourId).eq('section', 'faq'), 'Failed to clear tour FAQs');
     if (payload.faqs.length > 0) {
       const items = payload.faqs.map((f, idx) => ({
         tour_id: tourId,
@@ -974,12 +1007,12 @@ async function syncTourRelations(tourId: string, payload: AdminTourPayload): Pro
         section: 'faq',
         sort_order: idx + 1,
       }));
-      await supabase.from('tour_faqs').insert(items);
+      await ensureTourWrite(supabase.from('tour_faqs').insert(items), 'Failed to save tour FAQs');
     }
   }
 
   if (payload.whatToBring !== undefined) {
-    await supabase.from('tour_faqs').delete().eq('tour_id', tourId).eq('section', 'what_to_bring');
+    await ensureTourWrite(supabase.from('tour_faqs').delete().eq('tour_id', tourId).eq('section', 'what_to_bring'), 'Failed to clear tour preparation items');
     if (payload.whatToBring.length > 0) {
       const items = payload.whatToBring.map((item, idx) => ({
         tour_id: tourId,
@@ -988,12 +1021,12 @@ async function syncTourRelations(tourId: string, payload: AdminTourPayload): Pro
         section: 'what_to_bring',
         sort_order: idx + 1,
       }));
-      await supabase.from('tour_faqs').insert(items);
+      await ensureTourWrite(supabase.from('tour_faqs').insert(items), 'Failed to save tour FAQs');
     }
   }
 
   if (payload.importantInformation !== undefined) {
-    await supabase.from('tour_faqs').delete().eq('tour_id', tourId).eq('section', 'important_information');
+    await ensureTourWrite(supabase.from('tour_faqs').delete().eq('tour_id', tourId).eq('section', 'important_information'), 'Failed to clear important tour information');
     if (payload.importantInformation.length > 0) {
       const items = payload.importantInformation.map((item, idx) => ({
         tour_id: tourId,
@@ -1002,13 +1035,13 @@ async function syncTourRelations(tourId: string, payload: AdminTourPayload): Pro
         section: 'important_information',
         sort_order: idx + 1,
       }));
-      await supabase.from('tour_faqs').insert(items);
+      await ensureTourWrite(supabase.from('tour_faqs').insert(items), 'Failed to save tour FAQs');
     }
   }
 
   // Images
   if (payload.images !== undefined) {
-    await supabase.from('tour_images').delete().eq('tour_id', tourId);
+    await ensureTourWrite(supabase.from('tour_images').delete().eq('tour_id', tourId), 'Failed to clear tour images');
     if (payload.images.length > 0) {
       const items = payload.images.map((img, idx) => ({
         tour_id: tourId,
@@ -1019,13 +1052,13 @@ async function syncTourRelations(tourId: string, payload: AdminTourPayload): Pro
         is_primary: idx === 0 || !!img.is_primary,
         sort_order: idx + 1,
       }));
-      await supabase.from('tour_images').insert(items);
+      await ensureTourWrite(supabase.from('tour_images').insert(items), 'Failed to save tour images');
     }
   }
 
   // Videos
   if (payload.videos !== undefined) {
-    await supabase.from('tour_videos').delete().eq('tour_id', tourId);
+    await ensureTourWrite(supabase.from('tour_videos').delete().eq('tour_id', tourId), 'Failed to clear tour videos');
     if (payload.videos.length > 0) {
       const items = payload.videos.map((vid, idx) => ({
         tour_id: tourId,
@@ -1036,32 +1069,32 @@ async function syncTourRelations(tourId: string, payload: AdminTourPayload): Pro
         is_primary: idx === 0,
         sort_order: idx + 1,
       }));
-      await supabase.from('tour_videos').insert(items);
+      await ensureTourWrite(supabase.from('tour_videos').insert(items), 'Failed to save tour videos');
     }
   }
 
   // Categories
   if (payload.categoryIds !== undefined) {
-    await supabase.from('tour_categories').delete().eq('tour_id', tourId);
+    await ensureTourWrite(supabase.from('tour_categories').delete().eq('tour_id', tourId), 'Failed to clear tour categories');
     if (payload.categoryIds.length > 0) {
       const links = payload.categoryIds.map((catId, idx) => ({
         tour_id: tourId,
         category_id: catId,
         sort_order: idx + 1,
       }));
-      await supabase.from('tour_categories').insert(links);
+      await ensureTourWrite(supabase.from('tour_categories').insert(links), 'Failed to save tour categories');
     }
   }
 
   // Pickup Locations
   if (payload.pickupLocationIds !== undefined) {
-    await supabase.from('tour_pickup_locations').delete().eq('tour_id', tourId);
+    await ensureTourWrite(supabase.from('tour_pickup_locations').delete().eq('tour_id', tourId), 'Failed to clear tour pickup locations');
     if (payload.pickupLocationIds.length > 0) {
       const links = payload.pickupLocationIds.map((locId) => ({
         tour_id: tourId,
         pickup_location_id: locId,
       }));
-      await supabase.from('tour_pickup_locations').insert(links);
+      await ensureTourWrite(supabase.from('tour_pickup_locations').insert(links), 'Failed to save tour pickup locations');
     }
   }
 
@@ -1089,7 +1122,7 @@ async function syncTourRelations(tourId: string, payload: AdminTourPayload): Pro
 
   // SEO Metadata
   if (payload.seo !== undefined) {
-    await supabase.from('seo_metadata').upsert({
+    await ensureTourWrite(supabase.from('seo_metadata').upsert({
       entity_type: 'tour',
       entity_id: tourId,
       seo_title: payload.seo.seo_title || null,
@@ -1103,7 +1136,7 @@ async function syncTourRelations(tourId: string, payload: AdminTourPayload): Pro
       robots_index: payload.seo.robots_index ?? true,
       robots_follow: payload.seo.robots_follow ?? true,
       updated_at: new Date().toISOString(),
-    }, { onConflict: 'entity_type,entity_id' });
+    }, { onConflict: 'entity_type,entity_id' }), 'Failed to save tour SEO metadata');
   }
 
   notifyCatalogueDataChanged('tours');
@@ -1114,38 +1147,26 @@ async function syncTourRelations(tourId: string, payload: AdminTourPayload): Pro
  */
 export async function adminSetTourStatus(id: string, status: 'draft' | 'published' | 'archived'): Promise<void> {
   if (!isSupabaseConfigured() || isSchemaMissing()) {
-    const t = localTours.find((item) => item.id === id);
-    if (t) (t as any).status = status;
+    if (import.meta.env.PROD) throw new Error('Tour status cannot be changed because the live tour database could not be verified.');
+    const tour = localTours.find((item) => item.id === id);
+    if (tour) (tour as any).status = status;
     notifyCatalogueDataChanged('tours');
     return;
   }
 
-  try {
-    const { error } = await supabase
-      .from('tours')
-      .update({ status, updated_at: new Date().toISOString() })
-      .eq('id', id);
+  const { data, error } = await supabase
+    .from('tours')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select('id')
+    .maybeSingle();
 
-    if (error) {
-      if (isSchemaMissingError(error)) {
-        setSchemaMissing(true);
-        const t = localTours.find((item) => item.id === id);
-        if (t) (t as any).status = status;
-        notifyCatalogueDataChanged('tours');
-        return;
-      }
-      throw new Error(formatSupabaseError(error));
-    }
-    notifyCatalogueDataChanged('tours');
-  } catch (err) {
-    if (isSchemaMissingError(err)) {
-      setSchemaMissing(true);
-      const t = localTours.find((item) => item.id === id);
-      if (t) (t as any).status = status;
-      return;
-    }
-    throw err;
+  if (error) {
+    if (isSchemaMissingError(error)) setSchemaMissing(true);
+    throw new Error(formatSupabaseError(error));
   }
+  if (!data) throw new Error('Tour status was not changed because the tour no longer exists or is not accessible.');
+  notifyCatalogueDataChanged('tours');
 }
 
 /**
@@ -1154,25 +1175,23 @@ export async function adminSetTourStatus(id: string, status: 'draft' | 'publishe
  */
 export async function adminCheckTourBookingsCount(id: string): Promise<number> {
   if (!isSupabaseConfigured() || isSchemaMissing()) {
+    if (import.meta.env.PROD) throw new Error('Cannot verify booking history; tour deletion is blocked until the live database is available.');
     return id.includes('orange-bay') || id.includes('tour-1') ? 1 : 0;
   }
 
-  try {
-    const { count, error } = await supabase
-      .from('bookings')
-      .select('*', { count: 'exact', head: true })
-      .eq('tour_id', id);
+  const { count, error } = await supabase
+    .from('bookings')
+    .select('id', { count: 'exact', head: true })
+    .eq('tour_id', id);
 
-    if (error) {
-      if (isSchemaMissingError(error)) {
-        setSchemaMissing(true);
-      }
-      return 0;
-    }
-    return count || 0;
-  } catch {
-    return 0;
+  if (error) {
+    if (isSchemaMissingError(error)) setSchemaMissing(true);
+    throw new Error(`Could not verify existing bookings for this tour: ${formatSupabaseError(error)}`);
   }
+  if (count === null || count === undefined) {
+    throw new Error('Could not verify existing bookings for this tour. Deletion is blocked for safety.');
+  }
+  return count;
 }
 
 /**
@@ -1187,25 +1206,29 @@ export async function adminDeleteTour(id: string): Promise<void> {
   }
 
   if (!isSupabaseConfigured() || isSchemaMissing()) {
+    if (import.meta.env.PROD) throw new Error('Tour deletion is unavailable because the live tour database could not be verified.');
     localTours = localTours.filter((t) => t.id !== id);
     return;
   }
 
   try {
-    const { error } = await supabase.from('tours').delete().eq('id', id);
+    const { data, error } = await supabase.from('tours').delete().eq('id', id).select('id').maybeSingle();
     if (error) {
       if (isSchemaMissingError(error)) {
         setSchemaMissing(true);
+        if (import.meta.env.PROD) throw new Error('Tour deletion failed because the live tour database schema could not be verified.');
         localTours = localTours.filter((t) => t.id !== id);
         notifyCatalogueDataChanged('tours');
         return;
       }
       throw new Error(formatSupabaseError(error));
     }
+    if (!data) throw new Error('Tour was not deleted because it no longer exists or is not accessible.');
     notifyCatalogueDataChanged('tours');
   } catch (err) {
     if (isSchemaMissingError(err)) {
       setSchemaMissing(true);
+      if (import.meta.env.PROD) throw new Error('Tour deletion failed because the live tour database schema could not be verified.');
       localTours = localTours.filter((t) => t.id !== id);
       notifyCatalogueDataChanged('tours');
       return;
@@ -1398,7 +1421,10 @@ export async function getPublishedCategories(): Promise<Category[]> {
  * Lists destinations for admin management or selective filtering
  */
 export async function getDestinations(options?: { publishedOnly?: boolean }): Promise<DbDestination[]> {
-  if (!isSupabaseConfigured()) return [];
+  if (!isSupabaseConfigured()) {
+    if (import.meta.env.PROD) throw new Error('Supabase is not configured; destination records cannot be loaded in production.');
+    return [];
+  }
 
   let query = supabase
     .from('destinations')
@@ -1422,7 +1448,10 @@ export async function getDestinations(options?: { publishedOnly?: boolean }): Pr
  * Lists categories for admin management or selective filtering
  */
 export async function getCategories(options?: { publishedOnly?: boolean }): Promise<DbCategory[]> {
-  if (!isSupabaseConfigured()) return [];
+  if (!isSupabaseConfigured()) {
+    if (import.meta.env.PROD) throw new Error('Supabase is not configured; category records cannot be loaded in production.');
+    return [];
+  }
 
   let query = supabase
     .from('categories')
@@ -1594,29 +1623,30 @@ export function saveTourCustomExtraPrices(tourId: string, prices: Record<string,
  * Guarantees that prices configured in admin are visible across all devices and sessions.
  */
 export async function fetchTourCustomExtraPricesFromDb(tourId: string): Promise<Record<string, number>> {
-  if (isSupabaseConfigured() && !isSchemaMissing()) {
-    try {
-      const { data, error } = await supabase
-        .from('tour_assigned_extras')
-        .select('extra_id, custom_price_eur')
-        .eq('tour_id', tourId)
-        .not('custom_price_eur', 'is', null);
-
-      if (!error && data) {
-        const dbPrices: Record<string, number> = {};
-        data.forEach((r: any) => {
-          if (r.custom_price_eur !== null && r.custom_price_eur !== undefined) {
-            dbPrices[r.extra_id] = Number(r.custom_price_eur);
-          }
-        });
-        saveTourCustomExtraPrices(tourId, dbPrices);
-        return dbPrices;
-      }
-    } catch (err) {
-      console.warn('Failed to fetch tour custom extra prices from Supabase:', err);
-    }
+  if (!isSupabaseConfigured() || isSchemaMissing()) {
+    if (import.meta.env.PROD) throw new Error('Tour-specific add-on pricing is unavailable because the live database could not be verified.');
+    return getTourCustomExtraPrices(tourId);
   }
-  return getTourCustomExtraPrices(tourId);
+
+  const { data, error } = await supabase
+    .from('tour_assigned_extras')
+    .select('extra_id, custom_price_eur')
+    .eq('tour_id', tourId)
+    .not('custom_price_eur', 'is', null);
+
+  if (error) {
+    if (isSchemaMissingError(error)) setSchemaMissing(true);
+    throw new Error(formatSupabaseError(error));
+  }
+
+  const dbPrices: Record<string, number> = {};
+  (data || []).forEach((row: any) => {
+    if (row.custom_price_eur !== null && row.custom_price_eur !== undefined) {
+      dbPrices[row.extra_id] = Number(row.custom_price_eur);
+    }
+  });
+  saveTourCustomExtraPrices(tourId, dbPrices);
+  return dbPrices;
 }
 
 /**
@@ -1627,44 +1657,47 @@ export async function persistTourCustomExtraPriceToDb(
   extraId: string,
   priceEur: number | null
 ): Promise<{ success: boolean; error?: string }> {
-  // Update local memory cache immediately
-  const current = getTourCustomExtraPrices(tourId);
-  if (priceEur === null) {
-    delete current[extraId];
-  } else {
-    current[extraId] = priceEur;
-  }
-  saveTourCustomExtraPrices(tourId, current);
-
-  if (isSupabaseConfigured() && !isSchemaMissing()) {
-    try {
-      if (priceEur === null) {
-        const { error } = await supabase
-          .from('tour_assigned_extras')
-          .update({ custom_price_eur: null })
-          .eq('tour_id', tourId)
-          .eq('extra_id', extraId);
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('tour_assigned_extras')
-          .upsert({
-            tour_id: tourId,
-            extra_id: extraId,
-            custom_price_eur: priceEur,
-          });
-        if (error) throw error;
-      }
-      notifyCatalogueDataChanged('extras');
-      return { success: true };
-    } catch (err: any) {
-      console.error('Failed to persist custom extra price to Supabase:', err);
-      return { success: false, error: formatSupabaseError(err) };
+  if (!isSupabaseConfigured() || isSchemaMissing()) {
+    if (!import.meta.env.DEV) {
+      return { success: false, error: 'Supabase is not configured; add-on pricing cannot be saved in production.' };
     }
+    const local = getTourCustomExtraPrices(tourId);
+    if (priceEur === null) delete local[extraId];
+    else local[extraId] = priceEur;
+    saveTourCustomExtraPrices(tourId, local);
+    notifyCatalogueDataChanged('extras');
+    return { success: true };
   }
 
-  notifyCatalogueDataChanged('extras');
-  return { success: true };
+  try {
+    if (priceEur === null) {
+      const { error } = await supabase
+        .from('tour_assigned_extras')
+        .update({ custom_price_eur: null })
+        .eq('tour_id', tourId)
+        .eq('extra_id', extraId);
+      if (error) throw error;
+    } else {
+      const { error } = await supabase
+        .from('tour_assigned_extras')
+        .upsert({
+          tour_id: tourId,
+          extra_id: extraId,
+          custom_price_eur: priceEur,
+        });
+      if (error) throw error;
+    }
+
+    const local = getTourCustomExtraPrices(tourId);
+    if (priceEur === null) delete local[extraId];
+    else local[extraId] = priceEur;
+    saveTourCustomExtraPrices(tourId, local);
+    notifyCatalogueDataChanged('extras');
+    return { success: true };
+  } catch (error) {
+    if (isSchemaMissingError(error)) setSchemaMissing(true);
+    return { success: false, error: formatSupabaseError(error) };
+  }
 }
 
 /**

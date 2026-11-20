@@ -14,19 +14,23 @@ import {
 } from 'lucide-react';
 import { getGlobalActivityTimeline, CrmActivity } from '../../../services/crmService';
 import { CrmEventType } from '../../../types/crm';
+import { AdminLoadError } from '../AdminLoadError';
 
 export const CrmActivityTimeline: React.FC = () => {
   const [activities, setActivities] = useState<CrmActivity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const data = await getGlobalActivityTimeline(100);
       setActivities(data);
     } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'CRM activity timeline could not be loaded.');
       console.warn('Failed to load activity timeline:', err);
     } finally {
       setLoading(false);
@@ -75,6 +79,7 @@ export const CrmActivityTimeline: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

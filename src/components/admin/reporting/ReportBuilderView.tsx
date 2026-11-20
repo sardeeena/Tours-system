@@ -18,9 +18,10 @@ import {
 } from 'lucide-react';
 import { ReportBuilderFilters, ReportBuilderRow } from '../../../types/reporting';
 import { runReportBuilder, exportReportToCsv } from '../../../services/reportingService';
-import { ALL_TOURS } from '../../../data/toursData';
 import { Tour } from '../../../types';
 import { getPublishedTours } from '../../../services/tourService';
+import { listInquiryAssignees } from '../../../services/inquiryService';
+import { AdminLoadError } from '../AdminLoadError';
 import { useToast } from '../../../contexts/ToastContext';
 
 interface ReportBuilderViewProps {
@@ -45,45 +46,61 @@ export const ReportBuilderView: React.FC<ReportBuilderViewProps> = ({ onNavigate
 
   const [rows, setRows] = useState<ReportBuilderRow[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [optionsError, setOptionsError] = useState<string | null>(null);
+  const [staffError, setStaffError] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState<boolean>(false);
-  const [tours, setTours] = useState<Tour[]>(ALL_TOURS);
+  const [tours, setTours] = useState<Tour[]>([]);
+  const [availableStaff, setAvailableStaff] = useState<string[]>([]);
+
+  const loadOptions = async () => {
+    setOptionsError(null);
+    setStaffError(null);
+    const [tourResult, staffResult] = await Promise.allSettled([
+      getPublishedTours(),
+      listInquiryAssignees(),
+    ]);
+    if (tourResult.status === 'fulfilled') {
+      setTours(tourResult.value);
+    } else {
+      setTours([]);
+      setOptionsError(tourResult.reason instanceof Error ? tourResult.reason.message : 'Published tours could not be loaded.');
+    }
+    if (staffResult.status === 'fulfilled') {
+      setAvailableStaff(staffResult.value.map((staff) => staff.full_name).filter(Boolean));
+    } else {
+      setAvailableStaff([]);
+      setStaffError(staffResult.reason instanceof Error ? staffResult.reason.message : 'Staff filter options could not be loaded.');
+    }
+  };
 
   useEffect(() => {
-    let isMounted = true;
-    getPublishedTours()
-      .then((res) => {
-        if (isMounted && res && res.length > 0) {
-          setTours(res);
-        }
-      })
-      .catch((err) => {
-        console.warn('Could not load dynamic tours for ReportBuilder, falling back to static list:', err);
-      });
-    return () => {
-      isMounted = false;
-    };
+    void loadOptions();
   }, []);
 
   // Available unique options for dropdowns
   const availableDestinations = useMemo(() => {
     const set = new Set<string>();
-    (tours.length > 0 ? tours : ALL_TOURS).forEach((t) => {
+    tours.forEach((t) => {
       if (t.destination) set.add(t.destination);
     });
     return Array.from(set);
   }, [tours]);
 
-  const availableStaff = ['Ahmed Hassan', 'Mariam Youssef', 'Karim Adel', 'Sara Mostafa'];
-  const availableLeadSources = ['Website', 'WhatsApp', 'Hotel', 'Referral', 'Walk-in', 'Phone', 'Social Media'];
+  const availableLeadSources = ['Website', 'WhatsApp', 'Hotel', 'Referral', 'Walk-in', 'Phone', 'Email', 'Social Media', 'Other'];
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
+    setRows([]);
     try {
       const data = await runReportBuilder(filters);
       setRows(data);
     } catch (err) {
+      const message = err instanceof Error ? err.message : 'Could not load report builder results.';
       console.error('Failed to run report builder query:', err);
-      showToast('Could not load report builder results', 'error');
+      setLoadError(message);
+      showToast(message, 'error');
     } finally {
       setLoading(false);
     }
@@ -105,19 +122,22 @@ export const ReportBuilderView: React.FC<ReportBuilderViewProps> = ({ onNavigate
 
   // Summary KPI Totals for the current filtered rows
   const summaryTotals = useMemo(() => {
-    let grossTotal = 0;
+    const grossByCurrency = new Map<string, number>();
     let totalGuests = 0;
     let paidCount = 0;
 
-    rows.forEach((r) => {
-      grossTotal += r.total;
-      totalGuests += r.totalGuests;
-      if (r.paymentStatus === 'paid') paidCount++;
+    rows.forEach((row) => {
+      const currency = String(row.currency || 'UNKNOWN').toUpperCase();
+      grossByCurrency.set(currency, (grossByCurrency.get(currency) || 0) + (Number(row.total) || 0));
+      totalGuests += Number(row.totalGuests) || 0;
+      if (row.paymentStatus === 'paid') paidCount++;
     });
 
     return {
       count: rows.length,
-      grossTotal,
+      grossByCurrency: Array.from(grossByCurrency.entries())
+        .map(([currency, amount]) => `${currency} ${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`)
+        .join(' · ') || '—',
       totalGuests,
       paidCount,
       collectionPct: rows.length > 0 ? Math.round((paidCount / rows.length) * 100) : 0,
@@ -138,9 +158,10 @@ export const ReportBuilderView: React.FC<ReportBuilderViewProps> = ({ onNavigate
         'Destination',
         'Tour Date',
         'Guests',
-        'Subtotal (EUR)',
-        'Discount (EUR)',
-        'Total (EUR)',
+        'Subtotal (Original Currency)',
+        'Discount (Original Currency)',
+        'Total (Original Currency)',
+        'Currency',
         'Booking Status',
         'Payment Status',
         'Payment Method',
@@ -161,6 +182,7 @@ export const ReportBuilderView: React.FC<ReportBuilderViewProps> = ({ onNavigate
         r.subtotal,
         r.discount,
         r.total,
+        r.currency,
         r.bookingStatus,
         r.paymentStatus,
         r.paymentMethod,
@@ -210,6 +232,14 @@ export const ReportBuilderView: React.FC<ReportBuilderViewProps> = ({ onNavigate
 
   return (
     <div className="space-y-6 print:space-y-4 print:text-black print:bg-white">
+      {optionsError && <AdminLoadError message={optionsError} onRetry={loadOptions} />}
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
+      {staffError && (
+        <div role="status" className="rounded-xl border border-amber-500/30 bg-amber-950/20 px-3 py-2 text-xs text-amber-200">
+          Staff filter options are unavailable: {staffError}. Reports remain available without a staff filter.
+        </div>
+      )}
+
       {/* Filters Form Container */}
       <div className="bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854] rounded-2xl p-5 lg:p-6 shadow-xs space-y-4 print:hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E8E3DA] dark:border-[#1F3854] pb-3.5">
@@ -284,7 +314,7 @@ export const ReportBuilderView: React.FC<ReportBuilderViewProps> = ({ onNavigate
               className="w-full bg-[#FAF8F5] dark:bg-[#0A1118] border border-[#E8E3DA] dark:border-[#1F3854] rounded-xl px-2.5 py-1.5 text-[#0E1B2A] dark:text-white focus:outline-none focus:border-[#0A6C74]"
             >
               <option value="all">All Tours &amp; Excursions</option>
-              {(tours.length > 0 ? tours : ALL_TOURS).map((t) => (
+              {tours.map((t) => (
                 <option key={t.id} value={t.id}>
                   {t.title}
                 </option>
@@ -402,9 +432,9 @@ export const ReportBuilderView: React.FC<ReportBuilderViewProps> = ({ onNavigate
           </div>
         </div>
         <div className="bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854] rounded-2xl p-5 shadow-xs hover:border-[#0A6C74]/50 transition-colors print:bg-stone-100 print:border-stone-300">
-          <span className="text-[11px] text-stone-500 dark:text-stone-400 font-medium print:text-stone-700">Gross Contracted Total</span>
+          <span className="text-[11px] text-stone-500 dark:text-stone-400 font-medium print:text-stone-700">Gross Contracted Total (by currency)</span>
           <div className="text-xl font-bold text-[#0A6C74] dark:text-[#2DD4BF] mt-1 font-mono print:text-black">
-            €{summaryTotals.grossTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            {summaryTotals.grossByCurrency}
           </div>
         </div>
         <div className="bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#1F3854] rounded-2xl p-5 shadow-xs hover:border-sky-500/50 transition-colors print:bg-stone-100 print:border-stone-300">
@@ -447,6 +477,10 @@ export const ReportBuilderView: React.FC<ReportBuilderViewProps> = ({ onNavigate
                     Querying records with database filters...
                   </td>
                 </tr>
+              ) : loadError ? (
+                <tr><td colSpan={10} className="py-12 text-center text-red-400">Report results are unavailable. See the error above and retry.</td></tr>
+              ) : loadError ? (
+                <tr><td colSpan={10} className="py-12 text-center text-red-400">Report results are unavailable. See the error above and retry.</td></tr>
               ) : rows.length === 0 ? (
                 <tr>
                   <td colSpan={10} className="py-12 text-center text-stone-400">
@@ -474,7 +508,7 @@ export const ReportBuilderView: React.FC<ReportBuilderViewProps> = ({ onNavigate
                       {row.totalGuests}
                     </td>
                     <td className="py-3 px-3.5 text-right font-mono font-bold text-[#0A6C74] dark:text-[#2DD4BF] print:text-black">
-                      €{row.total.toFixed(2)}
+                      {row.currency} {row.total.toFixed(2)}
                     </td>
                     <td className="py-3 px-3.5 text-center">
                       <span

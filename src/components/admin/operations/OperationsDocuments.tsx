@@ -32,9 +32,9 @@ import {
 } from '../../../types/operations';
 import { DbVessel, DbGuide, DbWeatherBulletin } from '../../../types/database';
 import { Tour } from '../../../types';
-import { ALL_TOURS } from '../../../data/toursData';
 import { getPublishedTours } from '../../../services/tourService';
 import { useToast } from '../../../contexts/ToastContext';
+import { AdminLoadError } from '../AdminLoadError';
 
 type DocumentType =
   | 'coast_guard_manifest'
@@ -53,8 +53,9 @@ export const OperationsDocuments: React.FC<OperationsDocumentsProps> = ({ onNavi
   );
   const [docType, setDocType] = useState<DocumentType>('coast_guard_manifest');
   const [selectedTourId, setSelectedTourId] = useState<string>('all');
-  const [tours, setTours] = useState<Tour[]>(ALL_TOURS);
+  const [tours, setTours] = useState<Tour[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Data states
   const [departures, setDepartures] = useState<OperationalDeparture[]>([]);
@@ -66,6 +67,7 @@ export const OperationsDocuments: React.FC<OperationsDocumentsProps> = ({ onNavi
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const [deps, pass, picks, ves, gui, wea, loadedTours] = await Promise.all([
         getTodayDepartures(selectedDate),
@@ -74,7 +76,7 @@ export const OperationsDocuments: React.FC<OperationsDocumentsProps> = ({ onNavi
         listVessels(),
         listGuides(),
         getLatestWeatherBulletin(),
-        getPublishedTours().catch(() => []),
+        getPublishedTours(),
       ]);
       setDepartures(deps);
       setPassengers(pass);
@@ -86,6 +88,7 @@ export const OperationsDocuments: React.FC<OperationsDocumentsProps> = ({ onNavi
         setTours(loadedTours);
       }
     } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'Operational documents could not be loaded.');
       console.warn('Failed to load document data:', err);
     } finally {
       setLoading(false);
@@ -109,7 +112,7 @@ export const OperationsDocuments: React.FC<OperationsDocumentsProps> = ({ onNavi
 
   const filteredPickups = useMemo(() => {
     if (selectedTourId === 'all') return pickups;
-    const tourTitle = tours.find((t) => t.id === selectedTourId)?.title || ALL_TOURS.find((t) => t.id === selectedTourId)?.title;
+    const tourTitle = tours.find((t) => t.id === selectedTourId)?.title;
     if (!tourTitle) return pickups;
     return pickups.filter((p) => p.tourTitle.toLowerCase().includes(tourTitle.toLowerCase()));
   }, [pickups, selectedTourId, tours]);
@@ -185,6 +188,7 @@ export const OperationsDocuments: React.FC<OperationsDocumentsProps> = ({ onNavi
 
   return (
     <div className="space-y-6">
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
       {/* Top Controls Header (Hidden in Print) */}
       <div className="print:hidden space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

@@ -74,38 +74,45 @@ export const AdminCustomersList: React.FC = () => {
 
   const handleRoleSave = async () => {
     if (!selectedCustomer) return;
-    const success = await updateCustomerRole(selectedCustomer.id, tempRole);
-    if (success) {
+    try {
+      await updateCustomerRole(selectedCustomer.userId || selectedCustomer.id, tempRole);
       setCustomers((prev) =>
         prev.map((c) => (c.id === selectedCustomer.id ? { ...c, role: tempRole } : c))
       );
       setSelectedCustomer((prev) => (prev ? { ...prev, role: tempRole } : null));
       setEditingRole(false);
       showToast(`User role updated to "${tempRole}".`, 'success');
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'User role could not be updated.', 'error');
     }
   };
 
   const handleDelete = (cust: UnifiedCustomer) => {
+    if (cust.isRegistered) {
+      showToast('Registered accounts are managed through Security & Access and cannot be deleted from this directory.', 'error');
+      return;
+    }
     setCustomerToDelete(cust);
   };
 
   const confirmDeleteCustomer = async () => {
     if (!customerToDelete) return;
     setIsDeleting(true);
-    const success = await deleteCustomerRecord(customerToDelete.id);
-    if (success) {
+    try {
+      await deleteCustomerRecord(customerToDelete.customerRecordId || customerToDelete.id);
       setCustomers((prev) => prev.filter((c) => c.id !== customerToDelete.id));
       if (selectedCustomer?.id === customerToDelete.id) setSelectedCustomer(null);
-      showToast(`Customer record for "${customerToDelete.fullName}" deleted.`, 'info');
-    } else {
-      showToast('Failed to delete customer record.', 'error');
+      showToast(`Unregistered customer record for "${customerToDelete.fullName}" was deleted.`, 'success');
+      setCustomerToDelete(null);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'Customer record could not be deleted.', 'error');
+    } finally {
+      setIsDeleting(false);
     }
-    setCustomerToDelete(null);
-    setIsDeleting(false);
   };
 
   const exportCSV = () => {
-    const headers = ['Full Name', 'Email', 'Phone', 'Country', 'Hotel', 'Role', 'Total Bookings', 'Total Spent EUR', 'Registration Date'];
+    const headers = ['Full Name', 'Email', 'Phone', 'Country', 'Hotel', 'Role', 'Total Bookings', 'Total Booked Value EUR', 'Registration Date'];
     const rows = filteredCustomers.map((c) => [
       `"${c.fullName}"`,
       `"${c.email}"`,
@@ -354,8 +361,9 @@ export const AdminCustomersList: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleDelete(cust)}
-                        className="p-1.5 hover:bg-red-950/60 text-stone-500 hover:text-red-400 rounded cursor-pointer"
-                        title="Delete Record"
+                        disabled={cust.isRegistered}
+                        className="p-1.5 hover:bg-red-950/60 disabled:opacity-30 disabled:cursor-not-allowed text-stone-500 hover:text-red-400 rounded cursor-pointer"
+                        title={cust.isRegistered ? 'Registered account — manage in Security & Access' : 'Delete guest customer record'}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -406,11 +414,11 @@ export const AdminCustomersList: React.FC = () => {
                 <span className="text-stone-200">{selectedCustomer.hotel || 'Not specified'}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-stone-900">
-                <span className="text-stone-500">Total Bookings Completed:</span>
+                <span className="text-stone-500">Non-cancelled bookings:</span>
                 <span className="text-emerald-400 font-semibold">{selectedCustomer.totalBookings}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-stone-900">
-                <span className="text-stone-500">Total Lifetime Spend:</span>
+                <span className="text-stone-500">Lifetime Booked Value:</span>
                 <span className="text-white font-bold">€{selectedCustomer.totalSpentEur.toFixed(2)}</span>
               </div>
               <div className="flex justify-between py-1">
@@ -428,7 +436,9 @@ export const AdminCustomersList: React.FC = () => {
                   <Shield className="w-3.5 h-3.5 text-amber-400" />
                   <span>Access Authorization & Role:</span>
                 </span>
-                {!editingRole ? (
+                {!selectedCustomer.isRegistered ? (
+                  <span className="text-[10px] text-stone-500">Guest record — no login role</span>
+                ) : !editingRole ? (
                   <button
                     type="button"
                     onClick={() => setEditingRole(true)}
@@ -439,7 +449,7 @@ export const AdminCustomersList: React.FC = () => {
                 ) : null}
               </div>
 
-              {editingRole ? (
+              {editingRole && selectedCustomer.isRegistered ? (
                 <div className="flex items-center space-x-2 pt-2">
                   <select
                     value={tempRole}

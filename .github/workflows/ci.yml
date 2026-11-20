@@ -67,6 +67,12 @@ jobs:
       - name: Verify admin navigation, responsive drawer and live-site shortcut
         run: npm run test:admin-navigation
 
+      - name: Verify every admin tab and sidebar destination
+        run: npm run test:admin-module-coverage
+
+      - name: Verify admin production data connections
+        run: npm run test:admin-data-connections
+
       - name: Verify isolated admin authorization and error handling
         run: npm run test:admin
 

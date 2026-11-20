@@ -29,6 +29,7 @@ import {
 } from '../../../services/crmService';
 import { CrmDashboardMetrics } from '../../../types/crm';
 import { useToast } from '../../../contexts/ToastContext';
+import { AdminLoadError } from '../AdminLoadError';
 
 interface CrmDashboardProps {
   onNavigateTab: (tabId: string, param?: string) => void;
@@ -47,9 +48,11 @@ export const CrmDashboard: React.FC<CrmDashboardProps> = ({
   const [dueTodayTasks, setDueTodayTasks] = useState<CrmTask[]>([]);
   const [recentActivities, setRecentActivities] = useState<CrmActivity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const [m, followUps, acts] = await Promise.all([
         getCrmDashboardMetrics(),
@@ -61,6 +64,7 @@ export const CrmDashboard: React.FC<CrmDashboardProps> = ({
       setDueTodayTasks(followUps.dueToday);
       setRecentActivities(acts);
     } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'CRM dashboard metrics could not be loaded.');
       console.warn('Failed to load CRM dashboard metrics:', err);
     } finally {
       setLoading(false);
@@ -79,6 +83,7 @@ export const CrmDashboard: React.FC<CrmDashboardProps> = ({
 
   return (
     <div className="space-y-6">
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

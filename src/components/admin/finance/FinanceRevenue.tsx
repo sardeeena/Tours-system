@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { getFinancialReports } from '../../../services/financeService';
 import { FinancialReportData } from '../../../types/finance';
+import { AdminLoadError } from '../AdminLoadError';
 
 interface FinanceRevenueProps {
   onNavigateTab?: (tabId: string, param?: string) => void;
@@ -26,13 +27,16 @@ export const FinanceRevenue: React.FC<FinanceRevenueProps> = ({ onNavigateTab })
   const [selectedCurrency, setSelectedCurrency] = useState<string>('EUR');
   const [report, setReport] = useState<FinancialReportData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const data = await getFinancialReports(selectedCurrency);
       setReport(data);
     } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'Revenue data could not be loaded.');
       console.warn('Failed to load revenue data:', err);
     } finally {
       setLoading(false);
@@ -51,6 +55,7 @@ export const FinanceRevenue: React.FC<FinanceRevenueProps> = ({ onNavigateTab })
 
   return (
     <div className="space-y-6">
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

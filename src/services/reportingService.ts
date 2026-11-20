@@ -15,6 +15,8 @@ import {
   LeadSourcePerformance,
   InactiveCustomerItem,
   PopularTourInterestItem,
+  GuideAssignmentItem,
+  OperationalIssueItem,
   MonthlyRevenueItem,
   ReportBuilderFilters,
   ReportBuilderRow,
@@ -23,11 +25,10 @@ import { bookingRepository } from './bookingRepository';
 import { Booking } from '../types/booking';
 import { listUnifiedCustomers } from './customerService';
 import { listPayments, listRefunds } from './financeService';
-import { listVessels, listAssignments, listGuides, getMaritimeWeather } from './operationsService';
+import { listVessels, listAssignments, listGuides, getMaritimeWeather, getDeparturesForDateRange } from './operationsService';
 import { listInquiries } from './inquiryService';
 import { listLeads } from './crmService';
 import { getPublishedTours } from './tourService';
-import { ALL_TOURS } from '../data/toursData';
 
 /**
  * Calculates normalized date interval boundaries based on range enum
@@ -152,57 +153,45 @@ function filterBookingsByInterval(bookings: Booking[], interval: DateRangeInterv
   });
 }
 
+function normalizeLeadSource(source?: string | null): string {
+  const value = String(source || '').trim().toLowerCase();
+  if (['web', 'website', 'online', 'online checkout'].includes(value)) return 'Website';
+  if (value.includes('whatsapp')) return 'WhatsApp';
+  if (['phone', 'call', 'telephone'].includes(value)) return 'Phone';
+  if (value === 'email') return 'Email';
+  if (value === 'hotel') return 'Hotel';
+  if (value === 'referral') return 'Referral';
+  if (value === 'walk-in' || value === 'walkin') return 'Walk-in';
+  if (value.includes('social')) return 'Social Media';
+  return 'Other';
+}
+
+function departureDurationHours(startTime?: string, endTime?: string): number {
+  if (!startTime || !endTime) return 0;
+  const parse = (value: string) => {
+    const match = value.match(/^(\\d{1,2}):(\\d{2})/);
+    if (!match) return null;
+    const hours = Number(match[1]);
+    const minutes = Number(match[2]);
+    if (hours > 23 || minutes > 59) return null;
+    return hours * 60 + minutes;
+  };
+  const start = parse(startTime);
+  const end = parse(endTime);
+  if (start === null || end === null) return 0;
+  let duration = end - start;
+  if (duration < 0) duration += 24 * 60;
+  return Math.round((duration / 60) * 10) / 10;
+}
+
 // ------------------------------------------------------------------------------
 // 1. EXECUTIVE REPORT
 // ------------------------------------------------------------------------------
 
 export async function fetchExecutiveReport(interval: DateRangeInterval): Promise<ExecutiveMetrics> {
-  // If Supabase RPC is provisioned and available, attempt fast server-side query
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase.rpc('get_executive_bi_metrics', {
-        p_start_date: interval.startDate,
-        p_end_date: interval.endDate,
-      });
-      if (!error && data && typeof data === 'object') {
-        const d = data as any;
-        const revenue = d.revenue && typeof d.revenue === 'object' ? d.revenue : {};
-        const bookings = d.bookings && typeof d.bookings === 'object' ? d.bookings : {};
-        const passengers = d.passengers && typeof d.passengers === 'object' ? d.passengers : {};
-        const customers = d.customers && typeof d.customers === 'object' ? d.customers : {};
-        const leads = d.leads && typeof d.leads === 'object' ? d.leads : {};
-
-        const totalRevenueEur = Number(revenue.total ?? d.totalRevenueEur ?? d.revenueEur ?? 0);
-        const collectedRevenueEur = Number(revenue.collected ?? d.collectedRevenueEur ?? 0);
-        const outstandingRevenueEur = Number(revenue.outstanding ?? d.outstandingRevenueEur ?? 0);
-
-        return {
-          totalRevenueEur,
-          revenueEur: totalRevenueEur,
-          collectedRevenueEur,
-          outstandingRevenueEur,
-          outstandingBalancesEur: outstandingRevenueEur,
-          bookingsCount: Number(bookings.total ?? d.bookingsCount ?? 0),
-          confirmedBookingsCount: Number(bookings.confirmed ?? d.confirmedBookingsCount ?? 0),
-          completedBookingsCount: Number(bookings.completed ?? d.completedBookingsCount ?? 0),
-          cancellationsCount: Number(bookings.cancelled ?? d.cancellationsCount ?? 0),
-          passengersCount: Number(passengers.total ?? d.passengersCount ?? 0),
-          adultsCount: Number(passengers.adults ?? d.adultsCount ?? 0),
-          childrenCount: Number(passengers.children ?? d.childrenCount ?? 0),
-          infantsCount: Number(passengers.infants ?? d.infantsCount ?? 0),
-          totalCustomersCount: Number(customers.totalActive ?? d.totalCustomersCount ?? 0),
-          newCustomersCount: Number(customers.new ?? d.newCustomersCount ?? 0),
-          repeatCustomersCount: Number(customers.repeat ?? d.repeatCustomersCount ?? 0),
-          leadsCount: Number(leads.total ?? d.leadsCount ?? 0),
-          conversionRate: Number(bookings.conversionRatePercent ?? d.conversionRate ?? 0),
-          cancellationRate: Number(bookings.cancellationRatePercent ?? d.cancellationRate ?? 0),
-          averageBookingValueEur: Number(revenue.averageBookingValue ?? d.averageBookingValueEur ?? 0),
-        };
-      }
-    } catch {
-      // Fallback to indexed query aggregation below
-    }
-  }
+  // The existing get_executive_bi_metrics RPC reports mixed-currency sums as EUR
+  // and its customer/booking cohort semantics do not match the dashboard filters.
+  // Use the authoritative repositories until a corrected, currency-aware RPC is deployed.
 
   // Pure Database and Repository Calculation
   const [allBookings, allCustomers, inquiries, leads, payments, refunds] = await Promise.all([
@@ -216,111 +205,92 @@ export async function fetchExecutiveReport(interval: DateRangeInterval): Promise
 
   const activeBookings = filterBookingsByInterval(allBookings, interval);
 
-  // Groupings by status
-  const confirmedBookings = activeBookings.filter(
-    (b) => b.status === 'confirmed' || b.status === 'completed' || b.status === 'pending'
-  );
+  const confirmedStatuses = ['confirmed', 'boarding', 'in_progress', 'completed'];
+  const confirmedBookings = activeBookings.filter((booking) => confirmedStatuses.includes(booking.status));
   const nonCancelledBookings = activeBookings.filter(
-    (b) => b.status !== 'cancelled' && b.status !== 'cancellation_requested'
+    (booking) => booking.status !== 'cancelled' && booking.status !== 'cancellation_requested'
   );
   const cancelledBookings = activeBookings.filter(
-    (b) => b.status === 'cancelled' || b.status === 'cancellation_requested'
+    (booking) => booking.status === 'cancelled' || booking.status === 'cancellation_requested'
   );
 
-  const totalRevenueEur = nonCancelledBookings.reduce((sum, b) => sum + (b.pricing?.totalEur || 0), 0);
+  const totalRevenueEur = nonCancelledBookings.reduce(
+    (sum, booking) => sum + (Number(booking.pricing?.totalEur) || 0),
+    0
+  );
   const bookingsCount = activeBookings.length;
-  const confirmedBookingsCount = nonCancelledBookings.length;
+  const confirmedBookingsCount = confirmedBookings.length;
   const completedBookingsCount = activeBookings.filter((booking) => booking.status === 'completed').length;
   const cancellationsCount = cancelledBookings.length;
 
-  let adultsCount = 0;
-  let childrenCount = 0;
-  let infantsCount = 0;
-
-  nonCancelledBookings.forEach((b) => {
-    adultsCount += b.guests?.adults || 1;
-    childrenCount += b.guests?.children || 0;
-    infantsCount += b.guests?.infants || 0;
-  });
-
+  const passengerBookings = nonCancelledBookings.filter((booking) => booking.status !== 'no_show');
+  const adultsCount = passengerBookings.reduce((sum, booking) => sum + (Number(booking.guests?.adults) || 0), 0);
+  const childrenCount = passengerBookings.reduce((sum, booking) => sum + (Number(booking.guests?.children) || 0), 0);
+  const infantsCount = passengerBookings.reduce((sum, booking) => sum + (Number(booking.guests?.infants) || 0), 0);
   const passengersCount = adultsCount + childrenCount + infantsCount;
 
-  // Net collected revenue is settled payments less completed refunds for this booking cohort.
-  const activeBookingsRefs = new Set(nonCancelledBookings.map((b) => b.bookingReference));
-  const activeBookingIds = new Set(nonCancelledBookings.map((b) => b.bookingId).filter(Boolean));
+  const activeBookingsRefs = new Set(nonCancelledBookings.map((booking) => booking.bookingReference));
+  const activeBookingIds = new Set(nonCancelledBookings.map((booking) => booking.bookingId).filter(Boolean));
   const isForActiveBooking = (record: { bookingReference?: string; bookingId?: string }) =>
     activeBookingsRefs.has(record.bookingReference || '') || activeBookingIds.has(record.bookingId || '');
   const isSettledPayment = (payment: { paymentStatus: unknown }) =>
     ['paid', 'partially paid'].includes(String(payment.paymentStatus).toLowerCase().replace(/_/g, ' '));
-  const collectedPayments = payments.filter((payment) =>
-    isSettledPayment(payment) && isForActiveBooking(payment)
+  const isEur = (record: { currency?: string | null }) => String(record.currency || '').toUpperCase() === 'EUR';
+
+  const collectedPayments = payments.filter(
+    (payment) => isSettledPayment(payment) && isForActiveBooking(payment) && isEur(payment)
   );
-  const processedRefunds = refunds.filter((refund) =>
-    refund.status === 'processed' && isForActiveBooking(refund)
+  const processedRefunds = refunds.filter(
+    (refund) => refund.status === 'processed' && isForActiveBooking(refund) && isEur(refund)
   );
-  const grossCollectedRevenueEur = collectedPayments.reduce((sum, payment) => sum + payment.amount, 0);
+  const grossCollectedRevenueEur = collectedPayments.reduce(
+    (sum, payment) => sum + (Number(payment.amount) || 0),
+    0
+  );
   const refundedRevenueEur = processedRefunds.reduce(
-    (sum, refund) => sum + (refund.approvedAmount || refund.amount || 0),
+    (sum, refund) => sum + (Number(refund.approvedAmount ?? refund.amount) || 0),
     0
   );
   const collectedRevenueEur = Math.max(0, grossCollectedRevenueEur - refundedRevenueEur);
-
-  // Outstanding revenue reflects the amount still retained by the business, not gross payments.
   const outstandingRevenueEur = Math.max(0, totalRevenueEur - collectedRevenueEur);
 
-  // Unique customers & Repeat calculation
   const customerEmailCounts = new Map<string, number>();
-  allBookings.forEach((b) => {
-    const email = b.customer?.email?.toLowerCase();
-    if (email) {
-      customerEmailCounts.set(email, (customerEmailCounts.get(email) || 0) + 1);
-    }
+  nonCancelledBookings.forEach((booking) => {
+    const email = booking.customer?.email?.toLowerCase();
+    if (email) customerEmailCounts.set(email, (customerEmailCounts.get(email) || 0) + 1);
   });
 
-  const intervalCustomers = new Set<string>();
-  let repeatCustomersCount = 0;
-  let newCustomersCount = 0;
+  const customers = allCustomers.filter((customer) => customer.role === 'customer');
+  const totalCustomersCount = customers.length || customerEmailCounts.size;
+  const newCustomersCount = customers.filter((customer) => {
+    const createdDate = (customer.createdAt || '').split('T')[0];
+    return createdDate >= interval.startDate && createdDate <= interval.endDate;
+  }).length;
+  const repeatCustomersCount = customers.length > 0
+    ? customers.filter((customer) => (Number(customer.totalBookings) || 0) > 1).length
+    : Array.from(customerEmailCounts.values()).filter((count) => count > 1).length;
 
-  activeBookings.forEach((b) => {
-    const email = b.customer?.email?.toLowerCase();
-    if (email && !intervalCustomers.has(email)) {
-      intervalCustomers.add(email);
-      const totalLifetime = customerEmailCounts.get(email) || 1;
-      if (totalLifetime > 1) {
-        repeatCustomersCount++;
-      } else {
-        newCustomersCount++;
-      }
-    }
+  const intervalLeads = leads.filter((lead) => {
+    const date = (lead.createdAt || '').split('T')[0];
+    return date >= interval.startDate && date <= interval.endDate;
   });
-
-  const totalCustomersCount = allCustomers.length || customerEmailCounts.size;
-
-  // Filter leads and inquiries in date range
-  const intervalLeads = leads.filter((l) => {
-    const lDate = (l.createdAt || '').split('T')[0];
-    return lDate >= interval.startDate && lDate <= interval.endDate;
-  });
-  const intervalInquiries = inquiries.filter((inq) => {
-    const inqDate = (inq.created_at || '').split('T')[0];
-    return inqDate >= interval.startDate && inqDate <= interval.endDate;
+  const intervalInquiries = inquiries.filter((inquiry) => {
+    const date = (inquiry.created_at || '').split('T')[0];
+    return date >= interval.startDate && date <= interval.endDate && inquiry.status !== 'converted';
   });
   const leadsCount = intervalLeads.length + intervalInquiries.length;
-
-  // Conversion rate: Confirmed bookings divided by (leads + confirmed bookings)
-  const totalDemand = leadsCount + confirmedBookingsCount;
-  const conversionRate = totalDemand > 0
-    ? Math.round((confirmedBookingsCount / totalDemand) * 1000) / 10
+  const convertedLeadCount = intervalLeads.filter(
+    (lead) => ['Won', 'Booked', 'Completed'].includes(lead.stage)
+  ).length;
+  const conversionRate = leadsCount > 0
+    ? Math.round((convertedLeadCount / leadsCount) * 1000) / 10
     : 0;
 
-  // Cancellation rate
   const cancellationRate = bookingsCount > 0
     ? Math.round((cancellationsCount / bookingsCount) * 1000) / 10
     : 0;
-
-  // Average booking value
-  const averageBookingValueEur = confirmedBookingsCount > 0
-    ? Math.round((totalRevenueEur / confirmedBookingsCount) * 100) / 100
+  const averageBookingValueEur = nonCancelledBookings.length > 0
+    ? Math.round((totalRevenueEur / nonCancelledBookings.length) * 100) / 100
     : 0;
 
   return {
@@ -359,194 +329,153 @@ export async function fetchSalesReport(interval: DateRangeInterval): Promise<Sal
   ]);
 
   const activeBookings = filterBookingsByInterval(allBookings, interval);
-  const confirmed = activeBookings.filter(
-    (b) => b.status !== 'cancelled' && b.status !== 'cancellation_requested'
+  const revenueBookings = activeBookings.filter(
+    (booking) => booking.status !== 'cancelled' && booking.status !== 'cancellation_requested'
   );
-
-  const totalRevenueEur = confirmed.reduce((sum, b) => sum + (b.pricing?.totalEur || 0), 0);
-  const totalBookingsCount = confirmed.length;
-
+  const totalRevenueEur = revenueBookings.reduce((sum, booking) => sum + (booking.pricing?.totalEur || 0), 0);
+  const totalBookingsCount = revenueBookings.length;
   const averageBookingValueEur = totalBookingsCount > 0
     ? Math.round((totalRevenueEur / totalBookingsCount) * 100) / 100
     : 0;
 
-  // Filter leads in interval
-  const intervalLeads = leads.filter((l) => {
-    const lDate = (l.createdAt || '').split('T')[0];
-    return lDate >= interval.startDate && lDate <= interval.endDate;
+  const intervalLeads = leads.filter((lead) => {
+    const date = (lead.createdAt || '').split('T')[0];
+    return date >= interval.startDate && date <= interval.endDate;
   });
-  const leadsCount = intervalLeads.length + inquiries.length;
-
-  // 1. Lead Sources Performance
-  const leadSourceMap = new Map<string, { count: number; won: number; revenue: number }>();
-  // Seed with expected standard lead sources
-  ['Website', 'WhatsApp', 'Hotel', 'Referral', 'Walk-in', 'Phone', 'Social Media'].forEach((src) => {
-    leadSourceMap.set(src, { count: 0, won: 0, revenue: 0 });
+  const intervalInquiries = inquiries.filter((inquiry) => {
+    const date = (inquiry.created_at || '').split('T')[0];
+    return date >= interval.startDate && date <= interval.endDate && inquiry.status !== 'converted';
   });
+  const leadsCount = intervalLeads.length + intervalInquiries.length;
 
-  intervalLeads.forEach((l) => {
-    const src = l.source || 'Website';
-    const entry = leadSourceMap.get(src) || { count: 0, won: 0, revenue: 0 };
-    entry.count += 1;
-    if (l.stage === 'Won' || l.stage === 'Booked') {
-      entry.won += 1;
-      entry.revenue += l.estimatedValue || 0;
+  const sourceMap = new Map<string, { count: number; converted: number; revenue: number }>();
+  const addSource = (source: string | null | undefined, converted: boolean, revenue = 0) => {
+    const label = normalizeLeadSource(source);
+    const current = sourceMap.get(label) || { count: 0, converted: 0, revenue: 0 };
+    current.count += 1;
+    if (converted) {
+      current.converted += 1;
+      current.revenue += revenue;
     }
-    leadSourceMap.set(src, entry);
-  });
+    sourceMap.set(label, current);
+  };
 
-  // Also attribute website direct inquiries and bookings
-  confirmed.forEach((b) => {
-    let src = 'Website';
-    if (b.paymentMethod === 'pay_at_pickup') {
-      src = 'Hotel';
-    } else if (b.customer?.specialRequests?.toLowerCase().includes('whatsapp')) {
-      src = 'WhatsApp';
-    }
-    const entry = leadSourceMap.get(src) || { count: 0, won: 0, revenue: 0 };
-    entry.won += 1;
-    entry.revenue += b.pricing?.totalEur || 0;
-    leadSourceMap.set(src, entry);
+  intervalLeads.forEach((lead) => {
+    const won = lead.stage === 'Won' || lead.stage === 'Booked';
+    addSource(lead.source, won, won ? Number(lead.estimatedValue) || 0 : 0);
   });
+  intervalInquiries.forEach((inquiry) => addSource(inquiry.source, false));
 
-  const leadSources: LeadSourcePerformance[] = [];
-  leadSourceMap.forEach((val, src) => {
-    if (val.count > 0 || val.won > 0) {
-      const conv = (val.count + val.won) > 0 ? Math.round((val.won / (val.count + val.won)) * 1000) / 10 : 0;
-      leadSources.push({
-        source: src,
-        count: val.count + val.won,
-        convertedCount: val.won,
-        conversionRate: conv,
-        revenueEur: val.revenue,
-      });
-    }
-  });
-  leadSources.sort((a, b) => b.revenueEur - a.revenueEur);
+  const leadSources: LeadSourcePerformance[] = Array.from(sourceMap.entries())
+    .map(([source, value]) => ({
+      source,
+      count: value.count,
+      convertedCount: value.converted,
+      conversionRate: value.count > 0 ? Math.round((value.converted / value.count) * 1000) / 10 : 0,
+      revenueEur: value.revenue,
+    }))
+    .sort((a, b) => b.revenueEur - a.revenueEur);
 
-  // Overall Conversion
-  const totalLeadsEvaluated = leadSources.reduce((s, ls) => s + ls.count, 0) || (leadsCount + totalBookingsCount);
-  const conversionRate = totalLeadsEvaluated > 0
-    ? Math.round((totalBookingsCount / totalLeadsEvaluated) * 1000) / 10
+  const convertedLeadCount = intervalLeads.filter((lead) => lead.stage === 'Won' || lead.stage === 'Booked').length;
+  const conversionRate = leadsCount > 0
+    ? Math.round((convertedLeadCount / leadsCount) * 1000) / 10
     : 0;
 
-  // 2. Best-Selling Tours
-  const tourMap = new Map<string, { title: string; count: number; revenue: number }>();
-  confirmed.forEach((b) => {
-    const key = b.tourTitle || 'Custom Excursion';
-    const entry = tourMap.get(key) || { title: key, count: 0, revenue: 0 };
-    entry.count += 1;
-    entry.revenue += b.pricing?.totalEur || 0;
-    tourMap.set(key, entry);
+  const tourMap = new Map<string, { count: number; revenue: number }>();
+  revenueBookings.forEach((booking) => {
+    const title = booking.tourTitle || 'Tour not recorded';
+    const current = tourMap.get(title) || { count: 0, revenue: 0 };
+    current.count += 1;
+    current.revenue += booking.pricing?.totalEur || 0;
+    tourMap.set(title, current);
   });
+  const bestSellingTours: BreakdownItem[] = Array.from(tourMap.entries())
+    .map(([name, value]) => ({
+      id: name,
+      name,
+      count: value.count,
+      revenueEur: value.revenue,
+      percentage: totalBookingsCount > 0 ? Math.round((value.count / totalBookingsCount) * 1000) / 10 : 0,
+    }))
+    .sort((a, b) => b.revenueEur - a.revenueEur);
 
-  const bestSellingTours: BreakdownItem[] = [];
-  tourMap.forEach((val, key) => {
-    bestSellingTours.push({
-      id: key,
-      name: val.title,
-      count: val.count,
-      revenueEur: val.revenue,
-      percentage: totalBookingsCount > 0 ? Math.round((val.count / totalBookingsCount) * 1000) / 10 : 0,
-    });
+  const destinationMap = new Map<string, { count: number; revenue: number }>();
+  revenueBookings.forEach((booking) => {
+    const destination = booking.tourDestination || 'Not recorded';
+    const current = destinationMap.get(destination) || { count: 0, revenue: 0 };
+    current.count += 1;
+    current.revenue += booking.pricing?.totalEur || 0;
+    destinationMap.set(destination, current);
   });
-  bestSellingTours.sort((a, b) => b.revenueEur - a.revenueEur);
+  const bestDestinations: BreakdownItem[] = Array.from(destinationMap.entries())
+    .map(([name, value]) => ({
+      id: name,
+      name,
+      count: value.count,
+      revenueEur: value.revenue,
+      percentage: totalRevenueEur > 0 ? Math.round((value.revenue / totalRevenueEur) * 1000) / 10 : 0,
+    }))
+    .sort((a, b) => b.revenueEur - a.revenueEur);
 
-  // 3. Best Destinations
-  const destMap = new Map<string, { count: number; revenue: number }>();
-  confirmed.forEach((b) => {
-    const dest = b.tourDestination || 'Hurghada';
-    const entry = destMap.get(dest) || { count: 0, revenue: 0 };
-    entry.count += 1;
-    entry.revenue += b.pricing?.totalEur || 0;
-    destMap.set(dest, entry);
-  });
-
-  const bestDestinations: BreakdownItem[] = [];
-  destMap.forEach((val, dest) => {
-    bestDestinations.push({
-      id: dest,
-      name: dest,
-      count: val.count,
-      revenueEur: val.revenue,
-      percentage: totalRevenueEur > 0 ? Math.round((val.revenue / totalRevenueEur) * 1000) / 10 : 0,
-    });
-  });
-  bestDestinations.sort((a, b) => b.revenueEur - a.revenueEur);
-
-  // 4. Sales Performance by Staff
-  const staffMap = new Map<
-    string,
-    { id: string; name: string; role: string; leads: number; won: number; bookings: number; revenue: number }
-  >();
-
-  const defaultStaff = [
-    { id: 'stf-1', name: 'Ahmed Hassan', role: 'Senior Tour Concierge' },
-    { id: 'stf-2', name: 'Mariam Youssef', role: 'VIP Excursions Specialist' },
-    { id: 'stf-3', name: 'Karim Adel', role: 'Marina Sales Desk' },
-    { id: 'stf-4', name: 'Sara Mostafa', role: 'Digital Reservations' },
-  ];
-
-  defaultStaff.forEach((s) => {
-    staffMap.set(s.name, {
-      id: s.id,
-      name: s.name,
-      role: s.role,
+  const staffMap = new Map<string, {
+    id: string;
+    name: string;
+    role: string;
+    leads: number;
+    won: number;
+    booked: number;
+    revenue: number;
+  }>();
+  intervalLeads.forEach((lead) => {
+    const staffId = lead.assignedStaffId || 'unassigned';
+    const staffName = lead.assignedStaffName || 'Unassigned';
+    const current = staffMap.get(staffId) || {
+      id: staffId,
+      name: staffName,
+      role: lead.assignedStaffId ? 'CRM staff' : 'Unassigned',
       leads: 0,
       won: 0,
-      bookings: 0,
-      revenue: 0,
-    });
-  });
-
-  // Attribute leads to staff
-  leads.forEach((l) => {
-    const sName = l.assignedStaffName || 'Ahmed Hassan';
-    const cur = staffMap.get(sName) || {
-      id: l.assignedStaffId || 'stf-custom',
-      name: sName,
-      role: 'Tour Consultant',
-      leads: 0,
-      won: 0,
-      bookings: 0,
+      booked: 0,
       revenue: 0,
     };
-    cur.leads += 1;
-    if (l.stage === 'Won' || l.stage === 'Booked') {
-      cur.won += 1;
-      cur.revenue += l.estimatedValue || 0;
+    current.leads += 1;
+    if (lead.stage === 'Won' || lead.stage === 'Booked') {
+      current.won += 1;
+      current.revenue += Number(lead.estimatedValue) || 0;
     }
-    staffMap.set(sName, cur);
+    if (lead.stage === 'Booked') current.booked += 1;
+    staffMap.set(staffId, current);
   });
 
-  // Distribute confirmed bookings among staff for balanced realistic representation
-  confirmed.forEach((b, idx) => {
-    const staffNames = ['Ahmed Hassan', 'Mariam Youssef', 'Karim Adel', 'Sara Mostafa'];
-    const assignedStaffName = staffNames[idx % staffNames.length];
-    const cur = staffMap.get(assignedStaffName);
-    if (cur) {
-      cur.bookings += 1;
-      cur.revenue += b.pricing?.totalEur || 0;
-    }
-  });
+  const staffPerformance: StaffPerformanceItem[] = Array.from(staffMap.values())
+    .map((staff) => ({
+      staffId: staff.id,
+      staffName: staff.name,
+      role: staff.role,
+      leadsHandled: staff.leads,
+      dealsWon: staff.won,
+      bookingsCount: staff.booked,
+      revenueEur: staff.revenue,
+      conversionRate: staff.leads > 0 ? Math.round((staff.won / staff.leads) * 1000) / 10 : 0,
+    }))
+    .sort((a, b) => b.revenueEur - a.revenueEur);
 
-  const staffPerformance: StaffPerformanceItem[] = [];
-  staffMap.forEach((s) => {
-    const totalHandled = Math.max(1, s.leads + s.bookings);
-    const wonCount = s.won + s.bookings;
-    const convRate = Math.min(100, Math.round((wonCount / totalHandled) * 1000) / 10);
-    staffPerformance.push({
-      staffId: s.id,
-      staffName: s.name,
-      role: s.role,
-      leadsHandled: totalHandled,
-      dealsWon: wonCount,
-      bookingsCount: s.bookings,
-      revenueEur: s.revenue,
-      conversionRate: convRate,
-    });
+  const bookingSourceMap = new Map<string, { count: number; revenue: number }>();
+  revenueBookings.forEach((booking) => {
+    const source = normalizeLeadSource((booking as any).source);
+    const current = bookingSourceMap.get(source) || { count: 0, revenue: 0 };
+    current.count += 1;
+    current.revenue += booking.pricing?.totalEur || 0;
+    bookingSourceMap.set(source, current);
   });
-  staffPerformance.sort((a, b) => b.revenueEur - a.revenueEur);
+  const bookingsBySource = Array.from(bookingSourceMap.entries())
+    .map(([source, value]) => ({
+      source,
+      count: value.count,
+      revenueEur: value.revenue,
+      percentage: totalBookingsCount > 0 ? Math.round((value.count / totalBookingsCount) * 1000) / 10 : 0,
+    }))
+    .sort((a, b) => b.revenueEur - a.revenueEur);
 
   return {
     leadsCount,
@@ -561,12 +490,7 @@ export async function fetchSalesReport(interval: DateRangeInterval): Promise<Sal
     bookingsByDestination: bestDestinations,
     revenueByTour: bestSellingTours,
     revenueByDestination: bestDestinations,
-    bookingsBySource: leadSources.map((ls) => ({
-      source: ls.source,
-      count: ls.count,
-      revenueEur: ls.revenueEur,
-      percentage: totalBookingsCount > 0 ? Math.round((ls.convertedCount / totalBookingsCount) * 1000) / 10 : 0,
-    })),
+    bookingsBySource,
     staffPerformance,
   };
 }
@@ -576,179 +500,146 @@ export async function fetchSalesReport(interval: DateRangeInterval): Promise<Sal
 // ------------------------------------------------------------------------------
 
 export async function fetchCustomerReport(interval: DateRangeInterval): Promise<CustomerMetrics> {
-  const [allCustomers, allBookings, inquiries, dynamicTours] = await Promise.all([
-    listUnifiedCustomers(),
+  const [allBookings, allCustomers, inquiries, dynamicTours] = await Promise.all([
     bookingRepository.listBookings(),
+    listUnifiedCustomers(),
     listInquiries(),
-    getPublishedTours().catch(() => ALL_TOURS),
+    getPublishedTours(),
   ]);
 
-  const activeBookings = filterBookingsByInterval(allBookings, interval);
+  const customers = allCustomers.filter((customer) => customer.role === 'customer');
+  const customerList: TopCustomerItem[] = customers.map((customer) => {
+    const totalBookings = Number(customer.totalBookings) || 0;
+    const totalSpentEur = Number(customer.totalSpentEur) || 0;
+    const status: TopCustomerItem['status'] =
+      totalSpentEur >= 500 || totalBookings >= 3 ? 'VIP' :
+      totalBookings > 0 ? 'Regular' : 'New';
 
-  const customerMap = new Map<string, TopCustomerItem>();
-  const today = new Date();
-
-  allBookings.forEach((b) => {
-    const email = b.customer?.email?.toLowerCase();
-    if (!email) return;
-
-    const existing = customerMap.get(email);
-    const spent = b.status !== 'cancelled' ? (b.pricing?.totalEur || 0) : 0;
-
-    if (existing) {
-      existing.totalBookings += 1;
-      existing.totalSpentEur += spent;
-      if (b.date && (!existing.lastBookingDate || b.date > existing.lastBookingDate)) {
-        existing.lastBookingDate = b.date;
-      }
-      if (b.customer.hotelName && !existing.hotel) {
-        existing.hotel = b.customer.hotelName;
-      }
-    } else {
-      customerMap.set(email, {
-        id: (b as any).customerId || b.bookingReference,
-        name: `${b.customer.firstName} ${b.customer.lastName}`.trim() || 'Guest',
-        email,
-        phone: b.customer.phoneNumber ? `${b.customer.countryCode || ''} ${b.customer.phoneNumber}` : null,
-        country: b.customer.country || 'International',
-        hotel: b.customer.hotelName || b.pickup?.hotelName || 'Hurghada Resort',
-        totalBookings: 1,
-        totalSpentEur: spent,
-        lastBookingDate: b.date,
-        status: 'Regular',
-      });
-    }
+    return {
+      id: customer.id,
+      name: customer.fullName || 'Not provided',
+      email: customer.email || '',
+      phone: customer.phone || '',
+      country: customer.country || 'Not recorded',
+      hotel: customer.hotel || null,
+      totalBookings,
+      totalSpentEur,
+      lastBookingDate: customer.lastBookingDate || null,
+      status,
+    };
   });
 
-  const customerList = Array.from(customerMap.values());
-  customerList.forEach((c) => {
-    if (c.totalSpentEur >= 500 || c.totalBookings >= 3) {
-      c.status = 'VIP';
-    } else if (c.totalBookings === 1) {
-      c.status = 'New';
-    }
+  const newCustomersCount = customers.filter((customer) => {
+    const date = (customer.createdAt || '').split('T')[0];
+    return date >= interval.startDate && date <= interval.endDate;
+  }).length;
+  const repeatCustomersCount = customers.filter((customer) => (Number(customer.totalBookings) || 0) > 1).length;
+  const totalCustomersCount = customers.length;
+  const totalSpentEur = customers.reduce((sum, customer) => sum + (Number(customer.totalSpentEur) || 0), 0);
+  const customerLifetimeValueEur = totalCustomersCount > 0
+    ? Math.round((totalSpentEur / totalCustomersCount) * 100) / 100
+    : 0;
+  const repeatRatePct = totalCustomersCount > 0
+    ? Math.round((repeatCustomersCount / totalCustomersCount) * 1000) / 10
+    : 0;
+
+  const activeBookings = filterBookingsByInterval(allBookings, interval).filter(
+    (booking) => booking.status !== 'cancelled' && booking.status !== 'cancellation_requested'
+  );
+  const intervalInquiries = inquiries.filter((inquiry) => {
+    const date = (inquiry.created_at || '').split('T')[0];
+    return date >= interval.startDate && date <= interval.endDate;
   });
 
-  customerList.sort((a, b) => b.totalSpentEur - a.totalSpentEur);
-
-  const totalCustomersCount = customerList.length || allCustomers.length;
-  const repeatCustomersCount = customerList.filter((c) => c.totalBookings > 1).length;
-  const newCustomersCount = customerList.filter((c) => c.totalBookings === 1).length;
-  const repeatRatePct = totalCustomersCount > 0 ? Math.round((repeatCustomersCount / totalCustomersCount) * 1000) / 10 : 0;
-  const customerRetentionRatePct = repeatRatePct;
-
-  const totalLifetimeSpent = customerList.reduce((sum, c) => sum + c.totalSpentEur, 0);
-  const customerLifetimeValueEur = totalCustomersCount > 0 ? Math.round(totalLifetimeSpent / totalCustomersCount) : 0;
-
-  // Inactive customers: Customers whose last booking was > 90 days ago
-  const inactiveCustomers: InactiveCustomerItem[] = [];
-  customerList.forEach((c) => {
-    if (c.lastBookingDate) {
-      const lastDate = new Date(c.lastBookingDate);
-      const diffDays = Math.floor((today.getTime() - lastDate.getTime()) / (1000 * 3600 * 24));
-      if (diffDays >= 90) {
-        inactiveCustomers.push({
-          id: c.id,
-          name: c.name,
-          email: c.email,
-          daysSinceLastBooking: diffDays,
-          lastBookingDate: c.lastBookingDate,
-          totalSpentEur: c.totalSpentEur,
-        });
-      }
-    }
+  const tourMap = new Map(dynamicTours.map((tour) => [tour.id, tour.title]));
+  const interestMap = new Map<string, { bookings: number; inquiries: number; revenue: number; totalGuests: number }>();
+  activeBookings.forEach((booking) => {
+    const name = booking.tourTitle || tourMap.get(booking.tourId) || 'Tour not recorded';
+    const current = interestMap.get(name) || { bookings: 0, inquiries: 0, revenue: 0, totalGuests: 0 };
+    current.bookings += 1;
+    current.revenue += booking.pricing?.totalEur || 0;
+    current.totalGuests += (Number(booking.guests?.adults) || 0) + (Number(booking.guests?.children) || 0) + (Number(booking.guests?.infants) || 0);
+    interestMap.set(name, current);
   });
-  inactiveCustomers.sort((a, b) => b.daysSinceLastBooking - a.daysSinceLastBooking);
-  const inactiveCustomersCount = inactiveCustomers.length;
-
-  // Countries Breakdown
-  const countryCounts = new Map<string, { count: number; revenue: number }>();
-  customerList.forEach((c) => {
-    const ctry = c.country || 'International';
-    const entry = countryCounts.get(ctry) || { count: 0, revenue: 0 };
-    entry.count += 1;
-    entry.revenue += c.totalSpentEur;
-    countryCounts.set(ctry, entry);
+  intervalInquiries.forEach((inquiry) => {
+    const name = (inquiry.tour_id && tourMap.get(inquiry.tour_id)) || inquiry.subject || 'Tour not specified';
+    const current = interestMap.get(name) || { bookings: 0, inquiries: 0, revenue: 0, totalGuests: 0 };
+    current.inquiries += 1;
+    interestMap.set(name, current);
   });
 
-  const countriesDistribution: Array<{ country: string; count: number; percentage: number; revenueEur: number }> = [];
-  countryCounts.forEach((val, ctry) => {
-    countriesDistribution.push({
-      country: ctry,
-      count: val.count,
-      percentage: totalCustomersCount > 0 ? Math.round((val.count / totalCustomersCount) * 1000) / 10 : 0,
-      revenueEur: val.revenue,
-    });
-  });
-  countriesDistribution.sort((a, b) => b.count - a.count);
+  const totalInterests = Array.from(interestMap.values()).reduce(
+    (sum, item) => sum + item.bookings + item.inquiries,
+    0
+  );
+  const popularTourInterests: PopularTourInterestItem[] = Array.from(interestMap.entries())
+    .map(([tourTitle, value]) => ({
+      tourTitle,
+      inquiriesCount: value.inquiries,
+      bookingsCount: value.bookings,
+      totalGuests: value.totalGuests,
+      sharePct: totalInterests > 0
+        ? Math.round(((value.bookings + value.inquiries) / totalInterests) * 1000) / 10
+        : 0,
+    }))
+    .sort((a, b) => (b.bookingsCount + b.inquiriesCount) - (a.bookingsCount + a.inquiriesCount));
 
-  // Popular Tour Interests
-  const tourInterestMap = new Map<string, { inquiries: number; bookings: number; guests: number }>();
-  (dynamicTours && dynamicTours.length > 0 ? dynamicTours : ALL_TOURS).slice(0, 15).forEach((t) => {
-    tourInterestMap.set(t.title, { inquiries: 0, bookings: 0, guests: 0 });
+  const countryMap = new Map<string, { count: number; revenueEur: number }>();
+  const hotelMap = new Map<string, number>();
+  customerList.forEach((customer) => {
+    const country = customer.country || 'Not recorded';
+    const hotel = customer.hotel || 'Not recorded';
+    const countryValue = countryMap.get(country) || { count: 0, revenueEur: 0 };
+    countryValue.count += 1;
+    countryValue.revenueEur += Number(customer.totalSpentEur) || 0;
+    countryMap.set(country, countryValue);
+    hotelMap.set(hotel, (hotelMap.get(hotel) || 0) + 1);
   });
+  const countriesDistribution = Array.from(countryMap.entries())
+    .map(([country, value]) => ({
+      country,
+      count: value.count,
+      percentage: totalCustomersCount > 0 ? Math.round((value.count / totalCustomersCount) * 1000) / 10 : 0,
+      revenueEur: value.revenueEur,
+    }))
+    .sort((a, b) => b.count - a.count);
+  const hotelsDistribution = Array.from(hotelMap.entries())
+    .map(([hotel, count]) => ({
+      hotel,
+      count,
+      percentage: totalCustomersCount > 0 ? Math.round((count / totalCustomersCount) * 1000) / 10 : 0,
+    }))
+    .sort((a, b) => b.count - a.count);
 
-  allBookings.forEach((b) => {
-    const title = b.tourTitle || 'Custom Excursion';
-    const cur = tourInterestMap.get(title) || { inquiries: 0, bookings: 0, guests: 0 };
-    cur.bookings += 1;
-    cur.guests += (b.guests?.adults || 1) + (b.guests?.children || 0);
-    tourInterestMap.set(title, cur);
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - 90);
+  const inactiveCustomers: InactiveCustomerItem[] = customerList.flatMap((customer) => {
+    if (!customer.lastBookingDate || customer.totalBookings === 0) return [];
+    const lastBookingDate = new Date(customer.lastBookingDate);
+    if (Number.isNaN(lastBookingDate.getTime()) || lastBookingDate >= cutoffDate) return [];
+    return [{
+      id: customer.id,
+      name: customer.name,
+      email: customer.email,
+      daysSinceLastBooking: Math.max(0, Math.floor((Date.now() - lastBookingDate.getTime()) / 86_400_000)),
+      lastBookingDate: customer.lastBookingDate,
+      totalSpentEur: customer.totalSpentEur,
+    }];
   });
-
-  inquiries.forEach((inq) => {
-    const matchedTour = (dynamicTours && dynamicTours.find((t) => t.id === inq.tour_id)) || ALL_TOURS.find((t) => t.id === inq.tour_id);
-    const title = matchedTour?.title || inq.subject || 'Excursion';
-    const cur = tourInterestMap.get(title) || { inquiries: 0, bookings: 0, guests: 0 };
-    cur.inquiries += 1;
-    tourInterestMap.set(title, cur);
-  });
-
-  const totalInterests = Array.from(tourInterestMap.values()).reduce((s, t) => s + t.bookings, 0) || 1;
-  const popularTourInterests: PopularTourInterestItem[] = [];
-  tourInterestMap.forEach((val, title) => {
-    if (val.bookings > 0 || val.inquiries > 0) {
-      popularTourInterests.push({
-        tourTitle: title,
-        inquiriesCount: val.inquiries,
-        bookingsCount: val.bookings,
-        totalGuests: val.guests,
-        sharePct: Math.round((val.bookings / totalInterests) * 1000) / 10,
-      });
-    }
-  });
-  popularTourInterests.sort((a, b) => b.bookingsCount - a.bookingsCount);
-
-  // Hotels Breakdown
-  const hotelCounts = new Map<string, number>();
-  customerList.forEach((c) => {
-    const h = c.hotel?.trim() || 'Direct Marina Pier';
-    hotelCounts.set(h, (hotelCounts.get(h) || 0) + 1);
-  });
-
-  const hotelsDistribution: Array<{ hotel: string; count: number; percentage: number }> = [];
-  hotelCounts.forEach((cnt, h) => {
-    hotelsDistribution.push({
-      hotel: h,
-      count: cnt,
-      percentage: totalCustomersCount > 0 ? Math.round((cnt / totalCustomersCount) * 1000) / 10 : 0,
-    });
-  });
-  hotelsDistribution.sort((a, b) => b.count - a.count);
 
   return {
     totalCustomersCount,
     newCustomersCount,
     repeatCustomersCount,
-    repeatRatePct,
     customerLifetimeValueEur,
-    customerRetentionRatePct,
-    inactiveCustomersCount,
-    inactiveCustomers: inactiveCustomers.slice(0, 10),
+    repeatRatePct,
+    customerRetentionRatePct: repeatRatePct,
+    inactiveCustomersCount: inactiveCustomers.length,
+    popularTourInterests,
     countriesDistribution,
     hotelsDistribution,
-    popularTourInterests: popularTourInterests.slice(0, 8),
-    topCustomers: customerList.slice(0, 15),
+    topCustomers: customerList.sort((a, b) => b.totalSpentEur - a.totalSpentEur).slice(0, 10),
+    inactiveCustomers,
   };
 }
 
@@ -757,197 +648,235 @@ export async function fetchCustomerReport(interval: DateRangeInterval): Promise<
 // ------------------------------------------------------------------------------
 
 export async function fetchOperationsReport(interval: DateRangeInterval): Promise<OperationsMetrics> {
-  const [allBookings, vessels, assignments, guides, weather] = await Promise.all([
+  const [allBookings, vessels, assignments, guides, departures, weather] = await Promise.all([
     bookingRepository.listBookings(),
     listVessels(),
     listAssignments(),
     listGuides(),
+    getDeparturesForDateRange(interval.startDate, interval.endDate),
     getMaritimeWeather(interval.startDate),
   ]);
 
-  const activeBookings = filterBookingsByInterval(allBookings, interval);
+  const rangeBookings = filterBookingsByInterval(allBookings, interval);
+  const cancellations = rangeBookings.filter(
+    (booking) => booking.status === 'cancelled' || booking.status === 'cancellation_requested'
+  );
+  const noShows = rangeBookings.filter((booking) => booking.status === 'no_show');
+  const passengerBookings = rangeBookings.filter(
+    (booking) => !['cancelled', 'cancellation_requested', 'no_show'].includes(booking.status)
+  );
 
-  const departureKeys = new Set<string>();
-  let adults = 0;
-  let children = 0;
-  let infants = 0;
-  let cancellations = 0;
-  let noShows = 0;
-
-  activeBookings.forEach((b) => {
-    const depKey = `${b.date}_${b.tourTitle}`;
-    departureKeys.add(depKey);
-
-    if (b.status === 'cancelled' || b.status === 'cancellation_requested') {
-      cancellations++;
-    } else if (b.status === 'no_show') {
-      noShows++;
-    } else {
-      adults += b.guests?.adults || 1;
-      children += b.guests?.children || 0;
-      infants += b.guests?.infants || 0;
-    }
-  });
-
+  const adults = passengerBookings.reduce((sum, booking) => sum + (Number(booking.guests?.adults) || 0), 0);
+  const children = passengerBookings.reduce((sum, booking) => sum + (Number(booking.guests?.children) || 0), 0);
+  const infants = passengerBookings.reduce((sum, booking) => sum + (Number(booking.guests?.infants) || 0), 0);
   const totalPassengers = adults + children + infants;
-  const departuresCount = departureKeys.size || (activeBookings.length > 0 ? 1 : 0);
 
-  // Total theoretical capacity
-  const totalOfferedCapacity = departuresCount * 30; // average boat capacity
-  const capacityUtilizationPct = totalOfferedCapacity > 0
-    ? Math.min(100, Math.round((totalPassengers / totalOfferedCapacity) * 1000) / 10)
+  const activeDepartures = departures.filter((departure) => departure.status !== 'cancelled');
+  const assignedDepartures = activeDepartures.filter((departure) =>
+    Boolean(departure.vesselId || departure.guideId || departure.captainId || departure.driverId)
+  );
+  const unassignedDepartures = activeDepartures.filter((departure) =>
+    !departure.vesselId && !departure.guideId && !departure.captainId && !departure.driverId
+  );
+
+  const departurePassengerCount = activeDepartures.reduce(
+    (sum, departure) => sum + (Number(departure.passengerCount) || 0),
+    0
+  );
+  const departureCapacity = activeDepartures.reduce(
+    (sum, departure) => sum + (Number(departure.capacity) || 0),
+    0
+  );
+  const capacityUtilizationPct = departureCapacity > 0
+    ? Math.round((departurePassengerCount / departureCapacity) * 1000) / 10
     : 0;
 
-  const cancellationRatePct = activeBookings.length > 0
-    ? Math.round((cancellations / activeBookings.length) * 1000) / 10
-    : 0;
-
-  // Pickup Distribution
-  const pickupCounts = new Map<string, { guests: number; area: string }>();
-  activeBookings
-    .filter((b) => b.status !== 'cancelled')
-    .forEach((b) => {
-      const loc = b.pickup?.hotelName || b.customer?.hotelName || b.pickup?.locationName || 'Hurghada Center';
-      const area = b.pickup?.area || 'Hurghada Coast';
-      const guests = (b.guests?.adults || 1) + (b.guests?.children || 0);
-
-      const entry = pickupCounts.get(loc) || { guests: 0, area };
-      entry.guests += guests;
-      pickupCounts.set(loc, entry);
-    });
-
-  const pickupDistribution: Array<{ locationName: string; area: string; guestsCount: number; percentage: number }> = [];
-  pickupCounts.forEach((val, loc) => {
-    pickupDistribution.push({
-      locationName: loc,
-      area: val.area,
-      guestsCount: val.guests,
-      percentage: totalPassengers > 0 ? Math.round((val.guests / totalPassengers) * 1000) / 10 : 0,
-    });
+  const totalGuestsForPickup = passengerBookings.reduce(
+    (sum, booking) =>
+      sum +
+      (Number(booking.guests?.adults) || 0) +
+      (Number(booking.guests?.children) || 0) +
+      (Number(booking.guests?.infants) || 0),
+    0
+  );
+  const pickupMap = new Map<string, { area: string; guests: number }>();
+  passengerBookings.forEach((booking) => {
+    const locationName = booking.pickup?.locationName || booking.pickup?.hotelName ||
+      booking.customer?.hotelName || 'Not recorded';
+    const area = booking.pickup?.area || 'Not recorded';
+    const guests =
+      (Number(booking.guests?.adults) || 0) +
+      (Number(booking.guests?.children) || 0) +
+      (Number(booking.guests?.infants) || 0);
+    const current = pickupMap.get(locationName) || { area, guests: 0 };
+    current.guests += guests;
+    if (current.area === 'Not recorded' && area !== 'Not recorded') current.area = area;
+    pickupMap.set(locationName, current);
   });
-  pickupDistribution.sort((a, b) => b.guestsCount - a.guestsCount);
+  const pickupDistribution = Array.from(pickupMap.entries())
+    .map(([locationName, value]) => ({
+      locationName,
+      area: value.area,
+      guestsCount: value.guests,
+      percentage: totalGuestsForPickup > 0
+        ? Math.round((value.guests / totalGuestsForPickup) * 1000) / 10
+        : 0,
+    }))
+    .sort((a, b) => b.guestsCount - a.guestsCount);
 
-  // Vessel Utilization
-  const vesselUtilization: VesselUtilizationItem[] = vessels.map((ves) => {
-    const vesAssignments = assignments.filter((a) => {
-      const aDate = a.date || '';
-      return a.vesselId === ves.id && aDate >= interval.startDate && aDate <= interval.endDate;
-    });
-
-    const tripsCount = vesAssignments.length || 1;
-    let carried = 0;
-    vesAssignments.forEach((va) => {
-      const matched = activeBookings.filter(
-        (b) => b.date === va.date && (b.tourId === va.tourId || b.tourSlug === va.tourId) && b.status !== 'cancelled'
-      );
-      matched.forEach((b) => {
-        carried += (b.guests?.adults || 1) + (b.guests?.children || 0) + (b.guests?.infants || 0);
-      });
-    });
-
-    // If direct assignments match 0 but vessel is active, compute realistic capacity load
-    if (carried === 0 && activeBookings.length > 0) {
-      carried = Math.min(ves.passenger_capacity, Math.round(totalPassengers / Math.max(1, vessels.length)));
-    }
-
-    const totalCap = tripsCount * ves.passenger_capacity;
-    const utilPct = totalCap > 0 ? Math.min(100, Math.round((carried / totalCap) * 100)) : 0;
-
+  const vesselUtilization: VesselUtilizationItem[] = vessels.map((vessel) => {
+    const vesselDepartures = activeDepartures.filter((departure) => departure.vesselId === vessel.id);
+    const passengersCarried = vesselDepartures.reduce(
+      (sum, departure) => sum + (Number(departure.passengerCount) || 0),
+      0
+    );
+    const capacityForTrips = vesselDepartures.reduce(
+      (sum, departure) => sum + (Number(departure.capacity) || 0),
+      0
+    );
     return {
-      vesselId: ves.id,
-      vesselName: ves.name,
-      vesselType: ves.vessel_type,
-      maxCapacity: ves.passenger_capacity,
-      tripsCount,
-      passengersCarried: carried,
-      utilizationPct: utilPct,
+      vesselId: vessel.id,
+      vesselName: vessel.name,
+      vesselType: vessel.vessel_type || 'Not recorded',
+      maxCapacity: Number(vessel.passenger_capacity) || 0,
+      tripsCount: vesselDepartures.length,
+      passengersCarried,
+      utilizationPct: capacityForTrips > 0
+        ? Math.round((passengersCarried / capacityForTrips) * 1000) / 10
+        : 0,
     };
-  });
+  }).filter((vessel) => vessel.tripsCount > 0);
 
-  // Guide Assignments
-  const activeGuides = guides.filter((g) => g.is_active);
-  const guideWorkload = activeGuides.map((g) => {
-    const gAssignments = assignments.filter((a) => a.guideId === g.id);
+  const activeGuides = guides.filter((guide) => guide.is_active);
+  const guideWorkload: GuideAssignmentItem[] = activeGuides.map((guide) => {
+    const guideDepartures = activeDepartures.filter((departure) => departure.guideId === guide.id);
+    const hoursLogged = guideDepartures.reduce(
+      (sum, departure) => sum + departureDurationHours(departure.startTime || departure.departureTime, departure.endTime),
+      0
+    );
     return {
-      guideId: g.id,
-      guideName: g.full_name,
-      assignedCount: gAssignments.length,
-      hoursLogged: gAssignments.length * 7,
+      guideId: guide.id,
+      guideName: guide.full_name,
+      assignedCount: guideDepartures.length,
+      hoursLogged,
     };
-  });
+  }).sort((a, b) => b.assignedCount - a.assignedCount);
 
-  const totalAssignmentsCount = assignments.length;
-  const assignedToursCount = assignments.filter((a) => a.guideId && a.vesselId).length;
-  const unassignedToursCount = Math.max(0, departuresCount - assignedToursCount);
-
-  // Operational Issues List
-  const operationalIssues: OperationsMetrics['operationalIssues'] = [];
-
-  if (unassignedToursCount > 0) {
+  const timestamp = new Date().toISOString();
+  const operationalIssues: OperationalIssueItem[] = [];
+  if (activeDepartures.length === 0) {
     operationalIssues.push({
-      id: 'iss-unassigned',
+      id: 'no-departures-in-period',
+      severity: 'info',
+      category: 'schedule',
+      title: 'No departure records in the selected period',
+      description: 'No departure rows were found for this date range. Capacity and assignment metrics are therefore unavailable for this period.',
+      timestamp,
+    });
+  }
+  if (unassignedDepartures.length > 0) {
+    operationalIssues.push({
+      id: 'unassigned-departures',
       severity: 'warning',
-      category: 'Dispatch Alert',
-      title: `${unassignedToursCount} Unassigned Excursion Departure${unassignedToursCount > 1 ? 's' : ''}`,
-      description: 'Scheduled departures require captain or guide roster confirmation in operations manager.',
-      timestamp: new Date().toISOString(),
+      category: 'staffing',
+      title: 'Unassigned departures',
+      description: `${unassignedDepartures.length} departure record(s) have no vessel, guide, captain or driver assignment.`,
+      timestamp,
     });
   }
 
-  const windKnots = weather?.windSpeedKnots ?? 0;
-  const swellM = weather?.swellHeightM ?? 0;
-
-  if (windKnots > 20 || swellM > 1.8) {
+  const maintenanceVessels = vessels.filter((vessel) =>
+    ['maintenance', 'dry_dock'].includes(String(vessel.status || '').toLowerCase())
+  );
+  if (maintenanceVessels.length > 0) {
     operationalIssues.push({
-      id: 'iss-weather',
+      id: 'vessel-maintenance',
       severity: 'warning',
-      category: 'Maritime Weather',
-      title: 'Red Sea Coast Guard Advisory Notice',
-      description: `Winds at ${windKnots} knots with ${swellM}m waves. Offshore catamaran trips require safety check.`,
-      timestamp: new Date().toISOString(),
+      category: 'fleet',
+      title: 'Vessels under maintenance',
+      description: maintenanceVessels.map((vessel) => vessel.name).join(', '),
+      timestamp,
+    });
+  }
+
+  const hasLiveWeather = Boolean(
+    weather?.isAvailable &&
+    (weather.windSpeedKnots !== null && weather.windSpeedKnots !== undefined ||
+      weather.swellHeightM !== null && weather.swellHeightM !== undefined)
+  );
+  if (weather?.coastGuardCleared === false) {
+    operationalIssues.push({
+      id: 'coast-guard-not-cleared',
+      severity: 'critical',
+      category: 'clearance',
+      title: 'Operator bulletin records no Coast Guard clearance',
+      description: 'The recorded operator bulletin does not indicate clearance. Do not treat this dashboard as authorization to sail; follow the harbor authority and operator decision.',
+      timestamp,
+    });
+  } else if (weather?.coastGuardCleared === null || weather?.coastGuardCleared === undefined) {
+    operationalIssues.push({
+      id: 'coast-guard-not-recorded',
+      severity: 'warning',
+      category: 'clearance',
+      title: 'Coast Guard clearance is not recorded',
+      description: 'No operator-recorded clearance is available for this date. Verify sailing permission with the harbor authority before departure.',
+      timestamp,
+    });
+  }
+
+  if (!hasLiveWeather) {
+    operationalIssues.push({
+      id: 'weather-unavailable',
+      severity: 'warning',
+      category: 'weather',
+      title: 'Live maritime weather readings unavailable',
+      description: 'No current wind or swell observation is available. Verify local marine conditions and official Coast Guard notices before any departure; this dashboard cannot confirm clearance.',
+      timestamp,
     });
   } else {
-    operationalIssues.push({
-      id: 'iss-weather-ok',
-      severity: 'info',
-      category: 'Weather Clear',
-      title: 'Maritime Conditions Favorable',
-      description: 'Calm waters across Giftun Island and Makadi reefs; all commercial permits clear for departure.',
-      timestamp: new Date().toISOString(),
-    });
+    const wind = Number(weather.windSpeedKnots) || 0;
+    const swell = Number(weather.swellHeightM) || 0;
+    if (wind > 20 || swell > 1.8) {
+      operationalIssues.push({
+        id: 'weather-threshold',
+        severity: 'critical',
+        category: 'weather',
+        title: 'Weather readings exceed configured thresholds',
+        description: `Recorded wind: ${wind} knots; recorded swell: ${swell} m. Confirm the latest official marine advisories and operator clearance before departure.`,
+        timestamp,
+      });
+    } else {
+      operationalIssues.push({
+        id: 'weather-within-threshold',
+        severity: 'info',
+        category: 'weather',
+        title: 'Recorded weather readings within configured thresholds',
+        description: 'These readings are not a Coast Guard clearance or a substitute for checking current official marine advisories.',
+        timestamp,
+      });
+    }
   }
 
-  // Vessel maintenance reminder
-  const maintenancePending = vessels.filter((v) => v.status === 'maintenance');
-  if (maintenancePending.length > 0) {
-    operationalIssues.push({
-      id: 'iss-vessel-maint',
-      severity: 'critical',
-      category: 'Fleet Maintenance',
-      title: `${maintenancePending[0].name} in Dry Dock Inspection`,
-      description: `Vessel registration ${maintenancePending[0].registration_number} scheduled for marine surveyor sign-off.`,
-      timestamp: new Date().toISOString(),
-    });
-  }
+  const cancellationRatePct = rangeBookings.length > 0
+    ? Math.round((cancellations.length / rangeBookings.length) * 1000) / 10
+    : 0;
 
   return {
-    departuresCount,
-    passengerCounts: {
-      adults,
-      children,
-      infants,
-      total: totalPassengers,
-    },
+    departuresCount: activeDepartures.length,
+    passengerCounts: { adults, children, infants, total: totalPassengers },
     capacityUtilizationPct,
-    cancellationsCount: cancellations,
+    cancellationsCount: cancellations.length,
     cancellationRatePct,
-    noShowsCount: noShows,
+    noShowsCount: noShows.length,
     pickupDistribution,
     vesselUtilization,
     guideAssignments: {
-      totalAssignments: totalAssignmentsCount,
-      assignedTours: assignedToursCount,
-      unassignedTours: unassignedToursCount,
+      totalAssignments: assignments.filter((assignment) => {
+        const date = String((assignment as any).date || '');
+        return date >= interval.startDate && date <= interval.endDate;
+      }).length,
+      assignedTours: assignedDepartures.length,
+      unassignedTours: unassignedDepartures.length,
       activeGuidesCount: activeGuides.length,
       guides: guideWorkload,
     },
@@ -967,149 +896,151 @@ export async function fetchFinanceReport(interval: DateRangeInterval): Promise<F
   ]);
 
   const activeBookings = filterBookingsByInterval(allBookings, interval);
-
-  // Gross contracted revenue excludes cancelled bookings.
   const nonCancelled = activeBookings.filter(
-    (b) => b.status !== 'cancelled' && b.status !== 'cancellation_requested'
+    (booking) => booking.status !== 'cancelled' && booking.status !== 'cancellation_requested'
   );
-  const activeBookingsRefs = new Set(nonCancelled.map((b) => b.bookingReference));
-  const activeBookingIds = new Set(nonCancelled.map((b) => b.bookingId).filter(Boolean));
+  const activeBookingRefs = new Set(nonCancelled.map((booking) => booking.bookingReference));
+  const activeBookingIds = new Set(nonCancelled.map((booking) => booking.bookingId).filter(Boolean));
   const allNonCancelledBookingRefs = new Set(
     allBookings
       .filter((booking) => booking.status !== 'cancelled' && booking.status !== 'cancellation_requested')
       .map((booking) => booking.bookingReference)
   );
   const matchesActiveBooking = (record: { bookingReference?: string; bookingId?: string }) =>
-    activeBookingsRefs.has(record.bookingReference || '') || activeBookingIds.has(record.bookingId || '');
+    activeBookingRefs.has(record.bookingReference || '') || activeBookingIds.has(record.bookingId || '');
   const isSettledPayment = (payment: { paymentStatus: unknown }) =>
     ['paid', 'partially paid'].includes(String(payment.paymentStatus).toLowerCase().replace(/_/g, ' '));
-  const grossRevenueEur = nonCancelled.reduce((sum, b) => sum + (b.pricing?.totalEur || 0), 0);
+  const isEur = (record: { currency?: string | null }) => String(record.currency || '').toUpperCase() === 'EUR';
 
-  // Discounts
-  const discountsEur = nonCancelled.reduce((sum, b) => sum + (b.pricing?.discountEur || 0), 0);
+  const bookingGrossEur = (booking: (typeof nonCancelled)[number]) => {
+    const totalEur = Number(booking.pricing?.totalEur) || 0;
+    const discountEur = Number(booking.pricing?.discountEur) || 0;
+    const subtotalEur = Number(booking.pricing?.subtotalEur);
+    return Number.isFinite(subtotalEur) ? subtotalEur : totalEur + discountEur;
+  };
+  const grossRevenueEur = nonCancelled.reduce((sum, booking) => sum + bookingGrossEur(booking), 0);
+  const discountsEur = nonCancelled.reduce((sum, booking) => sum + (Number(booking.pricing?.discountEur) || 0), 0);
+  const netBookedRevenueEur = Math.max(0, grossRevenueEur - discountsEur);
 
-  // Filter payments within interval
   const intervalPayments = payments.filter((payment) => {
     if (!isSettledPayment(payment) || !allNonCancelledBookingRefs.has(payment.bookingReference)) return false;
     const paymentDate = (payment.paymentDate || payment.createdAt || '').split('T')[0];
     return (paymentDate >= interval.startDate && paymentDate <= interval.endDate) || matchesActiveBooking(payment);
   });
 
-  const collectedPaymentsEur = intervalPayments.reduce((sum, p) => sum + p.amount, 0);
+  const eurIntervalPayments = intervalPayments.filter(isEur);
+  const collectedPaymentsEur = eurIntervalPayments.reduce((sum, payment) => sum + (Number(payment.amount) || 0), 0);
 
-  // Filter refunds
   const intervalRefunds = refunds.filter((refund) => {
     if (refund.status !== 'processed') return false;
     const refundDate = (refund.processedDate || refund.createdAt || '').split('T')[0];
-    return refundDate >= interval.startDate && refundDate <= interval.endDate;
+    return matchesActiveBooking(refund) || (
+      refundDate >= interval.startDate &&
+      refundDate <= interval.endDate &&
+      allNonCancelledBookingRefs.has(refund.bookingReference)
+    );
   });
-
-  const refundsEur = intervalRefunds.reduce((sum, r) => sum + (r.approvedAmount || r.amount || 0), 0);
-
-  // Outstanding balances are based on net collections for this booking cohort.
-  const cohortPayments = payments.filter((payment) =>
-    isSettledPayment(payment) && matchesActiveBooking(payment)
-  );
-  const cohortRefunds = refunds.filter((refund) =>
-    refund.status === 'processed' && matchesActiveBooking(refund)
-  );
-  const cohortGrossCollected = cohortPayments.reduce((sum, payment) => sum + payment.amount, 0);
-  const cohortRefunded = cohortRefunds.reduce(
-    (sum, refund) => sum + (refund.approvedAmount || refund.amount || 0),
+  const eurIntervalRefunds = intervalRefunds.filter(isEur);
+  const refundsEur = eurIntervalRefunds.reduce(
+    (sum, refund) => sum + (Number(refund.approvedAmount ?? refund.amount) || 0),
     0
   );
-  const cohortNetCollected = Math.max(0, cohortGrossCollected - cohortRefunded);
-  const outstandingEur = Math.max(0, grossRevenueEur - cohortNetCollected);
 
-  // Net booked revenue deducts completed refunds, not merely approved requests.
-  const netRevenueEur = Math.max(0, grossRevenueEur - cohortRefunded);
+  const cohortPayments = payments.filter((payment) => isSettledPayment(payment) && matchesActiveBooking(payment));
+  const cohortRefunds = refunds.filter((refund) => refund.status === 'processed' && matchesActiveBooking(refund));
+  const cohortGrossCollectedEur = cohortPayments.filter(isEur).reduce(
+    (sum, payment) => sum + (Number(payment.amount) || 0),
+    0
+  );
+  const cohortRefundedEur = cohortRefunds.filter(isEur).reduce(
+    (sum, refund) => sum + (Number(refund.approvedAmount ?? refund.amount) || 0),
+    0
+  );
+  const cohortNetCollectedEur = Math.max(0, cohortGrossCollectedEur - cohortRefundedEur);
+  const outstandingEur = Math.max(0, netBookedRevenueEur - cohortNetCollectedEur);
+  const netRevenueEur = Math.max(0, netBookedRevenueEur - cohortRefundedEur);
 
-  // Collection Rate
-  const netDue = Math.max(1, grossRevenueEur - discountsEur);
+  const netDue = Math.max(1, netBookedRevenueEur);
   const collectionRatePct = Math.min(100, Math.round((collectedPaymentsEur / netDue) * 1000) / 10);
 
-  // Payment Methods Breakdown
   const methodMap = new Map<string, { amount: number; count: number }>();
-  intervalPayments.forEach((p) => {
-    const m = p.paymentMethod || 'Online Card / Gateway';
-    const cur = methodMap.get(m) || { amount: 0, count: 0 };
-    cur.amount += p.amount;
-    cur.count += 1;
-    methodMap.set(m, cur);
+  eurIntervalPayments.forEach((payment) => {
+    const method = payment.paymentMethod || 'Unknown';
+    const current = methodMap.get(method) || { amount: 0, count: 0 };
+    current.amount += Number(payment.amount) || 0;
+    current.count += 1;
+    methodMap.set(method, current);
   });
+  const paymentMethods: PaymentMethodBreakdown[] = Array.from(methodMap.entries())
+    .map(([method, value]) => ({
+      method,
+      amountEur: value.amount,
+      count: value.count,
+      percentage: collectedPaymentsEur > 0
+        ? Math.round((value.amount / collectedPaymentsEur) * 1000) / 10
+        : 0,
+    }))
+    .sort((a, b) => b.amountEur - a.amountEur);
 
-  const paymentMethods: PaymentMethodBreakdown[] = [];
-  methodMap.forEach((val, m) => {
-    paymentMethods.push({
-      method: m,
-      amountEur: val.amount,
-      count: val.count,
-      percentage: collectedPaymentsEur > 0 ? Math.round((val.amount / collectedPaymentsEur) * 1000) / 10 : 0,
-    });
-  });
-  paymentMethods.sort((a, b) => b.amountEur - a.amountEur);
-
-  // Monthly Revenue (12-month rolling breakdown)
-  const monthMap = new Map<string, { gross: number; paid: number; refunds: number; bookings: number }>();
+  const monthMap = new Map<string, { gross: number; discounts: number; paid: number; refunds: number; bookings: number }>();
   const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const curYear = new Date().getFullYear();
-
-  // Initialize 12 months
-  for (let m = 0; m < 12; m++) {
-    const key = `${monthNames[m]} ${curYear}`;
-    monthMap.set(key, { gross: 0, paid: 0, refunds: 0, bookings: 0 });
+  const currentYear = new Date().getFullYear();
+  for (let month = 0; month < 12; month++) {
+    monthMap.set(`${monthNames[month]} ${currentYear}`, { gross: 0, discounts: 0, paid: 0, refunds: 0, bookings: 0 });
   }
 
-  // Aggregate bookings by month
-  allBookings.forEach((b) => {
-    const dStr = b.date || b.createdAt;
-    if (!dStr) return;
-    const d = new Date(dStr);
-    if (d.getFullYear() === curYear && b.status !== 'cancelled') {
-      const key = `${monthNames[d.getMonth()]} ${curYear}`;
-      const cur = monthMap.get(key) || { gross: 0, paid: 0, refunds: 0, bookings: 0 };
-      cur.gross += b.pricing?.totalEur || 0;
-      cur.bookings += 1;
-      monthMap.set(key, cur);
-    }
+  allBookings.forEach((booking) => {
+    const dateValue = booking.date || booking.createdAt;
+    if (!dateValue || ['cancelled', 'cancellation_requested'].includes(booking.status)) return;
+    const date = new Date(dateValue);
+    if (Number.isNaN(date.getTime()) || date.getFullYear() !== currentYear) return;
+    const key = `${monthNames[date.getMonth()]} ${currentYear}`;
+    const current = monthMap.get(key)!;
+    current.gross += bookingGrossEur(booking);
+    current.discounts += Number(booking.pricing?.discountEur) || 0;
+    current.bookings += 1;
   });
 
-  // Aggregate payments by month
-  payments.forEach((p) => {
-    if (isSettledPayment(p)) {
-      const d = new Date(p.paymentDate || p.createdAt || '');
-      if (d.getFullYear() === curYear) {
-        const key = `${monthNames[d.getMonth()]} ${curYear}`;
-        const cur = monthMap.get(key) || { gross: 0, paid: 0, refunds: 0, bookings: 0 };
-        cur.paid += p.amount;
-        monthMap.set(key, cur);
-      }
-    }
+  payments.forEach((payment) => {
+    if (!isSettledPayment(payment) || !isEur(payment)) return;
+    const date = new Date(payment.paymentDate || payment.createdAt || '');
+    if (Number.isNaN(date.getTime()) || date.getFullYear() !== currentYear) return;
+    const key = `${monthNames[date.getMonth()]} ${currentYear}`;
+    const current = monthMap.get(key)!;
+    current.paid += Number(payment.amount) || 0;
   });
 
-  // Aggregate refunds by month
   refunds.forEach((refund) => {
-    if (refund.status !== 'processed') return;
-    const processedDate = new Date(refund.processedDate || refund.createdAt || '');
-    if (processedDate.getFullYear() === curYear) {
-      const key = `${monthNames[processedDate.getMonth()]} ${curYear}`;
-      const cur = monthMap.get(key) || { gross: 0, paid: 0, refunds: 0, bookings: 0 };
-      cur.refunds += refund.approvedAmount || refund.amount || 0;
-      monthMap.set(key, cur);
-    }
+    if (refund.status !== 'processed' || !isEur(refund)) return;
+    const date = new Date(refund.processedDate || refund.createdAt || '');
+    if (Number.isNaN(date.getTime()) || date.getFullYear() !== currentYear) return;
+    const key = `${monthNames[date.getMonth()]} ${currentYear}`;
+    const current = monthMap.get(key)!;
+    current.refunds += Number(refund.approvedAmount ?? refund.amount) || 0;
   });
 
-  const monthlyRevenue: MonthlyRevenueItem[] = [];
-  monthMap.forEach((val, m) => {
-    monthlyRevenue.push({
-      month: m,
-      grossEur: val.gross,
-      paidEur: val.paid,
-      refundsEur: val.refunds,
-      netEur: Math.max(0, val.gross - val.refunds),
-      bookingsCount: val.bookings,
-    });
+  const monthlyRevenue: MonthlyRevenueItem[] = Array.from(monthMap.entries()).map(([month, value]) => ({
+    month,
+    grossEur: value.gross,
+    discountsEur: value.discounts,
+    paidEur: value.paid,
+    refundsEur: value.refunds,
+    netEur: Math.max(0, value.gross - value.discounts - value.refunds),
+    bookingsCount: value.bookings,
+  }));
+
+  const currencyMap = new Map<string, number>();
+  intervalPayments.forEach((payment) => {
+    const currency = String(payment.currency || 'UNKNOWN').toUpperCase();
+    currencyMap.set(currency, (currencyMap.get(currency) || 0) + (Number(payment.amount) || 0));
   });
+  const currencyBreakdown = Array.from(currencyMap.entries())
+    .map(([currency, amount]) => ({
+      currency,
+      amount,
+      convertedEur: currency === 'EUR' ? amount : null,
+    }))
+    .sort((a, b) => b.amount - a.amount);
 
   return {
     grossRevenueEur,
@@ -1123,11 +1054,7 @@ export async function fetchFinanceReport(interval: DateRangeInterval): Promise<F
     collectionRatePct,
     paymentMethods,
     monthlyRevenue,
-    currencyBreakdown: [
-      { currency: 'EUR', amount: collectedPaymentsEur, convertedEur: collectedPaymentsEur },
-      { currency: 'USD', amount: Math.round(collectedPaymentsEur * 1.08), convertedEur: collectedPaymentsEur },
-      { currency: 'EGP', amount: Math.round(collectedPaymentsEur * 52.5), convertedEur: collectedPaymentsEur },
-    ],
+    currencyBreakdown,
   };
 }
 
@@ -1136,143 +1063,122 @@ export async function fetchFinanceReport(interval: DateRangeInterval): Promise<F
 // ------------------------------------------------------------------------------
 
 export async function runReportBuilder(filters: ReportBuilderFilters): Promise<ReportBuilderRow[]> {
-  // Check if Supabase RPC is available for fast server-side querying
-  if (isSupabaseConfigured()) {
-    try {
-      const { data, error } = await supabase.rpc('query_custom_bi_report', {
-        p_filters: filters,
-      });
-      if (!error && Array.isArray(data) && data.length > 0) {
-        return data.map((r: any) => ({
-          bookingId: r.booking_id || r.id,
-          bookingReference: r.booking_reference,
-          customerName: r.customer_name || 'Guest',
-          customerEmail: r.customer_email || '',
-          customerPhone: r.customer_phone || '',
-          tourTitle: r.tour_title || 'Excursion',
-          destination: r.destination_name || 'Hurghada',
-          bookingDate: r.booking_date,
-          travelDate: r.booking_date,
-          totalGuests: Number(r.total_guests || 1),
-          subtotal: Number(r.subtotal || 0),
-          discount: Number(r.discount || 0),
-          total: Number(r.total || 0),
-          currency: r.currency || 'EUR',
-          bookingStatus: r.booking_status || 'confirmed',
-          paymentStatus: r.payment_status || 'pending',
-          paymentMethod: r.payment_method || 'pay_at_pickup',
-          leadSource: r.lead_source || 'Website',
-          staffName: r.staff_name || 'Direct',
-          createdAt: r.created_at || '',
-        }));
-      }
-    } catch {
-      // Fallback to local query engine below
-    }
+  if (filters.startDate && filters.endDate && filters.startDate > filters.endDate) {
+    throw new Error('The report start date must be on or before the end date.');
   }
 
-  // Repository-based filter engine
+  if (isSupabaseConfigured()) {
+    const { data, error } = await supabase.rpc('query_custom_bi_report', {
+      p_filters: filters,
+    });
+    if (error) throw new Error(`The report query failed: ${error.message}`);
+    if (data === null || data === undefined) return [];
+    if (!Array.isArray(data)) throw new Error('The report query returned an invalid result format.');
+
+    return data.map((row: any) => ({
+      bookingId: String(row.booking_id || row.id || row.booking_reference || ''),
+      bookingReference: String(row.booking_reference || ''),
+      customerName: String(row.customer_name || ''),
+      customerEmail: String(row.customer_email || ''),
+      customerPhone: String(row.customer_phone || ''),
+      tourTitle: String(row.tour_title || ''),
+      destination: String(row.destination_name || ''),
+      bookingDate: String(row.booking_date || ''),
+      travelDate: String(row.travel_date || row.booking_date || ''),
+      totalGuests: Number(row.total_guests ?? 0),
+      subtotal: Number(row.subtotal ?? 0),
+      discount: Number(row.discount ?? 0),
+      total: Number(row.total ?? 0),
+      currency: String(row.currency || 'EUR').toUpperCase(),
+      bookingStatus: String(row.booking_status || 'unknown'),
+      paymentStatus: String(row.payment_status || 'unknown'),
+      paymentMethod: String(row.payment_method || 'unknown'),
+      leadSource: normalizeLeadSource(row.lead_source),
+      staffName: String(row.staff_name || 'Unassigned'),
+      createdAt: String(row.created_at || ''),
+    }));
+  }
+
+  if (!import.meta.env.DEV) {
+    throw new Error('Supabase is not configured; custom reports cannot be generated in production.');
+  }
+
+  // Development-only local query engine. It uses only records actually present
+  // in the local repository; it never invents staff, destinations or booking facts.
   const [allBookings, leads, dynamicTours] = await Promise.all([
     bookingRepository.listBookings(),
     listLeads(),
-    getPublishedTours().catch(() => ALL_TOURS),
+    getPublishedTours(),
   ]);
 
   const leadCustomerMap = new Map<string, { source: string; staff: string }>();
-  leads.forEach((l) => {
-    if (l.email) {
-      leadCustomerMap.set(l.email.toLowerCase(), {
-        source: l.source || 'Website',
-        staff: l.assignedStaffName || 'Tour Desk',
-      });
-    }
+  leads.forEach((lead) => {
+    if (!lead.email) return;
+    leadCustomerMap.set(lead.email.toLowerCase(), {
+      source: normalizeLeadSource(lead.source),
+      staff: lead.assignedStaffName || 'Unassigned',
+    });
   });
 
   return allBookings
-    .filter((b) => {
-      // 1. Date Range
-      const d = b.date || b.createdAt?.split('T')[0] || '';
-      if (filters.startDate && d < filters.startDate) return false;
-      if (filters.endDate && d > filters.endDate) return false;
+    .filter((booking) => {
+      const date = booking.date || booking.createdAt?.split('T')[0] || '';
+      if (filters.startDate && date < filters.startDate) return false;
+      if (filters.endDate && date > filters.endDate) return false;
 
-      // 2. Tour
       if (filters.tourId !== 'all') {
-        const matchId = b.tourId === filters.tourId || b.tourSlug === filters.tourId;
-        const matchingTour = (dynamicTours && dynamicTours.find((t) => t.id === filters.tourId)) || ALL_TOURS.find((t) => t.id === filters.tourId);
-        const matchTitle = matchingTour?.title === b.tourTitle;
-        if (!matchId && !matchTitle) return false;
+        const matchingTour = dynamicTours.find((tour) => tour.id === filters.tourId);
+        const matchId = booking.tourId === filters.tourId || booking.tourSlug === filters.tourId;
+        if (!matchId && matchingTour?.title !== booking.tourTitle) return false;
       }
 
-      // 3. Destination
-      if (filters.destination !== 'all') {
-        const dest = (b.tourDestination || 'Hurghada').toLowerCase();
-        if (dest !== filters.destination.toLowerCase()) return false;
-      }
+      if (filters.destination !== 'all' &&
+        (booking.tourDestination || '').toLowerCase() !== filters.destination.toLowerCase()) return false;
+      if (filters.bookingStatus !== 'all' && booking.status !== filters.bookingStatus) return false;
+      if (filters.paymentStatus !== 'all' && booking.paymentStatus !== filters.paymentStatus) return false;
 
-      // 4. Booking Status
-      if (filters.bookingStatus !== 'all') {
-        if (b.status !== filters.bookingStatus) return false;
-      }
-
-      // 5. Payment Status
-      if (filters.paymentStatus !== 'all') {
-        if (b.paymentStatus !== filters.paymentStatus) return false;
-      }
-
-      // 6. Customer query
       if (filters.customerQuery) {
-        const q = filters.customerQuery.toLowerCase();
-        const refMatch = (b.bookingReference || '').toLowerCase().includes(q);
-        const nameMatch = `${b.customer?.firstName || ''} ${b.customer?.lastName || ''}`.toLowerCase().includes(q);
-        const emailMatch = (b.customer?.email || '').toLowerCase().includes(q);
-        if (!refMatch && !nameMatch && !emailMatch) return false;
+        const query = filters.customerQuery.toLowerCase();
+        const referenceMatch = (booking.bookingReference || '').toLowerCase().includes(query);
+        const nameMatch = `${booking.customer?.firstName || ''} ${booking.customer?.lastName || ''}`.toLowerCase().includes(query);
+        const emailMatch = (booking.customer?.email || '').toLowerCase().includes(query);
+        if (!referenceMatch && !nameMatch && !emailMatch) return false;
       }
 
-      // 7. Lead source & Staff filters
-      const email = b.customer?.email?.toLowerCase() || '';
-      const leadInfo = leadCustomerMap.get(email) || {
-        source: b.paymentMethod === 'pay_at_pickup' ? 'Hotel' : 'Website',
-        staff: 'Mariam Youssef',
-      };
-
-      if (filters.leadSource !== 'all') {
-        if (leadInfo.source.toLowerCase() !== filters.leadSource.toLowerCase()) return false;
-      }
-
-      if (filters.staffName !== 'all') {
-        if (!leadInfo.staff.toLowerCase().includes(filters.staffName.toLowerCase())) return false;
-      }
-
+      const email = booking.customer?.email?.toLowerCase() || '';
+      const leadInfo = leadCustomerMap.get(email);
+      const source = leadInfo?.source || normalizeLeadSource((booking as any).source);
+      const staff = leadInfo?.staff || (booking as any).assignedStaffName || 'Unassigned';
+      if (filters.leadSource !== 'all' && source.toLowerCase() !== filters.leadSource.toLowerCase()) return false;
+      if (filters.staffName !== 'all' && !staff.toLowerCase().includes(filters.staffName.toLowerCase())) return false;
       return true;
     })
-    .map((b) => {
-      const email = b.customer?.email?.toLowerCase() || '';
-      const leadInfo = leadCustomerMap.get(email) || {
-        source: b.paymentMethod === 'pay_at_pickup' ? 'Hotel' : 'Website',
-        staff: 'Mariam Youssef',
-      };
-
+    .map((booking) => {
+      const email = booking.customer?.email?.toLowerCase() || '';
+      const leadInfo = leadCustomerMap.get(email);
       return {
-        bookingId: b.bookingId || b.bookingReference,
-        bookingReference: b.bookingReference,
-        customerName: `${b.customer?.firstName || ''} ${b.customer?.lastName || ''}`.trim() || 'Guest',
-        customerEmail: b.customer?.email || '',
-        customerPhone: b.customer?.phoneNumber || '',
-        tourTitle: b.tourTitle || 'Excursion',
-        destination: b.tourDestination || 'Hurghada',
-        bookingDate: b.date || '',
-        travelDate: b.date || '',
-        totalGuests: (b.guests?.adults || 1) + (b.guests?.children || 0) + (b.guests?.infants || 0),
-        subtotal: b.pricing?.subtotalEur || 0,
-        discount: b.pricing?.discountEur || 0,
-        total: b.pricing?.totalEur || 0,
-        currency: 'EUR',
-        bookingStatus: b.status || 'confirmed',
-        paymentStatus: b.paymentStatus || 'pending',
-        paymentMethod: b.paymentMethod || 'pay_at_pickup',
-        leadSource: leadInfo.source,
-        staffName: leadInfo.staff,
-        createdAt: b.createdAt || '',
+        bookingId: booking.bookingId || booking.bookingReference,
+        bookingReference: booking.bookingReference,
+        customerName: `${booking.customer?.firstName || ''} ${booking.customer?.lastName || ''}`.trim(),
+        customerEmail: booking.customer?.email || '',
+        customerPhone: booking.customer?.phoneNumber || '',
+        tourTitle: booking.tourTitle || '',
+        destination: booking.tourDestination || '',
+        bookingDate: booking.date || '',
+        travelDate: booking.date || '',
+        totalGuests: (Number(booking.guests?.adults) || 0) +
+          (Number(booking.guests?.children) || 0) +
+          (Number(booking.guests?.infants) || 0),
+        subtotal: booking.pricing?.subtotalEur || 0,
+        discount: booking.pricing?.discountEur || 0,
+        total: booking.pricing?.totalEur || 0,
+        currency: String(booking.pricing?.currency || 'EUR').toUpperCase(),
+        bookingStatus: booking.status || 'unknown',
+        paymentStatus: booking.paymentStatus || 'unknown',
+        paymentMethod: booking.paymentMethod || 'unknown',
+        leadSource: leadInfo?.source || normalizeLeadSource((booking as any).source),
+        staffName: leadInfo?.staff || (booking as any).assignedStaffName || 'Unassigned',
+        createdAt: booking.createdAt || '',
       };
     });
 }

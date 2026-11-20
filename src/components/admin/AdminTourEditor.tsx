@@ -46,6 +46,7 @@ import {
 import { AdminMediaManager } from './AdminMediaManager';
 import { AdminTab } from './AdminLayout';
 import { useAuth } from '../../contexts/AuthContext';
+import { AdminLoadError } from './AdminLoadError';
 
 interface AdminTourEditorProps {
   tourId?: string; // If undefined, we are creating a new tour
@@ -103,6 +104,8 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
 
   const [activeSubTab, setActiveSubTab] = useState<EditorTab>('general');
   const [loading, setLoading] = useState(isEditing);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadRetry, setLoadRetry] = useState(0);
   const [saving, setSaving] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState<string | null>(null);
@@ -182,6 +185,8 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
   // Load existing tour if editing
   useEffect(() => {
     async function init() {
+      setLoading(true);
+      setLoadError(null);
       try {
         const [dests, cats, pickups, extras] = await Promise.all([
           getDestinations(),
@@ -245,6 +250,7 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
           // pickup promises, language coverage, images or itinerary content.
         }
       } catch (err) {
+        setLoadError(err instanceof Error ? err.message : 'Tour editor data could not be loaded.');
         console.error('Failed to initialize editor data:', err);
       } finally {
         setLoading(false);
@@ -252,7 +258,7 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
     }
 
     init();
-  }, [tourId, isEditing]);
+  }, [tourId, isEditing, loadRetry]);
 
   // Track edits
   const handleFieldChange = (field: keyof DbTour, val: any) => {
@@ -385,6 +391,15 @@ export const AdminTourEditor: React.FC<AdminTourEditorProps> = ({
       <div className="p-16 text-center text-xs text-stone-400 space-y-3">
         <div className="w-8 h-8 border-2 border-[#0A6C74] border-t-transparent rounded-full animate-spin mx-auto" />
         <p>Loading tour CMS details from Supabase...</p>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="max-w-3xl mx-auto my-10 space-y-4">
+        <AdminLoadError message={loadError} onRetry={() => setLoadRetry((value) => value + 1)} />
+        <button type="button" onClick={() => onNavigateTab('tours')} className="px-4 py-2 rounded-lg bg-stone-800 text-white hover:bg-stone-700">Back to tours</button>
       </div>
     );
   }

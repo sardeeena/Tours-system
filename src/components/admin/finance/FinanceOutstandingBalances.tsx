@@ -21,6 +21,7 @@ import {
 } from '../../../services/financeService';
 import { OutstandingBalanceItem } from '../../../types/finance';
 import { useToast } from '../../../contexts/ToastContext';
+import { AdminLoadError } from '../AdminLoadError';
 
 interface FinanceOutstandingBalancesProps {
   onNavigateTab?: (tabId: string, param?: string) => void;
@@ -32,6 +33,7 @@ export const FinanceOutstandingBalances: React.FC<FinanceOutstandingBalancesProp
   const { showToast } = useToast();
   const [balances, setBalances] = useState<OutstandingBalanceItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -47,10 +49,12 @@ export const FinanceOutstandingBalances: React.FC<FinanceOutstandingBalancesProp
 
   const loadData = async () => {
     setLoading(true);
+    setLoadError(null);
     try {
       const data = await getOutstandingBalances();
       setBalances(data);
     } catch (err) {
+      setLoadError(err instanceof Error ? err.message : 'Outstanding balances could not be loaded.');
       console.warn('Failed to load outstanding balances:', err);
     } finally {
       setLoading(false);
@@ -161,6 +165,7 @@ export const FinanceOutstandingBalances: React.FC<FinanceOutstandingBalancesProp
 
   return (
     <div className="space-y-6">
+      {loadError && <AdminLoadError message={loadError} onRetry={loadData} />}
       {/* Top Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
