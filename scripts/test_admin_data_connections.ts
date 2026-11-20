@@ -100,6 +100,14 @@ assert.doesNotMatch(manifestUi, /getPublishedTours\(\)\.catch\(\(\) => \[\]\)/, 
 assert.match(manifestUi, /loadError/, 'Manifest load failures must be displayed distinctly from an empty manifest');
 assert.match(manifestUi, /passengerIndex: editingPassenger\.passengerIndex/, 'Manifest edits must send the passenger index');
 
+const completeSchema = read('complete_schema.sql');
+const passengerTableSchema = section(completeSchema, 'CREATE TABLE IF NOT EXISTS public.booking_passengers (', '\n);');
+assert.match(passengerTableSchema, /passenger_index INTEGER NOT NULL/, 'Fresh schema must include the stable passenger position column');
+assert.match(passengerTableSchema, /is_lead BOOLEAN/, 'Fresh schema must preserve the legacy lead-passenger compatibility flag');
+assert.match(passengerTableSchema, /UNIQUE \(booking_id, passenger_index\)/, 'Fresh schema must enforce unique passenger positions per booking');
+assert.match(completeSchema, /CREATE OR REPLACE FUNCTION public\.assign_booking_passenger_index\(\)/, 'Fresh schema must assign passenger positions to legacy booking RPC inserts');
+assert.match(completeSchema, /CREATE TRIGGER trg_assign_booking_passenger_index/, 'Fresh schema must install the passenger index assignment trigger');
+
 const manifestType = read('src/types/operations.ts');
 assert.match(section(manifestType, 'export interface PassengerManifestItem', 'export interface AvailabilitySlot'), /passengerIndex: number/, 'Manifest rows must expose a stable passenger index');
 

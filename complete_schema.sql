@@ -858,6 +858,9 @@ CREATE TABLE IF NOT EXISTS public.booking_passengers (
     passport_or_id_number TEXT,
     passenger_type TEXT NOT NULL DEFAULT 'adult' CHECK (passenger_type IN ('adult', 'child', 'infant')),
     is_lead_passenger BOOLEAN NOT NULL DEFAULT FALSE,
+    is_lead BOOLEAN DEFAULT FALSE,
+    passenger_index INTEGER NOT NULL,
+    CONSTRAINT booking_passengers_booking_id_passenger_index_key UNIQUE (booking_id, passenger_index),
     date_of_birth DATE,
     gender TEXT,
     phone TEXT,
@@ -1786,6 +1789,7 @@ CREATE INDEX IF NOT EXISTS idx_bookings_user_ref ON public.bookings(user_id, boo
 CREATE INDEX IF NOT EXISTS idx_bookings_tour_date_status ON public.bookings(tour_id, booking_date, status);
 CREATE INDEX IF NOT EXISTS idx_booking_extras_booking ON public.booking_extras(booking_id);
 CREATE INDEX IF NOT EXISTS idx_booking_passengers_booking ON public.booking_passengers(booking_id);
+-- The unique constraint above supplies the (booking_id, passenger_index) index.
 
 -- Business Intelligence Composite Indexes
 CREATE INDEX IF NOT EXISTS idx_bookings_reporting_composite ON public.bookings(created_at, booking_date, status, payment_status);
@@ -1932,6 +1936,39 @@ CREATE TRIGGER trigger_refunds_updated_at BEFORE UPDATE ON public.refund_records
 CREATE TRIGGER trigger_invoices_updated_at BEFORE UPDATE ON public.invoices FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trigger_comm_tmpl_updated_at BEFORE UPDATE ON public.communication_templates FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER trigger_comm_msgs_updated_at BEFORE UPDATE ON public.communication_messages FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+-- Stable passenger position assignment for the booking manifest.
+CREATE OR REPLACE FUNCTION public.assign_booking_passenger_index()
+RETURNS trigger
+LANGUAGE plpgsql
+SET search_path = ''
+AS $function$
+DECLARE
+  v_next_index integer;
+BEGIN
+  IF NEW.passenger_index IS NULL THEN
+    PERFORM 1
+    FROM public.bookings
+    WHERE id = NEW.booking_id
+    FOR UPDATE;
+
+    SELECT COALESCE(MAX(passenger_index) + 1, 0)
+    INTO v_next_index
+    FROM public.booking_passengers
+    WHERE booking_id = NEW.booking_id;
+
+    NEW.passenger_index := v_next_index;
+  END IF;
+
+  RETURN NEW;
+END;
+$function$;
+
+DROP TRIGGER IF EXISTS trg_assign_booking_passenger_index ON public.booking_passengers;
+CREATE TRIGGER trg_assign_booking_passenger_index
+BEFORE INSERT ON public.booking_passengers
+FOR EACH ROW
+EXECUTE FUNCTION public.assign_booking_passenger_index();
 
 -- Public Abuse Prevention Triggers
 DROP TRIGGER IF EXISTS trg_rate_limit_inquiries ON public.inquiries;
