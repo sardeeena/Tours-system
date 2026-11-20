@@ -27,7 +27,11 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Build production assets
         run: npm run build
-      - name: Run browser smoke tests
-        run: npx playwright test
+      - name: Run Vite preview browser smoke tests
+        run: npx playwright test --config=playwright.config.ts
+        env:
+          CI: true
+      - name: Run production Express HTTP browser smoke tests
+        run: npx playwright test --config=playwright.production.config.ts
         env:
           CI: true
