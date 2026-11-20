@@ -694,6 +694,10 @@ export async function updateUserProfile(
   userId: string,
   updates: Partial<AppUser>
 ): Promise<{ success: boolean; error?: string; user?: AppUser }> {
+  if (!userId?.trim()) {
+    return { success: false, error: 'A valid signed-in user is required to update profile details.' };
+  }
+
   const cleanPhone = updates.phoneNumber || updates.phone || null;
   const cleanCountry = updates.country || null;
   const cleanFullName = updates.fullName || null;
@@ -701,7 +705,8 @@ export async function updateUserProfile(
 
   if (isSupabaseConfigured()) {
     try {
-      // 1. Update Supabase public.profiles table
+      // public.profiles is the authoritative customer profile. Do not report
+      // success based only on Auth metadata when this database write fails.
       const profileUpdates: Record<string, any> = {
         updated_at: new Date().toISOString(),
       };
@@ -710,17 +715,23 @@ export async function updateUserProfile(
       if (cleanCountry !== null) profileUpdates.country = cleanCountry;
       if (cleanAvatar !== null) profileUpdates.avatar_url = cleanAvatar;
 
-      const { error: dbError } = await supabase
+      const { data: savedProfile, error: dbError } = await supabase
         .from('profiles')
         .update(profileUpdates)
-        .eq('id', userId);
+        .eq('id', userId)
+        .select('id, full_name, phone, country, avatar_url')
+        .maybeSingle();
 
       if (dbError) {
-        console.warn('Could not update profiles table, attempting auth metadata update:', dbError);
+        return { success: false, error: formatSupabaseError(dbError) };
+      }
+      if (!savedProfile) {
+        return { success: false, error: 'Your account profile could not be found. Please sign in again and retry.' };
       }
 
-      // 2. Update Supabase Auth user metadata
-      const { data: authData, error: authError } = await supabase.auth.updateUser({
+      // Auth metadata is a convenience mirror only; database profile fields
+      // remain authoritative for account display and application workflows.
+      const { error: authError } = await supabase.auth.updateUser({
         data: {
           full_name: cleanFullName || undefined,
           phone: cleanPhone || undefined,
@@ -728,12 +739,10 @@ export async function updateUserProfile(
           avatar_url: cleanAvatar || undefined,
         },
       });
-
       if (authError) {
-        return { success: false, error: formatSupabaseError(authError) };
+        console.warn('Profile was saved, but Auth metadata could not be synchronized:', authError);
       }
 
-      // 3. Retrieve refreshed user record
       const refreshedUser = await getCurrentAdminUser();
       void recordVisitorEvent({ event_name: 'profile_updated', page_path: '/account' });
       return { success: true, user: refreshedUser || undefined };
@@ -742,11 +751,14 @@ export async function updateUserProfile(
     }
   }
 
-  // Fallback for sandbox / local state
+  // Local fallback is available only when a real local active-user record exists.
   const activeUserRaw = localStorage.getItem(LOCAL_ACTIVE_USER_KEY);
   if (activeUserRaw) {
     try {
       const current = JSON.parse(activeUserRaw) as AppUser;
+      if (!current?.id || current.id !== userId) {
+        return { success: false, error: 'The active account changed. Please sign in again.' };
+      }
       const updated: AppUser = {
         ...current,
         ...updates,
@@ -757,7 +769,6 @@ export async function updateUserProfile(
       };
       localStorage.setItem(LOCAL_ACTIVE_USER_KEY, JSON.stringify(updated));
 
-      // Also update in registered users cache
       const localUsers = getStoredLocalUsers();
       const idx = localUsers.findIndex((u) => u.user.id === current.id || u.user.email === current.email);
       if (idx !== -1) {
@@ -767,11 +778,11 @@ export async function updateUserProfile(
 
       return { success: true, user: updated };
     } catch {
-      // ignore
+      return { success: false, error: 'Profile details could not be saved locally.' };
     }
   }
 
-  return { success: true };
+  return { success: false, error: 'No active account was found. Please sign in again.' };
 }
 
 /**
