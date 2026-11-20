@@ -79,6 +79,13 @@ assert(inquiryRoute.includes("p_max_hits: 10"), 'Inquiry endpoint caps submissio
 assert(inquiryRoute.includes("if (ipRateLimitError.code === 'P0001')"), 'Inquiry endpoint returns a rate-limit response when the database limit is reached');
 assert(inquiryRoute.includes("catch (error: any)"), 'Inquiry endpoint catches asynchronous failures and returns a controlled response');
 
+// CSV exports must quote every value and neutralise spreadsheet formulas.
+const communicationsCsv = read('src/components/admin/communications/CommunicationsHistory.tsx');
+assert(communicationsCsv.includes("const csvCell = (value: unknown): string =>"), 'Communications CSV uses one shared safe-cell serializer');
+assert(communicationsCsv.includes("/^[\\u0000-\\u0020]*[=+\\-@]/.test(raw)"), 'Communications CSV neutralizes formula prefixes after leading whitespace/control characters');
+assert(communicationsCsv.includes('safe.replace(/"/g, \'""\')'), 'Communications CSV escapes embedded quotes using RFC 4180 doubling');
+assert(communicationsCsv.includes("].map(csvCell)"), 'Every communications export column passes through the safe-cell serializer');
+
 // Booking test is source-only: never create a test booking against a configured database.
 const booking = read('src/services/bookingRepository.ts');
 assert(booking.includes("supabase.rpc('create_booking_atomic_with_departure'") && booking.includes('p_departure_id: booking.departureId'), 'Booking creation uses the authoritative atomic database RPC with an explicitly selected departure');
