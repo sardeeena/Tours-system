@@ -11,8 +11,8 @@ This roadmap tracks work intentionally left outside the comprehensive audit-reme
 
 **Goal:** deploy the merged remediation without risking existing bookings or capacity.
 
-- [ ] Confirm the production migration ledger and migration files after merge.
-- [ ] Back up the production database and record the backup/restore point.
+- [x] Compare the production migration ledger with the `main` migration directory after merge (2026-11-21).
+- [ ] Back up the production database and record a verified backup/restore point. **Release blocker:** the connected tooling cannot create or verify this point; obtain dashboard evidence before any production migration.
 - [ ] Review the forward migrations in order, especially:
   - `20261117130000_expand_staff_notification_categories.sql`
   - `20261117140000_durable_staff_notification_scanner.sql`
@@ -26,6 +26,25 @@ This roadmap tracks work intentionally left outside the comprehensive audit-reme
 - [ ] Run post-deploy health/readiness, authentication/authorization, booking, cancellation, notification, pickup and finance smoke tests.
 - [ ] Reconcile existing bookings and availability read-only first. Produce a reviewed mapping before linking any historical records to departures; never auto-link ambiguous records.
 - [ ] Confirm zero unintended changes to customer, booking, payment, invoice, availability and user records.
+
+### Production migration drift recorded (2026-11-21)
+
+Read-only comparison against Supabase project `uvtbtpxtrrmaublrztgv` found 156 applied migration versions and 161 SQL migration files on `main`.
+
+Seven repository migrations are not recorded as applied in production:
+- `20261119180000_refine_blog_seo_titles.sql`
+- `20261119210000_short_remaining_blog_seo_titles.sql`
+- `20261119220000_crm_inquiry_conversion_quality.sql`
+- `20261119234000_reporting_bi_data_integrity.sql`
+- `20261119235000_harden_bi_reporting_rpcs.sql`
+- `20261120020000_secure_public_form_writes.sql`
+- `20261120030000_coupons_require_content_permissions.sql`
+
+Two production ledger versions have no same-version file in the current repository: `20261119164928` (`refine_blog_seo_titles`) and `20261119191838` (`short_remaining_blog_seo_titles`). The repository contains later-timestamped files with the same migration names. Do not assume equivalence or rewrite migration history; compare the SQL effects and document the canonical history before applying anything.
+
+Read-only policy inspection also found that production still permits anonymous direct inserts into `inquiries` and `newsletter_subscriptions`, and the coupon policies do not yet match the current content-permission model. The application source contains server-side inquiry/newsletter endpoints using the server Supabase client, but the deployed Hostinger commit and production service-role configuration must be verified before public insert policies are removed.
+
+The seven pending files must be reviewed in dependency order after backup verification. In particular, validate that server-side inquiry/newsletter submissions work before applying `20261120020000`. Do not apply any of the seven migrations until the backup/restore point is verified, historical migration versions are reconciled, and the matching application deployment is confirmed.
 
 **Acceptance criteria:** migration history is consistent; all production smoke tests pass; no existing booking/capacity record is changed without an approved reconciliation; rollback/restore instructions are verified.
 
@@ -84,7 +103,7 @@ These items require real business decisions or credentials. Do not fabricate val
 
 ## Release 5 — Capacity model evolution
 
-**Implementation status:** Prepared in PR #206; pending CI and merge.
+**Implementation status:** Implemented and merged. PR #206 delivered the multi-departure model; PR #249 added and passed the true concurrent final-seat regression test. Merge commit: `434382f08787ff99c494f4adb2d03fc807edf592`.
 
 The multi-departure schema and booking flow are implemented. Each confirmed `departures` row is an independent slot. `tour_availability` remains a daily summary, with the original daily capacity preserved across the configured times. New bookings store the selected departure and its per-person prices; notifications and secure booking lookup return that exact slot.
 
@@ -94,7 +113,7 @@ The multi-departure schema and booking flow are implemented. Each confirmed `dep
 - [x] Update operator scheduling, customer booking selection, capacity checks, booking notifications and secure booking lookup.
 - [x] Add regression coverage for multiple same-day slots, independent capacities, private per-person pricing, and fail-closed ambiguous legacy booking calls.
 - [ ] Complete operator verification of provisional slot capacities, actual times and resource assignments before confirming slots for public booking.
-- [ ] Add a true multi-session concurrency test for simultaneous reservations against the same final available places.
+- [x] Add a true multi-session concurrency test for simultaneous reservations against the same final available places (PR #249; disposable local Supabase CI stack; exactly one of two concurrent requests succeeds).
 - [ ] Run migration against a production-like copy and obtain owner sign-off before rollout.
 
 **Acceptance criteria:** multiple departures can be independently booked and managed without overselling, cross-departure count leakage or loss of historical booking integrity. If the business does not need this capability, explicitly defer it and retain the current limitation.
