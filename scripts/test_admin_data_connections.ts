@@ -67,22 +67,22 @@ assert.match(guideUi, /loadError/, 'Guide registry must expose load failures rat
 assert.match(guideUi, /Operational staff could not be loaded/, 'Guide registry must distinguish errors from empty data');
 
 const operationsService = read('src/services/operationsService.ts');
-const pr215AvailabilityRead = section(operationsService, 'export async function listAvailabilitySlots()', 'export async function updateAvailabilitySlot(');
-assert.match(pr215AvailabilityRead, /rpc\('get_tour_availability_schedule'/, 'Admin availability must use the authoritative confirmed-departure schedule');
-assert.match(pr215AvailabilityRead, /availabilityByKey\.get\(/, 'Admin availability must map the authoritative schedule by tour and date');
-assert.match(pr215AvailabilityRead, /isBlackout: Boolean\(authoritative\?\.is_blackout/, 'Admin availability must distinguish real blackouts from dates without confirmed slots');
-assert.doesNotMatch(pr215AvailabilityRead, /row\.status\s*===/, 'Stale daily summary status must not determine bookability');
-assert.doesNotMatch(pr215AvailabilityRead, /bookingRepository\.listBookings\(\)/, 'Availability counts must come from the departure-capacity authority');
+const regression215AvailabilityRead = section(operationsService, 'export async function listAvailabilitySlots()', 'export async function updateAvailabilitySlot(');
+assert.match(regression215AvailabilityRead, /rpc\('get_tour_availability_schedule'/, 'Admin availability must use the authoritative confirmed-departure schedule');
+assert.match(regression215AvailabilityRead, /availabilityByKey\.get\(/, 'Admin availability must map the authoritative schedule by tour and date');
+assert.match(regression215AvailabilityRead, /isBlackout: Boolean\(authoritative\?\.is_blackout/, 'Admin availability must distinguish real blackouts from dates without confirmed slots');
+assert.doesNotMatch(regression215AvailabilityRead, /row\.status\s*===/, 'Stale daily summary status must not determine bookability');
+assert.doesNotMatch(regression215AvailabilityRead, /bookingRepository\.listBookings\(\)/, 'Availability counts must come from the departure-capacity authority');
 
-const pr215AvailabilityPersistence = section(operationsService, 'export async function updateAvailabilitySlot(', 'export async function setBlackoutDate(');
-assert.match(pr215AvailabilityPersistence, /is_blackout:\s*isBlackout/, 'Availability status toggles must persist the blackout flag used by booking RPCs');
-assert.match(pr215AvailabilityPersistence, /existing\?\.is_blackout/, 'Capacity-only updates must preserve the existing blackout state');
+const regression215AvailabilityWrite = section(operationsService, 'export async function updateAvailabilitySlot(', 'export async function setBlackoutDate(');
+assert.match(regression215AvailabilityWrite, /is_blackout:\s*isBlackout/, 'Availability status toggles must persist the blackout flag used by booking RPCs');
+assert.match(regression215AvailabilityWrite, /existing\?\.is_blackout/, 'Capacity-only updates must preserve the existing blackout state');
 
-const pr215BlackoutPersistence = section(operationsService, 'export async function setBlackoutDate(', 'export async function getMaritimeWeather(');
-assert.match(pr215BlackoutPersistence, /is_blackout:\s*isBlackout/, 'Explicit blackout operations must persist is_blackout');
+const regression215BlackoutWrite = section(operationsService, 'export async function setBlackoutDate(', 'export async function getMaritimeWeather(');
+assert.match(regression215BlackoutWrite, /is_blackout:\s*isBlackout/, 'Explicit blackout operations must persist is_blackout');
 
-const pr215AvailabilityToggleUi = read('src/components/admin/operations/OperationsAvailability.tsx');
-assert.match(pr215AvailabilityToggleUi, /isBlackout:\s*nextStatus === 'unavailable'/, 'Availability controls must pass explicit blackout intent to the persistence layer');
+const regression215AvailabilityToggle = read('src/components/admin/operations/OperationsAvailability.tsx');
+assert.match(regression215AvailabilityToggle, /isBlackout:\s*nextStatus === 'unavailable'/, 'Availability controls must pass explicit blackout intent to the persistence layer');
 const manifestRead = section(operationsService, 'export async function getPassengerManifest(', 'export async function updateManifestPassenger(');
 assert.match(manifestRead, /from\('booking_passengers'\)[\s\S]*?passenger_index/, 'Passenger manifests must read persisted passenger records');
 assert.match(manifestRead, /bookingIds\.length !== targetBookings\.length/, 'Manifest rows must not be matched with non-database booking references');
