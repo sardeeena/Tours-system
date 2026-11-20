@@ -623,9 +623,13 @@ export async function getCurrentAdminUser(): Promise<AppUser | null> {
     const permissions = Array.isArray(accessContext.permissions)
       ? accessContext.permissions.filter((permission: unknown): permission is string => typeof permission === 'string')
       : [];
-    const hasStaffRole = roles.some((role: string) => role !== 'customer' && role !== 'guide');
-    if (hasStaffRole && !user.email_confirmed_at) return null;
-    if (!profile.is_confirmed && !user.email_confirmed_at) return null;
+    // Do not restore any authenticated app state for an unconfirmed account,
+    // regardless of its cached/profile role or is_confirmed flag.
+    if (!user.email_confirmed_at) {
+      await supabase.auth.signOut();
+      localStorage.removeItem(LOCAL_ACTIVE_USER_KEY);
+      return null;
+    }
 
     const authedUser: AppUser = {
       id: user.id,
