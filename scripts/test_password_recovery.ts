@@ -125,11 +125,16 @@ async function runRecoveryTests() {
   const shortPassResult = await updateUserPassword('123', testEmail);
   assert(
     shortPassResult.success === false,
-    'updateUserPassword rejects passwords under 6 characters'
+    'updateUserPassword rejects passwords that do not meet the shared security policy'
   );
   assert(
-    Boolean(shortPassResult.error && shortPassResult.error.includes('6 characters')),
-    'updateUserPassword provides explicit feedback on password length rule'
+    Boolean(shortPassResult.error && shortPassResult.error.includes('8 characters')),
+    'updateUserPassword enforces the same 8-character minimum as registration'
+  );
+  const weakPassResult = await updateUserPassword('passwordonly', testEmail);
+  assert(
+    weakPassResult.success === false && Boolean(weakPassResult.error),
+    'updateUserPassword rejects passwords without the required number'
   );
 
   // ----------------------------------------------------------------------------
