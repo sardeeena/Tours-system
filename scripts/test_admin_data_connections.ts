@@ -78,7 +78,7 @@ const availabilityWrite = section(operationsService, 'export async function upda
 assert.match(availabilityWrite, /is_blackout:\s*isBlackout/, 'Availability status toggles must persist the blackout flag used by booking RPCs');
 assert.match(availabilityWrite, /existing\?\.is_blackout/, 'Capacity-only updates must preserve the existing blackout state');
 
-const blackoutWrite = section(operationsService, 'export async function setBlackoutDate(', '// =============================================================================\n// 8. WEATHER TELEMETRY');
+const blackoutWrite = section(operationsService, 'export async function setBlackoutDate(', 'export async function getMaritimeWeather(');
 assert.match(blackoutWrite, /is_blackout:\s*isBlackout/, 'Explicit blackout operations must persist is_blackout');
 
 const availabilityUi = read('src/components/admin/operations/OperationsAvailability.tsx');
