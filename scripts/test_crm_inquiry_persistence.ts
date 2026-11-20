@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 
 const inquiryService = readFileSync(new URL('../src/services/inquiryService.ts', import.meta.url), 'utf8');
 const inquiryManager = readFileSync(new URL('../src/components/admin/crm/CrmInquiriesManager.tsx', import.meta.url), 'utf8');
+const server = readFileSync(new URL('../server.ts', import.meta.url), 'utf8');
 
 function section(source: string, start: string, end: string): string {
   const startIndex = source.indexOf(start);
@@ -11,6 +12,21 @@ function section(source: string, start: string, end: string): string {
   assert.notEqual(endIndex, -1, `Missing boundary after: ${start}`);
   return source.slice(startIndex, endIndex);
 }
+
+const createInquiry = section(
+  inquiryService,
+  'export async function createCustomerInquiry',
+  'export async function listInquiries'
+);
+assert.match(createInquiry, /fetch\('\/api\/inquiries'/);
+assert.doesNotMatch(createInquiry, /\.from\('inquiries'\)\s*\.insert/);
+assert.match(createInquiry, /tour_title: cleanTourTitle/);
+
+const inquiryApi = section(server, "app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact']", '// 8. Newsletter Subscription API');
+assert.match(inquiryApi, /rpc\('check_atomic_rate_limit'/);
+assert.match(inquiryApi, /p_action: 'public_inquiry_email'/);
+assert.match(inquiryApi, /tour_title: cleanTourTitle/);
+assert.match(inquiryApi, /\.select\('id,customer_name,email,phone,whatsapp,tour_id,tour_title,subject,message,status,source,created_at,updated_at'\)/);
 
 const updateInquiry = section(
   inquiryService,
