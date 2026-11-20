@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(21);
+SELECT plan(24);
 
 SELECT has_function(
   'public','get_tour_departure_slots',ARRAY['text','date'],
@@ -33,7 +33,8 @@ CREATE TEMP TABLE multi_departure_context (
   test_date DATE NOT NULL,
   first_departure_id UUID,
   second_departure_id UUID,
-  booking_result JSONB
+  booking_result JSONB,
+  retry_result JSONB
 ) ON COMMIT DROP;
 
 INSERT INTO multi_departure_context (tour_id,test_date)
@@ -111,6 +112,49 @@ SET booking_result = public.create_booking_atomic_with_departure(
   'English',
   'en',
   first_departure_id
+);
+
+-- A retry after the first request has filled the slot must still return the
+-- original booking instead of failing the now-full capacity check.
+UPDATE multi_departure_context
+SET retry_result = public.create_booking_atomic_with_departure(
+  'pgtap-multi-departure-private',
+  test_date,
+  1,1,0,
+  'Multi','Slot',
+  'multi-slot-private@example.test',
+  '+201000000081',
+  'Egypt',
+  'Test Hotel',
+  NULL,NULL,
+  '[]'::jsonb,
+  NULL,
+  'pay_at_pickup',
+  'ROLLBACK TEST ONLY',
+  'idem_multi_departure_private_slot_0001',
+  'English',
+  'en',
+  first_departure_id
+);
+
+SELECT is(
+  (SELECT (retry_result->>'success')::BOOLEAN FROM multi_departure_context),
+  TRUE,
+  'an exact retry succeeds even after the original booking fills the departure'
+);
+
+SELECT is(
+  (SELECT (retry_result->>'bookingId')::UUID FROM multi_departure_context),
+  (SELECT (booking_result->>'bookingId')::UUID FROM multi_departure_context),
+  'an idempotent retry returns the original booking ID'
+);
+
+SELECT is(
+  (SELECT booked_passengers
+   FROM public.departures
+   WHERE id = (SELECT first_departure_id FROM multi_departure_context)),
+  2,
+  'an idempotent retry does not consume departure capacity twice'
 );
 
 SELECT is(
