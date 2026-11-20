@@ -1,13 +1,21 @@
 BEGIN;
-SELECT plan(8);
+SELECT plan(12);
 
 SELECT ok(
   NOT has_table_privilege('anon', 'public.inquiries', 'INSERT'),
   'Anonymous users cannot insert directly into inquiries'
 );
 SELECT ok(
+  NOT has_table_privilege('anon', 'public.inquiries', 'SELECT'),
+  'Anonymous users cannot read inquiry records'
+);
+SELECT ok(
   NOT has_table_privilege('anon', 'public.newsletter_subscriptions', 'INSERT'),
   'Anonymous users cannot insert directly into newsletter subscriptions'
+);
+SELECT ok(
+  NOT has_table_privilege('anon', 'public.newsletter_subscriptions', 'SELECT'),
+  'Anonymous users cannot read newsletter subscriptions'
 );
 SELECT ok(
   has_table_privilege('service_role', 'public.inquiries', 'INSERT'),
@@ -16,6 +24,14 @@ SELECT ok(
 SELECT ok(
   has_table_privilege('service_role', 'public.newsletter_subscriptions', 'INSERT'),
   'The validated server endpoint retains newsletter insert access'
+);
+SELECT ok(
+  has_function_privilege('service_role', 'public.check_atomic_rate_limit(text,text,interval,integer,text)', 'EXECUTE'),
+  'Server-side endpoints can use the atomic per-email rate limiter'
+);
+SELECT ok(
+  NOT has_function_privilege('anon', 'public.check_atomic_rate_limit(text,text,interval,integer,text)', 'EXECUTE'),
+  'Anonymous users cannot manipulate arbitrary rate-limit buckets'
 );
 SELECT ok(
   NOT EXISTS (
