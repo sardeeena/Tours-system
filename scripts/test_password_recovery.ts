@@ -63,6 +63,16 @@ async function runRecoveryTests() {
     'Unconfirmed sign-in immediately clears the Supabase session'
   );
 
+  const sessionRestorationBlock = authServiceSource.slice(
+    authServiceSource.indexOf('export async function getCurrentAdminUser'),
+    authServiceSource.indexOf('export async function verifyAdminAccess')
+  );
+  assert(
+    sessionRestorationBlock.includes('if (!user.email_confirmed_at)') &&
+      sessionRestorationBlock.includes('await supabase.auth.signOut()'),
+    'Session restoration rejects and signs out unconfirmed accounts regardless of profile flags'
+  );
+
   // Never send real password-recovery emails from CI or a developer test run.
   if (isSupabaseConfigured()) {
     assert(
