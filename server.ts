@@ -503,13 +503,15 @@ const serverInquiries: ServerInquiry[] = [];
 const serverNewsletters: ServerNewsletterSubscriber[] = [];
 
 // Helper email validator
-function normalizeSenderEmail(value: string): string {
+function normalizeSenderEmail(value: unknown): string {
+  if (typeof value !== 'string') return '';
   const trimmed = value.trim().replace(/^["']|["']$/g, '');
   const mailbox = trimmed.match(/<\s*([^<>]+)\s*>/);
   return (mailbox ? mailbox[1] : trimmed).trim();
 }
 
-function isValidEmail(email: string): boolean {
+function isValidEmail(email: unknown): boolean {
+  if (typeof email !== 'string' || email.length > 254) return false;
   const normalized = normalizeSenderEmail(email);
   const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
   return emailRegex.test(normalized) && normalized.length <= 254;
@@ -1942,101 +1944,123 @@ async function sendInquiryNotificationEmail(params: {
 }
 
 app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(5, 10 * 60_000), async (req: Request, res: Response) => {
-  const { name, email, phone, inquiryType = 'general_question', message, website_url_hp } = req.body;
+  const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};
+  const { name, email, phone, inquiryType = 'general_question', message, website_url_hp } = body;
 
-  // Bot honeypot check
-  if (website_url_hp && String(website_url_hp).trim() !== '') {
+  // Reject malformed JSON field types before passing values to string helpers.
+  if (typeof website_url_hp !== 'undefined' && typeof website_url_hp !== 'string') {
+    return res.status(400).json({ success: false, error: 'Invalid inquiry payload.' });
+  }
+  if (typeof website_url_hp === 'string' && website_url_hp.trim() !== '') {
     return res.status(200).json({ success: true, status: 'received' });
   }
-
-  if (!name || !email || !message) {
-    return res.status(400).json({
-      success: false,
-      error: 'Name, valid email, and message are required',
-    });
+  if (typeof name !== 'string' || typeof email !== 'string' || typeof message !== 'string') {
+    return res.status(400).json({ success: false, error: 'Name, valid email, and message are required.' });
+  }
+  if (typeof phone !== 'undefined' && phone !== null && typeof phone !== 'string') {
+    return res.status(400).json({ success: false, error: 'Invalid phone number.' });
+  }
+  if (typeof inquiryType !== 'string') {
+    return res.status(400).json({ success: false, error: 'Invalid inquiry type.' });
   }
 
-  if (!isValidEmail(email)) {
-    return res.status(400).json({
-      success: false,
-      error: 'Please enter a valid email address',
-    });
+  const cleanName = name.trim().slice(0, 100);
+  const cleanEmail = email.trim().toLowerCase();
+  const cleanMessage = message.trim().slice(0, 2000);
+  const cleanPhone = typeof phone === 'string' ? phone.trim().slice(0, 30) : null;
+  if (!cleanName || !cleanMessage || !isValidEmail(cleanEmail)) {
+    return res.status(400).json({ success: false, error: 'Name, valid email, and message are required.' });
   }
 
-  const cleanName = String(name).trim().slice(0, 100);
-  const cleanEmail = String(email).trim().toLowerCase();
-  const cleanMessage = String(message).trim().slice(0, 2000);
-  const cleanPhone = phone ? String(phone).slice(0, 30) : null;
-  const currentYear = new Date().getFullYear();
-  const ticketNumber = `INQ-${currentYear}-${Math.floor(1000 + Math.random() * 9000)}`;
+  // The generic path-based middleware is defense in depth. This canonical IP bucket
+  // also covers case and trailing-slash route aliases and service-role database writes.
+  const clientIp = typeof req.ip === 'string' ? req.ip.trim() : '';
+  if (!clientIp || !isIP(clientIp)) {
+    console.error('Inquiry endpoint could not determine a valid client IP.');
+    return res.status(503).json({ success: false, error: 'Inquiry service is temporarily unavailable. Please try again later.' });
+  }
+  if (!serverSupabase) {
+    return res.status(503).json({ success: false, error: 'Inquiry service is currently unconfigured or database is unreachable.' });
+  }
 
-  if (serverSupabase) {
-    try {
-      const { data, error } = await serverSupabase
-        .from('inquiries')
-        .insert({
-          customer_name: cleanName,
-          email: cleanEmail,
-          phone: cleanPhone,
-          subject: inquiryType === 'general_question' ? 'General Excursion Question' : String(inquiryType),
-          message: cleanMessage,
-          status: 'new',
-          source: 'web',
-        })
-        .select('id, created_at')
-        .single();
-
-      if (!error && data) {
-        const inquirySubject = inquiryType === 'general_question' ? 'General Excursion Question' : String(inquiryType).slice(0, 120);
-        const reservationEmail = process.env.BOOKING_NOTIFICATION_EMAIL?.trim() || 'reservation@awesomeadventure.tours';
-        await Promise.all([
-          sendInquiryNotificationEmail({
-            recipientEmail: reservationEmail,
-            customerName: cleanName,
-            templateKey: 'inquiry_staff_notification',
-            subject: `New website inquiry: ${inquirySubject}`,
-            replyTo: cleanEmail,
-            content: [
-              'A new inquiry was submitted on Awesome Adventure Tours.',
-              `Inquiry ID: ${data.id}`,
-              `Name: ${cleanName}`,
-              `Email: ${cleanEmail}`,
-              `Phone: ${cleanPhone || 'Not provided'}`,
-              `Subject: ${inquirySubject}`,
-              '',
-              'Message:',
-              cleanMessage,
-            ].join('\n'),
-          }),
-          sendInquiryNotificationEmail({
-            recipientEmail: cleanEmail,
-            customerName: cleanName,
-            templateKey: 'inquiry_customer_confirmation',
-            subject: 'We received your message — Awesome Adventure Tours',
-            content: `Hello ${cleanName},\n\nThank you for contacting Awesome Adventure Tours. We have received your inquiry (reference ${data.id}) and our team will respond within 2 hours during Egypt Pier Desk hours.\n\nIf your question is urgent, you can contact our reservations team at reservation@awesomeadventure.tours.\n\nAwesome Adventure Tours`,
-          }),
-        ]);
-        return res.status(201).json({
-          success: true,
-          inquiryId: data.id,
-          ticketNumber,
-          status: 'received',
-          estimatedResponseTime: 'Within 2 hours (Egypt Pier Desk hours)',
-          receivedAt: data.created_at,
-        });
+  try {
+    const { error: ipRateLimitError } = await serverSupabase.rpc('check_atomic_rate_limit', {
+      p_action: 'public_inquiry_ip',
+      p_identifier: createHash('sha256').update(clientIp).digest('hex'),
+      p_window_interval: '10 minutes',
+      p_max_hits: 10,
+      p_error_message: 'Too many inquiries submitted from your network. Please wait a few minutes before trying again.',
+    });
+    if (ipRateLimitError) {
+      if (ipRateLimitError.code === 'P0001') {
+        return res.status(429).json({ success: false, error: ipRateLimitError.message });
       }
-      if (error) {
-        console.error('Supabase inquiries insert error:', error.message);
-      }
-    } catch (dbErr) {
-      console.warn('Supabase inquiries insert exception:', dbErr);
+      console.error('Inquiry IP rate-limit check failed:', ipRateLimitError.message);
+      return res.status(503).json({ success: false, error: 'Inquiry service is temporarily unavailable. Please try again later.' });
     }
-  }
 
-  return res.status(503).json({
-    success: false,
-    error: 'Inquiry service is currently unconfigured or database is unreachable.',
-  });
+    const currentYear = new Date().getFullYear();
+    const ticketNumber = `INQ-${currentYear}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const inquirySubject = inquiryType === 'general_question' ? 'General Excursion Question' : inquiryType.trim().slice(0, 120) || 'General Excursion Question';
+    const { data, error } = await serverSupabase
+      .from('inquiries')
+      .insert({
+        customer_name: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone,
+        subject: inquirySubject,
+        message: cleanMessage,
+        status: 'new',
+        source: 'web',
+      })
+      .select('id, created_at')
+      .single();
+
+    if (error || !data) {
+      console.error('Supabase inquiries insert error:', error?.message || 'No inquiry row returned.');
+      return res.status(503).json({ success: false, error: 'Inquiry service is temporarily unavailable. Please try again later.' });
+    }
+
+    const reservationEmail = process.env.BOOKING_NOTIFICATION_EMAIL?.trim() || 'reservation@awesomeadventure.tours';
+    await Promise.all([
+      sendInquiryNotificationEmail({
+        recipientEmail: reservationEmail,
+        customerName: cleanName,
+        templateKey: 'inquiry_staff_notification',
+        subject: `New website inquiry: ${inquirySubject}`,
+        replyTo: cleanEmail,
+        content: [
+          'A new inquiry was submitted on Awesome Adventure Tours.',
+          `Inquiry ID: ${data.id}`,
+          `Name: ${cleanName}`,
+          `Email: ${cleanEmail}`,
+          `Phone: ${cleanPhone || 'Not provided'}`,
+          `Subject: ${inquirySubject}`,
+          '',
+          'Message:',
+          cleanMessage,
+        ].join('\n'),
+      }),
+      sendInquiryNotificationEmail({
+        recipientEmail: cleanEmail,
+        customerName: cleanName,
+        templateKey: 'inquiry_customer_confirmation',
+        subject: 'We received your message — Awesome Adventure Tours',
+        content: `Hello ${cleanName},\n\nThank you for contacting Awesome Adventure Tours. We have received your inquiry (reference ${data.id}) and our team will respond within 2 hours during Egypt Pier Desk hours.\n\nIf your question is urgent, you can contact our reservations team at reservation@awesomeadventure.tours.\n\nAwesome Adventure Tours`,
+      }),
+    ]);
+    return res.status(201).json({
+      success: true,
+      inquiryId: data.id,
+      ticketNumber,
+      status: 'received',
+      estimatedResponseTime: 'Within 2 hours (Egypt Pier Desk hours)',
+      receivedAt: data.created_at,
+    });
+  } catch (error: any) {
+    console.error('Inquiry submission failed:', error?.message || error);
+    return res.status(503).json({ success: false, error: 'Inquiry service is temporarily unavailable. Please try again later.' });
+  }
 });
 
 // ------------------------------------------------------------------------------
