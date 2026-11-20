@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(4);
+SELECT plan(5);
 
 SELECT ok(
   (SELECT qual FROM pg_policies WHERE schemaname='public' AND tablename='coupons' AND policyname='rbac_coupons_read') LIKE '%content.read%'
@@ -19,6 +19,16 @@ SELECT ok(
 SELECT ok(
   (SELECT qual FROM pg_policies WHERE schemaname='public' AND tablename='coupons' AND policyname='rbac_coupons_delete') LIKE '%content.delete%',
   'coupon deletion requires content.delete'
+);
+
+
+SELECT ok(
+  NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname='public' AND tablename='coupons'
+      AND cmd='SELECT' AND 'public'=ANY(roles)
+  ),
+  'anonymous and PUBLIC roles cannot read coupon rows directly'
 );
 
 SELECT * FROM finish();
