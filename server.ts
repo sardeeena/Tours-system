@@ -1942,7 +1942,7 @@ async function sendInquiryNotificationEmail(params: {
 }
 
 app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(5, 10 * 60_000), async (req: Request, res: Response) => {
-  const { name, email, phone, inquiryType = 'general_question', message, website_url_hp } = req.body;
+  const { name, email, phone, whatsapp, tour_id, tour_title, inquiryType = 'general_question', message, website_url_hp } = req.body || {};
 
   // Bot honeypot check
   if (website_url_hp && String(website_url_hp).trim() !== '') {
@@ -1966,7 +1966,7 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
   const cleanName = String(name).trim().slice(0, 100);
   const cleanEmail = String(email).trim().toLowerCase();
   const cleanMessage = String(message).trim().slice(0, 2000);
-  const cleanPhone = phone ? String(phone).slice(0, 30) : null;
+  const cleanPhone = phone ? String(phone).trim().slice(0, 30) : null;\n  const cleanWhatsapp = whatsapp ? String(whatsapp).trim().slice(0, 30) : cleanPhone;\n  const cleanTourId = typeof tour_id === 'string' && tour_id.trim() ? tour_id.trim() : null;\n  const cleanTourTitle = typeof tour_title === 'string' ? tour_title.trim().slice(0, 160) : '';\n  const inquirySubject = String(inquiryType).trim().slice(0, 120) || 'General Excursion Question';
   const currentYear = new Date().getFullYear();
   const ticketNumber = `INQ-${currentYear}-${Math.floor(1000 + Math.random() * 9000)}`;
 
@@ -1987,14 +1987,14 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
         .single();
 
       if (!error && data) {
-        const inquirySubject = inquiryType === 'general_question' ? 'General Excursion Question' : String(inquiryType).slice(0, 120);
+        const savedSubject = inquirySubject;
         const reservationEmail = process.env.BOOKING_NOTIFICATION_EMAIL?.trim() || 'reservation@awesomeadventure.tours';
         await Promise.all([
           sendInquiryNotificationEmail({
             recipientEmail: reservationEmail,
             customerName: cleanName,
             templateKey: 'inquiry_staff_notification',
-            subject: `New website inquiry: ${inquirySubject}`,
+            subject: `New website inquiry: ${savedSubject}`,
             replyTo: cleanEmail,
             content: [
               'A new inquiry was submitted on Awesome Adventure Tours.',
@@ -2002,7 +2002,7 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
               `Name: ${cleanName}`,
               `Email: ${cleanEmail}`,
               `Phone: ${cleanPhone || 'Not provided'}`,
-              `Subject: ${inquirySubject}`,
+              `Subject: ${savedSubject}`,
               '',
               'Message:',
               cleanMessage,
