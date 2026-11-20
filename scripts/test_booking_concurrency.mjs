@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 
-const baseUrl = (process.env.API_URL || process.env.SUPABASE_URL || '').replace(/\\/$/, '');
+const baseUrl = (process.env.API_URL || process.env.SUPABASE_URL || '').replace(/\/$/, '');
 const serviceKey = process.env.SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 assert.ok(baseUrl, 'Supabase local API_URL must be provided by supabase status -o env');
 assert.ok(serviceKey, 'Supabase local SERVICE_ROLE_KEY must be provided by supabase status -o env');
