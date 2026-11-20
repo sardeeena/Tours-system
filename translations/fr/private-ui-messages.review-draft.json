@@ -73,6 +73,7 @@
     "private.text.0fe07306": "Nom",
     "private.text.0fe2b40f": "Nom complet",
     "private.text.100e989c": "Réinitialiser votre mot de passe",
+    "private.text.10cdcf9b": "Au moins 8 caractères",
     "private.text.10f0f38f": " Vos conversations sont privées. Les notes internes sont visibles uniquement par notre équipe.",
     "private.text.111a4eef": "Profil TripAdvisor",
     "private.text.1176b48c": "Si un compte existe, un lien de réinitialisation a été envoyé.",
@@ -913,6 +914,7 @@
     "private.text.d920c6a1": "ex. : Markus Weber",
     "private.text.d92bfc81": "Les mieux notées",
     "private.text.d937f9f6": "Nouveau mot de passe ",
+    "private.text.d9590137": "Nous n’avons pas pu vérifier cette réservation ni envoyer la demande d’annulation. Veuillez vérifier vos informations et réessayer.",
     "private.text.da0f0ec6": " / pers.",
     "private.text.da1ac724": "Saisissez votre code d’authentification à 6 chiffres.",
     "private.text.da8e83c7": "Bateaux inspectés pour la sécurité et guides locaux agréés",
@@ -1079,8 +1081,7 @@
     "private.text.ff4b2739": "Max. :",
     "private.text.ff4def07": "Installer l’application de la mer Rouge",
     "private.text.ff566677": "Mot de passe mis à jour",
-    "private.text.ff566f40": "Nom ",
-    "private.text.d9590137": "Nous n’avons pas pu vérifier cette réservation ni envoyer la demande d’annulation. Veuillez vérifier vos informations et réessayer."
+    "private.text.ff566f40": "Nom "
   },
-  "coverage": 1078
+  "coverage": 1079
 }
