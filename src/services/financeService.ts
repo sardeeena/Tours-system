@@ -16,6 +16,7 @@ import {
 import { bookingRepository } from './bookingRepository';
 import { recordActivity } from './crmService';
 import { publishAutomationEvent } from './communicationService';
+import { getCompanySettings } from './siteSettingsService';
 
 const LOCAL_PAYMENTS_KEY = 'rse_fin_payments';
 const LOCAL_INVOICES_KEY = 'rse_fin_invoices';
@@ -26,6 +27,7 @@ export const COMPANY_DETAILS: CompanyBillingDetails = {
   // Brand identity only. Legal entity, tax, address, phone and bank details must be
   // entered by an authorized administrator before issuing legally complete invoices.
   name: 'Awesome Adventure Tours',
+  legalEntityName: '',
   tagline: 'Tours and experiences',
   address: '',
   city: '',
@@ -39,6 +41,37 @@ export const COMPANY_DETAILS: CompanyBillingDetails = {
   iban: '',
   swiftBic: '',
 };
+
+export async function getCompanyBillingDetails(): Promise<CompanyBillingDetails> {
+  const settings = await getCompanySettings();
+  return {
+    name: settings.legalEntityName.trim() || settings.companyName.trim(),
+    legalEntityName: settings.legalEntityName.trim(),
+    tagline: 'Official billing entity',
+    address: settings.registeredAddress.trim(),
+    city: settings.registeredCity.trim(),
+    country: settings.registeredCountry.trim(),
+    phone: settings.phone.trim(),
+    email: settings.email.trim(),
+    website: settings.website.trim() || COMPANY_DETAILS.website,
+    taxRegistrationNumber: settings.taxRegistrationNumber.trim(),
+    commercialRegistryNumber: settings.commercialRegistryNumber.trim(),
+    bankName: settings.bankName.trim(),
+    iban: settings.iban.trim(),
+    swiftBic: settings.swiftBic.trim(),
+  };
+}
+
+function getMissingCompanyBillingFields(details: CompanyBillingDetails): string[] {
+  const missing: string[] = [];
+  if (!details.legalEntityName?.trim()) missing.push('legal entity name');
+  if (!details.address.trim()) missing.push('registered legal address');
+  if (!details.country.trim()) missing.push('registered country');
+  if (!details.taxRegistrationNumber.trim() && !details.commercialRegistryNumber.trim()) {
+    missing.push('tax registration or commercial registry number');
+  }
+  return missing;
+}
 
 export const DEFAULT_PROVIDERS: PaymentProvider[] = [
   {
@@ -603,12 +636,8 @@ export async function generateInvoiceForBooking(bookingReference: string): Promi
     throw new Error(numberError ? formatSupabaseError(numberError) : 'The database did not allocate an invoice number.');
   }
 
-  const billingDetailsComplete = Boolean(
-    COMPANY_DETAILS.name.trim() &&
-    COMPANY_DETAILS.address.trim() &&
-    COMPANY_DETAILS.country.trim() &&
-    COMPANY_DETAILS.taxRegistrationNumber.trim()
-  );
+  const companyDetails = await getCompanyBillingDetails();
+  const missingBillingFields = getMissingCompanyBillingFields(companyDetails);
 
   const newInvoice: FinanceInvoice = {
     id: '',
@@ -640,11 +669,11 @@ export async function generateInvoiceForBooking(bookingReference: string): Promi
     paid: 0,
     balance: total,
     currency,
-    status: billingDetailsComplete ? 'issued' : 'draft',
-    companyDetails: COMPANY_DETAILS,
-    notes: billingDetailsComplete
-      ? null
-      : 'Draft only. Configure the legal entity name, registered address, country and tax registration details before issuing this invoice.',
+    status: 'draft',
+    companyDetails,
+    notes: missingBillingFields.length
+      ? `Draft only. Complete verified company billing details before issuing: ${missingBillingFields.join(', ')}.`
+      : 'Draft only. Review the details and explicitly issue this invoice when ready.',
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
@@ -702,6 +731,62 @@ export async function generateInvoiceForBooking(bookingReference: string): Promi
     ...newInvoice,
     id: inserted.id,
   };
+}
+
+
+export async function issueInvoice(invoiceId: string): Promise<FinanceInvoice> {
+  if (!requireFinanceBackend()) {
+    throw new Error('Invoice issuing requires the connected finance database.');
+  }
+
+  const companyDetails = await getCompanyBillingDetails();
+  const missingFields = getMissingCompanyBillingFields(companyDetails);
+  if (missingFields.length > 0) {
+    throw new Error(`Complete verified company billing details before issuing: ${missingFields.join(', ')}.`);
+  }
+
+  const { data: invoice, error: invoiceError } = await supabase
+    .from('invoices')
+    .select('id,status,total,paid,balance,due_date')
+    .eq('id', invoiceId)
+    .maybeSingle();
+
+  if (invoiceError) throw new Error(formatSupabaseError(invoiceError));
+  if (!invoice) throw new Error('Invoice not found.');
+  if (invoice.status !== 'draft') throw new Error('Only draft invoices can be issued.');
+
+  const issueDate = new Date().toISOString().slice(0, 10);
+  const paid = Number(invoice.paid || 0);
+  const balance = Number(invoice.balance || 0);
+  const nextStatus = balance <= 0.01
+    ? 'paid'
+    : paid > 0
+      ? 'partially_paid'
+      : invoice.due_date && invoice.due_date < issueDate
+        ? 'overdue'
+        : 'issued';
+
+  const { data: updated, error: updateError } = await supabase
+    .from('invoices')
+    .update({
+      company_details: companyDetails as any,
+      status: nextStatus,
+      issue_date: issueDate,
+      notes: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', invoiceId)
+    .eq('status', 'draft')
+    .select('id')
+    .maybeSingle();
+
+  if (updateError) throw new Error(formatSupabaseError(updateError));
+  if (!updated?.id) throw new Error('Invoice was changed by another user and is no longer a draft.');
+
+  const refreshedInvoices = await listInvoices();
+  const issuedInvoice = refreshedInvoices.find((item) => item.id === invoiceId);
+  if (!issuedInvoice) throw new Error('The invoice was issued but could not be reloaded.');
+  return issuedInvoice;
 }
 
 // 3. CONTROLLED REFUND MANAGEMENT (Immutable Audit Trail)

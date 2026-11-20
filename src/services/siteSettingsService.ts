@@ -3,6 +3,16 @@ import { DbSiteSetting } from '../types/database';
 
 export interface CompanySettings {
   companyName: string;
+  legalEntityName: string;
+  registeredAddress: string;
+  registeredCity: string;
+  registeredCountry: string;
+  taxRegistrationNumber: string;
+  commercialRegistryNumber: string;
+  bankName: string;
+  iban: string;
+  swiftBic: string;
+  website: string;
   email: string;
   phone: string;
   whatsapp: string;
@@ -46,6 +56,16 @@ export type { StaticPageContent };
 
 const DEFAULT_COMPANY_SETTINGS: CompanySettings = {
   companyName: 'Awesome Adventure Tours',
+  legalEntityName: '',
+  registeredAddress: '',
+  registeredCity: '',
+  registeredCountry: '',
+  taxRegistrationNumber: '',
+  commercialRegistryNumber: '',
+  bankName: '',
+  iban: '',
+  swiftBic: '',
+  website: 'https://awesomeadventure.tours',
   email: '',
   phone: '',
   whatsapp: '',
@@ -132,12 +152,16 @@ export async function saveSetting<T>(key: string, value: T, description?: string
 }
 
 export async function getCompanySettings(): Promise<CompanySettings> {
-  const settings = await getSetting<CompanySettings>('company_info', DEFAULT_COMPANY_SETTINGS);
-  return { ...settings, companyName: 'Awesome Adventure Tours' };
+  const settings = await getSetting<Partial<CompanySettings>>('company_info', DEFAULT_COMPANY_SETTINGS);
+  return { ...DEFAULT_COMPANY_SETTINGS, ...settings, companyName: 'Awesome Adventure Tours' };
 }
 
 export async function saveCompanySettings(settings: CompanySettings): Promise<void> {
-  return saveSetting<CompanySettings>('company_info', { ...settings, companyName: 'Awesome Adventure Tours' }, 'Master company identity and contact details');
+  return saveSetting<CompanySettings>(
+    'company_info',
+    { ...DEFAULT_COMPANY_SETTINGS, ...settings, companyName: 'Awesome Adventure Tours' },
+    'Master company identity, verified legal billing details, and contact details'
+  );
 }
 
 export async function getBookingPolicies(): Promise<BookingPolicySettings> {
