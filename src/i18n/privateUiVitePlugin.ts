@@ -2,7 +2,7 @@ import path from 'node:path';
 import ts from '@typescript/old';
 import type { Block, Expression, Node as TsNode, SourceFile, StringLiteral } from '@typescript/old';
 import type { Plugin } from 'vite';
-import { isPrivateUiSourcePath, normalizePrivateUiText, privateUiMessageKey } from './privateUiCatalog';
+import { isPrivateUiSourcePath, normalizePrivateUiText, privateUiMessageKey } from './privateUiCatalog.ts';
 
 const BLOCKED_TEXT_PARENTS = new Set(['script', 'style', 'pre', 'code', 'textarea']);
 const TRANSLATABLE_ATTRIBUTES = new Set(['placeholder', 'title', 'aria-label', 'aria-description', 'alt']);
