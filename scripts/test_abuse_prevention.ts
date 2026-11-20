@@ -36,7 +36,7 @@ const inquiryCreateEnd = inquiry.indexOf('export async function listInquiries', 
 const inquiryCreate = inquiry.slice(inquiryCreateStart, inquiryCreateEnd);
 const inquiryApiFetch = inquiryCreate.indexOf("fetch('/api/inquiries'");
 assert(inquiryTrap >= 0 && inquiryRateLimit > inquiryTrap, 'Inquiry honeypot short-circuits before rate-limit and persistence work');
-assert(inquiryApiFetch > inquiryTrap, 'Inquiry persistence uses the same-origin server API after the honeypot and rate-limit guards');
+assert(inquiryApiFetch > inquiryRateLimit, 'Inquiry persistence uses the same-origin server API after the honeypot and rate-limit guards');
 assert(!inquiryCreate.includes(".from('inquiries')"), 'Public inquiry creation never writes directly to the exposed table');
 assert(inquiry.slice(inquiryTrap, inquiryRateLimit).includes("admin_notes: 'Dropped honeypot bot trap'"), 'Inquiry honeypot produces a trapped internal marker');
 const server = read('server.ts');
