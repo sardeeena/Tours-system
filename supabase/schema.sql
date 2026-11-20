@@ -1768,9 +1768,7 @@ DROP POLICY IF EXISTS "Public can view own newsletter status" ON public.newslett
 DROP POLICY IF EXISTS "Public can update own subscription" ON public.newsletter_subscriptions;
 DROP POLICY IF EXISTS "Admins can manage newsletter subscriptions" ON public.newsletter_subscriptions;
 
-CREATE POLICY "Public can insert newsletter subscription"
-    ON public.newsletter_subscriptions FOR INSERT
-    WITH CHECK (TRUE);
+CREATE POLICY rbac_newsletter_subscriptions_create ON public.newsletter_subscriptions FOR INSERT TO authenticated WITH CHECK (private.has_permission('content.create'::text));
 
 CREATE POLICY "Public can view own newsletter status"
     ON public.newsletter_subscriptions FOR SELECT
@@ -1794,9 +1792,7 @@ CREATE POLICY "Admins can manage newsletter subscriptions"
 DROP POLICY IF EXISTS "Public can insert inquiry" ON public.inquiries;
 DROP POLICY IF EXISTS "Admins can manage inquiries" ON public.inquiries;
 
-CREATE POLICY "Public can insert inquiry"
-    ON public.inquiries FOR INSERT
-    WITH CHECK (TRUE);
+CREATE POLICY rbac_inquiries_create ON public.inquiries FOR INSERT TO authenticated WITH CHECK (private.has_permission('crm.create'::text));
 
 CREATE POLICY "Admins can manage inquiries"
     ON public.inquiries FOR ALL
