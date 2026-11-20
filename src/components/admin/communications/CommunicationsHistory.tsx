@@ -138,7 +138,7 @@ export const CommunicationsHistory: React.FC<CommunicationsHistoryProps> = ({ on
     // characters are included because spreadsheet applications may ignore them.
     const csvCell = (value: unknown): string => {
       const raw = String(value ?? '');
-      const safe = /^[\\u0000-\\u0020]*[=+\\-@]/.test(raw) ? `'${raw}` : raw;
+      const safe = /^[\u0000-\u0020]*[=+\-@]/.test(raw) ? `'${raw}` : raw;
       return `"${safe.replace(/"/g, '""')}"`;
     };
 
