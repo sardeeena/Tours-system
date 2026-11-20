@@ -139,39 +139,39 @@ export const AdminSectionManual: React.FC<{ activeTab: AdminTab }> = ({ activeTa
             role="dialog"
             aria-modal="true"
             aria-labelledby="admin-manual-title"
-            className="flex max-h-[min(88dvh,900px)] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-[#DCE3EC] bg-white shadow-2xl dark:border-[#31465D] dark:bg-[#101B28]"
+            className="flex max-h-[min(92dvh,960px)] w-full max-w-4xl flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_24px_80px_rgba(2,12,27,0.28)] dark:border-[#31465D] dark:bg-[#101B28]"
           >
-            <div className="flex items-start justify-between gap-4 border-b border-[#E5EAF0] px-5 py-4 dark:border-[#243447] sm:px-6">
+            <div className="flex items-start justify-between gap-4 border-b border-[#E5EAF0] px-6 py-5 dark:border-[#243447] sm:px-8">
               <div className="min-w-0">
                 <div className="mb-1 flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-[#0A6C74] dark:text-[#42C9BE]">
                   <BookOpen className="h-4 w-4" /> {group.label} · User manual
                 </div>
-                <h2 id="admin-manual-title" className="text-xl font-bold text-[#0E1B2A] dark:text-white">{title}</h2>
-                <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{page.purpose}</p>
+                <h2 id="admin-manual-title" className="text-2xl font-semibold tracking-tight text-[#0E1B2A] dark:text-white">{title}</h2>
+                <p className="mt-2 max-w-3xl text-[15px] leading-7 text-slate-600 dark:text-slate-300">{page.purpose}</p>
               </div>
               <button type="button" onClick={() => setOpen(false)} aria-label="Close user manual" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-[#1B3045] dark:hover:text-white">
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="border-b border-[#E5EAF0] px-5 py-3 dark:border-[#243447] sm:px-6">
-              <label className="flex items-center gap-2 rounded-xl border border-[#DCE3EC] bg-slate-50 px-3 py-2 dark:border-[#31465D] dark:bg-[#142235]">
+            <div className="border-b border-[#E5EAF0] px-6 py-4 dark:border-[#243447] sm:px-8">
+              <label className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-[#31465D] dark:bg-[#142235]">
                 <Search className="h-4 w-4 shrink-0 text-slate-400" />
                 <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Find a step or rule in this guide…" className="w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-white" />
               </label>
-              <p className="mt-2 text-xs text-slate-500 dark:text-slate-400">{group.description}</p>
+              <p className="mt-3 text-xs leading-5 text-slate-500 dark:text-slate-400">{group.description}</p>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
-              <div className="space-y-6">
+            <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6 sm:px-8">
+              <div className="space-y-8">
                 {sections.map((section) => {
                   const filtered = section.items.filter((item) => !normalizedQuery || item.toLowerCase().includes(normalizedQuery) || section.title.toLowerCase().includes(normalizedQuery));
                   if (!filtered.length) return null;
                   return (
                     <section key={section.title}>
-                      <h3 className="mb-3 flex items-center gap-2 text-sm font-bold text-[#0E1B2A] dark:text-white"><ChevronRight className="h-4 w-4 text-[#0A6C74]" />{section.title}</h3>
+                      <h3 className="mb-4 flex items-center gap-3 text-base font-semibold text-[#0E1B2A] dark:text-white"><ChevronRight className="h-4 w-4 text-[#0A6C74]" />{section.title}</h3>
                       <ol className="space-y-2">
-                        {filtered.map((item, index) => <li key={item} className="flex gap-3 rounded-xl bg-slate-50 px-3 py-3 text-sm leading-6 text-slate-700 dark:bg-[#142235] dark:text-slate-200"><span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#E8F3F4] text-xs font-bold text-[#0A6C74] dark:bg-[#0A6C74]/20 dark:text-[#42C9BE]">{index + 1}</span><span>{item}</span></li>)}
+                        {filtered.map((item) => <li key={item} className="flex gap-3 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4 text-[14px] leading-7 dark:border-[#26394D] text-slate-700 dark:bg-[#142235] dark:text-slate-200"><span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#E8F3F4] text-[#0A6C74] dark:bg-[#0A6C74]/20 dark:text-[#42C9BE]"><ChevronRight className="h-4 w-4" /></span><span>{item}</span></li>)}
                       </ol>
                     </section>
                   );
@@ -188,7 +188,7 @@ export const AdminSectionManual: React.FC<{ activeTab: AdminTab }> = ({ activeTa
 
             <div className="flex items-center justify-between gap-3 border-t border-[#E5EAF0] px-5 py-3 dark:border-[#243447] sm:px-6">
               <p className="text-xs text-slate-500 dark:text-slate-400">Guidance for the currently open admin tab.</p>
-              <button type="button" onClick={() => setOpen(false)} className="rounded-xl bg-[#0A6C74] px-4 py-2 text-sm font-semibold text-white hover:bg-[#08565C]">Close guide</button>
+              <button type="button" onClick={() => setOpen(false)} className="rounded-xl bg-[#0A6C74] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#08565C]">Close guide</button>
             </div>
           </section>
         </div>
