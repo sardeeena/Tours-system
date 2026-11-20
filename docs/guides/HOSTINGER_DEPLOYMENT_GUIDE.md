@@ -28,7 +28,7 @@
 2. Navigate to **Websites** > select or create domain **`awesomeadventure.tours`**.
 3. Under **Advanced** / **Hosting**, open **Node.js** (or search "Node.js" in the top bar).
 4. Configure the application runtime:
-   - **Node.js version**: Select **Node.js 20.x LTS** (or **Node.js 22.x LTS**).
+   - **Node.js version**: Select **Node.js 22.x**. Node.js 20 is outside the version range declared by `package.json` and is not supported.
    - **Application mode**: `Production`.
    - **Application root**: `/` (or `public_html`, matching your repository clone directory).
    - **Application startup file**: `server.js` *(Crucial: must be exactly `server.js`)*.
@@ -76,14 +76,12 @@ In Hostinger hPanel > **Node.js** > **Environment Variables** (or create a `.env
 |---|---|---|
 | `NODE_ENV` | `production` | Enables production static asset caching and disables Vite dev middleware |
 | `PORT` | `3000` | Port for Express server (Hostinger sets this dynamically if left blank) |
-| `APP_URL` | `https://awesomeadventure.tours` | Canonical production domain |
 | `VITE_SUPABASE_URL` | `https://uvtbtpxtrrmaublrztgv.supabase.co` | Authoritative production Supabase project URL |
-| `VITE_SUPABASE_ANON_KEY` | *(Your Supabase anon/publishable key)* | Public browser API key (safe to expose only with RLS and least-privilege grants) |
-| `VITE_APP_URL` | `https://awesomeadventure.tours` | Frontend canonical origin |
+| `VITE_SUPABASE_ANON_KEY` | *(Your Supabase publishable key)* | Public browser API key; database access remains governed by RLS and least-privilege grants |
 | `SUPABASE_URL` | `https://uvtbtpxtrrmaublrztgv.supabase.co` | Server-side Supabase URL |
-| `SUPABASE_ANON_KEY` | *(Same publishable/anon key)* | Server-side key used with verified user JWTs |
+| `SUPABASE_ANON_KEY` | *(Same publishable key)* | Server-side user-scoped key used with verified user JWTs |
 | `SUPABASE_SECRET_KEY` | *(Server-only Supabase secret key)* | Application server privileged operations; never add a `VITE_` prefix |
-| `SUPABASE_SERVICE_ROLE_KEY` | *(Only when required by the admin CLI script)* | Legacy CLI compatibility for `scripts/setup-admin.ts`; terminal-only, never add a `VITE_` prefix |
+| `SUPABASE_SERVICE_ROLE_KEY` | *(Optional legacy fallback only)* | Leave empty when using `SUPABASE_SECRET_KEY`; server-only and never add a `VITE_` prefix |
 | `RESEND_API_KEY` | *(Resend API key)* | Server-only email delivery secret |
 | `RESEND_FROM_EMAIL` | *(Verified sender address)* | Must be verified in Resend |
 | `RESEND_FROM_NAME` | `Awesome Adventure Tours` | Email sender display name |
@@ -138,7 +136,9 @@ To ensure seamless Google/email authentication and password reset flows on the n
 After starting the server on Hostinger, verify the live deployment:
 
 - [ ] **Health Endpoint**: Visit `https://awesomeadventure.tours/api/health`  
-  *Expected response*: `{"status":"ok","version":"2.4.0","environment":"production",...}`
+  *Expected response*: JSON containing `status: "ok"`, `version: "2.4.0"`, `uptimeSeconds` and `timestamp`. The public liveness endpoint intentionally does not disclose the deployment environment or Supabase configuration.  
+- [ ] **Readiness Endpoint**: Visit `https://awesomeadventure.tours/api/health/ready`  
+  *Expected*: HTTP 200 only when the public RLS-scoped catalogue dependency is reachable; otherwise investigate the reported readiness failure.
 - [ ] **Frontend Homepage**: Visit `https://awesomeadventure.tours/`  
   *Expected*: Fast load, Hero section, Why Choose Us, Featured Tours, Footer with Egyptian marine licensing details.
 - [ ] **Excursion Catalog**: Visit `https://awesomeadventure.tours/excursions`  
