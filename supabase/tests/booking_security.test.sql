@@ -542,7 +542,7 @@ SELECT set_config('request.jwt.claim.sub', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa
 SELECT set_config('request.jwt.claim.role', 'authenticated', TRUE);
 
 SELECT throws_ok(
-  $SELECT public.admin_resolve_booking_cancellation('NONEXISTENT-TEST-BOOKING', 'approve', NULL)$,
+  'SELECT public.admin_resolve_booking_cancellation(''NONEXISTENT-TEST-BOOKING'', ''approve'', NULL)',
   '42501',
   'Administrator authorization is required to resolve cancellation requests.',
   'ordinary authenticated customer cannot approve or reject cancellation requests'
