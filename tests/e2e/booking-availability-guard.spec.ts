@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test('booking cannot advance without a verified live departure', async ({ page }) => {
-  const response = await page.goto('/booking');
+  const response = await page.goto('/booking?tour=orange-bay-island-snorkeling');
   expect(response?.status()).toBeLessThan(400);
 
   const continueButton = page.getByRole('button', { name: /Choose Pickup/i });
