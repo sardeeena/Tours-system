@@ -18,7 +18,7 @@ import {
 import {
   listInvoices,
   generateInvoiceForBooking,
-  COMPANY_DETAILS,
+  issueInvoice,
 } from '../../../services/financeService';
 import { FinanceInvoice } from '../../../types/finance';
 import { bookingRepository } from '../../../services/bookingRepository';
@@ -45,6 +45,8 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
 
   // Preview / Printable Invoice Modal
   const [selectedInvoice, setSelectedInvoice] = useState<FinanceInvoice | null>(null);
+  const [issuingInvoice, setIssuingInvoice] = useState(false);
+  const [issueError, setIssueError] = useState<string | null>(null);
 
   // Generate Invoice Modal
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
@@ -100,6 +102,29 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
       showToast(err.message || 'Error generating invoice', 'error');
     } finally {
       setGenerating(false);
+    }
+  };
+
+  const handleIssueInvoice = async () => {
+    if (!selectedInvoice) return;
+    if (!hasPermission('finance.update')) {
+      showToast('Your role does not permit issuing invoices.', 'error');
+      return;
+    }
+
+    setIssuingInvoice(true);
+    setIssueError(null);
+    try {
+      const issued = await issueInvoice(selectedInvoice.id);
+      setSelectedInvoice(issued);
+      setInvoices(await listInvoices());
+      showToast(`Invoice ${issued.invoiceNumber} issued successfully.`, 'success');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'The invoice could not be issued.';
+      setIssueError(message);
+      showToast(message, 'error');
+    } finally {
+      setIssuingInvoice(false);
     }
   };
 
@@ -298,7 +323,7 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
                     <td className="py-3 px-4 text-right">
                       <button
                         type="button"
-                        onClick={() => setSelectedInvoice(inv)}
+                        onClick={() => { setIssueError(null); setSelectedInvoice(inv); }}
                         className="px-2.5 py-1 bg-[#0A6C74] hover:bg-[#08565C] text-white rounded text-[11px] font-semibold cursor-pointer transition-colors shadow-xs"
                       >
                         View & Print
@@ -397,6 +422,17 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
               </div>
 
               <div className="flex items-center space-x-2">
+                {selectedInvoice.status === 'draft' && hasPermission('finance.update') && (
+                  <button
+                    type="button"
+                    onClick={handleIssueInvoice}
+                    disabled={issuingInvoice}
+                    className="px-3.5 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white rounded text-xs font-semibold flex items-center space-x-1.5 shadow-xs cursor-pointer disabled:opacity-50"
+                  >
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>{issuingInvoice ? 'Issuing...' : 'Issue Invoice'}</span>
+                  </button>
+                )}
                 {hasPermission('finance.export') && <button
                   type="button"
                   onClick={handlePrint}
@@ -418,8 +454,17 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
 
             {/* Official Company Header & Invoice Metadata */}
             {selectedInvoice.status === 'draft' && (
-              <div className="border-2 border-amber-600 bg-amber-50 text-amber-900 rounded-lg px-4 py-3 text-center font-bold tracking-wide">
-                DRAFT — NOT A TAX INVOICE — NOT ISSUED
+              <div className="border-2 border-amber-600 bg-amber-50 text-amber-900 rounded-lg px-4 py-3 space-y-2 print:hidden">
+                <div className="text-center font-bold tracking-wide">DRAFT — NOT A TAX INVOICE — NOT ISSUED</div>
+                <p className="text-xs font-normal text-center">Complete the verified legal billing details in Site Settings → Company, then use Issue Invoice after checking this draft.</p>
+                {issueError && <p role="alert" className="text-xs font-semibold text-red-800 text-center">{issueError}</p>}
+                {onNavigateTab && (
+                  <div className="flex justify-center">
+                    <button type="button" onClick={() => { setSelectedInvoice(null); onNavigateTab('settings'); }} className="text-xs underline font-semibold">
+                      Open Company Settings
+                    </button>
+                  </div>
+                )}
               </div>
             )}
             <div className="grid grid-cols-2 gap-6 items-start border-b border-stone-300 pb-6">
@@ -448,7 +493,7 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
                   {selectedInvoice.invoiceNumber}
                 </div>
                 <div className="text-xs text-stone-600 font-mono">
-                  Issue Date: <strong>{selectedInvoice.issueDate}</strong>
+                  {selectedInvoice.status === 'draft' ? 'Draft Created' : 'Issue Date'}: <strong>{selectedInvoice.issueDate}</strong>
                 </div>
                 <div className="text-xs text-stone-600 font-mono">
                   Tour Date: <strong>{selectedInvoice.tourDate}</strong>
