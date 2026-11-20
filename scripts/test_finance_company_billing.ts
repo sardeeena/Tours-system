@@ -25,6 +25,7 @@ for (const field of [
 assert.match(settingsService, /\.\.\.DEFAULT_COMPANY_SETTINGS, \.\.\.settings/, 'Older company settings must safely merge newly added optional fields');
 assert.match(financeService, /getCompanySettings/, 'Finance must read the authoritative company settings');
 assert.match(financeService, /export async function getCompanyBillingDetails/, 'Finance must map legal company settings into invoice details');
+assert.match(financeService, /legalEntityName: settings\.legalEntityName\.trim\(\)/, 'Invoice snapshots must preserve the verified legal entity separately from the brand');
 assert.match(financeService, /settings\.registeredAddress\.trim\(\)/, 'Invoices must use the registered address, not the pier dispatch address');
 assert.match(financeService, /settings\.registeredCountry\.trim\(\)/, 'Invoices must use the registered country');
 assert.match(financeService, /function getMissingCompanyBillingFields/, 'Invoice issue readiness must validate legal billing fields');
@@ -35,6 +36,7 @@ assert.match(financeService, /company_details: companyDetails/, 'Issuing must pe
 
 assert.match(financeUi, /hasPermission\('finance\.update'\)/, 'Invoice issue controls must be permission-gated');
 assert.match(financeUi, /issueInvoice\(selectedInvoice\.id\)/, 'Invoice preview must call the issue workflow');
+assert.match(financeUi, /DRAFT — NOT A TAX INVOICE — NOT ISSUED/, 'Draft disclaimer must remain visible in the printable invoice');
 assert.match(financeUi, /Open Company Settings/, 'Draft invoices must provide a route to complete legal billing details');
 assert.match(financeUi, /Draft Created/, 'Draft dates must not be presented as issue dates');
 
