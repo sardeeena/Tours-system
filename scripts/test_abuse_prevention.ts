@@ -42,6 +42,7 @@ assert(inquiry.slice(inquiryTrap, inquiryRateLimit).includes("admin_notes: 'Drop
 const server = read('server.ts');
 assert(server.includes("p_action: 'public_inquiry_email'"), 'Inquiry API enforces a database-backed per-email rate limit');
 assert(server.includes("p_action: 'public_newsletter_email'"), 'Newsletter API enforces a database-backed per-email rate limit');
+assert((server.match(/createHash\('sha256'\)\.update\(cleanEmail\)\.digest\('hex'\)/g) || []).length === 2, 'Email rate-limit identifiers are hashed before database storage');
 assert(server.includes('tour_title: cleanTourTitle'), 'Inquiry API persists the referenced tour title separately from internal notes');
 
 // Newsletter honeypot must short-circuit before the network request.
