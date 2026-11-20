@@ -153,6 +153,8 @@ jobs:
 
       - name: Verify finance dashboards use settled payments and processed refunds
         run: npm run test:finance-reporting
+      - name: Verify legal billing settings and explicit invoice issuance
+        run: npm run test:finance-company-billing
 
       - name: Validate catalogue source and read-only import safety
         run: npm run test:catalogue
