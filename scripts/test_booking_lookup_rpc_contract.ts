@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-const repository = process.cwd();
 const service = readFileSync(new URL('../src/services/bookingRepository.ts', import.meta.url), 'utf8');
 const migration = readFileSync(
   new URL('../supabase/migrations/20261110000000_booking_lookup_cancellation_hardening.sql', import.meta.url),
