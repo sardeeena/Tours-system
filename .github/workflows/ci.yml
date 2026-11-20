@@ -295,6 +295,13 @@ jobs:
       - name: Run pgTAP database security tests
         run: supabase test db
 
+      - name: Verify simultaneous bookings cannot oversell a departure
+        run: |
+          set -a
+          eval "$(supabase status -o env)"
+          set +a
+          node scripts/test_booking_concurrency.mjs
+
       - name: Stop local Supabase stack
         if: always() && steps.setup-supabase-cli.outcome == 'success'
         run: supabase stop --no-backup
