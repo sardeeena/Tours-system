@@ -60,6 +60,7 @@ export interface InvoiceLineItem {
 
 export interface CompanyBillingDetails {
   name: string;
+  legalEntityName?: string;
   tagline: string;
   address: string;
   city: string;
