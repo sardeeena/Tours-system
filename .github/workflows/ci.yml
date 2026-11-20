@@ -142,6 +142,9 @@ jobs:
       - name: Verify normalized RBAC authority in client authorization gates
         run: npm run test:normalized-rbac-client-boundary
 
+      - name: Verify departure slot capacity normalization fails closed
+        run: npm run test:departure-slots
+
       - name: Verify booking identifier and production fallback behavior
         run: npm run test:booking
 
