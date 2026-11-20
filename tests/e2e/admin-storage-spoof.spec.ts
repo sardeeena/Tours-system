@@ -16,7 +16,7 @@ test('browser-stored administrator claims cannot unlock protected admin routes',
 
   await page.goto('/admin/bookings');
 
-  await expect(page).toHaveURL(/\\/admin\\/login\\?redirect=/);
+  await expect(page).toHaveURL(/\/admin\/login\?redirect=/);
   await expect(page.getByRole('heading', { name: 'Admin sign in' })).toBeVisible();
   await expect(page.getByText('Executive Dashboard')).toHaveCount(0);
   await expect.poll(() => page.evaluate(() => localStorage.getItem('rse_active_user'))).toBeNull();
