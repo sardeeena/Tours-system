@@ -115,6 +115,7 @@ export async function createCustomerInquiry(
       phone: cleanPhone,
       whatsapp: cleanWhatsapp,
       tour_id: input.tour_id || null,
+      tour_title: input.tour_title || null,
       subject: cleanSubject || 'General Excursion Assistance',
       message: cleanMessage,
       status: 'new',
