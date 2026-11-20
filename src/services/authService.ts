@@ -95,14 +95,15 @@ export async function signInUser(
       });
 
       if (!error && data.user) {
-        // Check if account email is verified
+        // A session only proves that credentials were accepted; it does not prove
+        // that the email address was confirmed. Require Supabase's verified user
+        // timestamp and never infer confirmation from the presence of a session.
         const isEmailConfirmed = Boolean(
-          data.user.email_confirmed_at ||
-          (data.user as any)?.confirmed_at ||
-          data.session
+          data.user.email_confirmed_at || (data.user as any)?.confirmed_at
         );
 
         if (!isEmailConfirmed) {
+          await supabase.auth.signOut();
           void recordVisitorEvent({ event_name: 'auth_sign_in_failed', page_path: '/login', event_data: { outcome: 'email_unconfirmed' } });
           return {
             user: null,
