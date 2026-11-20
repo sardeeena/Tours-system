@@ -1507,6 +1507,17 @@ CREATE POLICY "Admins can manage inquiries"
 DROP POLICY IF EXISTS "Public can read active coupons" ON public.coupons;
 DROP POLICY IF EXISTS "Admins can manage coupons" ON public.coupons;
 
+CREATE POLICY rbac_coupons_read ON public.coupons
+  FOR SELECT TO authenticated USING (public.has_permission('content.read'::text));
+CREATE POLICY rbac_coupons_create ON public.coupons
+  FOR INSERT TO authenticated WITH CHECK (public.has_permission('content.create'::text));
+CREATE POLICY rbac_coupons_update ON public.coupons
+  FOR UPDATE TO authenticated
+  USING (public.has_permission('content.update'::text))
+  WITH CHECK (public.has_permission('content.update'::text));
+CREATE POLICY rbac_coupons_delete ON public.coupons
+  FOR DELETE TO authenticated USING (public.has_permission('content.delete'::text));
+
 
 
 
