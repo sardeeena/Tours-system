@@ -89,6 +89,16 @@ export const AdminSettings: React.FC = () => {
   // Company Settings
   const [company, setCompany] = useState<CompanySettings>({
     companyName: 'Awesome Adventure Tours',
+    legalEntityName: '',
+    registeredAddress: '',
+    registeredCity: '',
+    registeredCountry: '',
+    taxRegistrationNumber: '',
+    commercialRegistryNumber: '',
+    bankName: '',
+    iban: '',
+    swiftBic: '',
+    website: 'https://awesomeadventure.tours',
     email: 'reservations@awesomeadventure.tours',
     phone: '+20 151 5212741',
     whatsapp: '+20 151 5212741',
@@ -104,7 +114,7 @@ export const AdminSettings: React.FC = () => {
   const [policies, setPolicies] = useState<BookingPolicySettings>({
     bookingNoticeCutoffHours: 12,
     cancellationNoticeHours: 24,
-    cancellationPolicyText: 'Free 100% cancellation up to 24 hours before trip departure time. Full automatic refund or free rescheduling in case of Coast Guard harbor weather closures.',
+    cancellationPolicyText: 'Cancellation, refund and rescheduling terms depend on the selected excursion. Review the terms shown on the tour page and during checkout before booking.',
     depositRequired: false,
     depositPercent: 0,
     childAgeLimit: 11,
@@ -114,17 +124,17 @@ export const AdminSettings: React.FC = () => {
 
   // Social & Footer
   const [social, setSocial] = useState<SocialLinksSettings>({
-    facebook: 'https://facebook.com/AwesomeAdventureTours',
-    instagram: 'https://instagram.com/awesomeadventuretours',
-    youtube: 'https://youtube.com/@awesomeadventuretours',
-    tripadvisor: 'https://tripadvisor.com/Attraction_Review-Hurghada-Red_Sea.html',
+    facebook: '',
+    instagram: '',
+    youtube: '',
+    tripadvisor: '',
   });
 
   const [footer, setFooter] = useState<FooterContentSettings>({
-    copyrightNotice: '© 2026 Awesome Adventure Tours SAE. Registered Tour Operator License #8421.',
-    aboutSnippet: 'Awesome Adventure Tours - professional maritime tour operator based in Hurghada Marina. Certified vessels, private yacht charters, island transfers, and desert safaris.',
-    badges: ['Egyptian Ministry of Tourism Certified', 'PADI Certified Dive Centers', 'Coast Guard Safety Compliant'],
-    paymentIconsText: 'Cash on Pickup • Visa • MasterCard • Bank Transfer',
+    copyrightNotice: `© ${new Date().getFullYear()} Awesome Adventure Tours.`,
+    aboutSnippet: 'Explore excursions and experiences across Egypt’s Red Sea coast. Review each tour’s details, inclusions and booking information before reserving.',
+    badges: [],
+    paymentIconsText: '',
   });
 
   const [savingSettings, setSavingSettings] = useState(false);
@@ -552,6 +562,55 @@ export const AdminSettings: React.FC = () => {
                   onChange={(e) => setCompany({ ...company, defaultCountry: e.target.value })}
                   className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]"
                 />
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-stone-800 space-y-4">
+              <div>
+                <h3 className="text-sm font-bold text-white">Legal Billing Details</h3>
+                <p className="text-[11px] text-stone-400 mt-1">Enter only verified legal and bank details. These fields are separate from the pier dispatch address. Invoices remain drafts until the required legal fields are complete and an authorized user issues them.</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">Legal Entity Name</label>
+                  <input type="text" value={company.legalEntityName} onChange={(e) => setCompany({ ...company, legalEntityName: e.target.value })} className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]" />
+                </div>
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">Tax Registration Number</label>
+                  <input type="text" value={company.taxRegistrationNumber} onChange={(e) => setCompany({ ...company, taxRegistrationNumber: e.target.value })} className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]" />
+                </div>
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">Registered Legal Address</label>
+                  <input type="text" value={company.registeredAddress} onChange={(e) => setCompany({ ...company, registeredAddress: e.target.value })} className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]" />
+                </div>
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">Registered City</label>
+                  <input type="text" value={company.registeredCity} onChange={(e) => setCompany({ ...company, registeredCity: e.target.value })} className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]" />
+                </div>
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">Registered Country</label>
+                  <input type="text" value={company.registeredCountry} onChange={(e) => setCompany({ ...company, registeredCountry: e.target.value })} className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]" />
+                </div>
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">Commercial Registry Number</label>
+                  <input type="text" value={company.commercialRegistryNumber} onChange={(e) => setCompany({ ...company, commercialRegistryNumber: e.target.value })} className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]" />
+                </div>
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">Bank Name</label>
+                  <input type="text" value={company.bankName} onChange={(e) => setCompany({ ...company, bankName: e.target.value })} className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]" />
+                </div>
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">IBAN</label>
+                  <input type="text" value={company.iban} onChange={(e) => setCompany({ ...company, iban: e.target.value })} className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]" />
+                </div>
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">SWIFT / BIC</label>
+                  <input type="text" value={company.swiftBic} onChange={(e) => setCompany({ ...company, swiftBic: e.target.value })} className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]" />
+                </div>
+                <div>
+                  <label className="block text-stone-300 font-semibold mb-1">Business Website</label>
+                  <input type="url" value={company.website} onChange={(e) => setCompany({ ...company, website: e.target.value })} className="w-full px-3 py-2 bg-stone-900 border border-stone-800 rounded text-white focus:outline-none focus:border-[#0A6C74]" />
+                </div>
               </div>
             </div>
 
