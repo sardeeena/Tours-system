@@ -536,7 +536,6 @@
     "private.text.83524862": " Actualiser",
     "private.text.839930ce": "Continuer vers la connexion ",
     "private.text.844aecbf": "Quad et buggy dans le désert",
-    "private.text.844e6efc": "Se souvenir de moi",
     "private.text.845df81c": "annulé",
     "private.text.84984536": "Mode de paiement ",
     "private.text.8579fc12": "ex. : markus.weber@example.com",
@@ -1082,5 +1081,5 @@
     "private.text.ff566677": "Mot de passe mis à jour",
     "private.text.ff566f40": "Nom "
   },
-  "coverage": 1078
+  "coverage": 1077
 }
