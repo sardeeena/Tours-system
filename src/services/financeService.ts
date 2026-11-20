@@ -27,6 +27,7 @@ export const COMPANY_DETAILS: CompanyBillingDetails = {
   // Brand identity only. Legal entity, tax, address, phone and bank details must be
   // entered by an authorized administrator before issuing legally complete invoices.
   name: 'Awesome Adventure Tours',
+  legalEntityName: '',
   tagline: 'Tours and experiences',
   address: '',
   city: '',
@@ -44,7 +45,8 @@ export const COMPANY_DETAILS: CompanyBillingDetails = {
 export async function getCompanyBillingDetails(): Promise<CompanyBillingDetails> {
   const settings = await getCompanySettings();
   return {
-    name: settings.legalEntityName.trim(),
+    name: settings.legalEntityName.trim() || settings.companyName.trim(),
+    legalEntityName: settings.legalEntityName.trim(),
     tagline: 'Official billing entity',
     address: settings.registeredAddress.trim(),
     city: settings.registeredCity.trim(),
@@ -62,7 +64,7 @@ export async function getCompanyBillingDetails(): Promise<CompanyBillingDetails>
 
 function getMissingCompanyBillingFields(details: CompanyBillingDetails): string[] {
   const missing: string[] = [];
-  if (!details.name.trim()) missing.push('legal entity name');
+  if (!details.legalEntityName?.trim()) missing.push('legal entity name');
   if (!details.address.trim()) missing.push('registered legal address');
   if (!details.country.trim()) missing.push('registered country');
   if (!details.taxRegistrationNumber.trim() && !details.commercialRegistryNumber.trim()) {
