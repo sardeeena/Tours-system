@@ -11,8 +11,8 @@
     "communication_template": 18,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1077,
-    "ui_catalog_messages": 1158,
+    "private_ui_messages": 1078,
+    "ui_catalog_messages": 1159,
     "source_records": 111
   },
   "records": [
@@ -4843,7 +4843,8 @@
         "private.text.94bf73ed": "* 1 adulte minimum requis. ",
         "private.text.ae24f1dc": "Heure de départ",
         "private.text.d01f2cac": "Privé",
-        "private.text.e67a346a": "Les détails de votre réservation sont enregistrés en toute sécurité. Consultez les conditions d’annulation de l’excursion choisie avant de l’envoyer."
+        "private.text.e67a346a": "Les détails de votre réservation sont enregistrés en toute sécurité. Consultez les conditions d’annulation de l’excursion choisie avant de l’envoyer.",
+        "private.text.d9590137": "We konden deze boeking niet verifiëren of het annuleringsverzoek niet verzenden. Controleer uw gegevens en probeer het opnieuw."
       }
     }
   ],

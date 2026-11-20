@@ -1079,7 +1079,8 @@
     "private.text.ff4b2739": "Max. :",
     "private.text.ff4def07": "Installer l’application de la mer Rouge",
     "private.text.ff566677": "Mot de passe mis à jour",
-    "private.text.ff566f40": "Nom "
+    "private.text.ff566f40": "Nom ",
+    "private.text.d9590137": "Nous n’avons pas pu vérifier cette réservation ni envoyer la demande d’annulation. Veuillez vérifier vos informations et réessayer."
   },
-  "coverage": 1077
+  "coverage": 1078
 }

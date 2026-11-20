@@ -50,6 +50,7 @@ export const MyBookingPage: React.FC<MyBookingPageProps> = ({
   const [cancelReason, setCancelReason] = useState('');
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelSuccessMsg, setCancelSuccessMsg] = useState<string | null>(null);
+  const [cancelErrorMsg, setCancelErrorMsg] = useState<string | null>(null);
 
   // Authoritative operations departure info
   const [opsInfo, setOpsInfo] = useState<{
@@ -116,6 +117,7 @@ export const MyBookingPage: React.FC<MyBookingPageProps> = ({
   const handleConfirmCancellation = async () => {
     if (!booking) return;
     setIsCancelling(true);
+    setCancelErrorMsg(null);
 
     try {
       const sanitizedReason = sanitizeString(cancelReason) || 'Customer requested cancellation via portal';
@@ -125,16 +127,25 @@ export const MyBookingPage: React.FC<MyBookingPageProps> = ({
         emailOrPhone
       );
 
-      if (updated) {
-        setBooking(updated);
-        await notificationService.sendCancellationNotification(updated);
-        setShowCancelModal(false);
-        setCancelSuccessMsg(
-          'Your cancellation request has been submitted for staff review. Your reservation remains active until the team approves the request.'
-        );
+      if (!updated) {
+        throw new Error('We could not verify this reservation or submit the cancellation request. Please check your details and try again.');
       }
+
+      setBooking(updated);
+      setShowCancelModal(false);
+      setCancelSuccessMsg(
+        'Your cancellation request has been submitted for staff review. Your reservation remains active until the team approves the request.'
+      );
+
+      // The verified cancellation request is already persisted by the RPC.
+      // A notification delivery failure must not make the customer retry it.
+      void notificationService.sendCancellationNotification(updated)
+        .catch((error) => console.warn('Cancellation notification could not be sent:', error));
     } catch (err) {
       console.error('Cancellation error', err);
+      setCancelErrorMsg(
+        err instanceof Error ? err.message : 'The cancellation request could not be submitted. Please try again.'
+      );
     } finally {
       setIsCancelling(false);
     }
@@ -469,7 +480,7 @@ export const MyBookingPage: React.FC<MyBookingPageProps> = ({
                 {booking.bookingStatus === 'confirmed' && (
                   <button
                     type="button"
-                    onClick={() => setShowCancelModal(true)}
+                    onClick={() => { setCancelErrorMsg(null); setShowCancelModal(true); }}
                     className="px-4 py-2 border border-red-300 text-red-700 hover:bg-red-50 rounded text-xs font-semibold shrink-0 transition-colors"
                   >
                     Cancel Booking
@@ -549,6 +560,12 @@ export const MyBookingPage: React.FC<MyBookingPageProps> = ({
                 className="w-full px-3 py-2 rounded border border-stone-300 text-xs focus:outline-none focus:ring-2 focus:ring-[#0A6C74]"
               />
             </div>
+
+            {cancelErrorMsg && (
+              <div role="alert" className="p-3 rounded border border-red-200 bg-red-50 text-red-800 text-xs">
+                {cancelErrorMsg}
+              </div>
+            )}
 
             <div className="pt-2 flex items-center justify-end space-x-2">
               <button

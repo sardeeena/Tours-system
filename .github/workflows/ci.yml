@@ -151,6 +151,9 @@ jobs:
       - name: Verify customer profile persistence reports database write failures
         run: npm run test:customer-profile-persistence
 
+      - name: Verify customer cancellation feedback and notification retry safety
+        run: npm run test:booking-cancellation-feedback
+
       - name: Verify booking identifier and production fallback behavior
         run: npm run test:booking
 

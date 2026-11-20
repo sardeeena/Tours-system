@@ -2,7 +2,7 @@ BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 
-SELECT plan(90);
+SELECT plan(91);
 
 SELECT ok(
   EXISTS (
@@ -540,6 +540,13 @@ SELECT set_config(
 );
 SELECT set_config('request.jwt.claim.sub', 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa', TRUE);
 SELECT set_config('request.jwt.claim.role', 'authenticated', TRUE);
+
+SELECT throws_ok(
+  $$SELECT public.admin_resolve_booking_cancellation('NONEXISTENT-TEST-BOOKING', 'approve', NULL)$$,
+  '42501',
+  'Administrator authorization is required to resolve cancellation requests.',
+  'ordinary authenticated customer cannot approve or reject cancellation requests'
+);
 
 INSERT INTO pg_temp.pgtap_booking_results (case_name, result)
 SELECT 'authenticated_booking', public.create_booking_atomic(
