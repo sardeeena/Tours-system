@@ -8,6 +8,7 @@ test('login rejects malformed email in the browser before contacting authenticat
 
   await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible();
   const email = page.locator('#login-email');
+  const loginForm = page.locator('form').filter({ has: email });
   await email.fill('not-an-email');
   await page.locator('#login-password').fill('PlaywrightOnly123!');
 
@@ -16,7 +17,7 @@ test('login rejects malformed email in the browser before contacting authenticat
     if (isAuthenticationRequest(request.url())) authRequests.push(request.url());
   });
 
-  await page.getByRole('button', { name: 'Sign In' }).click();
+  await loginForm.locator('button[type="submit"]').click();
 
   await expect(email).toHaveJSProperty('validity.typeMismatch', true);
   expect(authRequests).toHaveLength(0);
