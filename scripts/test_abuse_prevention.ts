@@ -34,7 +34,7 @@ const inquiryRateLimit = inquiry.indexOf('const limit = inquiryRateLimiter.check
 const inquiryEndpoint = inquiry.indexOf("fetch('/api/inquiries/submit'");
 assert(inquiryTrap >= 0 && inquiryRateLimit > inquiryTrap, 'Inquiry honeypot short-circuits before rate-limit and persistence work');
 assert(inquiryEndpoint > inquiryTrap, 'Inquiry persistence uses the server endpoint downstream of the honeypot guard');
-assert(!/\\.from\\('inquiries'\\)[\\s\\S]*?\\.insert\\(/.test(inquiry), 'Public inquiry service has no direct client-side insert bypass');
+assert(!/\.from\('inquiries'\)[\s\S]*?\.insert\(/.test(inquiry), 'Public inquiry service has no direct client-side insert bypass');
 assert(inquiry.slice(inquiryTrap, inquiryRateLimit).includes("admin_notes: 'Dropped honeypot bot trap'"), 'Inquiry honeypot produces a trapped internal marker');
 
 // Newsletter honeypot must short-circuit before the network request.
