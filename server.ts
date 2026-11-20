@@ -1963,11 +1963,16 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
   if (typeof inquiryType !== 'string') {
     return res.status(400).json({ success: false, error: 'Invalid inquiry type.' });
   }
+  const rawTourTitle = (req.body as Record<string, unknown>).tour_title;
+  if (typeof rawTourTitle !== 'undefined' && rawTourTitle !== null && typeof rawTourTitle !== 'string') {
+    return res.status(400).json({ success: false, error: 'Invalid tour title.' });
+  }
 
   const cleanName = name.trim().slice(0, 100);
   const cleanEmail = email.trim().toLowerCase();
   const cleanMessage = message.trim().slice(0, 2000);
   const cleanPhone = typeof phone === 'string' ? phone.trim().slice(0, 30) : null;
+  const cleanTourTitle = typeof rawTourTitle === 'string' ? rawTourTitle.trim().slice(0, 160) || null : null;
   if (!cleanName || !cleanMessage || !isValidEmail(cleanEmail)) {
     return res.status(400).json({ success: false, error: 'Name, valid email, and message are required.' });
   }
@@ -1984,6 +1989,23 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
   }
 
   try {
+    // A per-email quota complements the canonical IP quota: rotating IPs cannot
+    // repeatedly trigger confirmation emails to the same recipient.
+    const { error: emailRateLimitError } = await serverSupabase.rpc('check_atomic_rate_limit', {
+      p_action: 'public_inquiry_email',
+      p_identifier: createHash('sha256').update(cleanEmail).digest('hex'),
+      p_window_interval: '10 minutes',
+      p_max_hits: 5,
+      p_error_message: 'Too many inquiries from this email address. Please wait before trying again.',
+    });
+    if (emailRateLimitError) {
+      if (emailRateLimitError.code === 'P0001') {
+        return res.status(429).json({ success: false, error: emailRateLimitError.message });
+      }
+      console.error('Inquiry email rate-limit check failed:', emailRateLimitError.message);
+      return res.status(503).json({ success: false, error: 'Inquiry service is temporarily unavailable. Please try again later.' });
+    }
+
     const { error: ipRateLimitError } = await serverSupabase.rpc('check_atomic_rate_limit', {
       p_action: 'public_inquiry_ip',
       p_identifier: createHash('sha256').update(clientIp).digest('hex'),
@@ -2008,6 +2030,7 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
         customer_name: cleanName,
         email: cleanEmail,
         phone: cleanPhone,
+        tour_title: cleanTourTitle,
         subject: inquirySubject,
         message: cleanMessage,
         status: 'new',
@@ -2035,6 +2058,7 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
           `Name: ${cleanName}`,
           `Email: ${cleanEmail}`,
           `Phone: ${cleanPhone || 'Not provided'}`,
+          `Tour: ${cleanTourTitle || 'Not specified'}`,
           `Subject: ${inquirySubject}`,
           '',
           'Message:',
