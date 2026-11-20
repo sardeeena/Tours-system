@@ -75,6 +75,7 @@
     "test:admin-data-connections": "tsx scripts/test_admin_data_connections.ts",
     "test:departure-slots": "tsx scripts/test_departure_slot_normalization.ts",
     "test:booking-lookup-rpc": "tsx scripts/test_booking_lookup_rpc_contract.ts",
+    "test:customer-profile-persistence": "tsx scripts/test_customer_profile_persistence.ts",
     "test:booking-cancellation-feedback": "tsx scripts/test_booking_cancellation_feedback.ts"
   },
   "dependencies": {
