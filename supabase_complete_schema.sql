@@ -1508,11 +1508,6 @@ DROP POLICY IF EXISTS "Public can read active coupons" ON public.coupons;
 DROP POLICY IF EXISTS "Admins can manage coupons" ON public.coupons;
 
 
-CREATE POLICY "Admins can manage coupons"
-    ON public.coupons FOR ALL
-    TO authenticated
-    USING (public.is_admin())
-    WITH CHECK (public.is_admin());
 
 
 -- ------------------------------------------------------------------------------
