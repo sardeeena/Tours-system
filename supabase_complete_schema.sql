@@ -1507,9 +1507,6 @@ CREATE POLICY "Admins can manage inquiries"
 DROP POLICY IF EXISTS "Public can read active coupons" ON public.coupons;
 DROP POLICY IF EXISTS "Admins can manage coupons" ON public.coupons;
 
-CREATE POLICY "Public can read active coupons"
-    ON public.coupons FOR SELECT
-    USING (is_active = TRUE OR public.is_admin());
 
 CREATE POLICY "Admins can manage coupons"
     ON public.coupons FOR ALL
