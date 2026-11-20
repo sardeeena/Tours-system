@@ -454,12 +454,12 @@ export const FinanceInvoices: React.FC<FinanceInvoicesProps> = ({ onNavigateTab 
 
             {/* Official Company Header & Invoice Metadata */}
             {selectedInvoice.status === 'draft' && (
-              <div className="border-2 border-amber-600 bg-amber-50 text-amber-900 rounded-lg px-4 py-3 space-y-2 print:hidden">
+              <div className="border-2 border-amber-600 bg-amber-50 text-amber-900 rounded-lg px-4 py-3 space-y-2">
                 <div className="text-center font-bold tracking-wide">DRAFT — NOT A TAX INVOICE — NOT ISSUED</div>
-                <p className="text-xs font-normal text-center">Complete the verified legal billing details in Site Settings → Company, then use Issue Invoice after checking this draft.</p>
-                {issueError && <p role="alert" className="text-xs font-semibold text-red-800 text-center">{issueError}</p>}
+                <p className="text-xs font-normal text-center print:hidden">Complete the verified legal billing details in Site Settings → Company, then use Issue Invoice after checking this draft.</p>
+                {issueError && <p role="alert" className="text-xs font-semibold text-red-800 text-center print:hidden">{issueError}</p>}
                 {onNavigateTab && (
-                  <div className="flex justify-center">
+                  <div className="flex justify-center print:hidden">
                     <button type="button" onClick={() => { setSelectedInvoice(null); onNavigateTab('settings'); }} className="text-xs underline font-semibold">
                       Open Company Settings
                     </button>
