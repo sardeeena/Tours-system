@@ -34,7 +34,7 @@ assert.match(
 assert.match(
   departureMigration,
   /COMMENT ON FUNCTION private\.lookup_booking_secure\(TEXT,TEXT\)/,
-  'The departure migration must extend the private implementation used by the public RPC.',
+  'The departure migration must document the private secure lookup implementation.',
 );
 assert.match(
   service,
