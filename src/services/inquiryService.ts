@@ -54,6 +54,7 @@ export async function createCustomerInquiry(
 ): Promise<{ success: boolean; inquiry?: DbInquiry; error?: string }> {
   // Honeypot submissions are silently acknowledged and never persisted.
   if (input.website_url_hp && input.website_url_hp.trim() !== '') {
+    const now = new Date().toISOString();
     return {
       success: true,
       inquiry: {
@@ -63,6 +64,7 @@ export async function createCustomerInquiry(
         phone: input.phone || null,
         whatsapp: input.whatsapp || null,
         tour_id: input.tour_id || null,
+        tour_title: input.tour_title || null,
         subject: input.subject,
         message: input.message,
         status: 'new',
@@ -70,8 +72,8 @@ export async function createCustomerInquiry(
         ip_address: null,
         admin_notes: 'Dropped honeypot bot trap',
         assigned_staff_id: null,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        created_at: now,
+        updated_at: now,
       },
     };
   }
@@ -84,12 +86,14 @@ export async function createCustomerInquiry(
     };
   }
 
-  const cleanName = sanitizeString(input.customer_name);
-  const cleanEmail = sanitizeString(input.email).toLowerCase();
-  const cleanSubject = sanitizeString(input.subject);
-  const cleanMessage = sanitizeString(input.message);
-  const cleanPhone = input.phone ? sanitizeString(input.phone) : null;
-  const cleanWhatsapp = input.whatsapp ? sanitizeString(input.whatsapp) : cleanPhone;
+  const cleanName = sanitizeString(input.customer_name).slice(0, 100);
+  const cleanEmail = sanitizeString(input.email).trim().toLowerCase().slice(0, 254);
+  const cleanSubject = sanitizeString(input.subject).slice(0, 120);
+  const cleanMessage = sanitizeString(input.message).slice(0, 2000);
+  const cleanPhone = input.phone ? sanitizeString(input.phone).slice(0, 30) : null;
+  const cleanWhatsapp = input.whatsapp ? sanitizeString(input.whatsapp).slice(0, 30) : cleanPhone;
+  const cleanTourId = input.tour_id ? sanitizeString(input.tour_id).slice(0, 100) : null;
+  const cleanTourTitle = input.tour_title ? sanitizeString(input.tour_title).slice(0, 160) : null;
   const sourceValue = String(input.source || 'web').toLowerCase();
   const source: DbInquiry['source'] = sourceValue === 'whatsapp' ? 'whatsapp' : sourceValue === 'email' ? 'email' : sourceValue === 'phone' ? 'phone' : 'web';
 
@@ -113,13 +117,14 @@ export async function createCustomerInquiry(
       email: cleanEmail,
       phone: cleanPhone,
       whatsapp: cleanWhatsapp,
-      tour_id: input.tour_id || null,
+      tour_id: cleanTourId,
+      tour_title: cleanTourTitle,
       subject: cleanSubject || 'General Excursion Assistance',
       message: cleanMessage,
       status: 'new',
       source,
       ip_address: null,
-      admin_notes: input.tour_title ? `Referenced Tour: ${input.tour_title}` : null,
+      admin_notes: null,
       assigned_staff_id: null,
       created_at: now,
       updated_at: now,
@@ -129,63 +134,76 @@ export async function createCustomerInquiry(
     return { success: true, inquiry: localInquiry };
   }
 
-  const { data, error } = await supabase
-    .from('inquiries')
-    .insert({
-      customer_name: cleanName,
-      email: cleanEmail,
-      phone: cleanPhone,
-      whatsapp: cleanWhatsapp,
-      tour_id: input.tour_id || null,
-      subject: cleanSubject || 'General Excursion Assistance',
-      message: cleanMessage,
-      status: 'new',
-      source,
-      admin_notes: input.tour_title ? `Referenced Tour: ${input.tour_title}` : null,
-      ...(input.website_url_hp ? { website_url_hp: input.website_url_hp } : {}),
-    })
-    .select('*')
-    .single();
+  try {
+    const response = await fetch('/api/inquiries', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone,
+        whatsapp: cleanWhatsapp,
+        tour_id: cleanTourId,
+        tour_title: cleanTourTitle,
+        subject: cleanSubject || 'General Excursion Assistance',
+        message: cleanMessage,
+        source,
+        website_url_hp: input.website_url_hp || '',
+      }),
+    });
 
-  if (error) {
-    inquiryRateLimiter.recordFailedAttempt();
-    if (error.message?.includes('Rate limit exceeded') || error.code === 'P0001') {
-      return { success: false, error: error.message || 'Rate limit exceeded. Please wait before submitting another inquiry.' };
+    let payload: any = null;
+    try {
+      payload = await response.json();
+    } catch {
+      payload = null;
     }
-    return { success: false, error: `Your inquiry could not be saved: ${formatSupabaseError(error)}` };
-  }
-  if (!data?.id) {
+
+    if (!response.ok || payload?.success !== true || !payload?.inquiry?.id) {
+      inquiryRateLimiter.recordFailedAttempt();
+      return {
+        success: false,
+        error: typeof payload?.error === 'string'
+          ? payload.error
+          : 'Your inquiry could not be saved. Please try again later.',
+      };
+    }
+
+    const persistedInquiry = {
+      ...payload.inquiry,
+      ip_address: null,
+      admin_notes: null,
+      assigned_staff_id: null,
+    } as DbInquiry;
+    saveStoredInquiries([persistedInquiry, ...getStoredInquiries().filter((item) => item.id !== persistedInquiry.id)]);
+
+    // These are non-critical follow-up signals. The inquiry itself is already persisted.
+    void publishAutomationEvent(
+      'inquiry.received' as any,
+      {
+        inquiryId: persistedInquiry.id,
+        leadId: null,
+        customerId: null,
+        name: cleanName,
+        email: cleanEmail,
+        subject: persistedInquiry.subject,
+        message: cleanMessage,
+        tourId: cleanTourId,
+      },
+      'inquiry',
+      persistedInquiry.id
+    ).catch((eventError) => console.warn('Inquiry automation event was not published:', eventError));
+
+    void recordVisitorEvent({ event_name: 'inquiry_submitted', page_path: '/support', event_data: { source } })
+      .catch((eventError) => console.warn('Inquiry analytics event was not recorded:', eventError));
+    return { success: true, inquiry: persistedInquiry };
+  } catch (error) {
     inquiryRateLimiter.recordFailedAttempt();
-    return { success: false, error: 'Your inquiry could not be saved because the database returned no record.' };
+    console.error('Inquiry API request failed:', error);
+    return { success: false, error: 'Your inquiry could not be saved. Please try again later.' };
   }
-
-  const persistedInquiry = data as DbInquiry;
-  saveStoredInquiries([persistedInquiry, ...getStoredInquiries().filter((item) => item.id !== persistedInquiry.id)]);
-
-  // These are non-critical follow-up signals. The inquiry itself is already persisted.
-  void publishAutomationEvent(
-    'inquiry.received' as any,
-    {
-      inquiryId: persistedInquiry.id,
-      leadId: null,
-      customerId: null,
-      name: cleanName,
-      email: cleanEmail,
-      subject: persistedInquiry.subject,
-      message: cleanMessage,
-      tourId: input.tour_id,
-    },
-    'inquiry',
-    persistedInquiry.id
-  ).catch((eventError) => console.warn('Inquiry automation event was not published:', eventError));
-
-  void recordVisitorEvent({ event_name: 'inquiry_submitted', page_path: '/support', event_data: { source } });
-  return { success: true, inquiry: persistedInquiry };
 }
 
-/**
- * Lists all inquiries for the admin dashboard.
- */
 export async function listInquiries(filter?: { status?: string }): Promise<DbInquiry[]> {
   if (!isSupabaseConfigured() || isSchemaMissing()) {
     if (!import.meta.env.DEV) {
