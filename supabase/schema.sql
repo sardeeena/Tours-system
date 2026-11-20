@@ -1,3 +1,5 @@
+-- HISTORICAL REFERENCE SNAPSHOT: production schema is defined by supabase/migrations/.
+-- Do not apply this file to provision or update an environment; use `supabase db reset` and the migration chain.
 -- ==============================================================================
 -- RED SEA VOYAGES & MARITIME EXCURSIONS - COMPREHENSIVE SUPABASE DATABASE SCHEMA
 -- ==============================================================================
@@ -662,9 +664,9 @@ CREATE TABLE IF NOT EXISTS public.inquiries (
     ip_address TEXT,
     admin_notes TEXT,
     website_url_hp TEXT,
-    assigned_staff_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    assigned_staff_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_inquiries_email ON public.inquiries(LOWER(email));
