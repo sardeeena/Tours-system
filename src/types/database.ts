@@ -403,6 +403,7 @@ export interface DbInquiry {
   phone: string | null;
   whatsapp: string | null;
   tour_id: string | null;
+  tour_title: string | null;
   subject: string;
   message: string;
   status: 'new' | 'contacted' | 'resolved' | 'converted';
