@@ -1,6 +1,7 @@
 import { Tour } from '../types';
 import { Availability, DepartureSlot } from '../types/booking';
 import { APP_CONFIG } from '../config/appConfig';
+import { mapDepartureSlotFromServer } from '../lib/departureSlots';
 import { supabase, isSupabaseConfigured, formatSupabaseError } from './supabaseClient';
 
 /**
@@ -205,17 +206,5 @@ export async function getTourDepartureSlotsFromServer(
 
   if (error) throw new Error(formatSupabaseError(error));
 
-  return (Array.isArray(data) ? data : []).map((slot: any) => ({
-    departureId: String(slot.departure_id),
-    tourId: String(slot.tour_id),
-    date: String(slot.date),
-    startTime: String(slot.start_time || ''),
-    endTime: String(slot.end_time || ''),
-    status: slot.status,
-    capacity: Math.max(0, Number(slot.capacity) || 0),
-    bookedCount: Math.max(0, Number(slot.booked_count) || 0),
-    remainingCapacity: Math.max(0, Number(slot.remaining_capacity) || 0),
-    isAvailable: slot.is_available === true,
-    minimumNoticeHours: Math.max(0, Number(slot.minimum_notice_hours) || 0),
-  }));
+  return (Array.isArray(data) ? data : []).map((slot: any) => mapDepartureSlotFromServer(slot));
 }
