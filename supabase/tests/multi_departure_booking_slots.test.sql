@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(26);
+SELECT plan(34);
 
 SELECT has_function(
   'public','get_tour_departure_slots',ARRAY['text','date'],
@@ -35,7 +35,11 @@ CREATE TEMP TABLE multi_departure_context (
   second_departure_id UUID,
   booking_result JSONB,
   retry_result JSONB,
-  mismatched_retry_result JSONB
+  mismatched_retry_result JSONB,
+  cancellation_result JSONB,
+  repeated_cancellation_result JSONB,
+  second_booking_result JSONB,
+  rejection_result JSONB
 ) ON COMMIT DROP;
 
 INSERT INTO multi_departure_context (tour_id,test_date)
@@ -394,6 +398,95 @@ SELECT ok(
     'idem_multi_departure_ambiguous_0002'
   )->>'error') ILIKE '%select a departure time%',
   'ambiguous legacy booking receives a clear departure-selection error'
+);
+
+-- Exercise the real cancellation resolver against departure-linked bookings.
+-- These operations run inside this pgTAP transaction and are rolled back.
+SELECT set_config('request.jwt.claims', '{"role":"service_role"}', TRUE);
+
+UPDATE public.bookings
+SET cancellation_previous_status = status,
+    status = 'cancellation_requested'
+WHERE id = (SELECT (booking_result->>'bookingId')::UUID FROM multi_departure_context);
+
+UPDATE multi_departure_context
+SET cancellation_result = private.admin_resolve_booking_cancellation(
+  (booking_result->>'bookingReference'), 'approve', 'pgTAP cancellation capacity test'
+);
+
+SELECT is(
+  (SELECT (cancellation_result->>'success')::BOOLEAN FROM multi_departure_context),
+  TRUE,
+  'departure-linked cancellation approval succeeds'
+);
+SELECT is(
+  (SELECT status FROM public.bookings WHERE id = (SELECT (booking_result->>'bookingId')::UUID FROM multi_departure_context)),
+  'cancelled',
+  'approved cancellation marks the booking cancelled'
+);
+SELECT is(
+  (SELECT booked_passengers FROM public.departures WHERE id = (SELECT first_departure_id FROM multi_departure_context)),
+  0,
+  'approved cancellation releases the selected departure passenger count exactly once'
+);
+SELECT is(
+  (SELECT remaining_capacity FROM public.departures WHERE id = (SELECT first_departure_id FROM multi_departure_context)),
+  2,
+  'approved cancellation restores the selected departure remaining capacity'
+);
+
+UPDATE multi_departure_context
+SET repeated_cancellation_result = private.admin_resolve_booking_cancellation(
+  (booking_result->>'bookingReference'), 'approve', 'repeat approval must be idempotent'
+);
+SELECT is(
+  (SELECT (repeated_cancellation_result->>'alreadyResolved')::BOOLEAN FROM multi_departure_context),
+  TRUE,
+  'repeated cancellation approval is idempotent'
+);
+
+UPDATE multi_departure_context
+SET second_booking_result = public.create_booking_atomic_with_departure(
+  'pgtap-multi-departure-private',
+  test_date,
+  1,0,0,
+  'Reject','Cancellation',
+  'multi-slot-reject@example.test',
+  '+201000000087',
+  'Egypt',
+  'Test Hotel',
+  NULL,NULL,
+  '[]'::jsonb,
+  NULL,
+  'pay_at_pickup',
+  'ROLLBACK TEST ONLY',
+  'idem_multi_departure_reject_cancel_0001',
+  'English',
+  'en',
+  second_departure_id
+);
+UPDATE public.bookings
+SET cancellation_previous_status = status,
+    status = 'cancellation_requested'
+WHERE id = (SELECT (second_booking_result->>'bookingId')::UUID FROM multi_departure_context);
+UPDATE multi_departure_context
+SET rejection_result = private.admin_resolve_booking_cancellation(
+  (second_booking_result->>'bookingReference'), 'reject', 'pgTAP rejection capacity test'
+);
+SELECT is(
+  (SELECT (rejection_result->>'success')::BOOLEAN FROM multi_departure_context),
+  TRUE,
+  'cancellation rejection succeeds for a pending cancellation request'
+);
+SELECT is(
+  (SELECT status FROM public.bookings WHERE id = (SELECT (second_booking_result->>'bookingId')::UUID FROM multi_departure_context)),
+  'confirmed',
+  'rejected cancellation restores the booking''s prior confirmed status'
+);
+SELECT is(
+  (SELECT booked_passengers FROM public.departures WHERE id = (SELECT second_departure_id FROM multi_departure_context)),
+  1,
+  'rejecting cancellation retains the booking''s departure capacity'
 );
 
 SELECT * FROM finish();
