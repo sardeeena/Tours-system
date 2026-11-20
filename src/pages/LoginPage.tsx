@@ -35,7 +35,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ redirectUrl, onNavigate })
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [requiresConfirmation, setRequiresConfirmation] = useState(false);
@@ -522,18 +521,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ redirectUrl, onNavigate })
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <label className="flex items-center space-x-2 text-xs text-stone-600 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="rounded border-stone-300 text-[#0A6C74] focus:ring-[#0A6C74]"
-                />
-                <span>Remember me</span>
-              </label>
             </div>
 
             <button
