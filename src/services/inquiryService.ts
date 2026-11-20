@@ -129,9 +129,28 @@ export async function createCustomerInquiry(
     return { success: true, inquiry: localInquiry };
   }
 
-  const { data, error } = await supabase
-    .from('inquiries')
-    .insert({
+  // Public inquiries are persisted through the server endpoint; never expose public INSERT RLS.
+  let persistedInquiry: DbInquiry;
+  try {
+    const response = await fetch('/api/inquiries', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: cleanName,
+        email: cleanEmail,
+        phone: cleanPhone,
+        inquiryType: cleanSubject || 'General Excursion Assistance',
+        message: cleanMessage,
+        website_url_hp: input.website_url_hp || '',
+      }),
+    });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok || result?.success !== true || !result?.inquiryId) {
+      inquiryRateLimiter.recordFailedAttempt();
+      return { success: false, error: result?.error || 'Your inquiry could not be saved. Please try again.' };
+    }
+    persistedInquiry = {
+      id: result.inquiryId,
       customer_name: cleanName,
       email: cleanEmail,
       phone: cleanPhone,
@@ -141,25 +160,16 @@ export async function createCustomerInquiry(
       message: cleanMessage,
       status: 'new',
       source,
+      ip_address: null,
       admin_notes: input.tour_title ? `Referenced Tour: ${input.tour_title}` : null,
-      ...(input.website_url_hp ? { website_url_hp: input.website_url_hp } : {}),
-    })
-    .select('*')
-    .single();
-
-  if (error) {
+      assigned_staff_id: null,
+      created_at: result.receivedAt || new Date().toISOString(),
+      updated_at: result.receivedAt || new Date().toISOString(),
+    };
+  } catch {
     inquiryRateLimiter.recordFailedAttempt();
-    if (error.message?.includes('Rate limit exceeded') || error.code === 'P0001') {
-      return { success: false, error: error.message || 'Rate limit exceeded. Please wait before submitting another inquiry.' };
-    }
-    return { success: false, error: `Your inquiry could not be saved: ${formatSupabaseError(error)}` };
+    return { success: false, error: 'A connection error occurred. Your inquiry was not confirmed. Please try again.' };
   }
-  if (!data?.id) {
-    inquiryRateLimiter.recordFailedAttempt();
-    return { success: false, error: 'Your inquiry could not be saved because the database returned no record.' };
-  }
-
-  const persistedInquiry = data as DbInquiry;
   saveStoredInquiries([persistedInquiry, ...getStoredInquiries().filter((item) => item.id !== persistedInquiry.id)]);
 
   // These are non-critical follow-up signals. The inquiry itself is already persisted.
