@@ -11,8 +11,8 @@
     "static_page": 10,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1077,
-    "ui_catalog_messages": 1158,
+    "private_ui_messages": 1079,
+    "ui_catalog_messages": 1160,
     "source_records": 111
   },
   "records": [
@@ -3894,7 +3894,9 @@
         "private.text.d01f2cac": "Privé",
         "private.text.0bbe0f5d": "Les possibilités d’annulation dépendent de la politique applicable à l’excursion choisie. ",
         "private.text.245e34ba": "Les réservations sont envoyées directement à notre équipe de réservation. Consultez les conditions d’annulation de l’excursion choisie avant de confirmer. ",
-        "private.text.e67a346a": "Les détails de votre réservation sont enregistrés en toute sécurité. Consultez les conditions d’annulation de l’excursion choisie avant de l’envoyer."
+        "private.text.e67a346a": "Les détails de votre réservation sont enregistrés en toute sécurité. Consultez les conditions d’annulation de l’excursion choisie avant de l’envoyer.",
+        "private.text.d9590137": "Nous n’avons pas pu vérifier cette réservation ni envoyer la demande d’annulation. Veuillez vérifier vos informations et réessayer.",
+        "private.text.3ebf8d27": "La demande d’annulation n’a pas pu être envoyée. Veuillez réessayer."
       },
       "private_ui_message_count": 1100
     },
