@@ -102,6 +102,7 @@ export const OperationsAvailability: React.FC = () => {
     try {
       await updateAvailabilitySlot(slot.tourId, slot.date, {
         status: nextStatus,
+        isBlackout: nextStatus === 'unavailable',
         notes: nextStatus === 'unavailable'
           ? 'Manual blackout: closed by operations'
           : 'Manual override: reopened by operations',
