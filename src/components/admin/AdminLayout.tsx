@@ -293,7 +293,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     if (id === 'comm_templates') return 'communications.manage';
     if (id.startsWith('comm_')) return 'communications.read';
     if (['destinations','categories','newsletter','extras','faqs','reviews','media','seo','pages','translations'].includes(id)) return 'content.read';
-    if (id === 'coupons') return 'bookings.read';
+    if (id === 'coupons') return 'content.manage';
     if (id === 'settings') return 'settings.manage';
     return null;
   };
