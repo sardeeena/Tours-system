@@ -7,9 +7,9 @@ test('login rejects malformed email in the browser before contacting authenticat
   await page.goto('/login');
 
   await expect(page.getByRole('heading', { name: 'Welcome back' })).toBeVisible();
-  const email = page.getByLabel('Email Address');
+  const email = page.locator('#login-email');
   await email.fill('not-an-email');
-  await page.getByLabel('Password').fill('PlaywrightOnly123!');
+  await page.locator('#login-password').fill('PlaywrightOnly123!');
 
   const authRequests: string[] = [];
   page.on('request', (request) => {
@@ -29,7 +29,7 @@ test('expired recovery links offer a safe retry and reject malformed email befor
   await page.getByRole('button', { name: 'Request New Password Reset Link' }).click();
 
   await expect(page.getByRole('heading', { name: 'Reset Your Password' })).toBeVisible();
-  const email = page.getByLabel('Email Address');
+  const email = page.locator('#reset-email');
   await email.fill('not-an-email');
 
   const authRequests: string[] = [];
