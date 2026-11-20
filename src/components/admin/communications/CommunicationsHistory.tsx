@@ -133,23 +133,32 @@ export const CommunicationsHistory: React.FC<CommunicationsHistoryProps> = ({ on
       'Failure Reason',
     ];
 
+    // Quote every cell (RFC 4180) and neutralise spreadsheet formulas in all
+    // untrusted values, not just the customer name. Leading whitespace/control
+    // characters are included because spreadsheet applications may ignore them.
+    const csvCell = (value: unknown): string => {
+      const raw = String(value ?? '');
+      const safe = /^[\\u0000-\\u0020]*[=+\\-@]/.test(raw) ? `'${raw}` : raw;
+      return `"${safe.replace(/"/g, '""')}"`;
+    };
+
     const rows = filteredMessages.map((m) => [
-      `"${m.id}"`,
-      `"${m.channel}"`,
-      `"${m.customerName}"`,
-      `"${m.recipientAddress}"`,
-      `"${m.bookingReference || ''}"`,
-      `"${(m.subject || m.templateKey || '').replace(/"/g, '""')}"`,
-      `"${m.status}"`,
-      `"${m.providerName}"`,
-      `"${m.providerMessageId || ''}"`,
-      `"${m.sentAt || ''}"`,
-      `"${m.deliveredAt || ''}"`,
-      `"${m.openedAt || ''}"`,
-      `"${m.staffName}"`,
-      `"${m.createdAt}"`,
-      `"${(m.failureReason || '').replace(/"/g, '""')}"`,
-    ]);
+      m.id,
+      m.channel,
+      m.customerName,
+      m.recipientAddress,
+      m.bookingReference || '',
+      m.subject || m.templateKey || '',
+      m.status,
+      m.providerName,
+      m.providerMessageId || '',
+      m.sentAt || '',
+      m.deliveredAt || '',
+      m.openedAt || '',
+      m.staffName,
+      m.createdAt,
+      m.failureReason || '',
+    ].map(csvCell));
 
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);
