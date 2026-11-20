@@ -910,17 +910,18 @@ CREATE TABLE IF NOT EXISTS public.inquiries (
     email TEXT NOT NULL,
     phone TEXT,
     whatsapp TEXT,
-    tour_id UUID REFERENCES public.tours(id) ON DELETE SET NULL,
+    tour_id TEXT,
     tour_title TEXT,
-    subject TEXT,
+    subject TEXT NOT NULL DEFAULT 'General Excursion Assistance',
     message TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'in_progress', 'converted', 'closed', 'archived')),
-    source TEXT DEFAULT 'web',
+    status TEXT NOT NULL DEFAULT 'new' CHECK (status IN ('new', 'contacted', 'resolved', 'converted')),
+    source TEXT NOT NULL DEFAULT 'web' CHECK (source IN ('web', 'whatsapp', 'email', 'phone')),
     ip_address TEXT,
     admin_notes TEXT,
     website_url_hp TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    assigned_staff_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL
 );
 
 -- 3.28 GLOBAL FAQS TABLE
@@ -999,9 +1000,9 @@ CREATE TABLE IF NOT EXISTS public.audit_logs (
 CREATE TABLE IF NOT EXISTS public.newsletter_subscriptions (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email TEXT NOT NULL UNIQUE,
-    source TEXT NOT NULL DEFAULT 'website_footer',
+    source TEXT NOT NULL DEFAULT 'footer',
     status TEXT NOT NULL DEFAULT 'subscribed' CHECK (status IN ('subscribed', 'unsubscribed')),
-    discount_code TEXT,
+    discount_code TEXT NOT NULL DEFAULT 'REDSEA15',
     website_url_hp TEXT,
     metadata JSONB DEFAULT '{}'::jsonb,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -3231,8 +3232,10 @@ CREATE POLICY "Admins manage reviews" ON public.reviews FOR ALL TO authenticated
 CREATE POLICY "Public validate coupons" ON public.coupons FOR SELECT USING (is_active = true OR public.is_admin());
 CREATE POLICY "Admins manage coupons" ON public.coupons FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
 
-CREATE POLICY "Public can insert inquiry" ON public.inquiries FOR INSERT WITH CHECK (true);
-CREATE POLICY "Admins can manage inquiries" ON public.inquiries FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "rbac_inquiries_create" ON public.inquiries FOR INSERT TO authenticated WITH CHECK (private.has_permission('crm.create'::text));
+CREATE POLICY "rbac_inquiries_read" ON public.inquiries FOR SELECT TO authenticated USING (private.has_permission('crm.read'::text));
+CREATE POLICY "rbac_inquiries_update" ON public.inquiries FOR UPDATE TO authenticated USING (private.has_permission('crm.update'::text)) WITH CHECK (private.has_permission('crm.update'::text));
+CREATE POLICY "rbac_inquiries_delete" ON public.inquiries FOR DELETE TO authenticated USING (private.has_permission('crm.delete'::text));
 
 CREATE POLICY "Public can view faqs" ON public.faqs FOR SELECT USING (is_published = true OR public.is_admin());
 CREATE POLICY "Admins manage faqs" ON public.faqs FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
@@ -3249,8 +3252,13 @@ CREATE POLICY "Admins manage site settings" ON public.site_settings FOR ALL TO a
 CREATE POLICY "Admins view audit logs" ON public.audit_logs FOR SELECT TO authenticated USING (public.is_admin());
 CREATE POLICY "System insert audit logs" ON public.audit_logs FOR INSERT WITH CHECK (true);
 
-CREATE POLICY "Public can subscribe newsletter" ON public.newsletter_subscriptions FOR INSERT WITH CHECK (true);
-CREATE POLICY "Admins manage newsletter" ON public.newsletter_subscriptions FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
+CREATE POLICY "rbac_newsletter_subscriptions_create" ON public.newsletter_subscriptions FOR INSERT TO authenticated WITH CHECK (private.has_permission('content.create'::text));
+CREATE POLICY "rbac_newsletter_subscriptions_read" ON public.newsletter_subscriptions FOR SELECT TO authenticated USING (private.has_permission('content.read'::text));
+CREATE POLICY "rbac_newsletter_subscriptions_update" ON public.newsletter_subscriptions FOR UPDATE TO authenticated USING (private.has_permission('content.update'::text)) WITH CHECK (private.has_permission('content.update'::text));
+CREATE POLICY "rbac_newsletter_subscriptions_delete" ON public.newsletter_subscriptions FOR DELETE TO authenticated USING (private.has_permission('content.delete'::text));
+
+REVOKE ALL ON TABLE public.inquiries FROM PUBLIC, anon;
+REVOKE ALL ON TABLE public.newsletter_subscriptions FROM PUBLIC, anon;
 
 CREATE POLICY "Public can view media assets" ON public.media_assets FOR SELECT USING (true);
 CREATE POLICY "Admins can manage media assets" ON public.media_assets FOR ALL TO authenticated USING (public.is_admin()) WITH CHECK (public.is_admin());
