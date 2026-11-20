@@ -1982,7 +1982,7 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
   try {
     const { error: emailRateLimitError } = await serverSupabase.rpc('check_atomic_rate_limit', {
       p_action: 'public_inquiry_email',
-      p_identifier: cleanEmail,
+      p_identifier: createHash('sha256').update(cleanEmail).digest('hex'),
       p_window_interval: '10 minutes',
       p_max_hits: 5,
       p_error_message: 'Too many inquiries from this email address. Please wait before trying again.',
@@ -2179,7 +2179,7 @@ app.post(['/api/newsletter', '/api/newsletter/subscribe'], rateLimit(3, 10 * 60_
 
     const { error: emailRateLimitError } = await serverSupabase.rpc('check_atomic_rate_limit', {
       p_action: 'public_newsletter_email',
-      p_identifier: cleanEmail,
+      p_identifier: createHash('sha256').update(cleanEmail).digest('hex'),
       p_window_interval: '10 minutes',
       p_max_hits: 3,
       p_error_message: 'Too many subscription attempts for this email address. Please wait before trying again.',
