@@ -1800,6 +1800,7 @@ export async function listAvailabilitySlots(): Promise<AvailabilitySlot[]> {
     };
   });
 }
+
 export async function updateAvailabilitySlot(
   tourId: string,
   date: string,
