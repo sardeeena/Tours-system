@@ -1,7 +1,7 @@
 import { supabase, isSupabaseConfigured, formatSupabaseError } from './supabaseClient';
 import { UserRole } from '../types/database';
 import { recordVisitorEvent } from './visitorAnalyticsService';
-import { validatePasswordStrength } from '../lib/security';
+import { validatePasswordStrength as validatePasswordPolicy } from '../lib/security';
 
 export interface AppUser {
   id: string;
@@ -533,7 +533,7 @@ export async function updateUserPassword(
   newPassword: string,
   email?: string
 ): Promise<{ success: boolean; error?: string }> {
-  const passwordStrength = validatePasswordStrength(newPassword);
+  const passwordStrength = validatePasswordPolicy(newPassword);
   if (!passwordStrength.isValid) {
     return { success: false, error: passwordStrength.errors[0] || 'Password does not meet security requirements.' };
   }
