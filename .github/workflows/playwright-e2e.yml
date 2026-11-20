@@ -1,0 +1,33 @@
+name: Playwright browser smoke tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main, "audit/**", "fix/**"]
+permissions:
+  contents: read
+concurrency:
+  group: playwright-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  browser-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          package-manager-cache: false
+      - run: npm ci --include=dev --no-audit --no-fund
+      - name: Install Playwright test runner
+        run: npm install --no-save --package-lock=false @playwright/test
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Build production assets
+        run: npm run build
+      - name: Run browser smoke tests
+        run: npx playwright test
+        env:
+          CI: true
