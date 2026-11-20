@@ -145,6 +145,9 @@ jobs:
       - name: Verify departure slot capacity normalization fails closed
         run: npm run test:departure-slots
 
+      - name: Verify secure customer booking lookup RPC contract
+        run: npm run test:booking-lookup-rpc
+
       - name: Verify booking identifier and production fallback behavior
         run: npm run test:booking
 
