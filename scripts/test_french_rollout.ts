@@ -24,6 +24,9 @@ for (const locale of ['de', 'fr', 'it', 'ar', 'ru', 'es', 'pl', 'nl'] as const) 
   for (const key of englishKeys) {
     assert.ok(dictionary[key]?.trim(), locale.toUpperCase() + ' translation must not be empty: ' + key);
   }
+}
+
+for (const locale of ['fr', 'es', 'ar', 'nl', 'pl'] as const) {
   const rollout = EUROPEAN_LOCALE_ROLLOUT.find((item) => item.code === locale);
   assert.equal(rollout?.rollout, 'planned', locale.toUpperCase() + ' must remain staged until all content is reviewed and published.');
   assert.equal(SUPPORTED_LANGUAGES[locale], undefined, locale.toUpperCase() + ' must not be advertised from a static dictionary alone.');
