@@ -12,7 +12,7 @@ test('public pages do not throw uncaught browser exceptions', async ({ page }) =
   expect(exceptions, exceptions.join('\n')).toEqual([]);
 });
 
-test('homepage renders at mobile and desktop viewport widths without horizontal overflow', async ({ page }) => {
+test('Exclusive catalogue renders at mobile and desktop viewport widths without horizontal overflow', async ({ page }) => {
   for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 800 }]) {
     await page.setViewportSize(viewport);
     await page.goto('/exclusive');
