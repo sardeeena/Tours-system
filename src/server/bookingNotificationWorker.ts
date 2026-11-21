@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { startWorkerLease } from './workerLease';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { renderBookingTicketEmailHtml, renderBrandedEmailHtml } from '../utils/emailTemplate';
 import { ROUTABLE_LOCALE_CODES } from '../i18n/localeRouting';
@@ -739,10 +740,17 @@ export function startBookingNotificationWorker(client: SupabaseClient): () => vo
     }
   };
 
-  const timer = setInterval(() => void poll(), QUEUE_POLL_INTERVAL_MS);
+  const lease = startWorkerLease(client, 'booking_notification', (leader) => {
+    if (leader) void poll();
+  });
+  const timer = setInterval(() => {
+    if (lease.isLeader()) void poll();
+  }, QUEUE_POLL_INTERVAL_MS);
   timer.unref();
-  void poll();
 
-  console.log('[Booking Notification Worker] Started; polling durable Supabase queue.');
-  return () => clearInterval(timer);
+  console.log('[Booking Notification Worker] Started; waiting for the distributed worker lease.');
+  return () => {
+    clearInterval(timer);
+    lease.stop();
+  };
 }
