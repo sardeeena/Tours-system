@@ -1227,7 +1227,7 @@ export function exportReportToExcel(
   const tsvContent =
     '\uFEFF' +
     serializeSpreadsheetRows([
-      [`${title}\\tGenerated: ${new Date().toLocaleString()}`],
+      [`${title}\tGenerated: ${new Date().toLocaleString()}`],
       [],
       headers,
       ...rows,
