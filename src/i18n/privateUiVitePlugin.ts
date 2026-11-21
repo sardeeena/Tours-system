@@ -11,7 +11,7 @@ const TRANSLATABLE_CALLS = new Set(['showToast', 'confirm', 'alert', 'setError',
 function importSpecifier(fromFile: string, targetFile: string): string {
   let relative = path.relative(path.dirname(fromFile), targetFile).replace(/\\/g, '/');
   if (!relative.startsWith('.')) relative = './' + relative;
-  return relative.replace(/\.tsx?$/, '');
+  return relative;
 }
 
 function containsJsx(node: TsNode): boolean {
