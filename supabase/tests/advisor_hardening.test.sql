@@ -1,7 +1,7 @@
 BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(4);
+SELECT plan(5);
 
 WITH policy_actions AS (
   SELECT
@@ -37,12 +37,13 @@ SELECT ok(
     SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
     WHERE n.nspname = 'public' AND p.prosecdef
       AND has_function_privilege('anon', p.oid, 'EXECUTE')
+      AND p.proname NOT IN ('submit_public_tour_review')
   )
   AND NOT EXISTS (
     SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
     WHERE n.nspname = 'public' AND p.prosecdef
       AND has_function_privilege('authenticated', p.oid, 'EXECUTE')
-      AND p.proname NOT IN ('upsert_departure_with_availability','scan_staff_notifications')
+      AND p.proname NOT IN ('upsert_departure_with_availability','scan_staff_notifications','submit_public_tour_review')
   )
   AND NOT EXISTS (
     SELECT 1 FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
@@ -51,6 +52,13 @@ SELECT ok(
       AND position('public.is_admin()' IN pg_get_functiondef(p.oid)) = 0
   ),
   'public SECURITY DEFINER RPCs are limited to explicitly guarded admin-only operations'
+);
+
+SELECT ok(
+  has_function_privilege('anon', 'public.submit_public_tour_review(uuid,text,text,text,integer,text,text)', 'EXECUTE')
+  AND position('is_published' IN pg_get_functiondef(to_regprocedure('public.submit_public_tour_review(uuid,text,text,text,integer,text,text)'))) > 0
+  AND position('verified_booking' IN pg_get_functiondef(to_regprocedure('public.submit_public_tour_review(uuid,text,text,text,integer,text,text)'))) > 0,
+  'the only anonymous SECURITY DEFINER exception is the scoped public review intake RPC, which always queues unverified reviews'
 );
 
 SELECT ok(
