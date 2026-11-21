@@ -33,7 +33,7 @@ const CINEMATIC_SLIDES: TourSlide[] = [
     title1: 'Pristine Lagoons &',
     title2: 'Giftun Island Reefs',
     subtitle: 'Sail to Orange Bay and Paradise Island with crystal shallow sands, live coral gardens, and wild dolphin pods.',
-    imageUrl: 'https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/1794701564858-yfp2o4-White_island.webp',
+    imageUrl: 'https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/1794701564858-yfp2o4-White_island.webp',
     accentGradient: 'from-[#0A6C74] via-[#0D838C] to-[#0A6C74] dark:from-[#60C3CC] dark:via-[#91E4EB] dark:to-[#A3E8ED]',
   },
   {
@@ -41,7 +41,7 @@ const CINEMATIC_SLIDES: TourSlide[] = [
     title1: 'Sunset Dunes &',
     title2: 'Bedouin Nights',
     subtitle: 'High-octane ATV quad biking through Red Sea mountain canyons, sunset camel caravans, and authentic stargazing BBQ.',
-    imageUrl: 'https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/1794702525466-0in0mt-Red_Canyon0987.webp',
+    imageUrl: 'https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/1794702525466-0in0mt-Red_Canyon0987.webp',
     accentGradient: 'from-[#B45309] via-[#D97706] to-[#B45309] dark:from-[#F59E0B] dark:via-[#FBBF24] dark:to-[#FDE68A]',
   },
   {
@@ -49,7 +49,7 @@ const CINEMATIC_SLIDES: TourSlide[] = [
     title1: 'Unrivaled Coral Drop-Offs &',
     title2: 'Scuba Encounters',
     subtitle: 'Selected trips in Egypt offer introductory scuba dives and guided diving experiences. Check each tour page for dive format, instructor qualifications, equipment and inclusions.',
-    imageUrl: 'https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/1794762504613-q13f8l-Nationalpark.webp',
+    imageUrl: 'https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/1794762504613-q13f8l-Nationalpark.webp',
     accentGradient: 'from-[#0F766E] via-[#0D9488] to-[#0F766E] dark:from-[#2DD4BF] dark:via-[#5EEAD4] dark:to-[#99F6E4]',
   },
   {
@@ -57,7 +57,7 @@ const CINEMATIC_SLIDES: TourSlide[] = [
     title1: 'Exclusive Charters &',
     title2: 'Private Sandbars',
     subtitle: 'Tailored luxury yachts and high-speed cruisers with onboard chef, seclusion from crowds, and bespoke itineraries.',
-    imageUrl: 'https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/1794782246030-k8u1es-Pyramids.webp',
+    imageUrl: 'https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/1794701566922-pl0sd2-Yachuttour.webp',
     accentGradient: 'from-[#047857] via-[#059669] to-[#047857] dark:from-[#34D399] dark:via-[#6EE7B7] dark:to-[#A7F3D0]',
   },
   {
@@ -65,7 +65,7 @@ const CINEMATIC_SLIDES: TourSlide[] = [
     title1: 'Glass Bottom Views &',
     title2: 'Coastal Thrills',
     subtitle: 'Panoramic underwater observatory windows, parasailing high above turquoise lagoons, and safe family bay adventures.',
-    imageUrl: 'https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/1794700831162-th1r96-DesertStar.webp',
+    imageUrl: 'https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/1794698761078-i17pcl-Orange_Beach.webp',
     accentGradient: 'from-[#0369A1] via-[#0284C7] to-[#0369A1] dark:from-[#38BDF8] dark:via-[#7DD3FC] dark:to-[#BAE6FD]',
   }
 ];
