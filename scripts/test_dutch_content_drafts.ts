@@ -109,4 +109,4 @@ assert.equal(nl.source_data_warnings.length, 4, 'Known source schedule defects a
 assert.ok(nl.source_data_warnings.some((warning: any) => warning.source_value === '13:30 AM'));
 assert.ok(nl.source_data_warnings.some((warning: any) => warning.source_value === '13:00 PM'));
 
-console.log('Dutch review bundle checks passed: 111 content records, 1,161 UI messages, complete IDs and schema, unique slugs, and preserved placeholders.');
+console.log('Dutch review bundle checks passed: 111 content records, 1,163 UI messages, complete IDs and schema, unique slugs, and preserved placeholders.');
