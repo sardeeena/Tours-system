@@ -133,7 +133,7 @@ assert.doesNotMatch(adminSeo, /contentLength >= 300/, 'Admin does not mark thin 
 assert.match(destinationDetail, /RED_SEA_DESTINATION_SLUGS/, 'Destination detail pages use a destination-aware geographic label');
 assert.ok(destinationDetail.includes("RED_SEA_DESTINATION_SLUGS.has(destination.slug.toLowerCase())"), 'Only Red Sea destinations receive the Red Sea label');
 assert.match(destinationsSection, /Explore Egypt/, 'Destination discovery covers Egypt beyond Red Sea locations');
-assert.match(destinationsSection, /Check pickup availability and any supplements on each excursion/, 'Homepage avoids promising universal complimentary hotel pickup');
+assert.doesNotMatch(destinationsSection, /Check pickup availability and any supplements on each excursion/, 'Homepage omits the removed pickup-availability notice');
 assert.doesNotMatch(destinationsSection, /Complimentary hotel pickup from all main resorts/, 'Homepage removes the unsupported universal pickup claim');
 assert.match(tourEditor, /rating: 0,\s*review_count: 0/, 'New excursions start with no unverified rating or review count');
 assert.match(tourEditor, /Content readiness review/, 'Tour editor flags missing itineraries and FAQs');
