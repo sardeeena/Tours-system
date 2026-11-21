@@ -75,6 +75,111 @@ CREATE INDEX IF NOT EXISTS exclusive_departures_public_schedule_idx
 CREATE INDEX IF NOT EXISTS exclusive_reservations_departure_idx
   ON public.exclusive_reservations(exclusive_departure_id, status);
 
+
+-- Validate operator-created slots against the trip's configured limits and assigned resources.
+CREATE OR REPLACE FUNCTION public.validate_exclusive_departure()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $function$
+DECLARE
+  v_trip public.exclusive_trips%ROWTYPE;
+  v_tour_status TEXT;
+  v_capacity INTEGER;
+  v_inspection DATE;
+  v_maintenance DATE;
+BEGIN
+  SELECT * INTO v_trip
+  FROM public.exclusive_trips
+  WHERE id = NEW.exclusive_trip_id AND is_active = TRUE;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'An active Exclusive product is required before scheduling a slot' USING ERRCODE = '22023';
+  END IF;
+
+  SELECT status INTO v_tour_status
+  FROM public.tours
+  WHERE id = v_trip.tour_id AND is_exclusive = TRUE;
+  IF NOT FOUND OR v_tour_status <> 'published' THEN
+    RAISE EXCEPTION 'The Exclusive tour listing must be published before scheduling slots' USING ERRCODE = '22023';
+  END IF;
+
+  IF NEW.date < (now() AT TIME ZONE 'Africa/Cairo')::date THEN
+    RAISE EXCEPTION 'An Exclusive departure cannot be scheduled in the past' USING ERRCODE = '22023';
+  END IF;
+  IF NEW.maximum_guests > v_trip.maximum_guests THEN
+    RAISE EXCEPTION 'Slot capacity cannot exceed the Exclusive product maximum of % guests', v_trip.maximum_guests USING ERRCODE = '22023';
+  END IF;
+
+  IF NEW.vessel_id IS NOT NULL THEN
+    SELECT passenger_capacity, safety_inspection_expiry, next_maintenance_date
+    INTO v_capacity, v_inspection, v_maintenance
+    FROM public.vessels
+    WHERE id = NEW.vessel_id AND is_active = TRUE;
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'The assigned vessel is inactive or unavailable' USING ERRCODE = '22023';
+    END IF;
+    IF NEW.maximum_guests > v_capacity THEN
+      RAISE EXCEPTION 'Slot capacity exceeds the assigned vessel passenger capacity (%)', v_capacity USING ERRCODE = '22023';
+    END IF;
+    IF v_inspection IS NOT NULL AND v_inspection < NEW.date THEN
+      RAISE EXCEPTION 'The assigned vessel safety inspection expires before this departure' USING ERRCODE = '22023';
+    END IF;
+    IF v_maintenance IS NOT NULL AND v_maintenance <= NEW.date THEN
+      RAISE EXCEPTION 'The assigned vessel is due for maintenance on or before this departure' USING ERRCODE = '22023';
+    END IF;
+  END IF;
+
+  IF NEW.captain_id IS NOT NULL AND NOT EXISTS (
+    SELECT 1 FROM public.guides WHERE id = NEW.captain_id AND is_active = TRUE
+  ) THEN
+    RAISE EXCEPTION 'The assigned captain is inactive or unavailable' USING ERRCODE = '22023';
+  END IF;
+  IF NEW.guide_id IS NOT NULL AND NOT EXISTS (
+    SELECT 1 FROM public.guides WHERE id = NEW.guide_id AND is_active = TRUE
+  ) THEN
+    RAISE EXCEPTION 'The assigned guide is inactive or unavailable' USING ERRCODE = '22023';
+  END IF;
+  IF NEW.driver_id IS NOT NULL AND NOT EXISTS (
+    SELECT 1 FROM public.guides WHERE id = NEW.driver_id AND is_active = TRUE
+  ) THEN
+    RAISE EXCEPTION 'The assigned driver is inactive or unavailable' USING ERRCODE = '22023';
+  END IF;
+  RETURN NEW;
+END;
+$function$;
+
+DROP TRIGGER IF EXISTS validate_exclusive_departure_before_write ON public.exclusive_departures;
+CREATE TRIGGER validate_exclusive_departure_before_write
+BEFORE INSERT OR UPDATE ON public.exclusive_departures
+FOR EACH ROW EXECUTE FUNCTION public.validate_exclusive_departure();
+
+-- This narrow security-definer predicate keeps reserved slots out of the public schedule
+-- without exposing customer reservation records to anonymous visitors.
+CREATE OR REPLACE FUNCTION public.is_exclusive_departure_available(p_departure_id UUID)
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $function$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.exclusive_departures d
+    JOIN public.exclusive_trips et ON et.id = d.exclusive_trip_id AND et.is_active = TRUE
+    JOIN public.tours t ON t.id = et.tour_id AND t.status = 'published' AND t.is_exclusive = TRUE
+    WHERE d.id = p_departure_id
+      AND d.status = 'confirmed'
+      AND d.date >= (now() AT TIME ZONE 'Africa/Cairo')::date
+      AND NOT EXISTS (
+        SELECT 1 FROM public.exclusive_reservations r
+        WHERE r.exclusive_departure_id = d.id AND r.status IN ('pending','confirmed')
+      )
+  );
+$function$;
+REVOKE ALL ON FUNCTION public.is_exclusive_departure_available(UUID) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.is_exclusive_departure_available(UUID) TO anon, authenticated;
+
 ALTER TABLE public.exclusive_trips ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.exclusive_departures ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.exclusive_reservations ENABLE ROW LEVEL SECURITY;
@@ -119,6 +224,7 @@ CREATE POLICY exclusive_departures_public_read ON public.exclusive_departures
   USING (
     status = 'confirmed'
     AND date >= (now() AT TIME ZONE 'Africa/Cairo')::date
+    AND public.is_exclusive_departure_available(id)
     AND EXISTS (
       SELECT 1 FROM public.exclusive_trips et
       JOIN public.tours t ON t.id = et.tour_id
