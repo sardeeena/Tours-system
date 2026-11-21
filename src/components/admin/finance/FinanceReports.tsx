@@ -1,3 +1,4 @@
+import { serializeSpreadsheetRows } from '../../utils/spreadsheetExport';
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   TrendingUp,
@@ -146,7 +147,7 @@ export const FinanceReports: React.FC = () => {
     } else if (activeTab === 'by_tour') {
       headers = ['Tour Title', 'Currency', 'Bookings Confirmed', 'Total Revenue'];
       rows = filteredRevenueByTour.map((t) => [
-        `"${t.tourTitle}"`,
+        `${t.tourTitle}`,
         selectedCurrency,
         t.bookingsCount,
         t.amount,
@@ -154,7 +155,7 @@ export const FinanceReports: React.FC = () => {
     } else if (activeTab === 'by_destination') {
       headers = ['Destination Sector', 'Currency', 'Bookings Count', 'Total Revenue'];
       rows = filteredRevenueByDestination.map((d) => [
-        `"${d.destination}"`,
+        `${d.destination}`,
         selectedCurrency,
         d.bookingsCount,
         d.amount,
@@ -162,7 +163,7 @@ export const FinanceReports: React.FC = () => {
     } else if (activeTab === 'payments_received') {
       headers = ['Payment Gateway / Method', 'Currency', 'Transactions Count', 'Total Settled'];
       rows = filteredPaymentsByMethod.map((m) => [
-        `"${m.method}"`,
+        `${m.method}`,
         selectedCurrency,
         m.transactionsCount,
         m.amount,
@@ -171,7 +172,7 @@ export const FinanceReports: React.FC = () => {
       headers = ['Booking Ref', 'Customer', 'Due Date', 'Status', 'Total', 'Paid', 'Outstanding'];
       rows = filteredBalances.map((b) => [
         b.bookingReference,
-        `"${b.customerName}"`,
+        `${b.customerName}`,
         b.dueDate,
         b.status.toUpperCase(),
         b.totalAmount,
@@ -183,19 +184,19 @@ export const FinanceReports: React.FC = () => {
       rows = filteredRefunds.map((r) => [
         r.transactionReference,
         r.bookingReference,
-        `"${r.customerName}"`,
+        `${r.customerName}`,
         (r.processedDate || r.createdAt).split('T')[0],
         r.currency,
         r.approvedAmount || r.amount,
         r.status,
         r.refundMethod,
-        `"${r.reason}"`,
+        `${r.reason}`,
       ]);
     }
 
     const csvContent =
       'data:text/csv;charset=utf-8,' +
-      [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+      serializeSpreadsheetRows([headers, ...rows]);
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
