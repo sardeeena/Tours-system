@@ -38,7 +38,7 @@ assert.match(read('../src/components/tours/TourSearch.tsx'), /id="excursion-gues
 assert.match(read('../src/components/tours/TourSearch.tsx'), /onGuestsChange\(/, 'traveller-count input updates the catalogue filter state');
 assert.match(destinations, /onSelectDestination/, 'destination cards expose selection navigation');
 assert.doesNotMatch(destinations, /Check pickup availability and any supplements/, 'the redundant pickup availability notice is removed');
-assert.match(hero, /backdrop-blur-md/, 'hero copy has a glass backdrop for readable text');
+assert.match(hero, /backdrop-blur-sm/, 'hero copy keeps a lighter glass backdrop for readable text');
 assert.match(tourCard, /backdrop-blur-xl/, 'excursion cards use the subtle glass finish');
 assert.doesNotMatch(adminLayout, /label: 'Technical Control Center'/, 'technical diagnostics are absent from admin navigation');
 assert.match(adminLayout, /const canSeeTab = \(id: string\) => id === 'technical'[\s\S]*?\? false/, 'the technical admin tab is hidden');
