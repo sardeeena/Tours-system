@@ -104,10 +104,10 @@ check(
 );
 check(
   'Public translation endpoints cache locale dictionaries and reduce repeated checksum scans',
-  server.includes("app.get('/api/content-translations/ui', cachePublicResponse(300_000") &&
-    server.includes("app.get('/api/content-translations/locales', cachePublicResponse(300_000") &&
-    server.includes("app.get('/api/content-translations/target', cachePublicResponse(60_000") &&
-    server.includes("app.get('/api/content-translations/resolve', cachePublicResponse(60_000")
+  server.includes("app.get('/api/content-translations/ui', rateLimit(60, 60_000), cachePublicResponse(300_000") &&
+    server.includes("app.get('/api/content-translations/locales', rateLimit(30, 60_000), cachePublicResponse(300_000") &&
+    server.includes("app.get('/api/content-translations/target', rateLimit(90, 60_000), cachePublicResponse(60_000") &&
+    server.includes("app.get('/api/content-translations/resolve', rateLimit(90, 60_000), cachePublicResponse(60_000")
 );
 check(
   'Readiness probes use a bounded existence check instead of an exact count',

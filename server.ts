@@ -3134,7 +3134,7 @@ async function getCurrentTranslationSourceChecksum(entityType: string, entityKey
 
 // Returns only a reviewed translation whose source checksum still matches the
 // current published source record. A stale translation fails closed.
-app.get('/api/content-translations/ui', cachePublicResponse(300_000, 'private, no-store'), rateLimit(60, 60_000), async (req: Request, res: Response) => {
+app.get('/api/content-translations/ui', rateLimit(60, 60_000), cachePublicResponse(300_000, 'private, no-store'), async (req: Request, res: Response) => {
   const locale = typeof req.query.locale === 'string' ? req.query.locale : '';
   if (!TRANSLATION_LOCALES.has(locale)) return res.status(400).json({ success: false, error: 'Unsupported locale.' });
   if (locale === 'en') return res.json({ success: true, locale, messages: ENGLISH_UI_CATALOG });
@@ -3159,7 +3159,7 @@ app.get('/api/content-translations/ui', cachePublicResponse(300_000, 'private, n
   }
 });
 
-app.get('/api/content-translations/locales', cachePublicResponse(300_000, 'private, no-store'), rateLimit(30, 60_000), async (_req: Request, res: Response) => {
+app.get('/api/content-translations/locales', rateLimit(30, 60_000), cachePublicResponse(300_000, 'private, no-store'), async (_req: Request, res: Response) => {
   try {
     if (!serverSupabase) return res.status(503).json({ success: false, error: 'Translation service unavailable.' });
     const { data, error } = await serverSupabase.from('content_translations')
@@ -3232,7 +3232,7 @@ async function getTranslationSourceBySlug(entityType: string, slug: string): Pro
   return data || null;
 }
 
-app.get('/api/content-translations/target', cachePublicResponse(60_000, 'private, no-store'), rateLimit(90, 60_000), async (req: Request, res: Response) => {
+app.get('/api/content-translations/target', rateLimit(90, 60_000), cachePublicResponse(60_000, 'private, no-store'), async (req: Request, res: Response) => {
   const locale = typeof req.query.locale === 'string' ? req.query.locale : '';
   const requestedPath = typeof req.query.pathname === 'string' ? req.query.pathname : '';
   if (!TRANSLATION_LOCALES.has(locale) || !requestedPath.startsWith('/') || requestedPath.length > 512) {
@@ -3316,7 +3316,7 @@ app.get('/api/content-translations/target', cachePublicResponse(60_000, 'private
   }
 });
 
-app.get('/api/content-translations/resolve', cachePublicResponse(60_000, 'private, no-store'), rateLimit(90, 60_000), async (req: Request, res: Response) => {
+app.get('/api/content-translations/resolve', rateLimit(90, 60_000), cachePublicResponse(60_000, 'private, no-store'), async (req: Request, res: Response) => {
   const locale = typeof req.query.locale === 'string' ? req.query.locale : '';
   const entityType = typeof req.query.entity_type === 'string' ? req.query.entity_type : '';
   const entityKey = typeof req.query.entity_key === 'string' ? req.query.entity_key : '';
