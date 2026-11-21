@@ -13,7 +13,7 @@ test('public pages do not throw uncaught browser exceptions', async ({ page }) =
 });
 
 test('Exclusive catalogue renders at mobile and desktop viewport widths without horizontal overflow', async ({ page }) => {
-  for (const viewport of [{ width: 390, height: 844 }, { width: 1280, height: 800 }]) {
+  for (const viewport of [{ width: 390, height: 844 }, { width: 768, height: 1024 }, { width: 1280, height: 800 }]) {
     await page.setViewportSize(viewport);
     await page.goto('/exclusive');
     await expect(page.locator('body')).not.toBeEmpty();
