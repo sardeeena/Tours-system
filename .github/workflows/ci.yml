@@ -290,7 +290,8 @@ jobs:
           version: 3.1.0
 
       - name: Start isolated local Supabase stack
-        run: supabase start
+        # Inbucket is not needed by migration/RLS tests and its fixed host port can collide on shared runners.
+        run: supabase start --exclude inbucket
 
       - name: Apply the complete migration history to a clean database
         run: supabase db reset
