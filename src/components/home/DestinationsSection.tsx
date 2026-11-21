@@ -31,7 +31,7 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
       setInternalDestinations(data || []);
     } catch (err: any) {
       console.warn('Failed to load published destinations from database:', err);
-      setInternalError(err.message || 'Unable to load destinations from database.');
+      setInternalError('We couldn’t load destinations right now. Please try again.');
       setInternalDestinations([]);
     } finally {
       setInternalLoading(false);
