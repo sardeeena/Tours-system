@@ -121,7 +121,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
     }, 6500);
 
     return () => clearInterval(interval);
-  }, [isPaused, isPointerOver, isDocumentVisible, isInViewport, prefersReducedMotion]);
+  }, [currentSlideIndex, isPaused, isPointerOver, isDocumentVisible, isInViewport, prefersReducedMotion]);
 
   const slide = CINEMATIC_SLIDES[currentSlideIndex];
   const nextSlide = CINEMATIC_SLIDES[(currentSlideIndex + 1) % CINEMATIC_SLIDES.length];
