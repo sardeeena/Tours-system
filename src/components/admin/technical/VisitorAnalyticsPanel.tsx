@@ -49,7 +49,7 @@ const csvCell = (value: string | number | boolean | null): string => {
   // values numeric, but force untrusted text (including leading whitespace/control
   // characters before formula markers) to be interpreted as text by spreadsheet apps.
   const raw = String(value ?? '');
-  const safe = typeof value === 'string' && /^[\\u0000-\\u0020]*[=+\\-@]/.test(raw) ? `'${raw}` : raw;
+  const safe = typeof value === 'string' && /^[\u0000-\u0020]*[=+\-@]/.test(raw) ? `'${raw}` : raw;
   return '"' + safe.replace(/"/g, '""') + '"';
 };
 
