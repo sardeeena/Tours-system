@@ -77,12 +77,12 @@ export function startWorkerLease(
           p_worker_name: workerName,
           p_owner_id: ownerId,
         }).then(({ error }) => {
-          if (error) {
-            console.error('[Background Worker Lease] Lease release failed.', {
-              workerName,
-              error: error.message,
-            });
-          }
+          if (error) throw error;
+        }).catch((error: unknown) => {
+          console.error('[Background Worker Lease] Lease release failed.', {
+            workerName,
+            error: error instanceof Error ? error.message : 'Unknown lease error',
+          });
         });
       }
     },
