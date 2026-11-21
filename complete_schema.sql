@@ -3368,6 +3368,9 @@ COMMIT;
 -- Existing tours, departures and create_booking_atomic_with_departure remain untouched.
 BEGIN;
 
+CREATE SCHEMA IF NOT EXISTS private;
+GRANT USAGE ON SCHEMA private TO anon, authenticated, service_role;
+
 ALTER TABLE public.tours
   ADD COLUMN IF NOT EXISTS is_exclusive BOOLEAN NOT NULL DEFAULT FALSE;
 
@@ -3447,7 +3450,7 @@ CREATE INDEX IF NOT EXISTS exclusive_reservations_departure_idx
 
 
 -- Validate operator-created slots against the trip's configured limits and assigned resources.
-CREATE OR REPLACE FUNCTION public.validate_exclusive_departure()
+CREATE OR REPLACE FUNCTION private.validate_exclusive_departure()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -3572,11 +3575,14 @@ $function$;
 DROP TRIGGER IF EXISTS validate_exclusive_departure_before_write ON public.exclusive_departures;
 CREATE TRIGGER validate_exclusive_departure_before_write
 BEFORE INSERT OR UPDATE ON public.exclusive_departures
-FOR EACH ROW EXECUTE FUNCTION public.validate_exclusive_departure();
+FOR EACH ROW EXECUTE FUNCTION private.validate_exclusive_departure();
 
 -- This narrow security-definer predicate keeps reserved slots out of the public schedule
 -- without exposing customer reservation records to anonymous visitors.
-CREATE OR REPLACE FUNCTION public.is_exclusive_departure_available(p_departure_id UUID)
+
+REVOKE ALL ON FUNCTION private.validate_exclusive_departure() FROM PUBLIC, anon, authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION private.is_exclusive_departure_available(p_departure_id UUID)
 RETURNS BOOLEAN
 LANGUAGE sql
 STABLE
@@ -3599,14 +3605,22 @@ AS $function$
       )
   );
 $function$;
+REVOKE ALL ON FUNCTION private.is_exclusive_departure_available(UUID) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION private.is_exclusive_departure_available(UUID) TO anon, authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION public.is_exclusive_departure_available(p_departure_id UUID)
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY INVOKER
+SET search_path = ''
+AS $wrapper$
+  SELECT private.is_exclusive_departure_available(p_departure_id);
+$wrapper$;
 REVOKE ALL ON FUNCTION public.is_exclusive_departure_available(UUID) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.is_exclusive_departure_available(UUID) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.is_exclusive_departure_available(UUID) TO anon, authenticated, service_role;
 
-
--- Atomically mark a tour Exclusive and save its fixed trip price/guest limits.
-
--- Atomically classify a tour as Exclusive and save its fixed price and guest limits.
-CREATE OR REPLACE FUNCTION public.save_exclusive_trip_settings(
+CREATE OR REPLACE FUNCTION private.save_exclusive_trip_settings(
   p_tour_id UUID,
   p_fixed_trip_price NUMERIC,
   p_currency TEXT,
@@ -3677,6 +3691,27 @@ BEGIN
 END;
 $save$;
 
+REVOKE ALL ON FUNCTION private.save_exclusive_trip_settings(UUID,NUMERIC,TEXT,INTEGER,INTEGER,BOOLEAN) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION private.save_exclusive_trip_settings(UUID,NUMERIC,TEXT,INTEGER,INTEGER,BOOLEAN) TO authenticated, service_role;
+
+
+CREATE OR REPLACE FUNCTION public.save_exclusive_trip_settings(
+  p_tour_id UUID,
+  p_fixed_trip_price NUMERIC,
+  p_currency TEXT,
+  p_minimum_guests INTEGER,
+  p_maximum_guests INTEGER,
+  p_is_active BOOLEAN DEFAULT TRUE
+)
+RETURNS JSONB
+LANGUAGE sql
+SECURITY INVOKER
+SET search_path = ''
+AS $wrapper$
+  SELECT private.save_exclusive_trip_settings(
+    p_tour_id,p_fixed_trip_price,p_currency,p_minimum_guests,p_maximum_guests,p_is_active
+  );
+$wrapper$;
 REVOKE ALL ON FUNCTION public.save_exclusive_trip_settings(UUID,NUMERIC,TEXT,INTEGER,INTEGER,BOOLEAN) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.save_exclusive_trip_settings(UUID,NUMERIC,TEXT,INTEGER,INTEGER,BOOLEAN) TO authenticated, service_role;
 
@@ -3692,27 +3727,28 @@ CREATE INDEX IF NOT EXISTS bookings_exclusive_departure_idx
   WHERE booking_kind = 'exclusive';
 
 
+
 ALTER TABLE public.exclusive_trips ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.exclusive_departures ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.exclusive_reservations ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS exclusive_trips_public_read ON public.exclusive_trips;
-CREATE POLICY exclusive_trips_public_read ON public.exclusive_trips
+DROP POLICY IF EXISTS exclusive_trips_admin_read ON public.exclusive_trips;
+DROP POLICY IF EXISTS exclusive_trips_select ON public.exclusive_trips;
+CREATE POLICY exclusive_trips_select ON public.exclusive_trips
   FOR SELECT TO anon, authenticated
   USING (
-    is_active
-    AND EXISTS (
-      SELECT 1 FROM public.tours t
-      WHERE t.id = exclusive_trips.tour_id
-        AND t.is_exclusive = TRUE
-        AND t.status = 'published'
+    (
+      is_active
+      AND EXISTS (
+        SELECT 1 FROM public.tours t
+        WHERE t.id = exclusive_trips.tour_id
+          AND t.is_exclusive = TRUE
+          AND t.status = 'published'
+      )
     )
+    OR (auth.role() = 'authenticated' AND public.has_permission('content.read'))
   );
-
-DROP POLICY IF EXISTS exclusive_trips_admin_read ON public.exclusive_trips;
-CREATE POLICY exclusive_trips_admin_read ON public.exclusive_trips
-  FOR SELECT TO authenticated
-  USING (public.has_permission('content.read'));
 
 DROP POLICY IF EXISTS exclusive_trips_admin_insert ON public.exclusive_trips;
 CREATE POLICY exclusive_trips_admin_insert ON public.exclusive_trips
@@ -3731,26 +3767,26 @@ CREATE POLICY exclusive_trips_admin_delete ON public.exclusive_trips
   USING (public.has_permission('content.delete'));
 
 DROP POLICY IF EXISTS exclusive_departures_public_read ON public.exclusive_departures;
-CREATE POLICY exclusive_departures_public_read ON public.exclusive_departures
+DROP POLICY IF EXISTS exclusive_departures_admin_read ON public.exclusive_departures;
+DROP POLICY IF EXISTS exclusive_departures_select ON public.exclusive_departures;
+CREATE POLICY exclusive_departures_select ON public.exclusive_departures
   FOR SELECT TO anon, authenticated
   USING (
-    status = 'confirmed'
-    AND date >= (now() AT TIME ZONE 'Africa/Cairo')::date
-    AND public.is_exclusive_departure_available(id)
-    AND EXISTS (
-      SELECT 1 FROM public.exclusive_trips et
-      JOIN public.tours t ON t.id = et.tour_id
-      WHERE et.id = exclusive_departures.exclusive_trip_id
-        AND et.is_active = TRUE
-        AND t.is_exclusive = TRUE
-        AND t.status = 'published'
+    (
+      status = 'confirmed'
+      AND date >= (now() AT TIME ZONE 'Africa/Cairo')::date
+      AND public.is_exclusive_departure_available(id)
+      AND EXISTS (
+        SELECT 1 FROM public.exclusive_trips et
+        JOIN public.tours t ON t.id = et.tour_id
+        WHERE et.id = exclusive_departures.exclusive_trip_id
+          AND et.is_active = TRUE
+          AND t.is_exclusive = TRUE
+          AND t.status = 'published'
+      )
     )
+    OR (auth.role() = 'authenticated' AND public.has_permission('operations.read'))
   );
-
-DROP POLICY IF EXISTS exclusive_departures_admin_read ON public.exclusive_departures;
-CREATE POLICY exclusive_departures_admin_read ON public.exclusive_departures
-  FOR SELECT TO authenticated
-  USING (public.has_permission('operations.read'));
 
 DROP POLICY IF EXISTS exclusive_departures_admin_insert ON public.exclusive_departures;
 CREATE POLICY exclusive_departures_admin_insert ON public.exclusive_departures
@@ -3773,12 +3809,29 @@ CREATE POLICY exclusive_reservations_admin_read ON public.exclusive_reservations
   FOR SELECT TO authenticated
   USING (public.has_permission('bookings.read'));
 
-REVOKE ALL ON public.exclusive_trips, public.exclusive_departures, public.exclusive_reservations FROM PUBLIC;
+REVOKE ALL ON public.exclusive_trips, public.exclusive_departures, public.exclusive_reservations FROM PUBLIC, anon, authenticated;
 GRANT SELECT ON public.exclusive_trips, public.exclusive_departures TO anon, authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.exclusive_trips, public.exclusive_departures TO authenticated;
 GRANT SELECT ON public.exclusive_reservations TO authenticated;
 
-CREATE OR REPLACE FUNCTION public.reserve_exclusive_trip(
+-- The existing business audit trigger migration ran before these tables existed.
+-- The audit function strips customer/contact/free-text columns before storing snapshots.
+DROP TRIGGER IF EXISTS trg_capture_business_audit ON public.exclusive_trips;
+CREATE TRIGGER trg_capture_business_audit
+AFTER INSERT OR UPDATE OR DELETE ON public.exclusive_trips
+FOR EACH ROW EXECUTE FUNCTION private.capture_business_audit();
+
+DROP TRIGGER IF EXISTS trg_capture_business_audit ON public.exclusive_departures;
+CREATE TRIGGER trg_capture_business_audit
+AFTER INSERT OR UPDATE OR DELETE ON public.exclusive_departures
+FOR EACH ROW EXECUTE FUNCTION private.capture_business_audit();
+
+DROP TRIGGER IF EXISTS trg_capture_business_audit ON public.exclusive_reservations;
+CREATE TRIGGER trg_capture_business_audit
+AFTER INSERT OR UPDATE OR DELETE ON public.exclusive_reservations
+FOR EACH ROW EXECUTE FUNCTION private.capture_business_audit();
+
+CREATE OR REPLACE FUNCTION private.reserve_exclusive_trip(
   p_departure_id UUID,
   p_guest_count INTEGER,
   p_first_name TEXT,
@@ -4011,7 +4064,37 @@ $function$;
 
 -- Finance and existing booking administration may update the linked booking directly.
 -- Mirror those authoritative changes back into the Exclusive reservation record.
-CREATE OR REPLACE FUNCTION public.sync_exclusive_reservation_from_booking()
+
+REVOKE ALL ON FUNCTION private.reserve_exclusive_trip(UUID,INTEGER,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION private.reserve_exclusive_trip(UUID,INTEGER,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT) TO anon, authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION public.reserve_exclusive_trip(
+  p_departure_id UUID,
+  p_guest_count INTEGER,
+  p_first_name TEXT,
+  p_last_name TEXT,
+  p_email TEXT,
+  p_phone TEXT,
+  p_country TEXT DEFAULT NULL,
+  p_hotel TEXT DEFAULT NULL,
+  p_payment_method TEXT DEFAULT 'pay_at_pickup',
+  p_special_requests TEXT DEFAULT NULL,
+  p_idempotency_key TEXT DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE sql
+SECURITY INVOKER
+SET search_path = ''
+AS $wrapper$
+  SELECT private.reserve_exclusive_trip(
+    p_departure_id,p_guest_count,p_first_name,p_last_name,p_email,p_phone,
+    p_country,p_hotel,p_payment_method,p_special_requests,p_idempotency_key
+  );
+$wrapper$;
+REVOKE ALL ON FUNCTION public.reserve_exclusive_trip(UUID,INTEGER,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.reserve_exclusive_trip(UUID,INTEGER,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT) TO anon, authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION private.sync_exclusive_reservation_from_booking()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -4038,10 +4121,10 @@ CREATE TRIGGER sync_exclusive_reservation_from_booking_trigger
 AFTER UPDATE OF status,payment_status ON public.bookings
 FOR EACH ROW
 WHEN (NEW.booking_kind = 'exclusive')
-EXECUTE FUNCTION public.sync_exclusive_reservation_from_booking();
+EXECUTE FUNCTION private.sync_exclusive_reservation_from_booking();
 
 -- Keep reservation lifecycle and the linked booking/payment ledger synchronized.
-CREATE OR REPLACE FUNCTION public.update_exclusive_reservation_status(
+CREATE OR REPLACE FUNCTION private.update_exclusive_reservation_status(
   p_reservation_id UUID,
   p_status TEXT DEFAULT NULL,
   p_payment_status TEXT DEFAULT NULL
@@ -4097,12 +4180,29 @@ BEGIN
   RETURN jsonb_build_object('success',TRUE,'reservationId',p_reservation_id,'bookingId',v_reservation.booking_id);
 END;
 $function$;
+REVOKE ALL ON FUNCTION private.update_exclusive_reservation_status(UUID,TEXT,TEXT) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION private.update_exclusive_reservation_status(UUID,TEXT,TEXT) TO authenticated, service_role;
+
+
+
+REVOKE ALL ON FUNCTION private.sync_exclusive_reservation_from_booking() FROM PUBLIC, anon, authenticated, service_role;
+REVOKE ALL ON FUNCTION private.update_exclusive_reservation_status(UUID,TEXT,TEXT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION private.update_exclusive_reservation_status(UUID,TEXT,TEXT) TO authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION public.update_exclusive_reservation_status(
+  p_reservation_id UUID,
+  p_status TEXT DEFAULT NULL,
+  p_payment_status TEXT DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE sql
+SECURITY INVOKER
+SET search_path = ''
+AS $wrapper$
+  SELECT private.update_exclusive_reservation_status(p_reservation_id,p_status,p_payment_status);
+$wrapper$;
 REVOKE ALL ON FUNCTION public.update_exclusive_reservation_status(UUID,TEXT,TEXT) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.update_exclusive_reservation_status(UUID,TEXT,TEXT) TO authenticated, service_role;
-
-
-REVOKE ALL ON FUNCTION public.reserve_exclusive_trip(UUID,INTEGER,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT) FROM PUBLIC;
-GRANT EXECUTE ON FUNCTION public.reserve_exclusive_trip(UUID,INTEGER,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT) TO anon, authenticated, service_role;
 
 
 COMMIT;
