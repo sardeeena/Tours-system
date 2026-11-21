@@ -406,6 +406,18 @@ BEGIN
   FROM public.exclusive_reservations
   WHERE idempotency_key = v_key;
   IF FOUND THEN
+    IF v_existing.exclusive_departure_id IS DISTINCT FROM p_departure_id
+       OR v_existing.guest_count IS DISTINCT FROM p_guest_count
+       OR lower(v_existing.customer_email) IS DISTINCT FROM lower(btrim(p_email))
+       OR lower(v_existing.customer_first_name) IS DISTINCT FROM lower(btrim(p_first_name))
+       OR lower(v_existing.customer_last_name) IS DISTINCT FROM lower(btrim(p_last_name))
+       OR v_existing.customer_phone IS DISTINCT FROM btrim(p_phone)
+       OR v_existing.payment_method IS DISTINCT FROM coalesce(p_payment_method,'pay_at_pickup')
+       OR coalesce(v_existing.customer_country,'') IS DISTINCT FROM coalesce(nullif(btrim(coalesce(p_country,'')),''),'')
+       OR coalesce(v_existing.customer_hotel,'') IS DISTINCT FROM coalesce(nullif(btrim(coalesce(p_hotel,'')),''),'')
+       OR coalesce(v_existing.special_requests,'') IS DISTINCT FROM coalesce(nullif(btrim(coalesce(p_special_requests,'')),''),'') THEN
+      RAISE EXCEPTION 'This idempotency key was already used for different Exclusive reservation details' USING ERRCODE = '22023';
+    END IF;
     RETURN jsonb_build_object(
       'success', TRUE, 'duplicate', TRUE,
       'reservationId', v_existing.id,
@@ -545,6 +557,18 @@ BEGIN
 EXCEPTION WHEN unique_violation THEN
   SELECT * INTO v_existing FROM public.exclusive_reservations WHERE idempotency_key = v_key;
   IF FOUND THEN
+    IF v_existing.exclusive_departure_id IS DISTINCT FROM p_departure_id
+       OR v_existing.guest_count IS DISTINCT FROM p_guest_count
+       OR lower(v_existing.customer_email) IS DISTINCT FROM lower(btrim(p_email))
+       OR lower(v_existing.customer_first_name) IS DISTINCT FROM lower(btrim(p_first_name))
+       OR lower(v_existing.customer_last_name) IS DISTINCT FROM lower(btrim(p_last_name))
+       OR v_existing.customer_phone IS DISTINCT FROM btrim(p_phone)
+       OR v_existing.payment_method IS DISTINCT FROM coalesce(p_payment_method,'pay_at_pickup')
+       OR coalesce(v_existing.customer_country,'') IS DISTINCT FROM coalesce(nullif(btrim(coalesce(p_country,'')),''),'')
+       OR coalesce(v_existing.customer_hotel,'') IS DISTINCT FROM coalesce(nullif(btrim(coalesce(p_hotel,'')),''),'')
+       OR coalesce(v_existing.special_requests,'') IS DISTINCT FROM coalesce(nullif(btrim(coalesce(p_special_requests,'')),''),'') THEN
+      RAISE EXCEPTION 'This idempotency key was already used for different Exclusive reservation details' USING ERRCODE = '22023';
+    END IF;
     RETURN jsonb_build_object(
       'success', TRUE, 'duplicate', TRUE,
       'reservationId', v_existing.id,
