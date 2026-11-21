@@ -32,7 +32,7 @@ export const TourCard: React.FC<TourCardProps> = ({
     <motion.article 
       whileHover={{ y: -6 }}
       transition={{ duration: 0.25, ease: 'easeOut' }}
-      className="bg-white rounded-2xl border border-[#E8E3DA] overflow-hidden flex flex-col hover:border-[#0A6C74]/50 hover:shadow-xl transition-all duration-300 group h-full relative"
+      className="bg-white/85 dark:bg-[#132235]/85 backdrop-blur-xl rounded-2xl border border-white/70 dark:border-white/10 shadow-md overflow-hidden flex flex-col hover:border-[#0A6C74]/50 hover:shadow-xl transition-all duration-300 group h-full relative"
     >
       {/* Photo with smooth zoom and vignette */}
       <div 
