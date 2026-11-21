@@ -129,8 +129,6 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
     image.src = nextSlide.imageUrl;
   }, [nextSlide.imageUrl, isDocumentVisible, isInViewport, prefersReducedMotion]);
 
-  return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
 
   return (
     <section
