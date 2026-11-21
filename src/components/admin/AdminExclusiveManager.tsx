@@ -49,12 +49,13 @@ export const AdminExclusiveManager: React.FC = () => {
 
   useEffect(() => { void refresh(false); }, [refresh]);
   useEffect(() => {
-    if (!selectedTour?.exclusive_trips?.[0]) { setDepartures([]); setPrice('500'); setCurrency('EUR'); setMinimum('1'); setMaximum('10'); setActive(true); return; }
+    if (!selectedTour?.exclusive_trips?.[0]) { setDepartures([]); setPrice('500'); setCurrency('EUR'); setMinimum('1'); setMaximum('10'); setActive(true); setSlotCapacity('10'); return; }
     const trip = selectedTour.exclusive_trips[0];
     setPrice(String(trip.fixed_trip_price));
     setCurrency(trip.currency);
     setMinimum(String(trip.minimum_guests));
     setMaximum(String(trip.maximum_guests));
+    setSlotCapacity(String(trip.maximum_guests));
     setActive(trip.is_active);
     let current = true;
     getAdminExclusiveDepartures(trip.id).then((items) => current && setDepartures(items))
@@ -80,6 +81,9 @@ export const AdminExclusiveManager: React.FC = () => {
   const addSlot = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!config) return;
+    if (!Number.isInteger(Number(slotCapacity)) || Number(slotCapacity) < Number(minimum) || Number(slotCapacity) > Number(maximum)) {
+      setError('Slot capacity must be within this Exclusive product’s minimum and maximum guest limits.'); return;
+    }
     setSaving(true); setError(''); setNotice('');
     try {
       await createExclusiveDeparture({
