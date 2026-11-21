@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-const tourSlug = 'afternoon-desert-safari-with-echo-mountains-bedouin-village';
+const tourSlug = 'orange-bay-island-snorkeling';
 const tourPath = `/excursions/${tourSlug}`;
 const tabIds = ['overview', 'itinerary', 'included', 'details', 'reviews'] as const;
 const tabNames = ['Overview', 'Itinerary', 'Included', 'Details & FAQ', 'Reviews'];
