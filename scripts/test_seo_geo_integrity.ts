@@ -190,7 +190,7 @@ assert.match(translations, /Check cancellation terms before booking/, 'Homepage 
 assert.match(finalCta, /Hotel pickup zones and any location-based supplements are shown for the selected tour/, 'Final booking CTA discloses pickup zones and location-based supplements');
 assert.match(finalCta, /Review the cancellation terms for your selected excursion/, 'Final booking CTA points customers to the selected tour cancellation policy');
 assert.doesNotMatch(finalCta, /free cancellation is available up to 24 hours before the excursion start time|free cancellation up to 24 hours prior|Hotel pickup from your resort lobby is always included|Direct Booking Guarantee/i, 'Final CTA removes unsupported universal booking promises');
-assert.doesNotMatch(homeHero, /Practical Booking Information|hero\\.guarantee[1-4]/, 'Hero omits the removed booking-information strip and all four badge labels');
+assert.doesNotMatch(homeHero, /Practical Booking Information|hero\.guarantee[1-4]/, 'Hero omits the removed booking-information strip and all four badge labels');
 assert.doesNotMatch(homeHero, /certified PADI divemasters|2-tank guided boat dives/, 'Hero does not claim dive certifications or formats without tour-level evidence');
 assert.match(stepPickup, /Airport arrival transfer/, 'Airport pickup explains where to enter the destination hotel and flight details');
 assert.match(stepPickup, /Choose Your Pickup Location/, 'Pickup step uses generic wording that also fits airport transfers');
