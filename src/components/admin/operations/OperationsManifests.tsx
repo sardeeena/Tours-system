@@ -1,3 +1,4 @@
+import { serializeSpreadsheetRows } from '../../../utils/spreadsheetExport';
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   FileText,
@@ -178,25 +179,25 @@ export const OperationsManifests: React.FC = () => {
 
     const rows = filteredPassengers.map((p, idx) => [
       idx + 1,
-      `"${p.fullName.replace(/"/g, '""')}"`,
-      `"${p.bookingReference}"`,
-      `"${p.tourTitle.replace(/"/g, '""')}"`,
-      `"${p.nationality || 'International'}"`,
-      `"${p.passportOrId || 'N/A'}"`,
-      `"${p.dateOfBirth || 'N/A'}"`,
-      `"${p.phone || 'N/A'}"`,
+      `${p.fullName}`,
+      `${p.bookingReference}`,
+      `${p.tourTitle}`,
+      `${p.nationality || 'International'}`,
+      `${p.passportOrId || 'N/A'}`,
+      `${p.dateOfBirth || 'N/A'}`,
+      `${p.phone || 'N/A'}`,
       p.partySize || 1,
-      `"${(p.hotel || 'Direct Marina').replace(/"/g, '""')}"`,
-      `"${p.pickupTime || '07:30'}"`,
-      `"${(p.specialRequests || '').replace(/"/g, '""')}"`,
-      `"${(p.extras || 'None').replace(/"/g, '""')}"`,
-      `"${p.paymentStatus || 'Pending'}"`,
-      `"${p.bookingStatus || 'Confirmed'}"`,
+      `${(p.hotel || 'Direct Marina')}`,
+      `${p.pickupTime || '07:30'}`,
+      `${(p.specialRequests || '')}`,
+      `${(p.extras || 'None')}`,
+      `${p.paymentStatus || 'Pending'}`,
+      `${p.bookingStatus || 'Confirmed'}`,
     ]);
 
     const csvContent =
       'data:text/csv;charset=utf-8,' +
-      [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+      serializeSpreadsheetRows([headers, ...rows]);
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');

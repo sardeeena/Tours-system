@@ -1,3 +1,4 @@
+import { serializeSpreadsheetRows } from '../../utils/spreadsheetExport';
 import React, { useState, useEffect } from 'react';
 import {
   CalendarCheck,
@@ -271,26 +272,26 @@ export const AdminBookingsList: React.FC = () => {
     ];
 
     const rows = filtered.map((b) => [
-      `"${b.bookingReference}"`,
-      `"${b.tourTitle.replace(/"/g, '""')}"`,
-      `"${(b.tourLanguage || '').replace(/"/g, '""')}"`,
-      `"${b.date}"`,
-      `"${b.customer.firstName} ${b.customer.lastName}"`,
-      `"${b.customer.email}"`,
-      `"${b.customer.countryCode} ${b.customer.phoneNumber}"`,
-      `"${b.customer.country}"`,
-      `"${b.pickup.hotelName || ''}"`,
+      `${b.bookingReference}`,
+      `${b.tourTitle}`,
+      `${(b.tourLanguage || '')}`,
+      `${b.date}`,
+      `${b.customer.firstName} ${b.customer.lastName}`,
+      `${b.customer.email}`,
+      `${b.customer.countryCode} ${b.customer.phoneNumber}`,
+      `${b.customer.country}`,
+      `${b.pickup.hotelName || ''}`,
       b.guests.adults,
       b.guests.children,
       b.guests.infants,
       b.pricing.totalEur,
       b.pricing.currency || 'EUR',
-      `"${b.status}"`,
-      `"${b.paymentStatus}"`,
-      `"${b.createdAt}"`,
+      `${b.status}`,
+      `${b.paymentStatus}`,
+      `${b.createdAt}`,
     ]);
 
-    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const csvContent = serializeSpreadsheetRows([headers, ...rows]);
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');

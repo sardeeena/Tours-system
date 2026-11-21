@@ -62,6 +62,7 @@ import type { AdminTab } from './components/admin/AdminLayout';
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
 const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 const TechnicalControlCenter = lazy(() => import('./components/admin/technical/TechnicalControlCenter').then(m => ({ default: m.TechnicalControlCenter })));
+const VisitorAnalyticsPanel = lazy(() => import('./components/admin/technical/VisitorAnalyticsPanel').then(m => ({ default: m.VisitorAnalyticsPanel })));
 const AdminTourList = lazy(() => import('./components/admin/AdminTourList').then(m => ({ default: m.AdminTourList })));
 const AdminTourEditor = lazy(() => import('./components/admin/AdminTourEditor').then(m => ({ default: m.AdminTourEditor })));
 const AdminExclusiveManager = lazy(() => import('./components/admin/AdminExclusiveManager').then(m => ({ default: m.AdminExclusiveManager })));
@@ -319,7 +320,7 @@ function MainApp() {
       setLiveTours(toursRes.value || []);
     } else {
       console.warn('Failed to load published tours from Supabase:', toursRes.reason);
-      setToursError(toursRes.reason instanceof Error ? toursRes.reason.message : 'Unable to load published excursions. Please try again.');
+      setToursError('We couldn’t load excursions right now. Please try again.');
       setLiveTours([]);
     }
     setLoadingTours(false);
@@ -328,7 +329,7 @@ function MainApp() {
       setLiveDestinations(destsRes.value || []);
     } else {
       console.warn('Failed to load published destinations from Supabase:', destsRes.reason);
-      setDestinationsError(destsRes.reason?.message || 'Unable to load destinations from database.');
+      setDestinationsError('We couldn’t load destinations right now. Please try again.');
       setLiveDestinations([]);
     }
     setLoadingDestinations(false);
@@ -337,7 +338,7 @@ function MainApp() {
       setLiveCategories(catsRes.value || []);
     } else {
       console.warn('Failed to load published categories from Supabase:', catsRes.reason);
-      setCategoriesError(catsRes.reason?.message || 'Unable to load categories from database.');
+      setCategoriesError('We couldn’t load activities right now. Please try again.');
       setLiveCategories([]);
     }
     setLoadingCategories(false);
@@ -351,7 +352,7 @@ function MainApp() {
       setLiveTours(data || []);
     } catch (err) {
       console.warn('Failed to load published tours from Supabase:', err);
-      setToursError(err instanceof Error ? err.message : 'Unable to load published excursions. Please try again.');
+      setToursError('We couldn’t load excursions right now. Please try again.');
       setLiveTours([]);
     } finally {
       setLoadingTours(false);
@@ -366,7 +367,7 @@ function MainApp() {
       setLiveDestinations(data || []);
     } catch (err: any) {
       console.warn('Failed to load published destinations from Supabase:', err);
-      setDestinationsError(err.message || 'Unable to load destinations from database.');
+      setDestinationsError('We couldn’t load destinations right now. Please try again.');
       setLiveDestinations([]);
     } finally {
       setLoadingDestinations(false);
@@ -381,7 +382,7 @@ function MainApp() {
       setLiveCategories(data || []);
     } catch (err: any) {
       console.warn('Failed to load published categories from Supabase:', err);
-      setCategoriesError(err.message || 'Unable to load categories from database.');
+      setCategoriesError('We couldn’t load activities right now. Please try again.');
       setLiveCategories([]);
     } finally {
       setLoadingCategories(false);
@@ -953,7 +954,7 @@ function MainApp() {
         <div className="min-h-screen bg-stone-50 dark:bg-stone-950 flex items-center justify-center p-4 text-stone-700 dark:text-stone-300">
           <div className="text-center space-y-3">
             <div className="w-8 h-8 border-2 border-[#0A6C74] border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="text-xs">Verifying administrator permissions with database...</p>
+            <p className="text-xs">Checking your account permissions...</p>
           </div>
         </div>
       );
@@ -1105,6 +1106,7 @@ function MainApp() {
         'translations',
         'settings',
         'access_control',
+        'privacy_data',
         'technical',
         'crm_dashboard',
         'crm_leads',
@@ -1391,6 +1393,8 @@ function MainApp() {
           {activeAdminTab === 'settings' && <AdminSettings />}
 
           {activeAdminTab === 'access_control' && <AdminAccessControl />}
+
+          {activeAdminTab === 'privacy_data' && <VisitorAnalyticsPanel />}
 
           {activeAdminTab === 'technical' && <TechnicalControlCenter />}
         </AdminLayout>

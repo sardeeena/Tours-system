@@ -84,6 +84,7 @@ export type AdminTab =
   | 'blog'
   | 'settings'
   | 'access_control'
+  | 'privacy_data'
   | 'technical'
   | 'crm_dashboard'
   | 'crm_leads'
@@ -273,8 +274,8 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     // SECURITY & ACCESS CONTROL
     { id: 'header_security', label: 'ADMINISTRATION & SECURITY', isHeader: true },
     { id: 'access_control', label: 'Users, Roles & Permissions', icon: ShieldCheck },
+    { id: 'privacy_data', label: 'Privacy & Data', icon: ShieldCheck },
     { id: 'settings', label: 'Site Settings', icon: Settings },
-    { id: 'technical', label: 'Technical Control Center', icon: Activity },
   ];
 
   const requiredPermission = (id: string): string | null => {
@@ -302,8 +303,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   };
   const canManageAccess = Boolean(user?.roles?.includes('admin') || user?.roles?.includes('super_admin') || user?.role === 'admin' || user?.role === 'super_admin');
   const isSuperAdmin = Boolean(user?.roles?.includes('super_admin') || user?.role === 'super_admin');
-  const canSeeTab = (id: string) => id === 'technical' || id === 'settings'
-    ? isSuperAdmin
+  const canSeeTab = (id: string) => id === 'technical'
+    ? false
+    : id === 'settings' || id === 'privacy_data'
+      ? isSuperAdmin
     : id === 'translations'
       ? isSuperAdmin
       : id === 'access_control'
@@ -320,8 +323,10 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     return canSeeTab(item.id) || Boolean(children?.length) ? [{ ...item, children }] : [];
   });
   const activePermission = requiredPermission(activeTab);
-  const canAccessActiveTab = activeTab === 'technical' || activeTab === 'settings'
-    ? isSuperAdmin
+  const canAccessActiveTab = activeTab === 'technical'
+    ? false
+    : activeTab === 'settings' || activeTab === 'privacy_data'
+      ? isSuperAdmin
     : activeTab === 'translations'
       ? isSuperAdmin
       : activeTab === 'access_control'
@@ -332,26 +337,11 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
 
   return (
     <div className="admin-shell min-h-screen flex flex-col antialiased selection:bg-[#0A6C74] selection:text-white">
-      {/* Clear operational warning; implementation details stay in the restricted technical area. */}
-      {!supabaseConnected ? (
-        <div role="status" className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2 text-xs text-amber-800 dark:text-amber-200 flex items-center justify-between gap-3">
-          <span>Live information is temporarily unavailable. Some changes may not be saved. Please contact your administrator.</span>
-          {isSuperAdmin && (
-            <button type="button" onClick={() => onSelectTab('technical')} className="shrink-0 underline font-semibold">
-              View system status
-            </button>
-          )}
+      {( !supabaseConnected || schemaMissing) && (
+        <div role="status" className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2 text-xs text-amber-800 dark:text-amber-200">
+          Some information may be temporarily unavailable. Please refresh and try again shortly.
         </div>
-      ) : schemaMissing ? (
-        <div role="status" className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2 text-xs text-amber-800 dark:text-amber-200 flex items-center justify-between gap-3">
-          <span>Some system features are not ready yet. Please contact your administrator before making changes.</span>
-          {isSuperAdmin && (
-            <button type="button" onClick={() => onSelectTab('technical')} className="shrink-0 underline font-semibold">
-              View system status
-            </button>
-          )}
-        </div>
-      ) : null}
+      )}
 
       <div className="flex-1 flex overflow-hidden relative">
         {/* Mobile/Tablet Backdrop when sidebar is open */}
@@ -583,7 +573,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           {/* Main dashboard content */}
           <div className="admin-content flex-1 w-full min-w-0 p-4 sm:p-6 xl:p-8 overflow-x-auto flex justify-center">
             <div className="w-full max-w-[1600px]">
-              {canAccessActiveTab ? children : (
+              {activeTab === 'technical' ? (
+                <div className="max-w-xl mx-auto my-12 rounded-2xl border border-stone-200 bg-white/80 dark:border-slate-700 dark:bg-slate-900/70 p-6 text-center shadow-sm">
+                  <h2 className="font-bold text-lg">Page unavailable</h2>
+                  <p className="text-sm text-stone-600 dark:text-stone-300 mt-2">This page is not available.</p>
+                </div>
+              ) : canAccessActiveTab ? children : (
                 <div className="max-w-xl mx-auto my-12 rounded-2xl border border-amber-300/70 bg-amber-50 dark:bg-amber-950/20 p-6 text-center">
                   <ShieldCheck className="w-8 h-8 mx-auto text-amber-600 dark:text-amber-300 mb-3" />
                   <h2 className="font-bold text-lg">Access restricted</h2>

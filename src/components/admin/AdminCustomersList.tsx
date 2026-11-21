@@ -1,3 +1,4 @@
+import { serializeSpreadsheetRows } from '../../utils/spreadsheetExport';
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Users,
@@ -114,18 +115,18 @@ export const AdminCustomersList: React.FC = () => {
   const exportCSV = () => {
     const headers = ['Full Name', 'Email', 'Phone', 'Country', 'Hotel', 'Role', 'Total Bookings', 'Total Booked Value EUR', 'Registration Date'];
     const rows = filteredCustomers.map((c) => [
-      `"${c.fullName}"`,
-      `"${c.email}"`,
-      `"${c.phone || ''}"`,
-      `"${c.country || ''}"`,
-      `"${c.hotel || ''}"`,
-      `"${c.role}"`,
+      `${c.fullName}`,
+      `${c.email}`,
+      `${c.phone || ''}`,
+      `${c.country || ''}`,
+      `${c.hotel || ''}`,
+      `${c.role}`,
       c.totalBookings,
       c.totalSpentEur,
-      `"${c.createdAt}"`,
+      `${c.createdAt}`,
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const csvContent = 'data:text/csv;charset=utf-8,' + serializeSpreadsheetRows([headers, ...rows]);
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);

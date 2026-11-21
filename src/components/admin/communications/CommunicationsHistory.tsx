@@ -37,6 +37,7 @@ import {
 import { useToast } from '../../../contexts/ToastContext';
 import { AdminLoadError } from '../AdminLoadError';
 import { useAuth } from '../../../contexts/AuthContext';
+import { serializeSpreadsheetRows } from '../../../utils/spreadsheetExport';
 
 interface CommunicationsHistoryProps {
   onNavigateTab?: (tabId: string, param?: string) => void;
@@ -133,15 +134,6 @@ export const CommunicationsHistory: React.FC<CommunicationsHistoryProps> = ({ on
       'Failure Reason',
     ];
 
-    // Quote every cell (RFC 4180) and neutralise spreadsheet formulas in all
-    // untrusted values, not just the customer name. Leading whitespace/control
-    // characters are included because spreadsheet applications may ignore them.
-    const csvCell = (value: unknown): string => {
-      const raw = String(value ?? '');
-      const safe = /^[\u0000-\u0020]*[=+\-@]/.test(raw) ? `'${raw}` : raw;
-      return `"${safe.replace(/"/g, '""')}"`;
-    };
-
     const rows = filteredMessages.map((m) => [
       m.id,
       m.channel,
@@ -158,9 +150,9 @@ export const CommunicationsHistory: React.FC<CommunicationsHistoryProps> = ({ on
       m.staffName,
       m.createdAt,
       m.failureReason || '',
-    ].map(csvCell));
+    ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const csvContent = 'data:text/csv;charset=utf-8,' + serializeSpreadsheetRows([headers, ...rows]);
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);

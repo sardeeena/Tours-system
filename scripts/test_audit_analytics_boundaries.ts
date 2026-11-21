@@ -4,6 +4,43 @@ const server = fs.readFileSync('server.ts', 'utf8');
 const checks: Array<{ name: string; passed: boolean }> = [];
 const check = (name: string, passed: boolean) => checks.push({ name, passed });
 
+const visitorPanel = fs.readFileSync('src/components/admin/technical/VisitorAnalyticsPanel.tsx', 'utf8');
+const reportingService = fs.readFileSync('src/services/reportingService.ts', 'utf8');
+const technicalPanel = fs.readFileSync('src/components/admin/technical/TechnicalControlCenter.tsx', 'utf8');
+const spreadsheetSerializer = fs.readFileSync('src/utils/spreadsheetExport.ts', 'utf8');
+const spreadsheetExportFiles = [
+  'src/components/admin/AdminBookingsList.tsx',
+  'src/components/admin/AdminCustomersList.tsx',
+  'src/components/admin/AdminNewsletterList.tsx',
+  'src/components/admin/operations/OperationsDocuments.tsx',
+  'src/components/admin/operations/OperationsManifests.tsx',
+  'src/components/admin/finance/FinanceReports.tsx',
+  'src/components/admin/finance/FinancePayments.tsx',
+  'src/components/admin/finance/FinanceRefunds.tsx',
+  'src/components/admin/finance/FinanceOutstandingBalances.tsx',
+  'src/components/admin/crm/CrmCustomersManager.tsx',
+  'src/components/admin/crm/CrmSegmentsManager.tsx',
+  'src/components/admin/communications/CommunicationsHistory.tsx',
+].map((path) => ({ path, source: fs.readFileSync(path, 'utf8') }));
+
+check(
+  'Every CSV and TSV export uses the shared spreadsheet formula neutralizer',
+  spreadsheetSerializer.includes('serializeSpreadsheetCell')
+    && spreadsheetSerializer.includes("typeof value === 'string'")
+    && spreadsheetSerializer.includes('formulaSafe')
+    && spreadsheetSerializer.includes('\\ufeff')
+    && visitorPanel.includes('serializeSpreadsheetRows([columns, ...rows])')
+    && reportingService.includes('serializeSpreadsheetRows([')
+    && technicalPanel.includes('serializeSpreadsheetRows([columns, ...rows])')
+    && reportingService.match(/serializeSpreadsheetRows\(/g)?.length === 2
+    && spreadsheetExportFiles.every(({ source }) => source.includes('serializeSpreadsheetRows([headers, ...rows])'))
+    && !technicalPanel.includes('String(value).replace')
+);
+check(
+  'Spreadsheet formula neutralization preserves numeric values',
+  spreadsheetSerializer.includes("typeof value === 'string' &&")
+);
+
 const telemetryStart = server.indexOf('// Sanitized API telemetry.');
 const telemetryEnd = server.indexOf('// Initialize Google Gen AI client', telemetryStart);
 const telemetry = telemetryStart >= 0 && telemetryEnd > telemetryStart

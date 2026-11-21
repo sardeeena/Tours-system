@@ -4,6 +4,7 @@ import {
   Download, HardDrive, RefreshCw, Server, ShieldCheck, XCircle,
 } from 'lucide-react';
 import { useAuth } from '../../../contexts/AuthContext';
+import { serializeSpreadsheetRows } from '../../../utils/spreadsheetExport';
 import { VisitorAnalyticsPanel } from './VisitorAnalyticsPanel';
 import {
   fetchTechnicalEvents, fetchTechnicalOverview,
@@ -75,7 +76,7 @@ export const TechnicalControlCenter: React.FC = () => {
       event.request_method || '', event.request_path || '', event.status_code ?? '',
       event.duration_ms ?? '', event.actor_user_id || '',
     ]);
-    const csv = [columns, ...rows].map((row) => row.map((value) => `"${String(value).replace(/"/g, '""')}"`).join(',')).join('\r\n');
+    const csv = serializeSpreadsheetRows([columns, ...rows]);
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
     const anchor = document.createElement('a');
     anchor.href = url;

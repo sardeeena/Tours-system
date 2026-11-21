@@ -1,3 +1,4 @@
+import { serializeSpreadsheetRows } from '../../../utils/spreadsheetExport';
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   FileText,
@@ -134,42 +135,42 @@ export const OperationsDocuments: React.FC<OperationsDocumentsProps> = ({ onNavi
       const headers = ['No', 'Full Name', 'Nationality', 'Passport/ID', 'Passenger Type', 'Booking Reference', 'Hotel', 'Lead'];
       const rows = filteredPassengers.map((p, idx) => [
         idx + 1,
-        `"${p.fullName}"`,
-        `"${p.nationality || 'N/A'}"`,
-        `"${p.passportOrId || 'On Pier Inspection'}"`,
+        `${p.fullName}`,
+        `${p.nationality || 'N/A'}`,
+        `${p.passportOrId || 'On Pier Inspection'}`,
         p.passengerType,
         p.bookingReference,
-        `"${p.hotel || 'Direct Marina'}"`,
+        `${p.hotel || 'Direct Marina'}`,
         p.isLeadPassenger ? 'YES' : 'NO',
       ]);
-      csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+      csvContent = serializeSpreadsheetRows([headers, ...rows]);
     } else if (docType === 'pickup_run_sheet') {
       filename = `pickup_schedule_${selectedDate}.csv`;
       const headers = ['Pickup Time', 'Hotel', 'Room', 'Customer', 'Pax', 'Tour', 'Driver/Vehicle', 'Status', 'Phone'];
       const rows = filteredPickups.map((p) => [
         p.pickupTime,
-        `"${p.hotelName}"`,
-        `"${p.roomNumber || '-'}"`,
-        `"${p.customerName}"`,
+        `${p.hotelName}`,
+        `${p.roomNumber || '-'}`,
+        `${p.customerName}`,
         p.passengerCount,
-        `"${p.tourTitle}"`,
-        `"${p.driverVehicle || 'Assigned Shuttle'}"`,
+        `${p.tourTitle}`,
+        `${p.driverVehicle || 'Assigned Shuttle'}`,
         p.status,
-        `"${p.customerPhone || 'N/A'}"`,
+        `${p.customerPhone || 'N/A'}`,
       ]);
-      csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+      csvContent = serializeSpreadsheetRows([headers, ...rows]);
     } else if (docType === 'pier_financials') {
       filename = `pier_collections_${selectedDate}.csv`;
       const headers = ['Tour', 'Departure Time', 'Total EUR', 'Due at Pier EUR', 'Bookings Count', 'Passengers Count'];
       const rows = filteredDepartures.map((d) => [
-        `"${d.tourTitle}"`,
+        `${d.tourTitle}`,
         d.departureTime,
         d.paymentSummary.totalEur,
         d.paymentSummary.outstandingEur,
         d.bookingsCount,
         d.passengerCount,
       ]);
-      csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+      csvContent = serializeSpreadsheetRows([headers, ...rows]);
     } else {
       filename = `captain_briefing_${selectedDate}.txt`;
       csvContent = `RED SEA MARINE OPERATIONS BRIEFING\nDate: ${selectedDate}\nVessel: ${activeVessel?.name}\nCaptain: ${activeGuide?.full_name}\nPassengers: ${filteredPassengers.length}\nCoast Guard Cleared: ${weather?.coast_guard_cleared ? 'YES' : 'NO'}\nWater Temp: ${weather?.water_temperature_c}C\nSwell: ${weather?.swell_height_m}m\nWind: ${weather?.wind_speed_knots} kts ${weather?.wind_direction}`;

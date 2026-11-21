@@ -29,6 +29,7 @@ import { listVessels, listAssignments, listGuides, getMaritimeWeather, getDepart
 import { listInquiries } from './inquiryService';
 import { listLeads } from './crmService';
 import { getPublishedTours } from './tourService';
+import { serializeSpreadsheetRows } from '../utils/spreadsheetExport';
 
 /**
  * Calculates normalized date interval boundaries based on range enum
@@ -1195,17 +1196,14 @@ export function exportReportToCsv(
   headers: string[],
   rows: (string | number)[][]
 ): void {
-  const sanitize = (val: string | number) => {
-    const s = String(val ?? '');
-    return `"${s.replace(/"/g, '""')}"`;
-  };
-
   const csvContent =
     '\uFEFF' +
-    [`# ${title} - Exported on ${new Date().toISOString()}`, '']
-      .concat([headers.map(sanitize).join(',')])
-      .concat(rows.map((r) => r.map(sanitize).join(',')))
-      .join('\r\n');
+    serializeSpreadsheetRows([
+      [`# ${title} - Exported on ${new Date().toISOString()}`],
+      [],
+      headers,
+      ...rows,
+    ]);
 
   const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
@@ -1228,10 +1226,12 @@ export function exportReportToExcel(
 ): void {
   const tsvContent =
     '\uFEFF' +
-    [`${title}\tGenerated: ${new Date().toLocaleString()}`, '']
-      .concat([headers.join('\t')])
-      .concat(rows.map((r) => r.join('\t')))
-      .join('\r\n');
+    serializeSpreadsheetRows([
+      [`${title}\tGenerated: ${new Date().toLocaleString()}`],
+      [],
+      headers,
+      ...rows,
+    ], '\t');
 
   const blob = new Blob([tsvContent], { type: 'application/vnd.ms-excel;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
