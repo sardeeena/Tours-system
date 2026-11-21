@@ -108,7 +108,9 @@ BEGIN
     RAISE EXCEPTION 'The Exclusive tour listing must be published before scheduling slots' USING ERRCODE = '22023';
   END IF;
 
-  IF NEW.date < (now() AT TIME ZONE 'Africa/Cairo')::date THEN
+  IF NEW.date < (now() AT TIME ZONE 'Africa/Cairo')::date
+     OR (NEW.date = (now() AT TIME ZONE 'Africa/Cairo')::date
+         AND NEW.start_time <= (now() AT TIME ZONE 'Africa/Cairo')::time) THEN
     RAISE EXCEPTION 'An Exclusive departure cannot be scheduled in the past' USING ERRCODE = '22023';
   END IF;
   IF NEW.maximum_guests < v_trip.minimum_guests THEN
@@ -222,7 +224,9 @@ AS $function$
     JOIN public.tours t ON t.id = et.tour_id AND t.status = 'published' AND t.is_exclusive = TRUE
     WHERE d.id = p_departure_id
       AND d.status = 'confirmed'
-      AND d.date >= (now() AT TIME ZONE 'Africa/Cairo')::date
+      AND (d.date > (now() AT TIME ZONE 'Africa/Cairo')::date
+        OR (d.date = (now() AT TIME ZONE 'Africa/Cairo')::date
+          AND d.start_time > (now() AT TIME ZONE 'Africa/Cairo')::time))
       AND NOT EXISTS (
         SELECT 1 FROM public.exclusive_reservations r
         WHERE r.exclusive_departure_id = d.id AND r.status IN ('pending','confirmed','completed','no_show')
@@ -458,7 +462,9 @@ BEGIN
   WHERE id = p_departure_id
   FOR UPDATE;
   IF NOT FOUND OR v_departure.status <> 'confirmed'
-     OR v_departure.date < (now() AT TIME ZONE 'Africa/Cairo')::date THEN
+     OR v_departure.date < (now() AT TIME ZONE 'Africa/Cairo')::date
+     OR (v_departure.date = (now() AT TIME ZONE 'Africa/Cairo')::date
+         AND v_departure.start_time <= (now() AT TIME ZONE 'Africa/Cairo')::time) THEN
     RAISE EXCEPTION 'This exclusive trip slot is no longer available' USING ERRCODE = 'P0002';
   END IF;
 
