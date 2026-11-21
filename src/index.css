@@ -1069,11 +1069,23 @@ html :is(section[id], article[id], [data-scroll-target]) {
   }
 }
 
-/* Public and admin content must never be hidden while waiting for an observer.
-   Motion is decorative only: reveal targets are visible at every viewport size,
-   including tablets, desktop browsers, and webviews with delayed observers. */
-html.aat-motion-active .aat-reveal,
-html.aat-motion-active .aat-reveal.aat-visible {
+/* Subtle public-page section reveals. Targets remain readable before the
+   observer fires; reduced-motion users receive the fully static layout. */
+html.aat-motion-active .public-site .aat-reveal:not(.aat-visible) {
+  opacity: .94;
+  transform: translateY(10px);
+  transition: opacity 420ms ease, transform 520ms cubic-bezier(.2,.7,.2,1);
+  will-change: opacity, transform;
+}
+html.aat-motion-active .public-site .aat-reveal.aat-visible {
+  opacity: 1;
+  transform: none;
+  transition: opacity 420ms ease, transform 520ms cubic-bezier(.2,.7,.2,1);
+  will-change: auto;
+}
+/* Keep admin content stable; admin workflows should not shift while operating. */
+html.aat-motion-active .admin-shell .aat-reveal,
+html.aat-motion-active .admin-shell .aat-reveal.aat-visible {
   opacity: 1 !important;
   transform: none !important;
   transition: none !important;
