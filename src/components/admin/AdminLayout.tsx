@@ -571,7 +571,12 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
           {/* Main dashboard content */}
           <div className="admin-content flex-1 w-full min-w-0 p-4 sm:p-6 xl:p-8 overflow-x-auto flex justify-center">
             <div className="w-full max-w-[1600px]">
-              {canAccessActiveTab ? children : (
+              {activeTab === 'technical' ? (
+                <div className="max-w-xl mx-auto my-12 rounded-2xl border border-stone-200 bg-white/80 dark:border-slate-700 dark:bg-slate-900/70 p-6 text-center shadow-sm">
+                  <h2 className="font-bold text-lg">Page unavailable</h2>
+                  <p className="text-sm text-stone-600 dark:text-stone-300 mt-2">This page is not available.</p>
+                </div>
+              ) : canAccessActiveTab ? children : (
                 <div className="max-w-xl mx-auto my-12 rounded-2xl border border-amber-300/70 bg-amber-50 dark:bg-amber-950/20 p-6 text-center">
                   <ShieldCheck className="w-8 h-8 mx-auto text-amber-600 dark:text-amber-300 mb-3" />
                   <h2 className="font-bold text-lg">Access restricted</h2>
