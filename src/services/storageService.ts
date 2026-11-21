@@ -178,7 +178,7 @@ export async function uploadTourMedia(
     if (!import.meta.env.DEV) {
       return { url: '', storagePath: '', error: 'Supabase Storage is not configured in production.' };
     }
-    const objectUrl = URL.createObjectURL(file);
+    const objectUrl = URL.createObjectURL(uploadFile);
     const storagePath = `local/${Date.now()}-${cleanFileName}`;
     const localItem: StorageFileItem = {
       id: `local-${Date.now()}`,
