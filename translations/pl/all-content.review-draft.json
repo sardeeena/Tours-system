@@ -11,8 +11,8 @@
     "static_page": 10,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1082,
-    "ui_catalog_messages": 1163,
+    "private_ui_messages": 1084,
+    "ui_catalog_messages": 1165,
     "source_records": 111
   },
   "records": [
@@ -4750,7 +4750,9 @@
         "why.title": "Dlaczego warto rezerwować bezpośrednio u nas?",
         "private.text.6bcf5453": "Postęp rezerwacji",
         "private.text.79b4c617": "Etap ",
-        "private.text.a5b9a096": " z 4"
+        "private.text.a5b9a096": " z 4",
+        "private.text.28b74540": "Ekskluzywne",
+        "private.text.37bf777b": "Ekskluzywne wycieczki prywatne"
       },
       "private_ui_message_count": 650
     }

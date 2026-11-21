@@ -61,6 +61,7 @@ export type AdminTab =
   | 'dash_finance'
   | 'dash_builder'
   | 'tours'
+  | 'exclusive'
   | 'tour_new'
   | 'tour_edit'
   | 'bookings'
@@ -205,6 +206,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
       children: [
         { id: 'tours', label: 'All Tours' },
         { id: 'tour_new', label: 'Add New Tour' },
+        { id: 'exclusive', label: 'Exclusive Trips' },
       ],
     },
     { id: 'bookings', label: 'Reservations & Bookings', icon: CalendarCheck },
@@ -284,6 +286,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     if (id === 'dash_finance' || id.startsWith('fin_')) return 'finance.read';
     if (id === 'dash_builder') return 'analytics.manage';
     if (id === 'tours') return 'tours.read';
+    if (id === 'exclusive') return 'tours.update';
     if (id === 'tour_new') return 'tours.create';
     if (id === 'tour_edit') return 'tours.update';
     if (id === 'bookings') return 'bookings.read';

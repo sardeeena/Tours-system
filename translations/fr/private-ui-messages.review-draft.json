@@ -1084,7 +1084,9 @@
     "private.text.ff566f40": "Nom ",
     "private.text.6bcf5453": "Progression de la réservation",
     "private.text.79b4c617": "Étape ",
-    "private.text.a5b9a096": " sur 4"
+    "private.text.a5b9a096": " sur 4",
+    "private.text.28b74540": "Exclusif",
+    "private.text.37bf777b": "Excursions privées exclusives"
   },
-  "coverage": 1082
+  "coverage": 1084
 }

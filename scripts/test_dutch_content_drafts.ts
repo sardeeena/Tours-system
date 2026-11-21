@@ -25,8 +25,8 @@ assert.equal(records.length, 111);
 assert.deepEqual(nl.coverage, {
   tour: 25, blog_post: 50, destination: 7, static_page: 10,
   communication_template: 18, ui_catalog: 1,
-  public_ui_messages: 81, private_ui_messages: 1082,
-  ui_catalog_messages: 1163, source_records: 111,
+  public_ui_messages: 81, private_ui_messages: 1084,
+  ui_catalog_messages: 1165, source_records: 111,
 });
 
 const sourceKeys = new Set(refRecords.map(key));
@@ -84,14 +84,14 @@ for (const [k, v] of Object.entries(TRANSLATIONS.nl)) {
   assert.ok((v as string).trim(), 'Runtime public UI value is non-empty: ' + k);
 }
 assert.deepEqual(Object.keys(privateUi).sort(), Object.keys(privateContent).sort(), 'Every extracted private UI source key is represented exactly once');
-assert.equal(Object.keys(privateUi).length, 1082);
+assert.equal(Object.keys(privateUi).length, 1084);
 for (const [k, v] of Object.entries(privateUi)) {
   assert.equal(typeof v, 'string');
   assert.ok((v as string).trim(), 'Private UI value is non-empty: ' + k);
   const placeholders = (s: string) => (s.match(/\{\{[^{}]+\}\}|\{[A-Za-z0-9_.-]+\}|%[sd]|\$\{[^}]+\}/g) || []).sort();
   assert.deepEqual(placeholders(v as string), placeholders(privateContent[k]), 'Private UI placeholders are preserved: ' + k);
 }
-assert.equal(Object.keys(ui.content).length, 1163);
+assert.equal(Object.keys(ui.content).length, 1165);
 assert.equal(EUROPEAN_LOCALE_ROLLOUT.find((locale) => locale.code === 'nl')?.rollout, 'planned');
 assert.ok(SUPPORTED_LANGUAGES.nl, 'Dutch runtime dictionary is registered but remains hidden until published');
 
@@ -109,4 +109,4 @@ assert.equal(nl.source_data_warnings.length, 4, 'Known source schedule defects a
 assert.ok(nl.source_data_warnings.some((warning: any) => warning.source_value === '13:30 AM'));
 assert.ok(nl.source_data_warnings.some((warning: any) => warning.source_value === '13:00 PM'));
 
-console.log('Dutch review bundle checks passed: 111 content records, 1,163 UI messages, complete IDs and schema, unique slugs, and preserved placeholders.');
+console.log('Dutch review bundle checks passed: 111 content records, 1,165 UI messages, complete IDs and schema, unique slugs, and preserved placeholders.');

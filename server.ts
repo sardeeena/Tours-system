@@ -599,6 +599,7 @@ app.post('/api/chat', rateLimit(10, 60_000), async (req: Request, res: Response)
       .from('tours')
       .select('id,title,slug,short_description,duration,duration_hours,price,child_price,private_price,currency,tour_type,pickup_available,pickup_info,cancellation_policy,departure_time,available_days,destinations(name),tour_images(image_url,is_primary,sort_order)')
       .eq('status', 'published')
+      .eq('is_exclusive', false)
       .order('sort_order', { ascending: true })
       .limit(60);
 
@@ -1391,6 +1392,7 @@ app.get('/api/tours', rateLimit(120, 60_000), async (req: Request, res: Response
         tour_images (id, image_url, is_primary, sort_order)
       `)
       .eq('status', 'published')
+      .eq('is_exclusive', false)
       .order('sort_order', { ascending: true })
       .limit(maxItems);
 
@@ -4322,6 +4324,7 @@ const AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN = 'https://awesomeadventure.tours';
 const AWESOME_ADVENTURE_TOURS_CORE_PUBLIC_PATHS = [
   '/',
   '/excursions',
+  '/exclusive',
   '/destinations',
   '/experiences',
   '/blog',
@@ -4385,6 +4388,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
         .from('tours')
         .select('id,slug,updated_at')
         .eq('status', 'published')
+        .eq('is_exclusive', false)
         .order('updated_at', { ascending: false })
         .limit(5000);
 
@@ -4593,6 +4597,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
         .from('tours')
         .select('id,title,slug,short_description,price,private_price,tour_type,currency')
         .eq('status', 'published')
+        .eq('is_exclusive', false)
         .order('sort_order', { ascending: true })
         .limit(500);
 
@@ -4612,6 +4617,35 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
       }
     } catch (error) {
       console.warn('[SEO llms.txt] Tour catalogue could not be loaded:', error);
+    }
+  }
+
+  if (publicSupabase) {
+    lines.push('', '## Exclusive private trips', '- Exclusive trips are booked as one complete private experience. The displayed fixed price applies to the entire trip, not per person.', '- Customers select a confirmed date and time and reserve the whole slot for their group.');
+    try {
+      const { data: exclusiveTrips, error } = await (publicSupabase as any)
+        .from('exclusive_trips')
+        .select('fixed_trip_price,currency,minimum_guests,maximum_guests,tours!inner(title,slug,short_description,status,is_exclusive)')
+        .eq('is_active', true)
+        .eq('tours.status', 'published')
+        .eq('tours.is_exclusive', true)
+        .order('created_at', { ascending: false });
+      if (error) {
+        console.warn('[SEO llms.txt] Exclusive catalogue query failed:', error.message);
+      } else {
+        for (const item of exclusiveTrips || []) {
+          const tour = Array.isArray(item.tours) ? item.tours[0] : item.tours;
+          const title = cleanPublicText(tour?.title, 160);
+          const slug = typeof tour?.slug === 'string' ? tour.slug.trim() : '';
+          if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+          const fixedPrice = Number(item.fixed_trip_price);
+          const currency = typeof item.currency === 'string' ? item.currency.toUpperCase() : 'EUR';
+          const priceText = Number.isFinite(fixedPrice) ? ` Fixed price for the entire trip: ${fixedPrice} ${currency}.` : '';
+          lines.push(`- [${title}](https://awesomeadventure.tours/exclusive): ${cleanPublicText(tour?.short_description, 350)}${priceText} Group size: ${item.minimum_guests}–${item.maximum_guests} guests.`);
+        }
+      }
+    } catch (error) {
+      console.warn('[SEO llms.txt] Exclusive catalogue could not be loaded:', error);
     }
   }
 
@@ -4705,19 +4739,23 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
   try {
     const seoExclusions = await loadAwesomeAdventureToursSeoIndexExclusions();
     const now = new Date().toISOString();
-    const [tourResult, destinationResult, postResult] = await Promise.all([
+    const [tourResult, destinationResult, postResult, exclusiveResult] = await Promise.all([
       publicSupabase.from('tours')
         .select('id,destination_id,title,slug,short_description,description,duration,duration_type,duration_hours,tour_type,price,private_price,currency,pickup_available,pickup_info,cancellation_policy,departure_time,languages,difficulty,age_restrictions')
-        .eq('status', 'published').order('sort_order', { ascending: true }).limit(500),
+        .eq('status', 'published').eq('is_exclusive', false).order('sort_order', { ascending: true }).limit(500),
       publicSupabase.from('destinations')
         .select('id,name,slug,tagline,description').eq('status', 'published').order('sort_order', { ascending: true }).limit(100),
       publicSupabase.from('blog_posts')
         .select('title,slug,excerpt,content,seo_title,seo_description,published_at,updated_at,author_name,reading_time_minutes')
         .in('status', ['published', 'scheduled']).not('published_at', 'is', null).lte('published_at', now)
         .order('published_at', { ascending: false }).limit(200),
+      (publicSupabase as any).from('exclusive_trips')
+        .select('fixed_trip_price,currency,minimum_guests,maximum_guests,tours!inner(title,slug,short_description,description,duration,duration_hours,destinations(name))')
+        .eq('is_active', true).eq('tours.status', 'published').eq('tours.is_exclusive', true)
+        .order('created_at', { ascending: false }).limit(200),
     ]);
 
-    const failedQuery = [tourResult, destinationResult, postResult].find((result) => result.error);
+    const failedQuery = [tourResult, destinationResult, postResult, exclusiveResult].find((result) => result.error);
     if (failedQuery?.error) throw failedQuery.error;
 
     const tours = (tourResult.data || []).filter((tour: any) => {
@@ -4888,6 +4926,26 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
       }
     }
 
+    lines.push('', '## Exclusive private trips', 'Exclusive trips are reserved as one complete private experience. The fixed trip price applies to the entire trip and is not multiplied by the number of guests.');
+    for (const item of exclusiveResult.data || []) {
+      const tour = Array.isArray(item.tours) ? item.tours[0] : item.tours;
+      const title = cleanPublicText(tour?.title, 160);
+      const slug = typeof tour?.slug === 'string' ? tour.slug.trim() : '';
+      if (!title || !slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+      const price = Number(item.fixed_trip_price);
+      const currency = typeof item.currency === 'string' && /^[A-Z]{3}$/i.test(item.currency) ? item.currency.toUpperCase() : 'EUR';
+      lines.push('', `### ${title}`, 'URL: https://awesomeadventure.tours/exclusive');
+      const description = seoPlainText(tour?.description || tour?.short_description, 3000);
+      if (description) lines.push(description);
+      lines.push(
+        `Fixed price for the entire trip: ${Number.isFinite(price) ? price.toFixed(2) : 'Contact us'} ${currency}`,
+        `Group size: ${Number(item.minimum_guests)}–${Number(item.maximum_guests)} guests`,
+        `Duration: ${cleanPublicText(tour?.duration, 120) || 'See the public listing'}`
+      );
+      const destination = Array.isArray(tour?.destinations) ? tour.destinations[0] : tour?.destinations;
+      if (destination?.name) lines.push(`Destination: ${cleanPublicText(destination.name, 120)}`);
+    }
+
     lines.push('', '## Published travel articles');
     for (const post of postResult.data || []) {
       const slug = typeof post.slug === 'string' ? post.slug.trim() : '';
@@ -4979,6 +5037,18 @@ const AWESOME_ADVENTURE_TOURS_MCP_TOOLS = [
       additionalProperties: false,
     },
   },
+  {
+    name: 'search_exclusive_private_trips',
+    description: 'Search published Exclusive private trips. Prices are fixed for the entire trip, not per person. Returns public listing details and group-size limits only.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Optional search phrase, up to 120 characters.' },
+        limit: { type: 'integer', minimum: 1, maximum: 20, default: 10 },
+      },
+      additionalProperties: false,
+    },
+  },
 ];
 
 app.get('/.well-known/mcp/server-card.json', (_req: Request, res: Response) => {
@@ -4997,7 +5067,7 @@ app.get('/.well-known/mcp/server-card.json', (_req: Request, res: Response) => {
     transport: { type: 'streamable-http', endpoint: '/mcp' },
     capabilities: { tools: { listChanged: false } },
     authentication: { required: false, schemes: [] },
-    instructions: 'Only published public excursion catalogue data is available. Confirm current prices and availability on the linked live excursion page before making travel decisions.',
+    instructions: 'Only published public excursion and Exclusive private-trip catalogue data is available. Exclusive prices are fixed for the entire trip, not per person. Confirm current prices and availability on the live listing before making travel decisions.',
     tools: AWESOME_ADVENTURE_TOURS_MCP_TOOLS,
   });
 });
@@ -5025,7 +5095,7 @@ app.post('/mcp', rateLimit(60, 60_000), async (req: Request, res: Response) => {
       protocolVersion: supported.includes(requestedVersion) ? requestedVersion : '2025-06-18',
       capabilities: { tools: { listChanged: false } },
       serverInfo: { name: 'com.awesomeadventuretours/public-excursions', title: 'Awesome Adventure Tours Public Excursions', version: '1.0.0' },
-      instructions: 'Read-only public excursion catalogue. No bookings, personal data, payments or admin actions.',
+      instructions: 'Read-only public excursion and Exclusive private-trip catalogue. Exclusive prices are fixed per trip. No bookings, personal data, payments or admin actions.',
     });
   }
 
@@ -5047,6 +5117,7 @@ app.post('/mcp', rateLimit(60, 60_000), async (req: Request, res: Response) => {
       let query = publicSupabase.from('tours')
         .select('title,slug,short_description,price,private_price,tour_type,currency,duration')
         .eq('status', 'published')
+        .eq('is_exclusive', false)
         .order('sort_order', { ascending: true })
         .limit(limit);
       if (queryText) query = query.ilike('title', `%${queryText.replace(/[%_]/g, '')}%`);
@@ -5069,7 +5140,7 @@ app.post('/mcp', rateLimit(60, 60_000), async (req: Request, res: Response) => {
       if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) return fail(-32602, 'A valid excursion slug is required.');
       const { data, error } = await publicSupabase.from('tours')
         .select('title,slug,short_description,description,price,private_price,tour_type,currency,duration,pickup_info,cancellation_policy')
-        .eq('slug', slug).eq('status', 'published').maybeSingle();
+        .eq('slug', slug).eq('status', 'published').eq('is_exclusive', false).maybeSingle();
       if (error) throw error;
       if (!data) return reply({ content: [{ type: 'text', text: 'Published excursion not found.' }], isError: true });
       const tour = {
@@ -5086,6 +5157,39 @@ app.post('/mcp', rateLimit(60, 60_000), async (req: Request, res: Response) => {
       };
       return reply({ content: [{ type: 'text', text: JSON.stringify(tour) }], structuredContent: { tour } });
     }
+
+    if (toolName === 'search_exclusive_private_trips') {
+      const queryText = typeof args.query === 'string' ? args.query.trim().slice(0, 120) : '';
+      const limit = Number.isInteger(args.limit) ? Math.max(1, Math.min(20, args.limit)) : 10;
+      let query = (publicSupabase as any).from('exclusive_trips')
+        .select('fixed_trip_price,currency,minimum_guests,maximum_guests,tours!inner(title,slug,short_description,duration,duration_hours,destinations(name))')
+        .eq('is_active', true)
+        .eq('tours.status', 'published')
+        .eq('tours.is_exclusive', true)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+      if (queryText) query = query.ilike('tours.title', `%${queryText.replace(/[%_]/g, '')}%`);
+      const { data, error } = await query;
+      if (error) throw error;
+      const trips = (data || []).map((item: any) => {
+        const tour = Array.isArray(item.tours) ? item.tours[0] : item.tours;
+        const destination = Array.isArray(tour?.destinations) ? tour.destinations[0] : tour?.destinations;
+        return {
+          title: cleanPublicText(tour?.title, 160),
+          description: cleanPublicText(tour?.short_description, 400),
+          destination: cleanPublicText(destination?.name, 120),
+          fixedTripPrice: Number(item.fixed_trip_price),
+          currency: typeof item.currency === 'string' ? item.currency : 'EUR',
+          priceBasis: 'entire_trip',
+          minimumGuests: Number(item.minimum_guests),
+          maximumGuests: Number(item.maximum_guests),
+          duration: cleanPublicText(tour?.duration, 100),
+          url: 'https://awesomeadventure.tours/exclusive',
+        };
+      });
+      return reply({ content: [{ type: 'text', text: JSON.stringify(trips) }], structuredContent: { exclusiveTrips: trips } });
+    }
+
     return fail(-32602, 'Unknown tool. Use tools/list to discover available tools.');
   } catch (error) {
     console.warn('[MCP] Public excursion tool failed:', error);
@@ -5226,7 +5330,7 @@ async function loadAwesomeAdventureToursTours(): Promise<any[]> {
   try {
     const { data, error } = await publicSupabase.from('tours')
       .select('id,slug,title,short_description,description,price,private_price,tour_type,currency,duration,duration_hours,destination_id,pickup_info,cancellation_policy,departure_time,updated_at,sort_order')
-      .eq('status', 'published').order('sort_order', { ascending: true }).limit(500);
+      .eq('status', 'published').eq('is_exclusive', false).order('sort_order', { ascending: true }).limit(500);
     if (error) {
       console.warn('[SEO render] Published tours unavailable:', error.message);
       return [];
@@ -5469,6 +5573,40 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       <p>Choose from published excursion categories, from island and boat trips to snorkeling, diving and desert adventures. Explore current tours and review each itinerary before booking.</p>
       <div class="seo-grid">${cards || '<p>Experience categories are being updated. Please browse our published excursions.</p>'}</div>
       <p><a href="/excursions">Browse all excursions</a></p></main>`;
+  } else if (path === '/exclusive') {
+    pageKind = 'static';
+    seoIdentifier = 'exclusive';
+    seoIdentifierIsPageSlug = true;
+    title = 'Exclusive Private Boat Trips & Yacht Charters in Egypt | Awesome Adventure Tours';
+    description = 'Book a private speedboat, boat or yacht experience on Egypt’s Red Sea coast. One fixed price for the entire trip, with flexible group sizes and confirmed departure slots.';
+    let exclusiveItems: any[] = [];
+    if (publicSupabase) {
+      try {
+        const { data, error } = await (publicSupabase as any).from('exclusive_trips')
+          .select('fixed_trip_price,currency,minimum_guests,maximum_guests,tours!inner(title,slug,short_description,duration,duration_hours,destinations(name),tour_images(image_url,is_primary,sort_order))')
+          .eq('is_active', true)
+          .eq('tours.status', 'published')
+          .eq('tours.is_exclusive', true)
+          .order('created_at', { ascending: false });
+        if (error) console.warn('[SEO render] Exclusive catalogue unavailable:', error.message);
+        exclusiveItems = Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.warn('[SEO render] Exclusive catalogue query failed:', error);
+      }
+    }
+    const cards = exclusiveItems.map((item: any) => {
+      const tour = Array.isArray(item.tours) ? item.tours[0] : item.tours;
+      const name = seoPlainText(tour?.title, 160);
+      if (!name) return '';
+      const summary = seoPlainText(tour?.short_description, 400);
+      const price = Number(item.fixed_trip_price);
+      const currency = /^[A-Z]{3}$/.test(String(item.currency || '')) ? item.currency : 'EUR';
+      const imageRows = Array.isArray(tour?.tour_images) ? tour.tour_images : [];
+      const primary = imageRows.find((image: any) => image.is_primary) || imageRows[0];
+      const image = seoSafeImage(primary?.image_url);
+      return `<article class="seo-tour-card">${image ? `<img src="${seoHtmlEscape(image)}" alt="${seoHtmlEscape(name)}" loading="lazy" />` : ''}<h2>${seoHtmlEscape(name)}</h2>${summary ? `<p>${seoHtmlEscape(summary)}</p>` : ''}<p><strong>Fixed price for the entire trip: ${Number.isFinite(price) ? price.toFixed(2) : 'Contact us'} ${seoHtmlEscape(currency)}.</strong></p><p>Group size: ${Number(item.minimum_guests)}–${Number(item.maximum_guests)} guests.</p></article>`;
+    }).filter(Boolean).join('');
+    body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / Exclusive Private Trips</nav><h1>Exclusive Private Boat Trips & Yacht Charters</h1><p>Enjoy your own private boat, speedboat or yacht experience. Each Exclusive reservation secures the entire departure slot for one group. The fixed price applies to the complete trip and does not increase with the number of guests within the allowed capacity.</p><p>Choose a confirmed date and time, select your group size and send your reservation request.</p><div class="seo-grid">${cards || '<p>Exclusive experiences are being prepared. Please check back soon.</p>'}</div><p><a href="/excursions">Browse shared excursions and activities</a></p></main>`;
   } else if (path === '/excursions') {
     pageKind = 'catalogue';
     title = 'Boat Trips & Island Tours in Egypt | Awesome Adventure Tours';
@@ -5499,6 +5637,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
           `)
           .eq('slug', slug)
           .eq('status', 'published')
+          .eq('is_exclusive', false)
           .order('sort_order', { ascending: true, referencedTable: 'tour_images' })
           .order('sort_order', { ascending: true, referencedTable: 'tour_highlights' })
           .order('sort_order', { ascending: true, referencedTable: 'tour_inclusions' })
@@ -5656,7 +5795,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
     if (activeDestination && publicSupabase) {
       try {
         const { data, error } = await publicSupabase.from('tours').select('*')
-          .eq('destination_id', activeDestination.id).eq('status', 'published')
+          .eq('destination_id', activeDestination.id).eq('status', 'published').eq('is_exclusive', false)
           .order('sort_order', { ascending: true }).limit(100);
         if (error) console.warn('[SEO render] Destination tours query failed:', error.message);
         destinationTours = Array.isArray(data) ? data : [];

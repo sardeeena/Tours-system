@@ -36,6 +36,7 @@ interface HeaderProps {
   onNavigateSection?: (sectionId: string) => void;
   onNavigateHome?: () => void;
   onNavigateExcursions?: () => void;
+  onNavigateExclusive?: () => void;
   onNavigateBooking?: (tourSlug?: string) => void;
   onNavigateLogin?: () => void;
   onNavigateRegister?: () => void;
@@ -53,6 +54,7 @@ export const Header: React.FC<HeaderProps> = ({
   onNavigateSection,
   onNavigateHome,
   onNavigateExcursions,
+  onNavigateExclusive,
   onNavigateBooking,
   onNavigateLogin,
   onNavigateRegister,
@@ -230,6 +232,7 @@ export const Header: React.FC<HeaderProps> = ({
             >
               {t('nav.allExcursions')}
             </button>
+            <button type="button" onClick={() => { setMobileMenuOpen(false); onNavigateExclusive?.(); }} className="text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1 cursor-pointer whitespace-nowrap shrink-0">Exclusive</button>
             <button 
               type="button"
               onClick={() => handleNavClick('destinations-section')} 
@@ -693,6 +696,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               )}
 
+              <button type="button" onClick={() => { setMobileMenuOpen(false); onNavigateExclusive?.(); }} className="text-left py-2 px-3 rounded hover:bg-stone-100 text-[#0A6C74] font-semibold">Exclusive Private Trips</button>
               <button
                 type="button"
                 onClick={handleExcursionsClick}

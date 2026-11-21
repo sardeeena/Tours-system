@@ -19,6 +19,7 @@ import { NotFoundPage } from './components/common/NotFoundPage';
 const ExcursionsPage = lazy(() => import('./pages/ExcursionsPage').then(m => ({ default: m.ExcursionsPage })));
 const TourDetailPage = lazy(() => import('./pages/TourDetailPage').then(m => ({ default: m.TourDetailPage })));
 const BookingPage = lazy(() => import('./pages/BookingPage').then(m => ({ default: m.BookingPage })));
+const ExclusiveTripsPage = lazy(() => import('./pages/ExclusiveTripsPage').then(m => ({ default: m.ExclusiveTripsPage })));
 const BookingConfirmationPage = lazy(() => import('./pages/BookingConfirmationPage').then(m => ({ default: m.BookingConfirmationPage })));
 const MyBookingPage = lazy(() => import('./pages/MyBookingPage').then(m => ({ default: m.MyBookingPage })));
 const LoginPage = lazy(() => import('./pages/LoginPage').then(m => ({ default: m.LoginPage })));
@@ -63,6 +64,7 @@ const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard').th
 const TechnicalControlCenter = lazy(() => import('./components/admin/technical/TechnicalControlCenter').then(m => ({ default: m.TechnicalControlCenter })));
 const AdminTourList = lazy(() => import('./components/admin/AdminTourList').then(m => ({ default: m.AdminTourList })));
 const AdminTourEditor = lazy(() => import('./components/admin/AdminTourEditor').then(m => ({ default: m.AdminTourEditor })));
+const AdminExclusiveManager = lazy(() => import('./components/admin/AdminExclusiveManager').then(m => ({ default: m.AdminExclusiveManager })));
 const AdminBookingsList = lazy(() => import('./components/admin/AdminBookingsList').then(m => ({ default: m.AdminBookingsList })));
 const AdminInquiriesList = lazy(() => import('./components/admin/AdminInquiriesList').then(m => ({ default: m.AdminInquiriesList })));
 const AdminCustomersList = lazy(() => import('./components/admin/AdminCustomersList').then(m => ({ default: m.AdminCustomersList })));
@@ -465,7 +467,7 @@ function MainApp() {
       window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     };
 
-    if (currentLocale !== 'en' && !/^\/admin(?:\/|$)/i.test(normalizedRequestedPath)) {
+    if (currentLocale !== 'en' && !(/^\/admin(?:\/|$)/i.test(normalizedRequestedPath) || normalizedRequestedPath === '/exclusive')) {
       const params = new URLSearchParams({ locale: currentLocale, pathname: normalizedRequestedPath });
       fetch('/api/content-translations/target?' + params.toString(), {
         headers: { Accept: 'application/json' },
@@ -574,6 +576,26 @@ function MainApp() {
         robotsIndex: false,
         robotsFollow: false,
         schemaJsonLd: null,
+      });
+      return;
+    }
+
+    if (currentPath === '/exclusive') {
+      seoService.apply({
+        title: 'Exclusive Private Boat Trips & Yacht Charters in Egypt | Awesome Adventure Tours',
+        description: 'Book a private speedboat, boat or yacht experience on Egypt’s Red Sea coast. One fixed price for the entire trip, with flexible group sizes and confirmed departure slots.',
+        canonicalUrl: 'https://awesomeadventure.tours/exclusive',
+        ogType: 'website',
+        robotsIndex: true,
+        robotsFollow: true,
+        schemaJsonLd: {
+          '@context': 'https://schema.org',
+          '@type': 'CollectionPage',
+          name: 'Exclusive Private Trips',
+          description: 'Private boat, speedboat and yacht experiences with a fixed price for the entire trip.',
+          url: 'https://awesomeadventure.tours/exclusive',
+          isPartOf: { '@type': 'WebSite', name: 'Awesome Adventure Tours', url: 'https://awesomeadventure.tours/' },
+        },
       });
       return;
     }
@@ -1063,6 +1085,7 @@ function MainApp() {
       adminSubRoute?.main &&
       [
         'bookings',
+        'exclusive',
         'blog',
         'tickets',
         'inquiries',
@@ -1178,6 +1201,8 @@ function MainApp() {
               initialViewMode="builder"
             />
           )}
+
+          {activeAdminTab === 'exclusive' && <AdminExclusiveManager />}
 
           {activeAdminTab === 'tours' && (
             <AdminTourList
@@ -1379,7 +1404,7 @@ function MainApp() {
   const renderCurrentView = () => {
     // Public content routes and private customer workflows are rendered only
     // when the complete reviewed UI catalogue and required content are available.
-    if (currentLocale !== 'en' && !/^\/(?:booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|admin(?:\/|$)|support(?:\/|$))/i.test(currentPath)) {
+    if (currentLocale !== 'en' && !/^\/(?:booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|admin(?:\/|$)|support(?:\/|$)|exclusive$)/i.test(currentPath)) {
       return <Suspense fallback={<PublicPageLoadingFallback />}><LocalizedContentPage locale={currentLocale} pathname={currentPath} onNavigate={(path) => navigate(path)} /></Suspense>;
     }
     if (currentLocale !== 'en' && !supportedLanguages.some((item) => item.code === currentLocale) && /^\/(?:booking|my-booking|login|register|account|profile|reset-password)(?:\/|$)/i.test(currentPath)) {
@@ -1488,6 +1513,11 @@ function MainApp() {
 
     if (currentPath === '/support' || currentPath.startsWith('/support/')) {
       return <Suspense fallback={<PublicPageLoadingFallback />}><SupportPage /></Suspense>;
+    }
+
+    // Exclusive trips have a separate fixed-price-per-trip booking flow.
+    if (currentPath === '/exclusive') {
+      return <Suspense fallback={<PublicPageLoadingFallback />}><ExclusiveTripsPage /></Suspense>;
     }
 
     // Awesome Adventure Tours Journal: /blog and /blog/:slug

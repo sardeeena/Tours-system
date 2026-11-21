@@ -129,6 +129,7 @@ async function runRouteTests() {
     { path: '/login', expectedDest: '/index.html', description: 'Customer login page' },
     { path: '/register', expectedDest: '/index.html', description: 'Customer registration' },
     { path: '/excursions', expectedDest: '/index.html', description: 'Excursions catalog' },
+    { path: '/exclusive', expectedDest: '/index.html', description: 'Exclusive fixed-price private trip catalogue' },
     { path: '/destinations', expectedDest: '/index.html', description: 'Published destinations directory' },
     { path: '/experiences', expectedDest: '/index.html', description: 'Public experiences and categories page' },
     { path: '/excursions/orange-bay-island-snorkeling', expectedDest: '/index.html', description: 'Tour detail deep link' },
