@@ -44,8 +44,17 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
   return payload as T;
 }
 
+const csvCell = (value: string | number | boolean | null): string => {
+  // CSV quoting alone does not stop spreadsheet formula evaluation. Keep real numeric
+  // values numeric, but force untrusted text (including leading whitespace/control
+  // characters before formula markers) to be interpreted as text by spreadsheet apps.
+  const raw = String(value ?? '');
+  const safe = typeof value === 'string' && /^[\\u0000-\\u0020]*[=+\\-@]/.test(raw) ? `'${raw}` : raw;
+  return '"' + safe.replace(/"/g, '""') + '"';
+};
+
 const downloadCsv = (filename: string, columns: string[], rows: Array<Array<string | number | boolean | null>>) => {
-  const csv = [columns, ...rows].map((row) => row.map((value) => '"' + String(value ?? '').replace(/"/g, '""') + '"').join(',')).join('\r\n');
+  const csv = [columns, ...rows].map((row) => row.map(csvCell).join(',')).join('\r\n');
   const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
   const anchor = document.createElement('a'); anchor.href = url; anchor.download = filename; anchor.click(); URL.revokeObjectURL(url);
 };
