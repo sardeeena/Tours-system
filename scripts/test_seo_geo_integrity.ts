@@ -16,6 +16,7 @@ const scheduleMigration = readFileSync(new URL('../supabase/migrations/202611191
 const destinationSeoMigration = readFileSync(new URL('../supabase/migrations/20261119130000_seed_destination_seo_metadata.sql', import.meta.url), 'utf8');
 const blogSeoTitlesMigration = readFileSync(new URL('../supabase/migrations/20261119164928_refine_blog_seo_titles.sql', import.meta.url), 'utf8');
 const pickupMappingMigration = readFileSync(new URL('../supabase/migrations/20261119140000_reconcile_published_tour_pickup_mappings.sql', import.meta.url), 'utf8');
+const exclusiveTripPublicRlsMigration = readFileSync(new URL('../supabase/migrations/20261122100000_split_exclusive_trip_public_rls_policies.sql', import.meta.url), 'utf8');
 const tourCard = readFileSync(new URL('../src/components/tours/TourCard.tsx', import.meta.url), 'utf8');
 const tourDetail = readFileSync(new URL('../src/pages/TourDetailPage.tsx', import.meta.url), 'utf8');
 const tourService = readFileSync(new URL('../src/services/tourService.ts', import.meta.url), 'utf8');
@@ -217,5 +218,24 @@ const markdownHandlerEnd = server.indexOf("app.get('*'", markdownHandlerStart);
 const markdownHandler = server.slice(markdownHandlerStart, markdownHandlerEnd);
 assert.ok(markdownHandler.includes("lines.join('\\n')"), 'Homepage text/markdown response separates lines with real newline characters');
 assert.ok(!markdownHandler.includes("lines.join('\\\\n')"), 'Homepage text/markdown response does not emit literal backslash-n sequences');
+
+
+const exclusiveTripsAnonPolicyStart = exclusiveTripPublicRlsMigration.indexOf('CREATE POLICY exclusive_trips_anon_read');
+const exclusiveTripsAuthPolicyStart = exclusiveTripPublicRlsMigration.indexOf('CREATE POLICY exclusive_trips_authenticated_read');
+const exclusiveDeparturesAnonPolicyStart = exclusiveTripPublicRlsMigration.indexOf('CREATE POLICY exclusive_departures_anon_read');
+const exclusiveDeparturesAuthPolicyStart = exclusiveTripPublicRlsMigration.indexOf('CREATE POLICY exclusive_departures_authenticated_read');
+const exclusiveTripsAnonPolicy = exclusiveTripPublicRlsMigration.slice(exclusiveTripsAnonPolicyStart, exclusiveTripsAuthPolicyStart);
+const exclusiveTripsAuthPolicy = exclusiveTripPublicRlsMigration.slice(exclusiveTripsAuthPolicyStart, exclusiveDeparturesAnonPolicyStart);
+const exclusiveDeparturesAnonPolicy = exclusiveTripPublicRlsMigration.slice(exclusiveDeparturesAnonPolicyStart, exclusiveDeparturesAuthPolicyStart);
+const exclusiveDeparturesAuthPolicy = exclusiveTripPublicRlsMigration.slice(exclusiveDeparturesAuthPolicyStart);
+assert.ok(exclusiveTripsAnonPolicyStart >= 0 && exclusiveTripsAuthPolicyStart > exclusiveTripsAnonPolicyStart, 'Exclusive trips have separate anonymous and authenticated read policies');
+assert.ok(exclusiveDeparturesAnonPolicyStart > exclusiveTripsAuthPolicyStart && exclusiveDeparturesAuthPolicyStart > exclusiveDeparturesAnonPolicyStart, 'Exclusive departures have separate anonymous and authenticated read policies');
+assert.match(exclusiveTripsAnonPolicy, /TO anon/, 'Anonymous exclusive-trip reads use the anon role directly');
+assert.doesNotMatch(exclusiveTripsAnonPolicy, /has_permission/, 'Anonymous exclusive-trip reads never invoke staff RBAC helpers');
+assert.match(exclusiveTripsAuthPolicy, /TO authenticated[\\s\\S]*has_permission\\('content\\.read'\\)/, 'Authenticated exclusive-trip reads retain the content.read permission check');
+assert.match(exclusiveDeparturesAnonPolicy, /TO anon/, 'Anonymous exclusive-departure reads use the anon role directly');
+assert.doesNotMatch(exclusiveDeparturesAnonPolicy, /has_permission/, 'Anonymous exclusive-departure reads never invoke staff RBAC helpers');
+assert.match(exclusiveDeparturesAuthPolicy, /TO authenticated[\\s\\S]*has_permission\\('operations\\.read'\\)/, 'Authenticated exclusive-departure reads retain the operations.read permission check');
+assert.doesNotMatch(exclusiveTripPublicRlsMigration, /GRANT\\s+EXECUTE[^;]*has_permission/i, 'Fix does not weaken the has_permission function EXECUTE boundary');
 
 console.log('SEO/GEO sitemap, indexation and structured-data integrity checks passed.');
