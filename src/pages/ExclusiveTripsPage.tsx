@@ -45,8 +45,7 @@ export const ExclusiveTripsPage: React.FC<Props> = () => {
 
   useEffect(() => {
     if (!selectedTripId) { setDepartures([]); setSelectedDepartureId(''); return; }
-    const trip = trips.find((item) => item.id === selectedTripId);
-    if (trip) setGuestCount(Math.max(trip.minimum_guests, Math.min(2, trip.maximum_guests)));
+    if (selectedTrip) setGuestCount(Math.max(selectedTrip.minimum_guests, Math.min(2, selectedTrip.maximum_guests)));
     let active = true;
     setSlotsLoading(true);
     setSelectedDepartureId('');
@@ -56,7 +55,7 @@ export const ExclusiveTripsPage: React.FC<Props> = () => {
     }).catch((err) => active && setError(err instanceof Error ? err.message : 'Unable to load availability.'))
       .finally(() => active && setSlotsLoading(false));
     return () => { active = false; };
-  }, [selectedTripId]);
+  }, [selectedTrip]);
 
   const handleReserve = async (event: React.FormEvent) => {
     event.preventDefault();
