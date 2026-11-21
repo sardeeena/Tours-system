@@ -94,6 +94,7 @@ export function mapDbTourToFrontendTour(
     category: cats[0] || 'Excursion',
     categories: cats,
     tourType: dbTour.tour_type,
+    isExclusive: Boolean(dbTour.is_exclusive),
     durationCategory: dbTour.duration_type || 'Unspecified',
     durationHours: Number(dbTour.duration_hours) || 0,
     durationLabel: dbTour.duration || (dbTour.duration_hours ? `${dbTour.duration_hours} Hours` : ''),
@@ -229,6 +230,7 @@ export async function getPublishedTours(options?: TourFilterOptions): Promise<To
         duration_type,
         duration_hours,
         tour_type,
+        is_exclusive,
         status,
         featured,
         price,
@@ -257,7 +259,7 @@ export async function getPublishedTours(options?: TourFilterOptions): Promise<To
       .order('sort_order', { ascending: true });
 
     if (!options?.includeDrafts) {
-      query = query.eq('status', 'published');
+      query = query.eq('status', 'published').eq('is_exclusive', false);
     }
 
     if (options?.featuredOnly) {
@@ -344,7 +346,7 @@ export async function getTourBySlug(slug: string, allowDraft: boolean = false): 
       .eq('slug', slug);
 
     if (!allowDraft) {
-      query = query.eq('status', 'published');
+      query = query.eq('status', 'published').eq('is_exclusive', false);
     }
 
     const { data, error } = await query.maybeSingle();
