@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(16);
+SELECT plan(21);
 
 SELECT has_table('public','exclusive_trips','Exclusive product settings have their own table');
 SELECT has_table('public','exclusive_departures','Exclusive schedule slots have their own table');
@@ -9,6 +9,11 @@ SELECT has_function(
   'public','save_exclusive_trip_settings',
   ARRAY['uuid','numeric','text','integer','integer','boolean'],
   'admin settings mutation saves the tour classification and fixed price atomically'
+);
+SELECT has_function(
+  'public','update_exclusive_reservation_status',
+  ARRAY['uuid','text','text'],
+  'admin reservation updates synchronize the linked booking and payment status'
 );
 SELECT has_function(
   'public','reserve_exclusive_trip',
@@ -115,6 +120,29 @@ SELECT is(
   (SELECT (max_guests->>'total')::NUMERIC FROM exclusive_test_context),
   950.00::NUMERIC,
   'maximum guest count is charged the same fixed trip price'
+);
+SELECT is(
+  (SELECT b.total FROM public.bookings b
+   WHERE b.id=(SELECT (one_guest->>'bookingId')::UUID FROM exclusive_test_context)),
+  950.00::NUMERIC,
+  'one-guest Exclusive booking is also recorded at the fixed trip price in the shared finance ledger'
+);
+SELECT is(
+  (SELECT b.total FROM public.bookings b
+   WHERE b.id=(SELECT (max_guests->>'bookingId')::UUID FROM exclusive_test_context)),
+  950.00::NUMERIC,
+  'maximum-group Exclusive booking is recorded at the same fixed total in the shared finance ledger'
+);
+SELECT is(
+  (SELECT b.booking_kind FROM public.bookings b
+   WHERE b.id=(SELECT (one_guest->>'bookingId')::UUID FROM exclusive_test_context)),
+  'exclusive',
+  'shared booking record is explicitly classified as Exclusive'
+);
+SELECT ok(
+  (SELECT b.customer_id IS NOT NULL FROM public.bookings b
+   WHERE b.id=(SELECT (one_guest->>'bookingId')::UUID FROM exclusive_test_context)),
+  'Exclusive booking reuses the shared customer directory'
 );
 SELECT is(
   (SELECT (one_guest->>'total')::NUMERIC FROM exclusive_test_context),
