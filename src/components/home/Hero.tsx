@@ -213,21 +213,21 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
             <span className="font-medium text-stone-800 dark:text-slate-200">{t('hero.guarantee1')}</span>
           </div>
 
-          <div className="flex items-center space-x-2.5 group cursor-default">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-2.5 text-center group cursor-default">
             <div className="w-8 h-8 rounded-lg bg-white dark:bg-[#16283D] flex items-center justify-center text-[#0A6C74] dark:text-[#60C3CC] border border-stone-200 dark:border-slate-700/60 shadow-2xs group-hover:scale-105 transition-transform">
               <Clock className="w-4 h-4 shrink-0" />
             </div>
             <span className="font-medium text-stone-800 dark:text-slate-200">{t('hero.guarantee2')}</span>
           </div>
 
-          <div className="flex items-center space-x-2.5 group cursor-default">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-2.5 text-center group cursor-default">
             <div className="w-8 h-8 rounded-lg bg-white dark:bg-[#16283D] flex items-center justify-center text-[#0A6C74] dark:text-[#60C3CC] border border-stone-200 dark:border-slate-700/60 shadow-2xs group-hover:scale-105 transition-transform">
               <MapPin className="w-4 h-4 shrink-0" />
             </div>
             <span className="font-medium text-stone-800 dark:text-slate-200">{t('hero.guarantee3')}</span>
           </div>
 
-          <div className="flex items-center space-x-2.5 group cursor-default">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-2.5 text-center group cursor-default">
             <div className="w-8 h-8 rounded-lg bg-white dark:bg-[#16283D] flex items-center justify-center text-[#0A6C74] dark:text-[#60C3CC] border border-stone-200 dark:border-slate-700/60 shadow-2xs group-hover:scale-105 transition-transform">
               <Award className="w-4 h-4 shrink-0" />
             </div>
