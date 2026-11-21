@@ -1481,6 +1481,7 @@ function MainApp() {
           currency={currentCurrency}
           onNavigateHome={() => navigate('/')}
           onNavigateExcursions={() => navigate('/excursions')}
+        onNavigateExclusive={() => navigate('/exclusive')}
           onSelectTour={handleViewTour}
           onOpenMyBooking={() => navigate('/my-booking')}
         />
