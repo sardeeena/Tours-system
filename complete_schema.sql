@@ -1467,17 +1467,6 @@ CREATE TABLE IF NOT EXISTS public.automation_events (
 -- TABLES ADDED BY POST-BASELINE PRODUCTION MIGRATIONS (RBAC, CMS, SUPPORT, ANALYTICS)
 -- Keep this snapshot aligned with the incremental migration history.
 -- ==============================================================================
--- Distributed leases ensure only one process runs each durable background worker.
-CREATE TABLE IF NOT EXISTS public.background_worker_leases (
-  worker_name TEXT PRIMARY KEY
-    CHECK (worker_name IN ('booking_notification', 'staff_notification')),
-  owner_id UUID NOT NULL,
-  lease_expires_at TIMESTAMPTZ NOT NULL,
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
-);
-ALTER TABLE public.background_worker_leases ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON TABLE public.background_worker_leases FROM PUBLIC, anon, authenticated, service_role;
-
 
 CREATE TABLE IF NOT EXISTS public.access_roles (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
