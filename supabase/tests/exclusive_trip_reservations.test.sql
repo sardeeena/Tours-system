@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(25);
+SELECT plan(26);
 
 SELECT has_table('public','exclusive_trips','Exclusive product settings have their own table');
 SELECT has_table('public','exclusive_departures','Exclusive schedule slots have their own table');
@@ -132,6 +132,10 @@ $notice_test$;
 SELECT ok(
   (SELECT notice_rejected FROM exclusive_test_context),
   'Exclusive reservations enforce the tour minimum booking notice period'
+);
+SELECT ok(
+  NOT public.is_exclusive_departure_available((SELECT notice_slot FROM exclusive_test_context)),
+  'departures inside the minimum booking notice window are hidden from public availability'
 );
 
 UPDATE public.tours
