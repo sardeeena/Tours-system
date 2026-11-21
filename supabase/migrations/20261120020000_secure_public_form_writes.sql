@@ -15,3 +15,7 @@ CREATE POLICY rbac_newsletter_subscriptions_create ON public.newsletter_subscrip
 
 -- Anonymous public submission writes are intentionally absent: the server uses its
 -- server-only Supabase key and applies IP rate limits, validation and honeypots.
+
+-- Remove every direct anonymous table privilege. Public submissions use the
+-- server-only service-role client; anon must not retain TRUNCATE or other grants.
+REVOKE ALL PRIVILEGES ON TABLE public.inquiries, public.newsletter_subscriptions FROM anon;

@@ -1984,8 +1984,8 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
     console.error('Inquiry endpoint could not determine a valid client IP.');
     return res.status(503).json({ success: false, error: 'Inquiry service is temporarily unavailable. Please try again later.' });
   }
-  if (!serverSupabase) {
-    return res.status(503).json({ success: false, error: 'Inquiry service is currently unconfigured or database is unreachable.' });
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
+    return res.status(503).json({ success: false, error: 'Secure inquiry database service is not configured or unavailable.' });
   }
 
   try {

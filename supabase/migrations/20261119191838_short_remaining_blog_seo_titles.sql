@@ -1,7 +1,6 @@
 -- Shorten the remaining published blog SEO titles identified in the full 50-post review.
 -- Content, URLs, descriptions and publication state are intentionally unchanged.
 -- This migration is intentionally safe on clean CI databases where production blog rows are not seeded.
--- It updates only matching published rows; zero matching rows is valid in local migration tests.
 UPDATE public.blog_posts AS p SET seo_title = v.seo_title, updated_at = now()
 FROM (VALUES
   ('0cd117c2-37e2-4990-b183-d88aaebdb214'::uuid, 'Hurghada Quad Biking: First Ride Safety'),
