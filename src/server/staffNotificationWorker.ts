@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { startWorkerLease } from './workerLease';
 
 const SCAN_INTERVAL_MS = 5 * 60 * 1000;
 
@@ -28,9 +29,17 @@ export function startStaffNotificationWorker(client: SupabaseClient): () => void
     }
   };
 
-  const timer = setInterval(() => void scan(), SCAN_INTERVAL_MS);
+  const lease = startWorkerLease(client, 'staff_notification', (leader) => {
+    if (leader) void scan();
+  });
+  const timer = setInterval(() => {
+    if (lease.isLeader()) void scan();
+  }, SCAN_INTERVAL_MS);
   timer.unref();
-  void scan();
-  console.info('[Staff Notification Worker] Started; scanning authoritative database records every five minutes.');
-  return () => clearInterval(timer);
+
+  console.info('[Staff Notification Worker] Started; waiting for the distributed worker lease.');
+  return () => {
+    clearInterval(timer);
+    lease.stop();
+  };
 }
