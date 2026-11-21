@@ -32,6 +32,8 @@ export interface Tour {
   category: string; // Primary category display
   categories: string[]; // e.g. ["Boat Trip", "Snorkeling", "Island"]
   tourType: TourType;
+  /** True only for the separate Exclusive fixed-price-per-trip catalogue. */
+  isExclusive?: boolean;
   durationCategory: TourDurationCategory;
   durationHours: number;
   durationLabel: string; // e.g. "7 Hours (Full Day)"
