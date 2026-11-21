@@ -34,6 +34,7 @@ SELECT ok(
     SELECT 1 FROM pg_default_acl d
     CROSS JOIN LATERAL aclexplode(d.defaclacl) a
     WHERE d.defaclnamespace='public'::regnamespace AND d.defaclobjtype='r'
+      AND d.defaclrole='postgres'::regrole
       AND a.grantee IN ('anon'::regrole::oid, 'authenticated'::regrole::oid)
       AND a.privilege_type IN ('TRUNCATE','MAINTAIN','REFERENCES','TRIGGER')
   ),
