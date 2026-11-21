@@ -598,9 +598,10 @@ export const AdminBookingsList: React.FC = () => {
                 </h4>
                 <div className="space-y-1.5 text-stone-300">
                   <p><strong>Tour:</strong> {selectedBooking.tourTitle}</p>
+                  <p><strong>Booking Type:</strong> {selectedBooking.bookingKind === 'exclusive' ? 'Exclusive private trip · fixed price for the entire trip' : 'Standard excursion'}</p>
                   <p><strong>Tour Language:</strong> {selectedBooking.tourLanguage || 'Not recorded'}</p>
                   <p><strong>Date:</strong> {selectedBooking.date}</p>
-                  <p><strong>Party:</strong> {selectedBooking.guests.adults} Adults, {selectedBooking.guests.children} Children, {selectedBooking.guests.infants} Infants</p>
+                  <p><strong>Party:</strong> {selectedBooking.bookingKind === 'exclusive' ? `${selectedBooking.guests.adults + selectedBooking.guests.children + selectedBooking.guests.infants} guests · entire private trip` : `${selectedBooking.guests.adults} Adults, ${selectedBooking.guests.children} Children, ${selectedBooking.guests.infants} Infants`}</p>
                   <p><strong>Payment Method:</strong> {selectedBooking.paymentMethod.replace('_', ' ')}</p>
                   <p><strong>Pickup:</strong> {selectedBooking.pickup.locationName} — {selectedBooking.pickup.hotelName || 'Not specified'} (Room {selectedBooking.pickup.roomNumber || 'N/A'})</p>
                   <p className="text-sm font-bold text-white pt-1">Total: {selectedBooking.pricing.currency || 'EUR'} {Number(selectedBooking.pricing.totalEur).toFixed(2)}</p>
