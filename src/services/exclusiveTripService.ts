@@ -209,7 +209,7 @@ export async function getAdminExclusiveDepartures(tripId: string) {
 
 export async function updateExclusiveReservation(
   reservationId: string,
-  changes: { status?: string; payment_status?: string }
+  changes: { status?: string }
 ) {
   const client = requireSupabase();
   const { data, error } = await client.rpc('update_exclusive_reservation_status', {
