@@ -1,14 +1,28 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(13);
+SELECT plan(16);
 
 SELECT has_table('public','exclusive_trips','Exclusive product settings have their own table');
 SELECT has_table('public','exclusive_departures','Exclusive schedule slots have their own table');
 SELECT has_table('public','exclusive_reservations','Exclusive group reservations have their own table');
 SELECT has_function(
+  'public','save_exclusive_trip_settings',
+  ARRAY['uuid','numeric','text','integer','integer','boolean'],
+  'admin settings mutation saves the tour classification and fixed price atomically'
+);
+SELECT has_function(
   'public','reserve_exclusive_trip',
   ARRAY['uuid','integer','text','text','text','text','text','text','text','text','text'],
   'public reservation RPC is isolated from ordinary excursion booking'
+);
+SELECT ok(
+  NOT has_table_privilege('anon','public.exclusive_reservations','SELECT')
+  AND NOT has_table_privilege('anon','public.exclusive_reservations','INSERT'),
+  'anonymous clients cannot read or directly insert private customer reservations'
+);
+SELECT ok(
+  has_function_privilege('anon','public.reserve_exclusive_trip(uuid,integer,text,text,text,text,text,text,text,text,text)','EXECUTE'),
+  'anonymous customers can use only the guarded reservation RPC'
 );
 SELECT has_function(
   'public','create_booking_atomic_with_departure',
