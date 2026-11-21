@@ -43,6 +43,9 @@ export const TourGallery: React.FC<TourGalleryProps> = ({
             <img
               src={allImages[0]}
               alt={`${tourTitle} primary`}
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
               className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500"
             />
             <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
@@ -59,6 +62,8 @@ export const TourGallery: React.FC<TourGalleryProps> = ({
                 <img
                   src={img}
                   alt={`${tourTitle} preview ${idx + 1}`}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
                 <div className="absolute inset-0 bg-black/15 group-hover:bg-transparent transition-colors" />
@@ -102,6 +107,8 @@ export const TourGallery: React.FC<TourGalleryProps> = ({
             <img
               src={allImages[activePhotoIndex]}
               alt={`Photo ${activePhotoIndex + 1}`}
+              loading="eager"
+              decoding="async"
               className="max-h-[75vh] w-auto object-contain rounded-sm shadow-2xl"
             />
             <span className="text-xs text-white/70 mt-3 font-medium">
