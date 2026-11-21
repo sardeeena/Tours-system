@@ -1,3 +1,4 @@
+import { serializeSpreadsheetRows } from '../../utils/spreadsheetExport';
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   AlertCircle,
@@ -140,10 +141,10 @@ export const FinanceOutstandingBalances: React.FC<FinanceOutstandingBalancesProp
     ];
     const rows = filteredBalances.map((b) => [
       b.bookingReference,
-      `"${b.customerName}"`,
-      `"${b.customerPhone || 'N/A'}"`,
-      `"${b.hotel || 'Direct Marina'}"`,
-      `"${b.tourTitle}"`,
+      `${b.customerName}`,
+      `${b.customerPhone || 'N/A'}`,
+      `${b.hotel || 'Direct Marina'}`,
+      `${b.tourTitle}`,
       b.tourDate,
       b.totalAmount,
       b.paidAmount,
@@ -152,7 +153,7 @@ export const FinanceOutstandingBalances: React.FC<FinanceOutstandingBalancesProp
     ]);
     const csvContent =
       'data:text/csv;charset=utf-8,' +
-      [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+      serializeSpreadsheetRows([headers, ...rows]);
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
