@@ -913,6 +913,11 @@ AS $function$
 DECLARE
   v_reservation public.exclusive_reservations%ROWTYPE;
 BEGIN
+  IF p_payment_status IS NOT NULL THEN
+    RAISE EXCEPTION 'Payment status is controlled by the shared finance ledger. Record payments through Finance.'
+      USING ERRCODE = '42501';
+  END IF;
+
   IF auth.uid() IS NULL
      OR (p_status = 'cancelled' AND NOT public.has_permission('bookings.approve'))
      OR (
@@ -941,14 +946,12 @@ BEGIN
 
   UPDATE public.exclusive_reservations
   SET status=coalesce(p_status,status),
-      payment_status=coalesce(p_payment_status,payment_status),
       updated_at=now()
   WHERE id=p_reservation_id;
 
   IF v_reservation.booking_id IS NOT NULL THEN
     UPDATE public.bookings
     SET status=coalesce(p_status,status),
-        payment_status=coalesce(p_payment_status,payment_status),
         updated_at=now()
     WHERE id=v_reservation.booking_id;
   END IF;
