@@ -1923,17 +1923,14 @@ export async function submitTourReview(payload: {
     }
   }
 
-  const { error } = await supabase.from('reviews').insert({
-    tour_id: resolvedTourId || null,
-    author_name: payload.authorName,
-    country: payload.country || 'International',
-    country_code: payload.countryCode || 'DE',
-    rating: payload.rating,
-    comment: payload.comment,
-    traveler_type: payload.travelerType || 'Couple',
-    verified_booking: false,
-    is_published: false,
-    date: new Date().toISOString().split('T')[0],
+  const { error } = await supabase.rpc('submit_public_tour_review', {
+    p_tour_id: resolvedTourId || null,
+    p_author_name: payload.authorName,
+    p_country: payload.country || 'International',
+    p_country_code: payload.countryCode || 'DE',
+    p_rating: payload.rating,
+    p_comment: payload.comment,
+    p_traveler_type: payload.travelerType || 'Couple',
   });
 
   if (error) {
