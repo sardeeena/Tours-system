@@ -19,6 +19,7 @@ import { NotFoundPage } from './components/common/NotFoundPage';
 const ExcursionsPage = lazy(() => import('./pages/ExcursionsPage').then(m => ({ default: m.ExcursionsPage })));
 const TourDetailPage = lazy(() => import('./pages/TourDetailPage').then(m => ({ default: m.TourDetailPage })));
 const BookingPage = lazy(() => import('./pages/BookingPage').then(m => ({ default: m.BookingPage })));
+const ExclusiveTripsPage = lazy(() => import('./pages/ExclusiveTripsPage').then(m => ({ default: m.ExclusiveTripsPage })));
 const BookingConfirmationPage = lazy(() => import('./pages/BookingConfirmationPage').then(m => ({ default: m.BookingConfirmationPage })));
 const MyBookingPage = lazy(() => import('./pages/MyBookingPage').then(m => ({ default: m.MyBookingPage })));
 const LoginPage = lazy(() => import('./pages/LoginPage').then(m => ({ default: m.LoginPage })));
@@ -1488,6 +1489,11 @@ function MainApp() {
 
     if (currentPath === '/support' || currentPath.startsWith('/support/')) {
       return <Suspense fallback={<PublicPageLoadingFallback />}><SupportPage /></Suspense>;
+    }
+
+    // Exclusive trips have a separate fixed-price-per-trip booking flow.
+    if (currentPath === '/exclusive' || currentPath.startsWith('/exclusive/')) {
+      return <Suspense fallback={<PublicPageLoadingFallback />}><ExclusiveTripsPage /></Suspense>;
     }
 
     // Awesome Adventure Tours Journal: /blog and /blog/:slug
