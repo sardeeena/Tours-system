@@ -723,6 +723,8 @@ class SupabaseBookingRepository implements IBookingRepository {
 
     return {
       bookingId: data.id,
+      bookingKind: data.booking_kind === 'exclusive' ? 'exclusive' : 'standard',
+      exclusiveDepartureId: data.exclusive_departure_id || undefined,
       bookingReference: data.booking_reference,
       tourId: data.tour_id,
       tourSlug: tour.slug || 'orange-bay-island-snorkeling',
