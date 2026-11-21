@@ -36,12 +36,12 @@ SELECT has_function(
 );
 
 INSERT INTO public.tours (
-  title,slug,status,price,child_price,private_price,tour_type,max_guests,
+  title,slug,duration,status,price,child_price,private_price,tour_type,max_guests,
   pickup_available,minimum_booking_notice_hours,is_exclusive
 ) VALUES (
   'pgTAP Exclusive Fixed Price Test',
   'pgtap-exclusive-fixed-price-test',
-  'published',80,20,200,'Private',10,FALSE,0,TRUE
+  '4 hours','published',80,20,200,'private',10,FALSE,0,TRUE
 );
 
 CREATE TEMP TABLE exclusive_test_context (
