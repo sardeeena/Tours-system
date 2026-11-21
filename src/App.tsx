@@ -580,6 +580,26 @@ function MainApp() {
       return;
     }
 
+    if (currentPath === '/exclusive') {
+      seoService.apply({
+        title: 'Exclusive Private Boat Trips & Yacht Charters in Egypt | Awesome Adventure Tours',
+        description: 'Book a private speedboat, boat or yacht experience on Egypt’s Red Sea coast. One fixed price for the entire trip, with flexible group sizes and confirmed departure slots.',
+        canonicalUrl: 'https://awesomeadventure.tours/exclusive',
+        ogType: 'website',
+        robotsIndex: true,
+        robotsFollow: true,
+        schemaJsonLd: {
+          '@context': 'https://schema.org',
+          '@type': 'CollectionPage',
+          name: 'Exclusive Private Trips',
+          description: 'Private boat, speedboat and yacht experiences with a fixed price for the entire trip.',
+          url: 'https://awesomeadventure.tours/exclusive',
+          isPartOf: { '@type': 'WebSite', name: 'Awesome Adventure Tours', url: 'https://awesomeadventure.tours/' },
+        },
+      });
+      return;
+    }
+
     if (currentPath === '/blog') {
       seoService.apply({
         title: 'Awesome Adventure Tours Travel Journal | Red Sea Guides & Egypt Travel Stories',
