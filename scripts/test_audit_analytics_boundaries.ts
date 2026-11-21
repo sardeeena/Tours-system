@@ -31,7 +31,7 @@ check(
     && visitorPanel.includes('serializeSpreadsheetRows([columns, ...rows])')
     && reportingService.includes('serializeSpreadsheetRows([')
     && technicalPanel.includes('serializeSpreadsheetRows([columns, ...rows])')
-    && reportingService.match(/serializeSpreadsheetRows\\(/g)?.length === 2
+    && reportingService.match(/serializeSpreadsheetRows\(/g)?.length === 2
     && spreadsheetExportFiles.every(({ source }) => source.includes('serializeSpreadsheetRows([headers, ...rows])'))
     && !technicalPanel.includes('String(value).replace')
 );
