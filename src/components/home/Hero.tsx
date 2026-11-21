@@ -1,14 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  ShieldCheck, 
-  Clock, 
-  MapPin, 
-  Award
-} from 'lucide-react';
 import { SearchModule } from './SearchModule';
 import { Destination, Category } from '../../types';
-import { useLanguage } from '../../contexts/LanguageContext';
 import { useTheme } from '../../contexts/ThemeContext';
 
 interface HeroProps {
@@ -71,7 +64,6 @@ const CINEMATIC_SLIDES: TourSlide[] = [
 ];
 
 export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations, categories }) => {
-  const { t } = useLanguage();
   const { isDark } = useTheme();
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isPointerOver, setIsPointerOver] = useState(false);
@@ -161,10 +153,10 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
       <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-[#0E1B2A]/10 via-[#0E1B2A]/[0.04] to-[#FAF8F5]/45 dark:from-[#0E1B2A]/35 dark:via-[#0E1B2A]/20 dark:to-[#0E1B2A]/75" />
       <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-[#FAF8F5]/10 via-transparent to-[#FAF8F5]/10 dark:from-black/10 dark:via-transparent dark:to-black/10" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-8 pt-10 sm:pt-14 pb-12 sm:pb-16">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-8 pt-8 sm:pt-12 pb-8 sm:pb-12">
         
         {/* Dynamic Synchronized Headline & Narrative based on active cinematic tour */}
-        <div className="max-w-3xl mr-auto ml-0 mb-8 min-h-[110px] sm:min-h-[130px] text-left [direction:ltr]">
+        <div className="max-w-3xl mr-auto ml-0 mb-5 sm:mb-6 min-h-[100px] sm:min-h-[120px] text-left [direction:ltr]">
           <AnimatePresence mode="wait">
             <motion.div
               key={slide.id}
@@ -195,46 +187,12 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
           initial={prefersReducedMotion ? false : { opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: prefersReducedMotion ? 0 : 0.6, delay: prefersReducedMotion ? 0 : 0.2 }}
-          className="w-full max-w-5xl ml-0 mr-auto mb-8"
+          className="w-full max-w-5xl ml-0 mr-auto"
         >
           <SearchModule onSearch={onSearch} resultCount={resultCount} destinations={destinations} categories={categories} />
         </motion.div>
 
-        {/* Practical Booking Information */}
-        <motion.div
-          initial={prefersReducedMotion ? false : { opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: prefersReducedMotion ? 0 : 0.7, delay: prefersReducedMotion ? 0 : 0.3 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 pt-5 border-t border-[#E8E3DA] dark:border-slate-800/80 text-xs text-stone-700 dark:text-slate-300"
-        >
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-2.5 text-center group cursor-default">
-            <div className="w-8 h-8 rounded-lg bg-white dark:bg-[#16283D] flex items-center justify-center text-[#0A6C74] dark:text-[#60C3CC] border border-stone-200 dark:border-slate-700/60 shadow-2xs group-hover:scale-105 transition-transform">
-              <ShieldCheck className="w-4 h-4 shrink-0" />
-            </div>
-            <span className="font-medium text-stone-800 dark:text-slate-200">{t('hero.guarantee1')}</span>
-          </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-2.5 text-center group cursor-default">
-            <div className="w-8 h-8 rounded-lg bg-white dark:bg-[#16283D] flex items-center justify-center text-[#0A6C74] dark:text-[#60C3CC] border border-stone-200 dark:border-slate-700/60 shadow-2xs group-hover:scale-105 transition-transform">
-              <Clock className="w-4 h-4 shrink-0" />
-            </div>
-            <span className="font-medium text-stone-800 dark:text-slate-200">{t('hero.guarantee2')}</span>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-2.5 text-center group cursor-default">
-            <div className="w-8 h-8 rounded-lg bg-white dark:bg-[#16283D] flex items-center justify-center text-[#0A6C74] dark:text-[#60C3CC] border border-stone-200 dark:border-slate-700/60 shadow-2xs group-hover:scale-105 transition-transform">
-              <MapPin className="w-4 h-4 shrink-0" />
-            </div>
-            <span className="font-medium text-stone-800 dark:text-slate-200">{t('hero.guarantee3')}</span>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-2.5 text-center group cursor-default">
-            <div className="w-8 h-8 rounded-lg bg-white dark:bg-[#16283D] flex items-center justify-center text-[#0A6C74] dark:text-[#60C3CC] border border-stone-200 dark:border-slate-700/60 shadow-2xs group-hover:scale-105 transition-transform">
-              <Award className="w-4 h-4 shrink-0" />
-            </div>
-            <span className="font-medium text-stone-800 dark:text-slate-200">{t('hero.guarantee4')}</span>
-          </div>
-        </motion.div>
 
       </div>
     </section>
