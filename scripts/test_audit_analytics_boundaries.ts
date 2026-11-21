@@ -2,16 +2,16 @@ import fs from 'node:fs';
 
 const server = fs.readFileSync('server.ts', 'utf8');
 const checks: Array<{ name: string; passed: boolean }> = [];
+const check = (name: string, passed: boolean) => checks.push({ name, passed });
+
 const visitorPanel = fs.readFileSync('src/components/admin/technical/VisitorAnalyticsPanel.tsx', 'utf8');
 check(
   'All visitor privacy CSV exports neutralize spreadsheet formula-leading text while preserving numeric values',
   visitorPanel.includes('const csvCell = (value: string | number | boolean | null): string =>')
-    && visitorPanel.includes("typeof value === 'string' && /^[\\\\u0000-\\\\u0020]*[=+\\\\-@]/.test(raw)")
+    && visitorPanel.includes("typeof value === 'string' && /^[\\u0000-\\u0020]*[=+\\-@]/.test(raw)")
     && visitorPanel.includes("row.map(csvCell).join(',')")
     && (visitorPanel.match(/downloadCsv\(/g) || []).length >= 5
 );
-
-const check = (name: string, passed: boolean) => checks.push({ name, passed });
 
 const telemetryStart = server.indexOf('// Sanitized API telemetry.');
 const telemetryEnd = server.indexOf('// Initialize Google Gen AI client', telemetryStart);
