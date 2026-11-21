@@ -84,6 +84,7 @@ export type AdminTab =
   | 'blog'
   | 'settings'
   | 'access_control'
+  | 'privacy_data'
   | 'technical'
   | 'crm_dashboard'
   | 'crm_leads'
@@ -273,6 +274,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
     // SECURITY & ACCESS CONTROL
     { id: 'header_security', label: 'ADMINISTRATION & SECURITY', isHeader: true },
     { id: 'access_control', label: 'Users, Roles & Permissions', icon: ShieldCheck },
+    { id: 'privacy_data', label: 'Privacy & Data', icon: ShieldCheck },
     { id: 'settings', label: 'Site Settings', icon: Settings },
   ];
 
@@ -303,7 +305,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const isSuperAdmin = Boolean(user?.roles?.includes('super_admin') || user?.role === 'super_admin');
   const canSeeTab = (id: string) => id === 'technical'
     ? false
-    : id === 'settings'
+    : id === 'settings' || id === 'privacy_data'
       ? isSuperAdmin
     : id === 'translations'
       ? isSuperAdmin
@@ -323,7 +325,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({
   const activePermission = requiredPermission(activeTab);
   const canAccessActiveTab = activeTab === 'technical'
     ? false
-    : activeTab === 'settings'
+    : activeTab === 'settings' || activeTab === 'privacy_data'
       ? isSuperAdmin
     : activeTab === 'translations'
       ? isSuperAdmin
