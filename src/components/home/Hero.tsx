@@ -156,7 +156,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
       <div className="relative max-w-7xl mx-auto px-4 sm:px-8 pt-8 sm:pt-12 pb-0">
         
         {/* Dynamic Synchronized Headline & Narrative based on active cinematic tour */}
-        <div className="max-w-3xl mr-auto ml-0 mb-5 sm:mb-6 min-h-[100px] sm:min-h-[120px] rounded-2xl sm:rounded-3xl border border-white/35 bg-white/30 dark:bg-[#0E1B2A]/40 backdrop-blur-md shadow-lg shadow-black/10 px-4 py-4 sm:px-6 sm:py-5 text-left [direction:ltr]">
+        <div className="max-w-3xl mr-auto ml-0 mb-5 sm:mb-6 min-h-[100px] sm:min-h-[120px] rounded-2xl sm:rounded-3xl border border-white/35 bg-white/30 dark:bg-[#0E1B2A]/40 backdrop-blur-sm shadow-lg shadow-black/10 px-4 py-4 sm:px-6 sm:py-5 text-left [direction:ltr]">
           <AnimatePresence mode="wait">
             <motion.div
               key={slide.id}

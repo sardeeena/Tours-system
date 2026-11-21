@@ -155,7 +155,7 @@ interface CacheEntry<T> {
 let cachedPublishedTours: CacheEntry<Tour[]> | null = null;
 let cachedDestinations: CacheEntry<Destination[]> | null = null;
 let cachedCategories: CacheEntry<Category[]> | null = null;
-const CACHE_TTL_MS = 2 * 60 * 1000;
+const CACHE_TTL_MS = 5 * 60 * 1000;
 
 export function invalidateCatalogueCache() {
   cachedPublishedTours = null;
@@ -252,9 +252,7 @@ export async function getPublishedTours(options?: TourFilterOptions): Promise<To
         destinations (id, name, slug),
         tour_categories (sort_order, categories (id, name, slug)),
         tour_images (image_url, is_primary, sort_order),
-        tour_highlights (item, sort_order),
-        tour_inclusions (item, sort_order),
-        tour_exclusions (item, sort_order)
+        tour_highlights (item, sort_order)
       `)
       .order('sort_order', { ascending: true });
 
@@ -294,8 +292,6 @@ export async function getPublishedTours(options?: TourFilterOptions): Promise<To
         images: row.tour_images || [],
         itinerary: row.tour_itinerary || [],
         highlights: row.tour_highlights || [],
-        inclusions: row.tour_inclusions || [],
-        exclusions: row.tour_exclusions || [],
         faqs: row.tour_faqs || [],
       });
     });

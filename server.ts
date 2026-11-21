@@ -711,8 +711,10 @@ app.get('/api/health/ready', rateLimit(30, 60_000), async (_req: Request, res: R
 
   const { error } = await publicSupabase
     .from('tours')
-    .select('id', { head: true, count: 'exact' })
-    .eq('status', 'published');
+    .select('id')
+    .eq('status', 'published')
+    .limit(1)
+    .maybeSingle();
 
   if (error) {
     return res.status(503).json({
@@ -2844,25 +2846,18 @@ app.post('/api/visitor/events', rateLimit(90, 60_000), async (req: Authenticated
     return res.status(400).json({ success: false, error: 'Invalid visitor event.' });
   }
   try {
-    const { data: session, error: sessionError } = await serverSupabase
-      .from('visitor_sessions').select('id,analytics_consent').eq('id', sessionId).maybeSingle();
-    if (sessionError) throw sessionError;
-    if (!session?.analytics_consent) return res.status(204).end();
     const duration = Number(req.body?.duration_ms);
-    const { error } = await serverSupabase.from('visitor_events').insert({
-      session_id: sessionId,
-      user_id: req.user?.id || null,
-      event_name: eventName,
-      page_path: safePagePath(req.body?.page_path),
-      page_title: safeShortText(req.body?.page_title, 160),
-      duration_ms: Number.isFinite(duration) ? Math.max(0, Math.min(86_400_000, Math.round(duration))) : null,
-      event_data: safeVisitorEventData(req.body?.event_data),
+    const { data, error } = await serverSupabase.rpc('record_visitor_event', {
+      p_session_id: sessionId,
+      p_user_id: req.user?.id || null,
+      p_event_name: eventName,
+      p_page_path: safePagePath(req.body?.page_path),
+      p_page_title: safeShortText(req.body?.page_title, 160),
+      p_duration_ms: Number.isFinite(duration) ? Math.max(0, Math.min(86_400_000, Math.round(duration))) : null,
+      p_event_data: safeVisitorEventData(req.body?.event_data),
     });
     if (error) throw error;
-    await serverSupabase.from('visitor_sessions').update({
-      last_seen_at: new Date().toISOString(),
-      user_id: req.user?.id || null,
-    }).eq('id', sessionId);
+    if (data !== true) return res.status(204).end();
     return res.status(202).json({ success: true });
   } catch (error) {
     console.error('[Visitor analytics] Event ingestion failed:', error instanceof Error ? error.message : 'unknown error');
@@ -2870,7 +2865,6 @@ app.post('/api/visitor/events', rateLimit(90, 60_000), async (req: Authenticated
   }
 });
 
-// Superadmin-only visitor analytics. All reads use the existing verified AAL2 guard.
 app.get('/api/admin/technical/visitors/overview', rateLimit(30, 60_000), async (req: AuthenticatedRequest, res: Response) => {
   if (!requireSuperAdminAal2(req, res)) return;
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return res.status(503).json({ success: false, error: 'Visitor analytics are unavailable.' });
@@ -3140,7 +3134,7 @@ async function getCurrentTranslationSourceChecksum(entityType: string, entityKey
 
 // Returns only a reviewed translation whose source checksum still matches the
 // current published source record. A stale translation fails closed.
-app.get('/api/content-translations/ui', rateLimit(60, 60_000), async (req: Request, res: Response) => {
+app.get('/api/content-translations/ui', rateLimit(60, 60_000), cachePublicResponse(300_000, 'private, no-store'), async (req: Request, res: Response) => {
   const locale = typeof req.query.locale === 'string' ? req.query.locale : '';
   if (!TRANSLATION_LOCALES.has(locale)) return res.status(400).json({ success: false, error: 'Unsupported locale.' });
   if (locale === 'en') return res.json({ success: true, locale, messages: ENGLISH_UI_CATALOG });
@@ -3165,7 +3159,7 @@ app.get('/api/content-translations/ui', rateLimit(60, 60_000), async (req: Reque
   }
 });
 
-app.get('/api/content-translations/locales', rateLimit(30, 60_000), async (_req: Request, res: Response) => {
+app.get('/api/content-translations/locales', rateLimit(30, 60_000), cachePublicResponse(300_000, 'private, no-store'), async (_req: Request, res: Response) => {
   try {
     if (!serverSupabase) return res.status(503).json({ success: false, error: 'Translation service unavailable.' });
     const { data, error } = await serverSupabase.from('content_translations')
@@ -3238,7 +3232,7 @@ async function getTranslationSourceBySlug(entityType: string, slug: string): Pro
   return data || null;
 }
 
-app.get('/api/content-translations/target', rateLimit(90, 60_000), async (req: Request, res: Response) => {
+app.get('/api/content-translations/target', rateLimit(90, 60_000), cachePublicResponse(60_000, 'private, no-store'), async (req: Request, res: Response) => {
   const locale = typeof req.query.locale === 'string' ? req.query.locale : '';
   const requestedPath = typeof req.query.pathname === 'string' ? req.query.pathname : '';
   if (!TRANSLATION_LOCALES.has(locale) || !requestedPath.startsWith('/') || requestedPath.length > 512) {
@@ -3322,7 +3316,7 @@ app.get('/api/content-translations/target', rateLimit(90, 60_000), async (req: R
   }
 });
 
-app.get('/api/content-translations/resolve', rateLimit(90, 60_000), async (req: Request, res: Response) => {
+app.get('/api/content-translations/resolve', rateLimit(90, 60_000), cachePublicResponse(60_000, 'private, no-store'), async (req: Request, res: Response) => {
   const locale = typeof req.query.locale === 'string' ? req.query.locale : '';
   const entityType = typeof req.query.entity_type === 'string' ? req.query.entity_type : '';
   const entityKey = typeof req.query.entity_key === 'string' ? req.query.entity_key : '';
@@ -4372,7 +4366,44 @@ function cleanPublicText(value: unknown, maxLength = 500): string {
     : '';
 }
 
-app.get('/sitemap.xml', async (_req: Request, res: Response) => {
+type PublicTextCacheEntry = { expiresAt: number; body: string; contentType: string };
+const publicTextResponseCache = new Map<string, PublicTextCacheEntry>();
+
+/** Short-lived in-process caching for public, generated text endpoints only. */
+function cachePublicResponse(ttlMs: number, cacheControl: string) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    const key = req.originalUrl;
+    const cached = publicTextResponseCache.get(key);
+    if (cached && cached.expiresAt > Date.now()) {
+      res.status(200);
+      res.setHeader('Content-Type', cached.contentType);
+      res.setHeader('Cache-Control', cacheControl);
+      return res.send(cached.body);
+    }
+    if (cached) publicTextResponseCache.delete(key);
+
+    // Keep the browser/CDN policy consistent on both cache hits and misses.
+    res.setHeader('Cache-Control', cacheControl);
+    const originalSend = res.send.bind(res);
+    (res as any).send = (body: unknown) => {
+      if (res.statusCode === 200 && typeof body === 'string') {
+        publicTextResponseCache.set(key, {
+          expiresAt: Date.now() + ttlMs,
+          body,
+          contentType: String(res.getHeader('Content-Type') || 'text/plain; charset=utf-8'),
+        });
+        if (publicTextResponseCache.size > 64) {
+          const oldestKey = publicTextResponseCache.keys().next().value;
+          if (oldestKey) publicTextResponseCache.delete(oldestKey);
+        }
+      }
+      return originalSend(body as any);
+    };
+    next();
+  };
+}
+
+app.get('/sitemap.xml', cachePublicResponse(300_000, 'public, max-age=300, stale-while-revalidate=60'), async (_req: Request, res: Response) => {
   const urls = new Map<string, string | undefined>();
   const alternatesByUrl = new Map<string, Map<string, string>>();
   const seoExclusions = await loadAwesomeAdventureToursSeoIndexExclusions();
@@ -4561,7 +4592,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
   return res.send(xml);
 });
 
-app.get('/llms.txt', async (_req: Request, res: Response) => {
+app.get('/llms.txt', cachePublicResponse(300_000, 'public, max-age=300, stale-while-revalidate=60'), async (_req: Request, res: Response) => {
   const seoExclusions = await loadAwesomeAdventureToursSeoIndexExclusions();
   const lines = [
     '# Awesome Adventure Tours',
@@ -4730,7 +4761,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
 });
 
 
-app.get('/llms-full.txt', async (_req: Request, res: Response) => {
+app.get('/llms-full.txt', cachePublicResponse(300_000, 'public, max-age=300, stale-while-revalidate=60'), async (_req: Request, res: Response) => {
   if (!publicSupabase) {
     res.setHeader('Cache-Control', 'no-store');
     return res.status(503).type('text/plain; charset=utf-8').send('The public catalogue is temporarily unavailable. Please retry later.');
@@ -6174,6 +6205,11 @@ async function startServer() {
       return res.send(lines.join('\n'));
     });
 
+    const publicHtmlResponseCache = new Map<string, {
+      expiresAt: number;
+      rendered: Awaited<ReturnType<typeof renderAwesomeAdventureToursPublicHtml>>;
+    }>();
+
     app.get('*', async (req: Request, res: Response) => {
       if (req.path.startsWith('/api/')) {
         return res.status(404).json({ success: false, error: 'API route not found' });
@@ -6191,7 +6227,21 @@ async function startServer() {
 
       try {
         const indexHtml = fs.readFileSync(indexHtmlPath, 'utf8');
-        const rendered = await renderAwesomeAdventureToursPublicHtml(req.path, indexHtml);
+        const cachedHtml = publicHtmlResponseCache.get(req.path);
+        let rendered: Awaited<ReturnType<typeof renderAwesomeAdventureToursPublicHtml>>;
+        if (cachedHtml && cachedHtml.expiresAt > Date.now()) {
+          rendered = cachedHtml.rendered;
+        } else {
+          if (cachedHtml) publicHtmlResponseCache.delete(req.path);
+          rendered = await renderAwesomeAdventureToursPublicHtml(req.path, indexHtml);
+          if (rendered.statusCode === 200) {
+            publicHtmlResponseCache.set(req.path, { expiresAt: Date.now() + 30_000, rendered });
+            if (publicHtmlResponseCache.size > 100) {
+              const oldestKey = publicHtmlResponseCache.keys().next().value;
+              if (oldestKey) publicHtmlResponseCache.delete(oldestKey);
+            }
+          }
+        }
         res.status(rendered.statusCode);
         res.type('html');
         if (rendered.noindex) {

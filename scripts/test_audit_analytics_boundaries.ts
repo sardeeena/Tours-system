@@ -74,15 +74,88 @@ check(
   server.includes('const safeSnapshot = (value: unknown)')
     && server.includes('old_data: safeSnapshot(record.old_data), new_data: safeSnapshot(record.new_data)')
 );
+const visitorEventsStart = server.indexOf("app.post('/api/visitor/events'");
+const visitorEventsEnd = server.indexOf("app.get('/api/admin/technical/visitors/overview'", visitorEventsStart);
+const visitorEventsRoute = visitorEventsStart >= 0 && visitorEventsEnd > visitorEventsStart
+  ? server.slice(visitorEventsStart, visitorEventsEnd)
+  : '';
 check(
-  'Visitor analytics event ingestion requires an existing consented session',
-  /app\.post\('\/api\/visitor\/events'[\s\S]*?if \(!session\?\.analytics_consent\) return res\.status\(204\)\.end\(\)/.test(server)
+  'Visitor analytics event ingestion uses one consent-gated database RPC',
+  visitorEventsRoute.includes(".rpc('record_visitor_event'") &&
+    !visitorEventsRoute.includes(".from('visitor_sessions').select") &&
+    !visitorEventsRoute.includes(".from('visitor_events').insert")
 );
 check(
   'Visitor analytics accepts only allowlisted event names and event fields',
   server.includes('const VISITOR_EVENT_NAMES = new Set([')
     && server.includes('const VISITOR_EVENT_FIELDS = new Set([')
-    && server.includes('event_data: safeVisitorEventData(req.body?.event_data)')
+    && server.includes('p_event_data: safeVisitorEventData(req.body?.event_data)')
+);
+
+const performanceMigration = fs.readFileSync('supabase/migrations/20261122000000_project_performance_optimization.sql', 'utf8');
+const bookingWorker = fs.readFileSync('src/server/bookingNotificationWorker.ts', 'utf8');
+const tourService = fs.readFileSync('src/services/tourService.ts', 'utf8');
+
+check(
+  'Public generated text endpoints use bounded in-process response caching',
+  server.includes('function cachePublicResponse') &&
+    server.includes("cachePublicResponse(300_000") &&
+    server.includes("res.setHeader('Cache-Control', cacheControl)") &&
+    server.includes('publicHtmlResponseCache.size > 100')
+);
+check(
+  'Public translation endpoints cache locale dictionaries and reduce repeated checksum scans',
+  server.includes("app.get('/api/content-translations/ui', rateLimit(60, 60_000), cachePublicResponse(300_000") &&
+    server.includes("app.get('/api/content-translations/locales', rateLimit(30, 60_000), cachePublicResponse(300_000") &&
+    server.includes("app.get('/api/content-translations/target', rateLimit(90, 60_000), cachePublicResponse(60_000") &&
+    server.includes("app.get('/api/content-translations/resolve', rateLimit(90, 60_000), cachePublicResponse(60_000")
+);
+check(
+  'Readiness probes use a bounded existence check instead of an exact count',
+  server.includes(".select('id')\n    .eq('status', 'published')\n    .limit(1)\n    .maybeSingle()") &&
+    !server.includes(".select('id', { head: true, count: 'exact' })")
+);
+check(
+  'Idle booking queue polling backs off while active deliveries remain responsive',
+  bookingWorker.includes('IDLE_QUEUE_POLL_INTERVAL_MS = 30_000') &&
+    bookingWorker.includes('ACTIVE_QUEUE_POLL_INTERVAL_MS = 15_000') &&
+    bookingWorker.includes("messages.length > 0 ? 'active' : 'idle'")
+);
+const publishedToursStart = tourService.indexOf('export async function getPublishedTours');
+const getTourBySlugStart = tourService.indexOf('export async function getTourBySlug', publishedToursStart);
+const publishedToursQuery = publishedToursStart >= 0 && getTourBySlugStart > publishedToursStart
+  ? tourService.slice(publishedToursStart, getTourBySlugStart)
+  : '';
+const tourDetailQuery = getTourBySlugStart >= 0 ? tourService.slice(getTourBySlugStart) : '';
+check(
+  'Catalogue reads omit deep inclusion/exclusion relations while detail pages retain full data',
+  publishedToursQuery.includes('tour_highlights') &&
+    !publishedToursQuery.includes('tour_inclusions') &&
+    !publishedToursQuery.includes('tour_exclusions') &&
+    tourDetailQuery.includes('tour_inclusions (*)') &&
+    tourDetailQuery.includes('tour_exclusions (*)')
+);
+check(
+  'Published catalogue cache reduces repeated reads while retaining mutation invalidation',
+  tourService.includes('const CACHE_TTL_MS = 5 * 60 * 1000;') &&
+    tourService.includes('export function invalidateCatalogueCache()')
+);
+check(
+  'Database optimization migration adds the four missing FK indexes',
+  ['captain_id', 'driver_id', 'guide_id', 'vessel_id'].every((column) =>
+    performanceMigration.includes('exclusive_departures_' + column + '_idx')
+  )
+);
+check(
+  'Database optimization migration makes auth and permission RLS checks statement-scoped',
+  performanceMigration.includes('(SELECT auth.role())') &&
+    performanceMigration.includes('(SELECT public.has_permission(')
+);
+check(
+  'Visitor event RPC is service-role-only and atomically verifies consent',
+  performanceMigration.includes('CREATE OR REPLACE FUNCTION public.record_visitor_event') &&
+    performanceMigration.includes('analytics_consent = TRUE') &&
+    performanceMigration.includes('TO service_role')
 );
 
 const failed = checks.filter((item) => !item.passed);

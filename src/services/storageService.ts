@@ -72,6 +72,47 @@ export function validateMediaFile(file: File, type: 'image' | 'video'): { valid:
   return { valid: true };
 }
 
+
+/**
+ * Creates a smaller WebP copy before upload when the browser supports it.
+ * The original File is retained as a safe fallback if decoding or encoding fails,
+ * and the original is used whenever conversion would not meaningfully reduce size.
+ */
+async function optimizeImageForUpload(file: File): Promise<File> {
+  if (!file.type.startsWith('image/') || typeof createImageBitmap === 'undefined') return file;
+
+  let bitmap: ImageBitmap | null = null;
+  try {
+    bitmap = await createImageBitmap(file);
+    const maxDimension = 1920;
+    const scale = Math.min(1, maxDimension / Math.max(bitmap.width, bitmap.height));
+    const width = Math.max(1, Math.round(bitmap.width * scale));
+    const height = Math.max(1, Math.round(bitmap.height * scale));
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext('2d');
+    if (!context) return file;
+
+    context.drawImage(bitmap, 0, 0, width, height);
+    const blob = await new Promise<Blob | null>((resolve) => {
+      canvas.toBlob(resolve, 'image/webp', 0.82);
+    });
+    if (!blob || blob.size >= file.size * 0.95) return file;
+
+    const baseName = file.name.replace(/\.[^.]+$/, '') || 'image';
+    return new File([blob], `${baseName}.webp`, {
+      type: 'image/webp',
+      lastModified: file.lastModified,
+    });
+  } catch {
+    // Keep uploads reliable on browsers that cannot decode/encode a given format.
+    return file;
+  } finally {
+    bitmap?.close();
+  }
+}
+
 function getLocalAssets(): StorageFileItem[] {
   try {
     const raw = localStorage.getItem(LOCAL_MEDIA_ASSETS_KEY);
@@ -131,20 +172,21 @@ export async function uploadTourMedia(
   const validation = validateMediaFile(file, isVideo ? 'video' : 'image');
   if (!validation.valid) return { url: '', storagePath: '', error: validation.error };
 
-  const cleanFileName = sanitizeStorageFileName(file.name);
+  const uploadFile = isVideo ? file : await optimizeImageForUpload(file);
+  const cleanFileName = sanitizeStorageFileName(uploadFile.name);
   if (!isSupabaseConfigured()) {
     if (!import.meta.env.DEV) {
       return { url: '', storagePath: '', error: 'Supabase Storage is not configured in production.' };
     }
-    const objectUrl = URL.createObjectURL(file);
+    const objectUrl = URL.createObjectURL(uploadFile);
     const storagePath = `local/${Date.now()}-${cleanFileName}`;
     const localItem: StorageFileItem = {
       id: `local-${Date.now()}`,
-      name: file.name,
+      name: uploadFile.name,
       url: objectUrl,
       storagePath,
-      sizeBytes: file.size,
-      mimeType: file.type || 'image/jpeg',
+      sizeBytes: uploadFile.size,
+      mimeType: uploadFile.type || 'image/jpeg',
       title: meta?.title || file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' '),
       altText: meta?.altText || '',
       tourId: meta?.tourId || null,
@@ -155,8 +197,9 @@ export async function uploadTourMedia(
   }
 
   const storagePath = `${safeFolder}/${Date.now()}-${Math.random().toString(36).substring(2, 8)}-${cleanFileName}`;
-  const { error: uploadError } = await supabase.storage.from(MEDIA_BUCKET).upload(storagePath, file, {
-    cacheControl: '3600',
+  const { error: uploadError } = await supabase.storage.from(MEDIA_BUCKET).upload(storagePath, uploadFile, {
+    // Storage paths are unique and never overwritten; allow long-lived browser/CDN caching.
+    cacheControl: '31536000',
     upsert: false,
   });
   if (uploadError) return { url: '', storagePath: '', error: formatSupabaseError(uploadError) };
@@ -167,9 +210,9 @@ export async function uploadTourMedia(
     storage_path: storagePath,
     bucket_name: MEDIA_BUCKET,
     public_url: publicUrl,
-    file_name: file.name,
-    file_size_bytes: file.size,
-    mime_type: file.type || (isVideo ? 'video/mp4' : 'image/jpeg'),
+    file_name: uploadFile.name,
+    file_size_bytes: uploadFile.size,
+    mime_type: uploadFile.type || (isVideo ? 'video/mp4' : 'image/jpeg'),
     title: meta?.title || file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' '),
     alt_text: meta?.altText || null,
     tour_id: meta?.tourId || null,
@@ -204,11 +247,11 @@ export async function uploadTourMedia(
 
   const localItem: StorageFileItem = {
     id: insertedAsset.id,
-    name: file.name,
+    name: uploadFile.name,
     url: publicUrl,
     storagePath,
-    sizeBytes: file.size,
-    mimeType: file.type,
+    sizeBytes: uploadFile.size,
+    mimeType: uploadFile.type,
     title: assetPayload.title,
     altText: assetPayload.alt_text || '',
     tourId: assetPayload.tour_id,
@@ -468,11 +511,7 @@ export function getOptimizedImageUrl(
     return url.toString();
   }
 
-  if (originalUrl.includes('/storage/v1/object/public/')) {
-    if (options?.width) {
-      return `${originalUrl}?width=${options.width}&quality=${options.quality || 80}`;
-    }
-  }
-
+  // Supabase public object URLs do not apply width/quality query parameters.
+  // Return the stable original URL instead of creating ineffective cache variants.
   return originalUrl;
 }
