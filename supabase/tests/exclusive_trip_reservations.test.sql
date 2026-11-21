@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(23);
+SELECT plan(24);
 
 SELECT has_table('public','exclusive_trips','Exclusive product settings have their own table');
 SELECT has_table('public','exclusive_departures','Exclusive schedule slots have their own table');
@@ -145,6 +145,13 @@ SELECT ok(
    FROM public.exclusive_reservations r
    WHERE r.id=(SELECT (one_guest->>'reservationId')::UUID FROM exclusive_test_context)),
   'Exclusive reservation is linked one-to-one to its shared booking record'
+);
+SELECT ok(
+  (SELECT b.unit_price_adult=0 AND b.unit_price_child=0 AND b.departure_id IS NULL
+          AND b.exclusive_departure_id=(SELECT first_slot FROM exclusive_test_context)
+   FROM public.bookings b
+   WHERE b.id=(SELECT (one_guest->>'bookingId')::UUID FROM exclusive_test_context)),
+  'Exclusive booking does not acquire standard per-person prices or a standard departure link'
 );
 SELECT ok(
   (SELECT b.customer_id IS NOT NULL FROM public.bookings b
