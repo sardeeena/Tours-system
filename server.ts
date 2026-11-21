@@ -4739,7 +4739,7 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
   try {
     const seoExclusions = await loadAwesomeAdventureToursSeoIndexExclusions();
     const now = new Date().toISOString();
-    const [tourResult, destinationResult, postResult] = await Promise.all([
+    const [tourResult, destinationResult, postResult, exclusiveResult] = await Promise.all([
       publicSupabase.from('tours')
         .select('id,destination_id,title,slug,short_description,description,duration,duration_type,duration_hours,tour_type,price,private_price,currency,pickup_available,pickup_info,cancellation_policy,departure_time,languages,difficulty,age_restrictions')
         .eq('status', 'published').eq('is_exclusive', false).order('sort_order', { ascending: true }).limit(500),
@@ -4749,9 +4749,13 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
         .select('title,slug,excerpt,content,seo_title,seo_description,published_at,updated_at,author_name,reading_time_minutes')
         .in('status', ['published', 'scheduled']).not('published_at', 'is', null).lte('published_at', now)
         .order('published_at', { ascending: false }).limit(200),
+      (publicSupabase as any).from('exclusive_trips')
+        .select('fixed_trip_price,currency,minimum_guests,maximum_guests,tours!inner(title,slug,short_description,description,duration,duration_hours,destinations(name))')
+        .eq('is_active', true).eq('tours.status', 'published').eq('tours.is_exclusive', true)
+        .order('created_at', { ascending: false }).limit(200),
     ]);
 
-    const failedQuery = [tourResult, destinationResult, postResult].find((result) => result.error);
+    const failedQuery = [tourResult, destinationResult, postResult, exclusiveResult].find((result) => result.error);
     if (failedQuery?.error) throw failedQuery.error;
 
     const tours = (tourResult.data || []).filter((tour: any) => {
@@ -4920,6 +4924,26 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
           if (question && answer) lines.push(`- Q: ${question}`, `  A: ${answer}`);
         }
       }
+    }
+
+    lines.push('', '## Exclusive private trips', 'Exclusive trips are reserved as one complete private experience. The fixed trip price applies to the entire trip and is not multiplied by the number of guests.');
+    for (const item of exclusiveResult.data || []) {
+      const tour = Array.isArray(item.tours) ? item.tours[0] : item.tours;
+      const title = cleanPublicText(tour?.title, 160);
+      const slug = typeof tour?.slug === 'string' ? tour.slug.trim() : '';
+      if (!title || !slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+      const price = Number(item.fixed_trip_price);
+      const currency = typeof item.currency === 'string' && /^[A-Z]{3}$/i.test(item.currency) ? item.currency.toUpperCase() : 'EUR';
+      lines.push('', `### ${title}`, 'URL: https://awesomeadventure.tours/exclusive');
+      const description = seoPlainText(tour?.description || tour?.short_description, 3000);
+      if (description) lines.push(description);
+      lines.push(
+        `Fixed price for the entire trip: ${Number.isFinite(price) ? price.toFixed(2) : 'Contact us'} ${currency}`,
+        `Group size: ${Number(item.minimum_guests)}–${Number(item.maximum_guests)} guests`,
+        `Duration: ${cleanPublicText(tour?.duration, 120) || 'See the public listing'}`
+      );
+      const destination = Array.isArray(tour?.destinations) ? tour.destinations[0] : tour?.destinations;
+      if (destination?.name) lines.push(`Destination: ${cleanPublicText(destination.name, 120)}`);
     }
 
     lines.push('', '## Published travel articles');
