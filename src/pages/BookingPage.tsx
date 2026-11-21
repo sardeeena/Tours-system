@@ -38,12 +38,10 @@ interface BookingPageProps {
 }
 
 const STEPS = [
-  { id: 1, label: 'Date & Guests', icon: Calendar },
-  { id: 2, label: 'Pickup', icon: MapPin },
-  { id: 3, label: 'Extras', icon: Sparkles },
-  { id: 4, label: 'Guest Details', icon: User },
-  { id: 5, label: 'Review', icon: CheckSquare },
-  { id: 6, label: 'Payment', icon: Lock },
+  { id: 1, internal: 1, label: 'Your Excursion', icon: Calendar },
+  { id: 2, internal: 2, label: 'Your Arrangements', icon: MapPin },
+  { id: 3, internal: 4, label: 'Your Details', icon: User },
+  { id: 4, internal: 5, label: 'Confirm Reservation', icon: CheckSquare },
 ];
 
 export const BookingPage: React.FC<BookingPageProps> = ({
@@ -425,64 +423,28 @@ export const BookingPage: React.FC<BookingPageProps> = ({
 
   return (
     <div className="bg-[#FAF8F5] min-h-screen">
-      {/* Top Stepper Navigation */}
+      {/* Responsive four-stage progress navigation; detailed steps and validation remain intact */}
       <div className="bg-white border-b border-[#E8E3DA] sticky top-16 z-30 shadow-2xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          
-          {/* Desktop Stepper */}
-          <div className="hidden md:flex items-center justify-between">
+          <div className="hidden md:flex items-center justify-between gap-2" aria-label="Booking progress">
             {STEPS.map((s, idx) => {
-              const isCurrent = currentStep === s.id;
-              const isCompleted = currentStep > s.id;
-              return (
-                <div key={s.id} className="flex items-center flex-1 last:flex-none">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (isCompleted) setCurrentStep(s.id);
-                    }}
-                    className={`flex items-center space-x-2 text-xs font-semibold py-1.5 px-2 rounded transition-all text-left w-full ${
-                      isCurrent
-                        ? 'text-[#0A6C74] font-bold border-b-2 border-[#0A6C74]'
-                        : isCompleted
-                        ? 'text-stone-700 hover:text-stone-900 cursor-pointer'
-                        : 'text-stone-400 cursor-not-allowed'
-                    }`}
-                  >
-                    <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] shrink-0 transition-colors ${
-                        isCurrent
-                          ? 'bg-[#0A6C74] text-white'
-                          : isCompleted
-                          ? 'bg-emerald-600 text-white'
-                          : 'bg-stone-200 text-stone-500'
-                      }`}
-                    >
-                      {isCompleted ? <Check className="w-3.5 h-3.5 stroke-[3]" /> : s.id}
-                    </div>
-                    <span className="truncate">{s.label}</span>
-                  </button>
-                  {idx < STEPS.length - 1 && (
-                    <ChevronRight className="w-3.5 h-3.5 text-stone-300 mx-1 shrink-0" />
-                  )}
-                </div>
-              );
+              const stage = currentStep === 1 ? 1 : currentStep <= 3 ? 2 : currentStep === 4 ? 3 : 4;
+              const isCurrent = s.id === stage, isCompleted = s.id < stage;
+              return <div key={s.id} className="flex items-center flex-1 last:flex-none">
+                <button type="button" disabled={!isCompleted} onClick={() => isCompleted && setCurrentStep(s.internal)} aria-current={isCurrent ? 'step' : undefined}
+                  className={`flex items-center gap-2 text-xs font-semibold py-2 px-2 rounded text-left w-full ${isCurrent ? 'text-[#0A6C74] border-b-2 border-[#0A6C74]' : isCompleted ? 'text-stone-700 hover:text-stone-900' : 'text-stone-400'}`}>
+                  <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs shrink-0 ${isCurrent ? 'bg-[#0A6C74] text-white' : isCompleted ? 'bg-emerald-600 text-white' : 'bg-stone-200 text-stone-500'}`}>{isCompleted ? <Check className="w-3.5 h-3.5" /> : s.id}</span><span className="truncate">{s.label}</span>
+                </button>
+                {idx < STEPS.length - 1 && <ChevronRight className="w-4 h-4 text-stone-300 mx-1 shrink-0" />}
+              </div>;
             })}
           </div>
-
-          {/* Mobile Step Progress Indicator */}
-          <div className="md:hidden flex items-center space-x-2 pt-1">
-            <div className="flex-1 bg-stone-200 h-1.5 rounded-full overflow-hidden">
-              <div
-                className="bg-[#0A6C74] h-full transition-all duration-300"
-                style={{ width: `${(currentStep / 6) * 100}%` }}
-              />
+          <div className="md:hidden space-y-2 pt-1">
+            <div className="flex justify-between text-xs font-semibold text-stone-800"><span>{STEPS[currentStep === 1 ? 0 : currentStep <= 3 ? 1 : currentStep === 4 ? 2 : 3]?.label}</span><span>Stage {currentStep === 1 ? 1 : currentStep <= 3 ? 2 : currentStep === 4 ? 3 : 4} of 4</span></div>
+            <div className="bg-stone-200 h-1.5 rounded-full overflow-hidden" role="progressbar" aria-valuemin={1} aria-valuemax={4} aria-valuenow={currentStep === 1 ? 1 : currentStep <= 3 ? 2 : currentStep === 4 ? 3 : 4}>
+              <div className="bg-[#0A6C74] h-full transition-all duration-300" style={{ width: `${(currentStep === 1 ? 25 : currentStep <= 3 ? 50 : currentStep === 4 ? 75 : 100)}%` }} />
             </div>
-            <span className="text-xs font-bold text-stone-800 shrink-0">
-              {STEPS[currentStep - 1]?.label} ({currentStep}/6)
-            </span>
           </div>
-
         </div>
       </div>
 
