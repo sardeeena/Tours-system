@@ -225,7 +225,6 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Desktop Nav Links */}
           <nav className="hidden xl:flex items-center space-x-2 2xl:space-x-3 text-xs 2xl:text-sm font-semibold text-stone-700 dark:text-slate-200" aria-label="Main Navigation">
-            <button type="button" onClick={() => { setMobileMenuOpen(false); onNavigateExclusive?.(); }} className="w-full text-left">Exclusive Private Trips</button>
             <button 
               type="button"
               onClick={handleExcursionsClick} 
