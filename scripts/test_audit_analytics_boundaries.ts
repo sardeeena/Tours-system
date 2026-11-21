@@ -89,7 +89,7 @@ check(
   'Visitor analytics accepts only allowlisted event names and event fields',
   server.includes('const VISITOR_EVENT_NAMES = new Set([')
     && server.includes('const VISITOR_EVENT_FIELDS = new Set([')
-    && server.includes('event_data: safeVisitorEventData(req.body?.event_data)')
+    && server.includes('p_event_data: safeVisitorEventData(req.body?.event_data)')
 );
 
 const performanceMigration = fs.readFileSync('supabase/migrations/20261122000000_project_performance_optimization.sql', 'utf8');
