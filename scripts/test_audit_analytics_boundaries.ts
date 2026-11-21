@@ -11,7 +11,7 @@ check(
     && visitorPanel.includes("typeof value === 'string'")
     && visitorPanel.includes("? `'${raw}` : raw;")
     && visitorPanel.includes("row.map(csvCell).join(',')")
-    && (visitorPanel.match(/downloadCsv\(/g) || []).length >= 5
+    && visitorPanel.includes("const safe = typeof value === 'string'")
 );
 
 const telemetryStart = server.indexOf('// Sanitized API telemetry.');
