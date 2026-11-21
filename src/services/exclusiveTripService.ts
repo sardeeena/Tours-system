@@ -140,7 +140,7 @@ export async function saveExclusiveTrip(input: {
   isActive: boolean;
 }) {
   const client = requireSupabase();
-  if (!Number.isFinite(input.fixedTripPrice) || input.fixedTripPrice <= 0) {
+  if (!Number.isFinite(input.fixedTripPrice) || input.fixedTripPrice <= 0 || input.fixedTripPrice > 99999999.99) {
     throw new Error('Enter a fixed trip price greater than zero.');
   }
   if (!Number.isInteger(input.minimumGuests) || !Number.isInteger(input.maximumGuests)
