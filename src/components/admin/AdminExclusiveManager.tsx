@@ -42,11 +42,10 @@ export const AdminExclusiveManager: React.FC = () => {
       const [items, assignmentResources] = await Promise.all([getAdminExclusiveTours(), getExclusiveResourceOptions()]);
       setTours(items as AdminTour[]);
       setResources(assignmentResources);
-      const nextId = preserve && items.some((tour: any) => tour.id === selectedTourId) ? selectedTourId : (items[0]?.id || '');
-      setSelectedTourId(nextId);
+      setSelectedTourId((current) => preserve && items.some((tour: any) => tour.id === current) ? current : (items[0]?.id || ''));
     } catch (err) { setError(err instanceof Error ? err.message : 'Unable to load Exclusive management.'); }
     finally { setLoading(false); }
-  }, [selectedTourId]);
+  }, []);
 
   useEffect(() => { void refresh(false); }, [refresh]);
   useEffect(() => {
