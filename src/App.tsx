@@ -1517,7 +1517,7 @@ function MainApp() {
     }
 
     // Exclusive trips have a separate fixed-price-per-trip booking flow.
-    if (currentPath === '/exclusive' || currentPath.startsWith('/exclusive/')) {
+    if (currentPath === '/exclusive') {
       return <Suspense fallback={<PublicPageLoadingFallback />}><ExclusiveTripsPage /></Suspense>;
     }
 
