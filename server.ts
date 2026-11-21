@@ -214,7 +214,43 @@ if (SUPABASE_URL && SUPABASE_USER_KEY) {
   }
 }
 
+// Public CMS settings are read during server-rendered page requests. Keep a short,
+// per-client cache to collapse crawler bursts without sharing service-role and
+// publishable-key results or making administrator edits stale for long.
+const SITE_SETTINGS_CACHE_TTL_MS = 60_000;
+const siteSettingsCache = new WeakMap<SupabaseClient, Map<string, {
+  value: unknown;
+  expiresAt: number;
+  pending?: Promise<unknown>;
+}>>();
 
+async function getCachedSiteSetting(client: SupabaseClient, key: string): Promise<unknown | null> {
+  let cache = siteSettingsCache.get(client);
+  if (!cache) {
+    cache = new Map();
+    siteSettingsCache.set(client, cache);
+  }
+
+  const existing = cache.get(key);
+  if (existing?.pending) return existing.pending;
+  if (existing && existing.expiresAt > Date.now()) return existing.value;
+
+  const pending = (async () => {
+    const { data, error } = await client.from('site_settings').select('value').eq('key', key).maybeSingle();
+    if (error) throw error;
+    const value = data?.value ?? null;
+    cache!.set(key, { value, expiresAt: Date.now() + SITE_SETTINGS_CACHE_TTL_MS });
+    return value;
+  })();
+  cache.set(key, { value: existing?.value ?? null, expiresAt: 0, pending });
+
+  try {
+    return await pending;
+  } catch (error) {
+    if (cache.get(key)?.pending === pending) cache.delete(key);
+    throw error;
+  }
+}
 
 export interface AuthenticatedUser {
   id: string;
@@ -3047,9 +3083,7 @@ async function getTranslationSource(entityType: string, entityKey: string): Prom
   if (entityType === 'static_page') {
     if (entityKey === 'home') return { id: 'home', slug: 'home', title: 'Explore Egypt’s Red Sea Coast', heroHeadline: 'Explore Egypt’s Red Sea Coast', heroSubtitle: 'Boat trips, island visits, snorkeling, diving and desert safaris across Egypt’s Red Sea coast.', sections: [] };
     if (serverSupabase) {
-      const { data: setting, error } = await serverSupabase.from('site_settings').select('value').eq('key', 'pages_content').maybeSingle();
-      if (error) throw error;
-      const raw = setting?.value;
+      const raw = await getCachedSiteSetting(serverSupabase, 'pages_content');
       const pages = Array.isArray(raw) ? raw : raw && typeof raw === 'object' && Array.isArray((raw as any).pages) ? (raw as any).pages : [];
       const page = pages.find((item: any) => (item?.slug === entityKey || item?.id === entityKey) && item?.published !== false && item?.status !== 'draft' && item?.status !== 'unpublished');
       if (page) return page;
@@ -4367,31 +4401,21 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
     }
 
     try {
-      const { data: pageSetting, error: pagesError } = await publicSupabase
-        .from('site_settings')
-        .select('value')
-        .eq('key', 'pages_content')
-        .maybeSingle();
+      const rawPages = await getCachedSiteSetting(publicSupabase, 'pages_content');
+      const pages = Array.isArray(rawPages)
+        ? rawPages
+        : rawPages && typeof rawPages === 'object' && Array.isArray((rawPages as any).pages)
+          ? (rawPages as any).pages
+          : [];
 
-      if (pagesError) {
-        console.warn('[SEO sitemap] CMS page query failed:', pagesError.message);
-      } else {
-        const rawPages = pageSetting?.value;
-        const pages = Array.isArray(rawPages)
-          ? rawPages
-          : rawPages && typeof rawPages === 'object' && Array.isArray((rawPages as any).pages)
-            ? (rawPages as any).pages
-            : [];
-
-        for (const page of pages) {
-          const slug = typeof page?.slug === 'string' ? page.slug.trim() : '';
-          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
-          if (page?.published === false || page?.status === 'draft' || page?.status === 'unpublished' || page?.seoIndexable === false || seoExclusions.pageSlugs.has(slug)) continue;
-          urls.set(
-            `${AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN}/${encodeURIComponent(slug)}`,
-            toSitemapDate(page?.updated_at || page?.lastUpdated)
-          );
-        }
+      for (const page of pages) {
+        const slug = typeof page?.slug === 'string' ? page.slug.trim() : '';
+        if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+        if (page?.published === false || page?.status === 'draft' || page?.status === 'unpublished' || page?.seoIndexable === false || seoExclusions.pageSlugs.has(slug)) continue;
+        urls.set(
+          `${AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN}/${encodeURIComponent(slug)}`,
+          toSitemapDate(page?.updated_at || page?.lastUpdated)
+        );
       }
     } catch (error) {
       console.warn('[SEO sitemap] CMS pages could not be loaded:', error);
@@ -5204,15 +5228,9 @@ async function loadAwesomeAdventureToursPages(): Promise<any[]> {
   let publishedPages: any[] = [];
   if (publicSupabase) {
     try {
-      const { data, error } = await publicSupabase.from('site_settings')
-        .select('value').eq('key', 'pages_content').maybeSingle();
-      if (!error) {
-        const value = data?.value;
-        if (Array.isArray(value)) publishedPages = value;
-        else if (value && typeof value === 'object' && Array.isArray(value.pages)) publishedPages = value.pages;
-      } else {
-        console.warn('[SEO render] CMS pages unavailable; safe defaults used:', error.message);
-      }
+      const value = await getCachedSiteSetting(publicSupabase, 'pages_content');
+      if (Array.isArray(value)) publishedPages = value;
+      else if (value && typeof value === 'object' && Array.isArray((value as any).pages)) publishedPages = (value as any).pages;
     } catch (error) {
       console.warn('[SEO render] CMS pages query failed; safe defaults used:', error);
     }
@@ -5725,10 +5743,9 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
   const cmsSocialProfiles: string[] = [];
   if (publicSupabase) {
     try {
-      const { data, error } = await publicSupabase.from('site_settings')
-        .select('value').eq('key', 'social_links').maybeSingle();
-      if (!error && data?.value && typeof data.value === 'object') {
-        const social = data.value as Record<string, unknown>;
+      const value = await getCachedSiteSetting(publicSupabase, 'social_links');
+      if (value && typeof value === 'object') {
+        const social = value as Record<string, unknown>;
         for (const key of ['facebook', 'instagram', 'youtube', 'tiktok', 'tripadvisor']) {
           if (typeof social[key] === 'string') cmsSocialProfiles.push(social[key] as string);
         }
