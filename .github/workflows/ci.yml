@@ -157,6 +157,9 @@ jobs:
       - name: Verify customer cancellation feedback and notification retry safety
         run: npm run test:booking-cancellation-feedback
 
+      - name: Verify private and shared tour price display consistency
+        run: npm run test:tour-pricing
+
       - name: Verify booking identifier and production fallback behavior
         run: npm run test:booking
 
