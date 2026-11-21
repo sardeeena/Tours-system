@@ -67,7 +67,7 @@ FROM public.tours WHERE slug='pgtap-exclusive-fixed-price-test'
 ;
 
 UPDATE exclusive_test_context
-SET trip_id = (SELECT id FROM public.exclusive_trips et
+SET trip_id = (SELECT et.id FROM public.exclusive_trips et
   JOIN public.tours t ON t.id=et.tour_id WHERE t.slug='pgtap-exclusive-fixed-price-test');
 
 WITH slots AS (
