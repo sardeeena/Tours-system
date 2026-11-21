@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(24);
+SELECT plan(25);
 
 SELECT has_table('public','exclusive_trips','Exclusive product settings have their own table');
 SELECT has_table('public','exclusive_departures','Exclusive schedule slots have their own table');
@@ -49,12 +49,14 @@ CREATE TEMP TABLE exclusive_test_context (
   first_slot UUID,
   second_slot UUID,
   third_slot UUID,
+  notice_slot UUID,
   one_guest JSONB,
   max_guests JSONB,
   retry JSONB,
   over_limit_rejected BOOLEAN DEFAULT FALSE,
   duplicate_slot_rejected BOOLEAN DEFAULT FALSE,
-  mismatched_idempotency_rejected BOOLEAN DEFAULT FALSE
+  mismatched_idempotency_rejected BOOLEAN DEFAULT FALSE,
+  notice_rejected BOOLEAN DEFAULT FALSE
 ) ON COMMIT DROP;
 
 INSERT INTO exclusive_test_context DEFAULT VALUES;
@@ -99,6 +101,42 @@ WITH slots AS (
 )
 UPDATE exclusive_test_context SET
   third_slot=(SELECT id FROM slots WHERE start_time='08:00');
+
+WITH slots AS (
+  INSERT INTO public.exclusive_departures (
+    exclusive_trip_id,date,start_time,end_time,maximum_guests,status
+  )
+  SELECT trip_id,CURRENT_DATE+1,'23:59','23:59:59',10,'confirmed' FROM exclusive_test_context
+  RETURNING id
+)
+UPDATE exclusive_test_context SET notice_slot=(SELECT id FROM slots);
+
+UPDATE public.tours
+SET minimum_booking_notice_hours=72
+WHERE slug='pgtap-exclusive-fixed-price-test';
+
+DO $notice_test$
+BEGIN
+  BEGIN
+    PERFORM public.reserve_exclusive_trip(
+      (SELECT notice_slot FROM exclusive_test_context),1,
+      'Notice','Test','notice-exclusive@example.test','+201000000072',
+      'Egypt',NULL,'pay_at_pickup',NULL,'idem-exclusive-notice-001'
+    );
+  EXCEPTION WHEN SQLSTATE '22023' THEN
+    UPDATE exclusive_test_context SET notice_rejected=TRUE;
+  END;
+END;
+$notice_test$;
+
+SELECT ok(
+  (SELECT notice_rejected FROM exclusive_test_context),
+  'Exclusive reservations enforce the tour minimum booking notice period'
+);
+
+UPDATE public.tours
+SET minimum_booking_notice_hours=0
+WHERE slug='pgtap-exclusive-fixed-price-test';
 
 UPDATE exclusive_test_context
 SET one_guest = public.reserve_exclusive_trip(
