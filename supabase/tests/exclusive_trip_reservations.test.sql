@@ -37,12 +37,14 @@ CREATE TEMP TABLE exclusive_test_context (
   duplicate_slot_rejected BOOLEAN DEFAULT FALSE
 ) ON COMMIT DROP;
 
+INSERT INTO exclusive_test_context DEFAULT VALUES;
+
 INSERT INTO public.exclusive_trips (
   tour_id,fixed_trip_price,currency,minimum_guests,maximum_guests,is_active
 )
 SELECT id,950.00,'EUR',1,10,TRUE
 FROM public.tours WHERE slug='pgtap-exclusive-fixed-price-test'
-RETURNING id;
+;
 
 UPDATE exclusive_test_context
 SET trip_id = (SELECT id FROM public.exclusive_trips et
