@@ -14,7 +14,7 @@ const frenchRollout = EUROPEAN_LOCALE_ROLLOUT.find((locale) => locale.code === '
 assert.equal(frenchRollout?.rollout, 'planned', 'French must remain hidden until all content and UI catalogs are reviewed and published.');
 assert.equal(SUPPORTED_LANGUAGES.fr, undefined, 'French must not be advertised from a static dictionary alone.');
 
-for (const locale of ['es', 'ar'] as const) {
+for (const locale of ['de', 'fr', 'it', 'ar', 'ru', 'es', 'pl', 'nl'] as const) {
   const dictionary = TRANSLATIONS[locale] || {};
   assert.deepEqual(
     Object.keys(dictionary).sort(),
@@ -29,4 +29,4 @@ for (const locale of ['es', 'ar'] as const) {
   assert.equal(SUPPORTED_LANGUAGES[locale], undefined, locale.toUpperCase() + ' must not be advertised from a static dictionary alone.');
 }
 
-console.log('French, Spanish and Arabic interface dictionary coverage and staged-publication checks passed.');
+console.log('All eight requested interface dictionaries have complete English-key coverage; staged locales remain gated from publication.');

@@ -166,13 +166,13 @@ export const AdminTranslationManager: React.FC = () => {
           <p className="mt-1 text-sm text-stone-400">Super Admin + verified MFA required. Drafts never appear on public pages.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={() => setConfirmGenerate(true)} disabled={generating || loading || saving || !['fr','nl','pl'].includes(locale)} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{generating ? 'Generating ' + locale.toUpperCase() + ' drafts…' : 'Generate ' + locale.toUpperCase() + ' drafts'}</button>
+          <button type="button" onClick={() => setConfirmGenerate(true)} disabled={generating || loading || saving || !['de','fr','it','ar','ru','es','pl','nl'].includes(locale)} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{generating ? 'Generating ' + locale.toUpperCase() + ' drafts…' : 'Generate ' + locale.toUpperCase() + ' drafts'}</button>
           <button onClick={() => void load()} disabled={loading || generating} className="rounded border border-stone-700 px-3 py-2 text-sm disabled:opacity-50">{loading ? 'Loading…' : 'Refresh records'}</button>
         </div>
       </header>
       {confirmGenerate && !generating && <div role="dialog" aria-modal="true" aria-labelledby="translation-generate-title" className="rounded-xl border border-teal-700 bg-teal-950/40 p-4 space-y-3">
         <h2 id="translation-generate-title" className="font-semibold text-white">Generate translation drafts?</h2>
-        <p className="text-sm text-stone-300">This translates published tours, destinations, blog posts, public pages, communication templates and the interface catalog into the selected language. It uses Gemini. French, Dutch and Polish are enabled here. All results remain drafts; nothing is published automatically.</p>
+        <p className="text-sm text-stone-300">This translates published tours, destinations, blog posts, public pages, communication templates and the interface catalog into the selected language. It uses Gemini. German, French, Italian, Arabic, Russian, Spanish, Polish and Dutch are enabled here. All results remain drafts; nothing is published automatically.</p>
         <div className="flex flex-wrap gap-2"><button type="button" onClick={() => setConfirmGenerate(false)} className="rounded border border-stone-600 px-3 py-2 text-sm">Cancel</button><button type="button" onClick={() => { setConfirmGenerate(false); void generateSelectedLocale(); }} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white">Start generating drafts</button></div>
       </div>}
       {generationProgress && <p role="status" aria-live="polite" className="rounded-lg border border-stone-800 bg-stone-900/50 px-4 py-3 text-sm text-stone-300">{generationProgress}</p>}

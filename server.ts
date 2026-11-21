@@ -3348,8 +3348,10 @@ app.get('/api/content-translations/resolve', rateLimit(90, 60_000), cachePublicR
 
 // Super Admin + AAL2 bulk translation generation. Every generated row is a draft;
 // this endpoint never marks content reviewed or publishes it.
+const MANAGED_TRANSLATION_LOCALE_CODES = ['de', 'fr', 'it', 'ar', 'ru', 'es', 'pl', 'nl'] as const;
 const BULK_TRANSLATION_LOCALES: Record<string, string> = Object.fromEntries(
-  EUROPEAN_LOCALE_ROLLOUT.filter((locale) => locale.code !== 'en')
+  EUROPEAN_LOCALE_ROLLOUT
+    .filter((locale) => (MANAGED_TRANSLATION_LOCALE_CODES as readonly string[]).includes(locale.code))
     .map((locale) => [locale.code, locale.englishName]),
 );
 async function getBulkTranslationCandidates(): Promise<Array<{ entity_type: string; entity_key: string }>> {
