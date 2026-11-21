@@ -1,3 +1,4 @@
+import { serializeSpreadsheetRows } from '../../../utils/spreadsheetExport';
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Mail,
@@ -143,14 +144,14 @@ export const AdminNewsletterList: React.FC = () => {
   const exportCSV = () => {
     const headers = ['Email Address', 'Status', 'Promo Discount Code', 'Source', 'Subscribed Date'];
     const rows = filteredSubscribers.map((s) => [
-      `"${s.email}"`,
-      `"${s.status}"`,
-      `"${s.discountCode || 'REDSEA15'}"`,
-      `"${s.source || 'footer'}"`,
-      `"${s.createdAt}"`,
+      `${s.email}`,
+      `${s.status}`,
+      `${s.discountCode || 'REDSEA15'}`,
+      `${s.source || 'footer'}`,
+      `${s.createdAt}`,
     ]);
 
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const csvContent = 'data:text/csv;charset=utf-8,' + serializeSpreadsheetRows([headers, ...rows]);
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
