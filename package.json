@@ -77,7 +77,8 @@
     "test:booking-lookup-rpc": "tsx scripts/test_booking_lookup_rpc_contract.ts",
     "test:customer-profile-persistence": "tsx scripts/test_customer_profile_persistence.ts",
     "test:booking-cancellation-feedback": "tsx scripts/test_booking_cancellation_feedback.ts",
-    "test:coupon-rbac": "tsx scripts/test_coupon_rbac_alignment.ts"
+    "test:coupon-rbac": "tsx scripts/test_coupon_rbac_alignment.ts",
+    "test:tour-pricing": "tsx scripts/test_tour_pricing_consistency.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
