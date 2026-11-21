@@ -15,7 +15,7 @@ assert.ok(navBlock, 'Sidebar navigation list must be discoverable');
 const navIds = [...navBlock.matchAll(/id:\s*'([^']+)'/g)]
   .map((match) => match[1])
   .filter((id) => !id.startsWith('header_'));
-assert.ok(navIds.length >= 55, 'Expected all primary admin destinations to remain visible');
+assert.ok(navIds.length >= 54, 'Expected all primary admin destinations to remain visible except the intentionally hidden diagnostics area');
 const repeatedNavigationIds = [...new Set(navIds.filter((id, index) => navIds.indexOf(id) !== index))].sort();
 assert.deepEqual(repeatedNavigationIds, ['dashboard', 'tours'], 'Only the two expandable parent rows may share their destination ID with their first child.');
 assert.equal(new Set(navIds).size, navIds.length - 2, 'Unexpected duplicate sidebar destination IDs were introduced.');
@@ -24,7 +24,7 @@ assert.deepEqual(navIds.filter((id) => !tabs.includes(id)), [], 'Sidebar points 
 const routedTabs = new Set([...app.matchAll(/activeAdminTab\s*===\s*'([^']+)'/g)].map((match) => match[1]));
 assert.deepEqual(tabs.filter((id) => !routedTabs.has(id)), [], 'Every AdminTab must render a route in App.tsx');
 
-const intentionallyHiddenAliases = ['availability', 'crm_customers', 'crm_inquiries', 'tour_edit'].sort();
+const intentionallyHiddenAliases = ['availability', 'crm_customers', 'crm_inquiries', 'tour_edit', 'technical'].sort();
 const notInSidebar = tabs.filter((id) => !navIds.includes(id)).sort();
 assert.deepEqual(notInSidebar, intentionallyHiddenAliases, 'Hidden aliases/internal routes changed; review whether each should be navigable');
 
