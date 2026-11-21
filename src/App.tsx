@@ -467,7 +467,7 @@ function MainApp() {
       window.scrollTo({ top: 0, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     };
 
-    if (currentLocale !== 'en' && !/^\/admin(?:\/|$)/i.test(normalizedRequestedPath)) {
+    if (currentLocale !== 'en' && !(/^\/admin(?:\/|$)/i.test(normalizedRequestedPath) || normalizedRequestedPath === '/exclusive')) {
       const params = new URLSearchParams({ locale: currentLocale, pathname: normalizedRequestedPath });
       fetch('/api/content-translations/target?' + params.toString(), {
         headers: { Accept: 'application/json' },
@@ -1404,7 +1404,7 @@ function MainApp() {
   const renderCurrentView = () => {
     // Public content routes and private customer workflows are rendered only
     // when the complete reviewed UI catalogue and required content are available.
-    if (currentLocale !== 'en' && !/^\/(?:booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|admin(?:\/|$)|support(?:\/|$))/i.test(currentPath)) {
+    if (currentLocale !== 'en' && !/^\/(?:booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|admin(?:\/|$)|support(?:\/|$)|exclusive$)/i.test(currentPath)) {
       return <Suspense fallback={<PublicPageLoadingFallback />}><LocalizedContentPage locale={currentLocale} pathname={currentPath} onNavigate={(path) => navigate(path)} /></Suspense>;
     }
     if (currentLocale !== 'en' && !supportedLanguages.some((item) => item.code === currentLocale) && /^\/(?:booking|my-booking|login|register|account|profile|reset-password)(?:\/|$)/i.test(currentPath)) {
