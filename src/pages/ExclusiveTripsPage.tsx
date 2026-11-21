@@ -55,7 +55,7 @@ export const ExclusiveTripsPage: React.FC<Props> = () => {
     }).catch((err) => active && setError(err instanceof Error ? err.message : 'Unable to load availability.'))
       .finally(() => active && setSlotsLoading(false));
     return () => { active = false; };
-  }, [selectedTrip]);
+  }, [selectedTrip, selectedTripId]);
 
   const handleReserve = async (event: React.FormEvent) => {
     event.preventDefault();
