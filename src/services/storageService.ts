@@ -100,7 +100,7 @@ async function optimizeImageForUpload(file: File): Promise<File> {
     });
     if (!blob || blob.size >= file.size * 0.95) return file;
 
-    const baseName = file.name.replace(/\\.[^.]+$/, '') || 'image';
+    const baseName = file.name.replace(/\.[^.]+$/, '') || 'image';
     return new File([blob], `${baseName}.webp`, {
       type: 'image/webp',
       lastModified: file.lastModified,
