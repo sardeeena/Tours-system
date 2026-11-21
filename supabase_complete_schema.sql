@@ -2723,6 +2723,148 @@ CREATE INDEX IF NOT EXISTS bookings_exclusive_departure_idx
 
 
 
+
+
+-- Exclusive prices are whole-trip totals, not unit prices. Preserve the standard
+-- per-person snapshots unchanged for every non-Exclusive booking.
+CREATE OR REPLACE FUNCTION private.set_booking_unit_prices()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $function$
+DECLARE
+  v_tour_type TEXT;
+  v_adult_price NUMERIC(12,2);
+  v_child_price NUMERIC(12,2);
+  v_private_price NUMERIC(12,2);
+BEGIN
+  IF NEW.booking_kind = 'exclusive' THEN
+    NEW.unit_price_adult := 0;
+    NEW.unit_price_child := 0;
+    RETURN NEW;
+  END IF;
+
+  SELECT t.tour_type,t.price,t.child_price,t.private_price
+  INTO v_tour_type,v_adult_price,v_child_price,v_private_price
+  FROM public.tours AS t
+  WHERE t.id=NEW.tour_id AND t.status='published';
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'A published tour is required to snapshot booking unit prices.'
+      USING ERRCODE = '23503';
+  END IF;
+
+  IF COALESCE(v_tour_type,'Shared')='Private' THEN
+    IF v_private_price IS NULL OR v_private_price <= 0 THEN
+      RAISE EXCEPTION 'The private per-person rate is not configured for this excursion.'
+        USING ERRCODE = '23514';
+    END IF;
+    NEW.unit_price_adult := v_private_price;
+    NEW.unit_price_child := v_private_price;
+  ELSE
+    NEW.unit_price_adult := COALESCE(v_adult_price,0);
+    NEW.unit_price_child := COALESCE(v_child_price,ROUND(COALESCE(v_adult_price,0)*0.50,2));
+  END IF;
+
+  RETURN NEW;
+END;
+$function$;
+
+-- Keep the established booking trigger for ordinary excursions, but route
+-- Exclusive bookings through their own locked slot instead of requiring a
+-- row in the standard departures table.
+CREATE OR REPLACE FUNCTION private.assign_booking_to_scheduled_departure()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $function$
+DECLARE
+  v_requested_departure_id UUID;
+  v_departure_count INTEGER := 0;
+  v_vessel_id UUID;
+  v_guide_id UUID;
+BEGIN
+  IF NEW.booking_kind = 'exclusive' THEN
+    IF NEW.departure_id IS NOT NULL OR NEW.exclusive_departure_id IS NULL THEN
+      RAISE EXCEPTION 'Exclusive bookings must reference an Exclusive departure only'
+        USING ERRCODE = '23514';
+    END IF;
+
+    SELECT d.vessel_id, d.guide_id
+    INTO v_vessel_id, v_guide_id
+    FROM public.exclusive_departures AS d
+    JOIN public.exclusive_trips AS et ON et.id = d.exclusive_trip_id
+    WHERE d.id = NEW.exclusive_departure_id
+      AND et.tour_id = NEW.tour_id
+      AND d.date = NEW.booking_date
+      AND d.status = 'confirmed'
+    FOR UPDATE OF d;
+
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'The selected Exclusive departure does not belong to this tour/date or is not confirmed'
+        USING ERRCODE = '23514';
+    END IF;
+
+    NEW.assigned_vessel_id := v_vessel_id;
+    NEW.assigned_guide_id := v_guide_id;
+    RETURN NEW;
+  END IF;
+
+  v_requested_departure_id := COALESCE(
+    NEW.departure_id,
+    NULLIF(current_setting('app.booking_departure_id', TRUE), '')::UUID
+  );
+
+  IF v_requested_departure_id IS NULL THEN
+    SELECT count(*)::INTEGER
+    INTO v_departure_count
+    FROM public.departures AS d
+    WHERE d.tour_id = NEW.tour_id
+      AND d.date = NEW.booking_date
+      AND d.status = 'confirmed';
+
+    IF v_departure_count = 0 THEN
+      RAISE EXCEPTION 'No confirmed departure exists for this tour and date'
+        USING ERRCODE = '23514';
+    ELSIF v_departure_count > 1 THEN
+      RAISE EXCEPTION 'Select a departure time before completing this booking'
+        USING ERRCODE = '23514';
+    END IF;
+
+    SELECT d.id
+    INTO v_requested_departure_id
+    FROM public.departures AS d
+    WHERE d.tour_id = NEW.tour_id
+      AND d.date = NEW.booking_date
+      AND d.status = 'confirmed'
+    LIMIT 1;
+  END IF;
+
+  SELECT d.vessel_id, d.guide_id
+  INTO v_vessel_id, v_guide_id
+  FROM public.departures AS d
+  WHERE d.id = v_requested_departure_id
+    AND d.tour_id = NEW.tour_id
+    AND d.date = NEW.booking_date
+    AND d.status = 'confirmed'
+  FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'The selected departure does not belong to this tour/date or is not confirmed'
+      USING ERRCODE = '23514';
+  END IF;
+
+  NEW.departure_id := v_requested_departure_id;
+  NEW.assigned_vessel_id := v_vessel_id;
+  NEW.assigned_guide_id := v_guide_id;
+  RETURN NEW;
+END;
+$function$;
+REVOKE ALL ON FUNCTION private.assign_booking_to_scheduled_departure() FROM PUBLIC, anon, authenticated, service_role;
+
+
 ALTER TABLE public.exclusive_trips ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.exclusive_departures ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.exclusive_reservations ENABLE ROW LEVEL SECURITY;
