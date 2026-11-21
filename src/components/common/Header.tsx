@@ -169,11 +169,12 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   const handleBookingClick = () => {
+    // Let visitors choose an excursion before entering the booking flow.
     setMobileMenuOpen(false);
-    if (onNavigateBooking) {
-      onNavigateBooking();
-    } else if (onNavigateExcursions) {
+    if (onNavigateExcursions) {
       onNavigateExcursions();
+    } else {
+      handleNavClick('tours-section');
     }
   };
 
