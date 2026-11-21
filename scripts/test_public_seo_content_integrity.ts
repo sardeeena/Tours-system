@@ -41,6 +41,7 @@ assert.ok(tourDataMigration.includes("duration = 'Half Day (approx. 5 hours)'"),
 
 assert.match(app, /currentPath === '\/destinations'/, 'Client router explicitly handles the public destinations directory');
 assert.match(server, /path === '\/destinations'/, 'Server-side SEO renderer explicitly handles the public destinations directory');
+assert.match(server, /path === '\/exclusive'[\\s\\S]*?Fixed price for the entire trip/, 'Server-rendered Exclusive catalogue explains its fixed trip pricing');
 assert.match(server, /  '\/destinations',/, 'Public XML sitemap includes the destinations directory');
 assert.match(server, /  '\/exclusive',/, 'Public XML sitemap includes the dedicated Exclusive catalogue');
 assert.match(server, /## Exclusive private trips[\\s\\S]*?fixed price applies to the entire trip, not per person/, 'AI discovery explains that Exclusive prices apply to the entire trip');
