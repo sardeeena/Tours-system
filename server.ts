@@ -4622,7 +4622,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
   if (publicSupabase) {
     lines.push('', '## Exclusive private trips', '- Exclusive trips are booked as one complete private experience. The displayed fixed price applies to the entire trip, not per person.', '- Customers select a confirmed date and time and reserve the whole slot for their group.');
     try {
-      const { data: exclusiveTrips, error } = await publicSupabase
+      const { data: exclusiveTrips, error } = await (publicSupabase as any)
         .from('exclusive_trips')
         .select('fixed_trip_price,currency,minimum_guests,maximum_guests,tours!inner(title,slug,short_description,status,is_exclusive)')
         .eq('is_active', true)
