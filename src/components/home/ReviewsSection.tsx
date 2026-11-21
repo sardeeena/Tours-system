@@ -218,7 +218,7 @@ export const ReviewsSection: React.FC = () => {
                 <div className="pt-4 border-t border-stone-100 dark:border-slate-800 flex items-center justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className="w-10 h-10 shrink-0 rounded-full bg-[#E8F3F4] dark:bg-[#1B3B4A] text-[#0A6C74] dark:text-[#8ADBE0] flex items-center justify-center text-sm font-bold ring-1 ring-[#0A6C74]/10">
-                      {rev.authorName.trim().split(/\\s+/).slice(0, 2).map((part) => part.charAt(0)).join('').toUpperCase()}
+                      {rev.authorName.trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0)).join('').toUpperCase()}
                     </div>
                     <div className="min-w-0">
                       <span className="text-sm font-bold text-stone-900 dark:text-white block truncate">
