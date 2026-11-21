@@ -822,6 +822,8 @@ export interface Database {
         Row: {
           id: string;
           booking_reference: string;
+          booking_kind: string;
+          exclusive_departure_id: string | null;
           tour_id: string;
           customer_id: string | null;
           tour_language: string | null;
@@ -856,6 +858,8 @@ export interface Database {
         Insert: {
           id?: string;
           booking_reference: string;
+          booking_kind?: string;
+          exclusive_departure_id?: string | null;
           tour_id: string;
           customer_id?: string | null;
           tour_language?: string | null;
@@ -890,6 +894,8 @@ export interface Database {
         Update: {
           id?: string;
           booking_reference?: string;
+          booking_kind?: string;
+          exclusive_departure_id?: string | null;
           tour_id?: string;
           customer_id?: string | null;
           tour_language?: string | null;
