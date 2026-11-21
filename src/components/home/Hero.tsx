@@ -41,7 +41,7 @@ const CINEMATIC_SLIDES: TourSlide[] = [
     id: 'padi-scuba-diving',
     title1: 'Unrivaled Coral Drop-Offs &',
     title2: 'Scuba Encounters',
-    subtitle: 'Selected trips in Egypt offer introductory scuba dives and guided diving experiences. Check each tour page for dive format, instructor qualifications, equipment and inclusions.',
+    subtitle: 'Discover Egypt’s remarkable underwater world with guided diving experiences and vibrant Red Sea reefs.',
     imageUrl: 'https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/1794762504613-q13f8l-Nationalpark.webp',
     accentGradient: 'from-[#0F766E] via-[#0D9488] to-[#0F766E] dark:from-[#2DD4BF] dark:via-[#5EEAD4] dark:to-[#99F6E4]',
   },
@@ -156,7 +156,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
       <div className="relative max-w-7xl mx-auto px-4 sm:px-8 pt-8 sm:pt-12 pb-0">
         
         {/* Dynamic Synchronized Headline & Narrative based on active cinematic tour */}
-        <div className="max-w-3xl mr-auto ml-0 mb-5 sm:mb-6 min-h-[100px] sm:min-h-[120px] text-left [direction:ltr]">
+        <div className="max-w-3xl mr-auto ml-0 mb-5 sm:mb-6 min-h-[100px] sm:min-h-[120px] rounded-2xl sm:rounded-3xl border border-white/35 bg-white/30 dark:bg-[#0E1B2A]/40 backdrop-blur-md shadow-lg shadow-black/10 px-4 py-4 sm:px-6 sm:py-5 text-left [direction:ltr]">
           <AnimatePresence mode="wait">
             <motion.div
               key={slide.id}
@@ -174,7 +174,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
               </h1>
 
               {/* Dynamic Subtitle */}
-              <p className="text-sm sm:text-base lg:text-lg text-stone-600 dark:text-slate-300 font-normal leading-relaxed max-w-2xl ml-0 mr-auto text-left">
+              <p className="text-sm sm:text-base lg:text-lg text-stone-800 dark:text-white font-medium leading-relaxed max-w-2xl drop-shadow-sm ml-0 mr-auto text-left">
                 {slide.subtitle}
               </p>
             </motion.div>
