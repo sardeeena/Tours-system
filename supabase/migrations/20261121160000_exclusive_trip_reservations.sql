@@ -628,7 +628,12 @@ AS $function$
 DECLARE
   v_reservation public.exclusive_reservations%ROWTYPE;
 BEGIN
-  IF auth.uid() IS NULL OR NOT public.has_permission('bookings.update') THEN
+  IF auth.uid() IS NULL
+     OR (p_status = 'cancelled' AND NOT public.has_permission('bookings.approve'))
+     OR (
+       (p_status IS NULL OR p_status <> 'cancelled' OR p_payment_status IS NOT NULL)
+       AND NOT public.has_permission('bookings.update')
+     ) THEN
     RAISE EXCEPTION 'Not authorized to update Exclusive reservations' USING ERRCODE = '42501';
   END IF;
   IF p_status IS NULL AND p_payment_status IS NULL THEN
