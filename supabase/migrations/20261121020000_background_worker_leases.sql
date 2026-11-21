@@ -2,7 +2,10 @@
 -- even when the hosting platform runs multiple application processes.
 BEGIN;
 
-CREATE TABLE IF NOT EXISTS public.background_worker_leases (
+CREATE SCHEMA IF NOT EXISTS private;
+REVOKE ALL ON SCHEMA private FROM PUBLIC, anon, authenticated;
+
+CREATE TABLE IF NOT EXISTS private.background_worker_leases (
   worker_name TEXT PRIMARY KEY
     CHECK (worker_name IN ('booking_notification', 'staff_notification')),
   owner_id UUID NOT NULL,
@@ -10,8 +13,8 @@ CREATE TABLE IF NOT EXISTS public.background_worker_leases (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT clock_timestamp()
 );
 
-ALTER TABLE public.background_worker_leases ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON TABLE public.background_worker_leases FROM PUBLIC, anon, authenticated, service_role;
+ALTER TABLE private.background_worker_leases ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE private.background_worker_leases FROM PUBLIC, anon, authenticated, service_role;
 
 CREATE OR REPLACE FUNCTION public.acquire_background_worker_lease(
   p_worker_name TEXT,
@@ -33,7 +36,7 @@ BEGIN
       USING ERRCODE = '22023';
   END IF;
 
-  INSERT INTO public.background_worker_leases (
+  INSERT INTO private.background_worker_leases (
     worker_name, owner_id, lease_expires_at, updated_at
   )
   VALUES (
@@ -46,8 +49,8 @@ BEGIN
   SET owner_id = EXCLUDED.owner_id,
       lease_expires_at = EXCLUDED.lease_expires_at,
       updated_at = EXCLUDED.updated_at
-  WHERE public.background_worker_leases.lease_expires_at <= clock_timestamp()
-     OR public.background_worker_leases.owner_id = EXCLUDED.owner_id
+  WHERE private.background_worker_leases.lease_expires_at <= clock_timestamp()
+     OR private.background_worker_leases.owner_id = EXCLUDED.owner_id
   RETURNING TRUE INTO v_acquired;
 
   RETURN COALESCE(v_acquired, FALSE);
@@ -71,7 +74,7 @@ BEGIN
     RETURN FALSE;
   END IF;
 
-  DELETE FROM public.background_worker_leases
+  DELETE FROM private.background_worker_leases
   WHERE worker_name = p_worker_name
     AND owner_id = p_owner_id
   RETURNING TRUE INTO v_released;
