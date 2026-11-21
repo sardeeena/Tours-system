@@ -363,6 +363,53 @@ CREATE INDEX IF NOT EXISTS bookings_exclusive_departure_idx
 
 
 
+
+-- Exclusive prices are whole-trip totals, not unit prices. Preserve the standard
+-- per-person snapshots unchanged for every non-Exclusive booking.
+CREATE OR REPLACE FUNCTION private.set_booking_unit_prices()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $function$
+DECLARE
+  v_tour_type TEXT;
+  v_adult_price NUMERIC(12,2);
+  v_child_price NUMERIC(12,2);
+  v_private_price NUMERIC(12,2);
+BEGIN
+  IF NEW.booking_kind = 'exclusive' THEN
+    NEW.unit_price_adult := 0;
+    NEW.unit_price_child := 0;
+    RETURN NEW;
+  END IF;
+
+  SELECT t.tour_type,t.price,t.child_price,t.private_price
+  INTO v_tour_type,v_adult_price,v_child_price,v_private_price
+  FROM public.tours AS t
+  WHERE t.id=NEW.tour_id AND t.status='published';
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'A published tour is required to snapshot booking unit prices.'
+      USING ERRCODE = '23503';
+  END IF;
+
+  IF COALESCE(v_tour_type,'Shared')='Private' THEN
+    IF v_private_price IS NULL OR v_private_price <= 0 THEN
+      RAISE EXCEPTION 'The private per-person rate is not configured for this excursion.'
+        USING ERRCODE = '23514';
+    END IF;
+    NEW.unit_price_adult := v_private_price;
+    NEW.unit_price_child := v_private_price;
+  ELSE
+    NEW.unit_price_adult := COALESCE(v_adult_price,0);
+    NEW.unit_price_child := COALESCE(v_child_price,ROUND(COALESCE(v_adult_price,0)*0.50,2));
+  END IF;
+
+  RETURN NEW;
+END;
+$function$;
+
 -- Keep the established booking trigger for ordinary excursions, but route
 -- Exclusive bookings through their own locked slot instead of requiring a
 -- row in the standard departures table.
@@ -454,6 +501,8 @@ BEGIN
   RETURN NEW;
 END;
 $function$;
+REVOKE ALL ON FUNCTION private.assign_booking_to_scheduled_departure() FROM PUBLIC, anon, authenticated, service_role;
+
 
 ALTER TABLE public.exclusive_trips ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.exclusive_departures ENABLE ROW LEVEL SECURITY;
