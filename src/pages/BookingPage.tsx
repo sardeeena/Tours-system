@@ -441,7 +441,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
           </div>
           <div className="md:hidden space-y-2 pt-1">
             <div className="flex justify-between text-xs font-semibold text-stone-800"><span>{STEPS[currentStep === 1 ? 0 : currentStep <= 3 ? 1 : currentStep === 4 ? 2 : 3]?.label}</span><span>Stage {currentStep === 1 ? 1 : currentStep <= 3 ? 2 : currentStep === 4 ? 3 : 4} of 4</span></div>
-            <div className="bg-stone-200 h-1.5 rounded-full overflow-hidden" role="progressbar" aria-valuemin={1} aria-valuemax={4} aria-valuenow={currentStep === 1 ? 1 : currentStep <= 3 ? 2 : currentStep === 4 ? 3 : 4}>
+            <div className="bg-stone-200 h-1.5 rounded-full overflow-hidden" role="progressbar" aria-label="Booking progress" aria-valuemin={1} aria-valuemax={4} aria-valuenow={currentStep === 1 ? 1 : currentStep <= 3 ? 2 : currentStep === 4 ? 3 : 4}>
               <div className="bg-[#0A6C74] h-full transition-all duration-300" style={{ width: `${(currentStep === 1 ? 25 : currentStep <= 3 ? 50 : currentStep === 4 ? 75 : 100)}%` }} />
             </div>
           </div>
