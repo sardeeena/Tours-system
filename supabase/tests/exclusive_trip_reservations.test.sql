@@ -41,7 +41,7 @@ INSERT INTO public.tours (
 ) VALUES (
   'pgTAP Exclusive Fixed Price Test',
   'pgtap-exclusive-fixed-price-test',
-  '4 hours','published',80,20,200,'private',10,FALSE,0,TRUE
+  '4 hours','published',80,20,200,'Private',10,FALSE,0,TRUE
 );
 
 CREATE TEMP TABLE exclusive_test_context (
