@@ -4,19 +4,19 @@ CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
 SELECT plan(11);
 
 SELECT ok(
-  to_regclass('public.background_worker_leases') IS NOT NULL,
+  to_regclass('private.background_worker_leases') IS NOT NULL,
   'background worker lease table exists'
 );
 
 SELECT ok(
-  (SELECT relrowsecurity FROM pg_class WHERE oid = 'public.background_worker_leases'::regclass),
+  (SELECT relrowsecurity FROM pg_class WHERE oid = 'private.background_worker_leases'::regclass),
   'background worker lease table has row-level security enabled'
 );
 
 SELECT ok(
-  NOT has_table_privilege('anon', 'public.background_worker_leases', 'SELECT')
-  AND NOT has_table_privilege('authenticated', 'public.background_worker_leases', 'SELECT')
-  AND NOT has_table_privilege('service_role', 'public.background_worker_leases', 'SELECT'),
+  NOT has_table_privilege('anon', 'private.background_worker_leases', 'SELECT')
+  AND NOT has_table_privilege('authenticated', 'private.background_worker_leases', 'SELECT')
+  AND NOT has_table_privilege('service_role', 'private.background_worker_leases', 'SELECT'),
   'worker lease rows are not directly readable through API roles'
 );
 
