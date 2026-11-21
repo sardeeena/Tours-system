@@ -179,18 +179,18 @@ export const OperationsManifests: React.FC = () => {
 
     const rows = filteredPassengers.map((p, idx) => [
       idx + 1,
-      `${p.fullName.replace(/"/g, '""')}`,
+      `${p.fullName}`,
       `${p.bookingReference}`,
-      `${p.tourTitle.replace(/"/g, '""')}`,
+      `${p.tourTitle}`,
       `${p.nationality || 'International'}`,
       `${p.passportOrId || 'N/A'}`,
       `${p.dateOfBirth || 'N/A'}`,
       `${p.phone || 'N/A'}`,
       p.partySize || 1,
-      `${(p.hotel || 'Direct Marina').replace(/"/g, '""')}`,
+      `${(p.hotel || 'Direct Marina')}`,
       `${p.pickupTime || '07:30'}`,
-      `${(p.specialRequests || '').replace(/"/g, '""')}`,
-      `${(p.extras || 'None').replace(/"/g, '""')}`,
+      `${(p.specialRequests || '')}`,
+      `${(p.extras || 'None')}`,
       `${p.paymentStatus || 'Pending'}`,
       `${p.bookingStatus || 'Confirmed'}`,
     ]);
