@@ -103,6 +103,13 @@ check(
     server.includes('publicHtmlResponseCache')
 );
 check(
+  'Public translation endpoints cache locale dictionaries and reduce repeated checksum scans',
+  server.includes("app.get('/api/content-translations/ui', cachePublicResponse(300_000") &&
+    server.includes("app.get('/api/content-translations/locales', cachePublicResponse(300_000") &&
+    server.includes("app.get('/api/content-translations/target', cachePublicResponse(60_000") &&
+    server.includes("app.get('/api/content-translations/resolve', cachePublicResponse(60_000")
+);
+check(
   'Readiness probes use a bounded existence check instead of an exact count',
   server.includes(".select('id')\n    .eq('status', 'published')\n    .limit(1)\n    .maybeSingle()") &&
     !server.includes(".select('id', { head: true, count: 'exact' })")

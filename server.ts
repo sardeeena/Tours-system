@@ -3134,7 +3134,7 @@ async function getCurrentTranslationSourceChecksum(entityType: string, entityKey
 
 // Returns only a reviewed translation whose source checksum still matches the
 // current published source record. A stale translation fails closed.
-app.get('/api/content-translations/ui', rateLimit(60, 60_000), async (req: Request, res: Response) => {
+app.get('/api/content-translations/ui', cachePublicResponse(300_000, 'private, no-store'), rateLimit(60, 60_000), async (req: Request, res: Response) => {
   const locale = typeof req.query.locale === 'string' ? req.query.locale : '';
   if (!TRANSLATION_LOCALES.has(locale)) return res.status(400).json({ success: false, error: 'Unsupported locale.' });
   if (locale === 'en') return res.json({ success: true, locale, messages: ENGLISH_UI_CATALOG });
@@ -3159,7 +3159,7 @@ app.get('/api/content-translations/ui', rateLimit(60, 60_000), async (req: Reque
   }
 });
 
-app.get('/api/content-translations/locales', rateLimit(30, 60_000), async (_req: Request, res: Response) => {
+app.get('/api/content-translations/locales', cachePublicResponse(300_000, 'private, no-store'), rateLimit(30, 60_000), async (_req: Request, res: Response) => {
   try {
     if (!serverSupabase) return res.status(503).json({ success: false, error: 'Translation service unavailable.' });
     const { data, error } = await serverSupabase.from('content_translations')
@@ -3232,7 +3232,7 @@ async function getTranslationSourceBySlug(entityType: string, slug: string): Pro
   return data || null;
 }
 
-app.get('/api/content-translations/target', rateLimit(90, 60_000), async (req: Request, res: Response) => {
+app.get('/api/content-translations/target', cachePublicResponse(60_000, 'private, no-store'), rateLimit(90, 60_000), async (req: Request, res: Response) => {
   const locale = typeof req.query.locale === 'string' ? req.query.locale : '';
   const requestedPath = typeof req.query.pathname === 'string' ? req.query.pathname : '';
   if (!TRANSLATION_LOCALES.has(locale) || !requestedPath.startsWith('/') || requestedPath.length > 512) {
@@ -3316,7 +3316,7 @@ app.get('/api/content-translations/target', rateLimit(90, 60_000), async (req: R
   }
 });
 
-app.get('/api/content-translations/resolve', rateLimit(90, 60_000), async (req: Request, res: Response) => {
+app.get('/api/content-translations/resolve', cachePublicResponse(60_000, 'private, no-store'), rateLimit(90, 60_000), async (req: Request, res: Response) => {
   const locale = typeof req.query.locale === 'string' ? req.query.locale : '';
   const entityType = typeof req.query.entity_type === 'string' ? req.query.entity_type : '';
   const entityKey = typeof req.query.entity_key === 'string' ? req.query.entity_key : '';
@@ -4370,9 +4370,9 @@ type PublicTextCacheEntry = { expiresAt: number; body: string; contentType: stri
 const publicTextResponseCache = new Map<string, PublicTextCacheEntry>();
 
 /** Short-lived in-process caching for public, generated text endpoints only. */
-function cachePublicTextResponse(ttlMs: number, cacheControl: string) {
+function cachePublicResponse(ttlMs: number, cacheControl: string) {
   return (req: Request, res: Response, next: NextFunction) => {
-    const key = req.path;
+    const key = req.originalUrl;
     const cached = publicTextResponseCache.get(key);
     if (cached && cached.expiresAt > Date.now()) {
       res.status(200);
@@ -4401,7 +4401,7 @@ function cachePublicTextResponse(ttlMs: number, cacheControl: string) {
   };
 }
 
-app.get('/sitemap.xml', cachePublicTextResponse(300_000, 'public, max-age=300, stale-while-revalidate=60'), async (_req: Request, res: Response) => {
+app.get('/sitemap.xml', cachePublicResponse(300_000, 'public, max-age=300, stale-while-revalidate=60'), async (_req: Request, res: Response) => {
   const urls = new Map<string, string | undefined>();
   const alternatesByUrl = new Map<string, Map<string, string>>();
   const seoExclusions = await loadAwesomeAdventureToursSeoIndexExclusions();
@@ -4590,7 +4590,7 @@ app.get('/sitemap.xml', cachePublicTextResponse(300_000, 'public, max-age=300, s
   return res.send(xml);
 });
 
-app.get('/llms.txt', cachePublicTextResponse(300_000, 'public, max-age=300, stale-while-revalidate=60'), async (_req: Request, res: Response) => {
+app.get('/llms.txt', cachePublicResponse(300_000, 'public, max-age=300, stale-while-revalidate=60'), async (_req: Request, res: Response) => {
   const seoExclusions = await loadAwesomeAdventureToursSeoIndexExclusions();
   const lines = [
     '# Awesome Adventure Tours',
@@ -4759,7 +4759,7 @@ app.get('/llms.txt', cachePublicTextResponse(300_000, 'public, max-age=300, stal
 });
 
 
-app.get('/llms-full.txt', cachePublicTextResponse(300_000, 'public, max-age=300, stale-while-revalidate=60'), async (_req: Request, res: Response) => {
+app.get('/llms-full.txt', cachePublicResponse(300_000, 'public, max-age=300, stale-while-revalidate=60'), async (_req: Request, res: Response) => {
   if (!publicSupabase) {
     res.setHeader('Cache-Control', 'no-store');
     return res.status(503).type('text/plain; charset=utf-8').send('The public catalogue is temporarily unavailable. Please retry later.');
