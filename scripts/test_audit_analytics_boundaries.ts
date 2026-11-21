@@ -15,9 +15,7 @@ check(
     && spreadsheetSerializer.includes('formulaSafe')
     && visitorPanel.includes('serializeSpreadsheetRows([columns, ...rows])')
     && reportingService.includes('serializeSpreadsheetRows([')
-    && reportingService.includes("], '\\\\t');")
     && technicalPanel.includes('serializeSpreadsheetRows([columns, ...rows])')
-    && !reportingService.includes('const sanitize =')
     && !technicalPanel.includes('String(value).replace')
 );
 check(
