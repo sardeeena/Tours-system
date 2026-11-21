@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'motion/react';
-import { MapPin, Navigation, ArrowUpRight, AlertTriangle, RotateCcw } from 'lucide-react';
+import { MapPin, ArrowUpRight, AlertTriangle, RotateCcw } from 'lucide-react';
 import { Destination } from '../../types';
 import { getPublishedDestinations, NEUTRAL_DESTINATION_PLACEHOLDER } from '../../services/tourService';
 
@@ -87,10 +87,6 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
               Discover excursions across Egypt’s Red Sea coast and historic destinations. Each excursion page explains its own departure, transfer and booking arrangements.
             </p>
           </div>
-          <div className="text-xs text-stone-500 dark:text-slate-300 flex items-center bg-white dark:bg-[#132235] px-3.5 py-2 rounded-xl border border-stone-200/80 dark:border-slate-700 shadow-2xs">
-            <Navigation className="w-4 h-4 text-[#0A6C74] dark:text-[#60C3CC] mr-2 shrink-0" />
-            <span>Check pickup availability and any supplements on each excursion</span>
-          </div>
         </div>
 
         {/* Loading State */}
@@ -140,7 +136,7 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
             <MapPin className="w-8 h-8 text-stone-400 dark:text-slate-500 mx-auto" />
             <h3 className="text-sm font-semibold text-stone-800 dark:text-slate-200">No Destinations Available</h3>
             <p className="text-xs text-stone-500 dark:text-slate-400">
-              Coastal destination records are currently being updated in our database. Please check back shortly.
+              We’re refreshing our destination collection. Please check back soon.
             </p>
           </div>
         )}
@@ -157,7 +153,7 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
                 transition={{ duration: 0.45, delay: idx * 0.08 }}
                 whileHover={{ y: -6 }}
                 onClick={() => onSelectDestination(dest.name)}
-                className={`group bg-white dark:bg-[#132235] rounded-2xl border border-[#E8E3DA] dark:border-slate-800 overflow-hidden cursor-pointer hover:border-[#0A6C74]/50 hover:shadow-xl transition-all duration-300 flex flex-col justify-between ${
+                className={`group bg-white/85 dark:bg-[#132235]/85 backdrop-blur-xl rounded-2xl border border-white/70 dark:border-white/10 shadow-md overflow-hidden cursor-pointer hover:border-[#0A6C74]/50 hover:shadow-xl transition-all duration-300 flex flex-col justify-between ${
                   idx === 0 ? 'md:col-span-2 lg:col-span-1' : ''
                 }`}
               >
