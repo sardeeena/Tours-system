@@ -4,7 +4,11 @@ import {
   ShieldCheck, 
   Clock, 
   MapPin, 
-  Award
+  Award,
+  ChevronLeft,
+  ChevronRight,
+  Pause,
+  Play
 } from 'lucide-react';
 import { SearchModule } from './SearchModule';
 import { Destination, Category } from '../../types';
@@ -33,7 +37,7 @@ const CINEMATIC_SLIDES: TourSlide[] = [
     title1: 'Pristine Lagoons &',
     title2: 'Giftun Island Reefs',
     subtitle: 'Sail to Orange Bay and Paradise Island with crystal shallow sands, live coral gardens, and wild dolphin pods.',
-    imageUrl: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1600&q=75',
+    imageUrl: 'https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/1794698289844-jyr7cx-Orange_Bay.webp',
     accentGradient: 'from-[#0A6C74] via-[#0D838C] to-[#0A6C74] dark:from-[#60C3CC] dark:via-[#91E4EB] dark:to-[#A3E8ED]',
   },
   {
@@ -41,7 +45,7 @@ const CINEMATIC_SLIDES: TourSlide[] = [
     title1: 'Sunset Dunes &',
     title2: 'Bedouin Nights',
     subtitle: 'High-octane ATV quad biking through Red Sea mountain canyons, sunset camel caravans, and authentic stargazing BBQ.',
-    imageUrl: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1600&q=75',
+    imageUrl: 'https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/1794702133040-bwacm6-ATV_Quad_Riding.webp',
     accentGradient: 'from-[#B45309] via-[#D97706] to-[#B45309] dark:from-[#F59E0B] dark:via-[#FBBF24] dark:to-[#FDE68A]',
   },
   {
@@ -49,7 +53,7 @@ const CINEMATIC_SLIDES: TourSlide[] = [
     title1: 'Unrivaled Coral Drop-Offs &',
     title2: 'Scuba Encounters',
     subtitle: 'Selected trips in Egypt offer introductory scuba dives and guided diving experiences. Check each tour page for dive format, instructor qualifications, equipment and inclusions.',
-    imageUrl: 'https://images.unsplash.com/photo-1544551763-92ab472cad5d?auto=format&fit=crop&w=1600&q=75',
+    imageUrl: 'https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/1794762506883-5brf0x-Ras_Mohamed00.webp',
     accentGradient: 'from-[#0F766E] via-[#0D9488] to-[#0F766E] dark:from-[#2DD4BF] dark:via-[#5EEAD4] dark:to-[#99F6E4]',
   },
   {
@@ -75,6 +79,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
   const { isDark } = useTheme();
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [isPointerOver, setIsPointerOver] = useState(false);
   const [isDocumentVisible, setIsDocumentVisible] = useState(() => typeof document === 'undefined' || !document.hidden);
   const [isInViewport, setIsInViewport] = useState(true);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -110,15 +115,24 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
 
   // Auto-advance cinematic background & matching content every 6.5 seconds
   useEffect(() => {
-    if (isPaused || !isDocumentVisible || !isInViewport || prefersReducedMotion) return;
+    if (isPaused || isPointerOver || !isDocumentVisible || !isInViewport || prefersReducedMotion) return;
     const interval = setInterval(() => {
       setCurrentSlideIndex((prev) => (prev + 1) % CINEMATIC_SLIDES.length);
     }, 6500);
 
     return () => clearInterval(interval);
-  }, [isPaused, isDocumentVisible, isInViewport, prefersReducedMotion]);
+  }, [isPaused, isPointerOver, isDocumentVisible, isInViewport, prefersReducedMotion]);
 
   const slide = CINEMATIC_SLIDES[currentSlideIndex];
+  const nextSlide = CINEMATIC_SLIDES[(currentSlideIndex + 1) % CINEMATIC_SLIDES.length];
+
+  // Warm the next hero image while the current slide is visible to avoid a blank frame.
+  useEffect(() => {
+    if (!isDocumentVisible || !isInViewport || prefersReducedMotion) return;
+    const image = new Image();
+    image.decoding = 'async';
+    image.src = nextSlide.imageUrl;
+  }, [nextSlide.imageUrl, isDocumentVisible, isInViewport, prefersReducedMotion]);
 
   const handlePrevSlide = () => {
     setCurrentSlideIndex((prev) => (prev === 0 ? CINEMATIC_SLIDES.length - 1 : prev - 1));
@@ -146,20 +160,20 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
     <section
       ref={heroSectionRef}
       className="relative w-full bg-gradient-to-b from-[#E2F1F3] via-[#EFF7F8] to-[#FAF8F5] dark:bg-[#0E1B2A] text-stone-900 dark:text-white overflow-hidden transition-colors duration-300"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
+      onMouseEnter={() => setIsPointerOver(true)}
+      onMouseLeave={() => setIsPointerOver(false)}
     >
       {/* Cinematic Layer: Smooth Cross-fading background image with slow Ken Burns pan/zoom */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
         <AnimatePresence mode="sync">
           <motion.div
             key={slide.id}
-            initial={{ scale: 1.12, opacity: 0 }}
-            animate={{ scale: 1.02, opacity: isDark ? 0.42 : 0.22 }}
-            exit={{ scale: 1.16, opacity: 0 }}
-            transition={{ 
-              opacity: { duration: 1.6, ease: 'easeInOut' },
-              scale: { duration: 7.5, ease: 'easeOut' }
+            initial={prefersReducedMotion ? false : { scale: 1.08, opacity: 0 }}
+            animate={{ scale: 1.02, opacity: isDark ? 0.48 : 0.34 }}
+            exit={{ scale: prefersReducedMotion ? 1.02 : 1.12, opacity: 0 }}
+            transition={{
+              opacity: { duration: prefersReducedMotion ? 0 : 1.35, ease: 'easeInOut' },
+              scale: { duration: prefersReducedMotion ? 0 : 7.5, ease: 'easeOut' }
             }}
             className="absolute inset-0 bg-cover bg-center will-change-transform"
             style={{
@@ -174,8 +188,8 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
       <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-[#E8F3F4]/60 dark:bg-[#60C3CC]/15 rounded-full blur-3xl pointer-events-none" />
 
       {/* Cinematic Film Vignette & Multi-stop Depth Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#FAF8F5] via-[#FAF8F5]/60 to-transparent dark:from-[#0E1B2A] dark:via-[#0E1B2A]/60 dark:to-[#0E1B2A]/85 pointer-events-none" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-transparent via-[#FAF8F5]/30 to-[#FAF8F5]/80 dark:via-[#0E1B2A]/40 dark:to-[#0E1B2A]/90 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-t from-[#FAF8F5] via-[#FAF8F5]/45 to-transparent dark:from-[#0E1B2A] dark:via-[#0E1B2A]/50 dark:to-[#0E1B2A]/85 pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-transparent via-[#FAF8F5]/20 to-[#FAF8F5]/70 dark:via-[#0E1B2A]/30 dark:to-[#0E1B2A]/85 pointer-events-none" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-8 pt-10 sm:pt-14 pb-12 sm:pb-16">
         
@@ -184,10 +198,10 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
           <AnimatePresence mode="wait">
             <motion.div
               key={slide.id}
-              initial={{ opacity: 0, y: 18 }}
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -16 }}
-              transition={{ duration: 0.55, ease: 'easeOut' }}
+              exit={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: -16 }}
+              transition={{ duration: prefersReducedMotion ? 0 : 0.55, ease: 'easeOut' }}
             >
               {/* Dynamic Headline */}
               <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-stone-900 dark:text-white leading-[1.12] mb-3 [text-wrap:balance]">
@@ -203,6 +217,46 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
               </p>
             </motion.div>
           </AnimatePresence>
+        </div>
+
+
+        {/* Accessible slide controls: visitors can pause, resume, or choose a scene. */}
+        <div className="flex items-center gap-2 mb-6" aria-label="Hero image slideshow controls">
+          <button
+            type="button"
+            onClick={handlePrevSlide}
+            aria-label="Show previous hero image"
+            className="w-9 h-9 rounded-full border border-stone-300/80 dark:border-slate-600 bg-white/75 dark:bg-[#16283D]/80 text-stone-800 dark:text-white backdrop-blur-sm inline-flex items-center justify-center hover:bg-white dark:hover:bg-slate-700 transition-colors"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          {CINEMATIC_SLIDES.map((item, index) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setCurrentSlideIndex(index)}
+              aria-label={`Show hero image ${index + 1}: ${item.title1} ${item.title2}`}
+              aria-pressed={currentSlideIndex === index}
+              className={`h-2.5 rounded-full transition-all duration-300 ${currentSlideIndex === index ? 'w-7 bg-[#0A6C74] dark:bg-[#60C3CC]' : 'w-2.5 bg-stone-400/70 dark:bg-slate-400/70 hover:bg-stone-600 dark:hover:bg-slate-200'}`}
+            />
+          ))}
+          <button
+            type="button"
+            onClick={() => setIsPaused((paused) => !paused)}
+            aria-label={isPaused ? 'Resume hero slideshow' : 'Pause hero slideshow'}
+            aria-pressed={isPaused}
+            className="w-9 h-9 rounded-full border border-stone-300/80 dark:border-slate-600 bg-white/75 dark:bg-[#16283D]/80 text-stone-800 dark:text-white backdrop-blur-sm inline-flex items-center justify-center hover:bg-white dark:hover:bg-slate-700 transition-colors ml-1"
+          >
+            {isPaused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
+          </button>
+          <button
+            type="button"
+            onClick={handleNextSlide}
+            aria-label="Show next hero image"
+            className="w-9 h-9 rounded-full border border-stone-300/80 dark:border-slate-600 bg-white/75 dark:bg-[#16283D]/80 text-stone-800 dark:text-white backdrop-blur-sm inline-flex items-center justify-center hover:bg-white dark:hover:bg-slate-700 transition-colors"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
 
         {/* Booking / Search Module */}
