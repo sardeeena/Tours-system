@@ -24,6 +24,25 @@ export function startWorkerLease(
   let lastConfirmedAt = 0;
   let lastErrorLoggedAt = 0;
 
+  const release = (): void => {
+    void client.rpc('release_background_worker_lease', {
+      p_worker_name: workerName,
+      p_owner_id: ownerId,
+    }).then(
+      ({ error }) => {
+        if (error) {
+          console.error('[Background Worker Lease] Lease release failed.', { workerName, error: error.message });
+        }
+      },
+      (error: unknown) => {
+        console.error('[Background Worker Lease] Lease release failed.', {
+          workerName,
+          error: error instanceof Error ? error.message : 'Unknown lease error',
+        });
+      }
+    );
+  };
+
   const refresh = async (): Promise<void> => {
     if (stopped || refreshing) return;
     refreshing = true;
@@ -37,6 +56,10 @@ export function startWorkerLease(
       if (error) throw error;
 
       const acquired = data === true;
+      if (stopped) {
+        if (acquired) release();
+        return;
+      }
       lastConfirmedAt = acquired ? Date.now() : 0;
       if (leader !== acquired) {
         leader = acquired;
@@ -73,25 +96,7 @@ export function startWorkerLease(
       if (leader) {
         leader = false;
         onLeadershipChange(false);
-        void client.rpc('release_background_worker_lease', {
-          p_worker_name: workerName,
-          p_owner_id: ownerId,
-        }).then(
-          ({ error }) => {
-            if (error) {
-              console.error('[Background Worker Lease] Lease release failed.', {
-                workerName,
-                error: error.message,
-              });
-            }
-          },
-          (error: unknown) => {
-            console.error('[Background Worker Lease] Lease release failed.', {
-              workerName,
-              error: error instanceof Error ? error.message : 'Unknown lease error',
-            });
-          }
-        );
+        release();
       }
     },
   };
