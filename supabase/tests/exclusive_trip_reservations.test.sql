@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(22);
+SELECT plan(23);
 
 SELECT has_table('public','exclusive_trips','Exclusive product settings have their own table');
 SELECT has_table('public','exclusive_departures','Exclusive schedule slots have their own table');
@@ -139,6 +139,12 @@ SELECT is(
    WHERE b.id=(SELECT (one_guest->>'bookingId')::UUID FROM exclusive_test_context)),
   'exclusive',
   'shared booking record is explicitly classified as Exclusive'
+);
+SELECT ok(
+  (SELECT r.booking_id=(SELECT (one_guest->>'bookingId')::UUID FROM exclusive_test_context)
+   FROM public.exclusive_reservations r
+   WHERE r.id=(SELECT (one_guest->>'reservationId')::UUID FROM exclusive_test_context)),
+  'Exclusive reservation is linked one-to-one to its shared booking record'
 );
 SELECT ok(
   (SELECT b.customer_id IS NOT NULL FROM public.bookings b
