@@ -30,7 +30,7 @@ const app = express();
 app.set('trust proxy', 1);
 // Normalize the public hostname without altering non-www hosts or trusting arbitrary Host values.
 app.use((req: Request, res: Response, next: NextFunction) => {
-  const host = (req.headers.host || '').toLowerCase().replace(/:\\d+$/, '');
+  const host = (req.headers.host || '').toLowerCase().replace(/:\d+$/, '');
   if (host === 'www.awesomeadventure.tours') {
     return res.redirect(308, `https://awesomeadventure.tours${req.originalUrl}`);
   }
