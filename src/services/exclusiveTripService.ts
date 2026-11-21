@@ -206,10 +206,13 @@ export async function updateExclusiveReservation(
   changes: { status?: string; payment_status?: string }
 ) {
   const client = requireSupabase();
-  const { error } = await client.from('exclusive_reservations')
-    .update({ ...changes, updated_at: new Date().toISOString() })
-    .eq('id', reservationId);
-  if (error) throw new Error(error.message || 'Unable to update the Exclusive reservation.');
+  const { data, error } = await client.rpc('update_exclusive_reservation_status', {
+    p_reservation_id: reservationId,
+    p_status: changes.status || null,
+    p_payment_status: changes.payment_status || null,
+  });
+  if (error) throw new Error(error.message || 'Unable to update the Exclusive reservation and linked booking.');
+  if (!data?.success) throw new Error('The Exclusive reservation was not updated.');
 }
 
 export async function getExclusiveResourceOptions() {
