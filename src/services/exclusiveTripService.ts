@@ -147,19 +147,19 @@ export async function saveExclusiveTrip(input: {
     || input.minimumGuests < 1 || input.maximumGuests < input.minimumGuests || input.maximumGuests > 500) {
     throw new Error('Guest limits must be whole numbers, with maximum greater than or equal to minimum.');
   }
-  const { error: tourError } = await client.from('tours')
-    .update({ is_exclusive: true })
-    .eq('id', input.tourId);
-  if (tourError) throw new Error(tourError.message || 'Unable to classify this listing as Exclusive.');
-  const { error } = await client.from('exclusive_trips').upsert({
-    tour_id: input.tourId,
-    fixed_trip_price: input.fixedTripPrice,
-    currency: input.currency,
-    minimum_guests: input.minimumGuests,
-    maximum_guests: input.maximumGuests,
-    is_active: input.isActive,
-  }, { onConflict: 'tour_id' });
+  if (!/^[A-Z]{3}$/.test(input.currency)) {
+    throw new Error('Select a valid three-letter currency code.');
+  }
+  const { data, error } = await client.rpc('save_exclusive_trip_settings', {
+    p_tour_id: input.tourId,
+    p_fixed_trip_price: input.fixedTripPrice,
+    p_currency: input.currency,
+    p_minimum_guests: input.minimumGuests,
+    p_maximum_guests: input.maximumGuests,
+    p_is_active: input.isActive,
+  });
   if (error) throw new Error(error.message || 'Unable to save Exclusive trip settings.');
+  if (!data?.success) throw new Error('Exclusive trip settings were not saved.');
 }
 
 export async function createExclusiveDeparture(input: {
