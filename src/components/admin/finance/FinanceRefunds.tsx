@@ -1,4 +1,4 @@
-import { serializeSpreadsheetRows } from '../../utils/spreadsheetExport';
+import { serializeSpreadsheetRows } from '../../../utils/spreadsheetExport';
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   RotateCcw,
