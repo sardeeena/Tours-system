@@ -36,6 +36,7 @@ interface HeaderProps {
   onNavigateSection?: (sectionId: string) => void;
   onNavigateHome?: () => void;
   onNavigateExcursions?: () => void;
+  onNavigateExclusive?: () => void;
   onNavigateBooking?: (tourSlug?: string) => void;
   onNavigateLogin?: () => void;
   onNavigateRegister?: () => void;
@@ -53,6 +54,7 @@ export const Header: React.FC<HeaderProps> = ({
   onNavigateSection,
   onNavigateHome,
   onNavigateExcursions,
+  onNavigateExclusive,
   onNavigateBooking,
   onNavigateLogin,
   onNavigateRegister,
@@ -223,13 +225,14 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Desktop Nav Links */}
           <nav className="hidden xl:flex items-center space-x-2 2xl:space-x-3 text-xs 2xl:text-sm font-semibold text-stone-700 dark:text-slate-200" aria-label="Main Navigation">
-            <button 
+            <button type="button" onClick={() => { setMobileMenuOpen(false); onNavigateExclusive?.(); }} className="w-full text-left">Exclusive Private Trips</button>\n            <button 
               type="button"
               onClick={handleExcursionsClick} 
               className="text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1 cursor-pointer whitespace-nowrap shrink-0"
             >
               {t('nav.allExcursions')}
             </button>
+            <button type="button" onClick={() => { setMobileMenuOpen(false); onNavigateExclusive?.(); }} className="text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors py-1 cursor-pointer whitespace-nowrap shrink-0">Exclusive</button>
             <button 
               type="button"
               onClick={() => handleNavClick('destinations-section')} 
