@@ -98,9 +98,10 @@ const tourService = fs.readFileSync('src/services/tourService.ts', 'utf8');
 
 check(
   'Public generated text endpoints use bounded in-process response caching',
-  server.includes('function cachePublicTextResponse') &&
-    server.includes("cachePublicTextResponse(300_000") &&
-    server.includes('publicHtmlResponseCache')
+  server.includes('function cachePublicResponse') &&
+    server.includes("cachePublicResponse(300_000") &&
+    server.includes("res.setHeader('Cache-Control', cacheControl)") &&
+    server.includes('publicHtmlResponseCache.size > 100')
 );
 check(
   'Public translation endpoints cache locale dictionaries and reduce repeated checksum scans',

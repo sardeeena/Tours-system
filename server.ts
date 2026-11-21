@@ -4382,6 +4382,8 @@ function cachePublicResponse(ttlMs: number, cacheControl: string) {
     }
     if (cached) publicTextResponseCache.delete(key);
 
+    // Keep the browser/CDN policy consistent on both cache hits and misses.
+    res.setHeader('Cache-Control', cacheControl);
     const originalSend = res.send.bind(res);
     (res as any).send = (body: unknown) => {
       if (res.statusCode === 200 && typeof body === 'string') {
@@ -6234,7 +6236,7 @@ async function startServer() {
           rendered = await renderAwesomeAdventureToursPublicHtml(req.path, indexHtml);
           if (rendered.statusCode === 200) {
             publicHtmlResponseCache.set(req.path, { expiresAt: Date.now() + 30_000, rendered });
-            if (publicHtmlResponseCache.size > 250) {
+            if (publicHtmlResponseCache.size > 100) {
               const oldestKey = publicHtmlResponseCache.keys().next().value;
               if (oldestKey) publicHtmlResponseCache.delete(oldestKey);
             }
