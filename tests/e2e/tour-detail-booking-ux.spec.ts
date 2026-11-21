@@ -49,7 +49,7 @@ test('booking progress presents four clear stages on mobile without submitting a
   const progress = page.getByRole('progressbar', { name: 'Booking progress' });
   await expect(progress).toHaveAttribute('aria-valuemin', '1');
   await expect(progress).toHaveAttribute('aria-valuemax', '4');
-  const mobileProgress = progress.locator('xpath=../..');
-  await expect(mobileProgress.getByText('Your Excursion')).toBeVisible();
-  await expect(mobileProgress.getByText('Stage 1 of 4')).toBeVisible();
+  const mobileProgressHeader = progress.locator('xpath=../..').locator('div.flex.justify-between').first();
+  await expect(mobileProgressHeader.getByText('Your Excursion', { exact: true })).toBeVisible();
+  await expect(mobileProgressHeader.getByText('Stage 1 of 4', { exact: true })).toBeVisible();
 });
