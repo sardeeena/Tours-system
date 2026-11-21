@@ -162,26 +162,53 @@ BEGIN
   END IF;
 
   IF (
-    (NEW.captain_id IS NOT NULL AND EXISTS (
-      SELECT 1 FROM public.exclusive_departures d
-      WHERE d.id IS DISTINCT FROM NEW.id AND d.date=NEW.date
-        AND d.status NOT IN ('cancelled','completed')
-        AND NEW.captain_id IN (d.captain_id,d.guide_id,d.driver_id)
-        AND d.start_time < NEW.end_time AND d.end_time > NEW.start_time
+    (NEW.captain_id IS NOT NULL AND (
+      EXISTS (
+        SELECT 1 FROM public.exclusive_departures d
+        WHERE d.id IS DISTINCT FROM NEW.id AND d.date=NEW.date
+          AND d.status NOT IN ('cancelled','completed')
+          AND NEW.captain_id IN (d.captain_id,d.guide_id,d.driver_id)
+          AND d.start_time < NEW.end_time AND d.end_time > NEW.start_time
+      )
+      OR EXISTS (
+        SELECT 1 FROM public.departures d
+        WHERE d.date=NEW.date AND d.status NOT IN ('cancelled','completed')
+          AND (NEW.captain_id IN (d.captain_id,d.guide_id,d.driver_id)
+            OR NEW.captain_id = ANY(coalesce(d.crew_ids, ARRAY[]::uuid[])))
+          AND d.start_time::time < NEW.end_time AND d.end_time::time > NEW.start_time
+      )
     ))
-    OR (NEW.guide_id IS NOT NULL AND EXISTS (
-      SELECT 1 FROM public.exclusive_departures d
-      WHERE d.id IS DISTINCT FROM NEW.id AND d.date=NEW.date
-        AND d.status NOT IN ('cancelled','completed')
-        AND NEW.guide_id IN (d.captain_id,d.guide_id,d.driver_id)
-        AND d.start_time < NEW.end_time AND d.end_time > NEW.start_time
+    OR (NEW.guide_id IS NOT NULL AND (
+      EXISTS (
+        SELECT 1 FROM public.exclusive_departures d
+        WHERE d.id IS DISTINCT FROM NEW.id AND d.date=NEW.date
+          AND d.status NOT IN ('cancelled','completed')
+          AND NEW.guide_id IN (d.captain_id,d.guide_id,d.driver_id)
+          AND d.start_time < NEW.end_time AND d.end_time > NEW.start_time
+      )
+      OR EXISTS (
+        SELECT 1 FROM public.departures d
+        WHERE d.date=NEW.date AND d.status NOT IN ('cancelled','completed')
+          AND (NEW.guide_id IN (d.captain_id,d.guide_id,d.driver_id)
+            OR NEW.guide_id = ANY(coalesce(d.crew_ids, ARRAY[]::uuid[])))
+          AND d.start_time::time < NEW.end_time AND d.end_time::time > NEW.start_time
+      )
     ))
-    OR (NEW.driver_id IS NOT NULL AND EXISTS (
-      SELECT 1 FROM public.exclusive_departures d
-      WHERE d.id IS DISTINCT FROM NEW.id AND d.date=NEW.date
-        AND d.status NOT IN ('cancelled','completed')
-        AND NEW.driver_id IN (d.captain_id,d.guide_id,d.driver_id)
-        AND d.start_time < NEW.end_time AND d.end_time > NEW.start_time
+    OR (NEW.driver_id IS NOT NULL AND (
+      EXISTS (
+        SELECT 1 FROM public.exclusive_departures d
+        WHERE d.id IS DISTINCT FROM NEW.id AND d.date=NEW.date
+          AND d.status NOT IN ('cancelled','completed')
+          AND NEW.driver_id IN (d.captain_id,d.guide_id,d.driver_id)
+          AND d.start_time < NEW.end_time AND d.end_time > NEW.start_time
+      )
+      OR EXISTS (
+        SELECT 1 FROM public.departures d
+        WHERE d.date=NEW.date AND d.status NOT IN ('cancelled','completed')
+          AND (NEW.driver_id IN (d.captain_id,d.guide_id,d.driver_id)
+            OR NEW.driver_id = ANY(coalesce(d.crew_ids, ARRAY[]::uuid[])))
+          AND d.start_time::time < NEW.end_time AND d.end_time::time > NEW.start_time
+      )
     ))
   ) THEN
     RAISE EXCEPTION 'The assigned crew member is already scheduled during this time window' USING ERRCODE = '23P01';
@@ -731,6 +758,12 @@ BEGIN
   FOR SHARE;
   IF NOT FOUND THEN
     RAISE EXCEPTION 'This exclusive trip is not currently published' USING ERRCODE = 'P0002';
+  END IF;
+
+  IF (v_departure.date + v_departure.start_time) <
+     ((now() AT TIME ZONE 'Africa/Cairo') + make_interval(hours => coalesce(v_tour.minimum_booking_notice_hours, 0))) THEN
+    RAISE EXCEPTION 'This Exclusive departure does not meet the minimum booking notice period of % hours',
+      coalesce(v_tour.minimum_booking_notice_hours, 0) USING ERRCODE = '22023';
   END IF;
 
   IF p_guest_count < v_trip.minimum_guests
