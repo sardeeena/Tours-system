@@ -7,7 +7,7 @@ const app = fs.readFileSync('src/App.tsx', 'utf8');
 const tabUnion = layout.match(/export type AdminTab\s*=\s*([\s\S]*?);/)?.[1];
 assert.ok(tabUnion, 'AdminTab must remain a declared union');
 const tabs = [...tabUnion.matchAll(/'([^']+)'/g)].map((match) => match[1]);
-assert.equal(tabs.length, 62, 'The admin tab inventory changed; review the coverage matrix before updating this assertion');
+assert.equal(tabs.length, 63, 'The admin tab inventory changed; review the coverage matrix before updating this assertion');
 assert.equal(new Set(tabs).size, tabs.length, 'AdminTab contains duplicate identifiers');
 
 const navBlock = layout.match(/const navItems:[\s\S]*?=\s*\[([\s\S]*?)\n  \];/)?.[1];
@@ -27,6 +27,9 @@ assert.deepEqual(tabs.filter((id) => !routedTabs.has(id)), [], 'Every AdminTab m
 const intentionallyHiddenAliases = ['availability', 'crm_customers', 'crm_inquiries', 'tour_edit', 'technical'].sort();
 const notInSidebar = tabs.filter((id) => !navIds.includes(id)).sort();
 assert.deepEqual(notInSidebar, intentionallyHiddenAliases, 'Hidden aliases/internal routes changed; review whether each should be navigable');
+assert.match(layout, /id: 'privacy_data', label: 'Privacy & Data'/, 'Privacy and data controls remain accessible through a non-technical admin destination');
+assert.match(layout, /id === 'settings' \|\| id === 'privacy_data'[\s\S]*?\? isSuperAdmin/, 'Privacy and data controls remain superadmin-only');
+assert.match(app, /activeAdminTab === 'privacy_data' && <VisitorAnalyticsPanel \/>/, 'Privacy workspace remains independently reachable after diagnostics are hidden');
 
 for (const id of tabs) {
   const routeIndex = app.indexOf(`activeAdminTab === '${id}'`);
