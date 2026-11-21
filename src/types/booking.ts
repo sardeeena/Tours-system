@@ -109,6 +109,8 @@ export type BookingStatus =
 
 export interface Booking {
   bookingId: string;
+  bookingKind?: 'standard' | 'exclusive';
+  exclusiveDepartureId?: string;
   bookingReference: string; // e.g. AWE-20261118-123456
   idempotencyKey?: string; // Request idempotency token for duplicate & retry protection
   couponCode?: string; // Validated and redeemed atomically by the database
