@@ -30,6 +30,8 @@ const toolDefinitionsEnd = server.indexOf("app.get('/.well-known/mcp/server-card
 const tools = server.slice(toolDefinitionsStart, toolDefinitionsEnd);
 assert.match(tools, /name: 'search_published_excursions'/, 'Read-only published-excursion search tool is advertised');
 assert.match(tools, /name: 'get_published_excursion'/, 'Read-only published-excursion detail tool is advertised');
+assert.match(tools, /name: 'search_exclusive_private_trips'/, 'Read-only Exclusive trip search is advertised separately');
+assert.match(endpoint, /priceBasis: 'entire_trip'/, 'MCP marks Exclusive prices as applying to the entire trip');
 assert.doesNotMatch(tools, /booking|payment|refund|customer|admin|delete|update|create/i, 'MCP tool definitions expose no booking, payment, customer or administrative actions');
 
 assert.match(endpoint, /\.eq\('status', 'published'\)/, 'MCP data access is restricted to published excursions');
