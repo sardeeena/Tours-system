@@ -121,6 +121,20 @@ check(
     bookingWorker.includes('ACTIVE_QUEUE_POLL_INTERVAL_MS = 15_000') &&
     bookingWorker.includes("messages.length > 0 ? 'active' : 'idle'")
 );
+const publishedToursStart = tourService.indexOf('export async function getPublishedTours');
+const getTourBySlugStart = tourService.indexOf('export async function getTourBySlug', publishedToursStart);
+const publishedToursQuery = publishedToursStart >= 0 && getTourBySlugStart > publishedToursStart
+  ? tourService.slice(publishedToursStart, getTourBySlugStart)
+  : '';
+const tourDetailQuery = getTourBySlugStart >= 0 ? tourService.slice(getTourBySlugStart) : '';
+check(
+  'Catalogue reads omit deep inclusion/exclusion relations while detail pages retain full data',
+  publishedToursQuery.includes('tour_highlights') &&
+    !publishedToursQuery.includes('tour_inclusions') &&
+    !publishedToursQuery.includes('tour_exclusions') &&
+    tourDetailQuery.includes('tour_inclusions (*)') &&
+    tourDetailQuery.includes('tour_exclusions (*)')
+);
 check(
   'Published catalogue cache reduces repeated reads while retaining mutation invalidation',
   tourService.includes('const CACHE_TTL_MS = 5 * 60 * 1000;') &&
