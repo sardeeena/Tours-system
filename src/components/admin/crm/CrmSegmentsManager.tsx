@@ -1,3 +1,4 @@
+import { serializeSpreadsheetRows } from '../../../utils/spreadsheetExport';
 import React, { useState, useEffect } from 'react';
 import {
   Users,
@@ -113,18 +114,18 @@ export const CrmSegmentsManager: React.FC = () => {
   const exportSegmentCSV = () => {
     const headers = ['Full Name', 'Email', 'Phone', 'WhatsApp', 'Hotel', 'Revenue EUR', 'Total Bookings'];
     const rows = matchedCustomers.map((c) => [
-      `"${c.fullName}"`,
-      `"${c.email}"`,
-      `"${c.phone || ''}"`,
-      `"${c.whatsapp || ''}"`,
-      `"${c.hotel || ''}"`,
+      `${c.fullName}`,
+      `${c.email}`,
+      `${c.phone || ''}`,
+      `${c.whatsapp || ''}`,
+      `${c.hotel || ''}`,
       c.totalRevenue,
       c.totalBookings,
     ]);
 
     const csvContent =
       'data:text/csv;charset=utf-8,' +
-      [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+      serializeSpreadsheetRows([headers, ...rows]);
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
