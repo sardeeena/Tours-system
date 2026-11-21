@@ -155,7 +155,7 @@ interface CacheEntry<T> {
 let cachedPublishedTours: CacheEntry<Tour[]> | null = null;
 let cachedDestinations: CacheEntry<Destination[]> | null = null;
 let cachedCategories: CacheEntry<Category[]> | null = null;
-const CACHE_TTL_MS = 2 * 60 * 1000;
+const CACHE_TTL_MS = 5 * 60 * 1000;
 
 export function invalidateCatalogueCache() {
   cachedPublishedTours = null;

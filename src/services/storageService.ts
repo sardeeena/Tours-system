@@ -198,7 +198,8 @@ export async function uploadTourMedia(
 
   const storagePath = `${safeFolder}/${Date.now()}-${Math.random().toString(36).substring(2, 8)}-${cleanFileName}`;
   const { error: uploadError } = await supabase.storage.from(MEDIA_BUCKET).upload(storagePath, uploadFile, {
-    cacheControl: '3600',
+    // Storage paths are unique and never overwritten; allow long-lived browser/CDN caching.
+    cacheControl: '31536000',
     upsert: false,
   });
   if (uploadError) return { url: '', storagePath: '', error: formatSupabaseError(uploadError) };

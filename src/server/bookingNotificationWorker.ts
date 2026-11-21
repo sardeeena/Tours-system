@@ -38,7 +38,9 @@ type BookingRow = {
   booking_extras: any[];
 };
 
-const QUEUE_POLL_INTERVAL_MS = 15_000;
+const ACTIVE_QUEUE_POLL_INTERVAL_MS = 15_000;
+const IDLE_QUEUE_POLL_INTERVAL_MS = 30_000;
+const ERROR_QUEUE_POLL_INTERVAL_MS = 30_000;
 const MAX_DELIVERY_ATTEMPTS = 5;
 const CUSTOMER_LOCALE_CODES = new Set<string>(ROUTABLE_LOCALE_CODES);
 
@@ -707,16 +709,20 @@ export function startBookingNotificationWorker(client: SupabaseClient): () => vo
   }
 
   let running = false;
+  let stopped = false;
+  let pollTimer: ReturnType<typeof setTimeout> | null = null;
+  let lease: ReturnType<typeof startWorkerLease> | null = null;
 
-  const poll = async () => {
-    if (running) return;
+  const poll = async (): Promise<'active' | 'idle' | 'error'> => {
+    if (running) return 'idle';
     running = true;
 
     try {
       const { data, error } = await client.rpc('read_booking_notification_queue', { p_qty: 5 });
       if (error) throw error;
 
-      for (const item of (data || []) as QueueMessage[]) {
+      const messages = (data || []) as QueueMessage[];
+      for (const item of messages) {
         const eventId = item.message?.event_id;
         try {
           await processMessage(client, item, apiKey, fromEmail, fromName);
@@ -733,24 +739,51 @@ export function startBookingNotificationWorker(client: SupabaseClient): () => vo
           }
         }
       }
+      return messages.length > 0 ? 'active' : 'idle';
     } catch (error) {
       console.error('[Booking Notification Worker] Queue poll failed:', error);
+      return 'error';
     } finally {
       running = false;
     }
   };
 
-  const lease = startWorkerLease(client, 'booking_notification', (leader) => {
-    if (leader) void poll();
+  const scheduleNextPoll = (delayMs: number) => {
+    if (stopped || !lease?.isLeader()) return;
+    if (pollTimer) clearTimeout(pollTimer);
+    pollTimer = setTimeout(() => {
+      pollTimer = null;
+      void runPollAndSchedule();
+    }, delayMs);
+    pollTimer.unref();
+  };
+
+  const runPollAndSchedule = async () => {
+    if (stopped || !lease?.isLeader()) return;
+    const outcome = await poll();
+    if (stopped || !lease?.isLeader()) return;
+    const delay = outcome === 'active'
+      ? ACTIVE_QUEUE_POLL_INTERVAL_MS
+      : outcome === 'error'
+        ? ERROR_QUEUE_POLL_INTERVAL_MS
+        : IDLE_QUEUE_POLL_INTERVAL_MS;
+    scheduleNextPoll(delay);
+  };
+
+  lease = startWorkerLease(client, 'booking_notification', (leader) => {
+    if (leader) {
+      void runPollAndSchedule();
+    } else if (pollTimer) {
+      clearTimeout(pollTimer);
+      pollTimer = null;
+    }
   });
-  const timer = setInterval(() => {
-    if (lease.isLeader()) void poll();
-  }, QUEUE_POLL_INTERVAL_MS);
-  timer.unref();
 
   console.log('[Booking Notification Worker] Started; waiting for the distributed worker lease.');
   return () => {
-    clearInterval(timer);
-    lease.stop();
+    stopped = true;
+    if (pollTimer) clearTimeout(pollTimer);
+    pollTimer = null;
+    lease?.stop();
   };
 }
