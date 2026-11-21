@@ -599,6 +599,7 @@ app.post('/api/chat', rateLimit(10, 60_000), async (req: Request, res: Response)
       .from('tours')
       .select('id,title,slug,short_description,duration,duration_hours,price,child_price,private_price,currency,tour_type,pickup_available,pickup_info,cancellation_policy,departure_time,available_days,destinations(name),tour_images(image_url,is_primary,sort_order)')
       .eq('status', 'published')
+      .eq('is_exclusive', false)
       .order('sort_order', { ascending: true })
       .limit(60);
 
@@ -4322,6 +4323,7 @@ const AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN = 'https://awesomeadventure.tours';
 const AWESOME_ADVENTURE_TOURS_CORE_PUBLIC_PATHS = [
   '/',
   '/excursions',
+  '/exclusive',
   '/destinations',
   '/experiences',
   '/blog',
@@ -4385,6 +4387,7 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
         .from('tours')
         .select('id,slug,updated_at')
         .eq('status', 'published')
+        .eq('is_exclusive', false)
         .order('updated_at', { ascending: false })
         .limit(5000);
 
@@ -4593,6 +4596,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
         .from('tours')
         .select('id,title,slug,short_description,price,private_price,tour_type,currency')
         .eq('status', 'published')
+        .eq('is_exclusive', false)
         .order('sort_order', { ascending: true })
         .limit(500);
 
@@ -4612,6 +4616,35 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
       }
     } catch (error) {
       console.warn('[SEO llms.txt] Tour catalogue could not be loaded:', error);
+    }
+  }
+
+  if (publicSupabase) {
+    lines.push('', '## Exclusive private trips', '- Exclusive trips are booked as one complete private experience. The displayed fixed price applies to the entire trip, not per person.', '- Customers select a confirmed date and time and reserve the whole slot for their group.');
+    try {
+      const { data: exclusiveTrips, error } = await publicSupabase
+        .from('exclusive_trips')
+        .select('fixed_trip_price,currency,minimum_guests,maximum_guests,tours!inner(title,slug,short_description,status,is_exclusive)')
+        .eq('is_active', true)
+        .eq('tours.status', 'published')
+        .eq('tours.is_exclusive', true)
+        .order('created_at', { ascending: false });
+      if (error) {
+        console.warn('[SEO llms.txt] Exclusive catalogue query failed:', error.message);
+      } else {
+        for (const item of exclusiveTrips || []) {
+          const tour = Array.isArray(item.tours) ? item.tours[0] : item.tours;
+          const title = cleanPublicText(tour?.title, 160);
+          const slug = typeof tour?.slug === 'string' ? tour.slug.trim() : '';
+          if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+          const fixedPrice = Number(item.fixed_trip_price);
+          const currency = typeof item.currency === 'string' ? item.currency.toUpperCase() : 'EUR';
+          const priceText = Number.isFinite(fixedPrice) ? ` Fixed price for the entire trip: ${fixedPrice} ${currency}.` : '';
+          lines.push(`- [${title}](https://awesomeadventure.tours/exclusive): ${cleanPublicText(tour?.short_description, 350)}${priceText} Group size: ${item.minimum_guests}–${item.maximum_guests} guests.`);
+        }
+      }
+    } catch (error) {
+      console.warn('[SEO llms.txt] Exclusive catalogue could not be loaded:', error);
     }
   }
 
