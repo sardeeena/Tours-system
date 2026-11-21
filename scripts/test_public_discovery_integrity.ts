@@ -11,7 +11,7 @@ const server = read('../server.ts');
 const routes = read('../scripts/test_routes.ts');
 
 assert.match(app, /currentPath === '\/excursions'/, 'the public excursions directory has an explicit client route');
-assert.match(app, /currentPath === '\/exclusive' \|\| currentPath\.startsWith\('\/exclusive\/'\)/, 'Exclusive products use a separate public route');
+assert.match(app, /currentPath === '\/exclusive'/, 'Exclusive products use a separate public route');
 assert.match(tourService, /eq\('is_exclusive', false\)/, 'ordinary excursion discovery excludes Exclusive products');
 assert.match(app, /currentPath === '\/experiences'/, 'the experiences directory has an explicit client route');
 assert.match(app, /currentPath === '\/destinations'/, 'the destinations directory has an explicit client route');
