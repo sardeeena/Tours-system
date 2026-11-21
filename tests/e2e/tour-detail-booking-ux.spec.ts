@@ -46,8 +46,9 @@ test('booking progress presents four clear stages on mobile without submitting a
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`/booking?tour=${tourSlug}`);
 
+  const progress = page.getByLabel('Booking progress');
   await expect(page.getByRole('progressbar')).toHaveAttribute('aria-valuemin', '1');
   await expect(page.getByRole('progressbar')).toHaveAttribute('aria-valuemax', '4');
-  await expect(page.getByText('Your Excursion')).toBeVisible();
-  await expect(page.getByText(/Stage 1 of 4/)).toBeVisible();
+  await expect(progress.getByText('Your Excursion')).toBeVisible();
+  await expect(progress.getByText(/Stage 1 of 4/)).toBeVisible();
 });
