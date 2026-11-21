@@ -129,3 +129,13 @@ for (const result of results) {
 }
 console.log('\n' + (results.length - failed.length) + '/' + results.length + ' API access matrix checks passed.');
 if (failed.length) process.exit(1);
+
+const inquiryRouteStart = source.indexOf("app.post(['/api/inquiries'");
+const inquiryRouteEnd = source.indexOf("\n// ------------------------------------------------------------------------------", inquiryRouteStart);
+const inquiryRoute = inquiryRouteStart >= 0
+  ? source.slice(inquiryRouteStart, inquiryRouteEnd < 0 ? source.length : inquiryRouteEnd)
+  : '';
+assert(
+  'Public inquiry writes require the server-only Supabase key',
+  inquiryRoute.includes("SUPABASE_KEY_TYPE !== 'service_role'")
+);
