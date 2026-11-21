@@ -57,6 +57,14 @@ export const ExclusiveTripsPage: React.FC<Props> = () => {
     return () => { active = false; };
   }, [selectedTrip, selectedTripId]);
 
+  useEffect(() => {
+    if (!selectedTrip || !selectedDeparture) return;
+    setGuestCount((current) => Math.max(
+      selectedTrip.minimum_guests,
+      Math.min(current, selectedDeparture.maximum_guests, selectedTrip.maximum_guests)
+    ));
+  }, [selectedTrip, selectedDeparture]);
+
   const handleReserve = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!selectedTrip || !selectedDeparture) { setError('Please select an available date and time.'); return; }
