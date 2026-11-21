@@ -16,6 +16,7 @@ import { startStaffNotificationWorker } from './src/server/staffNotificationWork
 import { INITIAL_STATIC_PAGES } from './src/data/staticPages';
 import { EXPECTED_AWESOME_ADVENTURE_TOURS_SUPABASE_PROJECT_REF, isExpectedAwesomeAdventureToursSupabaseUrl } from './src/lib/supabaseProjectGuard';
 import { parseLocalePath, ROUTABLE_LOCALE_CODES } from './src/i18n/localeRouting';
+import { getTourAdultRateEur } from './src/services/pricingService';
 import { EUROPEAN_LOCALE_ROLLOUT } from './src/types/i18n';
 import { TRANSLATIONS } from './src/i18n/translations';
 import { PRIVATE_UI_SOURCE_CATALOG } from './src/i18n/privateUiCatalog.generated';
@@ -596,7 +597,7 @@ app.post('/api/chat', rateLimit(10, 60_000), async (req: Request, res: Response)
   try {
     const { data: catalogueRows, error: catalogueError } = await publicSupabase
       .from('tours')
-      .select('id,title,slug,short_description,duration,duration_hours,price,child_price,currency,tour_type,pickup_available,pickup_info,cancellation_policy,departure_time,available_days,destinations(name),tour_images(image_url,is_primary,sort_order)')
+      .select('id,title,slug,short_description,duration,duration_hours,price,child_price,private_price,currency,tour_type,pickup_available,pickup_info,cancellation_policy,departure_time,available_days,destinations(name),tour_images(image_url,is_primary,sort_order)')
       .eq('status', 'published')
       .order('sort_order', { ascending: true })
       .limit(60);
@@ -616,8 +617,8 @@ app.post('/api/chat', rateLimit(10, 60_000), async (req: Request, res: Response)
         summary: tour.short_description || '',
         duration: tour.duration || null,
         durationHours: tour.duration_hours == null ? null : Number(tour.duration_hours),
-        startingPrice: tour.price == null ? null : Number(tour.price),
-        childPrice: tour.child_price == null ? null : Number(tour.child_price),
+        startingPrice: publicTourStartingPrice(tour),
+        childPrice: tour.tour_type === 'Private' ? publicTourStartingPrice(tour) : (tour.child_price == null ? null : Number(tour.child_price)),
         currency: tour.currency || 'EUR',
         tourType: tour.tour_type || null,
         pickupAvailable: Boolean(tour.pickup_available),
@@ -1379,6 +1380,8 @@ app.get('/api/tours', rateLimit(120, 60_000), async (req: Request, res: Response
         featured,
         price,
         child_price,
+        private_price,
+        tour_type,
         badge,
         rating,
         review_count,
@@ -1480,8 +1483,10 @@ app.get('/api/tours', rateLimit(120, 60_000), async (req: Request, res: Response
         destination: t.destinations?.name || '',
         category: cats[0] || '',
         categories: cats,
-        priceEur: Number(t.price) || 0,
-        childPriceEur: t.child_price != null ? Number(t.child_price) : undefined,
+        priceEur: t.tour_type === 'Private' ? (Number(t.private_price) || 0) : (Number(t.price) || 0),
+        childPriceEur: t.tour_type === 'Private' ? (Number(t.private_price) || 0) : (t.child_price != null ? Number(t.child_price) : undefined),
+        privatePriceEur: t.private_price != null ? Number(t.private_price) : undefined,
+        tourType: t.tour_type || 'Shared',
         durationLabel: t.duration || (durationHours != null ? `${durationHours} Hours` : ''),
         ...(durationHours != null ? { durationHours } : {}),
         rating: Number.isFinite(rating) ? rating : 0,
@@ -4586,7 +4591,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
     try {
       const { data: tours, error } = await publicSupabase
         .from('tours')
-        .select('id,title,slug,short_description,price,currency')
+        .select('id,title,slug,short_description,price,private_price,tour_type,currency')
         .eq('status', 'published')
         .order('sort_order', { ascending: true })
         .limit(500);
@@ -4599,9 +4604,9 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
           const title = cleanPublicText(tour.title, 160);
           if (!title || seoExclusions.entityIds.has('tour:' + String(tour.id)) || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
           const description = cleanPublicText(tour.short_description, 400);
-          const price = Number(tour.price);
+          const price = publicTourStartingPrice(tour);
           const currency = typeof tour.currency === 'string' && /^[A-Z]{3}$/i.test(tour.currency) ? tour.currency.toUpperCase() : 'EUR';
-          const priceText = Number.isFinite(price) && price > 0 ? ` Starting price: ${price} ${currency}.` : '';
+          const priceText = price !== null && price > 0 ? ` Starting price: ${price} ${currency}.` : '';
           lines.push(`- [${title}](https://awesomeadventure.tours/excursions/${encodeURIComponent(slug)}): ${description}${priceText}`);
         }
       }
@@ -4702,7 +4707,7 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
     const now = new Date().toISOString();
     const [tourResult, destinationResult, postResult] = await Promise.all([
       publicSupabase.from('tours')
-        .select('id,destination_id,title,slug,short_description,description,duration,duration_type,duration_hours,tour_type,price,currency,pickup_available,pickup_info,cancellation_policy,departure_time,languages,difficulty,age_restrictions')
+        .select('id,destination_id,title,slug,short_description,description,duration,duration_type,duration_hours,tour_type,price,private_price,currency,pickup_available,pickup_info,cancellation_policy,departure_time,languages,difficulty,age_restrictions')
         .eq('status', 'published').order('sort_order', { ascending: true }).limit(500),
       publicSupabase.from('destinations')
         .select('id,name,slug,tagline,description').eq('status', 'published').order('sort_order', { ascending: true }).limit(100),
@@ -4817,9 +4822,9 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
       const title = cleanPublicText(tour.title, 160);
       const description = seoPlainText(tour.description, 7000);
       const shortDescription = cleanPublicText(tour.short_description, 700);
-      const price = Number(tour.price);
+      const price = publicTourStartingPrice(tour);
       const currency = typeof tour.currency === 'string' && /^[A-Z]{3}$/i.test(tour.currency) ? tour.currency.toUpperCase() : 'EUR';
-      const priceText = Number.isFinite(price) && price > 0 ? `${price.toFixed(2)} ${currency}` : 'Contact us for current pricing';
+      const priceText = price !== null && price > 0 ? `${price.toFixed(2)} ${currency}` : 'Contact us for current pricing';
       lines.push('', `### ${title}`, `URL: https://awesomeadventure.tours/excursions/${encodeURIComponent(slug)}`);
       if (shortDescription) lines.push(shortDescription);
       if (description) lines.push('', description);
@@ -5040,7 +5045,7 @@ app.post('/mcp', rateLimit(60, 60_000), async (req: Request, res: Response) => {
       const queryText = typeof args.query === 'string' ? args.query.trim().slice(0, 120) : '';
       const limit = Number.isInteger(args.limit) ? Math.max(1, Math.min(20, args.limit)) : 10;
       let query = publicSupabase.from('tours')
-        .select('title,slug,short_description,price,currency,duration')
+        .select('title,slug,short_description,price,private_price,tour_type,currency,duration')
         .eq('status', 'published')
         .order('sort_order', { ascending: true })
         .limit(limit);
@@ -5051,7 +5056,7 @@ app.post('/mcp', rateLimit(60, 60_000), async (req: Request, res: Response) => {
         title: cleanPublicText(tour.title, 160),
         slug: cleanPublicText(tour.slug, 180),
         description: cleanPublicText(tour.short_description, 400),
-        price: Number.isFinite(Number(tour.price)) ? Number(tour.price) : null,
+        price: publicTourStartingPrice(tour),
         currency: typeof tour.currency === 'string' ? tour.currency : 'EUR',
         duration: cleanPublicText(tour.duration, 100),
         url: `https://awesomeadventure.tours/excursions/${encodeURIComponent(String(tour.slug || ''))}`,
@@ -5063,7 +5068,7 @@ app.post('/mcp', rateLimit(60, 60_000), async (req: Request, res: Response) => {
       const slug = typeof args.slug === 'string' ? args.slug.trim() : '';
       if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) return fail(-32602, 'A valid excursion slug is required.');
       const { data, error } = await publicSupabase.from('tours')
-        .select('title,slug,short_description,description,price,currency,duration,pickup_info,cancellation_policy')
+        .select('title,slug,short_description,description,price,private_price,tour_type,currency,duration,pickup_info,cancellation_policy')
         .eq('slug', slug).eq('status', 'published').maybeSingle();
       if (error) throw error;
       if (!data) return reply({ content: [{ type: 'text', text: 'Published excursion not found.' }], isError: true });
@@ -5072,7 +5077,7 @@ app.post('/mcp', rateLimit(60, 60_000), async (req: Request, res: Response) => {
         slug: cleanPublicText(data.slug, 180),
         description: cleanPublicText(data.short_description || data.description, 1000),
         details: cleanPublicText(data.description, 4000),
-        price: Number.isFinite(Number(data.price)) ? Number(data.price) : null,
+        price: publicTourStartingPrice(data),
         currency: typeof data.currency === 'string' ? data.currency : 'EUR',
         duration: cleanPublicText(data.duration, 100),
         pickupInformation: cleanPublicText(data.pickup_info, 1000),
@@ -5195,6 +5200,15 @@ async function loadAwesomeAdventureToursSeoOverride(entityType: string, identifi
   }
 }
 
+function publicTourStartingPrice(tour: any): number | null {
+  const amount = getTourAdultRateEur({
+    tourType: tour?.tour_type === 'Private' ? 'Private' : 'Shared',
+    priceEur: Number(tour?.price) || 0,
+    privatePriceEur: tour?.private_price == null ? undefined : Number(tour.private_price),
+  });
+  return Number.isFinite(amount) && amount > 0 ? amount : null;
+}
+
 function seoPrice(priceValue: unknown, currencyValue: unknown): string {
   const price = Number(priceValue);
   if (!Number.isFinite(price) || price <= 0) return '';
@@ -5211,7 +5225,7 @@ async function loadAwesomeAdventureToursTours(): Promise<any[]> {
   if (!publicSupabase) return [];
   try {
     const { data, error } = await publicSupabase.from('tours')
-      .select('id,slug,title,short_description,description,price,currency,duration,duration_hours,destination_id,pickup_info,cancellation_policy,departure_time,updated_at,sort_order')
+      .select('id,slug,title,short_description,description,price,private_price,tour_type,currency,duration,duration_hours,destination_id,pickup_info,cancellation_policy,departure_time,updated_at,sort_order')
       .eq('status', 'published').order('sort_order', { ascending: true }).limit(500);
     if (error) {
       console.warn('[SEO render] Published tours unavailable:', error.message);
@@ -5295,7 +5309,7 @@ function seoTourCard(tour: any): string {
   if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) return '';
   const description = seoPlainText(tour?.short_description || tour?.description, 400);
   const duration = seoPlainText(tour?.duration, 80);
-  const price = seoPrice(tour?.price, tour?.currency);
+  const price = seoPrice(publicTourStartingPrice(tour), tour?.currency);
   return `<article class="seo-tour-card"><h2><a href="/excursions/${encodeURIComponent(slug)}">${seoHtmlEscape(title)}</a></h2>
     ${description ? `<p>${seoHtmlEscape(description)}</p>` : ''}
     ${duration ? `<p>Duration: ${seoHtmlEscape(duration)}</p>` : ''}
@@ -5475,7 +5489,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
         // This avoids six separate database round trips for every public detail page.
         const { data, error } = await publicSupabase.from('tours')
           .select(`
-            id,slug,title,short_description,description,price,currency,duration,duration_hours,
+            id,slug,title,short_description,description,price,private_price,tour_type,currency,duration,duration_hours,
             pickup_info,cancellation_policy,
             tour_images(image_url,alt_text,is_primary,sort_order),
             tour_highlights(item,sort_order),
@@ -5517,7 +5531,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       currentExclusions = Array.isArray(currentTour.tour_exclusions) ? currentTour.tour_exclusions : [];
       currentItinerary = Array.isArray(currentTour.tour_itinerary) ? currentTour.tour_itinerary : [];
 
-      const price = seoPrice(currentTour.price, currentTour.currency);
+      const price = seoPrice(publicTourStartingPrice(currentTour), currentTour.currency);
       const duration = seoPlainText(currentTour.duration, 100);
       const list = (heading: string, rows: any[]) => rows.length
         ? `<section><h2>${heading}</h2><ul class="seo-list">${rows.map(row => `<li>${seoHtmlEscape(seoPlainText(row.item || row.title, 400))}</li>`).join('')}</ul></section>`
@@ -6010,7 +6024,7 @@ async function startServer() {
         if (!title || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
         const summary = cleanPublicText(tour.short_description || tour.description, 300);
         const duration = cleanPublicText(tour.duration, 80);
-        const price = seoPrice(tour.price, tour.currency);
+        const price = seoPrice(publicTourStartingPrice(tour), tour.currency);
         const details = [summary, duration ? `Duration: ${duration}` : '', price ? `Starting price: ${price}` : ''].filter(Boolean).join(' | ');
         lines.push(`- [${title}](https://awesomeadventure.tours/excursions/${encodeURIComponent(slug)}): ${details}`);
       }

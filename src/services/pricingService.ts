@@ -45,6 +45,22 @@ export interface CalculateBookingPriceParams {
   discountEur?: number;
 }
 
+export function getTourAdultRateEur(tour: Pick<Tour, 'tourType' | 'priceEur' | 'privatePriceEur'>): number {
+  if (tour.tourType === 'Private') {
+    const privateRate = Number(tour.privatePriceEur);
+    return Number.isFinite(privateRate) ? Math.max(0, privateRate) : 0;
+  }
+  return Number.isFinite(tour.priceEur) ? Math.max(0, tour.priceEur) : 0;
+}
+
+export function getTourChildRateEur(tour: Pick<Tour, 'tourType' | 'priceEur' | 'childPriceEur' | 'privatePriceEur'>): number {
+  if (tour.tourType === 'Private') return getTourAdultRateEur(tour);
+  if (typeof tour.childPriceEur === 'number' && Number.isFinite(tour.childPriceEur)) {
+    return Math.max(0, tour.childPriceEur);
+  }
+  return Math.round(getTourAdultRateEur(tour) * 0.5);
+}
+
 const DEFAULT_CURRENCY: CurrencyConfig = {
   code: 'EUR',
   symbol: '€',
@@ -70,24 +86,17 @@ export function calculateBookingPrice({
   const infants = Math.max(0, guests.infants || 0);
   const payingPassengers = adults + children;
 
-  // Private tour pricing is a per-person rate for every paying passenger.
-  // Infants retain the existing free policy; shared tours keep their own child rate.
+  // Private tours use one configured per-person rate for all paying guests.
+  // Shared tours retain their own adult and child rates; infants remain free.
   const isPrivateTour = tour.tourType === 'Private';
-  const privateRate = Number(tour.privatePriceEur);
-  if (isPrivateTour && (!Number.isFinite(privateRate) || privateRate <= 0)) {
+  const basePricePerAdultEur = getTourAdultRateEur(tour);
+  const basePricePerChildEur = getTourChildRateEur(tour);
+  if (isPrivateTour && basePricePerAdultEur <= 0) {
     throw new Error('The private per-person rate is not configured for this excursion.');
   }
 
-  // 1. Adult Base Pricing
-  const basePricePerAdultEur = isPrivateTour ? privateRate : tour.priceEur;
+  // 1. Adult and child unit prices
   const adultSubtotalEur = adults * basePricePerAdultEur;
-
-  // 2. Child Pricing
-  const basePricePerChildEur = isPrivateTour
-    ? privateRate
-    : typeof tour.childPriceEur === 'number'
-      ? tour.childPriceEur
-      : Math.round(tour.priceEur * 0.5);
   const childSubtotalEur = children * basePricePerChildEur;
 
   // 3. Infants (Free)

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Calendar, Users, MapPin, CheckCircle2, ArrowRight, Plus, Minus, Info } from 'lucide-react';
 import { Tour, CurrencyConfig } from '../../types';
 import { formatPrice } from '../../data/toursData';
+import { getTourAdultRateEur, getTourChildRateEur } from '../../services/pricingService';
 
 interface TourBookingPanelProps {
   tour: Tour;
@@ -35,9 +36,8 @@ export const TourBookingPanel: React.FC<TourBookingPanelProps> = ({
     );
   };
 
-  // Private tours use one configured per-person rate for all paying guests.
-  const adultRate = tour.tourType === 'Private' ? (Number(tour.privatePriceEur) || 0) : tour.priceEur;
-  const childRate = tour.tourType === 'Private' ? adultRate : (tour.childPriceEur || tour.priceEur * 0.5);
+  const adultRate = getTourAdultRateEur(tour);
+  const childRate = getTourChildRateEur(tour);
   const adultSubtotal = adults * adultRate;
   const childSubtotal = children * childRate;
   

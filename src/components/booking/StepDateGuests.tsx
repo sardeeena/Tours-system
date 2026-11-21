@@ -3,7 +3,7 @@ import { Calendar, Users, MapPin, Clock, AlertCircle, CheckCircle2, Plus, Minus,
 import { Tour, CurrencyConfig } from '../../types';
 import { GuestCounts, DepartureSlot } from '../../types/booking';
 import { getEarliestSelectableDate, getTourDepartureSlotsFromServer } from '../../services/availabilityService';
-import { formatCurrencyAmount } from '../../services/pricingService';
+import { formatCurrencyAmount, getTourAdultRateEur, getTourChildRateEur } from '../../services/pricingService';
 import { useToast } from '../../contexts/ToastContext';
 
 interface StepDateGuestsProps {
@@ -110,12 +110,8 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
     selectedDeparture?.isAvailable &&
     !exceedsCapacity
   );
-  const adultRate = tour.tourType === 'Private'
-    ? Math.max(0, Number(tour.privatePriceEur) || 0)
-    : tour.priceEur;
-  const childRate = tour.tourType === 'Private'
-    ? adultRate
-    : (tour.childPriceEur || Math.round(tour.priceEur * 0.5));
+  const adultRate = getTourAdultRateEur(tour);
+  const childRate = getTourChildRateEur(tour);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -301,7 +297,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
                 <span className="text-[11px] text-stone-500">Age 12+</span>
               </div>
               <span className="font-semibold text-xs text-[#0A6C74]">
-                {formatCurrencyAmount(tour.priceEur, currency)}
+                {formatCurrencyAmount(adultRate, currency)}
               </span>
             </div>
             <div className="flex items-center justify-between pt-1">

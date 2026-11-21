@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { Star, Clock, MapPin, ArrowRight, Heart, Eye, Scale, Sparkles, Compass } from 'lucide-react';
 import { Tour, CurrencyConfig } from '../../types';
 import { formatPrice } from '../../data/toursData';
+import { getTourAdultRateEur } from '../../services/pricingService';
 import { useWishlist } from '../../contexts/WishlistContext';
 import { useComparison } from '../../contexts/ComparisonContext';
 
@@ -197,7 +198,7 @@ export const TourCard: React.FC<TourCardProps> = ({
               <span className="block text-[10px] uppercase font-bold text-stone-400 tracking-wider">From</span>
               <div className="flex items-baseline space-x-1">
                 <span className="text-base sm:text-lg font-bold text-[#0E1B2A] font-mono">
-                  {formatPrice(tour.tourType === 'Private' ? (tour.privatePriceEur || 0) : tour.priceEur, currency)}
+                  {formatPrice(getTourAdultRateEur(tour), currency)}
                 </span>
                 <span className="text-[11px] text-stone-500 font-medium">/ person</span>
               </div>
