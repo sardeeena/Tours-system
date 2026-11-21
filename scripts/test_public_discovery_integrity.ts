@@ -11,6 +11,8 @@ const server = read('../server.ts');
 const routes = read('../scripts/test_routes.ts');
 
 assert.match(app, /currentPath === '\/excursions'/, 'the public excursions directory has an explicit client route');
+assert.match(app, /currentPath === '\/exclusive' \|\| currentPath\.startsWith\('\/exclusive\/'\)/, 'Exclusive products use a separate public route');
+assert.match(tourService, /eq\('is_exclusive', false\)/, 'ordinary excursion discovery excludes Exclusive products');
 assert.match(app, /currentPath === '\/experiences'/, 'the experiences directory has an explicit client route');
 assert.match(app, /currentPath === '\/destinations'/, 'the destinations directory has an explicit client route');
 assert.match(app, /error=\{toursError\}[\s\S]*?onRetry=\{refreshPublishedTours\}/, 'excursion loading failures reach the catalogue with a retry action');
@@ -34,6 +36,7 @@ assert.match(tourService, /Unable to load published excursions:/, 'Supabase quer
 assert.match(tourService, /Unable to calculate published experience counts:/, 'experience count query failures are surfaced instead of publishing false zero counts');
 assert.match(server, /app\.get\('\/sitemap\.xml'/, 'the public sitemap endpoint exists');
 assert.match(server, /app\.get\('\/llms\.txt'/, 'the AI discovery index endpoint exists');
+assert.match(server, /exclusive_trips[\\s\\S]*?fixed price for the entire trip/, 'AI discovery publishes Exclusive products separately from per-person excursions');
 assert.ok(server.includes("app.get('/llms-full.txt'"), 'the full AI discovery content endpoint exists');
 assert.match(server, /path === '\/excursions'/, 'server-side excursion catalogue rendering is explicit');
 assert.match(server, /path === '\/experiences'/, 'server-side experience catalogue rendering is explicit');
