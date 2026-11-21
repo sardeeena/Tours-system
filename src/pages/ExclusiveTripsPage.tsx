@@ -45,6 +45,8 @@ export const ExclusiveTripsPage: React.FC<Props> = () => {
 
   useEffect(() => {
     if (!selectedTripId) { setDepartures([]); setSelectedDepartureId(''); return; }
+    const trip = trips.find((item) => item.id === selectedTripId);
+    if (trip) setGuestCount(Math.max(trip.minimum_guests, Math.min(2, trip.maximum_guests)));
     let active = true;
     setSlotsLoading(true);
     setSelectedDepartureId('');
@@ -59,6 +61,7 @@ export const ExclusiveTripsPage: React.FC<Props> = () => {
   const handleReserve = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!selectedTrip || !selectedDeparture) { setError('Please select an available date and time.'); return; }
+    if (selectedDeparture.maximum_guests < selectedTrip.minimum_guests) { setError('This departure is not configured for the minimum group size. Please choose another slot or contact our team.'); return; }
     if (guestCount < selectedTrip.minimum_guests || guestCount > Math.min(selectedTrip.maximum_guests, selectedDeparture.maximum_guests)) {
       setError('Please choose a guest count within this trip’s limits.'); return;
     }
