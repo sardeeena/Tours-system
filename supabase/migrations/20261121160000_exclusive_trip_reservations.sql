@@ -257,9 +257,8 @@ AS $function$
     JOIN public.tours t ON t.id = et.tour_id AND t.status = 'published' AND t.is_exclusive = TRUE
     WHERE d.id = p_departure_id
       AND d.status = 'confirmed'
-      AND (d.date > (now() AT TIME ZONE 'Africa/Cairo')::date
-        OR (d.date = (now() AT TIME ZONE 'Africa/Cairo')::date
-          AND d.start_time > (now() AT TIME ZONE 'Africa/Cairo')::time))
+      AND (d.date + d.start_time) >=
+        ((now() AT TIME ZONE 'Africa/Cairo') + make_interval(hours => coalesce(t.minimum_booking_notice_hours, 0)))
       AND NOT EXISTS (
         SELECT 1 FROM public.exclusive_reservations r
         WHERE r.exclusive_departure_id = d.id AND r.status IN ('pending','confirmed','completed','no_show')
