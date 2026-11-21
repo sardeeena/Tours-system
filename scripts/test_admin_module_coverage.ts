@@ -7,7 +7,7 @@ const app = fs.readFileSync('src/App.tsx', 'utf8');
 const tabUnion = layout.match(/export type AdminTab\s*=\s*([\s\S]*?);/)?.[1];
 assert.ok(tabUnion, 'AdminTab must remain a declared union');
 const tabs = [...tabUnion.matchAll(/'([^']+)'/g)].map((match) => match[1]);
-assert.equal(tabs.length, 61, 'The admin tab inventory changed; review the coverage matrix before updating this assertion');
+assert.equal(tabs.length, 62, 'The admin tab inventory changed; review the coverage matrix before updating this assertion');
 assert.equal(new Set(tabs).size, tabs.length, 'AdminTab contains duplicate identifiers');
 
 const navBlock = layout.match(/const navItems:[\s\S]*?=\s*\[([\s\S]*?)\n  \];/)?.[1];
