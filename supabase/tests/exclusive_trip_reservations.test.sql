@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(21);
+SELECT plan(22);
 
 SELECT has_table('public','exclusive_trips','Exclusive product settings have their own table');
 SELECT has_table('public','exclusive_departures','Exclusive schedule slots have their own table');
@@ -53,7 +53,8 @@ CREATE TEMP TABLE exclusive_test_context (
   max_guests JSONB,
   retry JSONB,
   over_limit_rejected BOOLEAN DEFAULT FALSE,
-  duplicate_slot_rejected BOOLEAN DEFAULT FALSE
+  duplicate_slot_rejected BOOLEAN DEFAULT FALSE,
+  mismatched_idempotency_rejected BOOLEAN DEFAULT FALSE
 ) ON COMMIT DROP;
 
 INSERT INTO exclusive_test_context DEFAULT VALUES;
@@ -190,6 +191,15 @@ BEGIN
   EXCEPTION WHEN SQLSTATE '23505' THEN
     UPDATE exclusive_test_context SET duplicate_slot_rejected=TRUE;
   END;
+  BEGIN
+    PERFORM public.reserve_exclusive_trip(
+      (SELECT second_slot FROM exclusive_test_context),1,
+      'One','Guest','one-exclusive@example.test','+201000000001',
+      'Egypt','Test Hotel','pay_at_pickup',NULL,'idem-exclusive-one-guest-001'
+    );
+  EXCEPTION WHEN SQLSTATE '22023' THEN
+    UPDATE exclusive_test_context SET mismatched_idempotency_rejected=TRUE;
+  END;
 END;
 $test$;
 
@@ -200,6 +210,10 @@ SELECT ok(
 SELECT ok(
   (SELECT duplicate_slot_rejected FROM exclusive_test_context),
   'a second group cannot reserve an already reserved exclusive slot'
+);
+SELECT ok(
+  (SELECT mismatched_idempotency_rejected FROM exclusive_test_context),
+  'an idempotency key cannot be replayed against a different departure'
 );
 
 SELECT * FROM finish();
