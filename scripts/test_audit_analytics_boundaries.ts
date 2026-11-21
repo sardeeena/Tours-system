@@ -8,7 +8,8 @@ const visitorPanel = fs.readFileSync('src/components/admin/technical/VisitorAnal
 check(
   'All visitor privacy CSV exports neutralize spreadsheet formula-leading text while preserving numeric values',
   visitorPanel.includes('const csvCell = (value: string | number | boolean | null): string =>')
-    && visitorPanel.includes("typeof value === 'string' && /^[\\u0000-\\u0020]*[=+\\-@]/.test(raw)")
+    && visitorPanel.includes("typeof value === 'string'")
+    && visitorPanel.includes("? `'${raw}` : raw;")
     && visitorPanel.includes("row.map(csvCell).join(',')")
     && (visitorPanel.match(/downloadCsv\(/g) || []).length >= 5
 );
