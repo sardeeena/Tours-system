@@ -50,7 +50,7 @@ export const AdminExclusiveManager: React.FC = () => {
 
   useEffect(() => { void refresh(false); }, []);
   useEffect(() => {
-    if (!selectedTour?.exclusive_trips?.[0]) { setDepartures([]); return; }
+    if (!selectedTour?.exclusive_trips?.[0]) { setDepartures([]); setPrice('500'); setCurrency('EUR'); setMinimum('1'); setMaximum('10'); setActive(true); return; }
     const trip = selectedTour.exclusive_trips[0];
     setPrice(String(trip.fixed_trip_price));
     setCurrency(trip.currency);
@@ -104,8 +104,10 @@ export const AdminExclusiveManager: React.FC = () => {
     } catch (err) { setError(err instanceof Error ? err.message : 'Unable to update reservation.'); }
   };
 
-  const revenue = departures.flatMap((slot) => slot.exclusive_reservations || [])
-    .filter((reservation: any) => reservation.status !== 'cancelled')
+  const allReservations = departures.flatMap((slot) => slot.exclusive_reservations || []);
+  const revenue = allReservations.filter((reservation: any) => reservation.status !== 'cancelled')
+    .reduce((sum: number, reservation: any) => sum + Number(reservation.total || 0), 0);
+  const paidRevenue = allReservations.filter((reservation: any) => reservation.payment_status === 'paid' && reservation.status !== 'cancelled')
     .reduce((sum: number, reservation: any) => sum + Number(reservation.total || 0), 0);
 
   if (loading) return <div className="p-8 text-stone-500">Loading Exclusive trips…</div>;
@@ -166,7 +168,7 @@ export const AdminExclusiveManager: React.FC = () => {
               </form>
 
               <section className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-6 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><h2 className="font-bold text-lg">Schedules & reservations</h2><p className="text-xs text-stone-500">One active reservation blocks the whole trip slot.</p></div><div className="rounded-lg bg-stone-50 px-3 py-2 text-sm"><span className="text-stone-500">Reserved revenue </span><strong>{new Intl.NumberFormat(undefined,{style:'currency',currency}).format(revenue)}</strong></div></div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><h2 className="font-bold text-lg">Schedules & reservations</h2><p className="text-xs text-stone-500">One active reservation blocks the whole trip slot.</p></div><div className="rounded-lg bg-stone-50 px-3 py-2 text-sm"><span className="text-stone-500">Reserved </span><strong>{new Intl.NumberFormat(undefined,{style:'currency',currency}).format(revenue)}</strong><span className="text-stone-400 mx-2">·</span><span className="text-stone-500">Paid </span><strong>{new Intl.NumberFormat(undefined,{style:'currency',currency}).format(paidRevenue)}</strong></div></div>
                 {departures.length === 0 ? <p className="text-sm text-stone-500 py-4">No Exclusive slots scheduled yet.</p> : departures.map((slot:any) => {
                   const reservations = slot.exclusive_reservations || [];
                   return <article key={slot.id} className="border border-stone-200 rounded-xl p-4 space-y-3">
