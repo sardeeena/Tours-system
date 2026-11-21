@@ -3,7 +3,6 @@
 BEGIN;
 
 CREATE SCHEMA IF NOT EXISTS private;
-REVOKE ALL ON SCHEMA private FROM PUBLIC, anon, authenticated;
 
 CREATE TABLE IF NOT EXISTS private.background_worker_leases (
   worker_name TEXT PRIMARY KEY
