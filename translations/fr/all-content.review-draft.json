@@ -11,8 +11,8 @@
     "static_page": 10,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1079,
-    "ui_catalog_messages": 1160,
+    "private_ui_messages": 1082,
+    "ui_catalog_messages": 1163,
     "source_records": 111
   },
   "records": [
@@ -3896,7 +3896,10 @@
         "whatsapp.quickInquiries": "Demandes rapides",
         "whatsapp.replies": "Réponse rapide",
         "why.subtitle": "Nous travaillons avec des prestataires locaux, des capitaines expérimentés et des guides. Le prestataire et les services inclus sont précisés pour chaque excursion.",
-        "why.title": "Pourquoi réserver directement avec nous ?"
+        "why.title": "Pourquoi réserver directement avec nous ?",
+        "private.text.6bcf5453": "Progression de la réservation",
+        "private.text.79b4c617": "Étape ",
+        "private.text.a5b9a096": " sur 4"
       },
       "private_ui_message_count": 1100
     },

@@ -11,8 +11,8 @@
     "communication_template": 18,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1079,
-    "ui_catalog_messages": 1160,
+    "private_ui_messages": 1082,
+    "ui_catalog_messages": 1163,
     "source_records": 111
   },
   "records": [
@@ -4845,7 +4845,10 @@
         "whatsapp.quickInquiries": "Snelle vragen",
         "whatsapp.replies": "Snel antwoord",
         "why.subtitle": "We werken samen met lokale activiteitenaanbieders, ervaren schippers en gidsen. Per excursie vermelden we de uitvoerende aanbieder en de inbegrepen diensten.",
-        "why.title": "Waarom rechtstreeks bij ons boeken?"
+        "why.title": "Waarom rechtstreeks bij ons boeken?",
+        "private.text.6bcf5453": "Voortgang van de boeking",
+        "private.text.79b4c617": "Stap ",
+        "private.text.a5b9a096": " van 4"
       }
     }
   ],

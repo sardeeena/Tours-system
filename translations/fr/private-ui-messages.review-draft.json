@@ -1081,7 +1081,10 @@
     "private.text.ff4b2739": "Max. :",
     "private.text.ff4def07": "Installer l’application de la mer Rouge",
     "private.text.ff566677": "Mot de passe mis à jour",
-    "private.text.ff566f40": "Nom "
+    "private.text.ff566f40": "Nom ",
+    "private.text.6bcf5453": "Progression de la réservation",
+    "private.text.79b4c617": "Étape ",
+    "private.text.a5b9a096": " sur 4"
   },
-  "coverage": 1079
+  "coverage": 1082
 }
