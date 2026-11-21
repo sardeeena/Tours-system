@@ -8,6 +8,20 @@ const visitorPanel = fs.readFileSync('src/components/admin/technical/VisitorAnal
 const reportingService = fs.readFileSync('src/services/reportingService.ts', 'utf8');
 const technicalPanel = fs.readFileSync('src/components/admin/technical/TechnicalControlCenter.tsx', 'utf8');
 const spreadsheetSerializer = fs.readFileSync('src/utils/spreadsheetExport.ts', 'utf8');
+const spreadsheetExportFiles = [
+  'src/components/admin/AdminBookingsList.tsx',
+  'src/components/admin/AdminCustomersList.tsx',
+  'src/components/admin/AdminNewsletterList.tsx',
+  'src/components/admin/operations/OperationsDocuments.tsx',
+  'src/components/admin/operations/OperationsManifests.tsx',
+  'src/components/admin/finance/FinanceReports.tsx',
+  'src/components/admin/finance/FinancePayments.tsx',
+  'src/components/admin/finance/FinanceRefunds.tsx',
+  'src/components/admin/finance/FinanceOutstandingBalances.tsx',
+  'src/components/admin/crm/CrmCustomersManager.tsx',
+  'src/components/admin/crm/CrmSegmentsManager.tsx',
+].map((path) => ({ path, source: fs.readFileSync(path, 'utf8') }));
+
 check(
   'Every CSV and TSV export uses the shared spreadsheet formula neutralizer',
   spreadsheetSerializer.includes('serializeSpreadsheetCell')
@@ -16,6 +30,8 @@ check(
     && visitorPanel.includes('serializeSpreadsheetRows([columns, ...rows])')
     && reportingService.includes('serializeSpreadsheetRows([')
     && technicalPanel.includes('serializeSpreadsheetRows([columns, ...rows])')
+    && reportingService.match(/serializeSpreadsheetRows\\(/g)?.length === 2
+    && spreadsheetExportFiles.every(({ source }) => source.includes('serializeSpreadsheetRows([headers, ...rows])'))
     && !technicalPanel.includes('String(value).replace')
 );
 check(
