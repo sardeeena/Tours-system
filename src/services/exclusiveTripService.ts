@@ -113,6 +113,7 @@ export async function reserveExclusiveTrip(input: ExclusiveReservationInput) {
     success: true;
     duplicate: boolean;
     reservationId: string;
+    bookingId: string;
     reservationReference: string;
     total: number;
     currency: string;
