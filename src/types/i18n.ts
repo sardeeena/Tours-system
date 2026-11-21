@@ -14,12 +14,6 @@ export const SUPPORTED_LANGUAGES: Partial<Record<LanguageCode, LanguageConfig>> 
     localName: 'English',
     flag: '🇬🇧',
   },
-  fr: {
-    code: 'fr',
-    name: 'French',
-    localName: 'Français',
-    flag: '🇫🇷',
-  },
   de: {
     code: 'de',
     name: 'German',
