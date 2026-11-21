@@ -1392,6 +1392,7 @@ app.get('/api/tours', rateLimit(120, 60_000), async (req: Request, res: Response
         tour_images (id, image_url, is_primary, sort_order)
       `)
       .eq('status', 'published')
+      .eq('is_exclusive', false)
       .order('sort_order', { ascending: true })
       .limit(maxItems);
 
@@ -4741,7 +4742,7 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
     const [tourResult, destinationResult, postResult] = await Promise.all([
       publicSupabase.from('tours')
         .select('id,destination_id,title,slug,short_description,description,duration,duration_type,duration_hours,tour_type,price,private_price,currency,pickup_available,pickup_info,cancellation_policy,departure_time,languages,difficulty,age_restrictions')
-        .eq('status', 'published').order('sort_order', { ascending: true }).limit(500),
+        .eq('status', 'published').eq('is_exclusive', false).order('sort_order', { ascending: true }).limit(500),
       publicSupabase.from('destinations')
         .select('id,name,slug,tagline,description').eq('status', 'published').order('sort_order', { ascending: true }).limit(100),
       publicSupabase.from('blog_posts')
@@ -5080,6 +5081,7 @@ app.post('/mcp', rateLimit(60, 60_000), async (req: Request, res: Response) => {
       let query = publicSupabase.from('tours')
         .select('title,slug,short_description,price,private_price,tour_type,currency,duration')
         .eq('status', 'published')
+        .eq('is_exclusive', false)
         .order('sort_order', { ascending: true })
         .limit(limit);
       if (queryText) query = query.ilike('title', `%${queryText.replace(/[%_]/g, '')}%`);
@@ -5102,7 +5104,7 @@ app.post('/mcp', rateLimit(60, 60_000), async (req: Request, res: Response) => {
       if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) return fail(-32602, 'A valid excursion slug is required.');
       const { data, error } = await publicSupabase.from('tours')
         .select('title,slug,short_description,description,price,private_price,tour_type,currency,duration,pickup_info,cancellation_policy')
-        .eq('slug', slug).eq('status', 'published').maybeSingle();
+        .eq('slug', slug).eq('status', 'published').eq('is_exclusive', false).maybeSingle();
       if (error) throw error;
       if (!data) return reply({ content: [{ type: 'text', text: 'Published excursion not found.' }], isError: true });
       const tour = {
@@ -5566,6 +5568,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
           `)
           .eq('slug', slug)
           .eq('status', 'published')
+          .eq('is_exclusive', false)
           .order('sort_order', { ascending: true, referencedTable: 'tour_images' })
           .order('sort_order', { ascending: true, referencedTable: 'tour_highlights' })
           .order('sort_order', { ascending: true, referencedTable: 'tour_inclusions' })
@@ -5723,7 +5726,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
     if (activeDestination && publicSupabase) {
       try {
         const { data, error } = await publicSupabase.from('tours').select('*')
-          .eq('destination_id', activeDestination.id).eq('status', 'published')
+          .eq('destination_id', activeDestination.id).eq('status', 'published').eq('is_exclusive', false)
           .order('sort_order', { ascending: true }).limit(100);
         if (error) console.warn('[SEO render] Destination tours query failed:', error.message);
         destinationTours = Array.isArray(data) ? data : [];
