@@ -426,7 +426,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
       {/* Responsive four-stage progress navigation; detailed steps and validation remain intact */}
       <div className="bg-white border-b border-[#E8E3DA] sticky top-16 z-30 shadow-2xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-          <div className="hidden md:flex items-center justify-between gap-2" aria-label="Booking progress">
+          <nav className="hidden md:flex items-center justify-between gap-2" aria-label="Booking progress">
             {STEPS.map((s, idx) => {
               const stage = currentStep === 1 ? 1 : currentStep <= 3 ? 2 : currentStep === 4 ? 3 : 4;
               const isCurrent = s.id === stage, isCompleted = s.id < stage;
@@ -438,7 +438,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
                 {idx < STEPS.length - 1 && <ChevronRight className="w-4 h-4 text-stone-300 mx-1 shrink-0" />}
               </div>;
             })}
-          </div>
+          </nav>
           <div className="md:hidden space-y-2 pt-1">
             <div className="flex justify-between text-xs font-semibold text-stone-800"><span>{STEPS[currentStep === 1 ? 0 : currentStep <= 3 ? 1 : currentStep === 4 ? 2 : 3]?.label}</span><span>Stage {currentStep === 1 ? 1 : currentStep <= 3 ? 2 : currentStep === 4 ? 3 : 4} of 4</span></div>
             <div className="bg-stone-200 h-1.5 rounded-full overflow-hidden" role="progressbar" aria-label="Booking progress" aria-valuemin={1} aria-valuemax={4} aria-valuenow={currentStep === 1 ? 1 : currentStep <= 3 ? 2 : currentStep === 4 ? 3 : 4}>
