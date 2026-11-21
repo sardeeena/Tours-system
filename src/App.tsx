@@ -319,7 +319,7 @@ function MainApp() {
       setLiveTours(toursRes.value || []);
     } else {
       console.warn('Failed to load published tours from Supabase:', toursRes.reason);
-      setToursError(toursRes.reason instanceof Error ? toursRes.reason.message : 'Unable to load published excursions. Please try again.');
+      setToursError('We couldn’t load excursions right now. Please try again.');
       setLiveTours([]);
     }
     setLoadingTours(false);
@@ -328,7 +328,7 @@ function MainApp() {
       setLiveDestinations(destsRes.value || []);
     } else {
       console.warn('Failed to load published destinations from Supabase:', destsRes.reason);
-      setDestinationsError(destsRes.reason?.message || 'Unable to load destinations from database.');
+      setDestinationsError('We couldn’t load destinations right now. Please try again.');
       setLiveDestinations([]);
     }
     setLoadingDestinations(false);
@@ -337,7 +337,7 @@ function MainApp() {
       setLiveCategories(catsRes.value || []);
     } else {
       console.warn('Failed to load published categories from Supabase:', catsRes.reason);
-      setCategoriesError(catsRes.reason?.message || 'Unable to load categories from database.');
+      setCategoriesError('We couldn’t load activities right now. Please try again.');
       setLiveCategories([]);
     }
     setLoadingCategories(false);
@@ -351,7 +351,7 @@ function MainApp() {
       setLiveTours(data || []);
     } catch (err) {
       console.warn('Failed to load published tours from Supabase:', err);
-      setToursError(err instanceof Error ? err.message : 'Unable to load published excursions. Please try again.');
+      setToursError('We couldn’t load excursions right now. Please try again.');
       setLiveTours([]);
     } finally {
       setLoadingTours(false);
@@ -366,7 +366,7 @@ function MainApp() {
       setLiveDestinations(data || []);
     } catch (err: any) {
       console.warn('Failed to load published destinations from Supabase:', err);
-      setDestinationsError(err.message || 'Unable to load destinations from database.');
+      setDestinationsError('We couldn’t load destinations right now. Please try again.');
       setLiveDestinations([]);
     } finally {
       setLoadingDestinations(false);
@@ -381,7 +381,7 @@ function MainApp() {
       setLiveCategories(data || []);
     } catch (err: any) {
       console.warn('Failed to load published categories from Supabase:', err);
-      setCategoriesError(err.message || 'Unable to load categories from database.');
+      setCategoriesError('We couldn’t load activities right now. Please try again.');
       setLiveCategories([]);
     } finally {
       setLoadingCategories(false);
@@ -953,7 +953,7 @@ function MainApp() {
         <div className="min-h-screen bg-stone-50 dark:bg-stone-950 flex items-center justify-center p-4 text-stone-700 dark:text-stone-300">
           <div className="text-center space-y-3">
             <div className="w-8 h-8 border-2 border-[#0A6C74] border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="text-xs">Verifying administrator permissions with database...</p>
+            <p className="text-xs">Checking your account permissions...</p>
           </div>
         </div>
       );
