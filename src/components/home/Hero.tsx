@@ -260,20 +260,20 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
         </div>
 
         {/* Booking / Search Module */}
-        <motion.div 
-          initial={{ opacity: 0, y: 22 }}
+        <motion.div
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: prefersReducedMotion ? 0 : 0.6, delay: prefersReducedMotion ? 0 : 0.2 }}
           className="w-full max-w-5xl mb-8"
         >
           <SearchModule onSearch={onSearch} resultCount={resultCount} destinations={destinations} categories={categories} />
         </motion.div>
 
         {/* Practical Booking Information */}
-        <motion.div 
-          initial={{ opacity: 0 }}
+        <motion.div
+          initial={prefersReducedMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.7, delay: 0.3 }}
+          transition={{ duration: prefersReducedMotion ? 0 : 0.7, delay: prefersReducedMotion ? 0 : 0.3 }}
           className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 pt-5 border-t border-[#E8E3DA] dark:border-slate-800/80 text-xs text-stone-700 dark:text-slate-300"
         >
           <div className="flex items-center space-x-2.5 group cursor-default">
