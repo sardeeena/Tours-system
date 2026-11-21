@@ -559,6 +559,37 @@ END;
 $function$;
 
 
+-- Finance and existing booking administration may update the linked booking directly.
+-- Mirror those authoritative changes back into the Exclusive reservation record.
+CREATE OR REPLACE FUNCTION public.sync_exclusive_reservation_from_booking()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $function$
+BEGIN
+  IF NEW.booking_kind = 'exclusive' THEN
+    UPDATE public.exclusive_reservations
+    SET payment_status=NEW.payment_status,
+        status=CASE
+          WHEN NEW.status='cancellation_requested' THEN 'pending'
+          WHEN NEW.status IN ('pending','confirmed','cancelled','completed','no_show') THEN NEW.status
+          ELSE status
+        END,
+        updated_at=now()
+    WHERE booking_id=NEW.id;
+  END IF;
+  RETURN NEW;
+END;
+$function$;
+
+DROP TRIGGER IF EXISTS sync_exclusive_reservation_from_booking_trigger ON public.bookings;
+CREATE TRIGGER sync_exclusive_reservation_from_booking_trigger
+AFTER UPDATE OF status,payment_status ON public.bookings
+FOR EACH ROW
+WHEN (NEW.booking_kind = 'exclusive')
+EXECUTE FUNCTION public.sync_exclusive_reservation_from_booking();
+
 -- Keep reservation lifecycle and the linked booking/payment ledger synchronized.
 CREATE OR REPLACE FUNCTION public.update_exclusive_reservation_status(
   p_reservation_id UUID,
