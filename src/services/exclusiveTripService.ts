@@ -215,7 +215,7 @@ export async function updateExclusiveReservation(
   const { data, error } = await client.rpc('update_exclusive_reservation_status', {
     p_reservation_id: reservationId,
     p_status: changes.status || null,
-    p_payment_status: changes.payment_status || null,
+    p_payment_status: null,
   });
   if (error) throw new Error(error.message || 'Unable to update the Exclusive reservation and linked booking.');
   if (!data?.success) throw new Error('The Exclusive reservation was not updated.');
