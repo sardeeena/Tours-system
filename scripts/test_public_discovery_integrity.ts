@@ -36,7 +36,7 @@ assert.match(tourService, /Unable to load published excursions:/, 'Supabase quer
 assert.match(tourService, /Unable to calculate published experience counts:/, 'experience count query failures are surfaced instead of publishing false zero counts');
 assert.match(server, /app\.get\('\/sitemap\.xml'/, 'the public sitemap endpoint exists');
 assert.match(server, /app\.get\('\/llms\.txt'/, 'the AI discovery index endpoint exists');
-assert.match(server, /exclusive_trips[\\s\\S]*?fixed price for the entire trip/, 'AI discovery publishes Exclusive products separately from per-person excursions');
+assert.match(server, /exclusive_trips[\\s\\S]*?fixed price applies to the entire trip/, 'AI discovery publishes Exclusive products separately from per-person excursions');
 assert.ok(server.includes("app.get('/llms-full.txt'"), 'the full AI discovery content endpoint exists');
 assert.match(server, /path === '\/excursions'/, 'server-side excursion catalogue rendering is explicit');
 assert.match(server, /path === '\/experiences'/, 'server-side experience catalogue rendering is explicit');
