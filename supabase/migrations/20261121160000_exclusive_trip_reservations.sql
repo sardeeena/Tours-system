@@ -332,8 +332,34 @@ DECLARE
   v_existing public.exclusive_reservations%ROWTYPE;
   v_reference TEXT;
   v_total NUMERIC(12,2);
+  v_client_ip TEXT;
   v_key TEXT := nullif(btrim(coalesce(p_idempotency_key,'')), '');
 BEGIN
+  -- Atomic abuse controls apply to guest reservations; exact idempotent retries return above.
+  BEGIN
+    v_client_ip := nullif(current_setting('request.headers', TRUE)::json->>'cf-connecting-ip', '');
+    IF v_client_ip IS NULL THEN
+      v_client_ip := nullif(current_setting('request.headers', TRUE)::json->>'x-forwarded-for', '');
+      IF v_client_ip LIKE '%,%' THEN
+        v_client_ip := btrim(split_part(v_client_ip, ',', 1));
+      END IF;
+    END IF;
+  EXCEPTION WHEN OTHERS THEN
+    v_client_ip := NULL;
+  END;
+  PERFORM public.check_atomic_rate_limit(
+    'exclusive_reservation_email', lower(btrim(coalesce(p_email,''))),
+    INTERVAL '10 minutes', 5,
+    'Too many exclusive trip reservation attempts for this email. Please wait before trying again.'
+  );
+  IF v_client_ip IS NOT NULL AND length(v_client_ip) <= 64 THEN
+    PERFORM public.check_atomic_rate_limit(
+      'exclusive_reservation_ip', btrim(v_client_ip),
+      INTERVAL '10 minutes', 10,
+      'Too many exclusive trip reservation attempts from this network. Please wait before trying again.'
+    );
+  END IF;
+
   IF p_departure_id IS NULL OR v_key IS NULL OR length(v_key) > 160 THEN
     RAISE EXCEPTION 'A departure and valid reservation request key are required' USING ERRCODE = '22023';
   END IF;
