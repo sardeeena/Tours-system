@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS public.exclusive_reservations (
 
 CREATE UNIQUE INDEX IF NOT EXISTS exclusive_one_active_reservation_per_slot
   ON public.exclusive_reservations(exclusive_departure_id)
-  WHERE status IN ('pending','confirmed');
+  WHERE status IN ('pending','confirmed','completed','no_show');
 
 CREATE INDEX IF NOT EXISTS exclusive_departures_public_schedule_idx
   ON public.exclusive_departures(date, start_time)
@@ -221,7 +221,7 @@ AS $function$
       AND d.date >= (now() AT TIME ZONE 'Africa/Cairo')::date
       AND NOT EXISTS (
         SELECT 1 FROM public.exclusive_reservations r
-        WHERE r.exclusive_departure_id = d.id AND r.status IN ('pending','confirmed')
+        WHERE r.exclusive_departure_id = d.id AND r.status IN ('pending','confirmed','completed','no_show')
       )
   );
 $function$;
@@ -473,7 +473,7 @@ BEGIN
   IF EXISTS (
     SELECT 1 FROM public.exclusive_reservations r
     WHERE r.exclusive_departure_id = v_departure.id
-      AND r.status IN ('pending','confirmed')
+      AND r.status IN ('pending','confirmed','completed','no_show')
   ) THEN
     RAISE EXCEPTION 'This exclusive trip slot has already been reserved' USING ERRCODE = '23505';
   END IF;
@@ -743,7 +743,7 @@ BEGIN
   IF EXISTS (
     SELECT 1 FROM public.exclusive_reservations r
     WHERE r.exclusive_departure_id = v_departure.id
-      AND r.status IN ('pending','confirmed')
+      AND r.status IN ('pending','confirmed','completed','no_show')
   ) THEN
     RAISE EXCEPTION 'This exclusive trip slot has already been reserved' USING ERRCODE = '23505';
   END IF;
@@ -851,7 +851,7 @@ COMMIT;
   IF EXISTS (
     SELECT 1 FROM public.exclusive_reservations r
     WHERE r.exclusive_departure_id = v_departure.id
-      AND r.status IN ('pending','confirmed')
+      AND r.status IN ('pending','confirmed','completed','no_show')
   ) THEN
     RAISE EXCEPTION 'This exclusive trip slot has already been reserved' USING ERRCODE = '23505';
   END IF;
@@ -1121,7 +1121,7 @@ BEGIN
   IF EXISTS (
     SELECT 1 FROM public.exclusive_reservations r
     WHERE r.exclusive_departure_id = v_departure.id
-      AND r.status IN ('pending','confirmed')
+      AND r.status IN ('pending','confirmed','completed','no_show')
   ) THEN
     RAISE EXCEPTION 'This exclusive trip slot has already been reserved' USING ERRCODE = '23505';
   END IF;
