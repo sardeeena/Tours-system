@@ -5037,6 +5037,18 @@ const AWESOME_ADVENTURE_TOURS_MCP_TOOLS = [
       additionalProperties: false,
     },
   },
+  {
+    name: 'search_exclusive_private_trips',
+    description: 'Search published Exclusive private trips. Prices are fixed for the entire trip, not per person. Returns public listing details and group-size limits only.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Optional search phrase, up to 120 characters.' },
+        limit: { type: 'integer', minimum: 1, maximum: 20, default: 10 },
+      },
+      additionalProperties: false,
+    },
+  },
 ];
 
 app.get('/.well-known/mcp/server-card.json', (_req: Request, res: Response) => {
@@ -5055,7 +5067,7 @@ app.get('/.well-known/mcp/server-card.json', (_req: Request, res: Response) => {
     transport: { type: 'streamable-http', endpoint: '/mcp' },
     capabilities: { tools: { listChanged: false } },
     authentication: { required: false, schemes: [] },
-    instructions: 'Only published public excursion catalogue data is available. Confirm current prices and availability on the linked live excursion page before making travel decisions.',
+    instructions: 'Only published public excursion and Exclusive private-trip catalogue data is available. Exclusive prices are fixed for the entire trip, not per person. Confirm current prices and availability on the live listing before making travel decisions.',
     tools: AWESOME_ADVENTURE_TOURS_MCP_TOOLS,
   });
 });
@@ -5083,7 +5095,7 @@ app.post('/mcp', rateLimit(60, 60_000), async (req: Request, res: Response) => {
       protocolVersion: supported.includes(requestedVersion) ? requestedVersion : '2025-06-18',
       capabilities: { tools: { listChanged: false } },
       serverInfo: { name: 'com.awesomeadventuretours/public-excursions', title: 'Awesome Adventure Tours Public Excursions', version: '1.0.0' },
-      instructions: 'Read-only public excursion catalogue. No bookings, personal data, payments or admin actions.',
+      instructions: 'Read-only public excursion and Exclusive private-trip catalogue. Exclusive prices are fixed per trip. No bookings, personal data, payments or admin actions.',
     });
   }
 
@@ -5145,6 +5157,39 @@ app.post('/mcp', rateLimit(60, 60_000), async (req: Request, res: Response) => {
       };
       return reply({ content: [{ type: 'text', text: JSON.stringify(tour) }], structuredContent: { tour } });
     }
+
+    if (toolName === 'search_exclusive_private_trips') {
+      const queryText = typeof args.query === 'string' ? args.query.trim().slice(0, 120) : '';
+      const limit = Number.isInteger(args.limit) ? Math.max(1, Math.min(20, args.limit)) : 10;
+      let query = (publicSupabase as any).from('exclusive_trips')
+        .select('fixed_trip_price,currency,minimum_guests,maximum_guests,tours!inner(title,slug,short_description,duration,duration_hours,destinations(name))')
+        .eq('is_active', true)
+        .eq('tours.status', 'published')
+        .eq('tours.is_exclusive', true)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+      if (queryText) query = query.ilike('tours.title', `%${queryText.replace(/[%_]/g, '')}%`);
+      const { data, error } = await query;
+      if (error) throw error;
+      const trips = (data || []).map((item: any) => {
+        const tour = Array.isArray(item.tours) ? item.tours[0] : item.tours;
+        const destination = Array.isArray(tour?.destinations) ? tour.destinations[0] : tour?.destinations;
+        return {
+          title: cleanPublicText(tour?.title, 160),
+          description: cleanPublicText(tour?.short_description, 400),
+          destination: cleanPublicText(destination?.name, 120),
+          fixedTripPrice: Number(item.fixed_trip_price),
+          currency: typeof item.currency === 'string' ? item.currency : 'EUR',
+          priceBasis: 'entire_trip',
+          minimumGuests: Number(item.minimum_guests),
+          maximumGuests: Number(item.maximum_guests),
+          duration: cleanPublicText(tour?.duration, 100),
+          url: 'https://awesomeadventure.tours/exclusive',
+        };
+      });
+      return reply({ content: [{ type: 'text', text: JSON.stringify(trips) }], structuredContent: { exclusiveTrips: trips } });
+    }
+
     return fail(-32602, 'Unknown tool. Use tools/list to discover available tools.');
   } catch (error) {
     console.warn('[MCP] Public excursion tool failed:', error);
