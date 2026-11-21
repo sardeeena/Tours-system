@@ -20,6 +20,7 @@ const spreadsheetExportFiles = [
   'src/components/admin/finance/FinanceOutstandingBalances.tsx',
   'src/components/admin/crm/CrmCustomersManager.tsx',
   'src/components/admin/crm/CrmSegmentsManager.tsx',
+  'src/components/admin/communications/CommunicationsHistory.tsx',
 ].map((path) => ({ path, source: fs.readFileSync(path, 'utf8') }));
 
 check(
