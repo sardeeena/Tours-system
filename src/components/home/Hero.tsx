@@ -143,7 +143,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
           <motion.div
             key={slide.id}
             initial={prefersReducedMotion ? false : { scale: 1.08, opacity: 0 }}
-            animate={{ scale: 1.02, opacity: isDark ? 0.48 : 0.34 }}
+            animate={{ scale: 1.02, opacity: isDark ? 0.78 : 0.82 }}
             exit={{ scale: prefersReducedMotion ? 1.02 : 1.12, opacity: 0 }}
             transition={{
               opacity: { duration: prefersReducedMotion ? 0 : 1.35, ease: 'easeInOut' },
@@ -157,18 +157,13 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
         </AnimatePresence>
       </div>
 
-      {/* Decorative ambient gradient light orbs */}
-      <div className="absolute top-10 left-1/4 w-96 h-96 bg-[#60C3CC]/20 dark:bg-[#0A6C74]/25 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-[#E8F3F4]/60 dark:bg-[#60C3CC]/15 rounded-full blur-3xl pointer-events-none" />
-
-      {/* Cinematic Film Vignette & Multi-stop Depth Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#FAF8F5] via-[#FAF8F5]/45 to-transparent dark:from-[#0E1B2A] dark:via-[#0E1B2A]/50 dark:to-[#0E1B2A]/85 pointer-events-none" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-transparent via-[#FAF8F5]/20 to-[#FAF8F5]/70 dark:via-[#0E1B2A]/30 dark:to-[#0E1B2A]/85 pointer-events-none" />
+      {/* Single restrained scrim: keep the photography clear while preserving text contrast. */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#FAF8F5]/25 via-transparent to-[#FAF8F5]/65 dark:from-[#0E1B2A]/35 dark:via-[#0E1B2A]/10 dark:to-[#0E1B2A]/70 pointer-events-none" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-8 pt-10 sm:pt-14 pb-12 sm:pb-16">
         
         {/* Dynamic Synchronized Headline & Narrative based on active cinematic tour */}
-        <div className="max-w-3xl mb-8 min-h-[110px] sm:min-h-[130px]">
+        <div className="max-w-3xl mx-auto mb-8 min-h-[110px] sm:min-h-[130px] text-center">
           <AnimatePresence mode="wait">
             <motion.div
               key={slide.id}
@@ -178,7 +173,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
               transition={{ duration: prefersReducedMotion ? 0 : 0.55, ease: 'easeOut' }}
             >
               {/* Dynamic Headline */}
-              <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-stone-900 dark:text-white leading-[1.12] mb-3 [text-wrap:balance]">
+              <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-stone-900 dark:text-white leading-[1.12] mb-3 text-center [text-wrap:balance]">
                 {slide.title1}{' '}
                 <span className={`italic font-serif text-transparent bg-clip-text bg-gradient-to-r ${slide.accentGradient}`}>
                   {slide.title2}
@@ -186,7 +181,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
               </h1>
 
               {/* Dynamic Subtitle */}
-              <p className="text-sm sm:text-base lg:text-lg text-stone-600 dark:text-slate-300 font-normal leading-relaxed max-w-2xl">
+              <p className="text-sm sm:text-base lg:text-lg text-stone-600 dark:text-slate-300 font-normal leading-relaxed max-w-2xl mx-auto text-center">
                 {slide.subtitle}
               </p>
             </motion.div>
@@ -199,7 +194,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
           initial={prefersReducedMotion ? false : { opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: prefersReducedMotion ? 0 : 0.6, delay: prefersReducedMotion ? 0 : 0.2 }}
-          className="w-full max-w-5xl mb-8"
+          className="w-full max-w-5xl mx-auto mb-8"
         >
           <SearchModule onSearch={onSearch} resultCount={resultCount} destinations={destinations} categories={categories} />
         </motion.div>
@@ -211,28 +206,28 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
           transition={{ duration: prefersReducedMotion ? 0 : 0.7, delay: prefersReducedMotion ? 0 : 0.3 }}
           className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 pt-5 border-t border-[#E8E3DA] dark:border-slate-800/80 text-xs text-stone-700 dark:text-slate-300"
         >
-          <div className="flex items-center space-x-2.5 group cursor-default">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-2.5 text-center group cursor-default">
             <div className="w-8 h-8 rounded-lg bg-white dark:bg-[#16283D] flex items-center justify-center text-[#0A6C74] dark:text-[#60C3CC] border border-stone-200 dark:border-slate-700/60 shadow-2xs group-hover:scale-105 transition-transform">
               <ShieldCheck className="w-4 h-4 shrink-0" />
             </div>
             <span className="font-medium text-stone-800 dark:text-slate-200">{t('hero.guarantee1')}</span>
           </div>
 
-          <div className="flex items-center space-x-2.5 group cursor-default">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-2.5 text-center group cursor-default">
             <div className="w-8 h-8 rounded-lg bg-white dark:bg-[#16283D] flex items-center justify-center text-[#0A6C74] dark:text-[#60C3CC] border border-stone-200 dark:border-slate-700/60 shadow-2xs group-hover:scale-105 transition-transform">
               <Clock className="w-4 h-4 shrink-0" />
             </div>
             <span className="font-medium text-stone-800 dark:text-slate-200">{t('hero.guarantee2')}</span>
           </div>
 
-          <div className="flex items-center space-x-2.5 group cursor-default">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-2.5 text-center group cursor-default">
             <div className="w-8 h-8 rounded-lg bg-white dark:bg-[#16283D] flex items-center justify-center text-[#0A6C74] dark:text-[#60C3CC] border border-stone-200 dark:border-slate-700/60 shadow-2xs group-hover:scale-105 transition-transform">
               <MapPin className="w-4 h-4 shrink-0" />
             </div>
             <span className="font-medium text-stone-800 dark:text-slate-200">{t('hero.guarantee3')}</span>
           </div>
 
-          <div className="flex items-center space-x-2.5 group cursor-default">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-2.5 text-center group cursor-default">
             <div className="w-8 h-8 rounded-lg bg-white dark:bg-[#16283D] flex items-center justify-center text-[#0A6C74] dark:text-[#60C3CC] border border-stone-200 dark:border-slate-700/60 shadow-2xs group-hover:scale-105 transition-transform">
               <Award className="w-4 h-4 shrink-0" />
             </div>

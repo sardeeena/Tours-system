@@ -180,66 +180,70 @@ export const ReviewsSection: React.FC = () => {
         {!isLoading && !error && data.reviews.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {data.reviews.map((rev, idx) => (
-              <motion.div
+              <motion.article
                 key={rev.id}
                 id={`review-card-${rev.id}`}
                 data-testid="review-card"
                 initial={{ opacity: 0, y: 18 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-40px' }}
-                transition={{ duration: 0.45, delay: idx * 0.08 }}
-                whileHover={{ y: -5 }}
-                className="bg-white dark:bg-[#132235] rounded-2xl border border-[#E8E3DA] dark:border-slate-800 p-6 flex flex-col justify-between hover:border-[#0A6C74]/50 hover:shadow-xl transition-all duration-300"
+                transition={{ duration: 0.45, delay: Math.min(idx % 3, 2) * 0.07 }}
+                whileHover={{ y: -4 }}
+                className="group relative min-h-[250px] bg-white dark:bg-[#132235] rounded-2xl border border-[#E8E3DA] dark:border-slate-800 p-6 sm:p-7 flex flex-col justify-between shadow-sm hover:border-[#0A6C74]/45 hover:shadow-lg transition-all duration-300"
               >
                 <div>
-                  {/* Rating and Date */}
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex text-amber-400">
-                      {[...Array(rev.rating)].map((_, i) => (
-                        <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                      ))}
+                  <div className="flex items-center justify-between gap-3 mb-5">
+                    <div className="inline-flex items-center gap-1.5 rounded-md bg-[#F6F2E9] dark:bg-slate-800/80 px-2.5 py-1.5" aria-label={`${rev.rating} out of 5 stars`}>
+                      <div className="flex text-amber-500">
+                        {[...Array(rev.rating)].map((_, i) => (
+                          <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                        ))}
+                      </div>
+                      <span className="text-[11px] font-bold text-stone-700 dark:text-slate-200">{rev.rating}.0</span>
                     </div>
-                    <span className="text-[11px] text-stone-400 dark:text-slate-500 font-mono">{rev.date}</span>
+                    <span className="text-[11px] text-stone-400 dark:text-slate-500">{rev.date}</span>
                   </div>
 
-                  {/* Excursion tag */}
                   {rev.tourTitle && (
-                    <span className="text-xs font-semibold text-[#0A6C74] dark:text-[#60C3CC] block mb-2 line-clamp-1">
+                    <span className="text-[11px] font-bold uppercase tracking-wide text-[#0A6C74] dark:text-[#60C3CC] block mb-2 line-clamp-1">
                       {rev.tourTitle}
                     </span>
                   )}
 
-                  {/* Review Text */}
-                  <p className="text-xs sm:text-[13px] text-stone-700 dark:text-slate-200 leading-relaxed mb-5 italic">
-                    "{rev.comment}"
+                  <p className="text-sm sm:text-[15px] text-stone-700 dark:text-slate-200 leading-[1.75] mb-6">
+                    “{rev.comment}”
                   </p>
                 </div>
 
-                {/* Guest Profile */}
-                <div className="pt-3.5 border-t border-stone-100 dark:border-slate-800 flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-bold text-stone-900 dark:text-white block">
-                      {rev.authorName}
-                    </span>
-                    <div className="text-[11px] text-stone-500 dark:text-slate-400 flex items-center space-x-1.5 mt-0.5">
-                      <span>{rev.country}</span>
-                      {rev.travelerType && (
-                        <>
-                          <span aria-hidden="true" className="text-stone-300 dark:text-slate-600">·</span>
-                          <span>{rev.travelerType}</span>
-                        </>
-                      )}
+                <div className="pt-4 border-t border-stone-100 dark:border-slate-800 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 shrink-0 rounded-full bg-[#E8F3F4] dark:bg-[#1B3B4A] text-[#0A6C74] dark:text-[#8ADBE0] flex items-center justify-center text-sm font-bold ring-1 ring-[#0A6C74]/10">
+                      {rev.authorName.trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0)).join('').toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-sm font-bold text-stone-900 dark:text-white block truncate">
+                        {rev.authorName}
+                      </span>
+                      <div className="text-[11px] text-stone-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
+                        <span>{rev.country}</span>
+                        {rev.travelerType && (
+                          <>
+                            <span aria-hidden="true" className="text-stone-300 dark:text-slate-600">·</span>
+                            <span>{rev.travelerType}</span>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
 
                   {rev.verifiedBooking && (
-                    <div className="flex items-center text-[10px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
-                      <CheckCircle2 className="w-3 h-3 mr-1 text-emerald-600 dark:text-emerald-400" />
+                    <div className="shrink-0 inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-2.5 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                       <span>Verified</span>
                     </div>
                   )}
                 </div>
-              </motion.div>
+              </motion.article>
             ))}
           </div>
         )}
