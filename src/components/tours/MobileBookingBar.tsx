@@ -1,7 +1,6 @@
 import React from 'react';
 import { Tour, CurrencyConfig } from '../../types';
 import { formatPrice } from '../../data/toursData';
-import { getTourAdultRateEur } from '../../services/pricingService';
 
 interface MobileBookingBarProps {
   tour: Tour;
@@ -20,7 +19,7 @@ export const MobileBookingBar: React.FC<MobileBookingBarProps> = ({
         <span className="text-[10px] uppercase font-bold text-stone-600 block leading-tight">Starting from</span>
         <div className="flex items-baseline space-x-1">
           <span className="text-xl font-bold text-[#0E1B2A]">
-            {formatPrice(getTourAdultRateEur(tour), currency)}
+            {formatPrice(tour.tourType === 'Private' ? (tour.privatePriceEur || 0) : tour.priceEur, currency)}
           </span>
           <span className="text-xs text-stone-600 font-medium">/ person</span>
         </div>
