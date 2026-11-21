@@ -143,11 +143,11 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
           <motion.div
             key={slide.id}
             initial={prefersReducedMotion ? false : { scale: 1.08, opacity: 0 }}
-            animate={{ scale: 1.02, opacity: isDark ? 0.78 : 0.82 }}
-            exit={{ scale: prefersReducedMotion ? 1.02 : 1.12, opacity: 0 }}
+            animate={{ scale: 1.015, opacity: isDark ? 0.9 : 1 }}
+            exit={{ scale: prefersReducedMotion ? 1.015 : 1.06, opacity: 0 }}
             transition={{
               opacity: { duration: prefersReducedMotion ? 0 : 1.35, ease: 'easeInOut' },
-              scale: { duration: prefersReducedMotion ? 0 : 7.5, ease: 'easeOut' }
+              scale: { duration: prefersReducedMotion ? 0 : 6.5, ease: 'easeOut' }
             }}
             className="absolute inset-0 bg-cover bg-center will-change-transform"
             style={{
@@ -157,8 +157,9 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
         </AnimatePresence>
       </div>
 
-      {/* Single restrained scrim: keep the photography clear while preserving text contrast. */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#FAF8F5]/25 via-transparent to-[#FAF8F5]/65 dark:from-[#0E1B2A]/35 dark:via-[#0E1B2A]/10 dark:to-[#0E1B2A]/70 pointer-events-none" />
+      {/* Subtle tonal treatment: preserve photo detail, protect headline contrast, and avoid a washed-out white veil. */}
+      <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-[#0E1B2A]/10 via-[#0E1B2A]/[0.04] to-[#FAF8F5]/45 dark:from-[#0E1B2A]/35 dark:via-[#0E1B2A]/20 dark:to-[#0E1B2A]/75" />
+      <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-[#FAF8F5]/10 via-transparent to-[#FAF8F5]/10 dark:from-black/10 dark:via-transparent dark:to-black/10" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-8 pt-10 sm:pt-14 pb-12 sm:pb-16">
         
@@ -173,7 +174,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
               transition={{ duration: prefersReducedMotion ? 0 : 0.55, ease: 'easeOut' }}
             >
               {/* Dynamic Headline */}
-              <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-stone-900 dark:text-white leading-[1.12] mb-3 text-center [text-wrap:balance]">
+              <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-stone-900 dark:text-white leading-[1.12] mb-3 text-center [text-wrap:balance] drop-shadow-[0_1px_1px_rgba(255,255,255,0.12)]">
                 {slide.title1}{' '}
                 <span className={`italic font-serif text-transparent bg-clip-text bg-gradient-to-r ${slide.accentGradient}`}>
                   {slide.title2}
