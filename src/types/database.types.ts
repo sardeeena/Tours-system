@@ -241,6 +241,7 @@ export interface Database {
           duration_type?: DurationCategory;
           duration_hours?: number;
           tour_type?: TourType;
+          is_exclusive?: boolean;
           status?: TourStatus;
           featured?: boolean;
           price?: number;
