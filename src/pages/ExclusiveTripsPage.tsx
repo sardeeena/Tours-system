@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Clock3, MapPin, Users, CalendarDays, Ship, AlertCircle } from 'lucide-react';
+import { CheckCircle2, Clock3, MapPin, Users, Ship, AlertCircle } from 'lucide-react';
 import { ExclusiveDeparture, ExclusiveTrip, getExclusiveDepartures, getExclusiveTrips, reserveExclusiveTrip } from '../services/exclusiveTripService';
 
 interface Props { onNavigateHome?: () => void; }
