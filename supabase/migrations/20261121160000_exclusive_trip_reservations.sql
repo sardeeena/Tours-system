@@ -69,6 +69,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS exclusive_one_active_reservation_per_slot
   ON public.exclusive_reservations(exclusive_departure_id)
   WHERE status IN ('pending','confirmed','completed','no_show');
 
+ALTER TABLE public.exclusive_reservations
+  ADD COLUMN IF NOT EXISTS booking_id UUID UNIQUE REFERENCES public.bookings(id) ON DELETE SET NULL;
+
 CREATE INDEX IF NOT EXISTS exclusive_departures_public_schedule_idx
   ON public.exclusive_departures(date, start_time)
   WHERE status = 'confirmed';
@@ -391,7 +394,8 @@ BEGIN
      OR nullif(btrim(coalesce(p_last_name,'')), '') IS NULL
      OR nullif(btrim(coalesce(p_email,'')), '') IS NULL
      OR length(btrim(p_email)) > 254
-     OR btrim(p_email) !~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}(btrim(coalesce(p_phone,'')), '') IS NULL THEN
+     OR btrim(p_email) !~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+     OR nullif(btrim(coalesce(p_phone,'')), '') IS NULL THEN
     RAISE EXCEPTION 'Valid customer name, email and phone are required' USING ERRCODE = '22023';
   END IF;
   IF coalesce(p_payment_method,'pay_at_pickup') NOT IN ('pay_at_pickup','pay_online') THEN
@@ -544,6 +548,7 @@ EXCEPTION WHEN unique_violation THEN
     RETURN jsonb_build_object(
       'success', TRUE, 'duplicate', TRUE,
       'reservationId', v_existing.id,
+      'bookingId', v_existing.booking_id,
       'reservationReference', v_existing.reservation_reference,
       'total', v_existing.total, 'currency', v_existing.currency,
       'status', v_existing.status
