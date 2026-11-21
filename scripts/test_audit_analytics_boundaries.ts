@@ -5,13 +5,24 @@ const checks: Array<{ name: string; passed: boolean }> = [];
 const check = (name: string, passed: boolean) => checks.push({ name, passed });
 
 const visitorPanel = fs.readFileSync('src/components/admin/technical/VisitorAnalyticsPanel.tsx', 'utf8');
+const reportingService = fs.readFileSync('src/services/reportingService.ts', 'utf8');
+const technicalPanel = fs.readFileSync('src/components/admin/technical/TechnicalControlCenter.tsx', 'utf8');
+const spreadsheetSerializer = fs.readFileSync('src/utils/spreadsheetExport.ts', 'utf8');
 check(
-  'All visitor privacy CSV exports neutralize spreadsheet formula-leading text while preserving numeric values',
-  visitorPanel.includes('const csvCell = (value: string | number | boolean | null): string =>')
-    && visitorPanel.includes("typeof value === 'string'")
-    && visitorPanel.includes("? `'${raw}` : raw;")
-    && visitorPanel.includes("row.map(csvCell).join(',')")
-    && visitorPanel.includes("const safe = typeof value === 'string'")
+  'Every CSV and TSV export uses the shared spreadsheet formula neutralizer',
+  spreadsheetSerializer.includes('serializeSpreadsheetCell')
+    && spreadsheetSerializer.includes("typeof value === 'string'")
+    && spreadsheetSerializer.includes('formulaSafe')
+    && visitorPanel.includes('serializeSpreadsheetRows([columns, ...rows])')
+    && reportingService.includes('serializeSpreadsheetRows([')
+    && reportingService.includes("], '\\\\t');")
+    && technicalPanel.includes('serializeSpreadsheetRows([columns, ...rows])')
+    && !reportingService.includes('const sanitize =')
+    && !technicalPanel.includes('String(value).replace')
+);
+check(
+  'Spreadsheet formula neutralization preserves numeric values',
+  spreadsheetSerializer.includes("typeof value === 'string' &&")
 );
 
 const telemetryStart = server.indexOf('// Sanitized API telemetry.');
