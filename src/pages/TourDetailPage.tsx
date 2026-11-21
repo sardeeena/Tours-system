@@ -63,6 +63,7 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({
   const { isCompared, toggleCompare } = useComparison();
   const { showToast } = useToast();
   const [copiedLink, setCopiedLink] = useState(false);
+  const [detailTab, setDetailTab] = useState<'overview' | 'itinerary' | 'included' | 'details' | 'reviews'>('overview');
 
   // Dynamic SEO meta tags, OpenGraph, and Schema.org JSON-LD
   const seoData = React.useMemo(() => seoService.generateTourSeo(tour), [tour]);
@@ -239,75 +240,62 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({
             {tour.shortDescription}
           </div>
 
-          {/* About this experience */}
-          <div className="space-y-3">
-            <h3 className="font-display text-lg font-bold text-[#0E1B2A]">
-              About This Experience
-            </h3>
-            <p className="text-xs sm:text-sm text-stone-600 leading-relaxed whitespace-pre-line">
-              {tour.fullDescription}
-            </p>
-          </div>
-
-          {/* Highlights */}
-          {tour.highlights && tour.highlights.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="font-display text-lg font-bold text-[#0E1B2A]">
-                Experience Highlights
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                {tour.highlights.map((hl, idx) => (
-                  <div key={idx} className="flex items-start text-xs text-stone-700 p-2.5 rounded bg-white border border-stone-200">
-                    <div className="p-1 rounded bg-[#E8F3F4] text-[#0A6C74] mr-2.5 mt-0.5 shrink-0">
-                      <Sparkles className="w-3 h-3" />
-                    </div>
-                    <span className="leading-snug">{hl}</span>
-                  </div>
+          {/* Responsive, focused excursion information tabs */}
+          <section className="space-y-5" aria-label="Excursion details">
+            <nav aria-label="Excursion information" className="sticky top-0 z-10 bg-[#FAF8F5]/95 backdrop-blur border-y border-stone-200 py-2">
+              <div className="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Tour sections">
+                {([
+                  ['overview', 'Overview'],
+                  ['itinerary', 'Itinerary'],
+                  ['included', 'Included'],
+                  ['details', 'Details & FAQ'],
+                  ['reviews', 'Reviews'],
+                ] as const).map(([id, label]) => (
+                  <button key={id} type="button" role="tab" aria-selected={detailTab === id}
+                    aria-controls={`tour-tab-panel-${id}`} id={`tour-tab-${id}`}
+                    onClick={() => setDetailTab(id)}
+                    className={`shrink-0 rounded-full px-4 py-2 text-xs sm:text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] ${detailTab === id ? 'bg-[#0A6C74] text-white shadow-sm' : 'bg-white border border-stone-200 text-stone-700 hover:border-[#0A6C74]'}`}>
+                    {label}
+                  </button>
                 ))}
               </div>
+            </nav>
+            <div role="tabpanel" id={`tour-tab-panel-${detailTab}`} aria-labelledby={`tour-tab-${detailTab}`} className="min-h-[12rem] space-y-6">
+              {detailTab === 'overview' && (
+                <div className="space-y-6">
+                  <section className="space-y-3">
+                    <h2 className="font-display text-lg font-bold text-[#0E1B2A]">About This Experience</h2>
+                    <p className="text-sm text-stone-600 leading-relaxed whitespace-pre-line">{tour.fullDescription}</p>
+                  </section>
+                  {tour.highlights && tour.highlights.length > 0 && (
+                    <section className="space-y-3">
+                      <h2 className="font-display text-lg font-bold text-[#0E1B2A]">Experience Highlights</h2>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        {tour.highlights.map((hl, idx) => <div key={idx} className="flex items-start text-sm text-stone-700 p-3 rounded bg-white border border-stone-200">
+                          <Sparkles className="w-4 h-4 text-[#0A6C74] mr-2 mt-0.5 shrink-0" /><span>{hl}</span>
+                        </div>)}
+                      </div>
+                    </section>
+                  )}
+                </div>
+              )}
+              {detailTab === 'itinerary' && <Itinerary items={tour.itinerary} />}
+              {detailTab === 'included' && <IncludedExcluded included={tour.included} excluded={tour.excluded} />}
+              {detailTab === 'details' && (
+                <div className="space-y-6">
+                  <ImportantInformation tour={tour} />
+                  {tour.faqs && tour.faqs.length > 0 && <section className="space-y-3" aria-labelledby="tour-faq-heading">
+                    <h2 id="tour-faq-heading" className="font-display text-xl font-bold text-[#0E1B2A]">Frequently Asked Questions</h2>
+                    <div className="space-y-2">{tour.faqs.map((faq, index) => <details key={index} className="group rounded border border-stone-200 bg-white px-4 py-3">
+                      <summary className="cursor-pointer list-none font-semibold text-sm text-stone-900 flex items-center justify-between gap-3"><span>{faq.question}</span><span aria-hidden="true" className="text-[#0A6C74] group-open:rotate-45 transition-transform">+</span></summary>
+                      <p className="mt-3 text-sm leading-relaxed text-stone-600">{faq.answer}</p>
+                    </details>)}</div>
+                  </section>}
+                </div>
+              )}
+              {detailTab === 'reviews' && <TourReviews tour={tour} />}
             </div>
-          )}
-
-          {/* ITINERARY */}
-          <div className="pt-4 border-t border-stone-200">
-            <Itinerary items={tour.itinerary} />
-          </div>
-
-          {/* WHAT'S INCLUDED / NOT INCLUDED */}
-          <div className="pt-4 border-t border-stone-200">
-            <IncludedExcluded
-              included={tour.included}
-              excluded={tour.excluded}
-            />
-          </div>
-
-          {/* IMPORTANT INFORMATION */}
-          <div className="pt-4 border-t border-stone-200">
-            <ImportantInformation tour={tour} />
-          </div>
-
-          {/* FREQUENTLY ASKED QUESTIONS */}
-          {tour.faqs && tour.faqs.length > 0 && (
-            <section className="pt-4 border-t border-stone-200" aria-labelledby="tour-faq-heading">
-              <h2 id="tour-faq-heading" className="font-display text-xl font-bold text-[#0E1B2A] mb-3">Frequently Asked Questions</h2>
-              <div className="space-y-2">
-                {tour.faqs.map((faq, index) => (
-                  <details key={index} className="group rounded border border-stone-200 bg-white px-4 py-3">
-                    <summary className="cursor-pointer list-none font-semibold text-sm text-stone-900 flex items-center justify-between gap-3">
-                      <span>{faq.question}</span>
-                      <span aria-hidden="true" className="text-[#0A6C74] group-open:rotate-45 transition-transform">+</span>
-                    </summary>
-                    <p className="mt-3 text-sm leading-relaxed text-stone-600">{faq.answer}</p>
-                  </details>
-                ))}
-              </div>
-            </section>
-          )}
-
-          {/* REVIEWS SECTION */}
-          <div className="pt-4 border-t border-stone-200">
-            <TourReviews tour={tour} />
-          </div>
+          </section>
 
           {/* RELATED TOURS */}
           <div className="pt-4">
