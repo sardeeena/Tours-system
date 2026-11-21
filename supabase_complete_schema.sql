@@ -2468,6 +2468,9 @@ BEGIN
   IF NEW.date < (now() AT TIME ZONE 'Africa/Cairo')::date THEN
     RAISE EXCEPTION 'An Exclusive departure cannot be scheduled in the past' USING ERRCODE = '22023';
   END IF;
+  IF NEW.maximum_guests < v_trip.minimum_guests THEN
+    RAISE EXCEPTION 'Slot capacity cannot be below the Exclusive product minimum of % guests', v_trip.minimum_guests USING ERRCODE = '22023';
+  END IF;
   IF NEW.maximum_guests > v_trip.maximum_guests THEN
     RAISE EXCEPTION 'Slot capacity cannot exceed the Exclusive product maximum of % guests', v_trip.maximum_guests USING ERRCODE = '22023';
   END IF;
@@ -2489,6 +2492,51 @@ BEGIN
     IF v_maintenance IS NOT NULL AND v_maintenance <= NEW.date THEN
       RAISE EXCEPTION 'The assigned vessel is due for maintenance on or before this departure' USING ERRCODE = '22023';
     END IF;
+  END IF;
+
+  -- Prevent assigning the same vessel or crew to overlapping regular or Exclusive departures.
+  IF NEW.vessel_id IS NOT NULL AND (
+    EXISTS (
+      SELECT 1 FROM public.exclusive_departures d
+      WHERE d.id IS DISTINCT FROM NEW.id AND d.date=NEW.date
+        AND d.status NOT IN ('cancelled','completed')
+        AND d.vessel_id=NEW.vessel_id
+        AND d.start_time < NEW.end_time AND d.end_time > NEW.start_time
+    )
+    OR EXISTS (
+      SELECT 1 FROM public.departures d
+      WHERE d.date=NEW.date AND d.status NOT IN ('cancelled','completed')
+        AND d.vessel_id=NEW.vessel_id
+        AND d.start_time::time < NEW.end_time AND d.end_time::time > NEW.start_time
+    )
+  ) THEN
+    RAISE EXCEPTION 'The assigned vessel is already scheduled during this time window' USING ERRCODE = '23P01';
+  END IF;
+
+  IF (
+    (NEW.captain_id IS NOT NULL AND EXISTS (
+      SELECT 1 FROM public.exclusive_departures d
+      WHERE d.id IS DISTINCT FROM NEW.id AND d.date=NEW.date
+        AND d.status NOT IN ('cancelled','completed')
+        AND NEW.captain_id IN (d.captain_id,d.guide_id,d.driver_id)
+        AND d.start_time < NEW.end_time AND d.end_time > NEW.start_time
+    ))
+    OR (NEW.guide_id IS NOT NULL AND EXISTS (
+      SELECT 1 FROM public.exclusive_departures d
+      WHERE d.id IS DISTINCT FROM NEW.id AND d.date=NEW.date
+        AND d.status NOT IN ('cancelled','completed')
+        AND NEW.guide_id IN (d.captain_id,d.guide_id,d.driver_id)
+        AND d.start_time < NEW.end_time AND d.end_time > NEW.start_time
+    ))
+    OR (NEW.driver_id IS NOT NULL AND EXISTS (
+      SELECT 1 FROM public.exclusive_departures d
+      WHERE d.id IS DISTINCT FROM NEW.id AND d.date=NEW.date
+        AND d.status NOT IN ('cancelled','completed')
+        AND NEW.driver_id IN (d.captain_id,d.guide_id,d.driver_id)
+        AND d.start_time < NEW.end_time AND d.end_time > NEW.start_time
+    ))
+  ) THEN
+    RAISE EXCEPTION 'The assigned crew member is already scheduled during this time window' USING ERRCODE = '23P01';
   END IF;
 
   IF NEW.captain_id IS NOT NULL AND NOT EXISTS (
