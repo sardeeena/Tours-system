@@ -13,7 +13,7 @@ const checks: Array<{ name: string; passed: boolean }> = [
   { name: 'Both technical API routes enforce superadmin AAL2', passed: (server.match(/requireSuperAdminAal2\(req, res\)/g) || []).length >= 3 },
   { name: 'API telemetry excludes technical endpoints and public health probes', passed: server.includes("routePath.startsWith('/api/admin/technical') || routePath === '/api/health'") },
   { name: 'Telemetry stores no request body, query string or authorization header', passed: !/metadata:\s*\{[^}]*req\.(body|query|headers)/s.test(server) },
-  { name: 'Technical diagnostics are hidden from admin navigation and direct tab access', passed: !layout.includes("label: 'Technical Control Center'") && /id === 'technical'[\\s\\S]{0,40}\\? false/.test(layout) && /activeTab === 'technical'[\\s\\S]{0,40}\\? false/.test(layout) },
+  { name: 'Technical diagnostics are hidden from admin navigation and direct tab access', passed: !layout.includes("label: 'Technical Control Center'") && layout.includes("const canSeeTab = (id: string) => id === 'technical'\\n    ? false") && layout.includes("const canAccessActiveTab = activeTab === 'technical'\\n    ? false") },
   { name: 'Translation workspace navigation is Super Admin-only', passed: /id === 'translations'[\s\S]{0,40}\? isSuperAdmin/.test(layout) && /activeTab === 'translations'[\s\S]{0,40}\? isSuperAdmin/.test(layout) },
   { name: 'Technical page refuses non-superadmin users', passed: page.includes('Superadmin access only') && page.includes('isSuperAdmin') },
   { name: 'Technical page is registered as a protected admin route', passed: app.includes("adminSubRoute?.main === 'technical'") && app.includes("activeAdminTab === 'technical' && <TechnicalControlCenter />") },
