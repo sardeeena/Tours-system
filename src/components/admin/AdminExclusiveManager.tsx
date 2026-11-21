@@ -98,7 +98,7 @@ export const AdminExclusiveManager: React.FC = () => {
     finally { setSaving(false); }
   };
 
-  const changeReservation = async (id: string, changes: { status?: string; payment_status?: string }) => {
+  const changeReservation = async (id: string, changes: { status?: string }) => {
     setError(''); setNotice('');
     try {
       await updateExclusiveReservation(id, changes);
@@ -178,7 +178,7 @@ export const AdminExclusiveManager: React.FC = () => {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><p className="font-bold">{slot.date} · {String(slot.start_time).slice(0,5)}–{String(slot.end_time).slice(0,5)}</p><p className="text-xs text-stone-500 mt-1">Maximum {slot.maximum_guests} guests · {slot.status}</p></div><span className={`text-xs font-semibold rounded-full px-3 py-1 ${reservations.some((r:any)=>['pending','confirmed','completed','no_show'].includes(r.status))?'bg-amber-100 text-amber-800':'bg-emerald-100 text-emerald-800'}`}>{reservations.some((r:any)=>['pending','confirmed'].includes(r.status))?'Reserved':'Available'}</span></div>
                     {reservations.map((reservation:any)=><div key={reservation.id} className="bg-stone-50 rounded-lg p-3 space-y-2">
                       <div className="flex flex-col sm:flex-row sm:justify-between gap-2"><div><p className="font-semibold">{reservation.customer_first_name} {reservation.customer_last_name} · {reservation.guest_count} guests</p><p className="text-xs text-stone-500">{reservation.reservation_reference} · {reservation.customer_email} · {reservation.customer_phone}</p></div><strong>{new Intl.NumberFormat(undefined,{style:'currency',currency:reservation.currency}).format(Number(reservation.total))}</strong></div>
-                      <div className="flex flex-wrap gap-2"><select aria-label="Reservation status" value={reservation.status} onChange={(e)=>void changeReservation(reservation.id,{status:e.target.value})} className="text-xs rounded border border-stone-300 p-2 bg-white"><option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option><option value="completed">Completed</option><option value="no_show">No show</option></select><select aria-label="Payment status" value={reservation.payment_status} onChange={(e)=>void changeReservation(reservation.id,{payment_status:e.target.value})} className="text-xs rounded border border-stone-300 p-2 bg-white"><option value="pending">Payment pending</option><option value="paid">Paid</option><option value="partially_paid">Partially paid</option><option value="refunded">Refunded</option><option value="failed">Failed</option></select></div>
+                      <div className="flex flex-wrap gap-2"><select aria-label="Reservation status" value={reservation.status} onChange={(e)=>void changeReservation(reservation.id,{status:e.target.value})} className="text-xs rounded border border-stone-300 p-2 bg-white"><option value="pending">Pending</option><option value="confirmed">Confirmed</option><option value="cancelled">Cancelled</option><option value="completed">Completed</option><option value="no_show">No show</option></select><span className="text-xs text-stone-500">Payment: {String(reservation.payment_status || "pending").replaceAll("_"," ")} · managed in Finance</span></div>
                     </div>)}
                   </article>;
                 })}
