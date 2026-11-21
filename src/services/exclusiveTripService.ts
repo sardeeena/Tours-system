@@ -125,7 +125,7 @@ export async function getAdminExclusiveTours() {
   const client = requireSupabase();
   const { data, error } = await client
     .from('tours')
-    .select('id,title,slug,status,is_exclusive,destinations(name)')
+    .select('id,title,slug,status,is_exclusive,destinations(name),exclusive_trips(id,fixed_trip_price,currency,minimum_guests,maximum_guests,is_active)')
     .order('title', { ascending: true });
   if (error) throw new Error(error.message || 'Unable to load tours for Exclusive management.');
   return data || [];
@@ -210,4 +210,15 @@ export async function updateExclusiveReservation(
     .update({ ...changes, updated_at: new Date().toISOString() })
     .eq('id', reservationId);
   if (error) throw new Error(error.message || 'Unable to update the Exclusive reservation.');
+}
+
+export async function getExclusiveResourceOptions() {
+  const client = requireSupabase();
+  const [vessels, guides] = await Promise.all([
+    client.from('vessels').select('id,name,passenger_capacity,is_active').eq('is_active', true).order('name'),
+    client.from('guides').select('id,full_name,role,is_active').eq('is_active', true).order('full_name'),
+  ]);
+  if (vessels.error) throw new Error(vessels.error.message || 'Unable to load active vessels.');
+  if (guides.error) throw new Error(guides.error.message || 'Unable to load active crew.');
+  return { vessels: vessels.data || [], guides: guides.data || [] };
 }
