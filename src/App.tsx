@@ -62,6 +62,7 @@ import type { AdminTab } from './components/admin/AdminLayout';
 const AdminLayout = lazy(() => import('./components/admin/AdminLayout').then(m => ({ default: m.AdminLayout })));
 const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
 const TechnicalControlCenter = lazy(() => import('./components/admin/technical/TechnicalControlCenter').then(m => ({ default: m.TechnicalControlCenter })));
+const VisitorAnalyticsPanel = lazy(() => import('./components/admin/technical/VisitorAnalyticsPanel').then(m => ({ default: m.VisitorAnalyticsPanel })));
 const AdminTourList = lazy(() => import('./components/admin/AdminTourList').then(m => ({ default: m.AdminTourList })));
 const AdminTourEditor = lazy(() => import('./components/admin/AdminTourEditor').then(m => ({ default: m.AdminTourEditor })));
 const AdminExclusiveManager = lazy(() => import('./components/admin/AdminExclusiveManager').then(m => ({ default: m.AdminExclusiveManager })));
