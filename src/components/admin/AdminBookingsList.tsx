@@ -273,8 +273,8 @@ export const AdminBookingsList: React.FC = () => {
 
     const rows = filtered.map((b) => [
       `${b.bookingReference}`,
-      `${b.tourTitle.replace(/"/g, '""')}`,
-      `${(b.tourLanguage || '').replace(/"/g, '""')}`,
+      `${b.tourTitle}`,
+      `${(b.tourLanguage || '')}`,
       `${b.date}`,
       `${b.customer.firstName} ${b.customer.lastName}`,
       `${b.customer.email}`,
