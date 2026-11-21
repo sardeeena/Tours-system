@@ -242,7 +242,7 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({
 
           {/* Responsive, focused excursion information tabs */}
           <section className="space-y-5" aria-label="Excursion details">
-            <nav aria-label="Excursion information" className="sticky top-0 z-10 bg-[#FAF8F5]/95 backdrop-blur border-y border-stone-200 py-2">
+            <nav aria-label="Excursion information" className="sticky top-16 z-10 bg-[#FAF8F5]/95 backdrop-blur border-y border-stone-200 py-2">
               <div className="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Tour sections">
                 {([
                   ['overview', 'Overview'],
@@ -252,17 +252,20 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({
                   ['reviews', 'Reviews'],
                 ] as const).map(([id, label]) => (
                   <button key={id} type="button" role="tab" aria-selected={detailTab === id}
-                    aria-controls={`tour-tab-panel-${id}`} id={`tour-tab-${id}`}
+                    aria-controls={`tour-tab-panel-${id}`} id={`tour-tab-${id}`} tabIndex={detailTab === id ? 0 : -1}
                     onClick={() => setDetailTab(id)}
                     onKeyDown={(event) => {
-                      if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
-                        event.preventDefault();
-                        const tabIds = ['overview', 'itinerary', 'included', 'details', 'reviews'] as const;
-                        const currentIndex = tabIds.indexOf(id);
-                        const nextIndex = event.key === 'ArrowRight' ? (currentIndex + 1) % tabIds.length : (currentIndex - 1 + tabIds.length) % tabIds.length;
-                        setDetailTab(tabIds[nextIndex]);
-                        document.getElementById(`tour-tab-${tabIds[nextIndex]}`)?.focus();
-                      }
+                      const tabIds = ['overview', 'itinerary', 'included', 'details', 'reviews'] as const;
+                      const currentIndex = tabIds.indexOf(id);
+                      let nextIndex = currentIndex;
+                      if (event.key === 'ArrowRight') nextIndex = (currentIndex + 1) % tabIds.length;
+                      else if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + tabIds.length) % tabIds.length;
+                      else if (event.key === 'Home') nextIndex = 0;
+                      else if (event.key === 'End') nextIndex = tabIds.length - 1;
+                      else return;
+                      event.preventDefault();
+                      setDetailTab(tabIds[nextIndex]);
+                      document.getElementById(`tour-tab-${tabIds[nextIndex]}`)?.focus();
                     }}
                     className={`shrink-0 rounded-full px-4 py-2 text-xs sm:text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] ${detailTab === id ? 'bg-[#0A6C74] text-white shadow-sm' : 'bg-white border border-stone-200 text-stone-700 hover:border-[#0A6C74]'}`}>
                     {label}
