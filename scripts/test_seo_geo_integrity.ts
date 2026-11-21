@@ -232,10 +232,10 @@ assert.ok(exclusiveTripsAnonPolicyStart >= 0 && exclusiveTripsAuthPolicyStart > 
 assert.ok(exclusiveDeparturesAnonPolicyStart > exclusiveTripsAuthPolicyStart && exclusiveDeparturesAuthPolicyStart > exclusiveDeparturesAnonPolicyStart, 'Exclusive departures have separate anonymous and authenticated read policies');
 assert.match(exclusiveTripsAnonPolicy, /TO anon/, 'Anonymous exclusive-trip reads use the anon role directly');
 assert.doesNotMatch(exclusiveTripsAnonPolicy, /has_permission/, 'Anonymous exclusive-trip reads never invoke staff RBAC helpers');
-assert.match(exclusiveTripsAuthPolicy, /TO authenticated[\\s\\S]*has_permission\\('content\\.read'\\)/, 'Authenticated exclusive-trip reads retain the content.read permission check');
+assert.match(exclusiveTripsAuthPolicy, /TO authenticated[\s\S]*has_permission\('content\.read'\)/, 'Authenticated exclusive-trip reads retain the content.read permission check');
 assert.match(exclusiveDeparturesAnonPolicy, /TO anon/, 'Anonymous exclusive-departure reads use the anon role directly');
 assert.doesNotMatch(exclusiveDeparturesAnonPolicy, /has_permission/, 'Anonymous exclusive-departure reads never invoke staff RBAC helpers');
-assert.match(exclusiveDeparturesAuthPolicy, /TO authenticated[\\s\\S]*has_permission\\('operations\\.read'\\)/, 'Authenticated exclusive-departure reads retain the operations.read permission check');
-assert.doesNotMatch(exclusiveTripPublicRlsMigration, /GRANT\\s+EXECUTE[^;]*has_permission/i, 'Fix does not weaken the has_permission function EXECUTE boundary');
+assert.match(exclusiveDeparturesAuthPolicy, /TO authenticated[\s\S]*has_permission\('operations\.read'\)/, 'Authenticated exclusive-departure reads retain the operations.read permission check');
+assert.doesNotMatch(exclusiveTripPublicRlsMigration, /GRANT\s+EXECUTE[^;]*has_permission/i, 'Fix does not weaken the has_permission function EXECUTE boundary');
 
 console.log('SEO/GEO sitemap, indexation and structured-data integrity checks passed.');
