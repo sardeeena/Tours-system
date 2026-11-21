@@ -696,6 +696,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               )}
 
+              <button type="button" onClick={() => { setMobileMenuOpen(false); onNavigateExclusive?.(); }} className="text-left py-2 px-3 rounded hover:bg-stone-100 text-[#0A6C74] font-semibold">Exclusive Private Trips</button>
               <button
                 type="button"
                 onClick={handleExcursionsClick}
