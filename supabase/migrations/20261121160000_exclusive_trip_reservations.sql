@@ -8,7 +8,7 @@ ALTER TABLE public.tours
 CREATE TABLE IF NOT EXISTS public.exclusive_trips (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tour_id UUID NOT NULL UNIQUE REFERENCES public.tours(id) ON DELETE CASCADE,
-  fixed_trip_price NUMERIC(12,2) NOT NULL CHECK (fixed_trip_price > 0),
+  fixed_trip_price NUMERIC(12,2) NOT NULL CHECK (fixed_trip_price > 0 AND fixed_trip_price <= 99999999.99),
   currency TEXT NOT NULL DEFAULT 'EUR' CHECK (currency ~ '^[A-Z]{3}$'),
   minimum_guests INTEGER NOT NULL DEFAULT 1 CHECK (minimum_guests BETWEEN 1 AND 500),
   maximum_guests INTEGER NOT NULL CHECK (maximum_guests BETWEEN 1 AND 500),
@@ -266,7 +266,7 @@ BEGIN
     RAISE EXCEPTION 'Not authorized to manage Exclusive trip settings' USING ERRCODE = '42501';
   END IF;
 
-  IF p_tour_id IS NULL OR p_fixed_trip_price IS NULL OR p_fixed_trip_price <= 0
+  IF p_tour_id IS NULL OR p_fixed_trip_price IS NULL OR p_fixed_trip_price <= 0 OR p_fixed_trip_price > 99999999.99
      OR p_currency IS NULL OR p_currency !~ '^[A-Z]{3}
 ALTER TABLE public.exclusive_departures ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.exclusive_reservations ENABLE ROW LEVEL SECURITY;
