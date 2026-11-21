@@ -4606,7 +4606,7 @@ app.get('/llms.txt', async (_req: Request, res: Response) => {
           const description = cleanPublicText(tour.short_description, 400);
           const price = publicTourStartingPrice(tour);
           const currency = typeof tour.currency === 'string' && /^[A-Z]{3}$/i.test(tour.currency) ? tour.currency.toUpperCase() : 'EUR';
-          const priceText = Number.isFinite(price) && price > 0 ? ` Starting price: ${price} ${currency}.` : '';
+          const priceText = price !== null && price > 0 ? ` Starting price: ${price} ${currency}.` : '';
           lines.push(`- [${title}](https://awesomeadventure.tours/excursions/${encodeURIComponent(slug)}): ${description}${priceText}`);
         }
       }
@@ -4824,7 +4824,7 @@ app.get('/llms-full.txt', async (_req: Request, res: Response) => {
       const shortDescription = cleanPublicText(tour.short_description, 700);
       const price = publicTourStartingPrice(tour);
       const currency = typeof tour.currency === 'string' && /^[A-Z]{3}$/i.test(tour.currency) ? tour.currency.toUpperCase() : 'EUR';
-      const priceText = Number.isFinite(price) && price > 0 ? `${price.toFixed(2)} ${currency}` : 'Contact us for current pricing';
+      const priceText = price !== null && price > 0 ? `${price.toFixed(2)} ${currency}` : 'Contact us for current pricing';
       lines.push('', `### ${title}`, `URL: https://awesomeadventure.tours/excursions/${encodeURIComponent(slug)}`);
       if (shortDescription) lines.push(shortDescription);
       if (description) lines.push('', description);
