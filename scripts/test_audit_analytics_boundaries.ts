@@ -27,7 +27,7 @@ check(
   spreadsheetSerializer.includes('serializeSpreadsheetCell')
     && spreadsheetSerializer.includes("typeof value === 'string'")
     && spreadsheetSerializer.includes('formulaSafe')
-    && spreadsheetSerializer.includes('\\\\ufeff')
+    && spreadsheetSerializer.includes('\\ufeff')
     && visitorPanel.includes('serializeSpreadsheetRows([columns, ...rows])')
     && reportingService.includes('serializeSpreadsheetRows([')
     && technicalPanel.includes('serializeSpreadsheetRows([columns, ...rows])')
