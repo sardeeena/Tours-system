@@ -62,9 +62,9 @@ const CINEMATIC_SLIDES: TourSlide[] = [
   },
   {
     id: 'water-sports-semi-submarine',
-    title1: 'Glass Bottom Views &',
-    title2: 'Coastal Thrills',
-    subtitle: 'Panoramic underwater observatory windows, parasailing high above turquoise lagoons, and safe family bay adventures.',
+    title1: 'Turquoise Shores &',
+    title2: 'Orange Bay Beaches',
+    subtitle: 'Escape to clear Red Sea waters, pale sandy shores, and the vivid coastal scenery of Egypt’s island escapes.',
     imageUrl: 'https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/1794698761078-i17pcl-Orange_Beach.webp',
     accentGradient: 'from-[#0369A1] via-[#0284C7] to-[#0369A1] dark:from-[#38BDF8] dark:via-[#7DD3FC] dark:to-[#BAE6FD]',
   }
