@@ -4402,21 +4402,20 @@ app.get('/sitemap.xml', async (_req: Request, res: Response) => {
 
     try {
       const rawPages = await getCachedSiteSetting(publicSupabase, 'pages_content');
-        const pages = Array.isArray(rawPages)
-          ? rawPages
-          : rawPages && typeof rawPages === 'object' && Array.isArray((rawPages as any).pages)
-            ? (rawPages as any).pages
-            : [];
+      const pages = Array.isArray(rawPages)
+        ? rawPages
+        : rawPages && typeof rawPages === 'object' && Array.isArray((rawPages as any).pages)
+          ? (rawPages as any).pages
+          : [];
 
-        for (const page of pages) {
-          const slug = typeof page?.slug === 'string' ? page.slug.trim() : '';
-          if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
-          if (page?.published === false || page?.status === 'draft' || page?.status === 'unpublished' || page?.seoIndexable === false || seoExclusions.pageSlugs.has(slug)) continue;
-          urls.set(
-            `${AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN}/${encodeURIComponent(slug)}`,
-            toSitemapDate(page?.updated_at || page?.lastUpdated)
-          );
-        }
+      for (const page of pages) {
+        const slug = typeof page?.slug === 'string' ? page.slug.trim() : '';
+        if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) continue;
+        if (page?.published === false || page?.status === 'draft' || page?.status === 'unpublished' || page?.seoIndexable === false || seoExclusions.pageSlugs.has(slug)) continue;
+        urls.set(
+          `${AWESOME_ADVENTURE_TOURS_PUBLIC_ORIGIN}/${encodeURIComponent(slug)}`,
+          toSitemapDate(page?.updated_at || page?.lastUpdated)
+        );
       }
     } catch (error) {
       console.warn('[SEO sitemap] CMS pages could not be loaded:', error);
