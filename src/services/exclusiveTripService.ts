@@ -129,7 +129,12 @@ export async function getAdminExclusiveTours() {
     .select('id,title,slug,status,is_exclusive,destinations(name),exclusive_trips(id,fixed_trip_price,currency,minimum_guests,maximum_guests,is_active)')
     .order('title', { ascending: true });
   if (error) throw new Error(error.message || 'Unable to load tours for Exclusive management.');
-  return data || [];
+  return (data || []).map((tour: any) => ({
+    ...tour,
+    exclusive_trips: Array.isArray(tour.exclusive_trips)
+      ? tour.exclusive_trips
+      : tour.exclusive_trips ? [tour.exclusive_trips] : [],
+  }));
 }
 
 export async function saveExclusiveTrip(input: {
