@@ -1106,6 +1106,7 @@ function MainApp() {
         'translations',
         'settings',
         'access_control',
+        'privacy_data',
         'technical',
         'crm_dashboard',
         'crm_leads',
@@ -1392,6 +1393,8 @@ function MainApp() {
           {activeAdminTab === 'settings' && <AdminSettings />}
 
           {activeAdminTab === 'access_control' && <AdminAccessControl />}
+
+          {activeAdminTab === 'privacy_data' && <VisitorAnalyticsPanel />}
 
           {activeAdminTab === 'technical' && <TechnicalControlCenter />}
         </AdminLayout>
