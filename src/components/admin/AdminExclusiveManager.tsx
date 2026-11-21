@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { CalendarPlus, RefreshCw, Save, DollarSign, AlertTriangle } from 'lucide-react';
 import {
   createExclusiveDeparture, getAdminExclusiveDepartures, getAdminExclusiveTours,
@@ -36,7 +36,7 @@ export const AdminExclusiveManager: React.FC = () => {
   const selectedTour = useMemo(() => tours.find((tour) => tour.id === selectedTourId) || null, [tours, selectedTourId]);
   const config = selectedTour?.exclusive_trips?.[0] || null;
 
-  const refresh = async (preserve = true) => {
+  const refresh = useCallback(async (preserve = true) => {
     setLoading(true); setError('');
     try {
       const [items, assignmentResources] = await Promise.all([getAdminExclusiveTours(), getExclusiveResourceOptions()]);
@@ -46,9 +46,9 @@ export const AdminExclusiveManager: React.FC = () => {
       setSelectedTourId(nextId);
     } catch (err) { setError(err instanceof Error ? err.message : 'Unable to load Exclusive management.'); }
     finally { setLoading(false); }
-  };
+  }, [selectedTourId]);
 
-  useEffect(() => { void refresh(false); }, []);
+  useEffect(() => { void refresh(false); }, [refresh]);
   useEffect(() => {
     if (!selectedTour?.exclusive_trips?.[0]) { setDepartures([]); setPrice('500'); setCurrency('EUR'); setMinimum('1'); setMaximum('10'); setActive(true); return; }
     const trip = selectedTour.exclusive_trips[0];
@@ -61,7 +61,7 @@ export const AdminExclusiveManager: React.FC = () => {
     getAdminExclusiveDepartures(trip.id).then((items) => current && setDepartures(items))
       .catch((err) => current && setError(err instanceof Error ? err.message : 'Unable to load reservations.'));
     return () => { current = false; };
-  }, [selectedTourId, tours]);
+  }, [selectedTour]);
 
   const saveConfig = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -168,7 +168,7 @@ export const AdminExclusiveManager: React.FC = () => {
               </form>
 
               <section className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-6 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><h2 className="font-bold text-lg">Schedules & reservations</h2><p className="text-xs text-stone-500">One active reservation blocks the whole trip slot.</p></div><div className="rounded-lg bg-stone-50 px-3 py-2 text-sm"><span className="text-stone-500">Reserved </span><strong>{new Intl.NumberFormat(undefined,{style:'currency',currency}).format(revenue)}</strong><span className="text-stone-400 mx-2">·</span><span className="text-stone-500">Paid </span><strong>{new Intl.NumberFormat(undefined,{style:'currency',currency}).format(paidRevenue)}</strong></div></div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2"><div><h2 className="font-bold text-lg">Schedules & reservations</h2><p className="text-xs text-stone-500">One active reservation blocks the whole trip slot.</p></div><div className="rounded-lg bg-stone-50 px-3 py-2 text-sm"><span className="text-stone-500">Reserved </span><strong>{new Intl.NumberFormat(undefined,{style:'currency',currency}).format(revenue)}</strong><span className="text-stone-400 mx-2">·</span><span className="text-stone-500">Fully paid </span><strong>{new Intl.NumberFormat(undefined,{style:'currency',currency}).format(paidRevenue)}</strong></div></div>
                 {departures.length === 0 ? <p className="text-sm text-stone-500 py-4">No Exclusive slots scheduled yet.</p> : departures.map((slot:any) => {
                   const reservations = slot.exclusive_reservations || [];
                   return <article key={slot.id} className="border border-stone-200 rounded-xl p-4 space-y-3">
