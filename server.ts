@@ -28,6 +28,15 @@ const app = express();
 // Let Express resolve req.ip from the forwarded client address so per-IP API
 // limits are not accidentally shared by every visitor behind the proxy.
 app.set('trust proxy', 1);
+// Normalize the public hostname without altering non-www hosts or trusting arbitrary Host values.
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const host = (req.headers.host || '').toLowerCase().replace(/:\\d+$/, '');
+  if (host === 'www.awesomeadventure.tours') {
+    return res.redirect(308, `https://awesomeadventure.tours${req.originalUrl}`);
+  }
+  next();
+});
+
 const PORT = process.env.PORT || 3000;
 const SERVER_START_TIME = Date.now();
 
