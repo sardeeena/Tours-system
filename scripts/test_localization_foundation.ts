@@ -117,7 +117,7 @@ for (const locale of ['en', 'de', 'fr', 'it', 'es', 'nl', 'pl', 'pt', 'ro', 'ru'
 
 assert.match(server, /app\.post\('\/api\/admin\/translations\/generate-batch'[\s\S]*requireSuperAdminAal2\(req, res\)/, 'AI bulk generation requires Super Admin AAL2');
 assert.match(server, /translation_state:\s*'draft'[\s\S]*reviewed_by:\s*null,\s*reviewed_at:\s*null,\s*published_at:\s*null/, 'AI bulk generation can only create unreviewed drafts');
-assert.match(server, /BULK_TRANSLATION_LOCALES: Record<string, string> = Object\.fromEntries\([\s\S]*EUROPEAN_LOCALE_ROLLOUT\.filter\(\(locale\) => locale\.code !== 'en'\)/, 'Server supports the configured locale catalogue while the admin workflow submits only its selected locale');
+assert.match(server, /const MANAGED_TRANSLATION_LOCALE_CODES = \['de', 'fr', 'it', 'ar', 'ru', 'es', 'pl', 'nl'\][\s\S]*BULK_TRANSLATION_LOCALES: Record<string, string> = Object\.fromEntries\([\s\S]*MANAGED_TRANSLATION_LOCALE_CODES/, 'Server bulk generation is restricted to the eight explicitly managed locales');
 assert.match(server, /communication_templates'\)\.select\('id'\)\.eq\('locale','en'\)\.order\('template_key'\)\.order\('id'\)/, 'Bulk generation uses deterministic communication-template ordering for offset batches');
 assert.match(server, /communication_template[\s\S]*communication_templates/, 'Communication templates are included in the protected translation workflow');
 assert.match(server, /String\(source\?\.subject \|\| ''\)[\s\S]*String\(source\?\.body_text \|\| ''\)/, 'Communication template placeholder checks include both subject and body');
@@ -133,7 +133,7 @@ assert.match(server, /translated\.content\.template_key !== item\.source\.templa
 assert.match(server, /select\('entity_type,entity_key,translated_slug,translation_state[\s\S]*workKeys\.has\(x\.entity_type\+':'\+x\.entity_key\)/, 'Bulk generation reserves slugs already used by reviewed or published translations');
 const adminTranslations = read('../src/components/admin/AdminTranslationManager.tsx');
 assert.match(adminTranslations, /Generate '\s*\+ locale\.toUpperCase\(\) \+ ' drafts/, 'Super Admin can generate drafts for the selected prepared locale');
-assert.match(adminTranslations, /!\['fr','nl','pl'\]\.includes\(locale\)/, 'Draft generation is limited to the prepared French, Dutch and Polish locales');
+assert.match(adminTranslations, /!\['de','fr','it','ar','ru','es','pl','nl'\]\.includes\(locale\)/, 'Draft generation is limited to the eight explicitly managed locales');
 assert.match(adminTranslations, /const targetLocale = locale/, 'Draft generation follows the selected locale rather than being pinned to French');
 assert.match(adminTranslations, /JSON\.stringify\(\{ locale: targetLocale, offset, limit: 10 \}\)/, 'Each generation batch carries the selected locale');
 assert.match(adminTranslations, /'communication_template'/, 'Super Admin can review communication template translations');
