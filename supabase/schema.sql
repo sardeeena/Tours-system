@@ -3987,7 +3987,7 @@ ALTER TABLE public.tours
 CREATE TABLE IF NOT EXISTS public.exclusive_trips (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tour_id UUID NOT NULL UNIQUE REFERENCES public.tours(id) ON DELETE CASCADE,
-  fixed_trip_price NUMERIC(12,2) NOT NULL CHECK (fixed_trip_price > 0),
+  fixed_trip_price NUMERIC(12,2) NOT NULL CHECK (fixed_trip_price > 0 AND fixed_trip_price <= 99999999.99),
   currency TEXT NOT NULL DEFAULT 'EUR' CHECK (currency ~ '^[A-Z]{3}$'),
   minimum_guests INTEGER NOT NULL DEFAULT 1 CHECK (minimum_guests BETWEEN 1 AND 500),
   maximum_guests INTEGER NOT NULL CHECK (maximum_guests BETWEEN 1 AND 500),
@@ -4020,6 +4020,7 @@ CREATE TABLE IF NOT EXISTS public.exclusive_departures (
 CREATE TABLE IF NOT EXISTS public.exclusive_reservations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   reservation_reference TEXT NOT NULL UNIQUE,
+  booking_id UUID UNIQUE REFERENCES public.bookings(id) ON DELETE SET NULL,
   exclusive_departure_id UUID NOT NULL REFERENCES public.exclusive_departures(id) ON DELETE RESTRICT,
   customer_first_name TEXT NOT NULL,
   customer_last_name TEXT NOT NULL,
@@ -4046,6 +4047,9 @@ CREATE TABLE IF NOT EXISTS public.exclusive_reservations (
 CREATE UNIQUE INDEX IF NOT EXISTS exclusive_one_active_reservation_per_slot
   ON public.exclusive_reservations(exclusive_departure_id)
   WHERE status IN ('pending','confirmed','completed','no_show');
+
+ALTER TABLE public.exclusive_reservations
+  ADD COLUMN IF NOT EXISTS booking_id UUID UNIQUE REFERENCES public.bookings(id) ON DELETE SET NULL;
 
 CREATE INDEX IF NOT EXISTS exclusive_departures_public_schedule_idx
   ON public.exclusive_departures(date, start_time)
@@ -4083,7 +4087,9 @@ BEGIN
     RAISE EXCEPTION 'The Exclusive tour listing must be published before scheduling slots' USING ERRCODE = '22023';
   END IF;
 
-  IF NEW.date < (now() AT TIME ZONE 'Africa/Cairo')::date THEN
+  IF NEW.date < (now() AT TIME ZONE 'Africa/Cairo')::date
+     OR (NEW.date = (now() AT TIME ZONE 'Africa/Cairo')::date
+         AND NEW.start_time <= (now() AT TIME ZONE 'Africa/Cairo')::time) THEN
     RAISE EXCEPTION 'An Exclusive departure cannot be scheduled in the past' USING ERRCODE = '22023';
   END IF;
   IF NEW.maximum_guests < v_trip.minimum_guests THEN
@@ -4197,7 +4203,9 @@ AS $function$
     JOIN public.tours t ON t.id = et.tour_id AND t.status = 'published' AND t.is_exclusive = TRUE
     WHERE d.id = p_departure_id
       AND d.status = 'confirmed'
-      AND d.date >= (now() AT TIME ZONE 'Africa/Cairo')::date
+      AND (d.date > (now() AT TIME ZONE 'Africa/Cairo')::date
+        OR (d.date = (now() AT TIME ZONE 'Africa/Cairo')::date
+          AND d.start_time > (now() AT TIME ZONE 'Africa/Cairo')::time))
       AND NOT EXISTS (
         SELECT 1 FROM public.exclusive_reservations r
         WHERE r.exclusive_departure_id = d.id AND r.status IN ('pending','confirmed','completed','no_show')
@@ -4241,7 +4249,7 @@ BEGIN
     RAISE EXCEPTION 'Not authorized to manage Exclusive trip settings' USING ERRCODE = '42501';
   END IF;
 
-  IF p_tour_id IS NULL OR p_fixed_trip_price IS NULL OR p_fixed_trip_price <= 0
+  IF p_tour_id IS NULL OR p_fixed_trip_price IS NULL OR p_fixed_trip_price <= 0 OR p_fixed_trip_price > 99999999.99
      OR p_currency IS NULL OR p_currency !~ '^[A-Z]{3}
 ALTER TABLE public.exclusive_departures ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.exclusive_reservations ENABLE ROW LEVEL SECURITY;
@@ -4323,16 +4331,11 @@ CREATE POLICY exclusive_reservations_admin_read ON public.exclusive_reservations
   FOR SELECT TO authenticated
   USING (public.has_permission('bookings.read'));
 
-DROP POLICY IF EXISTS exclusive_reservations_admin_update ON public.exclusive_reservations;
-CREATE POLICY exclusive_reservations_admin_update ON public.exclusive_reservations
-  FOR UPDATE TO authenticated
-  USING (public.has_permission('bookings.update'))
-  WITH CHECK (public.has_permission('bookings.update'));
 
 REVOKE ALL ON public.exclusive_trips, public.exclusive_departures, public.exclusive_reservations FROM PUBLIC;
 GRANT SELECT ON public.exclusive_trips, public.exclusive_departures TO anon, authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.exclusive_trips, public.exclusive_departures TO authenticated;
-GRANT SELECT, UPDATE ON public.exclusive_reservations TO authenticated;
+GRANT SELECT ON public.exclusive_reservations TO authenticated;
 
 CREATE OR REPLACE FUNCTION public.reserve_exclusive_trip(
   p_departure_id UUID,
@@ -4360,6 +4363,8 @@ DECLARE
   v_reference TEXT;
   v_total NUMERIC(12,2);
   v_client_ip TEXT;
+  v_customer_id UUID;
+  v_booking_id UUID;
   v_key TEXT := nullif(btrim(coalesce(p_idempotency_key,'')), '');
 BEGIN
   IF p_departure_id IS NULL OR v_key IS NULL OR length(v_key) > 160 THEN
@@ -4372,7 +4377,8 @@ BEGIN
      OR nullif(btrim(coalesce(p_last_name,'')), '') IS NULL
      OR nullif(btrim(coalesce(p_email,'')), '') IS NULL
      OR length(btrim(p_email)) > 254
-     OR btrim(p_email) !~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}(btrim(coalesce(p_phone,'')), '') IS NULL THEN
+     OR btrim(p_email) !~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+     OR nullif(btrim(coalesce(p_phone,'')), '') IS NULL THEN
     RAISE EXCEPTION 'Valid customer name, email and phone are required' USING ERRCODE = '22023';
   END IF;
   IF coalesce(p_payment_method,'pay_at_pickup') NOT IN ('pay_at_pickup','pay_online') THEN
@@ -4383,9 +4389,22 @@ BEGIN
   FROM public.exclusive_reservations
   WHERE idempotency_key = v_key;
   IF FOUND THEN
+    IF v_existing.exclusive_departure_id IS DISTINCT FROM p_departure_id
+       OR v_existing.guest_count IS DISTINCT FROM p_guest_count
+       OR lower(v_existing.customer_email) IS DISTINCT FROM lower(btrim(p_email))
+       OR lower(v_existing.customer_first_name) IS DISTINCT FROM lower(btrim(p_first_name))
+       OR lower(v_existing.customer_last_name) IS DISTINCT FROM lower(btrim(p_last_name))
+       OR v_existing.customer_phone IS DISTINCT FROM btrim(p_phone)
+       OR v_existing.payment_method IS DISTINCT FROM coalesce(p_payment_method,'pay_at_pickup')
+       OR coalesce(v_existing.customer_country,'') IS DISTINCT FROM coalesce(nullif(btrim(coalesce(p_country,'')),''),'')
+       OR coalesce(v_existing.customer_hotel,'') IS DISTINCT FROM coalesce(nullif(btrim(coalesce(p_hotel,'')),''),'')
+       OR coalesce(v_existing.special_requests,'') IS DISTINCT FROM coalesce(nullif(btrim(coalesce(p_special_requests,'')),''),'') THEN
+      RAISE EXCEPTION 'This idempotency key was already used for different Exclusive reservation details' USING ERRCODE = '22023';
+    END IF;
     RETURN jsonb_build_object(
       'success', TRUE, 'duplicate', TRUE,
       'reservationId', v_existing.id,
+      'bookingId', v_existing.booking_id,
       'reservationReference', v_existing.reservation_reference,
       'total', v_existing.total, 'currency', v_existing.currency,
       'status', v_existing.status
@@ -4422,7 +4441,9 @@ BEGIN
   WHERE id = p_departure_id
   FOR UPDATE;
   IF NOT FOUND OR v_departure.status <> 'confirmed'
-     OR v_departure.date < (now() AT TIME ZONE 'Africa/Cairo')::date THEN
+     OR v_departure.date < (now() AT TIME ZONE 'Africa/Cairo')::date
+     OR (v_departure.date = (now() AT TIME ZONE 'Africa/Cairo')::date
+         AND v_departure.start_time <= (now() AT TIME ZONE 'Africa/Cairo')::time) THEN
     RAISE EXCEPTION 'This exclusive trip slot is no longer available' USING ERRCODE = 'P0002';
   END IF;
 
@@ -4460,14 +4481,46 @@ BEGIN
   v_total := v_trip.fixed_trip_price;
   v_reference := 'EXC-' || upper(substr(replace(gen_random_uuid()::text,'-',''),1,12));
 
+  -- Reuse the existing customer and booking ledgers so payment transactions,
+  -- invoices, refunds and finance reporting continue to use booking_id.
+  PERFORM pg_advisory_xact_lock(hashtextextended(lower(btrim(p_email)), 0));
+  SELECT id INTO v_customer_id
+  FROM public.customers
+  WHERE lower(email) = lower(btrim(p_email))
+  ORDER BY created_at ASC
+  LIMIT 1
+  FOR UPDATE;
+
+  IF v_customer_id IS NULL THEN
+    INSERT INTO public.customers (
+      user_id,first_name,last_name,email,phone,country,hotel,source,preferred_currency
+    ) VALUES (
+      auth.uid(),btrim(p_first_name),btrim(p_last_name),lower(btrim(p_email)),btrim(p_phone),
+      coalesce(nullif(btrim(coalesce(p_country,'')),''),'International'),
+      nullif(btrim(coalesce(p_hotel,'')),''),'Exclusive Trip Booking',v_trip.currency
+    )
+    RETURNING id INTO v_customer_id;
+  END IF;
+
+  INSERT INTO public.bookings (
+    booking_reference,user_id,tour_id,customer_id,booking_date,status,payment_status,
+    payment_method,adult_count,child_count,infant_count,subtotal,total,currency,
+    special_requests,booking_kind,exclusive_departure_id
+  ) VALUES (
+    v_reference,auth.uid(),v_tour.id,v_customer_id,v_departure.date,'pending','pending',
+    coalesce(p_payment_method,'pay_at_pickup'),p_guest_count,0,0,v_total,v_total,
+    v_trip.currency,nullif(btrim(coalesce(p_special_requests,'')),''),'exclusive',v_departure.id
+  )
+  RETURNING id INTO v_booking_id;
+
   INSERT INTO public.exclusive_reservations (
-    reservation_reference, exclusive_departure_id,
+    reservation_reference, booking_id, exclusive_departure_id,
     customer_first_name, customer_last_name, customer_email, customer_phone,
     customer_country, customer_hotel, guest_count,
     fixed_trip_price, total, currency, payment_method,
     special_requests, idempotency_key
   ) VALUES (
-    v_reference, v_departure.id,
+    v_reference, v_booking_id, v_departure.id,
     btrim(p_first_name), btrim(p_last_name), lower(btrim(p_email)), btrim(p_phone),
     nullif(btrim(coalesce(p_country,'')), ''),
     nullif(btrim(coalesce(p_hotel,'')), ''),
@@ -4480,6 +4533,7 @@ BEGIN
   RETURN jsonb_build_object(
     'success', TRUE, 'duplicate', FALSE,
     'reservationId', v_existing.id,
+    'bookingId', v_existing.booking_id,
     'reservationReference', v_existing.reservation_reference,
     'total', v_existing.total, 'currency', v_existing.currency,
     'status', v_existing.status,
@@ -4488,9 +4542,22 @@ BEGIN
 EXCEPTION WHEN unique_violation THEN
   SELECT * INTO v_existing FROM public.exclusive_reservations WHERE idempotency_key = v_key;
   IF FOUND THEN
+    IF v_existing.exclusive_departure_id IS DISTINCT FROM p_departure_id
+       OR v_existing.guest_count IS DISTINCT FROM p_guest_count
+       OR lower(v_existing.customer_email) IS DISTINCT FROM lower(btrim(p_email))
+       OR lower(v_existing.customer_first_name) IS DISTINCT FROM lower(btrim(p_first_name))
+       OR lower(v_existing.customer_last_name) IS DISTINCT FROM lower(btrim(p_last_name))
+       OR v_existing.customer_phone IS DISTINCT FROM btrim(p_phone)
+       OR v_existing.payment_method IS DISTINCT FROM coalesce(p_payment_method,'pay_at_pickup')
+       OR coalesce(v_existing.customer_country,'') IS DISTINCT FROM coalesce(nullif(btrim(coalesce(p_country,'')),''),'')
+       OR coalesce(v_existing.customer_hotel,'') IS DISTINCT FROM coalesce(nullif(btrim(coalesce(p_hotel,'')),''),'')
+       OR coalesce(v_existing.special_requests,'') IS DISTINCT FROM coalesce(nullif(btrim(coalesce(p_special_requests,'')),''),'') THEN
+      RAISE EXCEPTION 'This idempotency key was already used for different Exclusive reservation details' USING ERRCODE = '22023';
+    END IF;
     RETURN jsonb_build_object(
       'success', TRUE, 'duplicate', TRUE,
       'reservationId', v_existing.id,
+      'bookingId', v_existing.booking_id,
       'reservationReference', v_existing.reservation_reference,
       'total', v_existing.total, 'currency', v_existing.currency,
       'status', v_existing.status
@@ -4499,6 +4566,98 @@ EXCEPTION WHEN unique_violation THEN
   RAISE EXCEPTION 'This exclusive trip slot has already been reserved' USING ERRCODE = '23505';
 END;
 $function$;
+
+
+-- Finance and existing booking administration may update the linked booking directly.
+-- Mirror those authoritative changes back into the Exclusive reservation record.
+CREATE OR REPLACE FUNCTION public.sync_exclusive_reservation_from_booking()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $function$
+BEGIN
+  IF NEW.booking_kind = 'exclusive' THEN
+    UPDATE public.exclusive_reservations
+    SET payment_status=NEW.payment_status,
+        status=CASE
+          WHEN NEW.status='cancellation_requested' THEN 'pending'
+          WHEN NEW.status IN ('pending','confirmed','cancelled','completed','no_show') THEN NEW.status
+          ELSE status
+        END,
+        updated_at=now()
+    WHERE booking_id=NEW.id;
+  END IF;
+  RETURN NEW;
+END;
+$function$;
+
+DROP TRIGGER IF EXISTS sync_exclusive_reservation_from_booking_trigger ON public.bookings;
+CREATE TRIGGER sync_exclusive_reservation_from_booking_trigger
+AFTER UPDATE OF status,payment_status ON public.bookings
+FOR EACH ROW
+WHEN (NEW.booking_kind = 'exclusive')
+EXECUTE FUNCTION public.sync_exclusive_reservation_from_booking();
+
+-- Keep reservation lifecycle and the linked booking/payment ledger synchronized.
+CREATE OR REPLACE FUNCTION public.update_exclusive_reservation_status(
+  p_reservation_id UUID,
+  p_status TEXT DEFAULT NULL,
+  p_payment_status TEXT DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $function$
+DECLARE
+  v_reservation public.exclusive_reservations%ROWTYPE;
+BEGIN
+  IF auth.uid() IS NULL
+     OR (p_status = 'cancelled' AND NOT public.has_permission('bookings.approve'))
+     OR (
+       (p_status IS NULL OR p_status <> 'cancelled' OR p_payment_status IS NOT NULL)
+       AND NOT public.has_permission('bookings.update')
+     ) THEN
+    RAISE EXCEPTION 'Not authorized to update Exclusive reservations' USING ERRCODE = '42501';
+  END IF;
+  IF p_status IS NULL AND p_payment_status IS NULL THEN
+    RAISE EXCEPTION 'At least one reservation status change is required' USING ERRCODE = '22023';
+  END IF;
+  IF p_status IS NOT NULL AND p_status NOT IN ('pending','confirmed','cancelled','completed','no_show') THEN
+    RAISE EXCEPTION 'Invalid Exclusive reservation status' USING ERRCODE = '22023';
+  END IF;
+  IF p_payment_status IS NOT NULL AND p_payment_status NOT IN ('pending','paid','partially_paid','refunded','failed') THEN
+    RAISE EXCEPTION 'Invalid Exclusive payment status' USING ERRCODE = '22023';
+  END IF;
+
+  SELECT * INTO v_reservation
+  FROM public.exclusive_reservations
+  WHERE id=p_reservation_id
+  FOR UPDATE;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Exclusive reservation not found' USING ERRCODE = 'P0002';
+  END IF;
+
+  UPDATE public.exclusive_reservations
+  SET status=coalesce(p_status,status),
+      payment_status=coalesce(p_payment_status,payment_status),
+      updated_at=now()
+  WHERE id=p_reservation_id;
+
+  IF v_reservation.booking_id IS NOT NULL THEN
+    UPDATE public.bookings
+    SET status=coalesce(p_status,status),
+        payment_status=coalesce(p_payment_status,payment_status),
+        updated_at=now()
+    WHERE id=v_reservation.booking_id;
+  END IF;
+
+  RETURN jsonb_build_object('success',TRUE,'reservationId',p_reservation_id,'bookingId',v_reservation.booking_id);
+END;
+$function$;
+REVOKE ALL ON FUNCTION public.update_exclusive_reservation_status(UUID,TEXT,TEXT) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.update_exclusive_reservation_status(UUID,TEXT,TEXT) TO authenticated, service_role;
 
 REVOKE ALL ON FUNCTION public.reserve_exclusive_trip(UUID,INTEGER,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.reserve_exclusive_trip(UUID,INTEGER,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT,TEXT) TO anon, authenticated, service_role;
@@ -4537,6 +4696,17 @@ $function$;
 
 REVOKE ALL ON FUNCTION public.save_exclusive_trip_settings(UUID,NUMERIC,TEXT,INTEGER,INTEGER,BOOLEAN) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.save_exclusive_trip_settings(UUID,NUMERIC,TEXT,INTEGER,INTEGER,BOOLEAN) TO authenticated, service_role;
+
+-- Bridge Exclusive reservations into the existing booking, payment and finance ledgers.
+ALTER TABLE public.bookings
+  ADD COLUMN IF NOT EXISTS booking_kind TEXT NOT NULL DEFAULT 'standard'
+    CHECK (booking_kind IN ('standard','exclusive')),
+  ADD COLUMN IF NOT EXISTS exclusive_departure_id UUID
+    REFERENCES public.exclusive_departures(id) ON DELETE SET NULL;
+
+CREATE INDEX IF NOT EXISTS bookings_exclusive_departure_idx
+  ON public.bookings(exclusive_departure_id)
+  WHERE booking_kind = 'exclusive';
 
 ALTER TABLE public.exclusive_trips ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.exclusive_departures ENABLE ROW LEVEL SECURITY;
