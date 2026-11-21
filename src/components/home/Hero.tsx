@@ -4,11 +4,7 @@ import {
   ShieldCheck, 
   Clock, 
   MapPin, 
-  Award,
-  ChevronLeft,
-  ChevronRight,
-  Pause,
-  Play
+  Award
 } from 'lucide-react';
 import { SearchModule } from './SearchModule';
 import { Destination, Category } from '../../types';
@@ -78,7 +74,6 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
   const { t } = useLanguage();
   const { isDark } = useTheme();
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
   const [isPointerOver, setIsPointerOver] = useState(false);
   const [isDocumentVisible, setIsDocumentVisible] = useState(() => typeof document === 'undefined' || !document.hidden);
   const [isInViewport, setIsInViewport] = useState(true);
@@ -115,13 +110,13 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
 
   // Auto-advance cinematic background & matching content every 6.5 seconds
   useEffect(() => {
-    if (isPaused || isPointerOver || !isDocumentVisible || !isInViewport || prefersReducedMotion) return;
+    if (isPointerOver || !isDocumentVisible || !isInViewport || prefersReducedMotion) return;
     const interval = setInterval(() => {
       setCurrentSlideIndex((prev) => (prev + 1) % CINEMATIC_SLIDES.length);
     }, 6500);
 
     return () => clearInterval(interval);
-  }, [currentSlideIndex, isPaused, isPointerOver, isDocumentVisible, isInViewport, prefersReducedMotion]);
+  }, [currentSlideIndex, isPointerOver, isDocumentVisible, isInViewport, prefersReducedMotion]);
 
   const slide = CINEMATIC_SLIDES[currentSlideIndex];
   const nextSlide = CINEMATIC_SLIDES[(currentSlideIndex + 1) % CINEMATIC_SLIDES.length];
@@ -134,27 +129,6 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
     image.src = nextSlide.imageUrl;
   }, [nextSlide.imageUrl, isDocumentVisible, isInViewport, prefersReducedMotion]);
 
-  const handlePrevSlide = () => {
-    setCurrentSlideIndex((prev) => (prev === 0 ? CINEMATIC_SLIDES.length - 1 : prev - 1));
-  };
-
-  const handleNextSlide = () => {
-    setCurrentSlideIndex((prev) => (prev + 1) % CINEMATIC_SLIDES.length);
-  };
-
-  // Keyboard navigation keeps carousel functionality smooth and accessible
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if (e.key === 'ArrowLeft') {
-        handlePrevSlide();
-      } else if (e.key === 'ArrowRight') {
-        handleNextSlide();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
 
   return (
     <section
@@ -219,45 +193,6 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
           </AnimatePresence>
         </div>
 
-
-        {/* Accessible slide controls: visitors can pause, resume, or choose a scene. */}
-        <div className="flex items-center gap-2 mb-6" aria-label="Hero image slideshow controls">
-          <button
-            type="button"
-            onClick={handlePrevSlide}
-            aria-label="Show previous hero image"
-            className="w-9 h-9 rounded-full border border-stone-300/80 dark:border-slate-600 bg-white/75 dark:bg-[#16283D]/80 text-stone-800 dark:text-white backdrop-blur-sm inline-flex items-center justify-center hover:bg-white dark:hover:bg-slate-700 transition-colors"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          {CINEMATIC_SLIDES.map((item, index) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setCurrentSlideIndex(index)}
-              aria-label={`Show hero image ${index + 1}: ${item.title1} ${item.title2}`}
-              aria-pressed={currentSlideIndex === index}
-              className={`h-2.5 rounded-full transition-all duration-300 ${currentSlideIndex === index ? 'w-7 bg-[#0A6C74] dark:bg-[#60C3CC]' : 'w-2.5 bg-stone-400/70 dark:bg-slate-400/70 hover:bg-stone-600 dark:hover:bg-slate-200'}`}
-            />
-          ))}
-          <button
-            type="button"
-            onClick={() => setIsPaused((paused) => !paused)}
-            aria-label={isPaused ? 'Resume hero slideshow' : 'Pause hero slideshow'}
-            aria-pressed={isPaused}
-            className="w-9 h-9 rounded-full border border-stone-300/80 dark:border-slate-600 bg-white/75 dark:bg-[#16283D]/80 text-stone-800 dark:text-white backdrop-blur-sm inline-flex items-center justify-center hover:bg-white dark:hover:bg-slate-700 transition-colors ml-1"
-          >
-            {isPaused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
-          </button>
-          <button
-            type="button"
-            onClick={handleNextSlide}
-            aria-label="Show next hero image"
-            className="w-9 h-9 rounded-full border border-stone-300/80 dark:border-slate-600 bg-white/75 dark:bg-[#16283D]/80 text-stone-800 dark:text-white backdrop-blur-sm inline-flex items-center justify-center hover:bg-white dark:hover:bg-slate-700 transition-colors"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
 
         {/* Booking / Search Module */}
         <motion.div
