@@ -254,6 +254,16 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({
                   <button key={id} type="button" role="tab" aria-selected={detailTab === id}
                     aria-controls={`tour-tab-panel-${id}`} id={`tour-tab-${id}`}
                     onClick={() => setDetailTab(id)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+                        event.preventDefault();
+                        const tabIds = ['overview', 'itinerary', 'included', 'details', 'reviews'] as const;
+                        const currentIndex = tabIds.indexOf(id);
+                        const nextIndex = event.key === 'ArrowRight' ? (currentIndex + 1) % tabIds.length : (currentIndex - 1 + tabIds.length) % tabIds.length;
+                        setDetailTab(tabIds[nextIndex]);
+                        document.getElementById(`tour-tab-${tabIds[nextIndex]}`)?.focus();
+                      }
+                    }}
                     className={`shrink-0 rounded-full px-4 py-2 text-xs sm:text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] ${detailTab === id ? 'bg-[#0A6C74] text-white shadow-sm' : 'bg-white border border-stone-200 text-stone-700 hover:border-[#0A6C74]'}`}>
                     {label}
                   </button>
