@@ -5259,7 +5259,7 @@ async function loadAwesomeAdventureToursTours(): Promise<any[]> {
   try {
     const { data, error } = await publicSupabase.from('tours')
       .select('id,slug,title,short_description,description,price,private_price,tour_type,currency,duration,duration_hours,destination_id,pickup_info,cancellation_policy,departure_time,updated_at,sort_order')
-      .eq('status', 'published').order('sort_order', { ascending: true }).limit(500);
+      .eq('status', 'published').eq('is_exclusive', false).order('sort_order', { ascending: true }).limit(500);
     if (error) {
       console.warn('[SEO render] Published tours unavailable:', error.message);
       return [];
@@ -5502,6 +5502,40 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       <p>Choose from published excursion categories, from island and boat trips to snorkeling, diving and desert adventures. Explore current tours and review each itinerary before booking.</p>
       <div class="seo-grid">${cards || '<p>Experience categories are being updated. Please browse our published excursions.</p>'}</div>
       <p><a href="/excursions">Browse all excursions</a></p></main>`;
+  } else if (path === '/exclusive') {
+    pageKind = 'static';
+    seoIdentifier = 'exclusive';
+    seoIdentifierIsPageSlug = true;
+    title = 'Exclusive Private Boat Trips & Yacht Charters in Egypt | Awesome Adventure Tours';
+    description = 'Book a private speedboat, boat or yacht experience on Egypt’s Red Sea coast. One fixed price for the entire trip, with flexible group sizes and confirmed departure slots.';
+    let exclusiveItems: any[] = [];
+    if (publicSupabase) {
+      try {
+        const { data, error } = await (publicSupabase as any).from('exclusive_trips')
+          .select('fixed_trip_price,currency,minimum_guests,maximum_guests,tours!inner(title,slug,short_description,duration,duration_hours,destinations(name),tour_images(image_url,is_primary,sort_order))')
+          .eq('is_active', true)
+          .eq('tours.status', 'published')
+          .eq('tours.is_exclusive', true)
+          .order('created_at', { ascending: false });
+        if (error) console.warn('[SEO render] Exclusive catalogue unavailable:', error.message);
+        exclusiveItems = Array.isArray(data) ? data : [];
+      } catch (error) {
+        console.warn('[SEO render] Exclusive catalogue query failed:', error);
+      }
+    }
+    const cards = exclusiveItems.map((item: any) => {
+      const tour = Array.isArray(item.tours) ? item.tours[0] : item.tours;
+      const name = seoPlainText(tour?.title, 160);
+      if (!name) return '';
+      const summary = seoPlainText(tour?.short_description, 400);
+      const price = Number(item.fixed_trip_price);
+      const currency = /^[A-Z]{3}$/.test(String(item.currency || '')) ? item.currency : 'EUR';
+      const imageRows = Array.isArray(tour?.tour_images) ? tour.tour_images : [];
+      const primary = imageRows.find((image: any) => image.is_primary) || imageRows[0];
+      const image = seoSafeImage(primary?.image_url);
+      return `<article class="seo-tour-card">${image ? `<img src="${seoHtmlEscape(image)}" alt="${seoHtmlEscape(name)}" loading="lazy" />` : ''}<h2>${seoHtmlEscape(name)}</h2>${summary ? `<p>${seoHtmlEscape(summary)}</p>` : ''}<p><strong>Fixed price for the entire trip: ${Number.isFinite(price) ? price.toFixed(2) : 'Contact us'} ${seoHtmlEscape(currency)}.</strong></p><p>Group size: ${Number(item.minimum_guests)}–${Number(item.maximum_guests)} guests.</p></article>`;
+    }).filter(Boolean).join('');
+    body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / Exclusive Private Trips</nav><h1>Exclusive Private Boat Trips & Yacht Charters</h1><p>Enjoy your own private boat, speedboat or yacht experience. Each Exclusive reservation secures the entire departure slot for one group. The fixed price applies to the complete trip and does not increase with the number of guests within the allowed capacity.</p><p>Choose a confirmed date and time, select your group size and send your reservation request.</p><div class="seo-grid">${cards || '<p>Exclusive experiences are being prepared. Please check back soon.</p>'}</div><p><a href="/excursions">Browse shared excursions and activities</a></p></main>`;
   } else if (path === '/excursions') {
     pageKind = 'catalogue';
     title = 'Boat Trips & Island Tours in Egypt | Awesome Adventure Tours';
