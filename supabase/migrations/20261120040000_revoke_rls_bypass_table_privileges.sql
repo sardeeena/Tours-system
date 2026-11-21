@@ -10,7 +10,7 @@ REVOKE TRUNCATE, MAINTAIN, REFERENCES, TRIGGER
 -- Apply the same boundary to tables created by either supported migration owner.
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
   REVOKE TRUNCATE, MAINTAIN, REFERENCES, TRIGGER ON TABLES FROM anon, authenticated;
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
-  REVOKE TRUNCATE, MAINTAIN, REFERENCES, TRIGGER ON TABLES FROM anon, authenticated;
+-- User-managed migrations execute as postgres; platform-owned objects remain
+-- governed by Supabase's own administrative lifecycle.
 
 COMMIT;
