@@ -224,6 +224,8 @@ export interface DbCustomer {
 export interface DbBooking {
   id: string;
   booking_reference: string;
+  booking_kind: 'standard' | 'exclusive';
+  exclusive_departure_id: string | null;
   tour_id: string;
   customer_id: string | null;
   tour_language: string | null;
