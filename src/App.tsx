@@ -64,6 +64,7 @@ const AdminDashboard = lazy(() => import('./components/admin/AdminDashboard').th
 const TechnicalControlCenter = lazy(() => import('./components/admin/technical/TechnicalControlCenter').then(m => ({ default: m.TechnicalControlCenter })));
 const AdminTourList = lazy(() => import('./components/admin/AdminTourList').then(m => ({ default: m.AdminTourList })));
 const AdminTourEditor = lazy(() => import('./components/admin/AdminTourEditor').then(m => ({ default: m.AdminTourEditor })));
+const AdminExclusiveManager = lazy(() => import('./components/admin/AdminExclusiveManager').then(m => ({ default: m.AdminExclusiveManager })));
 const AdminBookingsList = lazy(() => import('./components/admin/AdminBookingsList').then(m => ({ default: m.AdminBookingsList })));
 const AdminInquiriesList = lazy(() => import('./components/admin/AdminInquiriesList').then(m => ({ default: m.AdminInquiriesList })));
 const AdminCustomersList = lazy(() => import('./components/admin/AdminCustomersList').then(m => ({ default: m.AdminCustomersList })));
@@ -1064,6 +1065,7 @@ function MainApp() {
       adminSubRoute?.main &&
       [
         'bookings',
+        'exclusive',
         'blog',
         'tickets',
         'inquiries',
@@ -1179,6 +1181,8 @@ function MainApp() {
               initialViewMode="builder"
             />
           )}
+
+          {activeAdminTab === 'exclusive' && <AdminExclusiveManager />}
 
           {activeAdminTab === 'tours' && (
             <AdminTourList
