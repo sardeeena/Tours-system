@@ -136,7 +136,7 @@ export const AdminExclusiveManager: React.FC = () => {
           <form onSubmit={saveConfig} className="rounded-2xl border border-stone-200 bg-white p-5 sm:p-6 space-y-4">
             <div className="flex items-center gap-2"><DollarSign className="text-teal-700"/><h2 className="font-bold text-lg">Exclusive pricing & guest limits</h2></div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              <label className="text-sm font-semibold">Fixed trip price<input type="number" min="0.01" step="0.01" required value={price} onChange={(e)=>setPrice(e.target.value)} className="mt-1 w-full rounded-lg border border-stone-300 p-3"/></label>
+              <label className="text-sm font-semibold">Fixed trip price<input type="number" min="0.01" max="99999999.99" step="0.01" required value={price} onChange={(e)=>setPrice(e.target.value)} className="mt-1 w-full rounded-lg border border-stone-300 p-3"/></label>
               <label className="text-sm font-semibold">Currency<select value={currency} onChange={(e)=>setCurrency(e.target.value)} className="mt-1 w-full rounded-lg border border-stone-300 p-3 bg-white"><option>EUR</option><option>USD</option><option>GBP</option><option>EGP</option></select></label>
               <label className="text-sm font-semibold">Minimum guests<input type="number" min="1" max="500" required value={minimum} onChange={(e)=>setMinimum(e.target.value)} className="mt-1 w-full rounded-lg border border-stone-300 p-3"/></label>
               <label className="text-sm font-semibold">Maximum guests<input type="number" min="1" max="500" required value={maximum} onChange={(e)=>setMaximum(e.target.value)} className="mt-1 w-full rounded-lg border border-stone-300 p-3"/></label>
