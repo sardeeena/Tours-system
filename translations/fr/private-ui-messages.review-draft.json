@@ -1086,7 +1086,16 @@
     "private.text.79b4c617": "Étape ",
     "private.text.a5b9a096": " sur 4",
     "private.text.28b74540": "Exclusif",
-    "private.text.37bf777b": "Excursions privées exclusives"
+    "private.text.37bf777b": "Excursions privées exclusives",
+    "private.text.25168fa0": "Impossible de vérifier les horaires de départ. Veuillez réessayer dans un instant. ",
+    "private.text.66e67e50": "Départ disponible",
+    "private.text.72402638": "Disponible",
+    "private.text.7a58d233": "Les conditions d’annulation et de remboursement dépendent de l’excursion sélectionnée. Veuillez consulter sa politique avant de confirmer votre réservation. ",
+    "private.text.bf5e2ed8": "Ce départ ne peut pas accueillir le nombre de participants sélectionné. Veuillez réduire le nombre de participants ou choisir un autre départ. ",
+    "private.text.c1c961ad": "Vérification des horaires de départ… ",
+    "private.text.c2a951c0": "Disponibilité limitée",
+    "private.text.c64375dc": "Politique d’annulation",
+    "private.text.e9175fbd": "Votre compte est protégé"
   },
-  "coverage": 1084
+  "coverage": 1093
 }
