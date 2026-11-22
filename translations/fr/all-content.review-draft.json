@@ -4,7 +4,7 @@
   "status": "translation-review-draft",
   "source_project": "uvtbtpxtrrmaublrztgv",
   "coverage": {
-    "tour": 25,
+    "tour": 26,
     "blog_post": 50,
     "destination": 7,
     "communication_template": 18,
@@ -13,7 +13,7 @@
     "public_ui_messages": 81,
     "private_ui_messages": 1083,
     "ui_catalog_messages": 1164,
-    "source_records": 111
+    "source_records": 112
   },
   "records": [
     {
@@ -1002,7 +1002,53 @@
           "Briefing de sécurité et instructions pour conduire le quad",
           "Option de visite privée disponible"
         ],
-        "itinerary": [],
+        "itinerary": [
+          {
+            "time": "13:30",
+            "title": "Prise en charge à l’hôtel",
+            "description": "L’heure de prise en charge dépend de l’emplacement de votre hôtel."
+          },
+          {
+            "time": "14:45",
+            "title": "Centre de safari",
+            "description": "Arrivée au centre de safari, préparation et consignes de sécurité."
+          },
+          {
+            "time": "15:00",
+            "title": "Début de l’excursion en quad",
+            "description": "Partez pour environ 25 minutes de quad à travers le désert."
+          },
+          {
+            "time": "15:30",
+            "title": "Tente bédouine",
+            "description": "Arrivée à la tente bédouine et dégustation du thé traditionnel."
+          },
+          {
+            "time": "16:00",
+            "title": "Montagne de l’Écho",
+            "description": "Rendez-vous à la montagne de l’Écho (Jabal El Sout) pour prendre des photos et découvrir son étonnant phénomène d’écho."
+          },
+          {
+            "time": "16:20",
+            "title": "Balade à dos de chameau en option",
+            "description": "Balade facultative d’environ 10 minutes, incluse uniquement si vous choisissez l’option supplémentaire."
+          },
+          {
+            "time": "16:30",
+            "title": "Retour au centre de safari",
+            "description": "Retour au centre de safari avec une nouvelle balade en quad d’environ 25 minutes."
+          },
+          {
+            "time": "17:00",
+            "title": "Transfert de retour à l’hôtel",
+            "description": "Préparez-vous au départ et profitez du transfert de retour à votre hôtel."
+          },
+          {
+            "time": "00:00",
+            "title": "Remarque très importante",
+            "description": "Les horaires et les activités sont approximatifs et peuvent varier selon le programme de l’excursion."
+          }
+        ],
         "included": [
           "Prise en charge et retour à l’hôtel à Charm el-Cheikh",
           "Quad tout-terrain",
@@ -4708,6 +4754,101 @@
         "labels": {
           "browseMore": "Découvrir davantage",
           "bookNow": "Réserver"
+        }
+      }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "c343a962-c9b3-4789-8a2d-a260e1d4c2ce",
+      "source_slug": "horse-riding-in-hurghada-sea-desert-adventure",
+      "translated_slug": "promenade-a-cheval-hurghada-mer-desert",
+      "title": "Balade à cheval à Hurghada : aventure entre mer et désert",
+      "summary": "Découvrez les paysages de la mer Rouge et du désert à cheval. Choisissez une balade d’une ou deux heures, avec transferts depuis votre hôtel et accompagnement par un moniteur professionnel. L’option de deux heures permet également de vivre une expérience de baignade avec votre cheval dans la mer Rouge.",
+      "seo_title": "Balade à cheval à Hurghada | Mer Rouge et désert",
+      "seo_description": "Explorez Hurghada à cheval entre mer et désert. Balade d’une ou deux heures, moniteur professionnel et transferts depuis votre hôtel.",
+      "content": {
+        "title": "Balade à cheval à Hurghada : aventure entre mer et désert",
+        "description": "# Découvrez Hurghada à cheval, entre la mer Rouge et le désert\n\nEnvie de vivre une expérience différente pendant votre séjour à Hurghada ? Éloignez-vous de l’agitation des stations balnéaires et découvrez la beauté de la côte égyptienne de la mer Rouge sous un autre angle.\n\nCette aventure équestre associe la tranquillité du désert aux magnifiques paysages du littoral. Parcourez les étendues de sable, profitez des vues sur la mer et découvrez le lien unique entre le cheval et son cavalier.\n\n## Une expérience adaptée à tous les niveaux\n\nQue vous soyez cavalier expérimenté ou débutant, cette activité accueille différents niveaux. Un moniteur professionnel vous accompagne, vous explique les consignes de sécurité et vous aide à vous sentir à l’aise avant le départ.\n\n## Choisissez votre balade\n\n- **Balade d’une heure entre mer et désert :** profitez d’une promenade à cheval le long du littoral et dans les paysages désertiques.\n- **Balade de deux heures entre mer, désert et baignade à cheval :** prolongez l’aventure et terminez par une expérience particulière : entrer dans la mer Rouge avec votre cheval pour nager à ses côtés.\n\n## Transferts confortables depuis l’hôtel\n\nL’expérience comprend le transport aller-retour climatisé depuis les hôtels du centre de Hurghada. Après votre balade, détendez-vous pendant le trajet de retour.\n\nEn couple, entre amis ou en famille, cette balade à cheval est une belle façon de découvrir les paysages naturels de Hurghada.\n\nRéservez votre aventure avec Awesome Adventure Tours et créez un souvenir de vacances inoubliable !",
+        "durationLabel": "2 heures",
+        "highlights": [
+          "Découvrez la côte de Hurghada à cheval.",
+          "Profitez d’une balade unique entre la mer Rouge et le désert.",
+          "Choisissez une aventure d’une ou de deux heures.",
+          "Avec l’option de deux heures, vivez une expérience de baignade à cheval dans la mer Rouge.",
+          "Convient aux débutants comme aux cavaliers expérimentés.",
+          "Un moniteur professionnel vous accompagne.",
+          "Casque de sécurité et consignes de conduite fournis.",
+          "Prise en charge et retour pratiques à votre hôtel.",
+          "Options de balade partagée ou privée disponibles."
+        ],
+        "itinerary": [
+          {
+            "time": "11:00",
+            "title": "Prise en charge à l’hôtel",
+            "description": "Profitez d’une prise en charge pratique à votre hôtel à Hurghada dans un véhicule climatisé."
+          },
+          {
+            "time": "11:00",
+            "title": "Arrivée au centre équestre",
+            "description": "Rencontrez l’équipe, faites connaissance avec votre cheval et recevez votre équipement d’équitation."
+          },
+          {
+            "time": "11:00",
+            "title": "Consignes de sécurité",
+            "description": "Votre moniteur professionnel vous explique les bases de l’équitation, vous aide à mettre votre casque et vérifie que vous êtes prêt."
+          },
+          {
+            "time": "11:00",
+            "title": "Balade à cheval le long de la mer Rouge",
+            "description": "Commencez votre aventure à travers les magnifiques paysages côtiers, avec leurs plages de sable et leurs vues sur la mer Rouge."
+          },
+          {
+            "time": "11:00",
+            "title": "Découverte du désert",
+            "description": "Poursuivez votre balade dans le calme du désert et découvrez un autre visage de Hurghada, loin des stations animées."
+          },
+          {
+            "time": "11:00",
+            "title": "Baignade à cheval en option",
+            "description": "Choisissez l’option de deux heures pour entrer dans la mer Rouge avec votre cheval et nager à ses côtés. Cette expérience peut également être ajoutée à la balade d’une heure moyennant un supplément."
+          },
+          {
+            "time": "11:00",
+            "title": "Transfert de retour",
+            "description": "Après la balade, retournez au centre puis profitez d’un transport confortable jusqu’à votre hôtel."
+          }
+        ],
+        "included": [
+          "Prise en charge et retour à l’hôtel dans le centre de Hurghada.",
+          "Transport aller-retour en véhicule climatisé.",
+          "Balade à cheval guidée pour la durée choisie (1 ou 2 heures).",
+          "Moniteur et guide équestre professionnel.",
+          "Casque de sécurité.",
+          "Briefing de sécurité et consignes de base avant la balade."
+        ],
+        "excluded": [
+          "Repas et boissons.",
+          "Pourboires et gratifications personnelles.",
+          "Dépenses personnelles.",
+          "Option de baignade à cheval si vous réservez la balade d’une heure.",
+          "Transport depuis les zones situées en dehors du centre de Hurghada.",
+          "Massages et soins de spa en option."
+        ],
+        "faqs": [],
+        "pickupInfo": "**Lieu de prise en charge :** hôtel à Hurghada.\n\n**Zones de prise en charge incluses :**\n- Hurghada centre.\n\n**Zones avec supplément de transfert :**\n- Makadi Bay.\n- Sahl Hasheesh.\n- El Gouna.\n- Soma Bay.\n- Safaga.\n\n**Heures de départ disponibles :**\n- 11:00\n- 12:00\n- 15:00\n\n**Transport :** véhicule climatisé, aller-retour.\n\n**Instructions :** indiquez le nom et l’emplacement de votre hôtel lors de la réservation afin de confirmer l’heure exacte de prise en charge.\n\n**Informations importantes :**\n- Soyez prêt à l’heure de prise en charge confirmée.\n- Portez des chaussures fermées et un pantalon confortable.\n- Suivez les consignes de sécurité du moniteur.\n- L’activité dépend des conditions locales d’exploitation et de sécurité.",
+        "cancellationPolicy": "Annulation gratuite jusqu’à 24 heures avant le départ.\nLes annulations effectuées 12 heures avant le départ donnent droit à un remboursement de 50 %.\nLes annulations effectuées 6 heures avant le départ ne sont pas remboursables, mais la date peut être modifiée moyennant des frais supplémentaires.",
+        "ageRestrictions": "",
+        "labels": {
+          "highlights": "Points forts",
+          "itinerary": "Programme",
+          "included": "Inclus",
+          "excluded": "Non inclus",
+          "faqs": "Questions fréquentes",
+          "pickupInfo": "Informations sur la prise en charge",
+          "cancellationPolicy": "Politique d’annulation",
+          "ageRestrictions": "Restrictions d’âge",
+          "bookNow": "Réserver",
+          "browseMore": "Voir plus d’excursions"
         }
       }
     }
