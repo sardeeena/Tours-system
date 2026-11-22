@@ -5088,6 +5088,11 @@
             "section": "what_to_bring"
           },
           {
+            "question": "Informations importantes",
+            "answer": "Apportez une serviette si vous choisissez l’expérience de baignade avec le cheval.",
+            "section": "important_information"
+          },
+          {
             "question": "Que dois-je porter ?",
             "answer": "Il est recommandé de porter un pantalon long confortable et des chaussures fermées. Apportez également des lunettes de soleil, de la crème solaire et un chapeau.",
             "section": "faq"
@@ -5123,19 +5128,9 @@
             "section": "what_to_bring"
           },
           {
-            "question": "À apporter",
-            "answer": "**Conseil :** portez des vêtements confortables et apportez un maillot de bain et une serviette si vous souhaitez nager avec votre cheval dans la mer Rouge.",
-            "section": "what_to_bring"
-          },
-          {
             "question": "Quels sont les horaires de départ disponibles ?",
             "answer": "Les horaires proposés sont notamment 11:00, 12:00 et 15:00. L’heure exacte de prise en charge à l’hôtel dépend de votre emplacement.",
             "section": "faq"
-          },
-          {
-            "question": "Informations importantes",
-            "answer": "Apportez une serviette si vous choisissez l’expérience de baignade avec le cheval.",
-            "section": "important_information"
           },
           {
             "question": "À apporter",
@@ -5145,6 +5140,11 @@
           {
             "question": "À apporter",
             "answer": "Un peu d’argent liquide pour les options supplémentaires ou les dépenses personnelles.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "À apporter",
+            "answer": "**Conseil :** portez des vêtements confortables et apportez un maillot de bain et une serviette si vous souhaitez nager avec votre cheval dans la mer Rouge.",
             "section": "what_to_bring"
           }
         ],
