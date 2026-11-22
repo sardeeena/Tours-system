@@ -4,16 +4,16 @@
   "status": "translation-review-draft",
   "source_project": "uvtbtpxtrrmaublrztgv",
   "coverage": {
-    "tour": 25,
+    "tour": 26,
     "blog_post": 50,
     "destination": 7,
     "communication_template": 18,
     "static_page": 10,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1084,
-    "ui_catalog_messages": 1165,
-    "source_records": 111
+    "private_ui_messages": 1083,
+    "ui_catalog_messages": 1164,
+    "source_records": 112
   },
   "records": [
     {
@@ -1002,7 +1002,53 @@
           "Briefing de sécurité et instructions pour conduire le quad",
           "Option de visite privée disponible"
         ],
-        "itinerary": [],
+        "itinerary": [
+          {
+            "time": "13:30",
+            "title": "Prise en charge à l’hôtel",
+            "description": "L’heure de prise en charge dépend de l’emplacement de votre hôtel."
+          },
+          {
+            "time": "14:45",
+            "title": "Centre de safari",
+            "description": "Arrivée au centre de safari, préparation et consignes de sécurité."
+          },
+          {
+            "time": "15:00",
+            "title": "Début de l’excursion en quad",
+            "description": "Partez pour environ 25 minutes de quad à travers le désert."
+          },
+          {
+            "time": "15:30",
+            "title": "Tente bédouine",
+            "description": "Arrivée à la tente bédouine et dégustation du thé traditionnel."
+          },
+          {
+            "time": "16:00",
+            "title": "Montagne de l’Écho",
+            "description": "Rendez-vous à la montagne de l’Écho (Jabal El Sout) pour prendre des photos et découvrir son étonnant phénomène d’écho."
+          },
+          {
+            "time": "16:20",
+            "title": "Balade à dos de chameau en option",
+            "description": "Balade facultative d’environ 10 minutes, incluse uniquement si vous choisissez l’option supplémentaire."
+          },
+          {
+            "time": "16:30",
+            "title": "Retour au centre de safari",
+            "description": "Retour au centre de safari avec une nouvelle balade en quad d’environ 25 minutes."
+          },
+          {
+            "time": "17:00",
+            "title": "Transfert de retour à l’hôtel",
+            "description": "Préparez-vous au départ et profitez du transfert de retour à votre hôtel."
+          },
+          {
+            "time": "00:00",
+            "title": "Remarque très importante",
+            "description": "Les horaires et les activités sont approximatifs et peuvent varier selon le programme de l’excursion."
+          }
+        ],
         "included": [
           "Prise en charge et retour à l’hôtel à Charm el-Cheikh",
           "Quad tout-terrain",
@@ -1022,9 +1068,85 @@
           "Pourboires",
           "Tout service non expressément mentionné dans l’option sélectionnée"
         ],
-        "faqs": [],
-        "pickupInfo": "Les options de prise en charge, les lieux approuvés et tout supplément applicable sont indiqués pendant la réservation.",
-        "cancellationPolicy": "Veuillez contacter notre équipe de réservation pour confirmer les conditions d’annulation et de remboursement de cette excursion avant de réserver.",
+        "faqs": [
+          {
+            "question": "Informations importantes",
+            "answer": "Ne convient pas aux femmes enceintes.",
+            "section": "important_information"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Des vêtements confortables.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Que dois-je apporter pendant l’excursion ?",
+            "answer": "Des vêtements confortables, des chaussures fermées, des lunettes de soleil, de la crème solaire, un foulard léger pour vous protéger de la poussière, un appareil photo ou un téléphone, ainsi que de l’argent liquide pour les dépenses supplémentaires.",
+            "section": "faq"
+          },
+          {
+            "question": "Combien de temps dure l’excursion complète ?",
+            "answer": "L’excursion dure environ 3 heures.",
+            "section": "faq"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Des chaussures fermées.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "L’âge minimum pour conduire un quad est de 15 ans.",
+            "section": "important_information"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Cette activité est déconseillée aux personnes de plus de 70 ans souffrant de problèmes de dos.",
+            "section": "important_information"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Des lunettes de soleil.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "L’excursion est-elle proposée tous les jours ?",
+            "answer": "Oui, l’excursion est proposée tous les jours.",
+            "section": "faq"
+          },
+          {
+            "question": "À apporter",
+            "answer": "De la crème solaire.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Une excursion privée est-elle possible ?",
+            "answer": "Oui, une excursion privée est possible moyennant un supplément. Contactez-nous pour l’organiser.",
+            "section": "faq"
+          },
+          {
+            "question": "Quel est l’âge minimum pour conduire un quad ?",
+            "answer": "L’âge minimum pour conduire un quad est de 15 ans.",
+            "section": "faq"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Un foulard ou un châle léger pour vous protéger de la poussière.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Un appareil photo ou un téléphone.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Un peu d’argent liquide pour les dépenses supplémentaires.",
+            "section": "what_to_bring"
+          }
+        ],
+        "pickupInfo": "La prise en charge à l’hôtel est incluse depuis tous les hôtels situés dans la ville de Charm el-Cheikh.",
+        "cancellationPolicy": "Annulation gratuite jusqu’à 24 heures avant le départ. Les annulations effectuées 12 heures avant le départ donnent droit à un remboursement de 50 %. Les annulations effectuées 6 heures avant le départ ne sont pas remboursables, mais la date peut être modifiée moyennant des frais supplémentaires.",
         "ageRestrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
         "labels": {
           "highlights": "Points forts",
@@ -2553,7 +2675,53 @@
           "Parcourez les petites boutiques et les étals du marché local de Dahab",
           "Ajoutez une sortie en quad pour encore plus d’aventure, selon disponibilité"
         ],
-        "itinerary": [],
+        "itinerary": [
+          {
+            "time": "8:00 AM",
+            "title": "Prise en charge à l’hôtel",
+            "description": "Retrouvez votre guide à votre hôtel et partez tôt le matin."
+          },
+          {
+            "time": "09:00 AM",
+            "title": "Route à travers le Sinaï",
+            "description": "Traversez l’intérieur du Sinaï par la route en profitant des vues sur les montagnes."
+          },
+          {
+            "time": "9:45 AM",
+            "title": "Randonnée dans le Colored Canyon",
+            "description": "Parcourez ce canyon de 800 mètres aux parois dorées et violettes."
+          },
+          {
+            "time": "11:15 AM",
+            "title": "Snorkeling au Blue Hole",
+            "description": "Explorez les récifs coralliens de la réserve du Blue Hole avec masque et tuba."
+          },
+          {
+            "time": "12:45 PM",
+            "title": "Balade à dos de chameau",
+            "description": "Profitez d’une balade à dos de chameau incluse le long du rivage."
+          },
+          {
+            "time": "1:00 PM ",
+            "title": "Déjeuner",
+            "description": "Profitez d’une heure pour déguster un déjeuner grillé dans une tente bédouine sur la plage ou dans un restaurant local à Dahab, selon les disponibilités."
+          },
+          {
+            "time": "2:00 PM",
+            "title": "Arrêt dans la ville de Dahab",
+            "description": "Profitez de temps libre à Dahab pour boire un thé à la menthe et acheter des souvenirs."
+          },
+          {
+            "time": "4:30 PM ",
+            "title": "Retour à Charm el-Cheikh",
+            "description": "Détendez-vous pendant le trajet de retour vers votre hôtel."
+          },
+          {
+            "time": "6:00 PM",
+            "title": "Arrivée à Charm el-Cheikh",
+            "description": "Dépose à votre hôtel."
+          }
+        ],
         "included": [
           "Prise en charge et retour à l’hôtel à Charm el-Cheikh",
           "Visite guidée du Colored Canyon",
@@ -2575,18 +2743,68 @@
         ],
         "faqs": [
           {
-            "question": "L’équipement de snorkeling est-il fourni ou dois-je apporter le mien ?",
-            "answer": "Des masques, tubas et palmes désinfectés, en tailles adulte et enfant, sont fournis gratuitement à bord.",
+            "question": "Informations importantes",
+            "answer": "Cette excursion ne convient pas aux femmes enceintes.",
+            "section": "important_information"
+          },
+          {
+            "question": "Que dois-je apporter pendant l’excursion ?",
+            "answer": "Des vêtements confortables, des chaussures fermées, des lunettes de soleil, de la crème solaire, un foulard ou un châle léger contre la poussière, un appareil photo ou un téléphone, un peu d’argent liquide pour les dépenses supplémentaires, ainsi que de l’eau et des encas.",
             "section": "faq"
           },
           {
-            "question": "Les personnes qui ne savent pas nager peuvent-elles participer en toute sécurité ?",
-            "answer": "Oui. Des gilets de flottaison homologués par les garde-côtes sont fournis et des moniteurs de plongée certifiés accompagnent les participants dans l’eau.",
+            "question": "À apporter",
+            "answer": "Des vêtements confortables.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Des chaussures fermées.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Quel canyon allons-nous visiter ?",
+            "answer": "Nous visitons le Colored Canyon, également connu sous le nom de Red Canyon, dans le désert du Sinaï.",
             "section": "faq"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Cette excursion est déconseillée aux personnes de plus de 70 ans souffrant de problèmes de dos.",
+            "section": "important_information"
+          },
+          {
+            "question": "Cette excursion convient-elle aux personnes âgées et aux femmes enceintes ?",
+            "answer": "Nous ne recommandons pas cette excursion aux personnes âgées ni aux femmes enceintes, car elle comprend un long trajet en voiture et une randonnée dans le canyon.",
+            "section": "faq"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Des lunettes de soleil.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "À apporter",
+            "answer": "De la crème solaire.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Un foulard ou un châle léger pour vous protéger de la poussière.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Un appareil photo ou un téléphone.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Un peu d’argent liquide pour les dépenses supplémentaires.",
+            "section": "what_to_bring"
           }
         ],
-        "pickupInfo": "Les options de prise en charge, les lieux approuvés et tout supplément applicable sont indiqués pendant la réservation.",
-        "cancellationPolicy": "Veuillez contacter notre équipe de réservation pour confirmer les conditions d’annulation et de remboursement de cette excursion avant de réserver.",
+        "pickupInfo": "La prise en charge à l’hôtel est incluse depuis tous les hôtels situés dans la ville de Charm el-Cheikh.",
+        "cancellationPolicy": "Annulation gratuite jusqu’à 24 heures avant le départ. Les annulations effectuées 12 heures avant le départ donnent droit à un remboursement de 50 %. Les annulations effectuées 6 heures avant le départ ne sont pas remboursables, mais la date peut être modifiée moyennant des frais supplémentaires.",
         "ageRestrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
         "labels": {
           "highlights": "Points forts",
@@ -2878,7 +3096,6 @@
         "private.text.15c0012d": "Aperçu rapide",
         "private.text.16307986": "Chargement du portail de réservation",
         "private.text.16356ba4": "Participants réservés",
-        "private.text.17448d1f": "Annulation gratuite jusqu’à 24 heures avant le départ",
         "private.text.174a0119": "Enregistrer les modifications",
         "private.text.176bdf9a": "Ex. : Steigenberger ALDAU Beach, Sunrise Crystal Bay, etc.",
         "private.text.17bf4fb4": "Nous avons envoyé un lien de vérification à ",
@@ -2996,7 +3213,6 @@
         "private.text.329bfc72": "Diminuer la quantité",
         "private.text.32bfb13b": "Continuer à parcourir les excursions ",
         "private.text.3352afdc": "En attente",
-        "private.text.33a2f27a": "Vérification des disponibilités en temps réel… ",
         "private.text.33f28bc1": "LIEN_INVALIDE",
         "private.text.349192c0": "Réponse de l’équipe",
         "private.text.35756ac4": "Hall du resort",
@@ -3040,7 +3256,6 @@
         "private.text.3c977804": "Lien invalide ou expiré",
         "private.text.3cf7d308": "ex. : yourname@example.com",
         "private.text.3d64fdce": "name@domain.com ou +20 151 5212741",
-        "private.text.3db68b5f": "Les disponibilités en temps réel sont temporairement indisponibles. Veuillez réessayer dans un instant. ",
         "private.text.3dd538ca": "Vérifiez votre e-mail",
         "private.text.3dd73f38": "RÉF. : ",
         "private.text.3e91759a": "Coordonnées du voyageur principal ",
@@ -3162,7 +3377,6 @@
         "private.text.5d7af7ab": "Renvoyer l’e-mail de confirmation",
         "private.text.5da77726": "Comparer les itinéraires et les prestations côte à côte ",
         "private.text.5db0f77c": "Réservation confirmée ",
-        "private.text.5dc4f9aa": "Disponibilités en temps réel ",
         "private.text.5e211f6c": "Type d’activité",
         "private.text.5e7da67a": "2. Combien de personnes ? ",
         "private.text.5ef4dd19": "Vos excursions en yacht et aventures dans le désert enregistrées. ",
@@ -3408,7 +3622,6 @@
         "private.text.96a6bc1f": "Hauteur des vagues",
         "private.text.96ac901d": "Photo bientôt disponible",
         "private.text.973efe84": "Tous les départs de la flotte sont vérifiés quotidiennement par les autorités portuaires. Si les conditions météo empêchent la navigation, reprogrammez gratuitement l’excursion ou recevez un remboursement à 100 %. ",
-        "private.text.9894c0b7": "Un changement de programme ? Annulez ou modifiez votre date gratuitement jusqu’à 24 heures avant la prise en charge. ",
         "private.text.98ec2e39": "Âge à la date de l’excursion ",
         "private.text.9955f94a": "Choisissez la langue de votre guide. Votre sélection figurera sur votre bon de réservation.",
         "private.text.9973451d": "Votre note ",
@@ -3492,7 +3705,6 @@
         "private.text.ab849b65": "Aucune réservation trouvée",
         "private.text.abb27034": "Besoin d’aide, de conciergerie ou d’excursions sur mesure",
         "private.text.abefa042": "Excursion sélectionnée ",
-        "private.text.ac51b135": " places disponibles ",
         "private.text.ac6fc4c4": "Connectez-vous pour créer une demande d’assistance et suivre vos conversations en toute sécurité.",
         "private.text.acd20e52": "CONNEXION",
         "private.text.ace216ae": "expériences",
@@ -3632,7 +3844,6 @@
         "private.text.ca57609d": "ANNULATION_DEMANDÉE",
         "private.text.caa81c12": "Note du client",
         "private.text.cab62326": "Tout est inclus dans votre excursion ",
-        "private.text.cb01b8b2": "Protégé par Supabase Auth",
         "private.text.cb1af2ed": "Destination ",
         "private.text.cb3f846e": "Continuer vers la réservation de l’excursion en tant qu’invité ",
         "private.text.cb647246": "Cette excursion comprend tout l’équipement principal, les permis et les activités. Aucun supplément obligatoire n’est nécessaire. ",
@@ -3796,10 +4007,8 @@
         "private.text.f025c832": "N’incluez jamais de mots de passe, de données de carte bancaire ou d’identifiants sensibles.",
         "private.text.f0bbf1f2": " Retour à la file d’attente",
         "private.text.f1391edb": "Vous devez être connecté pour consulter et gérer le profil de votre compte voyageur. ",
-        "private.text.f1878a8e": " places restent disponibles pour ce départ. Veuillez réduire la taille du groupe ou choisir une autre date. ",
         "private.text.f1f487f3": "Adresse e-mail",
         "private.text.f2249348": "Assistance 24/7 : +20 151 5212741",
-        "private.text.f263abb5": "Vous avez sélectionné ",
         "private.text.f2774631": "Comment notre équipe peut-elle vous aider ? ",
         "private.text.f2a25179": "Billet officiel d’excursion et bon de prise en charge à l’hôtel • Mer Rouge, Égypte ",
         "private.text.f2e0c2e7": "Mot de passe oublié",
@@ -3822,7 +4031,6 @@
         "private.text.f535ef30": "Veuillez vérifier vos dates, votre lieu de prise en charge et vos coordonnées avant de payer. ",
         "private.text.f5592c45": "Aucun service de prise en charge",
         "private.text.f562fbae": "Accepté :",
-        "private.text.f57c290f": " participants, mais seulement ",
         "private.text.f57e0e94": "Merci pour votre avis ! ",
         "private.text.f58b0587": "● Annulé ",
         "private.text.f60c4582": "s",
@@ -3901,9 +4109,18 @@
         "private.text.79b4c617": "Étape ",
         "private.text.a5b9a096": " sur 4",
         "private.text.28b74540": "Exclusif",
-        "private.text.37bf777b": "Excursions privées exclusives"
+        "private.text.37bf777b": "Excursions privées exclusives",
+        "private.text.25168fa0": "Impossible de vérifier les horaires de départ. Veuillez réessayer dans un instant. ",
+        "private.text.66e67e50": "Départ disponible",
+        "private.text.72402638": "Disponible",
+        "private.text.7a58d233": "Les conditions d’annulation et de remboursement dépendent de l’excursion sélectionnée. Veuillez consulter sa politique avant de confirmer votre réservation. ",
+        "private.text.bf5e2ed8": "Ce départ ne peut pas accueillir le nombre de participants sélectionné. Veuillez réduire le nombre de participants ou choisir un autre départ. ",
+        "private.text.c1c961ad": "Vérification des horaires de départ… ",
+        "private.text.c2a951c0": "Disponibilité limitée",
+        "private.text.c64375dc": "Politique d’annulation",
+        "private.text.e9175fbd": "Votre compte est protégé"
       },
-      "private_ui_message_count": 1100
+      "private_ui_message_count": 1083
     },
     {
       "entity_type": "communication_template",
@@ -4709,6 +4926,203 @@
         "labels": {
           "browseMore": "Découvrir davantage",
           "bookNow": "Réserver"
+        }
+      }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "c343a962-c9b3-4789-8a2d-a260e1d4c2ce",
+      "source_slug": "horse-riding-in-hurghada-sea-desert-adventure",
+      "translated_slug": "promenade-a-cheval-hurghada-mer-desert",
+      "title": "Balade à cheval à Hurghada : aventure entre mer et désert",
+      "summary": "Découvrez les paysages de la mer Rouge et du désert à cheval. Choisissez une balade d’une ou deux heures, avec transferts depuis votre hôtel et accompagnement par un moniteur professionnel. L’option de deux heures permet également de vivre une expérience de baignade avec votre cheval dans la mer Rouge.",
+      "seo_title": "Balade à cheval à Hurghada | Mer Rouge et désert",
+      "seo_description": "Explorez Hurghada à cheval entre mer et désert. Balade d’une ou deux heures, moniteur professionnel et transferts depuis votre hôtel.",
+      "content": {
+        "title": "Balade à cheval à Hurghada : aventure entre mer et désert",
+        "description": "# Découvrez Hurghada à cheval, entre la mer Rouge et le désert\n\nEnvie de vivre une expérience différente pendant votre séjour à Hurghada ? Éloignez-vous de l’agitation des stations balnéaires et découvrez la beauté de la côte égyptienne de la mer Rouge sous un autre angle.\n\nCette aventure équestre associe la tranquillité du désert aux magnifiques paysages du littoral. Parcourez les étendues de sable, profitez des vues sur la mer et découvrez le lien unique entre le cheval et son cavalier.\n\n## Une expérience adaptée à tous les niveaux\n\nQue vous soyez cavalier expérimenté ou débutant, cette activité accueille différents niveaux. Un moniteur professionnel vous accompagne, vous explique les consignes de sécurité et vous aide à vous sentir à l’aise avant le départ.\n\n## Balade de 2 heures entre mer, désert et baignade à cheval\n\nProlongez l’aventure et terminez par une expérience particulière : entrer dans la mer Rouge avec votre cheval pour nager à ses côtés.\n\n## Transferts confortables depuis l’hôtel\n\nL’expérience comprend le transport aller-retour climatisé depuis les hôtels du centre de Hurghada. Après votre balade, détendez-vous pendant le trajet de retour.\n\nEn couple, entre amis ou en famille, cette balade à cheval est une belle façon de découvrir les paysages naturels de Hurghada.\n\nRéservez votre aventure avec Awesome Adventure Tours et créez un souvenir de vacances inoubliable !",
+        "durationLabel": "2 heures",
+        "highlights": [
+          "Découvrez la côte de Hurghada à cheval.",
+          "Profitez d’une balade unique entre la mer Rouge et le désert.",
+          "Convient aux débutants comme aux cavaliers expérimentés.",
+          "Un moniteur professionnel vous accompagne.",
+          "Casque de sécurité et consignes de conduite fournis.",
+          "Prise en charge et retour pratiques à votre hôtel.",
+          "Options de balade partagée ou privée disponibles."
+        ],
+        "itinerary": [
+          {
+            "time": "11:00",
+            "title": "Prise en charge à l’hôtel",
+            "description": "Profitez d’une prise en charge pratique à votre hôtel à Hurghada dans un véhicule climatisé."
+          },
+          {
+            "time": "11:45",
+            "title": "Arrivée au centre équestre",
+            "description": "Rencontrez l’équipe, faites connaissance avec votre cheval et recevez votre équipement d’équitation."
+          },
+          {
+            "time": "11:50",
+            "title": "Consignes de sécurité",
+            "description": "Votre moniteur professionnel vous explique les bases de l’équitation, vous aide à mettre votre casque et vérifie que vous êtes prêt."
+          },
+          {
+            "time": "12:00",
+            "title": "Balade à cheval le long de la mer Rouge",
+            "description": "Commencez votre aventure à travers les magnifiques paysages côtiers, avec leurs plages de sable et leurs vues sur la mer Rouge."
+          },
+          {
+            "time": "13:00",
+            "title": "Découverte du désert",
+            "description": "Poursuivez votre balade dans le calme du désert et découvrez un autre visage de Hurghada, loin des stations animées."
+          },
+          {
+            "time": "14:00",
+            "title": "Transfert de retour",
+            "description": "Après la balade, retournez au centre puis profitez d’un transport confortable jusqu’à votre hôtel."
+          }
+        ],
+        "included": [
+          "Prise en charge et retour à l’hôtel dans le centre de Hurghada.",
+          "Transport aller-retour en véhicule climatisé.",
+          "Balade à cheval guidée pour la durée choisie (1 ou 2 heures).",
+          "Moniteur et guide équestre professionnel.",
+          "Casque de sécurité.",
+          "Briefing de sécurité et consignes de base avant la balade."
+        ],
+        "excluded": [
+          "Repas et boissons.",
+          "Pourboires et gratifications personnelles.",
+          "Dépenses personnelles.",
+          "Transport depuis les zones situées en dehors du centre de Hurghada."
+        ],
+        "faqs": [
+          {
+            "question": "Informations importantes",
+            "answer": "Âge minimum indiqué par le prestataire pour monter à cheval : 4 ans.",
+            "section": "important_information"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Des vêtements confortables adaptés à l’équitation.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Faut-il avoir déjà pratiqué l’équitation ?",
+            "answer": "Non. Les débutants sont les bienvenus. Un moniteur professionnel vous donnera des instructions et vous accompagnera pendant la balade.",
+            "section": "faq"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Un pantalon long pour protéger vos jambes pendant la balade.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Combien de temps dure l’expérience équestre ?",
+            "answer": "Vous pouvez choisir une balade de 1 heure ou de 2 heures.",
+            "section": "faq"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Les nourrissons ne sont pas autorisés.",
+            "section": "important_information"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Le tarif enfant est indiqué pour les 6 à 11 ans, mais les règles relatives à l’âge minimum et au tarif enfant doivent être confirmées.",
+            "section": "important_information"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Des chaussures fermées ou des baskets confortables.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Puis-je nager avec mon cheval dans la mer Rouge ?",
+            "answer": "Oui. La baignade avec le cheval est incluse dans l’option de 2 heures. Elle peut également être ajoutée à la balade de 1 heure moyennant un supplément.",
+            "section": "faq"
+          },
+          {
+            "question": "Le transport depuis l’hôtel est-il inclus ?",
+            "answer": "Oui. Le transport aller-retour climatisé est inclus pour les hôtels du centre de Hurghada. Des frais supplémentaires s’appliquent à certaines zones voisines.",
+            "section": "faq"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Des lunettes de soleil et de la crème solaire.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Tous les niveaux d’équitation sont acceptés.",
+            "section": "important_information"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Un casque de sécurité et l’assistance du moniteur sont fournis.",
+            "section": "important_information"
+          },
+          {
+            "question": "Quel est l’âge minimum pour les enfants ?",
+            "answer": "Le prestataire indique un âge minimum de 4 ans pour monter à cheval et précise que les nourrissons ne sont pas autorisés. Veuillez confirmer le tarif enfant applicable avant de réserver.",
+            "section": "faq"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Un chapeau ou une casquette pour vous protéger du soleil.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "À apporter",
+            "answer": "De l’eau potable pour rester hydraté.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Que dois-je porter ?",
+            "answer": "Il est recommandé de porter un pantalon long confortable et des chaussures fermées. Apportez également des lunettes de soleil, de la crème solaire et un chapeau.",
+            "section": "faq"
+          },
+          {
+            "question": "Que dois-je apporter ?",
+            "answer": "Nous vous recommandons d’apporter une serviette, un appareil photo, de la crème solaire et un peu d’argent liquide pour les options supplémentaires ou les pourboires.",
+            "section": "faq"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Votre appareil photo ou votre téléphone pour immortaliser ces moments.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Des balades privées sont-elles proposées ?",
+            "answer": "Oui. Des options privées sont disponibles pour les expériences de 1 heure et de 2 heures, avec transfert privé et guide dédié.",
+            "section": "faq"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Un peu d’argent liquide pour les options supplémentaires ou les dépenses personnelles.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Quels sont les horaires de départ disponibles ?",
+            "answer": "Les horaires proposés sont notamment 11:00, 12:00 et 15:00. L’heure exacte de prise en charge à l’hôtel dépend de votre emplacement.",
+            "section": "faq"
+          }
+        ],
+        "pickupInfo": "**Lieu de prise en charge :** hôtel à Hurghada.\n\n**Zones de prise en charge incluses :**\n- Hurghada centre.\n\n**Zones avec supplément de transfert :**\n- Makadi Bay.\n- Sahl Hasheesh.\n- El Gouna.\n- Soma Bay.\n- Safaga.",
+        "cancellationPolicy": "Annulation gratuite jusqu’à 24 heures avant le départ.\nLes annulations effectuées 12 heures avant le départ donnent droit à un remboursement de 50 %.\nLes annulations effectuées 6 heures avant le départ ne sont pas remboursables, mais la date peut être modifiée moyennant des frais supplémentaires.",
+        "ageRestrictions": "",
+        "labels": {
+          "highlights": "Points forts",
+          "itinerary": "Programme",
+          "included": "Inclus",
+          "excluded": "Non inclus",
+          "faqs": "Questions fréquentes",
+          "pickupInfo": "Informations sur la prise en charge",
+          "cancellationPolicy": "Politique d’annulation",
+          "ageRestrictions": "Restrictions d’âge",
+          "bookNow": "Réserver",
+          "browseMore": "Voir plus d’excursions"
         }
       }
     }

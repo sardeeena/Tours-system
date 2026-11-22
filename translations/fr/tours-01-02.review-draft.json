@@ -44,7 +44,83 @@
           "Pourboires",
           "Tout service non expressément mentionné dans l’option sélectionnée"
         ],
-        "faqs": [],
+        "faqs": [
+          {
+            "question": "Informations importantes",
+            "answer": "Ne convient pas aux femmes enceintes.",
+            "section": "important_information"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Des vêtements confortables.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Que dois-je apporter pendant l’excursion ?",
+            "answer": "Des vêtements confortables, des chaussures fermées, des lunettes de soleil, de la crème solaire, un foulard léger pour vous protéger de la poussière, un appareil photo ou un téléphone, ainsi que de l’argent liquide pour les dépenses supplémentaires.",
+            "section": "faq"
+          },
+          {
+            "question": "Combien de temps dure l’excursion complète ?",
+            "answer": "L’excursion dure environ 3 heures.",
+            "section": "faq"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Des chaussures fermées.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "L’âge minimum pour conduire un quad est de 15 ans.",
+            "section": "important_information"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Cette activité est déconseillée aux personnes de plus de 70 ans souffrant de problèmes de dos.",
+            "section": "important_information"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Des lunettes de soleil.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "L’excursion est-elle proposée tous les jours ?",
+            "answer": "Oui, l’excursion est proposée tous les jours.",
+            "section": "faq"
+          },
+          {
+            "question": "À apporter",
+            "answer": "De la crème solaire.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Une excursion privée est-elle possible ?",
+            "answer": "Oui, une excursion privée est possible moyennant un supplément. Contactez-nous pour l’organiser.",
+            "section": "faq"
+          },
+          {
+            "question": "Quel est l’âge minimum pour conduire un quad ?",
+            "answer": "L’âge minimum pour conduire un quad est de 15 ans.",
+            "section": "faq"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Un foulard ou un châle léger pour vous protéger de la poussière.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Un appareil photo ou un téléphone.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Un peu d’argent liquide pour les dépenses supplémentaires.",
+            "section": "what_to_bring"
+          }
+        ],
         "pickupInfo": "Les options de prise en charge, les lieux approuvés et tout supplément applicable sont indiqués pendant la réservation.",
         "cancellationPolicy": "Veuillez contacter notre équipe de réservation pour confirmer les conditions d’annulation et de remboursement de cette excursion avant de réserver."
       },

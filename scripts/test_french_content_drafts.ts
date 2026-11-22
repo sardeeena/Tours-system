@@ -11,7 +11,7 @@ const records = bundle.records as any[];
 const count = (type: string) => records.filter((record) => record.entity_type === type).length;
 
 assert.equal(bundle.locale, 'fr');
-assert.equal(count('tour'), 25, 'All 25 published tours have French drafts');
+assert.equal(count('tour'), 26, 'All 26 published tours have French drafts');
 assert.equal(count('blog_post'), 50, 'All 50 published blog posts have French drafts');
 assert.equal(count('destination'), 7, 'All 7 published destinations have French drafts');
 assert.equal(count('communication_template'), 18, 'All 18 English communication templates in the rollout source have French drafts');
@@ -140,19 +140,26 @@ for (const source of staticSources) {
     'Static page preserves all source sections, keys, placeholders, links and numeric facts: ' + key);
 }
 assert.equal(staticSources.length, 10, 'Home plus all nine fallback static pages are covered');
-assert.equal(records.length, 111, 'The full French review bundle contains every known source candidate');
+assert.equal(records.length, 112, 'The full French review bundle contains every known source candidate');
 assert.deepEqual(bundle.source_data_warnings || [], [], 'The two previously flagged source-data issues have approved, source-backed corrections in the PR migration');
 const correctedQuad = records.find((record) => record.entity_type === 'tour' && record.entity_key === '18375e31-b866-4f07-b3a8-c13b2a5c243b');
 assert.equal(correctedQuad.content.itinerary.length, 5, 'El Gouna quad safari has five corrected itinerary steps');
 assert.equal(correctedQuad.content.faqs.length, 0, 'Unrelated boat/snorkeling FAQs are removed from the desert quad safari');
-const toursWithoutSourceFaqs = ["b3524f6e-ef5a-4585-ae5a-d6569e3a1468","17e6cedc-b281-4528-a42b-35faee49ac57","5a15257b-d664-4957-be77-c2cb87bd174a","cda285d8-1119-4118-bb73-3a3c433f8daf","b2303c4d-0803-4526-9246-31a19b8901c3","87f5ab47-2499-4511-9a68-39a279e5bb85","a66d28fb-505c-4cf6-b326-c47bbabe2624","8737c07b-794e-4189-a7d3-401fd9c8c02b","e2019bda-5664-4dd3-ac21-a38c2fd95c9f","0bf0a28b-b49e-4c3e-a076-6d5eb53e8c7d","fb31d1b8-e3ed-4596-afd3-3adc5241111c","cc09c496-09f9-4036-aa69-fe5f20208a3d","86f2d93f-33bf-420a-88a5-4c6035ae05ba","66490ba5-3887-4dca-985d-d5f85b7c01e4","56fdd9fc-3a63-4faf-89b4-ac9e7332b86d","2f2ca1a1-f0c7-4737-9700-57e801a08d99"];
+const sinaiAdventure = records.find((record) => record.entity_type === 'tour' && record.entity_key === '74bfe543-678a-470f-958b-34087125a56b');
+assert.equal(sinaiAdventure.content.itinerary.length, 9, 'Sinai Adventure preserves all source itinerary steps');
+assert.equal(sinaiAdventure.content.faqs.length, 12, 'Sinai Adventure preserves all source FAQ and information rows');
+const desertSafari = records.find((record) => record.entity_type === 'tour' && record.entity_key === 'b3524f6e-ef5a-4585-ae5a-d6569e3a1468');
+assert.equal(desertSafari.content.faqs.length, 15, 'Desert safari preserves all source FAQ and information rows');
+const horseRiding = records.find((record) => record.entity_type === 'tour' && record.entity_key === 'c343a962-c9b3-4789-8a2d-a260e1d4c2ce');
+assert.equal(horseRiding.content.faqs.length, 22, 'Horse riding preserves all source FAQ and information rows');
+const toursWithoutSourceFaqs = ["17e6cedc-b281-4528-a42b-35faee49ac57","5a15257b-d664-4957-be77-c2cb87bd174a","cda285d8-1119-4118-bb73-3a3c433f8daf","b2303c4d-0803-4526-9246-31a19b8901c3","87f5ab47-2499-4511-9a68-39a279e5bb85","a66d28fb-505c-4cf6-b326-c47bbabe2624","8737c07b-794e-4189-a7d3-401fd9c8c02b","e2019bda-5664-4dd3-ac21-a38c2fd95c9f","0bf0a28b-b49e-4c3e-a076-6d5eb53e8c7d","fb31d1b8-e3ed-4596-afd3-3adc5241111c","cc09c496-09f9-4036-aa69-fe5f20208a3d","86f2d93f-33bf-420a-88a5-4c6035ae05ba","66490ba5-3887-4dca-985d-d5f85b7c01e4","56fdd9fc-3a63-4faf-89b4-ac9e7332b86d","2f2ca1a1-f0c7-4737-9700-57e801a08d99"];
 for (const key of toursWithoutSourceFaqs) {
   const tour = records.find((record) => record.entity_type === 'tour' && record.entity_key === key);
   assert.ok(tour, 'Non-marine tour is included in the French source bundle: ' + key);
   assert.deepEqual(tour.content.faqs, [], 'French draft must not invent FAQ entries absent from the English source: ' + key);
 }
 
-const nonMarineTourSlugs = ["afternoon-desert-safari-with-echo-mountains-bedouin-village","cairo-pyramids-sphinx-egyptian-museum-day-trip-from-sharm-el-sheikh","el-gouna-jeep-desert-safari-bbq-dinner-stargazing-experience","from-hurghada-luxor-day-trip-karnak-temple-valley-of-the-kings","grand-egyptian-museum-guided-tour-with-entry-ticket","hurghada-airport-to-hotel-private-arrival-transfer","hurghada-desert-quad-safari-atv-adventure-camel-ride-bedouin-village","hurghada-desert-stargazing-safari-jeep-adventure-bedouin-dinner-telescope-experience","hurghada-parasailing-banana-boat-adventure-with-hotel-pickup","hurghada-quad-bike-safari-desert-ride-camel-experience-bedouin-village","mount-sinai-sunrise-hike-st-catherines-monastery-from-sharm-el-sheikh","old-cairo-full-day-tour-islamic-coptic-heritage-with-lunch","sharm-el-sheikh-private-city-tour-old-market-mosque-cathedral","st-catherine-monastery-dahab-day-trip-from-sharm-el-sheikh","ultimate-sinai-desert-safari-quad-camel-bbq-adventure","ultimate-sinai-desert-safari-quad-camel-bbq-adventure-copy-757"];
+const nonMarineTourSlugs = ["cairo-pyramids-sphinx-egyptian-museum-day-trip-from-sharm-el-sheikh","el-gouna-jeep-desert-safari-bbq-dinner-stargazing-experience","from-hurghada-luxor-day-trip-karnak-temple-valley-of-the-kings","grand-egyptian-museum-guided-tour-with-entry-ticket","hurghada-airport-to-hotel-private-arrival-transfer","hurghada-desert-quad-safari-atv-adventure-camel-ride-bedouin-village","hurghada-desert-stargazing-safari-jeep-adventure-bedouin-dinner-telescope-experience","hurghada-parasailing-banana-boat-adventure-with-hotel-pickup","hurghada-quad-bike-safari-desert-ride-camel-experience-bedouin-village","mount-sinai-sunrise-hike-st-catherines-monastery-from-sharm-el-sheikh","old-cairo-full-day-tour-islamic-coptic-heritage-with-lunch","sharm-el-sheikh-private-city-tour-old-market-mosque-cathedral","st-catherine-monastery-dahab-day-trip-from-sharm-el-sheikh","ultimate-sinai-desert-safari-quad-camel-bbq-adventure","ultimate-sinai-desert-safari-quad-camel-bbq-adventure-copy-757"];
 for (const slug of nonMarineTourSlugs) {
   const tour = records.find((record) => record.entity_type === 'tour' && record.source_slug === slug);
   assert.ok(tour, 'Non-marine source tour is present: ' + slug);
@@ -164,4 +171,4 @@ const rasMohammed = records.find((record) => record.entity_type === 'tour' && re
 assert.match(rasMohammed.content.faqs.find((faq: any) => /snorkeling est-il inclus/i.test(faq.question))?.answer || '', /Coral Gardens/);
 assert.match(rasMohammed.content.faqs.find((faq: any) => /snorkeling est-il inclus/i.test(faq.question))?.answer || '', /option de réservation/);
 
-console.log('French draft coverage passed: 25 tours, 50 articles, 7 destinations, 18 communication templates, homepage, public UI and ' + expectedPrivateKeys.length + ' private UI messages.');
+console.log('French draft coverage passed: 26 tours, 50 articles, 7 destinations, 18 communication templates, homepage, public UI and ' + expectedPrivateKeys.length + ' private UI messages.');

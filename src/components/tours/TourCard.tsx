@@ -75,7 +75,7 @@ export const TourCard: React.FC<TourCardProps> = ({
               e.stopPropagation();
               onQuickView(tour);
             }}
-            className="absolute inset-0 m-auto w-32 h-10 rounded-full bg-white/95 text-stone-900 text-xs font-semibold shadow-xl flex items-center justify-center space-x-1.5 opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-white z-10 cursor-pointer"
+            className="absolute inset-0 m-auto w-32 h-10 rounded-full bg-white/95 text-stone-900 text-xs font-semibold shadow-xl flex items-center justify-center space-x-1.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 transition-all duration-200 hover:bg-white z-10 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74]"
           >
             <Eye className="w-3.5 h-3.5 text-[#0A6C74]" />
             <span>Quick View</span>

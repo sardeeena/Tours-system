@@ -203,11 +203,11 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
             <span className="font-bold text-stone-900 text-sm block">Departure time</span>
             {availabilityLoading ? (
               <div className="p-3 bg-stone-50 border border-stone-200 rounded text-xs text-stone-600">
-                Checking live departure availability…
+                Checking departure times…
               </div>
             ) : availabilityError ? (
               <div className="p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-900">
-                Live availability is temporarily unavailable. Please try again in a moment.
+                We couldn't check departure times. Please try again in a moment.
               </div>
             ) : departureSlots.length === 0 ? (
               <div className="p-3 bg-stone-50 border border-stone-200 rounded text-xs text-stone-700">
@@ -223,18 +223,19 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
                         key={slot.departureId}
                         type="button"
                         disabled={!slot.isAvailable}
+                        aria-pressed={selected}
                         onClick={() => onDepartureChange(slot.departureId, slot.startTime)}
-                        className={`rounded border px-3 py-2 text-left transition-colors ${
+                        className={`rounded-lg border-2 px-3 py-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2 ${
                           selected
-                            ? 'border-[#0A6C74] bg-[#0A6C74]/10 text-[#0A6C74]'
+                            ? 'border-[#0A6C74] bg-[#E8F3F4] text-[#07565C] shadow-sm'
                             : slot.isAvailable
-                              ? 'border-stone-300 bg-stone-50 text-stone-800 hover:border-[#0A6C74]'
+                              ? 'border-stone-300 bg-white text-stone-800 hover:border-[#0A6C74] hover:bg-[#F5FAFA]'
                               : 'border-stone-200 bg-stone-100 text-stone-400 cursor-not-allowed'
                         }`}
                       >
                         <span className="font-semibold text-sm block">{slot.startTime}</span>
                         <span className="text-[10px] block">
-                          {slot.isAvailable ? `${slot.remainingCapacity} spots` : 'Sold Out'}
+                          {slot.isAvailable ? (slot.remainingCapacity <= 10 ? 'Limited availability' : 'Available') : 'Sold Out'}
                         </span>
                       </button>
                     );
@@ -246,7 +247,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
                     <div>
                       <span className="font-bold block">Party size exceeds available capacity</span>
                       <span>
-                        You have selected {totalPartySize} guests, but only {selectedDeparture.remainingCapacity} spots remain on this departure. Please reduce group size or choose another date.
+                        This departure cannot accommodate your selected group size. Please reduce the number of guests or choose another departure.
                       </span>
                     </div>
                   </div>
@@ -256,13 +257,10 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
                       <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                       <span>
                         <strong className="font-semibold text-emerald-950">
-                          {selectedDeparture.remainingCapacity} spots available
+                          {selectedDeparture.remainingCapacity <= 10 ? 'Limited availability' : 'Departure available'}
                         </strong> for selected departure
                       </span>
                     </div>
-                    <span className="text-[10px] text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded font-mono">
-                      Live Availability
-                    </span>
                   </div>
                 ) : (
                   <div className="p-3 bg-stone-50 border border-stone-200 rounded text-xs text-stone-700">
