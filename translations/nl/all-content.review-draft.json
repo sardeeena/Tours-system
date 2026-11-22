@@ -5229,6 +5229,11 @@
             "section": "what_to_bring"
           },
           {
+            "question": "Belangrijke informatie",
+            "answer": "Neem een handdoek mee als je kiest voor de zwemervaring met het paard.",
+            "section": "important_information"
+          },
+          {
             "question": "Wat kan ik het beste dragen?",
             "answer": "Comfortabele lange broek en gesloten schoenen worden aanbevolen. Neem ook een zonnebril, zonnebrandcrème en een hoed mee.",
             "section": "faq"
@@ -5264,7 +5269,12 @@
             "section": "what_to_bring"
           },
           {
-            "question": "Welke spullen moet je meenemen?",
+            "question": "Wat zijn de beschikbare starttijden?",
+            "answer": "De vermelde opties zijn 11:00, 12:00 en 15:00. De exacte ophaaltijd bij je hotel hangt af van je locatie.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat moet je meenemen",
             "answer": "Je camera of mobiele telefoon om mooie momenten vast te leggen.",
             "section": "what_to_bring"
           },
@@ -5277,16 +5287,6 @@
             "question": "Wat moet je meenemen",
             "answer": "**Tip:** draag comfortabele kleding en neem badkleding en een handdoek mee als je met je paard in de Rode Zee wilt zwemmen.",
             "section": "what_to_bring"
-          },
-          {
-            "question": "Wat zijn de beschikbare starttijden?",
-            "answer": "De vermelde opties zijn 11:00, 12:00 en 15:00. De exacte ophaaltijd bij je hotel hangt af van je locatie.",
-            "section": "faq"
-          },
-          {
-            "question": "Belangrijke informatie",
-            "answer": "Neem een handdoek mee als je kiest voor de zwemervaring met het paard.",
-            "section": "important_information"
           }
         ],
         "pickupInfo": "**Ophaallocatie:** hotelaccommodatie in Hurghada.\n\n**Inbegrepen ophaalzones:**\n- Centraal Hurghada.\n\n**Transferzones met toeslag:**\n- Makadi Bay.\n- Sahl Hasheesh.\n- El Gouna.\n- Soma Bay.\n- Safaga.\n\n**Beschikbare starttijden:**\n- 11:00 AM\n- 12:00 PM\n- 3:00 PM\n\n**Vervoer:** voertuig met airconditioning, heen en terug.\n\n**Ophaalinstructies:** vermeld bij het boeken de naam en locatie van je hotel om de exacte ophaaltijd te bevestigen.\n\n**Belangrijke informatie:**\n- Zorg dat je klaarstaat op de bevestigde ophaaltijd.\n- Draag gesloten schoenen en een comfortabele lange broek.\n- Volg de veiligheidsinstructies van de instructeur.\n- De ervaring is afhankelijk van de lokale bedrijfs- en veiligheidsomstandigheden.",
