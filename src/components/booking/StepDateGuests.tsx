@@ -203,11 +203,11 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
             <span className="font-bold text-stone-900 text-sm block">Departure time</span>
             {availabilityLoading ? (
               <div className="p-3 bg-stone-50 border border-stone-200 rounded text-xs text-stone-600">
-                Checking live departure availability…
+                Checking departure times…
               </div>
             ) : availabilityError ? (
               <div className="p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-900">
-                Live availability is temporarily unavailable. Please try again in a moment.
+                We couldn't check departure times. Please try again in a moment.
               </div>
             ) : departureSlots.length === 0 ? (
               <div className="p-3 bg-stone-50 border border-stone-200 rounded text-xs text-stone-700">
@@ -234,7 +234,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
                       >
                         <span className="font-semibold text-sm block">{slot.startTime}</span>
                         <span className="text-[10px] block">
-                          {slot.isAvailable ? `${slot.remainingCapacity} spots` : 'Sold Out'}
+                          {slot.isAvailable ? (slot.remainingCapacity <= 10 ? 'Limited availability' : 'Available') : 'Sold Out'}
                         </span>
                       </button>
                     );
@@ -246,7 +246,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
                     <div>
                       <span className="font-bold block">Party size exceeds available capacity</span>
                       <span>
-                        You have selected {totalPartySize} guests, but only {selectedDeparture.remainingCapacity} spots remain on this departure. Please reduce group size or choose another date.
+                        This departure cannot accommodate your selected group size. Please reduce the number of guests or choose another departure.
                       </span>
                     </div>
                   </div>
@@ -256,12 +256,12 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
                       <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                       <span>
                         <strong className="font-semibold text-emerald-950">
-                          {selectedDeparture.remainingCapacity} spots available
+                          {selectedDeparture.remainingCapacity <= 10 ? 'Limited availability' : 'Departure available'}
                         </strong> for selected departure
                       </span>
                     </div>
                     <span className="text-[10px] text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded font-mono">
-                      Live Availability
+                      
                     </span>
                   </div>
                 ) : (
