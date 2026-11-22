@@ -145,6 +145,9 @@ assert.deepEqual(bundle.source_data_warnings || [], [], 'The two previously flag
 const correctedQuad = records.find((record) => record.entity_type === 'tour' && record.entity_key === '18375e31-b866-4f07-b3a8-c13b2a5c243b');
 assert.equal(correctedQuad.content.itinerary.length, 5, 'El Gouna quad safari has five corrected itinerary steps');
 assert.equal(correctedQuad.content.faqs.length, 0, 'Unrelated boat/snorkeling FAQs are removed from the desert quad safari');
+const sinaiAdventure = records.find((record) => record.entity_type === 'tour' && record.entity_key === '74bfe543-678a-470f-958b-34087125a56b');
+assert.equal(sinaiAdventure.content.itinerary.length, 9, 'Sinai Adventure preserves all source itinerary steps');
+assert.equal(sinaiAdventure.content.faqs.length, 12, 'Sinai Adventure preserves all source FAQ and information rows');
 const desertSafari = records.find((record) => record.entity_type === 'tour' && record.entity_key === 'b3524f6e-ef5a-4585-ae5a-d6569e3a1468');
 assert.equal(desertSafari.content.faqs.length, 15, 'Desert safari preserves all source FAQ and information rows');
 const horseRiding = records.find((record) => record.entity_type === 'tour' && record.entity_key === 'c343a962-c9b3-4789-8a2d-a260e1d4c2ce');
