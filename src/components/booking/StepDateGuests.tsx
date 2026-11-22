@@ -223,12 +223,13 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
                         key={slot.departureId}
                         type="button"
                         disabled={!slot.isAvailable}
+                        aria-pressed={selected}
                         onClick={() => onDepartureChange(slot.departureId, slot.startTime)}
-                        className={`rounded border px-3 py-2 text-left transition-colors ${
+                        className={`rounded-lg border-2 px-3 py-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2 ${
                           selected
-                            ? 'border-[#0A6C74] bg-[#0A6C74]/10 text-[#0A6C74]'
+                            ? 'border-[#0A6C74] bg-[#E8F3F4] text-[#07565C] shadow-sm'
                             : slot.isAvailable
-                              ? 'border-stone-300 bg-stone-50 text-stone-800 hover:border-[#0A6C74]'
+                              ? 'border-stone-300 bg-white text-stone-800 hover:border-[#0A6C74] hover:bg-[#F5FAFA]'
                               : 'border-stone-200 bg-stone-100 text-stone-400 cursor-not-allowed'
                         }`}
                       >
@@ -260,9 +261,6 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
                         </strong> for selected departure
                       </span>
                     </div>
-                    <span className="text-[10px] text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded font-mono">
-                      
-                    </span>
                   </div>
                 ) : (
                   <div className="p-3 bg-stone-50 border border-stone-200 rounded text-xs text-stone-700">
