@@ -4940,13 +4940,11 @@
       "seo_description": "Explorez Hurghada à cheval entre mer et désert. Balade d’une ou deux heures, moniteur professionnel et transferts depuis votre hôtel.",
       "content": {
         "title": "Balade à cheval à Hurghada : aventure entre mer et désert",
-        "description": "# Découvrez Hurghada à cheval, entre la mer Rouge et le désert\n\nEnvie de vivre une expérience différente pendant votre séjour à Hurghada ? Éloignez-vous de l’agitation des stations balnéaires et découvrez la beauté de la côte égyptienne de la mer Rouge sous un autre angle.\n\nCette aventure équestre associe la tranquillité du désert aux magnifiques paysages du littoral. Parcourez les étendues de sable, profitez des vues sur la mer et découvrez le lien unique entre le cheval et son cavalier.\n\n## Une expérience adaptée à tous les niveaux\n\nQue vous soyez cavalier expérimenté ou débutant, cette activité accueille différents niveaux. Un moniteur professionnel vous accompagne, vous explique les consignes de sécurité et vous aide à vous sentir à l’aise avant le départ.\n\n## Choisissez votre balade\n\n- **Balade de 1 heure entre mer et désert :** profitez d’une promenade à cheval le long du littoral et dans les paysages désertiques.\n- **Balade de 2 heures entre mer, désert et baignade à cheval :** prolongez l’aventure et terminez par une expérience particulière : entrer dans la mer Rouge avec votre cheval pour nager à ses côtés.\n\n## Transferts confortables depuis l’hôtel\n\nL’expérience comprend le transport aller-retour climatisé depuis les hôtels du centre de Hurghada. Après votre balade, détendez-vous pendant le trajet de retour.\n\nEn couple, entre amis ou en famille, cette balade à cheval est une belle façon de découvrir les paysages naturels de Hurghada.\n\nRéservez votre aventure avec Awesome Adventure Tours et créez un souvenir de vacances inoubliable !",
+        "description": "# Découvrez Hurghada à cheval, entre la mer Rouge et le désert\n\nEnvie de vivre une expérience différente pendant votre séjour à Hurghada ? Éloignez-vous de l’agitation des stations balnéaires et découvrez la beauté de la côte égyptienne de la mer Rouge sous un autre angle.\n\nCette aventure équestre associe la tranquillité du désert aux magnifiques paysages du littoral. Parcourez les étendues de sable, profitez des vues sur la mer et découvrez le lien unique entre le cheval et son cavalier.\n\n## Une expérience adaptée à tous les niveaux\n\nQue vous soyez cavalier expérimenté ou débutant, cette activité accueille différents niveaux. Un moniteur professionnel vous accompagne, vous explique les consignes de sécurité et vous aide à vous sentir à l’aise avant le départ.\n\n## Balade de 2 heures entre mer, désert et baignade à cheval\n\nProlongez l’aventure et terminez par une expérience particulière : entrer dans la mer Rouge avec votre cheval pour nager à ses côtés.\n\n## Transferts confortables depuis l’hôtel\n\nL’expérience comprend le transport aller-retour climatisé depuis les hôtels du centre de Hurghada. Après votre balade, détendez-vous pendant le trajet de retour.\n\nEn couple, entre amis ou en famille, cette balade à cheval est une belle façon de découvrir les paysages naturels de Hurghada.\n\nRéservez votre aventure avec Awesome Adventure Tours et créez un souvenir de vacances inoubliable !",
         "durationLabel": "2 heures",
         "highlights": [
           "Découvrez la côte de Hurghada à cheval.",
           "Profitez d’une balade unique entre la mer Rouge et le désert.",
-          "Choisissez une aventure de 1 heure ou de 2 heures.",
-          "Avec l’option de 2 heures, vivez une expérience de baignade à cheval dans la mer Rouge.",
           "Convient aux débutants comme aux cavaliers expérimentés.",
           "Un moniteur professionnel vous accompagne.",
           "Casque de sécurité et consignes de conduite fournis.",
@@ -4960,32 +4958,27 @@
             "description": "Profitez d’une prise en charge pratique à votre hôtel à Hurghada dans un véhicule climatisé."
           },
           {
-            "time": "11:00",
+            "time": "11:45",
             "title": "Arrivée au centre équestre",
             "description": "Rencontrez l’équipe, faites connaissance avec votre cheval et recevez votre équipement d’équitation."
           },
           {
-            "time": "11:00",
+            "time": "11:50",
             "title": "Consignes de sécurité",
             "description": "Votre moniteur professionnel vous explique les bases de l’équitation, vous aide à mettre votre casque et vérifie que vous êtes prêt."
           },
           {
-            "time": "11:00",
+            "time": "12:00",
             "title": "Balade à cheval le long de la mer Rouge",
             "description": "Commencez votre aventure à travers les magnifiques paysages côtiers, avec leurs plages de sable et leurs vues sur la mer Rouge."
           },
           {
-            "time": "11:00",
+            "time": "13:00",
             "title": "Découverte du désert",
             "description": "Poursuivez votre balade dans le calme du désert et découvrez un autre visage de Hurghada, loin des stations animées."
           },
           {
-            "time": "11:00",
-            "title": "Baignade à cheval en option",
-            "description": "Choisissez l’option de 2 heures pour entrer dans la mer Rouge avec votre cheval et nager à ses côtés. Cette expérience peut également être ajoutée à la balade de 1 heure moyennant un supplément."
-          },
-          {
-            "time": "11:00",
+            "time": "14:00",
             "title": "Transfert de retour",
             "description": "Après la balade, retournez au centre puis profitez d’un transport confortable jusqu’à votre hôtel."
           }
@@ -5002,9 +4995,7 @@
           "Repas et boissons.",
           "Pourboires et gratifications personnelles.",
           "Dépenses personnelles.",
-          "Option de baignade à cheval si vous réservez la balade de 1 heure.",
-          "Transport depuis les zones situées en dehors du centre de Hurghada.",
-          "Massages et soins de spa en option."
+          "Transport depuis les zones situées en dehors du centre de Hurghada."
         ],
         "faqs": [
           {
@@ -5014,7 +5005,7 @@
           },
           {
             "question": "À apporter",
-            "answer": "### À apporter",
+            "answer": "Des vêtements confortables adaptés à l’équitation.",
             "section": "what_to_bring"
           },
           {
@@ -5024,7 +5015,7 @@
           },
           {
             "question": "À apporter",
-            "answer": "Des vêtements confortables adaptés à l’équitation.",
+            "answer": "Un pantalon long pour protéger vos jambes pendant la balade.",
             "section": "what_to_bring"
           },
           {
@@ -5038,23 +5029,8 @@
             "section": "important_information"
           },
           {
-            "question": "À apporter",
-            "answer": "Un pantalon long pour protéger vos jambes pendant la balade.",
-            "section": "what_to_bring"
-          },
-          {
             "question": "Informations importantes",
             "answer": "Le tarif enfant est indiqué pour les 6 à 11 ans, mais les règles relatives à l’âge minimum et au tarif enfant doivent être confirmées.",
-            "section": "important_information"
-          },
-          {
-            "question": "Puis-je nager avec mon cheval dans la mer Rouge ?",
-            "answer": "Oui. La baignade avec le cheval est incluse dans l’option de 2 heures. Elle peut également être ajoutée à la balade de 1 heure moyennant un supplément.",
-            "section": "faq"
-          },
-          {
-            "question": "Informations importantes",
-            "answer": "Tous les niveaux d’équitation sont acceptés.",
             "section": "important_information"
           },
           {
@@ -5063,38 +5039,13 @@
             "section": "what_to_bring"
           },
           {
+            "question": "Puis-je nager avec mon cheval dans la mer Rouge ?",
+            "answer": "Oui. La baignade avec le cheval est incluse dans l’option de 2 heures. Elle peut également être ajoutée à la balade de 1 heure moyennant un supplément.",
+            "section": "faq"
+          },
+          {
             "question": "Le transport depuis l’hôtel est-il inclus ?",
             "answer": "Oui. Le transport aller-retour climatisé est inclus pour les hôtels du centre de Hurghada. Des frais supplémentaires s’appliquent à certaines zones voisines.",
-            "section": "faq"
-          },
-          {
-            "question": "Quel est l’âge minimum pour les enfants ?",
-            "answer": "Le prestataire indique un âge minimum de 4 ans pour monter à cheval et précise que les nourrissons ne sont pas autorisés. Veuillez confirmer le tarif enfant applicable avant de réserver.",
-            "section": "faq"
-          },
-          {
-            "question": "À apporter",
-            "answer": "Un maillot de bain si vous choisissez l’expérience de baignade avec le cheval.",
-            "section": "what_to_bring"
-          },
-          {
-            "question": "Informations importantes",
-            "answer": "Un casque de sécurité et l’assistance du moniteur sont fournis.",
-            "section": "important_information"
-          },
-          {
-            "question": "À apporter",
-            "answer": "Une serviette et des vêtements de rechange.",
-            "section": "what_to_bring"
-          },
-          {
-            "question": "Informations importantes",
-            "answer": "Apportez une serviette si vous choisissez l’expérience de baignade avec le cheval.",
-            "section": "important_information"
-          },
-          {
-            "question": "Que dois-je porter ?",
-            "answer": "Il est recommandé de porter un pantalon long confortable et des chaussures fermées. Apportez également des lunettes de soleil, de la crème solaire et un chapeau.",
             "section": "faq"
           },
           {
@@ -5104,17 +5055,17 @@
           },
           {
             "question": "Informations importantes",
-            "answer": "La prise en charge à l’hôtel doit être confirmée en fonction de l’emplacement de votre hébergement.",
+            "answer": "Tous les niveaux d’équitation sont acceptés.",
             "section": "important_information"
           },
           {
-            "question": "Que dois-je apporter ?",
-            "answer": "Nous vous recommandons d’apporter une serviette, un appareil photo, de la crème solaire et un peu d’argent liquide pour les options supplémentaires ou les pourboires.",
-            "section": "faq"
+            "question": "Informations importantes",
+            "answer": "Un casque de sécurité et l’assistance du moniteur sont fournis.",
+            "section": "important_information"
           },
           {
-            "question": "Des balades privées sont-elles proposées ?",
-            "answer": "Oui. Des options privées sont disponibles pour les expériences de 1 heure et de 2 heures, avec transfert privé et guide dédié.",
+            "question": "Quel est l’âge minimum pour les enfants ?",
+            "answer": "Le prestataire indique un âge minimum de 4 ans pour monter à cheval et précise que les nourrissons ne sont pas autorisés. Veuillez confirmer le tarif enfant applicable avant de réserver.",
             "section": "faq"
           },
           {
@@ -5128,8 +5079,13 @@
             "section": "what_to_bring"
           },
           {
-            "question": "Quels sont les horaires de départ disponibles ?",
-            "answer": "Les horaires proposés sont notamment 11:00, 12:00 et 15:00. L’heure exacte de prise en charge à l’hôtel dépend de votre emplacement.",
+            "question": "Que dois-je porter ?",
+            "answer": "Il est recommandé de porter un pantalon long confortable et des chaussures fermées. Apportez également des lunettes de soleil, de la crème solaire et un chapeau.",
+            "section": "faq"
+          },
+          {
+            "question": "Que dois-je apporter ?",
+            "answer": "Nous vous recommandons d’apporter une serviette, un appareil photo, de la crème solaire et un peu d’argent liquide pour les options supplémentaires ou les pourboires.",
             "section": "faq"
           },
           {
@@ -5138,17 +5094,22 @@
             "section": "what_to_bring"
           },
           {
+            "question": "Des balades privées sont-elles proposées ?",
+            "answer": "Oui. Des options privées sont disponibles pour les expériences de 1 heure et de 2 heures, avec transfert privé et guide dédié.",
+            "section": "faq"
+          },
+          {
             "question": "À apporter",
             "answer": "Un peu d’argent liquide pour les options supplémentaires ou les dépenses personnelles.",
             "section": "what_to_bring"
           },
           {
-            "question": "À apporter",
-            "answer": "**Conseil :** portez des vêtements confortables et apportez un maillot de bain et une serviette si vous souhaitez nager avec votre cheval dans la mer Rouge.",
-            "section": "what_to_bring"
+            "question": "Quels sont les horaires de départ disponibles ?",
+            "answer": "Les horaires proposés sont notamment 11:00, 12:00 et 15:00. L’heure exacte de prise en charge à l’hôtel dépend de votre emplacement.",
+            "section": "faq"
           }
         ],
-        "pickupInfo": "**Lieu de prise en charge :** hôtel à Hurghada.\n\n**Zones de prise en charge incluses :**\n- Hurghada centre.\n\n**Zones avec supplément de transfert :**\n- Makadi Bay.\n- Sahl Hasheesh.\n- El Gouna.\n- Soma Bay.\n- Safaga.\n\n**Heures de départ disponibles :**\n- 11:00 AM\n- 12:00 PM\n- 3:00 PM\n\n**Transport :** véhicule climatisé, aller-retour.\n\n**Instructions :** indiquez le nom et l’emplacement de votre hôtel lors de la réservation afin de confirmer l’heure exacte de prise en charge.\n\n**Informations importantes :**\n- Soyez prêt à l’heure de prise en charge confirmée.\n- Portez des chaussures fermées et un pantalon confortable.\n- Suivez les consignes de sécurité du moniteur.\n- L’activité dépend des conditions locales d’exploitation et de sécurité.",
+        "pickupInfo": "**Lieu de prise en charge :** hôtel à Hurghada.\n\n**Zones de prise en charge incluses :**\n- Hurghada centre.\n\n**Zones avec supplément de transfert :**\n- Makadi Bay.\n- Sahl Hasheesh.\n- El Gouna.\n- Soma Bay.\n- Safaga.",
         "cancellationPolicy": "Annulation gratuite jusqu’à 24 heures avant le départ.\nLes annulations effectuées 12 heures avant le départ donnent droit à un remboursement de 50 %.\nLes annulations effectuées 6 heures avant le départ ne sont pas remboursables, mais la date peut être modifiée moyennant des frais supplémentaires.",
         "ageRestrictions": "",
         "labels": {
