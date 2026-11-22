@@ -4984,13 +4984,11 @@
       "seo_description": "Poznaj Hurghadę konno, między Morzem Czerwonym a pustynią. Wybierz przejażdżkę 1- lub 2-godzinną z instruktorem i transferem hotelowym.",
       "content": {
         "title": "Jazda konna w Hurghadzie: przygoda między morzem a pustynią",
-        "description": "# Odkryj Hurghadę konno – między Morzem Czerwonym a pustynią\n\nSzukasz czegoś wyjątkowego podczas wakacji w Hurghadzie? Opuść zatłoczone kurorty i poznaj piękno egipskiego wybrzeża Morza Czerwonego z zupełnie innej perspektywy.\n\nTa przygoda konna łączy spokojną atmosferę pustyni z pięknymi widokami wybrzeża. Przemierzaj piaszczyste tereny, podziwiaj morze i poczuj wyjątkową więź między koniem a jeźdźcem.\n\n## Jazda konna dla każdego poziomu zaawansowania\n\nNiezależnie od tego, czy jeździsz konno od lat, czy dopiero zaczynasz, wycieczka jest przygotowana dla różnych poziomów umiejętności. Towarzyszy Ci profesjonalny instruktor, który przekaże zasady bezpieczeństwa i pomoże przygotować się do jazdy.\n\n## Wybierz idealną przejażdżkę\n\n- **1-godzinna przejażdżka nad morzem i przez pustynię:** spokojna jazda wzdłuż wybrzeża i przez pustynne okolice.\n- **2-godzinna przejażdżka nad morzem, przez pustynię i kąpiel z koniem:** przedłuż przygodę i zakończ ją wyjątkowym doświadczeniem wejścia z koniem do Morza Czerwonego i wspólnej kąpieli.\n\n## Wygodne transfery hotelowe\n\nWycieczka obejmuje klimatyzowany transport w obie strony z hoteli w centralnej części Hurghady. Po przygodzie możesz odpocząć w drodze powrotnej do hotelu.\n\nNiezależnie od tego, czy podróżujesz we dwoje, z przyjaciółmi czy z rodziną, jazda konna to niezapomniany sposób na odkrywanie naturalnych krajobrazów Hurghady.\n\nZarezerwuj przygodę z Awesome Adventure Tours i stwórz wyjątkowe wakacyjne wspomnienie!",
+        "description": "# Odkryj Hurghadę konno – między Morzem Czerwonym a pustynią\n\nSzukasz czegoś wyjątkowego podczas wakacji w Hurghadzie? Opuść zatłoczone kurorty i poznaj piękno egipskiego wybrzeża Morza Czerwonego z zupełnie innej perspektywy.\n\nTa przygoda konna łączy spokojną atmosferę pustyni z pięknymi widokami wybrzeża. Przemierzaj piaszczyste tereny, podziwiaj morze i poczuj wyjątkową więź między koniem a jeźdźcem.\n\n## Jazda konna dla każdego poziomu zaawansowania\n\nNiezależnie od tego, czy jeździsz konno od lat, czy dopiero zaczynasz, wycieczka jest przygotowana dla różnych poziomów umiejętności. Towarzyszy Ci profesjonalny instruktor, który przekaże zasady bezpieczeństwa i pomoże przygotować się do jazdy.\n\n## 2-godzinna przejażdżka nad morzem, przez pustynię i kąpiel z koniem\n\nPrzedłuż przygodę i zakończ ją wyjątkowym doświadczeniem wejścia z koniem do Morza Czerwonego i wspólnej kąpieli.\n\n## Wygodne transfery hotelowe\n\nWycieczka obejmuje klimatyzowany transport w obie strony z hoteli w centralnej części Hurghady. Po przygodzie możesz odpocząć w drodze powrotnej do hotelu.\n\nNiezależnie od tego, czy podróżujesz we dwoje, z przyjaciółmi czy z rodziną, jazda konna to niezapomniany sposób na odkrywanie naturalnych krajobrazów Hurghady.\n\nZarezerwuj przygodę z Awesome Adventure Tours i stwórz wyjątkowe wakacyjne wspomnienie!",
         "durationLabel": "2 godziny",
         "highlights": [
           "Odkryj wybrzeże Hurghady z siodła.",
           "Przeżyj wyjątkową przejażdżkę między Morzem Czerwonym a pustynią.",
-          "Wybierz przygodę na 1 lub 2 godziny.",
-          "Przy opcji 2-godzinnej możesz wykąpać się z koniem w Morzu Czerwonym.",
           "Wycieczka odpowiednia dla początkujących i doświadczonych jeźdźców.",
           "Profesjonalny instruktor towarzyszy podczas całej aktywności.",
           "Zapewniony kask ochronny i instruktaż jazdy.",
@@ -5004,32 +5002,27 @@
             "description": "Wygodny odbiór z hotelu w Hurghadzie klimatyzowanym pojazdem."
           },
           {
-            "time": "11:00",
+            "time": "11:45",
             "title": "Przyjazd do ośrodka jeździeckiego",
             "description": "Poznaj zespół i swojego konia oraz odbierz sprzęt jeździecki."
           },
           {
-            "time": "11:00",
+            "time": "11:50",
             "title": "Instruktaż bezpieczeństwa",
             "description": "Profesjonalny instruktor wyjaśni podstawy jazdy, pomoże założyć kask i upewni się, że jesteś gotowy."
           },
           {
-            "time": "11:00",
+            "time": "12:00",
             "title": "Jazda konna wzdłuż Morza Czerwonego",
             "description": "Rozpocznij przygodę na pięknym wybrzeżu, podziwiając piaszczysty brzeg i widoki na Morze Czerwone."
           },
           {
-            "time": "11:00",
+            "time": "13:00",
             "title": "Odkrywanie pustyni",
             "description": "Kontynuuj przejażdżkę przez spokojne pustynne okolice i poznaj inną stronę Hurghady, z dala od zatłoczonych kurortów."
           },
           {
-            "time": "11:00",
-            "title": "Opcjonalna kąpiel z koniem",
-            "description": "Wybierz opcję 2-godzinną, aby wejść z koniem do Morza Czerwonego i popływać obok niego. Za dodatkową opłatą tę atrakcję można dodać również do przejażdżki 1-godzinnej."
-          },
-          {
-            "time": "11:00",
+            "time": "14:00",
             "title": "Transfer powrotny",
             "description": "Po zakończeniu jazdy wróć do ośrodka, a następnie wygodnym transportem do hotelu."
           }
@@ -5046,9 +5039,7 @@
           "Jedzenie i napoje.",
           "Napiwki i dobrowolne gratyfikacje.",
           "Wydatki osobiste.",
-          "Opcjonalna kąpiel z koniem przy rezerwacji przejażdżki 1-godzinnej.",
-          "Transport z obszarów poza centralną Hurghadą.",
-          "Opcjonalne masaże i zabiegi spa."
+          "Transport z obszarów poza centralną Hurghadą."
         ],
         "faqs": [
           {
@@ -5058,7 +5049,7 @@
           },
           {
             "question": "Co zabrać",
-            "answer": "### Co zabrać",
+            "answer": "Wygodne ubrania odpowiednie do jazdy konnej.",
             "section": "what_to_bring"
           },
           {
@@ -5068,7 +5059,7 @@
           },
           {
             "question": "Co zabrać",
-            "answer": "Wygodne ubrania odpowiednie do jazdy konnej.",
+            "answer": "Długie spodnie, które ochronią nogi podczas jazdy.",
             "section": "what_to_bring"
           },
           {
@@ -5082,23 +5073,8 @@
             "section": "important_information"
           },
           {
-            "question": "Co zabrać",
-            "answer": "Długie spodnie, które ochronią nogi podczas jazdy.",
-            "section": "what_to_bring"
-          },
-          {
             "question": "Ważne informacje",
             "answer": "Cena dla dzieci jest podana dla wieku 6–11 lat, ale zasady dotyczące minimalnego wieku i cen dziecięcych wymagają potwierdzenia.",
-            "section": "important_information"
-          },
-          {
-            "question": "Czy mogę popływać z koniem w Morzu Czerwonym?",
-            "answer": "Tak. Kąpiel z koniem jest wliczona w opcję 2-godzinną. Można ją również dodać do przejażdżki 1-godzinnej za dodatkową opłatą.",
-            "section": "faq"
-          },
-          {
-            "question": "Ważne informacje",
-            "answer": "Zapraszamy osoby na każdym poziomie umiejętności jeździeckich.",
             "section": "important_information"
           },
           {
@@ -5107,38 +5083,13 @@
             "section": "what_to_bring"
           },
           {
+            "question": "Czy mogę popływać z koniem w Morzu Czerwonym?",
+            "answer": "Tak. Kąpiel z koniem jest wliczona w opcję 2-godzinną. Można ją również dodać do przejażdżki 1-godzinnej za dodatkową opłatą.",
+            "section": "faq"
+          },
+          {
             "question": "Czy transport z hotelu jest wliczony w cenę?",
             "answer": "Tak. Klimatyzowany transport w obie strony jest wliczony dla hoteli w centralnej części Hurghady. W przypadku niektórych okolicznych obszarów obowiązują dodatkowe opłaty.",
-            "section": "faq"
-          },
-          {
-            "question": "Jaki jest minimalny wiek dzieci?",
-            "answer": "Usługodawca podaje minimalny wiek 4 lat do jazdy konnej i informuje, że niemowlęta nie mogą uczestniczyć. Przed rezerwacją potwierdź obowiązujące ceny dla dzieci.",
-            "section": "faq"
-          },
-          {
-            "question": "Co zabrać",
-            "answer": "Strój kąpielowy, jeśli wybierasz kąpiel z koniem.",
-            "section": "what_to_bring"
-          },
-          {
-            "question": "Ważne informacje",
-            "answer": "Zapewniony jest kask ochronny i pomoc instruktora.",
-            "section": "important_information"
-          },
-          {
-            "question": "Co zabrać",
-            "answer": "Ręcznik i ubranie na zmianę.",
-            "section": "what_to_bring"
-          },
-          {
-            "question": "Ważne informacje",
-            "answer": "Zabierz ręcznik, jeśli wybierasz kąpiel z koniem.",
-            "section": "important_information"
-          },
-          {
-            "question": "Co powinienem założyć?",
-            "answer": "Zalecamy wygodne długie spodnie i zakryte buty. Zabierz również okulary przeciwsłoneczne, krem z filtrem i kapelusz.",
             "section": "faq"
           },
           {
@@ -5148,17 +5099,17 @@
           },
           {
             "question": "Ważne informacje",
-            "answer": "Odbiór z hotelu należy potwierdzić w zależności od lokalizacji zakwaterowania.",
+            "answer": "Zapraszamy osoby na każdym poziomie umiejętności jeździeckich.",
             "section": "important_information"
           },
           {
-            "question": "Co powinienem ze sobą zabrać?",
-            "answer": "Zalecamy zabranie ręcznika, aparatu, kremu z filtrem i gotówki na opcjonalne dodatki lub napiwki.",
-            "section": "faq"
+            "question": "Ważne informacje",
+            "answer": "Zapewniony jest kask ochronny i pomoc instruktora.",
+            "section": "important_information"
           },
           {
-            "question": "Czy dostępne są prywatne przejażdżki?",
-            "answer": "Tak. Prywatne opcje są dostępne zarówno dla wycieczek 1-godzinnych, jak i 2-godzinnych, z prywatnym transferem i dedykowanym przewodnikiem.",
+            "question": "Jaki jest minimalny wiek dzieci?",
+            "answer": "Usługodawca podaje minimalny wiek 4 lat do jazdy konnej i informuje, że niemowlęta nie mogą uczestniczyć. Przed rezerwacją potwierdź obowiązujące ceny dla dzieci.",
             "section": "faq"
           },
           {
@@ -5172,8 +5123,13 @@
             "section": "what_to_bring"
           },
           {
-            "question": "Jakie są dostępne godziny rozpoczęcia?",
-            "answer": "Podane godziny rozpoczęcia to 11:00, 12:00 i 15:00. Dokładna godzina odbioru z hotelu zależy od lokalizacji.",
+            "question": "Co powinienem założyć?",
+            "answer": "Zalecamy wygodne długie spodnie i zakryte buty. Zabierz również okulary przeciwsłoneczne, krem z filtrem i kapelusz.",
+            "section": "faq"
+          },
+          {
+            "question": "Co powinienem ze sobą zabrać?",
+            "answer": "Zalecamy zabranie ręcznika, aparatu, kremu z filtrem i gotówki na opcjonalne dodatki lub napiwki.",
             "section": "faq"
           },
           {
@@ -5182,17 +5138,22 @@
             "section": "what_to_bring"
           },
           {
+            "question": "Czy dostępne są prywatne przejażdżki?",
+            "answer": "Tak. Prywatne opcje są dostępne zarówno dla wycieczek 1-godzinnych, jak i 2-godzinnych, z prywatnym transferem i dedykowanym przewodnikiem.",
+            "section": "faq"
+          },
+          {
             "question": "Co zabrać",
             "answer": "Trochę gotówki na opcjonalne dodatki lub wydatki osobiste.",
             "section": "what_to_bring"
           },
           {
-            "question": "Co zabrać",
-            "answer": "**Wskazówka:** załóż wygodne ubrania i zabierz strój kąpielowy oraz ręcznik, jeśli planujesz kąpiel z koniem w Morzu Czerwonym.",
-            "section": "what_to_bring"
+            "question": "Jakie są dostępne godziny rozpoczęcia?",
+            "answer": "Podane godziny rozpoczęcia to 11:00, 12:00 i 15:00. Dokładna godzina odbioru z hotelu zależy od lokalizacji.",
+            "section": "faq"
           }
         ],
-        "pickupInfo": "**Miejsce odbioru:** hotel w Hurghadzie.\n\n**Strefy odbioru w cenie:**\n- Centralna Hurghada.\n\n**Strefy transferu za dodatkową opłatą:**\n- Makadi Bay.\n- Sahl Hasheesh.\n- El Gouna.\n- Soma Bay.\n- Safaga.\n\n**Dostępne godziny rozpoczęcia:**\n- 11:00 AM\n- 12:00 PM\n- 3:00 PM\n\n**Transport:** klimatyzowany pojazd, w obie strony.\n\n**Instrukcje dotyczące odbioru:** podczas rezerwacji podaj nazwę i lokalizację hotelu, aby potwierdzić dokładną godzinę odbioru.\n\n**Ważne informacje:**\n- Bądź gotowy o potwierdzonej godzinie odbioru.\n- Załóż zakryte buty i wygodne długie spodnie.\n- Przestrzegaj instrukcji bezpieczeństwa instruktora.\n- Aktywność zależy od lokalnych warunków operacyjnych i bezpieczeństwa.",
+        "pickupInfo": "**Miejsce odbioru:** hotel w Hurghadzie.\n\n**Strefy odbioru w cenie:**\n- Centralna Hurghada.\n\n**Strefy transferu za dodatkową opłatą:**\n- Makadi Bay.\n- Sahl Hasheesh.\n- El Gouna.\n- Soma Bay.\n- Safaga.",
         "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed wyjazdem.\nAnulowanie na 12 godzin przed wyjazdem uprawnia do zwrotu 50% kosztów.\nAnulowanie na 6 godzin przed wyjazdem nie podlega zwrotowi, ale termin można zmienić za dodatkową opłatą.",
         "ageRestrictions": "",
         "labels": {
