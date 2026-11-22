@@ -163,13 +163,13 @@ export const StepPayment: React.FC<StepPaymentProps> = ({
           </p>
         </div>
 
-        {/* Free cancellation recap */}
+        {/* Cancellation policy recap */}
         <div className="p-3.5 bg-emerald-50 border border-emerald-200/80 rounded-sm text-xs text-emerald-900 flex items-start space-x-3">
           <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
           <div className="space-y-1">
-            <span className="font-bold block">Free 24-hour cancellation</span>
+            <span className="font-bold block">Cancellation policy</span>
             <p className="text-[11px] text-emerald-800 leading-normal">
-              Plans change? Cancel or change your date up to 24 hours before pickup at no cost.
+              Cancellation and refund terms depend on the selected excursion. Please review its policy before confirming your reservation.
             </p>
           </div>
         </div>
