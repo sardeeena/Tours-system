@@ -328,7 +328,7 @@ export const AdminBookingsList: React.FC = () => {
             Bookings & Reservations
           </h1>
           <p className="text-xs text-stone-400 mt-1">
-            Real-time reservations stored in the Supabase <code className="text-[#2dd4bf]">bookings</code> table.
+            View and manage customer reservations and booking details.
           </p>
         </div>
 
