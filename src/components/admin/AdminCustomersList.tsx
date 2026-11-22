@@ -151,7 +151,7 @@ export const AdminCustomersList: React.FC = () => {
             <span>Customer & Traveler Directory</span>
           </h2>
           <p className="text-xs text-stone-400 mt-1">
-            Unified records from database profiles, reservation guests, and registered traveler accounts.
+            Manage customer profiles, reservation guests, and registered traveler accounts.
           </p>
         </div>
 
@@ -425,7 +425,7 @@ export const AdminCustomersList: React.FC = () => {
               <div className="flex justify-between py-1">
                 <span className="text-stone-500">Registered Account:</span>
                 <span className={selectedCustomer.isRegistered ? 'text-emerald-400' : 'text-stone-400'}>
-                  {selectedCustomer.isRegistered ? 'Yes (Supabase Auth)' : 'No (Guest Booking)'}
+                  {selectedCustomer.isRegistered ? 'Yes (Registered account)' : 'No (Guest Booking)'}
                 </span>
               </div>
             </div>
