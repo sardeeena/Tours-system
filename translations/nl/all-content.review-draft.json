@@ -538,7 +538,53 @@
           "Bekijk de kleine winkels en lokale marktkraampjes van Dahab",
           "Voeg waar beschikbaar een quadrit toe voor extra avontuur"
         ],
-        "itinerary": [],
+        "itinerary": [
+          {
+            "time": "8:00 AM",
+            "title": "Ophalen bij het hotel",
+            "description": "Ontmoet je gids bij je hotel en vertrek vroeg."
+          },
+          {
+            "time": "09:00 AM",
+            "title": "Rit door de Sinaï",
+            "description": "Rijd door het binnenland van de Sinaï en geniet van het uitzicht op de bergen."
+          },
+          {
+            "time": "9:45 AM",
+            "title": "Wandeling door de Colored Canyon",
+            "description": "Wandel door de 800 meter lange kloof met goudkleurige en paarse wanden."
+          },
+          {
+            "time": "11:15 AM",
+            "title": "Snorkelen bij de Blue Hole",
+            "description": "Snorkel boven de koraalriffen van het Blue Hole-reservaat."
+          },
+          {
+            "time": "12:45 PM",
+            "title": "Kamelenrit",
+            "description": "Maak een inbegrepen kamelenrit langs de kust."
+          },
+          {
+            "time": "1:00 PM ",
+            "title": "Lunch",
+            "description": "Neem een uur de tijd voor een gegrilde lunch in een Bedoeïenentent aan het strand of in een lokaal restaurant in Dahab, afhankelijk van de beschikbaarheid."
+          },
+          {
+            "time": "2:00 PM",
+            "title": "Stop in Dahab",
+            "description": "Geniet van vrije tijd in Dahab voor muntthee en souvenirs."
+          },
+          {
+            "time": "4:30 PM ",
+            "title": "Terug naar Sharm El Sheikh",
+            "description": "Ontspan tijdens de rit terug naar je hotel."
+          },
+          {
+            "time": "6:00 PM",
+            "title": "Aankomst in Sharm El Sheikh",
+            "description": "Je wordt afgezet bij je hotel."
+          }
+        ],
         "included": [
           "Ophalen en terugbrengen bij het hotel in Sharm El Sheikh",
           "Begeleid bezoek aan de Colored Canyon",
@@ -560,18 +606,68 @@
         ],
         "faqs": [
           {
-            "question": "Is snorkeluitrusting inbegrepen of moet ik die zelf meenemen?",
-            "answer": "Aan boord zijn gratis gereinigde maskers, snorkels en zwemvliezen in volwassen- en kindermaten beschikbaar.",
+            "question": "Belangrijke informatie",
+            "answer": "Niet geschikt voor zwangere vrouwen.",
+            "section": "important_information"
+          },
+          {
+            "question": "Wat moet ik meenemen op de excursie?",
+            "answer": "Comfortabele kleding, gesloten schoenen, een zonnebril, zonnebrandcrème, een sjaal of lichte omslagdoek tegen het stof, een camera of telefoon, wat contant geld voor extra uitgaven, plus drinkwater en snacks.",
             "section": "faq"
           },
           {
-            "question": "Kunnen mensen die niet kunnen zwemmen veilig deelnemen?",
-            "answer": "Ja. Er zijn door de kustwacht goedgekeurde zwemvesten beschikbaar en gecertificeerde duikinstructeurs begeleiden gasten in het water.",
+            "question": "Wat moet je meenemen",
+            "answer": "Comfortabele kleding.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "Gesloten schoenen.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Welke canyon bezoeken we?",
+            "answer": "We bezoeken de Colored Canyon, ook bekend als de Red Canyon, in de Sinaïwoestijn.",
             "section": "faq"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Deze excursie wordt afgeraden voor gasten ouder dan 70 jaar met rugklachten.",
+            "section": "important_information"
+          },
+          {
+            "question": "Is deze excursie geschikt voor oudere gasten en zwangere vrouwen?",
+            "answer": "We raden deze excursie niet aan voor oudere gasten of zwangere vrouwen, omdat de tocht een lange rit en een wandeling door de canyon omvat.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "Een zonnebril.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "Zonnebrandcrème.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "Een sjaal of lichte omslagdoek tegen het stof.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "Een camera of telefoon.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "Wat contant geld voor extra uitgaven.",
+            "section": "what_to_bring"
           }
         ],
-        "pickupInfo": "Beschikbare ophaalopties, goedgekeurde locaties en eventuele toeslagen worden tijdens het boeken getoond.",
-        "cancellationPolicy": "Neem vóór het boeken contact op met ons boekingsteam om de annulerings- en terugbetalingsvoorwaarden voor deze excursie te bevestigen.",
+        "pickupInfo": "Ophalen bij het hotel is inbegrepen voor alle hotels binnen de stad Sharm El Sheikh.",
+        "cancellationPolicy": "Je kunt gratis annuleren tot 24 uur voor vertrek. Bij annuleringen 12 uur voor vertrek ontvang je 50% terug. Annuleringen 6 uur voor vertrek zijn niet restitueerbaar, maar de datum kan tegen een toeslag worden gewijzigd.",
         "ageRestrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
         "labels": {
           "highlights": "Hoogtepunten",
