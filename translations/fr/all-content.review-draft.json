@@ -4940,13 +4940,13 @@
       "seo_description": "Explorez Hurghada à cheval entre mer et désert. Balade d’une ou deux heures, moniteur professionnel et transferts depuis votre hôtel.",
       "content": {
         "title": "Balade à cheval à Hurghada : aventure entre mer et désert",
-        "description": "# Découvrez Hurghada à cheval, entre la mer Rouge et le désert\n\nEnvie de vivre une expérience différente pendant votre séjour à Hurghada ? Éloignez-vous de l’agitation des stations balnéaires et découvrez la beauté de la côte égyptienne de la mer Rouge sous un autre angle.\n\nCette aventure équestre associe la tranquillité du désert aux magnifiques paysages du littoral. Parcourez les étendues de sable, profitez des vues sur la mer et découvrez le lien unique entre le cheval et son cavalier.\n\n## Une expérience adaptée à tous les niveaux\n\nQue vous soyez cavalier expérimenté ou débutant, cette activité accueille différents niveaux. Un moniteur professionnel vous accompagne, vous explique les consignes de sécurité et vous aide à vous sentir à l’aise avant le départ.\n\n## Choisissez votre balade\n\n- **Balade d’une heure entre mer et désert :** profitez d’une promenade à cheval le long du littoral et dans les paysages désertiques.\n- **Balade de deux heures entre mer, désert et baignade à cheval :** prolongez l’aventure et terminez par une expérience particulière : entrer dans la mer Rouge avec votre cheval pour nager à ses côtés.\n\n## Transferts confortables depuis l’hôtel\n\nL’expérience comprend le transport aller-retour climatisé depuis les hôtels du centre de Hurghada. Après votre balade, détendez-vous pendant le trajet de retour.\n\nEn couple, entre amis ou en famille, cette balade à cheval est une belle façon de découvrir les paysages naturels de Hurghada.\n\nRéservez votre aventure avec Awesome Adventure Tours et créez un souvenir de vacances inoubliable !",
+        "description": "# Découvrez Hurghada à cheval, entre la mer Rouge et le désert\n\nEnvie de vivre une expérience différente pendant votre séjour à Hurghada ? Éloignez-vous de l’agitation des stations balnéaires et découvrez la beauté de la côte égyptienne de la mer Rouge sous un autre angle.\n\nCette aventure équestre associe la tranquillité du désert aux magnifiques paysages du littoral. Parcourez les étendues de sable, profitez des vues sur la mer et découvrez le lien unique entre le cheval et son cavalier.\n\n## Une expérience adaptée à tous les niveaux\n\nQue vous soyez cavalier expérimenté ou débutant, cette activité accueille différents niveaux. Un moniteur professionnel vous accompagne, vous explique les consignes de sécurité et vous aide à vous sentir à l’aise avant le départ.\n\n## Choisissez votre balade\n\n- **Balade de 1 heure entre mer et désert :** profitez d’une promenade à cheval le long du littoral et dans les paysages désertiques.\n- **Balade de 2 heures entre mer, désert et baignade à cheval :** prolongez l’aventure et terminez par une expérience particulière : entrer dans la mer Rouge avec votre cheval pour nager à ses côtés.\n\n## Transferts confortables depuis l’hôtel\n\nL’expérience comprend le transport aller-retour climatisé depuis les hôtels du centre de Hurghada. Après votre balade, détendez-vous pendant le trajet de retour.\n\nEn couple, entre amis ou en famille, cette balade à cheval est une belle façon de découvrir les paysages naturels de Hurghada.\n\nRéservez votre aventure avec Awesome Adventure Tours et créez un souvenir de vacances inoubliable !",
         "durationLabel": "2 heures",
         "highlights": [
           "Découvrez la côte de Hurghada à cheval.",
           "Profitez d’une balade unique entre la mer Rouge et le désert.",
           "Choisissez une aventure d’une ou de deux heures.",
-          "Avec l’option de deux heures, vivez une expérience de baignade à cheval dans la mer Rouge.",
+          "Avec l’option de 2 heures, vivez une expérience de baignade à cheval dans la mer Rouge.",
           "Convient aux débutants comme aux cavaliers expérimentés.",
           "Un moniteur professionnel vous accompagne.",
           "Casque de sécurité et consignes de conduite fournis.",
@@ -4982,7 +4982,7 @@
           {
             "time": "11:00",
             "title": "Baignade à cheval en option",
-            "description": "Choisissez l’option de deux heures pour entrer dans la mer Rouge avec votre cheval et nager à ses côtés. Cette expérience peut également être ajoutée à la balade d’une heure moyennant un supplément."
+            "description": "Choisissez l’option de 2 heures pour entrer dans la mer Rouge avec votre cheval et nager à ses côtés. Cette expérience peut également être ajoutée à la balade de 1 heure moyennant un supplément."
           },
           {
             "time": "11:00",
@@ -5002,7 +5002,7 @@
           "Repas et boissons.",
           "Pourboires et gratifications personnelles.",
           "Dépenses personnelles.",
-          "Option de baignade à cheval si vous réservez la balade d’une heure.",
+          "Option de baignade à cheval si vous réservez la balade de 1 heure.",
           "Transport depuis les zones situées en dehors du centre de Hurghada.",
           "Massages et soins de spa en option."
         ],
@@ -5029,7 +5029,7 @@
           },
           {
             "question": "Combien de temps dure l’expérience équestre ?",
-            "answer": "Vous pouvez choisir une balade d’une heure ou de deux heures.",
+            "answer": "Vous pouvez choisir une balade de 1 heure ou de deux heures.",
             "section": "faq"
           },
           {
@@ -5049,7 +5049,7 @@
           },
           {
             "question": "Puis-je nager avec mon cheval dans la mer Rouge ?",
-            "answer": "Oui. La baignade avec le cheval est incluse dans l’option de deux heures. Elle peut également être ajoutée à la balade d’une heure moyennant un supplément.",
+            "answer": "Oui. La baignade avec le cheval est incluse dans l’option de 2 heures. Elle peut également être ajoutée à la balade de 1 heure moyennant un supplément.",
             "section": "faq"
           },
           {
@@ -5114,7 +5114,7 @@
           },
           {
             "question": "Des balades privées sont-elles proposées ?",
-            "answer": "Oui. Des options privées sont disponibles pour les expériences d’une heure et de deux heures, avec transfert privé et guide dédié.",
+            "answer": "Oui. Des options privées sont disponibles pour les expériences de 1 heure et de 2 heures, avec transfert privé et guide dédié.",
             "section": "faq"
           },
           {
