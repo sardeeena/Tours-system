@@ -313,7 +313,7 @@ export const QuickBookModal: React.FC<QuickBookModalProps> = ({
           {/* Cancellation Notice */}
           <div className="flex items-center text-[11px] text-emerald-800 bg-emerald-50 p-2.5 rounded border border-emerald-200">
             <ShieldCheck className="w-4 h-4 text-emerald-600 mr-2 shrink-0" />
-            <span>Free cancellation up to 24 hours prior to departure for a 100% refund.</span>
+            <span>Cancellation terms vary by excursion. Please review the policy for your selected tour before booking.</span>
           </div>
 
           {/* Submit Action */}
