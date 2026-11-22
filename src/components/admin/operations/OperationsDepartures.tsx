@@ -135,7 +135,7 @@ export const OperationsDepartures: React.FC<OperationsDeparturesProps> = ({ onNa
     }
     const selectedTour = tours.find((tour) => tour.id === newTourId);
     if (!selectedTour) {
-      showToast('The selected tour is not available in the live database.', 'error');
+      showToast('The selected tour is no longer available. Please refresh and choose another tour.', 'error');
       return;
     }
     const unassignedLegacy = unassignedLegacyBookings.find((booking) => booking.tourId === newTourId);
