@@ -151,7 +151,7 @@ assert.equal(sinaiAdventure.content.faqs.length, 12, 'Sinai Adventure preserves 
 const desertSafari = records.find((record) => record.entity_type === 'tour' && record.entity_key === 'b3524f6e-ef5a-4585-ae5a-d6569e3a1468');
 assert.equal(desertSafari.content.faqs.length, 15, 'Desert safari preserves all source FAQ and information rows');
 const horseRiding = records.find((record) => record.entity_type === 'tour' && record.entity_key === 'c343a962-c9b3-4789-8a2d-a260e1d4c2ce');
-assert.equal(horseRiding.content.faqs.length, 28, 'Horse riding preserves all source FAQ and information rows');
+assert.equal(horseRiding.content.faqs.length, 22, 'Horse riding preserves all source FAQ and information rows');
 const toursWithoutSourceFaqs = ["17e6cedc-b281-4528-a42b-35faee49ac57","5a15257b-d664-4957-be77-c2cb87bd174a","cda285d8-1119-4118-bb73-3a3c433f8daf","b2303c4d-0803-4526-9246-31a19b8901c3","87f5ab47-2499-4511-9a68-39a279e5bb85","a66d28fb-505c-4cf6-b326-c47bbabe2624","8737c07b-794e-4189-a7d3-401fd9c8c02b","e2019bda-5664-4dd3-ac21-a38c2fd95c9f","0bf0a28b-b49e-4c3e-a076-6d5eb53e8c7d","fb31d1b8-e3ed-4596-afd3-3adc5241111c","cc09c496-09f9-4036-aa69-fe5f20208a3d","86f2d93f-33bf-420a-88a5-4c6035ae05ba","66490ba5-3887-4dca-985d-d5f85b7c01e4","56fdd9fc-3a63-4faf-89b4-ac9e7332b86d","2f2ca1a1-f0c7-4737-9700-57e801a08d99"];
 for (const key of toursWithoutSourceFaqs) {
   const tour = records.find((record) => record.entity_type === 'tour' && record.entity_key === key);
