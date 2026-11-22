@@ -571,7 +571,7 @@ export const CustomerProfilePage: React.FC<CustomerProfilePageProps> = ({
               ) : (
                 <div className="flex items-center justify-between text-xs text-stone-600">
                   <span>Password: ••••••••••••</span>
-                  <span className="text-stone-400 text-[11px]">Protected by Supabase Auth</span>
+                  <span className="text-stone-400 text-[11px]">Your account is protected</span>
                 </div>
               )}
             </div>
