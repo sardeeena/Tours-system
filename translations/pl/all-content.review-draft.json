@@ -4,16 +4,16 @@
   "status": "translation-review-draft",
   "source_project": "uvtbtpxtrrmaublrztgv",
   "coverage": {
-    "tour": 25,
+    "tour": 26,
     "blog_post": 50,
     "destination": 7,
     "communication_template": 18,
     "static_page": 10,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1084,
-    "ui_catalog_messages": 1165,
-    "source_records": 111
+    "private_ui_messages": 1083,
+    "ui_catalog_messages": 1164,
+    "source_records": 112
   },
   "records": [
     {
@@ -113,7 +113,53 @@
           "Otrzymaj instruktaż bezpieczeństwa i naucz się obsługi quada",
           "Wybierz prywatną wycieczkę, jeśli wolisz"
         ],
-        "itinerary": [],
+        "itinerary": [
+          {
+            "time": "13:30",
+            "title": "Odbiór z hotelu",
+            "description": "Godzina odbioru zależy od lokalizacji Twojego hotelu."
+          },
+          {
+            "time": "14:45",
+            "title": "Centrum safari",
+            "description": "Przyjazd do centrum safari, przygotowanie i instruktaż bezpieczeństwa."
+          },
+          {
+            "time": "15:00",
+            "title": "Początek przejażdżki quadem",
+            "description": "Rozpocznij około 25-minutową jazdę quadem przez pustynię."
+          },
+          {
+            "time": "15:30",
+            "title": "Namiot Beduinów",
+            "description": "Przyjazd do namiotu Beduinów i degustacja tradycyjnej beduińskiej herbaty."
+          },
+          {
+            "time": "16:00",
+            "title": "Góra Echo",
+            "description": "Udaj się na Górę Echo (Jabal El Sout), aby zrobić zdjęcia i poznać niezwykłe zjawisko echa."
+          },
+          {
+            "time": "16:20",
+            "title": "Opcjonalna przejażdżka na wielbłądzie",
+            "description": "Opcjonalna, około 10-minutowa przejażdżka na wielbłądzie, wliczona tylko po wybraniu dodatkowej opcji."
+          },
+          {
+            "time": "16:30",
+            "title": "Powrót do centrum safari",
+            "description": "Wróć do centrum safari kolejną, około 25-minutową przejażdżką quadem."
+          },
+          {
+            "time": "17:00",
+            "title": "Transfer powrotny do hotelu",
+            "description": "Przygotuj się do wyjazdu i skorzystaj z transferu powrotnego do hotelu."
+          },
+          {
+            "time": "00:00",
+            "title": "Bardzo ważna informacja",
+            "description": "Wszystkie godziny i aktywności są orientacyjne i mogą się zmienić w zależności od harmonogramu wycieczki."
+          }
+        ],
         "included": [
           "Odbiór z hotelu i powrót w Sharm el-Sheikh",
           "Quad",
@@ -133,9 +179,85 @@
           "Napiwki",
           "Usługi niewymienione wyraźnie w wybranej opcji"
         ],
-        "faqs": [],
-        "pickupInfo": "Dostępne opcje odbioru, zatwierdzone miejsca i ewentualne dopłaty są wyświetlane podczas rezerwacji.",
-        "cancellationPolicy": "Przed dokonaniem rezerwacji skontaktuj się z naszym zespołem, aby potwierdzić warunki anulowania i zwrotu kosztów tej wycieczki.",
+        "faqs": [
+          {
+            "question": "Ważne informacje",
+            "answer": "Wycieczka nie jest odpowiednia dla kobiet w ciąży.",
+            "section": "important_information"
+          },
+          {
+            "question": "Co zabrać",
+            "answer": "Wygodne ubrania.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Co powinienem zabrać na wycieczkę?",
+            "answer": "Wygodne ubrania, zakryte buty, okulary przeciwsłoneczne, krem z filtrem, szalik lub lekką chustę chroniącą przed kurzem, aparat lub telefon oraz trochę gotówki na dodatkowe wydatki.",
+            "section": "faq"
+          },
+          {
+            "question": "Ile trwa cała wycieczka?",
+            "answer": "Wycieczka trwa około 3 godzin.",
+            "section": "faq"
+          },
+          {
+            "question": "Co zabrać",
+            "answer": "Zakryte buty.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "Minimalny wiek do samodzielnego prowadzenia quada wynosi 15 lat.",
+            "section": "important_information"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "Wycieczka nie jest zalecana osobom powyżej 70 lat z problemami z kręgosłupem.",
+            "section": "important_information"
+          },
+          {
+            "question": "Co zabrać",
+            "answer": "Okulary przeciwsłoneczne.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Czy wycieczka odbywa się codziennie?",
+            "answer": "Tak, wycieczka jest dostępna każdego dnia.",
+            "section": "faq"
+          },
+          {
+            "question": "Co zabrać",
+            "answer": "Krem z filtrem przeciwsłonecznym.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Czy dostępna jest wycieczka prywatna?",
+            "answer": "Tak, wycieczka prywatna jest dostępna za dodatkową opłatą. Skontaktuj się z nami, aby ją zorganizować.",
+            "section": "faq"
+          },
+          {
+            "question": "Jaki jest minimalny wiek kierowcy quada?",
+            "answer": "Minimalny wiek kierowcy quada wynosi 15 lat.",
+            "section": "faq"
+          },
+          {
+            "question": "Co zabrać",
+            "answer": "Szalik lub lekką chustę chroniącą przed kurzem.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Co zabrać",
+            "answer": "Aparat lub telefon.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Co zabrać",
+            "answer": "Trochę gotówki na dodatkowe wydatki.",
+            "section": "what_to_bring"
+          }
+        ],
+        "pickupInfo": "Odbiór i dowóz do hotelu są wliczone w cenę dla wszystkich hoteli na terenie miasta Sharm El Sheikh.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed wyjazdem. Anulowanie na 12 godzin przed wyjazdem uprawnia do zwrotu 50% kosztów. Anulowanie na 6 godzin przed wyjazdem nie podlega zwrotowi, ale termin można zmienić za dodatkową opłatą.",
         "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
         "labels": {
           "highlights": "Najważniejsze atrakcje",
@@ -413,7 +535,53 @@
           "Odwiedź małe sklepy i lokalne stragany w Dahab",
           "Dodaj przejażdżkę quadem, jeśli jest dostępna, aby przeżyć więcej przygód"
         ],
-        "itinerary": [],
+        "itinerary": [
+          {
+            "time": "8:00 AM",
+            "title": "Odbiór z hotelu",
+            "description": "Spotkaj się z przewodnikiem w hotelu i wyrusz wcześnie rano."
+          },
+          {
+            "time": "09:00 AM",
+            "title": "Przejazd przez Synaj",
+            "description": "Przemierzaj interior Synaju drogą, podziwiając widoki na góry."
+          },
+          {
+            "time": "9:45 AM",
+            "title": "Wędrówka przez Colored Canyon",
+            "description": "Przejdź przez kanion o długości 800 metrów z jego złotymi i fioletowymi ścianami."
+          },
+          {
+            "time": "11:15 AM",
+            "title": "Snorkeling w Blue Hole",
+            "description": "Podziwiaj rafy koralowe rezerwatu Blue Hole podczas snorkelingu."
+          },
+          {
+            "time": "12:45 PM",
+            "title": "Przejażdżka na wielbłądzie",
+            "description": "Skorzystaj z wliczonej w cenę przejażdżki na wielbłądzie wzdłuż wybrzeża."
+          },
+          {
+            "time": "1:00 PM ",
+            "title": "Lunch",
+            "description": "Godzina na grillowany lunch w beduińskim namiocie na plaży lub w lokalnej restauracji w Dahab, w zależności od dostępności."
+          },
+          {
+            "time": "2:00 PM",
+            "title": "Postój w Dahab",
+            "description": "Czas wolny w Dahab na miętową herbatę i zakup pamiątek."
+          },
+          {
+            "time": "4:30 PM ",
+            "title": "Powrót do Sharm El Sheikh",
+            "description": "Odpocznij podczas drogi powrotnej do hotelu."
+          },
+          {
+            "time": "6:00 PM",
+            "title": "Przyjazd do Sharm El Sheikh",
+            "description": "Odwiezienie do hotelu."
+          }
+        ],
         "included": [
           "Odbiór z hotelu i powrót w Sharm el-Sheikh",
           "Zwiedzanie Colored Canyon z przewodnikiem",
@@ -435,18 +603,68 @@
         ],
         "faqs": [
           {
-            "question": "Czy sprzęt do snorkelingu jest wliczony w cenę, czy muszę zabrać własny?",
-            "answer": "Na pokładzie dostępne są bezpłatne, czyszczone maski, rurki i płetwy w rozmiarach dla dorosłych i dzieci.",
+            "question": "Ważne informacje",
+            "answer": "Wycieczka nie jest odpowiednia dla kobiet w ciąży.",
+            "section": "important_information"
+          },
+          {
+            "question": "Co powinienem zabrać na wycieczkę?",
+            "answer": "Wygodne ubrania, zakryte buty, okulary przeciwsłoneczne, krem z filtrem, szalik lub lekką chustę chroniącą przed kurzem, aparat lub telefon, trochę gotówki na dodatkowe wydatki, a także wodę pitną i przekąski.",
             "section": "faq"
           },
           {
-            "question": "Czy osoby, które nie potrafią pływać, mogą bezpiecznie uczestniczyć?",
-            "answer": "Tak. Dostępne są kamizelki ratunkowe zatwierdzone przez straż przybrzeżną, a certyfikowani instruktorzy nurkowania pomagają gościom w wodzie.",
+            "question": "Co zabrać",
+            "answer": "Wygodne ubrania.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Co zabrać",
+            "answer": "Zakryte buty.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Który kanion odwiedzimy?",
+            "answer": "Odwiedzimy Colored Canyon, znany również jako Red Canyon, na pustyni Synaj.",
             "section": "faq"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "Wycieczka nie jest zalecana osobom powyżej 70 lat z problemami z kręgosłupem.",
+            "section": "important_information"
+          },
+          {
+            "question": "Czy wycieczka jest odpowiednia dla osób starszych i kobiet w ciąży?",
+            "answer": "Nie zalecamy tej wycieczki osobom starszym ani kobietom w ciąży, ponieważ obejmuje długą podróż samochodem i wędrówkę przez kanion.",
+            "section": "faq"
+          },
+          {
+            "question": "Co zabrać",
+            "answer": "Okulary przeciwsłoneczne.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Co zabrać",
+            "answer": "Krem z filtrem przeciwsłonecznym.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Co zabrać",
+            "answer": "Szalik lub lekka chusta chroniąca przed kurzem.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Co zabrać",
+            "answer": "Aparat lub telefon.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Co zabrać",
+            "answer": "Trochę gotówki na dodatkowe wydatki.",
+            "section": "what_to_bring"
           }
         ],
-        "pickupInfo": "Dostępne opcje odbioru, zatwierdzone miejsca i ewentualne dopłaty są wyświetlane podczas rezerwacji.",
-        "cancellationPolicy": "Przed dokonaniem rezerwacji skontaktuj się z naszym zespołem, aby potwierdzić warunki anulowania i zwrotu kosztów tej wycieczki.",
+        "pickupInfo": "Odbiór z hotelu jest wliczony w cenę dla wszystkich hoteli na terenie miasta Sharm El Sheikh.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed wyjazdem. Anulowanie na 12 godzin przed wyjazdem uprawnia do zwrotu 50% kosztów. Anulowanie na 6 godzin przed wyjazdem nie podlega zwrotowi, ale termin można zmienić za dodatkową opłatą.",
         "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
         "labels": {
           "highlights": "Najważniejsze atrakcje",
@@ -3729,7 +3947,6 @@
         "private.text.15c0012d": "Aperçu rapide",
         "private.text.16307986": "Chargement du portail de réservation",
         "private.text.16356ba4": "Participants réservés",
-        "private.text.17448d1f": "Annulation gratuite jusqu’à 24 heures avant le départ",
         "private.text.174a0119": "Enregistrer les modifications",
         "private.text.176bdf9a": "Ex. : Steigenberger ALDAU Beach, Sunrise Crystal Bay, etc.",
         "private.text.17bf4fb4": "Nous avons envoyé un lien de vérification à ",
@@ -3847,7 +4064,6 @@
         "private.text.329bfc72": "Diminuer la quantité",
         "private.text.32bfb13b": "Continuer à parcourir les excursions ",
         "private.text.3352afdc": "En attente",
-        "private.text.33a2f27a": "Vérification des disponibilités en temps réel… ",
         "private.text.33f28bc1": "LIEN_INVALIDE",
         "private.text.349192c0": "Réponse de l’équipe",
         "private.text.35756ac4": "Hall du resort",
@@ -3891,7 +4107,6 @@
         "private.text.3c977804": "Lien invalide ou expiré",
         "private.text.3cf7d308": "ex. : yourname@example.com",
         "private.text.3d64fdce": "name@domain.com ou +20 151 5212741",
-        "private.text.3db68b5f": "Les disponibilités en temps réel sont temporairement indisponibles. Veuillez réessayer dans un instant. ",
         "private.text.3dd538ca": "Vérifiez votre e-mail",
         "private.text.3dd73f38": "RÉF. : ",
         "private.text.3e91759a": "Coordonnées du voyageur principal ",
@@ -4013,7 +4228,6 @@
         "private.text.5d7af7ab": "Renvoyer l’e-mail de confirmation",
         "private.text.5da77726": "Comparer les itinéraires et les prestations côte à côte ",
         "private.text.5db0f77c": "Réservation confirmée ",
-        "private.text.5dc4f9aa": "Disponibilités en temps réel ",
         "private.text.5e211f6c": "Type d’activité",
         "private.text.5e7da67a": "2. Combien de personnes ? ",
         "private.text.5ef4dd19": "Vos excursions en yacht et aventures dans le désert enregistrées. ",
@@ -4259,7 +4473,6 @@
         "private.text.96a6bc1f": "Hauteur des vagues",
         "private.text.96ac901d": "Photo bientôt disponible",
         "private.text.973efe84": "Tous les départs de la flotte sont vérifiés quotidiennement par les autorités portuaires. Si les conditions météo empêchent la navigation, reprogrammez gratuitement l’excursion ou recevez un remboursement à 100 %. ",
-        "private.text.9894c0b7": "Un changement de programme ? Annulez ou modifiez votre date gratuitement jusqu’à 24 heures avant la prise en charge. ",
         "private.text.98ec2e39": "Âge à la date de l’excursion ",
         "private.text.9955f94a": "Choisissez la langue de votre guide. Votre sélection figurera sur votre bon de réservation.",
         "private.text.9973451d": "Votre note ",
@@ -4343,7 +4556,6 @@
         "private.text.ab849b65": "Aucune réservation trouvée",
         "private.text.abb27034": "Besoin d’aide, de conciergerie ou d’excursions sur mesure",
         "private.text.abefa042": "Excursion sélectionnée ",
-        "private.text.ac51b135": " places disponibles ",
         "private.text.ac6fc4c4": "Connectez-vous pour créer une demande d’assistance et suivre vos conversations en toute sécurité.",
         "private.text.acd20e52": "CONNEXION",
         "private.text.ace216ae": "expériences",
@@ -4483,7 +4695,6 @@
         "private.text.ca57609d": "ANNULATION_DEMANDÉE",
         "private.text.caa81c12": "Note du client",
         "private.text.cab62326": "Tout est inclus dans votre excursion ",
-        "private.text.cb01b8b2": "Protégé par Supabase Auth",
         "private.text.cb1af2ed": "Destination ",
         "private.text.cb3f846e": "Continuer vers la réservation de l’excursion en tant qu’invité ",
         "private.text.cb647246": "Cette excursion comprend tout l’équipement principal, les permis et les activités. Aucun supplément obligatoire n’est nécessaire. ",
@@ -4647,10 +4858,8 @@
         "private.text.f025c832": "N’incluez jamais de mots de passe, de données de carte bancaire ou d’identifiants sensibles.",
         "private.text.f0bbf1f2": " Retour à la file d’attente",
         "private.text.f1391edb": "Vous devez être connecté pour consulter et gérer le profil de votre compte voyageur. ",
-        "private.text.f1878a8e": " places restent disponibles pour ce départ. Veuillez réduire la taille du groupe ou choisir une autre date. ",
         "private.text.f1f487f3": "Adresse e-mail",
         "private.text.f2249348": "Assistance 24/7 : +20 151 5212741",
-        "private.text.f263abb5": "Vous avez sélectionné ",
         "private.text.f2774631": "Comment notre équipe peut-elle vous aider ? ",
         "private.text.f2a25179": "Billet officiel d’excursion et bon de prise en charge à l’hôtel • Mer Rouge, Égypte ",
         "private.text.f2e0c2e7": "Mot de passe oublié",
@@ -4673,7 +4882,6 @@
         "private.text.f535ef30": "Veuillez vérifier vos dates, votre lieu de prise en charge et vos coordonnées avant de payer. ",
         "private.text.f5592c45": "Aucun service de prise en charge",
         "private.text.f562fbae": "Accepté :",
-        "private.text.f57c290f": " participants, mais seulement ",
         "private.text.f57e0e94": "Merci pour votre avis ! ",
         "private.text.f58b0587": "● Annulé ",
         "private.text.f60c4582": "s",
@@ -4752,7 +4960,16 @@
         "private.text.79b4c617": "Etap ",
         "private.text.a5b9a096": " z 4",
         "private.text.28b74540": "Ekskluzywne",
-        "private.text.37bf777b": "Ekskluzywne wycieczki prywatne"
+        "private.text.37bf777b": "Ekskluzywne wycieczki prywatne",
+        "private.text.25168fa0": "Nie udało się sprawdzić godzin odjazdu. Spróbuj ponownie za chwilę. ",
+        "private.text.66e67e50": "Wyjazd dostępny",
+        "private.text.72402638": "Dostępne",
+        "private.text.7a58d233": "Warunki anulowania i zwrotu kosztów zależą od wybranej wycieczki. Przed potwierdzeniem rezerwacji zapoznaj się z jej zasadami. ",
+        "private.text.bf5e2ed8": "Ten termin nie może pomieścić wybranej liczby uczestników. Zmniejsz liczbę gości lub wybierz inny termin. ",
+        "private.text.c1c961ad": "Sprawdzanie godzin odjazdu… ",
+        "private.text.c2a951c0": "Ograniczona dostępność",
+        "private.text.c64375dc": "Zasady anulowania",
+        "private.text.e9175fbd": "Twoje konto jest chronione"
       },
       "private_ui_message_count": 650
     }
