@@ -174,7 +174,83 @@
           "Fooien",
           "Diensten die niet uitdrukkelijk in de gekozen optie zijn vermeld"
         ],
-        "faqs": [],
+        "faqs": [
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Niet geschikt voor zwangere vrouwen.",
+            "section": "important_information"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "Comfortabele kleding.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat moet ik meenemen op de excursie?",
+            "answer": "Comfortabele kleding, gesloten schoenen, een zonnebril, zonnebrandcrème, een sjaal of lichte omslagdoek tegen het stof, een camera of telefoon en wat contant geld voor extra uitgaven.",
+            "section": "faq"
+          },
+          {
+            "question": "Hoe lang duurt de hele excursie?",
+            "answer": "De excursie duurt ongeveer 3 uur.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "Gesloten schoenen.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat is de minimumleeftijd om quad te rijden?",
+            "answer": "De minimumleeftijd om een quad te besturen is 15 jaar.",
+            "section": "important_information"
+          },
+          {
+            "question": "Voor gasten ouder dan 70 jaar met rugklachten wordt deze activiteit afgeraden.",
+            "answer": "Deze activiteit wordt afgeraden voor gasten ouder dan 70 jaar met rugklachten.",
+            "section": "important_information"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "Een zonnebril.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Is de excursie elke dag beschikbaar?",
+            "answer": "Ja, de excursie is elke dag beschikbaar.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "Zonnebrandcrème.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Is een privé-excursie mogelijk?",
+            "answer": "Ja, een privé-excursie is mogelijk tegen een toeslag. Neem contact met ons op om dit te regelen.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat is de minimumleeftijd om een quad te besturen?",
+            "answer": "De minimumleeftijd om een quad te besturen is 15 jaar.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "Een sjaal of lichte omslagdoek tegen het stof.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "Een camera of telefoon.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "Wat contant geld voor extra uitgaven.",
+            "section": "what_to_bring"
+          }
+        ],
         "pickupInfo": "Beschikbare ophaalopties, goedgekeurde locaties en eventuele toeslagen worden tijdens het boeken getoond.",
         "cancellationPolicy": "Neem vóór het boeken contact op met ons boekingsteam om de annulerings- en terugbetalingsvoorwaarden voor deze excursie te bevestigen.",
         "ageRestrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
@@ -4975,7 +5051,148 @@
           "Vervoer vanuit zones buiten centraal Hurghada.",
           "Optionele massage- en spabehandelingen."
         ],
-        "faqs": [],
+        "faqs": [
+          {
+            "question": "Belangrijke informatie",
+            "answer": "De door de aanbieder vermelde minimumleeftijd om paard te rijden is 4 jaar.",
+            "section": "important_information"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "### Wat moet je meenemen",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Heb ik eerdere ervaring met paardrijden nodig?",
+            "answer": "Nee. Beginners zijn welkom. Een professionele instructeur geeft uitleg en begeleidt je tijdens de rit.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "Comfortabele kleding die geschikt is voor paardrijden.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Hoe lang duurt de paardrijervaring?",
+            "answer": "Je kunt kiezen tussen een paardrijtocht van 1 uur of 2 uur.",
+            "section": "faq"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Baby’s zijn niet toegestaan.",
+            "section": "important_information"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "Een lange broek om je benen tijdens het rijden te beschermen.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Het kindertarief wordt vermeld voor leeftijden van 6–11 jaar, maar de regels voor de minimumleeftijd en kinderprijzen moeten nog worden bevestigd.",
+            "section": "important_information"
+          },
+          {
+            "question": "Kan ik met mijn paard zwemmen in de Rode Zee?",
+            "answer": "Ja. Zwemmen met het paard is inbegrepen bij de optie van 2 uur. Het kan ook tegen een toeslag aan de rit van 1 uur worden toegevoegd.",
+            "section": "faq"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Alle rijervaringniveaus zijn welkom.",
+            "section": "important_information"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "Dichte schoenen of comfortabele sportschoenen.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Is vervoer vanaf het hotel inbegrepen?",
+            "answer": "Ja. Retourvervoer met airconditioning is inbegrepen voor hotels in centraal Hurghada. Voor bepaalde omliggende gebieden geldt een toeslag.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat is de minimumleeftijd voor kinderen?",
+            "answer": "De aanbieder vermeldt een minimumleeftijd van 4 jaar om paard te rijden en geeft aan dat baby’s niet zijn toegestaan. Controleer vóór het boeken welk kindertarief van toepassing is.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "Badkleding als je kiest voor de zwemervaring met het paard.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Een veiligheidshelm en begeleiding door de instructeur zijn inbegrepen.",
+            "section": "important_information"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "Een handdoek en schone kleding.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat kan ik het beste dragen?",
+            "answer": "Comfortabele lange broek en gesloten schoenen worden aanbevolen. Neem ook een zonnebril, zonnebrandcrème en een hoed mee.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "Een zonnebril en zonnebrandcrème.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "De ophaaltijd bij het hotel moet worden bevestigd op basis van de locatie van je accommodatie.",
+            "section": "important_information"
+          },
+          {
+            "question": "Wat moet ik meenemen?",
+            "answer": "We raden aan een handdoek, camera, zonnebrandcrème en wat contant geld mee te nemen voor optionele extra’s of fooien.",
+            "section": "faq"
+          },
+          {
+            "question": "Zijn privéritten beschikbaar?",
+            "answer": "Ja. Privéopties zijn beschikbaar voor zowel de ervaring van 1 uur als die van 2 uur, met privévervoer en een eigen gids.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "Een hoed of pet ter bescherming tegen de zon.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "Drinkwater om gehydrateerd te blijven.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Welke spullen moet je meenemen?",
+            "answer": "Je camera of mobiele telefoon om mooie momenten vast te leggen.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "Wat contant geld voor optionele extra’s of persoonlijke uitgaven.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat moet je meenemen",
+            "answer": "**Tip:** draag comfortabele kleding en neem badkleding en een handdoek mee als je met je paard in de Rode Zee wilt zwemmen.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat zijn de beschikbare starttijden?",
+            "answer": "De vermelde opties zijn 11:00, 12:00 en 15:00. De exacte ophaaltijd bij je hotel hangt af van je locatie.",
+            "section": "faq"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Neem een handdoek mee als je kiest voor de zwemervaring met het paard.",
+            "section": "important_information"
+          }
+        ],
         "pickupInfo": "**Ophaallocatie:** hotelaccommodatie in Hurghada.\n\n**Inbegrepen ophaalzones:**\n- Centraal Hurghada.\n\n**Transferzones met toeslag:**\n- Makadi Bay.\n- Sahl Hasheesh.\n- El Gouna.\n- Soma Bay.\n- Safaga.\n\n**Beschikbare starttijden:**\n- 11:00 AM\n- 12:00 PM\n- 3:00 PM\n\n**Vervoer:** voertuig met airconditioning, heen en terug.\n\n**Ophaalinstructies:** vermeld bij het boeken de naam en locatie van je hotel om de exacte ophaaltijd te bevestigen.\n\n**Belangrijke informatie:**\n- Zorg dat je klaarstaat op de bevestigde ophaaltijd.\n- Draag gesloten schoenen en een comfortabele lange broek.\n- Volg de veiligheidsinstructies van de instructeur.\n- De ervaring is afhankelijk van de lokale bedrijfs- en veiligheidsomstandigheden.",
         "cancellationPolicy": "Je kunt gratis annuleren tot 24 uur voor vertrek.\nBij annuleringen 12 uur voor vertrek ontvang je 50% terug.\nAnnuleringen 6 uur voor vertrek zijn niet restitueerbaar, maar de datum kan tegen een toeslag worden gewijzigd.",
         "ageRestrictions": "",
