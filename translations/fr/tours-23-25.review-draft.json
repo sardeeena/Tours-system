@@ -44,14 +44,64 @@
         ],
         "faqs": [
           {
-            "question": "L’équipement de snorkeling est-il fourni ou dois-je apporter le mien ?",
-            "answer": "Des masques, tubas et palmes désinfectés, en tailles adulte et enfant, sont fournis gratuitement à bord.",
+            "question": "Informations importantes",
+            "answer": "Cette excursion ne convient pas aux femmes enceintes.",
+            "section": "important_information"
+          },
+          {
+            "question": "Que dois-je apporter pendant l’excursion ?",
+            "answer": "Des vêtements confortables, des chaussures fermées, des lunettes de soleil, de la crème solaire, un foulard ou un châle léger contre la poussière, un appareil photo ou un téléphone, un peu d’argent liquide pour les dépenses supplémentaires, ainsi que de l’eau et des encas.",
             "section": "faq"
           },
           {
-            "question": "Les personnes qui ne savent pas nager peuvent-elles participer en toute sécurité ?",
-            "answer": "Oui. Des gilets de flottaison homologués par les garde-côtes sont fournis et des moniteurs de plongée certifiés accompagnent les participants dans l’eau.",
+            "question": "À apporter",
+            "answer": "Des vêtements confortables.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Des chaussures fermées.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Quel canyon allons-nous visiter ?",
+            "answer": "Nous visitons le Colored Canyon, également connu sous le nom de Red Canyon, dans le désert du Sinaï.",
             "section": "faq"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Cette excursion est déconseillée aux personnes de plus de 70 ans souffrant de problèmes de dos.",
+            "section": "important_information"
+          },
+          {
+            "question": "Cette excursion convient-elle aux personnes âgées et aux femmes enceintes ?",
+            "answer": "Nous ne recommandons pas cette excursion aux personnes âgées ni aux femmes enceintes, car elle comprend un long trajet en voiture et une randonnée dans le canyon.",
+            "section": "faq"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Des lunettes de soleil.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "À apporter",
+            "answer": "De la crème solaire.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Un foulard ou un châle léger pour vous protéger de la poussière.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Un appareil photo ou un téléphone.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Un peu d’argent liquide pour les dépenses supplémentaires.",
+            "section": "what_to_bring"
           }
         ],
         "pickupInfo": "Les options de prise en charge, les lieux approuvés et tout supplément applicable sont indiqués pendant la réservation.",
