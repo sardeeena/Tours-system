@@ -5081,13 +5081,11 @@
       "seo_description": "Ontdek Hurghada te paard tussen de Rode Zee en de woestijn. Kies een rit van één of twee uur met professionele begeleiding en hoteltransfers.",
       "content": {
         "title": "Paardrijden in Hurghada: avontuur tussen zee en woestijn",
-        "description": "# Ontdek Hurghada te paard – tussen de Rode Zee en de woestijn\n\nOp zoek naar iets bijzonders tijdens je vakantie in Hurghada? Laat de drukte van het resort achter je en ontdek de schoonheid van de Egyptische Rode Zeekust vanuit een heel ander perspectief.\n\nDit paardrijavontuur combineert de rustige sfeer van de woestijn met het prachtige landschap van de kust. Rijd door open zandgebieden, geniet van het uitzicht op zee en ervaar de bijzondere band tussen paard en ruiter.\n\n## Een paardrijervaring voor elk niveau\n\nOf je nu een ervaren ruiter bent of voor het eerst gaat paardrijden, deze ervaring is geschikt voor verschillende niveaus. Een professionele instructeur begeleidt je, geeft veiligheidsinstructies en helpt je om je voor de rit op je gemak te voelen.\n\n## Kies jouw ideale rit\n\n- **Rit van 1 uur langs zee en woestijn:** geniet van een ontspannen tocht langs de kust en door het omliggende woestijnlandschap.\n- **Rit van 2 uur langs zee, woestijn en zwemmen met je paard:** verleng je avontuur en sluit af met de bijzondere ervaring om samen met je paard de Rode Zee in te gaan en te zwemmen.\n\n## Comfortabele hoteltransfers\n\nDe ervaring omvat vervoer met airconditioning van en naar hotels in centraal Hurghada. Na je avontuur kun je ontspannen tijdens de terugrit naar je hotel.\n\nOf je nu met je partner, vrienden of familie reist, paardrijden is een onvergetelijke manier om de natuur rond Hurghada te ontdekken.\n\nBoek je avontuur bij Awesome Adventure Tours en maak een bijzondere vakanti herinnering!",
+        "description": "# Ontdek Hurghada te paard – tussen de Rode Zee en de woestijn\n\nOp zoek naar iets bijzonders tijdens je vakantie in Hurghada? Laat de drukte van het resort achter je en ontdek de schoonheid van de Egyptische Rode Zeekust vanuit een heel ander perspectief.\n\nDit paardrijavontuur combineert de rustige sfeer van de woestijn met het prachtige landschap van de kust. Rijd door open zandgebieden, geniet van het uitzicht op zee en ervaar de bijzondere band tussen paard en ruiter.\n\n## Een paardrijervaring voor elk niveau\n\nOf je nu een ervaren ruiter bent of voor het eerst gaat paardrijden, deze ervaring is geschikt voor verschillende niveaus. Een professionele instructeur begeleidt je, geeft veiligheidsinstructies en helpt je om je voor de rit op je gemak te voelen.\n\n## 2 uur paardrijden langs zee, woestijn en zwemmen met je paard\n\nVerleng je avontuur en sluit af met de bijzondere ervaring om samen met je paard de Rode Zee in te gaan en te zwemmen.\n\n## Comfortabele hoteltransfers\n\nDe ervaring omvat vervoer met airconditioning van en naar hotels in centraal Hurghada. Na je avontuur kun je ontspannen tijdens de terugrit naar je hotel.\n\nOf je nu met je partner, vrienden of familie reist, paardrijden is een onvergetelijke manier om de natuur rond Hurghada te ontdekken.\n\nBoek je avontuur bij Awesome Adventure Tours en maak een bijzondere vakanti herinnering!",
         "durationLabel": "2 uur",
         "highlights": [
           "Ontdek de kust van Hurghada te paard.",
           "Geniet van een bijzondere rit tussen de Rode Zee en de woestijn.",
-          "Kies een avontuur van 1 of 2 uur.",
-          "Ervaar zwemmen met je paard in de Rode Zee bij de optie van 2 uur.",
           "Geschikt voor beginners en ervaren ruiters.",
           "Een professionele instructeur begeleidt de ervaring.",
           "Veiligheidshelm en rij-instructies inbegrepen.",
@@ -5101,32 +5099,27 @@
             "description": "Je wordt comfortabel opgehaald bij je hotel in Hurghada in een voertuig met airconditioning."
           },
           {
-            "time": "11:00",
+            "time": "11:45",
             "title": "Aankomst bij het paardrijcentrum",
             "description": "Maak kennis met het team en je paard en ontvang je rijuitrusting."
           },
           {
-            "time": "11:00",
+            "time": "11:50",
             "title": "Veiligheidsinstructies",
             "description": "Je professionele instructeur legt de basis uit, helpt je met je veiligheidshelm en zorgt dat je klaar bent voor de rit."
           },
           {
-            "time": "11:00",
+            "time": "12:00",
             "title": "Paardrijden langs de Rode Zee",
             "description": "Begin je avontuur door het prachtige kustlandschap, met open zandstranden en uitzicht op de Rode Zee."
           },
           {
-            "time": "11:00",
+            "time": "13:00",
             "title": "Ontdek de woestijn",
             "description": "Vervolg je rit door de rustige woestijnomgeving en ontdek een andere kant van Hurghada, weg van de drukke resorts."
           },
           {
-            "time": "11:00",
-            "title": "Optioneel zwemmen met je paard",
-            "description": "Kies de optie van 2 uur om samen met je paard de Rode Zee in te gaan en te zwemmen. Deze ervaring kan tegen een toeslag ook aan de rit van 1 uur worden toegevoegd."
-          },
-          {
-            "time": "11:00",
+            "time": "14:00",
             "title": "Terugtransfer",
             "description": "Na de rit keer je terug naar het centrum en reis je comfortabel terug naar je hotel."
           }
@@ -5143,9 +5136,7 @@
           "Eten en drinken.",
           "Fooien en persoonlijke gratificaties.",
           "Persoonlijke uitgaven.",
-          "Optionele zwemervaring met paard bij boeking van de rit van 1 uur.",
-          "Vervoer vanuit zones buiten centraal Hurghada.",
-          "Optionele massage- en spabehandelingen."
+          "Vervoer vanuit zones buiten centraal Hurghada."
         ],
         "faqs": [
           {
@@ -5155,7 +5146,7 @@
           },
           {
             "question": "Wat moet je meenemen",
-            "answer": "### Wat moet je meenemen",
+            "answer": "Comfortabele kleding die geschikt is voor paardrijden.",
             "section": "what_to_bring"
           },
           {
@@ -5165,7 +5156,7 @@
           },
           {
             "question": "Wat moet je meenemen",
-            "answer": "Comfortabele kleding die geschikt is voor paardrijden.",
+            "answer": "Een lange broek om je benen tijdens het rijden te beschermen.",
             "section": "what_to_bring"
           },
           {
@@ -5179,23 +5170,8 @@
             "section": "important_information"
           },
           {
-            "question": "Wat moet je meenemen",
-            "answer": "Een lange broek om je benen tijdens het rijden te beschermen.",
-            "section": "what_to_bring"
-          },
-          {
             "question": "Belangrijke informatie",
             "answer": "Het kindertarief wordt vermeld voor leeftijden van 6–11 jaar, maar de regels voor de minimumleeftijd en kinderprijzen moeten nog worden bevestigd.",
-            "section": "important_information"
-          },
-          {
-            "question": "Kan ik met mijn paard zwemmen in de Rode Zee?",
-            "answer": "Ja. Zwemmen met het paard is inbegrepen bij de optie van 2 uur. Het kan ook tegen een toeslag aan de rit van 1 uur worden toegevoegd.",
-            "section": "faq"
-          },
-          {
-            "question": "Belangrijke informatie",
-            "answer": "Alle rijervaringniveaus zijn welkom.",
             "section": "important_information"
           },
           {
@@ -5204,38 +5180,13 @@
             "section": "what_to_bring"
           },
           {
+            "question": "Kan ik met mijn paard zwemmen in de Rode Zee?",
+            "answer": "Ja. Zwemmen met het paard is inbegrepen bij de optie van 2 uur. Het kan ook tegen een toeslag aan de rit van 1 uur worden toegevoegd.",
+            "section": "faq"
+          },
+          {
             "question": "Is vervoer vanaf het hotel inbegrepen?",
             "answer": "Ja. Retourvervoer met airconditioning is inbegrepen voor hotels in centraal Hurghada. Voor bepaalde omliggende gebieden geldt een toeslag.",
-            "section": "faq"
-          },
-          {
-            "question": "Wat is de minimumleeftijd voor kinderen?",
-            "answer": "De aanbieder vermeldt een minimumleeftijd van 4 jaar om paard te rijden en geeft aan dat baby’s niet zijn toegestaan. Controleer vóór het boeken welk kindertarief van toepassing is.",
-            "section": "faq"
-          },
-          {
-            "question": "Wat moet je meenemen",
-            "answer": "Badkleding als je kiest voor de zwemervaring met het paard.",
-            "section": "what_to_bring"
-          },
-          {
-            "question": "Belangrijke informatie",
-            "answer": "Een veiligheidshelm en begeleiding door de instructeur zijn inbegrepen.",
-            "section": "important_information"
-          },
-          {
-            "question": "Wat moet je meenemen",
-            "answer": "Een handdoek en schone kleding.",
-            "section": "what_to_bring"
-          },
-          {
-            "question": "Belangrijke informatie",
-            "answer": "Neem een handdoek mee als je kiest voor de zwemervaring met het paard.",
-            "section": "important_information"
-          },
-          {
-            "question": "Wat kan ik het beste dragen?",
-            "answer": "Comfortabele lange broek en gesloten schoenen worden aanbevolen. Neem ook een zonnebril, zonnebrandcrème en een hoed mee.",
             "section": "faq"
           },
           {
@@ -5245,17 +5196,17 @@
           },
           {
             "question": "Belangrijke informatie",
-            "answer": "De ophaaltijd bij het hotel moet worden bevestigd op basis van de locatie van je accommodatie.",
+            "answer": "Alle rijervaringniveaus zijn welkom.",
             "section": "important_information"
           },
           {
-            "question": "Wat moet ik meenemen?",
-            "answer": "We raden aan een handdoek, camera, zonnebrandcrème en wat contant geld mee te nemen voor optionele extra’s of fooien.",
-            "section": "faq"
+            "question": "Belangrijke informatie",
+            "answer": "Een veiligheidshelm en begeleiding door de instructeur zijn inbegrepen.",
+            "section": "important_information"
           },
           {
-            "question": "Zijn privéritten beschikbaar?",
-            "answer": "Ja. Privéopties zijn beschikbaar voor zowel de ervaring van 1 uur als die van 2 uur, met privévervoer en een eigen gids.",
+            "question": "Wat is de minimumleeftijd voor kinderen?",
+            "answer": "De aanbieder vermeldt een minimumleeftijd van 4 jaar om paard te rijden en geeft aan dat baby’s niet zijn toegestaan. Controleer vóór het boeken welk kindertarief van toepassing is.",
             "section": "faq"
           },
           {
@@ -5269,8 +5220,13 @@
             "section": "what_to_bring"
           },
           {
-            "question": "Wat zijn de beschikbare starttijden?",
-            "answer": "De vermelde opties zijn 11:00, 12:00 en 15:00. De exacte ophaaltijd bij je hotel hangt af van je locatie.",
+            "question": "Wat kan ik het beste dragen?",
+            "answer": "Comfortabele lange broek en gesloten schoenen worden aanbevolen. Neem ook een zonnebril, zonnebrandcrème en een hoed mee.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat moet ik meenemen?",
+            "answer": "We raden aan een handdoek, camera, zonnebrandcrème en wat contant geld mee te nemen voor optionele extra’s of fooien.",
             "section": "faq"
           },
           {
@@ -5279,17 +5235,22 @@
             "section": "what_to_bring"
           },
           {
+            "question": "Zijn privéritten beschikbaar?",
+            "answer": "Ja. Privéopties zijn beschikbaar voor zowel de ervaring van 1 uur als die van 2 uur, met privévervoer en een eigen gids.",
+            "section": "faq"
+          },
+          {
             "question": "Wat moet je meenemen",
             "answer": "Wat contant geld voor optionele extra’s of persoonlijke uitgaven.",
             "section": "what_to_bring"
           },
           {
-            "question": "Wat moet je meenemen",
-            "answer": "**Tip:** draag comfortabele kleding en neem badkleding en een handdoek mee als je met je paard in de Rode Zee wilt zwemmen.",
-            "section": "what_to_bring"
+            "question": "Wat zijn de beschikbare starttijden?",
+            "answer": "De vermelde opties zijn 11:00, 12:00 en 15:00. De exacte ophaaltijd bij je hotel hangt af van je locatie.",
+            "section": "faq"
           }
         ],
-        "pickupInfo": "**Ophaallocatie:** hotelaccommodatie in Hurghada.\n\n**Inbegrepen ophaalzones:**\n- Centraal Hurghada.\n\n**Transferzones met toeslag:**\n- Makadi Bay.\n- Sahl Hasheesh.\n- El Gouna.\n- Soma Bay.\n- Safaga.\n\n**Beschikbare starttijden:**\n- 11:00 AM\n- 12:00 PM\n- 3:00 PM\n\n**Vervoer:** voertuig met airconditioning, heen en terug.\n\n**Ophaalinstructies:** vermeld bij het boeken de naam en locatie van je hotel om de exacte ophaaltijd te bevestigen.\n\n**Belangrijke informatie:**\n- Zorg dat je klaarstaat op de bevestigde ophaaltijd.\n- Draag gesloten schoenen en een comfortabele lange broek.\n- Volg de veiligheidsinstructies van de instructeur.\n- De ervaring is afhankelijk van de lokale bedrijfs- en veiligheidsomstandigheden.",
+        "pickupInfo": "**Ophaallocatie:** hotelaccommodatie in Hurghada.\n\n**Inbegrepen ophaalzones:**\n- Centraal Hurghada.\n\n**Transferzones met toeslag:**\n- Makadi Bay.\n- Sahl Hasheesh.\n- El Gouna.\n- Soma Bay.\n- Safaga.",
         "cancellationPolicy": "Je kunt gratis annuleren tot 24 uur voor vertrek.\nBij annuleringen 12 uur voor vertrek ontvang je 50% terug.\nAnnuleringen 6 uur voor vertrek zijn niet restitueerbaar, maar de datum kan tegen een toeslag worden gewijzigd.",
         "ageRestrictions": "",
         "labels": {
