@@ -4945,7 +4945,7 @@
         "highlights": [
           "Découvrez la côte de Hurghada à cheval.",
           "Profitez d’une balade unique entre la mer Rouge et le désert.",
-          "Choisissez une aventure d’une ou de deux heures.",
+          "Choisissez une aventure de 1 heure ou de 2 heures.",
           "Avec l’option de 2 heures, vivez une expérience de baignade à cheval dans la mer Rouge.",
           "Convient aux débutants comme aux cavaliers expérimentés.",
           "Un moniteur professionnel vous accompagne.",
@@ -5029,7 +5029,7 @@
           },
           {
             "question": "Combien de temps dure l’expérience équestre ?",
-            "answer": "Vous pouvez choisir une balade de 1 heure ou de deux heures.",
+            "answer": "Vous pouvez choisir une balade de 1 heure ou de 2 heures.",
             "section": "faq"
           },
           {
