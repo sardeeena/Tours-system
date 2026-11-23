@@ -25,8 +25,8 @@ assert.equal(records.length, 112);
 assert.deepEqual(nl.coverage, {
   tour: 26, blog_post: 50, destination: 7, static_page: 10,
   communication_template: 18, ui_catalog: 1,
-  public_ui_messages: 81, private_ui_messages: 1066,
-  ui_catalog_messages: 1147, source_records: 112,
+  public_ui_messages: 81, private_ui_messages: 1067,
+  ui_catalog_messages: 1148, source_records: 112,
 });
 
 const sourceKeys = new Set(refRecords.map(key));
@@ -84,14 +84,14 @@ for (const [k, v] of Object.entries(TRANSLATIONS.nl)) {
   assert.ok((v as string).trim(), 'Runtime public UI value is non-empty: ' + k);
 }
 assert.deepEqual(Object.keys(privateUi).sort(), Object.keys(privateContent).sort(), 'Every extracted private UI source key is represented exactly once');
-assert.equal(Object.keys(privateUi).length, 1066);
+assert.equal(Object.keys(privateUi).length, 1067);
 for (const [k, v] of Object.entries(privateUi)) {
   assert.equal(typeof v, 'string');
   assert.ok((v as string).trim(), 'Private UI value is non-empty: ' + k);
   const placeholders = (s: string) => (s.match(/\{\{[^{}]+\}\}|\{[A-Za-z0-9_.-]+\}|%[sd]|\$\{[^}]+\}/g) || []).sort();
   assert.deepEqual(placeholders(v as string), placeholders(privateContent[k]), 'Private UI placeholders are preserved: ' + k);
 }
-assert.equal(Object.keys(ui.content).length, 1147);
+assert.equal(Object.keys(ui.content).length, 1148);
 assert.equal(EUROPEAN_LOCALE_ROLLOUT.find((locale) => locale.code === 'nl')?.rollout, 'planned');
 assert.ok(SUPPORTED_LANGUAGES.nl, 'Dutch runtime dictionary is registered but remains hidden until published');
 
