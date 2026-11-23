@@ -1070,7 +1070,24 @@
     "private.text.e28cbf9c": "Photo suivante",
     "private.text.e9175fbd": "Votre compte est protégé",
     "private.text.f7239c75": "* Les horaires sont approximatifs et peuvent varier selon la logistique locale et les conditions en mer ou météorologiques.",
-    "private.text.36c24f6e": "Photos à venir"
+    "private.text.36c24f6e": "Photos à venir",
+    "private.text.0093d607": "Dites-nous comment nous pouvons vous aider. Notre équipe vous répondra.",
+    "private.text.16fe3d0b": "Blog de voyage",
+    "private.text.36865756": "Les excursions sont assurées par des prestataires et des guides locaux.",
+    "private.text.5e6216ec": "Excursions privées",
+    "private.text.6f037b40": "Vous ne pouvez pas accéder à cette page",
+    "private.text.6f7be91e": "Nous pouvons vous aider dans plusieurs langues",
+    "private.text.819fed0b": "Aide et assistance – Awesome Adventure Tours",
+    "private.text.839c8e12": "Envoyez-nous un message et retrouvez toutes les réponses au même endroit.",
+    "private.text.868ef0a2": "Vous n’avez ajouté aucune option supplémentaire.",
+    "private.text.ce4cdb64": "Connectez-vous pour nous envoyer un message et suivre nos réponses.",
+    "private.text.d4bd511a": "Besoin d’aide ? Contactez-nous",
+    "private.text.d82abc8f": "Consultez les demandes des clients et aidez l’équipe à y répondre.",
+    "private.text.e609c72f": "Aide et assistance",
+    "private.text.e929ba97": "Vérification des détails de l’excursion…",
+    "private.text.ef34eff4": "Votre compte n’est pas autorisé à gérer les demandes d’assistance.",
+    "private.text.fff7de5b": "Assistant de voyage",
+    "private.text.ffff4c4e": "Suggestions d’excursions"
   },
-  "coverage": 1068
+  "coverage": 1085
 }
