@@ -133,7 +133,7 @@ assert.match(adminSeo, /contentLength >= 650/, 'Admin destination indexability t
 assert.doesNotMatch(adminSeo, /contentLength >= 300/, 'Admin does not mark thin destinations indexable below the public threshold');
 assert.match(destinationDetail, /RED_SEA_DESTINATION_SLUGS/, 'Destination detail pages use a destination-aware geographic label');
 assert.ok(destinationDetail.includes("RED_SEA_DESTINATION_SLUGS.has(destination.slug.toLowerCase())"), 'Only Red Sea destinations receive the Red Sea label');
-assert.match(destinationsSection, /Explore Egypt/, 'Destination discovery covers Egypt beyond Red Sea locations');
+assert.match(destinationsSection, /Explore the Red Sea coast/, 'Destination discovery clearly describes the Red Sea destinations featured on the site');
 assert.doesNotMatch(destinationsSection, /Check pickup availability and any supplements on each excursion/, 'Homepage omits the removed pickup-availability notice');
 assert.doesNotMatch(destinationsSection, /Complimentary hotel pickup from all main resorts/, 'Homepage removes the unsupported universal pickup claim');
 assert.match(tourEditor, /rating: 0,\s*review_count: 0/, 'New excursions start with no unverified rating or review count');
@@ -188,8 +188,8 @@ assert.match(tourService, /Customer reviews are temporarily unavailable because 
 assert.match(homeReviews, /Booking verification is shown only when a completed booking can be confirmed/, 'Public review section explains verification accurately');
 assert.doesNotMatch(translations, /100% Weather Refund Guarantee|Free 24h Prior Cancellation|Free cancellation up to 24 hours before excursion start|Hotel Pickup Included|Licensed Local Guides|own boats and vehicles|All tours include hotel pickup|daily.*Hurghada|Daily Verified Departures|Dagelijks gecontroleerde vertrekken|Tägliche verifizierte Abfahrten|Ежедневные гарантированные отправления|Partenze Giornaliere Garantite|Plecări Zilnice Verificate|Codziennie potwierdzane wypłynięcia|CDWS|Safety & Guarantees|Sécurité et garanties|Veiligheid en garanties|Sicherheits- & Garantiestandards|Стандарты безопасности и гарантии|Sicurezza & Garanzie|Siguranță & Garanții|Bezpieczeństwo i gwarancje/i, 'Translations do not promise unsupported weather refunds, universal pickup, fleet ownership, certifications or daily departures');
 assert.match(translations, /Check cancellation terms before booking/, 'Homepage directs visitors to excursion-specific cancellation terms');
-assert.match(finalCta, /Hotel pickup zones and any location-based supplements are shown for the selected tour/, 'Final booking CTA discloses pickup zones and location-based supplements');
-assert.match(finalCta, /Review the cancellation terms for your selected excursion/, 'Final booking CTA points customers to the selected tour cancellation policy');
+assert.match(finalCta, /pickup options, any extra charges and cancellation terms before you book/, 'Final booking CTA discloses pickup zones and location-based supplements');
+assert.match(finalCta, /cancellation terms before you book/, 'Final booking CTA points customers to the selected tour cancellation policy');
 assert.doesNotMatch(finalCta, /free cancellation is available up to 24 hours before the excursion start time|free cancellation up to 24 hours prior|Hotel pickup from your resort lobby is always included|Direct Booking Guarantee/i, 'Final CTA removes unsupported universal booking promises');
 assert.doesNotMatch(homeHero, /Practical Booking Information|hero\.guarantee[1-4]/, 'Hero omits the removed booking-information strip and all four badge labels');
 assert.doesNotMatch(homeHero, /certified PADI divemasters|2-tank guided boat dives/, 'Hero does not claim dive certifications or formats without tour-level evidence');

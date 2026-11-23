@@ -360,9 +360,13 @@ export const ExcursionsPage: React.FC<ExcursionsPageProps> = ({
 
   // Dynamic SEO meta tags, OpenGraph, and Schema.org JSON-LD based on current filters
   const activeLabel = activitySelect !== 'All' ? activitySelect : destinationSelect !== 'All' ? destinationSelect : 'All';
+  const activeCategory = useMemo(
+    () => categories?.find((category) => category.name.toLowerCase() === activitySelect.toLowerCase()),
+    [categories, activitySelect]
+  );
   const seoData = useMemo(() => {
-    return seoService.generateCategorySeo(activeLabel, filteredTours.length, filteredTours);
-  }, [activeLabel, filteredTours]);
+    return seoService.generateCategorySeo(activeLabel, filteredTours.length, filteredTours, activeCategory);
+  }, [activeLabel, activeCategory, filteredTours]);
   useSeo(seoData);
 
   useEffect(() => {

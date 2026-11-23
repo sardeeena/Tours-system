@@ -14,8 +14,8 @@ const appConfig = read('../src/config/appConfig.ts');
 
 const about = pages.slice(pages.indexOf("id: 'about'"), pages.indexOf("id: 'contact'"));
 assert.match(about, /seoIndexable: true/, 'About fallback remains indexable');
-assert.match(about, /Local support in Hurghada/, 'About page contains useful company context');
-assert.match(about, /Clear information before you reserve/, 'About page explains how customers compare and book trips');
+assert.match(about, /A local team in Hurghada/, 'About page contains useful company context');
+assert.match(about, /Know what’s included/, 'About page explains how customers compare and book trips');
 assert.ok(appConfig.includes('2nd floor, Bostan Cafe, Madres, Hurghada') && !appConfig.includes('Berth B-14'), 'Booking support uses the current Hurghada office location');
 const contact = pages.slice(pages.indexOf("id: 'contact'"), pages.indexOf("id: 'why-us'"));
 assert.ok(contact.length >= 1000, 'Contact page provides substantive visitor support information');
@@ -54,10 +54,27 @@ assert.match(server, /override\?\.robots_index === false && !\(pageKind === 'sta
 assert.match(server, /override\?\.robots_follow === false && !\(pageKind === 'static' && seoIdentifier === 'about'\)/, 'About remains followable in server-rendered HTML');
 
 assert.doesNotMatch(hero, /Water 26°C|Water 25°C|Visibility 28m|Visibility 35m|Dolphin Pods Active|Sea Turtles Active/, 'hero does not publish unsupported live sea or wildlife conditions');
-assert.match(hero, /title1: 'Pristine Lagoons &'/, 'hero uses evergreen tour headlines instead of current-condition claims');
-assert.match(hero, /subtitle: 'Sail to Orange Bay and Paradise Island/, 'hero describes stable excursion experiences instead of unsupported live-condition claims');
+assert.match(hero, /title1: 'Orange Bay &'/, 'hero uses evergreen tour headlines instead of current-condition claims');
+assert.match(hero, /subtitle: 'Visit Orange Bay and Paradise Island/, 'hero describes stable excursion experiences instead of unsupported live-condition claims');
 
 assert.match(tourService, /if \(toursError\)[\s\S]*?throw new Error\(`Unable to calculate published excursion counts:/, 'destination count failures are surfaced instead of silently showing zero');
+
+const categorySeoStart = tourService.indexOf('export async function getPublishedCategories');
+const categorySeoService = tourService.slice(categorySeoStart, tourService.indexOf('export async function getDestinations', categorySeoStart));
+const categoryPageSource = read('../src/pages/ExcursionsPage.tsx');
+const categorySeoResolver = read('../src/services/seoService.ts');
+assert.match(categorySeoService, /seo_title, seo_description, seo_keywords/, 'Published category retrieval includes legacy category SEO fields');
+assert.match(categorySeoService, /from\('seo_metadata'\)[\s\S]*?eq\('entity_type', 'category'\)[\s\S]*?in\('entity_id', cats\.map/, 'Published category retrieval reads overrides saved by the SEO control center');
+assert.match(categorySeoService, /meta_description[\s\S]*?categorySeoById\.set/, 'Saved category meta descriptions are mapped into the public model');
+assert.match(categorySeoService, /seoTitle: categorySeoById\.get\(c\.id\)\?\.seoTitle \|\| c\.seo_title/, 'Legacy category-table SEO fields remain a fallback when no control-center override exists');
+assert.match(categorySeoService, /seoTitle: categorySeoById\.get\(c\.id\)\?\.seoTitle \|\| c\.seo_title \|\| undefined/, 'Category SEO title prefers the control-center override and falls back to the category table');
+assert.match(categorySeoService, /seoDescription: categorySeoById\.get\(c\.id\)\?\.seoDescription \|\| c\.seo_description \|\| undefined/, 'Category SEO description prefers the control-center override and falls back to the category table');
+assert.match(categorySeoService, /seoKeywords: categorySeoById\.get\(c\.id\)\?\.seoKeywords\?\.length[\s\S]*?Array\.isArray\(c\.seo_keywords\)/, 'Category SEO keywords prefer non-empty control-center values and fall back to category-table keywords');
+assert.match(categoryPageSource, /const activeCategory = useMemo\([\s\S]*?categories\?\.find\([\s\S]*?generateCategorySeo\(activeLabel, filteredTours\.length, filteredTours, activeCategory\)/, 'Excursion filter SEO receives the selected published category');
+assert.match(app, /const needsCategories = path === '\/experiences' \|\| path === '\/excursions'/, 'Direct visits to the excursions route load category metadata before applying SEO');
+assert.match(categorySeoResolver, /category\?\.seoTitle\?\.trim\(\)/, 'Category SEO title prefers the reviewed CMS title');
+assert.match(categorySeoResolver, /category\?\.seoDescription\?\.trim\(\)/, 'Category SEO description prefers the reviewed CMS description');
+assert.match(categorySeoResolver, /category\?\.seoKeywords/, 'Category SEO keywords are used when supplied');
 
 assert.match(robots, /^User-agent: \*$/m, 'robots.txt contains a valid wildcard user-agent');
 assert.match(robots, /^Sitemap: https:\/\/awesomeadventure\.tours\/sitemap\.xml$/m, 'robots.txt advertises the canonical sitemap');

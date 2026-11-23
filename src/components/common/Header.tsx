@@ -479,7 +479,7 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           )}
 
-          {/* Require Help Button */}
+          {/* Need help? Button */}
           {onOpenHelpInquiry && (
             <button
               type="button"
@@ -726,7 +726,7 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               )}
 
-              <button type="button" onClick={() => { setMobileMenuOpen(false); onNavigateExclusive?.(); }} className="text-left py-2 px-3 rounded hover:bg-stone-100 text-[#0A6C74] font-semibold">Exclusive Private Trips</button>
+              <button type="button" onClick={() => { setMobileMenuOpen(false); onNavigateExclusive?.(); }} className="text-left py-2 px-3 rounded hover:bg-stone-100 text-[#0A6C74] font-semibold">Private trips</button>
               <button
                 type="button"
                 onClick={handleExcursionsClick}
@@ -771,7 +771,7 @@ export const Header: React.FC<HeaderProps> = ({
                 {t('mobile.reviews')}
               </button>
               <a href="/blog" onClick={() => setMobileMenuOpen(false)} className="text-left py-2 px-3 rounded hover:bg-stone-100 dark:hover:bg-slate-800/60 font-semibold text-[#0A6C74] dark:text-teal-300 flex items-center justify-between">
-                <span>Blog & Travel Journal</span>
+                <span>Travel blog</span>
                 <span className="text-[10px] font-bold uppercase tracking-wider bg-[#0A6C74]/10 text-[#0A6C74] px-2 py-0.5 rounded-full">New</span>
               </a>
               <button
@@ -785,7 +785,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <CalendarCheck className="w-4 h-4 text-[#0A6C74] dark:text-[#2dd4bf]" />
                 <span>{t('nav.findMyBooking')}</span>
               </button>
-              <a href="/support" onClick={() => setMobileMenuOpen(false)} className="text-left py-2 px-3 rounded hover:bg-stone-100 dark:hover:bg-slate-800/60 font-semibold text-[#0A6C74] dark:text-teal-300">Customer Support & Tickets</a>
+              <a href="/support" onClick={() => setMobileMenuOpen(false)} className="text-left py-2 px-3 rounded hover:bg-stone-100 dark:hover:bg-slate-800/60 font-semibold text-[#0A6C74] dark:text-teal-300">Help & support</a>
 
               <div className="pt-3 border-t border-stone-200 flex flex-col space-y-2">
                 <button

@@ -31,16 +31,16 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'mobile.selectLanguage': 'Select Language',
 
     // Hero Section
-    'hero.badge': 'Direct Tour Operator in Hurghada & El Gouna',
+    'hero.badge': 'Local tours from Hurghada',
     'hero.guestsHosted': 'Check Available Departure Dates',
     'hero.title1': 'Explore the Red Sea',
-    'hero.title2': 'with Local Captains',
+    'hero.title2': 'with a local team',
     'hero.subtitle':
-      'Explore snorkeling boat trips, island visits, and desert quad safaris from Hurghada and nearby Red Sea destinations. Check each excursion for departure days, pickup options, and availability.',
-    'hero.guarantee1': 'Weather may affect departures',
-    'hero.guarantee2': 'Cancellation terms shown before booking',
-    'hero.guarantee3': 'Pickup zones and supplements shown per tour',
-    'hero.guarantee4': 'Local crews and guides on selected tours',
+      'Spend a day on the water, visit a Red Sea island or explore the desert by quad bike. Browse our tours from Hurghada and check the details before you book.',
+    'hero.guarantee1': 'Trips may change with the weather',
+    'hero.guarantee2': 'Check cancellation terms before booking',
+    'hero.guarantee3': 'Pickup details shown for each tour',
+    'hero.guarantee4': 'Local crews and guides',
 
     // Search Module
     'search.destination': 'Destination',
@@ -58,7 +58,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     // Popular Tours Section
     'popular.title': 'Popular Tours in the Red Sea',
     'popular.subtitle':
-      'Inclusions, pickup coverage, equipment, and marine park fees are listed on each excursion page.',
+      'Boat trips, island days and desert adventures. Open a tour to see the price, pickup details and what’s included.',
     'popular.viewAll': 'View All Tours',
     'popular.quickBook': 'Book Now',
     'popular.viewDetails': 'View Tour',
@@ -70,12 +70,12 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     // Why Choose Us
     'why.title': 'Why Book Directly With Us',
     'why.subtitle':
-      'We work with local activity providers, experienced skippers, and guides. The operating provider and included services are identified for each excursion.',
+      'We’re based in Hurghada and work with local boat crews, guides and activity providers. Check each tour page to see who runs it and what’s included.',
 
     // Final CTA
     'cta.title': 'Ready to explore the Red Sea?',
     'cta.subtitle':
-      'Review the cancellation terms and pickup zones for your selected excursion, including any hotel-area supplements, before confirming.',
+      'Pick a trip, check the details and book when you’re ready. Need a hand? Message our team on WhatsApp.',
     'cta.browse': 'View All Tours',
     'cta.chat': 'Chat on WhatsApp',
     'cta.lookup': 'Find My Booking',
@@ -97,7 +97,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'whatsapp.presetBooking': '🎟️ Existing booking: Need help with my reservation',
 
     // Footer
-    'footer.companyDesc': 'Hurghada-based tour operator offering Red Sea boat trips, island excursions, snorkeling, and desert experiences. Check each excursion for its operator and included services.',
+    'footer.companyDesc': 'We’re based in Hurghada and help visitors enjoy Red Sea boat trips, island days, snorkelling and desert safaris. Check each tour for prices, pickup details and what’s included.',
     'footer.destinations': 'Destinations',
     'footer.experiences': 'Experiences',
     'footer.customerCare': 'Customer Support',

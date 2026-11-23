@@ -1417,7 +1417,7 @@ export async function getPublishedCategories(forceRefresh = false): Promise<Cate
   // 1. Fetch published categories ordered by sort_order
   const { data: cats, error: catError } = await supabase
     .from('categories')
-    .select('id, name, slug, icon_name, image, description, sort_order')
+    .select('id, name, slug, icon_name, image, description, seo_title, seo_description, seo_keywords, sort_order')
     .eq('status', 'published')
     .order('sort_order', { ascending: true });
 
@@ -1430,6 +1430,28 @@ export async function getPublishedCategories(forceRefresh = false): Promise<Cate
     cachedCategories = { data: [], timestamp: Date.now() };
     writePublicDataCache('catalogue:categories', []);
     return [];
+  }
+
+  // SEO & GEO Control Center stores category overrides in seo_metadata.
+  // Keep the category-table fields as a backwards-compatible fallback.
+  const categorySeoById = new Map<string, { seoTitle?: string; seoDescription?: string; seoKeywords?: string[] }>();
+  const { data: categorySeoRows, error: categorySeoError } = await supabase
+    .from('seo_metadata')
+    .select('entity_id, seo_title, meta_description, seo_keywords')
+    .eq('entity_type', 'category')
+    .in('entity_id', cats.map((category) => category.id));
+
+  if (categorySeoError) {
+    console.warn('Could not load category SEO overrides; using category defaults:', formatSupabaseError(categorySeoError));
+  } else {
+    for (const row of categorySeoRows || []) {
+      if (!row.entity_id) continue;
+      categorySeoById.set(row.entity_id, {
+        seoTitle: row.seo_title || undefined,
+        seoDescription: row.meta_description || undefined,
+        seoKeywords: Array.isArray(row.seo_keywords) ? row.seo_keywords : [],
+      });
+    }
   }
 
   // 2. Fetch published tour category relations to calculate real tour counts
@@ -1484,6 +1506,11 @@ export async function getPublishedCategories(forceRefresh = false): Promise<Cate
     image: c.image || NEUTRAL_CATEGORY_PLACEHOLDER,
     tourCount: countMap[c.id] || 0,
     description: c.description || '',
+    seoTitle: categorySeoById.get(c.id)?.seoTitle || c.seo_title || undefined,
+    seoDescription: categorySeoById.get(c.id)?.seoDescription || c.seo_description || undefined,
+    seoKeywords: categorySeoById.get(c.id)?.seoKeywords?.length
+      ? categorySeoById.get(c.id)!.seoKeywords
+      : (Array.isArray(c.seo_keywords) ? c.seo_keywords : []),
   }));
 
   cachedCategories = {

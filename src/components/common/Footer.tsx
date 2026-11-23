@@ -73,7 +73,7 @@ export const Footer: React.FC<FooterProps> = ({
             </div>
             <div>
               <span className="text-stone-900 dark:text-white font-semibold block text-xs">WhatsApp Support</span>
-              <span className="text-[11px] text-stone-500 dark:text-slate-400">Multilingual support for international travellers</span>
+              <span className="text-[11px] text-stone-500 dark:text-slate-400">We can help in several languages</span>
             </div>
           </div>
 
@@ -116,7 +116,7 @@ export const Footer: React.FC<FooterProps> = ({
             </p>
             <div className="flex items-center space-x-2 text-[11px] text-stone-700 dark:text-slate-300">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span>Safety inspected boats and licensed local guides</span>
+              <span>Trips are run by local providers and guides</span>
             </div>
           </div>
 
@@ -269,7 +269,7 @@ export const Footer: React.FC<FooterProps> = ({
                     className="text-amber-600 dark:text-amber-300 hover:underline transition-colors flex items-center space-x-1 cursor-pointer"
                   >
                     <HelpCircle className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
-                    <span>Require Help & Concierge</span>
+                    <span>Need help? Talk to us</span>
                   </button>
                 </li>
               )}
@@ -306,7 +306,7 @@ export const Footer: React.FC<FooterProps> = ({
                   </button>
                 </li>
               )}
-              <li><a href="/blog" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">Travel Journal</a></li>
+              <li><a href="/blog" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">Travel blog</a></li>
               <li>
                 <a href="/about" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">About Awesome Adventure Tours</a>
               <li>

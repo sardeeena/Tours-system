@@ -188,7 +188,7 @@ export const StepReview: React.FC<StepReviewProps> = ({
         </div>
 
         {selectedExtras.length === 0 ? (
-          <p className="text-xs text-stone-500 italic">No additional extras selected.</p>
+          <p className="text-xs text-stone-500 italic">You haven’t added any extras.</p>
         ) : (
           <div className="space-y-1.5 text-xs">
             {selectedExtras.map((extra) => (

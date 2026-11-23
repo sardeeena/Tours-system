@@ -1,4 +1,4 @@
-import { Tour } from '../types';
+import { Category, Tour } from '../types';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 import { readPublicDataCache, writePublicDataCache } from './publicDataCache';
 
@@ -305,17 +305,17 @@ export const seoService = {
   /**
    * Generates tailored SEO metadata for Category & Filter Views
    */
-  generateCategorySeo(categoryName: string, tourCount: number, matchingTours: Tour[] = []): SeoMetadata {
+  generateCategorySeo(categoryName: string, tourCount: number, matchingTours: Tour[] = [], category?: Category): SeoMetadata {
     const origin = typeof window !== 'undefined' ? window.location.origin : 'https://awesomeadventure.tours';
     const isAll = categoryName === 'All' || !categoryName;
 
-    const title = isAll
+    const title = category?.seoTitle?.trim() || (isAll
       ? 'Boat Trips & Island Tours in Egypt | Awesome Adventure Tours'
-      : `${categoryName} Tours in Egypt | Awesome Adventure Tours`;
+      : `${categoryName} Tours in Egypt | Awesome Adventure Tours`);
 
-    const description = isAll
+    const description = category?.seoDescription?.trim() || (isAll
       ? `Compare ${tourCount} Red Sea boat trips, island cruises, snorkeling reefs, and desert safaris. Review pickup details, inclusions, and cancellation terms for each excursion.`
-      : `Explore ${tourCount} ${categoryName.toLowerCase()} in Hurghada and the Red Sea. Compare departure details, inclusions, and pickup arrangements for each excursion.`;
+      : `Explore ${tourCount} ${categoryName.toLowerCase()} in Hurghada and the Red Sea. Compare departure details, inclusions, and pickup arrangements for each excursion.`);
 
     const schemaJsonLd: Record<string, unknown> = {
       '@context': 'https://schema.org',
@@ -335,6 +335,7 @@ export const seoService = {
       title,
       description,
       keywords: [
+        ...(category?.seoKeywords || []).filter((keyword) => typeof keyword === 'string' && keyword.trim().length > 0),
         categoryName,
         'Egypt boat trips and island tours',
         'Hurghada boat trips',

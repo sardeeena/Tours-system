@@ -201,8 +201,8 @@ export const AdminSeoManager: React.FC = () => {
     } else if (currentScope === 'categories') {
       const cat = currentCats.find((c) => c.id === entityId || c.slug === entityId);
       if (cat) {
-        defaultTitle = `${cat.name} Excursions | Awesome Adventure Tours`;
-        defaultDesc = cat.description?.slice(0, 155) || `Browse published ${cat.name.toLowerCase()} excursions and review each trip’s details before booking.`;
+        defaultTitle = cat.seo_title || `${cat.name} Excursions | Awesome Adventure Tours`;
+        defaultDesc = cat.seo_description || cat.description?.slice(0, 155) || `Browse published ${cat.name.toLowerCase()} excursions and review each trip’s details before booking.`;
         defaultCanonical = 'https://awesomeadventure.tours/excursions';
         defaultOgImage = cat.image || defaultOgImage;
       }
