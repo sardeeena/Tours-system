@@ -28,8 +28,12 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname === '/sw.js' || url.pathname === '/manifest.webmanifest') return;
   if (!STATIC_FILE.test(url.pathname) || request.destination === 'document') return;
 
+  const immutableAsset = url.pathname.startsWith('/assets/');
   const cachePromise = caches.open(STATIC_CACHE);
-  const updatePromise = cachePromise.then(async (cache) => {
+  const cachedResponsePromise = cachePromise.then((cache) => cache.match(request));
+  const updatePromise = cachedResponsePromise.then(async (cached) => {
+    if (cached && immutableAsset) return cached;
+    const cache = await cachePromise;
     const response = await fetch(request);
     if (response && response.ok && response.type === 'basic') {
       await cache.put(request, response.clone());
@@ -39,11 +43,8 @@ self.addEventListener('fetch', (event) => {
     return response;
   });
 
-  // Register the refresh synchronously with the fetch event; cached assets are
-  // returned immediately while the latest copy is stored for the next visit.
-  event.waitUntil(updatePromise.catch(() => undefined));
-  event.respondWith(cachePromise.then(async (cache) => {
-    const cached = await cache.match(request);
-    return cached || updatePromise;
-  }));
+  // Register the refresh synchronously with the fetch event. Hashed build
+  // assets are immutable; public root assets use stale-while-revalidate.
+  event.waitUntil(updatePromise.then(() => undefined).catch(() => undefined));
+  event.respondWith(cachedResponsePromise.then((cached) => cached || updatePromise));
 });
