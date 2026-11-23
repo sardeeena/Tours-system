@@ -43,6 +43,22 @@ The exact technical and user-management route list is enforced by the automated 
 
 Most admin CRUD screens use the Supabase client directly. Their effective authorization is enforced by Postgres RLS policies and restricted RPCs. A server-route audit cannot certify those paths. Changes to table policies, privileged functions, storage policies, or role/permission assignment flows require their own database-focused review and pgTAP coverage.
 
+## Customer-facing permission boundaries
+
+| Customer action | Access model | Notes |
+|---|---|---|
+| Guest booking | Public server endpoint / guarded booking RPC | No direct anonymous writes to booking tables; server validates booking and uses trusted database operations. |
+| Signed-in booking access | Authenticated, owner-scoped RLS | Customers can read their own bookings; update triggers limit self-service changes to pickup/contact details and cancellation requests. |
+| Guest contact / inquiry | Public server endpoint | Validation, honeypot and rate limits; database writes use the server-only key. |
+| Newsletter signup / unsubscribe | Public server endpoint | Subscription state is not writable directly by anonymous browser clients. |
+| Tour reviews | Public server endpoint | Guest and signed-in submissions are accepted; reviews remain pending and unverified until staff moderation. |
+| Support tickets | Authenticated customer portal | Ticket ownership is tied to an Auth user ID. Guests use the public inquiry/contact flow instead; internal notes and staff queues remain permission-gated. |
+| Customer profile | Auth signup lifecycle + owner-scoped RLS | Customers can access their own profile; role, confirmation, and server-managed fields are protected by database triggers. |
+| Customer CRM record | Owner-scoped RLS + protected update trigger | Self-service edits are limited to contact and preference fields; CRM/booking-derived fields remain protected. |
+| File uploads | Storage bucket RLS | Avatars and tour media are public-read; avatar uploads are user-folder scoped; vouchers and support attachments are private and permission/ticket scoped. |
+
+The live audit found 76 public tables with RLS enabled and no public table missing RLS. It also found stale anonymous table grants on tables that had no anonymous or PUBLIC RLS policy. The accompanying migration revokes those unnecessary grants without changing customer-facing server endpoints or authenticated staff policies.
+
 ## Change procedure
 
 1. Add or update the route in the inventory test and this document.
