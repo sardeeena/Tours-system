@@ -87,6 +87,7 @@ assert(inquiryRoute.includes("typeof phone !== 'undefined' && phone !== null && 
 assert(inquiryRoute.includes("isIP(clientIp)"), 'Inquiry endpoint requires a valid resolved client IP');
 assert(server.includes('rateLimitNetworkKey(resolvedIp)'), 'Shared HTTP rate limits normalize IPv6 addresses to a /64 network key');
 assert(server.includes('rateLimitNetworkKey(resolvedClientIp)'), 'Public review database rate limits normalize IPv6 addresses to a /64 network key');
+assert(inquiryRoute.includes('rateLimitNetworkKey(resolvedClientIp)'), 'Public inquiry database rate limits normalize IPv6 addresses to a /64 network key');
 assert(server.includes("p_action: 'public_review_tour'"), 'Review submissions have an independent per-tour network budget');
 assert(server.includes("p_action: 'public_review_account'"), 'Signed-in review submissions have an independent per-account budget');
 assert(inquiryRoute.includes("p_action: 'public_inquiry_email'"), 'Inquiry endpoint applies a database-backed per-email rate limit');
