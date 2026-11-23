@@ -224,7 +224,9 @@ export async function getStaticPages(forceRefresh = false): Promise<StaticPageCo
   }
 
   const customPages = await getSetting<StaticPageContent[]>('pages_content', INITIAL_STATIC_PAGES);
-  const savedPages = Array.isArray(customPages) ? customPages : [];
+  const savedPages = (Array.isArray(customPages) ? customPages : []).filter((page) =>
+    page?.slug && page.published !== false && page.status !== 'draft' && page.status !== 'unpublished'
+  );
   const defaultsBySlug = new Map(INITIAL_STATIC_PAGES.map((page) => [page.slug, page]));
   const legalPolicySlugs = new Set(['privacy', 'terms', 'cancellation-policy', 'cookie-policy']);
 
