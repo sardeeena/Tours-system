@@ -27,6 +27,7 @@ import {
 } from '../types/database';
 import { PickupLocation, BookingExtra } from '../types/booking';
 import { ALL_TOURS } from '../data/toursData';
+import { clearPublicDataCache, readPublicDataCache, writePublicDataCache, PUBLIC_DATA_CACHE_TTL_MS } from './publicDataCache';
 
 /**
  * Transforms database tour record with related collections into the frontend Tour structure
@@ -155,12 +156,18 @@ interface CacheEntry<T> {
 let cachedPublishedTours: CacheEntry<Tour[]> | null = null;
 let cachedDestinations: CacheEntry<Destination[]> | null = null;
 let cachedCategories: CacheEntry<Category[]> | null = null;
-const CACHE_TTL_MS = 5 * 60 * 1000;
+const CACHE_TTL_MS = PUBLIC_DATA_CACHE_TTL_MS;
+let refreshingPublishedTours = false;
+let refreshingDestinations = false;
+let refreshingCategories = false;
 
 export function invalidateCatalogueCache() {
   cachedPublishedTours = null;
   cachedDestinations = null;
   cachedCategories = null;
+  clearPublicDataCache('catalogue:tours');
+  clearPublicDataCache('catalogue:destinations');
+  clearPublicDataCache('catalogue:categories');
 }
 
 export interface TourFilterOptions {
@@ -174,7 +181,7 @@ export interface TourFilterOptions {
 /**
  * Fetches all published tours for the public website with in-memory caching
  */
-export async function getPublishedTours(options?: TourFilterOptions): Promise<Tour[]> {
+export async function getPublishedTours(options?: TourFilterOptions, forceRefresh = false): Promise<Tour[]> {
   const filterTours = (sourceList: Tour[]): Tour[] => {
     let tours = [...sourceList];
     if (options?.destination && options.destination !== 'All' && options.destination !== 'All Destinations') {
@@ -200,9 +207,23 @@ export async function getPublishedTours(options?: TourFilterOptions): Promise<To
     return tours;
   };
 
-  // Serve from fast memory cache if valid and not demanding drafts
-  if (!options?.includeDrafts && cachedPublishedTours && (Date.now() - cachedPublishedTours.timestamp < CACHE_TTL_MS)) {
-    return filterTours(cachedPublishedTours.data);
+  // Public catalogue is cache-first across reloads. Expired data remains visible
+  // while one background refresh updates the cache; admin/draft reads never use it.
+  if (!options?.includeDrafts && !options?.featuredOnly && !forceRefresh) {
+    const persisted = readPublicDataCache<Tour[]>('catalogue:tours');
+    if (persisted) {
+      cachedPublishedTours = { data: persisted.data, timestamp: persisted.updatedAt };
+      if (!persisted.isFresh && !refreshingPublishedTours) {
+        refreshingPublishedTours = true;
+        void getPublishedTours(undefined, true)
+          .catch((error) => console.warn('Background public catalogue refresh failed:', error))
+          .finally(() => { refreshingPublishedTours = false; });
+      }
+      return filterTours(persisted.data);
+    }
+    if (cachedPublishedTours && Date.now() - cachedPublishedTours.timestamp < CACHE_TTL_MS) {
+      return filterTours(cachedPublishedTours.data);
+    }
   }
 
   if (!isSupabaseConfigured() || isSchemaMissing()) {
@@ -276,6 +297,10 @@ export async function getPublishedTours(options?: TourFilterOptions): Promise<To
     }
 
     if (!data || data.length === 0) {
+      if (!options?.includeDrafts && !options?.featuredOnly) {
+        cachedPublishedTours = { data: [], timestamp: Date.now() };
+        writePublicDataCache('catalogue:tours', []);
+      }
       return [];
     }
 
@@ -301,6 +326,7 @@ export async function getPublishedTours(options?: TourFilterOptions): Promise<To
         data: baseTours,
         timestamp: Date.now(),
       };
+      writePublicDataCache('catalogue:tours', baseTours);
     }
 
     return filterTours(baseTours);
@@ -1260,9 +1286,20 @@ export function notifyCatalogueDataChanged(
 /**
  * Fetches all published destinations for the public website with real dynamic tour counts
  */
-export async function getPublishedDestinations(): Promise<Destination[]> {
-  if (cachedDestinations && (Date.now() - cachedDestinations.timestamp < CACHE_TTL_MS)) {
-    return cachedDestinations.data;
+export async function getPublishedDestinations(forceRefresh = false): Promise<Destination[]> {
+  if (!forceRefresh) {
+    const persisted = readPublicDataCache<Destination[]>('catalogue:destinations');
+    if (persisted) {
+      cachedDestinations = { data: persisted.data, timestamp: persisted.updatedAt };
+      if (!persisted.isFresh && !refreshingDestinations) {
+        refreshingDestinations = true;
+        void getPublishedDestinations(true)
+          .catch((error) => console.warn('Background destination refresh failed:', error))
+          .finally(() => { refreshingDestinations = false; });
+      }
+      return persisted.data;
+    }
+    if (cachedDestinations && Date.now() - cachedDestinations.timestamp < CACHE_TTL_MS) return cachedDestinations.data;
   }
 
   if (!isSupabaseConfigured()) {
@@ -1282,6 +1319,8 @@ export async function getPublishedDestinations(): Promise<Destination[]> {
   }
 
   if (!dests || dests.length === 0) {
+    cachedDestinations = { data: [], timestamp: Date.now() };
+    writePublicDataCache('catalogue:destinations', []);
     return [];
   }
 
@@ -1323,6 +1362,7 @@ export async function getPublishedDestinations(): Promise<Destination[]> {
     data: mapped,
     timestamp: Date.now(),
   };
+  writePublicDataCache('catalogue:destinations', mapped);
 
   return mapped;
 }
@@ -1330,9 +1370,20 @@ export async function getPublishedDestinations(): Promise<Destination[]> {
 /**
  * Fetches all published categories for the public website with real dynamic tour counts
  */
-export async function getPublishedCategories(): Promise<Category[]> {
-  if (cachedCategories && (Date.now() - cachedCategories.timestamp < CACHE_TTL_MS)) {
-    return cachedCategories.data;
+export async function getPublishedCategories(forceRefresh = false): Promise<Category[]> {
+  if (!forceRefresh) {
+    const persisted = readPublicDataCache<Category[]>('catalogue:categories');
+    if (persisted) {
+      cachedCategories = { data: persisted.data, timestamp: persisted.updatedAt };
+      if (!persisted.isFresh && !refreshingCategories) {
+        refreshingCategories = true;
+        void getPublishedCategories(true)
+          .catch((error) => console.warn('Background category refresh failed:', error))
+          .finally(() => { refreshingCategories = false; });
+      }
+      return persisted.data;
+    }
+    if (cachedCategories && Date.now() - cachedCategories.timestamp < CACHE_TTL_MS) return cachedCategories.data;
   }
 
   if (!isSupabaseConfigured()) {
@@ -1352,6 +1403,8 @@ export async function getPublishedCategories(): Promise<Category[]> {
   }
 
   if (!cats || cats.length === 0) {
+    cachedCategories = { data: [], timestamp: Date.now() };
+    writePublicDataCache('catalogue:categories', []);
     return [];
   }
 
@@ -1411,6 +1464,7 @@ export async function getPublishedCategories(): Promise<Category[]> {
     data: mapped,
     timestamp: Date.now(),
   };
+  writePublicDataCache('catalogue:categories', mapped);
 
   return mapped;
 }
