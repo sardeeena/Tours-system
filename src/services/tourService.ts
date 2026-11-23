@@ -2013,6 +2013,7 @@ export async function submitTourReview(payload: {
   rating: number;
   comment: string;
   travelerType?: 'Couple' | 'Family' | 'Solo' | 'Friends';
+  website_url_hp?: string;
 }): Promise<void> {
   if (!Number.isInteger(payload.rating) || payload.rating < 1 || payload.rating > 5) {
     throw new Error('A customer review must include a rating from 1 to 5 stars.');
@@ -2046,6 +2047,7 @@ export async function submitTourReview(payload: {
       rating: payload.rating,
       comment: payload.comment.trim(),
       travelerType: payload.travelerType || 'Couple',
+      website_url_hp: payload.website_url_hp || '',
     }),
   });
   const result = await response.json().catch(() => ({}));
