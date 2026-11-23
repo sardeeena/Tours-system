@@ -11,8 +11,8 @@
     "communication_template": 18,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1068,
-    "ui_catalog_messages": 1149,
+    "private_ui_messages": 1085,
+    "ui_catalog_messages": 1166,
     "source_records": 112
   },
   "records": [
@@ -5052,8 +5052,26 @@
         "private.text.e28cbf9c": "Volgende foto",
         "private.text.e9175fbd": "Uw account is beveiligd",
         "private.text.f7239c75": "* Tijden zijn bij benadering en kunnen veranderen door lokale logistiek en omstandigheden op zee of het weer.",
-        "private.text.36c24f6e": "Foto's binnenkort beschikbaar"
-      }
+        "private.text.36c24f6e": "Foto's binnenkort beschikbaar",
+        "private.text.0093d607": "Vertel ons waarmee we je kunnen helpen. Ons team neemt contact met je op.",
+        "private.text.16fe3d0b": "Reisblog",
+        "private.text.36865756": "De excursies worden verzorgd door lokale aanbieders en gidsen.",
+        "private.text.5e6216ec": "Privé-excursies",
+        "private.text.6f037b40": "Je hebt geen toegang tot deze pagina",
+        "private.text.6f7be91e": "We helpen je in meerdere talen",
+        "private.text.819fed0b": "Hulp en ondersteuning van Awesome Adventure Tours",
+        "private.text.839c8e12": "Stuur ons een bericht en bekijk alle reacties op één plek.",
+        "private.text.868ef0a2": "Je hebt nog geen extra's toegevoegd.",
+        "private.text.ce4cdb64": "Log in om ons een bericht te sturen en onze reacties te volgen.",
+        "private.text.d4bd511a": "Hulp nodig? Neem contact met ons op",
+        "private.text.d82abc8f": "Bekijk klantvragen en help het team met antwoorden.",
+        "private.text.e609c72f": "Hulp en ondersteuning",
+        "private.text.e929ba97": "Excursiegegevens controleren...",
+        "private.text.ef34eff4": "Je account heeft geen toestemming om supporttickets te beheren.",
+        "private.text.fff7de5b": "Reisassistent",
+        "private.text.ffff4c4e": "Excursiesuggesties"
+      },
+      "private_ui_message_count": 1085
     },
     {
       "entity_type": "tour",
