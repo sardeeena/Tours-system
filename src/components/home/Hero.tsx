@@ -125,7 +125,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
   return (
     <section
       ref={heroSectionRef}
-      className="relative z-10 w-full bg-gradient-to-b from-[#E2F1F3] via-[#EFF7F8] to-[#FAF8F5] dark:bg-[#0E1B2A] text-stone-900 dark:text-white overflow-visible transition-colors duration-300"
+      className="relative z-10 w-full bg-gradient-to-b from-[#E2F1F3] via-[#EFF7F8] to-[#FAF8F5] dark:bg-[#0E1B2A] text-stone-900 dark:text-white overflow-hidden transition-colors duration-300"
       onMouseEnter={() => setIsPointerOver(true)}
       onMouseLeave={() => setIsPointerOver(false)}
     >
@@ -153,7 +153,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
       <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-[#0E1B2A]/10 via-[#0E1B2A]/[0.04] to-[#FAF8F5]/45 dark:from-[#0E1B2A]/35 dark:via-[#0E1B2A]/20 dark:to-[#0E1B2A]/75" />
       <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-[#FAF8F5]/10 via-transparent to-[#FAF8F5]/10 dark:from-black/10 dark:via-transparent dark:to-black/10" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-8 pt-8 sm:pt-12 pb-0">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-8 pt-8 sm:pt-12 pb-8 sm:pb-10">
         
         {/* Dynamic Synchronized Headline & Narrative based on active cinematic tour */}
         <div className="max-w-3xl mr-auto ml-0 mb-5 sm:mb-6 min-h-[100px] sm:min-h-[120px] rounded-2xl sm:rounded-3xl border border-white/35 bg-white/30 dark:bg-[#0E1B2A]/40 backdrop-blur-sm shadow-lg shadow-black/10 px-4 py-4 sm:px-6 sm:py-5 text-left [direction:ltr]">
@@ -187,7 +187,7 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
           initial={prefersReducedMotion ? false : { opacity: 0, y: 22 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: prefersReducedMotion ? 0 : 0.6, delay: prefersReducedMotion ? 0 : 0.2 }}
-          className="relative z-30 w-full max-w-5xl ml-0 mr-auto translate-y-1/2 -mb-[170px] sm:-mb-[120px] lg:-mb-12"
+          className="relative z-20 mt-6 sm:mt-8 w-full max-w-5xl ml-0 mr-auto pb-1"
         >
           <SearchModule onSearch={onSearch} resultCount={resultCount} destinations={destinations} categories={categories} />
         </motion.div>
