@@ -653,7 +653,7 @@ class SupabaseBookingRepository implements IBookingRepository {
   }
 
   async listBookings(filters?: { status?: string; limit?: number; date?: string }): Promise<Booking[]> {
-    if (filters?.date && !/^\\d{4}-\\d{2}-\\d{2}$/.test(filters.date)) {
+    if (filters?.date && !/^\d{4}-\d{2}-\d{2}$/.test(filters.date)) {
       throw new Error('A valid booking date is required.');
     }
     const supabaseConfigured = isSupabaseConfigured();
