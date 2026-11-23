@@ -117,7 +117,7 @@ export const StepReview: React.FC<StepReviewProps> = ({
               </span>
             </div>
             <div>
-              <span className="text-[10px] uppercase font-bold text-stone-400 block">Tour Language</span>
+              <span className="text-[10px] uppercase font-bold text-stone-400 block">Guide language</span>
               <span className="font-semibold text-stone-800">{tourLanguage}</span>
             </div>
           </div>
@@ -145,9 +145,9 @@ export const StepReview: React.FC<StepReviewProps> = ({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
           <div>
-            <span className="text-[10px] uppercase font-bold text-stone-400 block">Transfer Region</span>
+            <span className="text-[10px] uppercase font-bold text-stone-400 block">Pickup area</span>
             <span className="font-semibold text-stone-800">
-              {pickupLocation ? pickupLocation.name : tour.pickupAvailable ? 'Pickup selection required' : 'No pickup service'}
+              {pickupLocation ? pickupLocation.name : tour.pickupAvailable ? 'Choose a pickup location' : 'No pickup service'}
             </span>
             <span className="text-[11px] text-stone-500 block mt-0.5">
               {pickupLocation?.area}
@@ -155,9 +155,9 @@ export const StepReview: React.FC<StepReviewProps> = ({
           </div>
 
           <div>
-            <span className="text-[10px] uppercase font-bold text-stone-400 block">Hotel / Resort Name</span>
+            <span className="text-[10px] uppercase font-bold text-stone-400 block">Hotel or resort</span>
             <span className="font-semibold text-stone-800">
-              {hotelName ? hotelName : customer.hotelName || 'To be confirmed before departure'}
+              {hotelName ? hotelName : customer.hotelName || 'To be confirmed before your trip'}
             </span>
             {customer.roomNumber && (
               <span className="text-[11px] text-stone-500 block mt-0.5">
@@ -188,7 +188,7 @@ export const StepReview: React.FC<StepReviewProps> = ({
         </div>
 
         {selectedExtras.length === 0 ? (
-          <p className="text-xs text-stone-500 italic">No additional extras selected.</p>
+          <p className="text-xs text-stone-500 italic">You haven’t added any extras.</p>
         ) : (
           <div className="space-y-1.5 text-xs">
             {selectedExtras.map((extra) => (
