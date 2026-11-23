@@ -4,6 +4,10 @@ import { supabase } from '../../services/supabaseClient';
 import { EUROPEAN_LOCALE_ROLLOUT } from '../../types/i18n';
 import { useToast } from '../../contexts/ToastContext';
 
+type LocaleSummary = { draft: number; review: number; published: number; outdated: number; total: number };
+
+const ROLLOUT_LOCALES = EUROPEAN_LOCALE_ROLLOUT.filter((item) => ['fr', 'nl', 'pl'].includes(item.code));
+
 type TranslationRow = {
   id: string; entity_type: string; entity_key: string; locale: string;
   translated_slug: string | null; title: string | null; summary: string | null;
@@ -19,7 +23,8 @@ export const AdminTranslationManager: React.FC = () => {
   const [selectedId, setSelectedId] = useState('');
   const [entityType, setEntityType] = useState('tour');
   const [entityKey, setEntityKey] = useState('');
-  const [locale, setLocale] = useState('fr');
+  const [locale, setLocale] = useState('');
+  const [localeSummary, setLocaleSummary] = useState<Record<string, LocaleSummary>>({});
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
   const [summary, setSummary] = useState('');
@@ -49,6 +54,13 @@ export const AdminTranslationManager: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true);
     try {
+      const summaryResult = await request('/api/admin/translations?summary=true');
+      setLocaleSummary(summaryResult.locale_summary || {});
+      if (!locale) {
+        setRows([]);
+        setSelectedId('');
+        return;
+      }
       const result = await request('/api/admin/translations?locale=' + encodeURIComponent(locale));
       setRows(result.translations || []);
     } catch (error: any) {
@@ -127,7 +139,7 @@ export const AdminTranslationManager: React.FC = () => {
   };
 
   const save = async (state: 'draft' | 'review' | 'published') => {
-    if (!entityKey.trim() || !sourceChecksum.trim()) {
+    if (!locale || !entityKey.trim() || !sourceChecksum.trim()) {
       showToast('A source record key and source checksum are required before saving.', 'error'); return;
     }
     let parsedContent: Record<string, unknown>;
@@ -166,7 +178,7 @@ export const AdminTranslationManager: React.FC = () => {
           <p className="mt-1 text-sm text-stone-400">Super Admin + verified MFA required. Drafts never appear on public pages.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={() => setConfirmGenerate(true)} disabled={generating || loading || saving || !['fr','nl','pl'].includes(locale)} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{generating ? 'Generating ' + locale.toUpperCase() + ' drafts…' : 'Generate ' + locale.toUpperCase() + ' drafts'}</button>
+          <button type="button" onClick={() => setConfirmGenerate(true)} disabled={generating || loading || saving || !locale} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{generating ? 'Generating ' + locale.toUpperCase() + ' drafts…' : 'Generate ' + locale.toUpperCase() + ' drafts'}</button>
           <button onClick={() => void load()} disabled={loading || generating} className="rounded border border-stone-700 px-3 py-2 text-sm disabled:opacity-50">{loading ? 'Loading…' : 'Refresh records'}</button>
         </div>
       </header>
@@ -175,6 +187,19 @@ export const AdminTranslationManager: React.FC = () => {
         <p className="text-sm text-stone-300">This translates published tours, destinations, blog posts, public pages, communication templates and the interface catalog into the selected language. It uses Gemini. French, Dutch and Polish are enabled here. All results remain drafts; nothing is published automatically.</p>
         <div className="flex flex-wrap gap-2"><button type="button" onClick={() => setConfirmGenerate(false)} className="rounded border border-stone-600 px-3 py-2 text-sm">Cancel</button><button type="button" onClick={() => { setConfirmGenerate(false); void generateSelectedLocale(); }} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white">Start generating drafts</button></div>
       </div>}
+      <section aria-labelledby="translation-locale-overview" className="space-y-3">
+        <div><h2 id="translation-locale-overview" className="font-semibold text-white">Supported translation languages</h2><p className="text-xs text-stone-400">Only French, Dutch and Polish are enabled in this rollout. Counts come from saved database records; prepared files are not counted until safely imported.</p></div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {ROLLOUT_LOCALES.map((item) => {
+            const stats = localeSummary[item.code] || { draft: 0, review: 0, published: 0, outdated: 0, total: 0 };
+            return <button key={item.code} type="button" onClick={() => setLocale(item.code)} aria-pressed={locale === item.code} className={'rounded-xl border p-4 text-left transition-colors ' + (locale === item.code ? 'border-teal-500 bg-teal-950/30' : 'border-stone-800 bg-stone-900/60 hover:bg-stone-800')}>
+              <div className="flex items-center justify-between gap-2"><span className="font-semibold text-white">{item.nativeName}</span><span className="text-xs uppercase text-stone-400">{item.code}</span></div>
+              <p className="mt-2 text-2xl font-bold tabular-nums text-white">{stats.total}</p><p className="text-xs text-stone-400">saved records</p>
+              <p className="mt-3 text-xs text-stone-400">{stats.draft} drafts · {stats.review} in review · {stats.published} published · {stats.outdated} outdated</p>
+            </button>;
+          })}
+        </div>
+      </section>
       {generationProgress && <p role="status" aria-live="polite" className="rounded-lg border border-stone-800 bg-stone-900/50 px-4 py-3 text-sm text-stone-300">{generationProgress}</p>}
       <div className="grid gap-5 xl:grid-cols-[minmax(240px,0.8fr)_minmax(0,2fr)]">
         <aside className="rounded-xl border border-stone-800 bg-stone-900/60 p-4">
@@ -184,14 +209,14 @@ export const AdminTranslationManager: React.FC = () => {
               <div className="flex items-center justify-between gap-2"><span className="font-medium">{row.title || row.entity_key}</span><span className="text-[10px] uppercase text-stone-400">{row.translation_state}</span></div>
               <p className="mt-1 text-xs text-stone-500">{row.locale} · {row.entity_type} · {row.entity_key}</p>
             </button>)}
-            {!rows.length && <p className="py-8 text-center text-sm text-stone-500">No translation records for this locale yet.</p>}
+            {!rows.length && <p className="py-8 text-center text-sm text-stone-500">{locale ? 'No translation records for this language yet. Generate drafts or import a validated review bundle.' : 'Choose one of the supported languages above to view its saved translations.'}</p>}
           </div>
         </aside>
         <section className="rounded-xl border border-stone-800 bg-stone-900/60 p-4 sm:p-6">
           <div className="mb-4 flex items-center gap-2"><FileText className="h-5 w-5 text-teal-400" /><h2 className="font-semibold">Translation record</h2></div>
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="text-xs text-stone-400">Content type<select value={entityType} onChange={e=>{const next=e.target.value;setEntityType(next);setSourceChecksum('');setSelectedId('');if(next==='ui_catalog'){setEntityKey('site-ui');setTitle('Interface messages');setSlug('');setSummary('');setSeoTitle('');setSeoDescription('');}else if(entityKey==='site-ui'){setEntityKey('');setTitle('');setSlug('');setSummary('');setSeoTitle('');setSeoDescription('');}}} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white">{ENTITY_TYPES.map(x=><option key={x}>{x}</option>)}</select></label>
-            <label className="text-xs text-stone-400">Locale<select value={locale} onChange={e=>setLocale(e.target.value)} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white">{EUROPEAN_LOCALE_ROLLOUT.filter(x=>x.code!=='en').map(x=><option key={x.code} value={x.code}>{x.nativeName} ({x.code})</option>)}</select></label>
+            <label className="text-xs text-stone-400">Locale<select value={locale} onChange={e=>setLocale(e.target.value)} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white"><option value="">Choose a language</option>{ROLLOUT_LOCALES.map(x=><option key={x.code} value={x.code}>{x.nativeName} ({x.code})</option>)}</select></label>
             <label className="text-xs text-stone-400 sm:col-span-2">Source record key<input value={entityKey} onChange={e=>{setEntityKey(e.target.value);setSourceChecksum('');setSelectedId('');}} placeholder={entityType==='ui_catalog'?'site-ui':'Source record UUID or stable content key'} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label>
             <div className="sm:col-span-2 flex flex-wrap items-end gap-2"><label className="min-w-0 flex-1 text-xs text-stone-400">Source checksum<input value={sourceChecksum} readOnly placeholder="Load the authoritative checksum from the server" className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label><button type="button" disabled={loading || !entityKey.trim()} onClick={()=>void loadSource()} className="rounded border border-teal-700 px-3 py-2 text-xs font-semibold text-teal-200 disabled:opacity-50">Load source + checksum</button></div>
             {entityType!=='ui_catalog' && <><label className="text-xs text-stone-400">Translated title<input value={title} onChange={e=>setTitle(e.target.value)} className="mt-1 w-full rounded border border-stone-700 bg-stone-950 p-2 text-sm text-white" /></label>

@@ -133,7 +133,7 @@ assert.match(server, /translated\.content\.template_key !== item\.source\.templa
 assert.match(server, /select\('entity_type,entity_key,translated_slug,translation_state[\s\S]*workKeys\.has\(x\.entity_type\+':'\+x\.entity_key\)/, 'Bulk generation reserves slugs already used by reviewed or published translations');
 const adminTranslations = read('../src/components/admin/AdminTranslationManager.tsx');
 assert.match(adminTranslations, /Generate '\s*\+ locale\.toUpperCase\(\) \+ ' drafts/, 'Super Admin can generate drafts for the selected prepared locale');
-assert.match(adminTranslations, /!\['fr','nl','pl'\]\.includes\(locale\)/, 'Draft generation is limited to the prepared French, Dutch and Polish locales');
+assert.match(adminTranslations, /const ROLLOUT_LOCALES = EUROPEAN_LOCALE_ROLLOUT\.filter\(\(item\) => \['fr', 'nl', 'pl'\]\.includes\(item\.code\)\)/, 'Workspace locale choices are limited to the supported French, Dutch and Polish rollout');
 assert.match(adminTranslations, /const targetLocale = locale/, 'Draft generation follows the selected locale rather than being pinned to French');
 assert.match(adminTranslations, /JSON\.stringify\(\{ locale: targetLocale, offset, limit: 10 \}\)/, 'Each generation batch carries the selected locale');
 assert.match(adminTranslations, /'communication_template'/, 'Super Admin can review communication template translations');

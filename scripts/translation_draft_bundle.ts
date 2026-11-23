@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { createClient } from '@supabase/supabase-js';
-import { EUROPEAN_LOCALE_ROLLOUT, EuropeanLocaleCode } from '../src/types/i18n';
+import { EuropeanLocaleCode } from '../src/types/i18n';
 import { INITIAL_STATIC_PAGES } from '../src/data/staticPages';
 import { TRANSLATIONS } from '../src/i18n/translations';
 import { collectPrivateUiMessages } from './generate_private_ui_catalog';
@@ -13,7 +13,7 @@ type Draft = {
   title?: string; summary?: string; seo_title?: string; seo_description?: string;
   content: Record<string, unknown>; source_checksum: string;
 };
-const LOCALES = new Set<Locale>(EUROPEAN_LOCALE_ROLLOUT.filter((locale) => locale.code !== 'en').map((locale) => locale.code));
+const LOCALES = new Set<Locale>(['fr', 'nl', 'pl']);
 const ENTITY_TYPES = new Set(['tour','destination','blog_post','static_page','communication_template','ui_catalog']);
 const stable = (value: any): string => {
   if (Array.isArray(value)) return '[' + value.map(stable).join(',') + ']';
