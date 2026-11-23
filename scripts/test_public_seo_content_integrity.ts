@@ -67,7 +67,9 @@ assert.match(categorySeoService, /seo_title, seo_description, seo_keywords/, 'Pu
 assert.match(categorySeoService, /from\('seo_metadata'\)[\s\S]*?eq\('entity_type', 'category'\)[\s\S]*?in\('entity_id', cats\.map/, 'Published category retrieval reads overrides saved by the SEO control center');
 assert.match(categorySeoService, /meta_description[\s\S]*?categorySeoById\.set/, 'Saved category meta descriptions are mapped into the public model');
 assert.match(categorySeoService, /seoTitle: categorySeoById\.get\(c\.id\)\?\.seoTitle \|\| c\.seo_title/, 'Legacy category-table SEO fields remain a fallback when no control-center override exists');
-assert.match(categorySeoService, /seoTitle: c\.seo_title[\s\S]*?seoDescription: c\.seo_description[\s\S]*?seoKeywords:/, 'Category SEO fields are mapped into the public category model');
+assert.match(categorySeoService, /seoTitle: categorySeoById\.get\(c\.id\)\?\.seoTitle \|\| c\.seo_title \|\| undefined/, 'Category SEO title prefers the control-center override and falls back to the category table');
+assert.match(categorySeoService, /seoDescription: categorySeoById\.get\(c\.id\)\?\.seoDescription \|\| c\.seo_description \|\| undefined/, 'Category SEO description prefers the control-center override and falls back to the category table');
+assert.match(categorySeoService, /seoKeywords: categorySeoById\.get\(c\.id\)\?\.seoKeywords\?\.length[\s\S]*?Array\.isArray\(c\.seo_keywords\)/, 'Category SEO keywords prefer non-empty control-center values and fall back to category-table keywords');
 assert.match(categoryPageSource, /const activeCategory = useMemo\([\s\S]*?categories\?\.find\([\s\S]*?generateCategorySeo\(activeLabel, filteredTours\.length, filteredTours, activeCategory\)/, 'Excursion filter SEO receives the selected published category');
 assert.match(app, /const needsCategories = path === '\/experiences' \|\| path === '\/excursions'/, 'Direct visits to the excursions route load category metadata before applying SEO');
 assert.match(categorySeoResolver, /category\?\.seoTitle\?\.trim\(\)/, 'Category SEO title prefers the reviewed CMS title');
