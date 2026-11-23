@@ -90,7 +90,13 @@
         "footer.allRights": "Tous droits réservés.",
         "pwa.installApp": "Installer l’application",
         "pwa.saveToPhone": "Enregistrer sur le téléphone",
-        "pwa.installSubtitle": "Accédez rapidement hors ligne à vos bons d’excursion et réservations"
+        "pwa.installSubtitle": "Accédez rapidement hors ligne à vos bons d’excursion et réservations",
+        "private.text.7dfad6f9": "Comment pouvons-nous vous aider ?",
+        "private.text.ac6e2e54": "Connectez-vous pour nous envoyer un message et suivre nos réponses.",
+        "private.text.6f037b40": "Vous ne pouvez pas accéder à cette page",
+        "private.text.05514769": "Ce compte n’a pas accès aux demandes d’assistance.",
+        "private.text.428aea56": "Choisissez une demande pour lire les messages et la mettre à jour.",
+        "private.text.192e19f7": "N’envoyez pas de mot de passe ni de numéro complet de carte bancaire."
       }
     }
   ]
