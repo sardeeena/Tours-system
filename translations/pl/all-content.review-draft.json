@@ -11,8 +11,8 @@
     "static_page": 10,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1067,
-    "ui_catalog_messages": 1148,
+    "private_ui_messages": 1085,
+    "ui_catalog_messages": 1166,
     "source_records": 112
   },
   "records": [
@@ -4954,9 +4954,26 @@
         "private.text.e28cbf9c": "Następne zdjęcie",
         "private.text.e9175fbd": "Twoje konto jest chronione",
         "private.text.f7239c75": "* Godziny są orientacyjne i mogą ulec zmianie ze względu na lokalną organizację oraz warunki na morzu lub pogodę.",
-        "private.text.36c24f6e": "Zdjęcia wkrótce"
+        "private.text.36c24f6e": "Zdjęcia wkrótce",
+        "private.text.0093d607": "Napisz, jak możemy pomóc. Nasz zespół skontaktuje się z Tobą.",
+        "private.text.16fe3d0b": "Blog podróżniczy",
+        "private.text.36865756": "Wycieczki są realizowane przez lokalnych organizatorów i przewodników.",
+        "private.text.5e6216ec": "Wycieczki prywatne",
+        "private.text.6f037b40": "Nie masz dostępu do tej strony",
+        "private.text.6f7be91e": "Możemy pomóc w kilku językach",
+        "private.text.819fed0b": "Pomoc i wsparcie Awesome Adventure Tours",
+        "private.text.839c8e12": "Wyślij nam wiadomość i przeglądaj wszystkie odpowiedzi w jednym miejscu.",
+        "private.text.868ef0a2": "Nie dodano żadnych dodatkowych usług.",
+        "private.text.ce4cdb64": "Zaloguj się, aby wysłać nam wiadomość i śledzić nasze odpowiedzi.",
+        "private.text.d4bd511a": "Potrzebujesz pomocy? Skontaktuj się z nami",
+        "private.text.d82abc8f": "Przeglądaj zapytania klientów i pomagaj zespołowi na nie odpowiadać.",
+        "private.text.e609c72f": "Pomoc i wsparcie",
+        "private.text.e929ba97": "Sprawdzanie szczegółów wycieczki...",
+        "private.text.ef34eff4": "Twoje konto nie ma uprawnień do zarządzania zgłoszeniami do działu obsługi klienta.",
+        "private.text.fff7de5b": "Asystent podróży",
+        "private.text.ffff4c4e": "Propozycje wycieczek"
       },
-      "private_ui_message_count": 650
+      "private_ui_message_count": 1085
     },
     {
       "entity_type": "tour",
