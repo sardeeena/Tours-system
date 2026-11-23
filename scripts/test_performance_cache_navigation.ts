@@ -10,6 +10,7 @@ const settings = read('../src/services/siteSettingsService.ts');
 const seo = read('../src/services/seoService.ts');
 const blog = read('../src/services/blogService.ts');
 const exclusive = read('../src/services/exclusiveTripService.ts');
+const exclusivePage = read('../src/pages/ExclusiveTripsPage.tsx');
 const worker = read('../public/sw.js');
 const app = read('../src/App.tsx');
 const header = read('../src/components/common/Header.tsx');
@@ -41,7 +42,7 @@ assert.match(worker, /event\.waitUntil\(updatePromise/, 'cached assets refresh i
 assert.match(app, /const DeferredHomeSection/, 'homepage supports viewport-based section loading');
 assert.match(app, /const needsTours = isHome \|\| path === '\/excursions'/, 'non-catalogue routes avoid loading the full tour list');
 assert.match(app, /getPublishedTours\(undefined, isBookingRoute\)/, 'checkout refreshes authoritative tour prices instead of trusting a stale cache');
-assert.match(ec, /getExclusiveTrips\(true\)/, 'Exclusive booking refreshes its fixed trip price before checkout');
+assert.match(exclusivePage, /getExclusiveTrips\(true\)/, 'Exclusive booking refreshes its fixed trip price before checkout');
 assert.match(app, /const needsDestinations = isDestinationRoute \|\| \(isHome && refreshAll\)/, 'destination data is loaded on destination routes or explicit homepage refreshes');
 assert.match(app, /const needsCategories = path === '\/experiences' \|\| \(isHome && refreshAll\)/, 'category data is loaded on experience routes or explicit homepage refreshes');
 assert.match(app, /onEnter=\{refreshPublishedDestinations\}/, 'homepage destination data is loaded as its section approaches');
