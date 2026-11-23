@@ -41,7 +41,7 @@ export const ExperienceCategories: React.FC<ExperienceCategoriesProps> = ({
       setInternalCategories(data || []);
     } catch (err: any) {
       console.warn('Failed to load published categories from database:', err);
-      setInternalError(err.message || 'Unable to load categories from database.');
+      setInternalError('We couldn’t load experiences right now. Please try again in a moment.');
       setInternalCategories([]);
     } finally {
       setInternalLoading(false);
@@ -145,7 +145,7 @@ export const ExperienceCategories: React.FC<ExperienceCategoriesProps> = ({
             <AlertTriangle className="w-10 h-10 text-red-500 mx-auto" />
             <div>
               <h3 className="text-base font-semibold text-stone-900 dark:text-white">Unable to Load Experiences</h3>
-              <p className="text-xs text-stone-600 dark:text-stone-400 mt-1">{error}</p>
+              <p className="text-xs text-stone-600 dark:text-stone-400 mt-1">Please refresh the page or try again in a moment.</p>
             </div>
             <button
               type="button"
@@ -164,7 +164,7 @@ export const ExperienceCategories: React.FC<ExperienceCategoriesProps> = ({
             <Compass className="w-8 h-8 text-stone-400 dark:text-slate-500 mx-auto" />
             <h3 className="text-sm font-semibold text-stone-800 dark:text-slate-200">No Excursion Categories Available</h3>
             <p className="text-xs text-stone-500 dark:text-slate-400">
-              Excursion categories are currently being updated in our database. Please check back shortly.
+              We’re refreshing our excursion categories. Please check back shortly.
             </p>
           </div>
         )}
@@ -173,7 +173,9 @@ export const ExperienceCategories: React.FC<ExperienceCategoriesProps> = ({
         {!isLoading && !error && categories.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="experience-grid">
             {categories.map((cat, index) => (
-              <motion.div
+              <motion.button
+                type="button"
+                aria-label={`Browse ${cat.name} excursions`}
                 key={cat.id || cat.slug || index}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -181,7 +183,7 @@ export const ExperienceCategories: React.FC<ExperienceCategoriesProps> = ({
                 transition={{ duration: 0.45, delay: index * 0.07 }}
                 whileHover={{ y: -6 }}
                 onClick={() => onSelectCategory(cat.name)}
-                className="group relative rounded-2xl overflow-hidden border border-[#E8E3DA] dark:border-slate-700/80 bg-stone-100 dark:bg-stone-900 cursor-pointer h-80 flex flex-col justify-end p-6 hover:border-[#0A6C74]/70 hover:shadow-2xl transition-all duration-300"
+                className="group relative w-full text-left rounded-2xl overflow-hidden border border-[#E8E3DA] dark:border-slate-700/80 bg-stone-100 dark:bg-stone-900 cursor-pointer h-80 flex flex-col justify-end p-6 hover:border-[#0A6C74]/70 hover:shadow-2xl transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2"
               >
                 {/* Background Photography with smooth slow zoom */}
                 <div 
@@ -216,7 +218,7 @@ export const ExperienceCategories: React.FC<ExperienceCategoriesProps> = ({
                     </p>
                   )}
                 </div>
-              </motion.div>
+              </motion.button>
             ))}
           </div>
         )}

@@ -1155,3 +1155,65 @@ html[dir="rtl"] .public-site:not(.public-site-admin-route) :where([dir="ltr"], [
 html[dir="rtl"] .public-site:not(.public-site-admin-route) :where(bdi) {
   unicode-bidi: isolate;
 }
+
+/* ==============================================================================
+   SITE-WIDE CUSTOMER UX BASELINE
+   Applied consistently to public routes, account flows and booking screens.
+   ============================================================================== */
+
+/* Prevent narrow-device layout from creating accidental page-level overflow. */
+html {
+  min-width: 320px;
+  scroll-padding-top: 5rem;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  min-width: 320px;
+  overflow-x: clip;
+}
+
+/* Keep keyboard focus visible regardless of the component's local styling. */
+:where(a, button, input, select, textarea, summary, [role="button"], [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 3px solid #0A6C74;
+  outline-offset: 3px;
+}
+
+html.dark :where(a, button, input, select, textarea, summary, [role="button"], [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline-color: #5EEAD4;
+}
+
+/* Ensure disabled controls do not look or behave like available actions. */
+:where(button, input, select, textarea)[disabled],
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+/* Comfortable hit areas on touch-first devices without changing desktop layouts. */
+@media (pointer: coarse) {
+  :where(button, [role="button"], input[type="checkbox"], input[type="radio"]) {
+    touch-action: manipulation;
+  }
+
+  :where(button, [role="button"]) {
+    min-height: 2.75rem;
+  }
+}
+
+/* Honor reduced-motion preferences across all routes and third-party motion wrappers. */
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+

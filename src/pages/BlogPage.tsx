@@ -63,7 +63,7 @@ export const BlogPage: React.FC<{ slug?: string; onNavigate:(path:string)=>void 
   const shell='bg-[#FAF8F5] text-[#111A24] dark:bg-[#0A1118] dark:text-slate-100';
   if (slug) return <main className={shell+' min-h-screen'}>
     <div className="max-w-4xl mx-auto px-5 sm:px-8 py-12 sm:py-20">
-      <button onClick={()=>onNavigate('/blog')} className="text-sm font-semibold text-[#0A6C74] dark:text-teal-300 mb-8">← Back to the journal</button>
+      <button type="button" onClick={()=>onNavigate('/blog')} className="text-sm font-semibold text-[#0A6C74] dark:text-teal-300 mb-8">← Back to the journal</button>
       {loading ? <div className="animate-pulse h-72 rounded-3xl bg-stone-200 dark:bg-slate-800"/> : article ? <>
         {article.cover_image_url && <img src={article.cover_image_url} alt={article.title} className="w-full max-h-[520px] object-cover rounded-3xl mb-10"/>}
         <div className="text-xs uppercase tracking-[.2em] text-[#0A6C74] dark:text-teal-300 font-bold mb-4">{article.category?.name||'Awesome Adventure Tours Journal'}</div>
@@ -76,7 +76,7 @@ export const BlogPage: React.FC<{ slug?: string; onNavigate:(path:string)=>void 
         </div>
         {article.excerpt && <p className="text-xl leading-relaxed text-stone-600 dark:text-slate-300 border-l-4 border-[#C28D32] pl-5 mb-10">{article.excerpt}</p>}
         <article className="max-w-none"><BlogContent content={article.content} className="text-lg"/></article>
-        <div className="mt-14 p-8 rounded-3xl bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#243447]"><p className="text-xs uppercase tracking-widest text-[#C28D32] font-bold mb-2">Explore the Red Sea</p><h2 className="font-display text-2xl font-bold mb-3">Make your next story an adventure.</h2><button onClick={()=>onNavigate('/excursions')} className="inline-flex items-center gap-2 rounded-xl bg-[#0A6C74] text-white px-5 py-3 font-semibold">Explore excursions <ArrowRight size={16}/></button></div>
+        <div className="mt-14 p-8 rounded-3xl bg-white dark:bg-[#111E2E] border border-[#E8E3DA] dark:border-[#243447]"><p className="text-xs uppercase tracking-widest text-[#C28D32] font-bold mb-2">Explore the Red Sea</p><h2 className="font-display text-2xl font-bold mb-3">Make your next story an adventure.</h2><button type="button" onClick={()=>onNavigate('/excursions')} className="inline-flex items-center gap-2 rounded-xl bg-[#0A6C74] text-white px-5 py-3 font-semibold">Explore excursions <ArrowRight size={16}/></button></div>
       </> : <div className="py-24 text-center"><h1 className="font-display text-3xl font-bold">Article not found</h1><button onClick={()=>onNavigate('/blog')} className="mt-5 text-[#0A6C74]">Return to journal</button></div>}
       {error && <p className="text-rose-600 mt-5">{error}</p>}
     </div>

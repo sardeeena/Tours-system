@@ -441,7 +441,7 @@ export const ExcursionsPage: React.FC<ExcursionsPageProps> = ({
           {error && !isLoading && (
             <div role="alert" className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-900">
               <p className="font-semibold">We couldn’t load the excursions right now.</p>
-              <p className="mt-1">{error}</p>
+              <p className="mt-1">Please refresh the page or try again in a moment.</p>
               {onRetry && (
                 <button type="button" onClick={onRetry} className="mt-3 rounded-lg border border-red-300 px-4 py-2 font-semibold hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-500">
                   Try again
