@@ -342,7 +342,14 @@ export async function getPublishedTours(options?: TourFilterOptions, forceRefres
  */
 export async function getTourBySlug(slug: string, allowDraft: boolean = false, forceRefresh = false): Promise<Tour | null> {
   const cacheKey = `catalogue:tour:${slug}`;
-  if (!allowDraft && !forceRefresh) {
+  // A moderator session can read unpublished review rows under RLS. Never
+  // share a tour-detail cache entry across authenticated and anonymous sessions.
+  let canCachePublicTour = !allowDraft;
+  if (canCachePublicTour && isSupabaseConfigured()) {
+    const { data: { session } } = await supabase.auth.getSession();
+    canCachePublicTour = !session?.user;
+  }
+  if (canCachePublicTour && !forceRefresh) {
     const cached = readPublicDataCache<Tour | null>(cacheKey, PUBLIC_CATALOGUE_CACHE_TTL_MS);
     if (cached) {
       if (!cached.isFresh) {
@@ -390,7 +397,7 @@ export async function getTourBySlug(slug: string, allowDraft: boolean = false, f
     }
 
     if (!data) {
-      if (!allowDraft) writePublicDataCache(cacheKey, null);
+      if (canCachePublicTour) writePublicDataCache(cacheKey, null);
       return null;
     }
 
@@ -423,7 +430,7 @@ export async function getTourBySlug(slug: string, allowDraft: boolean = false, f
       faqs: data.tour_faqs || [],
       reviews: reviews,
     });
-    if (!allowDraft) writePublicDataCache(cacheKey, mappedTour);
+    if (canCachePublicTour) writePublicDataCache(cacheKey, mappedTour);
     return mappedTour;
   } catch (err) {
     console.warn('Error fetching tour by slug:', err);
