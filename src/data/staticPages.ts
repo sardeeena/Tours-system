@@ -26,8 +26,8 @@ export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
     id: 'about',
     title: 'About Awesome Adventure Tours',
     slug: 'about',
-    heroHeadline: 'Explore Egypt’s Red Sea Coast with Awesome Adventure Tours',
-    heroSubtitle: 'Awesome Adventure Tours helps travellers explore boat trips, island visits, snorkeling, diving, desert safaris and cultural excursions in Egypt. Browse published experiences, compare practical details and contact our Hurghada team before you reserve.',
+    heroHeadline: 'See the Red Sea with Awesome Adventure Tours',
+    heroSubtitle: 'Join us in Hurghada for boat trips, island days, snorkelling, diving and desert safaris. Browse the trips, see what’s included and message our team if you have a question.',
     lastUpdated: '2026-11-15',
     seoTitle: 'About Awesome Adventure Tours | Egypt Excursions & Red Sea Experiences',
     seoDescription: 'Get to know Awesome Adventure Tours in Hurghada, Egypt. Explore published Red Sea boat trips, island excursions, snorkeling, diving, desert safaris and cultural tours.',
@@ -35,19 +35,19 @@ export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
     sections: [
       {
         title: 'Experiences across Egypt',
-        content: 'Our published catalogue brings together experiences in destinations including Hurghada, El Gouna, Sharm El Sheikh and other parts of Egypt. Depending on the trip, travellers can compare boat and island excursions, snorkeling and diving activities, desert safaris, transfers and cultural sightseeing.',
+        content: 'We offer trips in Hurghada, El Gouna, Sharm El Sheikh and other parts of Egypt. Choose from boat trips, island visits, snorkelling, diving, desert safaris and sightseeing tours.',
       },
       {
         title: 'Clear information before you reserve',
-        content: 'Every excursion can have different departure arrangements, prices, durations, inclusions, age requirements and cancellation conditions. Review the individual tour page and the booking summary carefully so you understand what is included and where pickup is available.',
+        content: 'Every trip is different. Check the price, duration, what's included, age rules, pickup details and cancellation terms on the tour page before you book.',
       },
       {
         title: 'Local support in Hurghada',
-        content: 'Awesome Adventure Tours is based in Hurghada, Red Sea, Egypt. Our team can help with questions about published excursions, hotel pickup information and reservations. Contact us before booking if you need clarification about a particular trip.',
+        content: 'We’re based in Hurghada on Egypt’s Red Sea coast. Have a question about a trip, hotel pickup or your booking? Get in touch and our team will help.',
       },
       {
         title: 'How to choose your trip',
-        content: 'Start by selecting your destination or preferred activity. Compare the itinerary, duration, price, included services and practical requirements on each excursion page. Availability and operational conditions can change, especially for marine activities, so confirm the details for your chosen date before travelling.',
+        content: 'Choose where you want to go or what you’d like to do. Each tour page shows the schedule, duration, price and what's included. Trips at sea can change with the weather, so check the details for your date before you travel.',
       },
     ],
   },
@@ -55,8 +55,8 @@ export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
     id: 'contact',
     title: 'Contact Awesome Adventure Tours',
     slug: 'contact',
-    heroHeadline: 'Contact Our Hurghada Excursion Team',
-    heroSubtitle: 'Contact Awesome Adventure Tours for help comparing published excursions, understanding pickup arrangements, checking booking details and preparing your visit to Egypt.',
+    heroHeadline: 'Talk to our team in Hurghada',
+    heroSubtitle: 'Need help choosing a trip, arranging hotel pickup or checking a booking? Send us a message. We’re happy to help.',
     lastUpdated: '2026-11-16',
     seoTitle: 'Contact Awesome Adventure Tours | Hurghada, Egypt',
     seoDescription: 'Contact Awesome Adventure Tours in Hurghada for excursion questions, booking assistance, pickup information and customer support in your preferred language.',
@@ -64,23 +64,23 @@ export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
     sections: [
       {
         title: 'Speak with our team',
-        content: 'Call +20 151 5212741 for questions about published excursions, reservations and practical travel information. When asking about a particular trip, please tell us its name or share the excursion page, your preferred travel date and the number of guests. This helps our team understand which details you need. For an existing reservation, have your booking reference ready so we can identify the correct booking.',
+        content: 'Call us on +20 151 5212741. Tell us which trip you’re asking about, when you’d like to go and how many people are travelling. If you already have a booking, please have your booking reference ready.',
       },
       {
         title: 'Visit our Hurghada office',
-        content: 'Our office is located on the 2nd floor of Bostan Cafe, Madres, Hurghada, Red Sea Governorate, Egypt. If you plan to visit in person, contact us first to discuss your question and confirm the most suitable arrangements.',
+        content: 'You’ll find our office on the 2nd floor of Bostan Cafe, Madres, Hurghada, Red Sea Governorate, Egypt. Please contact us before visiting so we can make sure someone is available to help.',
       },
       {
         title: 'Help choosing and preparing for an excursion',
-        content: 'Before booking, review the excursion page for its current starting price, duration, itinerary, included services, exclusions, age requirements, pickup information and cancellation conditions. These details can differ between trips and may change with operational conditions. If anything is unclear, ask us about the specific excursion before you reserve. For pickup questions, include your hotel or preferred meeting point and the destination of the trip.',
+        content: 'Before you book, check the tour page for the price, duration, itinerary, what's included, age rules, pickup and cancellation terms. These details vary by trip. If you’re unsure about anything, send us the tour name and your hotel or meeting point.',
       },
       {
         title: 'Support for international travellers',
-        content: 'We assist international travellers and can communicate with customers in their preferred language. Tell us which language you would like to use when you contact us. Tour-guide language availability is specific to each excursion and departure, so check the language options shown for your selected trip rather than assuming every tour operates in every language.',
+        content: 'We welcome visitors from around the world. Let us know which language you prefer when you contact us. Guide languages vary by trip and departure, so check the options on the tour page before booking.',
       },
       {
         title: 'Booking and payment safety',
-        content: 'Use the booking form and the instructions provided with your reservation for booking and payment details. Do not send passwords, full payment-card numbers or card security codes in ordinary messages. Always check the final booking summary, date, guest details and price before confirming your reservation.',
+        content: 'Book through the website and follow the payment instructions shown with your reservation. Never send your password, full card number or card security code in a message. Before you confirm, check the date, guest details and total price.',
       },
     ],
   },
@@ -89,17 +89,17 @@ export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
     title: 'Why Choose Awesome Adventure Tours',
     slug: 'why-us',
     heroHeadline: 'Plan Your Red Sea Experience',
-    heroSubtitle: 'Use the published tour information to compare available experiences and choose the trip that suits your plans.',
+    heroSubtitle: 'See what each trip includes, compare the details and choose the one that suits your day.',
     lastUpdated: '2026-11-11',
     seoIndexable: false,
     sections: [
       {
         title: 'Tour information in one place',
-        content: 'Review each excursion’s description, price, duration, itinerary and included items before you make a reservation.',
+        content: 'Check the tour description, price, duration, schedule and what's included before you book.',
       },
       {
         title: 'Check the details that matter',
-        content: 'Pickup options, age requirements, availability and cancellation conditions can differ by excursion. Check the relevant tour page and booking details before confirming.',
+        content: 'Pickup, age rules, availability and cancellation terms vary by trip. Check the tour page and booking summary before you confirm.',
       },
     ],
   },
@@ -108,17 +108,17 @@ export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
     title: 'Marine Safety & Departure Information',
     slug: 'marine-safety',
     heroHeadline: 'Safety and Departure Information',
-    heroSubtitle: 'Marine excursions can be affected by weather, sea conditions and operational restrictions. Review the information provided for your selected trip.',
+    heroSubtitle: 'Boat trips depend on the weather and sea conditions. Check the details for your trip and follow the crew’s instructions.',
     lastUpdated: '2026-11-11',
     seoIndexable: false,
     sections: [
       {
         title: 'Before departure',
-        content: 'Read the selected excursion’s departure instructions, passenger requirements and equipment information. Follow the instructions provided by the crew and activity staff during the experience.',
+        content: 'Before you set off, read the departure details and check what equipment you need. Listen to the crew and activity staff throughout the trip.',
       },
       {
         title: 'Weather and operational changes',
-        content: 'Marine activities may be changed, delayed or cancelled when conditions do not permit a safe departure. Check the booking terms supplied for your specific excursion for the applicable arrangements.',
+        content: 'If the weather or sea is unsafe, a boat trip may be delayed, changed or cancelled. The cancellation and refund terms for your booking explain what happens next.',
       },
     ],
   },
@@ -127,21 +127,21 @@ export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
     title: 'Booking Terms & Conditions',
     slug: 'booking-conditions',
     heroHeadline: 'Booking Information',
-    heroSubtitle: 'Review the details and conditions that apply to your selected excursion before completing a reservation.',
+    heroSubtitle: 'Here’s what to check before you book your trip.',
     lastUpdated: '2026-11-11',
     seoIndexable: false,
     sections: [
       {
         title: 'Reservations and confirmation',
-        content: 'Check the selected date, number of guests, price, pickup information and other booking details before submitting your reservation. Keep the confirmation information provided after booking.',
+        content: 'Before you book, check your date, number of guests, price and pickup details. Keep your booking confirmation for your records.',
       },
       {
         title: 'Pickup and departure',
-        content: 'Pickup availability, meeting points, supplements and departure times may vary by excursion and location. Review the details shown for your selected trip before confirming.',
+        content: 'Pickup areas, meeting points, extra fees and start times depend on the trip and your location. Check the details shown during booking.',
       },
       {
         title: 'Changes and cancellations',
-        content: 'Cancellation periods, refund arrangements and rescheduling conditions are specific to the booking terms shown for the selected excursion. Review those terms before completing your reservation.',
+        content: 'Cancellation and refund rules are different for some trips. Read the terms shown for your chosen tour before you book.',
       },
     ],
   },
