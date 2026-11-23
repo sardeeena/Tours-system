@@ -156,7 +156,7 @@ interface CacheEntry<T> {
 let cachedPublishedTours: CacheEntry<Tour[]> | null = null;
 let cachedDestinations: CacheEntry<Destination[]> | null = null;
 let cachedCategories: CacheEntry<Category[]> | null = null;
-const CACHE_TTL_MS = PUBLIC_CATALOGUE_CACHE_TTL_MS;
+const CACHE_TTL_MS = 5 * 60 * 1000;
 let refreshingPublishedTours = false;
 let refreshingDestinations = false;
 let refreshingCategories = false;
