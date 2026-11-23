@@ -59,6 +59,17 @@ assert.match(hero, /subtitle: 'Visit Orange Bay and Paradise Island/, 'hero desc
 
 assert.match(tourService, /if \(toursError\)[\s\S]*?throw new Error\(`Unable to calculate published excursion counts:/, 'destination count failures are surfaced instead of silently showing zero');
 
+const categorySeoStart = tourService.indexOf('export async function getPublishedCategories');
+const categorySeoService = tourService.slice(categorySeoStart, tourService.indexOf('export async function getDestinations', categorySeoStart));
+const categoryPageSource = read('../src/pages/ExcursionsPage.tsx');
+const categorySeoResolver = read('../src/services/seoService.ts');
+assert.match(categorySeoService, /seo_title, seo_description, seo_keywords/, 'Published category retrieval includes the CMS SEO fields');
+assert.match(categorySeoService, /seoTitle: c\.seo_title[\s\S]*?seoDescription: c\.seo_description[\s\S]*?seoKeywords:/, 'Category SEO fields are mapped into the public category model');
+assert.match(categoryPageSource, /const activeCategory = useMemo\([\s\S]*?categories\?\.find\([\s\S]*?generateCategorySeo\(activeLabel, filteredTours\.length, filteredTours, activeCategory\)/, 'Excursion filter SEO receives the selected published category');
+assert.match(categorySeoResolver, /category\?\.seoTitle\?\.trim\(\)/, 'Category SEO title prefers the reviewed CMS title');
+assert.match(categorySeoResolver, /category\?\.seoDescription\?\.trim\(\)/, 'Category SEO description prefers the reviewed CMS description');
+assert.match(categorySeoResolver, /category\?\.seoKeywords/, 'Category SEO keywords are used when supplied');
+
 assert.match(robots, /^User-agent: \*$/m, 'robots.txt contains a valid wildcard user-agent');
 assert.match(robots, /^Sitemap: https:\/\/awesomeadventure\.tours\/sitemap\.xml$/m, 'robots.txt advertises the canonical sitemap');
 
