@@ -35,27 +35,19 @@ export const TourCard: React.FC<TourCardProps> = ({
       className="bg-white/85 dark:bg-[#132235]/85 backdrop-blur-xl rounded-2xl border border-white/70 dark:border-white/10 shadow-md overflow-hidden flex flex-col hover:border-[#0A6C74]/50 hover:shadow-xl transition-all duration-300 group h-full relative"
     >
       {/* Photo with smooth zoom and vignette */}
-      <div 
-        className="tour-card-media relative overflow-hidden bg-stone-100 cursor-pointer shrink-0"
-        onClick={() => onViewTour(tour)}
-      >
-        {tour.primaryImage ? (
-          <img
-            src={tour.primaryImage}
-            alt={tour.title}
-            className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
-            loading="lazy"
-            decoding="async"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-stone-200 text-stone-400">
-            <Compass className="w-8 h-8 mb-1 opacity-50 text-[#0A6C74]" />
-            <span className="text-[10px] font-medium tracking-wide uppercase">Photo Coming Soon</span>
-          </div>
-        )}
-
+      <div className="tour-card-media relative overflow-hidden bg-stone-100 shrink-0">
+        <button type="button" onClick={() => onViewTour(tour)} aria-label={`View ${tour.title} details`} className="absolute inset-0 z-0 h-full w-full cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0A6C74]">
+          {tour.primaryImage ? (
+            <img src={tour.primaryImage} alt="" className="h-full w-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out" loading="lazy" decoding="async" />
+          ) : (
+            <span className="flex h-full w-full flex-col items-center justify-center bg-stone-200 text-stone-500">
+              <Compass className="mb-1 h-8 w-8 text-[#0A6C74]" aria-hidden="true" />
+              <span className="text-[10px] font-medium uppercase tracking-wide">Photo Coming Soon</span>
+            </span>
+          )}
+        </button>
         {/* Cinematic gradient vignette */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />
+        <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/60 via-transparent to-black/30" />
 
         {/* Badge */}
         {tour.badge && (
@@ -105,7 +97,7 @@ export const TourCard: React.FC<TourCardProps> = ({
       </div>
 
       {/* Content */}
-      <div className="p-2.5 sm:p-5 flex-1 flex flex-col justify-between space-y-2 sm:space-y-3 min-w-0">
+      <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between space-y-2.5 sm:space-y-3 min-w-0">
         <div>
           {/* Unboxed Metadata Line */}
           <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[9px] sm:text-[11px] text-stone-500 font-medium mb-1.5 min-w-0">
@@ -123,21 +115,19 @@ export const TourCard: React.FC<TourCardProps> = ({
           </div>
 
           {/* Tour Title */}
-          <h3 
-            onClick={() => onViewTour(tour)}
-            className="font-display text-xs sm:text-base font-bold text-[#0E1B2A] dark:text-white leading-snug line-clamp-3 sm:line-clamp-2 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] cursor-pointer mb-1.5 sm:mb-2 transition-colors sm:min-h-[44px]"
-            title={tour.title}
-          >
-            {tour.title}
+          <h3 className="mb-1.5 font-display text-sm font-bold leading-snug text-[#0E1B2A] dark:text-white sm:mb-2 sm:min-h-[44px] sm:text-base">
+            <button type="button" onClick={() => onViewTour(tour)} title={tour.title} className="line-clamp-2 text-left transition-colors hover:text-[#0A6C74] focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] dark:hover:text-[#2dd4bf]">
+              {tour.title}
+            </button>
           </h3>
 
           {/* Short description */}
-          <p className="hidden sm:block text-xs text-stone-600 dark:text-slate-300 line-clamp-2 leading-relaxed mb-2 sm:mb-3 sm:min-h-[36px]">
+          <p className="text-[11px] sm:text-xs text-stone-600 dark:text-slate-300 line-clamp-2 leading-relaxed mb-2 sm:mb-3 sm:min-h-[36px]">
             {tour.shortDescription}
           </p>
 
           {/* Rating */}
-          <div className="flex items-center space-x-1.5 mb-2 text-xs">
+          <div className="flex items-center flex-wrap gap-x-1.5 mb-2 text-xs">
             {tour.reviewCount > 0 ? (
               <>
                 <div className="flex text-amber-400">
@@ -208,7 +198,7 @@ export const TourCard: React.FC<TourCardProps> = ({
               <button
                 type="button"
                 onClick={() => onViewTour(tour)}
-                className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold text-stone-700 hover:text-stone-900 bg-stone-100 hover:bg-stone-200/80 rounded-xl transition-all cursor-pointer"
+                className="flex-1 sm:flex-none min-h-10 px-2.5 sm:px-3 py-2 sm:py-2 text-xs font-semibold text-stone-700 hover:text-stone-900 bg-stone-100 hover:bg-stone-200/80 rounded-xl transition-all cursor-pointer"
               >
                 Details
               </button>
@@ -217,7 +207,7 @@ export const TourCard: React.FC<TourCardProps> = ({
                 whileTap={{ scale: 0.96 }}
                 type="button"
                 onClick={() => (onBookNow ? onBookNow(tour) : onViewTour(tour))}
-                className="flex-1 sm:flex-none justify-center px-2 sm:px-3.5 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold text-white bg-gradient-to-r from-[#0A6C74] to-[#0D838C] hover:from-[#08565C] hover:to-[#0A6C74] rounded-xl transition-all shadow-xs flex items-center space-x-1 group/btn cursor-pointer"
+                className="flex-1 sm:flex-none min-h-10 justify-center px-2.5 sm:px-3.5 py-2 sm:py-2 text-xs font-semibold text-white bg-gradient-to-r from-[#0A6C74] to-[#0D838C] hover:from-[#08565C] hover:to-[#0A6C74] rounded-xl transition-all shadow-xs flex items-center space-x-1 group/btn cursor-pointer"
               >
                 <span>Book</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />

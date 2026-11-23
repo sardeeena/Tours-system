@@ -475,7 +475,7 @@ export const Header: React.FC<HeaderProps> = ({
             type="button"
             id="book-excursion-header-btn"
             onClick={handleBookingClick}
-            className="inline-flex items-center px-4 py-2 text-xs font-semibold text-white bg-gradient-to-r from-[#0A6C74] to-[#0D838C] hover:from-[#08565C] hover:to-[#0A6C74] rounded-xl shadow-xs transition-all cursor-pointer whitespace-nowrap shrink-0"
+            className="inline-flex min-h-11 items-center px-4 py-2 text-xs font-semibold text-white bg-gradient-to-r from-[#0A6C74] to-[#0D838C] hover:from-[#08565C] hover:to-[#0A6C74] rounded-xl shadow-xs transition-all cursor-pointer whitespace-nowrap shrink-0"
           >
             {t('nav.bookExcursion')}
           </motion.button>
@@ -488,7 +488,7 @@ export const Header: React.FC<HeaderProps> = ({
             whileTap={{ scale: 0.96 }}
             type="button"
             onClick={handleBookingClick}
-            className="hidden sm:inline-flex items-center px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-[#0A6C74] to-[#0D838C] hover:from-[#08565C] hover:to-[#0A6C74] rounded-lg shadow-xs transition-all cursor-pointer whitespace-nowrap"
+            className="hidden sm:inline-flex min-h-11 items-center px-3 py-1.5 text-xs font-semibold text-white bg-gradient-to-r from-[#0A6C74] to-[#0D838C] hover:from-[#08565C] hover:to-[#0A6C74] rounded-lg shadow-xs transition-all cursor-pointer whitespace-nowrap"
           >
             <span>{t('nav.bookExcursion')}</span>
           </motion.button>
@@ -496,7 +496,7 @@ export const Header: React.FC<HeaderProps> = ({
           <a
             href="/blog"
             aria-label="Visit the Awesome Adventure Tours blog"
-            className="inline-flex items-center justify-center rounded-lg border border-[#0A6C74]/30 bg-[#E8F3F4] px-2.5 py-1.5 text-xs font-bold text-[#0A6C74] dark:border-teal-400/30 dark:bg-teal-950/50 dark:text-teal-300 whitespace-nowrap"
+            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[#0A6C74]/30 bg-[#E8F3F4] px-3 py-1.5 text-xs font-bold text-[#0A6C74] dark:border-teal-400/30 dark:bg-teal-950/50 dark:text-teal-300 whitespace-nowrap"
           >
             Blog
           </a>
@@ -505,7 +505,7 @@ export const Header: React.FC<HeaderProps> = ({
             type="button"
             id="mobile-menu-toggle-btn"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 text-stone-800 dark:text-slate-200 hover:bg-stone-200 dark:hover:bg-slate-800 rounded-lg border border-stone-300/70 dark:border-slate-700 bg-stone-200/60 dark:bg-slate-800/80 cursor-pointer min-w-[38px] min-h-[38px] flex items-center justify-center"
+            className="p-2 text-stone-800 dark:text-slate-200 hover:bg-stone-200 dark:hover:bg-slate-800 rounded-lg border border-stone-300/70 dark:border-slate-700 bg-stone-200/60 dark:bg-slate-800/80 cursor-pointer min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2"
             aria-label="Toggle navigation menu"
             aria-expanded={mobileMenuOpen}
           >

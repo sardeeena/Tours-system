@@ -61,7 +61,7 @@ export const TourBookingPanel: React.FC<TourBookingPanelProps> = ({
   };
 
   return (
-    <div id="booking-panel" className="bg-white border border-[#E8E3DA] rounded-sm p-5 shadow-sm sticky top-24">
+    <div id="booking-panel" className="bg-white border border-[#E8E3DA] rounded-2xl p-4 sm:p-5 shadow-md min-w-0">
       {/* Price Header */}
       <div className="pb-4 border-b border-stone-200">
         <div className="flex items-baseline justify-between">
@@ -102,9 +102,9 @@ export const TourBookingPanel: React.FC<TourBookingPanelProps> = ({
         </div>
 
         {/* Guests Steppers */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
           {/* Adults */}
-          <div className="p-2.5 bg-stone-50 border border-stone-200 rounded">
+          <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl">
             <div className="flex justify-between items-center mb-1.5">
               <span className="font-bold text-stone-900">Adults</span>
               <span className="text-[10px] text-stone-600">Age 12+</span>
@@ -114,7 +114,7 @@ export const TourBookingPanel: React.FC<TourBookingPanelProps> = ({
                 type="button"
                 disabled={adults <= 1}
                 onClick={() => setAdults(Math.max(1, adults - 1))}
-                className="w-7 h-7 rounded bg-white border border-stone-300 flex items-center justify-center text-stone-700 disabled:opacity-30 hover:bg-stone-100"
+                className="w-9 h-9 rounded-lg bg-white border border-stone-300 flex items-center justify-center text-stone-700 disabled:opacity-30 hover:bg-stone-100"
               >
                 <Minus className="w-3 h-3" />
               </button>
@@ -259,7 +259,7 @@ export const TourBookingPanel: React.FC<TourBookingPanelProps> = ({
         {/* Large CTA button */}
         <button
           type="submit"
-          className="w-full py-3 bg-[#0A6C74] hover:bg-[#08565C] text-white text-sm font-semibold rounded-sm transition-all shadow flex items-center justify-center space-x-2"
+          className="w-full min-h-12 py-3 bg-[#0A6C74] hover:bg-[#08565C] text-white text-sm font-semibold rounded-sm transition-all shadow flex items-center justify-center space-x-2"
         >
           <span>Book This Excursion</span>
           <ArrowRight className="w-4 h-4" />

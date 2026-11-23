@@ -99,7 +99,7 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.25 }}
-      className="bg-[#FAF8F5] min-h-screen py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pb-24 lg:pb-12"
+      className="bg-[#FAF8F5] min-h-screen py-5 sm:py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto pb-28 lg:pb-12"
     >
       {/* Breadcrumbs & Actions Row */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
@@ -171,7 +171,7 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({
       </div>
 
       {/* Main Grid: Left Details & Right Booking Sticky Panel */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mt-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start mt-5 sm:mt-6">
         
         {/* Left Column: Comprehensive Details (8 cols) */}
         <div className="lg:col-span-7 xl:col-span-8 space-y-8 min-w-0">
@@ -242,7 +242,7 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({
 
           {/* Responsive, focused excursion information tabs */}
           <section className="space-y-5" aria-label="Excursion details">
-            <nav aria-label="Excursion information" className="sticky top-16 z-10 bg-[#FAF8F5]/95 backdrop-blur border-y border-stone-200 py-2">
+            <nav aria-label="Excursion information" className="sticky top-14 sm:top-16 z-10 bg-[#FAF8F5]/95 backdrop-blur border-y border-stone-200 py-2">
               <div className="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Tour sections">
                 {([
                   ['overview', 'Overview'],
@@ -299,7 +299,7 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({
         </div>
 
         {/* Right Column: Sticky Booking Panel (4 cols) */}
-        <div className="lg:col-span-5 xl:col-span-4 sticky top-24">
+        <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-24 min-w-0">
           <TourBookingPanel
             tour={tour}
             currency={currency}

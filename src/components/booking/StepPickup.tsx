@@ -68,14 +68,16 @@ export const StepPickup: React.FC<StepPickupProps> = ({
           </div>
         ) : (
         /* Pickup Location Cards */
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 pt-1">
           {pickupList.map((loc) => {
             const isSelected = selectedPickupId === loc.id;
             return (
-              <div
+              <button
                 key={loc.id}
+                type="button"
+                aria-pressed={isSelected}
                 onClick={() => onSelectPickup(loc)}
-                className={`p-4 rounded-sm border cursor-pointer transition-all ${
+                className={`w-full text-left p-4 rounded-lg border cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2 ${
                   isSelected
                     ? 'border-[#0A6C74] bg-[#E8F3F4]/50 ring-1 ring-[#0A6C74]'
                     : 'border-stone-200 hover:border-stone-300 hover:bg-stone-50 bg-white'
@@ -113,11 +115,11 @@ export const StepPickup: React.FC<StepPickupProps> = ({
                 </div>
 
                 {loc.note && (
-                  <p className="text-[10px] text-stone-600 mt-2 pt-2 border-t border-stone-200/60 leading-normal">
+                  <p className="text-[11px] text-stone-600 mt-3 pt-3 border-t border-stone-200/60 leading-relaxed">
                     {loc.note}
                   </p>
                 )}
-              </div>
+              </button>
             );
           })}
         </div>
