@@ -60,7 +60,7 @@ export const StepPickup: React.FC<StepPickupProps> = ({
           </div>
         ) : error || pickupList.length === 0 ? (
           <div role="alert" className="rounded border border-amber-300 bg-amber-50 p-4 space-y-2 text-xs text-amber-950">
-            <p className="font-semibold">Pickup is not configured for this excursion yet.</p>
+            <p className="font-semibold">Pickup details aren’t available for this tour yet.</p>
             <p>{error || 'There are no active pickup locations explicitly approved for this excursion.'} Please contact our team before booking.</p>
             <a href={getWhatsAppSupportUrl()} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-xs font-semibold text-[#0A6C74] underline">
               <MessageCircle className="w-3.5 h-3.5 mr-1.5" /> Contact our booking team
@@ -157,7 +157,7 @@ export const StepPickup: React.FC<StepPickupProps> = ({
           <div className="flex items-start space-x-2.5">
             <HelpCircle className="w-4 h-4 text-stone-500 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold text-stone-900 block">Pickup location not listed?</span>
+              <span className="font-bold text-stone-900 block">Can’t find your pickup location?</span>
               <span className="text-stone-600 text-[11px]">
                 Staying in a private apartment or unlisted hotel? Contact us directly on WhatsApp.
               </span>
@@ -170,7 +170,7 @@ export const StepPickup: React.FC<StepPickupProps> = ({
             className="inline-flex items-center text-xs font-semibold text-[#0A6C74] hover:text-[#08565C] bg-white px-3 py-1.5 border border-stone-300 rounded shadow-2xs self-start sm:self-auto shrink-0"
           >
             <MessageCircle className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />
-            <span>Contact Us</span>
+            <span>Contact us</span>
           </a>
         </div>
         </>
