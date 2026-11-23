@@ -256,11 +256,11 @@ function MainApp() {
 
   // Live published destinations & categories loaded dynamically from Supabase
   const [liveDestinations, setLiveDestinations] = useState<Destination[]>([]);
-  const [loadingDestinations, setLoadingDestinations] = useState<boolean>(true);
+  const [loadingDestinations, setLoadingDestinations] = useState<boolean>(false);
   const [destinationsError, setDestinationsError] = useState<string | null>(null);
 
   const [liveCategories, setLiveCategories] = useState<Category[]>([]);
-  const [loadingCategories, setLoadingCategories] = useState<boolean>(true);
+  const [loadingCategories, setLoadingCategories] = useState<boolean>(false);
   const [categoriesError, setCategoriesError] = useState<string | null>(null);
 
   // Drawer / Modal states
@@ -331,14 +331,14 @@ function MainApp() {
 
   // Fetch only the public data required by the active route. Homepage search
   // needs all three lists; other pages avoid unrelated catalogue queries.
-  const refreshCatalogue = useCallback(async (path = currentPath) => {
+  const refreshCatalogue = useCallback(async (path = currentPath, refreshAll = false) => {
     const isHome = path === '/';
     const isDestinationRoute = path === '/destinations' || path.startsWith('/destinations/');
     const needsTours = isHome || path === '/excursions' || path.startsWith('/excursions/')
       || path === '/booking' || (path.startsWith('/booking/') && !path.startsWith('/booking/confirmation/'))
       || path.startsWith('/destinations/');
-    const needsDestinations = isHome || isDestinationRoute;
-    const needsCategories = isHome || path === '/experiences';
+    const needsDestinations = isDestinationRoute || (isHome && refreshAll);
+    const needsCategories = path === '/experiences' || (isHome && refreshAll);
 
     if (needsTours) {
       setLoadingTours(true);
@@ -462,11 +462,11 @@ function MainApp() {
   // Synchronize dynamic catalogue when admin mutations occur
   useEffect(() => {
     const handleDataUpdated = () => {
-      refreshCatalogue();
+      refreshCatalogue(currentPath, true);
     };
     window.addEventListener('rse_data_updated', handleDataUpdated);
     return () => window.removeEventListener('rse_data_updated', handleDataUpdated);
-  }, [refreshCatalogue]);
+  }, [currentPath, refreshCatalogue]);
 
   useEffect(() => {
     const handleUnavailableLanguageRoute = (event: Event) => {
@@ -1752,11 +1752,9 @@ function MainApp() {
           <Hero
             onSearch={handleHeroSearch}
             resultCount={liveTours.length}
-            destinations={liveDestinations}
-            categories={liveCategories}
           />
 
-          <DeferredHomeSection minHeight="clamp(22rem, 48vw, 34rem)">
+          <DeferredHomeSection minHeight="clamp(22rem, 48vw, 34rem)" onEnter={refreshPublishedDestinations}>
             <DestinationsSection
               destinations={liveDestinations}
               isLoading={loadingDestinations}
@@ -1777,7 +1775,7 @@ function MainApp() {
             />
           </DeferredHomeSection>
 
-          <DeferredHomeSection minHeight="clamp(24rem, 52vw, 38rem)">
+          <DeferredHomeSection minHeight="clamp(24rem, 52vw, 38rem)" onEnter={refreshPublishedCategories}>
             <ExperienceCategories
               categories={liveCategories}
               isLoading={loadingCategories}
