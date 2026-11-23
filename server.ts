@@ -1997,6 +1997,100 @@ async function sendInquiryNotificationEmail(params: {
   }
 }
 
+// Public review submissions are available to guests and signed-in customers.
+// Writes use the server-only service-role client; browser roles never receive review INSERT access.
+app.post('/api/reviews/submit', rateLimit(5, 10 * 60_000), async (req: Request, res: Response) => {
+  const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};
+  const { tourId, tourSlug, authorName, country, countryCode, rating, comment, travelerType, website_url_hp } = body;
+
+  if (typeof website_url_hp !== 'undefined' && typeof website_url_hp !== 'string') {
+    return res.status(400).json({ success: false, error: 'Invalid review submission.' });
+  }
+  // Honeypot submissions are accepted without persistence so bots do not learn the rule.
+  if (typeof website_url_hp === 'string' && website_url_hp.trim()) {
+    return res.status(201).json({ success: true, status: 'pending' });
+  }
+  if (typeof authorName !== 'string' || typeof comment !== 'string'
+    || (typeof tourId !== 'undefined' && typeof tourId !== 'string')
+    || (typeof tourSlug !== 'undefined' && typeof tourSlug !== 'string')
+    || (typeof country !== 'undefined' && typeof country !== 'string')
+    || (typeof countryCode !== 'undefined' && typeof countryCode !== 'string')
+    || (typeof travelerType !== 'undefined' && typeof travelerType !== 'string')) {
+    return res.status(400).json({ success: false, error: 'Please check your review details and try again.' });
+  }
+
+  const cleanName = authorName.trim().replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 100);
+  const cleanComment = comment.trim().replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '').slice(0, 2000);
+  const cleanCountry = typeof country === 'string' ? country.trim().slice(0, 80) : 'International';
+  const cleanCountryCode = typeof countryCode === 'string' && /^[A-Za-z]{2}$/.test(countryCode.trim())
+    ? countryCode.trim().toUpperCase() : null;
+  const allowedTravelerTypes = ['Couple', 'Family', 'Solo', 'Friends'];
+  const cleanTravelerType = typeof travelerType === 'string' && allowedTravelerTypes.includes(travelerType)
+    ? travelerType : 'Couple';
+  const cleanTourId = typeof tourId === 'string' ? tourId.trim() : '';
+  const cleanTourSlug = typeof tourSlug === 'string' ? tourSlug.trim().slice(0, 180) : '';
+
+  if (cleanName.length < 2 || cleanComment.length < 20 || !Number.isInteger(rating) || rating < 1 || rating > 5
+    || (!cleanTourId && !cleanTourSlug)) {
+    return res.status(400).json({ success: false, error: 'Please provide your name, a review of at least 20 characters, a rating, and the tour.' });
+  }
+  if (cleanTourId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(cleanTourId)) {
+    return res.status(400).json({ success: false, error: 'The selected tour could not be verified.' });
+  }
+  const clientIp = typeof req.ip === 'string' ? req.ip.trim() : '';
+  if (!clientIp || !isIP(clientIp)) {
+    return res.status(503).json({ success: false, error: 'Review service is temporarily unavailable. Please try again later.' });
+  }
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
+    return res.status(503).json({ success: false, error: 'Review service is temporarily unavailable. Please try again later.' });
+  }
+
+  try {
+    const { error: rateLimitError } = await serverSupabase.rpc('check_atomic_rate_limit', {
+      p_action: 'public_review_ip',
+      p_identifier: createHash('sha256').update(clientIp).digest('hex'),
+      p_window_interval: '10 minutes',
+      p_max_hits: 5,
+      p_error_message: 'Too many reviews have been submitted from your network. Please wait before trying again.',
+    });
+    if (rateLimitError) {
+      if (rateLimitError.code === 'P0001') return res.status(429).json({ success: false, error: rateLimitError.message });
+      console.error('Review rate-limit check failed:', rateLimitError.message);
+      return res.status(503).json({ success: false, error: 'Review service is temporarily unavailable. Please try again later.' });
+    }
+
+    let tourQuery = serverSupabase.from('tours').select('id, slug').eq('status', 'published').eq('is_exclusive', false);
+    if (cleanTourId) tourQuery = tourQuery.eq('id', cleanTourId);
+    else tourQuery = tourQuery.eq('slug', cleanTourSlug);
+    const { data: tour, error: tourError } = await tourQuery.maybeSingle();
+    if (tourError || !tour || (cleanTourSlug && tour.slug !== cleanTourSlug)) {
+      return res.status(400).json({ success: false, error: 'The selected tour is no longer available for reviews.' });
+    }
+
+    const { data: review, error: insertError } = await serverSupabase.from('reviews').insert({
+      tour_id: tour.id,
+      author_name: cleanName,
+      country: cleanCountry || 'International',
+      country_code: cleanCountryCode,
+      rating,
+      comment: cleanComment,
+      traveler_type: cleanTravelerType,
+      verified_booking: false,
+      is_published: false,
+      date: new Date().toISOString().slice(0, 10),
+    }).select('id').single();
+
+    if (insertError || !review) {
+      console.error('Public review insert failed:', insertError?.message || 'No review row returned.');
+      return res.status(503).json({ success: false, error: 'Your review could not be saved. Please try again.' });
+    }
+    return res.status(201).json({ success: true, reviewId: review.id, status: 'pending' });
+  } catch (error: any) {
+    console.error('Public review submission failed:', error?.message || error);
+    return res.status(503).json({ success: false, error: 'Review service is temporarily unavailable. Please try again later.' });
+  }
+});
+
 app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(5, 10 * 60_000), async (req: Request, res: Response) => {
   const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};
   const { name, email, phone, inquiryType = 'general_question', message, website_url_hp } = body;
