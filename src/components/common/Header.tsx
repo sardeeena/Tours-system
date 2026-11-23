@@ -305,7 +305,7 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               onClick={onOpenWishlist}
               className="relative p-1.5 text-stone-700 dark:text-slate-200 hover:text-rose-500 dark:hover:text-rose-400 transition-colors cursor-pointer rounded-lg hover:bg-stone-200/50 dark:hover:bg-slate-800/60 whitespace-nowrap shrink-0"
-              title="Saved Excursions"
+              title="Saved tours"
               aria-label={`View ${wishlistCount} saved excursions`}
             >
               <Heart className={`w-4 h-4 ${wishlistCount > 0 ? 'fill-rose-500 text-rose-500' : ''}`} />
@@ -322,7 +322,7 @@ export const Header: React.FC<HeaderProps> = ({
                 type="button"
                 onClick={onOpenCompare}
                 className="relative p-1.5 text-stone-700 dark:text-slate-200 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] transition-colors cursor-pointer rounded-lg hover:bg-stone-200/50 dark:hover:bg-slate-800/60 whitespace-nowrap shrink-0"
-                title="Compare Excursions"
+                title="Compare tours"
                 aria-label={`Compare ${comparisonCount} excursions`}
               >
                 <Scale className="w-4 h-4 text-[#0A6C74] dark:text-[#2dd4bf]" />
@@ -404,7 +404,7 @@ export const Header: React.FC<HeaderProps> = ({
                         className="w-full text-left px-3 py-2 hover:bg-stone-50 flex items-center space-x-2 text-stone-700"
                       >
                         <User className="w-3.5 h-3.5 text-[#0A6C74]" />
-                        <span>My Account Profile</span>
+                        <span>My profile</span>
                       </button>
 
                       <button
@@ -416,7 +416,7 @@ export const Header: React.FC<HeaderProps> = ({
                         className="w-full text-left px-3 py-2 hover:bg-stone-50 flex items-center space-x-2 text-stone-700"
                       >
                         <CalendarCheck className="w-3.5 h-3.5 text-[#0A6C74]" />
-                        <span>My Reservations</span>
+                        <span>My bookings</span>
                       </button>
 
                       {isAdmin && onNavigateAdmin && (
@@ -479,16 +479,16 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           )}
 
-          {/* Require Help Button */}
+          {/* Need help? Button */}
           {onOpenHelpInquiry && (
             <button
               type="button"
               onClick={onOpenHelpInquiry}
               className="hidden 2xl:inline-flex items-center px-3 py-2 text-xs font-semibold text-stone-700 hover:text-stone-900 hover:bg-stone-200/60 rounded-xl transition-all cursor-pointer border border-stone-300/70 bg-stone-200/40 whitespace-nowrap shrink-0"
-              title="Require Help, Concierge & Custom Tours"
+              title="Need help?, Concierge & Custom Tours"
             >
               <HelpCircle className="w-3.5 h-3.5 mr-1 text-[#0A6C74]" />
-              <span>Require Help</span>
+              <span>Need help?</span>
             </button>
           )}
 
@@ -700,7 +700,7 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <div className="flex items-center space-x-2">
                   <Heart className="w-4 h-4 fill-current" />
-                  <span>Saved Excursions</span>
+                  <span>Saved tours</span>
                 </div>
                 <span className="bg-rose-100 text-rose-700 text-xs px-2 py-0.5 rounded-full font-bold">
                   {wishlistCount}
@@ -718,7 +718,7 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   <div className="flex items-center space-x-2">
                     <Scale className="w-4 h-4" />
-                    <span>Compare Excursions</span>
+                    <span>Compare tours</span>
                   </div>
                   <span className="bg-[#E8F3F4] text-[#0A6C74] text-xs px-2 py-0.5 rounded-full font-bold">
                     {comparisonCount}
@@ -771,7 +771,7 @@ export const Header: React.FC<HeaderProps> = ({
                 {t('mobile.reviews')}
               </button>
               <a href="/blog" onClick={() => setMobileMenuOpen(false)} className="text-left py-2 px-3 rounded hover:bg-stone-100 dark:hover:bg-slate-800/60 font-semibold text-[#0A6C74] dark:text-teal-300 flex items-center justify-between">
-                <span>Blog & Travel Journal</span>
+                <span>Travel blog</span>
                 <span className="text-[10px] font-bold uppercase tracking-wider bg-[#0A6C74]/10 text-[#0A6C74] px-2 py-0.5 rounded-full">New</span>
               </a>
               <button
@@ -815,7 +815,7 @@ export const Header: React.FC<HeaderProps> = ({
                     className="w-full py-2.5 px-4 text-center font-semibold text-sm bg-[#0A6C74]/10 hover:bg-[#0A6C74]/20 text-[#0A6C74] rounded border border-[#0A6C74]/30 flex items-center justify-center space-x-2"
                   >
                     <HelpCircle className="w-4 h-4 text-[#0A6C74]" />
-                    <span>Require Help & Support</span>
+                    <span>Need help?</span>
                   </button>
                 )}
                 <a
