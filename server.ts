@@ -2162,11 +2162,12 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
 
   // The generic path-based middleware is defense in depth. This canonical IP bucket
   // also covers case and trailing-slash route aliases and service-role database writes.
-  const clientIp = typeof req.ip === 'string' ? req.ip.trim() : '';
-  if (!clientIp || !isIP(clientIp)) {
+  const resolvedClientIp = typeof req.ip === 'string' ? req.ip.trim() : '';
+  if (!resolvedClientIp || !isIP(resolvedClientIp)) {
     console.error('Inquiry endpoint could not determine a valid client IP.');
     return res.status(503).json({ success: false, error: 'Inquiry service is temporarily unavailable. Please try again later.' });
   }
+  const clientIp = rateLimitNetworkKey(resolvedClientIp);
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
     return res.status(503).json({ success: false, error: 'Secure inquiry database service is not configured or unavailable.' });
   }
