@@ -36,6 +36,10 @@ assert(ipv6A !== ipv6OtherNetwork, 'Different IPv6 /64 networks retain independe
 assert(rateLimitNetworkKey('192.0.2.10') !== rateLimitNetworkKey('192.0.2.11'), 'IPv4 addresses remain individually rate-limited');
 assert(rateLimitNetworkKey('::ffff:192.0.2.10') === rateLimitNetworkKey('192.0.2.10'), 'IPv4-mapped IPv6 addresses normalize to the corresponding IPv4 principal');
 assert(rateLimitNetworkKey('0:0:0:0:0:ffff:c000:020a') === rateLimitNetworkKey('192.0.2.10'), 'Hexadecimal IPv4-mapped IPv6 addresses normalize to the corresponding IPv4 principal');
+assert(rateLimitNetworkKey('fe80::1%eth0') === rateLimitNetworkKey('fe80::1'), 'IPv6 zone identifiers are stripped before network normalization');
+assert(rateLimitNetworkKey('::ffff:192.0.2.10%eth0') === rateLimitNetworkKey('192.0.2.10'), 'Zone-indexed IPv4-mapped IPv6 addresses normalize to IPv4');
+assert.doesNotThrow(() => rateLimitNetworkKey('fe80::1%eth0'), 'Zone-indexed IPv6 input never throws from the rate-limit helper');
+assert(server.includes("(req.ip || req.socket.remoteAddress || 'unknown').trim()"), 'Shared rate limiter trims proxy-derived client addresses before validation');
 
 
 
