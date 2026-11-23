@@ -63,7 +63,9 @@ const categorySeoStart = tourService.indexOf('export async function getPublished
 const categorySeoService = tourService.slice(categorySeoStart, tourService.indexOf('export async function getDestinations', categorySeoStart));
 const categoryPageSource = read('../src/pages/ExcursionsPage.tsx');
 const categorySeoResolver = read('../src/services/seoService.ts');
-assert.match(categorySeoService, /seo_title, seo_description, seo_keywords/, 'Published category retrieval includes the CMS SEO fields');
+assert.match(categorySeoService, /seo_title, seo_description, seo_keywords/, 'Published category retrieval includes legacy category SEO fields');
+assert.match(categorySeoService, /from\('seo_metadata'\)[\s\S]*?eq\('entity_type', 'category'\)[\s\S]*?in\('entity_id', cats\.map/, 'Published category retrieval reads overrides saved by the SEO control center');
+assert.match(categorySeoService, /meta_description[\s\S]*?categorySeoById\.set/, 'Saved category meta descriptions are mapped into the public model');
 assert.match(categorySeoService, /seoTitle: c\.seo_title[\s\S]*?seoDescription: c\.seo_description[\s\S]*?seoKeywords:/, 'Category SEO fields are mapped into the public category model');
 assert.match(categoryPageSource, /const activeCategory = useMemo\([\s\S]*?categories\?\.find\([\s\S]*?generateCategorySeo\(activeLabel, filteredTours\.length, filteredTours, activeCategory\)/, 'Excursion filter SEO receives the selected published category');
 assert.match(app, /const needsCategories = path === '\/experiences' \|\| path === '\/excursions'/, 'Direct visits to the excursions route load category metadata before applying SEO');
