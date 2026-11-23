@@ -1735,16 +1735,16 @@ export async function listAvailabilitySlots(startDate?: string, endDate?: string
 
   const tourIds = [...new Set(rows.map((row: any) => row.tour_id).filter(Boolean))];
   const dates = [...new Set(rows.map((row: any) => String(row.date).slice(0, 10)))].sort();
-  const startDate = dates[0];
-  const endDate = dates[dates.length - 1];
-  if (!startDate || !endDate || tourIds.length === 0) return [];
+  const firstAvailabilityDate = dates[0];
+  const lastAvailabilityDate = dates[dates.length - 1];
+  if (!firstAvailabilityDate || !lastAvailabilityDate || tourIds.length === 0) return [];
 
   // The public availability RPC is the source of truth: a date is open only
   // when it has a confirmed, non-blackout departure with bookable capacity.
   // Read it for each tour so the admin screen cannot display stale daily
   // summary flags as bookable inventory.
-  const start = new Date(`${startDate}T00:00:00.000Z`);
-  const finish = new Date(`${endDate}T00:00:00.000Z`);
+  const start = new Date(`${firstAvailabilityDate}T00:00:00.000Z`);
+  const finish = new Date(`${lastAvailabilityDate}T00:00:00.000Z`);
   const dateRanges: Array<{ startDate: string; endDate: string }> = [];
   for (let cursor = new Date(start); cursor <= finish;) {
     const chunkEnd = new Date(cursor);
