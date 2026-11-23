@@ -72,6 +72,7 @@ export const TourReviews: React.FC<TourReviewsProps> = ({ tour }) => {
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
+    const honeypotValue = (e.currentTarget as HTMLFormElement).elements.namedItem('website_url_hp') as HTMLInputElement | null;
     if (!authorName.trim() || !comment.trim()) {
       setSubmitError('Please provide your name and review comments.');
       return;
@@ -94,7 +95,7 @@ export const TourReviews: React.FC<TourReviewsProps> = ({ tour }) => {
         rating,
         comment: comment.trim(),
         travelerType,
-        website_url_hp: (e.currentTarget.elements.namedItem('website_url_hp') as HTMLInputElement | null)?.value || '',
+        website_url_hp: honeypotValue?.value || '',
       });
       void recordVisitorEvent({ event_name: 'review_submitted', page_path: `/excursions/${tour.slug}`, event_data: { tour_slug: tour.slug, interaction: 'submitted' } });
       setSubmittedMessage(true);
