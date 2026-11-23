@@ -216,7 +216,7 @@ export const AdminTranslationManager: React.FC = () => {
     } catch (error: any) {
       const message = error instanceof Error ? error.message : 'Bulk translation generation stopped.';
       showToast(message, 'error');
-      setGenerationProgress('Stopped safely after ' + totalGenerated + ' drafts and ' + totalSkipped + ' skipped records: ' + message + ' Retry to resume; reviewed and published records are preserved.');
+      setGenerationProgress('Stopped safely after ' + totalGenerated + ' drafts and ' + totalSkipped + ' skipped records: ' + message + ' Retry safely from the beginning; reviewed and published records are preserved.');
     } finally {
       setGenerating(false);
     }
