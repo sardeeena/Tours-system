@@ -34,6 +34,7 @@ const expectedRoutes: RouteEntry[] = [
   { method: 'POST', path: '/api/inquiries' },
   { method: 'POST', path: '/api/inquiries/submit' },
   { method: 'POST', path: '/api/contact' },
+  { method: 'POST', path: '/api/reviews/submit' },
   { method: 'GET', path: '/api/newsletter/unsubscribe' },
   { method: 'POST', path: '/api/newsletter/unsubscribe' },
   { method: 'POST', path: '/api/newsletter' },
@@ -121,6 +122,19 @@ assert(
   routeBlock('GET', '/api/auth/verify-session').includes('if (!req.user)')
     && routeBlock('GET', '/api/auth/verify-session').includes('roles: req.user.roles')
     && routeBlock('GET', '/api/auth/verify-session').includes('permissions: req.user.permissions')
+);
+
+const reviewRoute = routeBlock('POST', '/api/reviews/submit');
+assert(
+  'Public review submissions accept guests through the server-only service-role path',
+  reviewRoute.includes('rateLimit(5, 10 * 60_000)')
+    && reviewRoute.includes("SUPABASE_KEY_TYPE !== 'service_role'")
+    && reviewRoute.includes("p_action: 'public_review_ip'")
+    && reviewRoute.includes('is_published: false')
+    && reviewRoute.includes('verified_booking: false')
+    && reviewRoute.includes("eq('status', 'published')")
+    && reviewRoute.includes("eq('is_exclusive', false)"),
+  'Review submissions must be public, rate-limited, tour-validated, pending moderation, and never self-verified.'
 );
 
 const failed = results.filter((result) => !result.passed);
