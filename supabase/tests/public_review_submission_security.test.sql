@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(11);
+SELECT plan(16);
 
 SELECT ok(
   (SELECT relrowsecurity FROM pg_class WHERE oid='public.reviews'::regclass),
@@ -20,6 +20,66 @@ SELECT ok(
       )
   ),
   'anonymous table grants are absent wherever no public RLS policy exists'
+);
+SELECT ok(
+  NOT EXISTS (
+    SELECT 1 FROM information_schema.role_table_grants
+    WHERE table_schema='public' AND grantee='anon'
+      AND privilege_type IN ('INSERT','UPDATE','DELETE','TRUNCATE','REFERENCES','TRIGGER')
+  ),
+  'anonymous users have no direct write or table-maintenance grants anywhere in the public schema'
+);
+SELECT ok(
+  NOT EXISTS (
+    SELECT 1 FROM information_schema.role_table_grants g
+    WHERE g.table_schema='public' AND g.grantee='anon' AND g.privilege_type='SELECT'
+      AND NOT EXISTS (
+        SELECT 1 FROM pg_policies p
+        WHERE p.schemaname='public' AND p.tablename=g.table_name AND p.cmd='SELECT'
+          AND ('anon'=ANY(p.roles::text[]) OR 'public'=ANY(p.roles::text[]))
+      )
+  ),
+  'anonymous SELECT grants exist only for tables with an explicit public read policy'
+);
+SELECT ok(
+  NOT EXISTS (
+    SELECT 1 FROM pg_class c
+    JOIN pg_namespace n ON n.oid=c.relnamespace
+    WHERE n.nspname='public' AND c.relkind='S'
+      AND (
+        has_sequence_privilege('anon',c.oid,'USAGE')
+        OR has_sequence_privilege('anon',c.oid,'SELECT')
+        OR has_sequence_privilege('anon',c.oid,'UPDATE')
+      )
+  ),
+  'anonymous users have no direct sequence privileges'
+);
+SELECT ok(
+  NOT EXISTS (
+    SELECT 1
+    FROM pg_default_acl d
+    CROSS JOIN LATERAL aclexplode(d.defaclacl) acl
+    JOIN pg_roles grantee ON grantee.oid=acl.grantee
+    WHERE d.defaclnamespace='public'::regnamespace
+      AND grantee.rolname='anon'
+      AND d.defaclobjtype IN ('r','S','f')
+  ),
+  'future public tables, sequences and functions do not inherit anonymous privileges'
+);
+SELECT ok(
+  EXISTS (
+    SELECT 1 FROM pg_proc p
+    JOIN pg_namespace n ON n.oid=p.pronamespace
+    WHERE n.nspname='public' AND p.proname='create_booking_atomic'
+      AND has_function_privilege('anon',p.oid,'EXECUTE')
+  )
+  AND EXISTS (
+    SELECT 1 FROM pg_proc p
+    JOIN pg_namespace n ON n.oid=p.pronamespace
+    WHERE n.nspname='public' AND p.proname='get_tour_availability_schedule'
+      AND has_function_privilege('anon',p.oid,'EXECUTE')
+  ),
+  'intentional guest booking and availability RPCs retain their explicit execute grants'
 );
 SELECT ok(
   NOT has_table_privilege('anon','public.reviews','INSERT'),
