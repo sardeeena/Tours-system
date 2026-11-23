@@ -27,7 +27,7 @@ import {
 } from '../types/database';
 import { PickupLocation, BookingExtra } from '../types/booking';
 import { ALL_TOURS } from '../data/toursData';
-import { clearPublicDataCache, readPublicDataCache, writePublicDataCache, PUBLIC_DATA_CACHE_TTL_MS } from './publicDataCache';
+import { clearPublicDataCache, readPublicDataCache, writePublicDataCache, PUBLIC_DATA_CACHE_TTL_MS, PUBLIC_CATALOGUE_CACHE_TTL_MS } from './publicDataCache';
 
 /**
  * Transforms database tour record with related collections into the frontend Tour structure
@@ -208,7 +208,7 @@ export async function getPublishedTours(options?: TourFilterOptions, forceRefres
   // Public catalogue is cache-first across reloads. Expired data remains visible
   // while one background refresh updates the cache; admin/draft reads never use it.
   if (!options?.includeDrafts && !options?.featuredOnly && !forceRefresh) {
-    const persisted = readPublicDataCache<Tour[]>('catalogue:tours');
+    const persisted = readPublicDataCache<Tour[]>('catalogue:tours', PUBLIC_CATALOGUE_CACHE_TTL_MS);
     if (persisted) {
       cachedPublishedTours = { data: persisted.data, timestamp: persisted.updatedAt };
       if (!persisted.isFresh && !refreshingPublishedTours) {
@@ -343,7 +343,7 @@ export async function getPublishedTours(options?: TourFilterOptions, forceRefres
 export async function getTourBySlug(slug: string, allowDraft: boolean = false, forceRefresh = false): Promise<Tour | null> {
   const cacheKey = `catalogue:tour:${slug}`;
   if (!allowDraft && !forceRefresh) {
-    const cached = readPublicDataCache<Tour | null>(cacheKey);
+    const cached = readPublicDataCache<Tour | null>(cacheKey, PUBLIC_CATALOGUE_CACHE_TTL_MS);
     if (cached) {
       if (!cached.isFresh) {
         void getTourBySlug(slug, false, true).catch((error) => console.warn('Background tour detail refresh failed:', error));
