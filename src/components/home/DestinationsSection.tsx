@@ -78,13 +78,13 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
           <div>
             <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#0A6C74] dark:text-[#60C3CC] mb-2">
               <span className="w-5 h-0.5 bg-[#0A6C74] dark:bg-[#60C3CC] rounded-full"></span>
-              <span>Explore Egypt</span>
+              <span>Places to visit</span>
             </div>
             <h2 className="font-display text-2xl sm:text-4xl text-[#0E1B2A] dark:text-white tracking-tight">
-              Destinations We Serve
+              Explore the Red Sea coast
             </h2>
             <p className="text-stone-600 dark:text-slate-300 text-sm sm:text-base mt-2 max-w-xl leading-relaxed">
-              Discover excursions across Egypt’s Red Sea coast and historic destinations. Each excursion page explains its own departure, transfer and booking arrangements.
+              Explore places along Egypt’s Red Sea coast. Choose a destination to see the boat trips, beach days and other tours available there.
             </p>
           </div>
         </div>
@@ -116,7 +116,7 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
           <div className="rounded-2xl border border-red-200 dark:border-red-900/50 bg-red-50/50 dark:bg-red-950/20 p-8 text-center space-y-4 max-w-lg mx-auto" data-testid="destination-error">
             <AlertTriangle className="w-10 h-10 text-red-500 mx-auto" />
             <div>
-              <h3 className="text-base font-semibold text-stone-900 dark:text-white">Unable to Load Destinations</h3>
+              <h3 className="text-base font-semibold text-stone-900 dark:text-white">We couldn’t load the destinations</h3>
               <p className="text-xs text-stone-600 dark:text-stone-400 mt-1">Please refresh the page or try again in a moment.</p>
             </div>
             <button
@@ -125,7 +125,7 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
               className="inline-flex items-center space-x-1.5 px-4 py-2 bg-[#0A6C74] hover:bg-[#08565C] text-white rounded-lg text-xs font-semibold shadow transition-colors cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Retry Loading Destinations</span>
+              <span>Try again</span>
             </button>
           </div>
         )}
@@ -134,7 +134,7 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
         {!isLoading && !error && destinations.length === 0 && (
           <div className="rounded-2xl border border-stone-200 dark:border-slate-800 bg-stone-50 dark:bg-slate-900/40 p-8 text-center space-y-2 max-w-md mx-auto" data-testid="destination-empty">
             <MapPin className="w-8 h-8 text-stone-400 dark:text-slate-500 mx-auto" />
-            <h3 className="text-sm font-semibold text-stone-800 dark:text-slate-200">No Destinations Available</h3>
+            <h3 className="text-sm font-semibold text-stone-800 dark:text-slate-200">No destinations to show right now</h3>
             <p className="text-xs text-stone-500 dark:text-slate-400">
               We’re refreshing our destination collection. Please check back soon.
             </p>
