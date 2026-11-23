@@ -1048,7 +1048,9 @@ export async function getPassengerManifest(
   tourIdFilter?: string
 ): Promise<PassengerManifestItem[]> {
   const date = dateFilter || new Date().toISOString().split('T')[0];
-  const allBookings = await bookingRepository.listBookings();
+  // Fetch only the selected day's bookings rather than scanning the full
+  // reservation history to build a single-day passenger manifest.
+  const allBookings = await bookingRepository.listBookings({ date });
   const targetBookings = allBookings.filter((booking) => {
     const bookingDate = booking.date ? booking.date.split('T')[0] : '';
     if (bookingDate !== date) return false;
@@ -1216,7 +1218,9 @@ export async function updateManifestPassenger(
  */
 export async function getDailyPickupSchedule(dateTarget?: string): Promise<PickupScheduleItem[]> {
   const date = dateTarget || new Date().toISOString().split('T')[0];
-  const allBookings = await bookingRepository.listBookings();
+  // Limit the pickup board to the selected day; loading the full booking history
+  // adds an unnecessary paginated database scan to every calendar refresh.
+  const allBookings = await bookingRepository.listBookings({ date });
 
   // The database is authoritative in production. A failed query must not be
   // silently replaced by stale browser data.
@@ -1709,32 +1713,42 @@ export async function deleteGuide(id: string): Promise<boolean> {
 // 7. AVAILABILITY SLOTS
 // ==============================================================================
 
-export async function listAvailabilitySlots(): Promise<AvailabilitySlot[]> {
+export async function listAvailabilitySlots(startDate?: string, endDate?: string): Promise<AvailabilitySlot[]> {
+  if ((startDate && !/^\d{4}-\d{2}-\d{2}$/.test(startDate)) ||
+      (endDate && !/^\d{4}-\d{2}-\d{2}$/.test(endDate)) ||
+      Boolean(startDate) !== Boolean(endDate) ||
+      (startDate && endDate && startDate > endDate)) {
+    throw new Error('A valid inclusive availability date range is required.');
+  }
+
   if (!isSupabaseConfigured()) {
     if (import.meta.env?.DEV) return [];
     throw new Error('Supabase is not configured; live availability cannot be loaded.');
   }
 
-  const { data: rows, error } = await supabase
+  let availabilityQuery = supabase
     .from('tour_availability')
-    .select('id,tour_id,date,max_capacity,booked_count,status,notes,is_blackout')
-    .order('date', { ascending: true });
+    .select('id,tour_id,date,max_capacity,booked_count,status,notes,is_blackout');
+  if (startDate && endDate) {
+    availabilityQuery = availabilityQuery.gte('date', startDate).lte('date', endDate);
+  }
+  const { data: rows, error } = await availabilityQuery.order('date', { ascending: true });
 
   if (error) throw new Error(formatSupabaseError(error));
   if (!rows?.length) return [];
 
   const tourIds = [...new Set(rows.map((row: any) => row.tour_id).filter(Boolean))];
   const dates = [...new Set(rows.map((row: any) => String(row.date).slice(0, 10)))].sort();
-  const startDate = dates[0];
-  const endDate = dates[dates.length - 1];
-  if (!startDate || !endDate || tourIds.length === 0) return [];
+  const firstAvailabilityDate = dates[0];
+  const lastAvailabilityDate = dates[dates.length - 1];
+  if (!firstAvailabilityDate || !lastAvailabilityDate || tourIds.length === 0) return [];
 
   // The public availability RPC is the source of truth: a date is open only
   // when it has a confirmed, non-blackout departure with bookable capacity.
   // Read it for each tour so the admin screen cannot display stale daily
   // summary flags as bookable inventory.
-  const start = new Date(`${startDate}T00:00:00.000Z`);
-  const finish = new Date(`${endDate}T00:00:00.000Z`);
+  const start = new Date(`${firstAvailabilityDate}T00:00:00.000Z`);
+  const finish = new Date(`${lastAvailabilityDate}T00:00:00.000Z`);
   const dateRanges: Array<{ startDate: string; endDate: string }> = [];
   for (let cursor = new Date(start); cursor <= finish;) {
     const chunkEnd = new Date(cursor);
@@ -1748,9 +1762,17 @@ export async function listAvailabilitySlots(): Promise<AvailabilitySlot[]> {
     cursor.setUTCDate(cursor.getUTCDate() + 1);
   }
 
-  const [{ data: tours, error: toursError }, scheduleGroups] = await Promise.all([
-    supabase.from('tours').select('id,title,slug,departure_time').in('id', tourIds),
-    Promise.all(tourIds.map(async (tourId) => {
+  const { data: tours, error: toursError } = await supabase
+    .from('tours')
+    .select('id,title,slug,departure_time')
+    .in('id', tourIds);
+  if (toursError) throw new Error(formatSupabaseError(toursError));
+
+  // Bound RPC concurrency: the calendar only needs its visible date window,
+  // and a small batch avoids opening one database request per tour at once.
+  const scheduleGroups: any[][] = [];
+  for (let offset = 0; offset < tourIds.length; offset += 4) {
+    const batch = await Promise.all(tourIds.slice(offset, offset + 4).map(async (tourId) => {
       const chunks = await Promise.all(dateRanges.map(async (range) => {
         const { data, error: scheduleError } = await supabase.rpc('get_tour_availability_schedule', {
           p_tour_identifier: String(tourId),
@@ -1761,10 +1783,9 @@ export async function listAvailabilitySlots(): Promise<AvailabilitySlot[]> {
         return data || [];
       }));
       return chunks.flat();
-    })),
-  ]);
-
-  if (toursError) throw new Error(formatSupabaseError(toursError));
+    }));
+    scheduleGroups.push(...batch);
+  }
 
   const tourMap = new Map((tours || []).map((tour: any) => [tour.id, tour]));
   const availabilityByKey = new Map<string, any>();
