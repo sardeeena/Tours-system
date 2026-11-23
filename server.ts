@@ -6205,6 +6205,9 @@ async function startServer() {
       return res.send(lines.join('\n'));
     });
 
+    // SSR is limited to anonymous public routes. Reuse rendered public HTML
+    // briefly so refreshes and repeat visitors do not rerun the same catalogue queries.
+    const PUBLIC_HTML_CACHE_TTL_MS = 3 * 60 * 1000;
     const publicHtmlResponseCache = new Map<string, {
       expiresAt: number;
       rendered: Awaited<ReturnType<typeof renderAwesomeAdventureToursPublicHtml>>;
@@ -6235,7 +6238,7 @@ async function startServer() {
           if (cachedHtml) publicHtmlResponseCache.delete(req.path);
           rendered = await renderAwesomeAdventureToursPublicHtml(req.path, indexHtml);
           if (rendered.statusCode === 200) {
-            publicHtmlResponseCache.set(req.path, { expiresAt: Date.now() + 30_000, rendered });
+            publicHtmlResponseCache.set(req.path, { expiresAt: Date.now() + PUBLIC_HTML_CACHE_TTL_MS, rendered });
             if (publicHtmlResponseCache.size > 100) {
               const oldestKey = publicHtmlResponseCache.keys().next().value;
               if (oldestKey) publicHtmlResponseCache.delete(oldestKey);
