@@ -42,6 +42,6 @@ assert.match(editor,/setTimeout\(resolve, 6500\)/,'Bulk generation respects the 
 assert.match(editor,/All ten language draft-generation runs completed/,'Completion feedback confirms the all-language run');
 assert.match(editor,/human review is still required/,'The all-language workflow never implies automatic publication');
 assert.match(editor,/Existing reviewed and published records are preserved/,'The confirmation explains preservation of approved records');
-assert.match(editor,/Retry to resume/,'A failed run can be safely retried');
+assert.match(editor,/Retry safely from the beginning/,'A failed run can be safely retried without claiming persisted offset state');
 
 console.log('Bulk localization draft workflow safety checks passed.');
