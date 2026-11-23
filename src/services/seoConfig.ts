@@ -9,7 +9,7 @@ export const SEO_DEFAULTS = {
   SITE_NAME: 'Awesome Adventure Tours',
   DEFAULT_TITLE: 'Awesome Adventure Tours | Boat Trips, Island Tours & Safaris',
   DEFAULT_DESCRIPTION:
-    'Discover boat trips, island experiences, snorkeling, diving and desert safaris across Egypt. Compare tour details and book with confidence.',
+    'Find boat trips, island visits, snorkelling, diving and desert safaris in Egypt. See the details and choose a trip that suits you.',
   DEFAULT_OG_IMAGE: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&h=630&q=85',
   DEFAULT_LOCALE: 'en_US',
   KEYWORDS: [
@@ -34,22 +34,22 @@ export const HOMEPAGE_FAQS = [
   {
     question: 'How do I check pickup availability and transfer fees?',
     answer:
-      'Pickup areas, meeting points, and any transfer supplements are listed in each excursion’s Pickup & Departure Details. Select your hotel area during booking and review the total before submitting your reservation.',
+      'Pickup areas and any extra transfer fees are shown in the tour details. Choose your hotel area during booking to see the total.',
   },
   {
     question: 'Can I pay upon hotel pickup rather than paying in advance online?',
     answer:
-      'Some excursions offer "Pay at Hotel Pickup." The available payment method and accepted currency are shown during booking before you submit your reservation.',
+      'Some trips let you pay when you’re picked up. The payment methods and currencies available for your trip are shown during booking.',
   },
   {
     question: 'What is your cancellation and weather refund policy?',
     answer:
-      'Cancellation windows are shown on each excursion and can differ by tour. If maritime port closures prevent departure, the operations team will contact affected guests about the available refund or rescheduling arrangements.',
+      'Cancellation rules vary by trip and are shown on the tour page. If a port closure stops your trip from going ahead, our team will contact you about the options for your booking.',
   },
   {
     question: 'Are snorkeling gear and buffet lunch included on full-day boat trips?',
     answer:
-      'Inclusions differ by excursion. Check the Included and Not Included lists on the tour page; some trips include masks and fins, while others offer equipment for an additional charge.',
+      'What’s included depends on the trip. Check the tour page to see whether masks and fins are provided or cost extra.',
   },
 ];
 
@@ -415,7 +415,7 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string, locale?: string) 
   '/register': (origin) => ({
     title: 'Create an Account | Awesome Adventure Tours',
     description:
-      'Create a traveler account to manage your excursion bookings and saved wishlist.',
+      'Create an account to manage your bookings and saved tours.',
     canonicalUrl: `${origin}/register`,
     ogType: 'website',
     ogImage: SEO_DEFAULTS.DEFAULT_OG_IMAGE,
