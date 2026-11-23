@@ -42,7 +42,7 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onExploreTours, onOpenMyBook
             </h2>
 
             <p className="text-sm sm:text-base text-stone-600 dark:text-slate-300 leading-relaxed max-w-xl">
-              Choose a trip, check what’s included and see the pickup details before you book. Not sure which one is right? Send us a message.
+              Choose a trip, check what’s included, pickup options, any extra charges and cancellation terms before you book. Not sure which one is right? Send us a message.
             </p>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
