@@ -76,9 +76,9 @@ test('static public pages do not request the live tour catalogue', async ({ page
 
 test('tour detail HTML remains no-store with or without trailing slashes', async ({ page }) => {
   for (const path of [
-    '/excursions/orange-bay-island-snorkeling',
-    '/excursions/orange-bay-island-snorkeling/',
-    '/excursions/orange-bay-island-snorkeling//',
+    '/excursions/giftun-island-orange-bay-yacht-trip-with-snorkeling-lunch',
+    '/excursions/giftun-island-orange-bay-yacht-trip-with-snorkeling-lunch/',
+    '/excursions/giftun-island-orange-bay-yacht-trip-with-snorkeling-lunch//',
   ]) {
     const response = await page.goto(path);
     expect(response?.status()).toBe(200);
