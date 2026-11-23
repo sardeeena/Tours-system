@@ -33,7 +33,7 @@ The exact technical and user-management route list is enforced by the automated 
 |---|---|---|
 | Public | `/api/chat`, `/api/health`, `/api/health/ready`, `/api/config`, `/api/tours` | Public liveness/readiness only; readiness exposes dependency state without secrets; catalogue fails closed |
 | Booking/contact | `/api/bookings/create`, `/api/inquiries*`, `/api/contact` | Input validation, rate limits, booking-specific controls |
-| Reviews | `POST /api/reviews/submit` | Public for guests and signed-in customers; strict validation, published-tour lookup, IP + atomic database rate limits, honeypot, pending moderation; server-only service-role write |
+| Reviews | `POST /api/reviews/submit` | Public for guests and signed-in customers; strict validation, published-tour lookup, IPv4/per-IPv6-/64 network limits plus per-tour/per-account atomic quotas, honeypot, pending moderation; server-only service-role write |
 | Newsletter | `/api/newsletter*` | Subscription/unsubscribe validation and rate limits |
 | Visitor privacy | `/api/visitor/consent`, `/api/visitor/events` | Consent-aware, minimized telemetry |
 | Provider callbacks | `/api/webhooks/resend`, `/api/webhooks/whatsapp` | Provider signature/verification; no browser staff permission |
