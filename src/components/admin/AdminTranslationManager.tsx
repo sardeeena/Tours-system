@@ -37,6 +37,7 @@ export const AdminTranslationManager: React.FC = () => {
   const [generating, setGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState('');
   const [confirmGenerate, setConfirmGenerate] = useState(false);
+  const [confirmGenerateAll, setConfirmGenerateAll] = useState(false);
 
   const request = useCallback(async (url: string, init?: RequestInit) => {
     const { data } = await supabase.auth.getSession();
@@ -170,6 +171,57 @@ export const AdminTranslationManager: React.FC = () => {
     } finally { setSaving(false); }
   };
 
+
+  // Run the existing protected, resumable draft endpoint for every agreed locale.
+  // Each locale remains draft-only; the public publication gate is unchanged.
+  const generateAllLocales = async () => {
+    setGenerating(true);
+    let totalGenerated = 0;
+    let totalSkipped = 0;
+    try {
+      for (const target of ROLLOUT_LOCALES) {
+        let offset = 0;
+        let done = false;
+        let localeGenerated = 0;
+        let localeSkipped = 0;
+        setGenerationProgress('Starting ' + target.code.toUpperCase() + ' of ' + ROLLOUT_LOCALES.length + ' languages…');
+        while (!done) {
+          const result = await request('/api/admin/translations/generate-batch', {
+            method: 'POST',
+            body: JSON.stringify({ locale: target.code, offset, limit: 10 }),
+          });
+          offset = Number(result.next_offset || 0);
+          done = Boolean(result.done);
+          localeGenerated += Number(result.processed || 0);
+          localeSkipped += Number(result.skipped || 0);
+          totalGenerated += Number(result.processed || 0);
+          totalSkipped += Number(result.skipped || 0);
+          setGenerationProgress(
+            target.code.toUpperCase() + ' (' + (ROLLOUT_LOCALES.findIndex(x => x.code === target.code) + 1) +
+            '/' + ROLLOUT_LOCALES.length + '): ' + offset + '/' + result.total +
+            ' source records · ' + localeGenerated + ' drafts saved · ' + localeSkipped +
+            ' skipped. Overall: ' + totalGenerated + ' drafts saved.'
+          );
+          // Stay below the server's per-user generation rate limit, including
+          // the boundary between locales. The operation is safe to retry.
+          await new Promise(resolve => window.setTimeout(resolve, 6500));
+        }
+        const localeResult = await request('/api/admin/translations?locale=' + encodeURIComponent(target.code));
+        if (locale === target.code) setRows(localeResult.translations || []);
+      }
+      const summaryResult = await request('/api/admin/translations?summary=true');
+      setLocaleSummary(summaryResult.locale_summary || {});
+      showToast('All ten language draft-generation runs completed. Nothing was published; human review is still required.', 'success');
+      setGenerationProgress('Completed all ten languages: ' + totalGenerated + ' drafts saved, ' + totalSkipped + ' existing or ineligible records skipped. Review every language before publication.');
+    } catch (error: any) {
+      const message = error instanceof Error ? error.message : 'Bulk translation generation stopped.';
+      showToast(message, 'error');
+      setGenerationProgress('Stopped safely after ' + totalGenerated + ' drafts and ' + totalSkipped + ' skipped records: ' + message + ' Retry to resume; reviewed and published records are preserved.');
+    } finally {
+      setGenerating(false);
+    }
+  };
+
   return (
     <div className="space-y-6 text-stone-100">
       <header className="flex flex-wrap items-center justify-between gap-3">
@@ -178,10 +230,16 @@ export const AdminTranslationManager: React.FC = () => {
           <p className="mt-1 text-sm text-stone-400">Super Admin + verified MFA required. Drafts never appear on public pages.</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={() => setConfirmGenerateAll(true)} disabled={generating || loading || saving} className="rounded bg-indigo-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{generating && !confirmGenerate ? 'Generating all languages…' : 'Generate all 10 languages'}</button>
           <button type="button" onClick={() => setConfirmGenerate(true)} disabled={generating || loading || saving || !locale} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{generating ? 'Generating ' + locale.toUpperCase() + ' drafts…' : 'Generate ' + locale.toUpperCase() + ' drafts'}</button>
           <button onClick={() => void load()} disabled={loading || generating} className="rounded border border-stone-700 px-3 py-2 text-sm disabled:opacity-50">{loading ? 'Loading…' : 'Refresh records'}</button>
         </div>
       </header>
+      {confirmGenerateAll && !generating && <div role="dialog" aria-modal="true" aria-labelledby="translation-generate-all-title" className="rounded-xl border border-indigo-700 bg-indigo-950/40 p-4 space-y-3">
+        <h2 id="translation-generate-all-title" className="font-semibold text-white">Generate drafts in all ten languages?</h2>
+        <p className="text-sm text-stone-300">This runs the protected Gemini draft workflow sequentially for German, Italian, Romanian, Russian, French, Dutch, Polish, Czech, Swedish and Spanish. It may take several minutes. Existing reviewed and published records are preserved. Every generated record remains a draft; no customer-facing language is activated automatically. A human reviewer must approve translations and any external WhatsApp/Meta templates separately.</p>
+        <div className="flex flex-wrap gap-2"><button type="button" onClick={() => setConfirmGenerateAll(false)} className="rounded border border-stone-600 px-3 py-2 text-sm">Cancel</button><button type="button" onClick={() => { setConfirmGenerateAll(false); void generateAllLocales(); }} className="rounded bg-indigo-700 px-3 py-2 text-sm font-semibold text-white">Generate all ten languages</button></div>
+      </div>}
       {confirmGenerate && !generating && <div role="dialog" aria-modal="true" aria-labelledby="translation-generate-title" className="rounded-xl border border-teal-700 bg-teal-950/40 p-4 space-y-3">
         <h2 id="translation-generate-title" className="font-semibold text-white">Generate translation drafts?</h2>
         <p className="text-sm text-stone-300">This translates published tours, destinations, blog posts, public pages, communication templates and the interface catalog into the selected language. It uses Gemini. All ten agreed non-English languages are available here. All results remain drafts; nothing is published automatically.</p>
