@@ -5,6 +5,7 @@ import { isIP } from 'node:net';
 import { GoogleGenAI } from '@google/genai';
 import { generateContentWithModelFallback, getGeminiProviderErrorDetails } from './src/server/geminiTranslationFallback';
 import { validateTranslationBatchResponse } from './src/server/translationBatchResponse';
+import { rateLimitNetworkKey } from './src/server/rateLimitNetwork';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import path from 'path';
 import fs from 'fs';
@@ -279,7 +280,8 @@ function rateLimit(maxRequests = 60, windowMs = 60_000) {
   return (req: Request, res: Response, next: NextFunction) => {
     // Express req.ip is derived from the explicitly configured trusted proxy.
     // Never trust a raw client-supplied X-Forwarded-For value as a fallback.
-    const ip = req.ip || req.socket.remoteAddress || 'unknown';
+    const resolvedIp = req.ip || req.socket.remoteAddress || 'unknown';
+    const ip = isIP(resolvedIp) ? rateLimitNetworkKey(resolvedIp) : resolvedIp;
     const key = `${req.baseUrl || req.path}:${ip}`;
     const now = Date.now();
     let bucket = rateLimitBuckets.get(key);
@@ -1999,7 +2001,7 @@ async function sendInquiryNotificationEmail(params: {
 
 // Public review submissions are available to guests and signed-in customers.
 // Writes use the server-only service-role client; browser roles never receive review INSERT access.
-app.post('/api/reviews/submit', rateLimit(5, 10 * 60_000), async (req: Request, res: Response) => {
+app.post('/api/reviews/submit', rateLimit(5, 10 * 60_000), async (req: AuthenticatedRequest, res: Response) => {
   const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};
   const { tourId, tourSlug, authorName, country, countryCode, rating, comment, travelerType, website_url_hp } = body;
 
@@ -2037,10 +2039,11 @@ app.post('/api/reviews/submit', rateLimit(5, 10 * 60_000), async (req: Request, 
   if (cleanTourId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(cleanTourId)) {
     return res.status(400).json({ success: false, error: 'The selected tour could not be verified.' });
   }
-  const clientIp = typeof req.ip === 'string' ? req.ip.trim() : '';
-  if (!clientIp || !isIP(clientIp)) {
+  const resolvedClientIp = typeof req.ip === 'string' ? req.ip.trim() : '';
+  if (!resolvedClientIp || !isIP(resolvedClientIp)) {
     return res.status(503).json({ success: false, error: 'Review service is temporarily unavailable. Please try again later.' });
   }
+  const clientIp = rateLimitNetworkKey(resolvedClientIp);
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
     return res.status(503).json({ success: false, error: 'Review service is temporarily unavailable. Please try again later.' });
   }
@@ -2065,6 +2068,38 @@ app.post('/api/reviews/submit', rateLimit(5, 10 * 60_000), async (req: Request, 
     const { data: tour, error: tourError } = await tourQuery.maybeSingle();
     if (tourError || !tour || (cleanTourSlug && tour.slug !== cleanTourSlug)) {
       return res.status(400).json({ success: false, error: 'The selected tour is no longer available for reviews.' });
+    }
+
+    // A separate per-tour network budget limits queue flooding without allowing
+    // address rotation inside an IPv6 /64 to bypass the global network budget.
+    const { error: tourRateLimitError } = await serverSupabase.rpc('check_atomic_rate_limit', {
+      p_action: 'public_review_tour',
+      p_identifier: createHash('sha256').update(`${clientIp}:${tour.id}`).digest('hex'),
+      p_window_interval: '1 hour',
+      p_max_hits: 3,
+      p_error_message: 'Too many reviews for this tour have been submitted from your network. Please try again later.',
+    });
+    if (tourRateLimitError) {
+      if (tourRateLimitError.code === 'P0001') return res.status(429).json({ success: false, error: tourRateLimitError.message });
+      console.error('Review per-tour rate-limit check failed:', tourRateLimitError.message);
+      return res.status(503).json({ success: false, error: 'Review service is temporarily unavailable. Please try again later.' });
+    }
+
+    // Signed-in customers also receive an independent account budget, so sharing
+    // an address with other guests does not let one account post repeatedly.
+    if (req.user?.id) {
+      const { error: accountRateLimitError } = await serverSupabase.rpc('check_atomic_rate_limit', {
+        p_action: 'public_review_account',
+        p_identifier: createHash('sha256').update(req.user.id).digest('hex'),
+        p_window_interval: '24 hours',
+        p_max_hits: 5,
+        p_error_message: 'You have reached the review limit for your account. Please try again tomorrow.',
+      });
+      if (accountRateLimitError) {
+        if (accountRateLimitError.code === 'P0001') return res.status(429).json({ success: false, error: accountRateLimitError.message });
+        console.error('Review account rate-limit check failed:', accountRateLimitError.message);
+        return res.status(503).json({ success: false, error: 'Review service is temporarily unavailable. Please try again later.' });
+      }
     }
 
     const { data: review, error: insertError } = await serverSupabase.from('reviews').insert({
