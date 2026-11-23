@@ -228,7 +228,7 @@ export const Header: React.FC<HeaderProps> = ({
             : 'opacity-0 -translate-y-2 pointer-events-none'
         }`}
       >
-        <div className="max-w-7xl 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-10 py-2 sm:py-2.5 flex items-center justify-between bg-[#F7F4ED] dark:bg-[#0E1B2A]">
+        <div className="max-w-7xl 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-8 py-2 sm:py-2.5 flex items-center justify-between bg-[#F7F4ED] dark:bg-[#0E1B2A]">
           {/* Brand Logo */}
           <a 
             href="/" 
@@ -249,7 +249,7 @@ export const Header: React.FC<HeaderProps> = ({
           </a>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden 2xl:flex items-center space-x-2 2xl:space-x-3 text-xs 2xl:text-sm font-semibold text-stone-700 dark:text-slate-200" aria-label="Main Navigation">
+          <nav className="hidden 2xl:flex items-center space-x-2 2xl:space-x-2.5 text-xs 2xl:text-sm font-semibold text-stone-700 dark:text-slate-200" aria-label="Main Navigation">
             <button 
               type="button"
               onClick={handleExcursionsClick} 
