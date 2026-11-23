@@ -1417,7 +1417,7 @@ export async function getPublishedCategories(forceRefresh = false): Promise<Cate
   // 1. Fetch published categories ordered by sort_order
   const { data: cats, error: catError } = await supabase
     .from('categories')
-    .select('id, name, slug, icon_name, image, description, sort_order')
+    .select('id, name, slug, icon_name, image, description, seo_title, seo_description, seo_keywords, sort_order')
     .eq('status', 'published')
     .order('sort_order', { ascending: true });
 
@@ -1484,6 +1484,9 @@ export async function getPublishedCategories(forceRefresh = false): Promise<Cate
     image: c.image || NEUTRAL_CATEGORY_PLACEHOLDER,
     tourCount: countMap[c.id] || 0,
     description: c.description || '',
+    seoTitle: c.seo_title || undefined,
+    seoDescription: c.seo_description || undefined,
+    seoKeywords: Array.isArray(c.seo_keywords) ? c.seo_keywords : [],
   }));
 
   cachedCategories = {
