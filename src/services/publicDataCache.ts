@@ -40,6 +40,22 @@ export function writePublicDataCache<T>(key: string, data: T): void {
       updatedAt: Date.now(),
       data,
     }));
+    const entries: Array<{ key: string; updatedAt: number }> = [];
+    for (let index = 0; index < window.localStorage.length; index += 1) {
+      const storedKey = window.localStorage.key(index);
+      if (!storedKey?.startsWith(CACHE_PREFIX)) continue;
+      try {
+        const value = JSON.parse(window.localStorage.getItem(storedKey) || 'null');
+        entries.push({ key: storedKey, updatedAt: Number(value?.updatedAt) || 0 });
+      } catch {
+        window.localStorage.removeItem(storedKey);
+      }
+    }
+    entries.sort((a, b) => a.updatedAt - b.updatedAt);
+    while (entries.length > 40) {
+      const oldest = entries.shift();
+      if (oldest && oldest.key !== CACHE_PREFIX + key) window.localStorage.removeItem(oldest.key);
+    }
   } catch {
     // Storage is an optional performance layer; the live request remains authoritative.
   }
