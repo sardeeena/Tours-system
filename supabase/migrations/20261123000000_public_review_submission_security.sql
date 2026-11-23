@@ -19,30 +19,42 @@ CREATE POLICY "Public can read published reviews"
   TO anon
   USING (is_published = TRUE);
 
--- Remove stale anonymous table grants wherever RLS has no anon/PUBLIC policy.
--- These grants do not currently bypass RLS, but they are unnecessary and make future
--- policy changes dangerous. Public form writes continue through dedicated server APIs.
-DO $least_privilege$
+-- Anonymous browser clients are read-only at the table layer. All guest writes
+-- (booking, inquiries, newsletter and reviews) go through validated server APIs/RPCs.
+REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM anon;
+REVOKE ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public FROM anon;
+
+-- Restore SELECT only where an explicit anon/PUBLIC SELECT policy exists.
+DO $public_reads$
 DECLARE
   target record;
 BEGIN
   FOR target IN
-    SELECT DISTINCT g.table_schema, g.table_name
-    FROM information_schema.role_table_grants g
-    WHERE g.table_schema = 'public'
-      AND g.grantee = 'anon'
-      AND NOT EXISTS (
-        SELECT 1
-        FROM pg_policies p
-        WHERE p.schemaname = g.table_schema
-          AND p.tablename = g.table_name
-          AND ('anon' = ANY(p.roles::text[]) OR 'public' = ANY(p.roles::text[]))
-      )
+    SELECT DISTINCT p.tablename
+    FROM pg_policies p
+    WHERE p.schemaname = 'public'
+      AND p.cmd = 'SELECT'
+      AND ('anon' = ANY(p.roles::text[]) OR 'public' = ANY(p.roles::text[]))
   LOOP
-    EXECUTE format('REVOKE ALL PRIVILEGES ON TABLE %I.%I FROM anon', target.table_schema, target.table_name);
+    EXECUTE format('GRANT SELECT ON TABLE public.%I TO anon', target.tablename);
   END LOOP;
 END;
-$least_privilege$;
+$public_reads$;
+
+-- Prevent future tables, sequences, or functions created by either application
+-- schema owner from silently inheriting anonymous privileges.
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+  REVOKE ALL ON TABLES FROM anon;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
+  REVOKE ALL ON TABLES FROM anon;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+  REVOKE ALL ON SEQUENCES FROM anon;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
+  REVOKE ALL ON SEQUENCES FROM anon;
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+  REVOKE EXECUTE ON FUNCTIONS FROM anon;
+ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
+  REVOKE EXECUTE ON FUNCTIONS FROM anon;
 
 -- Keep public catalogue reads, but remove all direct anonymous mutations.
 REVOKE ALL PRIVILEGES ON TABLE public.reviews FROM anon;
