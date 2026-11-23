@@ -2230,6 +2230,19 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
     }
 
     const reservationEmail = process.env.BOOKING_NOTIFICATION_EMAIL?.trim() || 'reservation@awesomeadventure.tours';
+    // Do not let the public inquiry form be used to repeatedly email arbitrary
+    // third-party addresses. A recipient gets at most one confirmation per hour;
+    // the staff notification and inquiry record still proceed for every valid inquiry.
+    const { error: confirmationRateLimitError } = await serverSupabase.rpc('check_atomic_rate_limit', {
+      p_action: 'public_inquiry_confirmation_email',
+      p_identifier: createHash('sha256').update(cleanEmail).digest('hex'),
+      p_window_interval: '1 hour',
+      p_max_hits: 1,
+      p_error_message: 'A confirmation email was already sent to this address recently.',
+    });
+    if (confirmationRateLimitError && confirmationRateLimitError.code !== 'P0001') {
+      console.error('Inquiry confirmation email rate-limit check failed:', confirmationRateLimitError.message);
+    }
     await Promise.all([
       sendInquiryNotificationEmail({
         recipientEmail: reservationEmail,
@@ -2250,13 +2263,13 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
           cleanMessage,
         ].join('\n'),
       }),
-      sendInquiryNotificationEmail({
+      ...(confirmationRateLimitError ? [] : [sendInquiryNotificationEmail({
         recipientEmail: cleanEmail,
         customerName: cleanName,
         templateKey: 'inquiry_customer_confirmation',
         subject: 'We received your message — Awesome Adventure Tours',
         content: `Hello ${cleanName},\n\nThank you for contacting Awesome Adventure Tours. We have received your inquiry (reference ${data.id}) and our team will respond within 2 hours during Egypt Pier Desk hours.\n\nIf your question is urgent, you can contact our reservations team at reservation@awesomeadventure.tours.\n\nAwesome Adventure Tours`,
-      }),
+      })]),
     ]);
     return res.status(201).json({
       success: true,
