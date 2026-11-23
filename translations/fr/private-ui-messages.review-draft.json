@@ -1069,7 +1069,8 @@
     "private.text.e929ba97": "Vérification des détails de l’excursion…",
     "private.text.ef34eff4": "Votre compte n’est pas autorisé à gérer les demandes d’assistance.",
     "private.text.fff7de5b": "Assistant de voyage",
-    "private.text.ffff4c4e": "Suggestions d’excursions"
+    "private.text.ffff4c4e": "Suggestions d’excursions",
+    "private.text.d0162f9c": "Langue du site"
   },
-  "coverage": 1067
+  "coverage": 1068
 }
