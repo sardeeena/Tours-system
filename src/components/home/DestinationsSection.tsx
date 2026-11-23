@@ -78,7 +78,7 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
           <div>
             <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#0A6C74] dark:text-[#60C3CC] mb-2">
               <span className="w-5 h-0.5 bg-[#0A6C74] dark:bg-[#60C3CC] rounded-full"></span>
-              <span>Places to explore</span>
+              <span>Explore Egypt</span>
             </div>
             <h2 className="font-display text-2xl sm:text-4xl text-[#0E1B2A] dark:text-white tracking-tight">
               Destinations We Serve
