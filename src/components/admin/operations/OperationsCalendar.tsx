@@ -50,13 +50,29 @@ export const OperationsCalendar: React.FC<OperationsCalendarProps> = ({
   const [guides, setGuides] = useState<DbGuide[]>([]);
 
   const selectedDateStr = currentDate.toISOString().split('T')[0];
+  const calendarRange = (() => {
+    const start = new Date(currentDate);
+    const end = new Date(currentDate);
+    if (viewMode === 'month') {
+      start.setDate(1);
+      end.setMonth(end.getMonth() + 1, 0);
+      start.setDate(start.getDate() - start.getDay());
+    } else if (viewMode === 'week') {
+      start.setDate(start.getDate() - start.getDay());
+      end.setTime(start.getTime());
+      end.setDate(end.getDate() + 6);
+    }
+    const toDateKey = (date: Date) =>
+      `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    return { startDate: toDateKey(start), endDate: toDateKey(end) };
+  })();
 
   const loadData = async () => {
     setLoading(true);
     setLoadError(null);
     try {
       const [allSlots, deps, pUps, ves, gui] = await Promise.all([
-        listAvailabilitySlots(),
+        listAvailabilitySlots(calendarRange.startDate, calendarRange.endDate),
         getTodayDepartures(selectedDateStr),
         getDailyPickupSchedule(selectedDateStr),
         listVessels(),
@@ -77,7 +93,7 @@ export const OperationsCalendar: React.FC<OperationsCalendarProps> = ({
 
   useEffect(() => {
     loadData();
-  }, [selectedDateStr, viewMode]);
+  }, [selectedDateStr, viewMode, calendarRange.startDate, calendarRange.endDate]);
 
   // Navigation handlers
   const handlePrev = () => {
