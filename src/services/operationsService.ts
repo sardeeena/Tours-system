@@ -1219,7 +1219,9 @@ export async function updateManifestPassenger(
  */
 export async function getDailyPickupSchedule(dateTarget?: string): Promise<PickupScheduleItem[]> {
   const date = dateTarget || new Date().toISOString().split('T')[0];
-  const allBookings = await bookingRepository.listBookings();
+  // Limit the pickup board to the selected day; loading the full booking history
+  // adds an unnecessary paginated database scan to every calendar refresh.
+  const allBookings = await bookingRepository.listBookings({ date });
 
   // The database is authoritative in production. A failed query must not be
   // silently replaced by stale browser data.
