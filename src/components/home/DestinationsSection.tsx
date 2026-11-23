@@ -117,7 +117,7 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
             <AlertTriangle className="w-10 h-10 text-red-500 mx-auto" />
             <div>
               <h3 className="text-base font-semibold text-stone-900 dark:text-white">Unable to Load Destinations</h3>
-              <p className="text-xs text-stone-600 dark:text-stone-400 mt-1">{error}</p>
+              <p className="text-xs text-stone-600 dark:text-stone-400 mt-1">Please refresh the page or try again in a moment.</p>
             </div>
             <button
               type="button"
