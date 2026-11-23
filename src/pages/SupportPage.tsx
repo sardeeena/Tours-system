@@ -193,8 +193,8 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
   if (!user) {
     return <main className="flex-1 max-w-xl mx-auto w-full px-4 py-20 text-center">
       <div className={panelClass + ' p-8'}><Headphones className="w-10 h-10 text-[#0A6C74] mx-auto mb-4"/>
-        <h1 className="font-display text-2xl font-bold text-stone-900 dark:text-white">Awesome Adventure Tours Support</h1>
-        <p className="text-sm text-stone-500 mt-2 mb-6">Sign in to create a support request and securely follow your conversations.</p>
+        <h1 className="font-display text-2xl font-bold text-stone-900 dark:text-white">How can we help?</h1>
+        <p className="text-sm text-stone-500 mt-2 mb-6">Sign in to send us a message and follow our replies.</p>
         <a href="/login?redirect=%2Fsupport" className="inline-flex rounded-xl bg-[#0A6C74] text-white px-5 py-3 text-sm font-bold">Sign in to continue</a>
       </div>
     </main>;
@@ -202,8 +202,8 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
 
   if (staffMode && !canReadAll && !canReadAssigned && !canReply) {
     return <main className="flex-1 max-w-xl mx-auto px-4 py-20 text-center"><div className={panelClass+' p-8'}>
-      <Shield className="w-9 h-9 text-rose-500 mx-auto mb-3"/><h1 className="text-xl font-bold">Access restricted</h1>
-      <p className="text-sm text-stone-500 mt-2">Your account does not have permission to manage support tickets.</p>
+      <Shield className="w-9 h-9 text-rose-500 mx-auto mb-3"/><h1 className="text-xl font-bold">You can’t access this page</h1>
+      <p className="text-sm text-stone-500 mt-2">This account doesn’t have access to support tickets.</p>
     </div></main>;
   }
 
@@ -238,7 +238,7 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
             <input className={fieldClass} maxLength={180} minLength={4} required value={subject} onChange={e=>setSubject(e.target.value)} placeholder="For example: Question about my booking"/></label>
           <label className="block space-y-1.5 text-xs font-semibold text-stone-700 dark:text-slate-200">Tell us a little more
             <textarea className={fieldClass+' min-h-36 resize-y'} maxLength={10000} minLength={10} required value={description} onChange={e=>setDescription(e.target.value)} placeholder="Describe the issue and what you need help with…"/>
-            <span className="block text-[11px] font-normal text-stone-400">Please do not include passwords or full payment-card details.</span></label>
+            <span className="block text-[11px] font-normal text-stone-400">Don’t include passwords or full payment card details.</span></label>
           {isStaff && <div className="grid sm:grid-cols-3 gap-3 rounded-xl border border-stone-100 dark:border-slate-700 bg-stone-50/70 dark:bg-slate-900/40 p-4">
             <label className="text-xs font-semibold space-y-1.5">Category<select className={fieldClass} value={category} onChange={e=>setCategory(e.target.value)}>{[['general','General enquiry'],['booking','Booking'],['payment','Payment'],['refund','Refund'],['tour_operation','Tour / excursion'],['pickup','Pickup'],['technical','Technical issue'],['complaint','Complaint'],['other','Other']].map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>
             <label className="text-xs font-semibold space-y-1.5">Department<select className={fieldClass} value={department} onChange={e=>setDepartment(e.target.value)}>{['support','booking','operations','finance','sales','technical','management'].map(v=><option key={v} value={v}>{v.replace('_',' ').replace(/^./,x=>x.toUpperCase())}</option>)}</select></label>
@@ -270,7 +270,7 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
         </section>
 
         <section className={panelClass+' min-h-[460px] overflow-hidden'}>
-          {!selected ? <div className="h-full min-h-[460px] flex flex-col items-center justify-center p-8 text-center"><div className="w-14 h-14 rounded-2xl bg-[#E8F3F4] text-[#0A6C74] flex items-center justify-center mb-4"><Headphones size={26}/></div><h2 className="font-display text-xl font-bold">Select a ticket</h2><p className="text-sm text-stone-500 mt-2 max-w-sm">Choose a ticket from the queue to view its conversation and manage its progress.</p></div> :
+          {!selected ? <div className="h-full min-h-[460px] flex flex-col items-center justify-center p-8 text-center"><div className="w-14 h-14 rounded-2xl bg-[#E8F3F4] text-[#0A6C74] flex items-center justify-center mb-4"><Headphones size={26}/></div><h2 className="font-display text-xl font-bold">Select a ticket</h2><p className="text-sm text-stone-500 mt-2 max-w-sm">Choose a ticket to read the messages and update it.</p></div> :
           <><div className="p-5 sm:p-6 border-b border-stone-100 dark:border-slate-700 space-y-4 bg-gradient-to-br from-white to-stone-50/70 dark:from-[#111E2E] dark:to-slate-900/40">
             <button type="button" onClick={()=>setSelected(null)} className="lg:hidden inline-flex items-center gap-1 text-xs text-stone-500"><ArrowLeft size={14}/> Back to queue</button>
             <div className="flex flex-wrap items-center justify-between gap-2"><span className="text-xs font-bold text-[#0A6C74]">KS-{String(selected.ticket_number).padStart(6,'0')}</span><span className="text-xs text-stone-500">Created {new Date(selected.created_at).toLocaleString()}</span></div>
