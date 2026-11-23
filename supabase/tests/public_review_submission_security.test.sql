@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(10);
+SELECT plan(11);
 
 SELECT ok(
   (SELECT relrowsecurity FROM pg_class WHERE oid='public.reviews'::regclass),
@@ -44,10 +44,23 @@ SELECT ok(
     WHERE schemaname='public' AND tablename='reviews'
       AND policyname='Public can read published reviews'
       AND cmd='SELECT'
-      AND roles @> ARRAY['anon','authenticated']::name[]
+      AND roles @> ARRAY['anon']::name[]
+      AND NOT (roles @> ARRAY['authenticated']::name[])
       AND qual ILIKE '%is_published%'
   ),
-  'public read policy applies only to published reviews for guests and customers'
+  'anonymous public read policy exposes only published reviews'
+);
+SELECT ok(
+  EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname='public' AND tablename='reviews'
+      AND policyname='rbac_reviews_read'
+      AND cmd='SELECT'
+      AND roles @> ARRAY['authenticated']::name[]
+      AND qual ILIKE '%is_published%'
+      AND qual ILIKE '%has_permission%'
+  ),
+  'signed-in customers read published reviews through the existing single RBAC read policy'
 );
 SELECT ok(
   EXISTS (
