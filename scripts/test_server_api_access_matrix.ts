@@ -127,7 +127,7 @@ assert(
 const reviewRoute = routeBlock('POST', '/api/reviews/submit');
 assert(
   'Public review submissions accept guests through the server-only service-role path',
-  reviewRoute.includes('rateLimit(5, 10 * 60_000)')
+  reviewRoute.includes('rateLimit(30, 10 * 60_000)')
     && reviewRoute.includes("SUPABASE_KEY_TYPE !== 'service_role'")
     && reviewRoute.includes("p_action: 'public_review_ip'")
     && reviewRoute.includes('is_published: false')
