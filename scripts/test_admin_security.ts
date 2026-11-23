@@ -276,7 +276,7 @@ async function runSecurityTests() {
     serverSource.includes("app.use('/api', authenticateToken as any)") &&
     serverSource.includes('/^Bearer\\s+/i') &&
     serverSource.includes("rateLimit(10, 60_000)") &&
-    serverSource.includes("rateLimit(5, 10 * 60_000)") &&
+    serverSource.includes("rateLimit(15, 10 * 60_000)") &&
     serverSource.includes("rateLimit(3, 10 * 60_000)"),
     'Global API, booking/chat, inquiry, and newsletter request ceilings are present'
   );
