@@ -33,6 +33,7 @@ test('header menu stays compact across phone, tablet and laptop widths', async (
   for (const width of [360, 768, 1024, 1366]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
+    await expect(page.getByRole('combobox', { name: 'Website language' })).toBeVisible();
     const toggle = page.locator('#mobile-menu-toggle-btn');
     await expect(toggle).toBeVisible();
     await toggle.click();
@@ -52,6 +53,7 @@ test('header menu stays compact across phone, tablet and laptop widths', async (
 
   await page.setViewportSize({ width: 1536, height: 900 });
   await page.goto('/');
+  await expect(page.getByRole('combobox', { name: 'Website language' })).toBeVisible();
   await expect(page.locator('#mobile-menu-toggle-btn')).toBeHidden();
   await expect(page.getByRole('navigation', { name: 'Main Navigation' })).toBeVisible();
   await expect(page.locator('header').first()).toHaveJSProperty('scrollWidth', await page.locator('header').first().evaluate((element) => element.clientWidth));
