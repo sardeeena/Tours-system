@@ -42,7 +42,7 @@ export const TourCard: React.FC<TourCardProps> = ({
           ) : (
             <span className="flex h-full w-full flex-col items-center justify-center bg-stone-200 text-stone-500">
               <Compass className="mb-1 h-8 w-8 text-[#0A6C74]" aria-hidden="true" />
-              <span className="text-[10px] font-medium uppercase tracking-wide">Photo Coming Soon</span>
+              <span className="text-[10px] font-medium uppercase tracking-wide">Photo coming soon</span>
             </span>
           )}
         </button>
