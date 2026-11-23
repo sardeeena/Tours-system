@@ -10,6 +10,7 @@ const availability = read('../src/services/availabilityService.ts');
 const searchModule = read('../src/components/home/SearchModule.tsx');
 const seoAdmin = read('../src/components/admin/AdminSeoManager.tsx');
 const settings = read('../src/services/siteSettingsService.ts');
+const adminPagesManager = read('../src/components/admin/AdminPagesManager.tsx');
 const seo = read('../src/services/seoService.ts');
 const blog = read('../src/services/blogService.ts');
 const exclusive = read('../src/services/exclusiveTripService.ts');
@@ -33,6 +34,10 @@ assert.match(tours, /eq\('is_exclusive', false\)/, 'public destination counts ex
 assert.match(tours, /eq\('tours\.is_exclusive', false\)/, 'public category counts exclude Exclusive trips');
 assert.match(settings, /site:static-pages/, 'public CMS pages are cached across reloads');
 assert.match(settings, /page\.published !== false && page\.status !== 'draft' && page\.status !== 'unpublished'/, 'client public page cache excludes draft and unpublished CMS pages');
+assert.match(settings, /export async function getStaticPages\(\)/, 'admin CMS retains a complete page list including drafts');
+assert.match(settings, /export async function getPublishedStaticPages\(/, 'public pages use a separate published-only CMS reader');
+assert.match(app, /getPublishedStaticPages\(\)/, 'public app never loads the admin CMS draft list');
+assert.match(adminPagesManager, /getStaticPages\(\)/, 'admin page manager continues to load draft pages for editing');
 assert.match(server, /page\.published !== false && page\.status !== 'draft' && page\.status !== 'unpublished'/, 'server public page rendering excludes draft and unpublished CMS pages');
 assert.match(seo, /seo:\$\{entityType\}/, 'public SEO overrides use a persistent cache key');
 assert.match(seoAdmin, /clearPublicDataCache\(\)/, 'admin SEO updates invalidate the public SEO cache');
