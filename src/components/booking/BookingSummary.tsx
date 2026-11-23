@@ -1,5 +1,5 @@
 import React from 'react';
-import { MapPin, Clock, Calendar, Users, ShieldCheck, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
+import { MapPin, Clock, Calendar, Users, Sparkles, ChevronDown, ChevronUp } from 'lucide-react';
 import { Tour, CurrencyConfig } from '../../types';
 import { GuestCounts, PickupLocation, BookingExtra, BookingPricing } from '../../types/booking';
 
@@ -39,10 +39,10 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
   const totalGuests = (guests.adults || 1) + (guests.children || 0) + (guests.infants || 0);
 
   return (
-    <aside className="bg-white border border-[#E8E3DA] rounded-sm shadow-xs overflow-hidden text-xs">
+    <aside className="bg-white border border-[#E8E3DA] rounded-xl shadow-sm overflow-hidden text-xs">
       
       {/* Header with Tour info */}
-      <div className="p-4 bg-[#FAF8F5] border-b border-[#E8E3DA]">
+      <div className="p-4 sm:p-5 bg-[#F7F4ED] border-b border-[#E8E3DA]">
         <div className="flex space-x-3">
           <img
             src={tour.primaryImage}
@@ -228,19 +228,6 @@ export const BookingSummary: React.FC<BookingSummaryProps> = ({
             </div>
           </div>
         </div>
-
-        {/* Free Cancellation Guarantee badge */}
-        {showGuarantee && (
-          <div className="p-2.5 bg-emerald-50 rounded border border-emerald-200/80 text-[11px] text-emerald-900 flex items-start space-x-2">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-bold block">Free 24h Cancellation</span>
-              <span className="text-emerald-800">
-                Cancel up to 24 hours before pickup for a full refund.
-              </span>
-            </div>
-          </div>
-        )}
 
       </div>
     </aside>
