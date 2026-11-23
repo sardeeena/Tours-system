@@ -61,13 +61,12 @@ export const StepPayment: React.FC<StepPaymentProps> = ({
         </div>
 
         {/* Payment Options Grid */}
-        <div className="grid grid-cols-1 gap-3 pt-1" role="radiogroup" aria-label="Payment Method">
+        <div className="grid grid-cols-1 gap-3 pt-1">
           
           {/* Pay on Hotel Pickup (Active Option) */}
           <button
             type="button"
-            role="radio"
-            aria-checked={paymentMethod === 'pay_at_pickup'}
+            aria-pressed={paymentMethod === 'pay_at_pickup'}
             onClick={() => onPaymentMethodChange('pay_at_pickup')}
             className={`w-full text-left p-4 rounded-lg border cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2 ${
               paymentMethod === 'pay_at_pickup'
