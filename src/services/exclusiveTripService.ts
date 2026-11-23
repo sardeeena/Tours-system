@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabaseClient';
-import { clearPublicDataCache, readPublicDataCache, writePublicDataCache } from './publicDataCache';
+import { clearPublicDataCache, readPublicDataCache, writePublicDataCache, PUBLIC_CATALOGUE_CACHE_TTL_MS } from './publicDataCache';
 
 export interface ExclusiveTrip {
   id: string;
@@ -61,7 +61,7 @@ let refreshingExclusiveTrips = false;
 
 export async function getExclusiveTrips(forceRefresh = false): Promise<ExclusiveTrip[]> {
   if (!forceRefresh) {
-    const cached = readPublicDataCache<ExclusiveTrip[]>('catalogue:exclusive-trips');
+    const cached = readPublicDataCache<ExclusiveTrip[]>('catalogue:exclusive-trips', PUBLIC_CATALOGUE_CACHE_TTL_MS);
     if (cached) {
       if (!cached.isFresh && !refreshingExclusiveTrips) {
         refreshingExclusiveTrips = true;
