@@ -34,4 +34,14 @@ assert.match(editor,/All ten agreed non-English languages are available here/,'T
 assert.match(editor,/setGenerationProgress\(targetLocale\.toUpperCase\(\) \+ ': ' \+ offset \+ '\/' \+ result\.total \+ ' source records · ' \+ generatedCount \+ ' drafts saved · ' \+ skippedCount \+ ' skipped · selected locale'\)/,'Progress identifies the selected locale and batch progress rather than incorrectly saying French only');
 assert.match(editor,/targetLocale\.toUpperCase\(\) \+ ' translation draft generation completed/,'Completion feedback identifies the selected locale');
 assert.doesNotMatch(editor,/French only/,'Progress never mislabels Dutch or Polish batches as French');
+
+assert.match(editor,/const generateAllLocales = async \(\)/,'The workspace offers a single all-language generation workflow');
+assert.match(editor,/for \(const target of ROLLOUT_LOCALES\)/,'All ten approved locales are processed from the fixed registry');
+assert.match(editor,/Generate all 10 languages/,'The all-language action is visible in the workspace');
+assert.match(editor,/setTimeout\(resolve, 6500\)/,'Bulk generation respects the protected endpoint rate limit between batches');
+assert.match(editor,/All ten language draft-generation runs completed/,'Completion feedback confirms the all-language run');
+assert.match(editor,/human review is still required/,'The all-language workflow never implies automatic publication');
+assert.match(editor,/Existing reviewed and published records are preserved/,'The confirmation explains preservation of approved records');
+assert.match(editor,/Retry to resume/,'A failed run can be safely retried');
+
 console.log('Bulk localization draft workflow safety checks passed.');
