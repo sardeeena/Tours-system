@@ -34,15 +34,15 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onExploreTours, onOpenMyBook
           <div className="relative z-10 max-w-2xl space-y-4">
             <div className="inline-flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#0A6C74] dark:text-[#60C3CC] bg-[#0A6C74]/10 dark:bg-white/5 border border-[#0A6C74]/20 dark:border-white/10 px-3.5 py-1.5 rounded-full backdrop-blur-md">
               <Sparkles className="w-3.5 h-3.5 text-[#0A6C74] dark:text-[#60C3CC]" />
-              <span>Clear Booking Details</span>
+              <span>Let's plan your day</span>
             </div>
 
             <h2 className="font-display text-3xl sm:text-5xl text-stone-900 dark:text-white font-normal tracking-tight leading-[1.15]">
-              Ready to explore the crystal waters of the Red Sea?
+              Ready for a day on the Red Sea?
             </h2>
 
             <p className="text-sm sm:text-base text-stone-600 dark:text-slate-300 leading-relaxed max-w-xl">
-              Review the cancellation terms for your selected excursion before confirming. Hotel pickup zones and any location-based supplements are shown for the selected tour.
+              Choose a trip, check what’s included and see the pickup details before you book.
             </p>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
@@ -54,7 +54,7 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onExploreTours, onOpenMyBook
                 onClick={onExploreTours}
                 className="px-6 py-3.5 bg-gradient-to-r from-[#0A6C74] to-[#0D838C] hover:from-[#08565C] hover:to-[#0A6C74] text-white text-xs sm:text-sm font-semibold rounded-xl flex items-center justify-center space-x-2 shadow-lg transition-all group cursor-pointer"
               >
-                <span>View All Tours & Dates</span>
+                <span>Explore all tours</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </motion.button>
 
@@ -79,7 +79,7 @@ export const FinalCTA: React.FC<FinalCTAProps> = ({ onExploreTours, onOpenMyBook
                   className="px-5 py-3.5 bg-white hover:bg-stone-50 dark:bg-white/10 dark:hover:bg-white/15 text-stone-800 dark:text-slate-200 text-xs sm:text-sm font-semibold rounded-xl border border-stone-300 dark:border-white/10 transition-all flex items-center justify-center space-x-1.5 cursor-pointer shadow-xs"
                 >
                   <CalendarCheck className="w-4 h-4 text-[#0A6C74] dark:text-slate-300" />
-                  <span>Find My Booking</span>
+                  <span>Find my booking</span>
                 </motion.button>
               )}
             </div>
