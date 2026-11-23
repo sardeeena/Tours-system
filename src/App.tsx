@@ -342,7 +342,7 @@ function MainApp() {
     const needsTours = isHome || path === '/excursions' || path.startsWith('/excursions/')
       || isBookingRoute || path.startsWith('/destinations/');
     const needsDestinations = isDestinationRoute || (isHome && refreshAll);
-    const needsCategories = path === '/experiences' || (isHome && refreshAll);
+    const needsCategories = path === '/experiences' || path === '/excursions' || (isHome && refreshAll);
 
     if (needsTours) {
       setLoadingTours(true);
