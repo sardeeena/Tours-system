@@ -91,7 +91,7 @@ for (const [k, v] of Object.entries(privateUi)) {
   const placeholders = (s: string) => (s.match(/\{\{[^{}]+\}\}|\{[A-Za-z0-9_.-]+\}|%[sd]|\$\{[^}]+\}/g) || []).sort();
   assert.deepEqual(placeholders(v as string), placeholders(privateContent[k]), 'Private UI placeholders are preserved: ' + k);
 }
-assert.equal(Object.keys(ui.content).length, 1148);
+assert.equal(Object.keys(ui.content).length, 1149);
 assert.equal(EUROPEAN_LOCALE_ROLLOUT.find((locale) => locale.code === 'nl')?.rollout, 'planned');
 assert.ok(SUPPORTED_LANGUAGES.nl, 'Dutch runtime dictionary is registered but remains hidden until published');
 
