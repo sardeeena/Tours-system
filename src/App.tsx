@@ -414,6 +414,16 @@ function MainApp() {
     }
   }, []);
 
+  const openWishlist = useCallback(async () => {
+    if (liveTours.length === 0) await refreshPublishedTours();
+    setIsWishlistOpen(true);
+  }, [liveTours.length, refreshPublishedTours]);
+
+  const openCompare = useCallback(async () => {
+    if (liveTours.length === 0) await refreshPublishedTours();
+    setIsCompareOpen(true);
+  }, [liveTours.length, refreshPublishedTours]);
+
   const refreshPublishedDestinations = useCallback(async () => {
     setLoadingDestinations(true);
     setDestinationsError(null);
@@ -1508,7 +1518,7 @@ function MainApp() {
         <AccountPage
           currency={currentCurrency}
           onNavigate={(page, param) => navigate(page, param)}
-          onOpenWishlist={() => setIsWishlistOpen(true)}
+          onOpenWishlist={openWishlist}
         />
       );
     }
@@ -1822,7 +1832,7 @@ function MainApp() {
         onNavigateAdmin={() => navigate('/admin')}
         onNavigateSection={handleNavigateSection}
         onOpenWishlist={() => setIsWishlistOpen(true)}
-        onOpenCompare={() => setIsCompareOpen(true)}
+        onOpenCompare={openCompare}
         onOpenHelpInquiry={() => {
           setHelpSelectedTour(null);
           setIsHelpInquiryOpen(true);
@@ -1899,7 +1909,7 @@ function MainApp() {
       {!isAdminRoute && (
         <CompareFloatingBar
           allTours={liveTours}
-          onOpenCompareModal={() => setIsCompareOpen(true)}
+          onOpenCompareModal={openCompare}
         />
       )}
 
