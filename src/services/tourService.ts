@@ -276,7 +276,7 @@ export async function getPublishedTours(options?: TourFilterOptions, forceRefres
       .order('sort_order', { ascending: true });
 
     if (!options?.includeDrafts) {
-      query = query.eq('status', 'published').eq('is_exclusive', false).eq('reviews.is_published', true);
+      query = query.eq('status', 'published').eq('is_exclusive', false);
     }
 
     if (options?.featuredOnly) {
@@ -388,7 +388,7 @@ export async function getTourBySlug(slug: string, allowDraft: boolean = false, f
       .eq('slug', slug);
 
     if (!allowDraft) {
-      query = query.eq('status', 'published').eq('is_exclusive', false);
+      query = query.eq('status', 'published').eq('is_exclusive', false).eq('reviews.is_published', true);
     }
 
     const { data, error } = await query.maybeSingle();
