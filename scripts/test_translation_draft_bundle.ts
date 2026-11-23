@@ -5,7 +5,7 @@ const script=read('../scripts/translation_draft_bundle.ts');
 const doc=read('../docs/LOCALIZATION_WORKFLOW.md');
 const server=read('../server.ts');
 const editor=read('../src/components/admin/AdminTranslationManager.tsx');
-assert.match(script,/LOCALES = new Set<Locale>\\(\\['de', 'it', 'ro', 'ru', 'fr', 'nl', 'pl', 'cs', 'sv', 'es'\\]\\)/,'Draft imports are limited to the ten agreed non-English rollout locales');
+assert.match(script,/LOCALES = new Set<Locale>\(\['de', 'it', 'ro', 'ru', 'fr', 'nl', 'pl', 'cs', 'sv', 'es'\]\)/,'Draft imports are limited to the ten agreed non-English rollout locales');
 assert.match(script,/ENTITY_TYPES = new Set\(\['tour','destination','blog_post','static_page','communication_template','ui_catalog'\]\)/);
 assert.match(script,/translation_state:'draft'/);
 assert.match(script,/reviewed_at:null, published_at:null/);
