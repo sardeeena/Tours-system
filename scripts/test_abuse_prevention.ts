@@ -97,7 +97,7 @@ assert(inquiryRoute.includes('tour_title: cleanTourTitle'), 'Inquiry endpoint pe
 assert(inquiry.includes('tour_title: input.tour_title || null'), 'Inquiry client forwards referenced tour title to the server');
 assert(inquiryRoute.includes("p_action: 'public_inquiry_ip'"), 'Inquiry endpoint applies a database-backed per-IP rate limit');
 assert(inquiryRoute.includes("createHash('sha256').update(clientIp).digest('hex')"), 'Inquiry IP rate-limit identifiers are hashed before persistence');
-assert(inquiryRoute.includes("p_max_hits: 10"), 'Inquiry endpoint caps submissions at ten per IP per ten-minute window');
+assert(inquiryRoute.includes("p_max_hits: 30"), 'Inquiry endpoint caps submissions at thirty per IPv6 network per ten-minute window');
 assert(inquiryRoute.includes("if (ipRateLimitError.code === 'P0001')"), 'Inquiry endpoint returns a rate-limit response when the database limit is reached');
 assert(inquiryRoute.includes("catch (error: any)"), 'Inquiry endpoint catches asynchronous failures and returns a controlled response');
 
