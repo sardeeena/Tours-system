@@ -12,7 +12,7 @@
     "ui_catalog": 1,
     "public_ui_messages": 81,
     "private_ui_messages": 1080,
-    "ui_catalog_messages": 1161,
+    "ui_catalog_messages": 1169,
     "source_records": 112
   },
   "records": [
@@ -5064,7 +5064,15 @@
         "private.text.c1c961ad": "Vertrektijden controleren… ",
         "private.text.c2a951c0": "Beperkte beschikbaarheid",
         "private.text.c64375dc": "Annuleringsbeleid",
-        "private.text.e9175fbd": "Je account is beschermd"
+        "private.text.e9175fbd": "Je account is beschermd",
+        "private.text.69d458e5": "Een excursie op zee gepland?",
+        "private.text.dbd7e16b": "De zee- en weersomstandigheden kunnen veranderen. Vertrekinformatie wordt bevestigd door de lokale aanbieder.",
+        "private.text.4ec74a55": "Advies verbergen",
+        "private.text.decc7fb0": "Reistips",
+        "private.text.21533c25": "Voor de veiligheid beoordeelt de aanbieder de omstandigheden vóór vertrek. Als het weer invloed heeft op uw geboekte excursie, neemt het team contact met u op over de mogelijkheden volgens uw boekingsvoorwaarden.",
+        "private.text.562cc5ed": "Fotogalerij sluiten",
+        "private.text.6318d75c": "Vorige foto",
+        "private.text.e28cbf9c": "Volgende foto"
       }
     },
     {
