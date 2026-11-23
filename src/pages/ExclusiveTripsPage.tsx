@@ -95,15 +95,15 @@ export const ExclusiveTripsPage: React.FC<Props> = () => {
     <main className="min-h-screen bg-[#FAF8F5] dark:bg-[#0A1118] text-stone-900 dark:text-slate-100">
       <section className="bg-[#102B32] text-white px-4 sm:px-8 py-14 sm:py-20">
         <div className="max-w-7xl mx-auto">
-          <p className="uppercase tracking-[.22em] text-xs text-teal-200 font-semibold">Made entirely yours</p>
-          <h1 className="font-display text-4xl sm:text-5xl font-bold mt-3">Exclusive Private Trips</h1>
-          <p className="mt-4 max-w-2xl text-white/75 text-base sm:text-lg">Your own boat, yacht or private adventure. One fixed price for the entire trip, with no per-person price changes.</p>
+          <p className="uppercase tracking-[.22em] text-xs text-teal-200 font-semibold">A trip just for you</p>
+          <h1 className="font-display text-4xl sm:text-5xl font-bold mt-3">Private boat trips</h1>
+          <p className="mt-4 max-w-2xl text-white/75 text-base sm:text-lg">Have a boat or yacht to yourselves. The price is for the whole trip, not each person.</p>
         </div>
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(340px,.82fr)] gap-8">
         <section className="space-y-5">
-          <div className="flex items-center justify-between gap-3"><h2 className="text-2xl font-bold">Choose your experience</h2><span className="text-sm text-stone-500">{trips.length} experiences</span></div>
+          <div className="flex items-center justify-between gap-3"><h2 className="text-2xl font-bold">Choose your trip</h2><span className="text-sm text-stone-500">{trips.length} experiences</span></div>
           {trips.length === 0 && <div className="rounded-2xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-7">No exclusive trips are currently published. Please check back soon.</div>}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {trips.map((trip) => {
@@ -113,12 +113,12 @@ export const ExclusiveTripsPage: React.FC<Props> = () => {
                 className={`overflow-hidden rounded-2xl text-left bg-white dark:bg-slate-900 border-2 transition ${active ? 'border-teal-700 shadow-lg' : 'border-stone-200 dark:border-slate-700 hover:border-teal-500'}`}>
                 {image ? <img src={image} alt={trip.tours.title} className="w-full h-48 object-cover" loading="lazy" /> : <div className="h-48 bg-stone-200 dark:bg-slate-800 grid place-items-center"><Ship size={42}/></div>}
                 <div className="p-5">
-                  <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-teal-700 dark:text-teal-300 font-semibold"><Ship size={14}/> Exclusive experience</div>
+                  <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-teal-700 dark:text-teal-300 font-semibold"><Ship size={14}/> Private trip</div>
                   <h3 className="text-xl font-bold mt-2">{trip.tours.title}</h3>
                   {trip.tours.destinations?.name && <p className="text-sm text-stone-500 mt-1 flex items-center gap-1"><MapPin size={14}/>{trip.tours.destinations.name}</p>}
                   <p className="text-sm text-stone-600 dark:text-slate-300 mt-3 line-clamp-3">{trip.tours.short_description || trip.tours.description}</p>
                   <div className="mt-5 flex justify-between items-end gap-2">
-                    <div><p className="text-xs text-stone-500">Fixed price · entire trip</p><p className="text-2xl font-bold">{money(trip.fixed_trip_price, trip.currency)}</p></div>
+                    <div><p className="text-xs text-stone-500">One price for the whole trip</p><p className="text-2xl font-bold">{money(trip.fixed_trip_price, trip.currency)}</p></div>
                     <span className="text-xs text-stone-500 flex items-center gap-1"><Users size={14}/>{trip.minimum_guests}–{trip.maximum_guests} guests</span>
                   </div>
                 </div>
@@ -132,15 +132,15 @@ export const ExclusiveTripsPage: React.FC<Props> = () => {
             <div className="rounded-2xl border border-emerald-200 bg-white dark:bg-slate-900 dark:border-emerald-900 p-6 sm:p-8">
               <CheckCircle2 className="text-emerald-600" size={42}/>
               <h2 className="text-2xl font-bold mt-4">Reservation received</h2>
-              <p className="mt-2 text-stone-600 dark:text-slate-300">Your exclusive trip request has been recorded. Keep this reference for your records.</p>
+              <p className="mt-2 text-stone-600 dark:text-slate-300">We’ve received your booking request. Keep this reference so you can find it later.</p>
               <p className="mt-5 text-xs text-stone-500">Reservation reference</p><p className="text-xl font-bold tracking-wide">{confirmation.reference}</p>
               <div className="mt-5 border-t border-stone-200 dark:border-slate-700 pt-4 flex justify-between"><span>Total · entire trip</span><strong>{money(confirmation.total, confirmation.currency)}</strong></div>
               <button type="button" onClick={() => setConfirmation(null)} className="mt-6 w-full rounded-xl bg-teal-800 text-white py-3 font-semibold">Book another exclusive trip</button>
             </div>
           ) : selectedTrip ? (
             <form onSubmit={handleReserve} className="rounded-2xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 sm:p-7 shadow-sm space-y-4">
-              <div><p className="text-xs uppercase tracking-wider text-teal-700 dark:text-teal-300 font-semibold">Reserve privately</p><h2 className="text-2xl font-bold mt-1">{selectedTrip.tours.title}</h2><p className="text-sm text-stone-500 mt-1">One reservation secures the entire slot.</p></div>
-              <div className="rounded-xl bg-stone-50 dark:bg-slate-800 p-4 flex justify-between gap-3"><div><p className="text-xs text-stone-500">Fixed total · not per person</p><p className="text-2xl font-bold">{money(selectedTrip.fixed_trip_price, selectedTrip.currency)}</p></div><Ship className="text-teal-700" size={26}/></div>
+              <div><p className="text-xs uppercase tracking-wider text-teal-700 dark:text-teal-300 font-semibold">Book a private trip</p><h2 className="text-2xl font-bold mt-1">{selectedTrip.tours.title}</h2><p className="text-sm text-stone-500 mt-1">One booking reserves the whole trip.</p></div>
+              <div className="rounded-xl bg-stone-50 dark:bg-slate-800 p-4 flex justify-between gap-3"><div><p className="text-xs text-stone-500">Total price · for the whole trip</p><p className="text-2xl font-bold">{money(selectedTrip.fixed_trip_price, selectedTrip.currency)}</p></div><Ship className="text-teal-700" size={26}/></div>
               <label className="block text-sm font-semibold">Available date and time
                 <select required value={selectedDepartureId} onChange={(e) => setSelectedDepartureId(e.target.value)} className="mt-1 w-full rounded-lg border border-stone-300 dark:border-slate-600 bg-white dark:bg-slate-800 p-3">
                   <option value="">{slotsLoading ? 'Loading slots…' : 'Select a departure'}</option>
@@ -169,7 +169,7 @@ export const ExclusiveTripsPage: React.FC<Props> = () => {
               <button type="submit" disabled={submitting || slotsLoading || !selectedDepartureId || !departures.length} className="w-full rounded-xl bg-teal-800 hover:bg-teal-900 disabled:opacity-50 text-white py-3.5 font-bold">{submitting ? 'Reserving…' : 'Reserve this private trip'}</button>
               <p className="text-xs text-stone-500 text-center">A slot can be reserved by one group only. Guest count does not change the trip price.</p>
             </form>
-          ) : <div className="rounded-2xl bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-700 p-7">Choose an Exclusive experience to see its dates and booking details.</div>}
+          ) : <div className="rounded-2xl bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-700 p-7">Choose a private trip to see its dates and booking details.</div>}
         </aside>
       </div>
     </main>
