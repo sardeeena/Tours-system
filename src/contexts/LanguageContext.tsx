@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { LanguageCode, LanguageConfig, SUPPORTED_LANGUAGES, EUROPEAN_LOCALE_ROLLOUT } from '../types/i18n';
+import { LanguageCode, LanguageConfig, SUPPORTED_LANGUAGES } from '../types/i18n';
 import { TRANSLATIONS } from '../i18n/translations';
-import { parseLocalePath } from '../i18n/localeRouting';
+import { buildLocalizedPath, detectPreferredLocale, parseLocalePath } from '../i18n/localeRouting';
 
 interface LanguageContextValue {
   language: LanguageCode;
@@ -10,16 +10,20 @@ interface LanguageContextValue {
   supportedLanguages: LanguageConfig[];
   t: (key: string, fallback?: string) => string;
 }
-
 const LanguageContext = createContext<LanguageContextValue | undefined>(undefined);
+const LANGUAGE_PREFERENCE_KEY = 'awesome-adventure-language';
+
+const readSavedLanguage = (): string | null => {
+  try { return window.localStorage.getItem(LANGUAGE_PREFERENCE_KEY); } catch { return null; }
+};
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<LanguageCode>(() => {
     if (typeof window === 'undefined') return 'en';
-    // Locale-prefixed URLs are authoritative, including newly published locales.
     return (parseLocalePath(window.location.pathname)?.locale || 'en') as LanguageCode;
   });
   const [publishedUiLocales, setPublishedUiLocales] = useState<string[]>([]);
+  const [localesLoaded, setLocalesLoaded] = useState(false);
   const [remoteDictionary, setRemoteDictionary] = useState<Record<string, string>>({});
   const languageSwitchRequest = useRef(0);
 
@@ -28,21 +32,42 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     fetch('/api/content-translations/locales', { headers: { Accept: 'application/json' }, cache: 'no-store' })
       .then((response) => response.ok ? response.json() : null)
       .then((payload) => {
-        if (active && payload?.success && Array.isArray(payload.locales)) {
+        if (!active) return;
+        if (payload?.success && Array.isArray(payload.locales)) {
           setPublishedUiLocales(payload.locales.filter((value: unknown): value is string => typeof value === 'string'));
         }
+        setLocalesLoaded(true);
       })
-      .catch(() => { if (active) setPublishedUiLocales([]); });
+      .catch(() => { if (active) { setPublishedUiLocales([]); setLocalesLoaded(true); } });
     return () => { active = false; };
   }, []);
+
+  // First visit: route from browser preference only after the server confirms
+  // the locale is fully published. Explicit URLs and staff admin always win.
+  useEffect(() => {
+    if (!localesLoaded || typeof window === 'undefined') return;
+    if (parseLocalePath(window.location.pathname)) return;
+    if (/^\/(?:[a-z]{2}\/)?admin(?:\/|$)/i.test(window.location.pathname)) return;
+
+    const available = ['en', ...publishedUiLocales];
+    const saved = readSavedLanguage();
+    const savedIsAvailable = saved && available.includes(saved);
+    const preferred = savedIsAvailable
+      ? saved as LanguageCode
+      : detectPreferredLocale(window.navigator['languages'] || [window.navigator['language'] || 'en'], available);
+    if (preferred === 'en') return;
+
+    const localizedPath = buildLocalizedPath(preferred, window.location.pathname, publishedUiLocales);
+    if (!localizedPath) return;
+    window.location.replace(localizedPath + window.location.search + window.location.hash);
+  }, [localesLoaded, publishedUiLocales]);
 
   useEffect(() => {
     let active = true;
     setRemoteDictionary({});
     if (language === 'en') return () => { active = false; };
     fetch('/api/content-translations/ui?locale=' + encodeURIComponent(language), {
-      headers: { Accept: 'application/json' },
-      cache: 'no-store',
+      headers: { Accept: 'application/json' }, cache: 'no-store',
     })
       .then((response) => response.ok ? response.json() : null)
       .then((payload) => {
@@ -58,10 +83,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   }, [language]);
 
   const setLanguage = (newLang: LanguageCode) => {
-    if (typeof window === 'undefined') {
-      setLanguageState(newLang);
-      return;
-    }
+    if (typeof window === 'undefined') { setLanguageState(newLang); return; }
+    try { window.localStorage.setItem(LANGUAGE_PREFERENCE_KEY, newLang); } catch { /* Preference storage is optional. */ }
     const currentRouteLocale = parseLocalePath(window.location.pathname)?.locale || 'en';
     if (currentRouteLocale === newLang) {
       languageSwitchRequest.current += 1;
@@ -69,13 +92,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return;
     }
     const requestId = ++languageSwitchRequest.current;
-    const params = new URLSearchParams({
-      locale: newLang,
-      pathname: window.location.pathname || '/',
-    });
+    const params = new URLSearchParams({ locale: newLang, pathname: window.location.pathname || '/' });
     fetch('/api/content-translations/target?' + params.toString(), {
-      headers: { Accept: 'application/json' },
-      cache: 'no-store',
+      headers: { Accept: 'application/json' }, cache: 'no-store',
     })
       .then(async (response) => {
         const payload = await response.json().catch(() => ({}));
@@ -83,8 +102,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
           throw new Error(payload?.error || 'This page is not translated into the selected language yet.');
         }
         if (requestId !== languageSwitchRequest.current) return;
-        const nextUrl = payload.path + window.location.search + window.location.hash;
-        window.history.pushState({}, '', nextUrl);
+        window.history.pushState({}, '', payload.path + window.location.search + window.location.hash);
         setLanguageState(newLang);
         window.dispatchEvent(new PopStateEvent('popstate'));
       })
@@ -116,7 +134,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 
   useEffect(() => {
     document.documentElement.lang = language;
-    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.dir = 'ltr';
   }, [language]);
 
   const t = (key: string, fallback?: string): string => {
@@ -129,21 +147,10 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const adminPath = typeof window !== 'undefined' && /^\/(?:[a-z]{2}\/)?admin(?:\/|$)/i.test(window.location.pathname);
-  const dynamicConfigs: LanguageConfig[] = EUROPEAN_LOCALE_ROLLOUT
-    .filter((locale) => !adminPath && publishedUiLocales.includes(locale.code) && !SUPPORTED_LANGUAGES[locale.code])
-    .map((locale) => ({
-      code: locale.code,
-      name: locale.englishName,
-      localName: locale.nativeName,
-      flag: locale.direction === 'rtl' ? '🌐' : '🌍',
-    }));
-  const supportedLanguages = [
-    ...Object.values(SUPPORTED_LANGUAGES).filter(
-      (value): value is LanguageConfig => value !== undefined && (value.code === 'en' || publishedUiLocales.includes(value.code)),
-    ),
-    ...dynamicConfigs,
-  ];
-  const currentLanguageConfig = supportedLanguages.find((item) => item.code === language) || SUPPORTED_LANGUAGES.en!;
+  const supportedLanguages = adminPath
+    ? [SUPPORTED_LANGUAGES.en]
+    : Object.values(SUPPORTED_LANGUAGES).filter((value) => value.code === 'en' || publishedUiLocales.includes(value.code));
+  const currentLanguageConfig = SUPPORTED_LANGUAGES[language] || SUPPORTED_LANGUAGES.en;
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, currentLanguageConfig, supportedLanguages, t }}>
