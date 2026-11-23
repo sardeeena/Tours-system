@@ -2207,7 +2207,7 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
 
     const currentYear = new Date().getFullYear();
     const ticketNumber = `INQ-${currentYear}-${Math.floor(1000 + Math.random() * 9000)}`;
-    const cleanInquiryType = inquiryType.trim().replace(/[\\u0000-\\u001f\\u007f]/g, '').slice(0, 120);
+    const cleanInquiryType = inquiryType.trim().replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 120);
     const inquirySubject = cleanInquiryType === 'general_question' ? 'General Excursion Question' : cleanInquiryType || 'General Excursion Question';
     const { data, error } = await serverSupabase
       .from('inquiries')
