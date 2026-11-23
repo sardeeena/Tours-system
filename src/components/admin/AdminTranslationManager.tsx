@@ -184,12 +184,12 @@ export const AdminTranslationManager: React.FC = () => {
       </header>
       {confirmGenerate && !generating && <div role="dialog" aria-modal="true" aria-labelledby="translation-generate-title" className="rounded-xl border border-teal-700 bg-teal-950/40 p-4 space-y-3">
         <h2 id="translation-generate-title" className="font-semibold text-white">Generate translation drafts?</h2>
-        <p className="text-sm text-stone-300">This translates published tours, destinations, blog posts, public pages, communication templates and the interface catalog into the selected language. It uses Gemini. French, Dutch and Polish are enabled here. All results remain drafts; nothing is published automatically.</p>
+        <p className="text-sm text-stone-300">This translates published tours, destinations, blog posts, public pages, communication templates and the interface catalog into the selected language. It uses Gemini. All ten agreed non-English languages are available here. All results remain drafts; nothing is published automatically.</p>
         <div className="flex flex-wrap gap-2"><button type="button" onClick={() => setConfirmGenerate(false)} className="rounded border border-stone-600 px-3 py-2 text-sm">Cancel</button><button type="button" onClick={() => { setConfirmGenerate(false); void generateSelectedLocale(); }} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white">Start generating drafts</button></div>
       </div>}
       <section aria-labelledby="translation-locale-overview" className="space-y-3">
-        <div><h2 id="translation-locale-overview" className="font-semibold text-white">Supported translation languages</h2><p className="text-xs text-stone-400">Only French, Dutch and Polish are enabled in this rollout. Counts come from saved database records; prepared files are not counted until safely imported.</p></div>
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div><h2 id="translation-locale-overview" className="font-semibold text-white">Supported translation languages</h2><p className="text-xs text-stone-400">The ten agreed non-English languages are available for draft generation. Counts come from saved database records; prepared files are not counted until safely imported.</p></div>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {ROLLOUT_LOCALES.map((item) => {
             const stats = localeSummary[item.code] || { draft: 0, review: 0, published: 0, outdated: 0, total: 0 };
             return <button key={item.code} type="button" onClick={() => setLocale(item.code)} aria-pressed={locale === item.code} className={'rounded-xl border p-4 text-left transition-colors ' + (locale === item.code ? 'border-teal-500 bg-teal-950/30' : 'border-stone-800 bg-stone-900/60 hover:bg-stone-800')}>
