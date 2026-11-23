@@ -67,12 +67,23 @@ assert.match(guideUi, /loadError/, 'Guide registry must expose load failures rat
 assert.match(guideUi, /Operational staff could not be loaded/, 'Guide registry must distinguish errors from empty data');
 
 const operationsService = read('src/services/operationsService.ts');
-const regression215AvailabilityRead = section(operationsService, 'export async function listAvailabilitySlots()', 'export async function updateAvailabilitySlot(');
+const regression215AvailabilityRead = section(operationsService, 'export async function listAvailabilitySlots(', 'export async function updateAvailabilitySlot(');
 assert.match(regression215AvailabilityRead, /rpc\('get_tour_availability_schedule'/, 'Admin availability must use the authoritative confirmed-departure schedule');
 assert.match(regression215AvailabilityRead, /availabilityByKey\.get\(/, 'Admin availability must map the authoritative schedule by tour and date');
 assert.match(regression215AvailabilityRead, /isBlackout: Boolean\(authoritative\?\.is_blackout/, 'Admin availability must distinguish real blackouts from dates without confirmed slots');
 assert.doesNotMatch(regression215AvailabilityRead, /row\.status\s*===/, 'Stale daily summary status must not determine bookability');
 assert.doesNotMatch(regression215AvailabilityRead, /bookingRepository\.listBookings\(\)/, 'Availability counts must come from the departure-capacity authority');
+assert.match(regression215AvailabilityRead, /\.gte\('date', startDate\)\.lte\('date', endDate\)/, 'Operations availability reads must be scoped to the visible calendar range');
+assert.match(regression215AvailabilityRead, /for \(let offset = 0; offset < tourIds\.length; offset \+= 4\)/, 'Authoritative availability RPC requests must be concurrency-batched');
+
+const bookingRepositorySource = read('src/services/bookingRepository.ts');
+const listBookings = section(bookingRepositorySource, '  async listBookings(', '  private mapDbToBooking(');
+assert.match(listBookings, /query = query\.eq\('booking_date', filters\.date\)/, 'Date-scoped booking reads must filter in the database, not after fetching the full history');
+assert.match(listBookings, /booking\.date\?\.split\('T'\)\[0\] === filters\.date/, 'Development booking cache must honor the same date filter');
+const pickupSchedule = section(operationsService, 'export async function getDailyPickupSchedule(', 'export async function updatePickupScheduleStatus(');
+assert.match(pickupSchedule, /bookingRepository\.listBookings\(\{ date \}\)/, 'Daily pickup schedule must not scan the complete booking history');
+const passengerManifest = section(operationsService, 'export async function getPassengerManifest(', 'export async function updateManifestPassenger(');
+assert.match(passengerManifest, /bookingRepository\.listBookings\(\{ date \}\)/, 'Passenger manifest must not scan the complete booking history');
 
 const regression215AvailabilityWrite = section(operationsService, 'export async function updateAvailabilitySlot(', 'export async function setBlackoutDate(');
 assert.match(regression215AvailabilityWrite, /is_blackout:\s*isBlackout/, 'Availability status toggles must persist the blackout flag used by booking RPCs');
