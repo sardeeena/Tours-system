@@ -1,4 +1,4 @@
-// Cache-first for versioned/static same-origin assets only. Never cache HTML,
+// Cache-first for same-origin static assets only. Never cache HTML,
 // Supabase/API responses, authentication, bookings, availability or customer data.
 const STATIC_CACHE = 'aat-static-v2';
 const MAX_CACHED_ASSETS = 120;
@@ -25,24 +25,25 @@ self.addEventListener('fetch', (event) => {
 
   const url = new URL(request.url);
   if (url.origin !== self.location.origin || url.search || PRIVATE_PATH.test(url.pathname)) return;
+  if (url.pathname === '/sw.js' || url.pathname === '/manifest.webmanifest') return;
   if (!STATIC_FILE.test(url.pathname) || request.destination === 'document') return;
 
-  event.respondWith((async () => {
-    const cache = await caches.open(STATIC_CACHE);
-    const cached = await cache.match(request);
-    const update = fetch(request).then(async (response) => {
-      if (response && response.ok && response.type === 'basic') {
-        await cache.put(request, response.clone());
-        const keys = await cache.keys();
-        if (keys.length > MAX_CACHED_ASSETS) await cache.delete(keys[0]);
-      }
-      return response;
-    });
-
-    if (cached) {
-      event.waitUntil(update.catch(() => undefined));
-      return cached;
+  const cachePromise = caches.open(STATIC_CACHE);
+  const updatePromise = cachePromise.then(async (cache) => {
+    const response = await fetch(request);
+    if (response && response.ok && response.type === 'basic') {
+      await cache.put(request, response.clone());
+      const keys = await cache.keys();
+      if (keys.length > MAX_CACHED_ASSETS) await cache.delete(keys[0]);
     }
-    return update;
-  })());
+    return response;
+  });
+
+  // Register the refresh synchronously with the fetch event; cached assets are
+  // returned immediately while the latest copy is stored for the next visit.
+  event.waitUntil(updatePromise.catch(() => undefined));
+  event.respondWith(cachePromise.then(async (cache) => {
+    const cached = await cache.match(request);
+    return cached || updatePromise;
+  }));
 });
