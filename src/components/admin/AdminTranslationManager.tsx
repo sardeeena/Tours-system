@@ -35,6 +35,7 @@ export const AdminTranslationManager: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [generatingAll, setGeneratingAll] = useState(false);
   const [generationProgress, setGenerationProgress] = useState('');
   const [confirmGenerate, setConfirmGenerate] = useState(false);
   const [confirmGenerateAll, setConfirmGenerateAll] = useState(false);
@@ -176,6 +177,7 @@ export const AdminTranslationManager: React.FC = () => {
   // Each locale remains draft-only; the public publication gate is unchanged.
   const generateAllLocales = async () => {
     setGenerating(true);
+    setGeneratingAll(true);
     let totalGenerated = 0;
     let totalSkipped = 0;
     try {
@@ -218,6 +220,7 @@ export const AdminTranslationManager: React.FC = () => {
       showToast(message, 'error');
       setGenerationProgress('Stopped safely after ' + totalGenerated + ' drafts and ' + totalSkipped + ' skipped records: ' + message + ' Retry safely from the beginning; reviewed and published records are preserved.');
     } finally {
+      setGeneratingAll(false);
       setGenerating(false);
     }
   };
@@ -230,7 +233,7 @@ export const AdminTranslationManager: React.FC = () => {
           <p className="mt-1 text-sm text-stone-400">Super Admin + verified MFA required. Drafts never appear on public pages.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={() => setConfirmGenerateAll(true)} disabled={generating || loading || saving} className="rounded bg-indigo-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{generating && !confirmGenerate ? 'Generating all languages…' : 'Generate all 10 languages'}</button>
+          <button type="button" onClick={() => setConfirmGenerateAll(true)} disabled={generating || loading || saving} className="rounded bg-indigo-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{generatingAll ? 'Generating all languages…' : 'Generate all 10 languages'}</button>
           <button type="button" onClick={() => setConfirmGenerate(true)} disabled={generating || loading || saving || !locale} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{generating ? 'Generating ' + locale.toUpperCase() + ' drafts…' : 'Generate ' + locale.toUpperCase() + ' drafts'}</button>
           <button onClick={() => void load()} disabled={loading || generating} className="rounded border border-stone-700 px-3 py-2 text-sm disabled:opacity-50">{loading ? 'Loading…' : 'Refresh records'}</button>
         </div>
