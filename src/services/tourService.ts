@@ -276,7 +276,7 @@ export async function getPublishedTours(options?: TourFilterOptions, forceRefres
       .order('sort_order', { ascending: true });
 
     if (!options?.includeDrafts) {
-      query = query.eq('status', 'published').eq('is_exclusive', false);
+      query = query.eq('status', 'published').eq('is_exclusive', false).eq('reviews.is_published', true);
     }
 
     if (options?.featuredOnly) {
