@@ -11,8 +11,8 @@
     "static_page": 10,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1067,
-    "ui_catalog_messages": 1148,
+    "private_ui_messages": 1068,
+    "ui_catalog_messages": 1149,
     "source_records": 112
   },
   "records": [
@@ -3788,6 +3788,7 @@
         "private.text.c30bf512": "Les instructions de récupération du mot de passe ont été envoyées ! Veuillez consulter votre boîte de réception.",
         "private.text.c317f96a": "Navigation principale",
         "private.text.c34b586b": "Bénéficiez de 15 % de réduction",
+        "private.text.cdfbccf3": "Navigation mobile",
         "private.text.c3869976": "Louxor et Vallée des Rois ",
         "private.text.c38e7c24": "Envoi des instructions...",
         "private.text.c3acc0cd": "Recharger la page ",
