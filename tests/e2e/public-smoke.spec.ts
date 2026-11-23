@@ -80,7 +80,7 @@ test('tour detail routes remain no-store with or without trailing slashes, inclu
   // the HTTP cache policy must protect tour-detail routes even when the record
   // is unavailable. A published tour's HTML is covered by the live production
   // route smoke check outside this isolated test environment.
-  for ( (const path of [
+  for (const path of [
     '/excursions/playwright-no-store-cache-regression-test',
     '/excursions/playwright-no-store-cache-regression-test/',
     '/excursions/playwright-no-store-cache-regression-test//',
