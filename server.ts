@@ -3824,6 +3824,28 @@ app.get('/api/admin/translations', rateLimit(30, 60_000), async (req: Authentica
   const locale = typeof req.query.locale === 'string' ? req.query.locale : '';
   const entityType = typeof req.query.entity_type === 'string' ? req.query.entity_type : '';
   if (locale && !TRANSLATION_LOCALES.has(locale)) return res.status(400).json({ success: false, error: 'Unsupported locale.' });
+  if (req.query.summary === 'true') {
+    const rolloutLocales = ['fr', 'nl', 'pl'] as const;
+    const states = ['draft', 'review', 'published', 'outdated'] as const;
+    try {
+      const entries = await Promise.all(rolloutLocales.flatMap((targetLocale) => states.map(async (state) => {
+        const { count, error } = await serverSupabase!.from('content_translations')
+          .select('id', { count: 'exact', head: true })
+          .eq('locale', targetLocale)
+          .eq('translation_state', state);
+        if (error) throw error;
+        return { locale: targetLocale, state, count: count || 0 };
+      })));
+      const locale_summary = Object.fromEntries(rolloutLocales.map((targetLocale) => {
+        const counts = Object.fromEntries(states.map((state) => [state, entries.find((entry) => entry.locale === targetLocale && entry.state === state)?.count || 0]));
+        return [targetLocale, { ...counts, total: states.reduce((sum, state) => sum + Number(counts[state] || 0), 0) }];
+      }));
+      return res.json({ success: true, locale_summary });
+    } catch (error) {
+      console.error('[Translation editor] Could not load locale summary:', error);
+      return res.status(503).json({ success: false, error: 'Translation language status is temporarily unavailable.' });
+    }
+  }
   if (entityType && !TRANSLATION_ENTITY_TYPES.has(entityType)) return res.status(400).json({ success: false, error: 'Unsupported content type.' });
   try {
     let query = serverSupabase!.from('content_translations')
