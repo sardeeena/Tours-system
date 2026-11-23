@@ -47,25 +47,29 @@ import { TourDetailSkeleton } from './components/tours/TourDetailSkeleton';
 import { BookingPageSkeleton } from './components/booking/BookingPageSkeleton';
 import { Compass } from 'lucide-react';
 
-const DeferredHomeSection: React.FC<{ children: React.ReactNode; minHeight: string }> = ({ children, minHeight }) => {
+const DeferredHomeSection: React.FC<{ children: React.ReactNode; minHeight: string; onEnter?: () => void }> = ({ children, minHeight, onEnter }) => {
   const [isNearViewport, setIsNearViewport] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const element = sectionRef.current;
     if (!element) return;
-    if (typeof IntersectionObserver === 'undefined') {
+    const activate = () => {
       setIsNearViewport(true);
+      onEnter?.();
+    };
+    if (typeof IntersectionObserver === 'undefined') {
+      activate();
       return;
     }
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
-        setIsNearViewport(true);
+        activate();
         observer.disconnect();
       }
-    }, { rootMargin: '700px 0px' });
+    }, { rootMargin: '400px 0px' });
     observer.observe(element);
     return () => observer.disconnect();
-  }, []);
+  }, [onEnter]);
   return (
     <div ref={sectionRef} className="w-full min-w-0">
       {isNearViewport ? (
