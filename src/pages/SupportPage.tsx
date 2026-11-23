@@ -251,7 +251,7 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
           </details>
           <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-stone-100 dark:border-slate-700 pt-4">
             <p className="text-[11px] text-stone-400">Our support team will handle priority and assignment.</p>
-            <button disabled={busy} className="inline-flex justify-center items-center rounded-xl bg-[#0A6C74] hover:bg-[#085B62] text-white px-6 py-3 text-sm font-bold shadow-sm disabled:opacity-50">{busy?'Submitting…':'Send support request'}</button>
+            <button type="submit" disabled={busy} className="inline-flex justify-center items-center rounded-xl bg-[#0A6C74] hover:bg-[#085B62] text-white px-6 py-3 text-sm font-bold shadow-sm disabled:opacity-50">{busy?'Submitting…':'Send support request'}</button>
           </div>
         </div>
       </form>}
@@ -293,7 +293,7 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
             <textarea className={fieldClass+' min-h-24 resize-y'} value={reply} onChange={e=>setReply(e.target.value)} maxLength={10000} required placeholder={internal?'Write a note visible only to authorized staff…':'Write your reply…'}/>
             <label className="block text-xs text-stone-500">Attachments (up to 5 files, 10 MB each)<input type="file" multiple accept=".pdf,.jpg,.jpeg,.png,.webp,.txt" onChange={e=>setFiles(Array.from(e.target.files||[]).slice(0,5))} className="block mt-2 text-xs max-w-full"/></label>
             {files.length>0&&<p className="text-xs text-stone-500">{files.map(file=>file.name).join(', ')}</p>}
-            <div className="flex items-center justify-between gap-2"><span className="text-[10px] text-stone-500">Never include passwords, payment card details or sensitive credentials.</span><button disabled={busy||!reply.trim()} className="inline-flex items-center gap-2 rounded-xl bg-[#0A6C74] text-white px-4 py-2.5 text-xs font-bold disabled:opacity-50"><Send size={14}/>{busy?'Sending…':internal?'Add note':'Send reply'}</button></div>
+            <div className="flex items-center justify-between gap-2"><span className="text-[10px] text-stone-500">Never include passwords, payment card details or sensitive credentials.</span><button type="submit" disabled={busy||!reply.trim()} className="inline-flex items-center gap-2 rounded-xl bg-[#0A6C74] text-white px-4 py-2.5 text-xs font-bold disabled:opacity-50"><Send size={14}/>{busy?'Sending…':internal?'Add note':'Send reply'}</button></div>
           </form>}
           {selected.status==='closed' && <div className="p-5 border-t border-stone-100 dark:border-slate-700 text-xs text-stone-500 flex items-center gap-2"><CheckCircle2 size={16}/> This ticket is closed. Contact support to request reopening.</div>}
           </>}
