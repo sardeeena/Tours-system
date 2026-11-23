@@ -30,6 +30,7 @@ assert.match(tours, /catalogue:categories/, 'published categories are cached acr
 assert.match(tours, /catalogue:tour:/, 'public tour detail content is cached across reloads');
 assert.match(tours, /eq\('reviews\.is_published', true\)/, 'public tour detail cache includes published reviews only');
 assert.match(tours, /supabase\.auth\.getSession\(\)/, 'tour detail cache checks the real Supabase session');
+assert.match(tours, /!sessionError && !session\?\.user/, 'tour detail caching fails closed when session verification errors');
 assert.match(tours, /if \(canCachePublicTour\) writePublicDataCache\(cacheKey, mappedTour\)/, 'authenticated moderator data is never written to the shared public cache');
 assert.match(tours, /writePublicDataCache\('catalogue:tours'/, 'successful public catalogue reads refresh the persistent cache');
 assert.match(tours, /eq\('is_exclusive', false\)/, 'public destination counts exclude Exclusive trips');
