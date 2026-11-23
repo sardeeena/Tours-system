@@ -553,21 +553,21 @@ export const ALL_TOURS: Tour[] = [
       'https://images.unsplash.com/photo-1682687220063-4742bd7fd538?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=1200&q=80'
     ],
-    shortDescription: 'Sail to the protected Sha’ab Samadai marine reserve to snorkel near wild dolphins in calm natural lagoons.',
-    fullDescription: 'Sha’ab Samadai is a protected marine reserve in southern Egypt where families of spinner dolphins rest in natural lagoons. Snorkel in the designated lagoon zone with marine guides, then explore outer coral drop-offs. Includes hotel pickup across Marsa Alam and lunch onboard.',
+    shortDescription: 'Visit the protected Sha’ab Samadai marine reserve and snorkel in the designated area. Wild dolphins live here, but sightings are not guaranteed.',
+    fullDescription: 'Sha’ab Samadai is a protected marine reserve in southern Egypt. You’ll snorkel in the area set aside for visitors with a guide, then visit the outer reef. The trip includes hotel pickup in Marsa Alam and lunch on board. Dolphins live in the reserve, but sightings are not guaranteed.',
     highlights: [
       'Protected national marine park with regulated dolphin access',
-      'High chance to see spinner dolphins in calm waters',
+      'Look for spinner dolphins in their natural habitat (sightings are not guaranteed)',
       'Two guided snorkeling stops accompanied by marine guides',
       'Hot buffet lunch and cold drinks on the boat',
       'Hotel pickup and drop-off across Marsa Alam included'
     ],
     itinerary: [
       { time: '07:30', title: 'Hotel pickup', description: 'Transfer to Marsa Alam marina pier.' },
-      { time: '08:30', title: 'Sail to Samadai Reef', description: 'Cruising toward the offshore horseshoe reef.' },
-      { time: '10:00', title: 'First dolphin snorkeling', description: 'Snorkeling in the designated tourist zone of Samadai.' },
+      { time: '08:30', title: 'Sail to Samadai Reef', description: 'Sail towards the horseshoe-shaped reef.' },
+      { time: '10:00', title: 'First dolphin snorkeling', description: 'Snorkel in the area set aside for visitors.' },
       { time: '12:30', title: 'Buffet lunch onboard', description: 'Warm lunch served on the boat.' },
-      { time: '14:00', title: 'Second coral reef stop', description: 'Explore steep coral walls on the outer reef.' },
+      { time: '14:00', title: 'Second coral reef stop', description: 'Snorkel along the outer reef.' },
       { time: '16:00', title: 'Return to marina', description: 'Transfer back to hotel.' }
     ],
     included: ['Hotel pickup and drop-off', 'Boat trip to Samadai', 'National Park permit fee', 'Snorkeling equipment', 'Buffet lunch & drinks'],
@@ -605,8 +605,8 @@ export const ALL_TOURS: Tour[] = [
       'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=1200&q=80'
     ],
-    shortDescription: 'Snorkel straight from a sandy beach without a boat. Includes private bay entry, sun loungers, swimming pool, and lunch.',
-    fullDescription: 'Sharm El Naga is a protected bay south of Hurghada where coral reefs grow just a few meters from the shore. Ideal for families, children, and travelers who prefer walking into the water from the beach rather than taking a boat. Loungers, freshwater pool, and restaurant buffet lunch are included.',
+    shortDescription: 'Snorkel straight from the beach, with no boat trip needed. Includes bay entry, sun loungers, pool access and lunch.',
+    fullDescription: 'Sharm El Naga is a protected bay south of Hurghada, with coral reefs close to the shore. It’s a good option if you’d rather walk into the sea from the beach than snorkel from a boat. The trip includes sun loungers, pool access and a buffet lunch.',
     highlights: [
       'Direct beach-entry snorkeling without needing a boat',
       'Access to fresh-water swimming pool, showers, and shaded loungers',
@@ -616,7 +616,7 @@ export const ALL_TOURS: Tour[] = [
     itinerary: [
       { time: '08:30', title: 'Hotel transfer', description: 'Air-conditioned transfer to Sharm El Naga bay.' },
       { time: '09:30', title: 'Beach arrival & briefing', description: 'Settle into loungers and receive snorkeling equipment.' },
-      { time: '10:30', title: 'Guided shore snorkeling', description: 'Explore the drop-off with guide.' },
+      { time: '10:30', title: 'Guided shore snorkeling', description: 'Snorkel along the reef with your guide.' },
       { time: '13:00', title: 'Beachfront buffet lunch', description: 'Hot lunch at the reserve restaurant.' },
       { time: '14:30', title: 'Free beach & pool time', description: 'Relaxation and secondary snorkeling.' },
       { time: '16:00', title: 'Return transfer', description: 'Drop-off at your hotel.' }
@@ -655,8 +655,8 @@ export const ALL_TOURS: Tour[] = [
     galleryImages: [
       'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80'
     ],
-    shortDescription: 'View corals and fish through underwater glass windows without getting wet. Sail past sunken pillars with an optional swim stop.',
-    fullDescription: 'Great for children, non-swimmers, and anyone wanting a short 2.5-hour trip. Look through deep panoramic glass panels to watch coral reefs and marine life in calm bay waters. Includes a short swimming stop and hotel transfer.',
+    shortDescription: 'See coral and fish through the boat’s glass windows without getting wet. There’s also an optional stop for a swim.',
+    fullDescription: 'A good choice for families, children and non-swimmers. Look through the glass panels to see the reef and fish below, then take an optional swim stop. Hotel transfers are included.',
     highlights: [
       'Large submerged glass viewing windows',
       'Cruise past Sahl Hasheesh sunken columns',
@@ -665,14 +665,14 @@ export const ALL_TOURS: Tour[] = [
     ],
     itinerary: [
       { time: '10:00 or 14:00', title: 'Hotel pickup', description: 'Transfer to Sahl Hasheesh pier.' },
-      { time: '10:30 or 14:30', title: 'Boarding & glass viewing', description: 'Cruise over living reefs and sunken columns.' },
+      { time: '10:30 or 14:30', title: 'Boarding & glass viewing', description: 'Look through the glass panels as the boat passes over reefs and sunken columns.' },
       { time: '11:45 or 15:45', title: 'Optional swim stop', description: 'Jump into shallow calm water or stay on sun deck.' },
       { time: '12:30 or 16:30', title: 'Return transfer', description: 'Back to hotel.' }
     ],
     included: ['Hotel transfers', 'Glass bottom boat cruise', 'Soft drinks and water'],
     excluded: ['Personal photos'],
     whatToBring: ['Sunglasses', 'Camera'],
-    importantInformation: ['Stroller friendly and completely safe for all ages.'],
+    importantInformation: ['Ask us about access needs before booking. Children must be accompanied by an adult.'],
     languages: ['English', 'German', 'Russian'],
     maxGuests: 25,
     pickupAvailable: true,
@@ -704,8 +704,8 @@ export const ALL_TOURS: Tour[] = [
       'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80'
     ],
-    shortDescription: 'Cruise through the marine sanctuary of Ras Mohammed National Park, step onto the crystal sandbar of White Island, snorkel coral walls, and enjoy an onboard seafood buffet.',
-    fullDescription: 'Sail along the dramatic coastline of South Sinai into the protected marine sanctuary of Ras Mohammed National Park. Cruise to the famous White Island sandbar, explore vibrant coral reef walls, and enjoy a freshly prepared open seafood & grill buffet onboard.',
+    shortDescription: 'Visit Ras Mohammed National Park and White Island by boat. Enjoy time on the sandbar, snorkel along the reef and have lunch on board.',
+    fullDescription: 'Sail along the coast of South Sinai to Ras Mohammed National Park. Stop at White Island, snorkel along the reef and enjoy a seafood and barbecue buffet on board.',
     highlights: [
       'Cruise to Ras Mohammed National Park, Egypt’s oldest protected marine reserve',
       'Walk on the pristine shifting sands of White Island',
@@ -714,13 +714,13 @@ export const ALL_TOURS: Tour[] = [
       'Complimentary hotel pickup and drop-off from any resort in Sharm El-Sheikh'
     ],
     itinerary: [
-      { time: '08:00', title: 'Hotel Pickup', description: 'Air-conditioned transfer from your Sharm resort to the marina.' },
-      { time: '09:00', title: 'Yacht Departure', description: 'Welcome briefing, safety orientation, and cruise out towards South Sinai.' },
-      { time: '10:30', title: 'First Snorkeling Session', description: 'Guided exploration along protected coral reef walls with clownfish and sea turtles.' },
-      { time: '12:00', title: 'White Island Sandbar Stop', description: 'Tender boat transfer to the turquoise shallows and sandbar of White Island.' },
-      { time: '13:30', title: 'Fresh Buffet Lunch Onboard', description: 'Generous open buffet featuring grilled fish, chicken, pastas, and oriental mezze.' },
-      { time: '14:45', title: 'Second Snorkeling Stop', description: 'Afternoon swim among sea fans and schooling anthias.' },
-      { time: '16:30', title: 'Return to Marina & Hotel Drop-off', description: 'Scenic sail back to Sharm El-Sheikh and transfer back to your lobby.' }
+      { time: '08:00', title: 'Hotel Pickup', description: 'Your driver will take you from your Sharm resort to the marina.' },
+      { time: '09:00', title: 'Yacht Departure', description: 'Meet the crew for a safety briefing, then sail towards South Sinai.' },
+      { time: '10:30', title: 'First Snorkeling Session', description: 'Snorkel along the reef with a guide. You may spot clownfish and sea turtles.' },
+      { time: '12:00', title: 'White Island Sandbar Stop', description: 'Take a small boat to the shallow water and sandbar at White Island.' },
+      { time: '13:30', title: 'Fresh Buffet Lunch Onboard', description: 'Enjoy a buffet with grilled fish, chicken, pasta and mezze.' },
+      { time: '14:45', title: 'Second Snorkeling Stop', description: 'Enjoy another swim and look for reef fish.' },
+      { time: '16:30', title: 'Return to Marina & Hotel Drop-off', description: 'Sail back to Sharm El-Sheikh, then transfer to your hotel.' }
     ],
     included: [
       'Hotel pickup and return across all Sharm El-Sheikh resorts',
@@ -769,7 +769,7 @@ export const POPULAR_DESTINATIONS: Destination[] = [
     image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=800&q=80',
     tagline: 'Main departure hub for boat trips and coral reefs',
     tourCount: ALL_TOURS.filter((tour) => tour.destination === 'Hurghada').length,
-    description: 'The main resort city on the Red Sea with direct boat trips to Giftun Island, Orange Bay, and desert safari centers.',
+    description: 'A popular Red Sea resort with boat trips to Giftun Island and Orange Bay, plus desert safaris.',
     highlights: ['Giftun Island Marine Reserve', 'Orange Bay & Paradise Beach', 'Direct marina departures'],
     distanceFromAirport: '15 mins from Hurghada Airport (HRG)',
   },
@@ -780,7 +780,7 @@ export const POPULAR_DESTINATIONS: Destination[] = [
     image: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=800&q=80',
     tagline: 'Quiet lagoon town with marinas and private boat charters',
     tourCount: ALL_TOURS.filter((tour) => tour.destination === 'El Gouna').length,
-    description: 'A quiet resort town 30 minutes north of Hurghada, connected by lagoons, with private yacht charters from Abu Tig Marina.',
+    description: 'A quieter resort town north of Hurghada, known for its lagoons and private boat trips from Abu Tig Marina.',
     highlights: ['Abu Tig Marina departures', 'Lagoon boat tours', 'Private yacht charters'],
     distanceFromAirport: '30 mins north of Hurghada (HRG)',
   },
@@ -791,7 +791,7 @@ export const POPULAR_DESTINATIONS: Destination[] = [
     image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
     tagline: 'Calm bay with house reefs right off the beach',
     tourCount: ALL_TOURS.filter((tour) => tour.destination === 'Makadi Bay').length,
-    description: 'Located south of Hurghada with house reefs right in front of the hotels, great for snorkeling from the shore and desert tours.',
+    description: 'South of Hurghada, with hotels near the reef for shore snorkelling and easy access to desert trips.',
     highlights: ['Shore snorkeling from piers', 'Desert quad trail access', 'Calm waters for families'],
     distanceFromAirport: '25 mins south of Hurghada (HRG)',
   },
@@ -802,7 +802,7 @@ export const POPULAR_DESTINATIONS: Destination[] = [
     image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=80',
     tagline: 'Relaxed resort bay with walking promenade and glass bottom boats',
     tourCount: ALL_TOURS.filter((tour) => tour.destination === 'Sahl Hasheesh').length,
-    description: 'A relaxed bay with a pedestrian promenade, calm waters, sunken pharaonic pillars, and glass-bottom boat trips.',
+    description: 'A relaxed bay with a seafront walkway, calm water, sunken columns and glass-bottom boat trips.',
     highlights: ['Sunken columns', 'Quiet coral reefs', 'Promenade pier'],
     distanceFromAirport: '20 mins south of Hurghada (HRG)',
   },
@@ -813,7 +813,7 @@ export const POPULAR_DESTINATIONS: Destination[] = [
     image: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80',
     tagline: 'Wide bays and Sharm El Naga beach nature reserve',
     tourCount: ALL_TOURS.filter((tour) => tour.destination === 'Safaga').length,
-    description: 'A quieter coastal area south of Hurghada, home to the protected Sharm El Naga marine bay where you snorkel right from the sand.',
+    description: 'A quieter area south of Hurghada. At Sharm El Naga, you can snorkel straight from the beach.',
     highlights: ['Sharm El Naga protected bay', 'Sandy beaches', 'Quiet boat trips'],
     distanceFromAirport: '45 mins south of Hurghada (HRG)',
   },
@@ -824,7 +824,7 @@ export const POPULAR_DESTINATIONS: Destination[] = [
     image: 'https://images.unsplash.com/photo-1682687220063-4742bd7fd538?auto=format&fit=crop&w=800&q=80',
     tagline: 'Protected marine bays with sea turtles and wild dolphins',
     tourCount: ALL_TOURS.filter((tour) => tour.destination === 'Marsa Alam').length,
-    description: 'Egypt’s southern marine destination where wild spinner dolphins, sea turtles, and untouched reefs thrive.',
+    description: 'A southern Red Sea destination known for reefs and marine life, including spinner dolphins and sea turtles.',
     highlights: ['Abu Dabbab turtle bay', 'Sataya dolphin reef', 'Samadai dolphin house'],
     distanceFromAirport: '10-45 mins from Marsa Alam Airport (RMF)',
   },
@@ -835,7 +835,7 @@ export const POPULAR_DESTINATIONS: Destination[] = [
     image: 'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=800&q=80',
     tagline: 'Sinai marine jewel with Ras Mohammed drop-offs & White Island',
     tourCount: ALL_TOURS.filter((tour) => tour.destination === 'Sharm El-Sheikh').length,
-    description: 'The premier resort of the southern Sinai peninsula, famed for dramatic drop-off reef walls at Ras Mohammed National Park, the crystal waters of White Island, and the straits of Tiran.',
+    description: 'A popular resort on the Sinai Peninsula, with access to Ras Mohammed National Park, White Island and the reefs around the Straits of Tiran.',
     highlights: ['Ras Mohammed National Park', 'White Island sandbar cruise', 'Straits of Tiran reefs', 'Naama Bay marina departures'],
     distanceFromAirport: '15 mins from Sharm El-Sheikh Airport (SSH)',
   }
@@ -849,7 +849,7 @@ export const TOUR_CATEGORIES: Category[] = [
     iconName: 'Ship',
     image: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=600&q=80',
     tourCount: countToursForCategory('Boat Trips'),
-    description: 'Full-day motor yachts, catamarans, and island-hopping trips with sun decks and open buffet lunches.',
+    description: 'Boat trips, island visits and full-day cruises with time to relax, swim and have lunch on board.',
   },
   {
     id: 'cat-snorkeling',
@@ -858,7 +858,7 @@ export const TOUR_CATEGORIES: Category[] = [
     iconName: 'Waves',
     image: 'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=600&q=80',
     tourCount: countToursForCategory('Snorkeling'),
-    description: 'Guided encounters with clownfish, rays, and sea turtles over vibrant shallow coral gardens.',
+    description: 'Snorkelling trips to see coral reefs and look for fish, rays and turtles.',
   },
   {
     id: 'cat-diving',
@@ -867,7 +867,7 @@ export const TOUR_CATEGORIES: Category[] = [
     iconName: 'Compass',
     image: 'https://images.unsplash.com/photo-1544551763-92ab472cad5d?auto=format&fit=crop&w=600&q=80',
     tourCount: countToursForCategory('Diving'),
-    description: 'Certified 2-tank boat dives and beginner intro discovery dives led by PADI divemasters.',
+    description: 'Boat dives for certified divers and beginner dives with an instructor.',
   },
   {
     id: 'cat-safari',
@@ -876,7 +876,7 @@ export const TOUR_CATEGORIES: Category[] = [
     iconName: 'Sun',
     image: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=600&q=80',
     tourCount: countToursForCategory('Safari'),
-    description: 'ATV quad biking through Red Sea mountain canyons, Bedouin camp visits, camel rides & stargazing.',
+    description: 'Quad biking, Bedouin camp visits, camel rides and evenings in the desert.',
   },
   {
     id: 'cat-private',
@@ -885,7 +885,7 @@ export const TOUR_CATEGORIES: Category[] = [
     iconName: 'Anchor',
     image: 'https://images.unsplash.com/photo-1569263979104-865ab7cd8d17?auto=format&fit=crop&w=600&q=80',
     tourCount: countToursForCategory('Private Tours'),
-    description: 'Tailored private yachts and high-speed RIBs for couples, families, and custom itineraries.',
+    description: 'Private yachts and speedboats for couples, families and small groups.',
   },
   {
     id: 'cat-watersports',
@@ -894,7 +894,7 @@ export const TOUR_CATEGORIES: Category[] = [
     iconName: 'Waves',
     image: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80',
     tourCount: countToursForCategory('Water Sports'),
-    description: 'Parasailing, glass-bottom boats, and banana boat adventures for the entire family.',
+    description: 'Parasailing, glass-bottom boat trips and banana boat rides.',
   }
 ];
 
@@ -905,32 +905,32 @@ export const RECENT_REVIEWS = REVIEWS_DATA;
 export const TRUST_PILLARS = [
   {
     id: 'trust-local',
-    title: 'Local Booking Support',
-    description: 'Our Hurghada-based team helps you arrange excursions delivered by local activity providers. Provider details are confirmed for each trip.',
+    title: 'A local team to help',
+    description: 'We’re based in Hurghada and can help with questions before you book. Each tour page explains who runs the trip.',
     iconName: 'ShieldCheck',
   },
   {
     id: 'trust-fleet',
-    title: 'Local Activity Providers',
-    description: 'Excursions are delivered by independent local providers. Guide, skipper and certification details depend on the activity and are confirmed before booking.',
+    title: 'Local tour providers',
+    description: 'Local providers run the trips. The crew, guides and any qualifications depend on the activity and are shown where relevant.',
     iconName: 'Award',
   },
   {
     id: 'trust-transfers',
-    title: 'Pickup Options',
-    description: 'Pickup availability and any area supplement vary by excursion and resort. Check the pickup details shown for your selected trip before booking.',
+    title: 'Hotel pickup',
+    description: 'Pickup depends on the tour and your hotel. Check the pickup details and any extra charge before you book.',
     iconName: 'Bus',
   },
   {
     id: 'trust-cancellation',
-    title: 'Clear Cancellation Terms',
-    description: 'Cancellation terms are shown for each excursion. Review the tour-specific policy and conditions before confirming your reservation.',
+    title: 'Clear cancellation rules',
+    description: 'Each tour has its own cancellation rules. Check the policy on the tour page before booking.',
     iconName: 'Clock',
   },
   {
     id: 'trust-support',
-    title: 'Contact Our Team',
-    description: 'Contact options and support availability are shown on our website. Automated WhatsApp messaging may not be available for every request.',
+    title: 'We’re here to help',
+    description: 'Send us a message if you have a question. If WhatsApp isn’t available for your request, use the contact details on our website.',
     iconName: 'Headphones',
   }
 ];
