@@ -8,6 +8,7 @@ const cache = read('../src/services/publicDataCache.ts');
 const tours = read('../src/services/tourService.ts');
 const availability = read('../src/services/availabilityService.ts');
 const searchModule = read('../src/components/home/SearchModule.tsx');
+const seoAdmin = read('../src/components/admin/AdminSeoManager.tsx');
 const settings = read('../src/services/siteSettingsService.ts');
 const seo = read('../src/services/seoService.ts');
 const blog = read('../src/services/blogService.ts');
@@ -34,6 +35,7 @@ assert.match(settings, /site:static-pages/, 'public CMS pages are cached across 
 assert.match(settings, /page\.published !== false && page\.status !== 'draft' && page\.status !== 'unpublished'/, 'client public page cache excludes draft and unpublished CMS pages');
 assert.match(server, /page\.published !== false && page\.status !== 'draft' && page\.status !== 'unpublished'/, 'server public page rendering excludes draft and unpublished CMS pages');
 assert.match(seo, /seo:\$\{entityType\}/, 'public SEO overrides use a persistent cache key');
+assert.match(seoAdmin, /clearPublicDataCache\(\)/, 'admin SEO updates invalidate the public SEO cache');
 assert.match(blog, /blog:list:/, 'published blog lists are cached');
 assert.match(blog, /blog:post:/, 'published blog articles are cached');
 assert.match(exclusive, /catalogue:exclusive-trips/, 'published Exclusive product listings are cached');
