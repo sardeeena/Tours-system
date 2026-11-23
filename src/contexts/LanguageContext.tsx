@@ -42,7 +42,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return () => { active = false; };
   }, []);
 
-  // First visit: route from browser preference only after the server confirms
+  // Locale-prefixed URLs are authoritative. First visit routes from browser preferences only after the server confirms
   // the locale is fully published. Explicit URLs and staff admin always win.
   useEffect(() => {
     if (!localesLoaded || typeof window === 'undefined') return;
