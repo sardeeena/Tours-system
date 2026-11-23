@@ -173,7 +173,9 @@ export const ExperienceCategories: React.FC<ExperienceCategoriesProps> = ({
         {!isLoading && !error && categories.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="experience-grid">
             {categories.map((cat, index) => (
-              <motion.div
+              <motion.button
+                type="button"
+                aria-label={`Browse ${cat.name} excursions`}
                 key={cat.id || cat.slug || index}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -181,7 +183,7 @@ export const ExperienceCategories: React.FC<ExperienceCategoriesProps> = ({
                 transition={{ duration: 0.45, delay: index * 0.07 }}
                 whileHover={{ y: -6 }}
                 onClick={() => onSelectCategory(cat.name)}
-                className="group relative rounded-2xl overflow-hidden border border-[#E8E3DA] dark:border-slate-700/80 bg-stone-100 dark:bg-stone-900 cursor-pointer h-80 flex flex-col justify-end p-6 hover:border-[#0A6C74]/70 hover:shadow-2xl transition-all duration-300"
+                className="group relative w-full text-left rounded-2xl overflow-hidden border border-[#E8E3DA] dark:border-slate-700/80 bg-stone-100 dark:bg-stone-900 cursor-pointer h-80 flex flex-col justify-end p-6 hover:border-[#0A6C74]/70 hover:shadow-2xl transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2"
               >
                 {/* Background Photography with smooth slow zoom */}
                 <div 
@@ -216,7 +218,7 @@ export const ExperienceCategories: React.FC<ExperienceCategoriesProps> = ({
                     </p>
                   )}
                 </div>
-              </motion.div>
+              </motion.button>
             ))}
           </div>
         )}
