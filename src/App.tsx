@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Header } from './components/common/Header';
 import { Footer } from './components/common/Footer';
@@ -8,13 +8,13 @@ const WishlistDrawer = lazy(() => import('./components/common/WishlistDrawer').t
 const CompareModal = lazy(() => import('./components/common/CompareModal').then(m => ({ default: m.CompareModal })));
 import { CompareFloatingBar } from './components/common/CompareFloatingBar';
 import { Hero } from './components/home/Hero';
-import { PopularTours } from './components/home/PopularTours';
-import { ExperienceCategories } from './components/home/ExperienceCategories';
-import { DestinationsSection } from './components/home/DestinationsSection';
-import { WhyChooseUs } from './components/home/WhyChooseUs';
-import { ReviewsSection } from './components/home/ReviewsSection';
-import { FinalCTA } from './components/home/FinalCTA';
-import { HomeFAQ } from './components/home/HomeFAQ';
+const PopularTours = lazy(() => import('./components/home/PopularTours').then((module) => ({ default: module.PopularTours })));
+const ExperienceCategories = lazy(() => import('./components/home/ExperienceCategories').then((module) => ({ default: module.ExperienceCategories })));
+const DestinationsSection = lazy(() => import('./components/home/DestinationsSection').then((module) => ({ default: module.DestinationsSection })));
+const WhyChooseUs = lazy(() => import('./components/home/WhyChooseUs').then((module) => ({ default: module.WhyChooseUs })));
+const ReviewsSection = lazy(() => import('./components/home/ReviewsSection').then((module) => ({ default: module.ReviewsSection })));
+const FinalCTA = lazy(() => import('./components/home/FinalCTA').then((module) => ({ default: module.FinalCTA })));
+const HomeFAQ = lazy(() => import('./components/home/HomeFAQ').then((module) => ({ default: module.HomeFAQ })));
 import { NotFoundPage } from './components/common/NotFoundPage';
 const ExcursionsPage = lazy(() => import('./pages/ExcursionsPage').then(m => ({ default: m.ExcursionsPage })));
 const TourDetailPage = lazy(() => import('./pages/TourDetailPage').then(m => ({ default: m.TourDetailPage })));
@@ -46,6 +46,34 @@ import { sanitizeRedirectUrl } from './lib/security';
 import { TourDetailSkeleton } from './components/tours/TourDetailSkeleton';
 import { BookingPageSkeleton } from './components/booking/BookingPageSkeleton';
 import { Compass } from 'lucide-react';
+
+const DeferredHomeSection: React.FC<{ children: React.ReactNode; minHeight: string }> = ({ children, minHeight }) => {
+  const [isNearViewport, setIsNearViewport] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const element = sectionRef.current;
+    if (!element) return;
+    if (typeof IntersectionObserver === 'undefined') {
+      setIsNearViewport(true);
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setIsNearViewport(true);
+        observer.disconnect();
+      }
+    }, { rootMargin: '700px 0px' });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+  return (
+    <div ref={sectionRef} className="w-full min-w-0">
+      {isNearViewport ? (
+        <Suspense fallback={<div aria-hidden="true" style={{ minHeight }} className="w-full" />}>{children}</Suspense>
+      ) : <div aria-hidden="true" style={{ minHeight }} className="w-full" />}
+    </div>
+  );
+};
 
 // Providers
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -1691,48 +1719,46 @@ function MainApp() {
             categories={liveCategories}
           />
 
-          {/* Destinations Section */}
-          <DestinationsSection
-            destinations={liveDestinations}
-            isLoading={loadingDestinations}
-            error={destinationsError}
-            onRetry={refreshPublishedDestinations}
-            onSelectDestination={handleSelectHomeDestination}
-          />
+          <DeferredHomeSection minHeight="clamp(22rem, 48vw, 34rem)">
+            <DestinationsSection
+              destinations={liveDestinations}
+              isLoading={loadingDestinations}
+              error={destinationsError}
+              onRetry={refreshPublishedDestinations}
+              onSelectDestination={handleSelectHomeDestination}
+            />
+          </DeferredHomeSection>
 
-          {/* Popular Tours Section with Skeleton Loading */}
-          <PopularTours
-            tours={liveTours.slice(0, 8)}
-            currency={currentCurrency}
-            isLoading={loadingTours}
-            onSelectTour={handleViewTour}
-            onQuickBook={handleStartBooking}
-            onViewAllExcursions={() => navigate('/excursions')}
-          />
+          <DeferredHomeSection minHeight="clamp(34rem, 72vw, 52rem)">
+            <PopularTours
+              tours={liveTours.slice(0, 8)}
+              currency={currentCurrency}
+              isLoading={loadingTours}
+              onSelectTour={handleViewTour}
+              onQuickBook={handleStartBooking}
+              onViewAllExcursions={() => navigate('/excursions')}
+            />
+          </DeferredHomeSection>
 
-          {/* Experience Categories */}
-          <ExperienceCategories
-            categories={liveCategories}
-            isLoading={loadingCategories}
-            error={categoriesError}
-            onRetry={refreshPublishedCategories}
-            onSelectCategory={handleSelectHomeCategory}
-          />
+          <DeferredHomeSection minHeight="clamp(24rem, 52vw, 38rem)">
+            <ExperienceCategories
+              categories={liveCategories}
+              isLoading={loadingCategories}
+              error={categoriesError}
+              onRetry={refreshPublishedCategories}
+              onSelectCategory={handleSelectHomeCategory}
+            />
+          </DeferredHomeSection>
 
-          {/* Why Choose Us Trust Pillars */}
-          <WhyChooseUs />
-
-          {/* Reviews */}
-          <ReviewsSection />
-
-          {/* English homepage FAQ content and matching FAQPage structured data */}
-          {currentLocale === 'en' && <HomeFAQ />}
-
-          {/* Final CTA */}
-          <FinalCTA
-            onExploreTours={() => navigate('/excursions')}
-            onOpenMyBooking={() => navigate('/my-booking')}
-          />
+          <DeferredHomeSection minHeight="clamp(18rem, 35vw, 26rem)"><WhyChooseUs /></DeferredHomeSection>
+          <DeferredHomeSection minHeight="clamp(24rem, 48vw, 36rem)"><ReviewsSection /></DeferredHomeSection>
+          {currentLocale === 'en' && <DeferredHomeSection minHeight="clamp(20rem, 42vw, 32rem)"><HomeFAQ /></DeferredHomeSection>}
+          <DeferredHomeSection minHeight="16rem">
+            <FinalCTA
+              onExploreTours={() => navigate('/excursions')}
+              onOpenMyBooking={() => navigate('/my-booking')}
+            />
+          </DeferredHomeSection>
         </main>
       );
     }
