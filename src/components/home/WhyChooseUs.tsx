@@ -30,13 +30,13 @@ export const WhyChooseUs: React.FC = () => {
         <div className="flex items-end justify-between gap-4 mb-5 sm:mb-6">
           <div className="min-w-0">
             <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[.16em] text-[#0A6C74] dark:text-[#60C3CC] mb-1.5">
-              Local knowledge. Real people.
+              Your local tour team
             </p>
             <h2 className="font-display text-xl sm:text-3xl font-bold text-[#0E1B2A] dark:text-white tracking-tight">
-              Why Book Directly With Us
+              Why book with us?
             </h2>
             <p className="text-xs sm:text-sm text-stone-600 dark:text-slate-300 mt-1.5 max-w-2xl">
-              Your local team, from the first message to the end of your trip.
+              We’re here to help before you book and while you’re on your trip.
             </p>
           </div>
           <div className="hidden sm:flex shrink-0 items-center gap-2">
@@ -75,7 +75,7 @@ export const WhyChooseUs: React.FC = () => {
             </article>
           ))}
         </div>
-        <p className="sm:hidden text-[10px] text-stone-400 dark:text-slate-500 mt-1">Swipe to explore more</p>
+        <p className="sm:hidden text-[10px] text-stone-400 dark:text-slate-500 mt-1">Swipe to see more</p>
       </div>
     </section>
   );
