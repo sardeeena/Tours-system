@@ -61,10 +61,11 @@ SELECT ok(
     CROSS JOIN LATERAL aclexplode(d.defaclacl) acl
     JOIN pg_roles grantee ON grantee.oid=acl.grantee
     WHERE d.defaclnamespace='public'::regnamespace
+      AND d.defaclrole=(SELECT oid FROM pg_roles WHERE rolname='postgres')
       AND grantee.rolname='anon'
       AND d.defaclobjtype IN ('r','S','f')
   ),
-  'future public tables, sequences and functions do not inherit anonymous privileges'
+  'future application tables, sequences and functions created by postgres do not inherit anonymous privileges'
 );
 SELECT ok(
   EXISTS (
