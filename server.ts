@@ -280,7 +280,7 @@ function rateLimit(maxRequests = 60, windowMs = 60_000) {
   return (req: Request, res: Response, next: NextFunction) => {
     // Express req.ip is derived from the explicitly configured trusted proxy.
     // Never trust a raw client-supplied X-Forwarded-For value as a fallback.
-    const resolvedIp = req.ip || req.socket.remoteAddress || 'unknown';
+    const resolvedIp = (req.ip || req.socket.remoteAddress || 'unknown').trim();
     const ip = isIP(resolvedIp) ? rateLimitNetworkKey(resolvedIp) : resolvedIp;
     const key = `${req.baseUrl || req.path}:${ip}`;
     const now = Date.now();
