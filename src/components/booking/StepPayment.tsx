@@ -111,7 +111,7 @@ export const StepPayment: React.FC<StepPaymentProps> = ({
 
             <div className="mt-3 pt-3 border-t border-stone-200/70 flex items-center text-[11px] text-emerald-800">
               <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-emerald-600 shrink-0" />
-              <span>Your booking details are recorded securely. Review the cancellation terms for your selected excursion before submitting.</span>
+              <span>Your booking details are saved securely. Please check the cancellation terms for this tour before you confirm.</span>
             </div>
           </button>
 
