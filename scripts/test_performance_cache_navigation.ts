@@ -59,6 +59,8 @@ assert.match(searchModule, /if \(!catOpen \|\| propCategories \|\| categoriesLoa
 assert.match(server, /PUBLIC_HTML_CACHE_TTL_MS = 3 \* 60 \* 1000/, 'anonymous server-rendered public pages reuse database-backed HTML for three minutes');
 assert.ok(server.includes("publicHtmlCacheKey = req.path.replace(/\\/+$/, '') || '/'") , 'server HTML cache keys normalize trailing-slash variants');
 assert.match(server, /test\(publicHtmlCacheKey\)/, 'tour detail no-store headers use the normalized path');
+assert.match(server, /escapeXml\(origin \+ path\)/, 'server-generated hreflang links escape request-derived paths');
+assert.match(server, /escapeXml\(origin \+ requestedPath\)/, 'localized hreflang links escape the requested URL');
 assert.match(server, /publicHtmlResponseCache\.size > 100/, 'server HTML cache has a bounded entry count');
 assert.match(header, /mobile-navigation-menu/, 'mobile menu has a distinct accessible panel');
 assert.match(header, /w-\[min\(25rem,calc\(100vw-1\.5rem\)\)\]/, 'mobile menu is width-constrained instead of spanning the page');
