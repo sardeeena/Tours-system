@@ -43,7 +43,7 @@ All **8 of 8** published categories have a description, but **all 8 are missing 
 | Cultural & Historical Tours | 9 |
 | Private Tours | 3 |
 
-The descriptions are serviceable but generic. The public category records now expose their SEO title, description and keywords to the `/excursions` category-filter SEO resolver. These are filter-state metadata, not separate category landing pages: all category filters retain the `/excursions` canonical URL. This improves the metadata used when a visitor selects a category, but does not create eight independently indexable landing pages. The live SEO columns remain empty until reviewed copy is approved.
+The descriptions are serviceable but generic. The public category records now load SEO overrides saved by Admin → SEO & GEO Control Center (`seo_metadata`, `entity_type = category`) and pass their title, meta description and keywords to the `/excursions` category-filter SEO resolver. Existing category-table SEO columns remain a backwards-compatible fallback. These are filter-state metadata, not separate category landing pages: all category filters retain the `/excursions` canonical URL. This improves the metadata used when a visitor selects a category, but does not create eight independently indexable landing pages. The live SEO columns remain empty until reviewed copy is approved.
 
 ### 3. Destinations — metadata mostly present, keywords absent
 
