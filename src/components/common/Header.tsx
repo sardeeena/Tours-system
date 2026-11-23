@@ -552,7 +552,7 @@ export const Header: React.FC<HeaderProps> = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.98 }}
             transition={{ duration: 0.16, ease: 'easeOut' }}
-            className="absolute right-3 sm:right-6 top-full z-50 w-[min(25rem,calc(100vw-1.5rem))] xl:hidden border border-[#E8E3DA] dark:border-slate-700 rounded-2xl bg-[#FAF8F5] dark:bg-[#0E1B2A] px-4 py-4 sm:px-5 sm:py-5 shadow-2xl max-h-[calc(100dvh-5rem-env(safe-area-inset-bottom))] overflow-y-auto overscroll-contain touch-pan-y origin-top-right"
+            className="absolute right-3 sm:right-6 top-full z-50 w-[min(25rem,calc(100vw-1.5rem))] xl:hidden border border-[#E8E3DA] dark:border-slate-700 rounded-2xl bg-[#FAF8F5] dark:bg-[#0E1B2A] px-4 py-4 sm:px-5 sm:py-5 shadow-2xl max-h-[min(72dvh,calc(100dvh-5rem-env(safe-area-inset-bottom)))] overflow-y-auto overscroll-contain touch-pan-y origin-top-right"
           >
             <nav className="flex flex-col space-y-3.5 text-base font-medium text-[#0E1B2A] dark:text-slate-100">
               {/* Mobile User Profile Section */}
