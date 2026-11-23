@@ -38,7 +38,7 @@ import { bookingRepository } from './services/bookingRepository';
 import { saveBookingDraft, loadBookingDraft } from './services/draftStorage';
 import { getPublishedTours, getTourBySlug, getPublishedDestinations, getPublishedCategories } from './services/tourService';
 import { isSupabaseConfigured } from './services/supabaseClient';
-import { getStaticPages, INITIAL_STATIC_PAGES } from './services/siteSettingsService';
+import { getPublishedStaticPages, INITIAL_STATIC_PAGES } from './services/siteSettingsService';
 import type { StaticPageContent } from './services/siteSettingsService';
 import { getStoredSeoMetadata, seoService } from './services/seoService';
 import { generateStaticPageJsonLd, getPageSeo } from './services/seoConfig';
@@ -287,7 +287,7 @@ function MainApp() {
   const [staticPages, setStaticPages] = useState<StaticPageContent[]>(INITIAL_STATIC_PAGES);
   const refreshStaticPages = useCallback(async () => {
     try {
-      const pages = await getStaticPages();
+      const pages = await getPublishedStaticPages();
       setStaticPages(Array.isArray(pages) ? pages : INITIAL_STATIC_PAGES);
     } catch (err) {
       console.warn('Failed to load public static pages:', err);
