@@ -11,8 +11,8 @@
     "static_page": 10,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1067,
-    "ui_catalog_messages": 1148,
+    "private_ui_messages": 1068,
+    "ui_catalog_messages": 1149,
     "source_records": 112
   },
   "records": [
@@ -4102,7 +4102,8 @@
         "private.text.e929ba97": "Vérification des détails de l’excursion…",
         "private.text.ef34eff4": "Votre compte n’est pas autorisé à gérer les demandes d’assistance.",
         "private.text.fff7de5b": "Assistant de voyage",
-        "private.text.ffff4c4e": "Suggestions d’excursions"
+        "private.text.ffff4c4e": "Suggestions d’excursions",
+        "private.text.d0162f9c": "Langue du site"
       },
       "private_ui_message_count": 1067
     },
