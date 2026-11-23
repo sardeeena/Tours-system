@@ -74,6 +74,7 @@ export const Header: React.FC<HeaderProps> = ({
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [_isScrolled, setIsScrolled] = useState(false);
@@ -132,12 +133,35 @@ export const Header: React.FC<HeaderProps> = ({
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
         setUserDropdownOpen(false);
       }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)
+        && !(event.target as HTMLElement).closest('#mobile-menu-toggle-btn')) {
+        setMobileMenuOpen(false);
+      }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Lock background page scroll while the mobile drawer menu is open so scrolling moves the menu cleanly
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMobileMenuOpen(false);
+    };
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [mobileMenuOpen]);
+
+  // Close the compact menu when moving back to the desktop navigation breakpoint.
+  useEffect(() => {
+    const desktop = window.matchMedia('(min-width: 1536px)');
+    const closeOnDesktop = (event: MediaQueryListEvent) => {
+      if (event.matches) setMobileMenuOpen(false);
+    };
+    desktop.addEventListener('change', closeOnDesktop);
+    return () => desktop.removeEventListener('change', closeOnDesktop);
+  }, []);
+
+  // Lock background page scroll while the mobile drawer menu is open while preserving menu scrolling
   useEffect(() => {
     if (!mobileMenuOpen) return;
     const previousOverflow = document.body.style.overflow;
@@ -204,7 +228,7 @@ export const Header: React.FC<HeaderProps> = ({
             : 'opacity-0 -translate-y-2 pointer-events-none'
         }`}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-2.5 flex items-center justify-between bg-[#F7F4ED] dark:bg-[#0E1B2A]">
+        <div className="max-w-7xl 2xl:max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 2xl:px-10 py-2 sm:py-2.5 flex items-center justify-between bg-[#F7F4ED] dark:bg-[#0E1B2A]">
           {/* Brand Logo */}
           <a 
             href="/" 
@@ -225,7 +249,7 @@ export const Header: React.FC<HeaderProps> = ({
           </a>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden xl:flex items-center space-x-2 2xl:space-x-3 text-xs 2xl:text-sm font-semibold text-stone-700 dark:text-slate-200" aria-label="Main Navigation">
+          <nav className="hidden 2xl:flex items-center space-x-2 2xl:space-x-3 text-xs 2xl:text-sm font-semibold text-stone-700 dark:text-slate-200" aria-label="Main Navigation">
             <button 
               type="button"
               onClick={handleExcursionsClick} 
@@ -328,7 +352,7 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
 
         {/* Action Controls */}
-        <div className="hidden xl:flex items-center space-x-1.5 2xl:space-x-2.5 shrink-0">
+        <div className="hidden 2xl:flex items-center space-x-1.5 2xl:space-x-2.5 shrink-0">
 
           {/* User Auth Section */}
           {user ? (
@@ -482,7 +506,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Mobile menu button & actions */}
-        <div className="flex items-center space-x-2 xl:hidden shrink-0">
+        <div className="flex items-center space-x-2 2xl:hidden shrink-0">
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.96 }}
@@ -508,6 +532,7 @@ export const Header: React.FC<HeaderProps> = ({
             className="p-2 text-stone-800 dark:text-slate-200 hover:bg-stone-200 dark:hover:bg-slate-800 rounded-lg border border-stone-300/70 dark:border-slate-700 bg-stone-200/60 dark:bg-slate-800/80 cursor-pointer min-w-11 min-h-11 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2"
             aria-label="Toggle navigation menu"
             aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-navigation-menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -518,12 +543,16 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Mobile Drawer Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <motion.div 
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2, ease: 'easeOut' }}
-            className="xl:hidden border-t border-[#E8E3DA] dark:border-slate-800 bg-[#FAF8F5] dark:bg-[#0E1B2A] px-5 py-5 pb-8 shadow-lg max-h-[calc(100dvh-56px)] overflow-y-auto overscroll-contain touch-pan-y"
+          <motion.div
+            ref={mobileMenuRef}
+            id="mobile-navigation-menu"
+            role="region"
+            aria-label="Mobile navigation"
+            initial={{ opacity: 0, y: -8, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.98 }}
+            transition={{ duration: 0.16, ease: 'easeOut' }}
+            className="absolute right-3 sm:right-6 top-full z-50 w-[min(25rem,calc(100vw-1.5rem))] 2xl:hidden border border-[#E8E3DA] dark:border-slate-700 rounded-2xl bg-[#FAF8F5] dark:bg-[#0E1B2A] px-4 py-4 sm:px-5 sm:py-5 shadow-2xl max-h-[min(72dvh,calc(100dvh-5rem-env(safe-area-inset-bottom)))] overflow-y-auto overscroll-contain touch-pan-y origin-top-right"
           >
             <nav className="flex flex-col space-y-3.5 text-base font-medium text-[#0E1B2A] dark:text-slate-100">
               {/* Mobile User Profile Section */}

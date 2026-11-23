@@ -11,8 +11,8 @@
     "static_page": 10,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1066,
-    "ui_catalog_messages": 1147,
+    "private_ui_messages": 1067,
+    "ui_catalog_messages": 1148,
     "source_records": 112
   },
   "records": [
@@ -4698,6 +4698,7 @@
         "private.text.cf82f7c6": "Logo Awesome Adventure Tours",
         "private.text.cfde7062": "Thème clair (par défaut)",
         "private.text.cffaecfd": "Icône des excursions en mer Rouge",
+        "private.text.cdfbccf3": "Nawigacja mobilna",
         "private.text.d01f2cac": "Privé",
         "private.text.d02b5d18": "Locations privées",
         "private.text.d03c4dd9": "CLIENT",

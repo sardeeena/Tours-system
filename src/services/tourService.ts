@@ -27,6 +27,7 @@ import {
 } from '../types/database';
 import { PickupLocation, BookingExtra } from '../types/booking';
 import { ALL_TOURS } from '../data/toursData';
+import { clearPublicDataCache, readPublicDataCache, writePublicDataCache, PUBLIC_CATALOGUE_CACHE_TTL_MS } from './publicDataCache';
 
 /**
  * Transforms database tour record with related collections into the frontend Tour structure
@@ -156,11 +157,15 @@ let cachedPublishedTours: CacheEntry<Tour[]> | null = null;
 let cachedDestinations: CacheEntry<Destination[]> | null = null;
 let cachedCategories: CacheEntry<Category[]> | null = null;
 const CACHE_TTL_MS = 5 * 60 * 1000;
+let refreshingPublishedTours = false;
+let refreshingDestinations = false;
+let refreshingCategories = false;
 
 export function invalidateCatalogueCache() {
   cachedPublishedTours = null;
   cachedDestinations = null;
   cachedCategories = null;
+  clearPublicDataCache();
 }
 
 export interface TourFilterOptions {
@@ -174,7 +179,7 @@ export interface TourFilterOptions {
 /**
  * Fetches all published tours for the public website with in-memory caching
  */
-export async function getPublishedTours(options?: TourFilterOptions): Promise<Tour[]> {
+export async function getPublishedTours(options?: TourFilterOptions, forceRefresh = false): Promise<Tour[]> {
   const filterTours = (sourceList: Tour[]): Tour[] => {
     let tours = [...sourceList];
     if (options?.destination && options.destination !== 'All' && options.destination !== 'All Destinations') {
@@ -200,9 +205,23 @@ export async function getPublishedTours(options?: TourFilterOptions): Promise<To
     return tours;
   };
 
-  // Serve from fast memory cache if valid and not demanding drafts
-  if (!options?.includeDrafts && cachedPublishedTours && (Date.now() - cachedPublishedTours.timestamp < CACHE_TTL_MS)) {
-    return filterTours(cachedPublishedTours.data);
+  // Public catalogue is cache-first across reloads. Expired data remains visible
+  // while one background refresh updates the cache; admin/draft reads never use it.
+  if (!options?.includeDrafts && !options?.featuredOnly && !forceRefresh) {
+    const persisted = readPublicDataCache<Tour[]>('catalogue:tours', PUBLIC_CATALOGUE_CACHE_TTL_MS);
+    if (persisted) {
+      cachedPublishedTours = { data: persisted.data, timestamp: persisted.updatedAt };
+      if (!persisted.isFresh && !refreshingPublishedTours) {
+        refreshingPublishedTours = true;
+        void getPublishedTours(undefined, true)
+          .catch((error) => console.warn('Background public catalogue refresh failed:', error))
+          .finally(() => { refreshingPublishedTours = false; });
+      }
+      return filterTours(persisted.data);
+    }
+    if (cachedPublishedTours && Date.now() - cachedPublishedTours.timestamp < CACHE_TTL_MS) {
+      return filterTours(cachedPublishedTours.data);
+    }
   }
 
   if (!isSupabaseConfigured() || isSchemaMissing()) {
@@ -276,6 +295,10 @@ export async function getPublishedTours(options?: TourFilterOptions): Promise<To
     }
 
     if (!data || data.length === 0) {
+      if (!options?.includeDrafts && !options?.featuredOnly) {
+        cachedPublishedTours = { data: [], timestamp: Date.now() };
+        writePublicDataCache('catalogue:tours', []);
+      }
       return [];
     }
 
@@ -301,6 +324,7 @@ export async function getPublishedTours(options?: TourFilterOptions): Promise<To
         data: baseTours,
         timestamp: Date.now(),
       };
+      writePublicDataCache('catalogue:tours', baseTours);
     }
 
     return filterTours(baseTours);
@@ -316,7 +340,29 @@ export async function getPublishedTours(options?: TourFilterOptions): Promise<To
 /**
  * Fetches a single tour by slug with complete relations (for Tour Details and SEO)
  */
-export async function getTourBySlug(slug: string, allowDraft: boolean = false): Promise<Tour | null> {
+export async function getTourBySlug(slug: string, allowDraft: boolean = false, forceRefresh = false): Promise<Tour | null> {
+  const cacheKey = `catalogue:tour:${slug}`;
+  // A moderator session can read unpublished review rows under RLS. Never
+  // share a tour-detail cache entry across authenticated and anonymous sessions.
+  let canCachePublicTour = !allowDraft;
+  if (canCachePublicTour && isSupabaseConfigured()) {
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      canCachePublicTour = !sessionError && !session?.user;
+    } catch {
+      // Fail closed: a session lookup failure must never place privileged data in a public cache.
+      canCachePublicTour = false;
+    }
+  }
+  if (canCachePublicTour && !forceRefresh) {
+    const cached = readPublicDataCache<Tour | null>(cacheKey, PUBLIC_CATALOGUE_CACHE_TTL_MS);
+    if (cached) {
+      if (!cached.isFresh) {
+        void getTourBySlug(slug, false, true).catch((error) => console.warn('Background tour detail refresh failed:', error));
+      }
+      return cached.data;
+    }
+  }
   if (!isSupabaseConfigured() || isSchemaMissing()) {
     if (import.meta.env.PROD) return null;
     const local = localTours.find((t) => t.slug === slug || t.id === slug);
@@ -342,7 +388,7 @@ export async function getTourBySlug(slug: string, allowDraft: boolean = false): 
       .eq('slug', slug);
 
     if (!allowDraft) {
-      query = query.eq('status', 'published').eq('is_exclusive', false);
+      query = query.eq('status', 'published').eq('is_exclusive', false).eq('reviews.is_published', true);
     }
 
     const { data, error } = await query.maybeSingle();
@@ -356,6 +402,7 @@ export async function getTourBySlug(slug: string, allowDraft: boolean = false): 
     }
 
     if (!data) {
+      if (canCachePublicTour) writePublicDataCache(cacheKey, null);
       return null;
     }
 
@@ -376,7 +423,7 @@ export async function getTourBySlug(slug: string, allowDraft: boolean = false): 
       verifiedBooking: r.verified_booking,
     }));
 
-    return mapDbTourToFrontendTour(data, {
+    const mappedTour = mapDbTourToFrontendTour(data, {
       destinationName: destName,
       categories: catNames,
       images: data.tour_images || [],
@@ -388,6 +435,8 @@ export async function getTourBySlug(slug: string, allowDraft: boolean = false): 
       faqs: data.tour_faqs || [],
       reviews: reviews,
     });
+    if (canCachePublicTour) writePublicDataCache(cacheKey, mappedTour);
+    return mappedTour;
   } catch (err) {
     console.warn('Error fetching tour by slug:', err);
     return null;
@@ -1260,9 +1309,20 @@ export function notifyCatalogueDataChanged(
 /**
  * Fetches all published destinations for the public website with real dynamic tour counts
  */
-export async function getPublishedDestinations(): Promise<Destination[]> {
-  if (cachedDestinations && (Date.now() - cachedDestinations.timestamp < CACHE_TTL_MS)) {
-    return cachedDestinations.data;
+export async function getPublishedDestinations(forceRefresh = false): Promise<Destination[]> {
+  if (!forceRefresh) {
+    const persisted = readPublicDataCache<Destination[]>('catalogue:destinations');
+    if (persisted) {
+      cachedDestinations = { data: persisted.data, timestamp: persisted.updatedAt };
+      if (!persisted.isFresh && !refreshingDestinations) {
+        refreshingDestinations = true;
+        void getPublishedDestinations(true)
+          .catch((error) => console.warn('Background destination refresh failed:', error))
+          .finally(() => { refreshingDestinations = false; });
+      }
+      return persisted.data;
+    }
+    if (cachedDestinations && Date.now() - cachedDestinations.timestamp < CACHE_TTL_MS) return cachedDestinations.data;
   }
 
   if (!isSupabaseConfigured()) {
@@ -1282,6 +1342,8 @@ export async function getPublishedDestinations(): Promise<Destination[]> {
   }
 
   if (!dests || dests.length === 0) {
+    cachedDestinations = { data: [], timestamp: Date.now() };
+    writePublicDataCache('catalogue:destinations', []);
     return [];
   }
 
@@ -1289,7 +1351,8 @@ export async function getPublishedDestinations(): Promise<Destination[]> {
   const { data: toursData, error: toursError } = await supabase
     .from('tours')
     .select('id, destination_id')
-    .eq('status', 'published');
+    .eq('status', 'published')
+    .eq('is_exclusive', false);
 
   if (toursError) {
     console.error('Failed to calculate published destination counts:', formatSupabaseError(toursError));
@@ -1323,6 +1386,7 @@ export async function getPublishedDestinations(): Promise<Destination[]> {
     data: mapped,
     timestamp: Date.now(),
   };
+  writePublicDataCache('catalogue:destinations', mapped);
 
   return mapped;
 }
@@ -1330,9 +1394,20 @@ export async function getPublishedDestinations(): Promise<Destination[]> {
 /**
  * Fetches all published categories for the public website with real dynamic tour counts
  */
-export async function getPublishedCategories(): Promise<Category[]> {
-  if (cachedCategories && (Date.now() - cachedCategories.timestamp < CACHE_TTL_MS)) {
-    return cachedCategories.data;
+export async function getPublishedCategories(forceRefresh = false): Promise<Category[]> {
+  if (!forceRefresh) {
+    const persisted = readPublicDataCache<Category[]>('catalogue:categories');
+    if (persisted) {
+      cachedCategories = { data: persisted.data, timestamp: persisted.updatedAt };
+      if (!persisted.isFresh && !refreshingCategories) {
+        refreshingCategories = true;
+        void getPublishedCategories(true)
+          .catch((error) => console.warn('Background category refresh failed:', error))
+          .finally(() => { refreshingCategories = false; });
+      }
+      return persisted.data;
+    }
+    if (cachedCategories && Date.now() - cachedCategories.timestamp < CACHE_TTL_MS) return cachedCategories.data;
   }
 
   if (!isSupabaseConfigured()) {
@@ -1352,6 +1427,8 @@ export async function getPublishedCategories(): Promise<Category[]> {
   }
 
   if (!cats || cats.length === 0) {
+    cachedCategories = { data: [], timestamp: Date.now() };
+    writePublicDataCache('catalogue:categories', []);
     return [];
   }
 
@@ -1361,8 +1438,9 @@ export async function getPublishedCategories(): Promise<Category[]> {
   try {
     const { data: tcData, error: tcError } = await supabase
       .from('tour_categories')
-      .select('category_id, tours!inner(status)')
-      .eq('tours.status', 'published');
+      .select('category_id, tours!inner(status,is_exclusive)')
+      .eq('tours.status', 'published')
+      .eq('tours.is_exclusive', false);
 
     if (!tcError && tcData) {
       for (const item of tcData as any[]) {
@@ -1374,7 +1452,8 @@ export async function getPublishedCategories(): Promise<Category[]> {
       const { data: toursWithTc, error: fallbackError } = await supabase
         .from('tours')
         .select('id, tour_categories(category_id)')
-        .eq('status', 'published');
+        .eq('status', 'published')
+        .eq('is_exclusive', false);
 
       if (fallbackError) {
         throw new Error(`Unable to calculate published experience counts: ${formatSupabaseError(fallbackError)}`);
@@ -1411,6 +1490,7 @@ export async function getPublishedCategories(): Promise<Category[]> {
     data: mapped,
     timestamp: Date.now(),
   };
+  writePublicDataCache('catalogue:categories', mapped);
 
   return mapped;
 }

@@ -31,21 +31,9 @@ export const SearchModule: React.FC<SearchModuleProps> = ({
   const { t } = useLanguage();
   const [internalDestinations, setInternalDestinations] = useState<Destination[]>([]);
   const [internalCategories, setInternalCategories] = useState<Category[]>([]);
+  const [destinationsLoadState, setDestinationsLoadState] = useState<'idle' | 'loading' | 'loaded' | 'error'>('idle');
+  const [categoriesLoadState, setCategoriesLoadState] = useState<'idle' | 'loading' | 'loaded' | 'error'>('idle');
 
-  useEffect(() => {
-    if (!propDestinations) {
-      getPublishedDestinations().then(setInternalDestinations).catch(() => setInternalDestinations([]));
-    }
-  }, [propDestinations]);
-
-  useEffect(() => {
-    if (!propCategories) {
-      getPublishedCategories().then(setInternalCategories).catch(() => setInternalCategories([]));
-    }
-  }, [propCategories]);
-
-  const destinations = propDestinations || internalDestinations;
-  const categories = propCategories || internalCategories;
   const [destination, setDestination] = useState<string>('All Destinations');
   const [category, setCategory] = useState<string>('All Activities');
   const [date, setDate] = useState<string>('');
@@ -55,6 +43,33 @@ export const SearchModule: React.FC<SearchModuleProps> = ({
   const [destOpen, setDestOpen] = useState(false);
   const [catOpen, setCatOpen] = useState(false);
   const [guestsOpen, setGuestsOpen] = useState(false);
+
+  const destinations = propDestinations || internalDestinations;
+  const categories = propCategories || internalCategories;
+
+  // Search options are fetched only when the visitor opens the corresponding
+  // selector. This avoids loading secondary catalogue lists with the hero.
+  useEffect(() => {
+    if (!destOpen || propDestinations || destinationsLoadState !== 'idle') return;
+    setDestinationsLoadState('loading');
+    void getPublishedDestinations()
+      .then((data) => {
+        setInternalDestinations(data || []);
+        setDestinationsLoadState('loaded');
+      })
+      .catch(() => setDestinationsLoadState('error'));
+  }, [destOpen, propDestinations, destinationsLoadState]);
+
+  useEffect(() => {
+    if (!catOpen || propCategories || categoriesLoadState !== 'idle') return;
+    setCategoriesLoadState('loading');
+    void getPublishedCategories()
+      .then((data) => {
+        setInternalCategories(data || []);
+        setCategoriesLoadState('loaded');
+      })
+      .catch(() => setCategoriesLoadState('error'));
+  }, [catOpen, propCategories, categoriesLoadState]);
 
   const guestsRef = useRef<HTMLDivElement>(null);
   const destRef = useRef<HTMLDivElement>(null);
@@ -141,6 +156,9 @@ export const SearchModule: React.FC<SearchModuleProps> = ({
                     <span className="font-semibold text-stone-900">{t('search.allDestinations')}</span>
                     {destination === 'All Destinations' && <Check className="w-3.5 h-3.5 text-[#0A6C74]" />}
                   </button>
+                  {destinationsLoadState === 'loading' && <p role="status" className="px-3.5 py-2 text-xs text-stone-500">Loading destinations…</p>}
+                  {destinationsLoadState === 'error' && <button type="button" onClick={() => setDestinationsLoadState('idle')} className="w-full text-left px-3.5 py-2 text-xs font-semibold text-[#0A6C74] hover:bg-[#E8F3F4]/50">Could not load destinations. Try again</button>}
+                  {destinationsLoadState === 'loaded' && destinations.length === 0 && <p className="px-3.5 py-2 text-xs text-stone-500">No destinations are currently available.</p>}
                   {destinations.map((d) => (
                     <button
                       key={d.id}
@@ -199,6 +217,9 @@ export const SearchModule: React.FC<SearchModuleProps> = ({
                     <span className="font-semibold text-stone-900">{t('search.allActivities')}</span>
                     {category === 'All Activities' && <Check className="w-3.5 h-3.5 text-[#0A6C74]" />}
                   </button>
+                  {categoriesLoadState === 'loading' && <p role="status" className="px-3.5 py-2 text-xs text-stone-500">Loading activities…</p>}
+                  {categoriesLoadState === 'error' && <button type="button" onClick={() => setCategoriesLoadState('idle')} className="w-full text-left px-3.5 py-2 text-xs font-semibold text-[#0A6C74] hover:bg-[#E8F3F4]/50">Could not load activities. Try again</button>}
+                  {categoriesLoadState === 'loaded' && categories.length === 0 && <p className="px-3.5 py-2 text-xs text-stone-500">No activities are currently available.</p>}
                   {categories.map((c) => (
                     <button
                       key={c.id}

@@ -1,5 +1,6 @@
 import { Tour } from '../types';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
+import { readPublicDataCache, writePublicDataCache } from './publicDataCache';
 
 export interface SeoMetadata {
   title: string;
@@ -19,7 +20,7 @@ export interface SeoMetadata {
 
 const DEFAULT_TITLE = 'Awesome Adventure Tours | Boat Trips, Island Tours & Safaris';
 const DEFAULT_DESCRIPTION = 'Discover boat trips, island experiences, snorkeling, diving and desert safaris across Egypt. Compare tour details and book with confidence.';
-const DEFAULT_IMAGE = 'https://awesomeadventure.tours/logo.webp';
+const DEFAULT_IMAGE = 'https://awesomeadventure.tours/logo.png';
 const SITE_NAME = 'Awesome Adventure Tours';
 
 /**
@@ -80,11 +81,27 @@ function setSchemaJsonLd(schemaData?: Record<string, unknown> | null): void {
  * Loads optional SEO overrides saved by Admin > SEO & Meta Tags.
  * Page records are keyed by page_slug; entity records use their UUID entity_id.
  */
+let refreshingSeoCache = new Set<string>();
+
 export async function getStoredSeoMetadata(
   entityType: string,
   identifier: string,
-  usePageSlug = false
+  usePageSlug = false,
+  forceRefresh = false
 ): Promise<Partial<SeoMetadata> | null> {
+  const cacheKey = `seo:${entityType}:${usePageSlug ? 'slug' : 'id'}:${identifier}`;
+  if (!forceRefresh) {
+    const cached = readPublicDataCache<Partial<SeoMetadata> | null>(cacheKey);
+    if (cached) {
+      if (!cached.isFresh && !refreshingSeoCache.has(cacheKey)) {
+        refreshingSeoCache.add(cacheKey);
+        void getStoredSeoMetadata(entityType, identifier, usePageSlug, true)
+          .catch((error) => console.warn('Background SEO metadata refresh failed:', error))
+          .finally(() => refreshingSeoCache.delete(cacheKey));
+      }
+      return cached.data;
+    }
+  }
   if (!isSupabaseConfigured()) return null;
 
   try {
@@ -102,7 +119,10 @@ export async function getStoredSeoMetadata(
       console.warn('Could not load saved SEO metadata:', error);
       return null;
     }
-    if (!data) return null;
+    if (!data) {
+      writePublicDataCache(cacheKey, null);
+      return null;
+    }
 
     const schema = data.structured_data;
     const metadata: Partial<SeoMetadata> = {};
@@ -135,6 +155,7 @@ export async function getStoredSeoMetadata(
       metadata.schemaJsonLd = schema as Record<string, unknown>;
     }
 
+    writePublicDataCache(cacheKey, metadata);
     return metadata;
   } catch (err) {
     console.warn('Saved SEO metadata lookup failed:', err);

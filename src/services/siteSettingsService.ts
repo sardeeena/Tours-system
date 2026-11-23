@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured, formatSupabaseError } from './supabaseClient';
 import { DbSiteSetting } from '../types/database';
+import { clearPublicDataCache, readPublicDataCache, writePublicDataCache } from './publicDataCache';
 
 export interface CompanySettings {
   companyName: string;
@@ -206,43 +207,55 @@ export async function saveFooterContent(content: FooterContentSettings): Promise
   }, 'Footer copy, copyright, and compliance badges');
 }
 
-export async function getStaticPages(): Promise<StaticPageContent[]> {
-  const customPages = await getSetting<StaticPageContent[]>('pages_content', INITIAL_STATIC_PAGES);
-  const savedPages = Array.isArray(customPages) ? customPages : [];
-  const defaultsBySlug = new Map(INITIAL_STATIC_PAGES.map((page) => [page.slug, page]));
-  const legalPolicySlugs = new Set(['privacy', 'terms', 'cancellation-policy', 'cookie-policy']);
+async function loadSavedStaticPages(): Promise<StaticPageContent[]> {
+  const customPages = await getSetting<StaticPageContent[]>('pages_content', []);
+  return Array.isArray(customPages) ? customPages : [];
+}
 
-  // Upgrade legacy legal placeholders in the CMS without overwriting a newer
-  // policy that an administrator has deliberately edited and published.
-  const mergedSavedPages = savedPages.map((savedPage) => {
-    const defaultPage = defaultsBySlug.get(savedPage?.slug);
-    if (!defaultPage || !legalPolicySlugs.has(defaultPage.slug)) return savedPage;
-    const savedText = (savedPage.sections || []).map((section) => section.content || '').join(' ');
-    const isPlaceholder = /placeholder|under review|requires confirmation|policy information under review/i.test(savedText);
-    const isOlderThanCurrentPolicy = !savedPage.lastUpdated || savedPage.lastUpdated < defaultPage.lastUpdated;
-    return isPlaceholder || isOlderThanCurrentPolicy ? defaultPage : savedPage;
-  });
-
-  const normalizedSavedPages = mergedSavedPages.map((page) => ({
+function mergeStaticPages(savedPages: StaticPageContent[]): StaticPageContent[] {
+  const savedSlugs = new Set(savedPages.map((page) => page.slug));
+  const normalizedSavedPages = savedPages.map((page) => ({
     ...page,
-    title: normalizePublicBrandText(page.title || ''),
-    heroHeadline: normalizePublicBrandText(page.heroHeadline || ''),
-    heroSubtitle: normalizePublicBrandText(page.heroSubtitle || ''),
-    seoTitle: page.seoTitle ? normalizePublicBrandText(page.seoTitle) : page.seoTitle,
-    seoDescription: page.seoDescription ? normalizePublicBrandText(page.seoDescription) : page.seoDescription,
-    sections: (page.sections || []).map((section) => ({
-      ...section,
-      title: normalizePublicBrandText(section.title || ''),
-      content: normalizePublicBrandText(section.content || ''),
-    })),
+    sections: Array.isArray(page.sections) ? page.sections : [],
   }));
-  const savedSlugs = new Set(normalizedSavedPages.map((page) => page?.slug).filter(Boolean));
   return [
     ...normalizedSavedPages,
     ...INITIAL_STATIC_PAGES.filter((page) => !savedSlugs.has(page.slug)),
   ];
 }
 
+// Admin CMS uses this complete list, including drafts, for editing and review.
+export async function getStaticPages(): Promise<StaticPageContent[]> {
+  return mergeStaticPages(await loadSavedStaticPages());
+}
+
+let refreshingPublicStaticPages = false;
+
+// Public routes receive only published pages; this is the only static-page list
+// persisted in the browser cache.
+export async function getPublishedStaticPages(forceRefresh = false): Promise<StaticPageContent[]> {
+  if (!forceRefresh) {
+    const cached = readPublicDataCache<StaticPageContent[]>('site:static-pages');
+    if (cached) {
+      if (!cached.isFresh && !refreshingPublicStaticPages) {
+        refreshingPublicStaticPages = true;
+        void getPublishedStaticPages(true)
+          .catch((error) => console.warn('Background public page refresh failed:', error))
+          .finally(() => { refreshingPublicStaticPages = false; });
+      }
+      return cached.data;
+    }
+  }
+
+  const savedPages = (await loadSavedStaticPages()).filter((page) =>
+    page?.slug && page.published !== false && page.status !== 'draft' && page.status !== 'unpublished'
+  );
+  const result = mergeStaticPages(savedPages);
+  writePublicDataCache('site:static-pages', result);
+  return result;
+}
+
 export async function saveStaticPages(pages: StaticPageContent[]): Promise<void> {
-  return saveSetting<StaticPageContent[]>('pages_content', pages, 'CMS static pages content and copy');
+  await saveSetting<StaticPageContent[]>('pages_content', pages, 'CMS static pages content and copy');
+  clearPublicDataCache('site:static-pages');
 }

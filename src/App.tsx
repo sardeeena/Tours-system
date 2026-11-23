@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Header } from './components/common/Header';
 import { Footer } from './components/common/Footer';
@@ -8,13 +8,13 @@ const WishlistDrawer = lazy(() => import('./components/common/WishlistDrawer').t
 const CompareModal = lazy(() => import('./components/common/CompareModal').then(m => ({ default: m.CompareModal })));
 import { CompareFloatingBar } from './components/common/CompareFloatingBar';
 import { Hero } from './components/home/Hero';
-import { PopularTours } from './components/home/PopularTours';
-import { ExperienceCategories } from './components/home/ExperienceCategories';
-import { DestinationsSection } from './components/home/DestinationsSection';
-import { WhyChooseUs } from './components/home/WhyChooseUs';
-import { ReviewsSection } from './components/home/ReviewsSection';
-import { FinalCTA } from './components/home/FinalCTA';
-import { HomeFAQ } from './components/home/HomeFAQ';
+const PopularTours = lazy(() => import('./components/home/PopularTours').then((module) => ({ default: module.PopularTours })));
+const ExperienceCategories = lazy(() => import('./components/home/ExperienceCategories').then((module) => ({ default: module.ExperienceCategories })));
+const DestinationsSection = lazy(() => import('./components/home/DestinationsSection').then((module) => ({ default: module.DestinationsSection })));
+const WhyChooseUs = lazy(() => import('./components/home/WhyChooseUs').then((module) => ({ default: module.WhyChooseUs })));
+const ReviewsSection = lazy(() => import('./components/home/ReviewsSection').then((module) => ({ default: module.ReviewsSection })));
+const FinalCTA = lazy(() => import('./components/home/FinalCTA').then((module) => ({ default: module.FinalCTA })));
+const HomeFAQ = lazy(() => import('./components/home/HomeFAQ').then((module) => ({ default: module.HomeFAQ })));
 import { NotFoundPage } from './components/common/NotFoundPage';
 const ExcursionsPage = lazy(() => import('./pages/ExcursionsPage').then(m => ({ default: m.ExcursionsPage })));
 const TourDetailPage = lazy(() => import('./pages/TourDetailPage').then(m => ({ default: m.TourDetailPage })));
@@ -38,7 +38,7 @@ import { bookingRepository } from './services/bookingRepository';
 import { saveBookingDraft, loadBookingDraft } from './services/draftStorage';
 import { getPublishedTours, getTourBySlug, getPublishedDestinations, getPublishedCategories } from './services/tourService';
 import { isSupabaseConfigured } from './services/supabaseClient';
-import { getStaticPages, INITIAL_STATIC_PAGES } from './services/siteSettingsService';
+import { getPublishedStaticPages, INITIAL_STATIC_PAGES } from './services/siteSettingsService';
 import type { StaticPageContent } from './services/siteSettingsService';
 import { getStoredSeoMetadata, seoService } from './services/seoService';
 import { generateStaticPageJsonLd, getPageSeo } from './services/seoConfig';
@@ -46,6 +46,38 @@ import { sanitizeRedirectUrl } from './lib/security';
 import { TourDetailSkeleton } from './components/tours/TourDetailSkeleton';
 import { BookingPageSkeleton } from './components/booking/BookingPageSkeleton';
 import { Compass } from 'lucide-react';
+
+const DeferredHomeSection: React.FC<{ children: React.ReactNode; minHeight: string; onEnter?: () => void }> = ({ children, minHeight, onEnter }) => {
+  const [isNearViewport, setIsNearViewport] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const element = sectionRef.current;
+    if (!element) return;
+    const activate = () => {
+      setIsNearViewport(true);
+      onEnter?.();
+    };
+    if (typeof IntersectionObserver === 'undefined') {
+      activate();
+      return;
+    }
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        activate();
+        observer.disconnect();
+      }
+    }, { rootMargin: '400px 0px' });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [onEnter]);
+  return (
+    <div ref={sectionRef} className="w-full min-w-0">
+      {isNearViewport ? (
+        <Suspense fallback={<div aria-hidden="true" style={{ minHeight }} className="w-full" />}>{children}</Suspense>
+      ) : <div aria-hidden="true" style={{ minHeight }} className="w-full" />}
+    </div>
+  );
+};
 
 // Providers
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -228,11 +260,11 @@ function MainApp() {
 
   // Live published destinations & categories loaded dynamically from Supabase
   const [liveDestinations, setLiveDestinations] = useState<Destination[]>([]);
-  const [loadingDestinations, setLoadingDestinations] = useState<boolean>(true);
+  const [loadingDestinations, setLoadingDestinations] = useState<boolean>(false);
   const [destinationsError, setDestinationsError] = useState<string | null>(null);
 
   const [liveCategories, setLiveCategories] = useState<Category[]>([]);
-  const [loadingCategories, setLoadingCategories] = useState<boolean>(true);
+  const [loadingCategories, setLoadingCategories] = useState<boolean>(false);
   const [categoriesError, setCategoriesError] = useState<string | null>(null);
 
   // Drawer / Modal states
@@ -255,7 +287,7 @@ function MainApp() {
   const [staticPages, setStaticPages] = useState<StaticPageContent[]>(INITIAL_STATIC_PAGES);
   const refreshStaticPages = useCallback(async () => {
     try {
-      const pages = await getStaticPages();
+      const pages = await getPublishedStaticPages();
       setStaticPages(Array.isArray(pages) ? pages : INITIAL_STATIC_PAGES);
     } catch (err) {
       console.warn('Failed to load public static pages:', err);
@@ -301,48 +333,75 @@ function MainApp() {
     category: 'All',
   });
 
-  // Load tours, destinations, and categories in parallel for sub-second homepage rendering
-  const refreshCatalogue = useCallback(async () => {
-    setLoadingTours(true);
-    setLoadingDestinations(true);
-    setLoadingCategories(true);
-    setToursError(null);
-    setDestinationsError(null);
-    setCategoriesError(null);
+  // Fetch only the public data required by the active route. Homepage tour cards
+  // load first; search options and lower-page lists are fetched on demand.
+  const refreshCatalogue = useCallback(async (path = currentPath, refreshAll = false) => {
+    const isHome = path === '/';
+    const isDestinationRoute = path === '/destinations' || path.startsWith('/destinations/');
+    const isBookingRoute = path === '/booking' || (path.startsWith('/booking/') && !path.startsWith('/booking/confirmation'));
+    const needsTours = isHome || path === '/excursions' || path.startsWith('/excursions/')
+      || isBookingRoute || path.startsWith('/destinations/');
+    const needsDestinations = isDestinationRoute || (isHome && refreshAll);
+    const needsCategories = path === '/experiences' || (isHome && refreshAll);
+
+    if (needsTours) {
+      setLoadingTours(true);
+      setToursError(null);
+    } else {
+      setLoadingTours(false);
+    }
+    if (needsDestinations) {
+      setLoadingDestinations(true);
+      setDestinationsError(null);
+    } else {
+      setLoadingDestinations(false);
+    }
+    if (needsCategories) {
+      setLoadingCategories(true);
+      setCategoriesError(null);
+    } else {
+      setLoadingCategories(false);
+    }
 
     const [toursRes, destsRes, catsRes] = await Promise.allSettled([
-      getPublishedTours(),
-      getPublishedDestinations(),
-      getPublishedCategories(),
+      needsTours ? getPublishedTours(undefined, isBookingRoute) : Promise.resolve(undefined),
+      needsDestinations ? getPublishedDestinations() : Promise.resolve(undefined),
+      needsCategories ? getPublishedCategories() : Promise.resolve(undefined),
     ]);
 
-    if (toursRes.status === 'fulfilled') {
-      setLiveTours(toursRes.value || []);
-    } else {
-      console.warn('Failed to load published tours from Supabase:', toursRes.reason);
-      setToursError('We couldn’t load excursions right now. Please try again.');
-      setLiveTours([]);
+    if (needsTours) {
+      if (toursRes.status === 'fulfilled') {
+        setLiveTours(toursRes.value || []);
+      } else {
+        console.warn('Failed to load published tours from Supabase:', toursRes.reason);
+        setToursError('We couldn’t load excursions right now. Please try again.');
+        setLiveTours([]);
+      }
+      setLoadingTours(false);
     }
-    setLoadingTours(false);
 
-    if (destsRes.status === 'fulfilled') {
-      setLiveDestinations(destsRes.value || []);
-    } else {
-      console.warn('Failed to load published destinations from Supabase:', destsRes.reason);
-      setDestinationsError('We couldn’t load destinations right now. Please try again.');
-      setLiveDestinations([]);
+    if (needsDestinations) {
+      if (destsRes.status === 'fulfilled') {
+        setLiveDestinations(destsRes.value || []);
+      } else {
+        console.warn('Failed to load published destinations from Supabase:', destsRes.reason);
+        setDestinationsError('We couldn’t load destinations right now. Please try again.');
+        setLiveDestinations([]);
+      }
+      setLoadingDestinations(false);
     }
-    setLoadingDestinations(false);
 
-    if (catsRes.status === 'fulfilled') {
-      setLiveCategories(catsRes.value || []);
-    } else {
-      console.warn('Failed to load published categories from Supabase:', catsRes.reason);
-      setCategoriesError('We couldn’t load activities right now. Please try again.');
-      setLiveCategories([]);
+    if (needsCategories) {
+      if (catsRes.status === 'fulfilled') {
+        setLiveCategories(catsRes.value || []);
+      } else {
+        console.warn('Failed to load published categories from Supabase:', catsRes.reason);
+        setCategoriesError('We couldn’t load activities right now. Please try again.');
+        setLiveCategories([]);
+      }
+      setLoadingCategories(false);
     }
-    setLoadingCategories(false);
-  }, []);
+  }, [currentPath]);
 
   const refreshPublishedTours = useCallback(async () => {
     setLoadingTours(true);
@@ -358,6 +417,16 @@ function MainApp() {
       setLoadingTours(false);
     }
   }, []);
+
+  const openWishlist = useCallback(async () => {
+    if (liveTours.length === 0) await refreshPublishedTours();
+    setIsWishlistOpen(true);
+  }, [liveTours.length, refreshPublishedTours]);
+
+  const openCompare = useCallback(async () => {
+    if (liveTours.length === 0) await refreshPublishedTours();
+    setIsCompareOpen(true);
+  }, [liveTours.length, refreshPublishedTours]);
 
   const refreshPublishedDestinations = useCallback(async () => {
     setLoadingDestinations(true);
@@ -397,11 +466,11 @@ function MainApp() {
   // Synchronize dynamic catalogue when admin mutations occur
   useEffect(() => {
     const handleDataUpdated = () => {
-      refreshCatalogue();
+      refreshCatalogue(currentPath, true);
     };
     window.addEventListener('rse_data_updated', handleDataUpdated);
     return () => window.removeEventListener('rse_data_updated', handleDataUpdated);
-  }, [refreshCatalogue]);
+  }, [currentPath, refreshCatalogue]);
 
   useEffect(() => {
     const handleUnavailableLanguageRoute = (event: Event) => {
@@ -1453,7 +1522,7 @@ function MainApp() {
         <AccountPage
           currency={currentCurrency}
           onNavigate={(page, param) => navigate(page, param)}
-          onOpenWishlist={() => setIsWishlistOpen(true)}
+          onOpenWishlist={openWishlist}
         />
       );
     }
@@ -1687,52 +1756,48 @@ function MainApp() {
           <Hero
             onSearch={handleHeroSearch}
             resultCount={liveTours.length}
-            destinations={liveDestinations}
-            categories={liveCategories}
           />
 
-          {/* Destinations Section */}
-          <DestinationsSection
-            destinations={liveDestinations}
-            isLoading={loadingDestinations}
-            error={destinationsError}
-            onRetry={refreshPublishedDestinations}
-            onSelectDestination={handleSelectHomeDestination}
-          />
+          <DeferredHomeSection minHeight="clamp(22rem, 48vw, 34rem)" onEnter={refreshPublishedDestinations}>
+            <DestinationsSection
+              destinations={liveDestinations}
+              isLoading={loadingDestinations}
+              error={destinationsError}
+              onRetry={refreshPublishedDestinations}
+              onSelectDestination={handleSelectHomeDestination}
+            />
+          </DeferredHomeSection>
 
-          {/* Popular Tours Section with Skeleton Loading */}
-          <PopularTours
-            tours={liveTours.slice(0, 8)}
-            currency={currentCurrency}
-            isLoading={loadingTours}
-            onSelectTour={handleViewTour}
-            onQuickBook={handleStartBooking}
-            onViewAllExcursions={() => navigate('/excursions')}
-          />
+          <DeferredHomeSection minHeight="clamp(34rem, 72vw, 52rem)">
+            <PopularTours
+              tours={liveTours.slice(0, 8)}
+              currency={currentCurrency}
+              isLoading={loadingTours}
+              onSelectTour={handleViewTour}
+              onQuickBook={handleStartBooking}
+              onViewAllExcursions={() => navigate('/excursions')}
+            />
+          </DeferredHomeSection>
 
-          {/* Experience Categories */}
-          <ExperienceCategories
-            categories={liveCategories}
-            isLoading={loadingCategories}
-            error={categoriesError}
-            onRetry={refreshPublishedCategories}
-            onSelectCategory={handleSelectHomeCategory}
-          />
+          <DeferredHomeSection minHeight="clamp(24rem, 52vw, 38rem)" onEnter={refreshPublishedCategories}>
+            <ExperienceCategories
+              categories={liveCategories}
+              isLoading={loadingCategories}
+              error={categoriesError}
+              onRetry={refreshPublishedCategories}
+              onSelectCategory={handleSelectHomeCategory}
+            />
+          </DeferredHomeSection>
 
-          {/* Why Choose Us Trust Pillars */}
-          <WhyChooseUs />
-
-          {/* Reviews */}
-          <ReviewsSection />
-
-          {/* English homepage FAQ content and matching FAQPage structured data */}
-          {currentLocale === 'en' && <HomeFAQ />}
-
-          {/* Final CTA */}
-          <FinalCTA
-            onExploreTours={() => navigate('/excursions')}
-            onOpenMyBooking={() => navigate('/my-booking')}
-          />
+          <DeferredHomeSection minHeight="clamp(18rem, 35vw, 26rem)"><WhyChooseUs /></DeferredHomeSection>
+          <DeferredHomeSection minHeight="clamp(24rem, 48vw, 36rem)"><ReviewsSection /></DeferredHomeSection>
+          {currentLocale === 'en' && <DeferredHomeSection minHeight="clamp(20rem, 42vw, 32rem)"><HomeFAQ /></DeferredHomeSection>}
+          <DeferredHomeSection minHeight="16rem">
+            <FinalCTA
+              onExploreTours={() => navigate('/excursions')}
+              onOpenMyBooking={() => navigate('/my-booking')}
+            />
+          </DeferredHomeSection>
         </main>
       );
     }
@@ -1769,7 +1834,7 @@ function MainApp() {
         onNavigateAdmin={() => navigate('/admin')}
         onNavigateSection={handleNavigateSection}
         onOpenWishlist={() => setIsWishlistOpen(true)}
-        onOpenCompare={() => setIsCompareOpen(true)}
+        onOpenCompare={openCompare}
         onOpenHelpInquiry={() => {
           setHelpSelectedTour(null);
           setIsHelpInquiryOpen(true);
@@ -1846,7 +1911,7 @@ function MainApp() {
       {!isAdminRoute && (
         <CompareFloatingBar
           allTours={liveTours}
-          onOpenCompareModal={() => setIsCompareOpen(true)}
+          onOpenCompareModal={openCompare}
         />
       )}
 

@@ -5388,7 +5388,9 @@ async function loadAwesomeAdventureToursPages(): Promise<any[]> {
   // partial page list. CMS content wins, while missing SEO metadata and hero
   // fields inherit safe, reviewed defaults from the matching static page.
   const staticPageBySlug = new Map<string, typeof INITIAL_STATIC_PAGES[number]>(INITIAL_STATIC_PAGES.map((page) => [page.slug, page] as const));
-  const mergedPages = publishedPages.map((page: any) => {
+  const mergedPages = publishedPages
+    .filter((page: any) => page?.slug && page.published !== false && page.status !== 'draft' && page.status !== 'unpublished')
+    .map((page: any) => {
     const fallback = typeof page?.slug === 'string' ? staticPageBySlug.get(page.slug) : undefined;
     if (!fallback) return page;
     return {
@@ -5525,7 +5527,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
   let currentInclusions: any[] = [];
   let currentExclusions: any[] = [];
   let currentItinerary: any[] = [];
-  let pageImage = `${origin}/logo.webp`;
+  let pageImage = `${origin}/logo.png`;
   let visibleDestinations: any[] = [];
   let seoEntityType = 'page';
   let seoIdentifier = 'home';
@@ -5711,7 +5713,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
         : '';
       body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / <a href="/excursions">Excursions</a></nav><article>
         <h1>${seoHtmlEscape(seoPlainText(currentTour.title, 160))}</h1>
-        ${pageImage !== `${origin}/logo.webp` ? `<figure><img src="${seoHtmlEscape(pageImage)}" alt="${seoHtmlEscape(seoPlainText(currentTour.title, 160))}" loading="eager" style="width:100%;max-height:420px;object-fit:cover;border-radius:14px" /></figure>` : ''}
+        ${pageImage !== `${origin}/logo.png` ? `<figure><img src="${seoHtmlEscape(pageImage)}" alt="${seoHtmlEscape(seoPlainText(currentTour.title, 160))}" loading="eager" style="width:100%;max-height:420px;object-fit:cover;border-radius:14px" /></figure>` : ''}
         ${summary ? `<p>${seoHtmlEscape(summary)}</p>` : ''}
         ${price ? `<p><strong>Starting price: ${seoHtmlEscape(price)}</strong></p>` : ''}
         ${duration ? `<p>Duration: ${seoHtmlEscape(duration)}</p>` : ''}
@@ -5743,7 +5745,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
           if (!postTitle || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) return '';
           const excerpt = seoPlainText(post.excerpt, 400);
           const image = seoSafeImage(post.cover_image_url);
-          if (!pageImage || pageImage === `${origin}/logo.webp`) pageImage = image || pageImage;
+          if (!pageImage || pageImage === `${origin}/logo.png`) pageImage = image || pageImage;
           return `<article class="seo-tour-card">${image ? `<img src="${seoHtmlEscape(image)}" alt="${seoHtmlEscape(postTitle)}" loading="lazy" style="width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:10px;margin-bottom:12px" />` : ''}<p class="seo-muted">${seoHtmlEscape(seoPlainText(post.blog_categories?.name, 80) || 'Travel guide')}</p><h2><a href="/blog/${encodeURIComponent(slug)}">${seoHtmlEscape(postTitle)}</a></h2>${excerpt ? `<p>${seoHtmlEscape(excerpt)}</p>` : ''}<p><a href="/blog/${encodeURIComponent(slug)}">Read story</a></p></article>`;
         }).filter(Boolean).join('');
         body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / Travel Journal</nav><h1>The Awesome Adventure Tours Travel Journal</h1><p>${seoHtmlEscape(description)}</p><div class="seo-grid">${cards || '<p>New travel guides and local stories are on their way.</p>'}</div></main>`;
@@ -5808,7 +5810,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
         }
       }
       flushParagraph(); flushList();
-      body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / <a href="/blog">Travel Journal</a> / ${seoHtmlEscape(seoPlainText(currentBlogPost.title, 160))}</nav><article><h1>${seoHtmlEscape(seoPlainText(currentBlogPost.title, 160))}</h1>${pageImage !== `${origin}/logo.webp` ? `<figure><img src="${seoHtmlEscape(pageImage)}" alt="${seoHtmlEscape(seoPlainText(currentBlogPost.title, 160))}" loading="eager" style="width:100%;max-height:520px;object-fit:cover;border-radius:14px" /></figure>` : ''}<p class="seo-muted">${seoHtmlEscape(seoPlainText(currentBlogPost.blog_categories?.name, 80) || 'Awesome Adventure Tours Journal')} · ${seoHtmlEscape(seoPlainText(currentBlogPost.author_name, 120) || 'Awesome Adventure Tours Editorial Team')}</p>${currentBlogPost.excerpt ? `<p><strong>${seoHtmlEscape(seoPlainText(currentBlogPost.excerpt, 600))}</strong></p>` : ''}${blocks.join('')}<p><a href="/excursions">Explore Awesome Adventure Tours excursions</a></p></article></main>`;
+      body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / <a href="/blog">Travel Journal</a> / ${seoHtmlEscape(seoPlainText(currentBlogPost.title, 160))}</nav><article><h1>${seoHtmlEscape(seoPlainText(currentBlogPost.title, 160))}</h1>${pageImage !== `${origin}/logo.png` ? `<figure><img src="${seoHtmlEscape(pageImage)}" alt="${seoHtmlEscape(seoPlainText(currentBlogPost.title, 160))}" loading="eager" style="width:100%;max-height:520px;object-fit:cover;border-radius:14px" /></figure>` : ''}<p class="seo-muted">${seoHtmlEscape(seoPlainText(currentBlogPost.blog_categories?.name, 80) || 'Awesome Adventure Tours Journal')} · ${seoHtmlEscape(seoPlainText(currentBlogPost.author_name, 120) || 'Awesome Adventure Tours Editorial Team')}</p>${currentBlogPost.excerpt ? `<p><strong>${seoHtmlEscape(seoPlainText(currentBlogPost.excerpt, 600))}</strong></p>` : ''}${blocks.join('')}<p><a href="/excursions">Explore Awesome Adventure Tours excursions</a></p></article></main>`;
     }
   } else if (path.startsWith('/destinations/')) {
     let slug = '';
@@ -5961,7 +5963,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
     '@id': `${origin}/#organization`,
     name: 'Awesome Adventure Tours',
     url: origin,
-    logo: `${origin}/logo.webp`,
+    logo: `${origin}/logo.png`,
     description: 'Excursions and experiences along Egypt’s Red Sea coast, based in Hurghada, Egypt.',
     telephone: '+201515212741',
     address: {
@@ -6000,7 +6002,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       name: seoPlainText(currentTour.title, 160),
       description,
       url: canonical,
-      image: pageImage !== `${origin}/logo.webp` ? [pageImage] : undefined,
+      image: pageImage !== `${origin}/logo.png` ? [pageImage] : undefined,
       provider: { '@id': `${origin}/#organization` },
       // Excursions are TouristTrip entities, not retail Products. Nesting a
       // Product/Offer here makes Google classify tours as merchant listings and
@@ -6015,7 +6017,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       headline: seoPlainText(currentBlogPost.title, 160),
       description,
       url: canonical,
-      image: pageImage !== `${origin}/logo.webp` ? [pageImage] : undefined,
+      image: pageImage !== `${origin}/logo.png` ? [pageImage] : undefined,
       datePublished: currentBlogPost.published_at,
       dateModified: currentBlogPost.updated_at || currentBlogPost.published_at,
       author: { '@type': 'Organization', name: seoPlainText(currentBlogPost.author_name, 120) || 'Awesome Adventure Tours Editorial Team' },
@@ -6036,7 +6038,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       name: seoPlainText(activeDestination.name, 120),
       description,
       url: canonical,
-      image: pageImage !== `${origin}/logo.webp` ? pageImage : undefined,
+      image: pageImage !== `${origin}/logo.png` ? pageImage : undefined,
       subjectOf: { '@type': 'ItemList', itemListElement: destinationItems },
     });
   }
@@ -6057,7 +6059,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
         : pageKind === 'static' && path === '/contact'
           ? 'ContactPage'
           : 'WebPage';
-    graph.push({ '@type': pageSchemaType, '@id': `${canonical}#webpage`, url: canonical, name: title, description, isPartOf: { '@id': `${origin}/#website` }, publisher: { '@id': `${origin}/#organization` }, ...(path === '/about' ? { about: { '@id': `${origin}/#organization` } } : {}), ...(mainEntityId ? { mainEntity: { '@id': mainEntityId } } : {}), ...(pageImage !== `${origin}/logo.webp` ? { primaryImageOfPage: { '@type': 'ImageObject', url: pageImage } } : {}), ...(hasBreadcrumb ? { breadcrumb: { '@id': `${canonical}#breadcrumb` } } : {}) });
+    graph.push({ '@type': pageSchemaType, '@id': `${canonical}#webpage`, url: canonical, name: title, description, isPartOf: { '@id': `${origin}/#website` }, publisher: { '@id': `${origin}/#organization` }, ...(path === '/about' ? { about: { '@id': `${origin}/#organization` } } : {}), ...(mainEntityId ? { mainEntity: { '@id': mainEntityId } } : {}), ...(pageImage !== `${origin}/logo.png` ? { primaryImageOfPage: { '@type': 'ImageObject', url: pageImage } } : {}), ...(hasBreadcrumb ? { breadcrumb: { '@id': `${canonical}#breadcrumb` } } : {}) });
     if (hasBreadcrumb) graph.push({ '@type': 'BreadcrumbList', '@id': `${canonical}#breadcrumb`, itemListElement: breadcrumbItems.map((item, index) => ({ '@type': 'ListItem', position: index + 1, name: item.name, item: item.url })) });
   }
 
@@ -6090,12 +6092,12 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
   html = html.replace(/<link\s+rel="canonical"[^>]*>/i, `<link rel="canonical" href="${seoHtmlEscape(canonical)}" />`);
   html = html.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '');
   if (localePath) {
-    html = html.replace(/<html\b([^>]*)>/i, (_match, attrs) => '<html' + String(attrs).replace(/\s+lang=["'][^"']*["']/i, '').replace(/\s+dir=["'][^"']*["']/i, '') + ' lang="' + localePath.locale + '" dir="' + (localePath.locale === 'ar' ? 'rtl' : 'ltr') + '">');
+    html = html.replace(/<html\b([^>]*)>/i, (_match, attrs) => '<html' + String(attrs).replace(/\s+lang=["'][^"']*["']/i, '').replace(/\s+dir=["'][^"']*["']/i, '') + ' lang="' + escapeXml(localePath.locale) + '" dir="' + (localePath.locale === 'ar' ? 'rtl' : 'ltr') + '">');
     const alternateLinks: string[] = [];
-    alternateLinks.push('<link rel="alternate" hreflang="en" href="' + origin + path + '">');
-    alternateLinks.push('<link rel="alternate" hreflang="x-default" href="' + origin + path + '">');
+    alternateLinks.push('<link rel="alternate" hreflang="en" href="' + escapeXml(origin + path) + '">');
+    alternateLinks.push('<link rel="alternate" hreflang="x-default" href="' + escapeXml(origin + path) + '">');
     if (localizedTranslation) {
-      alternateLinks.push('<link rel="alternate" hreflang="' + localePath.locale + '" href="' + origin + requestedPath + '">');
+      alternateLinks.push('<link rel="alternate" hreflang="' + escapeXml(localePath.locale) + '" href="' + escapeXml(origin + requestedPath) + '">');
       if (serverSupabase) {
         try {
           const { data: alternatives } = await serverSupabase.from('content_translations')
@@ -6113,7 +6115,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
             const alternatePath = localizedTranslation.entity_type === 'static_page' && alternative.translated_slug === 'home'
               ? '/' + alternative.locale
               : '/' + alternative.locale + routePrefix + encodeURIComponent(alternative.translated_slug);
-            if (alternative.locale !== localePath.locale) alternateLinks.push('<link rel="alternate" hreflang="' + alternative.locale + '" href="' + origin + alternatePath + '">');
+            if (alternative.locale !== localePath.locale) alternateLinks.push('<link rel="alternate" hreflang="' + escapeXml(alternative.locale) + '" href="' + escapeXml(origin + alternatePath) + '">');
           }
         } catch (error) {
           console.warn('[Localized SSR] Reciprocal hreflang lookup failed:', error);
@@ -6205,6 +6207,9 @@ async function startServer() {
       return res.send(lines.join('\n'));
     });
 
+    // SSR is limited to anonymous public routes. Reuse rendered public HTML
+    // briefly so refreshes and repeat visitors do not rerun the same catalogue queries.
+    const PUBLIC_HTML_CACHE_TTL_MS = 3 * 60 * 1000;
     const publicHtmlResponseCache = new Map<string, {
       expiresAt: number;
       rendered: Awaited<ReturnType<typeof renderAwesomeAdventureToursPublicHtml>>;
@@ -6227,15 +6232,16 @@ async function startServer() {
 
       try {
         const indexHtml = fs.readFileSync(indexHtmlPath, 'utf8');
-        const cachedHtml = publicHtmlResponseCache.get(req.path);
+        const publicHtmlCacheKey = req.path.replace(/\/+$/, '') || '/';
+        const cachedHtml = publicHtmlResponseCache.get(publicHtmlCacheKey);
         let rendered: Awaited<ReturnType<typeof renderAwesomeAdventureToursPublicHtml>>;
         if (cachedHtml && cachedHtml.expiresAt > Date.now()) {
           rendered = cachedHtml.rendered;
         } else {
-          if (cachedHtml) publicHtmlResponseCache.delete(req.path);
+          if (cachedHtml) publicHtmlResponseCache.delete(publicHtmlCacheKey);
           rendered = await renderAwesomeAdventureToursPublicHtml(req.path, indexHtml);
           if (rendered.statusCode === 200) {
-            publicHtmlResponseCache.set(req.path, { expiresAt: Date.now() + 30_000, rendered });
+            publicHtmlResponseCache.set(publicHtmlCacheKey, { expiresAt: Date.now() + PUBLIC_HTML_CACHE_TTL_MS, rendered });
             if (publicHtmlResponseCache.size > 100) {
               const oldestKey = publicHtmlResponseCache.keys().next().value;
               if (oldestKey) publicHtmlResponseCache.delete(oldestKey);
@@ -6247,7 +6253,7 @@ async function startServer() {
         if (rendered.noindex) {
           res.setHeader('X-Robots-Tag', `noindex, ${rendered.nofollow ? 'nofollow' : 'follow'}`);
         }
-        const isTourDetailRoute = /^\/(?:[a-z]{2}\/)?excursions\/[a-z0-9]+(?:-[a-z0-9]+)*\/?$/i.test(req.path);
+        const isTourDetailRoute = /^\/(?:[a-z]{2}\/)?excursions\/[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(publicHtmlCacheKey);
         if (isTourDetailRoute) {
           // Prevent an intermediary cache from serving one excursion's HTML under another
           // excursion URL. Tour pages contain route-specific title, body and booking links.

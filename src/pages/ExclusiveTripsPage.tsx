@@ -34,7 +34,7 @@ export const ExclusiveTripsPage: React.FC<Props> = () => {
 
   useEffect(() => {
     let active = true;
-    getExclusiveTrips().then((items) => {
+    getExclusiveTrips(true).then((items) => {
       if (!active) return;
       setTrips(items);
       if (items[0]) setSelectedTripId(items[0].id);

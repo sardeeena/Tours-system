@@ -849,6 +849,7 @@
     "private.text.cf82f7c6": "Logo Awesome Adventure Tours",
     "private.text.cfde7062": "Thème clair (par défaut)",
     "private.text.cffaecfd": "Icône des excursions en mer Rouge",
+    "private.text.cdfbccf3": "Navigation mobile",
     "private.text.d01f2cac": "Privé",
     "private.text.d02b5d18": "Locations privées",
     "private.text.d03c4dd9": "CLIENT",
@@ -1071,5 +1072,5 @@
     "private.text.f7239c75": "* Les horaires sont approximatifs et peuvent varier selon la logistique locale et les conditions en mer ou météorologiques.",
     "private.text.36c24f6e": "Photos à venir"
   },
-  "coverage": 1067
+  "coverage": 1068
 }

@@ -17,6 +17,7 @@ import {
   FileText,
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../../services/supabaseClient';
+import { clearPublicDataCache } from '../../services/publicDataCache';
 import { adminListTours, getDestinations, getCategories } from '../../services/tourService';
 import { DbTour, DbDestination, DbCategory } from '../../types/database';
 import { useToast } from '../../contexts/ToastContext';
@@ -425,6 +426,7 @@ export const AdminSeoManager: React.FC = () => {
       }
     }
 
+    if (isSupabaseConfigured()) clearPublicDataCache();
     setSaving(false);
     setSaveSuccess(true);
     showToast(

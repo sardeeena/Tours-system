@@ -169,7 +169,7 @@ async function runRouteTests() {
   assert('destinations SEO metadata', seoSource.includes("'/destinations'") && seoSource.includes('Explore Egypt Destinations'), 'Destinations directory has dedicated canonical SEO metadata');
   assert('experiences SEO metadata', seoSource.includes("'/experiences'") && seoSource.includes('Awesome Adventure Tours'), 'Experiences route has dedicated Awesome Adventure Tours SEO metadata');
   const seoServiceSource = fs.readFileSync(path.join(process.cwd(), 'src/services/seoService.ts'), 'utf8');
-  assert('client SEO branding', seoServiceSource.includes("const SITE_NAME = 'Awesome Adventure Tours'") && seoServiceSource.includes('https://awesomeadventure.tours/logo.webp'), 'Client SEO service uses only Awesome Adventure Tours identity and canonical domain');
+  assert('client SEO branding', seoServiceSource.includes("const SITE_NAME = 'Awesome Adventure Tours'") && seoServiceSource.includes('https://awesomeadventure.tours/logo.png'), 'Client SEO service uses the canonical Awesome Adventure Tours logo and domain');
   assert('support portal noindex', seoSource.includes("'/support'") && seoSource.includes('robotsIndex: false') && seoSource.includes('robotsFollow: false'), 'Customer support portal is explicitly noindex and nofollow');
   const serverSource = fs.readFileSync(path.join(process.cwd(), 'server.ts'), 'utf8');
   assert('server destinations SEO rendering', serverSource.includes("path === '/destinations'") && serverSource.includes("pageKind = 'destinations'") && serverSource.includes('Explore Our Destinations in Egypt'), 'Server returns route-specific destination directory HTML for /destinations');

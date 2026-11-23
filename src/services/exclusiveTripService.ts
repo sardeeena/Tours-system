@@ -1,4 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabaseClient';
+import { clearPublicDataCache, readPublicDataCache, writePublicDataCache, PUBLIC_CATALOGUE_CACHE_TTL_MS } from './publicDataCache';
 
 export interface ExclusiveTrip {
   id: string;
@@ -56,7 +57,20 @@ function requireSupabase() {
   return supabase as any;
 }
 
-export async function getExclusiveTrips(): Promise<ExclusiveTrip[]> {
+let refreshingExclusiveTrips = false;
+
+export async function getExclusiveTrips(forceRefresh = false): Promise<ExclusiveTrip[]> {
+  if (!forceRefresh) {
+    const cached = readPublicDataCache<ExclusiveTrip[]>('catalogue:exclusive-trips', PUBLIC_CATALOGUE_CACHE_TTL_MS);
+    if (cached) {
+      if (!cached.isFresh && !refreshingExclusiveTrips) {
+        refreshingExclusiveTrips = true;
+        void getExclusiveTrips(true).catch((error) => console.warn('Background Exclusive trips refresh failed:', error))
+          .finally(() => { refreshingExclusiveTrips = false; });
+      }
+      return cached.data;
+    }
+  }
   const client = requireSupabase();
   const { data, error } = await client
     .from('exclusive_trips')
@@ -66,7 +80,7 @@ export async function getExclusiveTrips(): Promise<ExclusiveTrip[]> {
     .eq('tours.is_exclusive', true)
     .order('created_at', { ascending: false });
   if (error) throw new Error(error.message || 'Unable to load exclusive trips.');
-  return (data || []).map((trip: any) => ({
+  const trips = (data || []).map((trip: any) => ({
     ...trip,
     fixed_trip_price: Number(trip.fixed_trip_price),
     tours: {
@@ -76,6 +90,8 @@ export async function getExclusiveTrips(): Promise<ExclusiveTrip[]> {
       ),
     },
   }));
+  writePublicDataCache('catalogue:exclusive-trips', trips);
+  return trips;
 }
 
 export async function getExclusiveDepartures(tripId: string): Promise<ExclusiveDeparture[]> {
@@ -166,6 +182,7 @@ export async function saveExclusiveTrip(input: {
   });
   if (error) throw new Error(error.message || 'Unable to save Exclusive trip settings.');
   if (!data?.success) throw new Error('Exclusive trip settings were not saved.');
+  clearPublicDataCache('catalogue:exclusive-trips');
 }
 
 export async function createExclusiveDeparture(input: {

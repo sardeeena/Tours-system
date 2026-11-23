@@ -2,6 +2,8 @@ export interface StaticPageContent {
   id: string;
   title: string;
   slug: string;
+  published?: boolean;
+  status?: string;
   heroHeadline: string;
   heroSubtitle: string;
   lastUpdated: string;
