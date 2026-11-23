@@ -1,5 +1,6 @@
 import { supabase, isSupabaseConfigured, formatSupabaseError } from './supabaseClient';
 import { DbSiteSetting } from '../types/database';
+import { clearPublicDataCache, readPublicDataCache, writePublicDataCache } from './publicDataCache';
 
 export interface CompanySettings {
   companyName: string;
@@ -206,7 +207,22 @@ export async function saveFooterContent(content: FooterContentSettings): Promise
   }, 'Footer copy, copyright, and compliance badges');
 }
 
-export async function getStaticPages(): Promise<StaticPageContent[]> {
+let refreshingStaticPages = false;
+
+export async function getStaticPages(forceRefresh = false): Promise<StaticPageContent[]> {
+  if (!forceRefresh) {
+    const cached = readPublicDataCache<StaticPageContent[]>('site:static-pages');
+    if (cached) {
+      if (!cached.isFresh && !refreshingStaticPages) {
+        refreshingStaticPages = true;
+        void getStaticPages(true)
+          .catch((error) => console.warn('Background public page refresh failed:', error))
+          .finally(() => { refreshingStaticPages = false; });
+      }
+      return cached.data;
+    }
+  }
+
   const customPages = await getSetting<StaticPageContent[]>('pages_content', INITIAL_STATIC_PAGES);
   const savedPages = Array.isArray(customPages) ? customPages : [];
   const defaultsBySlug = new Map(INITIAL_STATIC_PAGES.map((page) => [page.slug, page]));
@@ -237,12 +253,15 @@ export async function getStaticPages(): Promise<StaticPageContent[]> {
     })),
   }));
   const savedSlugs = new Set(normalizedSavedPages.map((page) => page?.slug).filter(Boolean));
-  return [
+  const result = [
     ...normalizedSavedPages,
     ...INITIAL_STATIC_PAGES.filter((page) => !savedSlugs.has(page.slug)),
   ];
+  writePublicDataCache('site:static-pages', result);
+  return result;
 }
 
 export async function saveStaticPages(pages: StaticPageContent[]): Promise<void> {
-  return saveSetting<StaticPageContent[]>('pages_content', pages, 'CMS static pages content and copy');
+  await saveSetting<StaticPageContent[]>('pages_content', pages, 'CMS static pages content and copy');
+  clearPublicDataCache('site:static-pages');
 }
