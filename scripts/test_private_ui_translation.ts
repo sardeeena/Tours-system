@@ -19,7 +19,7 @@ for (const required of [
   'Confirm & Save New Password',
   'Your account',
   'No Reservations Found',
-  'Awesome Adventure Tours Support',
+  'How can we help?',
   'Ticket queue',
   'Print Voucher (PDF)',
   'Confirming your booking...',
