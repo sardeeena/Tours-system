@@ -34,6 +34,14 @@ interface OperationsCalendarProps {
 
 type CalendarViewMode = 'day' | 'week' | 'month';
 
+const formatLocalDate = (date: Date): string =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+const parseLocalDate = (date: string): Date => {
+  const [year, month, day] = date.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
 export const OperationsCalendar: React.FC<OperationsCalendarProps> = ({
   onSelectDepartureDate,
 }) => {
@@ -49,7 +57,7 @@ export const OperationsCalendar: React.FC<OperationsCalendarProps> = ({
   const [vessels, setVessels] = useState<DbVessel[]>([]);
   const [guides, setGuides] = useState<DbGuide[]>([]);
 
-  const selectedDateStr = currentDate.toISOString().split('T')[0];
+  const selectedDateStr = formatLocalDate(currentDate);
   const calendarRange = (() => {
     const start = new Date(currentDate);
     const end = new Date(currentDate);
@@ -124,7 +132,7 @@ export const OperationsCalendar: React.FC<OperationsCalendarProps> = ({
     setCurrentDate(new Date());
   };
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = formatLocalDate(new Date());
 
   // Month generation
   const year = currentDate.getFullYear();
@@ -138,7 +146,7 @@ export const OperationsCalendar: React.FC<OperationsCalendarProps> = ({
     const day = prevMonthDays - i;
     const prevDate = new Date(year, month - 1, day);
     monthDaysArray.push({
-      dateStr: prevDate.toISOString().split('T')[0],
+      dateStr: formatLocalDate(prevDate),
       dayNum: day,
       isCurrentMonth: false,
     });
@@ -146,7 +154,7 @@ export const OperationsCalendar: React.FC<OperationsCalendarProps> = ({
   for (let d = 1; d <= daysInMonth; d++) {
     const dateObj = new Date(year, month, d);
     monthDaysArray.push({
-      dateStr: dateObj.toISOString().split('T')[0],
+      dateStr: formatLocalDate(dateObj),
       dayNum: d,
       isCurrentMonth: true,
     });
@@ -160,7 +168,7 @@ export const OperationsCalendar: React.FC<OperationsCalendarProps> = ({
     const wDate = new Date(startOfWeek);
     wDate.setDate(startOfWeek.getDate() + i);
     weekDaysArray.push({
-      dateStr: wDate.toISOString().split('T')[0],
+      dateStr: formatLocalDate(wDate),
       dayNum: wDate.getDate(),
       dayName: wDate.toLocaleDateString(undefined, { weekday: 'short' }),
     });
@@ -301,7 +309,7 @@ export const OperationsCalendar: React.FC<OperationsCalendarProps> = ({
                 <div
                   key={idx}
                   onClick={() => {
-                    setCurrentDate(new Date(dayItem.dateStr));
+                    setCurrentDate(parseLocalDate(dayItem.dateStr));
                     if (onSelectDepartureDate) onSelectDepartureDate(dayItem.dateStr);
                   }}
                   className={`min-h-[115px] p-2 flex flex-col justify-between transition-colors cursor-pointer ${
@@ -394,7 +402,7 @@ export const OperationsCalendar: React.FC<OperationsCalendarProps> = ({
                 <div
                   key={idx}
                   onClick={() => {
-                    setCurrentDate(new Date(day.dateStr));
+                    setCurrentDate(parseLocalDate(day.dateStr));
                     setViewMode('day');
                   }}
                   className="p-2 space-y-2 hover:bg-stone-900/30 transition-colors cursor-pointer"
