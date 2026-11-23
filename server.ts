@@ -2091,9 +2091,9 @@ app.post('/api/reviews/submit', rateLimit(30, 10 * 60_000), async (req: Authenti
       const { error: accountRateLimitError } = await serverSupabase.rpc('check_atomic_rate_limit', {
         p_action: 'public_review_account',
         p_identifier: createHash('sha256').update(req.user.id).digest('hex'),
-        p_window_interval: '24 hours',
+        p_window_interval: '1 hour',
         p_max_hits: 5,
-        p_error_message: 'You have reached the review limit for your account. Please try again tomorrow.',
+        p_error_message: 'You have reached the review limit for your account. Please wait an hour before trying again.'
       });
       if (accountRateLimitError) {
         if (accountRateLimitError.code === 'P0001') return res.status(429).json({ success: false, error: accountRateLimitError.message });
