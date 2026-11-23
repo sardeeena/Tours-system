@@ -90,13 +90,7 @@
         "footer.allRights": "Alle rechten voorbehouden.",
         "pwa.installApp": "App installeren",
         "pwa.saveToPhone": "Opslaan op telefoon",
-        "pwa.installSubtitle": "Snelle offline toegang tot tourvouchers en boekingen",
-        "private.text.7dfad6f9": "Hoe kunnen we je helpen?",
-        "private.text.ac6e2e54": "Log in om ons een bericht te sturen en onze reacties te volgen.",
-        "private.text.6f037b40": "Je hebt geen toegang tot deze pagina",
-        "private.text.05514769": "Dit account heeft geen toegang tot supporttickets.",
-        "private.text.428aea56": "Kies een ticket om de berichten te lezen en bij te werken.",
-        "private.text.192e19f7": "Deel geen wachtwoorden of volledige betaalkaartgegevens."
+        "pwa.installSubtitle": "Snelle offline toegang tot tourvouchers en boekingen"
       }
     }
   ]
