@@ -12,7 +12,7 @@
     "ui_catalog": 1,
     "public_ui_messages": 81,
     "private_ui_messages": 1080,
-    "ui_catalog_messages": 1161,
+    "ui_catalog_messages": 1169,
     "source_records": 112
   },
   "records": [
@@ -4966,7 +4966,15 @@
         "private.text.c1c961ad": "Sprawdzanie godzin odjazdu… ",
         "private.text.c2a951c0": "Ograniczona dostępność",
         "private.text.c64375dc": "Zasady anulowania",
-        "private.text.e9175fbd": "Twoje konto jest chronione"
+        "private.text.e9175fbd": "Twoje konto jest chronione",
+        "private.text.69d458e5": "Planujesz wycieczkę morską?",
+        "private.text.dbd7e16b": "Warunki na morzu i pogoda mogą się zmieniać. Informacje o wypłynięciu potwierdza lokalny organizator.",
+        "private.text.4ec74a55": "Ukryj wskazówki",
+        "private.text.decc7fb0": "Wskazówki dotyczące wycieczki",
+        "private.text.21533c25": "Ze względów bezpieczeństwa organizator ocenia warunki przed wypłynięciem. Jeśli pogoda wpłynie na zarezerwowaną wycieczkę, zespół skontaktuje się z Tobą i przedstawi możliwości zgodne z warunkami rezerwacji.",
+        "private.text.562cc5ed": "Zamknij galerię zdjęć",
+        "private.text.6318d75c": "Poprzednie zdjęcie",
+        "private.text.e28cbf9c": "Następne zdjęcie"
       },
       "private_ui_message_count": 650
     },
