@@ -32,24 +32,24 @@ export const SEO_DEFAULTS = {
  */
 export const HOMEPAGE_FAQS = [
   {
-    question: 'How do I check pickup availability and transfer fees?',
+    question: 'Is hotel pickup available?',
     answer:
-      'Pickup areas and any extra transfer fees are shown in the tour details. Choose your hotel area during booking to see the total.',
+      'Pickup depends on the tour and your hotel. Choose your hotel area during booking to see whether pickup is available and if there’s an extra fee.',
   },
   {
-    question: 'Can I pay upon hotel pickup rather than paying in advance online?',
+    question: 'Can I pay when I’m picked up?',
     answer:
-      'Some trips let you pay when you’re picked up. The payment methods and currencies available for your trip are shown during booking.',
+      'Some tours offer payment at pickup. You’ll see the payment options for your chosen tour before you confirm.',
   },
   {
-    question: 'What is your cancellation and weather refund policy?',
+    question: 'What happens if I need to cancel or the weather is bad?',
     answer:
-      'Cancellation rules vary by trip and are shown on the tour page. If a port closure stops your trip from going ahead, our team will contact you about the options for your booking.',
+      'Cancellation rules depend on the tour, so check the terms shown on its page before booking. If bad weather or sea conditions affect your trip, our team will contact you about your options.',
   },
   {
-    question: 'Are snorkeling gear and buffet lunch included on full-day boat trips?',
+    question: 'Are snorkelling gear and lunch included?',
     answer:
-      'What’s included depends on the trip. Check the tour page to see whether masks and fins are provided or cost extra.',
+      'It depends on the tour. Check the Included and Not included lists on the tour page to see whether masks, fins and lunch are provided.',
   },
 ];
 
