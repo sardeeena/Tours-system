@@ -32,8 +32,8 @@ export const ALL_TOURS: Tour[] = [
       'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80'
     ],
-    shortDescription: 'Take a boat trip to Giftun Island’s Orange Bay beach with shallow turquoise water, two guided snorkeling stops at coral reefs, and buffet lunch onboard.',
-    fullDescription: 'Spend a relaxing day sailing across the Red Sea to Giftun Island. Disembark at Orange Bay where wooden swings, shallow white sandbars, and shaded beanbag cabanas await. Enjoy two hours of island leisure before re-boarding for a freshly prepared buffet lunch and two distinct open-sea snorkeling sessions over living coral heads.',
+    shortDescription: 'Take a boat trip to Orange Bay on Giftun Island. Swim, relax on the beach and snorkel at two reef stops. Lunch is served on board.',
+    fullDescription: 'Sail across the Red Sea to Giftun Island and spend around two hours at Orange Bay. Relax on the beach, swim in the shallow water, then return to the boat for lunch and two snorkelling stops.',
     highlights: [
       '2 hours on Orange Bay beach with shaded loungers and shallow turquoise water',
       'Two 45-minute guided snorkeling stops at vibrant offshore reefs',
@@ -42,13 +42,13 @@ export const ALL_TOURS: Tour[] = [
       'Hotel lobby pickup and return across Hurghada included'
     ],
     itinerary: [
-      { time: '08:00', title: 'Hotel pickup', description: 'Air-conditioned transfer from your resort lobby to Hurghada Marina.' },
-      { time: '09:00', title: 'Departure from marina', description: 'Safety briefing and scenic sail across the Red Sea toward Giftun Island.' },
-      { time: '10:00', title: 'First snorkeling stop', description: 'Guided reef snorkeling session observing parrotfish, rays, and clownfish.' },
-      { time: '12:30', title: 'Lunch onboard', description: 'Warm buffet lunch with fish, chicken, rice, salads, and seasonal fruits.' },
-      { time: '14:00', title: 'Island beach time', description: 'Disembark at Orange Bay for relaxation, photography, and swimming in shallow lagoons.' },
-      { time: '16:30', title: 'Return to marina', description: 'Leisurely cruise back as afternoon sun reflects on coastal mountains.' },
-      { time: '17:00', title: 'Hotel drop-off', description: 'Return transfer back to your hotel lobby.' }
+      { time: '08:00', title: 'Hotel pickup', description: 'Your air-conditioned transfer takes you from your hotel to Hurghada Marina.' },
+      { time: '09:00', title: 'Departure from marina', description: 'Meet the crew for a safety briefing, then sail towards Giftun Island.' },
+      { time: '10:00', title: 'First snorkeling stop', description: 'Snorkel at the reef with a guide and look out for colourful fish.' },
+      { time: '12:30', title: 'Lunch onboard', description: 'Enjoy a buffet lunch with fish, chicken, rice, salads and fruit.' },
+      { time: '14:00', title: 'Island beach time', description: 'Spend time on Orange Bay beach. Swim, relax and take photos.' },
+      { time: '16:30', title: 'Return to marina', description: 'Relax on the boat as we sail back to the marina.' },
+      { time: '17:00', title: 'Hotel drop-off', description: 'Your transfer takes you back to your hotel.' }
     ],
     included: [
       'Hotel pickup and return transfer',
@@ -113,8 +113,8 @@ export const ALL_TOURS: Tour[] = [
       'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=1200&q=80'
     ],
-    shortDescription: 'Sail to Paradise Beach on Giftun Island with white sand, parasols, folklore dance show, and two coral reef snorkeling stops.',
-    fullDescription: 'Visit Paradise Beach on Giftun Island for a relaxing beach day. Enjoy 2.5 hours on the white sand with shaded parasols and calm water for swimming. The boat stops at two coral reefs along the way where guides help you spot reef fish, followed by a warm buffet lunch on the yacht.',
+    shortDescription: 'Visit Paradise Beach on Giftun Island, with time on the sand, a beach show and two stops to snorkel at coral reefs.',
+    fullDescription: 'Spend around two and a half hours at Paradise Beach. Swim or relax under a parasol, then visit two reef stops with a guide. Lunch is served on the boat.',
     highlights: [
       '2.5 hours at Paradise Beach on Giftun Island',
       'Two stops at protected coral gardens with guide',
@@ -125,10 +125,10 @@ export const ALL_TOURS: Tour[] = [
     itinerary: [
       { time: '08:30', title: 'Hotel pickup', description: 'Pickup from hotel and transfer to the pier.' },
       { time: '09:30', title: 'Boat departure', description: 'Cruise across the Red Sea towards Giftun Island.' },
-      { time: '10:30', title: 'Reef snorkeling stop', description: '45 minutes over living coral formations.' },
-      { time: '12:00', title: 'Paradise Beach leisure', description: 'Sunbathing, beach volleyball, and optional beach bar refreshments.' },
-      { time: '14:30', title: 'Lunch onboard', description: 'Fresh buffet served in shaded dining salon.' },
-      { time: '15:30', title: 'Second snorkeling session', description: 'Exploring shallow reef pinnacles.' },
+      { time: '10:30', title: 'Reef snorkeling stop', description: 'Enjoy around 45 minutes to snorkel above the reef.' },
+      { time: '12:00', title: 'Paradise Beach leisure', description: 'Relax on the beach, play volleyball or buy a drink at the beach bar.' },
+      { time: '14:30', title: 'Lunch onboard', description: 'Enjoy a buffet lunch in the boat's shaded dining area.' },
+      { time: '15:30', title: 'Second snorkeling session', description: 'Visit another reef for a second snorkelling stop.' },
       { time: '17:00', title: 'Return to hotel', description: 'Docking and transfer back to hotel.' }
     ],
     included: [
@@ -179,8 +179,8 @@ export const ALL_TOURS: Tour[] = [
       'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80'
     ],
-    shortDescription: 'Take a boat trip to Shaab El Erg reef to see wild dolphins in open water, with two coral snorkeling stops and lunch.',
-    fullDescription: 'Shaab El Erg is a protected reef where pods of spinner dolphins rest and swim. We travel by comfortable boat to observe dolphins in their natural environment without chasing. Guided snorkeling stops follow over colorful coral reefs, with an open buffet lunch and water sports onboard.',
+    shortDescription: 'Take a boat trip to Shaab El Erg, where dolphins are sometimes spotted in the wild. The day also includes two snorkelling stops and lunch.',
+    fullDescription: 'We sail to Shaab El Erg, a reef where dolphins are sometimes seen swimming in the wild. If dolphins are nearby, watch them from the boat without chasing or disturbing them. The trip also includes guided snorkelling stops, lunch and water sports.',
     highlights: [
       'Observe pods of wild dolphins in their natural habitat',
       'Two guided reef snorkeling stops with marine guides',
@@ -191,10 +191,10 @@ export const ALL_TOURS: Tour[] = [
     itinerary: [
       { time: '08:00', title: 'Hotel pickup', description: 'Air-conditioned transfer from your resort.' },
       { time: '09:00', title: 'Departure from marina', description: 'Cruising toward Shaab El Erg reef.' },
-      { time: '10:30', title: 'Dolphin observation lagoon', description: 'Search and swimming opportunities near dolphin pods.' },
-      { time: '12:30', title: 'Lunch onboard', description: 'Fresh hot buffet prepared by onboard chef.' },
-      { time: '13:45', title: 'Reef snorkeling stop', description: 'Guided exploration of vibrant coral walls.' },
-      { time: '15:15', title: 'Water sports fun', description: 'Banana boat and sofa ride behind speedboat.' },
+      { time: '10:30', title: 'Dolphin observation lagoon', description: 'Look for dolphins from the boat. Sightings are not guaranteed, and swimming with them is not promised.' },
+      { time: '12:30', title: 'Lunch onboard', description: 'Enjoy a hot buffet lunch on board.' },
+      { time: '13:45', title: 'Reef snorkeling stop', description: 'Explore the reef with your snorkelling guide.' },
+      { time: '15:15', title: 'Water sports fun', description: 'Try a banana boat and sofa ride behind a speedboat.' },
       { time: '16:30', title: 'Return to marina', description: 'Disembarkation and hotel transfer.' }
     ],
     included: [
@@ -242,8 +242,8 @@ export const ALL_TOURS: Tour[] = [
       'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80'
     ],
-    shortDescription: 'The classic Red Sea boat trip featuring sandbar swimming on Giftun Island National Park, relaxing on sun decks, and snorkeling over living coral.',
-    fullDescription: 'Giftun Island is the classic island-and-reef experience. Set out from the marina on a spacious double-decker boat, soak up the sun on open decks, and spend over an hour on the island’s sandy shores before heading to two prime snorkeling reefs.',
+    shortDescription: 'A full-day boat trip to Giftun Island, with time on the beach, a chance to snorkel and lunch on board.',
+    fullDescription: 'Sail from the marina on a spacious two-deck boat. Enjoy time on Giftun Island, relax on the sun deck and stop at two reefs to snorkel.',
     highlights: [
       'Relaxation on Giftun Island National Park sandbars',
       'Two coral snorkeling sessions with guide',
@@ -251,11 +251,11 @@ export const ALL_TOURS: Tour[] = [
       'Hotel pickup and drop-off included'
     ],
     itinerary: [
-      { time: '08:30', title: 'Pickup from hotel', description: 'Lobby pickup and transfer to boat pier.' },
-      { time: '09:30', title: 'Cruise departure', description: 'Scenic sail across calm coastal waters.' },
+      { time: '08:30', title: 'Pickup from hotel', description: 'We’ll pick you up from your hotel lobby and take you to the pier.' },
+      { time: '09:30', title: 'Cruise departure', description: 'Enjoy the boat ride along the coast.' },
       { time: '11:00', title: 'Giftun Island stop', description: 'Swim and relax on the sandy beach.' },
       { time: '13:00', title: 'Buffet lunch', description: 'Warm lunch onboard.' },
-      { time: '14:15', title: 'Reef snorkeling', description: 'Exploring colorful coral gardens.' },
+      { time: '14:15', title: 'Reef snorkeling', description: 'Snorkel above colourful coral with your guide.' },
       { time: '16:00', title: 'Return cruise', description: 'Sail back to Hurghada pier.' }
     ],
     included: ['Hotel transfers', 'Boat trip & national park fee', 'Snorkeling equipment', 'Lunch & soft drinks'],
@@ -293,8 +293,8 @@ export const ALL_TOURS: Tour[] = [
       'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80'
     ],
-    shortDescription: 'Ride a 250cc ATV quad bike across desert trails and mountain canyons. Includes test drive and Bedouin tea.',
-    fullDescription: 'Drive a quad bike through the Eastern Desert near Hurghada. After a safety briefing and practice drive at the safari center, follow your guide through wide gravel trails and natural valleys framed by mountains. Stop at a Bedouin tent for herbal tea and rest before riding back.',
+    shortDescription: 'Ride a 250cc quad bike along desert trails near Hurghada. Includes a practice ride and a tea stop.',
+    fullDescription: 'After a safety briefing and practice ride, follow your guide through the desert near Hurghada. Stop at a Bedouin tent for tea and a short break before riding back.',
     highlights: [
       'Dedicated single quad bike for each participant',
       'Comprehensive safety test drive and instruction',
@@ -304,9 +304,9 @@ export const ALL_TOURS: Tour[] = [
     ],
     itinerary: [
       { time: '08:00 or 14:00', title: 'Hotel pickup', description: 'Air-conditioned transfer to desert base station.' },
-      { time: '08:45 or 14:45', title: 'Safety briefing & test drive', description: 'Learn controls and practice in enclosed training yard.' },
-      { time: '09:15 or 15:15', title: 'Quad trail ride', description: 'Guided convoy across wide sand plains and rocky valleys.' },
-      { time: '10:30 or 16:30', title: 'Bedouin tent break', description: 'Rest, herbal tea, and photo opportunities.' },
+      { time: '08:45 or 14:45', title: 'Safety briefing & test drive', description: 'Learn how to use the quad bike and practise before setting off.' },
+      { time: '09:15 or 15:15', title: 'Quad trail ride', description: 'Follow your guide along desert tracks and rocky valleys.' },
+      { time: '10:30 or 16:30', title: 'Bedouin tent break', description: 'Take a break, enjoy some tea and take photos.' },
       { time: '11:15 or 17:15', title: 'Return ride & hotel drop-off', description: 'Ride back to safari center and transfer to hotel.' }
     ],
     included: ['Hotel transfers', 'Single quad bike per driver', 'Safety helmet & instructor', 'Bedouin tea & water'],
@@ -344,8 +344,8 @@ export const ALL_TOURS: Tour[] = [
       'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80'
     ],
-    shortDescription: 'Quad biking, spider dune buggy driving, camel ride, Bedouin village visit, BBQ dinner, and evening folklore show.',
-    fullDescription: 'An afternoon and evening tour in the desert. Drive a quad bike and dune buggy, visit a Bedouin village to see how bread is baked on iron plates, ride a camel at sunset, and dine on an open-air barbecue buffet with music and folklore performances.',
+    shortDescription: 'Drive a quad bike and dune buggy, visit a Bedouin village, ride a camel and enjoy a barbecue dinner with a show.',
+    fullDescription: 'Spend the afternoon and evening in the desert. Ride a quad bike and dune buggy, visit a Bedouin village, see how local bread is made, take a camel ride at sunset and enjoy a barbecue dinner with a show.',
     highlights: [
       'ATV quad ride and spider dune buggy drive',
       'Authentic Bedouin village tour with bread making demonstration',
@@ -355,10 +355,10 @@ export const ALL_TOURS: Tour[] = [
     ],
     itinerary: [
       { time: '13:30', title: 'Hotel pickup', description: 'Transfer from resort lobby to safari station.' },
-      { time: '14:30', title: 'Quad & buggy drives', description: 'Action-packed driving across desert trails.' },
-      { time: '16:00', title: 'Bedouin village arrival', description: 'Tour village, pharmacy, and taste fresh flatbread.' },
-      { time: '17:00', title: 'Sunset camel ride', description: 'Scenic ride as sun sinks behind mountain ridge.' },
-      { time: '18:00', title: 'BBQ dinner & show', description: 'Open-air buffet dinner and folkloric show.' },
+      { time: '14:30', title: 'Quad & buggy drives', description: 'Ride quad bikes and buggies along desert trails.' },
+      { time: '16:00', title: 'Bedouin village arrival', description: 'Visit the village and try freshly made flatbread.' },
+      { time: '17:00', title: 'Sunset camel ride', description: 'Take a camel ride as the sun sets behind the mountains.' },
+      { time: '18:00', title: 'BBQ dinner & show', description: 'Enjoy a barbecue buffet dinner and a traditional show outdoors.' },
       { time: '19:30', title: 'Return transfer', description: 'Drop-off at your hotel.' }
     ],
     included: ['Round-trip transfers', 'Quad bike & spider buggy', 'Bedouin guide & camel ride', 'BBQ dinner & drinks', 'Show'],
@@ -396,8 +396,8 @@ export const ALL_TOURS: Tour[] = [
       'https://images.unsplash.com/photo-1569263979104-865ab7cd8d17?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80'
     ],
-    shortDescription: 'Private yacht charter for up to 8 guests. Choose your stops, snorkel quiet reefs, and enjoy a freshly cooked lunch.',
-    fullDescription: 'Rent a private yacht exclusively for your family or friends. Your captain coordinates the route according to your wishes—visit secluded sandbars, Orange Bay, or quiet snorkeling reefs away from crowds. The onboard cook prepares a fresh lunch while you swim and relax on the sun deck.',
+    shortDescription: 'Enjoy a private yacht trip for up to eight guests. Choose your stops, snorkel and have lunch on board.',
+    fullDescription: 'Book the yacht for your family or friends. Talk with the captain about where you’d like to go, then spend the day swimming, snorkelling and relaxing. Lunch is prepared on board.',
     highlights: [
       'Exclusive private yacht for your party only (up to 8 guests)',
       'Customized route: Orange Bay, Magawish, or Dolphin Reefs',
@@ -406,11 +406,11 @@ export const ALL_TOURS: Tour[] = [
       'Private Mercedes / minivan hotel transfers included'
     ],
     itinerary: [
-      { time: '09:00', title: 'Private hotel transfer', description: 'Direct pickup in private executive vehicle.' },
-      { time: '09:45', title: 'Boarding & captain consultation', description: 'Discuss preferred stops and customize your itinerary.' },
-      { time: '10:30', title: 'Secluded reef snorkeling', description: 'Anchor at quiet reef away from group boats.' },
-      { time: '13:00', title: 'Fresh gourmet lunch', description: 'Seafood and barbecue prepared by private cook.' },
-      { time: '14:30', title: 'Sandbar or island stop', description: 'Swim in shallow turquoise waters at your leisure.' },
+      { time: '09:00', title: 'Private hotel transfer', description: 'A private vehicle will pick you up from your hotel.' },
+      { time: '09:45', title: 'Boarding & captain consultation', description: 'Talk with the captain about where you’d like to stop.' },
+      { time: '10:30', title: 'Secluded reef snorkeling', description: 'Stop at a quieter reef to snorkel.' },
+      { time: '13:00', title: 'Fresh gourmet lunch', description: 'Enjoy seafood or a barbecue prepared on board.' },
+      { time: '14:30', title: 'Sandbar or island stop', description: 'Swim and relax in the shallow water.' },
       { time: '16:45', title: 'Sunset cruise to marina', description: 'Champagne or fresh juice toast during return sail.' }
     ],
     included: ['Entire private yacht charter', 'Captain and 2 crew members', 'Private chef lunch & drinks', 'All park fees & snorkeling gear', 'Private hotel transfers'],
