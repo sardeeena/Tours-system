@@ -6230,15 +6230,16 @@ async function startServer() {
 
       try {
         const indexHtml = fs.readFileSync(indexHtmlPath, 'utf8');
-        const cachedHtml = publicHtmlResponseCache.get(req.path);
+        const publicHtmlCacheKey = req.path.replace(/\/+$/, '') || '/';
+        const cachedHtml = publicHtmlResponseCache.get(publicHtmlCacheKey);
         let rendered: Awaited<ReturnType<typeof renderAwesomeAdventureToursPublicHtml>>;
         if (cachedHtml && cachedHtml.expiresAt > Date.now()) {
           rendered = cachedHtml.rendered;
         } else {
-          if (cachedHtml) publicHtmlResponseCache.delete(req.path);
+          if (cachedHtml) publicHtmlResponseCache.delete(publicHtmlCacheKey);
           rendered = await renderAwesomeAdventureToursPublicHtml(req.path, indexHtml);
           if (rendered.statusCode === 200) {
-            publicHtmlResponseCache.set(req.path, { expiresAt: Date.now() + PUBLIC_HTML_CACHE_TTL_MS, rendered });
+            publicHtmlResponseCache.set(publicHtmlCacheKey, { expiresAt: Date.now() + PUBLIC_HTML_CACHE_TTL_MS, rendered });
             if (publicHtmlResponseCache.size > 100) {
               const oldestKey = publicHtmlResponseCache.keys().next().value;
               if (oldestKey) publicHtmlResponseCache.delete(oldestKey);
