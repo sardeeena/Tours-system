@@ -6092,12 +6092,12 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
   html = html.replace(/<link\s+rel="canonical"[^>]*>/i, `<link rel="canonical" href="${seoHtmlEscape(canonical)}" />`);
   html = html.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '');
   if (localePath) {
-    html = html.replace(/<html\b([^>]*)>/i, (_match, attrs) => '<html' + String(attrs).replace(/\s+lang=["'][^"']*["']/i, '').replace(/\s+dir=["'][^"']*["']/i, '') + ' lang="' + localePath.locale + '" dir="' + (localePath.locale === 'ar' ? 'rtl' : 'ltr') + '">');
+    html = html.replace(/<html\b([^>]*)>/i, (_match, attrs) => '<html' + String(attrs).replace(/\s+lang=["'][^"']*["']/i, '').replace(/\s+dir=["'][^"']*["']/i, '') + ' lang="' + escapeXml(localePath.locale) + '" dir="' + (localePath.locale === 'ar' ? 'rtl' : 'ltr') + '">');
     const alternateLinks: string[] = [];
-    alternateLinks.push('<link rel="alternate" hreflang="en" href="' + origin + path + '">');
-    alternateLinks.push('<link rel="alternate" hreflang="x-default" href="' + origin + path + '">');
+    alternateLinks.push('<link rel="alternate" hreflang="en" href="' + escapeXml(origin + path) + '">');
+    alternateLinks.push('<link rel="alternate" hreflang="x-default" href="' + escapeXml(origin + path) + '">');
     if (localizedTranslation) {
-      alternateLinks.push('<link rel="alternate" hreflang="' + localePath.locale + '" href="' + origin + requestedPath + '">');
+      alternateLinks.push('<link rel="alternate" hreflang="' + escapeXml(localePath.locale) + '" href="' + escapeXml(origin + requestedPath) + '">');
       if (serverSupabase) {
         try {
           const { data: alternatives } = await serverSupabase.from('content_translations')
@@ -6115,7 +6115,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
             const alternatePath = localizedTranslation.entity_type === 'static_page' && alternative.translated_slug === 'home'
               ? '/' + alternative.locale
               : '/' + alternative.locale + routePrefix + encodeURIComponent(alternative.translated_slug);
-            if (alternative.locale !== localePath.locale) alternateLinks.push('<link rel="alternate" hreflang="' + alternative.locale + '" href="' + origin + alternatePath + '">');
+            if (alternative.locale !== localePath.locale) alternateLinks.push('<link rel="alternate" hreflang="' + escapeXml(alternative.locale) + '" href="' + escapeXml(origin + alternatePath) + '">');
           }
         } catch (error) {
           console.warn('[Localized SSR] Reciprocal hreflang lookup failed:', error);
