@@ -1763,9 +1763,12 @@ export async function listAvailabilitySlots(startDate?: string, endDate?: string
     cursor.setUTCDate(cursor.getUTCDate() + 1);
   }
 
-  const [{ data: tours, error: toursError }] = await Promise.all([
-    supabase.from('tours').select('id,title,slug,departure_time').in('id', tourIds),
-  ]);
+  const { data: tours, error: toursError } = await supabase
+    .from('tours')
+    .select('id,title,slug,departure_time')
+    .in('id', tourIds);
+  if (toursError) throw new Error(formatSupabaseError(toursError));
+
   // Bound RPC concurrency: the calendar only needs its visible date window,
   // and a small batch avoids opening one database request per tour at once.
   const scheduleGroups: any[][] = [];
@@ -1784,8 +1787,6 @@ export async function listAvailabilitySlots(startDate?: string, endDate?: string
     }));
     scheduleGroups.push(...batch);
   }
-
-  if (toursError) throw new Error(formatSupabaseError(toursError));
 
   const tourMap = new Map((tours || []).map((tour: any) => [tour.id, tour]));
   const availabilityByKey = new Map<string, any>();
