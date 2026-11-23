@@ -92,6 +92,9 @@ assert(inquiryRoute.includes("isIP(resolvedClientIp)"), 'Inquiry endpoint requir
 assert(server.includes('rateLimitNetworkKey(resolvedIp)'), 'Shared HTTP rate limits normalize IPv6 addresses to a /64 network key');
 assert(server.includes('rateLimitNetworkKey(resolvedClientIp)'), 'Public review database rate limits normalize IPv6 addresses to a /64 network key');
 assert(inquiryRoute.includes('rateLimitNetworkKey(resolvedClientIp)'), 'Public inquiry database rate limits normalize IPv6 addresses to a /64 network key');
+assert(inquiryRoute.includes("p_action: 'public_inquiry_confirmation_email'"), 'Inquiry customer confirmations use an independent per-recipient rate-limit bucket');
+assert(inquiryRoute.includes("p_window_interval: '1 hour'") && inquiryRoute.includes('p_max_hits: 1'), 'An arbitrary mailbox receives at most one inquiry confirmation per hour');
+assert(inquiryRoute.includes('confirmationRateLimitError ? [] : [sendInquiryNotificationEmail({'), 'Customer confirmation is skipped when its recipient quota is reached while staff notification continues');
 assert(server.includes("p_action: 'public_review_tour'"), 'Review submissions have an independent per-tour network budget');
 assert(server.includes("p_action: 'public_review_account'"), 'Signed-in review submissions have an independent per-account budget');
 assert(inquiryRoute.includes("p_action: 'public_inquiry_email'"), 'Inquiry endpoint applies a database-backed per-email rate limit');
