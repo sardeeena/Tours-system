@@ -116,7 +116,7 @@ export const Footer: React.FC<FooterProps> = ({
             </p>
             <div className="flex items-center space-x-2 text-[11px] text-stone-700 dark:text-slate-300">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span>Safety inspected boats and licensed local guides</span>
+              <span>Safety-checked boats and licensed local guides</span>
             </div>
           </div>
 
@@ -258,7 +258,7 @@ export const Footer: React.FC<FooterProps> = ({
                   onClick={onOpenMyBooking}
                   className="text-[#0A6C74] dark:text-[#60C3CC] hover:underline font-semibold cursor-pointer"
                 >
-                  My Booking & Voucher
+                  My booking and voucher
                 </button>
               </li>
               {onOpenHelpInquiry && (
@@ -269,7 +269,7 @@ export const Footer: React.FC<FooterProps> = ({
                     className="text-amber-600 dark:text-amber-300 hover:underline transition-colors flex items-center space-x-1 cursor-pointer"
                   >
                     <HelpCircle className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
-                    <span>Require Help & Concierge</span>
+                    <span>Need help?</span>
                   </button>
                 </li>
               )}
@@ -280,7 +280,7 @@ export const Footer: React.FC<FooterProps> = ({
                     onClick={onOpenLogin}
                     className="hover:text-[#0A6C74] dark:hover:text-white transition-colors cursor-pointer"
                   >
-                    Customer Sign In
+                    Sign in
                   </button>
                 </li>
               )}
@@ -291,7 +291,7 @@ export const Footer: React.FC<FooterProps> = ({
                     onClick={onOpenRegister}
                     className="hover:text-[#0A6C74] dark:hover:text-white transition-colors cursor-pointer"
                   >
-                    Register Account
+                    Create an account
                   </button>
                 </li>
               )}
@@ -302,11 +302,11 @@ export const Footer: React.FC<FooterProps> = ({
                     onClick={onOpenResetPassword}
                     className="hover:text-[#0A6C74] dark:hover:text-white transition-colors cursor-pointer"
                   >
-                    Reset Password
+                    Reset password
                   </button>
                 </li>
               )}
-              <li><a href="/blog" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">Travel Journal</a></li>
+              <li><a href="/blog" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">Travel blog</a></li>
               <li>
                 <a href="/about" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">About Awesome Adventure Tours</a>
               <li>
