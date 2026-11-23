@@ -21,7 +21,7 @@ This is a read-only audit of the production AwesomeAdventure Supabase project `u
 
 All 26 published tours have a short description. The audit found:
 
-- **25 of 26** currently say “Suitable for all ages” in the age guidance. This is a broad safety/eligibility claim and should not be repeated or rewritten as fact until the age limits are confirmed per activity and operator.
+- **25 of 26** currently say “Suitable for all ages” in the age guidance. This is a broad safety/eligibility claim and should not be repeated or rewritten as fact until the age limits are confirmed per activity and operator. The remaining horse-riding tour has no age guidance at all, so it also needs an operator-confirmed minimum age and child participation rules.
 - **23 of 26** direct customers to contact the booking team to confirm cancellation/refund terms. Those pages need clear, product-specific terms before stronger cancellation language is used.
 - **23 of 26** use generic pickup wording that says availability, approved locations and supplements are shown during booking. The booking flow should remain the source of truth for each hotel's eligibility and any charge.
 - No published tour currently has pickup marked unavailable, and none is missing its short description.
@@ -30,7 +30,7 @@ Tour descriptions and associated itinerary, inclusion and exclusion records cont
 
 ### 2. Categories — clear SEO metadata gap
 
-All **8 of 8** published categories have a description, but **all 8 are missing both `seo_title` and `seo_description`**.
+All **8 of 8** published categories have a description, but **all 8 are missing both `seo_title` and `seo_description`**. A separate read-only check also found no `seo_metadata` rows for `entity_type = 'category'`, so there are no saved overrides in the SEO control center either.
 
 | Category | Published tours linked |
 |---|---:|
