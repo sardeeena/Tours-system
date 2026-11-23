@@ -79,7 +79,7 @@ export const StepExtras: React.FC<StepExtrasProps> = ({
           </div>
         ) : (
           /* Extras Grid */
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 pt-1">
             {extrasList.map((extra) => {
               const isSelected = selectedExtraIds.includes(extra.id);
               const qty = extraQuantities[extra.id] || extra.minQuantity || 1;
@@ -95,9 +95,11 @@ export const StepExtras: React.FC<StepExtrasProps> = ({
                       : 'border-stone-200 hover:border-stone-300 hover:bg-stone-50 bg-white'
                   }`}
                 >
-                  <div
+                  <button
+                    type="button"
+                    aria-pressed={isSelected}
                     onClick={() => onToggleExtra(extra.id)}
-                    className="cursor-pointer"
+                    className="w-full cursor-pointer text-left rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="space-y-0.5">
@@ -122,9 +124,9 @@ export const StepExtras: React.FC<StepExtrasProps> = ({
                     <p className="text-[11px] text-stone-600 mt-2 leading-relaxed">
                       {extra.description}
                     </p>
-                  </div>
+                  </button>
 
-                  <div className="pt-3 mt-3 border-t border-stone-200/60 flex items-center justify-between text-xs">
+                  <div className="pt-3 mt-3 border-t border-stone-200/60 flex items-center justify-between gap-2 text-xs flex-wrap">
                     <div>
                       <span className="font-bold text-[#0A6C74] text-xs sm:text-sm">
                         +{formatCurrencyAmount(extra.priceEur, currency)}
@@ -186,7 +188,7 @@ export const StepExtras: React.FC<StepExtrasProps> = ({
 
         <div className="flex items-center space-x-1.5 text-[11px] text-stone-500 pt-1">
           <Info className="w-3.5 h-3.5 text-stone-400 shrink-0" />
-          <span>You can adjust or cancel optional add-ons free of charge up to 24 hours prior to departure.</span>
+          <span>Optional add-ons are included in your total before you confirm. You can review your selections in the booking summary.</span>
         </div>
       </div>
 
