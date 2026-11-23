@@ -43,7 +43,7 @@ All **8 of 8** published categories have a description, but **all 8 are missing 
 | Cultural & Historical Tours | 9 |
 | Private Tours | 3 |
 
-The descriptions are serviceable but generic. Before filling metadata, verify that category-page SEO actually reads these columns; the current source SEO resolver inspected in this branch has explicit route, tour and destination handling, but no category-specific context. Populating unused fields alone would not improve search snippets.
+The descriptions are serviceable but generic. The public category records now expose their SEO title, description and keywords to the `/excursions` category-filter SEO resolver. These are filter-state metadata, not separate category landing pages: all category filters retain the `/excursions` canonical URL. This improves the metadata used when a visitor selects a category, but does not create eight independently indexable landing pages. The live SEO columns remain empty until reviewed copy is approved.
 
 ### 3. Destinations — metadata mostly present, keywords absent
 
@@ -67,7 +67,7 @@ The French, Dutch and Polish JSON files in this PR are review drafts, not approv
 
 1. **Operator verification:** resolve age restrictions, pickup coverage/supplements and cancellation terms for each of the 26 tours with the product/operator owner.
 2. **Tour copy review:** only then tighten titles, summaries, itinerary language and inclusions/exclusions while preserving all verified facts and option-specific differences.
-3. **Category SEO implementation:** confirm category route rendering and metadata resolution end-to-end, then add unique titles/descriptions for the eight published categories and tests that prove the values reach the rendered page.
+3. **Category SEO content:** decide whether the business wants eight dedicated, indexable category landing pages. The current implementation passes category CMS metadata into the selected filter view, which remains canonical to `/excursions`; do not treat that as eight standalone SEO landing pages. Add reviewed category titles/descriptions only after the landing-page and canonical strategy is agreed.
 4. **Destination review:** add relevant keywords only where they accurately match destination inventory and search intent; do not add unsupported attractions or bookability claims.
 5. **Blog editorial review:** check factual freshness, not wholesale rewrite or metadata replacement.
 6. **Translations:** complete native-language and operational review, then import approved records as drafts using the existing checksum-protected workflow. Publication remains a separate release decision.
@@ -78,4 +78,4 @@ The French, Dutch and Polish JSON files in this PR are review drafts, not approv
 - No INSERT, UPDATE or DELETE was run against production.
 - No translation was imported, marked reviewed or published.
 - No tour prices, booking rules, availability, pickup settings, itinerary, inclusions or cancellation terms were changed.
-- No category SEO metadata was populated because the category-page metadata path must be verified first.
+- No category SEO metadata was populated. The selected-filter metadata path now reads the CMS fields, but the fields remain empty and there are no dedicated category landing pages.
