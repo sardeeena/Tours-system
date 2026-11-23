@@ -165,9 +165,7 @@ export function invalidateCatalogueCache() {
   cachedPublishedTours = null;
   cachedDestinations = null;
   cachedCategories = null;
-  clearPublicDataCache('catalogue:tours');
-  clearPublicDataCache('catalogue:destinations');
-  clearPublicDataCache('catalogue:categories');
+  clearPublicDataCache();
 }
 
 export interface TourFilterOptions {
@@ -342,7 +340,17 @@ export async function getPublishedTours(options?: TourFilterOptions, forceRefres
 /**
  * Fetches a single tour by slug with complete relations (for Tour Details and SEO)
  */
-export async function getTourBySlug(slug: string, allowDraft: boolean = false): Promise<Tour | null> {
+export async function getTourBySlug(slug: string, allowDraft: boolean = false, forceRefresh = false): Promise<Tour | null> {
+  const cacheKey = `catalogue:tour:${slug}`;
+  if (!allowDraft && !forceRefresh) {
+    const cached = readPublicDataCache<Tour | null>(cacheKey);
+    if (cached) {
+      if (!cached.isFresh) {
+        void getTourBySlug(slug, false, true).catch((error) => console.warn('Background tour detail refresh failed:', error));
+      }
+      return cached.data;
+    }
+  }
   if (!isSupabaseConfigured() || isSchemaMissing()) {
     if (import.meta.env.PROD) return null;
     const local = localTours.find((t) => t.slug === slug || t.id === slug);
@@ -382,6 +390,7 @@ export async function getTourBySlug(slug: string, allowDraft: boolean = false): 
     }
 
     if (!data) {
+      if (!allowDraft) writePublicDataCache(cacheKey, null);
       return null;
     }
 
@@ -402,7 +411,7 @@ export async function getTourBySlug(slug: string, allowDraft: boolean = false): 
       verifiedBooking: r.verified_booking,
     }));
 
-    return mapDbTourToFrontendTour(data, {
+    const mappedTour = mapDbTourToFrontendTour(data, {
       destinationName: destName,
       categories: catNames,
       images: data.tour_images || [],
@@ -414,6 +423,8 @@ export async function getTourBySlug(slug: string, allowDraft: boolean = false): 
       faqs: data.tour_faqs || [],
       reviews: reviews,
     });
+    if (!allowDraft) writePublicDataCache(cacheKey, mappedTour);
+    return mappedTour;
   } catch (err) {
     console.warn('Error fetching tour by slug:', err);
     return null;
