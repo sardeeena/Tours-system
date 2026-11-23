@@ -177,7 +177,7 @@ Tell me who you're traveling with, your resort area (Hurghada, El Gouna, Makadi 
                 Ask Captain Farouk
                 <Sparkles className="w-3 h-3 text-amber-300 dark:text-[#60C3CC]" />
               </span>
-              <span className="text-[10px] text-teal-100 dark:text-slate-300">AI Tour Concierge</span>
+              <span className="text-[10px] text-teal-100 dark:text-slate-300">Tour assistant</span>
             </div>
           </div>
         )}
@@ -376,7 +376,7 @@ Tell me who you're traveling with, your resort area (Hurghada, El Gouna, Makadi 
                     <span className="w-1.5 h-1.5 bg-[#0A6C74] rounded-full animate-bounce [animation-delay:-0.3s]" />
                     <span className="w-1.5 h-1.5 bg-[#0A6C74] rounded-full animate-bounce [animation-delay:-0.15s]" />
                     <span className="w-1.5 h-1.5 bg-[#0A6C74] rounded-full animate-bounce" />
-                    <span className="text-[10px] text-stone-400 pl-1.5">Consulting fleet schedule...</span>
+                    <span className="text-[10px] text-stone-400 pl-1.5">Checking tour details...</span>
                   </div>
                 </div>
               )}
@@ -411,7 +411,7 @@ Tell me who you're traveling with, your resort area (Hurghada, El Gouna, Makadi 
               </form>
               <div className="flex items-center justify-between text-[10px] text-stone-400 pt-1.5 px-1">
                 <span>Powered by Gemini 3.8 Flash</span>
-                <span>Live Excursion Recommendations</span>
+                <span>Tour suggestions</span>
               </div>
             </div>
 
