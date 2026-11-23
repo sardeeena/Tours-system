@@ -6,7 +6,6 @@ const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf
 const server = read('../server.ts');
 const app = read('../src/App.tsx');
 const locales = read('../src/types/i18n.ts');
-const publicStyles = read('../src/index.css');
 const migration = read('../supabase/migrations/20261116150000_european_localization_foundation.sql');
 const bookingLocaleMigration = read('../supabase/migrations/20261116160000_booking_customer_locale_atomic.sql');
 const expandedBookingLocaleMigration = read('../supabase/migrations/20261116170000_expand_booking_customer_locale_languages.sql');
