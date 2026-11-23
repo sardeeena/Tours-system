@@ -61,12 +61,15 @@ export const StepPayment: React.FC<StepPaymentProps> = ({
         </div>
 
         {/* Payment Options Grid */}
-        <div className="grid grid-cols-1 gap-3.5 pt-1">
+        <div className="grid grid-cols-1 gap-3 pt-1" role="radiogroup" aria-label="Choose a payment method">
           
           {/* Pay on Hotel Pickup (Active Option) */}
-          <div
+          <button
+            type="button"
+            role="radio"
+            aria-checked={paymentMethod === 'pay_at_pickup'}
             onClick={() => onPaymentMethodChange('pay_at_pickup')}
-            className={`p-4 rounded-sm border cursor-pointer transition-all ${
+            className={`w-full text-left p-4 rounded-lg border cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2 ${
               paymentMethod === 'pay_at_pickup'
                 ? 'border-[#0A6C74] bg-[#E8F3F4]/50 ring-1 ring-[#0A6C74]'
                 : 'border-stone-200 hover:border-stone-300 hover:bg-stone-50 bg-white'
@@ -111,7 +114,7 @@ export const StepPayment: React.FC<StepPaymentProps> = ({
               <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-emerald-600 shrink-0" />
               <span>Your booking details are recorded securely. Review the cancellation terms for your selected excursion before submitting.</span>
             </div>
-          </div>
+          </button>
 
           {/* Pay Online (Gateway Coming Soon) */}
           <div className="p-4 rounded-sm border border-stone-200 bg-stone-50/80 opacity-85">
@@ -215,7 +218,7 @@ export const StepPayment: React.FC<StepPaymentProps> = ({
       </div>
 
       {/* Navigation & Submit CTA */}
-      <div className="flex items-center justify-between pt-2">
+      <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
         <button
           type="button"
           disabled={isSubmitting}
@@ -230,7 +233,7 @@ export const StepPayment: React.FC<StepPaymentProps> = ({
           type="button"
           disabled={!termsAccepted || isSubmitting}
           onClick={onSubmitBooking}
-          className="px-8 py-3.5 bg-[#0A6C74] hover:bg-[#08565C] disabled:bg-stone-300 disabled:cursor-not-allowed text-white text-xs sm:text-sm font-bold rounded-sm transition-all shadow-md flex items-center justify-center space-x-2"
+          className="w-full sm:w-auto px-6 sm:px-8 py-3.5 bg-[#0A6C74] hover:bg-[#08565C] disabled:bg-stone-300 disabled:cursor-not-allowed text-white text-xs sm:text-sm font-bold rounded-sm transition-all shadow-md flex items-center justify-center space-x-2"
         >
           {isSubmitting ? (
             <div className="flex items-center space-x-2">
