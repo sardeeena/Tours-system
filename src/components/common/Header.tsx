@@ -354,28 +354,6 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Action Controls */}
         <div className="hidden 2xl:flex items-center space-x-1.5 2xl:space-x-1.5 shrink-0">
 
-          {/* Desktop language selector */}
-          <label className="inline-flex items-center gap-1 rounded-lg border border-stone-300/70 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 px-1.5 py-1.5 text-xs text-stone-700 dark:text-slate-200">
-            <Globe className="h-4 w-4 text-[#0A6C74] dark:text-[#60C3CC]" aria-hidden="true" />
-            <span className="sr-only">Website language</span>
-            <select
-              aria-label="Website language"
-              value={language}
-              onChange={(event) => {
-                const nextLanguage = event.target.value as LanguageCode;
-                setLanguage(nextLanguage);
-                void recordVisitorEvent({ event_name: 'language_changed', page_path: window.location.pathname, event_data: { language: nextLanguage } });
-              }}
-              className="max-w-[6rem] bg-transparent text-xs font-semibold text-inherit outline-none cursor-pointer"
-            >
-              {supportedLanguages.map((langItem) => (
-                <option key={langItem.code} value={langItem.code}>
-                  {langItem.localName}
-                </option>
-              ))}
-            </select>
-          </label>
-
           {/* User Auth Section */}
           {user ? (
             <div className="relative" ref={userMenuRef}>
@@ -542,31 +520,10 @@ export const Header: React.FC<HeaderProps> = ({
           <a
             href="/blog"
             aria-label="Visit the Awesome Adventure Tours blog"
-            className="hidden sm:inline-flex min-h-11 items-center justify-center rounded-lg border border-[#0A6C74]/30 bg-[#E8F3F4] px-3 py-1.5 text-xs font-bold text-[#0A6C74] dark:border-teal-400/30 dark:bg-teal-950/50 dark:text-teal-300 whitespace-nowrap"
+            className="inline-flex min-h-11 items-center justify-center rounded-lg border border-[#0A6C74]/30 bg-[#E8F3F4] px-3 py-1.5 text-xs font-bold text-[#0A6C74] dark:border-teal-400/30 dark:bg-teal-950/50 dark:text-teal-300 whitespace-nowrap"
           >
             Blog
           </a>
-
-          <label className="inline-flex 2xl:hidden items-center gap-1 rounded-lg border border-stone-300/70 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 px-1.5 sm:px-2 py-1.5 text-xs text-stone-700 dark:text-slate-200">
-            <Globe className="h-4 w-4 text-[#0A6C74] dark:text-[#60C3CC]" aria-hidden="true" />
-            <span className="sr-only">Website language</span>
-            <select
-              aria-label="Website language"
-              value={language}
-              onChange={(event) => {
-                const nextLanguage = event.target.value as LanguageCode;
-                setLanguage(nextLanguage);
-                void recordVisitorEvent({ event_name: 'language_changed', page_path: window.location.pathname, event_data: { language: nextLanguage } });
-              }}
-              className="max-w-[4.5rem] sm:max-w-[6.5rem] bg-transparent text-xs font-semibold text-inherit outline-none cursor-pointer"
-            >
-              {supportedLanguages.map((langItem) => (
-                <option key={langItem.code} value={langItem.code}>
-                  {langItem.localName}
-                </option>
-              ))}
-            </select>
-          </label>
 
           <button
             type="button"
@@ -829,6 +786,33 @@ export const Header: React.FC<HeaderProps> = ({
                 <span>{t('nav.findMyBooking')}</span>
               </button>
               <a href="/support" onClick={() => setMobileMenuOpen(false)} className="text-left py-2 px-3 rounded hover:bg-stone-100 dark:hover:bg-slate-800/60 font-semibold text-[#0A6C74] dark:text-teal-300">Help & support</a>
+
+              {/* Language selection belongs in the navigation menu, not the compact header bar. */}
+              <section aria-labelledby="mobile-language-heading" className="pt-3 border-t border-stone-200 dark:border-slate-700 space-y-2">
+                <h2 id="mobile-language-heading" className="px-3 text-xs font-bold uppercase tracking-wider text-stone-500 dark:text-slate-400">Website language</h2>
+                <label className="flex items-center gap-2 rounded-lg border border-stone-200 dark:border-slate-700 bg-white/80 dark:bg-slate-800/70 px-3 py-2.5 text-sm font-semibold text-stone-800 dark:text-slate-100">
+                  <Globe className="h-4 w-4 shrink-0 text-[#0A6C74] dark:text-[#60C3CC]" aria-hidden="true" />
+                  <span className="sr-only">Choose website language</span>
+                  <select
+                    aria-label="Choose website language"
+                    value={language}
+                    onChange={(event) => {
+                      const nextLanguage = event.target.value as LanguageCode;
+                      setLanguage(nextLanguage);
+                      void recordVisitorEvent({ event_name: 'language_changed', page_path: window.location.pathname, event_data: { language: nextLanguage } });
+                      setMobileMenuOpen(false);
+                    }}
+                    className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-inherit outline-none cursor-pointer"
+                  >
+                    {supportedLanguages.map((langItem) => (
+                      <option key={langItem.code} value={langItem.code}>
+                        {langItem.localName}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="h-4 w-4 shrink-0 text-stone-500" aria-hidden="true" />
+                </label>
+              </section>
 
               <div className="pt-3 border-t border-stone-200 flex flex-col space-y-2">
                 <button
