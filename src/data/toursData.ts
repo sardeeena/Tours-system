@@ -449,7 +449,7 @@ export const ALL_TOURS: Tour[] = [
       'https://images.unsplash.com/photo-1569263979104-865ab7cd8d17?auto=format&fit=crop&w=1200&q=80'
     ],
     shortDescription: 'Private cruiser departing Abu Tig Marina. Cruise through El Gouna channels, visit quiet northern reefs, and relax on sandbars.',
-    fullDescription: 'Depart directly from Abu Tig Marina in El Gouna on a private boat for up to 6 guests. Cruise along lagoon waterways into open water to snorkel northern reefs known for clear visibility and marine life. Includes soft drinks, fruit platter, and snorkeling gear.',
+    fullDescription: 'Set off from Abu Tig Marina in El Gouna on a private boat for up to six guests. Cruise through the lagoons and out to nearby reefs for a snorkel. Soft drinks, fruit and snorkelling gear are included.',
     highlights: [
       'Direct departure from Abu Tig Marina in El Gouna',
       'Private boat with sun shade and swimming ladder',
@@ -501,7 +501,7 @@ export const ALL_TOURS: Tour[] = [
       'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=1200&q=80'
     ],
     shortDescription: 'No license needed. Try scuba diving with a certified PADI instructor by your side. Includes 2 shallow boat dives and lunch.',
-    fullDescription: 'Designed for complete beginners who want to try scuba diving safely. On the cruise out, your instructor explains breathing, equalizing, and hand signals. You do two separate 20-minute shallow dives (max 6-7 meters) with your instructor holding your hand throughout. Between dives, relax on the sun deck and enjoy lunch.',
+    fullDescription: 'New to scuba diving? Your instructor will explain the basics on the way out, then guide you through two 20-minute beginner dives at a maximum depth of 6–7 metres. Relax on the sun deck between dives and enjoy lunch on board.',
     highlights: [
       'No previous diving experience or swimming expertise required',
       'Two separate shallow dives with your own instructor',
@@ -554,7 +554,7 @@ export const ALL_TOURS: Tour[] = [
       'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=1200&q=80'
     ],
     shortDescription: 'Sail to the protected Sha’ab Samadai marine reserve to snorkel near wild dolphins in calm natural lagoons.',
-    fullDescription: 'Sha’ab Samadai is a protected marine reserve in southern Egypt where families of spinner dolphins rest in natural lagoons. Snorkel in the designated lagoon zone with marine guides, then explore outer coral drop-offs. Includes hotel pickup across Marsa Alam and lunch onboard.',
+    fullDescription: 'Visit Sha’ab Samadai, a protected marine reserve near Marsa Alam where spinner dolphins are sometimes seen. Snorkel in the permitted area with a guide, then explore nearby reefs. Hotel pickup and lunch on board are included.',
     highlights: [
       'Protected national marine park with regulated dolphin access',
       'High chance to see spinner dolphins in calm waters',
@@ -606,7 +606,7 @@ export const ALL_TOURS: Tour[] = [
       'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=1200&q=80'
     ],
     shortDescription: 'Snorkel straight from a sandy beach without a boat. Includes private bay entry, sun loungers, swimming pool, and lunch.',
-    fullDescription: 'Sharm El Naga is a protected bay south of Hurghada where coral reefs grow just a few meters from the shore. Ideal for families, children, and travelers who prefer walking into the water from the beach rather than taking a boat. Loungers, freshwater pool, and restaurant buffet lunch are included.',
+    fullDescription: 'Visit Sharm El Naga, a protected bay south of Hurghada where coral reefs are close to the beach. It’s a good option if you’d rather walk into the water than take a boat. Sun loungers, a freshwater pool and buffet lunch are included.',
     highlights: [
       'Direct beach-entry snorkeling without needing a boat',
       'Access to fresh-water swimming pool, showers, and shaded loungers',
@@ -656,7 +656,7 @@ export const ALL_TOURS: Tour[] = [
       'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80'
     ],
     shortDescription: 'View corals and fish through underwater glass windows without getting wet. Sail past sunken pillars with an optional swim stop.',
-    fullDescription: 'Great for children, non-swimmers, and anyone wanting a short 2.5-hour trip. Look through deep panoramic glass panels to watch coral reefs and marine life in calm bay waters. Includes a short swimming stop and hotel transfer.',
+    fullDescription: 'A 2.5-hour trip for anyone who wants to see the underwater world without spending the day on a boat. Look through the submarine’s glass panels to spot coral and fish, with a short swimming stop and hotel transfer included.',
     highlights: [
       'Large submerged glass viewing windows',
       'Cruise past Sahl Hasheesh sunken columns',
@@ -704,8 +704,8 @@ export const ALL_TOURS: Tour[] = [
       'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
       'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80'
     ],
-    shortDescription: 'Cruise through the marine sanctuary of Ras Mohammed National Park, step onto the crystal sandbar of White Island, snorkel coral walls, and enjoy an onboard seafood buffet.',
-    fullDescription: 'Sail along the dramatic coastline of South Sinai into the protected marine sanctuary of Ras Mohammed National Park. Cruise to the famous White Island sandbar, explore vibrant coral reef walls, and enjoy a freshly prepared open seafood & grill buffet onboard.',
+    shortDescription: 'Visit Ras Mohammed National Park by boat, stop at White Island’s sandbar and snorkel along the coral reefs. Lunch is served on board.',
+    fullDescription: 'Sail along the coast of South Sinai to Ras Mohammed National Park. Stop at White Island’s sandbar, snorkel along the reef and enjoy a seafood and grill buffet on board.',
     highlights: [
       'Cruise to Ras Mohammed National Park, Egypt’s oldest protected marine reserve',
       'Walk on the pristine shifting sands of White Island',
@@ -716,9 +716,9 @@ export const ALL_TOURS: Tour[] = [
     itinerary: [
       { time: '08:00', title: 'Hotel Pickup', description: 'Air-conditioned transfer from your Sharm resort to the marina.' },
       { time: '09:00', title: 'Yacht Departure', description: 'Welcome briefing, safety orientation, and cruise out towards South Sinai.' },
-      { time: '10:30', title: 'First Snorkeling Session', description: 'Guided exploration along protected coral reef walls with clownfish and sea turtles.' },
+      { time: '10:30', title: 'First snorkelling stop', description: 'Snorkel along the reef with a guide. You may spot colourful fish and, if you’re lucky, turtles.' },
       { time: '12:00', title: 'White Island Sandbar Stop', description: 'Tender boat transfer to the turquoise shallows and sandbar of White Island.' },
-      { time: '13:30', title: 'Fresh Buffet Lunch Onboard', description: 'Generous open buffet featuring grilled fish, chicken, pastas, and oriental mezze.' },
+      { time: '13:30', title: 'Lunch on board', description: 'Enjoy a buffet with grilled fish, chicken, pasta and local sides.' },
       { time: '14:45', title: 'Second Snorkeling Stop', description: 'Afternoon swim among sea fans and schooling anthias.' },
       { time: '16:30', title: 'Return to Marina & Hotel Drop-off', description: 'Scenic sail back to Sharm El-Sheikh and transfer back to your lobby.' }
     ],
@@ -835,7 +835,7 @@ export const POPULAR_DESTINATIONS: Destination[] = [
     image: 'https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?auto=format&fit=crop&w=800&q=80',
     tagline: 'Sinai marine jewel with Ras Mohammed drop-offs & White Island',
     tourCount: ALL_TOURS.filter((tour) => tour.destination === 'Sharm El-Sheikh').length,
-    description: 'The premier resort of the southern Sinai peninsula, famed for dramatic drop-off reef walls at Ras Mohammed National Park, the crystal waters of White Island, and the straits of Tiran.',
+    description: 'A popular Red Sea resort known for its diving and snorkelling, with trips to Ras Mohammed National Park, White Island and the Straits of Tiran.',
     highlights: ['Ras Mohammed National Park', 'White Island sandbar cruise', 'Straits of Tiran reefs', 'Naama Bay marina departures'],
     distanceFromAirport: '15 mins from Sharm El-Sheikh Airport (SSH)',
   }
