@@ -113,9 +113,9 @@ for (const record of records.filter((x) => ['tour','blog_post','destination'].in
 
 const staticRecords = records.filter((record) => record.entity_type === 'static_page');
 const homeSource = {
-  title:'Explore Egypt’s Red Sea Coast',
-  heroHeadline:'Explore Egypt’s Red Sea Coast',
-  heroSubtitle:'Boat trips, island visits, snorkeling, diving and desert safaris across Egypt’s Red Sea coast.',
+  title:'See the Red Sea with Awesome Adventure Tours',
+  heroHeadline:'See the Red Sea with Awesome Adventure Tours',
+  heroSubtitle:'Join us in Hurghada for boat trips, island days, snorkelling, diving and desert safaris. Browse the trips, see what’s included and message our team if you have a question.',
   sections:[], paragraphs:[],
 };
 const staticSources = [homeSource, ...INITIAL_STATIC_PAGES];
