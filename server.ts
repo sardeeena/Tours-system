@@ -5,6 +5,7 @@ import { isIP } from 'node:net';
 import { GoogleGenAI } from '@google/genai';
 import { generateContentWithModelFallback, getGeminiProviderErrorDetails } from './src/server/geminiTranslationFallback';
 import { validateTranslationBatchResponse } from './src/server/translationBatchResponse';
+import { rateLimitNetworkKey } from './src/server/rateLimitNetwork';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import path from 'path';
 import fs from 'fs';
@@ -279,7 +280,8 @@ function rateLimit(maxRequests = 60, windowMs = 60_000) {
   return (req: Request, res: Response, next: NextFunction) => {
     // Express req.ip is derived from the explicitly configured trusted proxy.
     // Never trust a raw client-supplied X-Forwarded-For value as a fallback.
-    const ip = req.ip || req.socket.remoteAddress || 'unknown';
+    const resolvedIp = (req.ip || req.socket.remoteAddress || 'unknown').trim();
+    const ip = isIP(resolvedIp) ? rateLimitNetworkKey(resolvedIp) : resolvedIp;
     const key = `${req.baseUrl || req.path}:${ip}`;
     const now = Date.now();
     let bucket = rateLimitBuckets.get(key);
@@ -1997,7 +1999,134 @@ async function sendInquiryNotificationEmail(params: {
   }
 }
 
-app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(5, 10 * 60_000), async (req: Request, res: Response) => {
+// Public review submissions are available to guests and signed-in customers.
+// Writes use the server-only service-role client; browser roles never receive review INSERT access.
+app.post('/api/reviews/submit', rateLimit(30, 10 * 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};
+  const { tourId, tourSlug, authorName, country, countryCode, rating, comment, travelerType, website_url_hp } = body;
+
+  if (typeof website_url_hp !== 'undefined' && typeof website_url_hp !== 'string') {
+    return res.status(400).json({ success: false, error: 'Invalid review submission.' });
+  }
+  // Honeypot submissions are accepted without persistence so bots do not learn the rule.
+  if (typeof website_url_hp === 'string' && website_url_hp.trim()) {
+    return res.status(201).json({ success: true, status: 'pending' });
+  }
+  if (typeof authorName !== 'string' || typeof comment !== 'string'
+    || (typeof tourId !== 'undefined' && typeof tourId !== 'string')
+    || (typeof tourSlug !== 'undefined' && typeof tourSlug !== 'string')
+    || (typeof country !== 'undefined' && typeof country !== 'string')
+    || (typeof countryCode !== 'undefined' && typeof countryCode !== 'string')
+    || (typeof travelerType !== 'undefined' && typeof travelerType !== 'string')) {
+    return res.status(400).json({ success: false, error: 'Please check your review details and try again.' });
+  }
+
+  const cleanName = authorName.trim().replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 100);
+  const cleanComment = comment.trim().replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, '').slice(0, 2000);
+  const cleanCountry = typeof country === 'string' ? country.trim().slice(0, 80) : 'International';
+  const cleanCountryCode = typeof countryCode === 'string' && /^[A-Za-z]{2}$/.test(countryCode.trim())
+    ? countryCode.trim().toUpperCase() : null;
+  const allowedTravelerTypes = ['Couple', 'Family', 'Solo', 'Friends'];
+  const cleanTravelerType = typeof travelerType === 'string' && allowedTravelerTypes.includes(travelerType)
+    ? travelerType : 'Couple';
+  const cleanTourId = typeof tourId === 'string' ? tourId.trim() : '';
+  const cleanTourSlug = typeof tourSlug === 'string' ? tourSlug.trim().slice(0, 180) : '';
+
+  if (cleanName.length < 2 || cleanComment.length < 20 || !Number.isInteger(rating) || rating < 1 || rating > 5
+    || (!cleanTourId && !cleanTourSlug)) {
+    return res.status(400).json({ success: false, error: 'Please provide your name, a review of at least 20 characters, a rating, and the tour.' });
+  }
+  if (cleanTourId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(cleanTourId)) {
+    return res.status(400).json({ success: false, error: 'The selected tour could not be verified.' });
+  }
+  const resolvedClientIp = typeof req.ip === 'string' ? req.ip.trim() : '';
+  if (!resolvedClientIp || !isIP(resolvedClientIp)) {
+    return res.status(503).json({ success: false, error: 'Review service is temporarily unavailable. Please try again later.' });
+  }
+  const clientIp = rateLimitNetworkKey(resolvedClientIp);
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
+    return res.status(503).json({ success: false, error: 'Review service is temporarily unavailable. Please try again later.' });
+  }
+
+  try {
+    const { error: rateLimitError } = await serverSupabase.rpc('check_atomic_rate_limit', {
+      p_action: 'public_review_ip',
+      p_identifier: createHash('sha256').update(clientIp).digest('hex'),
+      p_window_interval: '10 minutes',
+      p_max_hits: 30,
+      p_error_message: 'Too many reviews have been submitted from your network. Please wait before trying again.',
+    });
+    if (rateLimitError) {
+      if (rateLimitError.code === 'P0001') return res.status(429).json({ success: false, error: rateLimitError.message });
+      console.error('Review rate-limit check failed:', rateLimitError.message);
+      return res.status(503).json({ success: false, error: 'Review service is temporarily unavailable. Please try again later.' });
+    }
+
+    let tourQuery = serverSupabase.from('tours').select('id, slug').eq('status', 'published').eq('is_exclusive', false);
+    if (cleanTourId) tourQuery = tourQuery.eq('id', cleanTourId);
+    else tourQuery = tourQuery.eq('slug', cleanTourSlug);
+    const { data: tour, error: tourError } = await tourQuery.maybeSingle();
+    if (tourError || !tour || (cleanTourSlug && tour.slug !== cleanTourSlug)) {
+      return res.status(400).json({ success: false, error: 'The selected tour is no longer available for reviews.' });
+    }
+
+    // A separate per-tour network budget limits queue flooding without allowing
+    // address rotation inside an IPv6 /64 to bypass the global network budget.
+    const { error: tourRateLimitError } = await serverSupabase.rpc('check_atomic_rate_limit', {
+      p_action: 'public_review_tour',
+      p_identifier: createHash('sha256').update(`${clientIp}:${tour.id}`).digest('hex'),
+      p_window_interval: '1 hour',
+      p_max_hits: 10,
+      p_error_message: 'Too many reviews for this tour have been submitted from your network. Please try again later.',
+    });
+    if (tourRateLimitError) {
+      if (tourRateLimitError.code === 'P0001') return res.status(429).json({ success: false, error: tourRateLimitError.message });
+      console.error('Review per-tour rate-limit check failed:', tourRateLimitError.message);
+      return res.status(503).json({ success: false, error: 'Review service is temporarily unavailable. Please try again later.' });
+    }
+
+    // Signed-in customers also receive an independent account budget, so sharing
+    // an address with other guests does not let one account post repeatedly.
+    if (req.user?.id) {
+      const { error: accountRateLimitError } = await serverSupabase.rpc('check_atomic_rate_limit', {
+        p_action: 'public_review_account',
+        p_identifier: createHash('sha256').update(req.user.id).digest('hex'),
+        p_window_interval: '1 hour',
+        p_max_hits: 5,
+        p_error_message: 'You have reached the review limit for your account. Please wait an hour before trying again.'
+      });
+      if (accountRateLimitError) {
+        if (accountRateLimitError.code === 'P0001') return res.status(429).json({ success: false, error: accountRateLimitError.message });
+        console.error('Review account rate-limit check failed:', accountRateLimitError.message);
+        return res.status(503).json({ success: false, error: 'Review service is temporarily unavailable. Please try again later.' });
+      }
+    }
+
+    const { data: review, error: insertError } = await serverSupabase.from('reviews').insert({
+      tour_id: tour.id,
+      author_name: cleanName,
+      country: cleanCountry || 'International',
+      country_code: cleanCountryCode,
+      rating,
+      comment: cleanComment,
+      traveler_type: cleanTravelerType,
+      verified_booking: false,
+      is_published: false,
+      date: new Date().toISOString().slice(0, 10),
+    }).select('id').single();
+
+    if (insertError || !review) {
+      console.error('Public review insert failed:', insertError?.message || 'No review row returned.');
+      return res.status(503).json({ success: false, error: 'Your review could not be saved. Please try again.' });
+    }
+    return res.status(201).json({ success: true, reviewId: review.id, status: 'pending' });
+  } catch (error: any) {
+    console.error('Public review submission failed:', error?.message || error);
+    return res.status(503).json({ success: false, error: 'Review service is temporarily unavailable. Please try again later.' });
+  }
+});
+
+app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(15, 10 * 60_000), async (req: Request, res: Response) => {
   const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};
   const { name, email, phone, inquiryType = 'general_question', message, website_url_hp } = body;
 
@@ -2033,11 +2162,12 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
 
   // The generic path-based middleware is defense in depth. This canonical IP bucket
   // also covers case and trailing-slash route aliases and service-role database writes.
-  const clientIp = typeof req.ip === 'string' ? req.ip.trim() : '';
-  if (!clientIp || !isIP(clientIp)) {
+  const resolvedClientIp = typeof req.ip === 'string' ? req.ip.trim() : '';
+  if (!resolvedClientIp || !isIP(resolvedClientIp)) {
     console.error('Inquiry endpoint could not determine a valid client IP.');
     return res.status(503).json({ success: false, error: 'Inquiry service is temporarily unavailable. Please try again later.' });
   }
+  const clientIp = rateLimitNetworkKey(resolvedClientIp);
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
     return res.status(503).json({ success: false, error: 'Secure inquiry database service is not configured or unavailable.' });
   }
@@ -2064,7 +2194,7 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
       p_action: 'public_inquiry_ip',
       p_identifier: createHash('sha256').update(clientIp).digest('hex'),
       p_window_interval: '10 minutes',
-      p_max_hits: 10,
+      p_max_hits: 30,
       p_error_message: 'Too many inquiries submitted from your network. Please wait a few minutes before trying again.',
     });
     if (ipRateLimitError) {
@@ -2077,7 +2207,8 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
 
     const currentYear = new Date().getFullYear();
     const ticketNumber = `INQ-${currentYear}-${Math.floor(1000 + Math.random() * 9000)}`;
-    const inquirySubject = inquiryType === 'general_question' ? 'General Excursion Question' : inquiryType.trim().slice(0, 120) || 'General Excursion Question';
+    const cleanInquiryType = inquiryType.trim().replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 120);
+    const inquirySubject = cleanInquiryType === 'general_question' ? 'General Excursion Question' : cleanInquiryType || 'General Excursion Question';
     const { data, error } = await serverSupabase
       .from('inquiries')
       .insert({
@@ -2099,6 +2230,19 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
     }
 
     const reservationEmail = process.env.BOOKING_NOTIFICATION_EMAIL?.trim() || 'reservation@awesomeadventure.tours';
+    // Do not let the public inquiry form be used to repeatedly email arbitrary
+    // third-party addresses. A recipient gets at most one confirmation per hour;
+    // the staff notification and inquiry record still proceed for every valid inquiry.
+    const { error: confirmationRateLimitError } = await serverSupabase.rpc('check_atomic_rate_limit', {
+      p_action: 'public_inquiry_confirmation_email',
+      p_identifier: createHash('sha256').update(cleanEmail).digest('hex'),
+      p_window_interval: '1 hour',
+      p_max_hits: 1,
+      p_error_message: 'A confirmation email was already sent to this address recently.',
+    });
+    if (confirmationRateLimitError && confirmationRateLimitError.code !== 'P0001') {
+      console.error('Inquiry confirmation email rate-limit check failed:', confirmationRateLimitError.message);
+    }
     await Promise.all([
       sendInquiryNotificationEmail({
         recipientEmail: reservationEmail,
@@ -2119,13 +2263,13 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
           cleanMessage,
         ].join('\n'),
       }),
-      sendInquiryNotificationEmail({
+      ...(confirmationRateLimitError ? [] : [sendInquiryNotificationEmail({
         recipientEmail: cleanEmail,
         customerName: cleanName,
         templateKey: 'inquiry_customer_confirmation',
         subject: 'We received your message — Awesome Adventure Tours',
         content: `Hello ${cleanName},\n\nThank you for contacting Awesome Adventure Tours. We have received your inquiry (reference ${data.id}) and our team will respond within 2 hours during Egypt Pier Desk hours.\n\nIf your question is urgent, you can contact our reservations team at reservation@awesomeadventure.tours.\n\nAwesome Adventure Tours`,
-      }),
+      })]),
     ]);
     return res.status(201).json({
       success: true,

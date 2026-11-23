@@ -33,6 +33,7 @@ The exact technical and user-management route list is enforced by the automated 
 |---|---|---|
 | Public | `/api/chat`, `/api/health`, `/api/health/ready`, `/api/config`, `/api/tours` | Public liveness/readiness only; readiness exposes dependency state without secrets; catalogue fails closed |
 | Booking/contact | `/api/bookings/create`, `/api/inquiries*`, `/api/contact` | Input validation, rate limits, booking-specific controls |
+| Reviews | `POST /api/reviews/submit` | Public for guests and signed-in customers; strict validation, published-tour lookup, IPv4/per-IPv6-/64 network limits plus per-tour/per-account atomic quotas, honeypot, pending moderation; server-only service-role write |
 | Newsletter | `/api/newsletter*` | Subscription/unsubscribe validation and rate limits |
 | Visitor privacy | `/api/visitor/consent`, `/api/visitor/events` | Consent-aware, minimized telemetry |
 | Provider callbacks | `/api/webhooks/resend`, `/api/webhooks/whatsapp` | Provider signature/verification; no browser staff permission |
@@ -41,6 +42,22 @@ The exact technical and user-management route list is enforced by the automated 
 ## Important scope boundary
 
 Most admin CRUD screens use the Supabase client directly. Their effective authorization is enforced by Postgres RLS policies and restricted RPCs. A server-route audit cannot certify those paths. Changes to table policies, privileged functions, storage policies, or role/permission assignment flows require their own database-focused review and pgTAP coverage.
+
+## Customer-facing permission boundaries
+
+| Customer action | Access model | Notes |
+|---|---|---|
+| Guest booking | Public server endpoint / guarded booking RPC | No direct anonymous writes to booking tables; server validates booking and uses trusted database operations. |
+| Signed-in booking access | Authenticated, owner-scoped RLS | Customers can read their own bookings; update triggers limit self-service changes to pickup/contact details and cancellation requests. |
+| Guest contact / inquiry | Public server endpoint | Validation, honeypot, IPv6-network and per-email rate limits; customer confirmation email is capped at one per recipient per hour; database writes use the server-only key. |
+| Newsletter signup / unsubscribe | Public server endpoint | Subscription state is not writable directly by anonymous browser clients. |
+| Tour reviews | Public server endpoint | Guest and signed-in submissions are accepted; reviews remain pending and unverified until staff moderation. |
+| Support tickets | Authenticated customer portal | Ticket ownership is tied to an Auth user ID. Guests use the public inquiry/contact flow instead; internal notes and staff queues remain permission-gated. |
+| Customer profile | Auth signup lifecycle + owner-scoped RLS | Customers can access their own profile; role, confirmation, and server-managed fields are protected by database triggers. |
+| Customer CRM record | Owner-scoped RLS + protected update trigger | Self-service edits are limited to contact and preference fields; CRM/booking-derived fields remain protected. |
+| File uploads | Storage bucket RLS | Avatars and tour media are public-read; avatar uploads are user-folder scoped; vouchers and support attachments are private and permission/ticket scoped. |
+
+The live audit found 76 public tables with RLS enabled and no public table missing RLS. It found anonymous DML grants on 45 public tables, including read-only catalogue tables, plus default privileges for both postgres and the Supabase-managed supabase_admin role. The migration removes anonymous table writes and sequence access, restores SELECT only where an explicit anon/PUBLIC SELECT policy exists, and revokes future anonymous defaults for application objects created by postgres. The supabase_admin default ACL is platform-owned and cannot be changed by the application migration role; it remains a documented operational follow-up. Existing guest booking, availability, lookup, and cancellation RPCs retain their explicit execute grants.
 
 ## Change procedure
 

@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { rateLimitNetworkKey } from '../src/server/rateLimitNetwork';
 
 /**
  * Static, side-effect-free security regression checks.
@@ -26,6 +27,19 @@ function assert(condition: boolean, description: string) {
 }
 
 console.log('Abuse prevention, rate limiting and booking fail-closed source checks');
+
+const ipv6A = rateLimitNetworkKey('2001:db8:abcd:1234::1');
+const ipv6B = rateLimitNetworkKey('2001:db8:abcd:1234:ffff::abcd');
+const ipv6OtherNetwork = rateLimitNetworkKey('2001:db8:abcd:1235::1');
+assert(ipv6A === ipv6B, 'IPv6 privacy-address rotation within one /64 shares a rate-limit principal');
+assert(ipv6A !== ipv6OtherNetwork, 'Different IPv6 /64 networks retain independent rate-limit principals');
+assert(rateLimitNetworkKey('192.0.2.10') !== rateLimitNetworkKey('192.0.2.11'), 'IPv4 addresses remain individually rate-limited');
+assert(rateLimitNetworkKey('::ffff:192.0.2.10') === rateLimitNetworkKey('192.0.2.10'), 'IPv4-mapped IPv6 addresses normalize to the corresponding IPv4 principal');
+assert(rateLimitNetworkKey('0:0:0:0:0:ffff:c000:020a') === rateLimitNetworkKey('192.0.2.10'), 'Hexadecimal IPv4-mapped IPv6 addresses normalize to the corresponding IPv4 principal');
+assert(rateLimitNetworkKey('fe80::1%eth0') === rateLimitNetworkKey('fe80::1'), 'IPv6 zone identifiers are stripped before network normalization');
+assert(rateLimitNetworkKey('::ffff:192.0.2.10%eth0') === rateLimitNetworkKey('192.0.2.10'), 'Zone-indexed IPv4-mapped IPv6 addresses normalize to IPv4');
+
+
 
 // Inquiry honeypot must short-circuit before rate-limit, CRM and database work.
 const inquiry = read('src/services/inquiryService.ts');
@@ -63,6 +77,7 @@ assert(migration.includes('REVOKE ALL ON TABLE public.rate_limit_buckets FROM PU
 
 // Public API validation must reject hostile JSON types before string operations.
 const server = read('server.ts');
+assert(server.includes("(req.ip || req.socket.remoteAddress || 'unknown').trim()"), 'Shared rate limiter trims proxy-derived client addresses before validation');
 const emailHelper = server.slice(server.indexOf('function normalizeSenderEmail'), server.indexOf('// ------------------------------------------------------------------------------', server.indexOf('function normalizeSenderEmail')));
 assert(emailHelper.includes("if (typeof value !== 'string') return ''"), 'Email normalization safely rejects non-string input');
 assert(emailHelper.includes("if (typeof email !== 'string' || email.length > 254) return false"), 'Email validation safely rejects non-string and oversized input');
@@ -72,7 +87,16 @@ const inquiryRoute = server.slice(inquiryRouteStart, inquiryRouteEnd);
 assert(inquiryRoute.includes("req.body && typeof req.body === 'object' && !Array.isArray(req.body)"), 'Inquiry endpoint normalizes malformed request bodies');
 assert(inquiryRoute.includes("typeof email !== 'string'"), 'Inquiry endpoint rejects non-string email values before validation');
 assert(inquiryRoute.includes("typeof phone !== 'undefined' && phone !== null && typeof phone !== 'string'"), 'Inquiry endpoint rejects non-string phone values');
-assert(inquiryRoute.includes("isIP(clientIp)"), 'Inquiry endpoint requires a valid resolved client IP');
+assert(inquiryRoute.includes(String.raw`inquiryType.trim().replace(/[\u0000-\u001f\u007f]/g, '')`), 'Inquiry subject strips control characters before outbound email headers');
+assert(inquiryRoute.includes("isIP(resolvedClientIp)"), 'Inquiry endpoint requires a valid resolved client IP');
+assert(server.includes('rateLimitNetworkKey(resolvedIp)'), 'Shared HTTP rate limits normalize IPv6 addresses to a /64 network key');
+assert(server.includes('rateLimitNetworkKey(resolvedClientIp)'), 'Public review database rate limits normalize IPv6 addresses to a /64 network key');
+assert(inquiryRoute.includes('rateLimitNetworkKey(resolvedClientIp)'), 'Public inquiry database rate limits normalize IPv6 addresses to a /64 network key');
+assert(inquiryRoute.includes("p_action: 'public_inquiry_confirmation_email'"), 'Inquiry customer confirmations use an independent per-recipient rate-limit bucket');
+assert(inquiryRoute.includes("p_window_interval: '1 hour'") && inquiryRoute.includes('p_max_hits: 1'), 'An arbitrary mailbox receives at most one inquiry confirmation per hour');
+assert(inquiryRoute.includes('confirmationRateLimitError ? [] : [sendInquiryNotificationEmail({'), 'Customer confirmation is skipped when its recipient quota is reached while staff notification continues');
+assert(server.includes("p_action: 'public_review_tour'"), 'Review submissions have an independent per-tour network budget');
+assert(server.includes("p_action: 'public_review_account'"), 'Signed-in review submissions have an independent per-account budget');
 assert(inquiryRoute.includes("p_action: 'public_inquiry_email'"), 'Inquiry endpoint applies a database-backed per-email rate limit');
 assert(inquiryRoute.includes("createHash('sha256').update(cleanEmail).digest('hex')"), 'Inquiry email rate-limit identifiers are hashed before persistence');
 assert(inquiryRoute.includes("p_max_hits: 5"), 'Inquiry email rate limit caps submissions at five per ten-minute window');
@@ -80,7 +104,7 @@ assert(inquiryRoute.includes('tour_title: cleanTourTitle'), 'Inquiry endpoint pe
 assert(inquiry.includes('tour_title: input.tour_title || null'), 'Inquiry client forwards referenced tour title to the server');
 assert(inquiryRoute.includes("p_action: 'public_inquiry_ip'"), 'Inquiry endpoint applies a database-backed per-IP rate limit');
 assert(inquiryRoute.includes("createHash('sha256').update(clientIp).digest('hex')"), 'Inquiry IP rate-limit identifiers are hashed before persistence');
-assert(inquiryRoute.includes("p_max_hits: 10"), 'Inquiry endpoint caps submissions at ten per IP per ten-minute window');
+assert(inquiryRoute.includes("p_max_hits: 30"), 'Inquiry endpoint caps submissions at thirty per IPv6 network per ten-minute window');
 assert(inquiryRoute.includes("if (ipRateLimitError.code === 'P0001')"), 'Inquiry endpoint returns a rate-limit response when the database limit is reached');
 assert(inquiryRoute.includes("catch (error: any)"), 'Inquiry endpoint catches asynchronous failures and returns a controlled response');
 

@@ -72,6 +72,7 @@ export const TourReviews: React.FC<TourReviewsProps> = ({ tour }) => {
 
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault();
+    const honeypotValue = (e.currentTarget as HTMLFormElement).elements.namedItem('website_url_hp') as HTMLInputElement | null;
     if (!authorName.trim() || !comment.trim()) {
       setSubmitError('Please provide your name and review comments.');
       return;
@@ -94,6 +95,7 @@ export const TourReviews: React.FC<TourReviewsProps> = ({ tour }) => {
         rating,
         comment: comment.trim(),
         travelerType,
+        website_url_hp: honeypotValue?.value || '',
       });
       void recordVisitorEvent({ event_name: 'review_submitted', page_path: `/excursions/${tour.slug}`, event_data: { tour_slug: tour.slug, interaction: 'submitted' } });
       setSubmittedMessage(true);
@@ -285,6 +287,14 @@ export const TourReviews: React.FC<TourReviewsProps> = ({ tour }) => {
 
             {!submittedMessage ? (
               <form onSubmit={handleSubmitReview} className="space-y-4 text-xs">
+                <input
+                  type="text"
+                  name="website_url_hp"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden="true"
+                  className="absolute -left-[10000px] h-px w-px opacity-0"
+                />
                 <h3 className="font-display text-base font-bold text-[#0E1B2A] dark:text-white">
                   Review {tour.title}
                 </h3>
@@ -324,6 +334,7 @@ export const TourReviews: React.FC<TourReviewsProps> = ({ tour }) => {
                     <input
                       type="text"
                       required
+                      maxLength={100}
                       value={authorName}
                       onChange={(e) => setAuthorName(e.target.value)}
                       placeholder="e.g. Thomas K."
@@ -368,6 +379,8 @@ export const TourReviews: React.FC<TourReviewsProps> = ({ tour }) => {
                   <textarea
                     rows={4}
                     required
+                    minLength={20}
+                    maxLength={2000}
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     placeholder="Tell us about the boat, crew, snorkeling stops, lunch, or transfers..."
