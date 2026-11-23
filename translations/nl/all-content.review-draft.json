@@ -11,8 +11,8 @@
     "communication_template": 18,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1066,
-    "ui_catalog_messages": 1147,
+    "private_ui_messages": 1067,
+    "ui_catalog_messages": 1148,
     "source_records": 112
   },
   "records": [
@@ -5050,7 +5050,8 @@
         "private.text.decc7fb0": "Reisadvies",
         "private.text.e28cbf9c": "Volgende foto",
         "private.text.e9175fbd": "Uw account is beveiligd",
-        "private.text.f7239c75": "* Tijden zijn bij benadering en kunnen veranderen door lokale logistiek en omstandigheden op zee of het weer."
+        "private.text.f7239c75": "* Tijden zijn bij benadering en kunnen veranderen door lokale logistiek en omstandigheden op zee of het weer.",
+        "private.text.36c24f6e": "Foto's binnenkort beschikbaar"
       }
     },
     {
