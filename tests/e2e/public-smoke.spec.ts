@@ -75,11 +75,9 @@ test('static public pages do not request the live tour catalogue', async ({ page
 
 
 test('tour detail routes remain no-store with or without trailing slashes, including unavailable slugs', async ({ page }) => {
-  // CI deliberately runs without production catalogue credentials. Use a unique
-  // non-existent slug so this test does not depend on mutable Supabase fixtures;
-  // the HTTP cache policy must protect tour-detail routes even when the record
-  // is unavailable. A published tour's HTML is covered by the live production
-  // route smoke check outside this isolated test environment.
+  // Use a unique non-existent slug so the test is independent of mutable
+  // Supabase fixtures. The route-level no-store policy must also protect 404
+  // responses and remain consistent across trailing-slash variants.
   for (const path of [
     '/excursions/playwright-no-store-cache-regression-test',
     '/excursions/playwright-no-store-cache-regression-test/',
