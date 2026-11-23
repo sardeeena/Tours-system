@@ -43,9 +43,12 @@ assert.match(app, /const needsDestinations = isDestinationRoute \|\| \(isHome &&
 assert.match(app, /const needsCategories = path === '\/experiences' \|\| \(isHome && refreshAll\)/, 'category data is loaded on experience routes or explicit homepage refreshes');
 assert.match(app, /onEnter=\{refreshPublishedDestinations\}/, 'homepage destination data is loaded as its section approaches');
 assert.match(app, /onEnter=\{refreshPublishedCategories\}/, 'homepage category data is loaded as its section approaches');
-assert.match(app, /rootMargin: '700px 0px'/, 'below-the-fold sections load shortly before entering view');
+assert.match(app, /rootMargin: '400px 0px'/, 'below-the-fold sections load shortly before entering view');
 assert.match(app, /const PopularTours = lazy\(/, 'tour-card code is split from the initial homepage bundle');
 assert.match(app, /const ReviewsSection = lazy\(/, 'review content is split from the initial homepage bundle');
+assert.match(searchModule, /if \(!destOpen \|\| propDestinations \|\| destinationsLoadState !== 'idle'\)/, 'destination options load only when the destination selector opens');
+assert.match(searchModule, /if \(!catOpen \|\| propCategories \|\| categoriesLoadState !== 'idle'\)/, 'category options load only when the activity selector opens');
+assert.match(server, /PUBLIC_HTML_CACHE_TTL_MS = 3 \* 60 \* 1000/, 'anonymous server-rendered public pages reuse database-backed HTML for three minutes');
 assert.match(header, /mobile-navigation-menu/, 'mobile menu has a distinct accessible panel');
 assert.match(header, /w-\[min\(25rem,calc\(100vw-1\.5rem\)\)\]/, 'mobile menu is width-constrained instead of spanning the page');
 assert.match(header, /max-h-\[min\(72dvh,calc\(100dvh-5rem-env\(safe-area-inset-bottom\)\)\)\]/, 'mobile menu scrolls within the viewport on small devices');
