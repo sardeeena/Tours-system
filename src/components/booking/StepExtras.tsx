@@ -155,7 +155,8 @@ export const StepExtras: React.FC<StepExtrasProps> = ({
                             }
                           }}
                           disabled={qty <= minQty}
-                          className="w-5 h-5 flex items-center justify-center rounded text-stone-600 hover:bg-stone-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                          aria-label={`Decrease ${extra.name} quantity`}
+                          className="min-h-11 min-w-11 flex items-center justify-center rounded-lg text-stone-700 hover:bg-stone-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] disabled:opacity-30 disabled:cursor-not-allowed"
                           title="Decrease quantity"
                         >
                           <Minus className="w-3 h-3" />
@@ -172,7 +173,8 @@ export const StepExtras: React.FC<StepExtrasProps> = ({
                             }
                           }}
                           disabled={qty >= maxQty}
-                          className="w-5 h-5 flex items-center justify-center rounded text-stone-600 hover:bg-stone-100 disabled:opacity-30 disabled:cursor-not-allowed"
+                          aria-label={`Increase ${extra.name} quantity`}
+                          className="min-h-11 min-w-11 flex items-center justify-center rounded-lg text-stone-700 hover:bg-stone-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] disabled:opacity-30 disabled:cursor-not-allowed"
                           title="Increase quantity"
                         >
                           <Plus className="w-3 h-3" />
