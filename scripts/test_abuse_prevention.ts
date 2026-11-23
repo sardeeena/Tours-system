@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { rateLimitNetworkKey } from '../src/server/rateLimitNetwork';
 
 /**
  * Static, side-effect-free security regression checks.
@@ -26,6 +27,17 @@ function assert(condition: boolean, description: string) {
 }
 
 console.log('Abuse prevention, rate limiting and booking fail-closed source checks');
+
+const ipv6A = rateLimitNetworkKey('2001:db8:abcd:1234::1');
+const ipv6B = rateLimitNetworkKey('2001:db8:abcd:1234:ffff::abcd');
+const ipv6OtherNetwork = rateLimitNetworkKey('2001:db8:abcd:1235::1');
+assert(ipv6A === ipv6B, 'IPv6 privacy-address rotation within one /64 shares a rate-limit principal');
+assert(ipv6A !== ipv6OtherNetwork, 'Different IPv6 /64 networks retain independent rate-limit principals');
+assert(rateLimitNetworkKey('192.0.2.10') !== rateLimitNetworkKey('192.0.2.11'), 'IPv4 addresses remain individually rate-limited');
+assert(rateLimitNetworkKey('::ffff:192.0.2.10') === rateLimitNetworkKey('192.0.2.10'), 'IPv4-mapped IPv6 addresses normalize to the corresponding IPv4 principal');
+assert(rateLimitNetworkKey('0:0:0:0:0:ffff:c000:020a') === rateLimitNetworkKey('192.0.2.10'), 'Hexadecimal IPv4-mapped IPv6 addresses normalize to the corresponding IPv4 principal');
+
+
 
 // Inquiry honeypot must short-circuit before rate-limit, CRM and database work.
 const inquiry = read('src/services/inquiryService.ts');
@@ -73,6 +85,10 @@ assert(inquiryRoute.includes("req.body && typeof req.body === 'object' && !Array
 assert(inquiryRoute.includes("typeof email !== 'string'"), 'Inquiry endpoint rejects non-string email values before validation');
 assert(inquiryRoute.includes("typeof phone !== 'undefined' && phone !== null && typeof phone !== 'string'"), 'Inquiry endpoint rejects non-string phone values');
 assert(inquiryRoute.includes("isIP(clientIp)"), 'Inquiry endpoint requires a valid resolved client IP');
+assert(server.includes('rateLimitNetworkKey(resolvedIp)'), 'Shared HTTP rate limits normalize IPv6 addresses to a /64 network key');
+assert(server.includes('rateLimitNetworkKey(resolvedClientIp)'), 'Public review database rate limits normalize IPv6 addresses to a /64 network key');
+assert(server.includes("p_action: 'public_review_tour'"), 'Review submissions have an independent per-tour network budget');
+assert(server.includes("p_action: 'public_review_account'"), 'Signed-in review submissions have an independent per-account budget');
 assert(inquiryRoute.includes("p_action: 'public_inquiry_email'"), 'Inquiry endpoint applies a database-backed per-email rate limit');
 assert(inquiryRoute.includes("createHash('sha256').update(cleanEmail).digest('hex')"), 'Inquiry email rate-limit identifiers are hashed before persistence');
 assert(inquiryRoute.includes("p_max_hits: 5"), 'Inquiry email rate limit caps submissions at five per ten-minute window');
