@@ -118,7 +118,7 @@ assert.match(bookingLocaleMigration, /NOT IN \('en', 'de', 'it', 'ro', 'ru'\)/, 
 assert.match(expandedBookingLocaleMigration, /NOT IN \('en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'\)/, 'Historical migration records the initial ten-locale allowlist');
 assert.match(allCustomerLocalesMigration, /NOT IN/, 'Historical migration expands the booking locale allowlist.');
 assert.match(approvedLocaleMigration, /'en', 'de', 'it', 'ro', 'ru', 'fr', 'nl', 'pl', 'cs', 'sv', 'es'/, 'Forward migration restricts booking locale writes to the eleven approved languages.');
-assert.match(approvedLocaleMigration, /position\\('''ar''' IN v_definition\\) > 0/, 'Forward migration removes Arabic from the customer locale allowlist.');
+assert.match(approvedLocaleMigration, /position\('''ar''' IN v_definition\) > 0/, 'Forward migration removes Arabic from the customer locale allowlist.');
 for (const locale of ['en', 'de', 'it', 'ro', 'ru', 'fr', 'nl', 'pl', 'cs', 'sv', 'es']) {
   assert.ok(allCustomerLocalesMigration.includes(`'${locale}'`), `Forward migration allows booking locale ${locale}`);
 }
