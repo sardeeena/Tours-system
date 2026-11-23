@@ -35,27 +35,19 @@ export const TourCard: React.FC<TourCardProps> = ({
       className="bg-white/85 dark:bg-[#132235]/85 backdrop-blur-xl rounded-2xl border border-white/70 dark:border-white/10 shadow-md overflow-hidden flex flex-col hover:border-[#0A6C74]/50 hover:shadow-xl transition-all duration-300 group h-full relative"
     >
       {/* Photo with smooth zoom and vignette */}
-      <div 
-        className="tour-card-media relative overflow-hidden bg-stone-100 cursor-pointer shrink-0"
-        onClick={() => onViewTour(tour)}
-      >
-        {tour.primaryImage ? (
-          <img
-            src={tour.primaryImage}
-            alt={tour.title}
-            className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
-            loading="lazy"
-            decoding="async"
-          />
-        ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center bg-stone-200 text-stone-400">
-            <Compass className="w-8 h-8 mb-1 opacity-50 text-[#0A6C74]" />
-            <span className="text-[10px] font-medium tracking-wide uppercase">Photo Coming Soon</span>
-          </div>
-        )}
-
+      <div className="tour-card-media relative overflow-hidden bg-stone-100 shrink-0">
+        <button type="button" onClick={() => onViewTour(tour)} aria-label={`View ${tour.title} details`} className="absolute inset-0 z-0 h-full w-full cursor-pointer text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#0A6C74]">
+          {tour.primaryImage ? (
+            <img src={tour.primaryImage} alt="" className="h-full w-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out" loading="lazy" decoding="async" />
+          ) : (
+            <span className="flex h-full w-full flex-col items-center justify-center bg-stone-200 text-stone-500">
+              <Compass className="mb-1 h-8 w-8 text-[#0A6C74]" aria-hidden="true" />
+              <span className="text-[10px] font-medium uppercase tracking-wide">Photo Coming Soon</span>
+            </span>
+          )}
+        </button>
         {/* Cinematic gradient vignette */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />
+        <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/60 via-transparent to-black/30" />
 
         {/* Badge */}
         {tour.badge && (
@@ -123,12 +115,10 @@ export const TourCard: React.FC<TourCardProps> = ({
           </div>
 
           {/* Tour Title */}
-          <h3 
-            onClick={() => onViewTour(tour)}
-            className="font-display text-sm sm:text-base font-bold text-[#0E1B2A] dark:text-white leading-snug line-clamp-2 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] cursor-pointer mb-1.5 sm:mb-2 transition-colors sm:min-h-[44px]"
-            title={tour.title}
-          >
-            {tour.title}
+          <h3 className="mb-1.5 font-display text-sm font-bold leading-snug text-[#0E1B2A] dark:text-white sm:mb-2 sm:min-h-[44px] sm:text-base">
+            <button type="button" onClick={() => onViewTour(tour)} title={tour.title} className="line-clamp-2 text-left transition-colors hover:text-[#0A6C74] focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] dark:hover:text-[#2dd4bf]">
+              {tour.title}
+            </button>
           </h3>
 
           {/* Short description */}
