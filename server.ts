@@ -5525,7 +5525,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
   let currentInclusions: any[] = [];
   let currentExclusions: any[] = [];
   let currentItinerary: any[] = [];
-  let pageImage = `${origin}/logo.webp`;
+  let pageImage = `${origin}/logo.png`;
   let visibleDestinations: any[] = [];
   let seoEntityType = 'page';
   let seoIdentifier = 'home';
@@ -5711,7 +5711,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
         : '';
       body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / <a href="/excursions">Excursions</a></nav><article>
         <h1>${seoHtmlEscape(seoPlainText(currentTour.title, 160))}</h1>
-        ${pageImage !== `${origin}/logo.webp` ? `<figure><img src="${seoHtmlEscape(pageImage)}" alt="${seoHtmlEscape(seoPlainText(currentTour.title, 160))}" loading="eager" style="width:100%;max-height:420px;object-fit:cover;border-radius:14px" /></figure>` : ''}
+        ${pageImage !== `${origin}/logo.png` ? `<figure><img src="${seoHtmlEscape(pageImage)}" alt="${seoHtmlEscape(seoPlainText(currentTour.title, 160))}" loading="eager" style="width:100%;max-height:420px;object-fit:cover;border-radius:14px" /></figure>` : ''}
         ${summary ? `<p>${seoHtmlEscape(summary)}</p>` : ''}
         ${price ? `<p><strong>Starting price: ${seoHtmlEscape(price)}</strong></p>` : ''}
         ${duration ? `<p>Duration: ${seoHtmlEscape(duration)}</p>` : ''}
@@ -5743,7 +5743,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
           if (!postTitle || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/i.test(slug)) return '';
           const excerpt = seoPlainText(post.excerpt, 400);
           const image = seoSafeImage(post.cover_image_url);
-          if (!pageImage || pageImage === `${origin}/logo.webp`) pageImage = image || pageImage;
+          if (!pageImage || pageImage === `${origin}/logo.png`) pageImage = image || pageImage;
           return `<article class="seo-tour-card">${image ? `<img src="${seoHtmlEscape(image)}" alt="${seoHtmlEscape(postTitle)}" loading="lazy" style="width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:10px;margin-bottom:12px" />` : ''}<p class="seo-muted">${seoHtmlEscape(seoPlainText(post.blog_categories?.name, 80) || 'Travel guide')}</p><h2><a href="/blog/${encodeURIComponent(slug)}">${seoHtmlEscape(postTitle)}</a></h2>${excerpt ? `<p>${seoHtmlEscape(excerpt)}</p>` : ''}<p><a href="/blog/${encodeURIComponent(slug)}">Read story</a></p></article>`;
         }).filter(Boolean).join('');
         body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / Travel Journal</nav><h1>The Awesome Adventure Tours Travel Journal</h1><p>${seoHtmlEscape(description)}</p><div class="seo-grid">${cards || '<p>New travel guides and local stories are on their way.</p>'}</div></main>`;
@@ -5808,7 +5808,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
         }
       }
       flushParagraph(); flushList();
-      body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / <a href="/blog">Travel Journal</a> / ${seoHtmlEscape(seoPlainText(currentBlogPost.title, 160))}</nav><article><h1>${seoHtmlEscape(seoPlainText(currentBlogPost.title, 160))}</h1>${pageImage !== `${origin}/logo.webp` ? `<figure><img src="${seoHtmlEscape(pageImage)}" alt="${seoHtmlEscape(seoPlainText(currentBlogPost.title, 160))}" loading="eager" style="width:100%;max-height:520px;object-fit:cover;border-radius:14px" /></figure>` : ''}<p class="seo-muted">${seoHtmlEscape(seoPlainText(currentBlogPost.blog_categories?.name, 80) || 'Awesome Adventure Tours Journal')} · ${seoHtmlEscape(seoPlainText(currentBlogPost.author_name, 120) || 'Awesome Adventure Tours Editorial Team')}</p>${currentBlogPost.excerpt ? `<p><strong>${seoHtmlEscape(seoPlainText(currentBlogPost.excerpt, 600))}</strong></p>` : ''}${blocks.join('')}<p><a href="/excursions">Explore Awesome Adventure Tours excursions</a></p></article></main>`;
+      body = `<main id="seo-initial-content"><nav><a href="/">Home</a> / <a href="/blog">Travel Journal</a> / ${seoHtmlEscape(seoPlainText(currentBlogPost.title, 160))}</nav><article><h1>${seoHtmlEscape(seoPlainText(currentBlogPost.title, 160))}</h1>${pageImage !== `${origin}/logo.png` ? `<figure><img src="${seoHtmlEscape(pageImage)}" alt="${seoHtmlEscape(seoPlainText(currentBlogPost.title, 160))}" loading="eager" style="width:100%;max-height:520px;object-fit:cover;border-radius:14px" /></figure>` : ''}<p class="seo-muted">${seoHtmlEscape(seoPlainText(currentBlogPost.blog_categories?.name, 80) || 'Awesome Adventure Tours Journal')} · ${seoHtmlEscape(seoPlainText(currentBlogPost.author_name, 120) || 'Awesome Adventure Tours Editorial Team')}</p>${currentBlogPost.excerpt ? `<p><strong>${seoHtmlEscape(seoPlainText(currentBlogPost.excerpt, 600))}</strong></p>` : ''}${blocks.join('')}<p><a href="/excursions">Explore Awesome Adventure Tours excursions</a></p></article></main>`;
     }
   } else if (path.startsWith('/destinations/')) {
     let slug = '';
@@ -5961,7 +5961,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
     '@id': `${origin}/#organization`,
     name: 'Awesome Adventure Tours',
     url: origin,
-    logo: `${origin}/logo.webp`,
+    logo: `${origin}/logo.png`,
     description: 'Excursions and experiences along Egypt’s Red Sea coast, based in Hurghada, Egypt.',
     telephone: '+201515212741',
     address: {
@@ -6000,7 +6000,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       name: seoPlainText(currentTour.title, 160),
       description,
       url: canonical,
-      image: pageImage !== `${origin}/logo.webp` ? [pageImage] : undefined,
+      image: pageImage !== `${origin}/logo.png` ? [pageImage] : undefined,
       provider: { '@id': `${origin}/#organization` },
       // Excursions are TouristTrip entities, not retail Products. Nesting a
       // Product/Offer here makes Google classify tours as merchant listings and
@@ -6015,7 +6015,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       headline: seoPlainText(currentBlogPost.title, 160),
       description,
       url: canonical,
-      image: pageImage !== `${origin}/logo.webp` ? [pageImage] : undefined,
+      image: pageImage !== `${origin}/logo.png` ? [pageImage] : undefined,
       datePublished: currentBlogPost.published_at,
       dateModified: currentBlogPost.updated_at || currentBlogPost.published_at,
       author: { '@type': 'Organization', name: seoPlainText(currentBlogPost.author_name, 120) || 'Awesome Adventure Tours Editorial Team' },
@@ -6036,7 +6036,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       name: seoPlainText(activeDestination.name, 120),
       description,
       url: canonical,
-      image: pageImage !== `${origin}/logo.webp` ? pageImage : undefined,
+      image: pageImage !== `${origin}/logo.png` ? pageImage : undefined,
       subjectOf: { '@type': 'ItemList', itemListElement: destinationItems },
     });
   }
@@ -6057,7 +6057,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
         : pageKind === 'static' && path === '/contact'
           ? 'ContactPage'
           : 'WebPage';
-    graph.push({ '@type': pageSchemaType, '@id': `${canonical}#webpage`, url: canonical, name: title, description, isPartOf: { '@id': `${origin}/#website` }, publisher: { '@id': `${origin}/#organization` }, ...(path === '/about' ? { about: { '@id': `${origin}/#organization` } } : {}), ...(mainEntityId ? { mainEntity: { '@id': mainEntityId } } : {}), ...(pageImage !== `${origin}/logo.webp` ? { primaryImageOfPage: { '@type': 'ImageObject', url: pageImage } } : {}), ...(hasBreadcrumb ? { breadcrumb: { '@id': `${canonical}#breadcrumb` } } : {}) });
+    graph.push({ '@type': pageSchemaType, '@id': `${canonical}#webpage`, url: canonical, name: title, description, isPartOf: { '@id': `${origin}/#website` }, publisher: { '@id': `${origin}/#organization` }, ...(path === '/about' ? { about: { '@id': `${origin}/#organization` } } : {}), ...(mainEntityId ? { mainEntity: { '@id': mainEntityId } } : {}), ...(pageImage !== `${origin}/logo.png` ? { primaryImageOfPage: { '@type': 'ImageObject', url: pageImage } } : {}), ...(hasBreadcrumb ? { breadcrumb: { '@id': `${canonical}#breadcrumb` } } : {}) });
     if (hasBreadcrumb) graph.push({ '@type': 'BreadcrumbList', '@id': `${canonical}#breadcrumb`, itemListElement: breadcrumbItems.map((item, index) => ({ '@type': 'ListItem', position: index + 1, name: item.name, item: item.url })) });
   }
 
