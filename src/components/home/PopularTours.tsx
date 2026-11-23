@@ -73,7 +73,7 @@ export const PopularTours: React.FC<PopularToursProps> = ({
           <div>
             <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-[#0A6C74] dark:text-[#60C3CC] mb-2">
               <span className="w-5 h-0.5 bg-[#0A6C74] dark:bg-[#60C3CC] rounded-full"></span>
-              <span>Handpicked Egypt Tours & Experiences</span>
+              <span>Popular trips around Egypt</span>
             </div>
             <h2 className="font-display text-2xl sm:text-4xl text-[#0E1B2A] dark:text-white tracking-tight">
               {t('popular.title')}
@@ -134,8 +134,8 @@ export const PopularTours: React.FC<PopularToursProps> = ({
           </div>
         ) : filteredTours.length === 0 ? (
           <div className="bg-white rounded-2xl border border-[#E8E3DA] p-12 text-center my-6 shadow-sm">
-            <p className="text-stone-700 font-semibold text-base mb-1">No excursions match your current filter.</p>
-            <p className="text-stone-500 text-xs mb-4">Try clearing your filters or selecting a different category.</p>
+            <p className="text-stone-700 font-semibold text-base mb-1">No tours match those filters.</p>
+            <p className="text-stone-500 text-xs mb-4">Try removing a filter or choosing another category.</p>
             <button
               type="button"
               onClick={() => {
