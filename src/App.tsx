@@ -338,9 +338,9 @@ function MainApp() {
   const refreshCatalogue = useCallback(async (path = currentPath, refreshAll = false) => {
     const isHome = path === '/';
     const isDestinationRoute = path === '/destinations' || path.startsWith('/destinations/');
+    const isBookingRoute = path === '/booking' || (path.startsWith('/booking/') && !path.startsWith('/booking/confirmation'));
     const needsTours = isHome || path === '/excursions' || path.startsWith('/excursions/')
-      || path === '/booking' || (path.startsWith('/booking/') && !path.startsWith('/booking/confirmation/'))
-      || path.startsWith('/destinations/');
+      || isBookingRoute || path.startsWith('/destinations/');
     const needsDestinations = isDestinationRoute || (isHome && refreshAll);
     const needsCategories = path === '/experiences' || (isHome && refreshAll);
 
@@ -364,7 +364,7 @@ function MainApp() {
     }
 
     const [toursRes, destsRes, catsRes] = await Promise.allSettled([
-      needsTours ? getPublishedTours() : Promise.resolve(undefined),
+      needsTours ? getPublishedTours(undefined, isBookingRoute) : Promise.resolve(undefined),
       needsDestinations ? getPublishedDestinations() : Promise.resolve(undefined),
       needsCategories ? getPublishedCategories() : Promise.resolve(undefined),
     ]);
