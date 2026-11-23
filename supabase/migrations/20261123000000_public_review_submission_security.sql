@@ -19,6 +19,31 @@ CREATE POLICY "Public can read published reviews"
   TO anon, authenticated
   USING (is_published = TRUE);
 
+-- Remove stale anonymous table grants wherever RLS has no anon/PUBLIC policy.
+-- These grants do not currently bypass RLS, but they are unnecessary and make future
+-- policy changes dangerous. Public form writes continue through dedicated server APIs.
+DO $least_privilege$
+DECLARE
+  target record;
+BEGIN
+  FOR target IN
+    SELECT DISTINCT g.table_schema, g.table_name
+    FROM information_schema.role_table_grants g
+    WHERE g.table_schema = 'public'
+      AND g.grantee = 'anon'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM pg_policies p
+        WHERE p.schemaname = g.table_schema
+          AND p.tablename = g.table_name
+          AND ('anon' = ANY(p.roles::text[]) OR 'public' = ANY(p.roles::text[]))
+      )
+  LOOP
+    EXECUTE format('REVOKE ALL PRIVILEGES ON TABLE %I.%I FROM anon', target.table_schema, target.table_name);
+  END LOOP;
+END;
+$least_privilege$;
+
 -- Keep public catalogue reads, but remove all direct anonymous mutations.
 REVOKE ALL PRIVILEGES ON TABLE public.reviews FROM anon;
 GRANT SELECT ON TABLE public.reviews TO anon;
