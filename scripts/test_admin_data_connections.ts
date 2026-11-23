@@ -73,7 +73,11 @@ assert.match(regression215AvailabilityRead, /availabilityByKey\.get\(/, 'Admin a
 assert.match(regression215AvailabilityRead, /isBlackout: Boolean\(authoritative\?\.is_blackout/, 'Admin availability must distinguish real blackouts from dates without confirmed slots');
 assert.doesNotMatch(regression215AvailabilityRead, /row\.status\s*===/, 'Stale daily summary status must not determine bookability');
 assert.doesNotMatch(regression215AvailabilityRead, /bookingRepository\.listBookings\(\)/, 'Availability counts must come from the departure-capacity authority');
-assert.match(regression215AvailabilityRead, /\.gte\('date', startDate\)\.lte\('date', endDate\)/, 'Operations availability reads must be scoped to the visible calendar range');
+assert.match(regression215AvailabilityRead, /\.gte\('date', startDate\)[\s\S]*?\.lte\('date', endDate\)/, 'Operations availability reads must be scoped to the requested calendar range');
+assert.match(regression215AvailabilityRead, /\.range\(offset, offset \+ pageSize - 1\)/, 'Operations availability reads must paginate bounded result pages');
+assert.match(regression215AvailabilityRead, /rangeDays > 366/, 'Operations availability reads must reject unbounded date windows');
+assert.match(regression215AvailabilityRead, /\.from\('tour_availability'\)[\s\S]*?\.gte\('date', startDate\)/, 'Operations availability must never issue an unfiltered full-table read');
+assert.match(read('src/components/admin/operations/OperationsAvailability.tsx'), /listAvailabilitySlots\(startDate, endDate\)/, 'Operations availability UI must always supply its selected date window');
 assert.match(regression215AvailabilityRead, /for \(let offset = 0; offset < tourIds\.length; offset \+= 4\)/, 'Authoritative availability RPC requests must be concurrency-batched');
 
 const bookingRepositorySource = read('src/services/bookingRepository.ts');
