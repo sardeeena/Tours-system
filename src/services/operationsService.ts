@@ -1710,8 +1710,8 @@ export async function deleteGuide(id: string): Promise<boolean> {
 // ==============================================================================
 
 export async function listAvailabilitySlots(startDate?: string, endDate?: string): Promise<AvailabilitySlot[]> {
-  if ((startDate && !/^\\d{4}-\\d{2}-\\d{2}$/.test(startDate)) ||
-      (endDate && !/^\\d{4}-\\d{2}-\\d{2}$/.test(endDate)) ||
+  if ((startDate && !/^\d{4}-\d{2}-\d{2}$/.test(startDate)) ||
+      (endDate && !/^\d{4}-\d{2}-\d{2}$/.test(endDate)) ||
       Boolean(startDate) !== Boolean(endDate) ||
       (startDate && endDate && startDate > endDate)) {
     throw new Error('A valid inclusive availability date range is required.');
