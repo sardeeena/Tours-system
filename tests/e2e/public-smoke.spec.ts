@@ -56,3 +56,19 @@ test('header menu stays compact across phone, tablet and laptop widths', async (
   await expect(page.getByRole('navigation', { name: 'Main Navigation' })).toBeVisible();
   await expect(page.locator('header').first()).toHaveJSProperty('scrollWidth', await page.locator('header').first().evaluate((element) => element.clientWidth));
 });
+
+
+test('static public pages do not request the live tour catalogue', async ({ page }) => {
+  const catalogueRequests: string[] = [];
+  page.on('request', (request) => {
+    const url = new URL(request.url());
+    if (/\\/rest\\/v1\\/(?:tours|destinations|categories|tour_categories)(?:\\?|$)/.test(url.pathname + url.search)) {
+      catalogueRequests.push(url.pathname);
+    }
+  });
+
+  const response = await page.goto('/about');
+  expect(response?.status()).toBeLessThan(400);
+  await expect(page.locator('body')).not.toBeEmpty();
+  expect(catalogueRequests).toEqual([]);
+});
