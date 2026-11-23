@@ -2001,7 +2001,7 @@ async function sendInquiryNotificationEmail(params: {
 
 // Public review submissions are available to guests and signed-in customers.
 // Writes use the server-only service-role client; browser roles never receive review INSERT access.
-app.post('/api/reviews/submit', rateLimit(5, 10 * 60_000), async (req: AuthenticatedRequest, res: Response) => {
+app.post('/api/reviews/submit', rateLimit(30, 10 * 60_000), async (req: AuthenticatedRequest, res: Response) => {
   const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};
   const { tourId, tourSlug, authorName, country, countryCode, rating, comment, travelerType, website_url_hp } = body;
 
@@ -2053,7 +2053,7 @@ app.post('/api/reviews/submit', rateLimit(5, 10 * 60_000), async (req: Authentic
       p_action: 'public_review_ip',
       p_identifier: createHash('sha256').update(clientIp).digest('hex'),
       p_window_interval: '10 minutes',
-      p_max_hits: 5,
+      p_max_hits: 30,
       p_error_message: 'Too many reviews have been submitted from your network. Please wait before trying again.',
     });
     if (rateLimitError) {
@@ -2076,7 +2076,7 @@ app.post('/api/reviews/submit', rateLimit(5, 10 * 60_000), async (req: Authentic
       p_action: 'public_review_tour',
       p_identifier: createHash('sha256').update(`${clientIp}:${tour.id}`).digest('hex'),
       p_window_interval: '1 hour',
-      p_max_hits: 3,
+      p_max_hits: 10,
       p_error_message: 'Too many reviews for this tour have been submitted from your network. Please try again later.',
     });
     if (tourRateLimitError) {
@@ -2126,7 +2126,7 @@ app.post('/api/reviews/submit', rateLimit(5, 10 * 60_000), async (req: Authentic
   }
 });
 
-app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(5, 10 * 60_000), async (req: Request, res: Response) => {
+app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(15, 10 * 60_000), async (req: Request, res: Response) => {
   const body = req.body && typeof req.body === 'object' && !Array.isArray(req.body) ? req.body : {};
   const { name, email, phone, inquiryType = 'general_question', message, website_url_hp } = body;
 
@@ -2194,7 +2194,7 @@ app.post(['/api/inquiries', '/api/inquiries/submit', '/api/contact'], rateLimit(
       p_action: 'public_inquiry_ip',
       p_identifier: createHash('sha256').update(clientIp).digest('hex'),
       p_window_interval: '10 minutes',
-      p_max_hits: 10,
+      p_max_hits: 30,
       p_error_message: 'Too many inquiries submitted from your network. Please wait a few minutes before trying again.',
     });
     if (ipRateLimitError) {
