@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { createHash } from 'node:crypto';
 import { readFile, writeFile } from 'node:fs/promises';
 import { createClient } from '@supabase/supabase-js';
-import { EUROPEAN_LOCALE_ROLLOUT, EuropeanLocaleCode } from '../src/types/i18n';
+import { EuropeanLocaleCode } from '../src/types/i18n';
 import { INITIAL_STATIC_PAGES } from '../src/data/staticPages';
 import { TRANSLATIONS } from '../src/i18n/translations';
 import { collectPrivateUiMessages } from './generate_private_ui_catalog';
