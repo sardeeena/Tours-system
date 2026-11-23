@@ -26,7 +26,7 @@ export interface IBookingRepository {
   updateBooking(booking: Booking): Promise<Booking>;
   cancelBooking(bookingReference: string, reason: string, verification: string): Promise<Booking | null>;
   resolveBookingCancellation(bookingReference: string, decision: 'approve' | 'reject', reason?: string): Promise<Booking | null>;
-  listBookings(filters?: { status?: string; limit?: number }): Promise<Booking[]>;
+  listBookings(filters?: { status?: string; limit?: number; date?: string }): Promise<Booking[]>;
 }
 
 export function generateBookingReference(bookingDate: string | Date = new Date()): string {
@@ -652,15 +652,19 @@ class SupabaseBookingRepository implements IBookingRepository {
     return data ? this.mapDbToBooking(data) : null;
   }
 
-  async listBookings(filters?: { status?: string; limit?: number }): Promise<Booking[]> {
+  async listBookings(filters?: { status?: string; limit?: number; date?: string }): Promise<Booking[]> {
+    if (filters?.date && !/^\\d{4}-\\d{2}-\\d{2}$/.test(filters.date)) {
+      throw new Error('A valid booking date is required.');
+    }
     const supabaseConfigured = isSupabaseConfigured();
     const schemaMissing = isSchemaMissing();
 
     if (shouldUseLocalBookingCache(isDevelopmentBuild, supabaseConfigured, schemaMissing)) {
       const local = this.getLocalBookings();
-      const filtered = filters?.status && filters.status !== 'all'
-        ? local.filter((booking) => booking.status === filters.status)
-        : local;
+      const filtered = local.filter((booking) =>
+        (!filters?.status || filters.status === 'all' || booking.status === filters.status) &&
+        (!filters?.date || booking.date?.split('T')[0] === filters.date)
+      );
       return filters?.limit ? filtered.slice(0, filters.limit) : filtered;
     }
 
@@ -692,6 +696,9 @@ class SupabaseBookingRepository implements IBookingRepository {
 
         if (filters?.status && filters.status !== 'all') {
           query = query.eq('status', filters.status);
+        }
+        if (filters?.date) {
+          query = query.eq('booking_date', filters.date);
         }
 
         const { data, error } = await query;
