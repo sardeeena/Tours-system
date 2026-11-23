@@ -37,6 +37,9 @@ assert.match(worker, /request\.destination === 'document'/, 'service worker neve
 assert.match(worker, /request\.headers\.has\('authorization'\)/, 'service worker refuses authenticated requests');
 assert.match(worker, /event\.waitUntil\(updatePromise/, 'cached assets refresh in the background');
 assert.match(app, /const DeferredHomeSection/, 'homepage supports viewport-based section loading');
+assert.match(app, /const needsTours = isHome \|\| path === '\/excursions'/, 'non-catalogue routes avoid loading the full tour list');
+assert.match(app, /const needsDestinations = isHome \|\| isDestinationRoute/, 'destination data is loaded only for homepage and destination routes');
+assert.match(app, /const needsCategories = isHome \|\| path === '\/experiences'/, 'category data is loaded only for homepage and experience routes');
 assert.match(app, /rootMargin: '700px 0px'/, 'below-the-fold sections load shortly before entering view');
 assert.match(app, /const PopularTours = lazy\(/, 'tour-card code is split from the initial homepage bundle');
 assert.match(app, /const ReviewsSection = lazy\(/, 'review content is split from the initial homepage bundle');
