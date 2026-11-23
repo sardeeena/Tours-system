@@ -424,8 +424,8 @@ export const BookingPage: React.FC<BookingPageProps> = ({
   return (
     <div className="bg-[#FAF8F5] min-h-screen">
       {/* Responsive four-stage progress navigation; detailed steps and validation remain intact */}
-      <div className="bg-white border-b border-[#E8E3DA] sticky top-16 z-30 shadow-2xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+      <div className="bg-white border-b border-[#E8E3DA] sticky top-14 sm:top-16 z-30 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-3.5">
           <nav className="hidden md:flex items-center justify-between gap-2" aria-label="Booking progress">
             {STEPS.map((s, idx) => {
               const stage = currentStep === 1 ? 1 : currentStep <= 3 ? 2 : currentStep === 4 ? 3 : 4;
@@ -449,7 +449,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
       </div>
 
       {/* Main Content Layout */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-7 lg:py-8">
         
         {/* Header Title */}
         <div className="mb-6">
@@ -465,7 +465,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
         </p>}
 
         {/* 2-Column Responsive Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 lg:gap-8 items-start">
           
           {/* Left Column: Active Step Flow (7 cols on desktop) */}
           <div className="lg:col-span-7 xl:col-span-8 min-w-0">
@@ -578,7 +578,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
           </div>
 
           {/* Right Column: Sticky Booking Summary (5 cols on desktop) */}
-          <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-36 space-y-4">
+          <div className="lg:col-span-5 xl:col-span-4 lg:sticky lg:top-32 space-y-4 min-w-0">
             <BookingSummary
               tour={currentTour}
               date={date}
@@ -593,7 +593,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
             />
 
             {/* Direct Operator Security Box */}
-            <div className="p-4 bg-white rounded-lg border border-[#E8E3DA] text-xs space-y-2">
+            <div className="p-4 sm:p-5 bg-white rounded-xl border border-[#E8E3DA] text-xs space-y-2">
               <div className="flex items-center text-emerald-700 font-bold">
                 <ShieldCheck className="w-4 h-4 mr-1.5" />
                 <span>Operator Direct Guarantee</span>
