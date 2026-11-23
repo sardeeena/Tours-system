@@ -13,7 +13,7 @@ type Draft = {
   title?: string; summary?: string; seo_title?: string; seo_description?: string;
   content: Record<string, unknown>; source_checksum: string;
 };
-const LOCALES = new Set<Locale>(['fr', 'nl', 'pl']);
+const LOCALES = new Set<Locale>(['de', 'it', 'ro', 'ru', 'fr', 'nl', 'pl', 'cs', 'sv', 'es']);
 const ENTITY_TYPES = new Set(['tour','destination','blog_post','static_page','communication_template','ui_catalog']);
 const stable = (value: any): string => {
   if (Array.isArray(value)) return '[' + value.map(stable).join(',') + ']';

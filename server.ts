@@ -3694,10 +3694,10 @@ app.post('/api/admin/translations/generate-batch', rateLimit(10,60000), async (r
       const current = await getCurrentTranslationSourceChecksum(candidate.entity_type,candidate.entity_key);
       if (current) prepared.push({type:candidate.entity_type,key:candidate.entity_key,checksum:current.checksum,source:current.source,payload:bulkTranslationPayload(candidate.entity_type,current.source)});
     }
-    const {data:existing,error:existingError} = await serverSupabase.from('content_translations').select('entity_type,entity_key,translated_slug,translation_state,reviewed_at,published_at').eq('locale',locale).limit(2000);
+    const {data:existing,error:existingError} = await serverSupabase.from('content_translations').select('entity_type,entity_key,translated_slug,translation_state,reviewed_at,published_at,source_checksum').eq('locale',locale).limit(2000);
     if (existingError) throw existingError;
     const known = new Map((existing || []).map((x:any)=>[x.entity_type+':'+x.entity_key,x]));
-    const work = prepared.filter(x=>{const old:any=known.get(x.type+':'+x.key);return !old || (old.translation_state==='draft' && !old.reviewed_at && !old.published_at);});
+    const work = prepared.filter(x=>{const old:any=known.get(x.type+':'+x.key);return !old || (old.translation_state==='draft' && !old.reviewed_at && !old.published_at && old.source_checksum !== x.checksum);});
     const workKeys = new Set(work.map((x)=>x.type+':'+x.key));
     const usedSlugs = new Set((existing || []).filter((x:any)=>!workKeys.has(x.entity_type+':'+x.entity_key)).map((x:any)=>x.translated_slug).filter(Boolean));
     let saved=0, skipped=prepared.length-work.length;
@@ -6258,7 +6258,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
   html = html.replace(/<link\s+rel="canonical"[^>]*>/i, `<link rel="canonical" href="${seoHtmlEscape(canonical)}" />`);
   html = html.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '');
   if (localePath) {
-    html = html.replace(/<html\b([^>]*)>/i, (_match, attrs) => '<html' + String(attrs).replace(/\s+lang=["'][^"']*["']/i, '').replace(/\s+dir=["'][^"']*["']/i, '') + ' lang="' + escapeXml(localePath.locale) + '" dir="' + (localePath.locale === 'ar' ? 'rtl' : 'ltr') + '">');
+    html = html.replace(/<html\b([^>]*)>/i, (_match, attrs) => '<html' + String(attrs).replace(/\s+lang=["'][^"']*["']/i, '').replace(/\s+dir=["'][^"']*["']/i, '') + ' lang="' + escapeXml(localePath.locale) + '" dir="' + 'ltr' + '">');
     const alternateLinks: string[] = [];
     alternateLinks.push('<link rel="alternate" hreflang="en" href="' + escapeXml(origin + path) + '">');
     alternateLinks.push('<link rel="alternate" hreflang="x-default" href="' + escapeXml(origin + path) + '">');

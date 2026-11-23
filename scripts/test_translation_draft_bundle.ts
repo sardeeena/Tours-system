@@ -5,7 +5,7 @@ const script=read('../scripts/translation_draft_bundle.ts');
 const doc=read('../docs/LOCALIZATION_WORKFLOW.md');
 const server=read('../server.ts');
 const editor=read('../src/components/admin/AdminTranslationManager.tsx');
-assert.match(script,/LOCALES = new Set<Locale>\(\['fr', 'nl', 'pl'\]\)/,'Draft imports are limited to the supported French, Dutch and Polish rollout locales');
+assert.match(script,/LOCALES = new Set<Locale>\(\['de', 'it', 'ro', 'ru', 'fr', 'nl', 'pl', 'cs', 'sv', 'es'\]\)/,'Draft imports are limited to the ten agreed non-English rollout locales');
 assert.match(script,/ENTITY_TYPES = new Set\(\['tour','destination','blog_post','static_page','communication_template','ui_catalog'\]\)/);
 assert.match(script,/translation_state:'draft'/);
 assert.match(script,/reviewed_at:null, published_at:null/);
@@ -18,6 +18,8 @@ assert.match(script,/checksum\(source\)!==item\.source_checksum/,'Stale source b
 assert.match(doc,/human reviewer/i);
 assert.match(doc,/dry run/i);
 assert.match(server,/maxOutputTokens:\s*65536/, 'Gemini output budget is large enough for structured catalogue translations');
+assert.match(server,/published_at,source_checksum/,'Generation reads existing source checksums before deciding whether a draft needs regeneration');
+assert.match(server,/old\.source_checksum !== x\.checksum/,'A retry preserves existing current-checksum drafts instead of overwriting them');
 assert.match(server,/generateBulkTranslationResponse[\s\S]*MAX_TOKENS[\s\S]*malformed JSON[\s\S]*Repair only the JSON syntax/, 'Gemini truncation and malformed JSON have safe recovery paths');
 assert.match(server,/content_translations_locale_slug_unique[\s\S]*already used in this language/, 'Duplicate localized slugs return a useful save error');
 assert.match(editor,/role="dialog"[\s\S]*Start generating drafts/, 'Generation uses a visible in-app confirmation instead of a browser prompt');
@@ -30,8 +32,20 @@ assert.match(editor,/Supported translation languages[\s\S]*saved records[\s\S]*i
 assert.match(editor,/useState\(''\)/,'The workspace starts with a language overview instead of silently selecting French');
 assert.match(editor,/summary=true/,'The workspace loads authoritative language counts');
 assert.match(server,/req\.query\.summary === 'true'[\s\S]*count: 'exact', head: true[\s\S]*locale_summary/,'The protected API returns exact per-locale lifecycle counts');
-assert.match(editor,/French, Dutch and Polish are enabled here/,'The generation confirmation explains the supported rollout languages');
+assert.match(editor,/All ten agreed non-English languages are available here/,'The generation confirmation explains the fixed language scope');
 assert.match(editor,/setGenerationProgress\(targetLocale\.toUpperCase\(\) \+ ': ' \+ offset \+ '\/' \+ result\.total \+ ' source records · ' \+ generatedCount \+ ' drafts saved · ' \+ skippedCount \+ ' skipped · selected locale'\)/,'Progress identifies the selected locale and batch progress rather than incorrectly saying French only');
 assert.match(editor,/targetLocale\.toUpperCase\(\) \+ ' translation draft generation completed/,'Completion feedback identifies the selected locale');
 assert.doesNotMatch(editor,/French only/,'Progress never mislabels Dutch or Polish batches as French');
+
+assert.match(editor,/const generateAllLocales = async \(\)/,'The workspace offers a single all-language generation workflow');
+assert.match(editor,/for \(const target of ROLLOUT_LOCALES\)/,'All ten approved locales are processed from the fixed registry');
+assert.match(editor,/Generate all 10 languages/,'The all-language action is visible in the workspace');
+assert.match(editor,/const \[generatingAll, setGeneratingAll\] = useState\(false\)/,'The UI tracks all-language generation separately from one-locale generation');
+assert.match(editor,/generatingAll \? 'Generating all languages/,'The progress label accurately distinguishes an all-language run');
+assert.match(editor,/setTimeout\(resolve, 6500\)/,'Bulk generation respects the protected endpoint rate limit between batches');
+assert.match(editor,/All ten language draft-generation runs completed/,'Completion feedback confirms the all-language run');
+assert.match(editor,/human review is still required/,'The all-language workflow never implies automatic publication');
+assert.match(editor,/Existing reviewed and published records are preserved/,'The confirmation explains preservation of approved records');
+assert.match(editor,/Retry safely from the beginning/,'A failed run can be safely retried without claiming persisted offset state');
+
 console.log('Bulk localization draft workflow safety checks passed.');
