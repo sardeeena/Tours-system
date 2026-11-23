@@ -84,7 +84,7 @@ const inquiryRoute = server.slice(inquiryRouteStart, inquiryRouteEnd);
 assert(inquiryRoute.includes("req.body && typeof req.body === 'object' && !Array.isArray(req.body)"), 'Inquiry endpoint normalizes malformed request bodies');
 assert(inquiryRoute.includes("typeof email !== 'string'"), 'Inquiry endpoint rejects non-string email values before validation');
 assert(inquiryRoute.includes("typeof phone !== 'undefined' && phone !== null && typeof phone !== 'string'"), 'Inquiry endpoint rejects non-string phone values');
-assert(inquiryRoute.includes("isIP(clientIp)"), 'Inquiry endpoint requires a valid resolved client IP');
+assert(inquiryRoute.includes("isIP(resolvedClientIp)"), 'Inquiry endpoint requires a valid resolved client IP');
 assert(server.includes('rateLimitNetworkKey(resolvedIp)'), 'Shared HTTP rate limits normalize IPv6 addresses to a /64 network key');
 assert(server.includes('rateLimitNetworkKey(resolvedClientIp)'), 'Public review database rate limits normalize IPv6 addresses to a /64 network key');
 assert(inquiryRoute.includes('rateLimitNetworkKey(resolvedClientIp)'), 'Public inquiry database rate limits normalize IPv6 addresses to a /64 network key');
