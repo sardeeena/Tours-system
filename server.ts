@@ -6258,7 +6258,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
   html = html.replace(/<link\s+rel="canonical"[^>]*>/i, `<link rel="canonical" href="${seoHtmlEscape(canonical)}" />`);
   html = html.replace(/<script\s+type="application\/ld\+json"[^>]*>[\s\S]*?<\/script>/gi, '');
   if (localePath) {
-    html = html.replace(/<html\b([^>]*)>/i, (_match, attrs) => '<html' + String(attrs).replace(/\s+lang=["'][^"']*["']/i, '').replace(/\s+dir=["'][^"']*["']/i, '') + ' lang="' + escapeXml(localePath.locale) + '" dir="' + (localePath.locale === 'ar' ? 'rtl' : 'ltr') + '">');
+    html = html.replace(/<html\b([^>]*)>/i, (_match, attrs) => '<html' + String(attrs).replace(/\s+lang=["'][^"']*["']/i, '').replace(/\s+dir=["'][^"']*["']/i, '') + ' lang="' + escapeXml(localePath.locale) + '" dir="' + 'ltr' + '">');
     const alternateLinks: string[] = [];
     alternateLinks.push('<link rel="alternate" hreflang="en" href="' + escapeXml(origin + path) + '">');
     alternateLinks.push('<link rel="alternate" hreflang="x-default" href="' + escapeXml(origin + path) + '">');
