@@ -4,7 +4,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
   en: {
     // Header Top Bar
     'top.licensed': 'Licensed Egyptian Tour Operator #2491/ETB',
-    'top.cancellation': 'Check cancellation terms before booking',
+    'top.cancellation': 'Check the cancellation terms before you book',
     'top.pierDesk': 'Support',
     'top.language': 'Language',
     'top.currency': 'Currency',
@@ -16,31 +16,31 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'nav.whyChooseUs': 'About Us',
     'nav.guestReviews': 'Reviews',
     'nav.findMyBooking': 'My Booking',
-    'nav.explore': 'View Tours',
+    'nav.explore': 'Explore tours',
     'nav.bookExcursion': 'Book Now',
     'nav.brandSubtitle': 'Hurghada & Red Sea Tours',
 
     // Mobile Menu
-    'mobile.popularTours': 'Popular Tours & Island Trips',
+    'mobile.popularTours': 'Popular tours and island trips',
     'mobile.destinationsDetailed': 'Destinations (Hurghada, El Gouna, Marsa Alam)',
     'mobile.categories': 'Tour Categories',
-    'mobile.safety': 'Safety & Booking Information',
+    'mobile.safety': 'Safety and booking info',
     'mobile.reviews': 'Customer Reviews',
     'mobile.findBookingSubtitle': 'My Booking (View & Cancel)',
     'mobile.contactWhatsApp': 'Contact us on WhatsApp',
     'mobile.selectLanguage': 'Select Language',
 
     // Hero Section
-    'hero.badge': 'Direct Tour Operator in Hurghada & El Gouna',
-    'hero.guestsHosted': 'Check Available Departure Dates',
-    'hero.title1': 'Explore the Red Sea',
-    'hero.title2': 'with Local Captains',
+    'hero.badge': 'Local tours in Hurghada and El Gouna',
+    'hero.guestsHosted': 'See available dates',
+    'hero.title1': 'Discover the Red Sea',
+    'hero.title2': 'with our local team',
     'hero.subtitle':
-      'Explore snorkeling boat trips, island visits, and desert quad safaris from Hurghada and nearby Red Sea destinations. Check each excursion for departure days, pickup options, and availability.',
-    'hero.guarantee1': 'Weather may affect departures',
-    'hero.guarantee2': 'Cancellation terms shown before booking',
-    'hero.guarantee3': 'Pickup zones and supplements shown per tour',
-    'hero.guarantee4': 'Local crews and guides on selected tours',
+      'Join us for boat trips, island days, snorkelling and desert safaris around Hurghada. Choose a tour and check the dates, pickup details and what’s included.',
+    'hero.guarantee1': 'Trips may change with the weather',
+    'hero.guarantee2': 'See cancellation terms before booking',
+    'hero.guarantee3': 'Pickup details and extra fees shown per tour',
+    'hero.guarantee4': 'Local crews and guides on selected trips',
 
     // Search Module
     'search.destination': 'Destination',
@@ -58,35 +58,35 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     // Popular Tours Section
     'popular.title': 'Popular Tours in the Red Sea',
     'popular.subtitle':
-      'Inclusions, pickup coverage, equipment, and marine park fees are listed on each excursion page.',
-    'popular.viewAll': 'View All Tours',
+      'See what’s included, where pickup is available and what you’ll need on each tour page.',
+    'popular.viewAll': 'Explore all tours',
     'popular.quickBook': 'Book Now',
-    'popular.viewDetails': 'View Tour',
+    'popular.viewDetails': 'See tour details',
     'popular.from': 'From',
     'popular.perPerson': 'per person',
     'popular.instantConfirmation': 'Instant Confirmation',
     'popular.verified': 'Official Operator',
 
     // Why Choose Us
-    'why.title': 'Why Book Directly With Us',
+    'why.title': 'Why book with us?',
     'why.subtitle':
-      'We work with local activity providers, experienced skippers, and guides. The operating provider and included services are identified for each excursion.',
+      'We know the area and work with local crews and guides. Each tour page tells you who runs the trip and what’s included.',
 
     // Final CTA
     'cta.title': 'Ready to explore the Red Sea?',
     'cta.subtitle':
-      'Review the cancellation terms and pickup zones for your selected excursion, including any hotel-area supplements, before confirming.',
-    'cta.browse': 'View All Tours',
+      'Choose your trip, check the pickup details and read the cancellation terms before you book.',
+    'cta.browse': 'Explore all tours',
     'cta.chat': 'Chat on WhatsApp',
     'cta.lookup': 'Find My Booking',
 
     // WhatsApp Floating Widget
-    'whatsapp.concierge': 'Tour Support Desk',
+    'whatsapp.concierge': 'Chat with our team',
     'whatsapp.online': 'Online Now · Direct WhatsApp',
     'whatsapp.replies': 'Quick reply',
     'whatsapp.greeting': 'Hello! 🌊 Have questions about tour availability, pickups, or private boat trips?',
-    'whatsapp.instruction': 'Choose a topic below or send us a message directly on WhatsApp.',
-    'whatsapp.quickInquiries': 'Quick Inquiries',
+    'whatsapp.instruction': 'Pick a topic or send us a message on WhatsApp.',
+    'whatsapp.quickInquiries': 'Quick questions',
     'whatsapp.customQuestion': 'Your Question',
     'whatsapp.placeholder': 'e.g. Can we book 6 guests for Orange Bay this Thursday?',
     'whatsapp.openButton': 'Open in WhatsApp',
@@ -97,7 +97,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     'whatsapp.presetBooking': '🎟️ Existing booking: Need help with my reservation',
 
     // Footer
-    'footer.companyDesc': 'Hurghada-based tour operator offering Red Sea boat trips, island excursions, snorkeling, and desert experiences. Check each excursion for its operator and included services.',
+    'footer.companyDesc': 'We’re a local tour team in Hurghada. Join us for Red Sea boat trips, island visits, snorkelling and desert safaris.',
     'footer.destinations': 'Destinations',
     'footer.experiences': 'Experiences',
     'footer.customerCare': 'Customer Support',
@@ -107,7 +107,7 @@ export const TRANSLATIONS: Partial<Record<LanguageCode, Record<string, string>>>
     // PWA & Mobile Install
     'pwa.installApp': 'Install App',
     'pwa.saveToPhone': 'Save to Phone',
-    'pwa.installSubtitle': 'Fast offline access to tour vouchers & bookings',
+    'pwa.installSubtitle': 'Keep your bookings and tour vouchers handy, even offline',
   },
 
   fr: {
