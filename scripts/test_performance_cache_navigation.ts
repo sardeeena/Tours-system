@@ -29,6 +29,8 @@ assert.match(tours, /writePublicDataCache\('catalogue:tours'/, 'successful publi
 assert.match(tours, /eq\('is_exclusive', false\)/, 'public destination counts exclude Exclusive trips');
 assert.match(tours, /eq\('tours\.is_exclusive', false\)/, 'public category counts exclude Exclusive trips');
 assert.match(settings, /site:static-pages/, 'public CMS pages are cached across reloads');
+assert.match(settings, /page\.published !== false && page\.status !== 'draft' && page\.status !== 'unpublished'/, 'client public page cache excludes draft and unpublished CMS pages');
+assert.match(server, /page\.published !== false && page\.status !== 'draft' && page\.status !== 'unpublished'/, 'server public page rendering excludes draft and unpublished CMS pages');
 assert.match(seo, /seo:\$\{entityType\}/, 'public SEO overrides use a persistent cache key');
 assert.match(blog, /blog:list:/, 'published blog lists are cached');
 assert.match(blog, /blog:post:/, 'published blog articles are cached');
