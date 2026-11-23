@@ -193,8 +193,8 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
   if (!user) {
     return <main className="flex-1 max-w-xl mx-auto w-full px-4 py-20 text-center">
       <div className={panelClass + ' p-8'}><Headphones className="w-10 h-10 text-[#0A6C74] mx-auto mb-4"/>
-        <h1 className="font-display text-2xl font-bold text-stone-900 dark:text-white">Awesome Adventure Tours Support</h1>
-        <p className="text-sm text-stone-500 mt-2 mb-6">Sign in to create a support request and securely follow your conversations.</p>
+        <h1 className="font-display text-2xl font-bold text-stone-900 dark:text-white">Awesome Adventure Tours Help & Support</h1>
+        <p className="text-sm text-stone-500 mt-2 mb-6">Sign in to send us a message and keep track of our replies.</p>
         <a href="/login?redirect=%2Fsupport" className="inline-flex rounded-xl bg-[#0A6C74] text-white px-5 py-3 text-sm font-bold">Sign in to continue</a>
       </div>
     </main>;
@@ -202,8 +202,8 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
 
   if (staffMode && !canReadAll && !canReadAssigned && !canReply) {
     return <main className="flex-1 max-w-xl mx-auto px-4 py-20 text-center"><div className={panelClass+' p-8'}>
-      <Shield className="w-9 h-9 text-rose-500 mx-auto mb-3"/><h1 className="text-xl font-bold">Access restricted</h1>
-      <p className="text-sm text-stone-500 mt-2">Your account does not have permission to manage support tickets.</p>
+      <Shield className="w-9 h-9 text-rose-500 mx-auto mb-3"/><h1 className="text-xl font-bold">You can’t access this page</h1>
+      <p className="text-sm text-stone-500 mt-2">Your account doesn’t have permission to manage support tickets.</p>
     </div></main>;
   }
 
@@ -212,7 +212,7 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
       <div className="flex flex-wrap items-end justify-between gap-4 border-b border-stone-200/80 dark:border-slate-700 pb-5">
         <div><p className="text-[11px] uppercase tracking-[.2em] font-bold text-[#0A6C74]">{isStaff ? 'TEAM WORKSPACE' : 'CUSTOMER PORTAL'}</p>
           <h1 className="font-display text-3xl sm:text-4xl font-bold text-stone-900 dark:text-white mt-1">{isStaff ? 'Ticket management' : 'My support tickets'}</h1>
-          <p className="text-sm text-stone-500 dark:text-slate-400 mt-2">{isStaff ? 'Prioritize, collaborate and resolve customer requests across departments.' : 'Create a request and keep every reply in one secure place.'}</p>
+          <p className="text-sm text-stone-500 dark:text-slate-400 mt-2">{isStaff ? 'Review customer requests and help the team reply.' : 'Send us a message and see all replies in one place.'}</p>
         </div>
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => void loadTickets()} className="inline-flex items-center gap-2 px-3 py-2.5 rounded-xl border border-stone-200 dark:border-slate-700 text-sm"><RefreshCw size={15}/> Refresh</button>
@@ -230,7 +230,7 @@ export const SupportPage: React.FC<{ staffMode?: boolean }> = ({ staffMode = fal
         <div className="flex items-start justify-between gap-4 border-b border-stone-100 dark:border-slate-700 px-5 py-5 sm:px-6">
           <div><p className="text-[10px] font-bold uppercase tracking-[.18em] text-[#0A6C74]">Customer support</p>
             <h2 className="mt-1 font-display text-xl font-bold text-stone-900 dark:text-white">{isStaff ? 'Create support ticket' : 'How can we help?'}</h2>
-            <p className="mt-1 text-sm text-stone-500 dark:text-slate-400">{isStaff ? 'Open a request on behalf of a customer. You can set its routing and priority.' : 'Tell us what happened. Our team will review your request and take it from here.'}</p></div>
+            <p className="mt-1 text-sm text-stone-500 dark:text-slate-400">{isStaff ? 'Open a request on behalf of a customer. You can set its routing and priority.' : 'Tell us how we can help. Our team will get back to you.'}</p></div>
           <button type="button" onClick={()=>setShowNew(false)} aria-label="Close form" className="rounded-lg px-3 py-2 text-sm text-stone-500 hover:bg-stone-100 dark:hover:bg-slate-800">Cancel</button>
         </div>
         <div className="space-y-4 p-5 sm:p-6">
