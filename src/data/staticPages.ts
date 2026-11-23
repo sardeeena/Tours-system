@@ -39,7 +39,7 @@ export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
       },
       {
         title: 'Clear information before you reserve',
-        content: 'Every trip is different. Check the price, duration, what's included, age rules, pickup details and cancellation terms on the tour page before you book.',
+        content: 'Every trip is different. Check the price, duration, what’s included, age rules, pickup details and cancellation terms on the tour page before you book.',
       },
       {
         title: 'Local support in Hurghada',
@@ -47,7 +47,7 @@ export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
       },
       {
         title: 'How to choose your trip',
-        content: 'Choose where you want to go or what you’d like to do. Each tour page shows the schedule, duration, price and what's included. Trips at sea can change with the weather, so check the details for your date before you travel.',
+        content: 'Choose where you want to go or what you’d like to do. Each tour page shows the schedule, duration, price and what’s included. Trips at sea can change with the weather, so check the details for your date before you travel.',
       },
     ],
   },
@@ -72,7 +72,7 @@ export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
       },
       {
         title: 'Help choosing and preparing for an excursion',
-        content: 'Before you book, check the tour page for the price, duration, itinerary, what's included, age rules, pickup and cancellation terms. These details vary by trip. If you’re unsure about anything, send us the tour name and your hotel or meeting point.',
+        content: 'Before you book, check the tour page for the price, duration, itinerary, what’s included, age rules, pickup and cancellation terms. These details vary by trip. If you’re unsure about anything, send us the tour name and your hotel or meeting point.',
       },
       {
         title: 'Support for international travellers',
@@ -95,7 +95,7 @@ export const INITIAL_STATIC_PAGES: StaticPageContent[] = [
     sections: [
       {
         title: 'Tour information in one place',
-        content: 'Check the tour description, price, duration, schedule and what's included before you book.',
+        content: 'Check the tour description, price, duration, schedule and what’s included before you book.',
       },
       {
         title: 'Check the details that matter',
