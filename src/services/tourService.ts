@@ -1328,7 +1328,8 @@ export async function getPublishedDestinations(forceRefresh = false): Promise<De
   const { data: toursData, error: toursError } = await supabase
     .from('tours')
     .select('id, destination_id')
-    .eq('status', 'published');
+    .eq('status', 'published')
+    .eq('is_exclusive', false);
 
   if (toursError) {
     console.error('Failed to calculate published destination counts:', formatSupabaseError(toursError));
@@ -1414,8 +1415,9 @@ export async function getPublishedCategories(forceRefresh = false): Promise<Cate
   try {
     const { data: tcData, error: tcError } = await supabase
       .from('tour_categories')
-      .select('category_id, tours!inner(status)')
-      .eq('tours.status', 'published');
+      .select('category_id, tours!inner(status,is_exclusive)')
+      .eq('tours.status', 'published')
+      .eq('tours.is_exclusive', false);
 
     if (!tcError && tcData) {
       for (const item of tcData as any[]) {
@@ -1427,7 +1429,8 @@ export async function getPublishedCategories(forceRefresh = false): Promise<Cate
       const { data: toursWithTc, error: fallbackError } = await supabase
         .from('tours')
         .select('id, tour_categories(category_id)')
-        .eq('status', 'published');
+        .eq('status', 'published')
+        .eq('is_exclusive', false);
 
       if (fallbackError) {
         throw new Error(`Unable to calculate published experience counts: ${formatSupabaseError(fallbackError)}`);
