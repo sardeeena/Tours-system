@@ -72,3 +72,18 @@ test('static public pages do not request the live tour catalogue', async ({ page
   await expect(page.locator('body')).not.toBeEmpty();
   expect(catalogueRequests).toEqual([]);
 });
+
+
+test('tour detail HTML remains no-store with or without trailing slashes', async ({ page }) => {
+  for (const path of [
+    '/excursions/orange-bay-island-snorkeling',
+    '/excursions/orange-bay-island-snorkeling/',
+    '/excursions/orange-bay-island-snorkeling//',
+  ]) {
+    const response = await page.goto(path);
+    expect(response?.status()).toBe(200);
+    expect(response?.headers()['cache-control']).toContain('private, no-store');
+    expect(response?.headers()['cdn-cache-control']).toBe('no-store');
+    expect(response?.headers()['surrogate-control']).toBe('no-store');
+  }
+});
