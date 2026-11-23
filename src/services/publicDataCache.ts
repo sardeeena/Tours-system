@@ -1,5 +1,6 @@
 const CACHE_PREFIX = 'aat_public_data_v1:';
 export const PUBLIC_DATA_CACHE_TTL_MS = 15 * 60 * 1000;
+export const PUBLIC_CATALOGUE_CACHE_TTL_MS = 5 * 60 * 1000;
 
 export interface PublicDataCacheEntry<T> {
   data: T;
@@ -11,7 +12,7 @@ export interface PublicDataCacheEntry<T> {
  * Persistent cache for anonymous, published website content only.
  * Never use this for auth, bookings, customer records, availability, or admin data.
  */
-export function readPublicDataCache<T>(key: string): PublicDataCacheEntry<T> | null {
+export function readPublicDataCache<T>(key: string, ttlMs = PUBLIC_DATA_CACHE_TTL_MS): PublicDataCacheEntry<T> | null {
   if (typeof window === 'undefined') return null;
   try {
     const raw = window.localStorage.getItem(CACHE_PREFIX + key);
@@ -24,7 +25,7 @@ export function readPublicDataCache<T>(key: string): PublicDataCacheEntry<T> | n
     return {
       data: parsed.data as T,
       updatedAt: Number(parsed.updatedAt),
-      isFresh: Date.now() - Number(parsed.updatedAt) < PUBLIC_DATA_CACHE_TTL_MS,
+      isFresh: Date.now() - Number(parsed.updatedAt) < ttlMs,
     };
   } catch {
     return null;
