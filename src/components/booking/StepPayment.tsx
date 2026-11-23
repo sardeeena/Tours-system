@@ -61,7 +61,7 @@ export const StepPayment: React.FC<StepPaymentProps> = ({
         </div>
 
         {/* Payment Options Grid */}
-        <div className="grid grid-cols-1 gap-3 pt-1" role="radiogroup" aria-label="Choose a payment method">
+        <div className="grid grid-cols-1 gap-3 pt-1" role="radiogroup" aria-label="Payment Method">
           
           {/* Pay on Hotel Pickup (Active Option) */}
           <button
