@@ -127,7 +127,7 @@ export const ALL_TOURS: Tour[] = [
       { time: '09:30', title: 'Boat departure', description: 'Cruise across the Red Sea towards Giftun Island.' },
       { time: '10:30', title: 'Reef snorkeling stop', description: 'Enjoy around 45 minutes to snorkel above the reef.' },
       { time: '12:00', title: 'Paradise Beach leisure', description: 'Relax on the beach, play volleyball or buy a drink at the beach bar.' },
-      { time: '14:30', title: 'Lunch onboard', description: 'Enjoy a buffet lunch in the boat's shaded dining area.' },
+      { time: '14:30', title: 'Lunch onboard', description: 'Enjoy a buffet lunch in the boat’s shaded dining area.' },
       { time: '15:30', title: 'Second snorkeling session', description: 'Visit another reef for a second snorkelling stop.' },
       { time: '17:00', title: 'Return to hotel', description: 'Docking and transfer back to hotel.' }
     ],
