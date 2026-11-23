@@ -282,7 +282,7 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string, locale?: string) 
   '/': (origin, locale = 'en') => ({
     title: 'Awesome Adventure Tours | Boat Trips, Island Tours & Safaris',
     description:
-      'Explore Red Sea boat trips to Orange Bay, Giftun Island, Ras Mohammed, and desert safaris. Compare tour details, pickup arrangements, inclusions, and cancellation terms.',
+      'Join a boat trip to Orange Bay or Giftun Island, snorkel in the Red Sea or head into the desert near Hurghada. See tour details and book your day out.',
     keywords: SEO_DEFAULTS.KEYWORDS,
     canonicalUrl: `${origin}/`,
     ogType: 'website',
@@ -295,7 +295,7 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string, locale?: string) 
   '/excursions': (origin) => ({
     title: 'Boat Trips & Island Tours in Egypt | Awesome Adventure Tours',
     description:
-      'Browse boat trips, island experiences, snorkeling activities and desert adventures across Egypt. Compare durations, inclusions and prices.',
+      'Find boat trips, island days, snorkelling and desert safaris around Egypt. Compare tours, see what’s included and choose your next day out.',
     keywords: [
       'Egypt boat trips and island tours',
       'boat trips Hurghada',
@@ -318,8 +318,8 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string, locale?: string) 
   }),
 
   '/destinations': (origin) => ({
-    title: 'Explore Egypt Destinations & Excursions | Awesome Adventure Tours',
-    description: 'Explore the destinations served by Awesome Adventure Tours across Egypt. Discover each location and browse available boat trips, island experiences and adventures.',
+    title: 'Places to Visit in Egypt | Awesome Adventure Tours',
+    description: 'Explore places to visit around Egypt, from Hurghada and El Gouna to other Red Sea destinations. Find boat trips, island visits and more.',
     keywords: [
       'Egypt tour destinations',
       'Hurghada excursions',
@@ -342,9 +342,9 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string, locale?: string) 
   }),
 
   '/experiences': (origin) => ({
-    title: 'Boat Trips, Snorkeling & Desert Safaris | Awesome Adventure Tours',
+    title: 'Red Sea Boat Trips & Desert Safaris | Awesome Adventure Tours',
     description:
-      'Discover boat trips, island escapes, snorkeling, diving and desert adventures across Egypt’s Red Sea coast.',
+      'Spend a day on the water, visit a Red Sea island, try snorkelling or explore the desert on a safari.',
     keywords: [
       'Egypt coastal experiences',
       'Hurghada boat trips',
@@ -367,9 +367,9 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string, locale?: string) 
   }),
 
   '/support': (origin) => ({
-    title: 'Customer Support & Tickets | Awesome Adventure Tours',
+    title: 'Help with Your Booking | Awesome Adventure Tours',
     description:
-      'Sign in to create a support request and securely follow your conversations with the Awesome Adventure Tours team.',
+      'Sign in to ask our team for help and keep track of your support messages.',
     keywords: [
       'Awesome Adventure Tours support',
       'Tour assistance in Egypt',
@@ -395,7 +395,7 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string, locale?: string) 
   '/my-booking': (origin) => ({
     title: 'Manage Your Booking & Download Voucher | Awesome Adventure Tours',
     description:
-      'Retrieve your reservation details and voucher using the booking reference provided at confirmation.',
+      'Find your booking and download your voucher with the reference from your confirmation.',
     canonicalUrl: `${origin}/my-booking`,
     ogType: 'website',
     ogImage: SEO_DEFAULTS.DEFAULT_OG_IMAGE,
