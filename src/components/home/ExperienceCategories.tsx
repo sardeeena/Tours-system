@@ -41,7 +41,7 @@ export const ExperienceCategories: React.FC<ExperienceCategoriesProps> = ({
       setInternalCategories(data || []);
     } catch (err: any) {
       console.warn('Failed to load published categories from database:', err);
-      setInternalError(err.message || 'Unable to load categories from database.');
+      setInternalError('We couldn’t load experiences right now. Please try again in a moment.');
       setInternalCategories([]);
     } finally {
       setInternalLoading(false);
@@ -145,7 +145,7 @@ export const ExperienceCategories: React.FC<ExperienceCategoriesProps> = ({
             <AlertTriangle className="w-10 h-10 text-red-500 mx-auto" />
             <div>
               <h3 className="text-base font-semibold text-stone-900 dark:text-white">Unable to Load Experiences</h3>
-              <p className="text-xs text-stone-600 dark:text-stone-400 mt-1">{error}</p>
+              <p className="text-xs text-stone-600 dark:text-stone-400 mt-1">Please refresh the page or try again in a moment.</p>
             </div>
             <button
               type="button"
@@ -164,7 +164,7 @@ export const ExperienceCategories: React.FC<ExperienceCategoriesProps> = ({
             <Compass className="w-8 h-8 text-stone-400 dark:text-slate-500 mx-auto" />
             <h3 className="text-sm font-semibold text-stone-800 dark:text-slate-200">No Excursion Categories Available</h3>
             <p className="text-xs text-stone-500 dark:text-slate-400">
-              Excursion categories are currently being updated in our database. Please check back shortly.
+              We’re refreshing our excursion categories. Please check back shortly.
             </p>
           </div>
         )}
