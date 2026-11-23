@@ -30,7 +30,7 @@ assert.match(editor,/Supported translation languages[\s\S]*saved records[\s\S]*i
 assert.match(editor,/useState\(''\)/,'The workspace starts with a language overview instead of silently selecting French');
 assert.match(editor,/summary=true/,'The workspace loads authoritative language counts');
 assert.match(server,/req\.query\.summary === 'true'[\s\S]*count: 'exact', head: true[\s\S]*locale_summary/,'The protected API returns exact per-locale lifecycle counts');
-assert.match(editor,/French, Dutch and Polish are enabled here/,'The generation confirmation explains the supported rollout languages');
+assert.match(editor,/All ten agreed non-English languages are available here/,'The generation confirmation explains the fixed language scope');
 assert.match(editor,/setGenerationProgress\(targetLocale\.toUpperCase\(\) \+ ': ' \+ offset \+ '\/' \+ result\.total \+ ' source records · ' \+ generatedCount \+ ' drafts saved · ' \+ skippedCount \+ ' skipped · selected locale'\)/,'Progress identifies the selected locale and batch progress rather than incorrectly saying French only');
 assert.match(editor,/targetLocale\.toUpperCase\(\) \+ ' translation draft generation completed/,'Completion feedback identifies the selected locale');
 assert.doesNotMatch(editor,/French only/,'Progress never mislabels Dutch or Polish batches as French');
