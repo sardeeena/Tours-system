@@ -5388,7 +5388,9 @@ async function loadAwesomeAdventureToursPages(): Promise<any[]> {
   // partial page list. CMS content wins, while missing SEO metadata and hero
   // fields inherit safe, reviewed defaults from the matching static page.
   const staticPageBySlug = new Map<string, typeof INITIAL_STATIC_PAGES[number]>(INITIAL_STATIC_PAGES.map((page) => [page.slug, page] as const));
-  const mergedPages = publishedPages.map((page: any) => {
+  const mergedPages = publishedPages
+    .filter((page: any) => page?.slug && page.published !== false && page.status !== 'draft' && page.status !== 'unpublished')
+    .map((page: any) => {
     const fallback = typeof page?.slug === 'string' ? staticPageBySlug.get(page.slug) : undefined;
     if (!fallback) return page;
     return {
