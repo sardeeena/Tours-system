@@ -2,13 +2,11 @@
 
 ## Current state
 
-The public site currently has five active UI dictionaries: English, German, Italian, Romanian and Russian. The locale registry added in this change lists the planned European language targets, but planned locales are **not** enabled in the selector and do not imply translated content is available.
+The approved public language scope is exactly eleven locales: English, German, Italian, Romanian, Russian, French, Dutch, Polish, Czech, Swedish and Spanish. Existing source dictionaries are not proof that every page is translated. A locale is selectable and routable only after the server confirms that its complete content, UI catalogue and customer communication templates are reviewed, published and current.
 
 ## Locale catalogue
 
-First expansion wave: French, Spanish, Dutch, Polish and Portuguese. Existing German, Italian and Romanian remain active. Keep English as the source language and Russian as an existing additional language.
-
-Next waves: Swedish, Danish, Norwegian Bokmål, Finnish, Greek, Bulgarian, Croatian, Czech, Slovak, Slovenian, Hungarian, Estonian, Latvian, Lithuanian, Ukrainian, Serbian and Albanian. Turkish is an additional nearby market; Arabic is an RTL additional market.
+The fixed catalogue is: `en`, `de`, `it`, `ro`, `ru`, `fr`, `nl`, `pl`, `cs`, `sv` and `es`. No other locales are in scope. The staff admin interface remains English-only.
 
 ## Data foundation
 
@@ -25,7 +23,7 @@ Next waves: Swedish, Danish, Norwegian Bokmål, Finnish, Greek, Bulgarian, Croat
 3. Human review of safety, pickup, cancellation, price, age and payment wording. Never machine-publish operational or legal claims.
 4. Locale-prefixed URLs with translated slugs where appropriate; preserve existing English URLs unchanged.
 5. Server-render locale-specific HTML, title/description/Open Graph, structured data `inLanguage`, self-canonical, reciprocal `hreflang` including `x-default`, and locale sitemap entries.
-6. Do not auto-redirect by IP or browser language. Offer a language suggestion and let visitors choose.
+6. On a first visit, automatically select the best match from the browser's ordered language preferences, but only from fully published locales. A previously selected language preference is remembered. An explicit locale URL always wins. Never use IP geolocation for language selection; use English when no preferred language is available.
 7. Verify booking language persists through confirmation, email and WhatsApp; do not confuse customer locale with the spoken guide language.
 8. Do not index fallback English content at a translated URL. Missing or outdated translations remain unpublished/noindex.
 
@@ -52,7 +50,7 @@ A locale is not launch-ready until all of these checks pass:
 
 ## Database and account hardening follow-up
 
-The translation table is intentionally server-only. Its lifecycle changes must remain covered by the existing business audit trigger, while the generic audit snapshot redacts the content JSON field. CI asserts the table's RLS posture, absence of public/authenticated SELECT privileges, and audit-trigger presence. The booking flow now calls a dedicated locale-aware atomic RPC: it delegates the authoritative reservation to the existing booking pipeline, then persists the validated current UI locale on the newly created booking and customer preference within the same transaction. The spoken guide language remains a separate field. The public RPC remains invoker-rights to satisfy the project's public-function security policy; its private SECURITY DEFINER implementation pins an empty search_path and only accepts the five currently supported UI locales. CI checks both privilege boundaries and the intended anon/authenticated booking access. Newsletter subscription now normalizes the requested language against the same supported UI-locale allowlist, selects a matching welcome-email template by locale, and falls back explicitly to the reviewed English template when a localized template is not available.
+The translation table is intentionally server-only. Its lifecycle changes must remain covered by the existing business audit trigger, while the generic audit snapshot redacts the content JSON field. CI asserts the table's RLS posture, absence of public/authenticated SELECT privileges, and audit-trigger presence. The booking flow now calls a dedicated locale-aware atomic RPC: it delegates the authoritative reservation to the existing booking pipeline, then persists the validated current UI locale on the newly created booking and customer preference within the same transaction. The spoken guide language remains a separate field. The public RPC remains invoker-rights to satisfy the project's public-function security policy; its private SECURITY DEFINER implementation pins an empty search_path and only accepts the eleven approved customer-facing locales. CI checks both privilege boundaries and the intended anon/authenticated booking access. Newsletter subscription now normalizes the requested language against the same supported UI-locale allowlist, selects a matching welcome-email template by locale, and falls back explicitly to the reviewed English template when a localized template is not available.
 
 The earlier Supabase advisor report also identified seven public tables with RLS enabled and no policies. Do not add broad authenticated policies to silence that warning: zero policies means deny-all for client roles, which may be the intended posture. Before changing anything, verify each table's consumers and ensure all reads/writes occur through trusted server-side service-role code. Add narrowly scoped policies only if a documented client use case requires them. A production privilege check confirmed all seven deny SELECT to anon/authenticated; six grant service-role SELECT, while whatsapp_provider_status_events has no direct table grants by design and is accessed through record_whatsapp_provider_status, a SECURITY DEFINER function executable only by service_role. Preserve that narrow RPC boundary rather than granting direct table access.
 
@@ -98,3 +96,4 @@ A complete UI catalog is the activation gate for additional booking/account inte
 ### Locale switching and translated slugs
 
 The language selector does not blindly prefix the current English slug. It calls `GET /api/content-translations/target`, which resolves the current source entity (or current translated record), checks the source checksum, and returns the target locale's translated slug. Switching back to English returns the original source slug. Booking, customer portal and authentication paths require a complete published UI catalog before the language switch is accepted; a missing translation leaves the current route/language unchanged and displays a toast.
+\n\n## Approved language scope and automatic routing\n\nThe application registry and locale URL parser are restricted to the eleven agreed language codes. First-visit routing waits for `/api/content-translations/locales` and therefore cannot redirect a visitor into a draft, incomplete, stale or unpublished locale. It matches browser tags such as `es-ES` and `pl-PL` to their base language, remembers an explicit language selection where browser storage is available, preserves the current path/query/hash, and leaves explicit locale-prefixed URLs untouched. The admin workspace is excluded from automatic routing and remains English-only.\n
