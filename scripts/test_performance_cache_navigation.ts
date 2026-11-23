@@ -6,6 +6,8 @@ import { fileURLToPath } from 'node:url';
 const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8');
 const cache = read('../src/services/publicDataCache.ts');
 const tours = read('../src/services/tourService.ts');
+const publicTourList = tours.slice(tours.indexOf('export async function getPublishedTours'), tours.indexOf('export async function getTourBySlug'));
+const publicTourDetail = tours.slice(tours.indexOf('export async function getTourBySlug'));
 const availability = read('../src/services/availabilityService.ts');
 const searchModule = read('../src/components/home/SearchModule.tsx');
 const seoAdmin = read('../src/components/admin/AdminSeoManager.tsx');
@@ -28,7 +30,8 @@ assert.match(tours, /catalogue:tours/, 'published tour list is cached across rel
 assert.match(tours, /catalogue:destinations/, 'published destinations are cached across reloads');
 assert.match(tours, /catalogue:categories/, 'published categories are cached across reloads');
 assert.match(tours, /catalogue:tour:/, 'public tour detail content is cached across reloads');
-assert.match(tours, /eq\('reviews\.is_published', true\)/, 'public tour detail cache includes published reviews only');
+assert.match(publicTourDetail, /eq\('reviews\.is_published', true\)/, 'public tour detail query includes published reviews only');
+assert.doesNotMatch(publicTourList, /reviews\.is_published/, 'review publication filtering is applied to the detail query, not the tour list');
 assert.match(tours, /supabase\.auth\.getSession\(\)/, 'tour detail cache checks the real Supabase session');
 assert.match(tours, /!sessionError && !session\?\.user/, 'tour detail caching fails closed when session verification errors');
 assert.match(tours, /if \(canCachePublicTour\) writePublicDataCache\(cacheKey, mappedTour\)/, 'authenticated moderator data is never written to the shared public cache');
