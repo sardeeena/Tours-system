@@ -105,7 +105,7 @@ export const TourCard: React.FC<TourCardProps> = ({
       </div>
 
       {/* Content */}
-      <div className="p-2.5 sm:p-5 flex-1 flex flex-col justify-between space-y-2 sm:space-y-3 min-w-0">
+      <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between space-y-2.5 sm:space-y-3 min-w-0">
         <div>
           {/* Unboxed Metadata Line */}
           <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[9px] sm:text-[11px] text-stone-500 font-medium mb-1.5 min-w-0">
@@ -125,19 +125,19 @@ export const TourCard: React.FC<TourCardProps> = ({
           {/* Tour Title */}
           <h3 
             onClick={() => onViewTour(tour)}
-            className="font-display text-xs sm:text-base font-bold text-[#0E1B2A] dark:text-white leading-snug line-clamp-3 sm:line-clamp-2 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] cursor-pointer mb-1.5 sm:mb-2 transition-colors sm:min-h-[44px]"
+            className="font-display text-sm sm:text-base font-bold text-[#0E1B2A] dark:text-white leading-snug line-clamp-2 hover:text-[#0A6C74] dark:hover:text-[#2dd4bf] cursor-pointer mb-1.5 sm:mb-2 transition-colors sm:min-h-[44px]"
             title={tour.title}
           >
             {tour.title}
           </h3>
 
           {/* Short description */}
-          <p className="hidden sm:block text-xs text-stone-600 dark:text-slate-300 line-clamp-2 leading-relaxed mb-2 sm:mb-3 sm:min-h-[36px]">
+          <p className="text-[11px] sm:text-xs text-stone-600 dark:text-slate-300 line-clamp-2 leading-relaxed mb-2 sm:mb-3 sm:min-h-[36px]">
             {tour.shortDescription}
           </p>
 
           {/* Rating */}
-          <div className="flex items-center space-x-1.5 mb-2 text-xs">
+          <div className="flex items-center flex-wrap gap-x-1.5 mb-2 text-xs">
             {tour.reviewCount > 0 ? (
               <>
                 <div className="flex text-amber-400">
@@ -208,7 +208,7 @@ export const TourCard: React.FC<TourCardProps> = ({
               <button
                 type="button"
                 onClick={() => onViewTour(tour)}
-                className="flex-1 sm:flex-none px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold text-stone-700 hover:text-stone-900 bg-stone-100 hover:bg-stone-200/80 rounded-xl transition-all cursor-pointer"
+                className="flex-1 sm:flex-none min-h-10 px-2.5 sm:px-3 py-2 sm:py-2 text-xs font-semibold text-stone-700 hover:text-stone-900 bg-stone-100 hover:bg-stone-200/80 rounded-xl transition-all cursor-pointer"
               >
                 Details
               </button>
@@ -217,7 +217,7 @@ export const TourCard: React.FC<TourCardProps> = ({
                 whileTap={{ scale: 0.96 }}
                 type="button"
                 onClick={() => (onBookNow ? onBookNow(tour) : onViewTour(tour))}
-                className="flex-1 sm:flex-none justify-center px-2 sm:px-3.5 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold text-white bg-gradient-to-r from-[#0A6C74] to-[#0D838C] hover:from-[#08565C] hover:to-[#0A6C74] rounded-xl transition-all shadow-xs flex items-center space-x-1 group/btn cursor-pointer"
+                className="flex-1 sm:flex-none min-h-10 justify-center px-2.5 sm:px-3.5 py-2 sm:py-2 text-xs font-semibold text-white bg-gradient-to-r from-[#0A6C74] to-[#0D838C] hover:from-[#08565C] hover:to-[#0A6C74] rounded-xl transition-all shadow-xs flex items-center space-x-1 group/btn cursor-pointer"
               >
                 <span>Book</span>
                 <ArrowRight className="w-3.5 h-3.5 group-hover/btn:translate-x-0.5 transition-transform" />
