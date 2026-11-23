@@ -44,7 +44,7 @@ export const Itinerary: React.FC<ItineraryProps> = ({ items }) => {
       </div>
       
       <p className="text-[11px] text-stone-600 italic">
-        * Times are approximate and may adjust slightly based on hotel location, harbor coast guard clearance, and maritime weather.
+        * Times are approximate and may change due to local logistics and sea or weather conditions.
       </p>
     </div>
   );
