@@ -1,10 +1,25 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(9);
+SELECT plan(10);
 
 SELECT ok(
   (SELECT relrowsecurity FROM pg_class WHERE oid='public.reviews'::regclass),
   'reviews table keeps row-level security enabled'
+);
+SELECT ok(
+  NOT EXISTS (
+    SELECT 1
+    FROM information_schema.role_table_grants g
+    WHERE g.table_schema='public'
+      AND g.grantee='anon'
+      AND NOT EXISTS (
+        SELECT 1 FROM pg_policies p
+        WHERE p.schemaname=g.table_schema
+          AND p.tablename=g.table_name
+          AND ('anon'=ANY(p.roles::text[]) OR 'public'=ANY(p.roles::text[]))
+      )
+  ),
+  'anonymous table grants are absent wherever no public RLS policy exists'
 );
 SELECT ok(
   NOT has_table_privilege('anon','public.reviews','INSERT'),
