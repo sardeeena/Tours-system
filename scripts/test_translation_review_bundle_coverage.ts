@@ -39,6 +39,12 @@ for (const locale of locales) {
     assert.equal(bundle.coverage[type], count, locale + ': declared ' + type + ' coverage does not match records');
   }
   assert.equal(bundle.coverage.source_records, expectedTotal, locale + ': declared source record total mismatch');
+  const uiCatalog = bundle.records.find((record: any) => record.entity_type === 'ui_catalog');
+  assert.ok(uiCatalog, locale + ': UI catalogue record is required');
+  assert.equal(uiCatalog.private_ui_message_count, bundle.coverage.private_ui_messages,
+    locale + ': private UI catalogue count must match declared coverage');
+  assert.equal(Object.keys(uiCatalog.content).length, bundle.coverage.ui_catalog_messages,
+    locale + ': UI catalogue content count must match declared coverage');
   assert.equal(bundle.coverage.ui_catalog_messages, bundle.coverage.public_ui_messages + bundle.coverage.private_ui_messages,
     locale + ': UI message coverage does not reconcile');
   console.log(locale.toUpperCase() + ': validated ' + bundle.records.length + ' review-draft records (' + Object.entries(counts).map(([type, count]) => count + ' ' + type).join(', ') + ').');
