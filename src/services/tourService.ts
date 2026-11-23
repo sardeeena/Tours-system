@@ -346,8 +346,13 @@ export async function getTourBySlug(slug: string, allowDraft: boolean = false, f
   // share a tour-detail cache entry across authenticated and anonymous sessions.
   let canCachePublicTour = !allowDraft;
   if (canCachePublicTour && isSupabaseConfigured()) {
-    const { data: { session } } = await supabase.auth.getSession();
-    canCachePublicTour = !session?.user;
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      canCachePublicTour = !sessionError && !session?.user;
+    } catch {
+      // Fail closed: a session lookup failure must never place privileged data in a public cache.
+      canCachePublicTour = false;
+    }
   }
   if (canCachePublicTour && !forceRefresh) {
     const cached = readPublicDataCache<Tour | null>(cacheKey, PUBLIC_CATALOGUE_CACHE_TTL_MS);
