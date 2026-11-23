@@ -144,7 +144,7 @@ export const MyBookingPage: React.FC<MyBookingPageProps> = ({
     } catch (err) {
       console.error('Cancellation error', err);
       setCancelErrorMsg(
-        err instanceof Error ? err.message : 'The cancellation request could not be submitted. Please try again.'
+        'The cancellation request could not be submitted. Please try again or contact our support team.'
       );
     } finally {
       setIsCancelling(false);
