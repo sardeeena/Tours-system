@@ -38,7 +38,6 @@ assert(rateLimitNetworkKey('::ffff:192.0.2.10') === rateLimitNetworkKey('192.0.2
 assert(rateLimitNetworkKey('0:0:0:0:0:ffff:c000:020a') === rateLimitNetworkKey('192.0.2.10'), 'Hexadecimal IPv4-mapped IPv6 addresses normalize to the corresponding IPv4 principal');
 assert(rateLimitNetworkKey('fe80::1%eth0') === rateLimitNetworkKey('fe80::1'), 'IPv6 zone identifiers are stripped before network normalization');
 assert(rateLimitNetworkKey('::ffff:192.0.2.10%eth0') === rateLimitNetworkKey('192.0.2.10'), 'Zone-indexed IPv4-mapped IPv6 addresses normalize to IPv4');
-assert(server.includes("(req.ip || req.socket.remoteAddress || 'unknown').trim()"), 'Shared rate limiter trims proxy-derived client addresses before validation');
 
 
 
@@ -78,6 +77,7 @@ assert(migration.includes('REVOKE ALL ON TABLE public.rate_limit_buckets FROM PU
 
 // Public API validation must reject hostile JSON types before string operations.
 const server = read('server.ts');
+assert(server.includes("(req.ip || req.socket.remoteAddress || 'unknown').trim()"), 'Shared rate limiter trims proxy-derived client addresses before validation');
 const emailHelper = server.slice(server.indexOf('function normalizeSenderEmail'), server.indexOf('// ------------------------------------------------------------------------------', server.indexOf('function normalizeSenderEmail')));
 assert(emailHelper.includes("if (typeof value !== 'string') return ''"), 'Email normalization safely rejects non-string input');
 assert(emailHelper.includes("if (typeof email !== 'string' || email.length > 254) return false"), 'Email validation safely rejects non-string and oversized input');
