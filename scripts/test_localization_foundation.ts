@@ -11,6 +11,7 @@ const migration = read('../supabase/migrations/20261116150000_european_localizat
 const bookingLocaleMigration = read('../supabase/migrations/20261116160000_booking_customer_locale_atomic.sql');
 const expandedBookingLocaleMigration = read('../supabase/migrations/20261116170000_expand_booking_customer_locale_languages.sql');
 const allCustomerLocalesMigration = read('../supabase/migrations/20261117230000_expand_all_customer_locales.sql');
+const approvedLocaleMigration = read('../supabase/migrations/20261124100000_restrict_customer_locale_allowlist.sql');
 const bookingRepository = read('../src/services/bookingRepository.ts');
 const bookingPage = read('../src/pages/BookingPage.tsx');
 const appNavigation = read('../src/App.tsx');
@@ -115,7 +116,9 @@ assert.match(bookingLocaleMigration, /customer_locale = p_customer_locale/, 'Boo
 assert.match(bookingLocaleMigration, /preferred_locale = p_customer_locale/, 'Customer communication preference is updated with the booking');
 assert.match(bookingLocaleMigration, /NOT IN \('en', 'de', 'it', 'ro', 'ru'\)/, 'Original locale migration establishes the initial allowlist');
 assert.match(expandedBookingLocaleMigration, /NOT IN \('en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'\)/, 'Historical migration records the initial ten-locale allowlist');
-assert.match(allCustomerLocalesMigration, /NOT IN/, 'Forward migration replaces the atomic booking locale allowlist.');
+assert.match(allCustomerLocalesMigration, /NOT IN/, 'Historical migration expands the booking locale allowlist.');
+assert.match(approvedLocaleMigration, /'en', 'de', 'it', 'ro', 'ru', 'fr', 'nl', 'pl', 'cs', 'sv', 'es'/, 'Forward migration restricts booking locale writes to the eleven approved languages.');
+assert.match(approvedLocaleMigration, /position\\('''ar''' IN v_definition\\) > 0/, 'Forward migration removes Arabic from the customer locale allowlist.');
 for (const locale of ['en', 'de', 'it', 'ro', 'ru', 'fr', 'nl', 'pl', 'cs', 'sv', 'es']) {
   assert.ok(allCustomerLocalesMigration.includes(`'${locale}'`), `Forward migration allows booking locale ${locale}`);
 }
