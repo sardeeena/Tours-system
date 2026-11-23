@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8');
 const cache = read('../src/services/publicDataCache.ts');
@@ -66,5 +68,16 @@ assert.match(header, /aria-controls="mobile-navigation-menu"/, 'menu toggle iden
 assert.match(seo, /logo\.png/, 'client SEO uses the canonical brand logo');
 assert.match(server, /logo\.png/, 'server-rendered metadata uses the canonical brand logo');
 assert.doesNotMatch(server + seo, /logo\.webp|logo\.jpg/, 'legacy logo variants are not referenced by public metadata');
+
+const sourceRoot = fileURLToPath(new URL('../src/', import.meta.url));
+const sourceFiles = (directory: string): string[] => readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+  const path = join(directory, entry.name);
+  if (entry.isDirectory()) return sourceFiles(path);
+  return /\.(?:tsx?|jsx?|css|html)$/.test(entry.name) ? [path] : [];
+});
+const legacyLogoReferences = sourceFiles(sourceRoot)
+  .filter((path) => /logo\.(?:webp|jpg)/i.test(readFileSync(path, 'utf8')))
+  .map((path) => relative(sourceRoot, path));
+assert.deepEqual(legacyLogoReferences, [], 'all active source components use the canonical logo asset');
 
 console.log('Public caching boundaries, deferred loading, mobile navigation and canonical logo checks passed.');
