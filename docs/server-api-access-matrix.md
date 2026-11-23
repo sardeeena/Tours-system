@@ -49,7 +49,7 @@ Most admin CRUD screens use the Supabase client directly. Their effective author
 |---|---|---|
 | Guest booking | Public server endpoint / guarded booking RPC | No direct anonymous writes to booking tables; server validates booking and uses trusted database operations. |
 | Signed-in booking access | Authenticated, owner-scoped RLS | Customers can read their own bookings; update triggers limit self-service changes to pickup/contact details and cancellation requests. |
-| Guest contact / inquiry | Public server endpoint | Validation, honeypot and rate limits; database writes use the server-only key. |
+| Guest contact / inquiry | Public server endpoint | Validation, honeypot, IPv6-network and per-email rate limits; customer confirmation email is capped at one per recipient per hour; database writes use the server-only key. |
 | Newsletter signup / unsubscribe | Public server endpoint | Subscription state is not writable directly by anonymous browser clients. |
 | Tour reviews | Public server endpoint | Guest and signed-in submissions are accepted; reviews remain pending and unverified until staff moderation. |
 | Support tickets | Authenticated customer portal | Ticket ownership is tied to an Auth user ID. Guests use the public inquiry/contact flow instead; internal notes and staff queues remain permission-gated. |
