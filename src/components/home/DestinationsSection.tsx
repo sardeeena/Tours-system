@@ -145,7 +145,9 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
         {!isLoading && !error && destinations.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="destination-grid">
             {destinations.map((dest, idx) => (
-              <motion.div
+              <motion.button
+                type="button"
+                aria-label={`Explore ${dest.name} excursions and schedules`}
                 key={dest.id || dest.slug || idx}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -153,7 +155,7 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
                 transition={{ duration: 0.45, delay: idx * 0.08 }}
                 whileHover={{ y: -6 }}
                 onClick={() => onSelectDestination(dest.name)}
-                className={`group bg-white/85 dark:bg-[#132235]/85 backdrop-blur-xl rounded-2xl border border-white/70 dark:border-white/10 shadow-md overflow-hidden cursor-pointer hover:border-[#0A6C74]/50 hover:shadow-xl transition-all duration-300 flex flex-col justify-between ${
+                className={`group w-full text-left bg-white/85 dark:bg-[#132235]/85 backdrop-blur-xl rounded-2xl border border-white/70 dark:border-white/10 shadow-md overflow-hidden cursor-pointer hover:border-[#0A6C74]/50 hover:shadow-xl transition-all duration-300 flex flex-col justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2 ${
                   idx === 0 ? 'md:col-span-2 lg:col-span-1' : ''
                 }`}
               >
@@ -226,7 +228,7 @@ export const DestinationsSection: React.FC<DestinationsSectionProps> = ({
                   <span>View {dest.name} Schedule & Rates</span>
                   <span className="text-stone-400 dark:text-slate-500 group-hover:translate-x-1 group-hover:text-[#0A6C74] transition-all">→</span>
                 </div>
-              </motion.div>
+              </motion.button>
             ))}
           </div>
         )}
