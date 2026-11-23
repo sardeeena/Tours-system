@@ -11,8 +11,8 @@
     "static_page": 10,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1080,
-    "ui_catalog_messages": 1161,
+    "private_ui_messages": 1088,
+    "ui_catalog_messages": 1169,
     "source_records": 112
   },
   "records": [
@@ -4115,7 +4115,15 @@
         "private.text.c1c961ad": "Vérification des horaires de départ… ",
         "private.text.c2a951c0": "Disponibilité limitée",
         "private.text.c64375dc": "Politique d’annulation",
-        "private.text.e9175fbd": "Votre compte est protégé"
+        "private.text.e9175fbd": "Votre compte est protégé",
+        "private.text.69d458e5": "Vous prévoyez une excursion en mer ?",
+        "private.text.dbd7e16b": "Les conditions en mer et la météo peuvent changer. Les informations sur les départs sont confirmées par l’opérateur local.",
+        "private.text.4ec74a55": "Masquer les conseils",
+        "private.text.decc7fb0": "Conseils pour votre excursion",
+        "private.text.21533c25": "Pour des raisons de sécurité, l’opérateur évalue les conditions avant le départ. Si la météo affecte votre excursion réservée, l’équipe vous contactera pour vous présenter les options prévues par les conditions de réservation.",
+        "private.text.562cc5ed": "Fermer la galerie photo",
+        "private.text.6318d75c": "Photo précédente",
+        "private.text.e28cbf9c": "Photo suivante"
       },
       "private_ui_message_count": 1083
     },
