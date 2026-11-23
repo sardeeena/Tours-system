@@ -2017,34 +2017,40 @@ export async function submitTourReview(payload: {
   if (!Number.isInteger(payload.rating) || payload.rating < 1 || payload.rating > 5) {
     throw new Error('A customer review must include a rating from 1 to 5 stars.');
   }
-
+  if (!payload.authorName.trim() || payload.authorName.trim().length > 100) {
+    throw new Error('Please provide your name (up to 100 characters).');
+  }
+  if (payload.comment.trim().length < 20 || payload.comment.trim().length > 2000) {
+    throw new Error('Your review must be between 20 and 2,000 characters.');
+  }
   if (!isSupabaseConfigured() || isSchemaMissing()) {
-    throw new Error('Customer reviews are temporarily unavailable because the live review database is not connected.');
+    throw new Error('Customer reviews are temporarily unavailable. Please try again later.');
   }
 
-  let resolvedTourId = payload.tourId;
-  if (!resolvedTourId && payload.tourSlug) {
-    const { data } = await supabase.from('tours').select('id').eq('slug', payload.tourSlug).maybeSingle();
-    if (data?.id) {
-      resolvedTourId = data.id;
-    }
-  }
-
-  const { error } = await supabase.from('reviews').insert({
-    tour_id: resolvedTourId || null,
-    author_name: payload.authorName,
-    country: payload.country || 'International',
-    country_code: payload.countryCode || 'DE',
-    rating: payload.rating,
-    comment: payload.comment,
-    traveler_type: payload.travelerType || 'Couple',
-    verified_booking: false,
-    is_published: false,
-    date: new Date().toISOString().split('T')[0],
+  // Guest submissions intentionally omit Authorization. Signed-in customers may
+  // include their verified session, but both paths use the same server validation.
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData.session?.access_token;
+  const response = await fetch('/api/reviews/submit', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    },
+    body: JSON.stringify({
+      tourId: payload.tourId,
+      tourSlug: payload.tourSlug,
+      authorName: payload.authorName.trim(),
+      country: payload.country || 'International',
+      countryCode: payload.countryCode,
+      rating: payload.rating,
+      comment: payload.comment.trim(),
+      travelerType: payload.travelerType || 'Couple',
+    }),
   });
-
-  if (error) {
-    throw new Error(formatSupabaseError(error));
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || result?.success !== true) {
+    throw new Error(typeof result?.error === 'string' ? result.error : 'Your review could not be submitted. Please try again.');
   }
 
   notifyCatalogueDataChanged('reviews');
