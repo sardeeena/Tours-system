@@ -57,7 +57,7 @@ Most admin CRUD screens use the Supabase client directly. Their effective author
 | Customer CRM record | Owner-scoped RLS + protected update trigger | Self-service edits are limited to contact and preference fields; CRM/booking-derived fields remain protected. |
 | File uploads | Storage bucket RLS | Avatars and tour media are public-read; avatar uploads are user-folder scoped; vouchers and support attachments are private and permission/ticket scoped. |
 
-The live audit found 76 public tables with RLS enabled and no public table missing RLS. It also found stale anonymous table grants on tables that had no anonymous or PUBLIC RLS policy. The accompanying migration revokes those unnecessary grants without changing customer-facing server endpoints or authenticated staff policies.
+The live audit found 76 public tables with RLS enabled and no public table missing RLS. It found anonymous DML grants on 45 public tables, including read-only catalogue tables, plus default privileges that would grant anonymous access to future tables, sequences, and functions. The migration removes anonymous table writes and sequence access, restores SELECT only where an explicit anon/PUBLIC SELECT policy exists, and revokes future anonymous defaults for tables, sequences, and functions. Existing guest booking, availability, lookup, and cancellation RPCs retain their explicit execute grants.
 
 ## Change procedure
 
