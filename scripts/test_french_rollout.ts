@@ -12,5 +12,5 @@ for (const key of englishKeys) {
 }
 const frenchRollout = EUROPEAN_LOCALE_ROLLOUT.find((locale) => locale.code === 'fr');
 assert.equal(frenchRollout?.rollout, 'planned', 'French must remain hidden until all content and UI catalogs are reviewed and published.');
-assert.equal(SUPPORTED_LANGUAGES.fr, undefined, 'French must not be advertised from a static dictionary alone.');
+assert.ok(SUPPORTED_LANGUAGES.fr, 'French must be present in the fixed language catalogue; publication is still controlled by the server.');
 console.log('French interface translation coverage and staged-publication checks passed (' + frenchKeys.length + ' messages).');
