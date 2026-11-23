@@ -40,6 +40,8 @@ assert.match(worker, /request\.headers\.has\('authorization'\)/, 'service worker
 assert.match(worker, /event\.waitUntil\(updatePromise/, 'cached assets refresh in the background');
 assert.match(app, /const DeferredHomeSection/, 'homepage supports viewport-based section loading');
 assert.match(app, /const needsTours = isHome \|\| path === '\/excursions'/, 'non-catalogue routes avoid loading the full tour list');
+assert.match(app, /getPublishedTours\(undefined, isBookingRoute\)/, 'checkout refreshes authoritative tour prices instead of trusting a stale cache');
+assert.match(ec, /getExclusiveTrips\(true\)/, 'Exclusive booking refreshes its fixed trip price before checkout');
 assert.match(app, /const needsDestinations = isDestinationRoute \|\| \(isHome && refreshAll\)/, 'destination data is loaded on destination routes or explicit homepage refreshes');
 assert.match(app, /const needsCategories = path === '\/experiences' \|\| \(isHome && refreshAll\)/, 'category data is loaded on experience routes or explicit homepage refreshes');
 assert.match(app, /onEnter=\{refreshPublishedDestinations\}/, 'homepage destination data is loaded as its section approaches');
