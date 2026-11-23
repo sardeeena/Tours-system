@@ -23,6 +23,7 @@ assert.match(tours, /catalogue:tours/, 'published tour list is cached across rel
 assert.match(tours, /catalogue:destinations/, 'published destinations are cached across reloads');
 assert.match(tours, /catalogue:categories/, 'published categories are cached across reloads');
 assert.match(tours, /catalogue:tour:/, 'public tour detail content is cached across reloads');
+assert.match(tours, /eq\('reviews\.is_published', true\)/, 'public tour detail cache includes published reviews only');
 assert.match(tours, /writePublicDataCache\('catalogue:tours'/, 'successful public catalogue reads refresh the persistent cache');
 assert.match(tours, /eq\('is_exclusive', false\)/, 'public destination counts exclude Exclusive trips');
 assert.match(tours, /eq\('tours\.is_exclusive', false\)/, 'public category counts exclude Exclusive trips');
