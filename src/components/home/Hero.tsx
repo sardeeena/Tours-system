@@ -133,30 +133,19 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-8 pt-8 sm:pt-12 pb-8 sm:pb-10">
         
-        {/* Dynamic Synchronized Headline & Narrative based on active cinematic tour */}
+        {/* Clear, localized headline stays steady while the background photos rotate. */}
         <div className="max-w-3xl mr-auto ml-0 mb-5 sm:mb-6 min-h-[100px] sm:min-h-[120px] rounded-2xl sm:rounded-3xl border border-white/35 bg-white/30 dark:bg-[#0E1B2A]/40 backdrop-blur-sm shadow-lg shadow-black/10 px-4 py-4 sm:px-6 sm:py-5 text-left [direction:ltr]">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={slide.id}
-              initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, y: -16 }}
-              transition={{ duration: prefersReducedMotion ? 0 : 0.55, ease: 'easeOut' }}
-            >
-              {/* Dynamic Headline */}
-              <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-stone-900 dark:text-white leading-[1.12] mb-3 text-left [text-wrap:balance] drop-shadow-[0_1px_1px_rgba(255,255,255,0.12)]">
-                {t('hero.title1', 'Discover the Red Sea')}{' '}
-                <span className="italic font-serif text-[#0A6C74] dark:text-[#91E4EB]">
-                  {t('hero.title2', 'with our local team')}
-                </span>
-              </h1>
-
-              {/* Dynamic Subtitle */}
-              <p className="text-sm sm:text-base lg:text-lg text-stone-800 dark:text-white font-medium leading-relaxed max-w-2xl drop-shadow-sm ml-0 mr-auto text-left">
-                {t('hero.subtitle', 'Join us for boat trips, island days, snorkelling and desert safaris around Hurghada. Choose a tour and check the dates, pickup details and what’s included.')}
-              </p>
-            </motion.div>
-          </AnimatePresence>
+          <div>
+            <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-stone-900 dark:text-white leading-[1.12] mb-3 text-left [text-wrap:balance] drop-shadow-[0_1px_1px_rgba(255,255,255,0.12)]">
+              {t('hero.title1', 'Discover the Red Sea')}{' '}
+              <span className="italic font-serif text-[#0A6C74] dark:text-[#91E4EB]">
+                {t('hero.title2', 'with our local team')}
+              </span>
+            </h1>
+            <p className="text-sm sm:text-base lg:text-lg text-stone-800 dark:text-white font-medium leading-relaxed max-w-2xl drop-shadow-sm ml-0 mr-auto text-left">
+              {t('hero.subtitle', 'Join us for boat trips, island days, snorkelling and desert safaris around Hurghada. Choose a tour and check the dates, pickup details and what’s included.')}
+            </p>
+          </div>
         </div>
 
 
