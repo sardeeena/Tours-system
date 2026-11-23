@@ -329,48 +329,75 @@ function MainApp() {
     category: 'All',
   });
 
-  // Load tours, destinations, and categories in parallel for sub-second homepage rendering
-  const refreshCatalogue = useCallback(async () => {
-    setLoadingTours(true);
-    setLoadingDestinations(true);
-    setLoadingCategories(true);
-    setToursError(null);
-    setDestinationsError(null);
-    setCategoriesError(null);
+  // Fetch only the public data required by the active route. Homepage search
+  // needs all three lists; other pages avoid unrelated catalogue queries.
+  const refreshCatalogue = useCallback(async (path = currentPath) => {
+    const isHome = path === '/';
+    const isDestinationRoute = path === '/destinations' || path.startsWith('/destinations/');
+    const needsTours = isHome || path === '/excursions' || path.startsWith('/excursions/')
+      || path === '/booking' || (path.startsWith('/booking/') && !path.startsWith('/booking/confirmation/'))
+      || path.startsWith('/destinations/');
+    const needsDestinations = isHome || isDestinationRoute;
+    const needsCategories = isHome || path === '/experiences';
+
+    if (needsTours) {
+      setLoadingTours(true);
+      setToursError(null);
+    } else {
+      setLoadingTours(false);
+    }
+    if (needsDestinations) {
+      setLoadingDestinations(true);
+      setDestinationsError(null);
+    } else {
+      setLoadingDestinations(false);
+    }
+    if (needsCategories) {
+      setLoadingCategories(true);
+      setCategoriesError(null);
+    } else {
+      setLoadingCategories(false);
+    }
 
     const [toursRes, destsRes, catsRes] = await Promise.allSettled([
-      getPublishedTours(),
-      getPublishedDestinations(),
-      getPublishedCategories(),
+      needsTours ? getPublishedTours() : Promise.resolve(undefined),
+      needsDestinations ? getPublishedDestinations() : Promise.resolve(undefined),
+      needsCategories ? getPublishedCategories() : Promise.resolve(undefined),
     ]);
 
-    if (toursRes.status === 'fulfilled') {
-      setLiveTours(toursRes.value || []);
-    } else {
-      console.warn('Failed to load published tours from Supabase:', toursRes.reason);
-      setToursError('We couldn’t load excursions right now. Please try again.');
-      setLiveTours([]);
+    if (needsTours) {
+      if (toursRes.status === 'fulfilled') {
+        setLiveTours(toursRes.value || []);
+      } else {
+        console.warn('Failed to load published tours from Supabase:', toursRes.reason);
+        setToursError('We couldn’t load excursions right now. Please try again.');
+        setLiveTours([]);
+      }
+      setLoadingTours(false);
     }
-    setLoadingTours(false);
 
-    if (destsRes.status === 'fulfilled') {
-      setLiveDestinations(destsRes.value || []);
-    } else {
-      console.warn('Failed to load published destinations from Supabase:', destsRes.reason);
-      setDestinationsError('We couldn’t load destinations right now. Please try again.');
-      setLiveDestinations([]);
+    if (needsDestinations) {
+      if (destsRes.status === 'fulfilled') {
+        setLiveDestinations(destsRes.value || []);
+      } else {
+        console.warn('Failed to load published destinations from Supabase:', destsRes.reason);
+        setDestinationsError('We couldn’t load destinations right now. Please try again.');
+        setLiveDestinations([]);
+      }
+      setLoadingDestinations(false);
     }
-    setLoadingDestinations(false);
 
-    if (catsRes.status === 'fulfilled') {
-      setLiveCategories(catsRes.value || []);
-    } else {
-      console.warn('Failed to load published categories from Supabase:', catsRes.reason);
-      setCategoriesError('We couldn’t load activities right now. Please try again.');
-      setLiveCategories([]);
+    if (needsCategories) {
+      if (catsRes.status === 'fulfilled') {
+        setLiveCategories(catsRes.value || []);
+      } else {
+        console.warn('Failed to load published categories from Supabase:', catsRes.reason);
+        setCategoriesError('We couldn’t load activities right now. Please try again.');
+        setLiveCategories([]);
+      }
+      setLoadingCategories(false);
     }
-    setLoadingCategories(false);
-  }, []);
+  }, [currentPath]);
 
   const refreshPublishedTours = useCallback(async () => {
     setLoadingTours(true);
