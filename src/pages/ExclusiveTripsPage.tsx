@@ -96,14 +96,14 @@ export const ExclusiveTripsPage: React.FC<Props> = () => {
       <section className="bg-[#102B32] text-white px-4 sm:px-8 py-14 sm:py-20">
         <div className="max-w-7xl mx-auto">
           <p className="uppercase tracking-[.22em] text-xs text-teal-200 font-semibold">Made entirely yours</p>
-          <h1 className="font-display text-4xl sm:text-5xl font-bold mt-3">Exclusive Private Trips</h1>
+          <h1 className="font-display text-4xl sm:text-5xl font-bold mt-3">Private trips</h1>
           <p className="mt-4 max-w-2xl text-white/75 text-base sm:text-lg">Your own boat, yacht or private adventure. One fixed price for the entire trip, with no per-person price changes.</p>
         </div>
       </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(340px,.82fr)] gap-8">
         <section className="space-y-5">
-          <div className="flex items-center justify-between gap-3"><h2 className="text-2xl font-bold">Choose your experience</h2><span className="text-sm text-stone-500">{trips.length} experiences</span></div>
+          <div className="flex items-center justify-between gap-3"><h2 className="text-2xl font-bold">Choose your trip</h2><span className="text-sm text-stone-500">{trips.length} experiences</span></div>
           {trips.length === 0 && <div className="rounded-2xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-7">No exclusive trips are currently published. Please check back soon.</div>}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {trips.map((trip) => {
@@ -139,7 +139,7 @@ export const ExclusiveTripsPage: React.FC<Props> = () => {
             </div>
           ) : selectedTrip ? (
             <form onSubmit={handleReserve} className="rounded-2xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-5 sm:p-7 shadow-sm space-y-4">
-              <div><p className="text-xs uppercase tracking-wider text-teal-700 dark:text-teal-300 font-semibold">Reserve privately</p><h2 className="text-2xl font-bold mt-1">{selectedTrip.tours.title}</h2><p className="text-sm text-stone-500 mt-1">One reservation secures the entire slot.</p></div>
+              <div><p className="text-xs uppercase tracking-wider text-teal-700 dark:text-teal-300 font-semibold">Book a private trip</p><h2 className="text-2xl font-bold mt-1">{selectedTrip.tours.title}</h2><p className="text-sm text-stone-500 mt-1">One booking reserves the whole time slot.</p></div>
               <div className="rounded-xl bg-stone-50 dark:bg-slate-800 p-4 flex justify-between gap-3"><div><p className="text-xs text-stone-500">Fixed total · not per person</p><p className="text-2xl font-bold">{money(selectedTrip.fixed_trip_price, selectedTrip.currency)}</p></div><Ship className="text-teal-700" size={26}/></div>
               <label className="block text-sm font-semibold">Available date and time
                 <select required value={selectedDepartureId} onChange={(e) => setSelectedDepartureId(e.target.value)} className="mt-1 w-full rounded-lg border border-stone-300 dark:border-slate-600 bg-white dark:bg-slate-800 p-3">
