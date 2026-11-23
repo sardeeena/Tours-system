@@ -16,7 +16,7 @@ DROP POLICY IF EXISTS "Public can read published reviews" ON public.reviews;
 CREATE POLICY "Public can read published reviews"
   ON public.reviews
   FOR SELECT
-  TO anon, authenticated
+  TO anon
   USING (is_published = TRUE);
 
 -- Remove stale anonymous table grants wherever RLS has no anon/PUBLIC policy.
