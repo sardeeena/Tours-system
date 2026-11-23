@@ -186,10 +186,6 @@ export const StepExtras: React.FC<StepExtrasProps> = ({
           </div>
         )}
 
-        <div className="flex items-center space-x-1.5 text-[11px] text-stone-500 pt-1">
-          <Info className="w-3.5 h-3.5 text-stone-400 shrink-0" />
-          <span>Optional add-ons are included in your total before you confirm. You can review your selections in the booking summary.</span>
-        </div>
       </div>
 
       {/* Navigation Buttons */}
