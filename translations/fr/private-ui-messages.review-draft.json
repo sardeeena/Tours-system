@@ -17,7 +17,6 @@
     "private.text.02fc21c9": "Yacht à moteur",
     "private.text.032633d4": "PAIEMENT À LA PRISE EN CHARGE",
     "private.text.033e7303": "Aucun supplément n’a été sélectionné.",
-    "private.text.037a2ebd": "Vous pouvez modifier ou annuler gratuitement les options facultatives jusqu’à 24 heures avant le départ.",
     "private.text.0398aaa1": "Créé le ",
     "private.text.03e6f08a": "Réservez votre excursion ",
     "private.text.0497e786": "Renvoyer l’e-mail",
@@ -128,7 +127,6 @@
     "private.text.1d8fa5d0": "Se déconnecter ",
     "private.text.1df8deab": "Ligne d’assistance d’urgence :",
     "private.text.1e13f3e6": "Retour à l’accueil",
-    "private.text.1e171efc": "Annulation gratuite jusqu’à 24 h avant le départ",
     "private.text.1e7c9273": "De quelle aide avez-vous besoin ? ",
     "private.text.1e82bbe9": "Le service de prise en charge n’est pas encore configuré pour cette excursion.",
     "private.text.1eac5983": "Pays ",
@@ -430,7 +428,6 @@
     "private.text.69953d78": " enregistré pour vos vacances ",
     "private.text.699ea3d7": " M’attribuer",
     "private.text.69c9b9d4": "Demandes spéciales :",
-    "private.text.69e609e0": "Annulez jusqu’à 24 heures avant la prise en charge pour obtenir un remboursement intégral. ",
     "private.text.6a99c031": "Nom de l’hôtel / de l’hébergement ",
     "private.text.6a9bce19": "Erreur lors du renvoi de l’e-mail de confirmation.",
     "private.text.6a9c9baa": "Vérifier et continuer ",
@@ -1087,5 +1084,5 @@
     "private.text.c64375dc": "Politique d’annulation",
     "private.text.e9175fbd": "Votre compte est protégé"
   },
-  "coverage": 1083
+  "coverage": 1080
 }
