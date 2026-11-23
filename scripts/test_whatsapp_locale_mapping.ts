@@ -30,7 +30,7 @@ assert.equal(resolveWhatsAppLocaleLanguageMap(JSON.stringify({ ar: 'ar' }), 'en'
 assert.equal(resolveWhatsAppLocaleLanguageMap(JSON.stringify({ fr: 'fr-fr' }), 'en').valid, false, 'Meta language codes must use the documented case-sensitive format.');
 assert.equal(resolveWhatsAppLocaleLanguageMap(JSON.stringify({ fr: 'fr_FR' }), 'xx').valid, false, 'Fallback language must also be explicitly approved.');
 
-assert.match(server, /resolveWhatsAppLocaleLanguageMap\\(process\\.env\\.WHATSAPP_TEMPLATE_LANGUAGE_MAP/);
-assert.match(server, /selectWhatsAppTemplateLanguage\\(preferredLocale/);
-assert.doesNotMatch(server, /\\['en', 'de', 'it', 'ro', 'ru'\\]\\.includes\\(preferredLocale\\)/, 'The former hard-coded locale allowlist is removed.');
+assert.ok(server.includes('resolveWhatsAppLocaleLanguageMap(process.env.WHATSAPP_TEMPLATE_LANGUAGE_MAP'));
+assert.ok(server.includes('selectWhatsAppTemplateLanguage(preferredLocale'));
+assert.ok(!server.includes("['en', 'de', 'it', 'ro', 'ru'].includes(preferredLocale)"), 'The former hard-coded locale allowlist is removed.');
 console.log('WhatsApp locale mapping and safe fallback checks passed.');
