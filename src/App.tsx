@@ -333,8 +333,8 @@ function MainApp() {
     category: 'All',
   });
 
-  // Fetch only the public data required by the active route. Homepage search
-  // needs all three lists; other pages avoid unrelated catalogue queries.
+  // Fetch only the public data required by the active route. Homepage tour cards
+  // load first; search options and lower-page lists are fetched on demand.
   const refreshCatalogue = useCallback(async (path = currentPath, refreshAll = false) => {
     const isHome = path === '/';
     const isDestinationRoute = path === '/destinations' || path.startsWith('/destinations/');
