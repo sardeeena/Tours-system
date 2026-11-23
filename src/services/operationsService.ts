@@ -1048,9 +1048,8 @@ export async function getPassengerManifest(
   tourIdFilter?: string
 ): Promise<PassengerManifestItem[]> {
   const date = dateFilter || new Date().toISOString().split('T')[0];
-  // Fetch only the selected day's bookings. Loading and paginating the
-  // entire booking history for a one-day pickup board can time out as the
-  // reservation table grows.
+  // Fetch only the selected day's bookings rather than scanning the full
+  // reservation history to build a single-day passenger manifest.
   const allBookings = await bookingRepository.listBookings({ date });
   const targetBookings = allBookings.filter((booking) => {
     const bookingDate = booking.date ? booking.date.split('T')[0] : '';
