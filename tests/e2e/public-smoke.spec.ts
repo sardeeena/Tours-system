@@ -62,7 +62,7 @@ test('static public pages do not request the live tour catalogue', async ({ page
   const catalogueRequests: string[] = [];
   page.on('request', (request) => {
     const url = new URL(request.url());
-    if (/\\/rest\\/v1\\/(?:tours|destinations|categories|tour_categories)(?:\\?|$)/.test(url.pathname + url.search)) {
+    if (/\/rest\/v1\/(?:tours|destinations|categories|tour_categories)(?:\?|$)/.test(url.pathname + url.search)) {
       catalogueRequests.push(url.pathname);
     }
   });
