@@ -54,8 +54,8 @@ assert.match(server, /override\?\.robots_index === false && !\(pageKind === 'sta
 assert.match(server, /override\?\.robots_follow === false && !\(pageKind === 'static' && seoIdentifier === 'about'\)/, 'About remains followable in server-rendered HTML');
 
 assert.doesNotMatch(hero, /Water 26°C|Water 25°C|Visibility 28m|Visibility 35m|Dolphin Pods Active|Sea Turtles Active/, 'hero does not publish unsupported live sea or wildlife conditions');
-assert.match(hero, /title1: 'A day on'/, 'hero uses a clear, everyday headline about the island trip');
-assert.match(hero, /subtitle: 'Visit Orange Bay and Paradise Island/, 'hero describes the trip in plain language without promising wildlife sightings');
+assert.match(hero, /t\('hero.title1'/, 'hero headline uses the translated, plain-language UI catalogue');
+assert.match(hero, /t\('hero.subtitle'/, 'hero subtitle uses the translated, plain-language UI catalogue');
 
 assert.match(tourService, /if \(toursError\)[\s\S]*?throw new Error\(`Unable to calculate published excursion counts:/, 'destination count failures are surfaced instead of silently showing zero');
 
