@@ -1709,16 +1709,26 @@ export async function deleteGuide(id: string): Promise<boolean> {
 // 7. AVAILABILITY SLOTS
 // ==============================================================================
 
-export async function listAvailabilitySlots(): Promise<AvailabilitySlot[]> {
+export async function listAvailabilitySlots(startDate?: string, endDate?: string): Promise<AvailabilitySlot[]> {
+  if ((startDate && !/^\\d{4}-\\d{2}-\\d{2}$/.test(startDate)) ||
+      (endDate && !/^\\d{4}-\\d{2}-\\d{2}$/.test(endDate)) ||
+      Boolean(startDate) !== Boolean(endDate) ||
+      (startDate && endDate && startDate > endDate)) {
+    throw new Error('A valid inclusive availability date range is required.');
+  }
+
   if (!isSupabaseConfigured()) {
     if (import.meta.env?.DEV) return [];
     throw new Error('Supabase is not configured; live availability cannot be loaded.');
   }
 
-  const { data: rows, error } = await supabase
+  let availabilityQuery = supabase
     .from('tour_availability')
-    .select('id,tour_id,date,max_capacity,booked_count,status,notes,is_blackout')
-    .order('date', { ascending: true });
+    .select('id,tour_id,date,max_capacity,booked_count,status,notes,is_blackout');
+  if (startDate && endDate) {
+    availabilityQuery = availabilityQuery.gte('date', startDate).lte('date', endDate);
+  }
+  const { data: rows, error } = await availabilityQuery.order('date', { ascending: true });
 
   if (error) throw new Error(formatSupabaseError(error));
   if (!rows?.length) return [];
@@ -1748,9 +1758,14 @@ export async function listAvailabilitySlots(): Promise<AvailabilitySlot[]> {
     cursor.setUTCDate(cursor.getUTCDate() + 1);
   }
 
-  const [{ data: tours, error: toursError }, scheduleGroups] = await Promise.all([
+  const [{ data: tours, error: toursError }] = await Promise.all([
     supabase.from('tours').select('id,title,slug,departure_time').in('id', tourIds),
-    Promise.all(tourIds.map(async (tourId) => {
+  ]);
+  // Bound RPC concurrency: the calendar only needs its visible date window,
+  // and a small batch avoids opening one database request per tour at once.
+  const scheduleGroups: any[][] = [];
+  for (let offset = 0; offset < tourIds.length; offset += 4) {
+    const batch = await Promise.all(tourIds.slice(offset, offset + 4).map(async (tourId) => {
       const chunks = await Promise.all(dateRanges.map(async (range) => {
         const { data, error: scheduleError } = await supabase.rpc('get_tour_availability_schedule', {
           p_tour_identifier: String(tourId),
@@ -1761,8 +1776,9 @@ export async function listAvailabilitySlots(): Promise<AvailabilitySlot[]> {
         return data || [];
       }));
       return chunks.flat();
-    })),
-  ]);
+    }));
+    scheduleGroups.push(...batch);
+  }
 
   if (toursError) throw new Error(formatSupabaseError(toursError));
 
