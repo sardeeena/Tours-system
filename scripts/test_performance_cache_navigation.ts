@@ -5,6 +5,7 @@ const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf
 const cache = read('../src/services/publicDataCache.ts');
 const tours = read('../src/services/tourService.ts');
 const availability = read('../src/services/availabilityService.ts');
+const searchModule = read('../src/components/home/SearchModule.tsx');
 const settings = read('../src/services/siteSettingsService.ts');
 const seo = read('../src/services/seoService.ts');
 const blog = read('../src/services/blogService.ts');
@@ -38,8 +39,10 @@ assert.match(worker, /request\.headers\.has\('authorization'\)/, 'service worker
 assert.match(worker, /event\.waitUntil\(updatePromise/, 'cached assets refresh in the background');
 assert.match(app, /const DeferredHomeSection/, 'homepage supports viewport-based section loading');
 assert.match(app, /const needsTours = isHome \|\| path === '\/excursions'/, 'non-catalogue routes avoid loading the full tour list');
-assert.match(app, /const needsDestinations = isHome \|\| isDestinationRoute/, 'destination data is loaded only for homepage and destination routes');
-assert.match(app, /const needsCategories = isHome \|\| path === '\/experiences'/, 'category data is loaded only for homepage and experience routes');
+assert.match(app, /const needsDestinations = isDestinationRoute \|\| \(isHome && refreshAll\)/, 'destination data is loaded on destination routes or explicit homepage refreshes');
+assert.match(app, /const needsCategories = path === '\/experiences' \|\| \(isHome && refreshAll\)/, 'category data is loaded on experience routes or explicit homepage refreshes');
+assert.match(app, /onEnter=\{refreshPublishedDestinations\}/, 'homepage destination data is loaded as its section approaches');
+assert.match(app, /onEnter=\{refreshPublishedCategories\}/, 'homepage category data is loaded as its section approaches');
 assert.match(app, /rootMargin: '700px 0px'/, 'below-the-fold sections load shortly before entering view');
 assert.match(app, /const PopularTours = lazy\(/, 'tour-card code is split from the initial homepage bundle');
 assert.match(app, /const ReviewsSection = lazy\(/, 'review content is split from the initial homepage bundle');
