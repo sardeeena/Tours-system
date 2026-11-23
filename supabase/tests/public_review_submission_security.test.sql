@@ -76,10 +76,28 @@ SELECT ok(
   AND EXISTS (
     SELECT 1 FROM pg_proc p
     JOIN pg_namespace n ON n.oid=p.pronamespace
+    WHERE n.nspname='public' AND p.proname='create_booking_atomic_with_departure'
+      AND has_function_privilege('anon',p.oid,'EXECUTE')
+  )
+  AND EXISTS (
+    SELECT 1 FROM pg_proc p
+    JOIN pg_namespace n ON n.oid=p.pronamespace
     WHERE n.nspname='public' AND p.proname='get_tour_availability_schedule'
       AND has_function_privilege('anon',p.oid,'EXECUTE')
+  )
+  AND EXISTS (
+    SELECT 1 FROM pg_proc p
+    JOIN pg_namespace n ON n.oid=p.pronamespace
+    WHERE n.nspname='public' AND p.proname='lookup_booking_secure'
+      AND has_function_privilege('anon',p.oid,'EXECUTE')
+  )
+  AND EXISTS (
+    SELECT 1 FROM pg_proc p
+    JOIN pg_namespace n ON n.oid=p.pronamespace
+    WHERE n.nspname='public' AND p.proname='request_booking_cancellation_secure'
+      AND has_function_privilege('anon',p.oid,'EXECUTE')
   ),
-  'intentional guest booking and availability RPCs retain their explicit execute grants'
+  'intentional guest booking, availability, lookup and cancellation RPCs retain explicit execute grants'
 );
 SELECT ok(
   NOT has_table_privilege('anon','public.reviews','INSERT'),
