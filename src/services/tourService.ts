@@ -27,7 +27,7 @@ import {
 } from '../types/database';
 import { PickupLocation, BookingExtra } from '../types/booking';
 import { ALL_TOURS } from '../data/toursData';
-import { clearPublicDataCache, readPublicDataCache, writePublicDataCache, PUBLIC_DATA_CACHE_TTL_MS, PUBLIC_CATALOGUE_CACHE_TTL_MS } from './publicDataCache';
+import { clearPublicDataCache, readPublicDataCache, writePublicDataCache, PUBLIC_CATALOGUE_CACHE_TTL_MS } from './publicDataCache';
 
 /**
  * Transforms database tour record with related collections into the frontend Tour structure
@@ -156,7 +156,7 @@ interface CacheEntry<T> {
 let cachedPublishedTours: CacheEntry<Tour[]> | null = null;
 let cachedDestinations: CacheEntry<Destination[]> | null = null;
 let cachedCategories: CacheEntry<Category[]> | null = null;
-const CACHE_TTL_MS = PUBLIC_DATA_CACHE_TTL_MS;
+const CACHE_TTL_MS = PUBLIC_CATALOGUE_CACHE_TTL_MS;
 let refreshingPublishedTours = false;
 let refreshingDestinations = false;
 let refreshingCategories = false;
