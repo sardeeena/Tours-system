@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { SearchModule } from './SearchModule';
 import { Destination, Category } from '../../types';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 interface HeroProps {
   onSearch: (filters: { destination: string; category: string; date: string; guests: number }) => void;
@@ -13,58 +14,35 @@ interface HeroProps {
 
 interface TourSlide {
   id: string;
-  title1: string;
-  title2: string;
-  subtitle: string;
   imageUrl: string;
-  accentGradient: string;
 }
 
 const CINEMATIC_SLIDES: TourSlide[] = [
   {
     id: 'snorkeling-orange-bay',
-    title1: 'A day on',
-    title2: 'Giftun Island',
-    subtitle: 'Visit Orange Bay and Paradise Island, swim in clear water and snorkel over Red Sea reefs.',
     imageUrl: 'https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/1794701564858-yfp2o4-White_island.webp',
-    accentGradient: 'from-[#0A6C74] via-[#0D838C] to-[#0A6C74] dark:from-[#60C3CC] dark:via-[#91E4EB] dark:to-[#A3E8ED]',
   },
   {
     id: 'desert-safari-quad',
-    title1: 'Explore the',
-    title2: 'Eastern Desert',
-    subtitle: 'Ride a quad bike through desert trails, visit a Bedouin village and enjoy the evening show.',
     imageUrl: 'https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/1794702525466-0in0mt-Red_Canyon0987.webp',
-    accentGradient: 'from-[#B45309] via-[#D97706] to-[#B45309] dark:from-[#F59E0B] dark:via-[#FBBF24] dark:to-[#FDE68A]',
   },
   {
     id: 'padi-scuba-diving',
-    title1: 'See the Red Sea',
-    title2: 'Underwater',
-    subtitle: 'Try scuba diving with a guide and discover the colourful reefs beneath the Red Sea.',
     imageUrl: 'https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/1794762504613-q13f8l-Nationalpark.webp',
-    accentGradient: 'from-[#0F766E] via-[#0D9488] to-[#0F766E] dark:from-[#2DD4BF] dark:via-[#5EEAD4] dark:to-[#99F6E4]',
   },
   {
     id: 'luxury-private-yacht',
-    title1: 'Your own day',
-    title2: 'on the sea',
-    subtitle: 'Hire a private boat, choose where to stop and enjoy time at sea with your group.',
     imageUrl: 'https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/1794701566922-pl0sd2-Yachuttour.webp',
-    accentGradient: 'from-[#047857] via-[#059669] to-[#047857] dark:from-[#34D399] dark:via-[#6EE7B7] dark:to-[#A7F3D0]',
   },
   {
     id: 'water-sports-semi-submarine',
-    title1: 'Find your',
-    title2: 'island escape',
-    subtitle: 'Spend the day by the sea, swim in clear water and enjoy the beaches around Hurghada.',
     imageUrl: 'https://uvtbtpxtrrmaublrztgv.supabase.co/storage/v1/object/public/tour-media/tours/1794698761078-i17pcl-Orange_Beach.webp',
-    accentGradient: 'from-[#0369A1] via-[#0284C7] to-[#0369A1] dark:from-[#38BDF8] dark:via-[#7DD3FC] dark:to-[#BAE6FD]',
   }
 ];
 
 export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations, categories }) => {
   const { isDark } = useTheme();
+  const { t } = useLanguage();
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isPointerOver, setIsPointerOver] = useState(false);
   const [isDocumentVisible, setIsDocumentVisible] = useState(() => typeof document === 'undefined' || !document.hidden);
@@ -167,15 +145,15 @@ export const Hero: React.FC<HeroProps> = ({ onSearch, resultCount, destinations,
             >
               {/* Dynamic Headline */}
               <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-normal tracking-tight text-stone-900 dark:text-white leading-[1.12] mb-3 text-left [text-wrap:balance] drop-shadow-[0_1px_1px_rgba(255,255,255,0.12)]">
-                {slide.title1}{' '}
-                <span className={`italic font-serif text-transparent bg-clip-text bg-gradient-to-r ${slide.accentGradient}`}>
-                  {slide.title2}
+                {t('hero.title1', 'Discover the Red Sea')}{' '}
+                <span className="italic font-serif text-[#0A6C74] dark:text-[#91E4EB]">
+                  {t('hero.title2', 'with our local team')}
                 </span>
               </h1>
 
               {/* Dynamic Subtitle */}
               <p className="text-sm sm:text-base lg:text-lg text-stone-800 dark:text-white font-medium leading-relaxed max-w-2xl drop-shadow-sm ml-0 mr-auto text-left">
-                {slide.subtitle}
+                {t('hero.subtitle', 'Join us for boat trips, island days, snorkelling and desert safaris around Hurghada. Choose a tour and check the dates, pickup details and what’s included.')}
               </p>
             </motion.div>
           </AnimatePresence>
