@@ -60,10 +60,20 @@ export async function getPublishedBlogPost(slug: string, forceRefresh = false): 
 export async function getAdminBlogPost(id: string): Promise<BlogPost> {
   const { data, error } = await supabase.from('blog_posts').select(POST_FIELDS).eq('id',id).single();
   if (error) throw error;
-  clearPublicDataCache();
   return data as unknown as BlogPost;
 }
-export async function getBlogCategories(): Promise<BlogCategory[]> {
+export async function getBlogCategories(forceRefresh = false): Promise<BlogCategory[]> {
+  if (!forceRefresh) {
+    const cached = readPublicDataCache<BlogCategory[]>('blog:categories');
+    if (cached) {
+      if (!cached.isFresh && !refreshingBlogCache.has('blog:categories')) {
+        refreshingBlogCache.add('blog:categories');
+        void getBlogCategories(true).catch((error) => console.warn('Background blog categories refresh failed:', error))
+          .finally(() => refreshingBlogCache.delete('blog:categories'));
+      }
+      return cached.data;
+    }
+  }
   const { data, error } = await supabase.from('blog_categories').select('id,name,slug,description').order('name');
   if (error) throw error;
   const categories = (data || []) as BlogCategory[];
@@ -92,6 +102,7 @@ export async function saveBlogPost(post: Partial<BlogPost> & { title: string; sl
     : supabase.from('blog_posts').insert(payload).select(POST_FIELDS).single();
   const { data, error } = await query;
   if (error) throw error;
+  clearPublicDataCache();
   return data as unknown as BlogPost;
 }
 export async function deleteBlogPost(id: string): Promise<void> {
