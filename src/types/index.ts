@@ -91,6 +91,9 @@ export interface Category {
   image: string;
   tourCount: number;
   description: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  seoKeywords?: string[];
 }
 
 export interface Review {
