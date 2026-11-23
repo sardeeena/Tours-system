@@ -354,6 +354,28 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Action Controls */}
         <div className="hidden 2xl:flex items-center space-x-1.5 2xl:space-x-2.5 shrink-0">
 
+          {/* Desktop language selector */}
+          <label className="inline-flex items-center gap-1.5 rounded-lg border border-stone-300/70 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 px-2 py-1.5 text-xs text-stone-700 dark:text-slate-200">
+            <Globe className="h-4 w-4 text-[#0A6C74] dark:text-[#60C3CC]" aria-hidden="true" />
+            <span className="sr-only">Website language</span>
+            <select
+              aria-label="Website language"
+              value={language}
+              onChange={(event) => {
+                const nextLanguage = event.target.value as LanguageCode;
+                setLanguage(nextLanguage);
+                void recordVisitorEvent({ event_name: 'language_changed', page_path: window.location.pathname, event_data: { language: nextLanguage } });
+              }}
+              className="max-w-[7.5rem] bg-transparent text-xs font-semibold text-inherit outline-none cursor-pointer"
+            >
+              {supportedLanguages.map((langItem) => (
+                <option key={langItem.code} value={langItem.code}>
+                  {langItem.localName}
+                </option>
+              ))}
+            </select>
+          </label>
+
           {/* User Auth Section */}
           {user ? (
             <div className="relative" ref={userMenuRef}>
