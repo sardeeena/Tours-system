@@ -27,3 +27,32 @@ test('not-found route has a rendered page', async ({ page }) => {
   expect(response?.status()).toBeLessThan(500);
   await expect(page.locator('body')).not.toBeEmpty();
 });
+
+
+test('header menu stays compact across phone, tablet and laptop widths', async ({ page }) => {
+  for (const width of [360, 768, 1024, 1366]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    const toggle = page.locator('#mobile-menu-toggle-btn');
+    await expect(toggle).toBeVisible();
+    await toggle.click();
+
+    const panel = page.locator('#mobile-navigation-menu');
+    await expect(panel).toBeVisible();
+    const bounds = await panel.boundingBox();
+    expect(bounds).not.toBeNull();
+    expect(bounds!.width).toBeLessThanOrEqual(Math.min(width, 420));
+    expect(bounds!.x).toBeGreaterThanOrEqual(0);
+    expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width);
+    expect(bounds!.height).toBeLessThan(900);
+
+    await page.keyboard.press('Escape');
+    await expect(panel).toBeHidden();
+  }
+
+  await page.setViewportSize({ width: 1536, height: 900 });
+  await page.goto('/');
+  await expect(page.locator('#mobile-menu-toggle-btn')).toBeHidden();
+  await expect(page.getByRole('navigation', { name: 'Main Navigation' })).toBeVisible();
+  await expect(page.locator('header').first()).toHaveJSProperty('scrollWidth', await page.locator('header').first().evaluate((element) => element.clientWidth));
+});
