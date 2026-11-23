@@ -29,6 +29,8 @@ assert.match(tours, /catalogue:destinations/, 'published destinations are cached
 assert.match(tours, /catalogue:categories/, 'published categories are cached across reloads');
 assert.match(tours, /catalogue:tour:/, 'public tour detail content is cached across reloads');
 assert.match(tours, /eq\('reviews\.is_published', true\)/, 'public tour detail cache includes published reviews only');
+assert.match(tours, /supabase\.auth\.getSession\(\)/, 'tour detail cache checks the real Supabase session');
+assert.match(tours, /if \(canCachePublicTour\) writePublicDataCache\(cacheKey, mappedTour\)/, 'authenticated moderator data is never written to the shared public cache');
 assert.match(tours, /writePublicDataCache\('catalogue:tours'/, 'successful public catalogue reads refresh the persistent cache');
 assert.match(tours, /eq\('is_exclusive', false\)/, 'public destination counts exclude Exclusive trips');
 assert.match(tours, /eq\('tours\.is_exclusive', false\)/, 'public category counts exclude Exclusive trips');
