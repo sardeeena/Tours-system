@@ -38,6 +38,8 @@ assert.doesNotMatch(editor,/French only/,'Progress never mislabels Dutch or Poli
 assert.match(editor,/const generateAllLocales = async \(\)/,'The workspace offers a single all-language generation workflow');
 assert.match(editor,/for \(const target of ROLLOUT_LOCALES\)/,'All ten approved locales are processed from the fixed registry');
 assert.match(editor,/Generate all 10 languages/,'The all-language action is visible in the workspace');
+assert.match(editor,/const \[generatingAll, setGeneratingAll\] = useState\(false\)/,'The UI tracks all-language generation separately from one-locale generation');
+assert.match(editor,/generatingAll \? 'Generating all languages/,'The progress label accurately distinguishes an all-language run');
 assert.match(editor,/setTimeout\(resolve, 6500\)/,'Bulk generation respects the protected endpoint rate limit between batches');
 assert.match(editor,/All ten language draft-generation runs completed/,'Completion feedback confirms the all-language run');
 assert.match(editor,/human review is still required/,'The all-language workflow never implies automatic publication');
