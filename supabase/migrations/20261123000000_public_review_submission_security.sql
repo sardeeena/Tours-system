@@ -41,19 +41,14 @@ BEGIN
 END;
 $public_reads$;
 
--- Prevent future tables, sequences, or functions created by either application
--- schema owner from silently inheriting anonymous privileges.
+-- Prevent future application objects created by the migration owner (postgres)
+-- from silently inheriting anonymous privileges. Supabase-managed supabase_admin
+-- defaults are platform-owned and cannot be changed by the migration role.
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
-  REVOKE ALL ON TABLES FROM anon;
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
   REVOKE ALL ON TABLES FROM anon;
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
   REVOKE ALL ON SEQUENCES FROM anon;
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
-  REVOKE ALL ON SEQUENCES FROM anon;
 ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
-  REVOKE EXECUTE ON FUNCTIONS FROM anon;
-ALTER DEFAULT PRIVILEGES FOR ROLE supabase_admin IN SCHEMA public
   REVOKE EXECUTE ON FUNCTIONS FROM anon;
 
 -- Keep public catalogue reads, but remove all direct anonymous mutations.
