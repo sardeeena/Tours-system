@@ -27,6 +27,19 @@ import { Tour } from '../../../types';
 import { getPublishedTours } from '../../../services/tourService';
 import { useToast } from '../../../contexts/ToastContext';
 
+const formatLocalDateInput = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const addDaysToDateInput = (dateValue: string, days: number): string => {
+  const date = new Date(`${dateValue}T12:00:00`);
+  date.setDate(date.getDate() + days);
+  return formatLocalDateInput(date);
+};
+
 export const OperationsAvailability: React.FC = () => {
   const { showToast } = useToast();
   const [slots, setSlots] = useState<AvailabilitySlot[]>([]);
@@ -36,6 +49,8 @@ export const OperationsAvailability: React.FC = () => {
   const [tourFilter, setTourFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [startDate, setStartDate] = useState(() => formatLocalDateInput(new Date()));
+  const [endDate, setEndDate] = useState(() => addDaysToDateInput(formatLocalDateInput(new Date()), 90));
 
   // Edit / Change Capacity Modal
   const [selectedSlot, setSelectedSlot] = useState<AvailabilitySlot | null>(null);
@@ -52,11 +67,14 @@ export const OperationsAvailability: React.FC = () => {
   const loadData = async () => {
     setLoading(true);
     setLoadError(null);
-      setSlots([]);
-      setTours([]);
+    setSlots([]);
+    setTours([]);
     try {
+      if (!startDate || !endDate || startDate > endDate) {
+        throw new Error('Choose a valid availability date range.');
+      }
       const [data, loadedTours] = await Promise.all([
-        listAvailabilitySlots(),
+        listAvailabilitySlots(startDate, endDate),
         getPublishedTours(),
       ]);
       setSlots(data);
@@ -215,6 +233,36 @@ export const OperationsAvailability: React.FC = () => {
 
       {/* Filters Bar */}
       <div className="bg-stone-950 border border-stone-800 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex flex-wrap items-end gap-2">
+          <label className="flex flex-col gap-1 text-stone-400">
+            <span>Date from</span>
+            <input
+              type="date"
+              value={startDate}
+              max={endDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="px-2.5 py-1.5 bg-stone-900 border border-stone-800 rounded text-stone-200"
+            />
+          </label>
+          <label className="flex flex-col gap-1 text-stone-400">
+            <span>Date to</span>
+            <input
+              type="date"
+              value={endDate}
+              min={startDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="px-2.5 py-1.5 bg-stone-900 border border-stone-800 rounded text-stone-200"
+            />
+          </label>
+          <button
+            type="button"
+            onClick={loadData}
+            disabled={loading || !startDate || !endDate || startDate > endDate}
+            className="px-3 py-1.5 bg-[#0A6C74] hover:bg-[#08565C] disabled:opacity-50 text-white rounded font-semibold"
+          >
+            Load dates
+          </button>
+        </div>
         <div className="relative w-full sm:w-72">
           <Search className="w-3.5 h-3.5 text-stone-500 absolute left-3 top-1/2 -translate-y-1/2" />
           <input

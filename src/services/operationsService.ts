@@ -1713,12 +1713,18 @@ export async function deleteGuide(id: string): Promise<boolean> {
 // 7. AVAILABILITY SLOTS
 // ==============================================================================
 
-export async function listAvailabilitySlots(startDate?: string, endDate?: string): Promise<AvailabilitySlot[]> {
-  if ((startDate && !/^\d{4}-\d{2}-\d{2}$/.test(startDate)) ||
-      (endDate && !/^\d{4}-\d{2}-\d{2}$/.test(endDate)) ||
-      Boolean(startDate) !== Boolean(endDate) ||
-      (startDate && endDate && startDate > endDate)) {
+export async function listAvailabilitySlots(startDate: string, endDate: string): Promise<AvailabilitySlot[]> {
+  const isValidDate = (value: string) => {
+    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false;
+    const parsed = new Date(`${value}T00:00:00.000Z`);
+    return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value;
+  };
+  if (!isValidDate(startDate) || !isValidDate(endDate) || startDate > endDate) {
     throw new Error('A valid inclusive availability date range is required.');
+  }
+  const rangeDays = (Date.parse(`${endDate}T00:00:00.000Z`) - Date.parse(`${startDate}T00:00:00.000Z`)) / 86400000 + 1;
+  if (rangeDays > 366) {
+    throw new Error('Availability can be viewed for up to 366 days at a time.');
   }
 
   if (!isSupabaseConfigured()) {
@@ -1726,16 +1732,26 @@ export async function listAvailabilitySlots(startDate?: string, endDate?: string
     throw new Error('Supabase is not configured; live availability cannot be loaded.');
   }
 
-  let availabilityQuery = supabase
-    .from('tour_availability')
-    .select('id,tour_id,date,max_capacity,booked_count,status,notes,is_blackout');
-  if (startDate && endDate) {
-    availabilityQuery = availabilityQuery.gte('date', startDate).lte('date', endDate);
-  }
-  const { data: rows, error } = await availabilityQuery.order('date', { ascending: true });
+  // Always constrain the database read to the requested window. Paginate in
+  // small chunks so a busy season cannot hit PostgREST's response/statement
+  // limits merely because the table contains many tours and dates.
+  const pageSize = 500;
+  const rows: any[] = [];
+  for (let offset = 0; ; offset += pageSize) {
+    const { data, error } = await supabase
+      .from('tour_availability')
+      .select('id,tour_id,date,max_capacity,booked_count,status,notes,is_blackout')
+      .gte('date', startDate)
+      .lte('date', endDate)
+      .order('date', { ascending: true })
+      .range(offset, offset + pageSize - 1);
 
-  if (error) throw new Error(formatSupabaseError(error));
-  if (!rows?.length) return [];
+    if (error) throw new Error(formatSupabaseError(error));
+    const page = data || [];
+    rows.push(...page);
+    if (page.length < pageSize) break;
+  }
+  if (!rows.length) return [];
 
   const tourIds = [...new Set(rows.map((row: any) => row.tour_id).filter(Boolean))];
   const dates = [...new Set(rows.map((row: any) => String(row.date).slice(0, 10)))].sort();
@@ -1745,8 +1761,6 @@ export async function listAvailabilitySlots(startDate?: string, endDate?: string
 
   // The public availability RPC is the source of truth: a date is open only
   // when it has a confirmed, non-blackout departure with bookable capacity.
-  // Read it for each tour so the admin screen cannot display stale daily
-  // summary flags as bookable inventory.
   const start = new Date(`${firstAvailabilityDate}T00:00:00.000Z`);
   const finish = new Date(`${lastAvailabilityDate}T00:00:00.000Z`);
   const dateRanges: Array<{ startDate: string; endDate: string }> = [];
@@ -1768,8 +1782,7 @@ export async function listAvailabilitySlots(startDate?: string, endDate?: string
     .in('id', tourIds);
   if (toursError) throw new Error(formatSupabaseError(toursError));
 
-  // Bound RPC concurrency: the calendar only needs its visible date window,
-  // and a small batch avoids opening one database request per tour at once.
+  // Bound RPC concurrency to four tours at a time to protect the database.
   const scheduleGroups: any[][] = [];
   for (let offset = 0; offset < tourIds.length; offset += 4) {
     const batch = await Promise.all(tourIds.slice(offset, offset + 4).map(async (tourId) => {
