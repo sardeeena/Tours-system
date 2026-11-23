@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { buildHreflangAlternates, buildLocalizedPath, parseLocalePath } from '../src/i18n/localeRouting';
+import { buildHreflangAlternates, buildLocalizedPath, detectPreferredLocale, parseLocalePath } from '../src/i18n/localeRouting';
 
 const read = (path: string) => readFileSync(new URL(path, import.meta.url), 'utf8');
 const server = read('../server.ts');
@@ -34,15 +34,15 @@ assert.equal(buildLocalizedPath('fr', '/excursions/ras-mohammed', ['de']), null,
 assert.deepEqual(buildHreflangAlternates('/excursions/ras-mohammed', ['de']).map((item) => item.hreflang), ['en', 'x-default', 'de']);
 assert.match(app, /key=\{tourDetailSlug\}/, 'Tour detail component state is reset when the route slug changes');
 
-for (const locale of ['fr', 'es', 'nl', 'pl', 'pt', 'sv', 'da', 'nb', 'fi', 'el', 'bg', 'hr', 'cs', 'sk', 'sl', 'hu', 'et', 'lv', 'lt', 'uk', 'sr', 'sq', 'tr', 'ar']) {
+for (const locale of ['fr', 'nl', 'pl', 'cs', 'sv', 'es']) {
   assert.match(locales, new RegExp(`code: '${locale}'`), `Locale registry includes ${locale}`);
 }
 assert.match(locales, /rollout: 'planned'/, 'New languages are explicitly planned rather than falsely marked translated');
-assert.match(locales, /direction: 'rtl'/, 'RTL direction is represented in locale metadata');
-assert.match(languageContext, /document\.documentElement\.dir = language === 'ar' \? 'rtl' : 'ltr'/, 'Arabic locale activates document-level RTL direction');
-assert.match(publicStyles, /html\[dir="rtl"\] \.public-site/, 'Public storefront has an explicit RTL layout baseline');
-assert.match(publicStyles, /Noto Sans Arabic/, 'Arabic storefront uses an Arabic-capable font fallback stack');
-assert.match(publicStyles, /unicode-bidi: isolate/, 'Mixed-direction values can be isolated safely in RTL layouts');
+assert.match(locales, /code: 'cs'/, 'Czech is in the approved language catalogue');
+assert.match(locales, /code: 'sv'/, 'Swedish is in the approved language catalogue');
+assert.match(locales, /code: 'es'/, 'Spanish is in the approved language catalogue');
+assert.doesNotMatch(locales, /code: '(?:pt|da|nb|fi|el|bg|hr|sk|sl|hu|et|lv|lt|uk|sr|sq|tr|ar)'/, 'Unapproved locales are excluded from the catalogue');
+assert.match(languageContext, /document\.documentElement\.dir = 'ltr'/, 'All approved public locales use left-to-right layout.');
 assert.match(migration, /CREATE TABLE IF NOT EXISTS public\.content_translations/, 'Translation content schema exists');
 assert.match(server, /app\.get\('\/api\/admin\/translations'[\s\S]*requireSuperAdminAal2\(req, res\)/, 'Translation listing API requires Super Admin AAL2');
 assert.match(server, /app\.post\('\/api\/admin\/translations'[\s\S]*requireSuperAdminAal2\(req, res\)/, 'Translation writes require Super Admin AAL2');
@@ -65,7 +65,7 @@ assert.match(server, /alternatesByUrl\.get\(loc\)[\s\S]*hreflangLinks[\s\S]*href
 assert.match(server, /alternates\.set\('x-default', englishUrl\)/, 'Localized sitemap includes the English x-default target');
 assert.match(server, /Reviewed localized pages could not be loaded/, 'Sitemap validates localized content before inclusion');
 assert.ok(server.includes("supportedLanguages: ['en']"), 'Public config advertises English until complete reviewed locales are published');
-assert.ok(languageContext.includes("value.code === 'en' || publishedUiLocales.includes(value.code)"), 'Built-in dictionaries are not advertised as full languages before content publication');
+assert.match(languageContext, /publishedUiLocales\.includes\(value\.code\)/, 'Languages are advertised only after the complete reviewed content is published');
 assert.match(server, /content_translations'[\s\S]*translated_slug[\s\S]*source_checksum/, 'Localized sitemap is based on translation records');
 assert.match(server, /const privateRoute = .*booking.*support/, 'Customer booking, account and support routes are identified before localized target resolution');
 assert.match(server, /body\.confirm_publish !== true/, 'Publishing requires explicit human confirmation');
@@ -79,7 +79,7 @@ assert.match(languageContext, /Locale-prefixed URLs are authoritative/, 'URL is 
 assert.match(languageContext, /api\/content-translations\/ui\?locale=/, 'Interface language loads its published UI catalog from the server');
 assert.match(languageContext, /api\/content-translations\/locales/, 'Language selector discovers only fully translated UI catalogs');
 assert.match(languageContext, /api\/content-translations\/target/, 'Language switching resolves the translated slug for the same source record');
-assert.match(languageContext, /publishedUiLocales\.includes\(locale\.code\)/, 'New locale options are shown only after the complete reviewed UI catalog is published');
+assert.match(languageContext, /publishedUiLocales\.includes\(value\.code\)/, 'Locale options are shown only after the complete reviewed UI catalog is published');
 assert.doesNotMatch(server, /not yet available for booking, account and support interfaces/, 'Fully translated private workflows are no longer hard-blocked by locale');
 assert.match(server, /staff admin interface remains English-only/, 'Staff admin routes stay English-only until their own UI catalogue exists.');
 assert.match(languageContext, /const adminPath = .*admin/, 'New customer locales are hidden on the untranslated staff admin interface.');
@@ -91,7 +91,12 @@ assert.match(localizedPage, /\&customer_locale=' \+ encodeURIComponent\(locale\)
 assert.match(server, /app\.get\('\/api\/content-translations\/target'[\s\S]*getCurrentTranslationSourceChecksum/, 'Translated route targets are source-checksum verified');
 assert.match(server, /getTranslationSourceBySlug/, 'English source slugs resolve to stable entity keys before switching locale');
 assert.match(server, /complete interface catalog is required for this language/, 'Booking and account route targets require a complete UI catalog');
-assert.doesNotMatch(languageContext, /navigator\.language/, 'Browser language does not silently override the route language');
+assert.match(languageContext, /detectPreferredLocale/, 'First visits use browser language preferences after publication is confirmed');
+assert.match(languageContext, /window\.location\.replace/, 'Automatic locale selection navigates to the locale-prefixed URL');
+assert.match(languageContext, /LANGUAGE_PREFERENCE_KEY/, 'A manually selected language is remembered');
+assert.equal(detectPreferredLocale(['es-ES', 'en-US'], ['en', 'es']), 'es', 'Browser region tags map to the available base language');
+assert.equal(detectPreferredLocale(['pl-PL'], ['en', 'de']), 'en', 'Unavailable browser languages safely fall back to English');
+assert.equal(detectPreferredLocale(['sv-SE'], ['en', 'sv']), 'sv', 'Swedish is detected when its full locale is published');
 assert.match(localizedPage, /cache: 'no-store'/, 'Public translation resolution bypasses stale browser caches');
 assert.match(localizedPage, /translation\.entity_type === 'tour'/, 'Translated tour routes retain a booking handoff');
 assert.match(localizedPage, /labels\.bookNow/, 'Localized page actions require translated UI labels');
@@ -111,7 +116,7 @@ assert.match(bookingLocaleMigration, /preferred_locale = p_customer_locale/, 'Cu
 assert.match(bookingLocaleMigration, /NOT IN \('en', 'de', 'it', 'ro', 'ru'\)/, 'Original locale migration establishes the initial allowlist');
 assert.match(expandedBookingLocaleMigration, /NOT IN \('en', 'de', 'it', 'ro', 'ru', 'fr', 'es', 'nl', 'pl', 'pt'\)/, 'Historical migration records the initial ten-locale allowlist');
 assert.match(allCustomerLocalesMigration, /NOT IN/, 'Forward migration replaces the atomic booking locale allowlist.');
-for (const locale of ['en', 'de', 'fr', 'it', 'es', 'nl', 'pl', 'pt', 'ro', 'ru', 'sv', 'da', 'nb', 'fi', 'el', 'bg', 'hr', 'cs', 'sk', 'sl', 'hu', 'et', 'lv', 'lt', 'uk', 'sr', 'sq', 'tr', 'ar']) {
+for (const locale of ['en', 'de', 'it', 'ro', 'ru', 'fr', 'nl', 'pl', 'cs', 'sv', 'es']) {
   assert.ok(allCustomerLocalesMigration.includes(`'${locale}'`), `Forward migration allows booking locale ${locale}`);
 }
 
@@ -133,7 +138,7 @@ assert.match(server, /translated\.content\.template_key !== item\.source\.templa
 assert.match(server, /select\('entity_type,entity_key,translated_slug,translation_state[\s\S]*workKeys\.has\(x\.entity_type\+':'\+x\.entity_key\)/, 'Bulk generation reserves slugs already used by reviewed or published translations');
 const adminTranslations = read('../src/components/admin/AdminTranslationManager.tsx');
 assert.match(adminTranslations, /Generate '\s*\+ locale\.toUpperCase\(\) \+ ' drafts/, 'Super Admin can generate drafts for the selected prepared locale');
-assert.match(adminTranslations, /const ROLLOUT_LOCALES = EUROPEAN_LOCALE_ROLLOUT\.filter\(\(item\) => \['fr', 'nl', 'pl'\]\.includes\(item\.code\)\)/, 'Workspace locale choices are limited to the supported French, Dutch and Polish rollout');
+assert.match(adminTranslations, /const ROLLOUT_LOCALES = EUROPEAN_LOCALE_ROLLOUT\.filter\(\(item\) => item\.code !== 'en'\)/, 'Workspace offers exactly the ten agreed non-English locales');
 assert.match(adminTranslations, /const targetLocale = locale/, 'Draft generation follows the selected locale rather than being pinned to French');
 assert.match(adminTranslations, /JSON\.stringify\(\{ locale: targetLocale, offset, limit: 10 \}\)/, 'Each generation batch carries the selected locale');
 assert.match(adminTranslations, /'communication_template'/, 'Super Admin can review communication template translations');
