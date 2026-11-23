@@ -6,7 +6,7 @@ import { useToast } from '../../contexts/ToastContext';
 
 type LocaleSummary = { draft: number; review: number; published: number; outdated: number; total: number };
 
-const ROLLOUT_LOCALES = EUROPEAN_LOCALE_ROLLOUT.filter((item) => ['fr', 'nl', 'pl'].includes(item.code));
+const ROLLOUT_LOCALES = EUROPEAN_LOCALE_ROLLOUT.filter((item) => item.code !== 'en');
 
 type TranslationRow = {
   id: string; entity_type: string; entity_key: string; locale: string;
