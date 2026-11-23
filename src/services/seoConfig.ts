@@ -7,7 +7,7 @@ import { APP_CONFIG } from '../config/appConfig';
  */
 export const SEO_DEFAULTS = {
   SITE_NAME: 'Awesome Adventure Tours',
-  DEFAULT_TITLE: 'Awesome Adventure Tours | Boat Trips, Island Tours & Safaris',
+  DEFAULT_TITLE: 'Awesome Adventure Tours | Red Sea Boat Trips & Safaris',
   DEFAULT_DESCRIPTION:
     'Discover boat trips, island experiences, snorkeling, diving and desert safaris across Egypt. Compare tour details and book with confidence.',
   DEFAULT_OG_IMAGE: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&h=630&q=85',
@@ -32,24 +32,24 @@ export const SEO_DEFAULTS = {
  */
 export const HOMEPAGE_FAQS = [
   {
-    question: 'How do I check pickup availability and transfer fees?',
+    question: 'Can you pick me up from my hotel?',
     answer:
-      'Pickup areas, meeting points, and any transfer supplements are listed in each excursion’s Pickup & Departure Details. Select your hotel area during booking and review the total before submitting your reservation.',
+      'Pickup depends on the tour and where you’re staying. Choose your hotel area during booking to see whether pickup is available and if there’s an extra charge.',
   },
   {
-    question: 'Can I pay upon hotel pickup rather than paying in advance online?',
+    question: 'Can I pay when you pick me up?',
     answer:
-      'Some excursions offer "Pay at Hotel Pickup." The available payment method and accepted currency are shown during booking before you submit your reservation.',
+      'Some tours let you pay when you’re picked up. The payment options for your chosen tour will be shown during booking.',
   },
   {
-    question: 'What is your cancellation and weather refund policy?',
+    question: 'What happens if I need to cancel or the weather is bad?',
     answer:
-      'Cancellation windows are shown on each excursion and can differ by tour. If maritime port closures prevent departure, the operations team will contact affected guests about the available refund or rescheduling arrangements.',
+      'Cancellation rules depend on the tour, so check the terms on its page before booking. If bad weather or a port closure stops the trip, our team will contact you about the next steps.',
   },
   {
-    question: 'Are snorkeling gear and buffet lunch included on full-day boat trips?',
+    question: 'Are snorkelling gear and lunch included?',
     answer:
-      'Inclusions differ by excursion. Check the Included and Not Included lists on the tour page; some trips include masks and fins, while others offer equipment for an additional charge.',
+      'It depends on the trip. Check the “What’s included” section on the tour page to see whether masks, fins and lunch are part of the price.',
   },
 ];
 
@@ -318,8 +318,8 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string, locale?: string) 
   }),
 
   '/destinations': (origin) => ({
-    title: 'Explore Egypt Destinations & Excursions | Awesome Adventure Tours',
-    description: 'Explore the destinations served by Awesome Adventure Tours across Egypt. Discover each location and browse available boat trips, island experiences and adventures.',
+    title: 'Red Sea Destinations & Tours | Awesome Adventure Tours',
+    description: 'Explore Red Sea destinations, from Hurghada to El Gouna. Find boat trips, island days, snorkelling and desert safaris with Awesome Adventure Tours.',
     keywords: [
       'Egypt tour destinations',
       'Hurghada excursions',
@@ -367,7 +367,7 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string, locale?: string) 
   }),
 
   '/support': (origin) => ({
-    title: 'Customer Support & Tickets | Awesome Adventure Tours',
+    title: 'Help & Support | Awesome Adventure Tours',
     description:
       'Sign in to create a support request and securely follow your conversations with the Awesome Adventure Tours team.',
     keywords: [
@@ -393,7 +393,7 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string, locale?: string) 
   }),
 
   '/my-booking': (origin) => ({
-    title: 'Manage Your Booking & Download Voucher | Awesome Adventure Tours',
+    title: 'Find Your Booking | Awesome Adventure Tours',
     description:
       'Retrieve your reservation details and voucher using the booking reference provided at confirmation.',
     canonicalUrl: `${origin}/my-booking`,
@@ -403,7 +403,7 @@ export const STATIC_ROUTE_SEO: Record<string, (origin: string, locale?: string) 
   }),
 
   '/login': (origin) => ({
-    title: 'Sign In | Awesome Adventure Tours Guest Portal',
+    title: 'Sign In | Awesome Adventure Tours',
     description:
       'Sign in to view your excursion reservations and saved wishlist.',
     canonicalUrl: `${origin}/login`,
@@ -444,8 +444,8 @@ export function getPageSeo(
     const formattedPrice = `€${tour.priceEur}`;
 
     return {
-      title: `${tour.title} (${tour.destination}) | Direct Booking & Pickup`,
-      description: `Book ${tour.title} in ${tour.destination}. ${tour.durationLabel}. Review pickup details, inclusions, and cancellation terms before booking. From ${formattedPrice}.`,
+      title: `${tour.title} (${tour.destination}) | Book Your Tour`,
+      description: `Book ${tour.title} in ${tour.destination}. ${tour.durationLabel}. Check pickup details, what’s included and cancellation terms before booking. From ${formattedPrice}.`,
       keywords: [
         tour.title,
         tour.destination,
