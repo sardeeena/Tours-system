@@ -168,6 +168,6 @@ async function main() {
   if (missing.length) throw new Error('Coverage mismatch. Current published source records are missing translations: ' + missing.join(', '));
   if (unexpected.length) console.warn('Drafts for unpublished or removed source records were preserved and excluded from this import: ' + unexpected.join(', '));
   await writeFile(outputPath, JSON.stringify({ schema_version:1, generated_at:new Date().toISOString(), locales:['nl'], records:output }, null, 2) + '\n');
-  console.log('Assembled ' + output.length + ' Dutch draft records with current source checksums. Output: ' + outputPath + '. No database records were changed or published.');
+  console.log('Assembled ' + output.length + ' Dutch draft records with current source checksums; skipped ' + skippedUnavailableSources + ' unpublished or removed source drafts. Output: ' + outputPath + '. No database records were changed or published.');
 }
 await main();
