@@ -27,7 +27,7 @@ import { useWishlist } from '../../contexts/WishlistContext';
 import { useComparison } from '../../contexts/ComparisonContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { LanguageCode } from '../../types/i18n';
+import { LanguageCode, SUPPORTED_LANGUAGES } from '../../types/i18n';
 
 interface HeaderProps {
   currentCurrency?: CurrencyConfig;
@@ -804,11 +804,14 @@ export const Header: React.FC<HeaderProps> = ({
                     }}
                     className="min-w-0 flex-1 bg-transparent text-sm font-semibold text-inherit outline-none cursor-pointer"
                   >
-                    {supportedLanguages.map((langItem) => (
-                      <option key={langItem.code} value={langItem.code}>
-                        {langItem.localName}
-                      </option>
-                    ))}
+                    {Object.values(SUPPORTED_LANGUAGES).map((langItem) => {
+                      const isAvailable = supportedLanguages.some((available) => available.code === langItem.code);
+                      return (
+                        <option key={langItem.code} value={langItem.code} disabled={!isAvailable}>
+                          {langItem.flag} {langItem.localName}{isAvailable ? '' : ' — coming soon'}
+                        </option>
+                      );
+                    })}
                   </select>
                   <ChevronDown className="h-4 w-4 shrink-0 text-stone-500" aria-hidden="true" />
                 </label>
