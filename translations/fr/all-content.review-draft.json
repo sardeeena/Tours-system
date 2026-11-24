@@ -2485,14 +2485,69 @@
         ],
         "faqs": [
           {
-            "question": "L’équipement de snorkeling est-il fourni ou dois-je apporter le mien ?",
-            "answer": "Des masques, tubas et palmes désinfectés, en tailles adulte et enfant, sont fournis gratuitement à bord.",
+            "question": "Que dois-je apporter pour cette excursion ?",
+            "answer": "Maillot de bain",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Que dois-je apporter pour cette excursion ?",
+            "answer": "Serviette",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Que dois-je apporter pour cette excursion ?",
+            "answer": "Crème solaire, chapeau et lunettes de soleil",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Que dois-je apporter pour cette excursion ?",
+            "answer": "Vêtements confortables pour le bateau",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Que dois-je apporter pour cette excursion ?",
+            "answer": "Un appareil photo ou un téléphone pour prendre des photos",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Que dois-je apporter pour cette excursion ?",
+            "answer": "Un peu d’argent pour les dépenses personnelles, selon vos besoins",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Quelles sont les heures approximatives de prise en charge et de départ du bateau ?",
+            "answer": "La prise en charge commence vers 8 h, selon l’emplacement de votre hôtel, et peut être légèrement plus tôt ou plus tard. Le bateau part vers 9 h. Le retour à votre hôtel est prévu vers 17 h.",
             "section": "faq"
           },
           {
-            "question": "Les personnes qui ne savent pas nager peuvent-elles participer en toute sécurité ?",
-            "answer": "Oui. Des gilets de flottaison homologués par les garde-côtes sont fournis et des moniteurs de plongée certifiés accompagnent les participants dans l’eau.",
+            "question": "Les frais d’entrée à l’île Orange Bay sont-ils inclus ?",
+            "answer": "Les frais d’entrée à l’île Orange Bay sont-ils inclus ?\n",
             "section": "faq"
+          },
+          {
+            "question": "L’équipement de snorkeling est-il fourni ?",
+            "answer": "Oui, l’équipement de snorkeling est disponible et compris dans le prix.",
+            "section": "faq"
+          },
+          {
+            "question": "Quelles consignes importantes dois-je respecter ?",
+            "answer": "Veuillez toujours suivre les instructions de l’équipage et des guides.",
+            "section": "important_information"
+          },
+          {
+            "question": "Quelles consignes importantes dois-je respecter ?",
+            "answer": "Suivez toutes les instructions pendant la plongée, le snorkeling et la baignade.",
+            "section": "important_information"
+          },
+          {
+            "question": "Quelles consignes importantes dois-je respecter ?",
+            "answer": "Veuillez surveiller les enfants à bord du bateau.",
+            "section": "important_information"
+          },
+          {
+            "question": "Que faire en cas de mal de mer ?",
+            "answer": "Si vous avez le mal de mer, informez immédiatement l’équipage ou le guide.",
+            "section": "important_information"
           }
         ],
         "pickupInfo": "Les options de prise en charge, les lieux approuvés et tout supplément applicable sont indiqués pendant la réservation.",
