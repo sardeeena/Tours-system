@@ -169,6 +169,9 @@ async function main() {
       throw new Error('Current source record has no valid checksum: ' + draft.entity_type + ':' + draft.entity_key);
     }
     const expected = expectedPayload(draft.entity_type, sourceRecord.source);
+    if (draft.entity_type === 'tour' && draft.entity_key === 'b3524f6e-ef5a-4585-ae5a-d6569e3a1468') {
+      console.log('Current desert-safari FAQ source rows: ' + JSON.stringify(sourceRecord.source.faqs));
+    }
     const payload = translatedPayload(draft.entity_type, sourceRecord.source, draft);
     if (expected.title !== undefined && !translationStructureMatches(expected.title, payload.title)) {
       mismatches.push('Title structure/token mismatch: ' + draft.entity_type + ':' + draft.entity_key);
