@@ -135,10 +135,10 @@ function translatedPayload(type: string, source: AnyRecord, draft: AnyRecord): A
       content:{
         title:content.title,description:content.description,durationLabel:content.durationLabel,
         highlights:content.highlights,
-        itinerary:mergeRows(source.itinerary || [],content.itinerary || [],['time','title','description'],'tour itinerary'),
-        included:mergeRows(source.included || [],content.included || [],['item'],'tour inclusions'),
-        excluded:mergeRows(source.excluded || [],content.excluded || [],['item'],'tour exclusions'),
-        faqs:mergeRows(source.faqs || [],content.faqs || [],['question','answer','section'],'tour FAQs'),
+        itinerary:mergeRows(source.itinerary || [],content.itinerary || [],['time','title','description'],'tour itinerary ' + draft.entity_key),
+        included:mergeRows(source.included || [],content.included || [],['item'],'tour inclusions ' + draft.entity_key),
+        excluded:mergeRows(source.excluded || [],content.excluded || [],['item'],'tour exclusions ' + draft.entity_key),
+        faqs:mergeRows(source.faqs || [],content.faqs || [],['question','answer','section'],'tour FAQs ' + draft.entity_key),
         pickupInfo:content.pickupInfo,cancellationPolicy:content.cancellationPolicy,ageRestrictions:content.ageRestrictions,labels:content.labels,
       },
     };
