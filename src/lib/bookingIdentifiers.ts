@@ -32,9 +32,9 @@ export function shouldUseLocalBookingCache(
 
 const COMPACT_BOOKING_REFERENCE_PATTERN = /^AA[A-Z0-9]{7}$/;
 const LEGACY_BOOKING_REFERENCE_PATTERNS = [
-  /^AWE-\\d{8}-\\d{6}$/,
-  /^RST-\\d{4}-[A-Z0-9]{4,32}$/,
-  /^RSE-\\d{4,8}$/,
+  /^AWE-\d{8}-\d{6}$/,
+  /^RST-\d{4}-[A-Z0-9]{4,32}$/,
+  /^RSE-\d{4,8}$/,
 ];
 
 /** Format a globally unique, nine-character booking reference. */
@@ -43,7 +43,7 @@ export function formatBookingReference(bookingDate: string | Date, sequence: num
     ? bookingDate.toISOString().slice(0, 10)
     : String(bookingDate || '').trim().slice(0, 10);
   const parsedDate = new Date(dateText + 'T00:00:00.000Z');
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(dateText) || Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== dateText) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateText) || Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== dateText) {
     throw new Error('A valid booking date is required to format a booking reference.');
   }
   const maxSequence = 36 ** 7 - 1;
