@@ -775,14 +775,69 @@
         ],
         "faqs": [
           {
-            "question": "Czy sprzęt do snorkelingu jest wliczony w cenę, czy muszę zabrać własny?",
-            "answer": "Na pokładzie dostępne są bezpłatne, czyszczone maski, rurki i płetwy w rozmiarach dla dorosłych i dzieci.",
+            "question": "Co należy zabrać na tę wycieczkę?",
+            "answer": "Strój kąpielowy",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Co należy zabrać na tę wycieczkę?",
+            "answer": "Ręcznik",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Co należy zabrać na tę wycieczkę?",
+            "answer": "Krem z filtrem przeciwsłonecznym, kapelusz i okulary przeciwsłoneczne",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Co należy zabrać na tę wycieczkę?",
+            "answer": "Wygodne ubranie na rejs łodzią",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Co należy zabrać na tę wycieczkę?",
+            "answer": "Aparat lub telefon do robienia zdjęć",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Co należy zabrać na tę wycieczkę?",
+            "answer": "Trochę pieniędzy na wydatki osobiste, według potrzeb",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Jakie są przybliżone godziny odbioru z hotelu i odpłynięcia łodzi?",
+            "answer": "Odbiór rozpoczyna się około 8:00, w zależności od lokalizacji hotelu, i może nastąpić nieco wcześniej lub później. Łódź odpływa około 9:00. Powrót do hotelu planowany jest około 17:00.",
             "section": "faq"
           },
           {
-            "question": "Czy osoby, które nie potrafią pływać, mogą bezpiecznie uczestniczyć?",
-            "answer": "Tak. Dostępne są kamizelki ratunkowe zatwierdzone przez straż przybrzeżną, a certyfikowani instruktorzy nurkowania pomagają gościom w wodzie.",
+            "question": "Czy opłata za wstęp na wyspę Orange Bay jest wliczona w cenę?",
+            "answer": "Czy opłata za wstęp na wyspę Orange Bay jest wliczona w cenę?\n",
             "section": "faq"
+          },
+          {
+            "question": "Czy sprzęt do snorkelingu jest zapewniony?",
+            "answer": "Tak, sprzęt do snorkelingu jest dostępny i wliczony w cenę.",
+            "section": "faq"
+          },
+          {
+            "question": "Jakich ważnych zaleceń należy przestrzegać?",
+            "answer": "Zawsze stosuj się do poleceń załogi i przewodników.",
+            "section": "important_information"
+          },
+          {
+            "question": "Jakich ważnych zaleceń należy przestrzegać?",
+            "answer": "Przestrzegaj wszystkich instrukcji podczas nurkowania, snorkelingu i pływania.",
+            "section": "important_information"
+          },
+          {
+            "question": "Jakich ważnych zaleceń należy przestrzegać?",
+            "answer": "Pilnuj dzieci przebywających na pokładzie łodzi.",
+            "section": "important_information"
+          },
+          {
+            "question": "Co zrobić w przypadku choroby morskiej?",
+            "answer": "Jeśli poczujesz chorobę morską, natychmiast poinformuj załogę lub przewodnika.",
+            "section": "important_information"
           }
         ],
         "pickupInfo": "Dostępne opcje odbioru, zatwierdzone miejsca i ewentualne dopłaty są wyświetlane podczas rezerwacji.",
