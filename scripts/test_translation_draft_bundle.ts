@@ -5,6 +5,18 @@ const script=read('../scripts/translation_draft_bundle.ts');
 const doc=read('../docs/LOCALIZATION_WORKFLOW.md');
 const server=read('../server.ts');
 const editor=read('../src/components/admin/AdminTranslationManager.tsx');
+const frenchAssembler=read('../scripts/assemble_french_import_bundle.ts');
+const dutchAssembler=read('../scripts/assemble_dutch_import_bundle.ts');
+const polishAssembler=read('../scripts/assemble_polish_import_bundle.ts');
+for (const [locale, assembler] of [['French', frenchAssembler], ['Dutch', dutchAssembler], ['Polish', polishAssembler]] as const) {
+  assert.match(assembler, /if \(!sourceRecord\)[\s\S]*skippedUnavailableSources\+\+[\s\S]*continue;/,
+    locale + ' preserves but excludes unpublished or removed source drafts from import');
+  assert.match(assembler, /if \(missing\.length\) throw new Error/,
+    locale + ' still fails if a currently published source record has no translation draft');
+  assert.match(assembler, /if \(unexpected\.length\) console\.warn/,
+    locale + ' reports stale drafts instead of silently importing them');
+}
+
 assert.match(script,/LOCALES = new Set<Locale>\(\['de', 'it', 'ro', 'ru', 'fr', 'nl', 'pl', 'cs', 'sv', 'es'\]\)/,'Draft imports are limited to the ten agreed non-English rollout locales');
 assert.match(script,/ENTITY_TYPES = new Set\(\['tour','destination','blog_post','static_page','communication_template','ui_catalog'\]\)/);
 assert.match(script,/translation_state:'draft'/);
