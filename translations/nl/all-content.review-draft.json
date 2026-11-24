@@ -176,77 +176,77 @@
         ],
         "faqs": [
           {
+            "question": "Wat moet ik meenemen op de excursie?",
+            "answer": "Neem comfortabele kleding, gesloten schoenen, een zonnebril, zonnebrandcrème, een sjaal of lichte omslagdoek tegen het stof, een camera of telefoon en wat contant geld voor extra uitgaven mee.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat neemt u mee",
+            "answer": "Comfortabele kleding.",
+            "section": "what_to_bring"
+          },
+          {
             "question": "Belangrijke informatie",
             "answer": "Niet geschikt voor zwangere vrouwen.",
             "section": "important_information"
           },
           {
-            "question": "Wat moet je meenemen",
-            "answer": "Comfortabele kleding.",
-            "section": "what_to_bring"
-          },
-          {
-            "question": "Wat moet ik meenemen op de excursie?",
-            "answer": "Comfortabele kleding, gesloten schoenen, een zonnebril, zonnebrandcrème, een sjaal of lichte omslagdoek tegen het stof, een camera of telefoon en wat contant geld voor extra uitgaven.",
+            "question": "V: Hoe lang duurt de hele excursie?",
+            "answer": "A: De excursie duurt ongeveer 3 uur.",
             "section": "faq"
           },
           {
-            "question": "Hoe lang duurt de hele excursie?",
-            "answer": "De excursie duurt ongeveer 3 uur.",
-            "section": "faq"
+            "question": "Belangrijke informatie",
+            "answer": "De minimumleeftijd om een quad te besturen is 15 jaar.",
+            "section": "important_information"
           },
           {
-            "question": "Wat moet je meenemen",
+            "question": "Wat neemt u mee",
             "answer": "Gesloten schoenen.",
             "section": "what_to_bring"
           },
           {
-            "question": "Wat is de minimumleeftijd om quad te rijden?",
-            "answer": "De minimumleeftijd om een quad te besturen is 15 jaar.",
+            "question": "V: Is de excursie elke dag beschikbaar?",
+            "answer": "A: Ja, de excursie is elke dag beschikbaar.",
+            "section": "faq"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Niet aanbevolen voor gasten ouder dan 70 jaar met rugklachten.",
             "section": "important_information"
           },
           {
-            "question": "Voor gasten ouder dan 70 jaar met rugklachten wordt deze activiteit afgeraden.",
-            "answer": "Deze activiteit wordt afgeraden voor gasten ouder dan 70 jaar met rugklachten.",
-            "section": "important_information"
-          },
-          {
-            "question": "Wat moet je meenemen",
+            "question": "Wat neemt u mee",
             "answer": "Een zonnebril.",
             "section": "what_to_bring"
           },
           {
-            "question": "Is de excursie elke dag beschikbaar?",
-            "answer": "Ja, de excursie is elke dag beschikbaar.",
-            "section": "faq"
-          },
-          {
-            "question": "Wat moet je meenemen",
+            "question": "Wat neemt u mee",
             "answer": "Zonnebrandcrème.",
             "section": "what_to_bring"
           },
           {
-            "question": "Is een privé-excursie mogelijk?",
-            "answer": "Ja, een privé-excursie is mogelijk tegen een toeslag. Neem contact met ons op om dit te regelen.",
+            "question": "V: Is een privé-excursie mogelijk?",
+            "answer": "A: Ja, een privé-excursie is mogelijk tegen een toeslag. Neem contact met ons op om deze te regelen.",
             "section": "faq"
           },
           {
-            "question": "Wat is de minimumleeftijd om een quad te besturen?",
-            "answer": "De minimumleeftijd om een quad te besturen is 15 jaar.",
-            "section": "faq"
-          },
-          {
-            "question": "Wat moet je meenemen",
+            "question": "Wat neemt u mee",
             "answer": "Een sjaal of lichte omslagdoek tegen het stof.",
             "section": "what_to_bring"
           },
           {
-            "question": "Wat moet je meenemen",
+            "question": "V: Wat is de minimumleeftijd om een quad te besturen?",
+            "answer": "A: De minimumleeftijd om een quad te besturen is 15 jaar.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat neemt u mee",
             "answer": "Een camera of telefoon.",
             "section": "what_to_bring"
           },
           {
-            "question": "Wat moet je meenemen",
+            "question": "Wat neemt u mee",
             "answer": "Wat contant geld voor extra uitgaven.",
             "section": "what_to_bring"
           }
