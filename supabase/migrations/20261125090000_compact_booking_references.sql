@@ -99,15 +99,13 @@ BEGIN
   SELECT pg_get_functiondef('public.lookup_booking_secure(text,text)'::regprocedure)
     INTO v_lookup_definition;
 
-  v_lookup_definition := regexp_replace(
+  v_lookup_definition := replace(
     v_lookup_definition,
-    'length[[:space:]]*\([[:space:]]*trim[[:space:]]*\([[:space:]]*p_reference[[:space:]]*\)[[:space:]]*\)[[:space:]]*<[[:space:]]*10',
-    'length(trim(p_reference)) < 9',
-    'gi'
+    'p_reference)) < 10',
+    'p_reference)) < 9'
   );
 
-  IF position('p_reference' IN v_lookup_definition) = 0
-     OR position('length(trim(p_reference)) < 9' IN lower(v_lookup_definition)) = 0 THEN
+  IF position('p_reference)) < 9' IN lower(v_lookup_definition)) = 0 THEN
     RAISE EXCEPTION 'Secure booking lookup reference-length guard could not be updated.';
   END IF;
   EXECUTE v_lookup_definition;
@@ -115,15 +113,13 @@ BEGIN
   SELECT pg_get_functiondef('public.request_booking_cancellation_secure(text,text,text)'::regprocedure)
     INTO v_cancellation_definition;
 
-  v_cancellation_definition := regexp_replace(
+  v_cancellation_definition := replace(
     v_cancellation_definition,
-    'length[[:space:]]*\([[:space:]]*trim[[:space:]]*\([[:space:]]*p_reference[[:space:]]*\)[[:space:]]*\)[[:space:]]*<[[:space:]]*10',
-    'length(trim(p_reference)) < 9',
-    'gi'
+    'p_reference)) < 10',
+    'p_reference)) < 9'
   );
 
-  IF position('p_reference' IN v_cancellation_definition) = 0
-     OR position('length(trim(p_reference)) < 9' IN lower(v_cancellation_definition)) = 0 THEN
+  IF position('p_reference)) < 9' IN lower(v_cancellation_definition)) = 0 THEN
     RAISE EXCEPTION 'Secure booking cancellation reference-length guard could not be updated.';
   END IF;
   EXECUTE v_cancellation_definition;
