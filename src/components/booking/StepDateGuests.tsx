@@ -211,7 +211,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
               </div>
             ) : departureSlots.length === 0 ? (
               <div className="p-3 bg-stone-50 border border-stone-200 rounded text-xs text-stone-700">
-                Choose a departure time to continue.
+                No departures are scheduled for this date. Please choose another date.
               </div>
             ) : (
               <>
@@ -264,7 +264,9 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
                   </div>
                 ) : (
                   <div className="p-3 bg-stone-50 border border-stone-200 rounded text-xs text-stone-700">
-                    This departure is currently closed. Please choose another date.
+                    {departureSlots.some((slot) => slot.isAvailable)
+                      ? 'Choose a departure time to continue.'
+                      : 'All departure times are sold out for this date. Please choose another date.'}
                   </div>
                 )}
               </>
