@@ -107,7 +107,7 @@ BEGIN
 
   v_lookup_definition := regexp_replace(
     v_lookup_definition,
-    'length[[:space:]]*\\([[:space:]]*trim[[:space:]]*\\([[:space:]]*p_reference[[:space:]]*\\)[[:space:]]*\\)[[:space:]]*<[[:space:]]*10',
+    'length[[:space:]]*\([[:space:]]*trim[[:space:]]*\([[:space:]]*p_reference[[:space:]]*\)[[:space:]]*\)[[:space:]]*<[[:space:]]*10',
     'length(trim(p_reference)) < 9',
     'gi'
   );
@@ -123,7 +123,7 @@ BEGIN
 
   v_cancellation_definition := regexp_replace(
     v_cancellation_definition,
-    'length[[:space:]]*\\([[:space:]]*trim[[:space:]]*\\([[:space:]]*p_reference[[:space:]]*\\)[[:space:]]*\\)[[:space:]]*<[[:space:]]*10',
+    'length[[:space:]]*\([[:space:]]*trim[[:space:]]*\([[:space:]]*p_reference[[:space:]]*\)[[:space:]]*\)[[:space:]]*<[[:space:]]*10',
     'length(trim(p_reference)) < 9',
     'gi'
   );
