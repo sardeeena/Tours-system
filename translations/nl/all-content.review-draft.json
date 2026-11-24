@@ -2604,7 +2604,83 @@
           "Fooien en gratificaties.",
           "Diensten die niet uitdrukkelijk bij de inbegrepen onderdelen zijn vermeld."
         ],
-        "faqs": [],
+        "faqs": [
+          {
+            "question": "V: Hoe lang duurt de hele reis?",
+            "answer": "A: Het is een dagtocht. We vertrekken rond middernacht uit Sharm-el-Sheikh en komen laat in de avond terug.",
+            "section": "faq"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Uw originele paspoort met een visum waarmee u naar Caïro mag reizen, is verplicht om aan de excursie deel te nemen.",
+            "section": "important_information"
+          },
+          {
+            "question": "Wat neemt u mee",
+            "answer": "- Comfortabele kleding en comfortabele schoenen",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat neemt u mee",
+            "answer": "- Een zonnebril",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "V: Bezoekt de excursie het Grand Egyptian Museum of het oude Egyptisch Museum?",
+            "answer": "A: Deze excursie omvat een bezoek aan het oude Egyptisch Museum op het Tahrirplein. Voor het Grand Egyptian Museum bieden we op onze website een aparte excursie met een ander programma aan.",
+            "section": "faq"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Dit is een dagtocht met een lange nachtelijke rit van ongeveer 7 uur per enkele reis.",
+            "section": "important_information"
+          },
+          {
+            "question": "Wat neemt u mee",
+            "answer": "- Water en sap, naar keuze",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "V: Is de lunch inbegrepen?",
+            "answer": "A: Ja, de lunch is inbegrepen en wordt geserveerd in een lokaal restaurant in Gizeh.",
+            "section": "faq"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Draag comfortabele kleding en schoenen, want bij het museum en het gebied van de piramides van Gizeh moet u wandelen.",
+            "section": "important_information"
+          },
+          {
+            "question": "V: Wat moet ik meenemen op de excursie?",
+            "answer": "A: Neem alstublieft het volgende mee:\n- Comfortabele kleding en comfortabele schoenen\n- Een zonnebril\n- Water en sap, naar keuze\n- Enkele lichte snacks\n- Uw originele paspoort met een visum waarmee u naar Caïro mag reizen. Dit is verplicht om aan de excursie deel te nemen.\n- Wat persoonlijk zakgeld, indien nodig",
+            "section": "faq"
+          },
+          {
+            "question": "Wat neemt u mee",
+            "answer": "- Enkele lichte snacks",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Neem water, sap en lichte snacks mee voor onderweg.",
+            "section": "important_information"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Neem indien nodig wat persoonlijk zakgeld mee.",
+            "section": "important_information"
+          },
+          {
+            "question": "Wat neemt u mee",
+            "answer": "- Uw originele paspoort met een visum waarmee u naar Caïro mag reizen. Dit is verplicht om aan de excursie deel te nemen.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat neemt u mee",
+            "answer": "- Wat persoonlijk zakgeld, indien nodig",
+            "section": "what_to_bring"
+          }
+        ],
         "pickupInfo": "Beschikbare ophaalopties, goedgekeurde locaties en eventuele toeslagen worden tijdens het boeken getoond.",
         "cancellationPolicy": "Neem vóór het boeken contact op met ons boekingsteam om de annulerings- en terugbetalingsvoorwaarden voor deze excursie te bevestigen.",
         "ageRestrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
