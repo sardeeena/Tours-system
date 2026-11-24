@@ -41,6 +41,8 @@ test('header menu stays compact across phone, tablet and laptop widths', async (
     await expect(panel).toBeVisible();
     const languageSelect = page.getByRole('combobox', { name: 'Choose website language' });
     await expect(languageSelect).toBeVisible();
+    await expect(panel.locator('select')).toHaveCount(1);
+    await expect(panel.getByText('Select language', { exact: true })).toHaveCount(0);
     await expect(languageSelect.locator('option')).toHaveCount(11);
     await expect(page.locator('header a[aria-label="Visit the Awesome Adventure Tours blog"]').last()).toBeVisible();
     const bounds = await panel.boundingBox();
