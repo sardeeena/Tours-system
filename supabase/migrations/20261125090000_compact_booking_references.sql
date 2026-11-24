@@ -69,8 +69,8 @@ BEGIN
 
     v_reference := 'AA' || private.encode_booking_reference_suffix(v_number);
 
-    -- Skip any reference that may already exist from a manually imported
-    -- booking or a previous deployment. Sequence values themselves never repeat.
+    -- Skip references already present from imports or previous deployments.
+    -- The bookings UNIQUE constraint and caller retry handle concurrent collisions.
     EXIT WHEN NOT EXISTS (
       SELECT 1
       FROM public.bookings
