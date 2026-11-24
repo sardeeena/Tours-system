@@ -28,10 +28,7 @@ function describeStructureMismatch(source: any, translated: any, path = 'content
   if (typeof source === 'string') {
     if (typeof translated !== 'string') return path + ': expected text';
     if (source.trim() && !translated.trim()) return path + ': translation is empty';
-    const protectedTokens = source.match(/\\{\\{[^{}]+\\}\\}|https?:\\/\\/[^\\s<>"']+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}|\\+\\d[\\d\\s()./-]{5,}\\d/g) || [];
-    const missingToken = protectedTokens.find((token) => !translated.includes(token));
-    if (missingToken) return path + ': protected token missing (' + missingToken + ')';
-    return null;
+    return path + ': protected token mismatch';
   }
   if (Array.isArray(source)) {
     if (!Array.isArray(translated)) return path + ': expected array';
