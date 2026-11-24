@@ -178,13 +178,13 @@ export const StepPayment: React.FC<StepPaymentProps> = ({
 
         {/* Terms and Conditions Checkbox */}
         <div className="pt-3 border-t border-stone-200 space-y-3">
-          <label className="flex items-start space-x-3 cursor-pointer">
+          <label className="flex items-start gap-3 rounded-xl border border-stone-200 bg-stone-50/70 p-4 cursor-pointer hover:border-[#0A6C74]/50 transition-colors">
             <input
               type="checkbox"
               required
               checked={termsAccepted}
               onChange={(e) => onTermsAcceptedChange(e.target.checked)}
-              className="mt-1 w-4 h-4 rounded text-[#0A6C74] focus:ring-[#0A6C74] border-stone-300 cursor-pointer"
+              className="mt-0.5 w-5 h-5 shrink-0 rounded-md text-[#0A6C74] focus:ring-[#0A6C74] border-stone-300 cursor-pointer"
             />
             <span className="text-xs text-stone-700 leading-relaxed">
               I agree to the{' '}
