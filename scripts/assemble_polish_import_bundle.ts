@@ -28,6 +28,39 @@ function translationStructureMatches(source: any, translated: any): boolean {
   }
   return source === translated;
 }
+function describeStructureMismatch(source: any, translated: any, path = 'content'): string | null {
+  if (typeof source === 'string') {
+    if (typeof translated !== 'string') return path + ': expected text';
+    if (source.trim() && !translated.trim()) return path + ': translation is empty';
+    const protectedTokens = source.match(/\\{\\{[^{}]+\\}\\}|https?:\\/\\/[^\\s<>"']+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}|\\+\\d[\\d\\s()./-]{5,}\\d/g) || [];
+    const missingToken = protectedTokens.find((token) => !translated.includes(token));
+    if (missingToken) return path + ': protected token missing (' + missingToken + ')';
+    return null;
+  }
+  if (Array.isArray(source)) {
+    if (!Array.isArray(translated)) return path + ': expected array';
+    if (source.length !== translated.length) return path + ': expected ' + source.length + ' rows, got ' + translated.length;
+    for (let i = 0; i < source.length; i++) {
+      const mismatch = describeStructureMismatch(source[i], translated[i], path + '[' + i + ']');
+      if (mismatch) return mismatch;
+    }
+    return null;
+  }
+  if (isObject(source)) {
+    if (!isObject(translated)) return path + ': expected object';
+    const sourceKeys = Object.keys(source).sort(), translatedKeys = Object.keys(translated).sort();
+    const missing = sourceKeys.filter((key) => !Object.prototype.hasOwnProperty.call(translated, key));
+    const extra = translatedKeys.filter((key) => !Object.prototype.hasOwnProperty.call(source, key));
+    if (missing.length) return path + ': missing keys ' + missing.join(', ');
+    if (extra.length) return path + ': unexpected keys ' + extra.join(', ');
+    for (const key of sourceKeys) {
+      const mismatch = describeStructureMismatch(source[key], translated[key], path + '.' + key);
+      if (mismatch) return mismatch;
+    }
+    return null;
+  }
+  return source === translated ? null : path + ': value type or value differs';
+}
 function uiCatalogStructureMatches(source: any, translated: any): boolean {
   if (typeof source === 'string') return typeof translated === 'string';
   if (Array.isArray(source)) return Array.isArray(translated) && source.length === translated.length &&
@@ -156,7 +189,7 @@ async function main() {
         const extraKeys = translatedKeys.filter((key) => !Object.prototype.hasOwnProperty.call(expected.content, key));
         throw new Error('UI catalogue structure mismatch: ' + draft.entity_key + '; missing keys (' + missingKeys.length + '): ' + missingKeys.join(', ') + '; extra keys (' + extraKeys.length + '): ' + extraKeys.join(', '));
       }
-      throw new Error('Content structure/token mismatch: ' + draft.entity_type + ':' + draft.entity_key);
+      throw new Error('Content structure/token mismatch: ' + (describeStructureMismatch(expected.content, payload.content, draft.entity_type + ':' + draft.entity_key + '.content') || 'unknown mismatch'));
     }
     const slug = normalizedSlug(draft.translated_slug, draft.entity_key);
     if (slugs.has(slug)) throw new Error('Duplicate Polish slug: ' + slug);
