@@ -1002,7 +1002,53 @@
           "Briefing de sécurité et instructions pour conduire le quad",
           "Option de visite privée disponible"
         ],
-        "itinerary": [],
+        "itinerary": [
+          {
+            "time": "13:30",
+            "title": "Prise en charge à l’hôtel",
+            "description": "L’heure de prise en charge dépend de l’emplacement de votre hôtel."
+          },
+          {
+            "time": "14:45",
+            "title": "Centre de safari",
+            "description": "Arrivée au centre de safari, préparation et consignes de sécurité."
+          },
+          {
+            "time": "15:00",
+            "title": "Début de l’excursion en quad",
+            "description": "Partez pour environ 25 minutes de quad à travers le désert."
+          },
+          {
+            "time": "15:30",
+            "title": "Tente bédouine",
+            "description": "Arrivée à la tente bédouine et dégustation du thé traditionnel."
+          },
+          {
+            "time": "16:00",
+            "title": "Montagne de l’Écho",
+            "description": "Rendez-vous à la montagne de l’Écho (Jabal El Sout) pour prendre des photos et découvrir son étonnant phénomène d’écho."
+          },
+          {
+            "time": "16:20",
+            "title": "Balade à dos de chameau en option",
+            "description": "Balade facultative d’environ 10 minutes, incluse uniquement si vous choisissez l’option supplémentaire."
+          },
+          {
+            "time": "16:30",
+            "title": "Retour au centre de safari",
+            "description": "Retour au centre de safari avec une nouvelle balade en quad d’environ 25 minutes."
+          },
+          {
+            "time": "17:00",
+            "title": "Transfert de retour à l’hôtel",
+            "description": "Préparez-vous au départ et profitez du transfert de retour à votre hôtel."
+          },
+          {
+            "time": "00:00",
+            "title": "Remarque très importante",
+            "description": "Les horaires et les activités sont approximatifs et peuvent varier selon le programme de l’excursion."
+          }
+        ],
         "included": [
           "Prise en charge et retour à l’hôtel à Charm el-Cheikh",
           "Quad tout-terrain",
