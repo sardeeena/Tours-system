@@ -9,11 +9,16 @@ import {
 
 const databaseId = '8f8c4f5a-1d21-4f1d-a2b8-9e1f4c6a2d10';
 
-assert.equal(formatBookingReference('2026-11-18', 123456), 'AWE-20261118-123456');
+assert.equal(formatBookingReference('2026-11-18', 123456), 'AA0002N9C');
+assert.equal(formatBookingReference('2026-11-18', 123456).length, 9);
+assert.equal(isValidBookingReference('AA0002N9C'), true);
+assert.equal(isValidBookingReference('AA0002N9C'.toLowerCase()), true);
+assert.equal(isValidBookingReference('AA0002N9'), false);
 assert.equal(isValidBookingReference('AWE-20261118-123456'), true);
-assert.equal(isValidBookingReference('AWE-20261118-12345'), false);
-assert.equal(isValidBookingReference('RST-2026-AB1234'), false);
-assert.throws(() => formatBookingReference('2026-11-18', 1000000), /between 1 and 999999/);
+assert.equal(isValidBookingReference('RST-2026-AB1234'), true);
+assert.equal(isValidBookingReference('RSE-12345'), true);
+assert.equal(isValidBookingReference('not-a-reference'), false);
+assert.throws(() => formatBookingReference('2026-11-18', 36 ** 7), /between 1 and/);
 
 assert.equal(
   resolveBookingTourIdentifier('tour-1', 'orange-bay-island-snorkeling'),
