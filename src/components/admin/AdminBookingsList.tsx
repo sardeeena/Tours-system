@@ -356,7 +356,7 @@ export const AdminBookingsList: React.FC = () => {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by reference (e.g. RST-2026-...), guest name, email, or tour..."
+            placeholder="Search by reference, guest name, email, or tour..."
             className="w-full pl-9 pr-4 py-2 bg-stone-900 border border-stone-800 rounded text-xs text-white placeholder-stone-500 focus:outline-none focus:border-[#0A6C74]"
           />
         </div>
