@@ -1314,9 +1314,6 @@ html.dark :where(a, button, input, select, textarea, summary, [role="button"], [
     width: 2.75rem;
     height: 2.75rem;
   }
-  .public-site:not(.public-site-admin-route) :where(button[class*="bg-[#0A6C74]"]) {
-    width: 100%;
-  }
 }
 @media (hover: hover) and (pointer: fine) {
   .public-site:not(.public-site-admin-route) :where(.aa-departure-option:not(:disabled):hover) {
