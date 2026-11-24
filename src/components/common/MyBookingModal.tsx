@@ -128,7 +128,7 @@ export const MyBookingModal: React.FC<MyBookingModalProps> = ({ isOpen, onClose,
                   required
                   value={bookingRef}
                   onChange={(e) => setBookingRef(e.target.value.toUpperCase())}
-                  placeholder="e.g. RST-2026-AB4821"
+                  placeholder="e.g. AA0000001"
                   className="w-full px-3 py-2 border border-stone-300 rounded text-sm uppercase font-mono tracking-wider focus:outline-none focus:ring-1 focus:ring-[#0A6C74]"
                 />
               </div>
