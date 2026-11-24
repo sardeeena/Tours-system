@@ -1229,7 +1229,7 @@ html.dark :where(a, button, input, select, textarea, summary, [role="button"], [
   font-weight: 600;
   letter-spacing: -.01em;
 }
-.public-site:not(.public-site-admin-route) :where(button[class*="bg-\\[\\#0A6C74\\]"], button[class*="bg-teal-brand"]) {
+.public-site:not(.public-site-admin-route) :where(button[class*="bg-[#0A6C74]"], button[class*="bg-teal-brand"]) {
   min-height: 3rem;
   border-radius: 999px;
   box-shadow: 0 8px 20px rgba(8, 86, 92, .16);
@@ -1294,7 +1294,7 @@ html.dark :where(a, button, input, select, textarea, summary, [role="button"], [
   opacity: .52;
   background: var(--site-surface-soft);
 }
-.public-site:not(.public-site-admin-route) :where(.bg-white.border, .bg-stone-50.border, .bg-emerald-50.border, .bg-amber-50.border, .bg-slate-50.border) {
+.public-site:not(.public-site-admin-route) :where(.bg-white.border, .bg-stone-50.border, [class*="bg-[#FAF8F5]"].border, .bg-emerald-50.border, .bg-amber-50.border, .bg-slate-50.border) {
   border-radius: 1rem;
 }
 .public-site:not(.public-site-admin-route) :where(.aa-info-card) {
@@ -1315,7 +1315,7 @@ html.dark :where(a, button, input, select, textarea, summary, [role="button"], [
     width: 2.75rem;
     height: 2.75rem;
   }
-  .public-site:not(.public-site-admin-route) :where(button[class*="bg-\\[\\#0A6C74\\]"]) {
+  .public-site:not(.public-site-admin-route) :where(button[class*="bg-[#0A6C74]"]) {
     width: 100%;
   }
 }
