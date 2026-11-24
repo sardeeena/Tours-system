@@ -76,9 +76,9 @@ export function isValidBookingReference(ref: string): boolean {
   if (!ref) return false;
   const clean = ref.trim().toUpperCase();
   return /^AA[A-Z0-9]{7}$/.test(clean) ||
-    /^AWE-\\d{8}-\\d{6}$/.test(clean) ||
-    /^RST-\\d{4}-[A-Z0-9]{4,32}$/.test(clean) ||
-    /^RSE-\\d{4,8}$/.test(clean);
+    /^AWE-\d{8}-\d{6}$/.test(clean) ||
+    /^RST-\d{4}-[A-Z0-9]{4,32}$/.test(clean) ||
+    /^RSE-\d{4,8}$/.test(clean);
 }
 
 /**
