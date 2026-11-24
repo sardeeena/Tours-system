@@ -108,53 +108,7 @@
           "Ontvang een veiligheidsbriefing en instructies voor het besturen van de quad",
           "Kies indien gewenst voor een privé-excursie"
         ],
-        "itinerary": [
-          {
-            "time": "13:30",
-            "title": "Ophalen bij het hotel",
-            "description": "De ophaaltijd is afhankelijk van de locatie van je hotel."
-          },
-          {
-            "time": "14:45",
-            "title": "Safaricentrum",
-            "description": "Aankomst bij het safaricentrum, voorbereiding en veiligheidsinstructies."
-          },
-          {
-            "time": "15:00",
-            "title": "Start van de quadervaring",
-            "description": "Begin aan de quadrit: ongeveer 25 minuten rijden door de woestijn."
-          },
-          {
-            "time": "15:30",
-            "title": "Bedoeïenentent",
-            "description": "Aankomst bij de Bedoeïenentent en geniet van traditionele Bedoeïenthee."
-          },
-          {
-            "time": "16:00",
-            "title": "Echo Mountain",
-            "description": "Ga naar Echo Mountain (Jabal El Sout) voor foto's en de bijzondere echo-ervaring."
-          },
-          {
-            "time": "16:20",
-            "title": "Optionele kamelenrit",
-            "description": "Een optionele kamelenrit van ongeveer 10 minuten, alleen inbegrepen wanneer je de extra optie kiest."
-          },
-          {
-            "time": "16:30",
-            "title": "Terug naar het safaricentrum",
-            "description": "Rijd met de quad in ongeveer 25 minuten terug naar het safaricentrum."
-          },
-          {
-            "time": "17:00",
-            "title": "Transfer terug naar het hotel",
-            "description": "Maak je klaar voor vertrek en reis terug naar je hotel."
-          },
-          {
-            "time": "00:00",
-            "title": "Belangrijke opmerking",
-            "description": "Alle tijden en activiteiten zijn bij benadering en kunnen afhankelijk van het tourschema veranderen."
-          }
-        ],
+        "itinerary": [],
         "included": [
           "Ophalen en terugbrengen bij het hotel in Sharm El Sheikh",
           "Quad",
