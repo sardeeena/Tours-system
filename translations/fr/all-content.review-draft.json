@@ -1070,9 +1070,9 @@
         ],
         "faqs": [
           {
-            "question": "Informations importantes",
-            "answer": "Ne convient pas aux femmes enceintes.",
-            "section": "important_information"
+            "question": "Que dois-je apporter pendant l’excursion ?",
+            "answer": "Veuillez apporter des vêtements confortables, des chaussures fermées, des lunettes de soleil, de la crème solaire, un foulard ou un châle léger pour vous protéger de la poussière, un appareil photo ou un téléphone, ainsi qu’un peu d’argent liquide pour les dépenses supplémentaires.",
+            "section": "faq"
           },
           {
             "question": "À apporter",
@@ -1080,14 +1080,19 @@
             "section": "what_to_bring"
           },
           {
-            "question": "Que dois-je apporter pendant l’excursion ?",
-            "answer": "Des vêtements confortables, des chaussures fermées, des lunettes de soleil, de la crème solaire, un foulard léger pour vous protéger de la poussière, un appareil photo ou un téléphone, ainsi que de l’argent liquide pour les dépenses supplémentaires.",
+            "question": "Informations importantes",
+            "answer": "Ne convient pas aux femmes enceintes.",
+            "section": "important_information"
+          },
+          {
+            "question": "Q : Combien de temps dure toute l’excursion ?",
+            "answer": "R : L’excursion dure environ 3 heures.",
             "section": "faq"
           },
           {
-            "question": "Combien de temps dure l’excursion complète ?",
-            "answer": "L’excursion dure environ 3 heures.",
-            "section": "faq"
+            "question": "Informations importantes",
+            "answer": "L’âge minimum pour conduire un quad est de 15 ans.",
+            "section": "important_information"
           },
           {
             "question": "À apporter",
@@ -1095,9 +1100,9 @@
             "section": "what_to_bring"
           },
           {
-            "question": "Informations importantes",
-            "answer": "L’âge minimum pour conduire un quad est de 15 ans.",
-            "section": "important_information"
+            "question": "Q : L’excursion est-elle proposée tous les jours ?",
+            "answer": "R : Oui, l’excursion est proposée tous les jours.",
+            "section": "faq"
           },
           {
             "question": "Informations importantes",
@@ -1110,29 +1115,24 @@
             "section": "what_to_bring"
           },
           {
-            "question": "L’excursion est-elle proposée tous les jours ?",
-            "answer": "Oui, l’excursion est proposée tous les jours.",
-            "section": "faq"
-          },
-          {
             "question": "À apporter",
             "answer": "De la crème solaire.",
             "section": "what_to_bring"
           },
           {
-            "question": "Une excursion privée est-elle possible ?",
-            "answer": "Oui, une excursion privée est possible moyennant un supplément. Contactez-nous pour l’organiser.",
-            "section": "faq"
-          },
-          {
-            "question": "Quel est l’âge minimum pour conduire un quad ?",
-            "answer": "L’âge minimum pour conduire un quad est de 15 ans.",
+            "question": "Q : Une excursion privée est-elle possible ?",
+            "answer": "R : Oui, une excursion privée est proposée moyennant un supplément. Contactez-nous pour l’organiser.",
             "section": "faq"
           },
           {
             "question": "À apporter",
             "answer": "Un foulard ou un châle léger pour vous protéger de la poussière.",
             "section": "what_to_bring"
+          },
+          {
+            "question": "Q : Quel est l’âge minimum pour conduire un quad ?",
+            "answer": "R : L’âge minimum pour conduire un quad est de 15 ans.",
+            "section": "faq"
           },
           {
             "question": "À apporter",
