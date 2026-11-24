@@ -2418,7 +2418,53 @@
           "Prenez de magnifiques photos de votre escapade sur l’île",
           "Vivez une journée mémorable en mer au départ de Hurghada"
         ],
-        "itinerary": [],
+        "itinerary": [
+          {
+            "time": "08:00",
+            "title": "Prise en charge à l’hôtel",
+            "description": "Prise en charge à votre hôtel dans un véhicule climatisé, selon la zone de prise en charge sélectionnée, puis transfert vers la marina."
+          },
+          {
+            "time": "09:00",
+            "title": "Départ du bateau et croisière vers Orange Bay",
+            "description": "Croisière vers Orange Bay, sur l’île de Giftun, avec des boissons chaudes et froides à bord."
+          },
+          {
+            "time": "10:45",
+            "title": "Temps libre sur la plage de l’île",
+            "description": "Détendez-vous sur la plage de l’île de Giftun, avec parasols et places assises, selon disponibilité."
+          },
+          {
+            "time": "13:00",
+            "title": "Premier arrêt snorkeling",
+            "description": "Faites du snorkeling avec l’équipement fourni, sous réserve des conditions météorologiques et de l’état de la mer."
+          },
+          {
+            "time": "14:00",
+            "title": "Deuxième arrêt snorkeling",
+            "description": "Deuxième arrêt snorkeling, sous réserve des conditions météorologiques et de l’état de la mer."
+          },
+          {
+            "time": "15:00",
+            "title": "Déjeuner",
+            "description": "Déjeuner pendant l’excursion."
+          },
+          {
+            "time": "16:00",
+            "title": "Croisière retour",
+            "description": "Détendez-vous à bord pendant le retour vers Hurghada."
+          },
+          {
+            "time": "17:00",
+            "title": "Retour à l’hôtel",
+            "description": "Transfert de retour vers votre hôtel."
+          },
+          {
+            "time": "00",
+            "title": "Remarque très importante",
+            "description": "Tous les horaires et toutes les activités sont indicatifs et peuvent varier selon le programme de l’excursion."
+          }
+        ],
         "included": [
           "Prise en charge et retour à l’hôtel, selon la zone de prise en charge sélectionnée",
           "Transport climatisé",
