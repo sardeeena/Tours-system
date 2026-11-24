@@ -263,7 +263,7 @@ export const StepCustomerInfo: React.FC<StepCustomerInfoProps> = ({
                 aria-label="Country dial code"
                 value={customer.countryCode || '+20'}
                 onChange={handleCountryDialSelect}
-                className="w-28 px-2 py-2.5 rounded border border-stone-300 text-xs bg-stone-100 font-mono focus:outline-none focus:ring-2 focus:ring-[#0A6C74]"
+                className="w-28 min-h-11 px-2 py-2.5 rounded-xl border border-stone-300 text-xs bg-stone-100 font-mono focus:outline-none focus:ring-2 focus:ring-[#0A6C74]"
               >
                 {COUNTRY_DIAL_CODES.map((c) => (
                   <option key={c.code} value={c.dial}>
