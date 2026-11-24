@@ -94,4 +94,42 @@ REVOKE ALL ON FUNCTION private.generate_booking_reference(date)
 COMMENT ON FUNCTION private.generate_booking_reference(date) IS
   'Internal collision-safe generator for nine-character AA plus seven-character base-36 booking references. The date argument is retained for RPC compatibility; uniqueness is global.';
 
+-- The verified guest lookup and cancellation RPCs historically rejected references
+-- shorter than ten characters. Lower their minimum to nine while preserving their
+-- contact verification, rate limits, permissions, and exact-match lookup behavior.
+DO $migration$
+DECLARE
+  v_lookup_definition text;
+  v_cancellation_definition text;
+BEGIN
+  SELECT pg_get_functiondef('public.lookup_booking_secure(text,text)'::regprocedure)
+    INTO v_lookup_definition;
+
+  IF position('LENGTH(TRIM(p_reference)) < 10' IN v_lookup_definition) = 0 THEN
+    RAISE EXCEPTION 'Secure booking lookup validation no longer matches the reviewed reference-length anchor.';
+  END IF;
+
+  v_lookup_definition := replace(
+    v_lookup_definition,
+    'LENGTH(TRIM(p_reference)) < 10',
+    'LENGTH(TRIM(p_reference)) < 9'
+  );
+  EXECUTE v_lookup_definition;
+
+  SELECT pg_get_functiondef('public.request_booking_cancellation_secure(text,text,text)'::regprocedure)
+    INTO v_cancellation_definition;
+
+  IF position('LENGTH(TRIM(p_reference)) < 10' IN v_cancellation_definition) = 0 THEN
+    RAISE EXCEPTION 'Secure booking cancellation validation no longer matches the reviewed reference-length anchor.';
+  END IF;
+
+  v_cancellation_definition := replace(
+    v_cancellation_definition,
+    'LENGTH(TRIM(p_reference)) < 10',
+    'LENGTH(TRIM(p_reference)) < 9'
+  );
+  EXECUTE v_cancellation_definition;
+END;
+$migration$;
+
 COMMIT;
