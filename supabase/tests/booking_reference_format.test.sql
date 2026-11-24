@@ -13,12 +13,12 @@ SELECT is(
 SELECT isnt(
   private.generate_booking_reference('2026-11-18'),
   private.generate_booking_reference('2026-11-18'),
-  'global sequence issues distinct references for concurrent bookings on the same date'
+  'cryptographically random generator returns distinct references on the same date'
 );
 SELECT isnt(
   private.generate_booking_reference('2026-11-18'),
   private.generate_booking_reference('2026-12-01'),
-  'global sequence remains unique across different departure dates'
+  'random generator also distinguishes bookings across departure dates'
 );
 SELECT * FROM finish();
 ROLLBACK;
