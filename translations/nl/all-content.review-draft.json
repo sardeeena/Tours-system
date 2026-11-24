@@ -780,14 +780,69 @@
         ],
         "faqs": [
           {
-            "question": "Is snorkeluitrusting inbegrepen of moet ik die zelf meenemen?",
-            "answer": "Aan boord zijn gratis gereinigde maskers, snorkels en zwemvliezen in volwassen- en kindermaten beschikbaar.",
+            "question": "Wat moet ik meenemen voor deze excursie?",
+            "answer": "Badkleding",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat moet ik meenemen voor deze excursie?",
+            "answer": "Handdoek",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat moet ik meenemen voor deze excursie?",
+            "answer": "Zonnebrandcrème, een hoed en een zonnebril",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat moet ik meenemen voor deze excursie?",
+            "answer": "Comfortabele kleding voor op de boot",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat moet ik meenemen voor deze excursie?",
+            "answer": "Een camera of telefoon om foto's te maken",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat moet ik meenemen voor deze excursie?",
+            "answer": "Wat persoonlijk zakgeld, naar behoefte",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat zijn de geschatte ophaal- en vertrektijden van de boot?",
+            "answer": "Het ophalen begint rond 8.00 uur, afhankelijk van de locatie van je hotel, en kan iets eerder of later zijn. De boot vertrekt rond 9.00 uur. We verwachten je rond 17.00 uur terug te brengen naar je hotel.",
             "section": "faq"
           },
           {
-            "question": "Kunnen mensen die niet kunnen zwemmen veilig deelnemen?",
-            "answer": "Ja. Er zijn door de kustwacht goedgekeurde zwemvesten beschikbaar en gecertificeerde duikinstructeurs begeleiden gasten in het water.",
+            "question": "Is de toegangsprijs voor Orange Bay Island inbegrepen?",
+            "answer": "Is de toegangsprijs voor Orange Bay Island inbegrepen?\n",
             "section": "faq"
+          },
+          {
+            "question": "Is snorkeluitrusting inbegrepen?",
+            "answer": "Ja, snorkeluitrusting is beschikbaar en bij de prijs inbegrepen.",
+            "section": "faq"
+          },
+          {
+            "question": "Welke belangrijke instructies moet ik volgen?",
+            "answer": "Volg altijd de aanwijzingen van de bemanning en gidsen.",
+            "section": "important_information"
+          },
+          {
+            "question": "Welke belangrijke instructies moet ik volgen?",
+            "answer": "Volg alle instructies tijdens het duiken, snorkelen en zwemmen.",
+            "section": "important_information"
+          },
+          {
+            "question": "Welke belangrijke instructies moet ik volgen?",
+            "answer": "Houd kinderen aan boord van de boot goed in de gaten.",
+            "section": "important_information"
+          },
+          {
+            "question": "Wat moet ik doen als ik zeeziek word?",
+            "answer": "Laat het de bemanning of gids onmiddellijk weten als je zeeziek wordt.",
+            "section": "important_information"
           }
         ],
         "pickupInfo": "Beschikbare ophaalopties, goedgekeurde locaties en eventuele toeslagen worden tijdens het boeken getoond.",
