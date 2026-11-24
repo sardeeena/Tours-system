@@ -713,7 +713,53 @@
           "Maak prachtige foto's van je eilanduitstapje",
           "Beleef een onvergetelijke dag op zee vanuit Hurghada"
         ],
-        "itinerary": [],
+        "itinerary": [
+          {
+            "time": "08:00",
+            "title": "Ophalen bij het hotel",
+            "description": "Ophalen bij uw hotel in een voertuig met airconditioning, afhankelijk van de door u gekozen ophaalzone, en transfer naar de jachthaven."
+          },
+          {
+            "time": "09:00",
+            "title": "Vertrek van de boot en vaart naar Orange Bay",
+            "description": "Vaar naar Orange Bay op Giftun Island. Aan boord zijn warme en koude dranken beschikbaar."
+          },
+          {
+            "time": "10:45",
+            "title": "Tijd op het strand van het eiland",
+            "description": "Ontspan op het strand van Giftun Island, met strandparasols en zitplaatsen, afhankelijk van beschikbaarheid."
+          },
+          {
+            "time": "13:00",
+            "title": "Eerste snorkelstop",
+            "description": "Ga snorkelen met de verstrekte uitrusting, afhankelijk van het weer en de omstandigheden op zee."
+          },
+          {
+            "time": "14:00",
+            "title": "Tweede snorkelstop",
+            "description": "Een tweede snorkelstop, afhankelijk van het weer en de omstandigheden op zee."
+          },
+          {
+            "time": "15:00",
+            "title": "Lunch",
+            "description": "Lunch tijdens de excursie."
+          },
+          {
+            "time": "16:00",
+            "title": "Terugvaart",
+            "description": "Ontspan aan boord terwijl we terugvaren naar Hurghada."
+          },
+          {
+            "time": "17:00",
+            "title": "Terugbrengen naar het hotel",
+            "description": "Transfer terug naar uw hotel."
+          },
+          {
+            "time": "00",
+            "title": "Zeer belangrijke opmerking",
+            "description": "Alle tijden en activiteiten zijn bij benadering en kunnen veranderen afhankelijk van het tourschema."
+          }
+        ],
         "included": [
           "Ophalen en terugbrengen bij het hotel, afhankelijk van het gekozen ophaalgebied",
           "Vervoer met airconditioning",
