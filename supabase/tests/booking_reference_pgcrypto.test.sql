@@ -38,7 +38,7 @@ SELECT ok(
   position(
     'gen_random_bytes('
     IN regexp_replace(
-      pg_get_functiondef(to_regprocedure('private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)')),
+      pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)')),
       'extensions\.gen_random_bytes',
       '',
       'gi'
