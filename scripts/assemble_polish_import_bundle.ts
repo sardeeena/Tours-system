@@ -28,39 +28,37 @@ function translationStructureMatches(source: any, translated: any): boolean {
   }
   return source === translated;
 }
-function describeStructureMismatch(source: any, translated: any, path = 'content'): string | null {
+function collectStructureMismatches(source: any, translated: any, path = 'content'): string[] {
   if (typeof source === 'string') {
-    if (typeof translated !== 'string') return path + ': expected text';
-    if (!source.trim()) return translated.trim() ? path + ': source is empty but draft has text' : null;
-    if (!translated.trim()) return path + ': translation is empty';
-    const protectedTokens = source.match(/\{\{[^{}]+\}\}|https?:\/\/[^\s<>"']+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|\+\d[\d\s()./-]{5,}\d/g) || [];
-    const missingToken = protectedTokens.find((token) => !translated.includes(token));
-    return missingToken ? path + ': protected token missing (' + missingToken + '); source=' + JSON.stringify(source) + '; draft=' + JSON.stringify(translated) : null;
+    if (typeof translated !== 'string') return [path + ': expected text'];
+    if (!source.trim()) return translated.trim() ? [path + ': source is empty but draft has text'] : [];
+    if (!translated.trim()) return [path + ': translation is empty'];
+    const protectedTokens = source.match(/\{\{[^{}]+\}\}|https?:\/\/[^\s<>"']+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|\+\d[\d\s()./-]{5,}\d|\d+(?:[.,]\d+)?/g) || [];
+    return protectedTokens.filter((token) => !translated.includes(token)).map((token) =>
+      path + ': protected token missing (' + token + '); source=' + JSON.stringify(source) + '; draft=' + JSON.stringify(translated)
+    );
   }
   if (Array.isArray(source)) {
-    if (!Array.isArray(translated)) return path + ': expected array';
-    if (source.length !== translated.length) return path + ': expected ' + source.length + ' rows, got ' + translated.length;
-    for (let i = 0; i < source.length; i++) {
-      const mismatch = describeStructureMismatch(source[i], translated[i], path + '[' + i + ']');
-      if (mismatch) return mismatch;
-    }
-    return null;
+    if (!Array.isArray(translated)) return [path + ': expected array'];
+    if (source.length !== translated.length) return [path + ': expected ' + source.length + ' rows, got ' + translated.length];
+    return source.flatMap((item, index) => collectStructureMismatches(item, translated[index], path + '[' + index + ']'));
   }
   if (isObject(source)) {
-    if (!isObject(translated)) return path + ': expected object';
+    if (!isObject(translated)) return [path + ': expected object'];
     const sourceKeys = Object.keys(source).sort(), translatedKeys = Object.keys(translated).sort();
     const missing = sourceKeys.filter((key) => !Object.prototype.hasOwnProperty.call(translated, key));
     const extra = translatedKeys.filter((key) => !Object.prototype.hasOwnProperty.call(source, key));
-    if (missing.length) return path + ': missing keys ' + missing.join(', ');
-    if (extra.length) return path + ': unexpected keys ' + extra.join(', ');
+    const result: string[] = [];
+    if (missing.length) result.push(path + ': missing keys ' + missing.join(', '));
+    if (extra.length) result.push(path + ': unexpected keys ' + extra.join(', '));
     for (const key of sourceKeys) {
-      const mismatch = describeStructureMismatch(source[key], translated[key], path + '.' + key);
-      if (mismatch) return mismatch;
+      if (Object.prototype.hasOwnProperty.call(translated, key)) result.push(...collectStructureMismatches(source[key], translated[key], path + '.' + key));
     }
-    return null;
+    return result;
   }
-  return source === translated ? null : path + ': value type or value differs';
+  return source === translated ? [] : [path + ': value type or value differs'];
 }
+
 function uiCatalogStructureMatches(source: any, translated: any): boolean {
   if (typeof source === 'string') return typeof translated === 'string';
   if (Array.isArray(source)) return Array.isArray(translated) && source.length === translated.length &&
@@ -190,7 +188,7 @@ async function main() {
         const extraKeys = translatedKeys.filter((key) => !Object.prototype.hasOwnProperty.call(expected.content, key));
         throw new Error('UI catalogue structure mismatch: ' + draft.entity_key + '; missing keys (' + missingKeys.length + '): ' + missingKeys.join(', ') + '; extra keys (' + extraKeys.length + '): ' + extraKeys.join(', '));
       }
-      mismatches.push('Content structure/token mismatch: ' + (describeStructureMismatch(expected.content, payload.content, draft.entity_type + ':' + draft.entity_key + '.content') || 'unknown mismatch'));
+      mismatches.push(...collectStructureMismatches(expected.content, payload.content, draft.entity_type + ':' + draft.entity_key + '.content').map((detail) => 'Content structure/token mismatch: ' + detail));
     }
     const slug = normalizedSlug(draft.translated_slug, draft.entity_key);
     if (slugs.has(slug)) throw new Error('Duplicate Polish slug: ' + slug);
