@@ -24,7 +24,7 @@ export const ImportantInformation: React.FC<ImportantInformationProps> = ({ tour
         
         {/* What to bring */}
         {tour.whatToBring && tour.whatToBring.length > 0 && (
-          <div className="bg-[#FAF8F5] border border-[#E8E3DA] rounded p-4">
+          <div className="aa-info-card bg-[#FAF8F5] border border-[#E8E3DA] rounded-xl p-4">
             <div className="flex items-center space-x-2 mb-2.5 text-stone-900 font-bold">
               <Backpack className="w-4 h-4 text-[#0A6C74]" />
               <span>What to Bring</span>
@@ -41,7 +41,7 @@ export const ImportantInformation: React.FC<ImportantInformationProps> = ({ tour
         )}
 
         {/* Pickup Information */}
-        <div className="bg-[#FAF8F5] border border-[#E8E3DA] rounded p-4">
+        <div className="aa-info-card bg-[#FAF8F5] border border-[#E8E3DA] rounded-xl p-4">
           <div className="flex items-center space-x-2 mb-2.5 text-stone-900 font-bold">
             <MapPin className="w-4 h-4 text-[#0A6C74]" />
             <span>Pickup & Departure Details</span>
@@ -52,7 +52,7 @@ export const ImportantInformation: React.FC<ImportantInformationProps> = ({ tour
         </div>
 
         {/* Cancellation Policy */}
-        <div className="bg-[#FAF8F5] border border-[#E8E3DA] rounded p-4">
+        <div className="aa-info-card bg-[#FAF8F5] border border-[#E8E3DA] rounded-xl p-4">
           <div className="flex items-center space-x-2 mb-2.5 text-stone-900 font-bold">
             <ShieldCheck className="w-4 h-4 text-[#0A6C74]" />
             <span>Cancellation & Refund Policy</span>
@@ -64,7 +64,7 @@ export const ImportantInformation: React.FC<ImportantInformationProps> = ({ tour
 
         {/* Health, Safety & Restrictions */}
         {((tour.importantInformation && tour.importantInformation.length > 0) || tour.ageRestrictions) && (
-          <div className="bg-[#FAF8F5] border border-[#E8E3DA] rounded p-4">
+          <div className="aa-info-card bg-[#FAF8F5] border border-[#E8E3DA] rounded-xl p-4">
             <div className="flex items-center space-x-2 mb-2.5 text-stone-900 font-bold">
               <AlertCircle className="w-4 h-4 text-[#0A6C74]" />
               <span>Guidelines & Safety</span>
