@@ -199,8 +199,8 @@ export const TourSearch: React.FC<TourSearchProps> = ({
             <button
               key={tab}
               type="button"
-              onClick={() => onSelectCategoryTab(tab)}
-              className={`px-3.5 py-1.5 rounded-sm whitespace-nowrap transition-all border ${
+              onClick={() => onSelectCategoryTab(tab)}\n              aria-pressed={isActive}
+              className={`px-4 py-2 rounded-full whitespace-nowrap transition-all border ${
                 isActive
                   ? 'bg-[#0A6C74] text-white border-[#0A6C74] font-semibold shadow-xs'
                   : 'bg-white text-stone-700 border-stone-200 hover:border-stone-400 hover:bg-stone-50'
