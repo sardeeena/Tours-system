@@ -1,19 +1,15 @@
 BEGIN;
 
 -- New customer-facing references are exactly nine characters:
--- "AA" plus seven base-36 sequence characters. A global database sequence
--- guarantees uniqueness across all tours and departure dates.
-CREATE SEQUENCE private.booking_reference_global_seq
-  AS bigint
-  MINVALUE 1
-  MAXVALUE 78364164095
-  START WITH 1
-  INCREMENT BY 1
-  NO CYCLE
-  CACHE 1;
-
-REVOKE ALL ON SEQUENCE private.booking_reference_global_seq
-  FROM PUBLIC, anon, authenticated, service_role;
+-- "AA" plus seven base-36 characters. Cryptographic randomness keeps references
+-- difficult to guess; the bookings unique constraint and retry loop prevent collisions.
+DO $extension_check$
+BEGIN
+  IF to_regprocedure('extensions.gen_random_bytes(integer)') IS NULL THEN
+    RAISE EXCEPTION 'pgcrypto extensions.gen_random_bytes(integer) is required for compact booking references.';
+  END IF;
+END;
+$extension_check$;
 
 CREATE OR REPLACE FUNCTION private.encode_booking_reference_suffix(p_value bigint)
 RETURNS text
@@ -66,12 +62,10 @@ BEGIN
   END IF;
 
   LOOP
-    v_number := nextval('private.booking_reference_global_seq'::regclass);
-
-    IF v_number > 78364164095 THEN
-      RAISE EXCEPTION 'The nine-character booking reference sequence is exhausted.'
-        USING ERRCODE = '54000';
-    END IF;
+    -- 56 cryptographically random bits are mapped into the seven-character
+    -- base-36 suffix. Any collision is retried; bookings.booking_reference is UNIQUE.
+    v_number := (('x' || encode(extensions.gen_random_bytes(7), 'hex'))::bit(56)::bigint
+      % 78364164095) + 1;
 
     v_reference := 'AA' || private.encode_booking_reference_suffix(v_number);
 
@@ -92,7 +86,7 @@ REVOKE ALL ON FUNCTION private.generate_booking_reference(date)
   FROM PUBLIC, anon, authenticated, service_role;
 
 COMMENT ON FUNCTION private.generate_booking_reference(date) IS
-  'Internal collision-safe generator for nine-character AA plus seven-character base-36 booking references. The date argument is retained for RPC compatibility; uniqueness is global.';
+  'Internal collision-safe generator for nine-character AA plus seven-character cryptographically random base-36 booking references. The date argument is retained for RPC compatibility.';
 
 -- The verified guest lookup and cancellation RPCs historically rejected references
 -- shorter than ten characters. Lower their minimum to nine while preserving their
