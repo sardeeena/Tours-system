@@ -163,6 +163,7 @@ async function main() {
   const output: AnyRecord[] = [];
   const slugs = new Set<string>();
   let skippedUnavailableSources = 0;
+  const mismatches: string[] = [];
   for (const draft of draftBundle.records as AnyRecord[]) {
     const sourceRecord: AnyRecord | undefined = sources.get(draft.entity_type + ':' + draft.entity_key);
     if (!sourceRecord) {
@@ -176,10 +177,10 @@ async function main() {
     const expected = expectedPayload(draft.entity_type, sourceRecord.source);
     const payload = translatedPayload(draft.entity_type, sourceRecord.source, draft);
     if (expected.title !== undefined && !translationStructureMatches(expected.title, payload.title)) {
-      throw new Error('Title structure/token mismatch: ' + draft.entity_type + ':' + draft.entity_key);
+      mismatches.push('Title structure/token mismatch: ' + draft.entity_type + ':' + draft.entity_key);
     }
     if (expected.summary !== undefined && !translationStructureMatches(expected.summary, payload.summary)) {
-      throw new Error('Summary structure/token mismatch: ' + draft.entity_type + ':' + draft.entity_key);
+      mismatches.push('Summary structure/token mismatch: ' + draft.entity_type + ':' + draft.entity_key);
     }
     if (!(draft.entity_type === 'ui_catalog' ? uiCatalogStructureMatches(expected.content, payload.content) : translationStructureMatches(expected.content, payload.content))) {
       if (draft.entity_type === 'ui_catalog' && isObject(expected.content) && isObject(payload.content)) {
@@ -189,7 +190,7 @@ async function main() {
         const extraKeys = translatedKeys.filter((key) => !Object.prototype.hasOwnProperty.call(expected.content, key));
         throw new Error('UI catalogue structure mismatch: ' + draft.entity_key + '; missing keys (' + missingKeys.length + '): ' + missingKeys.join(', ') + '; extra keys (' + extraKeys.length + '): ' + extraKeys.join(', '));
       }
-      throw new Error('Content structure/token mismatch: ' + (describeStructureMismatch(expected.content, payload.content, draft.entity_type + ':' + draft.entity_key + '.content') || 'unknown mismatch'));
+      mismatches.push('Content structure/token mismatch: ' + (describeStructureMismatch(expected.content, payload.content, draft.entity_type + ':' + draft.entity_key + '.content') || 'unknown mismatch'));
     }
     const slug = normalizedSlug(draft.translated_slug, draft.entity_key);
     if (slugs.has(slug)) throw new Error('Duplicate Polish slug: ' + slug);
@@ -201,6 +202,7 @@ async function main() {
       content:payload.content, source_checksum:sourceRecord.source_checksum,
     });
   }
+  if (mismatches.length) throw new Error('Translation source/draft mismatches:\n' + mismatches.join('\n'));
   const sourceKeys = new Set(sourceBundle.records.map((record: AnyRecord) => record.entity_type + ':' + record.entity_key));
   const draftKeys = new Set(draftBundle.records.map((record: AnyRecord) => record.entity_type + ':' + record.entity_key));
   const missing = [...sourceKeys].filter((key) => !draftKeys.has(key));
