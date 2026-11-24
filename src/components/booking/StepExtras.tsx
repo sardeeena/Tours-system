@@ -89,7 +89,7 @@ export const StepExtras: React.FC<StepExtrasProps> = ({
               return (
                 <div
                   key={extra.id}
-                  className={`p-4 rounded-sm border transition-all flex flex-col justify-between ${
+                  className={`aa-selectable-card p-4 rounded-xl border transition-all flex flex-col justify-between ${
                     isSelected
                       ? 'border-[#0A6C74] bg-[#E8F3F4]/50 ring-1 ring-[#0A6C74]'
                       : 'border-stone-200 hover:border-stone-300 hover:bg-stone-50 bg-white'
@@ -99,7 +99,7 @@ export const StepExtras: React.FC<StepExtrasProps> = ({
                     type="button"
                     aria-pressed={isSelected}
                     onClick={() => onToggleExtra(extra.id)}
-                    className="w-full cursor-pointer text-left rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2"
+                    className="w-full cursor-pointer text-left rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="space-y-0.5">
