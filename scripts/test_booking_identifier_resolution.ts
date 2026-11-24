@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import { isValidBookingReference as isValidSecureBookingReference } from '../src/lib/security';
 import {
   formatBookingReference,
   isValidBookingReference,
@@ -18,6 +19,11 @@ assert.equal(isValidBookingReference('AWE-20261118-123456'), true);
 assert.equal(isValidBookingReference('RST-2026-AB1234'), true);
 assert.equal(isValidBookingReference('RSE-12345'), true);
 assert.equal(isValidBookingReference('not-a-reference'), false);
+assert.equal(isValidSecureBookingReference('AA0002N9C'), true);
+assert.equal(isValidSecureBookingReference('AWE-20261118-123456'), true);
+assert.equal(isValidSecureBookingReference('RST-2026-AB1234'), true);
+assert.equal(isValidSecureBookingReference('RSE-12345'), true);
+assert.equal(isValidSecureBookingReference('not-a-reference'), false);
 assert.throws(() => formatBookingReference('2026-11-18', 36 ** 7), /between 1 and/);
 
 assert.equal(
