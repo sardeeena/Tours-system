@@ -1818,7 +1818,58 @@
           "Skorzystaj z okazji do zakupów podczas wizyty w Kairze.",
           "Podróżuj dzięki odbiorowi i powrotowi do hoteli w Sharm el-Sheikh."
         ],
-        "itinerary": [],
+        "itinerary": [
+          {
+            "time": "12:30",
+            "title": "Odbiór z hotelu",
+            "description": "Nasz zespół odbierze Cię z hotelu w Szarm el-Szejk."
+          },
+          {
+            "time": "1:30",
+            "title": "Miejsce zbiórki i wyjazd",
+            "description": "Spotkaj się w miejscu zbiórki, a następnie wyrusz do Kairu klimatyzowanym pojazdem."
+          },
+          {
+            "time": "2:00",
+            "title": "Przejazd do Kairu",
+            "description": "Przed nami długa nocna podróż. Odpocznij po drodze; do Kairu docieramy około 9:00."
+          },
+          {
+            "time": "09:00",
+            "title": "Muzeum Egipskie (stare muzeum w Kairze)",
+            "description": "Zwiedzaj Muzeum Egipskie z przewodnikiem-egiptologiem. Bilety wstępu są wliczone w cenę."
+          },
+          {
+            "time": "12:00",
+            "title": "Piramidy w Gizie i Wielki Sfinks",
+            "description": "Zwiedź teren piramid w Gizie i zobacz Wielkiego Sfinksa z bliska. Bilety wstępu są wliczone w cenę."
+          },
+          {
+            "time": "14:30",
+            "title": "Lunch w Gizie",
+            "description": "Lunch w lokalnej restauracji w Gizie."
+          },
+          {
+            "time": "15:50",
+            "title": "Przystanek na zakupy",
+            "description": "W programie wycieczki przewidziano przystanek na zakupy."
+          },
+          {
+            "time": "17:00",
+            "title": "Powrót do Szarm el-Szejk",
+            "description": "Powrót do Szarm el-Szejk; po przyjeździe późnym wieczorem odwieziemy Cię do hotelu."
+          },
+          {
+            "time": "00",
+            "title": "Bardzo ważna uwaga",
+            "description": "Wszystkie godziny i atrakcje są orientacyjne i mogą ulec zmianie w zależności od harmonogramu wycieczki."
+          },
+          {
+            "time": "11:00",
+            "title": "Nowy przystanek",
+            "description": "Krótki opis atrakcji."
+          }
+        ],
         "included": [
           "Odbiór i powrót do hoteli w Sharm el-Sheikh.",
           "Transport w obie strony między Sharm el-Sheikh a Kairem.",
