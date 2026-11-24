@@ -129,10 +129,16 @@ async function main() {
   const sources = new Map(sourceBundle.records.map((record: AnyRecord) => [record.entity_type + ':' + record.entity_key, record]));
   const output: AnyRecord[] = [];
   const slugs = new Set<string>();
+  let skippedUnavailableSources = 0;
   for (const draft of draftBundle.records as AnyRecord[]) {
     const sourceRecord: AnyRecord | undefined = sources.get(draft.entity_type + ':' + draft.entity_key);
-    if (!sourceRecord || !/^[a-f0-9]{64}$/i.test(sourceRecord.source_checksum || '')) {
-      throw new Error('Missing current source record or checksum: ' + draft.entity_type + ':' + draft.entity_key);
+    if (!sourceRecord) {
+      skippedUnavailableSources++;
+      console.warn('Preserved but skipped unpublished or removed source draft: ' + draft.entity_type + ':' + draft.entity_key);
+      continue;
+    }
+    if (!/^[a-f0-9]{64}$/i.test(sourceRecord.source_checksum || '')) {
+      throw new Error('Current source record has no valid checksum: ' + draft.entity_type + ':' + draft.entity_key);
     }
     const expected = expectedPayload(draft.entity_type, sourceRecord.source);
     const payload = translatedPayload(draft.entity_type, sourceRecord.source, draft);
@@ -166,7 +172,8 @@ async function main() {
   const draftKeys = new Set(draftBundle.records.map((record: AnyRecord) => record.entity_type + ':' + record.entity_key));
   const missing = [...sourceKeys].filter((key) => !draftKeys.has(key));
   const unexpected = [...draftKeys].filter((key) => !sourceKeys.has(key));
-  if (missing.length || unexpected.length) throw new Error('Coverage mismatch. Missing: ' + missing.join(', ') + '; unexpected: ' + unexpected.join(', '));
+  if (missing.length) throw new Error('Coverage mismatch. Current published source records are missing translations: ' + missing.join(', '));
+  if (unexpected.length) console.warn('Drafts for unpublished or removed source records were preserved and excluded from this import: ' + unexpected.join(', '));
   await writeFile(outputPath, JSON.stringify({ schema_version:1, generated_at:new Date().toISOString(), locales:['pl'], records:output }, null, 2) + '\n');
   console.log('Assembled ' + output.length + ' Polish draft records with current source checksums. Output: ' + outputPath + '. No database records were changed or published.');
 }
