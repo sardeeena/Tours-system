@@ -11,8 +11,8 @@
     "static_page": 10,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1069,
-    "ui_catalog_messages": 1150,
+    "private_ui_messages": 1073,
+    "ui_catalog_messages": 1154,
     "source_records": 112
   },
   "records": [
@@ -4104,7 +4104,11 @@
         "private.text.fff7de5b": "Assistant de voyage",
         "private.text.ffff4c4e": "Suggestions d’excursions",
         "private.text.d0162f9c": "Langue du site",
-        "private.text.9e1f6981": "Choisir la langue du site"
+        "private.text.9e1f6981": "Choisir la langue du site",
+        "private.text.208d5479": "Aucun départ n’est programmé pour cette date. Veuillez choisir une autre date. ",
+        "private.text.67339a93": "Tous les départs affichent complet pour cette date. Veuillez choisir une autre date.",
+        "private.text.a3974c94": "Choisissez une heure de départ pour continuer.",
+        "private.text.ecffeb3e": "ex. : AA0000001"
       },
       "private_ui_message_count": 1069
     },
