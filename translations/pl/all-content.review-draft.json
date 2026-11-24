@@ -708,7 +708,53 @@
           "Zrób piękne zdjęcia z wycieczki na wyspę",
           "Przeżyj niezapomniany dzień na morzu z Hurghady"
         ],
-        "itinerary": [],
+        "itinerary": [
+          {
+            "time": "08:00",
+            "title": "Odbiór z hotelu",
+            "description": "Odbiór z hotelu klimatyzowanym pojazdem, zgodnie z wybraną strefą odbioru, a następnie transfer do mariny."
+          },
+          {
+            "time": "09:00",
+            "title": "Wypłynięcie łodzi i rejs na Orange Bay",
+            "description": "Rejs na Orange Bay na wyspie Giftun; na pokładzie dostępne są ciepłe i zimne napoje."
+          },
+          {
+            "time": "10:45",
+            "title": "Czas na plaży wyspy",
+            "description": "Odpoczynek na plaży wyspy Giftun, z parasolami i miejscami do siedzenia, w zależności od dostępności."
+          },
+          {
+            "time": "13:00",
+            "title": "Pierwszy postój na snorkeling",
+            "description": "Snorkeling z zapewnionym sprzętem, zależnie od pogody i warunków na morzu."
+          },
+          {
+            "time": "14:00",
+            "title": "Drugi postój na snorkeling",
+            "description": "Drugi postój na snorkeling, zależnie od pogody i warunków na morzu."
+          },
+          {
+            "time": "15:00",
+            "title": "Lunch",
+            "description": "Lunch podczas wycieczki."
+          },
+          {
+            "time": "16:00",
+            "title": "Rejs powrotny",
+            "description": "Odpocznij na pokładzie podczas rejsu powrotnego do Hurghady."
+          },
+          {
+            "time": "17:00",
+            "title": "Odwiezienie do hotelu",
+            "description": "Transfer powrotny do hotelu."
+          },
+          {
+            "time": "00",
+            "title": "Bardzo ważna uwaga",
+            "description": "Wszystkie godziny i atrakcje są orientacyjne i mogą ulec zmianie w zależności od harmonogramu wycieczki."
+          }
+        ],
         "included": [
           "Odbiór z hotelu i powrót, zależnie od wybranej strefy odbioru",
           "Transport klimatyzowanym pojazdem",
