@@ -1,7 +1,4 @@
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
-import { TRANSLATIONS } from '../src/i18n/translations';
-import { collectPrivateUiMessages } from './generate_private_ui_catalog';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -53,17 +50,4 @@ for (const locale of locales) {
   console.log(locale.toUpperCase() + ': validated ' + bundle.records.length + ' review-draft records (' + Object.entries(counts).map(([type, count]) => count + ' ' + type).join(', ') + ').');
 }
 
-const stable = (value: any): string => {
-  if (Array.isArray(value)) return '[' + value.map(stable).join(',') + ']';
-  if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map((key) => JSON.stringify(key) + ':' + stable(value[key])).join(',') + '}';
-  return JSON.stringify(value);
-};
-const uiSource = {
-  id: 'site-ui',
-  slug: 'site-ui',
-  title: 'Interface messages',
-  content: { ...TRANSLATIONS.en, ...collectPrivateUiMessages() },
-};
-const canonicalUiChecksum = createHash('sha256').update(stable(uiSource)).digest('hex');
-console.log('Canonical UI source checksum for translation review bundles: ' + canonicalUiChecksum);
 console.log('French, Dutch and Polish review bundles cover all 112 CMS/UI source records each. No translations are published by this test.');
