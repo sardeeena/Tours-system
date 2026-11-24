@@ -69,15 +69,16 @@ export function isValidPhoneNumber(phone: string): boolean {
 }
 
 /**
- * Validates Awesome Adventure Tours booking reference format
- * Accepts RST-YYYY-XXXX (4–32 alphanumeric characters) or RSE-XXXXX
+ * Accepts new nine-character references and previously issued formats so
+ * existing customers can continue retrieving their original bookings.
  */
 export function isValidBookingReference(ref: string): boolean {
   if (!ref) return false;
   const clean = ref.trim().toUpperCase();
-  const format1 = /^RST-\d{4}-[A-Z0-9]{4,32}$/;
-  const format2 = /^RSE-\d{4,8}$/;
-  return format1.test(clean) || format2.test(clean);
+  return /^AA[A-Z0-9]{7}$/.test(clean) ||
+    /^AWE-\\d{8}-\\d{6}$/.test(clean) ||
+    /^RST-\\d{4}-[A-Z0-9]{4,32}$/.test(clean) ||
+    /^RSE-\\d{4,8}$/.test(clean);
 }
 
 /**
