@@ -12,7 +12,7 @@ function translationStructureMatches(source: any, translated: any): boolean {
   if (typeof source === 'string') {
     if (typeof translated !== 'string') return false;
     if (!source.trim()) return !translated.trim();
-    const protectedTokens = source.match(/\{\{[^{}]+\}\}|https?:\/\/[^\s<>"']+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|\+\d[\d\s()./-]{5,}\d/g) || [];
+    const protectedTokens = source.match(/\{\{[^{}]+\}\}|https?:\/\/[^\s<>"']+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|\+\d[\d\s()./-]{5,}\d|\d+(?:[.,]\d+)?/g) || [];
     if (!Boolean(translated.trim()) || !protectedTokens.every((token) => translated.includes(token))) return false;
     const numericTokens = source.match(/\b\d+(?:[.,]\d+)?\b/g) || [];
     const translatedNumbers = translated.match(/\b\d+(?:[.,]\d+)?\b/g) || [];
