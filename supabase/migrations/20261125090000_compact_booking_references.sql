@@ -105,29 +105,33 @@ BEGIN
   SELECT pg_get_functiondef('public.lookup_booking_secure(text,text)'::regprocedure)
     INTO v_lookup_definition;
 
-  IF position('LENGTH(TRIM(p_reference)) < 10' IN v_lookup_definition) = 0 THEN
-    RAISE EXCEPTION 'Secure booking lookup validation no longer matches the reviewed reference-length anchor.';
-  END IF;
-
-  v_lookup_definition := replace(
+  v_lookup_definition := regexp_replace(
     v_lookup_definition,
-    'LENGTH(TRIM(p_reference)) < 10',
-    'LENGTH(TRIM(p_reference)) < 9'
+    'length[[:space:]]*\\([[:space:]]*trim[[:space:]]*\\([[:space:]]*p_reference[[:space:]]*\\)[[:space:]]*\\)[[:space:]]*<[[:space:]]*10',
+    'length(trim(p_reference)) < 9',
+    'gi'
   );
+
+  IF position('p_reference' IN v_lookup_definition) = 0
+     OR position('length(trim(p_reference)) < 9' IN lower(v_lookup_definition)) = 0 THEN
+    RAISE EXCEPTION 'Secure booking lookup reference-length guard could not be updated.';
+  END IF;
   EXECUTE v_lookup_definition;
 
   SELECT pg_get_functiondef('public.request_booking_cancellation_secure(text,text,text)'::regprocedure)
     INTO v_cancellation_definition;
 
-  IF position('LENGTH(TRIM(p_reference)) < 10' IN v_cancellation_definition) = 0 THEN
-    RAISE EXCEPTION 'Secure booking cancellation validation no longer matches the reviewed reference-length anchor.';
-  END IF;
-
-  v_cancellation_definition := replace(
+  v_cancellation_definition := regexp_replace(
     v_cancellation_definition,
-    'LENGTH(TRIM(p_reference)) < 10',
-    'LENGTH(TRIM(p_reference)) < 9'
+    'length[[:space:]]*\\([[:space:]]*trim[[:space:]]*\\([[:space:]]*p_reference[[:space:]]*\\)[[:space:]]*\\)[[:space:]]*<[[:space:]]*10',
+    'length(trim(p_reference)) < 9',
+    'gi'
   );
+
+  IF position('p_reference' IN v_cancellation_definition) = 0
+     OR position('length(trim(p_reference)) < 9' IN lower(v_cancellation_definition)) = 0 THEN
+    RAISE EXCEPTION 'Secure booking cancellation reference-length guard could not be updated.';
+  END IF;
   EXECUTE v_cancellation_definition;
 END;
 $migration$;
