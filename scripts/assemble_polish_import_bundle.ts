@@ -35,7 +35,7 @@ function describeStructureMismatch(source: any, translated: any, path = 'content
     if (!translated.trim()) return path + ': translation is empty';
     const protectedTokens = source.match(/\{\{[^{}]+\}\}|https?:\/\/[^\s<>"']+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|\+\d[\d\s()./-]{5,}\d/g) || [];
     const missingToken = protectedTokens.find((token) => !translated.includes(token));
-    return missingToken ? path + ': protected token missing (' + missingToken + ')' : null;
+    return missingToken ? path + ': protected token missing (' + missingToken + '); source=' + JSON.stringify(source) + '; draft=' + JSON.stringify(translated) : null;
   }
   if (Array.isArray(source)) {
     if (!Array.isArray(translated)) return path + ': expected array';
