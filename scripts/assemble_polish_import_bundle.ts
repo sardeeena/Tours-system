@@ -173,7 +173,13 @@ async function main() {
       throw new Error('Current source record has no valid checksum: ' + draft.entity_type + ':' + draft.entity_key);
     }
     const expected = expectedPayload(draft.entity_type, sourceRecord.source);
-    const payload = translatedPayload(draft.entity_type, sourceRecord.source, draft);
+    let payload: AnyRecord;
+    try {
+      payload = translatedPayload(draft.entity_type, sourceRecord.source, draft);
+    } catch (error) {
+      mismatches.push(String(error));
+      continue;
+    }
     if (expected.title !== undefined && !translationStructureMatches(expected.title, payload.title)) {
       mismatches.push('Title structure/token mismatch: ' + draft.entity_type + ':' + draft.entity_key);
     }
