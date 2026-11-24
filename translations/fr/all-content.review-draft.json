@@ -1260,7 +1260,83 @@
           "Pourboires",
           "Tout service non expressément mentionné dans les prestations incluses"
         ],
-        "faqs": [],
+        "faqs": [
+          {
+            "question": "Q : Combien de temps dure toute l’excursion ?",
+            "answer": "R : Il s’agit d’une excursion d’une journée complète. Nous quittons Charm el-Cheikh vers minuit et rentrons tard dans la nuit.",
+            "section": "faq"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Votre passeport original avec un visa vous autorisant à vous rendre au Caire est obligatoire pour participer à l’excursion.",
+            "section": "important_information"
+          },
+          {
+            "question": "À emporter",
+            "answer": "- Des vêtements confortables et des chaussures confortables",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "À emporter",
+            "answer": "- Des lunettes de soleil",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Q : L’excursion comprend-elle le Grand Musée égyptien ou l’ancien Musée égyptien ?",
+            "answer": "R : Cette excursion comprend la visite de l’ancien Musée égyptien, situé place Tahrir. Nous proposons une excursion distincte sur notre site pour le Grand Musée égyptien, avec un programme différent.",
+            "section": "faq"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Il s’agit d’une excursion d’une journée complète, avec un long trajet de nuit d’environ 7 heures dans chaque sens.",
+            "section": "important_information"
+          },
+          {
+            "question": "À emporter",
+            "answer": "- De l’eau et du jus, selon vos préférences",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Q : Le déjeuner est-il inclus ?",
+            "answer": "R : Oui, le déjeuner est inclus dans un restaurant local à Gizeh.",
+            "section": "faq"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Portez des vêtements et des chaussures confortables, car la visite du musée et du site des pyramides de Gizeh implique de la marche.",
+            "section": "important_information"
+          },
+          {
+            "question": "Q : Que dois-je emporter pour l’excursion ?",
+            "answer": "R : Veuillez emporter :\n- Des vêtements confortables et des chaussures confortables\n- Des lunettes de soleil\n- De l’eau et du jus, selon vos préférences\n- Quelques encas légers\n- Votre passeport original avec un visa vous autorisant à vous rendre au Caire. Ce document est obligatoire pour participer à l’excursion.\n- Un peu d’argent de poche, selon vos besoins",
+            "section": "faq"
+          },
+          {
+            "question": "À emporter",
+            "answer": "- Quelques encas légers",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Prévoyez de l’eau, du jus et quelques encas légers pour le trajet.",
+            "section": "important_information"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Prévoyez un peu d’argent de poche, selon vos besoins.",
+            "section": "important_information"
+          },
+          {
+            "question": "À emporter",
+            "answer": "- Votre passeport original avec un visa vous autorisant à vous rendre au Caire. Ce document est obligatoire pour participer à l’excursion.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "À emporter",
+            "answer": "- Un peu d’argent de poche, selon vos besoins",
+            "section": "what_to_bring"
+          }
+        ],
         "pickupInfo": "Les options de prise en charge, les lieux approuvés et tout supplément applicable sont indiqués pendant la réservation.",
         "cancellationPolicy": "Veuillez contacter notre équipe de réservation pour confirmer les conditions d’annulation et de remboursement de cette excursion avant de réserver.",
         "ageRestrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
