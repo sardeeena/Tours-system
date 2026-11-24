@@ -93,36 +93,54 @@ COMMENT ON FUNCTION private.generate_booking_reference(date) IS
 -- contact verification, rate limits, permissions, and exact-match lookup behavior.
 DO $migration$
 DECLARE
-  v_lookup_definition text;
-  v_cancellation_definition text;
+  v_function record;
+  v_definition text;
+  v_rewritten text;
+  v_lookup_patched integer := 0;
+  v_cancellation_patched integer := 0;
 BEGIN
-  SELECT pg_get_functiondef('public.lookup_booking_secure(text,text)'::regprocedure)
-    INTO v_lookup_definition;
+  -- The lookup implementation is private in the current schema history, while
+  -- its narrow guest RPC remains public. Patch whichever implementation owns
+  -- the length guard instead of assuming a particular schema placement.
+  FOR v_function IN
+    SELECT p.oid::regprocedure AS signature, p.proname
+    FROM pg_proc AS p
+    INNER JOIN pg_namespace AS n ON n.oid = p.pronamespace
+    WHERE n.nspname IN ('public', 'private')
+      AND p.proname IN ('lookup_booking_secure', 'request_booking_cancellation_secure')
+  LOOP
+    v_definition := pg_get_functiondef(v_function.signature);
+    v_rewritten := replace(
+      v_definition,
+      'p_reference)) < 10',
+      'p_reference)) < 9'
+    );
 
-  v_lookup_definition := replace(
-    v_lookup_definition,
-    'p_reference)) < 10',
-    'p_reference)) < 9'
-  );
+    IF v_rewritten = v_definition THEN
+      v_rewritten := regexp_replace(
+        v_definition,
+        'p_reference\)\)[[:space:]]*<[[:space:]]*10',
+        'p_reference)) < 9',
+        'gi'
+      );
+    END IF;
 
-  IF position('p_reference)) < 9' IN lower(v_lookup_definition)) = 0 THEN
-    RAISE EXCEPTION 'Secure booking lookup reference-length guard could not be updated.';
+    IF v_rewritten <> v_definition THEN
+      EXECUTE v_rewritten;
+      IF v_function.proname = 'lookup_booking_secure' THEN
+        v_lookup_patched := v_lookup_patched + 1;
+      ELSIF v_function.proname = 'request_booking_cancellation_secure' THEN
+        v_cancellation_patched := v_cancellation_patched + 1;
+      END IF;
+    END IF;
+  END LOOP;
+
+  IF v_lookup_patched = 0 THEN
+    RAISE EXCEPTION 'No secure booking lookup implementation with the reviewed ten-character guard was found.';
   END IF;
-  EXECUTE v_lookup_definition;
-
-  SELECT pg_get_functiondef('public.request_booking_cancellation_secure(text,text,text)'::regprocedure)
-    INTO v_cancellation_definition;
-
-  v_cancellation_definition := replace(
-    v_cancellation_definition,
-    'p_reference)) < 10',
-    'p_reference)) < 9'
-  );
-
-  IF position('p_reference)) < 9' IN lower(v_cancellation_definition)) = 0 THEN
-    RAISE EXCEPTION 'Secure booking cancellation reference-length guard could not be updated.';
+  IF v_cancellation_patched = 0 THEN
+    RAISE EXCEPTION 'No secure booking cancellation implementation with the reviewed ten-character guard was found.';
   END IF;
-  EXECUTE v_cancellation_definition;
 END;
 $migration$;
 
