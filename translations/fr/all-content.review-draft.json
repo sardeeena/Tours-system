@@ -1188,7 +1188,58 @@
           "Profitez des possibilités de shopping pendant votre visite du Caire",
           "Voyagez avec prise en charge et retour à l’hôtel depuis Charm el-Cheikh"
         ],
-        "itinerary": [],
+        "itinerary": [
+          {
+            "time": "12:30",
+            "title": "Prise en charge à l’hôtel",
+            "description": "Notre équipe vient vous chercher à votre hôtel à Charm el-Cheikh."
+          },
+          {
+            "time": "1:30",
+            "title": "Point de rendez-vous et départ",
+            "description": "Retrouvez le groupe au point de rendez-vous, puis partez pour Le Caire dans un véhicule climatisé."
+          },
+          {
+            "time": "2:00",
+            "title": "Trajet vers Le Caire",
+            "description": "Le trajet de nuit est long. Reposez-vous en chemin ; l’arrivée au Caire est prévue vers 9 h 00."
+          },
+          {
+            "time": "09:00",
+            "title": "Musée égyptien (ancien musée du Caire)",
+            "description": "Visitez le Musée égyptien avec votre guide égyptologue. Les billets d’entrée sont inclus."
+          },
+          {
+            "time": "12:00",
+            "title": "Pyramides de Gizeh et Grand Sphinx",
+            "description": "Explorez le site des pyramides de Gizeh et admirez le Grand Sphinx de près. Les billets d’entrée sont inclus."
+          },
+          {
+            "time": "14:30",
+            "title": "Déjeuner à Gizeh",
+            "description": "Déjeuner dans un restaurant local à Gizeh."
+          },
+          {
+            "time": "15:50",
+            "title": "Pause shopping",
+            "description": "Une pause shopping est prévue au programme de l’excursion."
+          },
+          {
+            "time": "17:00",
+            "title": "Retour à Charm el-Cheikh",
+            "description": "Retour en voiture à Charm el-Cheikh, puis dépôt à votre hôtel à l’arrivée, tard dans la nuit."
+          },
+          {
+            "time": "00",
+            "title": "Remarque très importante",
+            "description": "Tous les horaires et toutes les activités sont indicatifs et peuvent varier selon le programme de l’excursion."
+          },
+          {
+            "time": "11:00",
+            "title": "Nouvelle étape",
+            "description": "Brève description de l’activité."
+          }
+        ],
         "included": [
           "Prise en charge et retour à l’hôtel à Charm el-Cheikh",
           "Transport aller-retour entre Charm el-Cheikh et Le Caire",
