@@ -1321,3 +1321,41 @@ html.dark :where(a, button, input, select, textarea, summary, [role="button"], [
     transform: translateY(-2px);
   }
 }
+
+
+/* Consistent modern form controls across the public booking and discovery flows. */
+.public-site:not(.public-site-admin-route) :where(
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea
+) {
+  border-radius: .875rem;
+  border-color: var(--site-border);
+  transition: border-color .16s ease, box-shadow .16s ease, background-color .16s ease;
+}
+.public-site:not(.public-site-admin-route) :where(
+  input:not([type="checkbox"]):not([type="radio"]),
+  select
+) {
+  min-height: 3rem;
+}
+.public-site:not(.public-site-admin-route) :where(
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea
+):focus-visible {
+  outline: none;
+  border-color: var(--site-brand);
+  box-shadow: 0 0 0 3px rgba(10, 108, 116, .14);
+}
+.public-site:not(.public-site-admin-route) :where(.aa-selectable-card) {
+  border-radius: 1rem;
+  transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+@media (max-width: 639px) {
+  .public-site:not(.public-site-admin-route) :where(input[type="date"]) {
+    min-height: 3.25rem;
+    font-size: 16px;
+    max-width: 100%;
+  }
+}
