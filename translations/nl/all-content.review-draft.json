@@ -2532,7 +2532,58 @@
           "Ervaar de gelegenheid om tijdens je bezoek aan Caïro te winkelen.",
           "Reis met ophalen en terugbrengen bij hotels in Sharm El Sheikh."
         ],
-        "itinerary": [],
+        "itinerary": [
+          {
+            "time": "12:30",
+            "title": "Ophalen bij het hotel",
+            "description": "Ons team haalt u op bij uw hotel in Sharm-el-Sheikh."
+          },
+          {
+            "time": "1:30",
+            "title": "Verzamelpunt en vertrek",
+            "description": "Kom samen op het afgesproken verzamelpunt en vertrek naar Caïro in een voertuig met airconditioning."
+          },
+          {
+            "time": "2:00",
+            "title": "Reis naar Caïro",
+            "description": "De rit duurt de hele nacht. Rust onderweg uit; we komen rond 9.00 uur aan in Caïro."
+          },
+          {
+            "time": "09:00",
+            "title": "Egyptisch Museum (het oude museum in Caïro)",
+            "description": "Bezoek het Egyptisch Museum met uw egyptologische gids. De toegangskaarten zijn inbegrepen."
+          },
+          {
+            "time": "12:00",
+            "title": "Piramides van Gizeh en de Grote Sfinx",
+            "description": "Verken het gebied van de piramides van Gizeh en bekijk de Grote Sfinx van dichtbij. De toegangskaarten zijn inbegrepen."
+          },
+          {
+            "time": "14:30",
+            "title": "Lunch in Gizeh",
+            "description": "Lunch in een lokaal restaurant in Gizeh."
+          },
+          {
+            "time": "15:50",
+            "title": "Winkelstop",
+            "description": "Tijdens de excursie is er een winkelstop."
+          },
+          {
+            "time": "17:00",
+            "title": "Terug naar Sharm-el-Sheikh",
+            "description": "We rijden terug naar Sharm-el-Sheikh en brengen u bij aankomst laat in de avond naar uw hotel."
+          },
+          {
+            "time": "00",
+            "title": "Zeer belangrijke opmerking",
+            "description": "Alle tijden en activiteiten zijn bij benadering en kunnen veranderen afhankelijk van het tourschema."
+          },
+          {
+            "time": "11:00",
+            "title": "Nieuwe stop",
+            "description": "Korte beschrijving van de activiteit."
+          }
+        ],
         "included": [
           "Ophalen en terugbrengen bij hotels in Sharm El Sheikh.",
           "Retourvervoer tussen Sharm El Sheikh en Caïro.",
