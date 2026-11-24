@@ -181,9 +181,9 @@
         ],
         "faqs": [
           {
-            "question": "Ważne informacje",
-            "answer": "Wycieczka nie jest odpowiednia dla kobiet w ciąży.",
-            "section": "important_information"
+            "question": "Co należy zabrać na wycieczkę?",
+            "answer": "Zabierz wygodne ubrania, zamknięte buty, okulary przeciwsłoneczne, krem z filtrem, szalik lub lekką chustę chroniącą przed kurzem, aparat fotograficzny lub telefon oraz trochę gotówki na dodatkowe wydatki.",
+            "section": "faq"
           },
           {
             "question": "Co zabrać",
@@ -191,28 +191,33 @@
             "section": "what_to_bring"
           },
           {
-            "question": "Co powinienem zabrać na wycieczkę?",
-            "answer": "Wygodne ubrania, zakryte buty, okulary przeciwsłoneczne, krem z filtrem, szalik lub lekką chustę chroniącą przed kurzem, aparat lub telefon oraz trochę gotówki na dodatkowe wydatki.",
-            "section": "faq"
-          },
-          {
-            "question": "Ile trwa cała wycieczka?",
-            "answer": "Wycieczka trwa około 3 godzin.",
-            "section": "faq"
-          },
-          {
-            "question": "Co zabrać",
-            "answer": "Zakryte buty.",
-            "section": "what_to_bring"
-          },
-          {
             "question": "Ważne informacje",
-            "answer": "Minimalny wiek do samodzielnego prowadzenia quada wynosi 15 lat.",
+            "answer": "Wycieczka nie jest odpowiednia dla kobiet w ciąży.",
             "section": "important_information"
           },
           {
+            "question": "P: Jak długo trwa cała wycieczka?",
+            "answer": "O: Wycieczka trwa około 3 godzin.",
+            "section": "faq"
+          },
+          {
             "question": "Ważne informacje",
-            "answer": "Wycieczka nie jest zalecana osobom powyżej 70 lat z problemami z kręgosłupem.",
+            "answer": "Minimalny wiek uprawniający do prowadzenia quada to 15 lat.",
+            "section": "important_information"
+          },
+          {
+            "question": "Co zabrać",
+            "answer": "Zamknięte buty.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "P: Czy wycieczka jest dostępna codziennie?",
+            "answer": "O: Tak, wycieczka jest dostępna codziennie.",
+            "section": "faq"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "Nie zaleca się udziału osobom powyżej 70. roku życia z problemami z kręgosłupem.",
             "section": "important_information"
           },
           {
@@ -221,33 +226,28 @@
             "section": "what_to_bring"
           },
           {
-            "question": "Czy wycieczka odbywa się codziennie?",
-            "answer": "Tak, wycieczka jest dostępna każdego dnia.",
-            "section": "faq"
-          },
-          {
             "question": "Co zabrać",
             "answer": "Krem z filtrem przeciwsłonecznym.",
             "section": "what_to_bring"
           },
           {
-            "question": "Czy dostępna jest wycieczka prywatna?",
-            "answer": "Tak, wycieczka prywatna jest dostępna za dodatkową opłatą. Skontaktuj się z nami, aby ją zorganizować.",
-            "section": "faq"
-          },
-          {
-            "question": "Jaki jest minimalny wiek kierowcy quada?",
-            "answer": "Minimalny wiek kierowcy quada wynosi 15 lat.",
+            "question": "P: Czy dostępna jest wycieczka prywatna?",
+            "answer": "O: Tak, wycieczka prywatna jest dostępna za dodatkową opłatą. Skontaktuj się z nami, aby ją zorganizować.",
             "section": "faq"
           },
           {
             "question": "Co zabrać",
-            "answer": "Szalik lub lekką chustę chroniącą przed kurzem.",
+            "answer": "Szalik lub lekka chusta chroniąca przed kurzem.",
             "section": "what_to_bring"
           },
           {
+            "question": "P: Jaki jest minimalny wiek, aby prowadzić quada?",
+            "answer": "O: Minimalny wiek uprawniający do prowadzenia quada to 15 lat.",
+            "section": "faq"
+          },
+          {
             "question": "Co zabrać",
-            "answer": "Aparat lub telefon.",
+            "answer": "Aparat fotograficzny lub telefon.",
             "section": "what_to_bring"
           },
           {
