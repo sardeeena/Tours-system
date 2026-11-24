@@ -639,37 +639,6 @@ export const Header: React.FC<HeaderProps> = ({
                 </div>
               )}
 
-              {/* Mobile Language Selector */}
-              <div className="p-3 bg-stone-100 rounded-lg border border-stone-200 space-y-2">
-                <span className="text-[11px] uppercase font-bold text-stone-500 tracking-wider flex items-center gap-1.5">
-                  <Globe className="w-3.5 h-3.5 text-[#0A6C74]" />
-                  {t('mobile.selectLanguage')}
-                </span>
-                <div className="grid grid-cols-5 gap-1">
-                  {supportedLanguages.map((langItem) => {
-                    const isSelected = language === langItem.code;
-                    return (
-                      <button
-                        key={langItem.code}
-                        type="button"
-                        onClick={() => {
-                          setLanguage(langItem.code as LanguageCode);
-                          void recordVisitorEvent({ event_name: 'language_changed', page_path: window.location.pathname, event_data: { language: langItem.code } });
-                        }}
-                        className={`py-1.5 px-2 rounded-md text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all ${
-                          isSelected
-                            ? 'bg-[#0A6C74] text-white shadow-xs'
-                            : 'bg-white text-stone-700 border border-stone-200 hover:bg-stone-50'
-                        }`}
-                      >
-                        <span aria-hidden="true">{langItem.flag}</span>
-                        <span>{langItem.code.toUpperCase()}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
               {/* Mobile Theme Selector (Default: Light, Optional: Dark) */}
               <div className="p-3 bg-stone-100 rounded-lg border border-stone-200 flex items-center justify-between">
                 <div className="flex items-center space-x-2 text-xs font-semibold text-stone-800">
