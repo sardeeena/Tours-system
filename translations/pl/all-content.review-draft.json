@@ -1890,7 +1890,83 @@
           "Napiwki.",
           "Usługi niewymienione wyraźnie w elementach wliczonych w cenę."
         ],
-        "faqs": [],
+        "faqs": [
+          {
+            "question": "P: Jak długo trwa cała wycieczka?",
+            "answer": "O: To całodniowa wycieczka. Wyjeżdżamy z Szarm el-Szejk około północy i wracamy późno w nocy.",
+            "section": "faq"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "Oryginalny paszport z wizą uprawniającą do wjazdu do Kairu jest obowiązkowy, aby wziąć udział w wycieczce.",
+            "section": "important_information"
+          },
+          {
+            "question": "Co zabrać",
+            "answer": "- Wygodne ubrania i wygodne buty",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Co zabrać",
+            "answer": "- Okulary przeciwsłoneczne",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "P: Czy wycieczka obejmuje Wielkie Muzeum Egipskie czy stare Muzeum Egipskie?",
+            "answer": "O: Ta wycieczka obejmuje wizytę w starym Muzeum Egipskim na placu Tahrir. Na naszej stronie oferujemy osobną wycieczkę do Wielkiego Muzeum Egipskiego z innym programem.",
+            "section": "faq"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "To całodniowa wycieczka z długą nocną podróżą trwającą około 7 godzin w każdą stronę.",
+            "section": "important_information"
+          },
+          {
+            "question": "Co zabrać",
+            "answer": "- Wodę i sok, według własnych preferencji",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "P: Czy lunch jest wliczony w cenę?",
+            "answer": "O: Tak, lunch jest wliczony w cenę i zostanie podany w lokalnej restauracji w Gizie.",
+            "section": "faq"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "Załóż wygodne ubrania i buty, ponieważ zwiedzanie muzeum i terenu piramid w Gizie wymaga chodzenia.",
+            "section": "important_information"
+          },
+          {
+            "question": "P: Co należy zabrać na wycieczkę?",
+            "answer": "O: Prosimy zabrać:\n- Wygodne ubrania i wygodne buty\n- Okulary przeciwsłoneczne\n- Wodę i sok, według własnych preferencji\n- Lekkie przekąski\n- Oryginalny paszport z wizą uprawniającą do wjazdu do Kairu. Jest to obowiązkowe, aby wziąć udział w wycieczce.\n- Trochę własnych pieniędzy na wydatki, w razie potrzeby",
+            "section": "faq"
+          },
+          {
+            "question": "Co zabrać",
+            "answer": "- Lekkie przekąski",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "Zabierz wodę, sok i lekkie przekąski na drogę.",
+            "section": "important_information"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "W razie potrzeby zabierz trochę własnych pieniędzy na wydatki.",
+            "section": "important_information"
+          },
+          {
+            "question": "Co zabrać",
+            "answer": "- Oryginalny paszport z wizą uprawniającą do wjazdu do Kairu. Jest to obowiązkowe, aby wziąć udział w wycieczce.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Co zabrać",
+            "answer": "- Trochę własnych pieniędzy na wydatki, w razie potrzeby",
+            "section": "what_to_bring"
+          }
+        ],
         "pickupInfo": "Dostępne opcje odbioru, zatwierdzone miejsca i ewentualne dopłaty są wyświetlane podczas rezerwacji.",
         "cancellationPolicy": "Przed dokonaniem rezerwacji skontaktuj się z naszym zespołem, aby potwierdzić warunki anulowania i zwrotu kosztów tej wycieczki.",
         "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
