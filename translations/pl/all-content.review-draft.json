@@ -113,7 +113,53 @@
           "Otrzymaj instruktaż bezpieczeństwa i naucz się obsługi quada",
           "Wybierz prywatną wycieczkę, jeśli wolisz"
         ],
-        "itinerary": [],
+        "itinerary": [
+          {
+            "time": "13:30",
+            "title": "Odbiór z hotelu",
+            "description": "Godzina odbioru zależy od lokalizacji Twojego hotelu."
+          },
+          {
+            "time": "14:45",
+            "title": "Centrum safari",
+            "description": "Przyjazd do centrum safari, przygotowanie i instruktaż bezpieczeństwa."
+          },
+          {
+            "time": "15:00",
+            "title": "Początek przejażdżki quadem",
+            "description": "Rozpocznij około 25-minutową jazdę quadem przez pustynię."
+          },
+          {
+            "time": "15:30",
+            "title": "Namiot Beduinów",
+            "description": "Przyjazd do namiotu Beduinów i degustacja tradycyjnej beduińskiej herbaty."
+          },
+          {
+            "time": "16:00",
+            "title": "Góra Echo",
+            "description": "Udaj się na Górę Echo (Jabal El Sout), aby zrobić zdjęcia i poznać niezwykłe zjawisko echa."
+          },
+          {
+            "time": "16:20",
+            "title": "Opcjonalna przejażdżka na wielbłądzie",
+            "description": "Opcjonalna, około 10-minutowa przejażdżka na wielbłądzie, wliczona tylko po wybraniu dodatkowej opcji."
+          },
+          {
+            "time": "16:30",
+            "title": "Powrót do centrum safari",
+            "description": "Wróć do centrum safari kolejną, około 25-minutową przejażdżką quadem."
+          },
+          {
+            "time": "17:00",
+            "title": "Transfer powrotny do hotelu",
+            "description": "Przygotuj się do wyjazdu i skorzystaj z transferu powrotnego do hotelu."
+          },
+          {
+            "time": "00:00",
+            "title": "Bardzo ważna informacja",
+            "description": "Wszystkie godziny i aktywności są orientacyjne i mogą się zmienić w zależności od harmonogramu wycieczki."
+          }
+        ],
         "included": [
           "Odbiór z hotelu i powrót w Sharm el-Sheikh",
           "Quad",
