@@ -1359,3 +1359,10 @@ html.dark :where(a, button, input, select, textarea, summary, [role="button"], [
     max-width: 100%;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .public-site:not(.public-site-admin-route) :where(.aa-selectable-card, .aa-departure-option, .aa-stepper-button) {
+    transition: none;
+    transform: none;
+  }
+}
