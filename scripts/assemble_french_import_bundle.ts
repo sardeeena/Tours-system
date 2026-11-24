@@ -70,7 +70,7 @@ function uiCatalogStructureMatches(source: any, translated: any): boolean {
 }
 function mergeRows(sourceRows: any[], translatedRows: any[], fields: string[], label: string): any[] {
   if (!Array.isArray(sourceRows) || !Array.isArray(translatedRows) || sourceRows.length !== translatedRows.length) {
-    throw new Error(label + ' row count does not match the live source (' + (sourceRows?.length ?? 'not-array') + ' vs ' + (translatedRows?.length ?? 'not-array') + ').');
+    throw new Error(label + ' row count does not match the live source (' + (sourceRows?.length ?? 'not-array') + ' vs ' + (translatedRows?.length ?? 'not-array') + '). Current source rows: ' + JSON.stringify(sourceRows));
   }
   return sourceRows.map((sourceRow, index) => {
     const translatedRow = translatedRows[index];
