@@ -12,7 +12,7 @@ function translationStructureMatches(source: any, translated: any): boolean {
   if (typeof source === 'string') {
     if (typeof translated !== 'string') return false;
     if (!source.trim()) return !translated.trim();
-    const protectedTokens = source.match(/\{\{[^{}]+\}\}|https?:\/\/[^\s<>"']+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|\+\d[\d\s()./-]{5,}\d/g) || [];
+    const protectedTokens = source.match(/\{\{[^{}]+\}\}|https?:\/\/[^\s<>"']+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|\+\d[\d\s()./-]{5,}\d|\d+(?:[.,]\d+)?/g) || [];
     if (!Boolean(translated.trim()) || !protectedTokens.every((token) => translated.includes(token))) return false;
     const numericTokens = source.match(/\b\d+(?:[.,]\d+)?\b/g) || [];
     const translatedNumbers = translated.match(/\b\d+(?:[.,]\d+)?\b/g) || [];
@@ -28,6 +28,37 @@ function translationStructureMatches(source: any, translated: any): boolean {
   }
   return source === translated;
 }
+function collectStructureMismatches(source: any, translated: any, path = 'content'): string[] {
+  if (typeof source === 'string') {
+    if (typeof translated !== 'string') return [path + ': expected text'];
+    if (!source.trim()) return translated.trim() ? [path + ': source is empty but draft has text'] : [];
+    if (!translated.trim()) return [path + ': translation is empty'];
+    const protectedTokens = source.match(/\{\{[^{}]+\}\}|https?:\/\/[^\s<>"']+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|\+\d[\d\s()./-]{5,}\d|\d+(?:[.,]\d+)?/g) || [];
+    return protectedTokens.filter((token) => !translated.includes(token)).map((token) =>
+      path + ': protected token missing (' + token + '); source=' + JSON.stringify(source) + '; draft=' + JSON.stringify(translated)
+    );
+  }
+  if (Array.isArray(source)) {
+    if (!Array.isArray(translated)) return [path + ': expected array'];
+    if (source.length !== translated.length) return [path + ': expected ' + source.length + ' rows, got ' + translated.length];
+    return source.flatMap((item, index) => collectStructureMismatches(item, translated[index], path + '[' + index + ']'));
+  }
+  if (isObject(source)) {
+    if (!isObject(translated)) return [path + ': expected object'];
+    const sourceKeys = Object.keys(source).sort(), translatedKeys = Object.keys(translated).sort();
+    const missing = sourceKeys.filter((key) => !Object.prototype.hasOwnProperty.call(translated, key));
+    const extra = translatedKeys.filter((key) => !Object.prototype.hasOwnProperty.call(source, key));
+    const result: string[] = [];
+    if (missing.length) result.push(path + ': missing keys ' + missing.join(', '));
+    if (extra.length) result.push(path + ': unexpected keys ' + extra.join(', '));
+    for (const key of sourceKeys) {
+      if (Object.prototype.hasOwnProperty.call(translated, key)) result.push(...collectStructureMismatches(source[key], translated[key], path + '.' + key));
+    }
+    return result;
+  }
+  return source === translated ? [] : [path + ': value type or value differs'];
+}
+
 function uiCatalogStructureMatches(source: any, translated: any): boolean {
   if (typeof source === 'string') return typeof translated === 'string';
   if (Array.isArray(source)) return Array.isArray(translated) && source.length === translated.length &&
@@ -41,10 +72,25 @@ function uiCatalogStructureMatches(source: any, translated: any): boolean {
 }
 function mergeRows(sourceRows: any[], translatedRows: any[], fields: string[], label: string): any[] {
   if (!Array.isArray(sourceRows) || !Array.isArray(translatedRows) || sourceRows.length !== translatedRows.length) {
-    throw new Error(label + ' row count does not match the live source (' + (sourceRows?.length ?? 'not-array') + ' vs ' + (translatedRows?.length ?? 'not-array') + ').');
+    throw new Error(label + ' row count does not match the live source (' + (sourceRows?.length ?? 'not-array') + ' vs ' + (translatedRows?.length ?? 'not-array') + '). Current source rows: ' + JSON.stringify(sourceRows));
   }
+  // The live FAQ query follows database ordering, while review drafts group
+  // rows by section. Pair FAQ translations within their section to avoid
+  // validating a towel translation against a pickup-time answer.
+  const orderedTranslations = label.includes('FAQs')
+    ? (() => {
+        const queues = new Map<string, any[]>();
+        for (const row of translatedRows) {
+          const key = String(row?.section || 'faq');
+          const queue = queues.get(key) || [];
+          queue.push(row);
+          queues.set(key, queue);
+        }
+        return sourceRows.map((row) => queues.get(String(row?.section || 'faq'))?.shift());
+      })()
+    : translatedRows;
   return sourceRows.map((sourceRow, index) => {
-    const translatedRow = translatedRows[index];
+    const translatedRow = orderedTranslations[index];
     const result = { ...sourceRow };
     if (typeof translatedRow === 'string') {
       const field = Object.prototype.hasOwnProperty.call(sourceRow, 'item') ? 'item' : fields[0];
@@ -102,10 +148,10 @@ function translatedPayload(type: string, source: AnyRecord, draft: AnyRecord): A
       content:{
         title:content.title,description:content.description,durationLabel:content.durationLabel,
         highlights:content.highlights,
-        itinerary:mergeRows(source.itinerary || [],content.itinerary || [],['time','title','description'],'tour itinerary'),
-        included:mergeRows(source.included || [],content.included || [],['item'],'tour inclusions'),
-        excluded:mergeRows(source.excluded || [],content.excluded || [],['item'],'tour exclusions'),
-        faqs:mergeRows(source.faqs || [],content.faqs || [],['question','answer','section'],'tour FAQs'),
+        itinerary:mergeRows(source.itinerary || [],content.itinerary || [],['time','title','description'],'tour itinerary ' + draft.entity_key),
+        included:mergeRows(source.included || [],content.included || [],['item'],'tour inclusions ' + draft.entity_key),
+        excluded:mergeRows(source.excluded || [],content.excluded || [],['item'],'tour exclusions ' + draft.entity_key),
+        faqs:mergeRows(source.faqs || [],content.faqs || [],['question','answer','section'],'tour FAQs ' + draft.entity_key),
         pickupInfo:content.pickupInfo,cancellationPolicy:content.cancellationPolicy,ageRestrictions:content.ageRestrictions,labels:content.labels,
       },
     };
@@ -129,21 +175,34 @@ async function main() {
   const sources = new Map(sourceBundle.records.map((record: AnyRecord) => [record.entity_type + ':' + record.entity_key, record]));
   const output: AnyRecord[] = [];
   const slugs = new Set<string>();
+  let skippedUnavailableSources = 0;
+  const mismatches: string[] = [];
   for (const draft of draftBundle.records as AnyRecord[]) {
     const sourceRecord: AnyRecord | undefined = sources.get(draft.entity_type + ':' + draft.entity_key);
-    if (!sourceRecord || !/^[a-f0-9]{64}$/i.test(sourceRecord.source_checksum || '')) {
-      throw new Error('Missing current source record or checksum: ' + draft.entity_type + ':' + draft.entity_key);
+    if (!sourceRecord) {
+      skippedUnavailableSources++;
+      console.warn('Preserved but skipped unpublished or removed source draft: ' + draft.entity_type + ':' + draft.entity_key);
+      continue;
+    }
+    if (!/^[a-f0-9]{64}$/i.test(sourceRecord.source_checksum || '')) {
+      throw new Error('Current source record has no valid checksum: ' + draft.entity_type + ':' + draft.entity_key);
     }
     const expected = expectedPayload(draft.entity_type, sourceRecord.source);
-    const payload = translatedPayload(draft.entity_type, sourceRecord.source, draft);
+    let payload: AnyRecord;
+    try {
+      payload = translatedPayload(draft.entity_type, sourceRecord.source, draft);
+    } catch (error) {
+      mismatches.push(String(error));
+      continue;
+    }
     if (expected.title !== undefined && !translationStructureMatches(expected.title, payload.title)) {
-      throw new Error('Title structure/token mismatch: ' + draft.entity_type + ':' + draft.entity_key);
+      mismatches.push('Title structure/token mismatch: ' + draft.entity_type + ':' + draft.entity_key);
     }
     if (expected.summary !== undefined && !translationStructureMatches(expected.summary, payload.summary)) {
-      throw new Error('Summary structure/token mismatch: ' + draft.entity_type + ':' + draft.entity_key);
+      mismatches.push('Summary structure/token mismatch: ' + draft.entity_type + ':' + draft.entity_key);
     }
     if (!(draft.entity_type === 'ui_catalog' ? uiCatalogStructureMatches(expected.content, payload.content) : translationStructureMatches(expected.content, payload.content))) {
-      throw new Error('Content structure/token mismatch: ' + draft.entity_type + ':' + draft.entity_key);
+      mismatches.push(...collectStructureMismatches(expected.content, payload.content, draft.entity_type + ':' + draft.entity_key + '.content').map((detail) => 'Content structure/token mismatch: ' + detail));
     }
     const slug = normalizedSlug(draft.translated_slug, draft.entity_key);
     if (slugs.has(slug)) throw new Error('Duplicate Dutch slug: ' + slug);
@@ -155,12 +214,14 @@ async function main() {
       content:payload.content, source_checksum:sourceRecord.source_checksum,
     });
   }
+  if (mismatches.length) throw new Error('Translation source/draft mismatches:\n' + mismatches.join('\n'));
   const sourceKeys = new Set(sourceBundle.records.map((record: AnyRecord) => record.entity_type + ':' + record.entity_key));
   const draftKeys = new Set(draftBundle.records.map((record: AnyRecord) => record.entity_type + ':' + record.entity_key));
   const missing = [...sourceKeys].filter((key) => !draftKeys.has(key));
   const unexpected = [...draftKeys].filter((key) => !sourceKeys.has(key));
-  if (missing.length || unexpected.length) throw new Error('Coverage mismatch. Missing: ' + missing.join(', ') + '; unexpected: ' + unexpected.join(', '));
+  if (missing.length) throw new Error('Coverage mismatch. Current published source records are missing translations: ' + missing.join(', '));
+  if (unexpected.length) console.warn('Drafts for unpublished or removed source records were preserved and excluded from this import: ' + unexpected.join(', '));
   await writeFile(outputPath, JSON.stringify({ schema_version:1, generated_at:new Date().toISOString(), locales:['nl'], records:output }, null, 2) + '\n');
-  console.log('Assembled ' + output.length + ' Dutch draft records with current source checksums. Output: ' + outputPath + '. No database records were changed or published.');
+  console.log('Assembled ' + output.length + ' Dutch draft records with current source checksums; skipped ' + skippedUnavailableSources + ' unpublished or removed source drafts. Output: ' + outputPath + '. No database records were changed or published.');
 }
 await main();

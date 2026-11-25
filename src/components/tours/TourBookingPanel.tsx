@@ -114,7 +114,7 @@ export const TourBookingPanel: React.FC<TourBookingPanelProps> = ({
                 type="button"
                 disabled={adults <= 1}
                 onClick={() => setAdults(Math.max(1, adults - 1))}
-                className="w-9 h-9 rounded-lg bg-white border border-stone-300 flex items-center justify-center text-stone-700 disabled:opacity-30 hover:bg-stone-100"
+                className="aa-stepper-button w-9 h-9 rounded-full bg-white border border-stone-300 flex items-center justify-center text-stone-700 disabled:opacity-30 hover:bg-stone-100"
               >
                 <Minus className="w-3 h-3" />
               </button>
@@ -122,7 +122,7 @@ export const TourBookingPanel: React.FC<TourBookingPanelProps> = ({
               <button
                 type="button"
                 onClick={() => setAdults(adults + 1)}
-                className="w-7 h-7 rounded bg-white border border-stone-300 flex items-center justify-center text-stone-700 hover:bg-stone-100"
+                className="aa-stepper-button w-7 h-7 rounded-full bg-white border border-stone-300 flex items-center justify-center text-stone-700 hover:bg-stone-100"
               >
                 <Plus className="w-3 h-3" />
               </button>
@@ -140,7 +140,7 @@ export const TourBookingPanel: React.FC<TourBookingPanelProps> = ({
                 type="button"
                 disabled={children <= 0}
                 onClick={() => setChildren(Math.max(0, children - 1))}
-                className="w-7 h-7 rounded bg-white border border-stone-300 flex items-center justify-center text-stone-700 disabled:opacity-30 hover:bg-stone-100"
+                className="aa-stepper-button w-7 h-7 rounded-full bg-white border border-stone-300 flex items-center justify-center text-stone-700 disabled:opacity-30 hover:bg-stone-100"
               >
                 <Minus className="w-3 h-3" />
               </button>
@@ -148,7 +148,7 @@ export const TourBookingPanel: React.FC<TourBookingPanelProps> = ({
               <button
                 type="button"
                 onClick={() => setChildren(children + 1)}
-                className="w-7 h-7 rounded bg-white border border-stone-300 flex items-center justify-center text-stone-700 hover:bg-stone-100"
+                className="aa-stepper-button w-7 h-7 rounded-full bg-white border border-stone-300 flex items-center justify-center text-stone-700 hover:bg-stone-100"
               >
                 <Plus className="w-3 h-3" />
               </button>

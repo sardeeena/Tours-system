@@ -1217,3 +1217,152 @@ html.dark :where(a, button, input, select, textarea, summary, [role="button"], [
   }
 }
 
+
+
+/* ==============================================================================
+   AWESOME ADVENTURE — MODERN INTERACTION SYSTEM
+   Egyptra-inspired interaction patterns, using the existing AAT brand tokens.
+   Applies to public pages only; admin workflows remain visually isolated.
+   ============================================================================== */
+.public-site:not(.public-site-admin-route) :where(button) {
+  border-radius: .875rem;
+  font-weight: 600;
+  letter-spacing: -.01em;
+}
+.public-site:not(.public-site-admin-route) :where(button[class*="bg-[#0A6C74]"], button[class*="bg-teal-brand"]) {
+  min-height: 3rem;
+  border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(8, 86, 92, .16);
+}
+.public-site:not(.public-site-admin-route) :where(button[aria-pressed="true"]) {
+  border-color: var(--site-brand);
+  background: var(--site-brand);
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(8, 86, 92, .16);
+}
+.public-site:not(.public-site-admin-route) :where(button[aria-pressed="false"]:not(:disabled)) {
+  border-color: var(--site-border);
+  background: var(--site-surface);
+}
+.public-site:not(.public-site-admin-route) :where(input[type="checkbox"], input[type="radio"]) {
+  width: 1.25rem;
+  height: 1.25rem;
+  min-width: 1.25rem;
+  min-height: 1.25rem;
+  flex: 0 0 1.25rem;
+  accent-color: var(--site-brand);
+  cursor: pointer;
+}
+.public-site:not(.public-site-admin-route) :where(input[type="checkbox"]:focus-visible, input[type="radio"]:focus-visible) {
+  outline-offset: 3px;
+}
+.public-site:not(.public-site-admin-route) :where(.aa-stepper-button) {
+  display: inline-flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--site-border);
+  border-radius: 999px;
+  background: var(--site-surface);
+  color: var(--site-brand);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, .06);
+}
+.public-site:not(.public-site-admin-route) :where(.aa-stepper-button:not(:disabled):hover) {
+  border-color: var(--site-brand);
+  background: var(--site-surface-soft);
+}
+.public-site:not(.public-site-admin-route) :where(.aa-departure-option) {
+  min-height: 5rem;
+  padding: .875rem 1rem;
+  border-width: 1.5px;
+  border-radius: 1rem;
+  text-align: left;
+}
+.public-site:not(.public-site-admin-route) :where(.aa-departure-option[aria-pressed="true"]) {
+  border-width: 2px;
+  background: var(--site-brand);
+  color: #fff;
+}
+.public-site:not(.public-site-admin-route) :where(.aa-departure-option[aria-pressed="false"]:not(:disabled)) {
+  border-color: var(--site-border);
+  background: var(--site-surface);
+}
+.public-site:not(.public-site-admin-route) :where(.aa-departure-option:disabled) {
+  opacity: .52;
+  background: var(--site-surface-soft);
+}
+.public-site:not(.public-site-admin-route) :where(.bg-white.border, .bg-stone-50.border, [class*="bg-[#FAF8F5]"].border, .bg-emerald-50.border, .bg-amber-50.border, .bg-slate-50.border) {
+  border-radius: 1rem;
+}
+.public-site:not(.public-site-admin-route) :where(.aa-info-card) {
+  border: 1px solid var(--site-border);
+  border-radius: 1rem;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, .035);
+}
+.public-site:not(.public-site-admin-route) :where(label:has(> input[type="checkbox"]), label:has(> input[type="radio"])) {
+  cursor: pointer;
+}
+@media (max-width: 639px) {
+  .public-site:not(.public-site-admin-route) :where(.aa-departure-option) {
+    min-height: 4.5rem;
+    padding: .75rem;
+  }
+  .public-site:not(.public-site-admin-route) :where(.aa-stepper-button) {
+    width: 2.75rem;
+    height: 2.75rem;
+  }
+}
+@media (hover: hover) and (pointer: fine) {
+  .public-site:not(.public-site-admin-route) :where(.aa-departure-option:not(:disabled):hover) {
+    border-color: var(--site-brand);
+    transform: translateY(-2px);
+  }
+}
+
+
+/* Consistent modern form controls across the public booking and discovery flows. */
+.public-site:not(.public-site-admin-route) :where(
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea
+) {
+  border-radius: .875rem;
+  border-color: var(--site-border);
+  transition: border-color .16s ease, box-shadow .16s ease, background-color .16s ease;
+}
+.public-site:not(.public-site-admin-route) :where(
+  input:not([type="checkbox"]):not([type="radio"]),
+  select
+) {
+  min-height: 3rem;
+}
+.public-site:not(.public-site-admin-route) :where(
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea
+):focus-visible {
+  outline: none;
+  border-color: var(--site-brand);
+  box-shadow: 0 0 0 3px rgba(10, 108, 116, .14);
+}
+.public-site:not(.public-site-admin-route) :where(.aa-selectable-card) {
+  border-radius: 1rem;
+  transition: border-color .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+@media (max-width: 639px) {
+  .public-site:not(.public-site-admin-route) :where(input[type="date"]) {
+    min-height: 3.25rem;
+    font-size: 16px;
+    max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-site:not(.public-site-admin-route) :where(.aa-selectable-card, .aa-departure-option, .aa-stepper-button) {
+    transition: none;
+    transform: none;
+  }
+}

@@ -77,7 +77,7 @@ export const StepPickup: React.FC<StepPickupProps> = ({
                 type="button"
                 aria-pressed={isSelected}
                 onClick={() => onSelectPickup(loc)}
-                className={`w-full text-left p-4 rounded-lg border cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2 ${
+                className={`aa-selectable-card w-full text-left p-4 rounded-xl border cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2 ${
                   isSelected
                     ? 'border-[#0A6C74] bg-[#E8F3F4]/50 ring-1 ring-[#0A6C74]'
                     : 'border-stone-200 hover:border-stone-300 hover:bg-stone-50 bg-white'

@@ -533,7 +533,6 @@
     "private.text.88dbf3d6": " Ajouter une note interne privée",
     "private.text.88ecfe70": ". Votre demande a été envoyée à notre équipe de coordination de la marina de Hurghada et enregistrée dans notre système en temps réel. ",
     "private.text.89589cd5": "Âge : 2 à 11 ans",
-    "private.text.896915f8": "ex. : RST-2026-AB4821",
     "private.text.8a13064b": "Sélectionner une réservation associée (si applicable) ",
     "private.text.8a28cbe8": "Afficher le récapitulatif de réservation",
     "private.text.8a9129bf": "Quad et dîner bédouin ",
@@ -905,7 +904,6 @@
     "private.text.e1bd74be": "Confirmer le nouveau mot de passe ",
     "private.text.e1dbd378": "Consultez votre boîte de réception pour trouver l’e-mail envoyé par ",
     "private.text.e1efc9a9": "Rédiger un avis",
-    "private.text.e21734fb": "Ce départ est actuellement fermé. Veuillez choisir une autre date. ",
     "private.text.e2d91d9b": "Effacer et redémarrer la conversation",
     "private.text.e2f282f4": "Un problème a interrompu cette page. Rechargez-la pour réessayer. Les détails de votre réservation n’ont pas été envoyés depuis cet écran de récupération. ",
     "private.text.e3917a3a": "Consultation : ",
@@ -1071,7 +1069,11 @@
     "private.text.fff7de5b": "Assistant de voyage",
     "private.text.ffff4c4e": "Suggestions d’excursions",
     "private.text.d0162f9c": "Langue du site",
-    "private.text.9e1f6981": "Choisir la langue du site"
+    "private.text.9e1f6981": "Choisir la langue du site",
+    "private.text.208d5479": "Aucun départ n’est programmé pour cette date. Veuillez choisir une autre date. ",
+    "private.text.67339a93": "Tous les départs affichent complet pour cette date. Veuillez choisir une autre date.",
+    "private.text.a3974c94": "Choisissez une heure de départ pour continuer.",
+    "private.text.ecffeb3e": "ex. : AA0000001"
   },
-  "coverage": 1069
+  "coverage": 1071
 }

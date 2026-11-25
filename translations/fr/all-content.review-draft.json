@@ -11,8 +11,8 @@
     "static_page": 10,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1069,
-    "ui_catalog_messages": 1150,
+    "private_ui_messages": 1071,
+    "ui_catalog_messages": 1152,
     "source_records": 112
   },
   "records": [
@@ -1070,9 +1070,9 @@
         ],
         "faqs": [
           {
-            "question": "Informations importantes",
-            "answer": "Ne convient pas aux femmes enceintes.",
-            "section": "important_information"
+            "question": "Que dois-je apporter pendant l’excursion ?",
+            "answer": "Veuillez apporter des vêtements confortables, des chaussures fermées, des lunettes de soleil, de la crème solaire, un foulard ou un châle léger pour vous protéger de la poussière, un appareil photo ou un téléphone, ainsi qu’un peu d’argent liquide pour les dépenses supplémentaires.",
+            "section": "faq"
           },
           {
             "question": "À apporter",
@@ -1080,14 +1080,19 @@
             "section": "what_to_bring"
           },
           {
-            "question": "Que dois-je apporter pendant l’excursion ?",
-            "answer": "Des vêtements confortables, des chaussures fermées, des lunettes de soleil, de la crème solaire, un foulard léger pour vous protéger de la poussière, un appareil photo ou un téléphone, ainsi que de l’argent liquide pour les dépenses supplémentaires.",
+            "question": "Informations importantes",
+            "answer": "Ne convient pas aux femmes enceintes.",
+            "section": "important_information"
+          },
+          {
+            "question": "Q : Combien de temps dure toute l’excursion ?",
+            "answer": "R : L’excursion dure environ 3 heures.",
             "section": "faq"
           },
           {
-            "question": "Combien de temps dure l’excursion complète ?",
-            "answer": "L’excursion dure environ 3 heures.",
-            "section": "faq"
+            "question": "Informations importantes",
+            "answer": "L’âge minimum pour conduire un quad est de 15 ans.",
+            "section": "important_information"
           },
           {
             "question": "À apporter",
@@ -1095,9 +1100,9 @@
             "section": "what_to_bring"
           },
           {
-            "question": "Informations importantes",
-            "answer": "L’âge minimum pour conduire un quad est de 15 ans.",
-            "section": "important_information"
+            "question": "Q : L’excursion est-elle proposée tous les jours ?",
+            "answer": "R : Oui, l’excursion est proposée tous les jours.",
+            "section": "faq"
           },
           {
             "question": "Informations importantes",
@@ -1110,29 +1115,24 @@
             "section": "what_to_bring"
           },
           {
-            "question": "L’excursion est-elle proposée tous les jours ?",
-            "answer": "Oui, l’excursion est proposée tous les jours.",
-            "section": "faq"
-          },
-          {
             "question": "À apporter",
             "answer": "De la crème solaire.",
             "section": "what_to_bring"
           },
           {
-            "question": "Une excursion privée est-elle possible ?",
-            "answer": "Oui, une excursion privée est possible moyennant un supplément. Contactez-nous pour l’organiser.",
-            "section": "faq"
-          },
-          {
-            "question": "Quel est l’âge minimum pour conduire un quad ?",
-            "answer": "L’âge minimum pour conduire un quad est de 15 ans.",
+            "question": "Q : Une excursion privée est-elle possible ?",
+            "answer": "R : Oui, une excursion privée est proposée moyennant un supplément. Contactez-nous pour l’organiser.",
             "section": "faq"
           },
           {
             "question": "À apporter",
             "answer": "Un foulard ou un châle léger pour vous protéger de la poussière.",
             "section": "what_to_bring"
+          },
+          {
+            "question": "Q : Quel est l’âge minimum pour conduire un quad ?",
+            "answer": "R : L’âge minimum pour conduire un quad est de 15 ans.",
+            "section": "faq"
           },
           {
             "question": "À apporter",
@@ -1188,7 +1188,58 @@
           "Profitez des possibilités de shopping pendant votre visite du Caire",
           "Voyagez avec prise en charge et retour à l’hôtel depuis Charm el-Cheikh"
         ],
-        "itinerary": [],
+        "itinerary": [
+          {
+            "time": "12:30",
+            "title": "Prise en charge à l’hôtel",
+            "description": "Notre équipe vient vous chercher à votre hôtel à Charm el-Cheikh."
+          },
+          {
+            "time": "1:30",
+            "title": "Point de rendez-vous et départ",
+            "description": "Retrouvez le groupe au point de rendez-vous, puis partez pour Le Caire dans un véhicule climatisé."
+          },
+          {
+            "time": "2:00",
+            "title": "Trajet vers Le Caire",
+            "description": "Le trajet de nuit est long. Reposez-vous en chemin ; l’arrivée au Caire est prévue vers 9 h 00."
+          },
+          {
+            "time": "09:00",
+            "title": "Musée égyptien (ancien musée du Caire)",
+            "description": "Visitez le Musée égyptien avec votre guide égyptologue. Les billets d’entrée sont inclus."
+          },
+          {
+            "time": "12:00",
+            "title": "Pyramides de Gizeh et Grand Sphinx",
+            "description": "Explorez le site des pyramides de Gizeh et admirez le Grand Sphinx de près. Les billets d’entrée sont inclus."
+          },
+          {
+            "time": "14:30",
+            "title": "Déjeuner à Gizeh",
+            "description": "Déjeuner dans un restaurant local à Gizeh."
+          },
+          {
+            "time": "15:50",
+            "title": "Pause shopping",
+            "description": "Une pause shopping est prévue au programme de l’excursion."
+          },
+          {
+            "time": "17:00",
+            "title": "Retour à Charm el-Cheikh",
+            "description": "Retour en voiture à Charm el-Cheikh, puis dépôt à votre hôtel à l’arrivée, tard dans la nuit."
+          },
+          {
+            "time": "00",
+            "title": "Remarque très importante",
+            "description": "Tous les horaires et toutes les activités sont indicatifs et peuvent varier selon le programme de l’excursion."
+          },
+          {
+            "time": "11:00",
+            "title": "Nouvelle étape",
+            "description": "Brève description de l’activité."
+          }
+        ],
         "included": [
           "Prise en charge et retour à l’hôtel à Charm el-Cheikh",
           "Transport aller-retour entre Charm el-Cheikh et Le Caire",
@@ -1209,9 +1260,85 @@
           "Pourboires",
           "Tout service non expressément mentionné dans les prestations incluses"
         ],
-        "faqs": [],
+        "faqs": [
+          {
+            "question": "Q : Combien de temps dure toute l’excursion ?",
+            "answer": "R : Il s’agit d’une excursion d’une journée complète. Nous quittons Charm el-Cheikh vers minuit et rentrons tard dans la nuit.",
+            "section": "faq"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Votre passeport original avec un visa vous autorisant à vous rendre au Caire est obligatoire pour participer à l’excursion.",
+            "section": "important_information"
+          },
+          {
+            "question": "À emporter",
+            "answer": "- Des vêtements confortables et des chaussures confortables",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "À emporter",
+            "answer": "- Des lunettes de soleil",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Q : L’excursion comprend-elle le Grand Musée égyptien ou l’ancien Musée égyptien ?",
+            "answer": "R : Cette excursion comprend la visite de l’ancien Musée égyptien, situé place Tahrir. Nous proposons une excursion distincte sur notre site pour le Grand Musée égyptien, avec un programme différent.",
+            "section": "faq"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Il s’agit d’une excursion d’une journée complète, avec un long trajet de nuit d’environ 7 heures dans chaque sens.",
+            "section": "important_information"
+          },
+          {
+            "question": "À emporter",
+            "answer": "- De l’eau et du jus, selon vos préférences",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Q : Le déjeuner est-il inclus ?",
+            "answer": "R : Oui, le déjeuner est inclus dans un restaurant local à Gizeh.",
+            "section": "faq"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Portez des vêtements et des chaussures confortables, car la visite du musée et du site des pyramides de Gizeh implique de la marche.",
+            "section": "important_information"
+          },
+          {
+            "question": "Q : Que dois-je emporter pour l’excursion ?",
+            "answer": "R : Veuillez emporter :\n- Des vêtements confortables et des chaussures confortables\n- Des lunettes de soleil\n- De l’eau et du jus, selon vos préférences\n- Quelques encas légers\n- Votre passeport original avec un visa vous autorisant à vous rendre au Caire. Ce document est obligatoire pour participer à l’excursion.\n- Un peu d’argent de poche, selon vos besoins",
+            "section": "faq"
+          },
+          {
+            "question": "À emporter",
+            "answer": "- Quelques encas légers",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Prévoyez de l’eau, du jus et quelques encas légers pour le trajet.",
+            "section": "important_information"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Prévoyez un peu d’argent de poche, selon vos besoins.",
+            "section": "important_information"
+          },
+          {
+            "question": "À emporter",
+            "answer": "- Votre passeport original avec un visa vous autorisant à vous rendre au Caire. Ce document est obligatoire pour participer à l’excursion.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "À emporter",
+            "answer": "- Un peu d’argent de poche, selon vos besoins",
+            "section": "what_to_bring"
+          }
+        ],
         "pickupInfo": "Les options de prise en charge, les lieux approuvés et tout supplément applicable sont indiqués pendant la réservation.",
-        "cancellationPolicy": "Veuillez contacter notre équipe de réservation pour confirmer les conditions d’annulation et de remboursement de cette excursion avant de réserver.",
+        "cancellationPolicy": "Annulation gratuite jusqu’à 24 heures avant le départ.\nLes annulations effectuées 12 heures avant le départ donnent droit à un remboursement de 50 %.\nLes annulations effectuées 6 heures avant le départ ne sont pas remboursables, mais la date peut être modifiée moyennant des frais supplémentaires.",
         "ageRestrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
         "labels": {
           "highlights": "Points forts",
@@ -2291,7 +2418,53 @@
           "Prenez de magnifiques photos de votre escapade sur l’île",
           "Vivez une journée mémorable en mer au départ de Hurghada"
         ],
-        "itinerary": [],
+        "itinerary": [
+          {
+            "time": "08:00",
+            "title": "Prise en charge à l’hôtel",
+            "description": "Prise en charge à votre hôtel dans un véhicule climatisé, selon la zone de prise en charge sélectionnée, puis transfert vers la marina."
+          },
+          {
+            "time": "09:00",
+            "title": "Départ du bateau et croisière vers Orange Bay",
+            "description": "Croisière vers Orange Bay, sur l’île de Giftun, avec des boissons chaudes et froides à bord."
+          },
+          {
+            "time": "10:45",
+            "title": "Temps libre sur la plage de l’île",
+            "description": "Détendez-vous sur la plage de l’île de Giftun, avec parasols et places assises, selon disponibilité."
+          },
+          {
+            "time": "13:00",
+            "title": "Premier arrêt snorkeling",
+            "description": "Faites du snorkeling avec l’équipement fourni, sous réserve des conditions météorologiques et de l’état de la mer."
+          },
+          {
+            "time": "14:00",
+            "title": "Deuxième arrêt snorkeling",
+            "description": "Deuxième arrêt snorkeling, sous réserve des conditions météorologiques et de l’état de la mer."
+          },
+          {
+            "time": "15:00",
+            "title": "Déjeuner",
+            "description": "Déjeuner pendant l’excursion."
+          },
+          {
+            "time": "16:00",
+            "title": "Croisière retour",
+            "description": "Détendez-vous à bord pendant le retour vers Hurghada."
+          },
+          {
+            "time": "17:00",
+            "title": "Retour à l’hôtel",
+            "description": "Transfert de retour vers votre hôtel."
+          },
+          {
+            "time": "00",
+            "title": "Remarque très importante",
+            "description": "Tous les horaires et toutes les activités sont indicatifs et peuvent varier selon le programme de l’excursion."
+          }
+        ],
         "included": [
           "Prise en charge et retour à l’hôtel, selon la zone de prise en charge sélectionnée",
           "Transport climatisé",
@@ -2312,18 +2485,73 @@
         ],
         "faqs": [
           {
-            "question": "L’équipement de snorkeling est-il fourni ou dois-je apporter le mien ?",
-            "answer": "Des masques, tubas et palmes désinfectés, en tailles adulte et enfant, sont fournis gratuitement à bord.",
+            "question": "Que dois-je apporter pour cette excursion ?",
+            "answer": "Maillot de bain",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Que dois-je apporter pour cette excursion ?",
+            "answer": "Serviette",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Que dois-je apporter pour cette excursion ?",
+            "answer": "Crème solaire, chapeau et lunettes de soleil",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Que dois-je apporter pour cette excursion ?",
+            "answer": "Vêtements confortables pour le bateau",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Que dois-je apporter pour cette excursion ?",
+            "answer": "Un appareil photo ou un téléphone pour prendre des photos",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Que dois-je apporter pour cette excursion ?",
+            "answer": "Un peu d’argent pour les dépenses personnelles, selon vos besoins",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Quelles sont les heures approximatives de prise en charge et de départ du bateau ?",
+            "answer": "La prise en charge commence vers 8:00 AM, selon l’emplacement de votre hôtel, et peut être légèrement plus tôt ou plus tard. Le bateau part vers 9:00 AM. Le retour à votre hôtel est prévu vers 5:00 PM.",
             "section": "faq"
           },
           {
-            "question": "Les personnes qui ne savent pas nager peuvent-elles participer en toute sécurité ?",
-            "answer": "Oui. Des gilets de flottaison homologués par les garde-côtes sont fournis et des moniteurs de plongée certifiés accompagnent les participants dans l’eau.",
+            "question": "Les frais d’entrée à l’île Orange Bay sont-ils inclus ?",
+            "answer": "Les frais d’entrée à l’île Orange Bay sont-ils inclus ?\n",
             "section": "faq"
+          },
+          {
+            "question": "L’équipement de snorkeling est-il fourni ?",
+            "answer": "Oui, l’équipement de snorkeling est disponible et compris dans le prix.",
+            "section": "faq"
+          },
+          {
+            "question": "Quelles consignes importantes dois-je respecter ?",
+            "answer": "Veuillez toujours suivre les instructions de l’équipage et des guides.",
+            "section": "important_information"
+          },
+          {
+            "question": "Quelles consignes importantes dois-je respecter ?",
+            "answer": "Suivez toutes les instructions pendant la plongée, le snorkeling et la baignade.",
+            "section": "important_information"
+          },
+          {
+            "question": "Quelles consignes importantes dois-je respecter ?",
+            "answer": "Veuillez surveiller les enfants à bord du bateau.",
+            "section": "important_information"
+          },
+          {
+            "question": "Que faire en cas de mal de mer ?",
+            "answer": "Si vous avez le mal de mer, informez immédiatement l’équipage ou le guide.",
+            "section": "important_information"
           }
         ],
         "pickupInfo": "Les options de prise en charge, les lieux approuvés et tout supplément applicable sont indiqués pendant la réservation.",
-        "cancellationPolicy": "Veuillez contacter notre équipe de réservation pour confirmer les conditions d’annulation et de remboursement de cette excursion avant de réserver.",
+        "cancellationPolicy": "Annulation gratuite jusqu’à 24 heures avant le départ. Pour toute annulation effectuée 12 heures avant le départ, un remboursement de 50 % est accordé. Les annulations effectuées 6 heures avant le départ ne sont pas remboursables, mais la date peut être modifiée moyennant des frais supplémentaires.",
         "ageRestrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
         "labels": {
           "highlights": "Points forts",
@@ -3531,7 +3759,6 @@
         "private.text.88dbf3d6": " Ajouter une note interne privée",
         "private.text.88ecfe70": ". Votre demande a été envoyée à notre équipe de coordination de la marina de Hurghada et enregistrée dans notre système en temps réel. ",
         "private.text.89589cd5": "Âge : 2 à 11 ans",
-        "private.text.896915f8": "ex. : RST-2026-AB4821",
         "private.text.8a13064b": "Sélectionner une réservation associée (si applicable) ",
         "private.text.8a28cbe8": "Afficher le récapitulatif de réservation",
         "private.text.8a9129bf": "Quad et dîner bédouin ",
@@ -3903,7 +4130,6 @@
         "private.text.e1bd74be": "Confirmer le nouveau mot de passe ",
         "private.text.e1dbd378": "Consultez votre boîte de réception pour trouver l’e-mail envoyé par ",
         "private.text.e1efc9a9": "Rédiger un avis",
-        "private.text.e21734fb": "Ce départ est actuellement fermé. Veuillez choisir une autre date. ",
         "private.text.e2d91d9b": "Effacer et redémarrer la conversation",
         "private.text.e2f282f4": "Un problème a interrompu cette page. Rechargez-la pour réessayer. Les détails de votre réservation n’ont pas été envoyés depuis cet écran de récupération. ",
         "private.text.e3917a3a": "Consultation : ",
@@ -4104,9 +4330,13 @@
         "private.text.fff7de5b": "Assistant de voyage",
         "private.text.ffff4c4e": "Suggestions d’excursions",
         "private.text.d0162f9c": "Langue du site",
-        "private.text.9e1f6981": "Choisir la langue du site"
+        "private.text.9e1f6981": "Choisir la langue du site",
+        "private.text.208d5479": "Aucun départ n’est programmé pour cette date. Veuillez choisir une autre date. ",
+        "private.text.67339a93": "Tous les départs affichent complet pour cette date. Veuillez choisir une autre date.",
+        "private.text.a3974c94": "Choisissez une heure de départ pour continuer.",
+        "private.text.ecffeb3e": "ex. : AA0000001"
       },
-      "private_ui_message_count": 1069
+      "private_ui_message_count": 1071
     },
     {
       "entity_type": "communication_template",

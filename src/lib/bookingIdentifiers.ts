@@ -30,9 +30,14 @@ export function shouldUseLocalBookingCache(
 }
 
 
-const BOOKING_REFERENCE_PATTERN = /^AWE-\d{8}-\d{6}$/;
+const COMPACT_BOOKING_REFERENCE_PATTERN = /^AA[A-Z0-9]{7}$/;
+const LEGACY_BOOKING_REFERENCE_PATTERNS = [
+  /^AWE-\d{8}-\d{6}$/,
+  /^RST-\d{4}-[A-Z0-9]{4,32}$/,
+  /^RSE-\d{4,8}$/,
+];
 
-/** Format a booking reference as AWE-YYYYMMDD-123456. */
+/** Format a globally unique, nine-character booking reference. */
 export function formatBookingReference(bookingDate: string | Date, sequence: number): string {
   const dateText = bookingDate instanceof Date
     ? bookingDate.toISOString().slice(0, 10)
@@ -41,19 +46,24 @@ export function formatBookingReference(bookingDate: string | Date, sequence: num
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateText) || Number.isNaN(parsedDate.getTime()) || parsedDate.toISOString().slice(0, 10) !== dateText) {
     throw new Error('A valid booking date is required to format a booking reference.');
   }
-  if (!Number.isInteger(sequence) || sequence < 1 || sequence > 999999) {
-    throw new Error('Booking reference sequence must be between 1 and 999999.');
+  const maxSequence = 36 ** 7 - 1;
+  if (!Number.isSafeInteger(sequence) || sequence < 1 || sequence > maxSequence) {
+    throw new Error(`Booking reference sequence must be between 1 and ${maxSequence}.`);
   }
-  return 'AWE-' + dateText.replace(/-/g, '') + '-' + String(sequence).padStart(6, '0');
+  return 'AA' + sequence.toString(36).toUpperCase().padStart(7, '0');
 }
 
+/** Accept new references and all previously issued formats for existing bookings. */
 export function isValidBookingReference(reference: string | null | undefined): boolean {
-  return typeof reference === 'string' && BOOKING_REFERENCE_PATTERN.test(reference.trim().toUpperCase());
+  if (typeof reference !== 'string') return false;
+  const clean = reference.trim().toUpperCase();
+  return COMPACT_BOOKING_REFERENCE_PATTERN.test(clean) ||
+    LEGACY_BOOKING_REFERENCE_PATTERNS.some((pattern) => pattern.test(clean));
 }
 
 /**
  * Browser-side placeholder used for idempotency and local development only.
- * Production always replaces it with the collision-safe database sequence value.
+ * Production replaces it with the collision-safe database sequence value.
  */
 export function generateLocalBookingReference(bookingDate: string | Date = new Date()): string {
   const random = new Uint32Array(1);
@@ -61,6 +71,6 @@ export function generateLocalBookingReference(bookingDate: string | Date = new D
     throw new Error('Secure random number generation is unavailable.');
   }
   globalThis.crypto.getRandomValues(random);
-  const sequence = (random[0] % 999999) + 1;
+  const sequence = (random[0] % (36 ** 7 - 1)) + 1;
   return formatBookingReference(bookingDate, sequence);
 }

@@ -211,7 +211,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
               </div>
             ) : departureSlots.length === 0 ? (
               <div className="p-3 bg-stone-50 border border-stone-200 rounded text-xs text-stone-700">
-                This departure is currently closed. Please choose another date.
+                No departures are scheduled for this date. Please choose another date.
               </div>
             ) : (
               <>
@@ -225,7 +225,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
                         disabled={!slot.isAvailable}
                         aria-pressed={selected}
                         onClick={() => onDepartureChange(slot.departureId, slot.startTime)}
-                        className={`rounded-lg border-2 px-3 py-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2 ${
+                        className={`aa-departure-option rounded-lg border-2 px-3 py-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2 ${
                           selected
                             ? 'border-[#0A6C74] bg-[#E8F3F4] text-[#07565C] shadow-sm'
                             : slot.isAvailable
@@ -264,7 +264,9 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
                   </div>
                 ) : (
                   <div className="p-3 bg-stone-50 border border-stone-200 rounded text-xs text-stone-700">
-                    This departure is currently closed. Please choose another date.
+                    {departureSlots.some((slot) => slot.isAvailable)
+                      ? 'Choose a departure time to continue.'
+                      : 'All departure times are sold out for this date. Please choose another date.'}
                   </div>
                 )}
               </>
@@ -303,7 +305,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
                 type="button"
                 disabled={guests.adults <= 1}
                 onClick={() => handleAdultsChange(-1)}
-                className="w-8 h-8 rounded bg-white border border-stone-300 flex items-center justify-center text-stone-700 hover:bg-stone-100 disabled:opacity-30 disabled:hover:bg-white transition-colors"
+                className="aa-stepper-button w-8 h-8 rounded bg-white border border-stone-300 flex items-center justify-center text-stone-700 hover:bg-stone-100 disabled:opacity-30 disabled:hover:bg-white transition-colors"
                 aria-label="Decrease adults"
               >
                 <Minus className="w-3.5 h-3.5" />

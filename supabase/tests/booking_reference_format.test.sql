@@ -1,19 +1,24 @@
 BEGIN;
-SELECT plan(3);
+SELECT plan(4);
 SELECT matches(
   private.generate_booking_reference('2026-11-18'),
-  '^AWE-20261118-[0-9]{6}$',
-  'booking reference includes the departure date and exactly six digits'
+  '^AA[A-Z0-9]{7}$',
+  'new booking references use the compact nine-character format'
+);
+SELECT is(
+  length(private.generate_booking_reference('2026-11-18')),
+  9,
+  'new booking references never exceed nine characters'
 );
 SELECT isnt(
   private.generate_booking_reference('2026-11-18'),
   private.generate_booking_reference('2026-11-18'),
-  'per-date counter issues distinct references for the same date'
+  'cryptographically random generator returns distinct references on the same date'
 );
-SELECT matches(
+SELECT isnt(
+  private.generate_booking_reference('2026-11-18'),
   private.generate_booking_reference('2026-12-01'),
-  '^AWE-20261201-[0-9]{6}$',
-  'booking reference uses the requested excursion date'
+  'random generator also distinguishes bookings across departure dates'
 );
 SELECT * FROM finish();
 ROLLBACK;

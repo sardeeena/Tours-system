@@ -11,8 +11,8 @@
     "communication_template": 18,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1069,
-    "ui_catalog_messages": 1150,
+    "private_ui_messages": 1071,
+    "ui_catalog_messages": 1152,
     "source_records": 112
   },
   "records": [
@@ -176,84 +176,84 @@
         ],
         "faqs": [
           {
+            "question": "Wat moet ik meenemen op de excursie?",
+            "answer": "Neem comfortabele kleding, gesloten schoenen, een zonnebril, zonnebrandcrème, een sjaal of lichte omslagdoek tegen het stof, een camera of telefoon en wat contant geld voor extra uitgaven mee.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat neemt u mee",
+            "answer": "Comfortabele kleding.",
+            "section": "what_to_bring"
+          },
+          {
             "question": "Belangrijke informatie",
             "answer": "Niet geschikt voor zwangere vrouwen.",
             "section": "important_information"
           },
           {
-            "question": "Wat moet je meenemen",
-            "answer": "Comfortabele kleding.",
-            "section": "what_to_bring"
-          },
-          {
-            "question": "Wat moet ik meenemen op de excursie?",
-            "answer": "Comfortabele kleding, gesloten schoenen, een zonnebril, zonnebrandcrème, een sjaal of lichte omslagdoek tegen het stof, een camera of telefoon en wat contant geld voor extra uitgaven.",
+            "question": "V: Hoe lang duurt de hele excursie?",
+            "answer": "A: De excursie duurt ongeveer 3 uur.",
             "section": "faq"
           },
           {
-            "question": "Hoe lang duurt de hele excursie?",
-            "answer": "De excursie duurt ongeveer 3 uur.",
-            "section": "faq"
+            "question": "Belangrijke informatie",
+            "answer": "De minimumleeftijd om een quad te besturen is 15 jaar.",
+            "section": "important_information"
           },
           {
-            "question": "Wat moet je meenemen",
+            "question": "Wat neemt u mee",
             "answer": "Gesloten schoenen.",
             "section": "what_to_bring"
           },
           {
-            "question": "Wat is de minimumleeftijd om quad te rijden?",
-            "answer": "De minimumleeftijd om een quad te besturen is 15 jaar.",
+            "question": "V: Is de excursie elke dag beschikbaar?",
+            "answer": "A: Ja, de excursie is elke dag beschikbaar.",
+            "section": "faq"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Niet aanbevolen voor gasten ouder dan 70 jaar met rugklachten.",
             "section": "important_information"
           },
           {
-            "question": "Voor gasten ouder dan 70 jaar met rugklachten wordt deze activiteit afgeraden.",
-            "answer": "Deze activiteit wordt afgeraden voor gasten ouder dan 70 jaar met rugklachten.",
-            "section": "important_information"
-          },
-          {
-            "question": "Wat moet je meenemen",
+            "question": "Wat neemt u mee",
             "answer": "Een zonnebril.",
             "section": "what_to_bring"
           },
           {
-            "question": "Is de excursie elke dag beschikbaar?",
-            "answer": "Ja, de excursie is elke dag beschikbaar.",
-            "section": "faq"
-          },
-          {
-            "question": "Wat moet je meenemen",
+            "question": "Wat neemt u mee",
             "answer": "Zonnebrandcrème.",
             "section": "what_to_bring"
           },
           {
-            "question": "Is een privé-excursie mogelijk?",
-            "answer": "Ja, een privé-excursie is mogelijk tegen een toeslag. Neem contact met ons op om dit te regelen.",
+            "question": "V: Is een privé-excursie mogelijk?",
+            "answer": "A: Ja, een privé-excursie is mogelijk tegen een toeslag. Neem contact met ons op om deze te regelen.",
             "section": "faq"
           },
           {
-            "question": "Wat is de minimumleeftijd om een quad te besturen?",
-            "answer": "De minimumleeftijd om een quad te besturen is 15 jaar.",
-            "section": "faq"
-          },
-          {
-            "question": "Wat moet je meenemen",
+            "question": "Wat neemt u mee",
             "answer": "Een sjaal of lichte omslagdoek tegen het stof.",
             "section": "what_to_bring"
           },
           {
-            "question": "Wat moet je meenemen",
+            "question": "V: Wat is de minimumleeftijd om een quad te besturen?",
+            "answer": "A: De minimumleeftijd om een quad te besturen is 15 jaar.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat neemt u mee",
             "answer": "Een camera of telefoon.",
             "section": "what_to_bring"
           },
           {
-            "question": "Wat moet je meenemen",
+            "question": "Wat neemt u mee",
             "answer": "Wat contant geld voor extra uitgaven.",
             "section": "what_to_bring"
           }
         ],
         "pickupInfo": "Ophalen en terugbrengen bij het hotel is inbegrepen voor alle hotels binnen de stad Sharm El Sheikh.",
         "cancellationPolicy": "Je kunt gratis annuleren tot 24 uur voor vertrek. Bij annuleringen 12 uur voor vertrek ontvang je 50% terug. Annuleringen 6 uur voor vertrek zijn niet restitueerbaar, maar de datum kan tegen een toeslag worden gewijzigd.",
-        "ageRestrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
+        "ageRestrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar mogen gratis mee.",
         "labels": {
           "highlights": "Hoogtepunten",
           "itinerary": "Reisprogramma",
@@ -713,7 +713,53 @@
           "Maak prachtige foto's van je eilanduitstapje",
           "Beleef een onvergetelijke dag op zee vanuit Hurghada"
         ],
-        "itinerary": [],
+        "itinerary": [
+          {
+            "time": "08:00",
+            "title": "Ophalen bij het hotel",
+            "description": "Ophalen bij uw hotel in een voertuig met airconditioning, afhankelijk van de door u gekozen ophaalzone, en transfer naar de jachthaven."
+          },
+          {
+            "time": "09:00",
+            "title": "Vertrek van de boot en vaart naar Orange Bay",
+            "description": "Vaar naar Orange Bay op Giftun Island. Aan boord zijn warme en koude dranken beschikbaar."
+          },
+          {
+            "time": "10:45",
+            "title": "Tijd op het strand van het eiland",
+            "description": "Ontspan op het strand van Giftun Island, met strandparasols en zitplaatsen, afhankelijk van beschikbaarheid."
+          },
+          {
+            "time": "13:00",
+            "title": "Eerste snorkelstop",
+            "description": "Ga snorkelen met de verstrekte uitrusting, afhankelijk van het weer en de omstandigheden op zee."
+          },
+          {
+            "time": "14:00",
+            "title": "Tweede snorkelstop",
+            "description": "Een tweede snorkelstop, afhankelijk van het weer en de omstandigheden op zee."
+          },
+          {
+            "time": "15:00",
+            "title": "Lunch",
+            "description": "Lunch tijdens de excursie."
+          },
+          {
+            "time": "16:00",
+            "title": "Terugvaart",
+            "description": "Ontspan aan boord terwijl we terugvaren naar Hurghada."
+          },
+          {
+            "time": "17:00",
+            "title": "Terugbrengen naar het hotel",
+            "description": "Transfer terug naar uw hotel."
+          },
+          {
+            "time": "00",
+            "title": "Zeer belangrijke opmerking",
+            "description": "Alle tijden en activiteiten zijn bij benadering en kunnen veranderen afhankelijk van het tourschema."
+          }
+        ],
         "included": [
           "Ophalen en terugbrengen bij het hotel, afhankelijk van het gekozen ophaalgebied",
           "Vervoer met airconditioning",
@@ -734,18 +780,73 @@
         ],
         "faqs": [
           {
-            "question": "Is snorkeluitrusting inbegrepen of moet ik die zelf meenemen?",
-            "answer": "Aan boord zijn gratis gereinigde maskers, snorkels en zwemvliezen in volwassen- en kindermaten beschikbaar.",
+            "question": "Wat moet ik meenemen voor deze excursie?",
+            "answer": "Badkleding",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat moet ik meenemen voor deze excursie?",
+            "answer": "Handdoek",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat moet ik meenemen voor deze excursie?",
+            "answer": "Zonnebrandcrème, een hoed en een zonnebril",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat moet ik meenemen voor deze excursie?",
+            "answer": "Comfortabele kleding voor op de boot",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat moet ik meenemen voor deze excursie?",
+            "answer": "Een camera of telefoon om foto's te maken",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat moet ik meenemen voor deze excursie?",
+            "answer": "Wat persoonlijk zakgeld, naar behoefte",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat zijn de geschatte ophaal- en vertrektijden van de boot?",
+            "answer": "Het ophalen begint rond 8:00 AM, afhankelijk van de locatie van je hotel, en kan iets eerder of later zijn. De boot vertrekt rond 9:00 AM. We verwachten je rond 5:00 PM terug te brengen naar je hotel.",
             "section": "faq"
           },
           {
-            "question": "Kunnen mensen die niet kunnen zwemmen veilig deelnemen?",
-            "answer": "Ja. Er zijn door de kustwacht goedgekeurde zwemvesten beschikbaar en gecertificeerde duikinstructeurs begeleiden gasten in het water.",
+            "question": "Is de toegangsprijs voor Orange Bay Island inbegrepen?",
+            "answer": "Is de toegangsprijs voor Orange Bay Island inbegrepen?\n",
             "section": "faq"
+          },
+          {
+            "question": "Is snorkeluitrusting inbegrepen?",
+            "answer": "Ja, snorkeluitrusting is beschikbaar en bij de prijs inbegrepen.",
+            "section": "faq"
+          },
+          {
+            "question": "Welke belangrijke instructies moet ik volgen?",
+            "answer": "Volg altijd de aanwijzingen van de bemanning en gidsen.",
+            "section": "important_information"
+          },
+          {
+            "question": "Welke belangrijke instructies moet ik volgen?",
+            "answer": "Volg alle instructies tijdens het duiken, snorkelen en zwemmen.",
+            "section": "important_information"
+          },
+          {
+            "question": "Welke belangrijke instructies moet ik volgen?",
+            "answer": "Houd kinderen aan boord van de boot goed in de gaten.",
+            "section": "important_information"
+          },
+          {
+            "question": "Wat moet ik doen als ik zeeziek word?",
+            "answer": "Laat het de bemanning of gids onmiddellijk weten als je zeeziek wordt.",
+            "section": "important_information"
           }
         ],
         "pickupInfo": "Beschikbare ophaalopties, goedgekeurde locaties en eventuele toeslagen worden tijdens het boeken getoond.",
-        "cancellationPolicy": "Neem vóór het boeken contact op met ons boekingsteam om de annulerings- en terugbetalingsvoorwaarden voor deze excursie te bevestigen.",
+        "cancellationPolicy": "Gratis annuleren tot 24 uur vóór vertrek. Bij annuleringen 12 uur vóór vertrek ontvang je 50% terug. Annuleringen 6 uur vóór vertrek zijn niet restitueerbaar, maar de datum kan tegen een toeslag worden gewijzigd.",
         "ageRestrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
         "labels": {
           "highlights": "Hoogtepunten",
@@ -1352,7 +1453,7 @@
       "summary": "Reis duizenden jaren terug in de tijd en ontdek de indrukwekkende geschiedenis van het oude Egypte tijdens een dagtocht van Hurghada naar Luxor. Verken het majestueuze Karnak-tempelcomplex, wandel door de koninklijke graven in de Vallei der Koningen en bewonder de indrukwekkende tempel van koningin Hatsjepsoet, uitgehouwen in de rotsen van Deir el-Bahari. Geniet van boeiende verhalen van je professionele egyptoloog, een traditionele Egyptische lunch en comfortabel hotelvervoer gedurende de reis.",
       "content": {
         "title": "Vanuit Hurghada: dagtocht naar Luxor, Karnak-tempel en Vallei der Koningen",
-        "description": "## Ontdek de wonderen van het oude Thebe tijdens een reis naar Luxor\n\nAls je ooit hebt willen zien waar de grote farao's leefden, hun goden vereerden en werden begraven, dan is een dag in Luxor een ervaring die je niet mag missen.\n\nLuxor wordt vaak omschreven als het grootste openluchtmuseum ter wereld en herbergt enkele van de meest bijzondere monumenten uit het oude Egypte. Tijdens deze dagtocht vanuit Hurghada reis je door de Oostelijke Woestijn naar het hart van de oude stad Thebe, waar elke tempel en elk koninklijk graf een eigen verhaal vertelt.\n\nJe dag begint vroeg met ophalen bij je hotel in Hurghada. Neem plaats in een comfortabel voertuig met airconditioning en geniet van de rit naar Luxor. Onderweg zijn er ruststops om de reis aangenamer te maken.\n\nBij aankomst bezoek je eerst het indrukwekkende Karnak-tempelcomplex. Dit enorme religieuze terrein werd gedurende vele generaties door farao's gebouwd en uitgebreid. Wandel onder de torenhoge zuilen van de Grote Hypostyle Zaal, bewonder de prachtig uitgehouwen hiërogliefen en ontdek het Heilige Meer terwijl je egyptoloog de fascinerende geschiedenis van deze bijzondere plek vertelt.\n\nWil je Luxor vanuit een ander perspectief bekijken, dan kun je ook een traditionele feluccatocht over de Nijl naar Banana Island toevoegen. Geniet van het zachte briesje, bekijk het dagelijkse leven langs de oevers en neem een ontspannen pauze van het sightseeing.\n\nDaarna geniet je van een heerlijke Egyptische lunch in een lokaal restaurant voordat je naar de westelijke oever van Luxor gaat, waar enkele van de beroemdste koninklijke monumenten van het oude Egypte op je wachten.\n\nJe volgende bestemming is de legendarische Vallei der Koningen. Verscholen tussen de woestijnheuvels was deze bijzondere begraafplaats de laatste rustplaats van veel van de machtigste farao's van Egypte. Bezoek drie inbegrepen koninklijke graven en bewonder de kleurrijke muurschilderingen, gedetailleerde hiërogliefen en fascinerende taferelen die duizenden jaren hebben doorstaan. Je kunt ook een toegangsticket voor het beroemde graf van Toetanchamon toevoegen voor een nog bijzonderder bezoek.\n\nVervolg je tocht naar de prachtige tempel van koningin Hatsjepsoet in Deir el-Bahari. De tempel is direct tegen indrukwekkende kalkstenen rotswanden gebouwd. De elegante terrassen en bijzondere architectuur maken dit een van de meest herkenbare tempels van Egypte. Leer meer over de opmerkelijke koningin die als farao regeerde en een van de meest gedenkwaardige monumenten van het land naliet.\n\nVoordat je de westelijke oever verlaat, maak je nog een laatste stop bij de Kolossen van Memnon. Deze twee enorme beelden van Amenhotep III staan al meer dan 3.000 jaar in het landschap van Thebe en behoren nog altijd tot de bekendste bezienswaardigheden van Luxor. Het is een prachtige plek om foto's te maken en de schaal van het oude Egyptische vakmanschap te bewonderen.\n\nNa het sightseeing kun je ontspannen in je voertuig met airconditioning voor de terugreis naar Hurghada.\n\nHet is een lange dag, maar een dag vol onvergetelijke plekken, boeiende verhalen en een veel diepere waardering voor de oude Egyptische beschaving.\n\nOf je Egypte nu voor het eerst bezoekt of al gefascineerd bent door de geschiedenis: deze excursie naar Luxor is een fantastische kans om de meest iconische archeologische schatten van het land op één bijzondere dag te ontdekken.",
+        "description": "## Ontdek de wonderen van het oude Thebe tijdens een reis naar Luxor\n\nAls je ooit hebt willen zien waar de grote farao's leefden, hun goden vereerden en werden begraven, dan is een dag in Luxor een ervaring die je niet mag missen.\n\nLuxor wordt vaak omschreven als het grootste openluchtmuseum ter wereld en herbergt enkele van de meest bijzondere monumenten uit het oude Egypte. Tijdens deze dagtocht vanuit Hurghada reis je door de Oostelijke Woestijn naar het hart van de oude stad Thebe, waar elke tempel en elk koninklijk graf een eigen verhaal vertelt.\n\nJe dag begint vroeg met ophalen bij je hotel in Hurghada. Neem plaats in een comfortabel voertuig met airconditioning en geniet van de rit naar Luxor. Onderweg zijn er ruststops om de reis aangenamer te maken.\n\nBij aankomst bezoek je eerst het indrukwekkende Karnak-tempelcomplex. Dit enorme religieuze terrein werd gedurende vele generaties door farao's gebouwd en uitgebreid. Wandel onder de torenhoge zuilen van de Grote Hypostyle Zaal, bewonder de prachtig uitgehouwen hiërogliefen en ontdek het Heilige Meer terwijl je egyptoloog de fascinerende geschiedenis van deze bijzondere plek vertelt.\n\nWil je Luxor vanuit een ander perspectief bekijken, dan kun je ook een traditionele feluccatocht over de Nijl naar Banana Island toevoegen. Geniet van het zachte briesje, bekijk het dagelijkse leven langs de oevers en neem een ontspannen pauze van het sightseeing.\n\nDaarna geniet je van een heerlijke Egyptische lunch in een lokaal restaurant voordat je naar de westelijke oever van Luxor gaat, waar enkele van de beroemdste koninklijke monumenten van het oude Egypte op je wachten.\n\nJe volgende bestemming is de legendarische Vallei der Koningen. Verscholen tussen de woestijnheuvels was deze bijzondere begraafplaats de laatste rustplaats van veel van de machtigste farao's van Egypte. Bezoek drie inbegrepen koninklijke graven en bewonder de kleurrijke muurschilderingen, gedetailleerde hiërogliefen en fascinerende taferelen die duizenden jaren hebben doorstaan. Je kunt ook een toegangsticket voor het beroemde graf van Toetanchamon toevoegen voor een nog bijzonderder bezoek.\n\nVervolg je tocht naar de prachtige tempel van koningin Hatsjepsoet in Deir el-Bahari. De tempel is direct tegen indrukwekkende kalkstenen rotswanden gebouwd. De elegante terrassen en bijzondere architectuur maken dit een van de meest herkenbare tempels van Egypte. Leer meer over de opmerkelijke koningin die als farao regeerde en een van de meest gedenkwaardige monumenten van het land naliet.\n\nVoordat je de westelijke oever verlaat, maak je nog een laatste stop bij de Kolossen van Memnon. Deze twee enorme beelden van Amenhotep III staan al meer dan 3,000 jaar in het landschap van Thebe en behoren nog altijd tot de bekendste bezienswaardigheden van Luxor. Het is een prachtige plek om foto's te maken en de schaal van het oude Egyptische vakmanschap te bewonderen.\n\nNa het sightseeing kun je ontspannen in je voertuig met airconditioning voor de terugreis naar Hurghada.\n\nHet is een lange dag, maar een dag vol onvergetelijke plekken, boeiende verhalen en een veel diepere waardering voor de oude Egyptische beschaving.\n\nOf je Egypte nu voor het eerst bezoekt of al gefascineerd bent door de geschiedenis: deze excursie naar Luxor is een fantastische kans om de meest iconische archeologische schatten van het land op één bijzondere dag te ontdekken.",
         "durationLabel": "Hele dag",
         "highlights": [
           "Ontdek Luxor, een van 's werelds meest bijzondere bestemmingen voor de geschiedenis van het oude Egypte.",
@@ -2242,11 +2343,11 @@
       "summary": "Beleef een onvergetelijk nachtelijk avontuur vanuit Sharm El Sheikh. Wandel onder een sterrenhemel naar de top van de berg Sinaï, bereik de top op tijd voor een adembenemende zonsopgang en bezoek daarna het historische Sint-Catharinaklooster aan de voet van de berg.",
       "content": {
         "title": "Wandeling naar de zonsopgang op de berg Sinaï en bezoek aan het Sint-Catharinaklooster",
-        "description": "Beleef een van de meest bijzondere avonturen van de Sinaï tijdens een nachtelijke tocht naar de berg Sinaï. Een uitdagende wandeling in het donker brengt je naar een onvergetelijke zonsopgang boven de bergen.\n\nJe ervaring begint 's avonds met ophalen bij je hotel in Sharm El Sheikh. Daarna rijd je comfortabel door het stille woestijnlandschap naar de omgeving van Sint-Catharina. Daar ontmoet je je lokale berggids, maak je je hoofdlamp klaar en begin je onder de sterren aan de klim.\n\nVolg het historische bergpad in een gelijkmatig tempo. Je loopt via het Kameelpad naar de beroemde laatste Trappen van Berouw. Een goede lichamelijke conditie is vereist, maar het indrukwekkende landschap en de serene sfeer maken iedere stap de moeite waard.\n\nBereik de top vóór zonsopgang en zoek een plek om te genieten van de veranderende kleuren aan de hemel terwijl de zon boven de ruige bergtoppen van de Sinaï verschijnt. Met een hoogte van ongeveer 2.285 meter biedt de berg Sinaï een spectaculair panoramisch uitzicht en een bijzonder moment om te koesteren.\n\nNa zonsopgang daal je de berg af en krijg je tijd om uit te rusten voordat je het Sint-Catharinaklooster bezoekt, een UNESCO-werelderfgoedlocatie met een eeuwenoude geschiedenis. Ontdek het religieuze erfgoed en de plek die traditioneel met de brandende braamstruik wordt verbonden.\n\nNa het bezoek ontspan je tijdens de rit terug naar Sharm El Sheikh. Je komt de volgende middag weer aan bij je hotel.\n\nDeze ervaring combineert avontuur, adembenemende natuur en de rijke geschiedenis van een van de belangrijkste bezienswaardigheden van de Sinaï.",
+        "description": "Beleef een van de meest bijzondere avonturen van de Sinaï tijdens een nachtelijke tocht naar de berg Sinaï. Een uitdagende wandeling in het donker brengt je naar een onvergetelijke zonsopgang boven de bergen.\n\nJe ervaring begint 's avonds met ophalen bij je hotel in Sharm El Sheikh. Daarna rijd je comfortabel door het stille woestijnlandschap naar de omgeving van Sint-Catharina. Daar ontmoet je je lokale berggids, maak je je hoofdlamp klaar en begin je onder de sterren aan de klim.\n\nVolg het historische bergpad in een gelijkmatig tempo. Je loopt via het Kameelpad naar de beroemde laatste Trappen van Berouw. Een goede lichamelijke conditie is vereist, maar het indrukwekkende landschap en de serene sfeer maken iedere stap de moeite waard.\n\nBereik de top vóór zonsopgang en zoek een plek om te genieten van de veranderende kleuren aan de hemel terwijl de zon boven de ruige bergtoppen van de Sinaï verschijnt. Met een hoogte van ongeveer 2,285 meter biedt de berg Sinaï een spectaculair panoramisch uitzicht en een bijzonder moment om te koesteren.\n\nNa zonsopgang daal je de berg af en krijg je tijd om uit te rusten voordat je het Sint-Catharinaklooster bezoekt, een UNESCO-werelderfgoedlocatie met een eeuwenoude geschiedenis. Ontdek het religieuze erfgoed en de plek die traditioneel met de brandende braamstruik wordt verbonden.\n\nNa het bezoek ontspan je tijdens de rit terug naar Sharm El Sheikh. Je komt de volgende middag weer aan bij je hotel.\n\nDeze ervaring combineert avontuur, adembenemende natuur en de rijke geschiedenis van een van de belangrijkste bezienswaardigheden van de Sinaï.",
         "durationLabel": "Hele dag",
         "highlights": [
           "Beklim de berg Sinaï onder een prachtige sterrenhemel.",
-          "Bereik de top op 2.285 meter hoogte op tijd voor de zonsopgang.",
+          "Bereik de top op 2,285 meter hoogte op tijd voor de zonsopgang.",
           "Geniet van spectaculaire panoramische uitzichten over het Sinaïgebergte.",
           "Volg het historische Kameelpad en de beroemde Trappen van Berouw.",
           "Ontdek de spirituele en historische betekenis van de berg Sinaï.",
@@ -2532,7 +2633,58 @@
           "Ervaar de gelegenheid om tijdens je bezoek aan Caïro te winkelen.",
           "Reis met ophalen en terugbrengen bij hotels in Sharm El Sheikh."
         ],
-        "itinerary": [],
+        "itinerary": [
+          {
+            "time": "12:30",
+            "title": "Ophalen bij het hotel",
+            "description": "Ons team haalt u op bij uw hotel in Sharm-el-Sheikh."
+          },
+          {
+            "time": "1:30",
+            "title": "Verzamelpunt en vertrek",
+            "description": "Kom samen op het afgesproken verzamelpunt en vertrek naar Caïro in een voertuig met airconditioning."
+          },
+          {
+            "time": "2:00",
+            "title": "Reis naar Caïro",
+            "description": "De rit duurt de hele nacht. Rust onderweg uit; we komen rond 9.00 uur aan in Caïro."
+          },
+          {
+            "time": "09:00",
+            "title": "Egyptisch Museum (het oude museum in Caïro)",
+            "description": "Bezoek het Egyptisch Museum met uw egyptologische gids. De toegangskaarten zijn inbegrepen."
+          },
+          {
+            "time": "12:00",
+            "title": "Piramides van Gizeh en de Grote Sfinx",
+            "description": "Verken het gebied van de piramides van Gizeh en bekijk de Grote Sfinx van dichtbij. De toegangskaarten zijn inbegrepen."
+          },
+          {
+            "time": "14:30",
+            "title": "Lunch in Gizeh",
+            "description": "Lunch in een lokaal restaurant in Gizeh."
+          },
+          {
+            "time": "15:50",
+            "title": "Winkelstop",
+            "description": "Tijdens de excursie is er een winkelstop."
+          },
+          {
+            "time": "17:00",
+            "title": "Terug naar Sharm-el-Sheikh",
+            "description": "We rijden terug naar Sharm-el-Sheikh en brengen u bij aankomst laat in de avond naar uw hotel."
+          },
+          {
+            "time": "00",
+            "title": "Zeer belangrijke opmerking",
+            "description": "Alle tijden en activiteiten zijn bij benadering en kunnen veranderen afhankelijk van het tourschema."
+          },
+          {
+            "time": "11:00",
+            "title": "Nieuwe stop",
+            "description": "Korte beschrijving van de activiteit."
+          }
+        ],
         "included": [
           "Ophalen en terugbrengen bij hotels in Sharm El Sheikh.",
           "Retourvervoer tussen Sharm El Sheikh en Caïro.",
@@ -2553,9 +2705,85 @@
           "Fooien en gratificaties.",
           "Diensten die niet uitdrukkelijk bij de inbegrepen onderdelen zijn vermeld."
         ],
-        "faqs": [],
+        "faqs": [
+          {
+            "question": "V: Hoe lang duurt de hele reis?",
+            "answer": "A: Het is een dagtocht. We vertrekken rond middernacht uit Sharm-el-Sheikh en komen laat in de avond terug.",
+            "section": "faq"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Uw originele paspoort met een visum waarmee u naar Caïro mag reizen, is verplicht om aan de excursie deel te nemen.",
+            "section": "important_information"
+          },
+          {
+            "question": "Wat neemt u mee",
+            "answer": "- Comfortabele kleding en comfortabele schoenen",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat neemt u mee",
+            "answer": "- Een zonnebril",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "V: Bezoekt de excursie het Grand Egyptian Museum of het oude Egyptisch Museum?",
+            "answer": "A: Deze excursie omvat een bezoek aan het oude Egyptisch Museum op het Tahrirplein. Voor het Grand Egyptian Museum bieden we op onze website een aparte excursie met een ander programma aan.",
+            "section": "faq"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Dit is een dagtocht met een lange nachtelijke rit van ongeveer 7 uur per enkele reis.",
+            "section": "important_information"
+          },
+          {
+            "question": "Wat neemt u mee",
+            "answer": "- Water en sap, naar keuze",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "V: Is de lunch inbegrepen?",
+            "answer": "A: Ja, de lunch is inbegrepen en wordt geserveerd in een lokaal restaurant in Gizeh.",
+            "section": "faq"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Draag comfortabele kleding en schoenen, want bij het museum en het gebied van de piramides van Gizeh moet u wandelen.",
+            "section": "important_information"
+          },
+          {
+            "question": "V: Wat moet ik meenemen op de excursie?",
+            "answer": "A: Neem alstublieft het volgende mee:\n- Comfortabele kleding en comfortabele schoenen\n- Een zonnebril\n- Water en sap, naar keuze\n- Enkele lichte snacks\n- Uw originele paspoort met een visum waarmee u naar Caïro mag reizen. Dit is verplicht om aan de excursie deel te nemen.\n- Wat persoonlijk zakgeld, indien nodig",
+            "section": "faq"
+          },
+          {
+            "question": "Wat neemt u mee",
+            "answer": "- Enkele lichte snacks",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Neem water, sap en lichte snacks mee voor onderweg.",
+            "section": "important_information"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Neem indien nodig wat persoonlijk zakgeld mee.",
+            "section": "important_information"
+          },
+          {
+            "question": "Wat neemt u mee",
+            "answer": "- Uw originele paspoort met een visum waarmee u naar Caïro mag reizen. Dit is verplicht om aan de excursie deel te nemen.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Wat neemt u mee",
+            "answer": "- Wat persoonlijk zakgeld, indien nodig",
+            "section": "what_to_bring"
+          }
+        ],
         "pickupInfo": "Beschikbare ophaalopties, goedgekeurde locaties en eventuele toeslagen worden tijdens het boeken getoond.",
-        "cancellationPolicy": "Neem vóór het boeken contact op met ons boekingsteam om de annulerings- en terugbetalingsvoorwaarden voor deze excursie te bevestigen.",
+        "cancellationPolicy": "Gratis annuleren tot 24 uur voor vertrek.\nBij annuleringen 12 uur voor vertrek ontvangt u 50% terug.\nAnnuleringen 6 uur voor vertrek worden niet terugbetaald, maar de datum kan tegen een extra vergoeding worden gewijzigd.",
         "ageRestrictions": "Geschikt voor alle leeftijden. Kinderen jonger dan 2 jaar nemen gratis deel.",
         "labels": {
           "highlights": "Hoogtepunten",
@@ -4480,7 +4708,6 @@
         "private.text.88dbf3d6": " Ajouter une note interne privée",
         "private.text.88ecfe70": ". Votre demande a été envoyée à notre équipe de coordination de la marina de Hurghada et enregistrée dans notre système en temps réel. ",
         "private.text.89589cd5": "Âge : 2 à 11 ans",
-        "private.text.896915f8": "ex. : RST-2026-AB4821",
         "private.text.8a13064b": "Sélectionner une réservation associée (si applicable) ",
         "private.text.8a28cbe8": "Afficher le récapitulatif de réservation",
         "private.text.8a9129bf": "Quad et dîner bédouin ",
@@ -4852,7 +5079,6 @@
         "private.text.e1bd74be": "Confirmer le nouveau mot de passe ",
         "private.text.e1dbd378": "Consultez votre boîte de réception pour trouver l’e-mail envoyé par ",
         "private.text.e1efc9a9": "Rédiger un avis",
-        "private.text.e21734fb": "Ce départ est actuellement fermé. Veuillez choisir une autre date. ",
         "private.text.e2d91d9b": "Effacer et redémarrer la conversation",
         "private.text.e2f282f4": "Un problème a interrompu cette page. Rechargez-la pour réessayer. Les détails de votre réservation n’ont pas été envoyés depuis cet écran de récupération. ",
         "private.text.e3917a3a": "Consultation : ",
@@ -5053,9 +5279,13 @@
         "private.text.fff7de5b": "Reisassistent",
         "private.text.ffff4c4e": "Excursiesuggesties",
         "private.text.d0162f9c": "Taal van de website",
-        "private.text.9e1f6981": "Website-taal kiezen"
+        "private.text.9e1f6981": "Website-taal kiezen",
+        "private.text.208d5479": "Voor deze datum zijn geen vertrektijden gepland. Kies een andere datum. ",
+        "private.text.67339a93": "Alle vertrektijden zijn voor deze datum uitverkocht. Kies een andere datum.",
+        "private.text.a3974c94": "Kies een vertrektijd om verder te gaan.",
+        "private.text.ecffeb3e": "bijv. AA0000001"
       },
-      "private_ui_message_count": 1069
+      "private_ui_message_count": 1071
     },
     {
       "entity_type": "tour",

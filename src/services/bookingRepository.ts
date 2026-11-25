@@ -35,7 +35,7 @@ export function generateBookingReference(bookingDate: string | Date = new Date()
 
 export function validateBookingPayload(booking: Booking): { isValid: boolean; error?: string } {
   if (!isValidBookingReference(booking.bookingReference)) {
-    return { isValid: false, error: 'Invalid booking reference format. Expected AWE-YYYYMMDD-123456.' };
+    return { isValid: false, error: 'Invalid booking reference format. New references must be exactly 9 characters; legacy references remain supported.' };
   }
   if (!booking.customer || !booking.customer.email || !booking.customer.email.includes('@')) {
     return { isValid: false, error: 'A valid customer email address is required.' };

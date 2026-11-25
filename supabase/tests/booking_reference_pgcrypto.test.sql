@@ -6,23 +6,27 @@ SELECT plan(8);
 
 SELECT ok(
   position('private.generate_booking_reference(p_booking_date)' IN pg_get_functiondef(to_regprocedure('private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)'))) > 0
-  AND position('AWE-' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0,
-  'atomic booking function delegates to the date-based AWE reference generator'
+  AND position('extensions.gen_random_bytes(7)' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0
+  AND position('AA' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0,
+  'atomic booking function delegates to the cryptographically random nine-character reference generator'
 );
 
 SELECT ok(
-  position('ON CONFLICT (booking_date)' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0,
-  'reference generator atomically upserts the per-date counter'
+  position('private.encode_booking_reference_suffix' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0
+  AND position('78364164095' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0,
+  'reference generator encodes seven base-36 characters after the AA prefix'
 );
 
 SELECT ok(
-  position('last_value < 999999' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0,
-  'reference generator enforces the six-digit per-date capacity'
+  position('NOT EXISTS' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0
+  AND position('public.bookings' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0,
+  'reference generator checks existing bookings and retries an already-issued reference'
 );
 
 SELECT ok(
-  position('to_char(p_booking_date' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0,
-  'reference generator embeds the excursion date'
+  position('extensions.gen_random_bytes(7)' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0
+  AND position('private.encode_booking_reference_suffix' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0,
+  'reference generator derives a compact suffix from cryptographic random bytes'
 );
 
 SELECT ok(
@@ -34,13 +38,13 @@ SELECT ok(
   position(
     'gen_random_bytes('
     IN regexp_replace(
-      pg_get_functiondef(to_regprocedure('private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)')),
+      pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)')),
       'extensions\.gen_random_bytes',
       '',
       'gi'
     )
   ) = 0,
-  'atomic booking function has no unqualified pgcrypto random-byte call'
+  'reference generator has no unqualified pgcrypto random-byte call'
 );
 
 SELECT ok(
