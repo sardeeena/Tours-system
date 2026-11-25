@@ -87,6 +87,8 @@
 
           if (loaded || (!choices.analytics && !choices.marketing)) return;
           loaded = true;
+          // The React consent component may have inserted GTM for a just-saved choice.
+          if (document.getElementById('aat-gtm-script')) return;
           window.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
           var script = document.createElement('script');
           script.id = 'aat-gtm-script';
