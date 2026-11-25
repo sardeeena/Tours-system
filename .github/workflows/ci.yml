@@ -264,6 +264,9 @@ jobs:
       - name: Verify Vite and its plugins are build-only dependencies
         run: npm run test:source-content-corrections
 
+      - name: Verify supplier-managed departure notifications and public performance regressions
+        run: npm run test:supplier-managed-departures
+
       - name: Audit production runtime dependencies
         run: npm audit --omit=dev --audit-level=low
 
