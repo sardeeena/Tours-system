@@ -70,6 +70,25 @@ export const LocalizedContentPage: React.FC<{
     document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';
   }, [locale, result]);
 
+  useEffect(() => {
+    const legalFallback = unavailable && fallbackPage
+      && ['terms', 'privacy', 'cancellation-policy', 'cookie-policy'].includes(fallbackPage.slug);
+    if (!legalFallback) return;
+
+    document.title = fallbackPage.seoTitle || `${fallbackPage.title} | Awesome Adventure Tours`;
+    document.documentElement.lang = 'en';
+    const description = fallbackPage.seoDescription || fallbackPage.heroSubtitle || '';
+    let meta = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
+    if (!meta) { meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta); }
+    meta.content = description;
+    let robots = document.querySelector('meta[name="robots"]') as HTMLMetaElement | null;
+    if (!robots) { robots = document.createElement('meta'); robots.name = 'robots'; document.head.appendChild(robots); }
+    robots.content = 'noindex, follow';
+    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement | null;
+    if (!canonical) { canonical = document.createElement('link'); canonical.rel = 'canonical'; document.head.appendChild(canonical); }
+    canonical.href = window.location.origin + `/${fallbackPage.slug}`;
+  }, [fallbackPage, unavailable]);
+
   const translation = result?.translation;
   const content = translation?.content || {};
   const paragraphs = asStrings(content.paragraphs);
