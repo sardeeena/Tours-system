@@ -7,10 +7,12 @@ const pages = read('../src/data/staticPages.ts');
 const hero = read('../src/components/home/Hero.tsx');
 const tourService = read('../src/services/tourService.ts');
 const server = read('../server.ts');
+const localizedPage = read('../src/pages/LocalizedContentPage.tsx');
 const robots = read('../public/robots.txt');
 const blogPage = read('../src/pages/BlogPage.tsx');
 const cookieConsent = read('../src/components/common/CookieConsent.tsx');
 const bookingPayment = read('../src/components/booking/StepPayment.tsx');
+const booking = read('../src/pages/BookingPage.tsx');
 const slugMigration = read('../supabase/migrations/20261125210000_fix_sharm_safari_slug_and_redundant_index.sql');
 const slugMigrationTest = read('../supabase/tests/seo_slug_and_index_cleanup.test.sql');
 const appConfig = read('../src/config/appConfig.ts');
@@ -118,7 +120,9 @@ assert.ok(blogPage.includes('article.seo_title') && blogPage.includes('article.s
 
 assert.match(server, /sharm-super-safari-atv-camel-stargazing-bbq-dinner/);
 assert.ok(server.includes('res.redirect(308'), 'The old Sharm safari URL has a permanent redirect');
-assert.ok(bookingPayment.includes('href="/terms"'), 'The booking step links to the full Terms page');
+assert.match(bookingPayment, /href=\{termsPath\}/, 'The booking step links to the full Terms page in the active customer language');
+assert.match(bookingPayment, /locale !== 'en' \? `\/\$\{locale\}\/terms` : '\/terms'/, 'The Terms link preserves the localized URL prefix');
+assert.match(booking, /locale=\{customerLocale\}/, 'The final booking step receives the customer locale');
 
 assert.match(slugMigration, /Sharm: Super Safari ATV, Camel Ride, Stargazing & BBQ Dinner/);
 assert.match(slugMigration, /DROP INDEX IF EXISTS public\.idx_tour_images_primary/);
@@ -126,4 +130,10 @@ assert.match(slugMigration, /seo_metadata/);
 assert.match(slugMigrationTest, /uq_tour_images_one_primary_per_tour/);
 assert.ok(slugMigrationTest.includes('SELECT plan(4)'), 'The SQL regression uses a four-assertion pgTAP plan');
 
+assert.match(server, /localizedLegalFallback/);
+assert.ok(server.includes('translation of this legal page has not yet been reviewed and published'), 'The SSR legal fallback clearly identifies the unpublished translation');
+assert.match(server, /localizedLegalFallback \? path/);
+assert.match(localizedPage, /isLegalFallback/);
+assert.match(localizedPage, /StaticContentPage page=\{fallbackPage\}/);
+assert.match(app, /fallbackPage=\{staticPage\}/);
 console.log('Public SEO, blog catalogue and consent-aware analytics integrity checks passed.');

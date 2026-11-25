@@ -5644,6 +5644,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
   const localePath = parseLocalePath(requestedPath);
   let path = localePath?.pathname || requestedPath;
   let localizedTranslation: any = null;
+  let localizedLegalFallback = false;
   if (localePath) {
     const parts = path.split('/').filter(Boolean);
     const route = parts.length === 2 && parts[0] === 'excursions'
@@ -5674,7 +5675,15 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
         console.error('[Localized SSR] Translation resolution failed:', error);
       }
     }
-    if (!localizedTranslation) path = '/__localized_translation_unavailable__';
+    if (!localizedTranslation) {
+      const legalStaticSlug = parts.length === 1 ? parts[0] : '';
+      if (route?.entityType === 'static_page' && ['terms', 'privacy', 'cancellation-policy', 'cookie-policy'].includes(legalStaticSlug)) {
+        path = '/' + legalStaticSlug;
+        localizedLegalFallback = true;
+      } else {
+        path = '/__localized_translation_unavailable__';
+      }
+    }
   }
   const origin = 'https://awesomeadventure.tours';
   let title = 'Awesome Adventure Tours | Boat Trips, Island Tours & Safaris';
@@ -5699,7 +5708,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
   let seoIdentifier = 'home';
   let seoIdentifierIsPageSlug = true;
 
-  if (localePath && !localizedTranslation) {
+  if (localePath && !localizedTranslation && !localizedLegalFallback) {
     statusCode = 404;
     noindex = true;
     nofollow = false;
@@ -6098,10 +6107,14 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       safeFaqs.map((faq: any) => '<section><h2>' + seoHtmlEscape(faq.question) + '</h2><p>' + seoHtmlEscape(faq.answer) + '</p></section>').join('') +
       ['pickupInfo','cancellationPolicy','ageRestrictions'].map((key) => typeof content[key] === 'string' ? '<p>' + seoHtmlEscape(content[key]) + '</p>' : '').join('') + safeLists + '</main>';
   }
+  if (localizedLegalFallback) {
+    body = `<div class="mx-auto max-w-4xl px-4 sm:px-6 pt-6"><p class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950">The ${seoHtmlEscape(localePath?.locale || '')} translation of this legal page has not yet been reviewed and published. The official English version is shown below so you can read the current terms before making a reservation. <a class="font-semibold underline" href="${seoHtmlEscape(path)}">Open the English legal page</a>.</p></div>` + body;
+  }
   title = seoBoundedTitle(title) || 'Awesome Adventure Tours';
   description = seoBoundedDescription(description) || 'Explore published excursions and experiences across Egypt’s Red Sea coast.';
-  const canonicalPath = localePath ? requestedPath : path;
+  const canonicalPath = localizedLegalFallback ? path : localePath ? requestedPath : path;
   const canonical = `${origin}${canonicalPath === '/' ? '/' : canonicalPath}`;
+  if (localizedLegalFallback) noindex = true;
   const cmsSocialProfiles: string[] = [];
   if (publicSupabase) {
     try {
