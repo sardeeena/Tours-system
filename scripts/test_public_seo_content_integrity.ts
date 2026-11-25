@@ -132,7 +132,7 @@ assert.match(slugMigrationTest, /uq_tour_images_one_primary_per_tour/);
 assert.ok(slugMigrationTest.includes('SELECT plan(4)'), 'The SQL regression uses a four-assertion pgTAP plan');
 
 assert.match(server, /localizedLegalFallback/);
-assert.match(server, /The \\.*translation of this legal page has not yet been reviewed and published/);
+assert.ok(server.includes('translation of this legal page has not yet been reviewed and published'), 'The SSR legal fallback clearly identifies the unpublished translation');
 assert.match(server, /localizedLegalFallback \? path/);
 assert.match(localizedPage, /isLegalFallback/);
 assert.match(localizedPage, /StaticContentPage page=\{fallbackPage\}/);
