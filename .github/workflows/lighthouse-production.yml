@@ -53,50 +53,109 @@ jobs:
       - name: Install pinned Lighthouse
         run: npm install --global lighthouse@13.6.0
 
-      - name: Run representative production audits
+      - name: Preflight representative production pages
+        id: preflight
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p lighthouse-reports
-
           declare -A pages=(
             [home]="https://awesomeadventure.tours/"
             [terms]="https://awesomeadventure.tours/terms"
             [tour]="https://awesomeadventure.tours/excursions/sharm-super-safari-atv-camel-stargazing-bbq-dinner"
           )
+          blocked=0
+          printf 'page\thttp_status\tfinal_url\n' > lighthouse-reports/http-preflight.tsv
+          for page in home terms tour; do
+            url="${pages[${page}]}"
+            result="$(curl --location --silent --show-error --max-time 30 \
+              --user-agent 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36' \
+              --output /dev/null --write-out '%{http_code}\t%{url_effective}' "${url}" 2> "lighthouse-reports/${page}-curl.log" || true)"
+            status="${result%%$'\t'*}"
+            final_url="${result#*$'\t'}"
+            printf '%s\t%s\t%s\n' "${page}" "${status:-000}" "${final_url:-unavailable}" >> lighthouse-reports/http-preflight.tsv
+            echo "${page}: HTTP ${status:-000}"
+            if [ "${status}" = "403" ] || [ "${status}" = "429" ]; then
+              blocked=1
+            elif [ "${status}" != "200" ]; then
+              cat "lighthouse-reports/${page}-curl.log"
+              echo "Unexpected production response for ${page}: HTTP ${status:-000}" >&2
+              exit 1
+            fi
+          done
+          echo "blocked=${blocked}" >> "${GITHUB_OUTPUT}"
+          if [ "${blocked}" -eq 1 ]; then
+            echo "::warning::Hostinger/CDN returned 403 or 429 to the GitHub-hosted audit runner. Lighthouse is skipped rather than weakening production bot protection."
+          fi
 
+      - name: Run representative production audits
+        if: steps.preflight.outputs.blocked != '1'
+        id: audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          declare -A pages=(
+            [home]="https://awesomeadventure.tours/"
+            [terms]="https://awesomeadventure.tours/terms"
+            [tour]="https://awesomeadventure.tours/excursions/sharm-super-safari-atv-camel-stargazing-bbq-dinner"
+          )
+          blocked=0
           for page in home terms tour; do
             url="${pages[${page}]}"
             for device in mobile desktop; do
               echo "Running Lighthouse: ${page} (${device})"
-              if [ "${device}" = "desktop" ]; then
-                lighthouse "${url}" \
-                  --preset=desktop \
-                  --only-categories=performance,accessibility,best-practices,seo \
-                  --output=json \
-                  --output-path="lighthouse-reports/${page}-${device}.json" \
-                  --quiet \
-                  --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage"
+              log="lighthouse-reports/${page}-${device}.log"
+              args=(
+                "${url}"
+                "--only-categories=performance,accessibility,best-practices,seo"
+                "--output=json"
+                "--output-path=lighthouse-reports/${page}-${device}.json"
+                "--quiet"
+                "--chrome-flags=--headless --no-sandbox --disable-dev-shm-usage"
+              )
+              if [ "${device}" = "desktop" ]; then args+=("--preset=desktop"); fi
+              if lighthouse "${args[@]}" > "${log}" 2>&1; then
+                cat "${log}"
               else
-                lighthouse "${url}" \
-                  --only-categories=performance,accessibility,best-practices,seo \
-                  --output=json \
-                  --output-path="lighthouse-reports/${page}-${device}.json" \
-                  --quiet \
-                  --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage"
+                code=$?
+                cat "${log}"
+                if grep -Eq 'Status code: (403|429)' "${log}"; then
+                  blocked=1
+                  echo "::warning::The production edge blocked the Lighthouse browser request for ${page} (${device})."
+                  break 2
+                fi
+                exit "${code}"
               fi
               sleep 15
             done
           done
+          echo "blocked=${blocked}" >> "${GITHUB_OUTPUT}"
+          if [ "${blocked}" -eq 1 ]; then
+            echo "::warning::Production edge protection blocked the Lighthouse browser. No security controls were bypassed."
+          fi
 
       - name: Print Lighthouse score and Core Web Vitals summary
+        if: always()
         shell: bash
         run: |
           node <<'NODE'
           const fs = require('node:fs');
           const path = require('node:path');
           const dir = 'lighthouse-reports';
-          const files = fs.readdirSync(dir).filter((file) => file.endsWith('.json')).sort();
+          const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter((file) => file.endsWith('.json')).sort() : [];
+          const preflight = fs.existsSync(path.join(dir, 'http-preflight.tsv'))
+            ? fs.readFileSync(path.join(dir, 'http-preflight.tsv'), 'utf8')
+            : '';
+          if (preflight) console.log('\nProduction HTTP preflight:\n' + preflight);
+          if (files.length === 0) {
+            console.log('No Lighthouse report was produced. Check the preflight and per-page logs; a 403/429 from the production edge is reported as blocked, not as a performance score.');
+            if (preflight && /\t(403|429)\t/.test(preflight)) {
+              console.log('Result: BLOCKED BY PRODUCTION EDGE — Lighthouse scores are unavailable.');
+              process.exit(0);
+            }
+            console.error('No Lighthouse reports were produced and no edge block was detected.');
+            process.exit(1);
+          }
           const pct = (value) => value == null ? 'n/a' : String(Math.round(value * 100));
           const ms = (value) => value == null ? 'n/a' : String(Math.round(value));
           console.log('| Page | Device | Performance | Accessibility | Best practices | SEO | LCP ms | CLS | TBT ms | TTFB ms |');
@@ -120,9 +179,11 @@ jobs:
           }
           NODE
 
-      - name: Upload Lighthouse reports
+      - name: Upload Lighthouse diagnostics and reports
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: awesome-adventure-lighthouse-reports
-          path: lighthouse-reports/*.json
+          path: lighthouse-reports/**
+          if-no-files-found: warn
           retention-days: 14
