@@ -16,6 +16,7 @@ assert.match(migration, /resource_management_mode = ''internal''/);
 assert.match(migration, /idx_departures_internal_unassigned_date/);
 assert.match(migration, /archived_at TIMESTAMPTZ/);
 assert.match(migration, /idx_staff_notifications_active_created_at_id/);
+assert.match(migration, /dedup_key = 'archived:' \|\| dedup_key/);
 assert.match(migration, /archived_at = COALESCE\(archived_at, now\(\)\)/);
 assert.match(migration, /is_read = TRUE/);
 assert.match(migration, /v_count <> 1/);
