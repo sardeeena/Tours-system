@@ -212,6 +212,13 @@ export const StepPayment: React.FC<StepPaymentProps> = ({
               . I understand that payment will be collected in cash or card upon hotel pickup.
             </span>
           </label>
+          <p className="px-1 text-[11px] leading-relaxed text-stone-500">
+            You can read the complete{' '}
+            <a href="/terms" target="_blank" rel="noopener noreferrer" className="font-semibold text-[#0A6C74] underline hover:text-[#08565C]">Terms &amp; Conditions</a>
+            {' '}and{' '}
+            <a href="/cancellation-policy" target="_blank" rel="noopener noreferrer" className="font-semibold text-[#0A6C74] underline hover:text-[#08565C]">Cancellation &amp; Refund Policy</a>
+            {' '}before accepting.
+          </p>
         </div>
 
       </section>
