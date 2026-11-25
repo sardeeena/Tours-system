@@ -225,7 +225,7 @@ export async function recordVisitorEvent(input: {
   // (not purchase) because payment may still be pending.
   if (input.event_name !== 'page_view') {
     const gaEventData = { ...safeEventData };
-    if (input.event_name === 'booking_confirmed' && typeof safeEventData.booking_value === 'number') {
+    if (input.event_name === 'booking_submitted' && typeof safeEventData.booking_value === 'number') {
       gaEventData.value = safeEventData.booking_value;
     }
     window.gtag?.('event', input.event_name, {
