@@ -1,6 +1,7 @@
 -- Treat supplier-managed departures as valid; keep internal resource modules intact.
 BEGIN;
 ALTER TABLE public.departures ADD COLUMN IF NOT EXISTS resource_management_mode TEXT;
+ALTER TABLE public.staff_notifications ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ;
 UPDATE public.departures SET resource_management_mode = 'supplier' WHERE resource_management_mode IS NULL;
 ALTER TABLE public.departures ALTER COLUMN resource_management_mode SET DEFAULT 'supplier', ALTER COLUMN resource_management_mode SET NOT NULL;
 DO $constraint$
@@ -12,10 +13,16 @@ END;
 $constraint$;
 CREATE INDEX IF NOT EXISTS idx_departures_internal_unassigned_date ON public.departures(date)
   WHERE resource_management_mode='internal' AND status NOT IN ('cancelled','completed') AND (guide_id IS NULL OR vessel_id IS NULL);
-CREATE INDEX IF NOT EXISTS idx_staff_notifications_created_at_id ON public.staff_notifications(created_at DESC,id DESC);
+CREATE INDEX IF NOT EXISTS idx_staff_notifications_active_created_at_id
+  ON public.staff_notifications(created_at DESC,id DESC)
+  WHERE archived_at IS NULL;
 -- Preserve old false alerts as history but remove them from the unread queue.
-UPDATE public.staff_notifications SET is_read=TRUE,read_at=COALESCE(read_at,now())
-WHERE category='departure_unassigned' AND is_read=FALSE;
+UPDATE public.staff_notifications
+SET archived_at = COALESCE(archived_at, now()),
+    is_read = TRUE,
+    read_at = COALESCE(read_at, now())
+WHERE category = 'departure_unassigned'
+  AND archived_at IS NULL;
 -- Retain every other scanner rule and authorization check; change only this exact predicate.
 DO $scanner$
 DECLARE
