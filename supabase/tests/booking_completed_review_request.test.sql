@@ -23,8 +23,8 @@ SELECT ok(
 );
 
 SELECT ok(
-  position('extensions.gen_random_bytes(7)' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0
-  AND position('private.encode_booking_reference_suffix' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0,
+  position('extensions.gen_random_bytes(3)' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0
+  AND position('lpad(v_number::text, 6, ''0'')' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0,
   'reference generator derives the six-digit suffix from cryptographic random bytes'
 );
 
