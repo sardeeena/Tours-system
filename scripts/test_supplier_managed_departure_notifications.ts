@@ -7,6 +7,7 @@ const communication = read('../src/services/communicationService.ts');
 const html = read('../index.html');
 const hero = read('../src/components/home/Hero.tsx');
 const exclusivePage = read('../src/pages/ExclusiveTripsPage.tsx');
+const server = read('../server.ts');
 
 assert.match(migration, /resource_management_mode TEXT/);
 assert.match(migration, /SET resource_management_mode = 'supplier'/);
@@ -41,6 +42,10 @@ assert.match(exclusivePage, /contact our team/);
 assert.match(exclusivePage, /Plan a private boat trip on Egypt’s Red Sea/);
 assert.match(exclusivePage, /Meals, drinks, hotel transfers, snorkeling equipment/);
 assert.match(exclusivePage, /Dates, routes and sea conditions/);
+assert.match(server, /Plan a private boat trip on Egypt’s Red Sea/);
+assert.match(server, /Check the details before you reserve/);
+assert.match(server, /Routes, weather and sea conditions/);
+assert.match(server, /Contact our Hurghada team/);
 const robots = read('../public/robots.txt');
 assert.match(robots, /User-agent: OpenSEO-Audit\s+Crawl-delay: 2/);
 
