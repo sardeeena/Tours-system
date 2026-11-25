@@ -2,8 +2,8 @@ BEGIN;
 SELECT plan(6);
 SELECT matches(
   private.generate_booking_reference('2026-11-18'),
-  '^AA[A-Z0-9]{7}$',
-  'new booking references use the compact nine-character format'
+  '^AA-[0-9]{6}$',
+  'new booking references use the agreed AA- plus six-digit format'
 );
 SELECT is(
   length(private.generate_booking_reference('2026-11-18')),
