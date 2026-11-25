@@ -24,6 +24,10 @@ assert.match(service, /window\.gtag\?\.\('event', 'purchase'/, 'Confirmed bookin
 const bookingPage = read('../src/pages/BookingPage.tsx');
 assert.match(bookingPage, /booking_reference: newBooking\.bookingReference/);
 assert.match(bookingPage, /currency,/);
-assert.doesNotMatch(service, /allowedKeys = new Set\(\[[\s\S]*?'email'[\s\S]*?'phone'/, 'PII fields are not added to the GA4 allowlist');
+const allowlist = service.match(/const allowedKeys = new Set\(\[([\s\S]*?)\]\);/)?.[1] || '';
+assert.doesNotMatch(allowlist, /email|phone|first_name|last_name/i, 'PII fields are not added to the GA4 allowlist');
+assert.match(bookingPage, /booking_reference: newBooking\.bookingReference/);
+assert.match(bookingPage, /value: pricing\.totalEur/);
+assert.match(bookingPage, /currency: currency\.code/);
 
 console.log('Consent-gated GTM, SPA page views, safe GA4 events and booking purchase tracking checks passed.');
