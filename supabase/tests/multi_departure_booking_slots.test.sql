@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(34);
+SELECT plan(35);
 
 SELECT has_function(
   'public','get_tour_departure_slots',ARRAY['text','date'],
@@ -77,6 +77,12 @@ UPDATE multi_departure_context AS context
 SET second_departure_id = created.id
 FROM created
 WHERE context.tour_id = created.tour_id AND context.test_date = created.date;
+
+SELECT is(
+  (SELECT start_time FROM public.departures WHERE id = (SELECT first_departure_id FROM multi_departure_context)),
+  '09:00',
+  'the selected departure fixture persists its exact start time'
+);
 
 SELECT is(
   (SELECT count(*)::INTEGER
