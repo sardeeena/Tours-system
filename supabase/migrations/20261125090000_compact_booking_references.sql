@@ -1,8 +1,7 @@
 BEGIN;
 
--- New customer-facing references are exactly nine characters:
--- "AA" plus seven base-36 characters. Cryptographic randomness keeps references
--- difficult to guess; the bookings unique constraint and retry loop prevent collisions.
+-- New customer-facing references are exactly nine characters: AA- plus six digits.
+-- This readable format is used for all new bookings; historical references remain valid.
 DO $extension_check$
 BEGIN
   IF to_regprocedure('extensions.gen_random_bytes(integer)') IS NULL THEN
@@ -62,12 +61,12 @@ BEGIN
   END IF;
 
   LOOP
-    -- 56 cryptographically random bits are mapped into the seven-character
-    -- base-36 suffix. Any collision is retried; bookings.booking_reference is UNIQUE.
-    v_number := (('x' || encode(extensions.gen_random_bytes(7), 'hex'))::bit(56)::bigint
-      % 78364164095) + 1;
+    -- Generate a six-digit customer code. The unique constraint plus this
+    -- existence check and caller retry handle both historical and concurrent collisions.
+    v_number := (('x' || encode(extensions.gen_random_bytes(3), 'hex'))::bit(24)::integer
+      % 900000) + 100000;
 
-    v_reference := 'AA' || private.encode_booking_reference_suffix(v_number);
+    v_reference := 'AA-' || lpad(v_number::text, 6, '0');
 
     -- Skip references already present from imports or previous deployments.
     -- The bookings UNIQUE constraint and caller retry handle concurrent collisions.
@@ -86,7 +85,7 @@ REVOKE ALL ON FUNCTION private.generate_booking_reference(date)
   FROM PUBLIC, anon, authenticated, service_role;
 
 COMMENT ON FUNCTION private.generate_booking_reference(date) IS
-  'Internal collision-safe generator for nine-character AA plus seven-character cryptographically random base-36 booking references. The date argument is retained for RPC compatibility.';
+  'Internal collision-safe generator for nine-character AA- plus six-digit cryptographically random booking references. The date argument is retained for RPC compatibility.';
 
 -- The verified guest lookup and cancellation RPCs historically rejected references
 -- shorter than ten characters. Lower their minimum to nine while preserving their
