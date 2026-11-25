@@ -1,3 +1,9 @@
+# OpenSEO's site auditor is a low-frequency technical crawler. Keep its requests spaced out.
+User-agent: OpenSEO-Audit
+Crawl-delay: 2
+Allow: /
+Disallow: /api/
+
 # Awesome Adventure Tours crawler policy
 # Permit search crawlers used by AI answer engines while keeping the existing
 # no-training preference for model-training crawlers.
