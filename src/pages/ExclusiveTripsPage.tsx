@@ -174,6 +174,30 @@ export const ExclusiveTripsPage: React.FC<Props> = () => {
           ) : <div className="rounded-2xl bg-white dark:bg-slate-900 border border-stone-200 dark:border-slate-700 p-7">Choose a private trip to see its dates and booking details.</div>}
         </aside>
       </div>
+
+      <section aria-labelledby="private-trip-guide" className="max-w-5xl mx-auto px-4 sm:px-6 pb-12 sm:pb-16 space-y-8">
+        <div className="max-w-3xl">
+          <p className="text-xs uppercase tracking-[.18em] text-teal-700 dark:text-teal-300 font-semibold">A more personal day at sea</p>
+          <h2 id="private-trip-guide" className="font-display text-3xl sm:text-4xl font-bold mt-2">Plan a private boat trip on Egypt’s Red Sea</h2>
+          <p className="mt-4 text-stone-600 dark:text-slate-300 leading-7">A private boat charter gives your group the boat for your own outing rather than joining a shared excursion. It can be a relaxed way to spend time on the water with family or friends, enjoy the coastline and plan a day around your group. The exact boat, route, departure point and available services depend on the private trip published in the listings above.</p>
+        </div>
+        <div className="grid md:grid-cols-2 gap-6">
+          <article className="rounded-2xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6">
+            <h3 className="text-xl font-bold">Check the details before you reserve</h3>
+            <p className="mt-3 text-stone-600 dark:text-slate-300 leading-7">Each available listing shows its fixed price for the whole trip, minimum and maximum group size, and the departure dates and times that can be requested. Review the departure location and trip description carefully. Meals, drinks, hotel transfers, snorkeling equipment and stops are not automatically included in every charter; check the individual listing and the arrangements confirmed by our team.</p>
+          </article>
+          <article className="rounded-2xl border border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-900 p-6">
+            <h3 className="text-xl font-bold">How the reservation works</h3>
+            <p className="mt-3 text-stone-600 dark:text-slate-300 leading-7">Choose a published trip and an available departure, enter the number of guests, and share your contact and pickup details. You can add a special request before submitting. The reservation screen displays the total trip price, not a per-person rate. Keep the reference shown after submission so our team can identify your request and follow up about the arrangements.</p>
+          </article>
+        </div>
+        <div className="max-w-3xl space-y-3">
+          <h3 className="text-xl font-bold">Dates, routes and sea conditions</h3>
+          <p className="text-stone-600 dark:text-slate-300 leading-7">Private departures are displayed only when dates have been configured and published. If no date is available, contact our team rather than selecting an unavailable slot. Boat routes and time on the water can be affected by weather, sea conditions and local safety guidance. Any changes to the planned outing should be discussed with the team before departure.</p>
+          <h3 className="text-xl font-bold pt-3">Looking for a private Red Sea experience?</h3>
+          <p className="text-stone-600 dark:text-slate-300 leading-7">Browse the published private boat and yacht options above to compare what is currently offered. If you have a preferred date, group size or idea for your day, send it to our team through the <a href="/contact" className="text-teal-700 dark:text-teal-300 underline underline-offset-4">contact page</a>. We can explain which options are available and what can be arranged for your group.</p>
+        </div>
+      </section>
     </main>
   );
 };
