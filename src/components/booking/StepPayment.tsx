@@ -49,13 +49,13 @@ export const StepPayment: React.FC<StepPaymentProps> = ({
     <div className="space-y-6 animate-in fade-in duration-200">
       
       {/* Header */}
-      <div className="bg-white border border-[#E8E3DA] rounded-sm p-5 space-y-4">
+      <section className="aa-booking-section rounded-2xl border border-stone-200 bg-white p-4 sm:p-6 space-y-5">
         <div>
-          <h2 className="font-display text-base sm:text-lg font-bold text-[#0E1B2A] flex items-center">
+          <h2 className="font-display text-lg sm:text-xl font-bold text-[#0E1B2A] flex items-center">
             <Lock className="w-4 h-4 mr-2 text-[#0A6C74]" />
             Payment Method
           </h2>
-          <p className="text-xs text-stone-600 mt-1">
+          <p className="text-sm text-stone-500 mt-2">
             Choose how you want to pay. You do not need to pay anything today.
           </p>
         </div>
@@ -68,7 +68,7 @@ export const StepPayment: React.FC<StepPaymentProps> = ({
             type="button"
             aria-pressed={paymentMethod === 'pay_at_pickup'}
             onClick={() => onPaymentMethodChange('pay_at_pickup')}
-            className={`w-full text-left p-4 rounded-lg border cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2 ${
+            className={`aa-choice-card w-full text-left p-5 rounded-2xl border cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2 ${
               paymentMethod === 'pay_at_pickup'
                 ? 'border-[#0A6C74] bg-[#E8F3F4]/50 ring-1 ring-[#0A6C74]'
                 : 'border-stone-200 hover:border-stone-300 hover:bg-stone-50 bg-white'
@@ -214,7 +214,7 @@ export const StepPayment: React.FC<StepPaymentProps> = ({
           </label>
         </div>
 
-      </div>
+      </section>
 
       {/* Navigation & Submit CTA */}
       <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
@@ -222,7 +222,7 @@ export const StepPayment: React.FC<StepPaymentProps> = ({
           type="button"
           disabled={isSubmitting}
           onClick={onBack}
-          className="px-5 py-2.5 border border-stone-300 hover:bg-stone-50 text-stone-700 text-xs sm:text-sm font-semibold rounded-sm transition-colors flex items-center space-x-1.5"
+          className="aa-secondary-action px-5 py-3 border border-stone-300 hover:bg-stone-50 text-stone-700 text-sm font-semibold rounded-full transition-colors flex items-center space-x-1.5"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back</span>

@@ -4,7 +4,7 @@ test('excursion search clears an impossible query when filters are reset', async
   await page.goto('/excursions');
   await expect(page.getByRole('heading', { name: 'Explore Our Excursions' })).toBeVisible();
 
-  const search = page.getByPlaceholder(/Orange Bay, Quad, Diving, Yacht/i);
+  const search = page.getByPlaceholder(/Orange Bay, quad biking, diving/i);
   await expect(search).toBeVisible();
   await search.fill('playwright-no-such-experience-xyz');
   await expect(page.getByRole('heading', { name: 'No excursions match your selected filters' })).toBeVisible();
