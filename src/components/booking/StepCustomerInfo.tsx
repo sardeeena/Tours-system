@@ -151,7 +151,7 @@ export const StepCustomerInfo: React.FC<StepCustomerInfoProps> = ({
       )}
 
       {/* Header */}
-      <div className="bg-white border border-[#E8E3DA] rounded-sm p-5 space-y-4">
+      <section className="aa-booking-section rounded-2xl border border-stone-200 bg-white p-4 sm:p-6 space-y-5">
         <div>
           <h2 className="font-display text-base sm:text-lg font-bold text-[#0E1B2A] flex items-center">
             <User className="w-4 h-4 mr-2 text-[#0A6C74]" />
@@ -387,7 +387,7 @@ export const StepCustomerInfo: React.FC<StepCustomerInfoProps> = ({
         <button
           type="button"
           onClick={onBack}
-          className="px-5 py-2.5 border border-stone-300 hover:bg-stone-50 text-stone-700 text-xs sm:text-sm font-semibold rounded-sm transition-colors flex items-center space-x-1.5"
+          className="aa-secondary-action px-5 py-3 border border-stone-300 hover:bg-stone-50 text-stone-700 text-sm font-semibold rounded-full transition-colors flex items-center space-x-1.5"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back</span>
@@ -396,7 +396,7 @@ export const StepCustomerInfo: React.FC<StepCustomerInfoProps> = ({
         <button
           type="button"
           onClick={handleSubmitAttempt}
-          className="px-7 py-3 bg-[#0A6C74] hover:bg-[#08565C] text-white text-xs sm:text-sm font-semibold rounded-sm transition-colors shadow-xs flex items-center space-x-2"
+          className="aa-primary-action px-7 py-3 bg-[#0A6C74] hover:bg-[#08565C] text-white text-sm font-semibold rounded-full transition-colors shadow-xs flex items-center space-x-2"
         >
           <span>Review Booking</span>
           <ArrowRight className="w-4 h-4" />
