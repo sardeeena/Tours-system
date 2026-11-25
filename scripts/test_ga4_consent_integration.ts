@@ -36,6 +36,7 @@ assert.match(html, /var measurementId = 'G-XGYXLWF4FG'/, 'The verified GA4 web s
 assert.match(html, /choices\.analytics && !gaLoaded/, 'Direct GA4 only loads after analytics consent');
 assert.match(html, /send_page_view: false/, 'Automatic page views are disabled to prevent duplicates');
 assert.match(html, /aat-ga4-script/, 'Direct GA4 loader has a duplicate-load guard');
+assert.match(html, /document\.getElementById\('aat-gtm-script'\)/, 'The early and React consent loaders cannot inject GTM twice');
 assert.match(cookieConsent, /GA4_MEASUREMENT_ID = 'G-XGYXLWF4FG'/, 'Consent changes load the same GA4 property');
 assert.match(cookieConsent, /choices\.analytics && !document\.getElementById\('aat-ga4-script'\)/, 'GA4 loads when consent is granted after initial render');
 assert.match(service, /input\.event_name === 'booking_submitted'/, 'The submitted-booking event carries the booking value');
