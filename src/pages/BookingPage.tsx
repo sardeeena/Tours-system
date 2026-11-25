@@ -572,6 +572,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
                 {currentStep === 6 && (
                   <StepPayment
                     pricing={pricing}
+                    locale={customerLocale}
                     couponCode={couponCode}
                     onCouponCodeChange={setCouponCode}
                     currency={currency}
