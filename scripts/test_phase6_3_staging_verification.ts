@@ -337,7 +337,7 @@ async function runPhase63VerificationSuite() {
   console.log('\n--- Test Group 4: Reservation Validation & Capacity Integrity ---');
 
   const ref = generateBookingReference();
-  assert(/^AA[A-Z0-9]{7}$/.test(ref) && ref.length === 9, `Generated reference is exactly nine characters: ${ref}`);
+  assert(/^AA-\d{6}$/.test(ref) && ref.length === 9, `Generated reference uses AA- plus six digits (9 characters): ${ref}`);
 
   const validBookingPayload: Booking = {
     bookingId: 'test-booking-id-1',
