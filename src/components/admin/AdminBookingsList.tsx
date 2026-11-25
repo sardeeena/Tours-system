@@ -304,9 +304,12 @@ export const AdminBookingsList: React.FC = () => {
     showToast(`Exported ${filtered.length} booking records to CSV.`, 'success');
   };
 
+  const normalizedSearch = search.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
   const filtered = bookings.filter((b) => {
+    const normalizedReference = b.bookingReference.toUpperCase().replace(/[^A-Z0-9]/g, '');
     const matchSearch =
       b.bookingReference.toLowerCase().includes(search.toLowerCase()) ||
+      (normalizedSearch.length > 0 && normalizedReference.includes(normalizedSearch)) ||
       b.customer.firstName.toLowerCase().includes(search.toLowerCase()) ||
       b.customer.lastName.toLowerCase().includes(search.toLowerCase()) ||
       b.customer.email.toLowerCase().includes(search.toLowerCase()) ||
@@ -400,7 +403,7 @@ export const AdminBookingsList: React.FC = () => {
             <table className="w-full text-left text-xs">
               <thead className="bg-stone-900/80 text-stone-400 border-b border-stone-800">
                 <tr>
-                  <th className="py-3 px-4 font-semibold">Reference</th>
+                  <th className="py-3 px-4 font-semibold">Customer Reference</th>
                   <th className="py-3 px-4 font-semibold">Guest Contact</th>
                   <th className="py-3 px-4 font-semibold">Excursion</th>
                   <th className="py-3 px-4 font-semibold">Trip Date</th>
@@ -413,8 +416,9 @@ export const AdminBookingsList: React.FC = () => {
               <tbody className="divide-y divide-stone-800/60 text-stone-300">
                 {paginatedBookings.map((b) => (
                   <tr key={b.bookingReference} className="hover:bg-stone-900/40 transition-colors">
-                    <td className="py-3 px-4 font-mono font-bold text-white">
-                      {b.bookingReference}
+                    <td className="py-3 px-4 font-mono font-bold text-white whitespace-nowrap">
+                      <span>{b.bookingReference}</span>
+                      <span className="block text-[9px] font-sans font-medium tracking-wide text-stone-500">Customer-facing booking code</span>
                     </td>
                     <td className="py-3 px-4">
                       <span className="font-semibold text-stone-200 block truncate max-w-[160px]">
