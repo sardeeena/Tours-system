@@ -23,7 +23,9 @@ export const TourBookingPanel: React.FC<TourBookingPanelProps> = ({
   currency,
   onBook,
 }) => {
-  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+  const today = new Date();
+  const tomorrowDate = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1, 12);
+  const tomorrow = `${tomorrowDate.getFullYear()}-${String(tomorrowDate.getMonth() + 1).padStart(2, '0')}-${String(tomorrowDate.getDate()).padStart(2, '0')}`;
   const [date, setDate] = useState(tomorrow);
   const [adults, setAdults] = useState(2);
   const [children, setChildren] = useState(0);
@@ -85,26 +87,21 @@ export const TourBookingPanel: React.FC<TourBookingPanelProps> = ({
       {/* Booking Form */}
       <form onSubmit={handleSubmit} className="mt-4 space-y-4 text-xs">
         
-        {/* Date Selector */}
-        <div>
-          <label className="block font-bold text-stone-900 mb-1.5 flex items-center">
-            <Calendar className="w-3.5 h-3.5 mr-1.5 text-[#0A6C74]" />
-            Select Date
+        {/* Date selector with quick-pick day tiles */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-2"><div><span className="aa-step-kicker">Choose your day</span><label htmlFor="tour-panel-date" className="mt-1 block font-bold text-stone-900">When would you like to go?</label></div><Calendar className="h-5 w-5 text-[#0A6C74]" /></div>
+          <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
+            {Array.from({ length: 5 }, (_, index) => { const [year, month, day] = date.split('-').map(Number); const tile = new Date(year, month - 1, day + index, 12); const value = `${tile.getFullYear()}-${String(tile.getMonth() + 1).padStart(2, '0')}-${String(tile.getDate()).padStart(2, '0')}`; const selected = value === date; return <button key={value} type="button" aria-pressed={selected} onClick={() => setDate(value)} className={`aa-date-tile ${selected ? 'is-selected' : ''}`}><span className="text-[9px] sm:text-[10px] font-semibold uppercase">{tile.toLocaleDateString(undefined, { weekday: 'short' })}</span><span className="font-display text-lg sm:text-xl font-bold leading-none">{tile.getDate()}</span><span className="text-[9px] sm:text-[10px]">{tile.toLocaleDateString(undefined, { month: 'short' })}</span></button>; })}
+          </div>
+          <label htmlFor="tour-panel-date" className="block text-[11px] font-semibold text-[#0A6C74]">Need a different date?
+            <input id="tour-panel-date" type="date" required min={(() => { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`; })()} value={date} onChange={(e) => setDate(e.target.value)} className="mt-1 w-full rounded-xl border border-stone-200 bg-stone-50 px-3 py-2.5 text-sm text-stone-800" />
           </label>
-          <input
-            type="date"
-            required
-            min={new Date().toISOString().split('T')[0]}
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="w-full px-3 py-2 border border-stone-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-[#0A6C74] bg-stone-50/50"
-          />
         </div>
 
         {/* Guests Steppers */}
-        <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+        <div className="grid grid-cols-2 gap-3">
           {/* Adults */}
-          <div className="p-3 bg-stone-50 border border-stone-200 rounded-xl">
+          <div className="aa-guest-card">
             <div className="flex justify-between items-center mb-1.5">
               <span className="font-bold text-stone-900">Adults</span>
               <span className="text-[10px] text-stone-600">Age 12+</span>
@@ -130,7 +127,7 @@ export const TourBookingPanel: React.FC<TourBookingPanelProps> = ({
           </div>
 
           {/* Children */}
-          <div className="p-2.5 bg-stone-50 border border-stone-200 rounded">
+          <div className="aa-guest-card">
             <div className="flex justify-between items-center mb-1.5">
               <span className="font-bold text-stone-900">Children</span>
               <span className="text-[10px] text-stone-600">Age 2-11</span>
@@ -259,7 +256,7 @@ export const TourBookingPanel: React.FC<TourBookingPanelProps> = ({
         {/* Large CTA button */}
         <button
           type="submit"
-          className="w-full min-h-12 py-3 bg-[#0A6C74] hover:bg-[#08565C] text-white text-sm font-semibold rounded-sm transition-all shadow flex items-center justify-center space-x-2"
+          className="aa-primary-action w-full min-h-12 py-3 bg-[#0A6C74] hover:bg-[#08565C] text-white text-sm font-semibold rounded-full transition-all shadow flex items-center justify-center space-x-2"
         >
           <span>Book This Excursion</span>
           <ArrowRight className="w-4 h-4" />
