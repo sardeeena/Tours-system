@@ -282,132 +282,30 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
         </div>
       </section>
 
-      {/* Guest Steppers */}
-      <div className="bg-white border border-[#E8E3DA] rounded-sm p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <span className="font-bold text-stone-900 text-sm flex items-center">
-            <Users className="w-4 h-4 mr-2 text-[#0A6C74]" />
-            2. How many people?
-          </span>
-          <span className="text-[11px] text-stone-500">
-            Ages on date of tour
-          </span>
+      {/* Guest selection */}
+      <section className="aa-booking-section rounded-2xl border border-stone-200 bg-white p-4 sm:p-6 space-y-5" aria-labelledby="booking-guests-heading">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <div><span className="aa-step-kicker">Step 4 · Who's coming?</span><h3 id="booking-guests-heading" className="mt-1 font-display text-lg font-bold text-[#0E1B2A]">Your group</h3></div>
+          <span className="text-xs text-stone-500">Ages on the day of the tour</span>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-          
-          {/* Adults */}
-          <div className="aa-guest-card">
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <span className="font-bold text-stone-900 block text-xs">Adults</span>
-                <span className="text-[11px] text-stone-500">Age 12+</span>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {([
+            { key: 'adults', label: 'Adults', age: '12 years and over', count: guests.adults, rate: formatCurrencyAmount(adultRate, currency), change: handleAdultsChange, min: 1 },
+            { key: 'children', label: 'Children', age: '2–11 years', count: guests.children, rate: formatCurrencyAmount(childRate, currency), change: handleChildrenChange, min: 0 },
+            { key: 'infants', label: 'Infants', age: 'Under 2 years', count: guests.infants, rate: 'Free', change: handleInfantsChange, min: 0 },
+          ] as const).map((guest) => (
+            <div key={guest.key} className="aa-guest-card">
+              <div className="flex items-start justify-between gap-2"><div><span className="block font-bold text-stone-900">{guest.label}</span><span className="mt-1 block text-[11px] text-stone-500">{guest.age}</span></div><span className="rounded-full bg-[#F0F7F6] px-2.5 py-1 text-[11px] font-semibold text-[#0A6C74]">{guest.rate}</span></div>
+              <div className="mt-5 flex items-center justify-between">
+                <button type="button" disabled={guest.count <= guest.min} onClick={() => guest.change(-1)} aria-label={`Remove one ${guest.label.toLowerCase()}`} className="aa-stepper-button"><Minus className="h-4 w-4" /></button>
+                <span className="font-display text-2xl font-bold tabular-nums text-[#0E1B2A]" aria-live="polite">{guest.count}</span>
+                <button type="button" onClick={() => guest.change(1)} aria-label={`Add one ${guest.label.toLowerCase()}`} className="aa-stepper-button"><Plus className="h-4 w-4" /></button>
               </div>
-              <span className="font-semibold text-xs text-[#0A6C74]">
-                {formatCurrencyAmount(adultRate, currency)}
-              </span>
             </div>
-            <div className="flex items-center justify-between pt-2">
-              <button
-                type="button"
-                disabled={guests.adults <= 1}
-                onClick={() => handleAdultsChange(-1)}
-                className="aa-stepper-button w-8 h-8 rounded bg-white border border-stone-300 flex items-center justify-center text-stone-700 hover:bg-stone-100 disabled:opacity-30 disabled:hover:bg-white transition-colors"
-                aria-label="Decrease adults"
-              >
-                <Minus className="w-3.5 h-3.5" />
-              </button>
-              <span className="font-display font-bold text-stone-900 text-base">
-                {guests.adults}
-              </span>
-              <button
-                type="button"
-                onClick={() => handleAdultsChange(1)}
-                className="w-8 h-8 rounded bg-white border border-stone-300 flex items-center justify-center text-stone-700 hover:bg-stone-100 transition-colors"
-                aria-label="Increase adults"
-              >
-                <Plus className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Children */}
-          <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-sm">
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <span className="font-bold text-stone-900 block text-xs">Children</span>
-                <span className="text-[11px] text-stone-500">Age 2–11</span>
-              </div>
-              <span className="font-semibold text-xs text-[#0A6C74]">
-                {formatCurrencyAmount(
-                  childRate,
-                  currency
-                )}
-              </span>
-            </div>
-            <div className="flex items-center justify-between pt-1">
-              <button
-                type="button"
-                disabled={guests.children <= 0}
-                onClick={() => handleChildrenChange(-1)}
-                className="w-8 h-8 rounded bg-white border border-stone-300 flex items-center justify-center text-stone-700 hover:bg-stone-100 disabled:opacity-30 disabled:hover:bg-white transition-colors"
-                aria-label="Decrease children"
-              >
-                <Minus className="w-3.5 h-3.5" />
-              </button>
-              <span className="font-display font-bold text-stone-900 text-base">
-                {guests.children}
-              </span>
-              <button
-                type="button"
-                onClick={() => handleChildrenChange(1)}
-                className="w-8 h-8 rounded bg-white border border-stone-300 flex items-center justify-center text-stone-700 hover:bg-stone-100 transition-colors"
-                aria-label="Increase children"
-              >
-                <Plus className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-
-          {/* Infants */}
-          <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-sm">
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <span className="font-bold text-stone-900 block text-xs">Infants</span>
-                <span className="text-[11px] text-stone-500">Under 2 yrs</span>
-              </div>
-              <span className="font-bold text-xs text-emerald-700">Free</span>
-            </div>
-            <div className="flex items-center justify-between pt-1">
-              <button
-                type="button"
-                disabled={guests.infants <= 0}
-                onClick={() => handleInfantsChange(-1)}
-                className="w-8 h-8 rounded bg-white border border-stone-300 flex items-center justify-center text-stone-700 hover:bg-stone-100 disabled:opacity-30 disabled:hover:bg-white transition-colors"
-                aria-label="Decrease infants"
-              >
-                <Minus className="w-3.5 h-3.5" />
-              </button>
-              <span className="font-display font-bold text-stone-900 text-base">
-                {guests.infants}
-              </span>
-              <button
-                type="button"
-                onClick={() => handleInfantsChange(1)}
-                className="w-8 h-8 rounded bg-white border border-stone-300 flex items-center justify-center text-stone-700 hover:bg-stone-100 transition-colors"
-                aria-label="Increase infants"
-              >
-                <Plus className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-
+          ))}
         </div>
-
-        <p className="text-[11px] text-stone-500">
-          * Minimum 1 adult required.
-        </p>
-      </div>
+        <p className="text-xs text-stone-500">At least one adult is required for every booking.</p>
+      </section>
 
       {/* CTA Button */}
       <div className="flex justify-end pt-2">
