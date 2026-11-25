@@ -25,7 +25,7 @@ export const LocalizedContentPage: React.FC<{
   pathname: string;
   onNavigate: (path: string) => void;
   fallbackPage?: StaticPageContent | null;
-> = ({ locale, pathname, onNavigate, fallbackPage }) => {
+}> = ({ locale, pathname, onNavigate, fallbackPage }) => {
   const route = useMemo(() => {
     const parts = pathname.split('/').filter(Boolean);
     if (parts.length === 0) return { entityType: 'static_page', slug: 'home' };
