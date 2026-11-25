@@ -18,7 +18,8 @@ CREATE INDEX IF NOT EXISTS idx_staff_notifications_active_created_at_id
   WHERE archived_at IS NULL;
 -- Preserve old false alerts as history but remove them from the unread queue.
 UPDATE public.staff_notifications
-SET archived_at = COALESCE(archived_at, now()),
+SET dedup_key = 'archived:' || dedup_key,
+    archived_at = COALESCE(archived_at, now()),
     is_read = TRUE,
     read_at = COALESCE(read_at, now())
 WHERE category = 'departure_unassigned'
