@@ -81,6 +81,7 @@ assert.match(categorySeoResolver, /category\?\.seoTitle\?\.trim\(\)/, 'Category 
 assert.match(categorySeoResolver, /category\?\.seoDescription\?\.trim\(\)/, 'Category SEO description prefers the reviewed CMS description');
 assert.match(categorySeoResolver, /category\?\.seoKeywords/, 'Category SEO keywords are used when supplied');
 
+assert.match(robots, /^User-agent: OpenSEO-Audit\nCrawl-delay: 10\n/m, 'OpenSEO audit crawler uses a conservative ten-second request delay');
 assert.match(robots, /^User-agent: \*$/m, 'robots.txt contains a valid wildcard user-agent');
 assert.match(robots, /^Sitemap: https:\/\/awesomeadventure\.tours\/sitemap\.xml$/m, 'robots.txt advertises the canonical sitemap');
 
