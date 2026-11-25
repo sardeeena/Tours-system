@@ -23,6 +23,7 @@ const translatedPrivateKeys = Object.keys(privateDraft.content || {});
 const missingPrivate = expectedPrivateKeys.filter((key) => !privateDraft.content?.[key]);
 const extraPrivate = translatedPrivateKeys.filter((key) => !(key in PRIVATE_UI_SOURCE_CATALOG));
 console.log('PRIVATE_UI_MISSING_SOURCE_TEXT', JSON.stringify(missingPrivate.map((key) => ({ key, source: PRIVATE_UI_SOURCE_CATALOG[key] })), null, 2));
+console.log('PRIVATE_UI_EXTRA_TRANSLATED_KEYS', JSON.stringify(extraPrivate.map((key) => ({ key, translated: privateDraft.content[key] })), null, 2));
 assert.deepEqual(missingPrivate, [], 'Every extracted private customer UI message has a French translation');
 assert.deepEqual(extraPrivate, [], 'The private French catalogue contains no unknown source keys');
 assert.equal(translatedPrivateKeys.length, expectedPrivateKeys.length);
