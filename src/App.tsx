@@ -1478,7 +1478,7 @@ function MainApp() {
     // Public content routes and private customer workflows are rendered only
     // when the complete reviewed UI catalogue and required content are available.
     if (currentLocale !== 'en' && !/^\/(?:booking(?:\/|$)|my-booking(?:\/|$)|login(?:\/|$)|register(?:\/|$)|account(?:\/|$)|profile(?:\/|$)|reset-password(?:\/|$)|admin(?:\/|$)|support(?:\/|$)|exclusive$)/i.test(currentPath)) {
-      return <Suspense fallback={<PublicPageLoadingFallback />}><LocalizedContentPage locale={currentLocale} pathname={currentPath} onNavigate={(path) => navigate(path)} /></Suspense>;
+      return <Suspense fallback={<PublicPageLoadingFallback />}><LocalizedContentPage locale={currentLocale} pathname={currentPath} onNavigate={(path) => navigate(path)} fallbackPage={staticPage} /></Suspense>;
     }
     if (currentLocale !== 'en' && !supportedLanguages.some((item) => item.code === currentLocale) && /^\/(?:booking|my-booking|login|register|account|profile|reset-password)(?:\/|$)/i.test(currentPath)) {
       return <main className="mx-auto max-w-xl px-5 py-24 text-center"><h1 className="text-2xl font-bold">This interface language is not ready yet</h1><p className="mt-3">This language is not yet fully translated for booking and account workflows.</p><button className="mt-6 rounded bg-teal-800 px-5 py-3 text-white" onClick={() => navigate('/')}>Return to the English site</button></main>;
