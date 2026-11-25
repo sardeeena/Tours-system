@@ -3825,7 +3825,7 @@ app.get('/api/admin/translations', rateLimit(30, 60_000), async (req: Authentica
   const entityType = typeof req.query.entity_type === 'string' ? req.query.entity_type : '';
   if (locale && !TRANSLATION_LOCALES.has(locale)) return res.status(400).json({ success: false, error: 'Unsupported locale.' });
   if (req.query.summary === 'true') {
-    const rolloutLocales = ['fr', 'nl', 'pl'] as const;
+    const rolloutLocales = Object.keys(BULK_TRANSLATION_LOCALES);
     const states = ['draft', 'review', 'published', 'outdated'] as const;
     try {
       const entries = await Promise.all(rolloutLocales.flatMap((targetLocale) => states.map(async (state) => {
