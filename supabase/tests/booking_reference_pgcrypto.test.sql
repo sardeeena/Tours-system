@@ -6,15 +6,15 @@ SELECT plan(8);
 
 SELECT ok(
   position('private.generate_booking_reference(p_booking_date)' IN pg_get_functiondef(to_regprocedure('private.create_booking_atomic(text,date,integer,integer,integer,text,text,text,text,text,text,text,text,jsonb,text,text,text,text)'))) > 0
-  AND position('extensions.gen_random_bytes(7)' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0
+  AND position('extensions.gen_random_bytes(3)' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0
   AND position('AA' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0,
-  'atomic booking function delegates to the cryptographically random nine-character reference generator'
+  'atomic booking function delegates to the cryptographically random nine-character AA-###### reference generator'
 );
 
 SELECT ok(
-  position('private.encode_booking_reference_suffix' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0
-  AND position('78364164095' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0,
-  'reference generator encodes seven base-36 characters after the AA prefix'
+  position('lpad(v_number::text, 6, ''0'')' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0
+  AND position('900000' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0,
+  'reference generator creates six decimal digits after the AA- prefix'
 );
 
 SELECT ok(
@@ -26,7 +26,7 @@ SELECT ok(
 SELECT ok(
   position('extensions.gen_random_bytes(7)' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0
   AND position('private.encode_booking_reference_suffix' IN pg_get_functiondef(to_regprocedure('private.generate_booking_reference(date)'))) > 0,
-  'reference generator derives a compact suffix from cryptographic random bytes'
+  'reference generator derives the six-digit code from cryptographic random bytes'
 );
 
 SELECT ok(
