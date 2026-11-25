@@ -23,6 +23,8 @@ assert.match(service, /if \(!consent\?\.analytics\) return/, 'No GA4 events are 
 assert.match(service, /const allowedKeys = new Set\(\[/, 'Google Analytics event parameters use an explicit allowlist');
 assert.match(service, /window\.gtag\?\.\('event', input\.event_name/, 'Booking events are forwarded with their accurate event names');
 assert.doesNotMatch(service, /gtag\?\.\('event', 'purchase'/, 'Pending reservations are not mislabeled as completed purchases');
+assert.match(bookingPage, /event_name: 'booking_submitted'/, 'A successful reservation is tracked as one booking submission');
+assert.doesNotMatch(bookingPage, /event_name: 'booking_confirmed'/, 'A payment-pending reservation is not mislabeled as confirmed');
 assert.match(bookingPage, /booking_reference: newBooking\.bookingReference/, 'The authoritative booking reference is included');
 assert.match(bookingPage, /booking_value: pricing\.totalEur/, 'Booking value is included as a custom parameter');
 assert.match(bookingPage, /currency: currency\.code/, 'The selected currency is included');
@@ -36,5 +38,6 @@ assert.match(html, /send_page_view: false/, 'Automatic page views are disabled t
 assert.match(html, /aat-ga4-script/, 'Direct GA4 loader has a duplicate-load guard');
 assert.match(cookieConsent, /GA4_MEASUREMENT_ID = 'G-XGYXLWF4FG'/, 'Consent changes load the same GA4 property');
 assert.match(cookieConsent, /choices\.analytics && !document\.getElementById\('aat-ga4-script'\)/, 'GA4 loads when consent is granted after initial render');
+assert.match(service, /input\.event_name === 'booking_submitted'/, 'The submitted-booking event carries the booking value');
 assert.match(service, /gaEventData\.value = safeEventData\.booking_value/, 'Booking conversion value uses the GA4 value parameter');
 console.log('Consent-gated GTM, SPA page views, non-PII events and booking conversion checks passed.');
