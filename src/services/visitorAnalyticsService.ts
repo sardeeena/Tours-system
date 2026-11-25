@@ -1,5 +1,11 @@
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 
+declare global {
+  interface Window {
+    gtag?: (command: string, eventName: string, params?: Record<string, string | number | boolean>) => void;
+  }
+}
+
 export type VisitorEventName =
   | 'page_view' | 'page_exit' | 'navigation' | 'tour_view' | 'search'
   | 'booking_started' | 'booking_step_completed' | 'booking_submitted'
