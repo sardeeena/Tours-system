@@ -406,20 +406,22 @@ export const BookingPage: React.FC<BookingPageProps> = ({
       };
 
       await bookingRepository.createBooking(newBooking);
-      void recordVisitorEvent({ event_name: 'booking_submitted', page_path: '/booking', event_data: { tour_slug: currentTour?.slug || 'unknown', booking_step: currentStep } });
-      clearBookingDraft();
-      // The database transaction has already enqueued booking.created in the durable
-      // booking notification queue. The server worker sends the email asynchronously.
+      // One accurate conversion event per saved reservation. The reservation is
+      // submitted successfully, while payment may remain pending until pickup.
       void recordVisitorEvent({
-        event_name: 'booking_confirmed',
+        event_name: 'booking_submitted',
         page_path: '/booking',
         event_data: {
           tour_slug: currentTour?.slug || 'unknown',
+          booking_step: currentStep,
           booking_reference: newBooking.bookingReference,
           booking_value: pricing.totalEur * (currency.rateToEur || 1),
           currency: currency.code,
         },
       });
+      clearBookingDraft();
+      // The database transaction has already enqueued booking.created in the durable
+      // booking notification queue. The server worker sends the email asynchronously.
       showToast('Reservation submitted successfully!', 'success');
       onBookingSuccess(newBooking);
     } catch (err: any) {
