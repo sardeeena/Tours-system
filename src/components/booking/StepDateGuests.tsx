@@ -205,7 +205,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
           <div className="w-full px-3.5 py-2.5 rounded border border-stone-200 text-sm bg-stone-50 text-stone-800">{availableLanguages[0]}</div>
         )}
         <p className="text-[11px] text-stone-500">Choose the language for your tour guide. Your selection will appear on your booking voucher.</p>
-      </div>
+      </section>
 
       {/* Date selection — compact, bookable calendar strip */}
       <section className="aa-booking-section rounded-2xl border border-stone-200 bg-white p-4 sm:p-6 space-y-5" aria-labelledby="booking-date-heading">
