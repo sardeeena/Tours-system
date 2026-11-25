@@ -67,13 +67,14 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
   const [calendarWeek, setCalendarWeek] = React.useState(0);
   const calendarStart = addBookingDays(parseBookingDate(earliestDate), calendarWeek * 7);
   const dateTiles = Array.from({ length: 7 }, (_, index) => addBookingDays(calendarStart, index));
-  const selectedDateValue = date ? parseBookingDate(date) : null;
-  const selectedDateWeek = selectedDateValue
-    ? Math.max(0, Math.floor((selectedDateValue.getTime() - parseBookingDate(earliestDate).getTime()) / (7 * 86400000)))
-    : 0;
-
   React.useEffect(() => {
-    if (selectedDateValue && selectedDateWeek !== calendarWeek) setCalendarWeek(selectedDateWeek);
+    if (!date) return;
+    const [year, month, day] = date.split('-').map(Number);
+    const [startYear, startMonth, startDay] = earliestDate.split('-').map(Number);
+    const selectedUtcDay = Date.UTC(year, month - 1, day);
+    const firstUtcDay = Date.UTC(startYear, startMonth - 1, startDay);
+    const nextWeek = Math.max(0, Math.floor((selectedUtcDay - firstUtcDay) / (7 * 86400000)));
+    setCalendarWeek((current) => current === nextWeek ? current : nextWeek);
   }, [date, earliestDate]);
 
   const [departureSlots, setDepartureSlots] = React.useState<DepartureSlot[]>([]);
