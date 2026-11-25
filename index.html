@@ -48,6 +48,40 @@
         wait_for_update: 500
       });
     </script>
+    <!-- Google Tag Manager loads only after the visitor grants analytics or marketing consent. -->
+    <script>
+      (function () {
+        var containerId = 'GTM-5SSVKB24';
+        var loaded = false;
+        function applyVisitorConsent() {
+          var choices;
+          try {
+            choices = JSON.parse(localStorage.getItem('aat_cookie_consent_v1') || 'null');
+          } catch (_) {
+            return;
+          }
+          if (!choices || choices.version !== '2' ||
+              typeof choices.analytics !== 'boolean' || typeof choices.marketing !== 'boolean') return;
+
+          window.gtag('consent', 'update', {
+            analytics_storage: choices.analytics ? 'granted' : 'denied',
+            ad_storage: choices.marketing ? 'granted' : 'denied',
+            ad_user_data: choices.marketing ? 'granted' : 'denied',
+            ad_personalization: choices.marketing ? 'granted' : 'denied'
+          });
+
+          if (loaded || (!choices.analytics && !choices.marketing)) return;
+          loaded = true;
+          window.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
+          var script = document.createElement('script');
+          script.async = true;
+          script.src = 'https://www.googletagmanager.com/gtm.js?id=' + encodeURIComponent(containerId);
+          document.head.appendChild(script);
+        }
+        window.addEventListener('awesome:visitor-consent-saved', applyVisitorConsent);
+        applyVisitorConsent();
+      })();
+    </script>
 </head>
   <body class="bg-[#FAF8F5] text-[#111A24] antialiased selection:bg-[#0A6C74] selection:text-white">
     <script>
