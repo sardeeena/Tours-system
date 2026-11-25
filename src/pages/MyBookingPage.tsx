@@ -85,7 +85,7 @@ export const MyBookingPage: React.FC<MyBookingPageProps> = ({
     const cleanContact = sanitizeString(emailOrPhone);
 
     if (!cleanRef) {
-      setErrorMessage('Please enter your booking reference code (e.g. AA0000001).');
+      setErrorMessage('Please enter your booking reference code (e.g. AA-123456).');
       setIsLoading(false);
       return;
     }
@@ -212,7 +212,7 @@ export const MyBookingPage: React.FC<MyBookingPageProps> = ({
                   required
                   value={reference}
                   onChange={(e) => setReference(e.target.value.toUpperCase())}
-                  placeholder="e.g. AA0000001"
+                  placeholder="e.g. AA-123456"
                   className="w-full px-3.5 py-2.5 rounded border border-stone-300 text-sm uppercase font-mono tracking-wider focus:outline-none focus:ring-2 focus:ring-[#0A6C74] bg-stone-50/50"
                 />
                 <span className="text-[11px] text-stone-500 mt-1 block">

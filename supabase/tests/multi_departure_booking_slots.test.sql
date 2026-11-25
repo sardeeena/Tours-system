@@ -1,6 +1,6 @@
 BEGIN;
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(34);
+SELECT plan(36);
 
 SELECT has_function(
   'public','get_tour_departure_slots',ARRAY['text','date'],
@@ -79,6 +79,12 @@ FROM created
 WHERE context.tour_id = created.tour_id AND context.test_date = created.date;
 
 SELECT is(
+  (SELECT start_time FROM public.departures WHERE id = (SELECT first_departure_id FROM multi_departure_context)),
+  '09:00',
+  'the selected departure fixture persists its exact start time'
+);
+
+SELECT is(
   (SELECT count(*)::INTEGER
    FROM public.get_tour_departure_slots(
      'pgtap-multi-departure-private',
@@ -153,6 +159,12 @@ SELECT is(
   (SELECT (retry_result->>'bookingId')::UUID FROM multi_departure_context),
   (SELECT (booking_result->>'bookingId')::UUID FROM multi_departure_context),
   'an idempotent retry returns the original booking ID'
+);
+
+SELECT is(
+  (SELECT retry_result->>'departureTime' FROM multi_departure_context),
+  '09:00',
+  'an idempotent retry also returns the original selected departure time'
 );
 
 -- The same idempotency key cannot be replayed against another departure.
