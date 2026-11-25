@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { StaticContentPage } from './StaticContentPage';
+import type { StaticPageContent } from '../services/siteSettingsService';
 import { ArrowLeft, ArrowRight, Globe, Loader2 } from 'lucide-react';
 
 type TranslationPayload = {
@@ -22,7 +24,8 @@ export const LocalizedContentPage: React.FC<{
   locale: string;
   pathname: string;
   onNavigate: (path: string) => void;
-}> = ({ locale, pathname, onNavigate }) => {
+  fallbackPage?: StaticPageContent | null;
+> = ({ locale, pathname, onNavigate, fallbackPage }) => {
   const route = useMemo(() => {
     const parts = pathname.split('/').filter(Boolean);
     if (parts.length === 0) return { entityType: 'static_page', slug: 'home' };
@@ -86,9 +89,30 @@ export const LocalizedContentPage: React.FC<{
   const sourceSlug = clean(result?.source?.slug || result?.source?.id);
 
   if (loading) return <main className="min-h-[60vh] grid place-items-center px-5"><Loader2 className="h-8 w-8 animate-spin text-teal-700" aria-label="Loading translation" /></main>;
-  if (unavailable || !translation) return (
-    <main className="mx-auto max-w-2xl px-5 py-24 text-center"><Globe className="mx-auto mb-5 h-10 w-10 text-stone-400" /><h1 className="font-display text-3xl font-bold text-stone-900 dark:text-white">404</h1></main>
-  );
+  if (unavailable || !translation) {
+    const isLegalFallback = route?.entityType === 'static_page'
+      && ['terms', 'privacy', 'cancellation-policy', 'cookie-policy'].includes(route.slug)
+      && fallbackPage
+      && ['terms', 'privacy', 'cancellation-policy', 'cookie-policy'].includes(fallbackPage.slug);
+
+    if (isLegalFallback) {
+      return (
+        <div>
+          <aside role="status" className="mx-auto max-w-4xl px-4 pt-6">
+            <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
+              The {locale.toUpperCase()} translation of this legal page has not yet been reviewed and published. The official English version is shown below so you can read the current terms before making a reservation.
+              {' '}<a href={`/${fallbackPage.slug}`} className="font-semibold underline">Open the English legal page</a>.
+            </p>
+          </aside>
+          <StaticContentPage page={fallbackPage} />
+        </div>
+      );
+    }
+
+    return (
+      <main className="mx-auto max-w-2xl px-5 py-24 text-center"><Globe className="mx-auto mb-5 h-10 w-10 text-stone-400" /><h1 className="font-display text-3xl font-bold text-stone-900 dark:text-white">404</h1></main>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#FAF8F5] px-5 py-12 text-[#17212B] dark:bg-[#0A1118] dark:text-slate-100" dir={locale === 'ar' ? 'rtl' : 'ltr'}>
