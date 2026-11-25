@@ -416,7 +416,7 @@ export const BookingPage: React.FC<BookingPageProps> = ({
         event_data: {
           tour_slug: currentTour?.slug || 'unknown',
           booking_reference: newBooking.bookingReference,
-          value: pricing.totalEur * (currency.rateToEur || 1),
+          booking_value: pricing.totalEur * (currency.rateToEur || 1),
           currency: currency.code,
         },
       });
