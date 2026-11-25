@@ -175,7 +175,7 @@ export const StepPickup: React.FC<StepPickupProps> = ({
         </div>
         </>
         )}
-      </div>
+      </section>
 
       {/* Navigation Buttons */}
       <div className="flex items-center justify-between pt-2">
