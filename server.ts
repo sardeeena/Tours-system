@@ -6394,7 +6394,7 @@ async function startServer() {
     app.get('*', async (req: Request, res: Response) => {
       // Keep the Sharm safari and its existing departure IDs, but replace the
       // accidental copy-suffixed public URL with a descriptive permanent URL.
-      const legacySharmSafariMatch = req.path.match(/^\\/(?:([a-z]{2})\\/)?excursions\\/ultimate-sinai-desert-safari-quad-camel-bbq-adventure-copy-757\\/?$/i);
+      const legacySharmSafariMatch = req.path.match(/^\/(?:([a-z]{2})\/)?excursions\/ultimate-sinai-desert-safari-quad-camel-bbq-adventure-copy-757\/?$/i);
       if (legacySharmSafariMatch) {
         const localePrefix = legacySharmSafariMatch[1] ? `/${legacySharmSafariMatch[1].toLowerCase()}` : '';
         const queryIndex = req.originalUrl.indexOf('?');
