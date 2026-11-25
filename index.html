@@ -89,6 +89,7 @@
           loaded = true;
           window.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
           var script = document.createElement('script');
+          script.id = 'aat-gtm-script';
           script.async = true;
           script.src = 'https://www.googletagmanager.com/gtm.js?id=' + encodeURIComponent(containerId);
           document.head.appendChild(script);
