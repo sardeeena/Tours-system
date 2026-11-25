@@ -113,4 +113,9 @@ assert.ok(!blogSeoRoute.includes('seoService.apply'), 'App does not overwrite ar
 assert.ok(blogPage.includes('article.seo_title') && blogPage.includes('article.seo_description'), 'Blog articles apply their own stored SEO title and description');
 
 
+assert.match(server, /sharm-super-safari-atv-camel-stargazing-bbq-dinner/);
+assert.match(server, /res\\.redirect\\(308/);
+assert.match(bookingPayment, /href="\\/terms"/);
+assert.match(bookingPayment, /href="\\/cancellation-policy"/);
+
 console.log('Public SEO, blog catalogue and consent-aware analytics integrity checks passed.');
