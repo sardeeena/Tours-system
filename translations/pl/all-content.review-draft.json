@@ -806,7 +806,7 @@
           },
           {
             "question": "Jakie są przybliżone godziny odbioru z hotelu i odpłynięcia łodzi?",
-            "answer": "Odbiór rozpoczyna się około 8:00, w zależności od lokalizacji hotelu, i może nastąpić nieco wcześniej lub później. Łódź odpływa około 9:00. Powrót do hotelu planowany jest około 17:00.",
+            "answer": "Odbiór rozpoczyna się około 8:00 AM, w zależności od lokalizacji hotelu, i może nastąpić nieco wcześniej lub później. Łódź odpływa około 9:00 AM. Powrót do hotelu planowany jest około 5:00 PM.",
             "section": "faq"
           },
           {
@@ -841,7 +841,7 @@
           }
         ],
         "pickupInfo": "Dostępne opcje odbioru, zatwierdzone miejsca i ewentualne dopłaty są wyświetlane podczas rezerwacji.",
-        "cancellationPolicy": "Przed dokonaniem rezerwacji skontaktuj się z naszym zespołem, aby potwierdzić warunki anulowania i zwrotu kosztów tej wycieczki.",
+        "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed wyjazdem. Anulowanie na 12 godzin przed wyjazdem uprawnia do zwrotu 50% kosztów. Anulowanie na 6 godzin przed wyjazdem nie podlega zwrotowi, ale termin można zmienić za dodatkową opłatą.",
         "ageRestrictions": "Odpowiednie dla wszystkich grup wiekowych. Dzieci poniżej 2 lat uczestniczą bezpłatnie.",
         "labels": {
           "highlights": "Najważniejsze atrakcje",
