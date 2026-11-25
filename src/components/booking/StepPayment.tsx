@@ -214,7 +214,7 @@ export const StepPayment: React.FC<StepPaymentProps> = ({
           </label>
         </div>
 
-      </div>
+      </section>
 
       {/* Navigation & Submit CTA */}
       <div className="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
