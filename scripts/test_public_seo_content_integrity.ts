@@ -124,6 +124,6 @@ assert.match(slugMigration, /Sharm: Super Safari ATV, Camel Ride, Stargazing & B
 assert.match(slugMigration, /DROP INDEX IF EXISTS public\.idx_tour_images_primary/);
 assert.match(slugMigration, /seo_metadata/);
 assert.match(slugMigrationTest, /uq_tour_images_one_primary_per_tour/);
-assert.match(slugMigrationTest, /v_departures = 0/);
+assert.match(slugMigrationTest, /SELECT plan\\(4\\)/);
 
 console.log('Public SEO, blog catalogue and consent-aware analytics integrity checks passed.');
