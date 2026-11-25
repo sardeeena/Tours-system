@@ -117,9 +117,9 @@ assert.ok(blogPage.includes('article.seo_title') && blogPage.includes('article.s
 
 
 assert.match(server, /sharm-super-safari-atv-camel-stargazing-bbq-dinner/);
-assert.match(server, /res\\.redirect\\(308/);
-assert.match(bookingPayment, /href="\\/terms"/);
-assert.match(bookingPayment, /href="\\/cancellation-policy"/);
+assert.ok(server.includes('res.redirect(308'), 'The old Sharm safari URL has a permanent redirect');
+assert.ok(bookingPayment.includes('href="/terms"'), 'The booking step links to the full Terms page');
+assert.ok(bookingPayment.includes('href="/cancellation-policy"'), 'The booking step links to the cancellation policy');
 
 assert.match(slugMigration, /Sharm: Super Safari ATV, Camel Ride, Stargazing & BBQ Dinner/);
 assert.match(slugMigration, /DROP INDEX IF EXISTS public\.idx_tour_images_primary/);
