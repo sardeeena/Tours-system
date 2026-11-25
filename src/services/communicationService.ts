@@ -1237,6 +1237,7 @@ export async function listStaffNotifications(): Promise<StaffNotification[]> {
   const { data, error } = await supabase
     .from('staff_notifications')
     .select('id,category,dedup_key,title,message,severity,entity_type,entity_id,link_tab,is_read,read_at,created_at')
+    .is('archived_at', null)
     .order('created_at', { ascending: false })
     .order('id', { ascending: false })
     .limit(1000);
