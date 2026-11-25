@@ -1232,11 +1232,13 @@ export async function listStaffNotifications(): Promise<StaffNotification[]> {
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }
 
-  await checkAndGenerateStaffNotifications();
+  // The distributed worker and explicit Scan Events action own scanning.
+  // Loading the inbox must remain a read-only operation.
   const { data, error } = await supabase
     .from('staff_notifications')
     .select('id,category,dedup_key,title,message,severity,entity_type,entity_id,link_tab,is_read,read_at,created_at')
     .order('created_at', { ascending: false })
+    .order('id', { ascending: false })
     .limit(1000);
   if (error) throw new Error(error.message || 'Could not load the staff notification inbox.');
   return (data || []).map(mapStaffNotification);

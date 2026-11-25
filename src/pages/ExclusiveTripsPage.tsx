@@ -98,6 +98,8 @@ export const ExclusiveTripsPage: React.FC<Props> = () => {
           <p className="uppercase tracking-[.22em] text-xs text-teal-200 font-semibold">A trip just for you</p>
           <h1 className="font-display text-4xl sm:text-5xl font-bold mt-3">Private boat trips</h1>
           <p className="mt-4 max-w-2xl text-white/75 text-base sm:text-lg">Have a boat or yacht to yourselves. The price is for the whole trip, not each person.</p>
+          <p className="mt-3 max-w-3xl text-sm sm:text-base text-white/70">Choose a published private trip to see its available dates, departure times and guest limits. Each listing shows the total price for the whole trip, so you can see the cost before you send a reservation request.</p>
+          <p className="mt-3 max-w-3xl text-sm sm:text-base text-white/70">Once you choose a date and group size, add your contact and pickup details. You can also include a special request. If no suitable date is listed, or you would like help planning a private outing, contact our team and we can discuss the options available.</p>
         </div>
       </section>
 
