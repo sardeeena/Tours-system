@@ -34,14 +34,16 @@ export const VisitorAnalyticsTracker: React.FC<Props> = ({ path, userId }) => {
     const now = Date.now();
     const safePath = path.split(/[?#]/, 1)[0] || '/';
     if (previous.current && previous.current.path !== safePath) {
-      // GA4 receives SPA page views only after analytics consent has enabled this effect.
-      window.gtag?.('event', 'page_view', {
-        page_path: safePath,
-        page_title: document.title,
-        page_location: window.location.origin + safePath,
-      });
       void recordVisitorEvent({ event_name: 'navigation', page_path: safePath, event_data: { interaction: 'internal_navigation' } });
     }
+
+    // Send one page_view for the initial route and each SPA route change.
+    // GA4 is configured with send_page_view:false, so this is the sole page-view source.
+    window.gtag?.('event', 'page_view', {
+      page_path: safePath,
+      page_title: document.title,
+      page_location: window.location.origin + safePath,
+    });
     previous.current = { path: safePath, startedAt: now };
     void recordVisitorEvent({
       event_name: 'page_view',
