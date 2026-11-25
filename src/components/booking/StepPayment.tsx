@@ -18,6 +18,7 @@ import { BOOKING_LEGAL_TERMS } from '../../data/bookingData';
 
 interface StepPaymentProps {
   pricing: BookingPricing;
+  locale: string;
   couponCode: string;
   onCouponCodeChange: (code: string) => void;
   currency: CurrencyConfig;
@@ -32,6 +33,7 @@ interface StepPaymentProps {
 
 export const StepPayment: React.FC<StepPaymentProps> = ({
   pricing,
+  locale,
   couponCode,
   onCouponCodeChange,
   currency,
@@ -44,6 +46,7 @@ export const StepPayment: React.FC<StepPaymentProps> = ({
   onBack,
 }) => {
   const [showTermsModal, setShowTermsModal] = useState(false);
+  const termsPath = locale && locale !== 'en' ? `/${locale}/terms` : '/terms';
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
@@ -189,7 +192,7 @@ export const StepPayment: React.FC<StepPaymentProps> = ({
             <span className="text-xs text-stone-700 leading-relaxed">
               I agree to the{' '}
               <a
-                href="/terms"
+                href={termsPath}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
