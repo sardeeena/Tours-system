@@ -188,7 +188,7 @@ export const StepExtras: React.FC<StepExtrasProps> = ({
           </div>
         )}
 
-      </div>
+      </section>
 
       {/* Navigation Buttons */}
       <div className="flex items-center justify-between pt-2">
