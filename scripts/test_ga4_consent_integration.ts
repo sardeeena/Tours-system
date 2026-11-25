@@ -24,6 +24,7 @@ assert.match(service, /const allowedKeys = new Set\(\[/, 'Google Analytics event
 assert.match(service, /window\.gtag\?\.\('event', input\.event_name/, 'Booking events are forwarded with their accurate event names');
 assert.doesNotMatch(service, /gtag\?\.\('event', 'purchase'/, 'Pending reservations are not mislabeled as completed purchases');
 assert.match(bookingPage, /event_name: 'booking_submitted'/, 'A successful reservation is tracked as one booking submission');
+assert.match(service, /input\.event_name === 'booking_submitted'[\s\S]*window\.gtag\?\.\('event', 'qualify_lead'/, 'A saved reservation also triggers the connected GA4 qualify_lead key event');
 assert.doesNotMatch(bookingPage, /event_name: 'booking_confirmed'/, 'A payment-pending reservation is not mislabeled as confirmed');
 assert.match(bookingPage, /booking_reference: newBooking\.bookingReference/, 'The authoritative booking reference is included');
 assert.match(bookingPage, /booking_value: pricing\.totalEur/, 'Booking value is included as a custom parameter');
