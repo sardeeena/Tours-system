@@ -1,6 +1,6 @@
 # OpenSEO's site auditor is a low-frequency technical crawler. Keep its requests spaced out.
 User-agent: OpenSEO-Audit
-Crawl-delay: 2
+Crawl-delay: 5
 Allow: /
 Disallow: /api/
 
