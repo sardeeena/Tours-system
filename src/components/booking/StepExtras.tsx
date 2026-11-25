@@ -51,13 +51,13 @@ export const StepExtras: React.FC<StepExtrasProps> = ({
     <div className="space-y-6 animate-in fade-in duration-200">
       
       {/* Header */}
-      <div className="bg-white border border-[#E8E3DA] rounded-sm p-5 space-y-4">
+      <section className="aa-booking-section rounded-2xl border border-stone-200 bg-white p-4 sm:p-6 space-y-5">
         <div>
-          <h2 className="font-display text-base sm:text-lg font-bold text-[#0E1B2A] flex items-center">
+          <h2 className="font-display text-lg sm:text-xl font-bold text-[#0E1B2A] flex items-center">
             <Sparkles className="w-4 h-4 mr-2 text-[#0A6C74]" />
             Optional Extras & Add-ons
           </h2>
-          <p className="text-xs text-stone-600 mt-1">
+          <p className="text-sm text-stone-500 mt-2">
             Enhance your excursion with optional upgrades. You can skip this step or modify selections later.
           </p>
         </div>
@@ -79,7 +79,7 @@ export const StepExtras: React.FC<StepExtrasProps> = ({
           </div>
         ) : (
           /* Extras Grid */
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 pt-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
             {extrasList.map((extra) => {
               const isSelected = selectedExtraIds.includes(extra.id);
               const qty = extraQuantities[extra.id] || extra.minQuantity || 1;
@@ -89,7 +89,7 @@ export const StepExtras: React.FC<StepExtrasProps> = ({
               return (
                 <div
                   key={extra.id}
-                  className={`aa-selectable-card p-4 rounded-xl border transition-all flex flex-col justify-between ${
+                  className={`aa-extra-card aa-selectable-card p-4 sm:p-5 rounded-2xl border transition-all flex flex-col justify-between ${
                     isSelected
                       ? 'border-[#0A6C74] bg-[#E8F3F4]/50 ring-1 ring-[#0A6C74]'
                       : 'border-stone-200 hover:border-stone-300 hover:bg-stone-50 bg-white'
@@ -103,7 +103,7 @@ export const StepExtras: React.FC<StepExtrasProps> = ({
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="space-y-0.5">
-                        <span className="font-bold text-stone-900 text-xs sm:text-sm block">
+                        <span className="font-bold text-stone-900 text-sm sm:text-base block">
                           {extra.name}
                         </span>
                         <span className="text-[10px] uppercase font-bold text-[#0A6C74] bg-[#E8F3F4] px-1.5 py-0.5 rounded inline-block">
@@ -121,12 +121,12 @@ export const StepExtras: React.FC<StepExtrasProps> = ({
                       </div>
                     </div>
 
-                    <p className="text-[11px] text-stone-600 mt-2 leading-relaxed">
+                    <p className="text-xs text-stone-600 mt-3 leading-relaxed">
                       {extra.description}
                     </p>
                   </button>
 
-                  <div className="pt-3 mt-3 border-t border-stone-200/60 flex items-center justify-between gap-2 text-xs flex-wrap">
+                  <div className="pt-4 mt-4 border-t border-stone-200/60 flex items-center justify-between gap-2 text-xs flex-wrap">
                     <div>
                       <span className="font-bold text-[#0A6C74] text-xs sm:text-sm">
                         +{formatCurrencyAmount(extra.priceEur, currency)}
@@ -195,7 +195,7 @@ export const StepExtras: React.FC<StepExtrasProps> = ({
         <button
           type="button"
           onClick={onBack}
-          className="px-5 py-2.5 border border-stone-300 hover:bg-stone-50 text-stone-700 text-xs sm:text-sm font-semibold rounded-sm transition-colors flex items-center space-x-1.5"
+          className="aa-secondary-action px-5 py-3 border border-stone-300 hover:bg-stone-50 text-stone-700 text-sm font-semibold rounded-full transition-colors flex items-center space-x-1.5"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back</span>
@@ -204,7 +204,7 @@ export const StepExtras: React.FC<StepExtrasProps> = ({
         <button
           type="button"
           onClick={onNext}
-          className="px-7 py-3 bg-[#0A6C74] hover:bg-[#08565C] text-white text-xs sm:text-sm font-semibold rounded-sm transition-colors shadow-xs flex items-center space-x-2"
+          className="aa-primary-action px-7 py-3 bg-[#0A6C74] hover:bg-[#08565C] text-white text-sm font-semibold rounded-full transition-colors shadow-xs flex items-center space-x-2"
         >
           <span>Continue</span>
           <ArrowRight className="w-4 h-4" />
