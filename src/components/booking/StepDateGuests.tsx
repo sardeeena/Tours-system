@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Calendar, Users, MapPin, Clock, AlertCircle, CheckCircle2, Plus, Minus, ArrowRight } from 'lucide-react';
+import { Calendar, CalendarDays, ChevronLeft, ChevronRight, Users, MapPin, Clock, AlertCircle, CheckCircle2, Plus, Minus, ArrowRight } from 'lucide-react';
 import { Tour, CurrencyConfig } from '../../types';
 import { GuestCounts, DepartureSlot } from '../../types/booking';
 import { getEarliestSelectableDate, getTourDepartureSlotsFromServer } from '../../services/availabilityService';
@@ -19,6 +19,25 @@ interface StepDateGuestsProps {
   currency: CurrencyConfig;
   onNext: () => void;
 }
+
+
+const parseBookingDate = (value: string) => {
+  const [year, month, day] = value.split('-').map(Number);
+  return new Date(year, month - 1, day, 12);
+};
+
+const formatBookingDate = (value: Date) => {
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, '0');
+  const day = String(value.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const addBookingDays = (value: Date, days: number) => {
+  const next = new Date(value);
+  next.setDate(next.getDate() + days);
+  return next;
+};
 
 export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
   tour,
@@ -44,6 +63,18 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
       onDateChange(earliestDate);
     }
   }, [date, earliestDate, onDateChange]);
+
+  const [calendarWeek, setCalendarWeek] = React.useState(0);
+  const calendarStart = addBookingDays(parseBookingDate(earliestDate), calendarWeek * 7);
+  const dateTiles = Array.from({ length: 7 }, (_, index) => addBookingDays(calendarStart, index));
+  const selectedDateValue = date ? parseBookingDate(date) : null;
+  const selectedDateWeek = selectedDateValue
+    ? Math.max(0, Math.floor((selectedDateValue.getTime() - parseBookingDate(earliestDate).getTime()) / (7 * 86400000)))
+    : 0;
+
+  React.useEffect(() => {
+    if (selectedDateValue && selectedDateWeek !== calendarWeek) setCalendarWeek(selectedDateWeek);
+  }, [date, earliestDate]);
 
   const [departureSlots, setDepartureSlots] = React.useState<DepartureSlot[]>([]);
   const [availabilityLoading, setAvailabilityLoading] = React.useState(true);
@@ -175,105 +206,81 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
         <p className="text-[11px] text-stone-500">Choose the language for your tour guide. Your selection will appear on your booking voucher.</p>
       </div>
 
-      {/* Date Selection Box */}
-      <div className="bg-white border border-[#E8E3DA] rounded-sm p-5 space-y-4">
-        <div className="flex items-center justify-between">
-          <label htmlFor="booking-date" className="font-bold text-stone-900 text-sm flex items-center">
-            <Calendar className="w-4 h-4 mr-2 text-[#0A6C74]" />
-            1. Choose your date
-          </label>
-          <span className="text-[11px] text-stone-500">
-            Book at least {minimumNoticeHours} hours in advance
-          </span>
+      {/* Date selection — compact, bookable calendar strip */}
+      <section className="aa-booking-section rounded-2xl border border-stone-200 bg-white p-4 sm:p-6 space-y-5" aria-labelledby="booking-date-heading">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <span className="aa-step-kicker">Step 1 · When are you going?</span>
+            <h3 id="booking-date-heading" className="mt-1 font-display text-lg sm:text-xl font-bold text-[#0E1B2A]">Choose your date</h3>
+            <p className="mt-1 text-xs sm:text-sm text-stone-500">Pick a day to see its available departure times.</p>
+          </div>
+          <span className="rounded-full bg-[#F2F7F6] px-3 py-1.5 text-[11px] font-semibold text-[#0A6C74]">Book {minimumNoticeHours}+ hours ahead</span>
         </div>
 
-        <div className="space-y-2">
-          <input
-            id="booking-date"
-            type="date"
-            required
-            min={earliestDate}
-            value={date}
-            onChange={(e) => onDateChange(e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded border border-stone-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#0A6C74] bg-stone-50/50"
-          />
-
-          {/* Independently bookable departure times */}
-          <div className="pt-2 space-y-2">
-            <span className="font-bold text-stone-900 text-sm block">Departure time</span>
-            {availabilityLoading ? (
-              <div className="p-3 bg-stone-50 border border-stone-200 rounded text-xs text-stone-600">
-                Checking departure times…
-              </div>
-            ) : availabilityError ? (
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-900">
-                We couldn't check departure times. Please try again in a moment.
-              </div>
-            ) : departureSlots.length === 0 ? (
-              <div className="p-3 bg-stone-50 border border-stone-200 rounded text-xs text-stone-700">
-                No departures are scheduled for this date. Please choose another date.
-              </div>
-            ) : (
-              <>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {departureSlots.map((slot) => {
-                    const selected = slot.departureId === selectedDepartureId;
-                    return (
-                      <button
-                        key={slot.departureId}
-                        type="button"
-                        disabled={!slot.isAvailable}
-                        aria-pressed={selected}
-                        onClick={() => onDepartureChange(slot.departureId, slot.startTime)}
-                        className={`aa-departure-option rounded-lg border-2 px-3 py-3 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2 ${
-                          selected
-                            ? 'border-[#0A6C74] bg-[#E8F3F4] text-[#07565C] shadow-sm'
-                            : slot.isAvailable
-                              ? 'border-stone-300 bg-white text-stone-800 hover:border-[#0A6C74] hover:bg-[#F5FAFA]'
-                              : 'border-stone-200 bg-stone-100 text-stone-400 cursor-not-allowed'
-                        }`}
-                      >
-                        <span className="font-semibold text-sm block">{slot.startTime}</span>
-                        <span className="text-[10px] block">
-                          {slot.isAvailable ? (slot.remainingCapacity <= 10 ? 'Limited availability' : 'Available') : 'Sold Out'}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-                {selectedDeparture?.isAvailable && exceedsCapacity ? (
-                  <div className="p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-900 flex items-center space-x-2">
-                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                    <div>
-                      <span className="font-bold block">Party size exceeds available capacity</span>
-                      <span>
-                        This departure cannot accommodate your selected group size. Please reduce the number of guests or choose another departure.
-                      </span>
-                    </div>
-                  </div>
-                ) : selectedDeparture?.isAvailable ? (
-                  <div className="p-3 bg-emerald-50 border border-emerald-200 rounded text-xs text-emerald-950 flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span>
-                        <strong className="font-semibold text-emerald-950">
-                          {selectedDeparture.remainingCapacity <= 10 ? 'Limited availability' : 'Departure available'}
-                        </strong> for selected departure
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="p-3 bg-stone-50 border border-stone-200 rounded text-xs text-stone-700">
-                    {departureSlots.some((slot) => slot.isAvailable)
-                      ? 'Choose a departure time to continue.'
-                      : 'All departure times are sold out for this date. Please choose another date.'}
-                  </div>
-                )}
-              </>
-            )}
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm font-semibold text-stone-800">{calendarStart.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</span>
+          <div className="flex items-center gap-2">
+            <button type="button" aria-label="Previous week" disabled={calendarWeek === 0} onClick={() => setCalendarWeek((week) => Math.max(0, week - 1))} className="aa-calendar-nav" ><ChevronLeft className="h-4 w-4" /></button>
+            <button type="button" aria-label="Next week" onClick={() => setCalendarWeek((week) => week + 1)} className="aa-calendar-nav"><ChevronRight className="h-4 w-4" /></button>
           </div>
         </div>
-      </div>
+
+        <div className="grid grid-cols-4 sm:grid-cols-7 gap-2" role="group" aria-label="Choose a booking date">
+          {dateTiles.map((tile) => {
+            const tileValue = formatBookingDate(tile);
+            const selected = date === tileValue;
+            return (
+              <button key={tileValue} type="button" aria-pressed={selected} onClick={() => onDateChange(tileValue)} className={`aa-date-tile ${selected ? 'is-selected' : ''}`}>
+                <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide">{tile.toLocaleDateString(undefined, { weekday: 'short' })}</span>
+                <span className="font-display text-xl sm:text-2xl font-bold leading-none">{tile.getDate()}</span>
+                <span className="text-[10px]">{tile.toLocaleDateString(undefined, { month: 'short' })}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-xl bg-stone-50 px-3.5 py-3">
+          <div className="flex items-center gap-2 text-xs text-stone-600"><CalendarDays className="h-4 w-4 text-[#0A6C74]" /><span>{date ? parseBookingDate(date).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : 'Select a date'}</span></div>
+          <label htmlFor="booking-date" className="flex items-center gap-2 text-xs font-semibold text-[#0A6C74] cursor-pointer">Choose another date
+            <input id="booking-date" type="date" required min={earliestDate} value={date} onChange={(e) => onDateChange(e.target.value)} className="aa-date-input" />
+          </label>
+        </div>
+
+        <div className="space-y-3 pt-1">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div><span className="aa-step-kicker">Step 2 · Choose a time</span><h4 className="mt-1 font-semibold text-stone-900">Departure time</h4></div>
+            {selectedDeparture?.isAvailable && <span className="text-[11px] text-emerald-700 font-semibold">Time selected</span>}
+          </div>
+          {availabilityLoading ? (
+            <div role="status" className="rounded-xl bg-stone-50 p-4 text-sm text-stone-600">Checking available departures…</div>
+          ) : availabilityError ? (
+            <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">We couldn't check departure times. Please try again in a moment.</div>
+          ) : departureSlots.length === 0 ? (
+            <div className="rounded-xl border border-stone-200 bg-stone-50 p-4 text-sm text-stone-600">No departures are scheduled for this date. Please choose another date.</div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {departureSlots.map((slot) => {
+                  const selected = slot.departureId === selectedDepartureId;
+                  return (
+                    <button key={slot.departureId} type="button" disabled={!slot.isAvailable} aria-pressed={selected} onClick={() => onDepartureChange(slot.departureId, slot.startTime)} className={`aa-departure-card ${selected ? 'is-selected' : ''} ${!slot.isAvailable ? 'is-sold-out' : ''}`}>
+                      <span className="flex items-center justify-between gap-2"><span className="text-lg font-bold">{slot.startTime}</span>{selected && <CheckCircle2 className="h-5 w-5" />}</span>
+                      <span className="mt-2 flex items-center justify-between gap-2 text-[11px]"><span>{slot.isAvailable ? (slot.remainingCapacity <= 10 ? 'Limited places' : 'Available') : 'Sold out'}</span>{slot.isAvailable && <span>{slot.remainingCapacity} places left</span>}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {selectedDeparture?.isAvailable && exceedsCapacity ? (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-3.5 text-sm text-amber-900 flex items-start gap-2"><AlertCircle className="h-4 w-4 mt-0.5 shrink-0" /><span><strong className="block">Not enough places for this group</strong>Reduce the number of guests or choose another departure.</span></div>
+              ) : selectedDeparture?.isAvailable ? (
+                <div className="flex items-center gap-2 rounded-xl bg-emerald-50 px-3.5 py-3 text-xs font-medium text-emerald-800"><CheckCircle2 className="h-4 w-4 shrink-0" />{selectedDeparture.remainingCapacity <= 10 ? 'Limited availability' : 'This departure is available'} for your group</div>
+              ) : (
+                <p className="text-xs text-stone-500">{departureSlots.some((slot) => slot.isAvailable) ? 'Choose a departure time to continue.' : 'All departure times are sold out for this date.'}</p>
+              )}
+            </>
+          )}
+        </div>
+      </section>
 
       {/* Guest Steppers */}
       <div className="bg-white border border-[#E8E3DA] rounded-sm p-5 space-y-4">
@@ -290,8 +297,8 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
           
           {/* Adults */}
-          <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-sm">
-            <div className="flex justify-between items-start mb-2">
+          <div className="aa-guest-card">
+            <div className="flex justify-between items-start mb-3">
               <div>
                 <span className="font-bold text-stone-900 block text-xs">Adults</span>
                 <span className="text-[11px] text-stone-500">Age 12+</span>
@@ -300,7 +307,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
                 {formatCurrencyAmount(adultRate, currency)}
               </span>
             </div>
-            <div className="flex items-center justify-between pt-1">
+            <div className="flex items-center justify-between pt-2">
               <button
                 type="button"
                 disabled={guests.adults <= 1}
@@ -408,7 +415,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
           type="button"
           disabled={!isFormValid}
           onClick={onNext}
-          className="w-full sm:w-auto px-7 py-3 bg-[#0A6C74] hover:bg-[#08565C] disabled:bg-stone-300 disabled:cursor-not-allowed text-white text-xs sm:text-sm font-semibold rounded-sm transition-colors shadow-xs flex items-center justify-center space-x-2"
+          className="aa-primary-action w-full sm:w-auto px-7 py-3 bg-[#0A6C74] hover:bg-[#08565C] disabled:bg-stone-300 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-full transition-colors shadow-xs flex items-center justify-center space-x-2"
         >
           <span>Choose Pickup</span>
           <ArrowRight className="w-4 h-4" />
