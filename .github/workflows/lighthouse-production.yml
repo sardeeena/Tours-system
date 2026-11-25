@@ -136,6 +136,8 @@ jobs:
 
       - name: Print Lighthouse score and Core Web Vitals summary
         if: always()
+        env:
+          EDGE_BLOCKED: ${{ steps.preflight.outputs.blocked == '1' || steps.audit.outputs.blocked == '1' }}
         shell: bash
         run: |
           node <<'NODE'
@@ -143,6 +145,7 @@ jobs:
           const path = require('node:path');
           const dir = 'lighthouse-reports';
           const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter((file) => file.endsWith('.json')).sort() : [];
+          const edgeBlocked = process.env.EDGE_BLOCKED === 'true';
           const preflight = fs.existsSync(path.join(dir, 'http-preflight.tsv'))
             ? fs.readFileSync(path.join(dir, 'http-preflight.tsv'), 'utf8')
             : '';
@@ -156,6 +159,7 @@ jobs:
             console.error('No Lighthouse reports were produced and no edge block was detected.');
             process.exit(1);
           }
+          if (edgeBlocked) console.log('Warning: The production edge blocked at least one browser audit; scores below are partial only.');
           const pct = (value) => value == null ? 'n/a' : String(Math.round(value * 100));
           const ms = (value) => value == null ? 'n/a' : String(Math.round(value));
           console.log('| Page | Device | Performance | Accessibility | Best practices | SEO | LCP ms | CLS | TBT ms | TTFB ms |');
