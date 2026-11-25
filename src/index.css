@@ -1594,3 +1594,7 @@ html.dark :where(a, button, input, select, textarea, summary, [role="button"], [
   .public-site:not(.public-site-admin-route) .aa-date-tile,
   .public-site:not(.public-site-admin-route) .aa-departure-card { transition: none; transform: none; }
 }
+
+.public-site:not(.public-site-admin-route) .aa-tour-summary {
+  box-shadow: 0 8px 24px rgba(15, 23, 42, .045);
+}
