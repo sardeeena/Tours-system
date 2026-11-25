@@ -31,6 +31,7 @@ export function shouldUseLocalBookingCache(
 
 
 const COMPACT_BOOKING_REFERENCE_PATTERN = /^AA-\d{6}$/;
+const LEGACY_COMPACT_BOOKING_REFERENCE_PATTERN = /^AA[A-Z0-9]{7}$/;
 const LEGACY_BOOKING_REFERENCE_PATTERNS = [
   /^AWE-\d{8}-\d{6}$/,
   /^RST-\d{4}-[A-Z0-9]{4,32}$/,
@@ -58,6 +59,7 @@ export function isValidBookingReference(reference: string | null | undefined): b
   if (typeof reference !== 'string') return false;
   const clean = reference.trim().toUpperCase();
   return COMPACT_BOOKING_REFERENCE_PATTERN.test(clean) ||
+    LEGACY_COMPACT_BOOKING_REFERENCE_PATTERN.test(clean) ||
     LEGACY_BOOKING_REFERENCE_PATTERNS.some((pattern) => pattern.test(clean));
 }
 
