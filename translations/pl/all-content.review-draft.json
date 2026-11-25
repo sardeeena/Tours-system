@@ -11,8 +11,8 @@
     "static_page": 10,
     "ui_catalog": 1,
     "public_ui_messages": 81,
-    "private_ui_messages": 1091,
-    "ui_catalog_messages": 1172,
+    "private_ui_messages": 1090,
+    "ui_catalog_messages": 1171,
     "source_records": 112
   },
   "records": [
@@ -5094,7 +5094,6 @@
         "private.text.ecbba0e5": "Le service d’assistance est temporairement indisponible. Veuillez réessayer plus tard.",
         "private.text.ecc43bc2": "Mes réservations et bons",
         "private.text.ecd582c2": "Réservation confirmée et transmise",
-        "private.text.ecffeb3e": "np. AA0000001",
         "private.text.ed9a36fb": "Posez vos questions sur les sorties dauphins, les bancs de sable des îles, les enfants...",
         "private.text.ee888e84": "Nom de l’hôtel / du resort",
         "private.text.eefe12e8": "Assistance WhatsApp",
@@ -5207,7 +5206,7 @@
         "why.subtitle": "Korzystamy z własnych łodzi i pojazdów, z certyfikowanymi kapitanami i przyjaznymi lokalnymi przewodnikami. Płacisz lokalne ceny organizatora, bez marży agencji.",
         "why.title": "Dlaczego warto rezerwować bezpośrednio u nas?"
       },
-      "private_ui_message_count": 1091
+      "private_ui_message_count": 1090
     },
     {
       "entity_type": "tour",
