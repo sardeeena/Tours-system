@@ -84,3 +84,39 @@ assert.match(css, /@media \(prefers-reduced-motion: reduce\)/, 'Global motion st
 assert.match(css, /\.admin-shell/, 'Motion styling covers the admin workspace as well as public pages');
 
 console.log('Site-wide motion, smart scrolling and reduced-motion accessibility checks passed.');
+
+
+// Full booking and tour-discovery redesign: guard against reverting to cosmetic-only controls.
+const dateGuestStep = fs.readFileSync('src/components/booking/StepDateGuests.tsx', 'utf8');
+assert.match(dateGuestStep, /aa-date-tile/, 'Booking dates are presented as selectable date tiles');
+assert.match(dateGuestStep, /Previous week[\s\S]*Next week/, 'Booking date tiles support week navigation');
+assert.match(dateGuestStep, /aa-departure-card/, 'Departure times are distinct selectable cards');
+assert.match(dateGuestStep, /aria-pressed=\{selected\}/, 'Departure selection exposes its selected state');
+assert.match(dateGuestStep, /remainingCapacity/, 'Departure cards retain capacity-aware availability');
+assert.match(dateGuestStep, /aa-guest-card/, 'Adult, child and infant counts use dedicated traveller cards');
+
+const pickupStep = fs.readFileSync('src/components/booking/StepPickup.tsx', 'utf8');
+assert.match(pickupStep, /aa-pickup-option/, 'Approved pickup locations use prominent choice cards');
+assert.match(pickupStep, /pickupAvailable/, 'Pickup eligibility remains enforced');
+
+const extrasStep = fs.readFileSync('src/components/booking/StepExtras.tsx', 'utf8');
+assert.match(extrasStep, /aa-extra-card/, 'Optional extras use dedicated selectable cards');
+assert.match(extrasStep, /onUpdateQuantity/, 'Optional extra quantity controls remain available');
+
+const tourBookingPanel = fs.readFileSync('src/components/tours/TourBookingPanel.tsx', 'utf8');
+assert.match(tourBookingPanel, /aa-date-tile/, 'Tour detail booking panel uses quick-pick date tiles');
+assert.match(tourBookingPanel, /type="date"/, 'Tour detail booking panel retains full date selection');
+
+const tourSearch = fs.readFileSync('src/components/tours/TourSearch.tsx', 'utf8');
+assert.match(tourSearch, /aa-search-panel/, 'Tour discovery uses a prominent search panel');
+assert.match(tourSearch, /aa-search-field/, 'Destination, activity, date and traveller filters have distinct field cards');
+assert.match(tourSearch, /aa-category-pill/, 'Tour categories use dedicated navigation pills');
+
+for (const path of ['src/components/booking/StepCustomerInfo.tsx', 'src/components/booking/StepPayment.tsx']) {
+  const source = fs.readFileSync(path, 'utf8');
+  assert.match(source, /aa-booking-section/, path + ' uses the shared booking-step hierarchy');
+}
+assert.match(css, /\.aa-date-tile\.is-selected/, 'Date tiles have a distinct selected state');
+assert.match(css, /\.aa-departure-card\.is-selected/, 'Departure cards have a distinct selected state');
+assert.match(css, /\.aa-search-field/, 'Search filter fields receive responsive styling');
+console.log('Full booking experience and tour discovery interaction checks passed.');
