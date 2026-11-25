@@ -1,0 +1,128 @@
+name: Production Lighthouse
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/lighthouse-production.yml"
+      - "public/robots.txt"
+      - "server.ts"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-lighthouse
+  cancel-in-progress: false
+
+jobs:
+  lighthouse:
+    name: Lighthouse mobile and desktop
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Wait for the Hostinger deployment from this release
+        shell: bash
+        run: |
+          set -euo pipefail
+          deployed=0
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent --show-error --max-time 15 https://awesomeadventure.tours/robots.txt | grep -q 'Crawl-delay: 10'; then
+              echo "The new production release is live."
+              deployed=1
+              break
+            fi
+            echo "Waiting for Hostinger deployment (attempt ${attempt}/60)..."
+            sleep 15
+          done
+          if [ "${deployed}" -ne 1 ]; then
+            echo "The production deployment marker did not appear within 15 minutes." >&2
+            exit 1
+          fi
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Verify Chrome
+        run: google-chrome --version
+
+      - name: Install pinned Lighthouse
+        run: npm install --global lighthouse@13.6.0
+
+      - name: Run representative production audits
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p lighthouse-reports
+
+          declare -A pages=(
+            [home]="https://awesomeadventure.tours/"
+            [terms]="https://awesomeadventure.tours/terms"
+            [tour]="https://awesomeadventure.tours/excursions/sharm-super-safari-atv-camel-stargazing-bbq-dinner"
+          )
+
+          for page in home terms tour; do
+            url="${pages[${page}]}"
+            for device in mobile desktop; do
+              echo "Running Lighthouse: ${page} (${device})"
+              if [ "${device}" = "desktop" ]; then
+                lighthouse "${url}" \
+                  --preset=desktop \
+                  --only-categories=performance,accessibility,best-practices,seo \
+                  --output=json \
+                  --output-path="lighthouse-reports/${page}-${device}.json" \
+                  --quiet \
+                  --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage"
+              else
+                lighthouse "${url}" \
+                  --only-categories=performance,accessibility,best-practices,seo \
+                  --output=json \
+                  --output-path="lighthouse-reports/${page}-${device}.json" \
+                  --quiet \
+                  --chrome-flags="--headless --no-sandbox --disable-dev-shm-usage"
+              fi
+              sleep 15
+            done
+          done
+
+      - name: Print Lighthouse score and Core Web Vitals summary
+        shell: bash
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const path = require('node:path');
+          const dir = 'lighthouse-reports';
+          const files = fs.readdirSync(dir).filter((file) => file.endsWith('.json')).sort();
+          const pct = (value) => value == null ? 'n/a' : String(Math.round(value * 100));
+          const ms = (value) => value == null ? 'n/a' : String(Math.round(value));
+          console.log('| Page | Device | Performance | Accessibility | Best practices | SEO | LCP ms | CLS | TBT ms | TTFB ms |');
+          console.log('|---|---|---:|---:|---:|---:|---:|---:|---:|---:|');
+          for (const file of files) {
+            const report = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8'));
+            const audits = report.audits || {};
+            const categories = report.categories || {};
+            console.log([
+              file.replace(/-(mobile|desktop)\.json$/, ''),
+              file.includes('-desktop') ? 'desktop' : 'mobile',
+              pct(categories.performance?.score),
+              pct(categories.accessibility?.score),
+              pct(categories['best-practices']?.score),
+              pct(categories.seo?.score),
+              ms(audits['largest-contentful-paint']?.numericValue),
+              audits['cumulative-layout-shift']?.numericValue?.toFixed(3) ?? 'n/a',
+              ms(audits['total-blocking-time']?.numericValue),
+              ms(audits['server-response-time']?.numericValue),
+            ].join(' | ').replace(/^|$/g, '|'));
+          }
+          NODE
+
+      - name: Upload Lighthouse reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: awesome-adventure-lighthouse-reports
+          path: lighthouse-reports/*.json
+          retention-days: 14
