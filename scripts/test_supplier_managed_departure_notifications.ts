@@ -42,6 +42,6 @@ assert.match(exclusivePage, /Plan a private boat trip on Egypt’s Red Sea/);
 assert.match(exclusivePage, /Meals, drinks, hotel transfers, snorkeling equipment/);
 assert.match(exclusivePage, /Dates, routes and sea conditions/);
 const robots = read('../public/robots.txt');
-assert.match(robots, /User-agent: OpenSEO-Audit\\s+Crawl-delay: 2/);
+assert.match(robots, /User-agent: OpenSEO-Audit\s+Crawl-delay: 2/);
 
 console.log('Supplier-managed departure, archived notification, hero preload and exclusive SEO checks passed.');
