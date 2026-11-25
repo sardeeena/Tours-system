@@ -34,6 +34,12 @@ export const VisitorAnalyticsTracker: React.FC<Props> = ({ path, userId }) => {
     const now = Date.now();
     const safePath = path.split(/[?#]/, 1)[0] || '/';
     if (previous.current && previous.current.path !== safePath) {
+      // GA4 receives SPA page views only after analytics consent has enabled this effect.
+      window.gtag?.('event', 'page_view', {
+        page_path: safePath,
+        page_title: document.title,
+        page_location: window.location.origin + safePath,
+      });
       void recordVisitorEvent({ event_name: 'navigation', page_path: safePath, event_data: { interaction: 'internal_navigation' } });
     }
     previous.current = { path: safePath, startedAt: now };
