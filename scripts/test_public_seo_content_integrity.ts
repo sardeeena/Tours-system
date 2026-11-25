@@ -8,7 +8,6 @@ const hero = read('../src/components/home/Hero.tsx');
 const tourService = read('../src/services/tourService.ts');
 const server = read('../server.ts');
 const localizedPage = read('../src/pages/LocalizedContentPage.tsx');
-const app = read('../src/App.tsx');
 const robots = read('../public/robots.txt');
 const blogPage = read('../src/pages/BlogPage.tsx');
 const cookieConsent = read('../src/components/common/CookieConsent.tsx');
