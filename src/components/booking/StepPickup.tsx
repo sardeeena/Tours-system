@@ -39,13 +39,13 @@ export const StepPickup: React.FC<StepPickupProps> = ({
     <div className="space-y-6 animate-in fade-in duration-200">
       
       {/* Step Header */}
-      <div className="bg-white border border-[#E8E3DA] rounded-sm p-5 space-y-4">
+      <section className="aa-booking-section rounded-2xl border border-stone-200 bg-white p-4 sm:p-6 space-y-5">
         <div>
-          <h2 className="font-display text-base sm:text-lg font-bold text-[#0E1B2A] flex items-center">
+          <h2 className="font-display text-lg sm:text-xl font-bold text-[#0E1B2A] flex items-center">
             <MapPin className="w-4 h-4 mr-2 text-[#0A6C74]" />
             Choose Your Pickup Location
           </h2>
-          <p className="text-xs text-stone-600 mt-1">
+          <p className="text-sm text-stone-500 mt-2">
             {pickupAvailable ? 'Choose a pickup location explicitly approved for this excursion.' : 'Pickup is not offered for this excursion.'}
           </p>
         </div>
@@ -68,7 +68,7 @@ export const StepPickup: React.FC<StepPickupProps> = ({
           </div>
         ) : (
         /* Pickup Location Cards */
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-3 pt-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
           {pickupList.map((loc) => {
             const isSelected = selectedPickupId === loc.id;
             return (
@@ -77,7 +77,7 @@ export const StepPickup: React.FC<StepPickupProps> = ({
                 type="button"
                 aria-pressed={isSelected}
                 onClick={() => onSelectPickup(loc)}
-                className={`aa-selectable-card w-full text-left p-4 rounded-xl border cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2 ${
+                className={`aa-choice-card aa-pickup-option w-full text-left p-4 sm:p-5 rounded-2xl border cursor-pointer transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0A6C74] focus-visible:ring-offset-2 ${
                   isSelected
                     ? 'border-[#0A6C74] bg-[#E8F3F4]/50 ring-1 ring-[#0A6C74]'
                     : 'border-stone-200 hover:border-stone-300 hover:bg-stone-50 bg-white'
@@ -86,7 +86,7 @@ export const StepPickup: React.FC<StepPickupProps> = ({
                 <div className="flex items-start justify-between">
                   <div className="space-y-1">
                     <div className="flex items-center space-x-2">
-                      <span className="font-bold text-stone-900 text-xs sm:text-sm">
+                      <span className="font-bold text-stone-900 text-sm sm:text-base">
                         {loc.name}
                       </span>
                       {loc.isPopular && (
@@ -95,7 +95,7 @@ export const StepPickup: React.FC<StepPickupProps> = ({
                         </span>
                       )}
                     </div>
-                    <span className="text-[11px] text-stone-500 block">
+                    <span className="text-xs text-stone-500 block mt-1">
                       {loc.area}
                     </span>
                   </div>
@@ -115,7 +115,7 @@ export const StepPickup: React.FC<StepPickupProps> = ({
                 </div>
 
                 {loc.note && (
-                  <p className="text-[11px] text-stone-600 mt-3 pt-3 border-t border-stone-200/60 leading-relaxed">
+                  <p className="text-xs text-stone-600 mt-4 pt-3 border-t border-stone-200/60 leading-relaxed">
                     {loc.note}
                   </p>
                 )}
@@ -134,7 +134,7 @@ export const StepPickup: React.FC<StepPickupProps> = ({
         {/* Accommodation Name Input */}
         {pickupAvailable && pickupList.length > 0 && !loading && !error && (
         <>
-        <div className="pt-3 border-t border-stone-200 space-y-2">
+        <div className="aa-hotel-field pt-4 border-t border-stone-200 space-y-2">
           <label htmlFor="hotel-input" className="block text-xs font-bold text-stone-900 flex items-center">
             <Building className="w-3.5 h-3.5 mr-1.5 text-[#0A6C74]" />
             Hotel name (Optional - can be provided later)
@@ -182,7 +182,7 @@ export const StepPickup: React.FC<StepPickupProps> = ({
         <button
           type="button"
           onClick={onBack}
-          className="px-5 py-2.5 border border-stone-300 hover:bg-stone-50 text-stone-700 text-xs sm:text-sm font-semibold rounded-sm transition-colors flex items-center space-x-1.5"
+          className="aa-secondary-action px-5 py-3 border border-stone-300 hover:bg-stone-50 text-stone-700 text-sm font-semibold rounded-full transition-colors flex items-center space-x-1.5"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Back</span>
@@ -192,7 +192,7 @@ export const StepPickup: React.FC<StepPickupProps> = ({
           type="button"
           onClick={onNext}
           disabled={!canContinue}
-          className="px-7 py-3 bg-[#0A6C74] hover:bg-[#08565C] disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs sm:text-sm font-semibold rounded-sm transition-colors shadow-xs flex items-center space-x-2"
+          className="aa-primary-action px-7 py-3 bg-[#0A6C74] hover:bg-[#08565C] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold rounded-full transition-colors shadow-xs flex items-center space-x-2"
         >
           <span>Continue</span>
           <ArrowRight className="w-4 h-4" />
