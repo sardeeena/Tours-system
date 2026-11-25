@@ -700,7 +700,6 @@
     "private.text.a6959fcd": "Directement auprès de l’équipe commerciale",
     "private.text.a6f36070": "Erreur 404 • Destination introuvable ",
     "private.text.a7374bb6": "Nous avons enregistré votre réservation. Un billet numérique est en attente d’envoi à",
-    "private.text.a77621e4": "Veuillez saisir votre référence de réservation (par ex. AA-123456).",
     "private.text.a7969deb": "Dans la comparaison",
     "private.text.a79e0058": "Mot de passe oublié ? ",
     "private.text.a812d0f9": "En attente du client",
@@ -1095,5 +1094,5 @@
     "private.text.fff7de5b": "Assistant de voyage",
     "private.text.ffff4c4e": "Suggestions d’excursions"
   },
-  "coverage": 1091
+  "coverage": 1090
 }
