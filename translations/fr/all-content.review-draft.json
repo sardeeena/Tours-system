@@ -2551,7 +2551,7 @@
           }
         ],
         "pickupInfo": "Les options de prise en charge, les lieux approuvés et tout supplément applicable sont indiqués pendant la réservation.",
-        "cancellationPolicy": "Veuillez contacter notre équipe de réservation pour confirmer les conditions d’annulation et de remboursement de cette excursion avant de réserver.",
+        "cancellationPolicy": "Annulation gratuite jusqu’à 24 heures avant le départ. Pour toute annulation effectuée 12 heures avant le départ, un remboursement de 50 % est accordé. Les annulations effectuées 6 heures avant le départ ne sont pas remboursables, mais la date peut être modifiée moyennant des frais supplémentaires.",
         "ageRestrictions": "Convient à tous les âges. Les enfants de moins de 2 ans participent gratuitement.",
         "labels": {
           "highlights": "Points forts",
