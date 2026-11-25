@@ -33,6 +33,10 @@ const formatBookingDate = (value: Date) => {
   return `${year}-${month}-${day}`;
 };
 
+const formatBookingWeekday = (value: Date) => value.toLocaleDateString(undefined, { weekday: 'short' });
+const formatBookingMonth = (value: Date) => value.toLocaleDateString(undefined, { month: 'short' });
+const formatBookingLongDate = (value: Date) => value.toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
 const addBookingDays = (value: Date, days: number) => {
   const next = new Date(value);
   next.setDate(next.getDate() + days);
@@ -232,16 +236,16 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
             const selected = date === tileValue;
             return (
               <button key={tileValue} type="button" aria-pressed={selected} onClick={() => onDateChange(tileValue)} className={`aa-date-tile ${selected ? 'is-selected' : ''}`}>
-                <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide">{tile.toLocaleDateString(undefined, { weekday: 'short' })}</span>
+                <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wide">{formatBookingWeekday(tile)}</span>
                 <span className="font-display text-xl sm:text-2xl font-bold leading-none">{tile.getDate()}</span>
-                <span className="text-[10px]">{tile.toLocaleDateString(undefined, { month: 'short' })}</span>
+                <span className="text-[10px]">{formatBookingMonth(tile)}</span>
               </button>
             );
           })}
         </div>
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 rounded-xl bg-stone-50 px-3.5 py-3">
-          <div className="flex items-center gap-2 text-xs text-stone-600"><CalendarDays className="h-4 w-4 text-[#0A6C74]" /><span>{date ? parseBookingDate(date).toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : 'Select a date'}</span></div>
+          <div className="flex items-center gap-2 text-xs text-stone-600"><CalendarDays className="h-4 w-4 text-[#0A6C74]" /><span>{date ? formatBookingLongDate(parseBookingDate(date)) : 'Select a date'}</span></div>
           <label htmlFor="booking-date" className="flex items-center gap-2 text-xs font-semibold text-[#0A6C74] cursor-pointer">Choose another date
             <input id="booking-date" type="date" required min={earliestDate} value={date} onChange={(e) => onDateChange(e.target.value)} className="aa-date-input" />
           </label>
