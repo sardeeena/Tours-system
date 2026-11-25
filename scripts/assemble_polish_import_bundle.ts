@@ -74,8 +74,22 @@ function mergeRows(sourceRows: any[], translatedRows: any[], fields: string[], l
   if (!Array.isArray(sourceRows) || !Array.isArray(translatedRows) || sourceRows.length !== translatedRows.length) {
     throw new Error(label + ' row count does not match the live source (' + (sourceRows?.length ?? 'not-array') + ' vs ' + (translatedRows?.length ?? 'not-array') + '). Current source rows: ' + JSON.stringify(sourceRows));
   }
+  // Live FAQ rows follow database ordering, while review drafts group rows
+  // by section. Pair translations within each section to keep answers aligned.
+  const orderedTranslations = label.includes('FAQs')
+    ? (() => {
+        const queues = new Map<string, any[]>();
+        for (const row of translatedRows) {
+          const key = String(row?.section || 'faq');
+          const queue = queues.get(key) || [];
+          queue.push(row);
+          queues.set(key, queue);
+        }
+        return sourceRows.map((row) => queues.get(String(row?.section || 'faq'))?.shift());
+      })()
+    : translatedRows;
   return sourceRows.map((sourceRow, index) => {
-    const translatedRow = translatedRows[index];
+    const translatedRow = orderedTranslations[index];
     const result = { ...sourceRow };
     if (typeof translatedRow === 'string') {
       const field = Object.prototype.hasOwnProperty.call(sourceRow, 'item') ? 'item' : fields[0];
