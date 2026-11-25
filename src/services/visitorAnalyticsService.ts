@@ -220,13 +220,18 @@ export async function recordVisitorEvent(input: {
     if (allowedKeys.has(key)) safeEventData[key] = value;
   }
 
-  // The initial page view is sent by the consented GTM Google tag. SPA route
-  // changes are emitted by VisitorAnalyticsTracker to avoid double-counting it.
+  // Page views are emitted once by VisitorAnalyticsTracker for the initial
+  // route and each SPA navigation. A submitted reservation stays booking_confirmed
+  // (not purchase) because payment may still be pending.
   if (input.event_name !== 'page_view') {
+    const gaEventData = { ...safeEventData };
+    if (input.event_name === 'booking_submitted' && typeof safeEventData.booking_value === 'number') {
+      gaEventData.value = safeEventData.booking_value;
+    }
     window.gtag?.('event', input.event_name, {
       page_path: input.page_path.split(/[?#]/, 1)[0],
       ...(input.page_title ? { page_title: input.page_title.slice(0, 160) } : {}),
-      ...safeEventData,
+      ...gaEventData,
     });
   }
 

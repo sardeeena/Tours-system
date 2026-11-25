@@ -47,6 +47,6 @@ assert.match(server, /Check the details before you reserve/);
 assert.match(server, /Routes, weather and sea conditions/);
 assert.match(server, /Contact our Hurghada team/);
 const robots = read('../public/robots.txt');
-assert.match(robots, /User-agent: OpenSEO-Audit\s+Crawl-delay: 2/);
+assert.match(robots, /User-agent: OpenSEO-Audit\s+Crawl-delay: 5/);
 
 console.log('Supplier-managed departure, archived notification, hero preload and exclusive SEO checks passed.');

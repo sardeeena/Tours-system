@@ -52,7 +52,9 @@
     <script>
       (function () {
         var containerId = 'GTM-5SSVKB24';
+        var measurementId = 'G-XGYXLWF4FG';
         var loaded = false;
+        var gaLoaded = false;
         function applyVisitorConsent() {
           var choices;
           try {
@@ -70,10 +72,26 @@
             ad_personalization: choices.marketing ? 'granted' : 'denied'
           });
 
+          // GA4 is loaded directly after analytics consent; it does not depend on
+          // a separately published Google Tag Manager container configuration.
+          if (choices.analytics && !gaLoaded && !document.getElementById('aat-ga4-script')) {
+            gaLoaded = true;
+            window.gtag('js', new Date());
+            window.gtag('config', measurementId, { send_page_view: false });
+            var gaScript = document.createElement('script');
+            gaScript.id = 'aat-ga4-script';
+            gaScript.async = true;
+            gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(measurementId);
+            document.head.appendChild(gaScript);
+          }
+
           if (loaded || (!choices.analytics && !choices.marketing)) return;
           loaded = true;
+          // The React consent component may have inserted GTM for a just-saved choice.
+          if (document.getElementById('aat-gtm-script')) return;
           window.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
           var script = document.createElement('script');
+          script.id = 'aat-gtm-script';
           script.async = true;
           script.src = 'https://www.googletagmanager.com/gtm.js?id=' + encodeURIComponent(containerId);
           document.head.appendChild(script);

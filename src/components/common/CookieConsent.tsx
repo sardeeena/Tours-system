@@ -11,6 +11,7 @@ type ConsentChoices = {
 
 const CONSENT_KEY = 'aat_cookie_consent_v1';
 const GTM_ID = 'GTM-5SSVKB24';
+const GA4_MEASUREMENT_ID = 'G-XGYXLWF4FG';
 const CONSENT_VERSION = '2';
 
 function applyConsent(choices: ConsentChoices): void {
@@ -26,9 +27,18 @@ function applyConsent(choices: ConsentChoices): void {
     security_storage: 'granted',
   });
 
-  // Do not contact Google Tag Manager until the visitor has opted into at
-  // least one optional category. Individual GTM tags must still enforce
-  // their matching analytics or advertising consent requirement.
+  // Load the GA4 stream directly after analytics consent, independently of GTM.
+  if (choices.analytics && !document.getElementById('aat-ga4-script')) {
+    browserWindow.gtag?.('js', new Date());
+    browserWindow.gtag?.('config', GA4_MEASUREMENT_ID, { send_page_view: false });
+    const gaScript = document.createElement('script');
+    gaScript.id = 'aat-ga4-script';
+    gaScript.async = true;
+    gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${GA4_MEASUREMENT_ID}`;
+    document.head.appendChild(gaScript);
+  }
+
+  // Keep GTM available for consented marketing tags.
   if ((choices.analytics || choices.marketing) && !document.getElementById('aat-gtm-script')) {
     browserWindow.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
     const script = document.createElement('script');

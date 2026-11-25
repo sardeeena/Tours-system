@@ -188,16 +188,15 @@ export const StepPayment: React.FC<StepPaymentProps> = ({
             />
             <span className="text-xs text-stone-700 leading-relaxed">
               I agree to the{' '}
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setShowTermsModal(true);
-                }}
+              <a
+                href="/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
                 className="text-[#0A6C74] font-semibold underline hover:text-[#08565C]"
               >
                 Terms & Conditions
-              </button>{' '}
+              </a>{' '}
               and{' '}
               <button
                 type="button"
