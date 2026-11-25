@@ -149,12 +149,12 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
     <div className="space-y-6 animate-in fade-in duration-200">
       
       {/* Selected Tour Header Preview */}
-      <div className="p-4 bg-white border border-[#E8E3DA] rounded-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="aa-tour-summary p-4 sm:p-5 bg-white border border-stone-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
         <div className="flex items-center space-x-3.5">
           <img
             src={tour.primaryImage}
             alt={tour.title}
-            className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-xs border border-stone-200"
+            className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl border border-stone-200"
           />
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-[#0A6C74] block">
@@ -187,7 +187,7 @@ export const StepDateGuests: React.FC<StepDateGuestsProps> = ({
       </div>
 
       {/* Tour Language Selection */}
-      <div className="bg-white border border-[#E8E3DA] rounded-sm p-5 space-y-3">
+      <section className="aa-booking-section rounded-2xl border border-stone-200 bg-white p-4 sm:p-5 space-y-3">
         <label htmlFor="booking-tour-language" className="font-bold text-stone-900 text-sm block">
           Tour language <span className="text-red-500">*</span>
         </label>
