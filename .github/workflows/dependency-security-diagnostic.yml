@@ -29,8 +29,18 @@ jobs:
       - name: Resolve all dependencies including development tools
         run: npm install --include=dev --no-audit --no-fund
 
+      - name: Install Bun with network retries
+        shell: bash
+        run: |
+          curl --fail --silent --show-error --location \
+            --retry 5 --retry-all-errors --retry-delay 3 \
+            https://bun.sh/install | bash
+          echo "BUN_INSTALL=${HOME}/.bun" >> "$GITHUB_ENV"
+          echo "${HOME}/.bun/bin" >> "$GITHUB_PATH"
+          "${HOME}/.bun/bin/bun" --version
+
       - name: Refresh the Bun lockfile without installing dependencies
-        uses: oven-sh/setup-bun@v2
+        run: bun --version
 
       - name: Resolve and save the Bun lockfile
         run: bun install --lockfile-only
