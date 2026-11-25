@@ -46,6 +46,7 @@ assert.match(languageContext, /document\.documentElement\.dir = 'ltr'/, 'All app
 assert.match(migration, /CREATE TABLE IF NOT EXISTS public\.content_translations/, 'Translation content schema exists');
 assert.match(server, /app\.get\('\/api\/admin\/translations'[\s\S]*requireSuperAdminAal2\(req, res\)/, 'Translation listing API requires Super Admin AAL2');
 assert.match(server, /app\.post\('\/api\/admin\/translations'[\s\S]*requireSuperAdminAal2\(req, res\)/, 'Translation writes require Super Admin AAL2');
+assert.match(server, /const rolloutLocales = Object\.keys\(BULK_TRANSLATION_LOCALES\)/, 'Translation workspace counts cover all ten approved non-English locales');
 assert.match(server, /app\.get\('\/api\/admin\/translations\/source'[\s\S]*requireSuperAdminAal2\(req, res\)/, 'Authoritative source checksum endpoint requires Super Admin AAL2');
 assert.match(server, /app\.get\('\/api\/content-translations\/resolve'[\s\S]*translation_state', 'published'[\s\S]*current\.checksum === data\.source_checksum/, 'Public resolver requires published state and a current source checksum');
 assert.match(server, /app\.get\('\/api\/content-translations\/ui'[\s\S]*complete = englishKeys\.every/, 'Public UI catalog is delivered only when every source message is translated');

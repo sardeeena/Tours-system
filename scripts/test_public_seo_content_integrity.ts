@@ -13,7 +13,7 @@ const blogPage = read('../src/pages/BlogPage.tsx');
 const cookieConsent = read('../src/components/common/CookieConsent.tsx');
 const bookingPayment = read('../src/components/booking/StepPayment.tsx');
 const booking = read('../src/pages/BookingPage.tsx');
-const slugMigration = read('../supabase/migrations/20261125210000_fix_sharm_safari_slug_and_redundant_index.sql');
+const slugMigration = read('../supabase/migrations/20261125202009_fix_sharm_safari_slug_and_redundant_index.sql');
 const slugMigrationTest = read('../supabase/tests/seo_slug_and_index_cleanup.test.sql');
 const appConfig = read('../src/config/appConfig.ts');
 
@@ -81,6 +81,7 @@ assert.match(categorySeoResolver, /category\?\.seoTitle\?\.trim\(\)/, 'Category 
 assert.match(categorySeoResolver, /category\?\.seoDescription\?\.trim\(\)/, 'Category SEO description prefers the reviewed CMS description');
 assert.match(categorySeoResolver, /category\?\.seoKeywords/, 'Category SEO keywords are used when supplied');
 
+assert.match(robots, /^User-agent: OpenSEO-Audit\nCrawl-delay: 10\n/m, 'OpenSEO audit crawler uses a conservative ten-second request delay');
 assert.match(robots, /^User-agent: \*$/m, 'robots.txt contains a valid wildcard user-agent');
 assert.match(robots, /^Sitemap: https:\/\/awesomeadventure\.tours\/sitemap\.xml$/m, 'robots.txt advertises the canonical sitemap');
 
