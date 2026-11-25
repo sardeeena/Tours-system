@@ -10,6 +10,9 @@ const server = read('../server.ts');
 const robots = read('../public/robots.txt');
 const blogPage = read('../src/pages/BlogPage.tsx');
 const cookieConsent = read('../src/components/common/CookieConsent.tsx');
+const bookingPayment = read('../src/components/booking/StepPayment.tsx');
+const slugMigration = read('../supabase/migrations/20261125210000_fix_sharm_safari_slug_and_redundant_index.sql');
+const slugMigrationTest = read('../supabase/tests/seo_slug_and_index_cleanup.test.sql');
 const appConfig = read('../src/config/appConfig.ts');
 
 const about = pages.slice(pages.indexOf("id: 'about'"), pages.indexOf("id: 'contact'"));
@@ -117,5 +120,11 @@ assert.match(server, /sharm-super-safari-atv-camel-stargazing-bbq-dinner/);
 assert.match(server, /res\\.redirect\\(308/);
 assert.match(bookingPayment, /href="\\/terms"/);
 assert.match(bookingPayment, /href="\\/cancellation-policy"/);
+
+assert.match(slugMigration, /Sharm: Super Safari ATV, Camel Ride, Stargazing & BBQ Dinner/);
+assert.match(slugMigration, /DROP INDEX IF EXISTS public\.idx_tour_images_primary/);
+assert.match(slugMigration, /seo_metadata/);
+assert.match(slugMigrationTest, /uq_tour_images_one_primary_per_tour/);
+assert.match(slugMigrationTest, /v_departures = 0/);
 
 console.log('Public SEO, blog catalogue and consent-aware analytics integrity checks passed.');
