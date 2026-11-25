@@ -1,5 +1,11 @@
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 
+declare global {
+  interface Window {
+    gtag?: (command: string, eventName: string, params?: Record<string, string | number | boolean>) => void;
+  }
+}
+
 export type VisitorEventName =
   | 'page_view' | 'page_exit' | 'navigation' | 'tour_view' | 'search'
   | 'booking_started' | 'booking_step_completed' | 'booking_submitted'
@@ -202,6 +208,28 @@ export async function recordVisitorEvent(input: {
 }): Promise<void> {
   const consent = readVisitorConsent();
   if (!consent?.analytics) return;
+
+  // Forward only a small, non-PII allowlist to Google Analytics.
+  // Names, email addresses, phone numbers and free-text fields never leave the first-party analytics store.
+  const allowedKeys = new Set([
+    'tour_slug', 'destination', 'category', 'step', 'currency', 'value',
+    'payment_method', 'guest_count', 'booking_reference', 'bookingReference', 'booking_value',
+  ]);
+  const safeEventData: Record<string, string | number | boolean> = {};
+  for (const [key, value] of Object.entries(input.event_data || {})) {
+    if (allowedKeys.has(key)) safeEventData[key] = value;
+  }
+
+  // The initial page view is sent by the consented GTM Google tag. SPA route
+  // changes are emitted by VisitorAnalyticsTracker to avoid double-counting it.
+  if (input.event_name !== 'page_view') {
+    window.gtag?.('event', input.event_name, {
+      page_path: input.page_path.split(/[?#]/, 1)[0],
+      ...(input.page_title ? { page_title: input.page_title.slice(0, 160) } : {}),
+      ...safeEventData,
+    });
+  }
+
   await post('/api/visitor/events', {
     session_id: sessionId(),
     event_name: input.event_name,

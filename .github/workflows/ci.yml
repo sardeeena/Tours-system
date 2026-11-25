@@ -103,6 +103,9 @@ jobs:
       - name: Verify audit and analytics privacy boundaries
         run: npm run test:audit-analytics-boundaries
 
+      - name: Verify consent-gated Google Analytics integration
+        run: npm run test:ga4-consent
+
       - name: Verify persistent CRM inquiry staff assignments
         run: npm run test:crm-inquiry-staff-assignment
 
