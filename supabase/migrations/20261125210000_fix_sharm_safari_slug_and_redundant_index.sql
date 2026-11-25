@@ -1,5 +1,6 @@
 -- Correct the copy-suffixed slug for the distinct Sharm Super Safari product.
--- The tour primary key and all 366 associated departures remain unchanged.
+-- The tour primary key and all associated departure records remain unchanged.
+-- This is a no-op in clean CI databases that do not contain production catalogue rows.
 DO $$
 DECLARE
   v_updated INTEGER := 0;
@@ -12,11 +13,25 @@ BEGIN
     RAISE EXCEPTION 'The replacement Sharm safari slug is already used by another tour';
   END IF;
 
-  IF NOT EXISTS (
+  IF EXISTS (
     SELECT 1 FROM public.tours
-    WHERE slug = 'sharm-super-safari-atv-camel-stargazing-bbq-dinner'
-      AND title = 'Sharm: Super Safari ATV, Camel Ride, Stargazing & BBQ Dinner'
+    WHERE slug = 'ultimate-sinai-desert-safari-quad-camel-bbq-adventure-copy-757'
   ) THEN
+    IF EXISTS (
+      SELECT 1 FROM public.tours
+      WHERE slug = 'sharm-super-safari-atv-camel-stargazing-bbq-dinner'
+    ) THEN
+      RAISE EXCEPTION 'Both old and replacement Sharm safari slugs exist; refusing ambiguous rename';
+    END IF;
+
+    IF (
+      SELECT count(*) FROM public.tours
+      WHERE slug = 'ultimate-sinai-desert-safari-quad-camel-bbq-adventure-copy-757'
+        AND title = 'Sharm: Super Safari ATV, Camel Ride, Stargazing & BBQ Dinner'
+    ) <> 1 THEN
+      RAISE EXCEPTION 'The legacy Sharm safari slug does not identify exactly one expected tour';
+    END IF;
+
     UPDATE public.tours
     SET slug = 'sharm-super-safari-atv-camel-stargazing-bbq-dinner',
         updated_at = now()
