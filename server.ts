@@ -6392,6 +6392,15 @@ async function startServer() {
     }>();
 
     app.get('*', async (req: Request, res: Response) => {
+      // Keep the Sharm safari and its existing departure IDs, but replace the
+      // accidental copy-suffixed public URL with a descriptive permanent URL.
+      const legacySharmSafariMatch = req.path.match(/^\\/(?:([a-z]{2})\\/)?excursions\\/ultimate-sinai-desert-safari-quad-camel-bbq-adventure-copy-757\\/?$/i);
+      if (legacySharmSafariMatch) {
+        const localePrefix = legacySharmSafariMatch[1] ? `/${legacySharmSafariMatch[1].toLowerCase()}` : '';
+        const queryIndex = req.originalUrl.indexOf('?');
+        const queryString = queryIndex >= 0 ? req.originalUrl.slice(queryIndex) : '';
+        return res.redirect(308, `${localePrefix}/excursions/sharm-super-safari-atv-camel-stargazing-bbq-dinner${queryString}`);
+      }
       if (req.path.startsWith('/api/')) {
         return res.status(404).json({ success: false, error: 'API route not found' });
       }
