@@ -14,7 +14,8 @@ assert.ok(denied >= 0 && loader > denied, 'Consent Mode defaults are denied befo
 assert.match(html, /choices\.version !== '2'/, 'Only the current consent version is accepted');
 assert.match(html, /choices\.analytics \? 'granted' : 'denied'/, 'Analytics consent controls analytics storage');
 assert.match(html, /choices\.marketing \? 'granted' : 'denied'/, 'Marketing consent controls advertising storage');
-assert.match(html, /!choices\.analytics && !choices\.marketing/, 'GTM is not loaded when optional consent is denied');
+assert.match(html, /if \(!choices\.marketing \|\| loaded\)/, 'GTM loads only after marketing consent');
+assert.doesNotMatch(html, /!choices\.analytics && !choices\.marketing/, 'Analytics-only consent does not load the marketing container');
 assert.match(html, /awesome:visitor-consent-saved/, 'GTM responds to consent changes');
 assert.match(html, /googletagmanager\.com\/gtm\.js/, 'The configured GTM container is loaded');
 
@@ -24,6 +25,7 @@ assert.match(service, /const allowedKeys = new Set\(\[/, 'Google Analytics event
 assert.match(service, /window\.gtag\?\.\('event', input\.event_name/, 'Booking events are forwarded with their accurate event names');
 assert.doesNotMatch(service, /gtag\?\.\('event', 'purchase'/, 'Pending reservations are not mislabeled as completed purchases');
 assert.match(bookingPage, /event_name: 'booking_submitted'/, 'A successful reservation is tracked as one booking submission');
+assert.match(service, /input\.event_name === 'booking_submitted'[\s\S]*window\.gtag\?\.\('event', 'qualify_lead'/, 'A saved reservation also triggers the connected GA4 qualify_lead key event');
 assert.doesNotMatch(bookingPage, /event_name: 'booking_confirmed'/, 'A payment-pending reservation is not mislabeled as confirmed');
 assert.match(bookingPage, /booking_reference: newBooking\.bookingReference/, 'The authoritative booking reference is included');
 assert.match(bookingPage, /booking_value: pricing\.totalEur/, 'Booking value is included as a custom parameter');
@@ -39,6 +41,7 @@ assert.match(html, /aat-ga4-script/, 'Direct GA4 loader has a duplicate-load gua
 assert.match(html, /document\.getElementById\('aat-gtm-script'\)/, 'The early and React consent loaders cannot inject GTM twice');
 assert.match(cookieConsent, /GA4_MEASUREMENT_ID = 'G-XGYXLWF4FG'/, 'Consent changes load the same GA4 property');
 assert.match(cookieConsent, /choices\.analytics && !document\.getElementById\('aat-ga4-script'\)/, 'GA4 loads when consent is granted after initial render');
+assert.match(cookieConsent, /if \(choices\.marketing && !document\.getElementById\('aat-gtm-script'\)\)/, 'The GTM marketing container loads only after marketing consent');
 assert.match(service, /input\.event_name === 'booking_submitted'/, 'The submitted-booking event carries the booking value');
 assert.match(service, /gaEventData\.value = safeEventData\.booking_value/, 'Booking conversion value uses the GA4 value parameter');
 console.log('Consent-gated GTM, SPA page views, non-PII events and booking conversion checks passed.');

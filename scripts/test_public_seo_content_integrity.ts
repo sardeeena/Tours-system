@@ -109,7 +109,7 @@ assert.ok(!tourRenderer.includes('Promise.all([') && !tourRenderer.includes('rel
 
 assert.match(cookieConsent, /const GTM_ID = 'GTM-5SSVKB24'/, 'Cookie consent loads the newly confirmed Google Tag Manager container');
 assert.doesNotMatch(cookieConsent, /GTM-MZVP38WC/, 'Retired Google Tag Manager container is no longer referenced');
-assert.match(cookieConsent, /choices\.analytics \|\| choices\.marketing/, 'Google Tag Manager remains blocked until optional consent is granted');
+assert.match(cookieConsent, /choices\.marketing && !document\.getElementById\('aat-gtm-script'\)/, 'Google Tag Manager loads only after marketing consent');
 assert.match(cookieConsent, /gtag\?\.\('consent', 'update'/, 'Google Consent Mode is updated when visitors save their preferences');
 assert.match(blogPage, /getPublishedBlogPosts\(60\)/, 'Blog catalogue can display all 50 planned published articles');
 const blogSeoStart = app.indexOf("if (currentPath.startsWith('/blog/'))");

@@ -228,11 +228,19 @@ export async function recordVisitorEvent(input: {
     if (input.event_name === 'booking_submitted' && typeof safeEventData.booking_value === 'number') {
       gaEventData.value = safeEventData.booking_value;
     }
-    window.gtag?.('event', input.event_name, {
+    const gaEventParams = {
       page_path: input.page_path.split(/[?#]/, 1)[0],
       ...(input.page_title ? { page_title: input.page_title.slice(0, 160) } : {}),
       ...gaEventData,
-    });
+    };
+    window.gtag?.('event', input.event_name, gaEventParams);
+
+    // GA4's connected property already marks qualify_lead as a key event.
+    // Keep booking_submitted for the detailed booking funnel and emit the
+    // corresponding lead-conversion event once after a reservation is saved.
+    if (input.event_name === 'booking_submitted') {
+      window.gtag?.('event', 'qualify_lead', gaEventParams);
+    }
   }
 
   await post('/api/visitor/events', {

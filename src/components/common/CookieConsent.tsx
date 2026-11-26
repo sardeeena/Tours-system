@@ -39,7 +39,7 @@ function applyConsent(choices: ConsentChoices): void {
   }
 
   // Keep GTM available for consented marketing tags.
-  if ((choices.analytics || choices.marketing) && !document.getElementById('aat-gtm-script')) {
+  if (choices.marketing && !document.getElementById('aat-gtm-script')) {
     browserWindow.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
     const script = document.createElement('script');
     script.id = 'aat-gtm-script';

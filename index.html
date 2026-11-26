@@ -48,7 +48,7 @@
         wait_for_update: 500
       });
     </script>
-    <!-- Google Tag Manager loads only after the visitor grants analytics or marketing consent. -->
+    <!-- Google Tag Manager loads only after the visitor grants marketing consent. -->
     <script>
       (function () {
         var containerId = 'GTM-5SSVKB24';
@@ -85,7 +85,7 @@
             document.head.appendChild(gaScript);
           }
 
-          if (loaded || (!choices.analytics && !choices.marketing)) return;
+          if (!choices.marketing || loaded) return;
           loaded = true;
           // The React consent component may have inserted GTM for a just-saved choice.
           if (document.getElementById('aat-gtm-script')) return;
