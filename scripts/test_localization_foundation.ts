@@ -140,9 +140,10 @@ assert.match(server, /function translationStructureMatches[\s\S]*protectedTokens
 assert.match(server, /translated\.content\.template_key !== item\.source\.template_key[\s\S]*JSON\.stringify\(translated\.content\.variables/, 'Communication translation cannot alter template keys, channels or variable names');
 assert.match(server, /select\('entity_type,entity_key,translated_slug,translation_state[\s\S]*workKeys\.has\(x\.entity_type\+':'\+x\.entity_key\)/, 'Bulk generation reserves slugs already used by reviewed or published translations');
 const adminTranslations = read('../src/components/admin/AdminTranslationManager.tsx');
-assert.match(adminTranslations, /Generate '\s*\+ locale\.toUpperCase\(\) \+ ' drafts/, 'Super Admin can generate drafts for the selected prepared locale');
+assert.match(adminTranslations, /aria-label="Language to translate"[\s\S]*Generate selected language/, 'Super Admin has a dedicated language dropdown and one-language generation action');
+assert.match(adminTranslations, /generateSelectedLocale\(singleLanguageLocale\)/, 'One-language action passes the selected locale only');
 assert.match(adminTranslations, /const ROLLOUT_LOCALES = EUROPEAN_LOCALE_ROLLOUT\.filter\(\(item\) => item\.code !== 'en'\)/, 'Workspace offers exactly the ten agreed non-English locales');
-assert.match(adminTranslations, /const targetLocale = locale/, 'Draft generation follows the selected locale rather than being pinned to French');
+assert.match(adminTranslations, /const generateSelectedLocale = async \(targetLocale: string = singleLanguageLocale\)/, 'Draft generation follows the explicitly selected locale rather than being pinned to French');
 assert.match(adminTranslations, /JSON\.stringify\(\{ locale: targetLocale, offset, limit: 10 \}\)/, 'Each generation batch carries the selected locale');
 assert.match(adminTranslations, /'communication_template'/, 'Super Admin can review communication template translations');
 assert.match(adminTranslations, /6500/, 'Bulk generator respects the server generation rate limit');
