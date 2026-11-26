@@ -24,6 +24,7 @@ export const AdminTranslationManager: React.FC = () => {
   const [entityType, setEntityType] = useState('tour');
   const [entityKey, setEntityKey] = useState('');
   const [locale, setLocale] = useState('');
+  const [singleLanguageLocale, setSingleLanguageLocale] = useState('de');
   const [localeSummary, setLocaleSummary] = useState<Record<string, LocaleSummary>>({});
   const [title, setTitle] = useState('');
   const [slug, setSlug] = useState('');
@@ -106,10 +107,10 @@ export const AdminTranslationManager: React.FC = () => {
     } finally { setLoading(false); }
   };
 
-  const generateSelectedLocale = async () => {
+  const generateSelectedLocale = async (targetLocale: string = singleLanguageLocale) => {
+    setLocale(targetLocale);
     setGenerating(true);
-    setGenerationProgress('Preparing translation batches…');
-    const targetLocale = locale;
+    setGenerationProgress('Preparing ' + targetLocale.toUpperCase() + ' translation batches…');
     let generatedCount = 0;
     let skippedCount = 0;
     try {
@@ -241,7 +242,8 @@ export const AdminTranslationManager: React.FC = () => {
         </div>
         <div className="flex flex-wrap gap-2">
           <button type="button" onClick={() => setConfirmGenerateAll(true)} disabled={generating || loading || saving} className="rounded bg-indigo-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{generatingAll ? 'Generating all languages…' : 'Generate all 10 languages'}</button>
-          <button type="button" onClick={() => setConfirmGenerate(true)} disabled={generating || loading || saving || !locale} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">{generating ? 'Generating ' + locale.toUpperCase() + ' drafts…' : 'Generate ' + locale.toUpperCase() + ' drafts'}</button>
+          <label className="flex items-center gap-2 text-xs text-stone-300">One language at a time<select aria-label="Language to translate" value={singleLanguageLocale} onChange={event => setSingleLanguageLocale(event.target.value)} disabled={generating || loading || saving} className="min-w-[150px] rounded border border-stone-700 bg-stone-950 px-2 py-2 text-sm text-white">{ROLLOUT_LOCALES.map(item => <option key={item.code} value={item.code}>{item.nativeName} ({item.code.toUpperCase()})</option>)}</select></label>
+          <button type="button" onClick={() => setConfirmGenerate(true)} disabled={generating || loading || saving || !singleLanguageLocale} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-50">Generate selected language</button>
           <button onClick={() => void load()} disabled={loading || generating} className="rounded border border-stone-700 px-3 py-2 text-sm disabled:opacity-50">{loading ? 'Loading…' : 'Refresh records'}</button>
         </div>
       </header>
@@ -252,8 +254,8 @@ export const AdminTranslationManager: React.FC = () => {
       </div>}
       {confirmGenerate && !generating && <div role="dialog" aria-modal="true" aria-labelledby="translation-generate-title" className="rounded-xl border border-teal-700 bg-teal-950/40 p-4 space-y-3">
         <h2 id="translation-generate-title" className="font-semibold text-white">Generate translation drafts?</h2>
-        <p className="text-sm text-stone-300">This translates published tours, destinations, blog posts, public pages, communication templates and the interface catalog into the selected language. It uses Gemini. All ten agreed non-English languages are available here. All results remain drafts; nothing is published automatically.</p>
-        <div className="flex flex-wrap gap-2"><button type="button" onClick={() => setConfirmGenerate(false)} className="rounded border border-stone-600 px-3 py-2 text-sm">Cancel</button><button type="button" onClick={() => { setConfirmGenerate(false); void generateSelectedLocale(); }} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white">Start generating drafts</button></div>
+        <p className="text-sm text-stone-300">This translates published tours, destinations, blog posts, public pages, communication templates and the interface catalog into only the language selected above. Other languages are not started or changed. It uses Gemini. All results remain drafts; nothing is published automatically.</p>
+        <div className="flex flex-wrap gap-2"><button type="button" onClick={() => setConfirmGenerate(false)} className="rounded border border-stone-600 px-3 py-2 text-sm">Cancel</button><button type="button" onClick={() => { setConfirmGenerate(false); void generateSelectedLocale(singleLanguageLocale); }} className="rounded bg-teal-700 px-3 py-2 text-sm font-semibold text-white">Generate {ROLLOUT_LOCALES.find(item => item.code === singleLanguageLocale)?.nativeName || singleLanguageLocale} drafts</button></div>
       </div>}
       <section aria-labelledby="translation-locale-overview" className="space-y-3">
         <div><h2 id="translation-locale-overview" className="font-semibold text-white">Supported translation languages</h2><p className="text-xs text-stone-400">The ten agreed non-English languages are available for draft generation. Counts come from saved database records; prepared files are not counted until safely imported.</p></div>
