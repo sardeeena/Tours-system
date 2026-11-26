@@ -73,7 +73,7 @@ export async function generateContentWithModelFallback<TRequest extends GeminiMo
   request: TRequest,
   options: GeminiFailoverOptions = {},
 ): Promise<TResponse> {
-  const fallbackModels = options.fallbackModels ?? ['gemini-3.5-flash-lite', 'gemini-3.6-flash', 'gemini-2.5-flash-lite'];
+  const fallbackModels = options.fallbackModels ?? ['gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
   const models = [...new Set([request.model, ...fallbackModels].filter(Boolean))];
   const sleep = options.sleep ?? wait;
   const random = options.random ?? Math.random;
