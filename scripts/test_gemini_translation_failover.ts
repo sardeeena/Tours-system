@@ -14,14 +14,14 @@ async function testCapacityFailover() {
     async (request: { model: string; prompt: string }) => {
       calls.push(request.model);
       if (request.model === 'gemini-3.8-flash') throw makeError(503, 'UNAVAILABLE: high demand');
-      if (request.model === 'gemini-3.5-flash-lite') return { text: 'translated' };
+      if (request.model === 'gemini-4-hydrogen') return { text: 'translated' };
       throw new Error('Unexpected model');
     },
     { model: 'gemini-3.8-flash', prompt: 'public source text' },
     { sleep: noWait, random: zeroJitter },
   );
   assert.deepEqual(result, { text: 'translated' });
-  assert.deepEqual(calls, ['gemini-3.8-flash', 'gemini-3.8-flash', 'gemini-3.5-flash-lite']);
+  assert.deepEqual(calls, ['gemini-3.8-flash', 'gemini-3.8-flash', 'gemini-4-hydrogen']);
 }
 
 async function testFallbackOrderUsesStableDocumentedModels() {
@@ -36,9 +36,8 @@ async function testFallbackOrderUsesStableDocumentedModels() {
   ));
   assert.deepEqual(calls, [
     'gemini-3.8-flash', 'gemini-3.8-flash',
+    'gemini-4-hydrogen', 'gemini-4-hydrogen',
     'gemini-3.5-flash-lite', 'gemini-3.5-flash-lite',
-    'gemini-3.6-flash', 'gemini-3.6-flash',
-    'gemini-2.5-flash-lite', 'gemini-2.5-flash-lite',
   ]);
 }
 
