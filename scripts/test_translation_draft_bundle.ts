@@ -38,7 +38,11 @@ assert.match(editor,/role="dialog"[\s\S]*Start generating drafts/, 'Generation u
 assert.match(editor,/onClick=\{\(\) => setConfirmGenerate\(true\)\}/, 'The Generate button opens the in-page confirmation directly');
 assert.match(editor,/disabled=\{saving \|\| !entityKey\.trim\(\) \|\| !sourceChecksum\.trim\(\)\}/, 'Save actions stay disabled until a verified source key and checksum are loaded');
 assert.match(editor,/To save, select an existing translation or enter its source record key/, 'The editor explains how to enable saving');
-assert.match(editor,/const targetLocale = locale/,'Draft generation uses the selected locale');
+assert.match(editor,/const generateSelectedLocale = async \(targetLocale: string = singleLanguageLocale\)/,'Single-language generation accepts an explicit selected locale');
+assert.match(editor,/aria-label="Language to translate"[\s\S]*ROLLOUT_LOCALES\.map/,'The single-language action offers a dropdown containing only the ten agreed locales');
+assert.match(editor,/Generate selected language/,'The workspace exposes a separate one-language action');
+assert.match(editor,/generateSelectedLocale\(singleLanguageLocale\)/,'The single-language action passes only the chosen locale to the existing draft endpoint');
+assert.match(editor,/Other languages are not started or changed/,'Single-language confirmation makes clear that other locales are untouched');
 assert.match(editor,/const ROLLOUT_LOCALES = EUROPEAN_LOCALE_ROLLOUT\.filter\(/,'The workspace derives its supported locale list explicitly');
 assert.match(editor,/Supported translation languages[\s\S]*saved records[\s\S]*in review[\s\S]*published/,'The workspace shows a per-language record and lifecycle overview');
 assert.match(editor,/useState\(''\)/,'The workspace starts with a language overview instead of silently selecting French');
