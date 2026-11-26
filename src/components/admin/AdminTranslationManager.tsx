@@ -48,8 +48,15 @@ export const AdminTranslationManager: React.FC = () => {
       ...init,
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token, ...(init?.headers || {}) },
     });
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok || payload.success === false) throw new Error(payload.error || 'Translation service request failed.');
+    const responseText = await response.text();
+    let payload: any = {};
+    try { payload = responseText ? JSON.parse(responseText) : {}; } catch { /* handled below with HTTP diagnostics */ }
+    if (!response.ok || payload.success === false) {
+      const requestId = response.headers.get('X-Request-ID');
+      const diagnostic = 'Translation service returned HTTP ' + response.status
+        + (requestId ? ' (request ' + requestId + ')' : '') + '.';
+      throw new Error(payload.error || diagnostic + ' Please retry; if it continues, share this message with support.');
+    }
     return payload;
   }, []);
 
