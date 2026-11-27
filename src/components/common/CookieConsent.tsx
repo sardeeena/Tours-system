@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { recordVisitorConsent, sanitizeVisitorAnalyticsPath } from '../../services/visitorAnalyticsService';
+import { isInternalAnalyticsPath, recordVisitorConsent, sanitizeVisitorAnalyticsPath } from '../../services/visitorAnalyticsService';
 
 type ConsentChoices = {
   necessary: true;
@@ -27,8 +27,11 @@ function applyConsent(choices: ConsentChoices): void {
     security_storage: 'granted',
   });
 
+  // Consent is saved on every route, but internal staff pages never start analytics sessions.
+  const internalRoute = isInternalAnalyticsPath(window.location.pathname);
+
   // Load the GA4 stream directly after analytics consent, independently of GTM.
-  if (choices.analytics && !document.getElementById('aat-ga4-script')) {
+  if (!internalRoute && choices.analytics && !document.getElementById('aat-ga4-script')) {
     browserWindow.gtag?.('js', new Date());
     const safePath = sanitizeVisitorAnalyticsPath(window.location.pathname);
     const safeLocation = window.location.origin + safePath;
@@ -41,7 +44,7 @@ function applyConsent(choices: ConsentChoices): void {
   }
 
   // Keep GTM available for consented marketing tags.
-  if (choices.marketing && !document.getElementById('aat-gtm-script')) {
+  if (!internalRoute && choices.marketing && !document.getElementById('aat-gtm-script')) {
     browserWindow.dataLayer.push({ 'gtm.start': Date.now(), event: 'gtm.js' });
     const script = document.createElement('script');
     script.id = 'aat-gtm-script';
@@ -97,8 +100,16 @@ export const CookieConsent: React.FC = () => {
       setCustomising(true);
       setVisible(true);
     };
+    const loadAnalyticsOnPublicRoute = () => {
+      const current = readSavedConsent();
+      if (current) applyConsent(current);
+    };
     window.addEventListener('awesome:open-cookie-settings', openSettings);
-    return () => window.removeEventListener('awesome:open-cookie-settings', openSettings);
+    window.addEventListener('awesome:public-analytics-route', loadAnalyticsOnPublicRoute);
+    return () => {
+      window.removeEventListener('awesome:open-cookie-settings', openSettings);
+      window.removeEventListener('awesome:public-analytics-route', loadAnalyticsOnPublicRoute);
+    };
   }, []);
 
   const save = (analytics: boolean, marketing: boolean) => {
