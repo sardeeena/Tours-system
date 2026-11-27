@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { recordVisitorConsent } from '../../services/visitorAnalyticsService';
+import { recordVisitorConsent, sanitizeVisitorAnalyticsPath } from '../../services/visitorAnalyticsService';
 
 type ConsentChoices = {
   necessary: true;
@@ -30,7 +30,9 @@ function applyConsent(choices: ConsentChoices): void {
   // Load the GA4 stream directly after analytics consent, independently of GTM.
   if (choices.analytics && !document.getElementById('aat-ga4-script')) {
     browserWindow.gtag?.('js', new Date());
-    browserWindow.gtag?.('config', GA4_MEASUREMENT_ID, { send_page_view: false });
+    const safePath = sanitizeVisitorAnalyticsPath(window.location.pathname);
+    const safeLocation = window.location.origin + safePath;
+    browserWindow.gtag?.('config', GA4_MEASUREMENT_ID, { send_page_view: false, page_location: safeLocation, page_path: safePath });
     const gaScript = document.createElement('script');
     gaScript.id = 'aat-ga4-script';
     gaScript.async = true;
