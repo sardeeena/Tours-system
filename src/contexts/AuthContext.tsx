@@ -153,7 +153,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return { factorId: null as string | null, requiresEnrollment: false };
   }, []);
 
-  const refreshUser = useCallback(async (trackSignIn = false) => {
+  const refreshUser = useCallback(async () => {
     try {
       const current = await getCurrentAdminUser();
       const mfaState = await getPrivilegedAdminMfaState(current);
@@ -172,10 +172,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setPendingMfaFactorId(null);
       setRequiresMfaEnrollment(false);
       setUser(current);
-      if (trackSignIn && current) {
-        void recordVisitorEvent({ event_name: 'auth_sign_in', page_path: typeof window !== 'undefined' ? window.location.pathname : '/login', event_data: { auth_method: 'supabase' } });
-      }
-    } catch {
+     } catch {
       setUser(null);
       setPendingMfaFactorId(null);
       setRequiresMfaEnrollment(false);
@@ -271,7 +268,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           // Supabase advises against awaiting client calls inside this callback:
           // it runs while auth state is being processed and can deadlock the auth lock.
           window.setTimeout(() => {
-            void refreshUser(event === 'SIGNED_IN');
+            void refreshUser();
           }, 0);
         } else if (event === 'SIGNED_OUT') {
           setUser(null);
@@ -348,6 +345,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setPendingMfaFactorId(null);
       setRequiresMfaEnrollment(false);
       setUser(verifiedUser);
+      // Only an explicit customer login is a visitor sign-in; auth restoration and
+      // token refresh notifications are not new logins. Staff activity is excluded.
+      const isStaffAccount = verifiedUser.roles?.some((role) => role === 'admin' || role === 'super_admin') || false;
+      if (!isStaffAccount) {
+        void recordVisitorEvent({ event_name: 'auth_sign_in', page_path: '/login', event_data: { auth_method: 'supabase' } });
+      }
     } else {
       setUser(null);
       setPendingMfaFactorId(null);
@@ -374,8 +377,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
     if (verifyError) return { success: false, error: verifyError.message };
 
-    void recordVisitorEvent({ event_name: 'mfa_verified', page_path: '/login', event_data: { outcome: 'verified' } });
-    void recordVisitorEvent({ event_name: 'auth_sign_in', page_path: '/login', event_data: { auth_method: 'mfa' } });
+    // MFA is required for staff accounts; do not mix staff security events into visitor analytics.
     setPendingMfaFactorId(null);
     setRequiresMfaEnrollment(false);
     await refreshUser();
