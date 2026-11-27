@@ -7,6 +7,7 @@ const tracker = read('../src/components/common/VisitorAnalyticsTracker.tsx');
 const cookieConsent = read('../src/components/common/CookieConsent.tsx');
 const service = read('../src/services/visitorAnalyticsService.ts');
 const bookingPage = read('../src/pages/BookingPage.tsx');
+const server = read('../server.ts');
 
 const denied = html.indexOf("analytics_storage: 'denied'");
 const loader = html.indexOf("var containerId = 'GTM-5SSVKB24'");
@@ -49,6 +50,8 @@ assert.match(cookieConsent, /GA4_MEASUREMENT_ID = 'G-XGYXLWF4FG'/, 'Consent chan
 assert.match(cookieConsent, /choices\.analytics && !document\.getElementById\('aat-ga4-script'\)/, 'GA4 loads when consent is granted after initial render');
 assert.match(cookieConsent, /if \(choices\.marketing && !document\.getElementById\('aat-gtm-script'\)\)/, 'The GTM marketing container loads only after marketing consent');
 assert.match(service, /input\.event_name === 'booking_submitted'/, 'The submitted-booking event carries the booking value');
-assert.match(files["server.ts"].content, /'booking_value'/, 'First-party ingestion accepts booking value for reconciliation');
+assert.match(server, /'booking_value'/, 'First-party ingestion accepts booking value for reconciliation');
+assert.match(server, /function safePagePath[\\s\\S]*booking\\/confirmation/, 'Server-side ingestion anonymizes dynamic booking confirmation paths');
+assert.match(server, /function safePagePath[\\s\\S]*my-booking/, 'Server-side ingestion anonymizes customer booking lookup paths');
 assert.match(service, /gaEventData\.value = safeEventData\.booking_value/, 'Booking conversion value uses the GA4 value parameter');
 console.log('Consent-gated GTM, SPA page views, non-PII events and booking conversion checks passed.');
