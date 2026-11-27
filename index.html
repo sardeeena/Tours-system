@@ -55,6 +55,12 @@
         var measurementId = 'G-XGYXLWF4FG';
         var loaded = false;
         var gaLoaded = false;
+        function safeAnalyticsPageLocation() {
+          var path = (window.location.pathname || '/').replace(/\/+$/, '') || '/';
+          if (/^\/booking\/confirmation\/[^/]+$/i.test(path)) path = '/booking/confirmation';
+          if (/^\/my-booking\/[^/]+$/i.test(path)) path = '/my-booking';
+          return window.location.origin + path;
+        }
         function applyVisitorConsent() {
           var choices;
           try {
@@ -77,7 +83,8 @@
           if (choices.analytics && !gaLoaded && !document.getElementById('aat-ga4-script')) {
             gaLoaded = true;
             window.gtag('js', new Date());
-            window.gtag('config', measurementId, { send_page_view: false });
+            var safeLocation = safeAnalyticsPageLocation();
+            window.gtag('config', measurementId, { send_page_view: false, page_location: safeLocation, page_path: safeLocation.slice(window.location.origin.length) });
             var gaScript = document.createElement('script');
             gaScript.id = 'aat-ga4-script';
             gaScript.async = true;
