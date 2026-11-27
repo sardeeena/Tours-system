@@ -51,16 +51,16 @@ const CONSENT_VERSION = '2';
 /** Remove booking/customer identifiers from URLs before either analytics destination sees them. */
 export function sanitizeVisitorAnalyticsPath(value: string): string {
   const rawPath = typeof value === 'string' ? value.split(/[?#]/, 1)[0] : '/';
-  const path = rawPath.replace(/\\/+/g, '/') || '/';
-  const normalized = path.length > 1 ? path.replace(/\\/$/, '') : path;
-  if (/^\\/booking\\/confirmation\\/[^/]+$/i.test(normalized)) return '/booking/confirmation';
-  if (/^\\/my-booking\\/[^/]+$/i.test(normalized)) return '/my-booking';
+  const path = rawPath.replace(/\/+/g, '/') || '/';
+  const normalized = path.length > 1 ? path.replace(/\/$/, '') : path;
+  if (/^\/booking\/confirmation\/[^/]+$/i.test(normalized)) return '/booking/confirmation';
+  if (/^\/my-booking\/[^/]+$/i.test(normalized)) return '/my-booking';
   return normalized.slice(0, 512) || '/';
 }
 
 /** Staff/admin console activity is operational, not visitor acquisition behaviour. */
 export function isInternalAnalyticsPath(value: string): boolean {
-  return /^\\/admin(?:\\/|$)/i.test(sanitizeVisitorAnalyticsPath(value));
+  return /^\/admin(?:\/|$)/i.test(sanitizeVisitorAnalyticsPath(value));
 }
 
 function randomId(): string {
