@@ -23,6 +23,10 @@ assert.match(html, /googletagmanager\.com\/gtm\.js/, 'The configured GTM contain
 
 assert.match(tracker, /window\.gtag\?\.\('event', 'page_view'/, 'Initial and SPA routes send consented GA4 page views');
 assert.match(tracker, /isInternalAnalyticsPath/, 'Admin routes are excluded from visitor tracking');
+assert.match(tracker, /awesome:public-analytics-route/, 'Analytics initializes only after navigation to a public route');
+assert.match(html, /isInternalAnalyticsRoute/, 'Initial admin loads do not initialize GA4 or GTM');
+assert.match(cookieConsent, /!internalRoute && choices\.analytics/, 'Cookie consent does not initialize GA4 on admin routes');
+assert.match(cookieConsent, /awesome:public-analytics-route/, 'Saved consent initializes analytics after leaving the admin console');
 assert.doesNotMatch(tracker, /userId/, 'Authentication state changes cannot retrigger page views');
 assert.match(service, /if \(!consent\?\.analytics\) return/, 'No GA4 events are sent without analytics consent');
 assert.match(service, /const allowedKeys = new Set\(\[/, 'Google Analytics event parameters use an explicit allowlist');
