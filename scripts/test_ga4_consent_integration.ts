@@ -53,7 +53,7 @@ assert.match(cookieConsent, /GA4_MEASUREMENT_ID = 'G-XGYXLWF4FG'/, 'Consent chan
 assert.match(cookieConsent, /choices\.analytics && !document\.getElementById\('aat-ga4-script'\)/, 'GA4 loads when consent is granted after initial render');
 assert.match(cookieConsent, /if \(choices\.marketing && !document\.getElementById\('aat-gtm-script'\)\)/, 'The GTM marketing container loads only after marketing consent');
 assert.match(service, /input\.event_name === 'booking_submitted'/, 'The submitted-booking event carries the booking value');
-assert.match(server, /'booking_value'/, 'First-party ingestion accepts booking value for reconciliation');
+assert.match(server, /function safePagePath[\s\S]*booking\/confirmation/, 'Server-side ingestion anonymizes dynamic booking confirmation paths');
 assert.match(server, /function safePagePath[\s\S]*my-booking/, 'Server-side ingestion anonymizes customer booking lookup paths');
 assert.match(server, /function safePagePath[\s\S]*my-booking/, 'Server-side ingestion anonymizes customer booking lookup paths');
 assert.doesNotMatch(authContext, /refreshUser\(event === 'SIGNED_IN'\)/, 'Auth state restoration cannot inflate successful sign-in events');
