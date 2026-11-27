@@ -223,6 +223,8 @@ export async function recordVisitorEvent(input: {
   duration_ms?: number;
   event_data?: Record<string, string | number | boolean>;
 }): Promise<void> {
+  const safePath = sanitizeVisitorAnalyticsPath(input.page_path);
+  if (isInternalAnalyticsPath(safePath) || isInternalAnalyticsPath(window.location.pathname)) return;
   const consent = readVisitorConsent();
   if (!consent?.analytics) return;
 
@@ -236,8 +238,6 @@ export async function recordVisitorEvent(input: {
   for (const [key, value] of Object.entries(input.event_data || {})) {
     if (allowedKeys.has(key)) safeEventData[key] = value;
   }
-
-  const safePath = sanitizeVisitorAnalyticsPath(input.page_path);
 
   // Page views are emitted once by VisitorAnalyticsTracker for the initial
   // route and each SPA navigation. A submitted reservation remains a lead,
