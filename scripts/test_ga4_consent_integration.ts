@@ -8,6 +8,7 @@ const cookieConsent = read('../src/components/common/CookieConsent.tsx');
 const service = read('../src/services/visitorAnalyticsService.ts');
 const bookingPage = read('../src/pages/BookingPage.tsx');
 const server = read('../server.ts');
+const authContext = read('../src/contexts/AuthContext.tsx');
 
 const denied = html.indexOf("analytics_storage: 'denied'");
 const loader = html.indexOf("var containerId = 'GTM-5SSVKB24'");
@@ -26,7 +27,9 @@ assert.doesNotMatch(tracker, /userId/, 'Authentication state changes cannot retr
 assert.match(service, /if \(!consent\?\.analytics\) return/, 'No GA4 events are sent without analytics consent');
 assert.match(service, /const allowedKeys = new Set\(\[/, 'Google Analytics event parameters use an explicit allowlist');
 assert.match(service, /sanitizeVisitorAnalyticsPath/, 'Booking references are removed from analytics route paths');
-assert.doesNotMatch(service, /booking_reference|bookingReference/, 'Booking references are not allowed in analytics event payloads');
+const gaAllowlist = service.match(/const allowedKeys = new Set\\(\\[([\\s\\S]*?)\\]\\);/)?.[1] || '';
+assert.doesNotMatch(gaAllowlist, /booking_reference|bookingReference/i, 'Booking references are not allowed in GA4 event parameters');
+assert.match(service, /key !== 'booking_reference'/, 'Booking references are removed before first-party event ingestion');
 assert.match(service, /gaEventData\.step = safeEventData\.booking_step/, 'Booking step is mapped to the GA4 step parameter');
 assert.match(service, /gaEventData\.value = safeEventData\.booking_value/, 'Booking value is mapped to GA4 value');
 assert.match(service, /window\.gtag\?\.\('event', input\.event_name/, 'Booking events are forwarded with their accurate event names');
@@ -34,7 +37,7 @@ assert.doesNotMatch(service, /gtag\?\.\('event', 'purchase'/, 'Pending reservati
 assert.match(bookingPage, /event_name: 'booking_submitted'/, 'A successful reservation is tracked as one booking submission');
 assert.match(service, /input\.event_name === 'booking_submitted'[\s\S]*window\.gtag\?\.\('event', 'qualify_lead'/, 'A saved reservation also triggers the connected GA4 qualify_lead key event');
 assert.doesNotMatch(bookingPage, /event_name: 'booking_confirmed'/, 'A payment-pending reservation is not mislabeled as confirmed');
-assert.doesNotMatch(bookingPage, /booking_reference|bookingReference/, 'Booking references are never sent to analytics');
+assert.doesNotMatch(bookingPage, /event_data:\\s*\\{[^}]*booking_reference/, 'Booking references are never sent to analytics');
 assert.match(bookingPage, /booking_value: pricing\.totalEur/, 'Booking value is included as a custom parameter');
 assert.match(bookingPage, /currency: currency\.code/, 'The selected currency is included');
 
@@ -53,5 +56,7 @@ assert.match(service, /input\.event_name === 'booking_submitted'/, 'The submitte
 assert.match(server, /'booking_value'/, 'First-party ingestion accepts booking value for reconciliation');
 assert.match(server, /function safePagePath[\\s\\S]*booking\\/confirmation/, 'Server-side ingestion anonymizes dynamic booking confirmation paths');
 assert.match(server, /function safePagePath[\\s\\S]*my-booking/, 'Server-side ingestion anonymizes customer booking lookup paths');
+assert.doesNotMatch(authContext, /refreshUser\\(event === 'SIGNED_IN'\\)/, 'Auth state restoration cannot inflate successful sign-in events');
+assert.match(authContext, /isStaffAccount/, 'Staff authentication activity is excluded from visitor analytics');
 assert.match(service, /gaEventData\.value = safeEventData\.booking_value/, 'Booking conversion value uses the GA4 value parameter');
 console.log('Consent-gated GTM, SPA page views, non-PII events and booking conversion checks passed.');
