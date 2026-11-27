@@ -246,12 +246,13 @@ export async function recordVisitorEvent(input: {
       gaEventData.step = safeEventData.booking_step;
       delete gaEventData.booking_step;
     }
-    if (typeof safeEventData.booking_value === 'number') {
+    if (input.event_name === 'booking_submitted' && typeof safeEventData.booking_value === 'number') {
       gaEventData.value = safeEventData.booking_value;
       delete gaEventData.booking_value;
     }
     const gaEventParams = {
       page_path: safePath,
+      page_location: window.location.origin + safePath,
       ...(input.page_title ? { page_title: input.page_title.slice(0, 160) } : {}),
       ...gaEventData,
     };
