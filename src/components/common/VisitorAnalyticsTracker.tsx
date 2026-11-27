@@ -35,6 +35,7 @@ export const VisitorAnalyticsTracker: React.FC<Props> = ({ path }) => {
       previous.current = null;
       return;
     }
+    window.dispatchEvent(new Event('awesome:public-analytics-route'));
     const now = Date.now();
     if (previous.current && previous.current.path !== safePath) {
       void recordVisitorEvent({ event_name: 'navigation', page_path: safePath, event_data: { interaction: 'internal_navigation' } });
