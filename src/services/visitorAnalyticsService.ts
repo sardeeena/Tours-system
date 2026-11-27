@@ -198,7 +198,9 @@ async function post(path: string, body: Record<string, unknown>): Promise<void> 
 }
 
 export async function recordVisitorConsent(choices: VisitorConsent, source = 'cookie_banner'): Promise<void> {
-  const id = choices.analytics ? sessionId() : (() => {
+  const trackVisitorSession = !isInternalAnalyticsPath(window.location.pathname);
+  const id = choices.analytics && trackVisitorSession ? sessionId() : (() => {
+    if (choices.analytics) return null;
     try {
       const saved = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
       return typeof saved?.id === 'string' ? saved.id : null;
@@ -208,8 +210,8 @@ export async function recordVisitorConsent(choices: VisitorConsent, source = 'co
     try { localStorage.removeItem(SESSION_KEY); localStorage.removeItem(VISITOR_KEY); } catch { /* storage may be unavailable */ }
   }
   await post('/api/visitor/consent', {
-    session_id: id, visitor_id: choices.analytics ? visitorId() : null, analytics: choices.analytics, marketing: choices.marketing,
-    source, consent_version: choices.version, ...(choices.analytics ? { landing_path: window.location.pathname, metadata: visitorMetadata() } : {}),
+    session_id: id, visitor_id: choices.analytics && trackVisitorSession ? visitorId() : null, analytics: choices.analytics, marketing: choices.marketing,
+    source, consent_version: choices.version, ...(choices.analytics && trackVisitorSession ? { landing_path: sanitizeVisitorAnalyticsPath(window.location.pathname), metadata: visitorMetadata() } : {}),
   });
   window.dispatchEvent(new CustomEvent('awesome:visitor-consent-saved'));
 }
