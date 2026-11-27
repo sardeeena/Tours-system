@@ -1,0 +1,70 @@
+name: Production availability check
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-availability-check
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Check public site and application readiness
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Check homepage responds successfully
+        shell: bash
+        run: |
+          set -euo pipefail
+          status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' --location --max-time 25 --retry 2 --retry-delay 2 https://awesomeadventure.tours/)"
+          if [ "$status" != "200" ]; then
+            echo "::error::Homepage returned HTTP $status (expected 200)."
+            exit 1
+          fi
+          echo "Homepage returned HTTP 200."
+
+      - name: Check application liveness
+        shell: bash
+        run: |
+          set -euo pipefail
+          body="$(curl --fail --silent --show-error --location --max-time 25 --retry 2 --retry-delay 2 https://awesomeadventure.tours/api/health)"
+          printf '%s' "$body" | node -e '
+            const fs = require("node:fs");
+            const data = JSON.parse(fs.readFileSync(0, "utf8"));
+            if (data.status !== "ok" || !Number.isFinite(data.uptimeSeconds) || data.uptimeSeconds <= 0) {
+              throw new Error("Health endpoint did not return a valid live status.");
+            }
+            console.log("Liveness OK; process uptime seconds:", data.uptimeSeconds);
+          '
+
+      - name: Check database-backed application readiness
+        shell: bash
+        run: |
+          set -euo pipefail
+          body="$(curl --fail --silent --show-error --location --max-time 25 --retry 2 --retry-delay 2 https://awesomeadventure.tours/api/health/ready)"
+          printf '%s' "$body" | node -e '
+            const fs = require("node:fs");
+            const data = JSON.parse(fs.readFileSync(0, "utf8"));
+            if (data.status !== "ready" || data.checks?.database !== "ok") {
+              throw new Error("Application readiness or database check failed.");
+            }
+            console.log("Readiness OK; database check:", data.checks.database);
+          '
+
+      - name: Record check result
+        if: success()
+        run: |
+          {
+            echo "## Production availability"
+            echo ""
+            echo "- Homepage: HTTP 200"
+            echo "- Application liveness: passed"
+            echo "- Database-backed readiness: passed"
+            echo "- Checked at: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+          } >> "$GITHUB_STEP_SUMMARY"
