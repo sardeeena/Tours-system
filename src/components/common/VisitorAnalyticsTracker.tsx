@@ -26,16 +26,18 @@ export const VisitorAnalyticsTracker: React.FC<Props> = ({ path }) => {
   }, []);
 
   useEffect(() => {
-    if (!enabled) {
-      previous.current = null;
-      return;
-    }
     const safePath = sanitizeVisitorAnalyticsPath(path);
     if (isInternalAnalyticsPath(safePath)) {
       previous.current = null;
       return;
     }
+    // This route signal also lets consented marketing tags initialize when
+    // analytics consent is denied; it never grants analytics consent.
     window.dispatchEvent(new Event('awesome:public-analytics-route'));
+    if (!enabled) {
+      previous.current = null;
+      return;
+    }
     const now = Date.now();
     if (previous.current && previous.current.path !== safePath) {
       void recordVisitorEvent({ event_name: 'navigation', page_path: safePath, event_data: { interaction: 'internal_navigation' } });
