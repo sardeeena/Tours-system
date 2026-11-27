@@ -59,8 +59,8 @@ assert.match(html, /aat-ga4-script/, 'Direct GA4 loader has a duplicate-load gua
 assert.match(html, /document\.getElementById\('aat-gtm-script'\)/, 'The early and React consent loaders cannot inject GTM twice');
 assert.match(cookieConsent, /GA4_MEASUREMENT_ID = 'G-XGYXLWF4FG'/, 'Consent changes load the same GA4 property');
 assert.match(cookieConsent, /sanitizeVisitorAnalyticsPath/, 'Late consent grants also sanitize the initial GA4 page location');
-assert.match(cookieConsent, /choices\.analytics && !document\.getElementById\('aat-ga4-script'\)/, 'GA4 loads when consent is granted after initial render');
-assert.match(cookieConsent, /if \(choices\.marketing && !document\.getElementById\('aat-gtm-script'\)\)/, 'The GTM marketing container loads only after marketing consent');
+assert.match(cookieConsent, /!internalRoute && choices\.analytics && !document\.getElementById\('aat-ga4-script'\)/, 'GA4 loads only on public routes after analytics consent');
+assert.match(cookieConsent, /if \(!internalRoute && choices\.marketing && !document\.getElementById\('aat-gtm-script'\)\)/, 'The GTM marketing container loads only on public routes after marketing consent');
 assert.match(service, /input\.event_name === 'booking_submitted'/, 'The submitted-booking event carries the booking value');
 assert.match(server, /function safePagePath[\s\S]*booking\/confirmation/, 'Server-side ingestion anonymizes dynamic booking confirmation paths');
 assert.match(server, /function safePagePath[\s\S]*my-booking/, 'Server-side ingestion anonymizes customer booking lookup paths');
