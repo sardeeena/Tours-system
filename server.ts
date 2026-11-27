@@ -2993,13 +2993,15 @@ app.post('/api/visitor/events', rateLimit(90, 60_000), async (req: Authenticated
   if (!sessionId || !VISITOR_EVENT_NAMES.has(eventName)) {
     return res.status(400).json({ success: false, error: 'Invalid visitor event.' });
   }
+  const pagePath = safePagePath(req.body?.page_path);
+  if (/^\/admin(?:\/|$)/i.test(pagePath)) return res.status(204).end();
   try {
     const duration = Number(req.body?.duration_ms);
     const { data, error } = await serverSupabase.rpc('record_visitor_event', {
       p_session_id: sessionId,
       p_user_id: req.user?.id || null,
       p_event_name: eventName,
-      p_page_path: safePagePath(req.body?.page_path),
+      p_page_path: pagePath,
       p_page_title: safeShortText(req.body?.page_title, 160),
       p_duration_ms: Number.isFinite(duration) ? Math.max(0, Math.min(86_400_000, Math.round(duration))) : null,
       p_event_data: safeVisitorEventData(req.body?.event_data),
