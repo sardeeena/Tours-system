@@ -2762,7 +2762,7 @@ const VISITOR_EVENT_NAMES = new Set([
 ]);
 const VISITOR_EVENT_FIELDS = new Set([
   'tour_slug','category','destination','booking_step','result_count',
-  'currency','sort_order','filter_count','form_name','interaction',
+  'currency','booking_value','sort_order','filter_count','form_name','interaction',
   'action','outcome','channel','role','source','ticket_category','priority','status','auth_method','search_type','language',
 ]);
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -2845,8 +2845,12 @@ function safeShortText(value: unknown, max = 120): string | null {
 
 function safePagePath(value: unknown): string {
   if (typeof value !== 'string' || !value.startsWith('/')) return '/';
-  // Store route paths only; never retain query parameters, fragments, or submitted form values.
-  return value.split(/[?#]/, 1)[0].replace(/[\u0000-\u001f]/g, '').slice(0, 512) || '/';
+  // Strip query strings and dynamic booking references before persistence.
+  const path = value.split(/[?#]/, 1)[0].replace(/[\\u0000-\\u001f]/g, '').replace(/\\/+/g, '/');
+  const normalized = path.length > 1 ? path.replace(/\\/$/, '') : path;
+  if (/^\\/booking\\/confirmation\\/[^/]+$/i.test(normalized)) return '/booking/confirmation';
+  if (/^\\/my-booking\\/[^/]+$/i.test(normalized)) return '/my-booking';
+  return normalized.slice(0, 512) || '/';
 }
 
 function safeVisitorMetadata(value: any) {
