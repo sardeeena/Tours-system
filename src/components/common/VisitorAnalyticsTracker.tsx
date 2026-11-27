@@ -1,13 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { readVisitorConsent, recordVisitorConsent, recordVisitorEvent } from '../../services/visitorAnalyticsService';
+import { isInternalAnalyticsPath, readVisitorConsent, recordVisitorConsent, recordVisitorEvent, sanitizeVisitorAnalyticsPath } from '../../services/visitorAnalyticsService';
 
 interface Props {
   path: string;
-  userId?: string | null;
 }
 
 /** Consent-gated SPA page tracking. No optional identifiers are created before opt-in. */
-export const VisitorAnalyticsTracker: React.FC<Props> = ({ path, userId }) => {
+export const VisitorAnalyticsTracker: React.FC<Props> = ({ path }) => {
   const [enabled, setEnabled] = useState(false);
   const previous = useRef<{ path: string; startedAt: number } | null>(null);
 
@@ -31,8 +30,12 @@ export const VisitorAnalyticsTracker: React.FC<Props> = ({ path, userId }) => {
       previous.current = null;
       return;
     }
+    const safePath = sanitizeVisitorAnalyticsPath(path);
+    if (isInternalAnalyticsPath(safePath)) {
+      previous.current = null;
+      return;
+    }
     const now = Date.now();
-    const safePath = path.split(/[?#]/, 1)[0] || '/';
     if (previous.current && previous.current.path !== safePath) {
       void recordVisitorEvent({ event_name: 'navigation', page_path: safePath, event_data: { interaction: 'internal_navigation' } });
     }
@@ -49,7 +52,7 @@ export const VisitorAnalyticsTracker: React.FC<Props> = ({ path, userId }) => {
       event_name: 'page_view',
       page_path: safePath,
       page_title: document.title,
-      event_data: userId ? { interaction: 'signed_in' } : { interaction: 'guest' },
+      event_data: { interaction: 'page_view' },
     });
     return () => {
       const current = previous.current;
@@ -61,7 +64,7 @@ export const VisitorAnalyticsTracker: React.FC<Props> = ({ path, userId }) => {
         });
       }
     };
-  }, [enabled, path, userId]);
+  }, [enabled, path]);
 
   return null;
 };
