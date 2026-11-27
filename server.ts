@@ -2846,10 +2846,10 @@ function safeShortText(value: unknown, max = 120): string | null {
 function safePagePath(value: unknown): string {
   if (typeof value !== 'string' || !value.startsWith('/')) return '/';
   // Strip query strings and dynamic booking references before persistence.
-  const path = value.split(/[?#]/, 1)[0].replace(/[\\u0000-\\u001f]/g, '').replace(/\\/+/g, '/');
-  const normalized = path.length > 1 ? path.replace(/\\/$/, '') : path;
-  if (/^\\/booking\\/confirmation\\/[^/]+$/i.test(normalized)) return '/booking/confirmation';
-  if (/^\\/my-booking\\/[^/]+$/i.test(normalized)) return '/my-booking';
+  const path = value.split(/[?#]/, 1)[0].replace(/[\u0000-\u001f]/g, '').replace(/\/+/g, '/');
+  const normalized = path.length > 1 ? path.replace(/\/$/, '') : path;
+  if (/^\/booking\/confirmation\/[^/]+$/i.test(normalized)) return '/booking/confirmation';
+  if (/^\/my-booking\/[^/]+$/i.test(normalized)) return '/my-booking';
   return normalized.slice(0, 512) || '/';
 }
 
