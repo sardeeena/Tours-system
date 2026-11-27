@@ -61,6 +61,9 @@
           if (/^\/my-booking\/[^/]+$/i.test(path)) path = '/my-booking';
           return window.location.origin + path;
         }
+        function isInternalAnalyticsRoute() {
+          return /^\/admin(?:\/|$)/i.test(window.location.pathname || '/');
+        }
         function applyVisitorConsent() {
           var choices;
           try {
@@ -80,6 +83,10 @@
 
           // GA4 is loaded directly after analytics consent; it does not depend on
           // a separately published Google Tag Manager container configuration.
+          // Do not start GA4 or GTM sessions for staff/admin console activity.
+          // A public-route event will retry this loader after SPA navigation.
+          if (isInternalAnalyticsRoute()) return;
+
           if (choices.analytics && !gaLoaded && !document.getElementById('aat-ga4-script')) {
             gaLoaded = true;
             window.gtag('js', new Date());
@@ -104,6 +111,7 @@
           document.head.appendChild(script);
         }
         window.addEventListener('awesome:visitor-consent-saved', applyVisitorConsent);
+        window.addEventListener('awesome:public-analytics-route', applyVisitorConsent);
         applyVisitorConsent();
       })();
     </script>
