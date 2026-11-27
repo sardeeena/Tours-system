@@ -31,6 +31,8 @@ assert.doesNotMatch(tracker, /userId/, 'Authentication state changes cannot retr
 assert.match(service, /if \(!consent\?\.analytics\) return/, 'No GA4 events are sent without analytics consent');
 assert.match(service, /const allowedKeys = new Set\(\[/, 'Google Analytics event parameters use an explicit allowlist');
 assert.match(service, /sanitizeVisitorAnalyticsPath/, 'Booking references are removed from analytics route paths');
+assert.match(service, /isInternalAnalyticsPath\(window\.location\.pathname\)/, 'Event service blocks staff-route analytics calls');
+assert.match(server, /const pagePath = safePagePath[\s\S]*admin\(\?:/, 'Server ingestion independently blocks admin-route events');
 const gaAllowlist = service.split("const allowedKeys = new Set([" )[1]?.split("]);" )[0] || '';
 assert.doesNotMatch(gaAllowlist, /booking_reference|bookingReference/i, 'Booking references are not allowed in GA4 event parameters');
 assert.match(service, /key !== 'booking_reference'/, 'Booking references are removed before first-party event ingestion');
