@@ -172,7 +172,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setPendingMfaFactorId(null);
       setRequiresMfaEnrollment(false);
       setUser(current);
-     } catch {
+    } catch {
       setUser(null);
       setPendingMfaFactorId(null);
       setRequiresMfaEnrollment(false);
