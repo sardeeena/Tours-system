@@ -61,4 +61,5 @@ assert.match(server, /function safePagePath[\s\S]*my-booking/, 'Server-side inge
 assert.doesNotMatch(authContext, /refreshUser\(event === 'SIGNED_IN'\)/, 'Auth state restoration cannot inflate successful sign-in events');
 assert.match(authContext, /isStaffAccount/, 'Staff authentication activity is excluded from visitor analytics');
 assert.match(service, /gaEventData\.value = safeEventData\.booking_value/, 'Booking conversion value uses the GA4 value parameter');
+assert.match(service, /page_location: window\.location\.origin \+ safePath/, 'Custom GA4 events override the browser URL with a sanitized location');
 console.log('Consent-gated GTM, SPA page views, non-PII events and booking conversion checks passed.');
