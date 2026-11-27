@@ -48,6 +48,21 @@ const SESSION_TTL_MS = 30 * 60 * 1000;
 const VISITOR_TTL_MS = 180 * 24 * 60 * 60 * 1000;
 const CONSENT_VERSION = '2';
 
+/** Remove booking/customer identifiers from URLs before either analytics destination sees them. */
+export function sanitizeVisitorAnalyticsPath(value: string): string {
+  const rawPath = typeof value === 'string' ? value.split(/[?#]/, 1)[0] : '/';
+  const path = rawPath.replace(/\\/+/g, '/') || '/';
+  const normalized = path.length > 1 ? path.replace(/\\/$/, '') : path;
+  if (/^\\/booking\\/confirmation\\/[^/]+$/i.test(normalized)) return '/booking/confirmation';
+  if (/^\\/my-booking\\/[^/]+$/i.test(normalized)) return '/my-booking';
+  return normalized.slice(0, 512) || '/';
+}
+
+/** Staff/admin console activity is operational, not visitor acquisition behaviour. */
+export function isInternalAnalyticsPath(value: string): boolean {
+  return /^\\/admin(?:\\/|$)/i.test(sanitizeVisitorAnalyticsPath(value));
+}
+
 function randomId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
   const bytes = new Uint8Array(16);
@@ -212,24 +227,31 @@ export async function recordVisitorEvent(input: {
   // Forward only a small, non-PII allowlist to Google Analytics.
   // Names, email addresses, phone numbers and free-text fields never leave the first-party analytics store.
   const allowedKeys = new Set([
-    'tour_slug', 'destination', 'category', 'step', 'currency', 'value',
-    'payment_method', 'guest_count', 'booking_reference', 'bookingReference', 'booking_value',
+    'tour_slug', 'destination', 'category', 'booking_step', 'step',
+    'currency', 'value', 'payment_method', 'guest_count', 'booking_value',
   ]);
   const safeEventData: Record<string, string | number | boolean> = {};
   for (const [key, value] of Object.entries(input.event_data || {})) {
     if (allowedKeys.has(key)) safeEventData[key] = value;
   }
 
+  const safePath = sanitizeVisitorAnalyticsPath(input.page_path);
+
   // Page views are emitted once by VisitorAnalyticsTracker for the initial
-  // route and each SPA navigation. A submitted reservation stays booking_confirmed
-  // (not purchase) because payment may still be pending.
+  // route and each SPA navigation. A submitted reservation remains a lead,
+  // not a purchase, because supplier confirmation and payment may still be pending.
   if (input.event_name !== 'page_view') {
     const gaEventData = { ...safeEventData };
-    if (input.event_name === 'booking_submitted' && typeof safeEventData.booking_value === 'number') {
+    if (typeof safeEventData.booking_step === 'number') {
+      gaEventData.step = safeEventData.booking_step;
+      delete gaEventData.booking_step;
+    }
+    if (typeof safeEventData.booking_value === 'number') {
       gaEventData.value = safeEventData.booking_value;
+      delete gaEventData.booking_value;
     }
     const gaEventParams = {
-      page_path: input.page_path.split(/[?#]/, 1)[0],
+      page_path: safePath,
       ...(input.page_title ? { page_title: input.page_title.slice(0, 160) } : {}),
       ...gaEventData,
     };
@@ -246,9 +268,9 @@ export async function recordVisitorEvent(input: {
   await post('/api/visitor/events', {
     session_id: sessionId(),
     event_name: input.event_name,
-    page_path: input.page_path.split(/[?#]/, 1)[0],
+    page_path: safePath,
     page_title: input.page_title?.slice(0, 160),
     duration_ms: input.duration_ms,
-    event_data: input.event_data || {},
+    event_data: Object.fromEntries(Object.entries(input.event_data || {}).filter(([key]) => key !== 'booking_reference' && key !== 'bookingReference')),
   });
 }
