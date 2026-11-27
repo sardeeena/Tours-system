@@ -37,7 +37,7 @@ assert.doesNotMatch(service, /gtag\?\.\('event', 'purchase'/, 'Pending reservati
 assert.match(bookingPage, /event_name: 'booking_submitted'/, 'A successful reservation is tracked as one booking submission');
 assert.match(service, /input\.event_name === 'booking_submitted'[\s\S]*window\.gtag\?\.\('event', 'qualify_lead'/, 'A saved reservation also triggers the connected GA4 qualify_lead key event');
 assert.doesNotMatch(bookingPage, /event_data:\s*\{[^}]*booking_reference/, 'Booking references are never sent to analytics');
-assert.doesNotMatch(bookingPage, /event_data:\s*\{[^}]*booking_reference/, 'Booking references are never sent to analytics');
+assert.doesNotMatch(bookingPage, /event_name: 'booking_confirmed'/, 'A pending reservation is not mislabeled as supplier-confirmed');
 assert.match(bookingPage, /booking_value: pricing\.totalEur/, 'Booking value is included as a custom parameter');
 assert.match(bookingPage, /currency: currency\.code/, 'The selected currency is included');
 
@@ -54,7 +54,6 @@ assert.match(cookieConsent, /choices\.analytics && !document\.getElementById\('a
 assert.match(cookieConsent, /if \(choices\.marketing && !document\.getElementById\('aat-gtm-script'\)\)/, 'The GTM marketing container loads only after marketing consent');
 assert.match(service, /input\.event_name === 'booking_submitted'/, 'The submitted-booking event carries the booking value');
 assert.match(server, /function safePagePath[\s\S]*booking\/confirmation/, 'Server-side ingestion anonymizes dynamic booking confirmation paths');
-assert.match(server, /function safePagePath[\s\S]*my-booking/, 'Server-side ingestion anonymizes customer booking lookup paths');
 assert.match(server, /function safePagePath[\s\S]*my-booking/, 'Server-side ingestion anonymizes customer booking lookup paths');
 assert.doesNotMatch(authContext, /refreshUser\(event === 'SIGNED_IN'\)/, 'Auth state restoration cannot inflate successful sign-in events');
 assert.match(authContext, /isStaffAccount/, 'Staff authentication activity is excluded from visitor analytics');
