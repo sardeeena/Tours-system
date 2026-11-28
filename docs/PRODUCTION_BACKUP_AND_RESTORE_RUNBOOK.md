@@ -9,7 +9,13 @@ A complete recoverable backup has two independent parts: PostgreSQL logical expo
 
 ## Database export
 
-Use a trusted workstation or secured backup runner. Install the current Supabase CLI and Docker. Obtain the database connection string from the Supabase Dashboard Connect panel (prefer the Session pooler where supported). Never put credentials in Git, logs, or command output.
+Use a trusted workstation or secured backup runner. Install the current Supabase CLI and Docker. For this hosted Supabase project, link the CLI to the exact project and enter the database password at the interactive prompt. Never put credentials in Git, logs, shell history, or command output.
+
+```bash
+supabase link --project-ref uvtbtpxtrrmaublrztgv
+```
+
+Then export from the linked project. `supabase db dump` uses the linked project by default; `--db-url` is intended for self-hosted PostgreSQL connections and should not be used for this hosted project.
 
 ```bash
 set -euo pipefail
@@ -18,10 +24,9 @@ STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
 DEST="backups/$STAMP"
 mkdir -p "$DEST"
 
-: "${SUPABASE_DB_URL:?Set SUPABASE_DB_URL securely}"
-supabase db dump --db-url "$SUPABASE_DB_URL" -f "$DEST/roles.sql" --role-only
-supabase db dump --db-url "$SUPABASE_DB_URL" -f "$DEST/schema.sql"
-supabase db dump --db-url "$SUPABASE_DB_URL" -f "$DEST/data.sql" --use-copy --data-only -x "storage.buckets_vectors" -x "storage.vector_indexes"
+supabase db dump -f "$DEST/roles.sql" --role-only
+supabase db dump -f "$DEST/schema.sql"
+supabase db dump -f "$DEST/data.sql" --use-copy --data-only -x "storage.buckets_vectors" -x "storage.vector_indexes"
 
 sha256sum "$DEST"/*.sql > "$DEST/SHA256SUMS"
 ```
