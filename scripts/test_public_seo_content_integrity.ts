@@ -91,6 +91,13 @@ assert.match(robots, /^# Hostinger-Release-Marker: aa-analytics-seo-2026-11-28$/
 const lighthouseWorkflow = read('../.github/workflows/lighthouse-production.yml');
 assert.match(lighthouseWorkflow, /schedule:[\s\S]*?cron: '17 4 \* \* 1'/, 'Production Lighthouse audits run weekly');
 assert.match(lighthouseWorkflow, /Hostinger-Release-Marker: aa-analytics-seo-2026-11-28/, 'Production Lighthouse waits for the release-specific robots marker rather than a pre-existing crawl directive');
+assert.match(lighthouseWorkflow, /node scripts\/seo_site_audit\.mjs/, 'Weekly production audit runs the sitemap crawler before Lighthouse');
+assert.match(lighthouseWorkflow, /steps\.seo_crawl\.outputs\.blocked/, 'Lighthouse is skipped if the sitemap crawler is blocked by the production edge');
+assert.match(lighthouseWorkflow, /AwesomeAdventureSiteAudit\/1\.0/, 'Production preflight uses a transparent audit user-agent');
+const seoCrawler = read('../scripts/seo_site_audit.mjs');
+assert.match(seoCrawler, /status === 403 \|\| status === 429/, 'SEO crawler stops on edge protection rather than retrying or bypassing it');
+assert.match(seoCrawler, /10_000/, 'SEO crawler applies a conservative ten-second minimum request delay');
+assert.doesNotMatch(seoCrawler, /Mozilla\/5\.0/, 'SEO crawler does not impersonate a browser');
 assert.match(robots, /^User-agent: \*$/m, 'robots.txt contains a valid wildcard user-agent');
 assert.match(robots, /^Sitemap: https:\/\/awesomeadventure\.tours\/sitemap\.xml$/m, 'robots.txt advertises the canonical sitemap');
 
