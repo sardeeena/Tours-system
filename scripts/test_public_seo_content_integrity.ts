@@ -27,6 +27,7 @@ assert.match(privacy, /Google Analytics 4 \(GA4\)[\s\S]*?only after analytics co
 assert.match(privacy, /Google Tag Manager \(GTM\)[\s\S]*?only after marketing consent/, 'Privacy notice describes consent-gated marketing tags');
 assert.match(privacy, /visitor-event records, 180 days for visitor-session records and 730 days for cookie\/consent records/, 'Privacy notice matches configured first-party analytics retention');
 assert.match(privacy, /booking references, passenger details or free-text booking requests/, 'Privacy notice explains that direct booking identifiers and contact details are excluded from analytics events');
+assert.match(privacy, /internal account identifier; this identifier is not sent to Google Analytics 4/, 'Privacy notice discloses the signed-in account identifier used by first-party analytics');
 const contact = pages.slice(pages.indexOf("id: 'contact'"), pages.indexOf("id: 'why-us'"));
 assert.ok(contact.length >= 1000, 'Contact page provides substantive visitor support information');
 assert.match(contact, /preferred language/, 'Contact page explains language support without promising every tour is available in every language');
