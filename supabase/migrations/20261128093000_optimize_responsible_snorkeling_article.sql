@@ -114,7 +114,6 @@ Compare the current [Awesome Adventure Tours excursions](https://awesomeadventur
 
 - [CDWS: Snorkel Supervision and Risk Management guidance (PDF)](https://cdwsstore.blob.core.windows.net/membership/downloads/rulesAndRegulations/b6864-Module%202%20Snorkel%20Supervision%20and%20risk%20management%20outline%20V1%2015%20May%202020.pdf)
 - [Egyptian Environmental Affairs Agency: published protected-area instructions (PDF)](https://www.eeaa.gov.eg/Uploads/Project/Files/20221211122056645.pdf)
-- [Visit Egypt: Red Sea Reefs visitor guide](https://visitegypt.travel/attractions/red-sea-reefs.html)
 
 Protected-area rules can change and are not identical at every site. Check the current instructions displayed at the location and follow your guide or local authority.
 $article$,
