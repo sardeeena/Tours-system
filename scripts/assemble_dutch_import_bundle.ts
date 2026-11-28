@@ -8,12 +8,18 @@ function normalizedSlug(value: unknown, fallback: string): string {
     || fallback.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 160)
     || 'page';
 }
+function normalizeProtectedToken(token: string): string {
+  if (/^https?:\/\//i.test(token)) {
+    return token.replace(/[.,!?;:]+$/g, '').replace(/[)]+$/g, '');
+  }
+  return token;
+}
 function translationStructureMatches(source: any, translated: any): boolean {
   if (typeof source === 'string') {
     if (typeof translated !== 'string') return false;
     if (!source.trim()) return !translated.trim();
     const protectedTokens = source.match(/\{\{[^{}]+\}\}|https?:\/\/[^\s<>"']+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|\+\d[\d\s()./-]{5,}\d|\d+(?:[.,]\d+)?/g) || [];
-    if (!Boolean(translated.trim()) || !protectedTokens.every((token) => translated.includes(token))) return false;
+    if (!Boolean(translated.trim()) || !protectedTokens.every((token) => translated.includes(normalizeProtectedToken(token)))) return false;
     const numericTokens = source.match(/\b\d+(?:[.,]\d+)?\b/g) || [];
     const translatedNumbers = translated.match(/\b\d+(?:[.,]\d+)?\b/g) || [];
     const digitsOnly = (value: string) => value.replace(/\D/g, '');
@@ -34,7 +40,7 @@ function collectStructureMismatches(source: any, translated: any, path = 'conten
     if (!source.trim()) return translated.trim() ? [path + ': source is empty but draft has text'] : [];
     if (!translated.trim()) return [path + ': translation is empty'];
     const protectedTokens = source.match(/\{\{[^{}]+\}\}|https?:\/\/[^\s<>"']+|[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|\+\d[\d\s()./-]{5,}\d|\d+(?:[.,]\d+)?/g) || [];
-    return protectedTokens.filter((token) => !translated.includes(token)).map((token) =>
+    return protectedTokens.filter((token) => !translated.includes(normalizeProtectedToken(token))).map((token) =>
       path + ': protected token missing (' + token + '); source=' + JSON.stringify(source) + '; draft=' + JSON.stringify(translated)
     );
   }
