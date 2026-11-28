@@ -18,10 +18,10 @@ const slugMigrationTest = read('../supabase/tests/seo_slug_and_index_cleanup.tes
 const appConfig = read('../src/config/appConfig.ts');
 
 assert.match(footer, /About Awesome Adventure Tours<\/a>\s*<\/li>\s*<li>\s*<a href="https:\/\/www\.tripadvisor/, 'Footer support links use valid sibling list items');
-assert.match(footer, /href="\\/destinations"/, 'Footer links directly to the public destinations directory');
-assert.match(footer, /href="\\/experiences"/, 'Footer links directly to the public experiences directory');
-assert.match(footer, /href="\\/excursions"/, 'Footer links directly to all excursions');
-assert.match(footer, /href="\\/exclusive"/, 'Footer links directly to the Exclusive private trips catalogue');
+assert.match(footer, /href="\/destinations"/, 'Footer links directly to the public destinations directory');
+assert.match(footer, /href="\/experiences"/, 'Footer links directly to the public experiences directory');
+assert.match(footer, /href="\/excursions"/, 'Footer links directly to all excursions');
+assert.match(footer, /href="\/exclusive"/, 'Footer links directly to the Exclusive private trips catalogue');
 const about = pages.slice(pages.indexOf("id: 'about'"), pages.indexOf("id: 'contact'"));
 assert.match(about, /seoIndexable: true/, 'About fallback remains indexable');
 assert.match(about, /A local team in Hurghada/, 'About page contains useful company context');
