@@ -1,5 +1,5 @@
--- The completed-booking review trigger already emits this event; the constraint
--- must allow it or the booking status update is rolled back.
+-- The booking-completion review trigger already emits this event. Production has
+-- the intended contract; this migration reconciles clean installs with production.
 BEGIN;
 
 ALTER TABLE public.automation_events
