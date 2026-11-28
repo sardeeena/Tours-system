@@ -104,5 +104,7 @@ test('off-site backup workflow encrypts the archive and verifies the remote uplo
   assert.ok(verificationIndex > uploadIndex, 'Remote object size must be verified after upload');
   assert.match(workflow, /storage-policies\.sql/);
   assert.match(workflow, /BACKUP_STORAGE_DIR=/);
+  assert.match(workflow, /DB_OBJECT_COUNT/);
+  assert.match(workflow, /DB_OBJECT_BYTES/);
   assert.doesNotMatch(workflow, /actions\/upload-artifact/);
 });
