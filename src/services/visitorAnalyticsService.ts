@@ -232,7 +232,7 @@ export async function recordVisitorEvent(input: {
   // Names, email addresses, phone numbers and free-text fields never leave the first-party analytics store.
   const allowedKeys = new Set([
     'tour_slug', 'destination', 'category', 'booking_step', 'step',
-    'currency', 'value', 'payment_method', 'guest_count', 'booking_value',
+    'currency', 'value', 'booking_value',
   ]);
   const safeEventData: Record<string, string | number | boolean> = {};
   for (const [key, value] of Object.entries(input.event_data || {})) {
