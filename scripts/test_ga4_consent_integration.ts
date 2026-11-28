@@ -9,6 +9,8 @@ const service = read('../src/services/visitorAnalyticsService.ts');
 const bookingPage = read('../src/pages/BookingPage.tsx');
 const server = read('../server.ts');
 const authContext = read('../src/contexts/AuthContext.tsx');
+const completeSchema = read('../complete_schema.sql');
+const supabaseSchema = read('../supabase/schema.sql');
 
 const denied = html.indexOf("analytics_storage: 'denied'");
 const loader = html.indexOf("var containerId = 'GTM-5SSVKB24'");
@@ -69,4 +71,13 @@ assert.doesNotMatch(authContext, /refreshUser\(event === 'SIGNED_IN'\)/, 'Auth s
 assert.match(authContext, /isStaffAccount/, 'Staff authentication activity is excluded from visitor analytics');
 assert.match(service, /gaEventData\.value = safeEventData\.booking_value/, 'Booking conversion value uses the GA4 value parameter');
 assert.match(service, /page_location: window\.location\.origin \+ safePath/, 'Custom GA4 events override the browser URL with a sanitized location');
+const serverEventContract = server.match(/const VISITOR_EVENT_NAMES = new Set\\(\\[([\\s\\S]*?)\\]\\);/)?.[1] || '';
+const expectedVisitorEvents = Array.from(serverEventContract.matchAll(/'([^']+)'/g), (match) => match[1]).sort();
+assert.ok(expectedVisitorEvents.length > 0, 'Server visitor event allowlist is present');
+for (const [name, schema] of [['complete_schema.sql', completeSchema], ['supabase/schema.sql', supabaseSchema]] as const) {
+  const eventConstraint = schema.match(/event_name text NOT NULL CHECK \\(event_name IN \\(([\\s\\S]*?)\\)\\),/)?.[1] || '';
+  const schemaEvents = Array.from(eventConstraint.matchAll(/'([^']+)'/g), (match) => match[1]).sort();
+  assert.deepEqual(schemaEvents, expectedVisitorEvents, name + ' visitor event constraint matches the server event contract');
+  assert.ok(!schemaEvents.includes('booking_created'), name + ' keeps operational booking_created separate from consented visitor events');
+}
 console.log('Consent-gated GTM, SPA page views, non-PII events and booking conversion checks passed.');
