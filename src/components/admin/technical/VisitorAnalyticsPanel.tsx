@@ -89,7 +89,7 @@ export const VisitorAnalyticsPanel: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true); setError(''); setNotice('');
     try {
-      const [summary, sessionRows, eventRows, consentRows, settings, auditRows] = await Promise.all([
+      const [summary, sessionRows, eventRows, consentRows, settings, auditRows, lifecycleRows] = await Promise.all([
         api<Overview>('/api/admin/technical/visitors/overview'),
         api<{ sessions: Session[] }>(`/api/admin/technical/visitors/sessions?limit=500${deviceType ? `&device_type=${encodeURIComponent(deviceType)}` : ''}${fromDate ? `&from=${encodeURIComponent(new Date(`${fromDate}T00:00:00`).toISOString())}` : ''}${toDate ? `&to=${encodeURIComponent(new Date(`${toDate}T23:59:59`).toISOString())}` : ''}`),
         api<{ events: VisitorEvent[] }>(`/api/admin/technical/visitors/events?limit=500${eventType ? `&event_name=${encodeURIComponent(eventType)}` : ''}${fromDate ? `&from=${encodeURIComponent(new Date(`${fromDate}T00:00:00`).toISOString())}` : ''}${toDate ? `&to=${encodeURIComponent(new Date(`${toDate}T23:59:59`).toISOString())}` : ''}`),
