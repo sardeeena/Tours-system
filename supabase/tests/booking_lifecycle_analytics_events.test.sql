@@ -18,8 +18,10 @@ SELECT ok(
 );
 SELECT ok(
   has_table_privilege('service_role', 'public.booking_lifecycle_events', 'SELECT')
-  AND has_table_privilege('service_role', 'public.booking_lifecycle_events', 'INSERT'),
-  'trusted server workflows can read and write operational lifecycle events'
+  AND NOT has_table_privilege('service_role', 'public.booking_lifecycle_events', 'INSERT')
+  AND NOT has_table_privilege('service_role', 'public.booking_lifecycle_events', 'UPDATE')
+  AND NOT has_table_privilege('service_role', 'public.booking_lifecycle_events', 'DELETE'),
+  'trusted server workflows can read the append-only ledger but cannot mutate it directly'
 );
 SELECT ok(
   EXISTS (
