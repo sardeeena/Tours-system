@@ -164,7 +164,7 @@ jobs:
           if (preflight) console.log('\nProduction HTTP preflight:\n' + preflight);
           if (files.length === 0) {
             console.log('No Lighthouse report was produced. Check the preflight and per-page logs; a 403/429 from the production edge is reported as blocked, not as a performance score.');
-            if (preflight && /\t(403|429)\t/.test(preflight)) {
+            if (edgeBlocked || (preflight && /\t(403|429)\t/.test(preflight))) {
               console.log('Result: BLOCKED BY PRODUCTION EDGE — Lighthouse scores are unavailable.');
               process.exit(0);
             }
