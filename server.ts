@@ -3036,6 +3036,7 @@ app.get('/api/admin/technical/booking-lifecycle/overview', rateLimit(30, 60_000)
         .select('event_type')
         .gte('occurred_at', since)
         .order('occurred_at', { ascending: false })
+        .order('id', { ascending: true })
         .range(offset, offset + pageSize - 1);
       if (error) throw error;
       const rows = data || [];
