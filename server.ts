@@ -3200,7 +3200,7 @@ app.post('/api/admin/technical/visitors/settings', rateLimit(10, 60_000), async 
 
 
 async function pruneVisitorAnalytics(): Promise<void> {
-  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return;
+  if (process.env.NODE_ENV !== 'production' || !serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return;
   try {
     const { data: settings, error: settingsError } = await serverSupabase
       .from('visitor_analytics_settings')
@@ -6563,10 +6563,13 @@ async function startServer() {
   const server = app.listen(Number(PORT), '0.0.0.0', () => {
     console.log(`Awesome Adventure Tours server running on port/socket ${PORT} [${process.env.NODE_ENV || 'development'}]`);
 
-    // Apply configured visitor-data retention once at startup and daily thereafter.
-    void pruneVisitorAnalytics();
-    const visitorRetentionTimer = setInterval(() => { void pruneVisitorAnalytics(); }, 24 * 60 * 60 * 1000);
-    visitorRetentionTimer.unref();
+    // Retention deletes records; never run it from a local or preview server,
+    // even if a developer accidentally configures a production service-role key.
+    if (process.env.NODE_ENV === 'production' && serverSupabase && SUPABASE_KEY_TYPE === 'service_role') {
+      void pruneVisitorAnalytics();
+      const visitorRetentionTimer = setInterval(() => { void pruneVisitorAnalytics(); }, 24 * 60 * 60 * 1000);
+      visitorRetentionTimer.unref();
+    }
 
     // The durable queue consumer must use a server-only Supabase secret key.
     // It never starts with an anon/publishable key or in local development.
