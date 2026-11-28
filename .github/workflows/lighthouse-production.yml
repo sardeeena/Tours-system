@@ -25,6 +25,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
       # Update the robots.txt release marker whenever a server/SEO release needs a fresh deployment gate.
       - name: Wait for the Hostinger deployment marker for this release
         shell: bash
@@ -46,7 +49,7 @@ jobs:
           fi
 
       - name: Set up Node.js 22
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
 
@@ -197,7 +200,7 @@ jobs:
 
       - name: Upload Lighthouse diagnostics and reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: awesome-adventure-lighthouse-reports
           path: lighthouse-reports/**

@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import {
   decodeHtml,
   isAllowedByRobots,
@@ -90,4 +91,13 @@ test('parses HTML attributes independent of quote style and case', () => {
     name: 'description',
     content: 'hello',
   });
+});
+
+
+test('production Lighthouse workflow checks out the repository before running the local SEO crawler', () => {
+  const workflow = readFileSync(new URL('../.github/workflows/lighthouse-production.yml', import.meta.url), 'utf8');
+  const checkoutIndex = workflow.indexOf('uses: actions/checkout@v7');
+  const crawlerIndex = workflow.indexOf('node scripts/seo_site_audit.mjs');
+  assert.ok(checkoutIndex >= 0, 'Lighthouse workflow must check out the repository');
+  assert.ok(crawlerIndex > checkoutIndex, 'SEO crawler must run after repository checkout');
 });

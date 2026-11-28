@@ -9,7 +9,7 @@ A complete recoverable backup has two independent parts: PostgreSQL logical expo
 
 ## Database export
 
-Use a trusted workstation or secured backup runner. Install the current Supabase CLI and Docker. Obtain the database connection string from the Supabase Dashboard Connect panel (prefer the Session pooler where supported). Never put credentials in Git, logs, or command output.
+Use a trusted workstation or secured backup runner. Install the current Supabase CLI and Docker. Obtain the production database connection string from the Supabase Dashboard **Connect** panel (use the Session pooler where supported) and store it as `SUPABASE_DB_URL` in the secured runner. Never put credentials in Git, logs, shell history, or command output.
 
 ```bash
 set -euo pipefail
@@ -26,13 +26,15 @@ supabase db dump --db-url "$SUPABASE_DB_URL" -f "$DEST/data.sql" --use-copy --da
 sha256sum "$DEST"/*.sql > "$DEST/SHA256SUMS"
 ```
 
+The Supabase platform CLI backup workflow supports `--db-url` with the managed project's connection string. The database export includes database roles, schema, data, RLS policies, functions, triggers and Auth user records. Project-level Auth provider settings, JWT signing secrets, SMTP configuration, Edge Functions, and Storage object bytes/configuration require separate recovery steps.
+
 Encrypt the export before uploading it. Store the encryption key separately from the backup destination. Use an off-site destination in a separate account/provider (for example, an encrypted S3-compatible bucket with versioning and lifecycle retention). Do not store backups in the application web root or in the same Supabase project being backed up.
 
 Recommended initial policy: daily backups, retain 30 daily and 12 monthly copies, and alert on any failed or missing backup. Restrict access to the backup destination to the backup and recovery operators.
 
 ## Storage object export
 
-The database dump includes Storage metadata, not object bytes. Enumerate all buckets and recursively list every object (including nested prefixes), then download each object using the authenticated Supabase Storage API or an S3-compatible Storage endpoint. Preserve bucket, full object path, content type, cache-control, and relevant metadata. Include private buckets; do not make them public to facilitate backup.
+The database dump is not a complete Storage backup and does not contain the actual object bytes. Treat Storage as a separate recovery component: export bucket configuration, object metadata and every object. Enumerate all buckets and recursively list every object (including nested prefixes), then download each object using the authenticated Supabase Storage API or an S3-compatible Storage endpoint. Preserve bucket, full object path, content type, cache-control, and relevant metadata. Include private buckets; do not make them public to facilitate backup.
 
 Current buckets observed at the time of this runbook: `avatars` (public), `tour-media` (public), `support-ticket-attachments` (private), and `vouchers` (private). Re-enumerate buckets on every run; do not assume this list is permanent. Compare expected object count and total bytes with downloaded objects, produce a manifest with per-object SHA-256 hashes, and fail the backup if any object cannot be read. Upload the encrypted archive and manifest to the separate off-site destination.
 
