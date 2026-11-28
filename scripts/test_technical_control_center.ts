@@ -4,6 +4,7 @@ const migration = fs.readFileSync('supabase/migrations/20261112190420_superadmin
 const server = fs.readFileSync('server.ts', 'utf8');
 const layout = fs.readFileSync('src/components/admin/AdminLayout.tsx', 'utf8');
 const page = fs.readFileSync('src/components/admin/technical/TechnicalControlCenter.tsx', 'utf8');
+const visitorPanel = fs.readFileSync('src/components/admin/technical/VisitorAnalyticsPanel.tsx', 'utf8');
 const app = fs.readFileSync('src/App.tsx', 'utf8');
 
 const checks: Array<{ name: string; passed: boolean }> = [
@@ -12,7 +13,7 @@ const checks: Array<{ name: string; passed: boolean }> = [
   { name: 'Only the server service role is granted table access', passed: /GRANT ALL ON TABLE public\.technical_events TO service_role/i.test(migration) },
   { name: 'Both technical API routes enforce superadmin AAL2', passed: (server.match(/requireSuperAdminAal2\(req, res\)/g) || []).length >= 3 },
   { name: 'Operational lifecycle reporting uses a separate protected server endpoint', passed: server.includes("app.get('/api/admin/technical/booking-lifecycle/overview'") && server.includes("from('booking_lifecycle_events')") && server.includes('requireSuperAdminAal2(req, res)') },
-  { name: 'Visitor dashboard keeps operational lifecycle metrics separate from consented visitor funnel', passed: page.includes('/api/admin/technical/booking-lifecycle/overview') && page.includes('Separate from consented visitor tracking') && page.includes('Staff-recorded confirmations') },
+  { name: 'Visitor dashboard keeps operational lifecycle metrics separate from consented visitor funnel', passed: visitorPanel.includes('/api/admin/technical/booking-lifecycle/overview') && visitorPanel.includes('Separate from consented visitor tracking') && visitorPanel.includes('Staff-recorded confirmations') },
   { name: 'API telemetry excludes technical endpoints and public health probes', passed: server.includes("routePath.startsWith('/api/admin/technical') || routePath === '/api/health'") },
   { name: 'Telemetry stores no request body, query string or authorization header', passed: !/metadata:\s*\{[^}]*req\.(body|query|headers)/s.test(server) },
   { name: 'Technical diagnostics are hidden from admin navigation and direct tab access', passed: !layout.includes("label: 'Technical Control Center'") && layout.slice(layout.indexOf('const canSeeTab'), layout.indexOf('const visibleNavItems')).includes('? false') && layout.slice(layout.indexOf('const canAccessActiveTab'), layout.indexOf('let activeNavSection')).includes('? false') },
