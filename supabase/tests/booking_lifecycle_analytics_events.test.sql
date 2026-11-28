@@ -103,6 +103,12 @@ SELECT is(
   'replaying the same source event is idempotent'
 );
 
+SELECT set_config(
+  'request.jwt.claims',
+  jsonb_build_object('role', 'service_role')::text,
+  true
+);
+
 UPDATE public.bookings
 SET status = 'confirmed'
 WHERE id = 'f6600000-0000-4000-8000-000000000001';
