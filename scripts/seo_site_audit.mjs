@@ -281,7 +281,11 @@ export async function runSiteAudit(options = {}) {
       const currentSitemap = pendingSitemaps.shift();
       if (!currentSitemap || seenSitemaps.has(currentSitemap)) continue;
       seenSitemaps.add(currentSitemap);
-      const result = await fetchWithRedirect(currentSitemap, baseHost);
+      if (!isAllowedByRobots(currentSitemap, robotsRules)) {
+        addIssue(issues, 'critical', currentSitemap, 'Sitemap location is disallowed by robots.txt.');
+        continue;
+      }
+      const result = await fetchWithRedirect(currentSitemap, baseHost, robotsRules);
       if (!result.response || result.response.status !== 200) {
         addIssue(issues, 'critical', currentSitemap, `Sitemap request failed (HTTP ${result.response?.status ?? 'network error'}).`);
         continue;
