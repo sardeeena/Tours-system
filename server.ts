@@ -6068,7 +6068,9 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
         const bullet = line.match(/^[-*]\s+(.+)$/);
         if (heading) {
           flushParagraph(); flushList();
-          blocks.push(`<h2>${seoRenderInline(heading[1], 180)}</h2>`);
+          const headingLevel = heading[0].match(/^#+/)?.[0].length || 1;
+          const headingTag = headingLevel === 1 ? 'h2' : 'h3';
+          blocks.push(`<${headingTag}>${seoRenderInline(heading[1], 180)}</${headingTag}>`);
         } else if (bullet) {
           flushParagraph();
           listItems.push(bullet[1]);
