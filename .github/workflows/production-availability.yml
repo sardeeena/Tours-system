@@ -14,14 +14,34 @@ permissions:
 
 concurrency:
   group: production-availability-check
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   check:
     name: Check public site and application readiness
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 20
     steps:
+      - name: Wait for the exact production commit on main
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: |
+          set -euo pipefail
+          deployed=0
+          for attempt in $(seq 1 40); do
+            if curl --fail --silent --show-error --max-time 10 --header 'Cache-Control: no-cache' --header 'Pragma: no-cache' https://awesomeadventure.tours/robots.txt | grep -Fq "# Hostinger-Release-Marker: $GITHUB_SHA"; then
+              echo "Production is serving commit $GITHUB_SHA."
+              deployed=1
+              break
+            fi
+            echo "Waiting for Hostinger to serve commit $GITHUB_SHA (attempt $attempt/40)..."
+            sleep 15
+          done
+          if [ "$deployed" -ne 1 ]; then
+            echo "::error::Production did not serve the exact main commit $GITHUB_SHA within the deployment window."
+            exit 1
+          fi
+
       - name: Check homepage responds successfully
         shell: bash
         run: |
@@ -63,12 +83,18 @@ jobs:
             if (!xml.includes("<urlset") && !xml.includes("<sitemapindex")) {
               throw new Error("Sitemap response is not a sitemap XML document.");
             }
-            if (!xml.includes("https://awesomeadventure.tours/")) {
+            if (!xml.includes("<loc>https://awesomeadventure.tours/</loc>")) {
               throw new Error("Sitemap is missing the canonical homepage URL.");
+            }
+            if (!xml.includes("<loc>https://awesomeadventure.tours/terms</loc>")) {
+              throw new Error("Sitemap is missing the published Terms page.");
+            }
+            if (xml.includes("<loc>https://awesomeadventure.tours/booking</loc>")) {
+              throw new Error("Private booking flow must not be included in the public sitemap.");
             }
             const entries = (xml.match(/<(url|sitemap)>/g) || []).length;
             if (entries < 1) throw new Error("Sitemap contains no entries.");
-            console.log("Sitemap XML is present with", entries, "entries.");
+            console.log("Sitemap XML is present with", entries, "entries; private booking route is excluded.");
           '
 
       - name: Check application liveness
@@ -108,5 +134,6 @@ jobs:
             echo "- Homepage: HTTP 200"
             echo "- Application liveness: passed"
             echo "- Database-backed readiness: passed"
+            echo "- Deployed commit: $GITHUB_SHA"
             echo "- Checked at: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
           } >> "$GITHUB_STEP_SUMMARY"
