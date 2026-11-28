@@ -136,6 +136,10 @@ SELECT is(
 );
 
 UPDATE public.bookings
+SET payment_status = 'paid'
+WHERE id = 'f6600000-0000-4000-8000-000000000001';
+
+UPDATE public.bookings
 SET status = 'completed'
 WHERE id = 'f6600000-0000-4000-8000-000000000001';
 
