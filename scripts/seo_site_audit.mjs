@@ -198,7 +198,7 @@ async function fetchWithRedirect(url, baseHost, robotsRules = []) {
         'User-Agent': AUDIT_USER_AGENT,
         Accept: 'text/html,application/xhtml+xml,application/xml,text/xml,*/*;q=0.8',
       },
-      signal: AbortSignal.timeout(15_000),
+      signal: AbortSignal.timeout(12_000),
     });
     if ([301, 302, 303, 307, 308].includes(response.status)) {
       const location = response.headers.get('location');
