@@ -21,9 +21,8 @@ In GA4, open **Admin → Data display → Custom definitions → Custom dimensio
 | Destination | `destination` | Destination context |
 | Category | `category` | Excursion category |
 | Booking step | `step` | Booking funnel step; the website maps `booking_step` to `step` before sending |
-| Payment method | `payment_method` | Selected payment method, where sent |
 
-Do not register `currency`, `page_path`, `page_location`, `page_title`, `session_id`, `user_id`, or customer identifiers as custom dimensions. GA4 already has standard page/campaign dimensions, and some parameter names are reserved.
+Do not register `currency`, `page_path`, `page_location`, `page_title`, `session_id`, `user_id`, payment methods, guest counts, or customer identifiers as custom dimensions. The site deliberately does not forward payment-method or guest-count details to GA4. GA4 already has standard page/campaign dimensions, and some parameter names are reserved.
 
 ## Custom metrics to register
 
@@ -32,8 +31,7 @@ In **Admin → Data display → Custom definitions → Custom metrics → Create
 | Display name | Event parameter | Unit | Interpretation |
 |---|---|---|---|
 | Submitted booking value | `value` | Currency | Requested reservation value on `booking_submitted`; this is **not received revenue** |
-| Guest count | `guest_count` | Standard | Number of guests attached to the relevant event |
-
+| Guest count 
 Do not classify submitted booking value as revenue. The site maps `booking_value` to GA4's `value` only for the successful reservation-submission event. It must not be used as a purchase or cash-received metric.
 
 Google's instructions: [Create custom metrics](https://support.google.com/analytics/answer/14239619) and [About custom dimensions and metrics](https://support.google.com/analytics/answer/14240153). New custom definitions may take up to 24–48 hours to appear in reports.
