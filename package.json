@@ -35,7 +35,7 @@
     "test:brand-identity": "tsx scripts/test_brand_identity.ts",
     "test:public-catalogue": "tsx scripts/test_public_catalogue_fail_closed.ts",
     "test:public-discovery": "tsx scripts/test_public_discovery_integrity.ts",
-    "test:public-seo-content": "tsx scripts/test_public_seo_content_integrity.ts && node --test scripts/seo_site_audit.test.mjs",
+    "test:public-seo-content": "tsx scripts/test_public_seo_content_integrity.ts && node --test scripts/seo_site_audit.test.mjs scripts/write_release_marker.test.mjs",
     "test:booking-finance-boundary": "tsx scripts/test_booking_finance_ledger_authority.ts",
     "test:finance-reporting": "tsx scripts/test_finance_reporting_refund_consistency.ts",
     "test:finance-company-billing": "tsx scripts/test_finance_company_billing.ts",
