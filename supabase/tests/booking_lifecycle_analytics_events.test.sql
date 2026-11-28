@@ -80,17 +80,17 @@ VALUES (
 
 SELECT is(
   (SELECT count(*)::integer FROM public.booking_lifecycle_events
-   WHERE booking_id = 'f6600000-0000-4000-8000-000000000001' AND event_type = 'booking_submitted'),
+   WHERE booking_id = 'f6600000-0000-4000-8000-000000000001' AND event_type = 'booking_created'),
   1,
   'a new booking creates exactly one submitted event'
 );
 
 SELECT private.record_booking_lifecycle_event(
   'f6600000-0000-4000-8000-000000000001',
-  'booking_submitted',
+  'booking_created',
   'bookings',
   'f6600000-0000-4000-8000-000000000001',
-  'booking:f6600000-0000-4000-8000-000000000001:submitted',
+  'booking:f6600000-0000-4000-8000-000000000001:created',
   NULL,
   'pending',
   100,
@@ -100,7 +100,7 @@ SELECT private.record_booking_lifecycle_event(
 );
 SELECT is(
   (SELECT count(*)::integer FROM public.booking_lifecycle_events
-   WHERE booking_id = 'f6600000-0000-4000-8000-000000000001' AND event_type = 'booking_submitted'),
+   WHERE booking_id = 'f6600000-0000-4000-8000-000000000001' AND event_type = 'booking_created'),
   1,
   'replaying the same source event is idempotent'
 );
