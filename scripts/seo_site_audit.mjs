@@ -338,7 +338,7 @@ export async function runSiteAudit(options = {}) {
   if (sitemapUrls.length === 0 && !blocked) addIssue(issues, 'critical', '/sitemap.xml', 'No crawlable URLs were found in the sitemap.');
   const sitemapSet = new Set(sitemapUrls);
   const linkedTargets = new Set();
-  const queue = [...sitemapUrls];
+  const queue = blocked ? [] : [...sitemapUrls];
   const seen = new Set();
   const excludedPrefixes = ['/admin', '/api', '/my-booking', '/booking/confirmation', '/staff', '/login', '/register', '/auth'];
 
