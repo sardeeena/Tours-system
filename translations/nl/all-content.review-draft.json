@@ -4,7 +4,7 @@
   "status": "translation-review-draft",
   "source_project": "uvtbtpxtrrmaublrztgv",
   "coverage": {
-    "tour": 26,
+    "tour": 27,
     "blog_post": 50,
     "destination": 7,
     "static_page": 10,
@@ -13,7 +13,7 @@
     "public_ui_messages": 81,
     "private_ui_messages": 1090,
     "ui_catalog_messages": 1171,
-    "source_records": 112
+    "source_records": 113
   },
   "records": [
     {
@@ -5492,6 +5492,186 @@
         "labels": {
           "highlights": "Hoogtepunten",
           "itinerary": "Programma",
+          "included": "Inbegrepen",
+          "excluded": "Niet inbegrepen",
+          "faqs": "Veelgestelde vragen",
+          "pickupInfo": "Ophaalinformatie",
+          "cancellationPolicy": "Annuleringsbeleid",
+          "ageRestrictions": "Leeftijdsbeperkingen",
+          "bookNow": "Boek nu",
+          "browseMore": "Bekijk meer excursies"
+        }
+      }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "9d5ffc61-a204-4fcc-9f8c-e10b3499dfa9",
+      "locale": "nl",
+      "source_slug": "luxor-west-bank-private-tour-kings-queens-hatshepsut-temple-with-lunch",
+      "translated_slug": "prive-rondleiding-westelijke-oever-luxor-koningen-koninginnen-tempel-hatsjepsoet-lunch",
+      "title": "Privétour op de westelijke oever van Luxor: koningen, koninginnen en de tempel van Hatsjepsoet met lunch",
+      "summary": "Ontdek de westelijke oever van Luxor tijdens een privétour met een Egyptoloog als gids. Bezoek de Vallei der Koningen en Koninginnen, de tempel van Hatsjepsoet en de Kolossen van Memnon, inclusief lunch.",
+      "seo_title": "Privétour westelijke oever Luxor met lunch",
+      "seo_description": "Bezoek de Vallei der Koningen en Koninginnen, de tempel van Hatsjepsoet en de Kolossen van Memnon met een privé-Egyptoloog en lunch.",
+      "duration": "6 uur",
+      "duration_type": "Hele dag",
+      "departure_time": "07:00 AM, 08:00 AM, 09:00 AM",
+      "age_restrictions": "",
+      "pickup_info": "* Gratis ophalen bij alle hotels in de stad Luxor.\n* Voor hotels buiten de stad Luxor kan een toeslag gelden.\n* Geef bij het boeken de naam van je hotel door; we bevestigen vervolgens je ophaaltijd.",
+      "cancellation_policy": "* Gratis annuleren tot 24 uur voor aanvang van de excursie.\n* Annuleren 12 uur voor de excursie: 50% terugbetaling.\n* Annuleren 6 uur voor de excursie: geen terugbetaling, maar je kunt tegen betaling de datum wijzigen.",
+      "content": {
+        "title": "Privétour op de westelijke oever van Luxor: koningen, koninginnen en de tempel van Hatsjepsoet met lunch",
+        "description": "Stap in de fascinerende wereld van het oude Egypte tijdens een privéreis over de westelijke oever van Luxor. Onder begeleiding van een professionele Egyptoloog ontdek je enkele van de meest bijzondere archeologische locaties in de regio en hoor je de verhalen van de koningen, koninginnen en heersers van het oude Thebe.\n\nJe dag begint met ophalen bij je hotel in Luxor in een privévoertuig met airconditioning. Rijd naar de Vallei der Koningen, de legendarische begraafplaats van de farao’s, waar je prachtig versierde koninklijke graven kunt ontdekken.\n\nVervolg je route naar de Vallei der Koninginnen, de laatste rustplaats van koninklijke echtgenotes en andere leden van de koninklijke familie. Hier bevindt zich ook het beroemde graf van Nefertari, bekend om zijn indrukwekkende decoraties.\n\nBezoek daarna de imposante tempel van Hatsjepsoet, een bijzonder monument dat tegen de kliffen van Deir el-Bahari is gebouwd. Leer meer over deze opmerkelijke vrouwelijke heerser, wier nalatenschap haar tot een van de meest fascinerende figuren uit het oude Egypte maakte.\n\nVoordat je de westelijke oever verlaat, stop je bij de Kolossen van Memnon, twee enorme beelden die al duizenden jaren op de Thebaanse vlakte staan.\n\nNa het verkennen van deze historische bezienswaardigheden geniet je van een traditionele Egyptische lunch in een lokaal restaurant, waarna je comfortabel terugkeert naar je hotel.",
+        "durationLabel": "6 uur",
+        "highlights": [
+          "Verken de beroemde Vallei der Koningen",
+          "Ontdek de koninklijke graven in de Vallei der Koninginnen",
+          "Bezoek de prachtige tempel van Hatsjepsoet",
+          "Bewonder de indrukwekkende Kolossen van Memnon",
+          "Leer over de oude Egyptische geschiedenis met een privé-Egyptoloog",
+          "Geniet van een traditionele Egyptische lunch in een lokaal restaurant"
+        ],
+        "itinerary": [
+          {
+            "time": "00:00",
+            "title": "Ophalen bij het hotel",
+            "description": "Ontmoet je privégids en chauffeur bij je hotel in Luxor en reis in een voertuig met airconditioning naar de westelijke oever."
+          },
+          {
+            "time": "00:00",
+            "title": "Vallei der Koningen",
+            "description": "Verken de koninklijke necropolis en ontdek de versierde graven van farao’s uit het oude Egypte."
+          },
+          {
+            "time": "00:00",
+            "title": "Vallei der Koninginnen",
+            "description": "Bezoek de begraafplaats van koninklijke koninginnen en ontdek het beroemde graf van Nefertari."
+          },
+          {
+            "time": "00:00",
+            "title": "Tempel van Hatsjepsoet",
+            "description": "Bewonder de indrukwekkende terrassen van de tempel en leer over het leven en de nalatenschap van koningin Hatsjepsoet."
+          },
+          {
+            "time": "00:00",
+            "title": "Kolossen van Memnon",
+            "description": "Stop bij de twee monumentale beelden en maak onvergetelijke foto’s."
+          },
+          {
+            "time": "00:00",
+            "title": "Lunch en terugreis",
+            "description": "Geniet van een Egyptische lunch in een lokaal restaurant voordat je met privévervoer teruggaat naar je hotel."
+          }
+        ],
+        "included": [
+          "Ophalen en terugbrengen bij je hotel in Luxor",
+          "Privévervoer met airconditioning",
+          "Professionele Egyptoloog als gids",
+          "Lunch in een lokaal restaurant"
+        ],
+        "excluded": [
+          "Toegangskaarten voor archeologische locaties en tempels",
+          "Extra toegangsprijzen voor graven",
+          "Fooien en persoonlijke uitgaven"
+        ],
+        "faqs": [
+          {
+            "question": "Hoe lang duurt de tour over de westelijke oever van Luxor?",
+            "answer": "De tour duurt ongeveer 6 uur, inclusief ophalen en terugbrengen bij het hotel, bezoeken aan de belangrijkste archeologische locaties en lunch in een lokaal restaurant.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat moet ik meenemen?",
+            "answer": "Comfortabele wandelschoenen.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Volg tijdens de hele tour de aanwijzingen van je gids.",
+            "section": "important_information"
+          },
+          {
+            "question": "Welke historische locaties bezoeken we tijdens de tour?",
+            "answer": "Je verkent de Vallei der Koningen, de Vallei der Koninginnen, de indrukwekkende tempel van Hatsjepsoet en de beroemde Kolossen van Memnon.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat moet ik meenemen?",
+            "answer": "Een zonnebril en een hoed.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Blijf bij alle archeologische locaties binnen de aangewezen bezoekersgebieden.",
+            "section": "important_information"
+          },
+          {
+            "question": "Is dit een privétour of een gedeelde groepstour?",
+            "answer": "Dit is een privé-ervaring: je geniet van de tour met je eigen gezelschap, privévervoer en een persoonlijke gids.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat moet ik meenemen?",
+            "answer": "Zonnebrandcrème.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Draag geschikt schoeisel wanneer je over oude locaties en oneffen ondergronden loopt.",
+            "section": "important_information"
+          },
+          {
+            "question": "Gaat er een Egyptoloog als gids met ons mee?",
+            "answer": "Ja, een professionele Egyptoloog begeleidt je tijdens de hele tour en deelt boeiende verhalen en historische informatie over de oude Egyptische beschaving.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat moet ik meenemen?",
+            "answer": "Een fles water.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Drink voldoende water, vooral bij warm weer.",
+            "section": "important_information"
+          },
+          {
+            "question": "Is de lunch bij de tourprijs inbegrepen?",
+            "answer": "Ja, de lunch in een lokaal Egyptisch restaurant is inbegrepen, zodat je tijdens de excursie kunt genieten van traditionele Egyptische gerechten.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat moet ik meenemen?",
+            "answer": "Een camera of smartphone.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Raak oude monumenten en voorwerpen niet aan en klim er niet op.",
+            "section": "important_information"
+          },
+          {
+            "question": "Zijn de toegangskaarten inbegrepen in de boekingsprijs?",
+            "answer": "Nee, toegangskaarten voor archeologische locaties en tempels zijn niet inbegrepen. Je kunt deze tickets ter plaatse apart kopen.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat moet ik meenemen?",
+            "answer": "Wat contant geld voor persoonlijke uitgaven en eventuele optionele toegangskaarten.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Houd je persoonlijke bezittingen altijd goed in de gaten.",
+            "section": "important_information"
+          }
+        ],
+        "pickupInfo": "* Gratis ophalen bij alle hotels in de stad Luxor.\n* Voor hotels buiten de stad Luxor kan een toeslag gelden.\n* Geef bij het boeken de naam van je hotel door; we bevestigen vervolgens je ophaaltijd.",
+        "cancellationPolicy": "* Gratis annuleren tot 24 uur voor aanvang van de excursie.\n* Annuleren 12 uur voor de excursie: 50% terugbetaling.\n* Annuleren 6 uur voor de excursie: geen terugbetaling, maar je kunt tegen betaling de datum wijzigen.",
+        "ageRestrictions": "",
+        "labels": {
+          "highlights": "Hoogtepunten",
+          "itinerary": "Reisprogramma",
           "included": "Inbegrepen",
           "excluded": "Niet inbegrepen",
           "faqs": "Veelgestelde vragen",
