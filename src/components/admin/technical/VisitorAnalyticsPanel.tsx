@@ -266,7 +266,7 @@ export const VisitorAnalyticsPanel: React.FC = () => {
         {lifecycle ? <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div><h3 className="font-semibold">Operational booking & payment lifecycle · {lifecycle.periodDays} days</h3>
-              <p className="mt-1 text-xs text-slate-500">Separate from consented visitor tracking; recorded from authoritative database changes.</p></div>
+              <p className="mt-1 text-xs text-slate-500">Separate from consented visitor tracking; includes website and staff-created reservations, so it is not a web-conversion count.</p></div>
             <span className="text-xs text-slate-500">{lifecycle.totalEvents.toLocaleString()} events</span>
           </div>
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
