@@ -261,7 +261,7 @@ function addIssue(issues, severity, url, message) {
 }
 
 export function evaluatePageSeoIssues(page, url, sitemapSet, issues, finalUrl = url, baseUrl = new URL(url).origin) {
-  const noindex = /\\bnoindex\\b/i.test(page.robots || '');
+  const noindex = /\bnoindex\b/i.test(page.robots || '');
   if (noindex) {
     if (sitemapSet.has(url)) {
       addIssue(issues, 'critical', url, 'URL is present in sitemap but declares noindex.');
@@ -516,7 +516,7 @@ export async function runSiteAudit(options = {}) {
   const descriptionGroups = new Map();
   const canonicalGroups = new Map();
   for (const page of pages) {
-    if (/\\bnoindex\\b/i.test(page.robots || '')) continue;
+    if (/\bnoindex\b/i.test(page.robots || '')) continue;
     if (page.title) titleGroups.set(page.title, [...(titleGroups.get(page.title) || []), page.url]);
     if (page.description) descriptionGroups.set(page.description, [...(descriptionGroups.get(page.description) || []), page.url]);
     if (page.canonical) canonicalGroups.set(page.canonical, [...(canonicalGroups.get(page.canonical) || []), page.url]);
@@ -525,7 +525,7 @@ export async function runSiteAudit(options = {}) {
   for (const [description, urls] of descriptionGroups) if (urls.length > 1) addIssue(issues, 'warning', urls[0], `Duplicate meta description appears on ${urls.length} pages: ${description.slice(0, 90)}.`);
   for (const [canonical, urls] of canonicalGroups) if (urls.length > 1) addIssue(issues, 'warning', urls[0], `Multiple pages share canonical ${canonical}.`);
 
-  const noindexUrls = new Set(pages.filter((page) => /\\bnoindex\\b/i.test(page.robots || '')).map((page) => page.url));
+  const noindexUrls = new Set(pages.filter((page) => /\bnoindex\b/i.test(page.robots || '')).map((page) => page.url));
   const orphanSitemapUrls = sitemapUrls.filter((url) =>
     url !== new URL('/', baseUrl).toString() && !noindexUrls.has(url) && !linkedTargets.has(url)
   );
