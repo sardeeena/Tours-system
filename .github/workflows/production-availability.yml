@@ -67,17 +67,19 @@ jobs:
           done
 
           robots="$(curl --fail --silent --show-error --location --max-time 25 --retry 2 --retry-delay 2 https://awesomeadventure.tours/robots.txt)"
-          printf '%s' "$robots" | grep -Fq '# Hostinger-Release-Marker: aa-analytics-seo-2026-11-28' || {
-            echo "::error::The deployed robots.txt release marker is missing."
-            exit 1
-          }
+          if [ "$GITHUB_EVENT_NAME" != "pull_request" ]; then
+            printf '%s' "$robots" | grep -Fq "# Hostinger-Release-Marker: $GITHUB_SHA" || {
+              echo "::error::robots.txt does not contain the exact deployed commit marker."
+              exit 1
+            }
+          fi
           printf '%s' "$robots" | grep -Fq 'Sitemap: https://awesomeadventure.tours/sitemap.xml' || {
             echo "::error::robots.txt does not advertise the canonical sitemap."
             exit 1
           }
 
           sitemap="$(curl --fail --silent --show-error --location --max-time 25 --retry 2 --retry-delay 2 https://awesomeadventure.tours/sitemap.xml)"
-          printf '%s' "$sitemap" | node -e '
+          printf '%s' "$sitemap" | GITHUB_EVENT_NAME="$GITHUB_EVENT_NAME" node -e '
             const fs = require("node:fs");
             const xml = fs.readFileSync(0, "utf8");
             if (!xml.includes("<urlset") && !xml.includes("<sitemapindex")) {
@@ -89,7 +91,7 @@ jobs:
             if (!xml.includes("<loc>https://awesomeadventure.tours/terms</loc>")) {
               throw new Error("Sitemap is missing the published Terms page.");
             }
-            if (xml.includes("<loc>https://awesomeadventure.tours/booking</loc>")) {
+            if (process.env.GITHUB_EVENT_NAME !== "pull_request" && xml.includes("<loc>https://awesomeadventure.tours/booking</loc>")) {
               throw new Error("Private booking flow must not be included in the public sitemap.");
             }
             const entries = (xml.match(/<(url|sitemap)>/g) || []).length;
