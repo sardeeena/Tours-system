@@ -267,7 +267,14 @@ export async function runSiteAudit(options = {}) {
 
   const robotsResult = await fetchWithRedirect(new URL('/robots.txt', baseUrl).toString(), baseHost);
   if (!robotsResult.response || robotsResult.response.status !== 200) {
-    addIssue(issues, 'critical', '/robots.txt', `Unable to retrieve robots.txt (HTTP ${robotsResult.response?.status ?? 'network error'}).`);
+    const status = robotsResult.response?.status ?? null;
+    if (status === 403 || status === 429) {
+      blocked = true;
+      blockedStatus = status;
+      addIssue(issues, 'warning', '/robots.txt', `Production edge returned HTTP ${status}; crawl stopped without retrying or bypassing protection.`);
+    } else {
+      addIssue(issues, 'critical', '/robots.txt', `Unable to retrieve robots.txt (HTTP ${status ?? 'network error'}).`);
+    }
   } else {
     const robotsText = await robotsResult.response.text();
     const robots = parseRobots(robotsText);
@@ -288,7 +295,14 @@ export async function runSiteAudit(options = {}) {
       }
       const result = await fetchWithRedirect(currentSitemap, baseHost, robotsRules);
       if (!result.response || result.response.status !== 200) {
-        addIssue(issues, 'critical', currentSitemap, `Sitemap request failed (HTTP ${result.response?.status ?? 'network error'}).`);
+        const status = result.response?.status ?? null;
+        if (status === 403 || status === 429) {
+          blocked = true;
+          blockedStatus = status;
+          addIssue(issues, 'warning', currentSitemap, `Production edge returned HTTP ${status}; crawl stopped without retrying or bypassing protection.`);
+          break;
+        }
+        addIssue(issues, 'critical', currentSitemap, `Sitemap request failed (HTTP ${status ?? 'network error'}).`);
         continue;
       }
       const xml = await result.response.text();
@@ -321,7 +335,7 @@ export async function runSiteAudit(options = {}) {
     sitemapUrls = [...new Set(normalizedSitemap)];
   }
 
-  if (sitemapUrls.length === 0) addIssue(issues, 'critical', '/sitemap.xml', 'No crawlable URLs were found in the sitemap.');
+  if (sitemapUrls.length === 0 && !blocked) addIssue(issues, 'critical', '/sitemap.xml', 'No crawlable URLs were found in the sitemap.');
   const sitemapSet = new Set(sitemapUrls);
   const linkedTargets = new Set();
   const queue = [...sitemapUrls];
