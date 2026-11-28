@@ -4,7 +4,7 @@
   "status": "translation-review-draft",
   "source_project": "uvtbtpxtrrmaublrztgv",
   "coverage": {
-    "tour": 27,
+    "tour": 28,
     "blog_post": 50,
     "destination": 7,
     "static_page": 10,
@@ -13,7 +13,7 @@
     "public_ui_messages": 81,
     "private_ui_messages": 1090,
     "ui_catalog_messages": 1171,
-    "source_records": 113
+    "source_records": 114
   },
   "records": [
     {
@@ -5682,6 +5682,229 @@
           "browseMore": "Bekijk meer excursies"
         }
       }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "b4ef01ac-9971-441f-a8af-fcea73e4a0cb",
+      "locale": "nl",
+      "source_slug": "valley-of-the-kings-full-day-tour-in-luxor",
+      "translated_slug": "dagtocht-vallei-der-koningen-luxor",
+      "title": "Dagtocht naar de Vallei der Koningen in Luxor",
+      "summary": "Ontdek het oude Thebe tijdens een dagtocht door Luxor. Bezoek de Karnak-tempel, de Vallei der Koningen, de tempel van Hatsjepsoet en de Kolossen van Memnon met een Egyptoloog als gids, inclusief lunch en hoteltransfers.",
+      "seo_title": "Dagtocht naar de Vallei der Koningen in Luxor",
+      "seo_description": "Ontdek Karnak, de Vallei der Koningen, de tempel van Hatsjepsoet en de Kolossen van Memnon met een Egyptoloog als gids. Lunch en hoteltransfers in Luxor inbegrepen.",
+      "duration": "Hele dag",
+      "duration_type": "Halve dag",
+      "departure_time": "04:00 AM",
+      "age_restrictions": "",
+      "pickup_info": "Ophalen en terugbrengen bij je hotel in Luxor.",
+      "cancellation_policy": "* Gratis annuleren tot 24 uur voor aanvang van de excursie.\n* Annuleren 12 uur voor de excursie: 50% terugbetaling.\n* Annuleren 6 uur voor de excursie: geen terugbetaling, maar je kunt tegen betaling de datum wijzigen.",
+      "content": {
+        "title": "Dagtocht naar de Vallei der Koningen in Luxor",
+        "description": "Breng een dag door met het ontdekken van de bijzondere geschiedenis van Luxor, een stad die vaak het grootste openluchtmuseum ter wereld wordt genoemd. Van indrukwekkende tempelcomplexen tot oude koninklijke begraafplaatsen: deze excursie brengt je dichter bij de verhalen, tradities en prestaties van de farao’s die het oude Egypte vormgaven.\n\nJe dag begint met ophalen bij je hotel in Luxor. Reis comfortabel in een voertuig met airconditioning naar de eerste bezienswaardigheid, onder begeleiding van een professionele Egyptoloog die je kennis laat maken met de fascinerende geschiedenis van de oude stad.\n\nBegin je ontdekkingstocht bij de Karnak-tempel, een enorm religieus complex met indrukwekkende zuilen, monumentale poorten en prachtig bewaarde historische details. Terwijl je door de bijzondere zalen wandelt, ontdek je hoe verschillende generaties Egyptische heersers hebben bijgedragen aan de bouw en uitbreiding ervan.\n\nNa het bezoek aan Karnak geniet je van een ontspannen lunch in een lokaal restaurant in Luxor voordat je de excursie voortzet.\n\nJe kunt er ook voor kiezen om een traditionele felucca-tocht over de Nijl te maken (optioneel), een rustige manier om van de rivier en het omliggende landschap te genieten.\n\nVervolg je route naar de westelijke oever en bezoek de legendarische Vallei der Koningen, waar veel van de machtigste farao’s uit het oude Egypte werden begraven. Bezoek de geselecteerde graven en bewonder de kleurrijke versieringen, gedetailleerde hiërogliefen en bijzondere scènes die de oude Egyptische opvattingen over het leven na de dood laten zien.\n\nOntdek vervolgens de indrukwekkende tempel van koningin Hatsjepsoet in Deir el-Bahari. Dit bijzondere monument is gebouwd tegen een imposante kalkstenen bergwand en staat bekend om zijn elegante terrassen en unieke architectuur.\n\nDe laatste bezienswaardigheid zijn de Kolossen van Memnon, twee enorme stenen beelden die al duizenden jaren over het Thebaanse landschap uitkijken. Maak mooie foto’s en leer meer over hun geschiedenis.\n\nNa een dag vol geschiedenis en ontdekkingen kun je ontspannen tijdens de comfortabele rit terug naar je hotel in Luxor.\n\nOf je nu geïnteresseerd bent in oude architectuur, koninklijke geschiedenis of het culturele erfgoed van Egypte, deze excursie laat je de hoogtepunten van Luxor op één dag beleven.",
+        "durationLabel": "Hele dag",
+        "highlights": [
+          "Verken de indrukwekkende Karnak-tempel en de bijzondere oude bouwwerken.",
+          "Ontdek de fascinerende koninklijke graven in de Vallei der Koningen.",
+          "Bezoek de bijzondere tempel van koningin Hatsjepsoet in Deir el-Bahari.",
+          "Bewonder de beroemde Kolossen van Memnon op de westelijke oever van Luxor.",
+          "Leer over de wereld van de oude farao’s met een professionele Egyptoloog als gids.",
+          "Geniet van een lunch in een lokaal restaurant in Luxor.",
+          "Kies optioneel voor een traditionele felucca-tocht over de Nijl.",
+          "Profiteer van ophalen en terugbrengen bij je hotel in Luxor."
+        ],
+        "itinerary": [
+          {
+            "time": "00:00",
+            "title": "Ophalen bij je hotel in Luxor",
+            "description": "Je dag begint met ophalen bij je hotel in Luxor. Ontmoet je chauffeur en reis comfortabel in een voertuig met airconditioning naar de eerste bezienswaardigheid."
+          },
+          {
+            "time": "00:00",
+            "title": "Eerste stop – Karnak-tempel",
+            "description": "Bezoek een van de indrukwekkendste oude religieuze complexen van Egypte. Verken de monumentale zuilen, historische binnenplaatsen en bijzondere architectuur en leer waarom de tempel zo belangrijk was voor de oude Egyptische beschaving."
+          },
+          {
+            "time": "00:00",
+            "title": "Lunchpauze",
+            "description": "Neem een pauze in een lokaal restaurant in Luxor en geniet van de lunch voordat je verdergaat."
+          },
+          {
+            "time": "00:00",
+            "title": "Optionele felucca-tocht op de Nijl",
+            "description": "Kies voor een traditionele overtocht met een felucca op de Nijl. Ontspan op het water en geniet van het mooie uitzicht op Luxor."
+          },
+          {
+            "time": "00:00",
+            "title": "Vallei der Koningen",
+            "description": "Ontdek de oude begraafplaats van de Egyptische farao’s. Bezoek de geselecteerde graven en bewonder de kleurrijke muurschilderingen en gedetailleerde hiërogliefen."
+          },
+          {
+            "time": "00:00",
+            "title": "Tempel van koningin Hatsjepsoet",
+            "description": "Verken deze bijzondere tempel die in de rotswanden van Deir el-Bahari is gebouwd. Ontdek het unieke ontwerp en leer over de opmerkelijke vrouwelijke heerser die de tempel liet bouwen."
+          },
+          {
+            "time": "00:00",
+            "title": "Kolossen van Memnon",
+            "description": "Stop bij de twee enorme beelden van Amenhotep III. Je gids vertelt over hun geschiedenis en de rol die ze ooit speelden bij het bewaken van het oude koninklijke complex."
+          },
+          {
+            "time": "00:00",
+            "title": "Terug naar je hotel",
+            "description": "Na afloop van het programma word je comfortabel teruggebracht naar je hotel in Luxor."
+          },
+          {
+            "time": "00:00",
+            "title": "Let op",
+            "description": "De volgorde van het programma kan veranderen door lokale omstandigheden en operationele afspraken. De felucca-tocht op de Nijl is optioneel en niet bij de tourprijs inbegrepen."
+          }
+        ],
+        "included": [
+          "Gratis ophalen en terugbrengen bij je hotel in Luxor.",
+          "Retourtransfers in een comfortabel voertuig met airconditioning.",
+          "Professionele Egyptoloog als gids.",
+          "Toegangskaarten voor de bezienswaardigheden die in het programma zijn opgenomen.",
+          "Toegangskaarten voor de bezienswaardigheden die in het programma zijn opgenomen.",
+          "Lunch in een lokaal restaurant in Luxor.",
+          "Water of frisdrank aan boord.",
+          "Begeleide sightseeing in Luxor."
+        ],
+        "excluded": [
+          "Drankjes in het restaurant.",
+          "Optionele felucca-tocht op de Nijl.",
+          "Persoonlijke uitgaven.",
+          "Extra toegangsprijzen voor bezienswaardigheden of graven die niet bij het standaardticket zijn inbegrepen.",
+          "Diensten die niet uitdrukkelijk bij de inbegrepen onderdelen worden genoemd."
+        ],
+        "faqs": [
+          {
+            "question": "Hoe kan ik de tour naar de Vallei der Koningen boeken?",
+            "answer": "Je kunt rechtstreeks via onze website reserveren. Kies de gewenste datum, selecteer het aantal deelnemers, vul je gegevens in en rond je boeking af.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat moet ik meenemen?",
+            "answer": "Een geldig paspoort of een duidelijke kopie van je paspoort.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Volg tijdens de hele excursie de aanwijzingen van je gids.",
+            "section": "important_information"
+          },
+          {
+            "question": "Wat is het annuleringsbeleid?",
+            "answer": "Je kunt je reservering kosteloos annuleren tot 12 uur voor het geplande vertrek van de excursie.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat moet ik meenemen?",
+            "answer": "Comfortabele wandelschoenen.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Draag comfortabele schoenen, omdat sommige archeologische gebieden ongelijke oppervlakken en trappen hebben.",
+            "section": "important_information"
+          },
+          {
+            "question": "Kan ik de datum van mijn boeking wijzigen?",
+            "answer": "Ja. Je kunt tot 24 uur voor het geplande vertrek een datumwijziging aanvragen, afhankelijk van de beschikbaarheid.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat moet ik meenemen?",
+            "answer": "Lichte en comfortabele kleding.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Drink voldoende water, vooral bij warm weer.",
+            "section": "important_information"
+          },
+          {
+            "question": "Waar begint de excursie?",
+            "answer": "De excursie begint in Luxor, met gratis ophalen en terugbrengen bij hotels in de stad.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat moet ik meenemen?",
+            "answer": "Een zonnebril en een zonnehoed.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Gebruik zonnebrandcrème en draag een hoed om jezelf tegen direct zonlicht te beschermen.",
+            "section": "important_information"
+          },
+          {
+            "question": "Hoe laat begint de excursie?",
+            "answer": "De momenteel vermelde starttijd is ongeveer 04:00 AM. Je exacte ophaaltijd bij het hotel wordt vóór de excursie bevestigd.",
+            "section": "faq"
+          },
+          {
+            "question": "Wat moet ik meenemen?",
+            "answer": "Zonnebrandcrème.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Wees voorzichtig wanneer je door oude graven en tempelgebieden loopt.",
+            "section": "important_information"
+          },
+          {
+            "question": "Wat moet ik meenemen?",
+            "answer": "Een camera of smartphone.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Raak oude muurschilderingen, inscripties of historische bouwwerken niet aan.",
+            "section": "important_information"
+          },
+          {
+            "question": "Wat moet ik meenemen?",
+            "answer": "Wat contant geld voor persoonlijke uitgaven.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Houd je aan alle borden en blijf uit afgesloten gebieden bij archeologische locaties.",
+            "section": "important_information"
+          },
+          {
+            "question": "Wat moet ik meenemen?",
+            "answer": "Een kleine rugzak voor je persoonlijke spullen.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Houd je persoonlijke bezittingen en waardevolle spullen veilig.",
+            "section": "important_information"
+          },
+          {
+            "question": "Belangrijke informatie",
+            "answer": "Volg de veiligheidsinstructies van de bemanning als je kiest voor de optionele felucca-tocht op de Nijl.",
+            "section": "important_information"
+          }
+        ],
+        "pickupInfo": "Ophalen en terugbrengen bij je hotel in Luxor.",
+        "cancellationPolicy": "* Gratis annuleren tot 24 uur voor aanvang van de excursie.\n* Annuleren 12 uur voor de excursie: 50% terugbetaling.\n* Annuleren 6 uur voor de excursie: geen terugbetaling, maar je kunt tegen betaling de datum wijzigen.",
+        "ageRestrictions": "",
+        "labels": {
+          "highlights": "Hoogtepunten",
+          "itinerary": "Reisprogramma",
+          "included": "Inbegrepen",
+          "excluded": "Niet inbegrepen",
+          "faqs": "Veelgestelde vragen",
+          "pickupInfo": "Ophaalinformatie",
+          "cancellationPolicy": "Annuleringsbeleid",
+          "ageRestrictions": "Leeftijdsbeperkingen",
+          "bookNow": "Boek nu",
+          "browseMore": "Bekijk meer excursies"
+        }
+      }
     }
   ],
   "source_data_warnings": [
@@ -5712,6 +5935,47 @@
       "field": "departure_time",
       "source_value": "20:00 ",
       "issue": "Source database value contains trailing whitespace. Preserved unchanged."
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "b4ef01ac-9971-441f-a8af-fcea73e4a0cb",
+      "field": "duration_type",
+      "source_value": "Half Day",
+      "observed_values": [
+        "Full Day",
+        "10 hours"
+      ],
+      "issue": "The title, duration label and duration_hours describe a full-day 10-hour excursion, but duration_type says Half Day. Preserve source data and do not publish this translation until the operator confirms the category."
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "b4ef01ac-9971-441f-a8af-fcea73e4a0cb",
+      "field": "pickup_available",
+      "source_value": false,
+      "observed_values": [
+        "Hotel pickup and drop-off in Luxor",
+        "active Luxor City Hotels mapping with zero fee"
+      ],
+      "issue": "Structured pickup is disabled although the public copy, inclusions and one active zero-fee Luxor mapping describe hotel pickup. Operator confirmation is required before publication."
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "b4ef01ac-9971-441f-a8af-fcea73e4a0cb",
+      "field": "faqs.cancellation",
+      "source_value": "Free cancellation up to 12 hours before departure",
+      "observed_values": [
+        "Free cancellation up to 24 hours",
+        "50% refund at 12 hours",
+        "no refund at 6 hours"
+      ],
+      "issue": "The cancellation FAQ conflicts with the tour cancellation_policy. The source FAQ is preserved in this draft; align it with the authoritative policy before publication."
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "b4ef01ac-9971-441f-a8af-fcea73e4a0cb",
+      "field": "included",
+      "source_value": "Entrance fees to the sightseeing sites included in the programme.",
+      "issue": "The exact same inclusion appears twice. Both source rows are preserved in the review draft; remove the duplicate only after confirming the intended inclusions."
     }
   ]
 }

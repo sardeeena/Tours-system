@@ -15,18 +15,18 @@ const counts = (type: string) => records.filter((record) => record.entity_type =
 
 assert.equal(nl.locale, 'nl');
 assert.equal(nl.source_project, 'uvtbtpxtrrmaublrztgv');
-assert.equal(counts('tour'), 27);
+assert.equal(counts('tour'), 28);
 assert.equal(counts('blog_post'), 50);
 assert.equal(counts('destination'), 7);
 assert.equal(counts('static_page'), 10);
 assert.equal(counts('communication_template'), 18);
 assert.equal(counts('ui_catalog'), 1);
-assert.equal(records.length, 113);
+assert.equal(records.length, 114);
 assert.deepEqual(nl.coverage, {
-  tour: 27, blog_post: 50, destination: 7, static_page: 10,
+  tour: 28, blog_post: 50, destination: 7, static_page: 10,
   communication_template: 18, ui_catalog: 1,
   public_ui_messages: 81, private_ui_messages: 1090,
-  ui_catalog_messages: 1171, source_records: 113,
+  ui_catalog_messages: 1171, source_records: 114,
 });
 
 const sourceKeys = new Set(refRecords.map(key));
@@ -105,8 +105,10 @@ for (const record of records.filter((item) => item.entity_type === 'communicatio
     assert.deepEqual(placeholders(record.content[field] || ''), placeholders(source.content[field] || ''), key(record) + ' preserves ' + field + ' placeholders');
   }
 }
-assert.equal(nl.source_data_warnings.length, 4, 'Known source schedule defects are documented, not silently corrected');
+assert.equal(nl.source_data_warnings.length, 8, 'Known source schedule and Valley of the Kings content defects are documented, not silently corrected');
+assert.ok(nl.source_data_warnings.some((warning: any) => warning.entity_key === 'b4ef01ac-9971-441f-a8af-fcea73e4a0cb' && warning.field === 'pickup_available'));
+assert.ok(nl.source_data_warnings.some((warning: any) => warning.entity_key === 'b4ef01ac-9971-441f-a8af-fcea73e4a0cb' && warning.field === 'faqs.cancellation'));
 assert.ok(nl.source_data_warnings.some((warning: any) => warning.source_value === '13:30 AM'));
 assert.ok(nl.source_data_warnings.some((warning: any) => warning.source_value === '13:00 PM'));
 
-console.log('Dutch review bundle checks passed: 113 content records, 1,171 UI messages, complete IDs and schema, unique slugs, and preserved placeholders.');
+console.log('Dutch review bundle checks passed: 114 content records, 1,171 UI messages, complete IDs and schema, unique slugs, and preserved placeholders.');

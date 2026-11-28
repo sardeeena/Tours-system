@@ -4,7 +4,7 @@
   "status": "translation-review-draft",
   "source_project": "uvtbtpxtrrmaublrztgv",
   "coverage": {
-    "tour": 27,
+    "tour": 28,
     "blog_post": 50,
     "destination": 7,
     "communication_template": 18,
@@ -13,7 +13,7 @@
     "public_ui_messages": 81,
     "private_ui_messages": 1090,
     "ui_catalog_messages": 1171,
-    "source_records": 113
+    "source_records": 114
   },
   "records": [
     {
@@ -5584,7 +5584,272 @@
           "browseMore": "Zobacz więcej wycieczek"
         }
       }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "b4ef01ac-9971-441f-a8af-fcea73e4a0cb",
+      "locale": "pl",
+      "source_slug": "valley-of-the-kings-full-day-tour-in-luxor",
+      "translated_slug": "calodniowa-wycieczka-dolina-krolow-luksor",
+      "title": "Całodniowa wycieczka do Doliny Królów w Luksorze",
+      "summary": "Odkryj skarby starożytnych Teb podczas całodniowej wycieczki po Luksorze. Odwiedź świątynię Karnak, Dolinę Królów, świątynię Hatszepsut i Kolosy Memnona z przewodnikiem-egiptologiem; lunch i transfery hotelowe są wliczone.",
+      "seo_title": "Całodniowa wycieczka do Doliny Królów w Luksorze",
+      "seo_description": "Poznaj Karnak, Dolinę Królów, świątynię Hatszepsut i Kolosy Memnona z przewodnikiem-egiptologiem. Lunch i transfery hotelowe w Luksorze w cenie.",
+      "duration": "Cały dzień",
+      "duration_type": "Pół dnia",
+      "departure_time": "04:00 AM",
+      "age_restrictions": "",
+      "pickup_info": "Odbiór z hotelu i powrót do hotelu w Luksorze.",
+      "cancellation_policy": "* Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.\n* Anulowanie 12 godzin przed wycieczką: zwrot 50% kosztów.\n* Anulowanie 6 godzin przed wycieczką: brak zwrotu kosztów, ale za opłatą można zmienić termin.",
+      "content": {
+        "title": "Całodniowa wycieczka do Doliny Królów w Luksorze",
+        "description": "Spędź dzień, odkrywając niezwykłą historię Luksoru, miasta często nazywanego największym muzeum na świeżym powietrzu na świecie. Od wspaniałych kompleksów świątynnych po starożytne królewskie nekropolie — ta wycieczka przybliży Ci opowieści, tradycje i osiągnięcia faraonów, którzy ukształtowali starożytny Egipt.\n\nDzień rozpocznie się odbiorem z hotelu w Luksorze. Wygodnym, klimatyzowanym samochodem udasz się do pierwszego miejsca, a profesjonalny przewodnik-egiptolog wprowadzi Cię w fascynującą historię tego starożytnego miasta.\n\nZwiedzanie rozpoczniesz od świątyni Karnak, ogromnego kompleksu religijnego z imponującymi kolumnami, monumentalnymi bramami i doskonale zachowanymi detalami historycznymi. Spacerując po niezwykłych salach, dowiesz się, jak kolejne pokolenia egipskich władców przyczyniały się do jej budowy i rozbudowy.\n\nPo zwiedzaniu Karnaku zjesz lunch w lokalnej restauracji w Luksorze, a następnie wyruszysz dalej.\n\nMożesz także wybrać tradycyjny rejs feluką po Nilu (opcjonalnie), aby spokojnie podziwiać rzekę i otaczający ją krajobraz.\n\nNastępnie udasz się na zachodni brzeg i odwiedzisz legendarną Dolinę Królów, gdzie spoczęło wielu najpotężniejszych faraonów starożytnego Egiptu. Zobaczysz wybrane grobowce i ich kolorowe dekoracje, szczegółowe hieroglify oraz sceny ukazujące staroegipskie wierzenia dotyczące życia po śmierci.\n\nKolejnym punktem będzie imponująca świątynia królowej Hatszepsut w Deir el-Bahari. Ten niezwykły zabytek, wzniesiony u podnóża monumentalnej wapiennej góry, słynie z eleganckich tarasów i charakterystycznej architektury.\n\nOstatnim przystankiem będą Kolosy Memnona — dwa ogromne kamienne posągi, które od tysięcy lat górują nad tebańskim krajobrazem. Zrób pamiątkowe zdjęcia i poznaj ich historię.\n\nPo dniu pełnym historii i odkryć odpoczniesz podczas wygodnego transferu z powrotem do hotelu w Luksorze.\n\nJeśli interesuje Cię starożytna architektura, królewska historia lub dziedzictwo kulturowe Egiptu, ta wycieczka pozwoli Ci poznać najważniejsze atrakcje Luksoru w jeden dzień.",
+        "durationLabel": "Cały dzień",
+        "highlights": [
+          "Odkryj wspaniałą świątynię Karnak i jej imponujące starożytne budowle.",
+          "Poznaj fascynujące królewskie grobowce w Dolinie Królów.",
+          "Odwiedź niezwykłą świątynię królowej Hatszepsut w Deir el-Bahari.",
+          "Zobacz słynne Kolosy Memnona na zachodnim brzegu Luksoru.",
+          "Poznaj świat starożytnych faraonów z profesjonalnym przewodnikiem-egiptologiem.",
+          "Zjedz lunch w lokalnej restauracji w Luksorze.",
+          "Wybierz opcjonalny tradycyjny rejs feluką po Nilu.",
+          "Skorzystaj z odbioru z hotelu i transferu powrotnego w Luksorze."
+        ],
+        "itinerary": [
+          {
+            "time": "00:00",
+            "title": "Odbiór z hotelu w Luksorze",
+            "description": "Dzień rozpocznie się odbiorem z hotelu w Luksorze. Spotkaj się z kierowcą i wygodnym, klimatyzowanym samochodem udaj się na pierwszą atrakcję."
+          },
+          {
+            "time": "00:00",
+            "title": "Pierwszy przystanek – świątynia Karnak",
+            "description": "Odwiedź jeden z najbardziej imponujących starożytnych kompleksów religijnych w Egipcie. Zobacz monumentalne kolumny, historyczne dziedzińce i niezwykłe detale architektoniczne, poznając znaczenie tego miejsca dla starożytnej cywilizacji egipskiej."
+          },
+          {
+            "time": "00:00",
+            "title": "Przerwa na lunch",
+            "description": "Zatrzymaj się w lokalnej restauracji w Luksorze i zjedz lunch przed dalszym zwiedzaniem."
+          },
+          {
+            "time": "00:00",
+            "title": "Opcjonalny rejs feluką po Nilu",
+            "description": "Wybierz tradycyjny rejs feluką po Nilu. Odpocznij na wodzie i podziwiaj piękne okolice Luksoru."
+          },
+          {
+            "time": "00:00",
+            "title": "Dolina Królów",
+            "description": "Odkryj starożytną nekropolię faraonów Egiptu. Zwiedź wybrane grobowce i podziwiaj kolorowe malowidła ścienne oraz szczegółowe hieroglify."
+          },
+          {
+            "time": "00:00",
+            "title": "Świątynia królowej Hatszepsut",
+            "description": "Poznaj niezwykłą świątynię wzniesioną w klifach Deir el-Bahari. Odkryj jej wyjątkową architekturę i historię niezwykłej władczyni, która zleciła jej budowę."
+          },
+          {
+            "time": "00:00",
+            "title": "Kolosy Memnona",
+            "description": "Zatrzymaj się przy dwóch ogromnych posągach Amenhotepa III. Przewodnik opowie o ich historii i roli, jaką niegdyś pełniły przy królewskim kompleksie."
+          },
+          {
+            "time": "00:00",
+            "title": "Powrót do hotelu",
+            "description": "Po zakończeniu programu zwiedzania wygodnym transportem wrócisz do hotelu w Luksorze."
+          },
+          {
+            "time": "00:00",
+            "title": "Ważna uwaga",
+            "description": "Kolejność programu może ulec zmianie w zależności od lokalnych warunków i ustaleń operacyjnych. Rejs feluką po Nilu jest opcjonalny i nie jest wliczony w cenę wycieczki."
+          }
+        ],
+        "included": [
+          "Bezpłatny odbiór z hotelu i powrót do hotelu w Luksorze.",
+          "Transfery w obie strony wygodnym, klimatyzowanym samochodem.",
+          "Profesjonalny przewodnik-egiptolog.",
+          "Bilety wstępu do atrakcji uwzględnionych w programie.",
+          "Bilety wstępu do atrakcji uwzględnionych w programie.",
+          "Lunch w lokalnej restauracji w Luksorze.",
+          "Woda lub napoje bezalkoholowe na pokładzie.",
+          "Zwiedzanie Luksoru z przewodnikiem."
+        ],
+        "excluded": [
+          "Napoje w restauracji.",
+          "Opcjonalny rejs feluką po Nilu.",
+          "Wydatki osobiste.",
+          "Dodatkowe opłaty za atrakcje lub grobowce nieobjęte standardowym biletem.",
+          "Usługi niewymienione wyraźnie w sekcji świadczeń w cenie."
+        ],
+        "faqs": [
+          {
+            "question": "Jak zarezerwować wycieczkę do Doliny Królów?",
+            "answer": "Możesz zarezerwować miejsce bezpośrednio na naszej stronie. Wybierz preferowaną datę, liczbę uczestników, wpisz swoje dane i dokończ rezerwację.",
+            "section": "faq"
+          },
+          {
+            "question": "Co należy zabrać?",
+            "answer": "Ważny paszport lub wyraźną kopię paszportu.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "Podczas całej wycieczki stosuj się do wskazówek przewodnika.",
+            "section": "important_information"
+          },
+          {
+            "question": "Jakie są zasady anulowania?",
+            "answer": "Możesz bezpłatnie anulować rezerwację do 12 godzin przed planowanym rozpoczęciem wycieczki.",
+            "section": "faq"
+          },
+          {
+            "question": "Co należy zabrać?",
+            "answer": "Wygodne buty do chodzenia.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "Załóż wygodne obuwie, ponieważ niektóre obszary archeologiczne mają nierówne nawierzchnie i schody.",
+            "section": "important_information"
+          },
+          {
+            "question": "Czy mogę zmienić datę rezerwacji?",
+            "answer": "Tak. Możesz poprosić o zmianę daty do 24 godzin przed planowanym wyjazdem, w zależności od dostępności.",
+            "section": "faq"
+          },
+          {
+            "question": "Co należy zabrać?",
+            "answer": "Lekką i wygodną odzież.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "Pamiętaj o nawodnieniu, szczególnie podczas upałów.",
+            "section": "important_information"
+          },
+          {
+            "question": "Gdzie rozpoczyna się wycieczka?",
+            "answer": "Wycieczka rozpoczyna się w Luksorze; odbiór z hoteli na terenie miasta i powrót do hotelu są bezpłatne.",
+            "section": "faq"
+          },
+          {
+            "question": "Co należy zabrać?",
+            "answer": "Okulary przeciwsłoneczne i kapelusz.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "Używaj kremu z filtrem i noś kapelusz, aby chronić się przed bezpośrednim słońcem.",
+            "section": "important_information"
+          },
+          {
+            "question": "O której godzinie rozpoczyna się wycieczka?",
+            "answer": "Obecnie podana godzina rozpoczęcia to około 04:00 AM. Dokładna godzina odbioru z hotelu zostanie potwierdzona przed wycieczką.",
+            "section": "faq"
+          },
+          {
+            "question": "Co należy zabrać?",
+            "answer": "Krem z filtrem przeciwsłonecznym.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "Zachowaj ostrożność podczas chodzenia wewnątrz starożytnych grobowców i na terenach świątyń.",
+            "section": "important_information"
+          },
+          {
+            "question": "Co należy zabrać?",
+            "answer": "Aparat fotograficzny lub smartfon.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "Nie dotykaj starożytnych malowideł ściennych, inskrypcji ani zabytkowych konstrukcji.",
+            "section": "important_information"
+          },
+          {
+            "question": "Co należy zabrać?",
+            "answer": "Gotówkę na wydatki osobiste.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "Przestrzegaj wszystkich oznaczeń i nie wchodź do stref zamkniętych na stanowiskach archeologicznych.",
+            "section": "important_information"
+          },
+          {
+            "question": "Co należy zabrać?",
+            "answer": "Mały plecak na rzeczy osobiste.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "Pilnuj swoich rzeczy osobistych i kosztowności.",
+            "section": "important_information"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "Jeśli wybierzesz opcjonalny rejs feluką po Nilu, stosuj się do instrukcji bezpieczeństwa załogi.",
+            "section": "important_information"
+          }
+        ],
+        "pickupInfo": "Odbiór z hotelu i powrót do hotelu w Luksorze.",
+        "cancellationPolicy": "* Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.\n* Anulowanie 12 godzin przed wycieczką: zwrot 50% kosztów.\n* Anulowanie 6 godzin przed wycieczką: brak zwrotu kosztów, ale za opłatą można zmienić termin.",
+        "ageRestrictions": "",
+        "labels": {
+          "highlights": "Najważniejsze atrakcje",
+          "itinerary": "Plan wycieczki",
+          "included": "W cenie",
+          "excluded": "Nie w cenie",
+          "faqs": "Najczęstsze pytania",
+          "pickupInfo": "Informacje o odbiorze",
+          "cancellationPolicy": "Zasady anulowania",
+          "ageRestrictions": "Ograniczenia wiekowe",
+          "bookNow": "Rezerwuj teraz",
+          "browseMore": "Zobacz więcej wycieczek"
+        }
+      }
     }
   ],
-  "source_data_warnings": []
+  "source_data_warnings": [
+    {
+      "entity_type": "tour",
+      "entity_key": "b4ef01ac-9971-441f-a8af-fcea73e4a0cb",
+      "field": "duration_type",
+      "source_value": "Half Day",
+      "observed_values": [
+        "Full Day",
+        "10 hours"
+      ],
+      "issue": "The title, duration label and duration_hours describe a full-day 10-hour excursion, but duration_type says Half Day. Preserve source data and do not publish this translation until the operator confirms the category."
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "b4ef01ac-9971-441f-a8af-fcea73e4a0cb",
+      "field": "pickup_available",
+      "source_value": false,
+      "observed_values": [
+        "Hotel pickup and drop-off in Luxor",
+        "active Luxor City Hotels mapping with zero fee"
+      ],
+      "issue": "Structured pickup is disabled although the public copy, inclusions and one active zero-fee Luxor mapping describe hotel pickup. Operator confirmation is required before publication."
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "b4ef01ac-9971-441f-a8af-fcea73e4a0cb",
+      "field": "faqs.cancellation",
+      "source_value": "Free cancellation up to 12 hours before departure",
+      "observed_values": [
+        "Free cancellation up to 24 hours",
+        "50% refund at 12 hours",
+        "no refund at 6 hours"
+      ],
+      "issue": "The cancellation FAQ conflicts with the tour cancellation_policy. The source FAQ is preserved in this draft; align it with the authoritative policy before publication."
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "b4ef01ac-9971-441f-a8af-fcea73e4a0cb",
+      "field": "included",
+      "source_value": "Entrance fees to the sightseeing sites included in the programme.",
+      "issue": "The exact same inclusion appears twice. Both source rows are preserved in the review draft; remove the duplicate only after confirming the intended inclusions."
+    }
+  ]
 }

@@ -4,7 +4,7 @@
   "status": "translation-review-draft",
   "source_project": "uvtbtpxtrrmaublrztgv",
   "coverage": {
-    "tour": 27,
+    "tour": 28,
     "blog_post": 50,
     "destination": 7,
     "communication_template": 18,
@@ -13,7 +13,7 @@
     "public_ui_messages": 81,
     "private_ui_messages": 1090,
     "ui_catalog_messages": 1171,
-    "source_records": 113
+    "source_records": 114
   },
   "records": [
     {
@@ -5540,7 +5540,272 @@
           "browseMore": "Voir d’autres excursions"
         }
       }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "b4ef01ac-9971-441f-a8af-fcea73e4a0cb",
+      "locale": "fr",
+      "source_slug": "valley-of-the-kings-full-day-tour-in-luxor",
+      "translated_slug": "excursion-journee-vallee-rois-louxor",
+      "title": "Excursion d’une journée dans la Vallée des Rois à Louxor",
+      "summary": "Découvrez les trésors de l’ancienne Thèbes lors d’une excursion d’une journée à Louxor. Visitez le temple de Karnak, la Vallée des Rois, le temple d’Hatchepsout et les colosses de Memnon avec un guide égyptologue, avec déjeuner et transferts depuis votre hôtel.",
+      "seo_title": "Excursion d’une journée à la Vallée des Rois à Louxor",
+      "seo_description": "Explorez Karnak, la Vallée des Rois, le temple d’Hatchepsout et les colosses de Memnon avec un guide égyptologue. Déjeuner et transferts à Louxor inclus.",
+      "duration": "Journée complète",
+      "duration_type": "Demi-journée",
+      "departure_time": "04:00 AM",
+      "age_restrictions": "",
+      "pickup_info": "Prise en charge et retour à l’hôtel à Louxor.",
+      "cancellation_policy": "* Annulation gratuite jusqu’à 24 heures avant le début de l’excursion.\n* Annulation 12 heures avant l’excursion : remboursement de 50 %.\n* Annulation 6 heures avant l’excursion : aucun remboursement, mais la date peut être modifiée moyennant des frais.",
+      "content": {
+        "title": "Excursion d’une journée dans la Vallée des Rois à Louxor",
+        "description": "Passez une journée à découvrir l’histoire exceptionnelle de Louxor, une ville souvent décrite comme le plus grand musée à ciel ouvert du monde. Des vastes complexes de temples aux anciennes nécropoles royales, cette excursion vous rapproche des récits, des traditions et des réalisations des pharaons de l’Égypte ancienne.\n\nVotre journée commence par une prise en charge à votre hôtel à Louxor. Voyagez confortablement dans un véhicule climatisé jusqu’à votre première étape, accompagné d’un guide égyptologue professionnel qui vous présentera l’histoire fascinante de l’ancienne ville.\n\nCommencez votre visite au temple de Karnak, un immense complexe religieux composé de colonnes impressionnantes, de portes monumentales et de détails historiques remarquablement préservés. En parcourant ses salles extraordinaires, découvrez comment plusieurs générations de souverains égyptiens ont contribué à sa construction et à son agrandissement.\n\nAprès la visite de Karnak, profitez d’un déjeuner dans un restaurant local à Louxor avant de poursuivre votre découverte.\n\nVous pouvez également choisir une promenade traditionnelle en felouque sur le Nil (en option), pour profiter paisiblement du fleuve et du paysage environnant.\n\nContinuez vers la rive ouest et visitez la légendaire Vallée des Rois, où reposent de nombreux pharaons parmi les plus puissants de l’Égypte ancienne. Entrez dans les tombeaux sélectionnés et admirez les décorations colorées, les hiéroglyphes détaillés et les scènes fascinantes qui révèlent les croyances égyptiennes sur l’au-delà.\n\nExplorez ensuite le remarquable temple de la reine Hatchepsout à Deir el-Bahari. Construit au pied d’une impressionnante montagne calcaire, ce monument se distingue par ses terrasses élégantes et son architecture singulière.\n\nVotre dernière étape est celle des colosses de Memnon, deux immenses statues de pierre qui veillent sur la plaine thébaine depuis des milliers d’années. Prenez des photos et découvrez leur histoire.\n\nAprès une journée riche en histoire et en découvertes, détendez-vous pendant que votre chauffeur vous ramène à votre hôtel à Louxor.\n\nQue vous soyez passionné d’architecture ancienne, d’histoire royale ou de patrimoine culturel égyptien, cette excursion vous permet de découvrir les grands sites de Louxor en une seule journée.",
+        "durationLabel": "Journée complète",
+        "highlights": [
+          "Explorez le magnifique temple de Karnak et ses impressionnantes structures antiques.",
+          "Découvrez les tombeaux royaux fascinants de la Vallée des Rois.",
+          "Visitez le remarquable temple de la reine Hatchepsout à Deir el-Bahari.",
+          "Admirez les célèbres colosses de Memnon sur la rive ouest de Louxor.",
+          "Découvrez l’univers des anciens pharaons avec un guide égyptologue professionnel.",
+          "Profitez d’un déjeuner dans un restaurant local à Louxor.",
+          "Choisissez une promenade traditionnelle en felouque sur le Nil, en option.",
+          "Bénéficiez de la prise en charge et du retour à votre hôtel à Louxor."
+        ],
+        "itinerary": [
+          {
+            "time": "00:00",
+            "title": "Prise en charge à l’hôtel à Louxor",
+            "description": "Votre journée commence par la prise en charge à votre hôtel à Louxor. Retrouvez votre chauffeur et voyagez confortablement dans un véhicule climatisé pour commencer votre visite."
+          },
+          {
+            "time": "00:00",
+            "title": "Première étape – Temple de Karnak",
+            "description": "Visitez l’un des complexes religieux antiques les plus impressionnants d’Égypte. Découvrez ses colonnes monumentales, ses cours historiques et son architecture remarquable tout en apprenant son importance dans la civilisation égyptienne ancienne."
+          },
+          {
+            "time": "00:00",
+            "title": "Pause déjeuner",
+            "description": "Faites une pause dans un restaurant local à Louxor et profitez d’un déjeuner avant de poursuivre votre excursion."
+          },
+          {
+            "time": "00:00",
+            "title": "Promenade facultative en felouque sur le Nil",
+            "description": "Choisissez une traversée traditionnelle en felouque sur le Nil. Détendez-vous sur l’eau et admirez les beaux paysages de Louxor."
+          },
+          {
+            "time": "00:00",
+            "title": "Vallée des Rois",
+            "description": "Découvrez l’ancienne nécropole des pharaons d’Égypte. Visitez les tombeaux sélectionnés et admirez leurs peintures murales colorées et leurs hiéroglyphes détaillés."
+          },
+          {
+            "time": "00:00",
+            "title": "Temple de la reine Hatchepsout",
+            "description": "Explorez cet extraordinaire temple construit dans les falaises de Deir el-Bahari. Découvrez son architecture unique et l’histoire de la remarquable souveraine qui l’a fait construire."
+          },
+          {
+            "time": "00:00",
+            "title": "Colosses de Memnon",
+            "description": "Arrêtez-vous devant les deux immenses statues d’Amenhotep III. Votre guide vous expliquera leur histoire et leur rôle dans la protection de l’ancien complexe royal."
+          },
+          {
+            "time": "00:00",
+            "title": "Retour à votre hôtel",
+            "description": "Après la visite, profitez d’un transfert confortable vers votre hôtel à Louxor."
+          },
+          {
+            "time": "00:00",
+            "title": "À noter",
+            "description": "L’ordre de l’itinéraire peut changer selon les conditions locales et l’organisation de l’excursion. La promenade en felouque sur le Nil est facultative et n’est pas comprise dans le prix."
+          }
+        ],
+        "included": [
+          "Prise en charge et retour gratuits à votre hôtel à Louxor.",
+          "Transferts aller-retour dans un véhicule confortable et climatisé.",
+          "Guide égyptologue professionnel.",
+          "Billets d’entrée aux sites touristiques prévus au programme.",
+          "Billets d’entrée aux sites touristiques prévus au programme.",
+          "Déjeuner dans un restaurant local à Louxor.",
+          "Eau ou boissons sans alcool à bord.",
+          "Visite guidée des sites de Louxor."
+        ],
+        "excluded": [
+          "Boissons au restaurant.",
+          "Promenade facultative en felouque sur le Nil.",
+          "Dépenses personnelles.",
+          "Frais d’entrée supplémentaires pour les attractions ou les tombeaux non compris dans le billet standard.",
+          "Tout service qui n’est pas expressément mentionné dans les prestations incluses."
+        ],
+        "faqs": [
+          {
+            "question": "Comment réserver l’excursion à la Vallée des Rois ?",
+            "answer": "Vous pouvez réserver directement sur notre site. Choisissez la date souhaitée, indiquez le nombre de participants, saisissez vos coordonnées et finalisez votre réservation.",
+            "section": "faq"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Passeport valide ou copie lisible du passeport.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Suivez les instructions de votre guide tout au long de l’excursion.",
+            "section": "important_information"
+          },
+          {
+            "question": "Quelle est la politique d’annulation ?",
+            "answer": "Vous pouvez annuler votre réservation gratuitement jusqu’à 12 heures avant le départ prévu de l’excursion.",
+            "section": "faq"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Des chaussures de marche confortables.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Portez des chaussures confortables, car certaines zones archéologiques présentent des surfaces irrégulières et des marches.",
+            "section": "important_information"
+          },
+          {
+            "question": "Puis-je modifier la date de ma réservation ?",
+            "answer": "Oui. Vous pouvez demander un changement de date jusqu’à 24 heures avant le départ prévu, sous réserve de disponibilité.",
+            "section": "faq"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Des vêtements légers et confortables.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Veillez à bien vous hydrater, surtout par temps chaud.",
+            "section": "important_information"
+          },
+          {
+            "question": "Où commence l’excursion ?",
+            "answer": "L’excursion commence à Louxor, avec prise en charge et retour gratuits dans les hôtels de la ville.",
+            "section": "faq"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Des lunettes de soleil et un chapeau.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Utilisez de la crème solaire et portez un chapeau pour vous protéger du soleil direct.",
+            "section": "important_information"
+          },
+          {
+            "question": "À quelle heure commence l’excursion ?",
+            "answer": "L’heure de départ actuellement indiquée est d’environ 04:00 AM. L’heure exacte de prise en charge à votre hôtel sera confirmée avant l’excursion.",
+            "section": "faq"
+          },
+          {
+            "question": "À apporter",
+            "answer": "De la crème solaire.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Soyez prudent lorsque vous marchez dans les tombeaux anciens et les zones des temples.",
+            "section": "important_information"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Un appareil photo ou un smartphone.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Ne touchez pas aux peintures murales anciennes, aux inscriptions ni aux structures historiques.",
+            "section": "important_information"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Un peu d’argent liquide pour les dépenses personnelles.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Respectez tous les panneaux et les zones interdites sur les sites archéologiques.",
+            "section": "important_information"
+          },
+          {
+            "question": "À apporter",
+            "answer": "Un petit sac à dos pour vos effets personnels.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Gardez vos effets personnels et vos objets de valeur en sécurité.",
+            "section": "important_information"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Si vous choisissez la promenade facultative en felouque sur le Nil, suivez les consignes de sécurité de l’équipage.",
+            "section": "important_information"
+          }
+        ],
+        "pickupInfo": "Prise en charge et retour à l’hôtel à Louxor.",
+        "cancellationPolicy": "* Annulation gratuite jusqu’à 24 heures avant le début de l’excursion.\n* Annulation 12 heures avant l’excursion : remboursement de 50 %.\n* Annulation 6 heures avant l’excursion : aucun remboursement, mais la date peut être modifiée moyennant des frais.",
+        "ageRestrictions": "",
+        "labels": {
+          "highlights": "Points forts",
+          "itinerary": "Programme",
+          "included": "Inclus",
+          "excluded": "Non inclus",
+          "faqs": "Questions fréquentes",
+          "pickupInfo": "Informations sur la prise en charge",
+          "cancellationPolicy": "Politique d’annulation",
+          "ageRestrictions": "Restrictions d’âge",
+          "bookNow": "Réserver maintenant",
+          "browseMore": "Voir d’autres excursions"
+        }
+      }
     }
   ],
-  "source_data_warnings": []
+  "source_data_warnings": [
+    {
+      "entity_type": "tour",
+      "entity_key": "b4ef01ac-9971-441f-a8af-fcea73e4a0cb",
+      "field": "duration_type",
+      "source_value": "Half Day",
+      "observed_values": [
+        "Full Day",
+        "10 hours"
+      ],
+      "issue": "The title, duration label and duration_hours describe a full-day 10-hour excursion, but duration_type says Half Day. Preserve source data and do not publish this translation until the operator confirms the category."
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "b4ef01ac-9971-441f-a8af-fcea73e4a0cb",
+      "field": "pickup_available",
+      "source_value": false,
+      "observed_values": [
+        "Hotel pickup and drop-off in Luxor",
+        "active Luxor City Hotels mapping with zero fee"
+      ],
+      "issue": "Structured pickup is disabled although the public copy, inclusions and one active zero-fee Luxor mapping describe hotel pickup. Operator confirmation is required before publication."
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "b4ef01ac-9971-441f-a8af-fcea73e4a0cb",
+      "field": "faqs.cancellation",
+      "source_value": "Free cancellation up to 12 hours before departure",
+      "observed_values": [
+        "Free cancellation up to 24 hours",
+        "50% refund at 12 hours",
+        "no refund at 6 hours"
+      ],
+      "issue": "The cancellation FAQ conflicts with the tour cancellation_policy. The source FAQ is preserved in this draft; align it with the authoritative policy before publication."
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "b4ef01ac-9971-441f-a8af-fcea73e4a0cb",
+      "field": "included",
+      "source_value": "Entrance fees to the sightseeing sites included in the programme.",
+      "issue": "The exact same inclusion appears twice. Both source rows are preserved in the review draft; remove the duplicate only after confirming the intended inclusions."
+    }
+  ]
 }
