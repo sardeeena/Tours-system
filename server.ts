@@ -5490,6 +5490,42 @@ function seoHtmlEscape(value: unknown): string {
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+function seoRenderInline(value: unknown, maxLength = 2000): string {
+  if (typeof value !== 'string') return '';
+  const source = value.slice(0, maxLength);
+  const tokenPattern = /(\*\*[^*]+\*\*|\*[^*]+\*|\[[^\]]+\]\((?:https:\/\/|mailto:)[^)]+\))/g;
+  let output = '';
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = tokenPattern.exec(source)) !== null) {
+    output += seoHtmlEscape(source.slice(lastIndex, match.index));
+    const token = match[0];
+    if (token.startsWith('**')) {
+      output += '<strong>' + seoHtmlEscape(token.slice(2, -2)) + '</strong>';
+    } else if (token.startsWith('*')) {
+      output += '<em>' + seoHtmlEscape(token.slice(1, -1)) + '</em>';
+    } else {
+      const link = token.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+      let safeHref = '';
+      if (link) {
+        try {
+          const url = new URL(link[2].trim());
+          if ((url.protocol === 'https:' && !url.username && !url.password) || url.protocol === 'mailto:') {
+            safeHref = url.toString();
+          }
+        } catch { /* Invalid or unsafe links are rendered as text. */ }
+      }
+      output += link && safeHref
+        ? '<a href="' + seoHtmlEscape(safeHref) + '" rel="noopener noreferrer">' + seoHtmlEscape(link[1]) + '</a>'
+        : seoHtmlEscape(token);
+    }
+    lastIndex = match.index + token.length;
+  }
+
+  return output + seoHtmlEscape(source.slice(lastIndex));
+}
+
 function seoPlainText(value: unknown, maxLength = 4000): string {
   if (typeof value !== 'string') return '';
   return value.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
@@ -6015,13 +6051,13 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       let listItems: string[] = [];
       const flushParagraph = () => {
         if (paragraph.length) {
-          blocks.push(`<p>${paragraph.map(line => seoHtmlEscape(seoPlainText(line, 2000))).join(' ')}</p>`);
+          blocks.push(`<p>${paragraph.map(line => seoRenderInline(line, 2000)).join(' ')}</p>`);
           paragraph = [];
         }
       };
       const flushList = () => {
         if (listItems.length) {
-          blocks.push(`<ul class="seo-list">${listItems.map(item => `<li>${seoHtmlEscape(seoPlainText(item, 500))}</li>`).join('')}</ul>`);
+          blocks.push(`<ul class="seo-list">${listItems.map(item => `<li>${seoRenderInline(item, 500)}</li>`).join('')}</ul>`);
           listItems = [];
         }
       };
@@ -6032,7 +6068,7 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
         const bullet = line.match(/^[-*]\s+(.+)$/);
         if (heading) {
           flushParagraph(); flushList();
-          blocks.push(`<h2>${seoHtmlEscape(seoPlainText(heading[1], 180))}</h2>`);
+          blocks.push(`<h2>${seoRenderInline(heading[1], 180)}</h2>`);
         } else if (bullet) {
           flushParagraph();
           listItems.push(bullet[1]);
