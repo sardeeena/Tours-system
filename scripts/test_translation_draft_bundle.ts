@@ -22,7 +22,7 @@ assert.match(script,/ENTITY_TYPES = new Set\(\['tour','destination','blog_post',
 assert.match(script,/translation_state:'draft'/);
 assert.match(script,/reviewed_at:null, published_at:null/);
 assert.match(script,/existing\.data\.translation_state!=='draft' \|\| existing\.data\.reviewed_at \|\| existing\.data\.published_at/);
-assert.match(script,/flag==='--apply'/,'Import requires an explicit apply flag');
+assert.match(script,/const apply = flags\.includes\('--apply'\)/,'Import requires an explicit apply flag and parses it independently from strict validation');
 assert.match(script,/flags\.includes\('--apply'\)/,'Import apply mode is parsed independently from validation flags');
 assert.match(script,/flags\.includes\('--strict'\)/,'CI can request strict dry-run validation');
 assert.match(script,/if \(strict && skipped > 0\)[\s\S]*Strict translation validation failed/,'Strict validation fails when any draft would be skipped');
