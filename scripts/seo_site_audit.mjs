@@ -148,6 +148,25 @@ export function parseHtmlPage(html, pageUrl, baseHost) {
     }
   }
 
+  const hreflangLinks = [];
+  const hreflangErrors = [];
+  for (const tag of String(html).match(/<link\\b[^>]*>/gi) || []) {
+    const attrs = parseAttributes(tag);
+    if ((attrs.rel || '').toLowerCase().split(/\\s+/).includes('alternate') && attrs.hreflang) {
+      const normalized = normalizePageUrl(attrs.href || '', pageUrl);
+      if (!/^(?:[a-z]{2}(?:-[a-z]{2})?|x-default)$/i.test(attrs.hreflang)) hreflangErrors.push('Invalid hreflang value: ' + attrs.hreflang);
+      if (!normalized) hreflangErrors.push('Invalid hreflang URL for ' + attrs.hreflang);
+      else {
+        try {
+          if (!sameSiteHost(new URL(normalized).hostname, baseHost)) hreflangErrors.push('Cross-host hreflang URL: ' + normalized);
+        } catch { hreflangErrors.push('Invalid hreflang URL: ' + normalized); }
+        hreflangLinks.push({ language: attrs.hreflang, url: normalized });
+      }
+    }
+  }
+  const imagesWithoutAlt = (String(html).match(/<img\\b[^>]*>/gi) || [])
+    .filter((tag) => !Object.prototype.hasOwnProperty.call(parseAttributes(tag), 'alt')).length;
+
   const internalLinks = new Set();
   for (const tag of String(html).match(/<a\b[^>]*>/gi) || []) {
     const href = parseAttributes(tag).href;
