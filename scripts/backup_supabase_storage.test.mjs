@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, readFileSync, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createHash } from 'node:crypto';
@@ -90,4 +90,18 @@ test('refuses to create an empty backup when bucket listing is empty', async (t)
   t.after(() => rm(outputDir, { recursive: true, force: true }));
   const client = createFakeClient({ entries: {}, files: {}, buckets: [] });
   await assert.rejects(() => backupSupabaseStorage({ client, outputDir }), /No Storage buckets/);
+});
+
+
+test('off-site backup workflow encrypts the archive and verifies the remote upload', () => {
+  const workflow = readFileSync(new URL('../.github/workflows/backup-supabase.yml', import.meta.url), 'utf8');
+  const encryptionIndex = workflow.indexOf('age -r "$BACKUP_AGE_RECIPIENT"');
+  const uploadIndex = workflow.indexOf('aws s3 cp "$ENCRYPTED"');
+  const verificationIndex = workflow.indexOf('aws s3api head-object');
+  assert.ok(encryptionIndex >= 0, 'Backup must be encrypted with age');
+  assert.ok(uploadIndex > encryptionIndex, 'Only the encrypted archive may be uploaded');
+  assert.ok(verificationIndex > uploadIndex, 'Remote object size must be verified after upload');
+  assert.match(workflow, /storage-policies\.sql/);
+  assert.match(workflow, /BACKUP_STORAGE_DIR=/);
+  assert.doesNotMatch(workflow, /actions\/upload-artifact/);
 });
