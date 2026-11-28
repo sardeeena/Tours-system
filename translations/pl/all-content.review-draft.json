@@ -4,7 +4,7 @@
   "status": "translation-review-draft",
   "source_project": "uvtbtpxtrrmaublrztgv",
   "coverage": {
-    "tour": 26,
+    "tour": 27,
     "blog_post": 50,
     "destination": 7,
     "communication_template": 18,
@@ -13,7 +13,7 @@
     "public_ui_messages": 81,
     "private_ui_messages": 1090,
     "ui_catalog_messages": 1171,
-    "source_records": 112
+    "source_records": 113
   },
   "records": [
     {
@@ -5390,6 +5390,186 @@
         ],
         "pickupInfo": "**Miejsce odbioru:** hotel w Hurghadzie.\n\n**Strefy odbioru w cenie:**\n- Centralna Hurghada.\n\n**Strefy transferu za dodatkową opłatą:**\n- Makadi Bay.\n- Sahl Hasheesh.\n- El Gouna.\n- Soma Bay.\n- Safaga.",
         "cancellationPolicy": "Bezpłatne anulowanie do 24 godzin przed wyjazdem.\nAnulowanie na 12 godzin przed wyjazdem uprawnia do zwrotu 50% kosztów.\nAnulowanie na 6 godzin przed wyjazdem nie podlega zwrotowi, ale termin można zmienić za dodatkową opłatą.",
+        "ageRestrictions": "",
+        "labels": {
+          "highlights": "Najważniejsze atrakcje",
+          "itinerary": "Plan wycieczki",
+          "included": "W cenie",
+          "excluded": "Nie w cenie",
+          "faqs": "Najczęstsze pytania",
+          "pickupInfo": "Informacje o odbiorze",
+          "cancellationPolicy": "Zasady anulowania",
+          "ageRestrictions": "Ograniczenia wiekowe",
+          "bookNow": "Rezerwuj teraz",
+          "browseMore": "Zobacz więcej wycieczek"
+        }
+      }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "9d5ffc61-a204-4fcc-9f8c-e10b3499dfa9",
+      "locale": "pl",
+      "source_slug": "luxor-west-bank-private-tour-kings-queens-hatshepsut-temple-with-lunch",
+      "translated_slug": "prywatna-wycieczka-zachodni-brzeg-luksoru-dolina-krolow-krolowych-hatszepsut-lunch",
+      "title": "Prywatna wycieczka po zachodnim brzegu Luksoru: Dolina Królów i Królowych, świątynia Hatszepsut i lunch",
+      "summary": "Odkryj zachodni brzeg Luksoru podczas prywatnej wycieczki z przewodnikiem-egiptologiem. Zwiedź Dolinę Królów i Królowych, świątynię Hatszepsut oraz Kolosy Memnona; lunch jest wliczony w cenę.",
+      "seo_title": "Prywatna wycieczka po zachodnim brzegu Luksoru z lunchem",
+      "seo_description": "Odwiedź Dolinę Królów i Królowych, świątynię Hatszepsut i Kolosy Memnona z prywatnym przewodnikiem-egiptologiem. Lunch w cenie.",
+      "duration": "6 godzin",
+      "duration_type": "Cały dzień",
+      "departure_time": "07:00 AM, 08:00 AM, 09:00 AM",
+      "age_restrictions": "",
+      "pickup_info": "* Bezpłatny odbiór ze wszystkich hoteli w mieście Luksor.\n* Hotele poza miastem Luksor mogą wiązać się z dodatkową opłatą.\n* Podczas rezerwacji podaj nazwę hotelu, a potwierdzimy godzinę odbioru.",
+      "cancellation_policy": "* Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.\n* Anulowanie 12 godzin przed wycieczką: zwrot 50% kosztów.\n* Anulowanie 6 godzin przed wycieczką: brak zwrotu kosztów, ale za opłatą można zmienić termin.",
+      "content": {
+        "title": "Prywatna wycieczka po zachodnim brzegu Luksoru: Dolina Królów i Królowych, świątynia Hatszepsut i lunch",
+        "description": "Poznaj fascynujący świat starożytnego Egiptu podczas prywatnej wyprawy na zachodni brzeg Luksoru. W towarzystwie profesjonalnego przewodnika-egiptologa odkryjesz jedne z najważniejszych stanowisk archeologicznych w regionie i poznasz historie królów, królowych oraz władców starożytnych Teb.\n\nDzień rozpocznie się odbiorem z hotelu w Luksorze prywatnym, klimatyzowanym samochodem. Następnie udasz się do Doliny Królów, legendarnej nekropolii faraonów, gdzie zobaczysz pięknie zdobione królewskie grobowce.\n\nKolejnym punktem będzie Dolina Królowych, miejsce spoczynku królewskich małżonek i członków rodziny królewskiej. Znajduje się tam również słynny grobowiec Nefertari, znany z wyjątkowych dekoracji.\n\nNastępnie odwiedzisz imponującą świątynię Hatszepsut, niezwykły zabytek wzniesiony na klifach Deir el-Bahari. Poznasz historię tej wyjątkowej władczyni, której dziedzictwo uczyniło ją jedną z najbardziej fascynujących postaci starożytnego Egiptu.\n\nPrzed opuszczeniem zachodniego brzegu zatrzymasz się przy Kolosach Memnona — dwóch ogromnych posągach, które od tysięcy lat stoją na równinie tebańskiej.\n\nPo zwiedzaniu tych historycznych miejsc zjesz tradycyjny egipski lunch w lokalnej restauracji, a następnie wygodnie wrócisz do hotelu.",
+        "durationLabel": "6 godzin",
+        "highlights": [
+          "Odkryj słynną Dolinę Królów",
+          "Poznaj królewskie nekropolie w Dolinie Królowych",
+          "Odwiedź wspaniałą świątynię Hatszepsut",
+          "Zobacz imponujące Kolosy Memnona",
+          "Poznaj historię starożytnego Egiptu z prywatnym przewodnikiem-egiptologiem",
+          "Skosztuj tradycyjnego egipskiego lunchu w lokalnej restauracji"
+        ],
+        "itinerary": [
+          {
+            "time": "00:00",
+            "title": "Odbiór z hotelu",
+            "description": "Spotkaj się z prywatnym przewodnikiem i kierowcą w hotelu w Luksorze, a następnie przejedź klimatyzowanym samochodem na zachodni brzeg."
+          },
+          {
+            "time": "00:00",
+            "title": "Dolina Królów",
+            "description": "Zwiedź królewską nekropolię i odkryj zdobione grobowce faraonów starożytnego Egiptu."
+          },
+          {
+            "time": "00:00",
+            "title": "Dolina Królowych",
+            "description": "Odwiedź miejsce pochówku królewskich małżonek i poznaj słynny grobowiec Nefertari."
+          },
+          {
+            "time": "00:00",
+            "title": "Świątynia Hatszepsut",
+            "description": "Podziwiaj imponujące tarasy świątyni i poznaj życie oraz dziedzictwo królowej Hatszepsut."
+          },
+          {
+            "time": "00:00",
+            "title": "Kolosy Memnona",
+            "description": "Zatrzymaj się przy dwóch monumentalnych posągach i zrób wyjątkowe zdjęcia."
+          },
+          {
+            "time": "00:00",
+            "title": "Lunch i powrót",
+            "description": "Zjedz egipski lunch w lokalnej restauracji, a następnie prywatnym transportem wróć do hotelu."
+          }
+        ],
+        "included": [
+          "Odbiór z hotelu i powrót do hotelu w Luksorze",
+          "Prywatny transport klimatyzowanym samochodem",
+          "Profesjonalny przewodnik-egiptolog",
+          "Lunch w lokalnej restauracji"
+        ],
+        "excluded": [
+          "Bilety wstępu do stanowisk archeologicznych i świątyń",
+          "Dodatkowe opłaty za wejście do grobowców",
+          "Napiwki i wydatki osobiste"
+        ],
+        "faqs": [
+          {
+            "question": "Ile trwa wycieczka po zachodnim brzegu Luksoru?",
+            "answer": "Wycieczka trwa około 6 godzin, wliczając odbiór i powrót do hotelu, zwiedzanie głównych stanowisk archeologicznych oraz lunch w lokalnej restauracji.",
+            "section": "faq"
+          },
+          {
+            "question": "Co należy zabrać?",
+            "answer": "Wygodne buty do chodzenia.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "Podczas całej wycieczki stosuj się do wskazówek przewodnika.",
+            "section": "important_information"
+          },
+          {
+            "question": "Jakie zabytki odwiedzimy podczas wycieczki?",
+            "answer": "Zwiedzisz Dolinę Królów, Dolinę Królowych, imponującą świątynię Hatszepsut oraz słynne Kolosy Memnona.",
+            "section": "faq"
+          },
+          {
+            "question": "Co należy zabrać?",
+            "answer": "Okulary przeciwsłoneczne i kapelusz.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "Na wszystkich stanowiskach archeologicznych pozostawaj w wyznaczonych strefach dla zwiedzających.",
+            "section": "important_information"
+          },
+          {
+            "question": "Czy jest to wycieczka prywatna czy wspólna wycieczka grupowa?",
+            "answer": "To prywatne doświadczenie: zwiedzasz we własnym gronie, korzystasz z prywatnego transportu i opieki dedykowanego przewodnika.",
+            "section": "faq"
+          },
+          {
+            "question": "Co należy zabrać?",
+            "answer": "Krem z filtrem przeciwsłonecznym.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "Podczas zwiedzania starożytnych zabytków i nierównych nawierzchni noś odpowiednie obuwie.",
+            "section": "important_information"
+          },
+          {
+            "question": "Czy będzie nam towarzyszył przewodnik-egiptolog?",
+            "answer": "Tak, profesjonalny przewodnik-egiptolog będzie towarzyszył Ci przez całą wycieczkę, opowiadając ciekawe historie i przekazując informacje o cywilizacji starożytnego Egiptu.",
+            "section": "faq"
+          },
+          {
+            "question": "Co należy zabrać?",
+            "answer": "Butelkę wody.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "Pamiętaj o nawodnieniu, szczególnie podczas upałów.",
+            "section": "important_information"
+          },
+          {
+            "question": "Czy lunch jest wliczony w cenę wycieczki?",
+            "answer": "Tak, lunch w lokalnej egipskiej restauracji jest wliczony w cenę. Podczas wycieczki skosztujesz tradycyjnych egipskich potraw.",
+            "section": "faq"
+          },
+          {
+            "question": "Co należy zabrać?",
+            "answer": "Aparat fotograficzny lub smartfon.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "Nie dotykaj starożytnych zabytków ani artefaktów i nie wspinaj się na nie.",
+            "section": "important_information"
+          },
+          {
+            "question": "Czy bilety wstępu są wliczone w cenę rezerwacji?",
+            "answer": "Nie, bilety wstępu do stanowisk archeologicznych i świątyń nie są wliczone w cenę. Można je kupić osobno na miejscu.",
+            "section": "faq"
+          },
+          {
+            "question": "Co należy zabrać?",
+            "answer": "Gotówkę na wydatki osobiste i opcjonalne bilety wstępu.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Ważne informacje",
+            "answer": "Przez cały czas pilnuj swoich rzeczy osobistych.",
+            "section": "important_information"
+          }
+        ],
+        "pickupInfo": "* Bezpłatny odbiór ze wszystkich hoteli w mieście Luksor.\n* Hotele poza miastem Luksor mogą wiązać się z dodatkową opłatą.\n* Podczas rezerwacji podaj nazwę hotelu, a potwierdzimy godzinę odbioru.",
+        "cancellationPolicy": "* Bezpłatne anulowanie do 24 godzin przed rozpoczęciem wycieczki.\n* Anulowanie 12 godzin przed wycieczką: zwrot 50% kosztów.\n* Anulowanie 6 godzin przed wycieczką: brak zwrotu kosztów, ale za opłatą można zmienić termin.",
         "ageRestrictions": "",
         "labels": {
           "highlights": "Najważniejsze atrakcje",
