@@ -9,7 +9,7 @@
   "scripts": {
     "dev": "tsx scripts/generate_private_ui_catalog.ts && tsx server.ts",
     "start": "node server.js",
-    "build": "tsx scripts/generate_private_ui_catalog.ts && vite build && esbuild server.ts --bundle --platform=node --format=esm --packages=external --outfile=server.js",
+    "build": "tsx scripts/generate_private_ui_catalog.ts && vite build && node scripts/write_release_marker.mjs && esbuild server.ts --bundle --platform=node --format=esm --packages=external --outfile=server.js",
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "lint": "tsx scripts/generate_private_ui_catalog.ts && ./node_modules/typescript-7/bin/tsc --noEmit",
