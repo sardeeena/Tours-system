@@ -153,9 +153,9 @@ export function parseHtmlPage(html, pageUrl, baseHost) {
   for (const tag of String(html).match(/<link\b[^>]*>/gi) || []) {
     const attrs = parseAttributes(tag);
     if ((attrs.rel || '').toLowerCase().split(/\s+/).includes('alternate') && attrs.hreflang) {
-      const normalized = normalizePageUrl(attrs.href || '', pageUrl);
-      if (!/^(?:[a-z]{2}(?:-[a-z]{2})?|x-default)$/i.test(attrs.hreflang)) hreflangErrors.push('Invalid hreflang value: ' + attrs.hreflang);
-      if (!normalized) hreflangErrors.push('Invalid hreflang URL for ' + attrs.hreflang);
+      const normalized = attrs.href ? normalizePageUrl(attrs.href, pageUrl) : null;
+      if (!/^(?:[a-z]{2,3}(?:-[a-z0-9]{2,8})*|x-default)$/i.test(attrs.hreflang)) hreflangErrors.push('Invalid hreflang value: ' + attrs.hreflang);
+      if (!normalized) hreflangErrors.push('Missing or invalid hreflang URL for ' + attrs.hreflang);
       else {
         try {
           if (!sameSiteHost(new URL(normalized).hostname, baseHost)) hreflangErrors.push('Cross-host hreflang URL: ' + normalized);
