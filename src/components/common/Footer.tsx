@@ -126,6 +126,7 @@ export const Footer: React.FC<FooterProps> = ({
               Destinations
             </h3>
             <ul className="space-y-2 text-xs text-stone-600 dark:text-slate-400">
+              <li><a href="/destinations" className="font-semibold text-[#0A6C74] dark:text-[#60C3CC] hover:underline">Browse all destinations</a></li>
               <li>
                 <button 
                   type="button" 
@@ -189,6 +190,8 @@ export const Footer: React.FC<FooterProps> = ({
               Tour Categories
             </h3>
             <ul className="space-y-2 text-xs text-stone-600 dark:text-slate-400">
+              <li><a href="/experiences" className="font-semibold text-[#0A6C74] dark:text-[#60C3CC] hover:underline">Explore all experiences</a></li>
+              <li><a href="/excursions" className="font-semibold text-[#0A6C74] dark:text-[#60C3CC] hover:underline">Browse all excursions</a></li>
               <li>
                 <button 
                   type="button" 
@@ -252,6 +255,7 @@ export const Footer: React.FC<FooterProps> = ({
               Customer Support
             </h3>
             <ul className="space-y-2 text-xs text-stone-600 dark:text-slate-400">
+              <li><a href="/exclusive" className="font-semibold text-[#0A6C74] dark:text-[#60C3CC] hover:underline">Exclusive private trips</a></li>
               <li>
                 <button 
                   type="button" 
