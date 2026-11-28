@@ -9,6 +9,7 @@ const tourService = read('../src/services/tourService.ts');
 const server = read('../server.ts');
 const localizedPage = read('../src/pages/LocalizedContentPage.tsx');
 const robots = read('../public/robots.txt');
+const footer = read('../src/components/common/Footer.tsx');
 const blogPage = read('../src/pages/BlogPage.tsx');
 const cookieConsent = read('../src/components/common/CookieConsent.tsx');
 const bookingPayment = read('../src/components/booking/StepPayment.tsx');
