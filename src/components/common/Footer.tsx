@@ -126,6 +126,7 @@ export const Footer: React.FC<FooterProps> = ({
               Destinations
             </h3>
             <ul className="space-y-2 text-xs text-stone-600 dark:text-slate-400">
+              <li><a href="/destinations" className="font-semibold text-[#0A6C74] dark:text-[#60C3CC] hover:underline">Browse all destinations</a></li>
               <li>
                 <button 
                   type="button" 
@@ -189,6 +190,8 @@ export const Footer: React.FC<FooterProps> = ({
               Tour Categories
             </h3>
             <ul className="space-y-2 text-xs text-stone-600 dark:text-slate-400">
+              <li><a href="/experiences" className="font-semibold text-[#0A6C74] dark:text-[#60C3CC] hover:underline">Explore all experiences</a></li>
+              <li><a href="/excursions" className="font-semibold text-[#0A6C74] dark:text-[#60C3CC] hover:underline">Browse all excursions</a></li>
               <li>
                 <button 
                   type="button" 
@@ -252,6 +255,7 @@ export const Footer: React.FC<FooterProps> = ({
               Customer Support
             </h3>
             <ul className="space-y-2 text-xs text-stone-600 dark:text-slate-400">
+              <li><a href="/exclusive" className="font-semibold text-[#0A6C74] dark:text-[#60C3CC] hover:underline">Exclusive private trips</a></li>
               <li>
                 <button 
                   type="button" 
@@ -309,9 +313,9 @@ export const Footer: React.FC<FooterProps> = ({
               <li><a href="/blog" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">Travel blog</a></li>
               <li>
                 <a href="/about" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">About Awesome Adventure Tours</a>
+              </li>
               <li>
                 <a href="https://www.tripadvisor.co.uk/Attraction_Review-g297549-d34759384-Reviews-Awesome_Adventure_Tours-Hurghada_Red_Sea_and_Sinai.html" target="_blank" rel="noopener noreferrer" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">TripAdvisor Profile</a>
-              </li>
               </li>
               <li>
                 <a href="/contact" className="hover:text-[#0A6C74] dark:hover:text-white transition-colors">Contact</a>

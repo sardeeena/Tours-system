@@ -7,6 +7,8 @@ on:
     paths:
       - ".github/workflows/lighthouse-production.yml"
       - "public/robots.txt"
+      - "package.json"
+      - "scripts/write_release_marker.mjs"
       - "scripts/seo_site_audit.mjs"
   workflow_dispatch:
   schedule:
@@ -28,14 +30,14 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v7
 
-      # Update the robots.txt release marker whenever a server/SEO release needs a fresh deployment gate.
+      # The build stamps robots.txt with this exact commit SHA; a previous release can never satisfy this gate.
       - name: Wait for the Hostinger deployment marker for this release
         shell: bash
         run: |
           set -euo pipefail
           deployed=0
           for attempt in $(seq 1 60); do
-            if curl --fail --silent --show-error --max-time 15 --header 'Cache-Control: no-cache' --header 'Pragma: no-cache' https://awesomeadventure.tours/robots.txt | grep -Fq 'Hostinger-Release-Marker: aa-analytics-seo-2026-11-28'; then
+            if curl --fail --silent --show-error --max-time 15 --header 'Cache-Control: no-cache' --header 'Pragma: no-cache' https://awesomeadventure.tours/robots.txt | grep -Fq "# Hostinger-Release-Marker: $GITHUB_SHA"; then
               echo "The production release marker is live."
               deployed=1
               break
