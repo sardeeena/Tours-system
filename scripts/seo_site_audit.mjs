@@ -274,8 +274,9 @@ export async function runSiteAudit(options = {}) {
     robotsRules = robots.rules;
     crawlDelayMs = robots.crawlDelayMs;
     const sitemapCandidates = [...robotsText.matchAll(/^\s*Sitemap:\s*(\S+)\s*$/gim)].map((match) => match[1]);
-    const sitemapUrl = sitemapCandidates[0] || new URL('/sitemap.xml', baseUrl).toString();
-    const pendingSitemaps = [sitemapUrl];
+    const pendingSitemaps = sitemapCandidates.length
+      ? [...sitemapCandidates]
+      : [new URL('/sitemap.xml', baseUrl).toString()];
     const seenSitemaps = new Set();
     while (pendingSitemaps.length && seenSitemaps.size < 10) {
       const currentSitemap = pendingSitemaps.shift();
