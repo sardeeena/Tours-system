@@ -1,4 +1,4 @@
-# Hostinger-Release-Marker: aa-analytics-seo-2026-11-28
+# Hostinger-Release-Marker: BUILD_COMMIT
 # OpenSEO's site auditor is a low-frequency technical crawler. Keep its requests spaced out.
 User-agent: OpenSEO-Audit
 Crawl-delay: 10
