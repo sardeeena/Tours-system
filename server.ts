@@ -3015,6 +3015,46 @@ app.post('/api/visitor/events', rateLimit(90, 60_000), async (req: Authenticated
   }
 });
 
+app.get('/api/admin/technical/booking-lifecycle/overview', rateLimit(30, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
+    return res.status(503).json({ success: false, error: 'Operational booking analytics are unavailable.' });
+  }
+
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const counts: Record<string, number> = {};
+  let offset = 0;
+  const pageSize = 1000;
+  const maxRows = 20_000;
+  let totalEvents = 0;
+  let truncated = false;
+
+  try {
+    while (offset < maxRows) {
+      const { data, error } = await serverSupabase
+        .from('booking_lifecycle_events')
+        .select('event_type')
+        .gte('occurred_at', since)
+        .order('occurred_at', { ascending: false })
+        .range(offset, offset + pageSize - 1);
+      if (error) throw error;
+      const rows = data || [];
+      totalEvents += rows.length;
+      for (const row of rows) {
+        if (typeof row.event_type === 'string') counts[row.event_type] = (counts[row.event_type] || 0) + 1;
+      }
+      if (rows.length < pageSize) break;
+      offset += pageSize;
+      if (offset >= maxRows) truncated = true;
+    }
+
+    return res.json({ periodDays: 30, totalEvents, events: counts, truncated });
+  } catch (error) {
+    console.error('[Booking lifecycle analytics] Overview failed:', error instanceof Error ? error.message : 'unknown error');
+    return res.status(503).json({ success: false, error: 'Operational booking analytics are temporarily unavailable.' });
+  }
+});
+
 app.get('/api/admin/technical/visitors/overview', rateLimit(30, 60_000), async (req: AuthenticatedRequest, res: Response) => {
   if (!requireSuperAdminAal2(req, res)) return;
   if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return res.status(503).json({ success: false, error: 'Visitor analytics are unavailable.' });
