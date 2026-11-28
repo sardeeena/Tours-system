@@ -72,7 +72,7 @@ jobs:
           for page in home terms tour; do
             url="${pages[${page}]}"
             result="$(curl --location --silent --show-error --max-time 30 \
-              --user-agent 'AwesomeAdventureSiteAudit/1.0 (+https://awesomeadventure.tours/) # Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36' \
+              --user-agent 'AwesomeAdventureSiteAudit/1.0 (+https://awesomeadventure.tours/)' \
               --output /dev/null --write-out '%{http_code}\t%{url_effective}' "${url}" 2> "lighthouse-reports/${page}-curl.log" || true)"
             status="${result%%$'\t'*}"
             final_url="${result#*$'\t'}"
