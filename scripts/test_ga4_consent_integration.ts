@@ -35,6 +35,7 @@ assert.match(service, /isInternalAnalyticsPath\(window\.location\.pathname\)/, '
 assert.ok(server.includes("if (/^\\/admin(?:\\/|$)/i.test(pagePath)) return res.status(204).end();"), 'Server ingestion independently blocks admin-route events');
 const gaAllowlist = service.split("const allowedKeys = new Set([" )[1]?.split("]);" )[0] || '';
 assert.doesNotMatch(gaAllowlist, /booking_reference|bookingReference/i, 'Booking references are not allowed in GA4 event parameters');
+assert.doesNotMatch(gaAllowlist, /payment_method|guest_count/i, 'Payment-method and guest-count details are not forwarded to GA4');
 assert.match(service, /key !== 'booking_reference'/, 'Booking references are removed before first-party event ingestion');
 assert.match(service, /gaEventData\.step = safeEventData\.booking_step/, 'Booking step is mapped to the GA4 step parameter');
 assert.match(service, /gaEventData\.value = safeEventData\.booking_value/, 'Booking value is mapped to GA4 value');
