@@ -9,6 +9,8 @@ on:
       - "public/robots.txt"
       - "server.ts"
   workflow_dispatch:
+  schedule:
+    - cron: '17 4 * * 1'
 
 permissions:
   contents: read
@@ -23,14 +25,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: Wait for the Hostinger deployment from this release
+      # Update the robots.txt release marker whenever a server/SEO release needs a fresh deployment gate.
+      - name: Wait for the Hostinger deployment marker for this release
         shell: bash
         run: |
           set -euo pipefail
           deployed=0
           for attempt in $(seq 1 60); do
-            if curl --fail --silent --show-error --max-time 15 https://awesomeadventure.tours/robots.txt | grep -q 'Crawl-delay: 10'; then
-              echo "The new production release is live."
+            if curl --fail --silent --show-error --max-time 15 https://awesomeadventure.tours/robots.txt | grep -Fq 'Hostinger-Release-Marker: aa-analytics-seo-2026-11-28'; then
+              echo "The production release marker is live."
               deployed=1
               break
             fi
@@ -38,7 +41,7 @@ jobs:
             sleep 15
           done
           if [ "${deployed}" -ne 1 ]; then
-            echo "The production deployment marker did not appear within 15 minutes." >&2
+            echo "The production release marker did not appear within 15 minutes." >&2
             exit 1
           fi
 
