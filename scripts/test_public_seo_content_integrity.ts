@@ -55,6 +55,10 @@ assert.match(server, /path === '\/destinations'/, 'Server-side SEO renderer expl
 assert.match(server, /path === '\/exclusive'[\s\S]*?Fixed price for the entire trip/, 'Server-rendered Exclusive catalogue explains its fixed trip pricing');
 assert.match(server, /  '\/destinations',/, 'Public XML sitemap includes the destinations directory');
 assert.match(server, /  '\/exclusive',/, 'Public XML sitemap includes the dedicated Exclusive catalogue');
+const corePathsStart = server.indexOf('const AWESOME_ADVENTURE_TOURS_CORE_PUBLIC_PATHS');
+const corePathsEnd = server.indexOf('];', corePathsStart);
+assert.ok(corePathsStart >= 0 && corePathsEnd > corePathsStart, 'Core public sitemap path list exists');
+assert.doesNotMatch(server.slice(corePathsStart, corePathsEnd), /['"]\\/booking['"]/, 'Private booking flow is not a core public sitemap route');
 assert.match(server, /## Exclusive private trips[\s\S]*?fixed price applies to the entire trip, not per person/, 'AI discovery explains that Exclusive prices apply to the entire trip');
 assert.match(app, /currentPath === '\/exclusive'[\s\S]*?CollectionPage/, 'Exclusive catalogue has dedicated indexable metadata and structured data');
 assert.match(server, /\[Destinations\]\(https:\/\/awesomeadventure\.tours\/destinations\)/, 'llms.txt advertises the destinations directory');
@@ -88,10 +92,18 @@ assert.match(categorySeoResolver, /category\?\.seoDescription\?\.trim\(\)/, 'Cat
 assert.match(categorySeoResolver, /category\?\.seoKeywords/, 'Category SEO keywords are used when supplied');
 
 assert.match(robots, /^User-agent: OpenSEO-Audit\nCrawl-delay: 10\n/m, 'OpenSEO audit crawler uses a conservative ten-second request delay');
-assert.match(robots, /^# Hostinger-Release-Marker: aa-analytics-seo-2026-11-28$/m, 'robots.txt includes the release marker used to gate production Lighthouse audits');
+assert.match(robots, /^# Hostinger-Release-Marker: BUILD_COMMIT$/m, 'robots.txt contains a build-time release-marker placeholder');
+const packageJson = JSON.parse(read('../package.json'));
+const releaseMarkerScript = read('../scripts/write_release_marker.mjs');
 const lighthouseWorkflow = read('../.github/workflows/lighthouse-production.yml');
-assert.match(lighthouseWorkflow, /schedule:[\s\S]*?cron: '17 4 \* \* 1'/, 'Production Lighthouse audits run weekly');
-assert.match(lighthouseWorkflow, /Hostinger-Release-Marker: aa-analytics-seo-2026-11-28/, 'Production Lighthouse waits for the release-specific robots marker rather than a pre-existing crawl directive');
+const availabilityWorkflow = read('../.github/workflows/production-availability.yml');
+assert.match(packageJson.scripts.build, /node scripts\\/write_release_marker\\.mjs/, 'production build stamps robots.txt with the deployed commit');
+assert.match(releaseMarkerScript, /GITHUB_SHA/, 'release marker prefers the exact GitHub commit SHA');
+assert.match(releaseMarkerScript, /git.*rev-parse.*HEAD/, 'release marker can resolve the checked-out commit on Hostinger');
+assert.match(lighthouseWorkflow, /schedule:[\\s\\S]*?cron: '17 4 \\* \\* 1'/, 'Production Lighthouse audits run weekly');
+assert.match(lighthouseWorkflow, /Hostinger-Release-Marker: \\$GITHUB_SHA/, 'Production Lighthouse waits for the exact deployed commit');
+assert.match(availabilityWorkflow, /github.event_name != 'pull_request'/, 'production availability waits for the deployed commit only on main and scheduled runs');
+assert.match(availabilityWorkflow, /Private booking flow must not be included in the public sitemap/, 'production availability rejects private booking URLs in the public sitemap');
 assert.match(lighthouseWorkflow, /node scripts\/seo_site_audit\.mjs/, 'Weekly production audit runs the sitemap crawler before Lighthouse');
 assert.match(lighthouseWorkflow, /steps\.seo_crawl\.outputs\.blocked/, 'Lighthouse is skipped if the sitemap crawler is blocked by the production edge');
 assert.match(lighthouseWorkflow, /AwesomeAdventureSiteAudit\/1\.0/, 'Production preflight uses a transparent audit user-agent');
