@@ -1,7 +1,7 @@
 BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(13);
+SELECT plan(14);
 
 SELECT ok(
   to_regclass('public.booking_lifecycle_events') IS NOT NULL,
@@ -156,6 +156,12 @@ SELECT is(
    WHERE booking_id = 'f6600000-0000-4000-8000-000000000001' AND event_type = 'booking_completed'),
   1,
   'completion is recorded only when the booking is completed and ledger-paid'
+);
+SELECT is(
+  (SELECT count(*)::integer FROM public.automation_events
+   WHERE event_name = 'booking.completed' AND entity_id = 'f6600000-0000-4000-8000-000000000001'),
+  1,
+  'the existing completed-booking automation event is accepted and persisted'
 );
 
 INSERT INTO public.refund_records (
