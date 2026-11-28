@@ -81,7 +81,7 @@ SELECT ok(NOT EXISTS (
       'audit_logs','technical_events','visitor_sessions','visitor_events',
       'visitor_consent_records','visitor_analytics_settings',
       'rate_limit_events','rate_limit_buckets','request_idempotency',
-      'idempotency_keys','booking_idempotency_keys','schema_migrations'
+      'idempotency_keys','booking_idempotency_keys','booking_lifecycle_events','schema_migrations'
     )
     AND NOT EXISTS (
       SELECT 1 FROM pg_trigger t JOIN pg_class c ON c.oid = t.tgrelid

@@ -22,6 +22,12 @@ assert.match(about, /seoIndexable: true/, 'About fallback remains indexable');
 assert.match(about, /A local team in Hurghada/, 'About page contains useful company context');
 assert.match(about, /Know what’s included/, 'About page explains how customers compare and book trips');
 assert.ok(appConfig.includes('2nd floor, Bostan Cafe, Madres, Hurghada') && !appConfig.includes('Berth B-14'), 'Booking support uses the current Hurghada office location');
+const privacy = pages.slice(pages.indexOf("id: 'privacy'"), pages.indexOf("id: 'terms'"));
+assert.match(privacy, /Google Analytics 4 \(GA4\)[\s\S]*?only after analytics consent/, 'Privacy notice describes consent-gated GA4');
+assert.match(privacy, /Google Tag Manager \(GTM\)[\s\S]*?only after marketing consent/, 'Privacy notice describes consent-gated marketing tags');
+assert.match(privacy, /visitor-event records, 180 days for visitor-session records and 730 days for cookie\/consent records/, 'Privacy notice matches configured first-party analytics retention');
+assert.match(privacy, /booking references, passenger details or free-text booking requests/, 'Privacy notice explains that direct booking identifiers and contact details are excluded from analytics events');
+assert.match(privacy, /internal account identifier; this identifier is not sent to Google Analytics 4/, 'Privacy notice discloses the signed-in account identifier used by first-party analytics');
 const contact = pages.slice(pages.indexOf("id: 'contact'"), pages.indexOf("id: 'why-us'"));
 assert.ok(contact.length >= 1000, 'Contact page provides substantive visitor support information');
 assert.match(contact, /preferred language/, 'Contact page explains language support without promising every tour is available in every language');
@@ -82,6 +88,17 @@ assert.match(categorySeoResolver, /category\?\.seoDescription\?\.trim\(\)/, 'Cat
 assert.match(categorySeoResolver, /category\?\.seoKeywords/, 'Category SEO keywords are used when supplied');
 
 assert.match(robots, /^User-agent: OpenSEO-Audit\nCrawl-delay: 10\n/m, 'OpenSEO audit crawler uses a conservative ten-second request delay');
+assert.match(robots, /^# Hostinger-Release-Marker: aa-analytics-seo-2026-11-28$/m, 'robots.txt includes the release marker used to gate production Lighthouse audits');
+const lighthouseWorkflow = read('../.github/workflows/lighthouse-production.yml');
+assert.match(lighthouseWorkflow, /schedule:[\s\S]*?cron: '17 4 \* \* 1'/, 'Production Lighthouse audits run weekly');
+assert.match(lighthouseWorkflow, /Hostinger-Release-Marker: aa-analytics-seo-2026-11-28/, 'Production Lighthouse waits for the release-specific robots marker rather than a pre-existing crawl directive');
+assert.match(lighthouseWorkflow, /node scripts\/seo_site_audit\.mjs/, 'Weekly production audit runs the sitemap crawler before Lighthouse');
+assert.match(lighthouseWorkflow, /steps\.seo_crawl\.outputs\.blocked/, 'Lighthouse is skipped if the sitemap crawler is blocked by the production edge');
+assert.match(lighthouseWorkflow, /AwesomeAdventureSiteAudit\/1\.0/, 'Production preflight uses a transparent audit user-agent');
+const seoCrawler = read('../scripts/seo_site_audit.mjs');
+assert.match(seoCrawler, /status === 403 \|\| status === 429/, 'SEO crawler stops on edge protection rather than retrying or bypassing it');
+assert.match(seoCrawler, /10_000/, 'SEO crawler applies a conservative ten-second minimum request delay');
+assert.doesNotMatch(seoCrawler, /Mozilla\/5\.0/, 'SEO crawler does not impersonate a browser');
 assert.match(robots, /^User-agent: \*$/m, 'robots.txt contains a valid wildcard user-agent');
 assert.match(robots, /^Sitemap: https:\/\/awesomeadventure\.tours\/sitemap\.xml$/m, 'robots.txt advertises the canonical sitemap');
 
@@ -117,6 +134,15 @@ const blogSeoEnd = app.indexOf("if (['/login'", blogSeoStart);
 const blogSeoRoute = app.slice(blogSeoStart, blogSeoEnd);
 assert.ok(!blogSeoRoute.includes('seoService.apply'), 'App does not overwrite article-specific server SEO with a generic blog title');
 assert.ok(blogPage.includes('article.seo_title') && blogPage.includes('article.seo_description'), 'Blog articles apply their own stored SEO title and description');
+assert.ok(server.includes('function seoRenderInline('), 'Server-rendered blog content has a dedicated safe Markdown inline renderer');
+assert.ok(server.includes("const headingTag = headingLevel === 1 ? 'h2' : 'h3'"), 'Server-rendered blog headings preserve the same hierarchy as the hydrated article');
+const reefArticleMigration = read('../supabase/migrations/20261128093000_optimize_responsible_snorkeling_article.sql');
+assert.match(reefArticleMigration, /Coral Reef Etiquette: 7 Red Sea Snorkeling Rules/);
+assert.match(reefArticleMigration, /CDWS: Snorkel Supervision and Risk Management/);
+assert.match(reefArticleMigration, /Egyptian Environmental Affairs Agency/);
+assert.match(reefArticleMigration, /entity_key IN \('35def44b-0538-493d-ade9-60b2a8466067', 'responsible-snorkeling-protect-coral-reefs'\)/, 'Article content migration refuses to invalidate a published translation');
+assert.ok(server.includes("url.protocol === 'https:' && !url.username && !url.password"), 'Server-rendered Markdown links reject unsafe protocols and credential-bearing URLs');
+assert.ok(server.includes('seoRenderInline(line, 2000)') && server.includes('seoRenderInline(item, 500)') && server.includes('seoRenderInline(heading[1], 180)'), 'Server-rendered blog paragraphs, lists and headings preserve safe inline links and formatting');
 
 
 assert.match(server, /sharm-super-safari-atv-camel-stargazing-bbq-dinner/);

@@ -45,6 +45,7 @@ const expectedRoutes: RouteEntry[] = [
   { method: 'POST', path: '/api/visitor/consent' },
   { method: 'POST', path: '/api/visitor/events' },
   { method: 'GET', path: '/api/admin/technical/visitors/overview' },
+  { method: 'GET', path: '/api/admin/technical/booking-lifecycle/overview' },
   { method: 'GET', path: '/api/admin/technical/visitors/events' },
   { method: 'GET', path: '/api/admin/technical/visitors/sessions' },
   { method: 'GET', path: '/api/admin/technical/visitors/consent' },
@@ -86,7 +87,7 @@ const routeBlock = (method: string, path: string): string => {
 const superAdminRoutes = expectedRoutes.filter((route) => route.path.startsWith('/api/admin/'));
 assert(
   'Every Super Admin API route requires normalized Super Admin plus AAL2',
-  superAdminRoutes.length === 19 && superAdminRoutes.every((route) => routeBlock(route.method, route.path).includes('requireSuperAdminAal2(req, res)')),
+  superAdminRoutes.length === 20 && superAdminRoutes.every((route) => routeBlock(route.method, route.path).includes('requireSuperAdminAal2(req, res)')),
   'All /api/admin/* routes must retain the dedicated Super Admin/AAL2 guard.'
 );
 

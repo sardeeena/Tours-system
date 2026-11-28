@@ -48,6 +48,21 @@ const SESSION_TTL_MS = 30 * 60 * 1000;
 const VISITOR_TTL_MS = 180 * 24 * 60 * 60 * 1000;
 const CONSENT_VERSION = '2';
 
+/** Remove booking/customer identifiers from URLs before either analytics destination sees them. */
+export function sanitizeVisitorAnalyticsPath(value: string): string {
+  const rawPath = typeof value === 'string' ? value.split(/[?#]/, 1)[0] : '/';
+  const path = rawPath.replace(/\/+/g, '/') || '/';
+  const normalized = path.length > 1 ? path.replace(/\/$/, '') : path;
+  if (/^\/booking\/confirmation\/[^/]+$/i.test(normalized)) return '/booking/confirmation';
+  if (/^\/my-booking\/[^/]+$/i.test(normalized)) return '/my-booking';
+  return normalized.slice(0, 512) || '/';
+}
+
+/** Staff/admin console activity is operational, not visitor acquisition behaviour. */
+export function isInternalAnalyticsPath(value: string): boolean {
+  return /^\/admin(?:\/|$)/i.test(sanitizeVisitorAnalyticsPath(value));
+}
+
 function randomId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') return crypto.randomUUID();
   const bytes = new Uint8Array(16);
@@ -183,7 +198,9 @@ async function post(path: string, body: Record<string, unknown>): Promise<void> 
 }
 
 export async function recordVisitorConsent(choices: VisitorConsent, source = 'cookie_banner'): Promise<void> {
-  const id = choices.analytics ? sessionId() : (() => {
+  const trackVisitorSession = !isInternalAnalyticsPath(window.location.pathname);
+  const id = choices.analytics && trackVisitorSession ? sessionId() : (() => {
+    if (choices.analytics) return null;
     try {
       const saved = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
       return typeof saved?.id === 'string' ? saved.id : null;
@@ -193,8 +210,8 @@ export async function recordVisitorConsent(choices: VisitorConsent, source = 'co
     try { localStorage.removeItem(SESSION_KEY); localStorage.removeItem(VISITOR_KEY); } catch { /* storage may be unavailable */ }
   }
   await post('/api/visitor/consent', {
-    session_id: id, visitor_id: choices.analytics ? visitorId() : null, analytics: choices.analytics, marketing: choices.marketing,
-    source, consent_version: choices.version, ...(choices.analytics ? { landing_path: window.location.pathname, metadata: visitorMetadata() } : {}),
+    session_id: id, visitor_id: choices.analytics && trackVisitorSession ? visitorId() : null, analytics: choices.analytics, marketing: choices.marketing,
+    source, consent_version: choices.version, ...(choices.analytics && trackVisitorSession ? { landing_path: sanitizeVisitorAnalyticsPath(window.location.pathname), metadata: visitorMetadata() } : {}),
   });
   window.dispatchEvent(new CustomEvent('awesome:visitor-consent-saved'));
 }
@@ -206,14 +223,16 @@ export async function recordVisitorEvent(input: {
   duration_ms?: number;
   event_data?: Record<string, string | number | boolean>;
 }): Promise<void> {
+  const safePath = sanitizeVisitorAnalyticsPath(input.page_path);
+  if (isInternalAnalyticsPath(safePath) || isInternalAnalyticsPath(window.location.pathname)) return;
   const consent = readVisitorConsent();
   if (!consent?.analytics) return;
 
   // Forward only a small, non-PII allowlist to Google Analytics.
   // Names, email addresses, phone numbers and free-text fields never leave the first-party analytics store.
   const allowedKeys = new Set([
-    'tour_slug', 'destination', 'category', 'step', 'currency', 'value',
-    'payment_method', 'guest_count', 'booking_reference', 'bookingReference', 'booking_value',
+    'tour_slug', 'destination', 'category', 'booking_step', 'step',
+    'currency', 'value', 'booking_value',
   ]);
   const safeEventData: Record<string, string | number | boolean> = {};
   for (const [key, value] of Object.entries(input.event_data || {})) {
@@ -221,15 +240,21 @@ export async function recordVisitorEvent(input: {
   }
 
   // Page views are emitted once by VisitorAnalyticsTracker for the initial
-  // route and each SPA navigation. A submitted reservation stays booking_confirmed
-  // (not purchase) because payment may still be pending.
+  // route and each SPA navigation. A submitted reservation remains a lead,
+  // not a purchase, because supplier confirmation and payment may still be pending.
   if (input.event_name !== 'page_view') {
     const gaEventData = { ...safeEventData };
+    if (typeof safeEventData.booking_step === 'number') {
+      gaEventData.step = safeEventData.booking_step;
+      delete gaEventData.booking_step;
+    }
     if (input.event_name === 'booking_submitted' && typeof safeEventData.booking_value === 'number') {
       gaEventData.value = safeEventData.booking_value;
+      delete gaEventData.booking_value;
     }
     const gaEventParams = {
-      page_path: input.page_path.split(/[?#]/, 1)[0],
+      page_path: safePath,
+      page_location: window.location.origin + safePath,
       ...(input.page_title ? { page_title: input.page_title.slice(0, 160) } : {}),
       ...gaEventData,
     };
@@ -246,9 +271,9 @@ export async function recordVisitorEvent(input: {
   await post('/api/visitor/events', {
     session_id: sessionId(),
     event_name: input.event_name,
-    page_path: input.page_path.split(/[?#]/, 1)[0],
+    page_path: safePath,
     page_title: input.page_title?.slice(0, 160),
     duration_ms: input.duration_ms,
-    event_data: input.event_data || {},
+    event_data: Object.fromEntries(Object.entries(input.event_data || {}).filter(([key]) => key !== 'booking_reference' && key !== 'bookingReference')),
   });
 }

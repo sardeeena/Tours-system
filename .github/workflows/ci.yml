@@ -249,11 +249,11 @@ jobs:
         run: |
           npm run translations:export -- ./translation-source.json
           npm run translations:assemble-fr -- ./translation-source.json ./translations/fr/french-import-bundle.review-draft.json
-          npm run translations:import -- ./translations/fr/french-import-bundle.review-draft.json
+          npm run translations:import -- ./translations/fr/french-import-bundle.review-draft.json --strict
           npm run translations:assemble-nl -- ./translation-source.json ./translations/nl/dutch-import-bundle.review-draft.json
-          npm run translations:import -- ./translations/nl/dutch-import-bundle.review-draft.json
+          npm run translations:import -- ./translations/nl/dutch-import-bundle.review-draft.json --strict
           npm run translations:assemble-pl -- ./translation-source.json ./translations/pl/polish-import-bundle.review-draft.json
-          npm run translations:import -- ./translations/pl/polish-import-bundle.review-draft.json
+          npm run translations:import -- ./translations/pl/polish-import-bundle.review-draft.json --strict
 
       - name: Verify WhatsApp locale mapping and safe fallback
         run: npm run test:whatsapp-locale-mapping

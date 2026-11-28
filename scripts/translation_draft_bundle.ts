@@ -139,7 +139,8 @@ async function currentSource(entityType:string, entityKey:string):Promise<any|nu
   }
   return null;
 }
-async function importDrafts(path: string, apply: boolean) {
+async function importDrafts(path: string, apply: boolean, strict: boolean = false) {
+  if (strict && apply) throw new Error('--strict is validation-only and cannot be combined with --apply.');
   const parsed = JSON.parse(await readFile(path,'utf8'));
   if (parsed?.schema_version !== 1 || !Array.isArray(parsed.records)) throw new Error('Unsupported translation bundle schema.');
   let accepted=0, skipped=0;
@@ -167,14 +168,19 @@ async function importDrafts(path: string, apply: boolean) {
     }
     accepted++;
   }
+  if (strict && skipped > 0) {
+    throw new Error('Strict translation validation failed: ' + skipped + ' record(s) were skipped. Resolve every invalid, stale, missing-source, reviewed or published record before continuing.');
+  }
   console.log((apply?'Imported ':'Dry run: would import ')+accepted+' drafts; skipped '+skipped+'. No record was published.');
 }
-const [mode,path,flag] = process.argv.slice(2);
+const [mode,path,...flags] = process.argv.slice(2);
+const apply = flags.includes('--apply');
+const strict = flags.includes('--strict');
 if (mode==='export' && path) await exportBundle(path);
-else if (mode==='import' && path) await importDrafts(path,flag==='--apply');
+else if (mode==='import' && path) await importDrafts(path,apply,strict);
 else {
   console.log('Usage: npm run translations:export -- ./translation-source.json');
-  console.log('       npm run translations:import -- ./translation-drafts.json [--apply]');
-  console.log('Import defaults to dry-run. --apply writes draft rows only; reviewed/published rows are preserved.');
+  console.log('       npm run translations:import -- ./translation-drafts.json [--strict] [--apply]');
+  console.log('Import defaults to dry-run. --strict fails if any record would be skipped. --apply writes draft rows only; reviewed/published rows are preserved.');
   process.exitCode=1;
 }

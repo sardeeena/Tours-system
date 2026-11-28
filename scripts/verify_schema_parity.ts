@@ -63,7 +63,7 @@ function runParityCheck() {
 
   // Canonical baseline required tables (enforces that objects missing from BOTH files are caught)
   const REQUIRED_CANONICAL_TABLES = [
-    'audit_logs', 'automation_events', 'booking_extras', 'booking_passengers', 'bookings',
+    'audit_logs', 'automation_events', 'booking_extras', 'booking_lifecycle_events', 'booking_passengers', 'bookings',
     'categories', 'communication_messages', 'communication_templates', 'coupons',
     'crm_activities', 'crm_communications', 'crm_conversations', 'crm_lead_stages',
     'crm_notes', 'crm_segments', 'crm_tags', 'crm_tasks', 'customers', 'departures',

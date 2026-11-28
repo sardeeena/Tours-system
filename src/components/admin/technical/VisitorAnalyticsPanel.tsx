@@ -6,8 +6,9 @@ import { serializeSpreadsheetRows } from '../../../utils/spreadsheetExport';
 type Overview = {
   periodDays: number; sessions: number; uniqueVisitors: number; returningVisitors: number; events: number; guestSessions: number;
   signedInSessions: number; consentRecords: number; analyticsOptIns: number; marketingOptIns: number;
-  bookingFunnel: { started: number; stepsCompleted: number; submitted: number; confirmed: number; cancellationRequests: number };
+  bookingFunnel: { started: number; stepsCompleted: number; submitted: number; cancellationRequests: number };
 };
+type LifecycleOverview = { periodDays: number; totalEvents: number; events: Record<string, number>; truncated: boolean };
 type Session = {
   id: string; visitor_id: string; user_id: string | null; started_at: string; last_seen_at: string; ended_at: string | null;
   landing_path: string; referrer_host: string | null; utm_source: string | null; utm_medium: string | null;
@@ -61,6 +62,7 @@ const Card = ({ label, value, icon: Icon }: { label: string; value: number; icon
 
 export const VisitorAnalyticsPanel: React.FC = () => {
   const [overview, setOverview] = useState<Overview | null>(null);
+  const [lifecycle, setLifecycle] = useState<LifecycleOverview | null>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [events, setEvents] = useState<VisitorEvent[]>([]);
   const [consents, setConsents] = useState<ConsentRecord[]>([]);
@@ -87,16 +89,17 @@ export const VisitorAnalyticsPanel: React.FC = () => {
   const load = useCallback(async () => {
     setLoading(true); setError(''); setNotice('');
     try {
-      const [summary, sessionRows, eventRows, consentRows, settings, auditRows] = await Promise.all([
+      const [summary, sessionRows, eventRows, consentRows, settings, auditRows, lifecycleRows] = await Promise.all([
         api<Overview>('/api/admin/technical/visitors/overview'),
         api<{ sessions: Session[] }>(`/api/admin/technical/visitors/sessions?limit=500${deviceType ? `&device_type=${encodeURIComponent(deviceType)}` : ''}${fromDate ? `&from=${encodeURIComponent(new Date(`${fromDate}T00:00:00`).toISOString())}` : ''}${toDate ? `&to=${encodeURIComponent(new Date(`${toDate}T23:59:59`).toISOString())}` : ''}`),
         api<{ events: VisitorEvent[] }>(`/api/admin/technical/visitors/events?limit=500${eventType ? `&event_name=${encodeURIComponent(eventType)}` : ''}${fromDate ? `&from=${encodeURIComponent(new Date(`${fromDate}T00:00:00`).toISOString())}` : ''}${toDate ? `&to=${encodeURIComponent(new Date(`${toDate}T23:59:59`).toISOString())}` : ''}`),
         api<{ records: ConsentRecord[] }>('/api/admin/technical/visitors/consent?limit=150'),
         api<{ settings: Retention }>('/api/admin/technical/visitors/settings'),
         api<{ records: AuditRecord[] }>(`/api/admin/technical/audit-logs?limit=500${fromDate ? `&from=${encodeURIComponent(new Date(`${fromDate}T00:00:00`).toISOString())}` : ''}${toDate ? `&to=${encodeURIComponent(new Date(`${toDate}T23:59:59`).toISOString())}` : ''}`),
+        api<LifecycleOverview>('/api/admin/technical/booking-lifecycle/overview').catch(() => null),
       ]);
       setOverview(summary); setSessions(sessionRows.sessions || []); setEvents(eventRows.events || []);
-      setConsents(consentRows.records || []); setAuditRecords(auditRows.records || []); if (settings.settings) setRetention(settings.settings);
+      setConsents(consentRows.records || []); setAuditRecords(auditRows.records || []); setLifecycle(lifecycleRows); if (settings.settings) setRetention(settings.settings);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Visitor analytics could not be loaded.');
     } finally { setLoading(false); }
@@ -255,11 +258,38 @@ export const VisitorAnalyticsPanel: React.FC = () => {
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
           <h3 className="font-semibold">Booking conversion funnel · 30 days</h3>
-          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-5">
-            {[['Started', overview.bookingFunnel.started], ['Steps completed', overview.bookingFunnel.stepsCompleted], ['Submitted', overview.bookingFunnel.submitted], ['Confirmed', overview.bookingFunnel.confirmed], ['Cancellation requests', overview.bookingFunnel.cancellationRequests]].map(([label,value]) => <div key={String(label)} className="rounded-lg bg-slate-50 p-3 dark:bg-slate-800"><p className="text-[10px] text-slate-500">{label}</p><p className="mt-1 text-xl font-bold tabular-nums">{Number(value).toLocaleString()}</p></div>)}
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[['Started', overview.bookingFunnel.started], ['Steps completed', overview.bookingFunnel.stepsCompleted], ['Submitted', overview.bookingFunnel.submitted], ['Cancellation requests', overview.bookingFunnel.cancellationRequests]].map(([label,value]) => <div key={String(label)} className="rounded-lg bg-slate-50 p-3 dark:bg-slate-800"><p className="text-[10px] text-slate-500">{label}</p><p className="mt-1 text-xl font-bold tabular-nums">{Number(value).toLocaleString()}</p></div>)}
           </div>
           <p className="mt-2 text-[10px] text-slate-500">Only visitors who accepted analytics tracking are included.</p>
         </div>
+        {lifecycle ? <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div><h3 className="font-semibold">Operational booking & payment lifecycle · {lifecycle.periodDays} days</h3>
+              <p className="mt-1 text-xs text-slate-500">Separate from consented visitor tracking; includes website and staff-created reservations, so it is not a web-conversion count.</p></div>
+            <span className="text-xs text-slate-500">{lifecycle.totalEvents.toLocaleString()} events</span>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+            {[
+              ['Reservations created', 'booking_created'],
+              ['Staff-recorded confirmations', 'booking_status_confirmed'],
+              ['Cancellation requests', 'booking_cancellation_requested'],
+              ['Cancellations', 'booking_cancelled'],
+              ['Completed & paid', 'booking_completed'],
+              ['No shows', 'booking_no_show'],
+              ['Payments received', 'payment_received'],
+              ['Partial payments', 'payment_partially_received'],
+              ['Payment failures', 'payment_failed'],
+              ['Payment transactions refunded', 'payment_transaction_refunded'],
+              ['Refunds processed', 'refund_processed'],
+            ].map(([label, key]) => <div key={key} className="rounded-lg bg-slate-50 p-3 dark:bg-slate-800">
+              <p className="text-[10px] text-slate-500">{label}</p>
+              <p className="mt-1 text-xl font-bold tabular-nums">{(lifecycle.events[key] || 0).toLocaleString()}</p>
+            </div>)}
+          </div>
+          <p className="mt-3 text-[10px] text-slate-500">Confirmation means staff recorded the booking as confirmed in the supplier-managed workflow; it is not a direct supplier API event. Completed counts require both completed status and ledger-paid status. This ledger starts when its database migration is deployed and does not backfill earlier bookings.</p>
+          {lifecycle.truncated && <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">Showing the latest 20,000 lifecycle events; the reporting window is truncated.</p>}
+        </div> : <p className="rounded-lg border border-dashed border-slate-300 p-3 text-xs text-slate-500 dark:border-slate-700">Operational lifecycle reporting will appear after the lifecycle-ledger migration is deployed. The consented visitor funnel above remains separate.</p>}
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {[
             ['Top pages', topPages],
@@ -280,7 +310,7 @@ export const VisitorAnalyticsPanel: React.FC = () => {
       {activeSection === 'activity' && <div className="space-y-4">
         <div className="flex flex-wrap items-end gap-3 rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
           <label className="min-w-[130px] flex-1 text-[11px] text-slate-500">Device type<select value={deviceType} onChange={(e) => setDeviceType(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs dark:border-slate-600 dark:bg-slate-800"><option value="">All devices</option><option value="desktop">Desktop</option><option value="mobile">Mobile</option><option value="tablet">Tablet</option><option value="other">Other</option></select></label>
-          <label className="min-w-[160px] flex-1 text-[11px] text-slate-500">Event type<select value={eventType} onChange={(e) => setEventType(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs dark:border-slate-600 dark:bg-slate-800"><option value="">All event types</option>{['page_view','navigation','tour_view','tour_search','tour_filter_applied','booking_started','booking_step_viewed','booking_step_completed','booking_submitted','booking_confirmed','booking_lookup','booking_cancellation_requested','auth_sign_in','auth_sign_in_failed','auth_sign_up','auth_sign_out','profile_updated','password_reset_requested','password_changed','confirmation_email_resent','email_confirmed','mfa_verified','contact_request_submitted','newsletter_subscribed','inquiry_submitted','support_ticket_created','support_reply_sent','support_ticket_updated','chatbot_interaction','wishlist_updated','comparison_updated','review_submitted','tour_shared','language_changed','currency_changed'].map((value) => <option key={value} value={value}>{value.replace(/_/g, ' ')}</option>)}</select></label>
+          <label className="min-w-[160px] flex-1 text-[11px] text-slate-500">Event type<select value={eventType} onChange={(e) => setEventType(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs dark:border-slate-600 dark:bg-slate-800"><option value="">All event types</option>{['page_view','navigation','tour_view','tour_search','tour_filter_applied','booking_started','booking_step_viewed','booking_step_completed','booking_submitted','booking_confirmed','booking_lookup','booking_cancellation_requested','auth_sign_in','auth_sign_in_failed','auth_sign_up','auth_sign_out','profile_updated','password_reset_requested','password_changed','confirmation_email_resent','email_confirmed','mfa_verified','contact_request_submitted','newsletter_subscribed','inquiry_submitted','support_ticket_created','support_reply_sent','support_ticket_updated','chatbot_interaction','wishlist_updated','comparison_updated','review_submitted','tour_shared','language_changed','currency_changed'].map((value) => <option key={value} value={value}>{value === 'booking_confirmed' ? 'booking confirmed (legacy submission event)' : value.replace(/_/g, ' ')}</option>)}</select></label>
           <label className="text-[11px] text-slate-500">From<input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs dark:border-slate-600 dark:bg-slate-800" /></label>
           <label className="text-[11px] text-slate-500">To<input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-2 py-2 text-xs dark:border-slate-600 dark:bg-slate-800" /></label>
           <label className="min-w-[200px] flex-[2] text-[11px] text-slate-500">Search<input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Visitor, page, browser, campaign…" className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs dark:border-slate-600 dark:bg-slate-800" /></label>

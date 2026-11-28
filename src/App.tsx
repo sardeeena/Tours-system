@@ -1819,7 +1819,7 @@ function MainApp() {
     <div className={`public-site min-h-screen flex flex-col bg-[#FAF8F5] dark:bg-[#0A1118] text-[#111A24] dark:text-[#F1F5F9] transition-colors duration-200 ${currentPath.startsWith('/admin') ? 'public-site-admin-route' : ''}`}>
       <SiteMotionSystem />
       <CookieConsent />
-      <VisitorAnalyticsTracker path={currentPath} userId={user?.id || null} />
+      <VisitorAnalyticsTracker path={currentPath} />
       {/* Global Header */}
       <Header
         currentCurrency={currentCurrency}

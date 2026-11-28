@@ -7,8 +7,10 @@ on:
     paths:
       - ".github/workflows/lighthouse-production.yml"
       - "public/robots.txt"
-      - "server.ts"
+      - "scripts/seo_site_audit.mjs"
   workflow_dispatch:
+  schedule:
+    - cron: '17 4 * * 1'
 
 permissions:
   contents: read
@@ -21,16 +23,17 @@ jobs:
   lighthouse:
     name: Lighthouse mobile and desktop
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
-      - name: Wait for the Hostinger deployment from this release
+      # Update the robots.txt release marker whenever a server/SEO release needs a fresh deployment gate.
+      - name: Wait for the Hostinger deployment marker for this release
         shell: bash
         run: |
           set -euo pipefail
           deployed=0
           for attempt in $(seq 1 60); do
-            if curl --fail --silent --show-error --max-time 15 https://awesomeadventure.tours/robots.txt | grep -q 'Crawl-delay: 10'; then
-              echo "The new production release is live."
+            if curl --fail --silent --show-error --max-time 15 --header 'Cache-Control: no-cache' --header 'Pragma: no-cache' https://awesomeadventure.tours/robots.txt | grep -Fq 'Hostinger-Release-Marker: aa-analytics-seo-2026-11-28'; then
+              echo "The production release marker is live."
               deployed=1
               break
             fi
@@ -38,7 +41,7 @@ jobs:
             sleep 15
           done
           if [ "${deployed}" -ne 1 ]; then
-            echo "The production deployment marker did not appear within 15 minutes." >&2
+            echo "The production release marker did not appear within 15 minutes." >&2
             exit 1
           fi
 
@@ -69,7 +72,7 @@ jobs:
           for page in home terms tour; do
             url="${pages[${page}]}"
             result="$(curl --location --silent --show-error --max-time 30 \
-              --user-agent 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/157.0.0.0 Safari/537.36' \
+              --user-agent 'AwesomeAdventureSiteAudit/1.0 (+https://awesomeadventure.tours/)' \
               --output /dev/null --write-out '%{http_code}\t%{url_effective}' "${url}" 2> "lighthouse-reports/${page}-curl.log" || true)"
             status="${result%%$'\t'*}"
             final_url="${result#*$'\t'}"
@@ -88,8 +91,17 @@ jobs:
             echo "::warning::Hostinger/CDN returned 403 or 429 to the GitHub-hosted audit runner. Lighthouse is skipped rather than weakening production bot protection."
           fi
 
-      - name: Run representative production audits
+      - name: Run rate-limited sitemap and internal-link SEO crawl
+        id: seo_crawl
         if: steps.preflight.outputs.blocked != '1'
+        env:
+          SEO_AUDIT_BASE_URL: https://awesomeadventure.tours
+          SEO_AUDIT_MAX_PAGES: '110'
+          SEO_AUDIT_OUTPUT_DIR: lighthouse-reports
+        run: node scripts/seo_site_audit.mjs
+
+      - name: Run representative production audits
+        if: steps.preflight.outputs.blocked != '1' && steps.seo_crawl.outputs.blocked != 'true'
         id: audit
         shell: bash
         run: |
@@ -137,14 +149,14 @@ jobs:
       - name: Print Lighthouse score and Core Web Vitals summary
         if: always()
         env:
-          EDGE_BLOCKED: ${{ steps.preflight.outputs.blocked == '1' || steps.audit.outputs.blocked == '1' }}
+          EDGE_BLOCKED: ${{ steps.preflight.outputs.blocked == '1' || steps.seo_crawl.outputs.blocked == 'true' || steps.audit.outputs.blocked == '1' }}
         shell: bash
         run: |
           node <<'NODE'
           const fs = require('node:fs');
           const path = require('node:path');
           const dir = 'lighthouse-reports';
-          const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter((file) => file.endsWith('.json')).sort() : [];
+          const files = fs.existsSync(dir) ? fs.readdirSync(dir).filter((file) => ['home', 'terms', 'tour'].some((page) => ['mobile', 'desktop'].some((device) => file === page + '-' + device + '.json'))).sort() : [];
           const edgeBlocked = process.env.EDGE_BLOCKED === 'true';
           const preflight = fs.existsSync(path.join(dir, 'http-preflight.tsv'))
             ? fs.readFileSync(path.join(dir, 'http-preflight.tsv'), 'utf8')
@@ -152,7 +164,7 @@ jobs:
           if (preflight) console.log('\nProduction HTTP preflight:\n' + preflight);
           if (files.length === 0) {
             console.log('No Lighthouse report was produced. Check the preflight and per-page logs; a 403/429 from the production edge is reported as blocked, not as a performance score.');
-            if (preflight && /\t(403|429)\t/.test(preflight)) {
+            if (edgeBlocked || (preflight && /\t(403|429)\t/.test(preflight))) {
               console.log('Result: BLOCKED BY PRODUCTION EDGE — Lighthouse scores are unavailable.');
               process.exit(0);
             }

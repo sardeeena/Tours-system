@@ -2762,7 +2762,7 @@ const VISITOR_EVENT_NAMES = new Set([
 ]);
 const VISITOR_EVENT_FIELDS = new Set([
   'tour_slug','category','destination','booking_step','result_count',
-  'currency','sort_order','filter_count','form_name','interaction',
+  'currency','booking_value','sort_order','filter_count','form_name','interaction',
   'action','outcome','channel','role','source','ticket_category','priority','status','auth_method','search_type','language',
 ]);
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -2845,8 +2845,12 @@ function safeShortText(value: unknown, max = 120): string | null {
 
 function safePagePath(value: unknown): string {
   if (typeof value !== 'string' || !value.startsWith('/')) return '/';
-  // Store route paths only; never retain query parameters, fragments, or submitted form values.
-  return value.split(/[?#]/, 1)[0].replace(/[\u0000-\u001f]/g, '').slice(0, 512) || '/';
+  // Strip query strings and dynamic booking references before persistence.
+  const path = value.split(/[?#]/, 1)[0].replace(/[\u0000-\u001f]/g, '').replace(/\/+/g, '/');
+  const normalized = path.length > 1 ? path.replace(/\/$/, '') : path;
+  if (/^\/booking\/confirmation\/[^/]+$/i.test(normalized)) return '/booking/confirmation';
+  if (/^\/my-booking\/[^/]+$/i.test(normalized)) return '/my-booking';
+  return normalized.slice(0, 512) || '/';
 }
 
 function safeVisitorMetadata(value: any) {
@@ -2989,13 +2993,15 @@ app.post('/api/visitor/events', rateLimit(90, 60_000), async (req: Authenticated
   if (!sessionId || !VISITOR_EVENT_NAMES.has(eventName)) {
     return res.status(400).json({ success: false, error: 'Invalid visitor event.' });
   }
+  const pagePath = safePagePath(req.body?.page_path);
+  if (/^\/admin(?:\/|$)/i.test(pagePath)) return res.status(204).end();
   try {
     const duration = Number(req.body?.duration_ms);
     const { data, error } = await serverSupabase.rpc('record_visitor_event', {
       p_session_id: sessionId,
       p_user_id: req.user?.id || null,
       p_event_name: eventName,
-      p_page_path: safePagePath(req.body?.page_path),
+      p_page_path: pagePath,
       p_page_title: safeShortText(req.body?.page_title, 160),
       p_duration_ms: Number.isFinite(duration) ? Math.max(0, Math.min(86_400_000, Math.round(duration))) : null,
       p_event_data: safeVisitorEventData(req.body?.event_data),
@@ -3006,6 +3012,47 @@ app.post('/api/visitor/events', rateLimit(90, 60_000), async (req: Authenticated
   } catch (error) {
     console.error('[Visitor analytics] Event ingestion failed:', error instanceof Error ? error.message : 'unknown error');
     return res.status(503).json({ success: false, error: 'Visitor activity could not be recorded.' });
+  }
+});
+
+app.get('/api/admin/technical/booking-lifecycle/overview', rateLimit(30, 60_000), async (req: AuthenticatedRequest, res: Response) => {
+  if (!requireSuperAdminAal2(req, res)) return;
+  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') {
+    return res.status(503).json({ success: false, error: 'Operational booking analytics are unavailable.' });
+  }
+
+  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+  const counts: Record<string, number> = {};
+  let offset = 0;
+  const pageSize = 1000;
+  const maxRows = 20_000;
+  let totalEvents = 0;
+  let truncated = false;
+
+  try {
+    while (offset < maxRows) {
+      const { data, error } = await serverSupabase
+        .from('booking_lifecycle_events')
+        .select('event_type')
+        .gte('occurred_at', since)
+        .order('occurred_at', { ascending: false })
+        .order('id', { ascending: true })
+        .range(offset, offset + pageSize - 1);
+      if (error) throw error;
+      const rows = data || [];
+      totalEvents += rows.length;
+      for (const row of rows) {
+        if (typeof row.event_type === 'string') counts[row.event_type] = (counts[row.event_type] || 0) + 1;
+      }
+      if (rows.length < pageSize) break;
+      offset += pageSize;
+      if (offset >= maxRows) truncated = true;
+    }
+
+    return res.json({ periodDays: 30, totalEvents, events: counts, truncated });
+  } catch (error) {
+    console.error('[Booking lifecycle analytics] Overview failed:', error instanceof Error ? error.message : 'unknown error');
+    return res.status(503).json({ success: false, error: 'Operational booking analytics are temporarily unavailable.' });
   }
 });
 
@@ -3153,7 +3200,7 @@ app.post('/api/admin/technical/visitors/settings', rateLimit(10, 60_000), async 
 
 
 async function pruneVisitorAnalytics(): Promise<void> {
-  if (!serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return;
+  if (process.env.NODE_ENV !== 'production' || !serverSupabase || SUPABASE_KEY_TYPE !== 'service_role') return;
   try {
     const { data: settings, error: settingsError } = await serverSupabase
       .from('visitor_analytics_settings')
@@ -5443,6 +5490,42 @@ function seoHtmlEscape(value: unknown): string {
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+function seoRenderInline(value: unknown, maxLength = 2000): string {
+  if (typeof value !== 'string') return '';
+  const source = value.slice(0, maxLength);
+  const tokenPattern = /(\*\*[^*]+\*\*|\*[^*]+\*|\[[^\]]+\]\((?:https:\/\/|mailto:)[^)]+\))/g;
+  let output = '';
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = tokenPattern.exec(source)) !== null) {
+    output += seoHtmlEscape(source.slice(lastIndex, match.index));
+    const token = match[0];
+    if (token.startsWith('**')) {
+      output += '<strong>' + seoHtmlEscape(token.slice(2, -2)) + '</strong>';
+    } else if (token.startsWith('*')) {
+      output += '<em>' + seoHtmlEscape(token.slice(1, -1)) + '</em>';
+    } else {
+      const link = token.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+      let safeHref = '';
+      if (link) {
+        try {
+          const url = new URL(link[2].trim());
+          if ((url.protocol === 'https:' && !url.username && !url.password) || url.protocol === 'mailto:') {
+            safeHref = url.toString();
+          }
+        } catch { /* Invalid or unsafe links are rendered as text. */ }
+      }
+      output += link && safeHref
+        ? '<a href="' + seoHtmlEscape(safeHref) + '" rel="noopener noreferrer">' + seoHtmlEscape(link[1]) + '</a>'
+        : seoHtmlEscape(token);
+    }
+    lastIndex = match.index + token.length;
+  }
+
+  return output + seoHtmlEscape(source.slice(lastIndex));
+}
+
 function seoPlainText(value: unknown, maxLength = 4000): string {
   if (typeof value !== 'string') return '';
   return value.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
@@ -5968,13 +6051,13 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
       let listItems: string[] = [];
       const flushParagraph = () => {
         if (paragraph.length) {
-          blocks.push(`<p>${paragraph.map(line => seoHtmlEscape(seoPlainText(line, 2000))).join(' ')}</p>`);
+          blocks.push(`<p>${paragraph.map(line => seoRenderInline(line, 2000)).join(' ')}</p>`);
           paragraph = [];
         }
       };
       const flushList = () => {
         if (listItems.length) {
-          blocks.push(`<ul class="seo-list">${listItems.map(item => `<li>${seoHtmlEscape(seoPlainText(item, 500))}</li>`).join('')}</ul>`);
+          blocks.push(`<ul class="seo-list">${listItems.map(item => `<li>${seoRenderInline(item, 500)}</li>`).join('')}</ul>`);
           listItems = [];
         }
       };
@@ -5985,7 +6068,9 @@ async function renderAwesomeAdventureToursPublicHtml(pathname: string, template:
         const bullet = line.match(/^[-*]\s+(.+)$/);
         if (heading) {
           flushParagraph(); flushList();
-          blocks.push(`<h2>${seoHtmlEscape(seoPlainText(heading[1], 180))}</h2>`);
+          const headingLevel = heading[0].match(/^#+/)?.[0].length || 1;
+          const headingTag = headingLevel === 1 ? 'h2' : 'h3';
+          blocks.push(`<${headingTag}>${seoRenderInline(heading[1], 180)}</${headingTag}>`);
         } else if (bullet) {
           flushParagraph();
           listItems.push(bullet[1]);
@@ -6478,10 +6563,13 @@ async function startServer() {
   const server = app.listen(Number(PORT), '0.0.0.0', () => {
     console.log(`Awesome Adventure Tours server running on port/socket ${PORT} [${process.env.NODE_ENV || 'development'}]`);
 
-    // Apply configured visitor-data retention once at startup and daily thereafter.
-    void pruneVisitorAnalytics();
-    const visitorRetentionTimer = setInterval(() => { void pruneVisitorAnalytics(); }, 24 * 60 * 60 * 1000);
-    visitorRetentionTimer.unref();
+    // Retention deletes records; never run it from a local or preview server,
+    // even if a developer accidentally configures a production service-role key.
+    if (process.env.NODE_ENV === 'production' && serverSupabase && SUPABASE_KEY_TYPE === 'service_role') {
+      void pruneVisitorAnalytics();
+      const visitorRetentionTimer = setInterval(() => { void pruneVisitorAnalytics(); }, 24 * 60 * 60 * 1000);
+      visitorRetentionTimer.unref();
+    }
 
     // The durable queue consumer must use a server-only Supabase secret key.
     // It never starts with an anon/publishable key or in local development.

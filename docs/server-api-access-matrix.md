@@ -22,6 +22,7 @@ This inventory covers Express routes registered in `server.ts`. It is a regressi
 | POST | `/api/communications/whatsapp/consent` | `communications.manage` |
 | POST | `/api/communications/whatsapp` | `communications.manage` |
 | GET/POST | `/api/admin/technical/*` | Normalized `super_admin` + AAL2 + server service-role key |
+| GET | `/api/admin/technical/booking-lifecycle/overview` | Super Admin + AAL2; aggregates pseudonymous operational lifecycle event counts separately from consented visitor tracking |
 | GET/POST | `/api/admin/users/*` | Normalized `super_admin` + AAL2 + server service-role key |
 | POST | `/api/admin/translations/generate-batch` | Normalized `super_admin` + AAL2; server-side Gemini + service-role only; creates drafts only |
 
