@@ -252,4 +252,4 @@ jobs:
         shell: bash
         run: |
           rm -rf "$RUNNER_TEMP/awesome-adventure-backup"
-          rm -f "$RUNNER_TEMP"/awesome-adventure-*.tar.gz "$RUNNER_TEMP"/awesome-adventure-*.tar.gz.age
+          rm -f "$RUNNER_TEMP"/awesome-adventure-*.tar.gz "$RUNNER_TEMP"/awesome-adventure-*.tar.gz.age "$RUNNER_TEMP"/verify-awesome-adventure-*.tar.gz.age
