@@ -24,6 +24,8 @@ In GA4, open **Admin → Data display → Custom definitions → Custom dimensio
 
 Do not register `currency`, `page_path`, `page_location`, `page_title`, `session_id`, `user_id`, payment methods, guest counts, or customer identifiers as custom dimensions. The site deliberately does not forward payment-method or guest-count details to GA4. GA4 already has standard page/campaign dimensions, and some parameter names are reserved.
 
+Google reference: [Create custom dimensions](https://support.google.com/analytics/answer/14240153).
+
 ## Booking value reporting (no custom metric required)
 
 The site sends the numeric `value` and ISO `currency` parameters on both `booking_submitted` and its lead alias `qualify_lead`. GA4 already provides the standard **Event value** metric for the `value` parameter, so do not create a duplicate custom metric.
