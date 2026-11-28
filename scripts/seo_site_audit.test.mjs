@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   decodeHtml,
+  evaluatePageSeoIssues,
   isAllowedByRobots,
   isSafeSameSiteUrl,
   normalizePageUrl,
@@ -100,4 +101,22 @@ test('production Lighthouse workflow checks out the repository before running th
   const crawlerIndex = workflow.indexOf('node scripts/seo_site_audit.mjs');
   assert.ok(checkoutIndex >= 0, 'Lighthouse workflow must check out the repository');
   assert.ok(crawlerIndex > checkoutIndex, 'SEO crawler must run after repository checkout');
+});
+
+
+test('noindex transactional routes are not audited as indexable pages when absent from the sitemap', () => {
+  const issues = [];
+  const page = { robots: 'noindex,nofollow', title: '', description: '', canonical: 'https://example.com/', h1Count: 0, jsonLdErrors: [], hreflangErrors: [], imagesWithoutAlt: 0 };
+  evaluatePageSeoIssues(page, 'https://example.com/booking', new Set(), issues, 'https://example.com/booking', 'https://example.com');
+  assert.deepEqual(issues, []);
+});
+
+test('noindex routes included in the sitemap remain a critical SEO failure', () => {
+  const issues = [];
+  const url = 'https://example.com/booking';
+  const page = { robots: 'noindex,nofollow', title: '', description: '', canonical: 'https://example.com/', h1Count: 0 };
+  evaluatePageSeoIssues(page, url, new Set([url]), issues, url, 'https://example.com');
+  assert.equal(issues.length, 1);
+  assert.equal(issues[0].severity, 'critical');
+  assert.match(issues[0].message, /present in sitemap but declares noindex/);
 });
