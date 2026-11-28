@@ -1,13 +1,13 @@
 -- Privacy-safe, authoritative operational analytics for booking and payment lifecycle changes.
--- This ledger is separate from consent-gated visitor analytics: it contains no customer PII
--- and records business transactions needed for operations and finance reporting.
+-- This ledger is separate from consent-gated visitor analytics: it contains a pseudonymous booking UUID
+-- and restricted operational facts, but no direct customer contact details.
 BEGIN;
 
 CREATE TABLE IF NOT EXISTS public.booking_lifecycle_events (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   booking_id uuid NOT NULL REFERENCES public.bookings(id) ON DELETE RESTRICT,
   event_type text NOT NULL CHECK (event_type IN (
-    'booking_submitted',
+    'booking_created',
     'booking_status_confirmed',
     'booking_cancellation_requested',
     'booking_cancelled',
@@ -94,8 +94,8 @@ DECLARE
 BEGIN
   IF TG_OP = 'INSERT' THEN
     PERFORM private.record_booking_lifecycle_event(
-      NEW.id, 'booking_submitted', 'bookings', NEW.id,
-      'booking:' || NEW.id::text || ':submitted',
+      NEW.id, 'booking_created', 'bookings', NEW.id,
+      'booking:' || NEW.id::text || ':created',
       NULL, NEW.status, NEW.total, NEW.currency,
       jsonb_build_object('booking_kind', NEW.booking_kind),
       COALESCE(NEW.created_at, now())
