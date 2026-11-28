@@ -5007,7 +5007,7 @@ ALTER TABLE public.booking_lifecycle_events ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON TABLE public.booking_lifecycle_events FROM PUBLIC, anon, authenticated;
 GRANT SELECT, INSERT ON TABLE public.booking_lifecycle_events TO service_role;
 COMMENT ON TABLE public.booking_lifecycle_events IS
-  'PII-free operational booking/payment event ledger. Not visitor tracking; accessible only to trusted server/service-role workflows.';
+  'Operational booking/payment event ledger. Contains a pseudonymous booking UUID but no direct customer contact details; not visitor tracking and accessible only to trusted server/service-role workflows.';
 
 CREATE OR REPLACE FUNCTION private.record_booking_lifecycle_event(
   p_booking_id uuid,
