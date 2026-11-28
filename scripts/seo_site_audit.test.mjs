@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   decodeHtml,
   isAllowedByRobots,
+  isSafeSameSiteUrl,
   normalizePageUrl,
   parseAttributes,
   parseHtmlPage,
@@ -24,6 +25,15 @@ test('normalizes page URLs without query strings, fragments or trailing slashes'
     normalizePageUrl('/destinations/sharm/?utm_source=test#top', 'https://example.com'),
     'https://example.com/destinations/sharm'
   );
+});
+
+test('only permits HTTP(S) sitemap targets on the canonical site host', () => {
+  assert.equal(isSafeSameSiteUrl('https://example.com/sitemap.xml', 'example.com'), true);
+  assert.equal(isSafeSameSiteUrl('https://www.example.com/sitemap.xml', 'example.com'), true);
+  assert.equal(isSafeSameSiteUrl('https://attacker.example/sitemap.xml', 'example.com'), false);
+  assert.equal(isSafeSameSiteUrl('http://127.0.0.1/private', 'example.com'), false);
+  assert.equal(isSafeSameSiteUrl('file:///etc/passwd', 'example.com'), false);
+  assert.equal(isSafeSameSiteUrl('not a URL', 'example.com'), false);
 });
 
 test('parses robots rules and honors the longest allow/disallow match', () => {
