@@ -1639,7 +1639,7 @@ CREATE TABLE IF NOT EXISTS public.visitor_events (
   user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   event_name text NOT NULL CHECK (event_name IN (
     'page_view','page_exit','navigation','tour_view','search',
-    'booking_started','booking_step_completed','booking_created',
+    'booking_started','booking_step_completed','booking_submitted','booking_created',
     'booking_confirmed','booking_cancelled','custom'
   )),
   page_path text,
