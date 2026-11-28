@@ -1,7 +1,7 @@
 BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(12);
+SELECT plan(13);
 
 SELECT ok(
   to_regclass('public.booking_lifecycle_events') IS NOT NULL,
@@ -81,6 +81,26 @@ SELECT is(
    WHERE booking_id = 'f6600000-0000-4000-8000-000000000001' AND event_type = 'booking_submitted'),
   1,
   'a new booking creates exactly one submitted event'
+);
+
+SELECT private.record_booking_lifecycle_event(
+  'f6600000-0000-4000-8000-000000000001',
+  'booking_submitted',
+  'bookings',
+  'f6600000-0000-4000-8000-000000000001',
+  'booking:f6600000-0000-4000-8000-000000000001:submitted',
+  NULL,
+  'pending',
+  100,
+  'EUR',
+  '{}'::jsonb,
+  now()
+);
+SELECT is(
+  (SELECT count(*)::integer FROM public.booking_lifecycle_events
+   WHERE booking_id = 'f6600000-0000-4000-8000-000000000001' AND event_type = 'booking_submitted'),
+  1,
+  'replaying the same source event is idempotent'
 );
 
 UPDATE public.bookings
