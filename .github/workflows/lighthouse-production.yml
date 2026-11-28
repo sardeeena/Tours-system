@@ -7,7 +7,7 @@ on:
     paths:
       - ".github/workflows/lighthouse-production.yml"
       - "public/robots.txt"
-      - "server.ts"
+      - "scripts/seo_site_audit.mjs"
   workflow_dispatch:
   schedule:
     - cron: '17 4 * * 1'
