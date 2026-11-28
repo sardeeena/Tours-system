@@ -4,7 +4,7 @@
   "status": "translation-review-draft",
   "source_project": "uvtbtpxtrrmaublrztgv",
   "coverage": {
-    "tour": 26,
+    "tour": 27,
     "blog_post": 50,
     "destination": 7,
     "communication_template": 18,
@@ -13,7 +13,7 @@
     "public_ui_messages": 81,
     "private_ui_messages": 1090,
     "ui_catalog_messages": 1171,
-    "source_records": 112
+    "source_records": 113
   },
   "records": [
     {
@@ -5358,6 +5358,186 @@
           "ageRestrictions": "Restrictions d’âge",
           "bookNow": "Réserver",
           "browseMore": "Voir plus d’excursions"
+        }
+      }
+    },
+    {
+      "entity_type": "tour",
+      "entity_key": "9d5ffc61-a204-4fcc-9f8c-e10b3499dfa9",
+      "locale": "fr",
+      "source_slug": "luxor-west-bank-private-tour-kings-queens-hatshepsut-temple-with-lunch",
+      "translated_slug": "visite-privee-rive-ouest-louxor-rois-reines-temple-hatchepsout-dejeuner",
+      "title": "Visite privée de la rive ouest de Louxor : rois, reines et temple d’Hatchepsout avec déjeuner",
+      "summary": "Découvrez la rive ouest de Louxor lors d’une visite privée avec guide égyptologue. Explorez les vallées des Rois et des Reines, le temple d’Hatchepsout et les colosses de Memnon, avec déjeuner inclus.",
+      "seo_title": "Visite privée de la rive ouest de Louxor avec déjeuner",
+      "seo_description": "Visitez les vallées des Rois et des Reines, le temple d’Hatchepsout et les colosses de Memnon avec un guide égyptologue privé et un déjeuner.",
+      "duration": "6 heures",
+      "duration_type": "Journée complète",
+      "departure_time": "07:00 AM, 08:00 AM, 09:00 AM",
+      "age_restrictions": "",
+      "pickup_info": "* Prise en charge gratuite dans tous les hôtels de la ville de Louxor.\n* Les hôtels situés en dehors de la ville de Louxor peuvent entraîner des frais supplémentaires.\n* Veuillez nous communiquer le nom de votre hôtel lors de la réservation ; nous confirmerons l’heure de prise en charge.",
+      "cancellation_policy": "* Annulation gratuite jusqu’à 24 heures avant le début de l’excursion.\n* Annulation 12 heures avant l’excursion : remboursement de 50 %.\n* Annulation 6 heures avant l’excursion : aucun remboursement, mais la date peut être modifiée moyennant des frais.",
+      "content": {
+        "title": "Visite privée de la rive ouest de Louxor : rois, reines et temple d’Hatchepsout avec déjeuner",
+        "description": "Plongez dans l’univers fascinant de l’Égypte ancienne lors d’un voyage privé sur la rive ouest de Louxor. Accompagné d’un guide égyptologue professionnel, découvrez certains des sites archéologiques les plus remarquables de la région et les histoires des rois, des reines et des souverains de l’ancienne Thèbes.\n\nVotre journée commence par une prise en charge à votre hôtel de Louxor dans un véhicule privé climatisé. Dirigez-vous vers la vallée des Rois, célèbre nécropole des pharaons, où vous pourrez découvrir des tombeaux royaux magnifiquement décorés.\n\nContinuez vers la vallée des Reines, dernière demeure des épouses royales et des membres de la famille royale. Le site abrite également le célèbre tombeau de Néfertari, réputé pour ses décorations exceptionnelles.\n\nVisitez ensuite l’impressionnant temple d’Hatchepsout, monument spectaculaire construit dans les falaises de Deir el-Bahari. Découvrez l’histoire de cette souveraine remarquable, dont l’héritage a fait l’une des figures les plus fascinantes de l’Égypte ancienne.\n\nAvant de quitter la rive ouest, arrêtez-vous aux colosses de Memnon, deux statues monumentales qui se dressent dans la plaine thébaine depuis des milliers d’années.\n\nAprès la découverte de ces sites historiques, savourez un déjeuner égyptien traditionnel dans un restaurant local, puis retournez confortablement à votre hôtel.",
+        "durationLabel": "6 heures",
+        "highlights": [
+          "Explorez la célèbre vallée des Rois",
+          "Découvrez les sépultures royales de la vallée des Reines",
+          "Visitez le magnifique temple d’Hatchepsout",
+          "Admirez les impressionnants colosses de Memnon",
+          "Découvrez l’histoire de l’Égypte ancienne avec un guide égyptologue privé",
+          "Savourez un déjeuner égyptien traditionnel dans un restaurant local"
+        ],
+        "itinerary": [
+          {
+            "time": "00:00",
+            "title": "Prise en charge à l’hôtel",
+            "description": "Retrouvez votre guide privé et votre chauffeur à votre hôtel de Louxor, puis rejoignez la rive ouest dans un véhicule climatisé."
+          },
+          {
+            "time": "00:00",
+            "title": "Vallée des Rois",
+            "description": "Explorez la nécropole royale et découvrez les tombeaux décorés des pharaons de l’Égypte ancienne."
+          },
+          {
+            "time": "00:00",
+            "title": "Vallée des Reines",
+            "description": "Visitez le lieu de sépulture des reines royales et découvrez le célèbre tombeau de Néfertari."
+          },
+          {
+            "time": "00:00",
+            "title": "Temple d’Hatchepsout",
+            "description": "Admirez les impressionnantes terrasses du temple et découvrez la vie et l’héritage de la reine Hatchepsout."
+          },
+          {
+            "time": "00:00",
+            "title": "Colosses de Memnon",
+            "description": "Arrêtez-vous devant les deux statues monumentales et prenez des photos mémorables."
+          },
+          {
+            "time": "00:00",
+            "title": "Déjeuner et retour",
+            "description": "Savourez un déjeuner égyptien dans un restaurant local avant votre transfert privé de retour à l’hôtel."
+          }
+        ],
+        "included": [
+          "Prise en charge et retour à l’hôtel à Louxor",
+          "Transport privé climatisé",
+          "Guide égyptologue professionnel",
+          "Déjeuner dans un restaurant local"
+        ],
+        "excluded": [
+          "Billets d’entrée aux sites archéologiques et aux temples",
+          "Frais d’entrée supplémentaires aux tombeaux",
+          "Pourboires et dépenses personnelles"
+        ],
+        "faqs": [
+          {
+            "question": "Combien de temps dure la visite de la rive ouest de Louxor ?",
+            "answer": "La visite dure environ 6 heures, prise en charge et retour à l’hôtel, visites des principaux sites archéologiques et déjeuner dans un restaurant local compris.",
+            "section": "faq"
+          },
+          {
+            "question": "Que faut-il apporter ?",
+            "answer": "Des chaussures de marche confortables.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Suivez les consignes de votre guide tout au long de la visite.",
+            "section": "important_information"
+          },
+          {
+            "question": "Quels sites historiques visiterons-nous pendant la visite ?",
+            "answer": "Vous découvrirez la vallée des Rois, la vallée des Reines, l’impressionnant temple d’Hatchepsout et les célèbres colosses de Memnon.",
+            "section": "faq"
+          },
+          {
+            "question": "Que faut-il apporter ?",
+            "answer": "Des lunettes de soleil et un chapeau.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Restez dans les zones de visite désignées sur tous les sites archéologiques.",
+            "section": "important_information"
+          },
+          {
+            "question": "S’agit-il d’une visite privée ou d’une excursion en groupe ?",
+            "answer": "Il s’agit d’une expérience privée : vous profitez de la visite avec votre propre groupe, un transport privé et un guide dédié.",
+            "section": "faq"
+          },
+          {
+            "question": "Que faut-il apporter ?",
+            "answer": "De la crème solaire.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Portez des chaussures adaptées pour marcher sur les sites antiques et les surfaces irrégulières.",
+            "section": "important_information"
+          },
+          {
+            "question": "Un guide égyptologue nous accompagnera-t-il ?",
+            "answer": "Oui, un guide égyptologue professionnel vous accompagnera pendant toute la visite et partagera des récits passionnants ainsi que des informations historiques sur la civilisation de l’Égypte ancienne.",
+            "section": "faq"
+          },
+          {
+            "question": "Que faut-il apporter ?",
+            "answer": "Une bouteille d’eau.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Pensez à bien vous hydrater, surtout lorsqu’il fait chaud.",
+            "section": "important_information"
+          },
+          {
+            "question": "Le déjeuner est-il compris dans le prix de la visite ?",
+            "answer": "Oui, le déjeuner dans un restaurant égyptien local est inclus ; vous pourrez déguster des plats traditionnels pendant l’excursion.",
+            "section": "faq"
+          },
+          {
+            "question": "Que faut-il apporter ?",
+            "answer": "Un appareil photo ou un smartphone.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Ne touchez pas aux monuments anciens et ne grimpez pas dessus ; respectez également les objets archéologiques.",
+            "section": "important_information"
+          },
+          {
+            "question": "Les billets d’entrée sont-ils inclus dans le prix de la réservation ?",
+            "answer": "Non, les billets d’entrée aux sites archéologiques et aux temples ne sont pas inclus. Vous pouvez les acheter séparément sur place.",
+            "section": "faq"
+          },
+          {
+            "question": "Que faut-il apporter ?",
+            "answer": "Un peu d’argent liquide pour les dépenses personnelles et les billets d’entrée facultatifs.",
+            "section": "what_to_bring"
+          },
+          {
+            "question": "Informations importantes",
+            "answer": "Gardez vos effets personnels en sécurité à tout moment.",
+            "section": "important_information"
+          }
+        ],
+        "pickupInfo": "* Prise en charge gratuite dans tous les hôtels de la ville de Louxor.\n* Les hôtels situés en dehors de la ville de Louxor peuvent entraîner des frais supplémentaires.\n* Veuillez nous communiquer le nom de votre hôtel lors de la réservation ; nous confirmerons l’heure de prise en charge.",
+        "cancellationPolicy": "* Annulation gratuite jusqu’à 24 heures avant le début de l’excursion.\n* Annulation 12 heures avant l’excursion : remboursement de 50 %.\n* Annulation 6 heures avant l’excursion : aucun remboursement, mais la date peut être modifiée moyennant des frais.",
+        "ageRestrictions": "",
+        "labels": {
+          "highlights": "Points forts",
+          "itinerary": "Programme",
+          "included": "Inclus",
+          "excluded": "Non inclus",
+          "faqs": "Questions fréquentes",
+          "pickupInfo": "Informations sur la prise en charge",
+          "cancellationPolicy": "Politique d’annulation",
+          "ageRestrictions": "Restrictions d’âge",
+          "bookNow": "Réserver maintenant",
+          "browseMore": "Voir d’autres excursions"
         }
       }
     }
