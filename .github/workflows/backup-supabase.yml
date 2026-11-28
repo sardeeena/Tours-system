@@ -1,0 +1,255 @@
+name: Supabase off-site backup
+
+on:
+  schedule:
+    - cron: "17 1 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-offsite-backup
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    name: Encrypted database and Storage backup
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      SUPABASE_URL: https://uvtbtpxtrrmaublrztgv.supabase.co
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      BACKUP_S3_ENDPOINT: ${{ vars.BACKUP_S3_ENDPOINT }}
+      BACKUP_S3_BUCKET: ${{ vars.BACKUP_S3_BUCKET }}
+      BACKUP_S3_REGION: ${{ vars.BACKUP_S3_REGION }}
+      BACKUP_S3_ACCESS_KEY_ID: ${{ secrets.BACKUP_S3_ACCESS_KEY_ID }}
+      BACKUP_S3_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_S3_SECRET_ACCESS_KEY }}
+      BACKUP_AGE_RECIPIENT: ${{ vars.BACKUP_AGE_RECIPIENT }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.BACKUP_S3_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.BACKUP_S3_SECRET_ACCESS_KEY }}
+      AWS_EC2_METADATA_DISABLED: "true"
+      AWS_DEFAULT_REGION: ${{ vars.BACKUP_S3_REGION }}
+
+    steps:
+      - name: Validate off-site backup configuration
+        id: config
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=""
+          for name in SUPABASE_DB_URL SUPABASE_SECRET_KEY BACKUP_S3_ENDPOINT BACKUP_S3_BUCKET BACKUP_S3_REGION BACKUP_S3_ACCESS_KEY_ID BACKUP_S3_SECRET_ACCESS_KEY BACKUP_AGE_RECIPIENT; do
+            case "$name" in
+              SUPABASE_DB_URL) value="$SUPABASE_DB_URL" ;;
+              SUPABASE_SECRET_KEY) value="$SUPABASE_SECRET_KEY" ;;
+              BACKUP_S3_ENDPOINT) value="$BACKUP_S3_ENDPOINT" ;;
+              BACKUP_S3_BUCKET) value="$BACKUP_S3_BUCKET" ;;
+              BACKUP_S3_REGION) value="$BACKUP_S3_REGION" ;;
+              BACKUP_S3_ACCESS_KEY_ID) value="$BACKUP_S3_ACCESS_KEY_ID" ;;
+              BACKUP_S3_SECRET_ACCESS_KEY) value="$BACKUP_S3_SECRET_ACCESS_KEY" ;;
+              BACKUP_AGE_RECIPIENT) value="$BACKUP_AGE_RECIPIENT" ;;
+            esac
+            if [ -z "$value" ]; then
+              missing="$missing $name"
+            fi
+          done
+
+          if [ -n "$missing" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            {
+              echo "### Off-site backup is not configured"
+              echo "Missing GitHub Actions secrets/variables:$missing."
+              echo "No database export, Storage download or upload was performed."
+            } >> "$GITHUB_STEP_SUMMARY"
+            if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+              echo "::error::Add the required GitHub Actions secrets and variables before running a manual backup."
+              exit 1
+            fi
+            echo "::warning::Scheduled backup skipped because off-site backup credentials are not configured."
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check out repository
+        if: steps.config.outputs.configured == 'true'
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        if: steps.config.outputs.configured == 'true'
+        uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          package-manager-cache: false
+
+      - name: Set up Supabase CLI
+        if: steps.config.outputs.configured == 'true'
+        uses: supabase/setup-cli@v3
+        with:
+          version: 3.1.0
+
+      - name: Install backup utilities
+        if: steps.config.outputs.configured == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes age awscli postgresql-client
+
+      - name: Install production dependencies for the Storage exporter
+        if: steps.config.outputs.configured == 'true'
+        run: npm ci --omit=dev --no-audit --no-fund --ignore-scripts
+
+      - name: Export, encrypt, upload and verify backup
+        if: steps.config.outputs.configured == 'true'
+        shell: bash
+        env:
+          WORKDIR: ${{ runner.temp }}/awesome-adventure-backup
+        run: |
+          set -euo pipefail
+          umask 077
+
+          mkdir -p "$WORKDIR"
+
+          # PostgreSQL logical exports. The connection string is supplied only through a masked Actions secret.
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f "$WORKDIR/roles.sql" --role-only
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f "$WORKDIR/schema.sql"
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f "$WORKDIR/data.sql" --use-copy --data-only -x "storage.buckets_vectors" -x "storage.vector_indexes"
+
+          # Preserve Storage RLS policy definitions separately from object bytes and bucket metadata.
+          psql -X -qAt -v ON_ERROR_STOP=1 "$SUPABASE_DB_URL" > "$WORKDIR/storage-policies.sql" <<'SQL'
+          SELECT COALESCE(
+            string_agg(
+              format(
+                'DROP POLICY IF EXISTS %I ON %I.%I; CREATE POLICY %I ON %I.%I AS %s FOR %s TO %s%s%s;',
+                policyname, schemaname, tablename,
+                policyname, schemaname, tablename,
+                permissive, cmd, array_to_string(roles, ', '),
+                CASE WHEN qual IS NOT NULL THEN ' USING (' || qual || ')' ELSE '' END,
+                CASE WHEN with_check IS NOT NULL THEN ' WITH CHECK (' || with_check || ')' ELSE '' END
+              ),
+              E'\n\n' ORDER BY schemaname, tablename, policyname
+            ),
+            '-- No Storage RLS policies found'
+          )
+          FROM pg_policies
+          WHERE schemaname = 'storage';
+          SQL
+
+          # Download every bucket, including private buckets, and verify each object with SHA-256.
+          BACKUP_STORAGE_DIR="$WORKDIR/storage-export" node scripts/backup_supabase_storage.mjs
+
+          # Cross-check the API export against database metadata before archiving.
+          DB_BUCKET_COUNT="$(psql -X -qAt -v ON_ERROR_STOP=1 "$SUPABASE_DB_URL" -c 'SELECT count(*) FROM storage.buckets;')"
+          DB_OBJECT_COUNT="$(psql -X -qAt -v ON_ERROR_STOP=1 "$SUPABASE_DB_URL" -c 'SELECT count(*) FROM storage.objects;')"
+          DB_OBJECT_BYTES="$(psql -X -qAt -v ON_ERROR_STOP=1 "$SUPABASE_DB_URL" -c "SELECT COALESCE(sum(NULLIF(metadata->>'size', '')::bigint), 0) FROM storage.objects;")"
+          API_BUCKET_COUNT="$(jq -r '.bucket_count' "$WORKDIR/storage-export/storage-manifest.json")"
+          API_OBJECT_COUNT="$(jq -r '.object_count' "$WORKDIR/storage-export/storage-manifest.json")"
+          API_OBJECT_BYTES="$(jq -r '.total_bytes' "$WORKDIR/storage-export/storage-manifest.json")"
+
+          if [ "$DB_BUCKET_COUNT" != "$API_BUCKET_COUNT" ] || [ "$DB_OBJECT_COUNT" != "$API_OBJECT_COUNT" ] || [ "$DB_OBJECT_BYTES" != "$API_OBJECT_BYTES" ]; then
+            echo "::error::Storage API export does not match database bucket/object counts or byte totals."
+            exit 1
+          fi
+
+          node --input-type=module - <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          import path from 'node:path';
+          const workdir = process.env.WORKDIR;
+          const storage = JSON.parse(readFileSync(path.join(workdir, 'storage-export/storage-manifest.json'), 'utf8'));
+          writeFileSync(
+            path.join(workdir, 'backup-metadata.json'),
+            JSON.stringify({
+              project_ref: 'uvtbtpxtrrmaublrztgv',
+              created_at: new Date().toISOString(),
+              source_commit: process.env.GITHUB_SHA,
+              backup_format: 1,
+              storage_bucket_count: storage.bucket_count,
+              storage_object_count: storage.object_count,
+              storage_total_bytes: storage.total_bytes,
+            }, null, 2) + '\n',
+            { mode: 0o600 },
+          );
+          NODE
+
+          sha256sum "$WORKDIR/roles.sql" "$WORKDIR/schema.sql" "$WORKDIR/data.sql" "$WORKDIR/storage-policies.sql" "$WORKDIR/backup-metadata.json" "$WORKDIR/storage-export/storage-buckets.json" "$WORKDIR/storage-export/storage-manifest.json" > "$WORKDIR/SHA256SUMS"
+
+          STAMP="$(date -u +%Y%m%dT%H%M%SZ)"
+          DATE_PREFIX="$(date -u +%Y/%m/%d)"
+          MONTH="$(date -u +%Y-%m)"
+          ARCHIVE="$RUNNER_TEMP/awesome-adventure-$STAMP.tar.gz"
+          ENCRYPTED="$ARCHIVE.age"
+          DAILY_KEY="backups/daily/$DATE_PREFIX/awesome-adventure-$STAMP.tar.gz.age"
+
+          tar -czf "$ARCHIVE" -C "$WORKDIR" .
+          age -r "$BACKUP_AGE_RECIPIENT" -o "$ENCRYPTED" "$ARCHIVE"
+          rm -f "$ARCHIVE"
+
+          LOCAL_SIZE="$(stat -c '%s' "$ENCRYPTED")"
+          LOCAL_SHA256="$(sha256sum "$ENCRYPTED" | cut -d ' ' -f1)"
+          aws s3 cp "$ENCRYPTED" "s3://$BACKUP_S3_BUCKET/$DAILY_KEY" \
+            --endpoint-url "$BACKUP_S3_ENDPOINT" \
+            --region "$BACKUP_S3_REGION" \
+            --metadata "sha256=$LOCAL_SHA256" \
+            --only-show-errors
+
+          REMOTE_SIZE="$(aws s3api head-object \
+            --bucket "$BACKUP_S3_BUCKET" \
+            --key "$DAILY_KEY" \
+            --endpoint-url "$BACKUP_S3_ENDPOINT" \
+            --region "$BACKUP_S3_REGION" \
+            --query ContentLength \
+            --output text)"
+          REMOTE_SHA256="$(aws s3api head-object \
+            --bucket "$BACKUP_S3_BUCKET" \
+            --key "$DAILY_KEY" \
+            --endpoint-url "$BACKUP_S3_ENDPOINT" \
+            --region "$BACKUP_S3_REGION" \
+            --query Metadata.sha256 \
+            --output text)"
+
+          if [ "$REMOTE_SIZE" != "$LOCAL_SIZE" ] || [ "$REMOTE_SHA256" != "$LOCAL_SHA256" ]; then
+            echo "::error::Uploaded backup size or SHA-256 metadata does not match the local encrypted archive."
+            exit 1
+          fi
+
+          # Download the encrypted object once and hash the actual remote bytes, not only its metadata.
+          REMOTE_ARCHIVE="$RUNNER_TEMP/verify-awesome-adventure-$STAMP.tar.gz.age"
+          aws s3 cp "s3://$BACKUP_S3_BUCKET/$DAILY_KEY" "$REMOTE_ARCHIVE" \
+            --endpoint-url "$BACKUP_S3_ENDPOINT" \
+            --region "$BACKUP_S3_REGION" \
+            --only-show-errors
+          DOWNLOADED_SHA256="$(sha256sum "$REMOTE_ARCHIVE" | cut -d ' ' -f1)"
+          if [ "$DOWNLOADED_SHA256" != "$LOCAL_SHA256" ]; then
+            echo "::error::Downloaded backup bytes do not match the local encrypted archive."
+            exit 1
+          fi
+          rm -f "$REMOTE_ARCHIVE"
+
+          # Keep a separate monthly copy on the first day of each month.
+          if [ "$(date -u +%d)" = "01" ]; then
+            MONTHLY_KEY="backups/monthly/$MONTH/awesome-adventure-$MONTH.tar.gz.age"
+            aws s3 cp "s3://$BACKUP_S3_BUCKET/$DAILY_KEY" "s3://$BACKUP_S3_BUCKET/$MONTHLY_KEY" \
+              --endpoint-url "$BACKUP_S3_ENDPOINT" \
+              --region "$BACKUP_S3_REGION" \
+              --only-show-errors
+          fi
+
+          OBJECT_COUNT="$(jq -r '.object_count' "$WORKDIR/storage-export/storage-manifest.json")"
+          TOTAL_BYTES="$(jq -r '.total_bytes' "$WORKDIR/storage-export/storage-manifest.json")"
+
+          {
+            echo "### Encrypted off-site backup verified"
+            echo "- Destination: \`s3://$BACKUP_S3_BUCKET/$DAILY_KEY\`"
+            echo "- Encrypted archive: $LOCAL_SIZE bytes"
+            echo "- Storage objects: $OBJECT_COUNT"
+            echo "- Storage bytes: $TOTAL_BYTES"
+            echo "- Remote HEAD size matched the uploaded archive."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          rm -f "$ENCRYPTED"
+
+      - name: Remove plaintext backup workspace
+        if: always() && steps.config.outputs.configured == 'true'
+        shell: bash
+        run: |
+          rm -rf "$RUNNER_TEMP/awesome-adventure-backup"
+          rm -f "$RUNNER_TEMP"/awesome-adventure-*.tar.gz "$RUNNER_TEMP"/awesome-adventure-*.tar.gz.age "$RUNNER_TEMP"/verify-awesome-adventure-*.tar.gz.age

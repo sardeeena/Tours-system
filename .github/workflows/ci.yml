@@ -194,6 +194,9 @@ jobs:
       - name: Verify public SEO, sitemap and AI-discovery integrity
         run: npm run test:public-seo-content
 
+      - name: Verify encrypted Supabase Storage backup exporter and workflow safety
+        run: node --test scripts/backup_supabase_storage.test.mjs
+
       - name: Verify public discovery routes, filtering and failure states
         run: npm run test:public-discovery
 
