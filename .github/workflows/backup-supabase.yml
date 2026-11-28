@@ -137,10 +137,24 @@ jobs:
           # Download every bucket, including private buckets, and verify each object with SHA-256.
           BACKUP_STORAGE_DIR="$WORKDIR/storage-export" node scripts/backup_supabase_storage.mjs
 
+          # Cross-check the API export against database metadata before archiving.
+          DB_BUCKET_COUNT="$(psql -X -qAt -v ON_ERROR_STOP=1 "$SUPABASE_DB_URL" -c 'SELECT count(*) FROM storage.buckets;')"
+          DB_OBJECT_COUNT="$(psql -X -qAt -v ON_ERROR_STOP=1 "$SUPABASE_DB_URL" -c 'SELECT count(*) FROM storage.objects;')"
+          DB_OBJECT_BYTES="$(psql -X -qAt -v ON_ERROR_STOP=1 "$SUPABASE_DB_URL" -c "SELECT COALESCE(sum(NULLIF(metadata->>'size', '')::bigint), 0) FROM storage.objects;")"
+          API_BUCKET_COUNT="$(jq -r '.bucket_count' "$WORKDIR/storage-export/storage-manifest.json")"
+          API_OBJECT_COUNT="$(jq -r '.object_count' "$WORKDIR/storage-export/storage-manifest.json")"
+          API_OBJECT_BYTES="$(jq -r '.total_bytes' "$WORKDIR/storage-export/storage-manifest.json")"
+
+          if [ "$DB_BUCKET_COUNT" != "$API_BUCKET_COUNT" ] || [ "$DB_OBJECT_COUNT" != "$API_OBJECT_COUNT" ] || [ "$DB_OBJECT_BYTES" != "$API_OBJECT_BYTES" ]; then
+            echo "::error::Storage API export does not match database bucket/object counts or byte totals."
+            exit 1
+          fi
+
           node --input-type=module - <<'NODE'
-          import { writeFileSync } from 'node:fs';
+          import { readFileSync, writeFileSync } from 'node:fs';
           import path from 'node:path';
           const workdir = process.env.WORKDIR;
+          const storage = JSON.parse(readFileSync(path.join(workdir, 'storage-export/storage-manifest.json'), 'utf8'));
           writeFileSync(
             path.join(workdir, 'backup-metadata.json'),
             JSON.stringify({
@@ -148,6 +162,9 @@ jobs:
               created_at: new Date().toISOString(),
               source_commit: process.env.GITHUB_SHA,
               backup_format: 1,
+              storage_bucket_count: storage.bucket_count,
+              storage_object_count: storage.object_count,
+              storage_total_bytes: storage.total_bytes,
             }, null, 2) + '\n',
             { mode: 0o600 },
           );
