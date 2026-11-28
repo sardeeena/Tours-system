@@ -184,9 +184,11 @@ jobs:
           rm -f "$ARCHIVE"
 
           LOCAL_SIZE="$(stat -c '%s' "$ENCRYPTED")"
+          LOCAL_SHA256="$(sha256sum "$ENCRYPTED" | cut -d ' ' -f1)"
           aws s3 cp "$ENCRYPTED" "s3://$BACKUP_S3_BUCKET/$DAILY_KEY" \
             --endpoint-url "$BACKUP_S3_ENDPOINT" \
             --region "$BACKUP_S3_REGION" \
+            --metadata "sha256=$LOCAL_SHA256" \
             --only-show-errors
 
           REMOTE_SIZE="$(aws s3api head-object \
@@ -196,9 +198,16 @@ jobs:
             --region "$BACKUP_S3_REGION" \
             --query ContentLength \
             --output text)"
+          REMOTE_SHA256="$(aws s3api head-object \
+            --bucket "$BACKUP_S3_BUCKET" \
+            --key "$DAILY_KEY" \
+            --endpoint-url "$BACKUP_S3_ENDPOINT" \
+            --region "$BACKUP_S3_REGION" \
+            --query Metadata.sha256 \
+            --output text)"
 
-          if [ "$REMOTE_SIZE" != "$LOCAL_SIZE" ]; then
-            echo "::error::Uploaded backup size does not match the local encrypted archive."
+          if [ "$REMOTE_SIZE" != "$LOCAL_SIZE" ] || [ "$REMOTE_SHA256" != "$LOCAL_SHA256" ]; then
+            echo "::error::Uploaded backup size or SHA-256 metadata does not match the local encrypted archive."
             exit 1
           fi
 
