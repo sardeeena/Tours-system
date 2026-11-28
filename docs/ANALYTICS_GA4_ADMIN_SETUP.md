@@ -24,17 +24,20 @@ In GA4, open **Admin → Data display → Custom definitions → Custom dimensio
 
 Do not register `currency`, `page_path`, `page_location`, `page_title`, `session_id`, `user_id`, payment methods, guest counts, or customer identifiers as custom dimensions. The site deliberately does not forward payment-method or guest-count details to GA4. GA4 already has standard page/campaign dimensions, and some parameter names are reserved.
 
-## Custom metrics to register
+## Booking value reporting (no custom metric required)
 
-In **Admin → Data display → Custom definitions → Custom metrics → Create custom metric**:
+The site sends the numeric `value` and ISO `currency` parameters on both `booking_submitted` and its lead alias `qualify_lead`. GA4 already provides the standard **Event value** metric for the `value` parameter, so do not create a duplicate custom metric.
 
-| Display name | Event parameter | Unit | Interpretation |
-|---|---|---|---|
-| Submitted booking value | `value` | Currency | Requested reservation value on `booking_submitted`; this is **not received revenue** |
-| Guest count 
-Do not classify submitted booking value as revenue. The site maps `booking_value` to GA4's `value` only for the successful reservation-submission event. It must not be used as a purchase or cash-received metric.
+In an Exploration or a customized Events report:
 
-Google's instructions: [Create custom metrics](https://support.google.com/analytics/answer/14239619) and [About custom dimensions and metrics](https://support.google.com/analytics/answer/14240153). New custom definitions may take up to 24–48 hours to appear in reports.
+1. Add the standard **Event value** metric.
+2. Filter the event name to exactly `booking_submitted` so the same submitted reservation is not counted again under the `qualify_lead` alias.
+3. Break down or filter by the standard **Currency** dimension.
+4. Label the result **Submitted booking value — not revenue**.
+
+Important: GA4's Event value metric is not currency-converted and combines realized and unrealized values. This event represents the requested value of a reservation, not cash received. Do not use it as purchase revenue.
+
+Google references: [Event value metric](https://support.google.com/analytics/answer/12926615) and [GA4 event value/currency parameters](https://developers.google.com/analytics/devguides/collection/ga4/reference/events).
 
 ## Key-event rules
 
