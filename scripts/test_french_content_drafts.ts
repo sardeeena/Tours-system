@@ -11,7 +11,7 @@ const records = bundle.records as any[];
 const count = (type: string) => records.filter((record) => record.entity_type === type).length;
 
 assert.equal(bundle.locale, 'fr');
-assert.equal(count('tour'), 27, 'All 27 published tours have French drafts');
+assert.equal(count('tour'), 28, 'All 28 published tours have French drafts');
 assert.equal(count('blog_post'), 50, 'All 50 published blog posts have French drafts');
 assert.equal(count('destination'), 7, 'All 7 published destinations have French drafts');
 assert.equal(count('communication_template'), 18, 'All 18 English communication templates in the rollout source have French drafts');
@@ -140,8 +140,10 @@ for (const source of staticSources) {
     'Static page preserves all source sections, keys, placeholders, links and numeric facts: ' + key);
 }
 assert.equal(staticSources.length, 10, 'Home plus all nine fallback static pages are covered');
-assert.equal(records.length, 113, 'The full French review bundle contains every known source candidate');
-assert.deepEqual(bundle.source_data_warnings || [], [], 'The two previously flagged source-data issues have approved, source-backed corrections in the PR migration');
+assert.equal(records.length, 114, 'The full French review bundle contains every known source candidate');
+assert.equal(bundle.source_data_warnings?.length, 4, 'The Valley of the Kings source-data conflicts are explicitly documented for review');
+assert.ok(bundle.source_data_warnings.some((warning: any) => warning.entity_key === 'b4ef01ac-9971-441f-a8af-fcea73e4a0cb' && warning.field === 'pickup_available'), 'Pickup flag and public pickup copy conflict is documented');
+assert.ok(bundle.source_data_warnings.some((warning: any) => warning.entity_key === 'b4ef01ac-9971-441f-a8af-fcea73e4a0cb' && warning.field === 'duration_type'), 'Duration category conflict is documented');
 const correctedQuad = records.find((record) => record.entity_type === 'tour' && record.entity_key === '18375e31-b866-4f07-b3a8-c13b2a5c243b');
 assert.equal(correctedQuad.content.itinerary.length, 5, 'El Gouna quad safari has five corrected itinerary steps');
 assert.equal(correctedQuad.content.faqs.length, 0, 'Unrelated boat/snorkeling FAQs are removed from the desert quad safari');
