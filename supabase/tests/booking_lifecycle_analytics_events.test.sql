@@ -1,7 +1,7 @@
 BEGIN;
 
 CREATE EXTENSION IF NOT EXISTS pgtap WITH SCHEMA extensions;
-SELECT plan(11);
+SELECT plan(12);
 
 SELECT ok(
   to_regclass('public.booking_lifecycle_events') IS NOT NULL,
