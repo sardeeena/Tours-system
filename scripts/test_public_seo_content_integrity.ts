@@ -17,7 +17,7 @@ const slugMigration = read('../supabase/migrations/20261125202009_fix_sharm_safa
 const slugMigrationTest = read('../supabase/tests/seo_slug_and_index_cleanup.test.sql');
 const appConfig = read('../src/config/appConfig.ts');
 
-assert.match(footer, /About Awesome Adventure Tours<\\/a>\\s*<\\/li>\\s*<li>\\s*<a href="https:\\/\\/www\\.tripadvisor/, 'Footer support links use valid sibling list items');
+assert.match(footer, /About Awesome Adventure Tours<\/a>\s*<\/li>\s*<li>\s*<a href="https:\/\/www\.tripadvisor/, 'Footer support links use valid sibling list items');
 const about = pages.slice(pages.indexOf("id: 'about'"), pages.indexOf("id: 'contact'"));
 assert.match(about, /seoIndexable: true/, 'About fallback remains indexable');
 assert.match(about, /A local team in Hurghada/, 'About page contains useful company context');
