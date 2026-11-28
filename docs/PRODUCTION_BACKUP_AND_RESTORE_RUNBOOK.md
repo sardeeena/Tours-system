@@ -34,7 +34,7 @@ Recommended initial policy: daily backups, retain 30 daily and 12 monthly copies
 
 ## Automated GitHub Actions backup
 
-The repository includes a daily `Supabase off-site backup` workflow. It creates database exports, Storage bucket configuration, Storage RLS policy definitions, all Storage objects (including private buckets), and a SHA-256 manifest. It compresses the export, encrypts it client-side with `age`, uploads the encrypted archive to an S3-compatible destination, and verifies the remote object size with a HEAD request. It also creates a separate monthly copy on the first day of each month.
+The repository includes a daily `Supabase off-site backup` workflow. It creates database exports, Storage bucket configuration, Storage RLS policy definitions, all Storage objects (including private buckets), and a SHA-256 manifest. It compresses the export, encrypts it client-side with `age`, uploads the encrypted archive to an S3-compatible destination, and verifies the remote object size and SHA-256 metadata with a HEAD request, then downloads the encrypted object and compares the actual remote bytes with the local SHA-256. It also creates a separate monthly copy on the first day of each month.
 
 The workflow is deliberately inactive until the destination and credentials are configured. Scheduled runs with missing configuration report a warning and do not claim a backup was created; a manual run fails clearly until configuration is complete.
 
