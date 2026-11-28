@@ -207,9 +207,23 @@ function sameSiteHost(hostname, baseHost) {
   return host === base || host === 'www.' + base;
 }
 
+export function isSafeSameSiteUrl(value, baseHost) {
+  try {
+    const url = new URL(value);
+    return ['http:', 'https:'].includes(url.protocol) && sameSiteHost(url.hostname, baseHost);
+  } catch {
+    return false;
+  }
+}
+
 async function fetchWithRedirect(url, baseHost, robotsRules = []) {
   let current = url;
   const redirects = [];
+  // Sitemap entries are remote input. Never let the crawler fetch another host,
+  // a non-HTTP protocol, or a private/loopback target via a poisoned sitemap.
+  if (!isSafeSameSiteUrl(current, baseHost)) {
+    return { response: null, finalUrl: current, redirects, invalidInitialUrl: true };
+  }
   for (let attempt = 0; attempt <= 5; attempt += 1) {
     const response = await fetch(current, {
       redirect: 'manual',
@@ -224,6 +238,9 @@ async function fetchWithRedirect(url, baseHost, robotsRules = []) {
       await response.body?.cancel().catch(() => {});
       if (!location) return { response, finalUrl: current, redirects, externalRedirect: null };
       const next = new URL(location, current);
+      if (!['http:', 'https:'].includes(next.protocol)) {
+        return { response, finalUrl: current, redirects, externalRedirect: next.toString() };
+      }
       if (!sameSiteHost(next.hostname, baseHost)) {
         return { response, finalUrl: current, redirects, externalRedirect: next.toString() };
       }
@@ -300,9 +317,23 @@ export async function runSiteAudit(options = {}) {
     robotsRules = robots.rules;
     crawlDelayMs = robots.crawlDelayMs;
     const sitemapCandidates = [...robotsText.matchAll(/^\s*Sitemap:\s*(\S+)\s*$/gim)].map((match) => match[1]);
-    const pendingSitemaps = sitemapCandidates.length
-      ? sitemapCandidates.map((candidate) => new URL(candidate, baseUrl).toString())
-      : [new URL('/sitemap.xml', baseUrl).toString()];
+    const pendingSitemaps = [];
+    if (sitemapCandidates.length) {
+      for (const candidate of sitemapCandidates) {
+        let sitemapUrl;
+        try { sitemapUrl = new URL(candidate, baseUrl).toString(); } catch {
+          addIssue(issues, 'critical', candidate, 'Invalid sitemap URL declared in robots.txt.');
+          continue;
+        }
+        if (!isSafeSameSiteUrl(sitemapUrl, baseHost)) {
+          addIssue(issues, 'critical', sitemapUrl, 'Sitemap URL must use HTTP(S) and the canonical site host.');
+          continue;
+        }
+        pendingSitemaps.push(sitemapUrl);
+      }
+    } else {
+      pendingSitemaps.push(new URL('/sitemap.xml', baseUrl).toString());
+    }
     const seenSitemaps = new Set();
     while (pendingSitemaps.length && seenSitemaps.size < 10) {
       const currentSitemap = pendingSitemaps.shift();
