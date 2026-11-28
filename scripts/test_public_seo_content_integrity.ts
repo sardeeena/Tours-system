@@ -118,6 +118,12 @@ const blogSeoRoute = app.slice(blogSeoStart, blogSeoEnd);
 assert.ok(!blogSeoRoute.includes('seoService.apply'), 'App does not overwrite article-specific server SEO with a generic blog title');
 assert.ok(blogPage.includes('article.seo_title') && blogPage.includes('article.seo_description'), 'Blog articles apply their own stored SEO title and description');
 assert.ok(server.includes('function seoRenderInline('), 'Server-rendered blog content has a dedicated safe Markdown inline renderer');
+assert.ok(server.includes("const headingTag = headingLevel === 1 ? 'h2' : 'h3'"), 'Server-rendered blog headings preserve the same hierarchy as the hydrated article');
+const reefArticleMigration = read('../supabase/migrations/20261128093000_optimize_responsible_snorkeling_article.sql');
+assert.match(reefArticleMigration, /Coral Reef Etiquette: 7 Red Sea Snorkeling Rules/);
+assert.match(reefArticleMigration, /CDWS: Snorkel Supervision and Risk Management/);
+assert.match(reefArticleMigration, /Egyptian Environmental Affairs Agency/);
+assert.match(reefArticleMigration, /entity_key IN \('35def44b-0538-493d-ade9-60b2a8466067', 'responsible-snorkeling-protect-coral-reefs'\)/, 'Article content migration refuses to invalidate a published translation');
 assert.ok(server.includes("url.protocol === 'https:' && !url.username && !url.password"), 'Server-rendered Markdown links reject unsafe protocols and credential-bearing URLs');
 assert.ok(server.includes('seoRenderInline(line, 2000)') && server.includes('seoRenderInline(item, 500)') && server.includes('seoRenderInline(heading[1], 180)'), 'Server-rendered blog paragraphs, lists and headings preserve safe inline links and formatting');
 
