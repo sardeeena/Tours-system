@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const expectedCoverage = {
-  tour: 26,
+  tour: 27,
   blog_post: 50,
   destination: 7,
   communication_template: 18,
@@ -50,4 +50,4 @@ for (const locale of locales) {
   console.log(locale.toUpperCase() + ': validated ' + bundle.records.length + ' review-draft records (' + Object.entries(counts).map(([type, count]) => count + ' ' + type).join(', ') + ').');
 }
 
-console.log('French, Dutch and Polish review bundles cover all 112 CMS/UI source records each. No translations are published by this test.');
+console.log('French, Dutch and Polish review bundles cover all 113 CMS/UI source records each. No translations are published by this test.');
