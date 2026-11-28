@@ -49,20 +49,28 @@ Keep at least 7 daily and 4 weekly encrypted backup sets where storage capacity 
 
 ### Export
 
-Set `DATABASE_URL` in the local shell using the production database connection string, then run:
+From the trusted workstation, link the CLI to the exact production project. The CLI will prompt for the database password; enter it interactively and do not place it in shell history or a command argument:
+
+```bash
+supabase link --project-ref uvtbtpxtrrmaublrztgv
+```
+
+Then create the export set. These commands use the linked project (the default target for `supabase db dump`):
 
 ```bash
 mkdir -p ./awesome-adventure-backup
 cd ./awesome-adventure-backup
 
-supabase db dump --remote="$DATABASE_URL" -f roles.sql --role-only
-supabase db dump --remote="$DATABASE_URL" -f schema.sql
-supabase db dump --remote="$DATABASE_URL" -f data.sql --use-copy --data-only \
+supabase db dump -f roles.sql --role-only
+supabase db dump -f schema.sql
+supabase db dump -f data.sql --use-copy --data-only \
   -x "storage.buckets_vectors" \
   -x "storage.vector_indexes"
 
 sha256sum roles.sql schema.sql data.sql > SHA256SUMS
 ```
+
+Do not add a `--remote` flag or put the database password in the command. For a self-hosted PostgreSQL instance, the CLI supports `--db-url`; for this hosted Supabase project, use `supabase link` and the linked-project workflow.
 
 The CLI's default dump excludes Supabase-managed schemas and extension-owned schemas. The three files cover custom roles, application schema, and application data; they do not export Auth users or Storage object bytes.
 
