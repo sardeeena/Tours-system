@@ -92,10 +92,10 @@ async function collectBucketObjects(storage, bucketName, prefix, objects, visite
         throw new Error('Storage object listing returned an invalid entry.');
       }
       const objectPath = prefix ? prefix + '/' + entry.name : entry.name;
+      resolveObjectDestination(path.resolve('storage-backup-root'), bucketName, objectPath);
       if (entry.id == null && entry.metadata == null) {
         await collectBucketObjects(storage, bucketName, objectPath, objects, visited, depth + 1, pageSize);
       } else {
-        resolveObjectDestination(path.resolve('storage-backup-root'), bucketName, objectPath);
         objects.push({ bucket: bucketName, path: objectPath, metadata: entry });
       }
     }
@@ -132,8 +132,9 @@ async function downloadObject(storage, storageRoot, object) {
     createWriteStream(destination, { flags: 'wx', mode: 0o600 }),
   );
 
-  const expectedSize = Number(object.metadata?.metadata?.size);
-  if (Number.isFinite(expectedSize) && expectedSize >= 0 && expectedSize !== bytes) {
+  const sizeValue = object.metadata?.metadata?.size;
+  const expectedSize = sizeValue === undefined || sizeValue === null ? null : Number(sizeValue);
+  if (expectedSize !== null && Number.isFinite(expectedSize) && expectedSize >= 0 && expectedSize !== bytes) {
     throw new Error('Storage object size verification failed; refusing to publish an incomplete backup.');
   }
 
@@ -145,6 +146,9 @@ async function downloadObject(storage, storageRoot, object) {
     created_at: object.metadata?.created_at ?? null,
     updated_at: object.metadata?.updated_at ?? null,
     last_accessed_at: object.metadata?.last_accessed_at ?? null,
+    id: object.metadata?.id ?? null,
+    owner: object.metadata?.owner ?? null,
+    owner_id: object.metadata?.owner_id ?? null,
     metadata: object.metadata?.metadata ?? null,
     user_metadata: object.metadata?.user_metadata ?? null,
   };
