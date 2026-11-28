@@ -8,7 +8,13 @@ function normalizedSlug(value: unknown, fallback: string): string {
     || fallback.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 160)
     || 'page';
 }
-function normalizeProtectedToken(token: string): string {\n  if (/^https?:\\/\\//i.test(token)) return token.replace(/[.,!?;:]+$/g, '').replace(/[)]+$/g, '');\n  return token;\n}\nfunction translationStructureMatches(source: any, translated: any): boolean {
+function normalizeProtectedToken(token: string): string {
+  if (/^https?:\/\//i.test(token)) {
+    return token.replace(/[.,!?;:]+$/g, '').replace(/[)]+$/g, '');
+  }
+  return token;
+}
+function translationStructureMatches(source: any, translated: any): boolean {
   if (typeof source === 'string') {
     if (typeof translated !== 'string') return false;
     if (!source.trim()) return !translated.trim();
