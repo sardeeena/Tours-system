@@ -211,6 +211,19 @@ jobs:
             exit 1
           fi
 
+          # Download the encrypted object once and hash the actual remote bytes, not only its metadata.
+          REMOTE_ARCHIVE="$RUNNER_TEMP/verify-awesome-adventure-$STAMP.tar.gz.age"
+          aws s3 cp "s3://$BACKUP_S3_BUCKET/$DAILY_KEY" "$REMOTE_ARCHIVE" \
+            --endpoint-url "$BACKUP_S3_ENDPOINT" \
+            --region "$BACKUP_S3_REGION" \
+            --only-show-errors
+          DOWNLOADED_SHA256="$(sha256sum "$REMOTE_ARCHIVE" | cut -d ' ' -f1)"
+          if [ "$DOWNLOADED_SHA256" != "$LOCAL_SHA256" ]; then
+            echo "::error::Downloaded backup bytes do not match the local encrypted archive."
+            exit 1
+          fi
+          rm -f "$REMOTE_ARCHIVE"
+
           # Keep a separate monthly copy on the first day of each month.
           if [ "$(date -u +%d)" = "01" ]; then
             MONTHLY_KEY="backups/monthly/$MONTH/awesome-adventure-$MONTH.tar.gz.age"
