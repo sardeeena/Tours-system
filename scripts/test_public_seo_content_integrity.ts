@@ -117,6 +117,9 @@ const blogSeoEnd = app.indexOf("if (['/login'", blogSeoStart);
 const blogSeoRoute = app.slice(blogSeoStart, blogSeoEnd);
 assert.ok(!blogSeoRoute.includes('seoService.apply'), 'App does not overwrite article-specific server SEO with a generic blog title');
 assert.ok(blogPage.includes('article.seo_title') && blogPage.includes('article.seo_description'), 'Blog articles apply their own stored SEO title and description');
+assert.ok(server.includes('function seoRenderInline('), 'Server-rendered blog content has a dedicated safe Markdown inline renderer');
+assert.ok(server.includes("url.protocol === 'https:' && !url.username && !url.password"), 'Server-rendered Markdown links reject unsafe protocols and credential-bearing URLs');
+assert.ok(server.includes('seoRenderInline(line, 2000)') && server.includes('seoRenderInline(item, 500)') && server.includes('seoRenderInline(heading[1], 180)'), 'Server-rendered blog paragraphs, lists and headings preserve safe inline links and formatting');
 
 
 assert.match(server, /sharm-super-safari-atv-camel-stargazing-bbq-dinner/);
