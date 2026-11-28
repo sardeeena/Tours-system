@@ -8,7 +8,7 @@ BEGIN
     SELECT 1
     FROM public.content_translations
     WHERE entity_type = 'blog_post'
-      AND entity_key = '35def44b-0538-493d-ade9-60b2a8466067'
+      AND entity_key IN ('35def44b-0538-493d-ade9-60b2a8466067', 'responsible-snorkeling-protect-coral-reefs')
       AND translation_state = 'published'
   ) THEN
     RAISE EXCEPTION 'Review published blog translations before changing the responsible-snorkeling source content.';
