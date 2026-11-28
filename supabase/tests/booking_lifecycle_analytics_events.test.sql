@@ -82,7 +82,7 @@ SELECT is(
   (SELECT count(*)::integer FROM public.booking_lifecycle_events
    WHERE booking_id = 'f6600000-0000-4000-8000-000000000001' AND event_type = 'booking_created'),
   1,
-  'a new booking creates exactly one submitted event'
+  'a new booking creates exactly one operational booking-created event'
 );
 
 SELECT private.record_booking_lifecycle_event(
