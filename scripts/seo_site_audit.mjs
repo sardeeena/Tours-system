@@ -188,7 +188,7 @@ function sameSiteHost(hostname, baseHost) {
   return host === base || host === 'www.' + base;
 }
 
-async function fetchWithRedirect(url, baseHost) {
+async function fetchWithRedirect(url, baseHost, robotsRules = []) {
   let current = url;
   const redirects = [];
   for (let attempt = 0; attempt <= 5; attempt += 1) {
@@ -207,6 +207,9 @@ async function fetchWithRedirect(url, baseHost) {
       const next = new URL(location, current);
       if (!sameSiteHost(next.hostname, baseHost)) {
         return { response, finalUrl: current, redirects, externalRedirect: next.toString() };
+      }
+      if (robotsRules.length && !isAllowedByRobots(next.toString(), robotsRules)) {
+        return { response, finalUrl: current, redirects, disallowedRedirect: next.toString() };
       }
       redirects.push({ status: response.status, from: current, to: next.toString() });
       current = next.toString();
@@ -329,7 +332,7 @@ export async function runSiteAudit(options = {}) {
 
     let result;
     try {
-      result = await fetchWithRedirect(url, baseHost);
+      result = await fetchWithRedirect(url, baseHost, robotsRules);
     } catch (error) {
       addIssue(issues, 'critical', url, `Network request failed: ${error instanceof Error ? error.message : 'unknown error'}.`);
       pages.push({ url, status: null, redirectCount: 0, title: '', canonical: '', h1Count: null, jsonLdCount: null });
@@ -375,6 +378,12 @@ export async function runSiteAudit(options = {}) {
       pages.push(page);
       continue;
     }
+    if (result.disallowedRedirect) {
+      addIssue(issues, 'warning', url, `Redirect target is disallowed by robots.txt: ${result.disallowedRedirect}.`);
+      await result.response.body?.cancel().catch(() => {});
+      pages.push(page);
+      continue;
+    }
     if (status < 200 || status >= 300) {
       addIssue(issues, 'critical', url, `HTTP ${status} returned for a public crawl URL.`);
       await result.response.body?.cancel().catch(() => {});
@@ -393,6 +402,8 @@ export async function runSiteAudit(options = {}) {
     const html = await result.response.text();
     const parsed = parseHtmlPage(html, result.finalUrl, baseHost);
     Object.assign(page, parsed);
+    const xRobotsTag = result.response.headers.get('x-robots-tag') || '';
+    if (xRobotsTag) page.robots = [page.robots, xRobotsTag].filter(Boolean).join(', ').toLowerCase();
     if (!page.title) addIssue(issues, 'critical', url, 'Missing HTML title.');
     else if (page.title.length < 25 || page.title.length > 65) addIssue(issues, 'warning', url, `Title length is ${page.title.length} characters.`);
     if (!page.description) addIssue(issues, 'warning', url, 'Missing meta description.');
