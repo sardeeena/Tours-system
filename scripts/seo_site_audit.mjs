@@ -260,6 +260,30 @@ function addIssue(issues, severity, url, message) {
   issues.push({ severity, url, message });
 }
 
+export function evaluatePageSeoIssues(page, url, sitemapSet, issues, finalUrl = url, baseUrl = new URL(url).origin) {
+  const noindex = /\\bnoindex\\b/i.test(page.robots || '');
+  if (noindex) {
+    if (sitemapSet.has(url)) {
+      addIssue(issues, 'critical', url, 'URL is present in sitemap but declares noindex.');
+    }
+    // Transactional/private noindex routes do not need indexable-page canonicals or headings.
+    return;
+  }
+
+  if (!page.title) addIssue(issues, 'critical', url, 'Missing HTML title.');
+  else if (page.title.length < 25 || page.title.length > 65) addIssue(issues, 'warning', url, `Title length is ${page.title.length} characters.`);
+  if (!page.description) addIssue(issues, 'warning', url, 'Missing meta description.');
+  else if (page.description.length < 70 || page.description.length > 160) addIssue(issues, 'warning', url, `Meta description length is ${page.description.length} characters.`);
+  if (!page.canonical) addIssue(issues, 'critical', url, 'Missing canonical link.');
+  else if (page.canonical !== normalizePageUrl(finalUrl, baseUrl)) {
+    addIssue(issues, 'critical', url, `Canonical does not match final URL (${page.canonical}).`);
+  }
+  if (page.h1Count !== 1) addIssue(issues, 'warning', url, `Expected one H1 but found ${page.h1Count}.`);
+  if (page.jsonLdErrors?.length) addIssue(issues, 'warning', url, page.jsonLdErrors.join('; '));
+  if (page.hreflangErrors?.length) addIssue(issues, 'warning', url, page.hreflangErrors.join('; '));
+  if (page.imagesWithoutAlt > 0) addIssue(issues, 'warning', url, `${page.imagesWithoutAlt} image(s) are missing an alt attribute.`);
+}
+
 function makeMarkdownReport(report) {
   const lines = [
     '# Awesome Adventure production SEO crawl',
@@ -267,6 +291,7 @@ function makeMarkdownReport(report) {
     `- Run status: **${report.status}**`,
     `- Sitemap URLs discovered: ${report.sitemapUrlCount}`,
     `- Pages crawled: ${report.pagesCrawled}`,
+    '- Link discovery: raw HTML anchors only; JavaScript-rendered links are not inspected.',
     `- Additional internal pages discovered: ${report.discoveredUrlCount}`,
     `- Blocked by production edge: ${report.blocked ? 'yes' : 'no'}`,
     `- Critical issues: ${report.criticalCount}`,
@@ -473,17 +498,7 @@ export async function runSiteAudit(options = {}) {
     Object.assign(page, parsed);
     const xRobotsTag = result.response.headers.get('x-robots-tag') || '';
     if (xRobotsTag) page.robots = [page.robots, xRobotsTag].filter(Boolean).join(', ').toLowerCase();
-    if (!page.title) addIssue(issues, 'critical', url, 'Missing HTML title.');
-    else if (page.title.length < 25 || page.title.length > 65) addIssue(issues, 'warning', url, `Title length is ${page.title.length} characters.`);
-    if (!page.description) addIssue(issues, 'warning', url, 'Missing meta description.');
-    else if (page.description.length < 70 || page.description.length > 160) addIssue(issues, 'warning', url, `Meta description length is ${page.description.length} characters.`);
-    if (!page.canonical) addIssue(issues, 'critical', url, 'Missing canonical link.');
-    else if (page.canonical !== normalizePageUrl(result.finalUrl, baseUrl)) addIssue(issues, 'critical', url, `Canonical does not match final URL (${page.canonical}).`);
-    if (/\bnoindex\b/i.test(page.robots) && sitemapSet.has(url)) addIssue(issues, 'critical', url, 'URL is present in sitemap but declares noindex.');
-    if (page.h1Count !== 1) addIssue(issues, 'warning', url, `Expected one H1 but found ${page.h1Count}.`);
-    if (page.jsonLdErrors?.length) addIssue(issues, 'warning', url, page.jsonLdErrors.join('; '));
-    if (page.hreflangErrors?.length) addIssue(issues, 'warning', url, page.hreflangErrors.join('; '));
-    if (page.imagesWithoutAlt > 0) addIssue(issues, 'warning', url, `${page.imagesWithoutAlt} image(s) are missing an alt attribute.`);
+    evaluatePageSeoIssues(page, url, sitemapSet, issues, result.finalUrl, baseUrl);
     for (const link of page.internalLinks) {
       linkedTargets.add(link);
       if (!seen.has(link) && !queue.includes(link) && !sitemapSet.has(link) &&
@@ -501,6 +516,7 @@ export async function runSiteAudit(options = {}) {
   const descriptionGroups = new Map();
   const canonicalGroups = new Map();
   for (const page of pages) {
+    if (/\\bnoindex\\b/i.test(page.robots || '')) continue;
     if (page.title) titleGroups.set(page.title, [...(titleGroups.get(page.title) || []), page.url]);
     if (page.description) descriptionGroups.set(page.description, [...(descriptionGroups.get(page.description) || []), page.url]);
     if (page.canonical) canonicalGroups.set(page.canonical, [...(canonicalGroups.get(page.canonical) || []), page.url]);
@@ -509,8 +525,18 @@ export async function runSiteAudit(options = {}) {
   for (const [description, urls] of descriptionGroups) if (urls.length > 1) addIssue(issues, 'warning', urls[0], `Duplicate meta description appears on ${urls.length} pages: ${description.slice(0, 90)}.`);
   for (const [canonical, urls] of canonicalGroups) if (urls.length > 1) addIssue(issues, 'warning', urls[0], `Multiple pages share canonical ${canonical}.`);
 
-  const orphanSitemapUrls = sitemapUrls.filter((url) => url !== new URL('/', baseUrl).toString() && !linkedTargets.has(url));
-  for (const url of orphanSitemapUrls) addIssue(issues, 'warning', url, 'Sitemap URL was not linked from another crawled page.');
+  const noindexUrls = new Set(pages.filter((page) => /\\bnoindex\\b/i.test(page.robots || '')).map((page) => page.url));
+  const orphanSitemapUrls = sitemapUrls.filter((url) =>
+    url !== new URL('/', baseUrl).toString() && !noindexUrls.has(url) && !linkedTargets.has(url)
+  );
+  for (const url of orphanSitemapUrls) {
+    addIssue(
+      issues,
+      'warning',
+      url,
+      'No raw-HTML anchor link to this sitemap URL was found on another crawled page. This static crawler does not execute JavaScript; verify rendered navigation before treating it as a true orphan.'
+    );
+  }
 
   const criticalCount = issues.filter((issue) => issue.severity === 'critical').length;
   const warningCount = issues.filter((issue) => issue.severity === 'warning').length;
@@ -518,6 +544,7 @@ export async function runSiteAudit(options = {}) {
     generatedAt: new Date().toISOString(),
     baseUrl: baseUrl.toString(),
     userAgent: AUDIT_USER_AGENT,
+    linkDiscoveryMode: 'raw-html-anchor-only',
     crawlDelayMs,
     maxPages,
     status: blocked ? 'blocked-partial' : criticalCount ? 'issues-found' : 'complete',
