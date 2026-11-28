@@ -271,7 +271,7 @@ export const VisitorAnalyticsPanel: React.FC = () => {
           </div>
           <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
             {[
-              ['Reservations submitted', 'booking_submitted'],
+              ['Reservations created', 'booking_created'],
               ['Staff-recorded confirmations', 'booking_status_confirmed'],
               ['Cancellation requests', 'booking_cancellation_requested'],
               ['Cancellations', 'booking_cancelled'],
