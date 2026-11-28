@@ -8,6 +8,7 @@ type Overview = {
   signedInSessions: number; consentRecords: number; analyticsOptIns: number; marketingOptIns: number;
   bookingFunnel: { started: number; stepsCompleted: number; submitted: number; confirmed: number; cancellationRequests: number };
 };
+type LifecycleOverview = { periodDays: number; totalEvents: number; events: Record<string, number>; truncated: boolean };
 type Session = {
   id: string; visitor_id: string; user_id: string | null; started_at: string; last_seen_at: string; ended_at: string | null;
   landing_path: string; referrer_host: string | null; utm_source: string | null; utm_medium: string | null;
@@ -61,6 +62,7 @@ const Card = ({ label, value, icon: Icon }: { label: string; value: number; icon
 
 export const VisitorAnalyticsPanel: React.FC = () => {
   const [overview, setOverview] = useState<Overview | null>(null);
+  const [lifecycle, setLifecycle] = useState<LifecycleOverview | null>(null);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [events, setEvents] = useState<VisitorEvent[]>([]);
   const [consents, setConsents] = useState<ConsentRecord[]>([]);
@@ -94,9 +96,10 @@ export const VisitorAnalyticsPanel: React.FC = () => {
         api<{ records: ConsentRecord[] }>('/api/admin/technical/visitors/consent?limit=150'),
         api<{ settings: Retention }>('/api/admin/technical/visitors/settings'),
         api<{ records: AuditRecord[] }>(`/api/admin/technical/audit-logs?limit=500${fromDate ? `&from=${encodeURIComponent(new Date(`${fromDate}T00:00:00`).toISOString())}` : ''}${toDate ? `&to=${encodeURIComponent(new Date(`${toDate}T23:59:59`).toISOString())}` : ''}`),
+        api<LifecycleOverview>('/api/admin/technical/booking-lifecycle/overview').catch(() => null),
       ]);
       setOverview(summary); setSessions(sessionRows.sessions || []); setEvents(eventRows.events || []);
-      setConsents(consentRows.records || []); setAuditRecords(auditRows.records || []); if (settings.settings) setRetention(settings.settings);
+      setConsents(consentRows.records || []); setAuditRecords(auditRows.records || []); setLifecycle(lifecycleRows); if (settings.settings) setRetention(settings.settings);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Visitor analytics could not be loaded.');
     } finally { setLoading(false); }
@@ -260,6 +263,30 @@ export const VisitorAnalyticsPanel: React.FC = () => {
           </div>
           <p className="mt-2 text-[10px] text-slate-500">Only visitors who accepted analytics tracking are included.</p>
         </div>
+        {lifecycle ? <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div><h3 className="font-semibold">Operational booking & payment lifecycle · {lifecycle.periodDays} days</h3>
+              <p className="mt-1 text-xs text-slate-500">Separate from consented visitor tracking; recorded from authoritative database changes.</p></div>
+            <span className="text-xs text-slate-500">{lifecycle.totalEvents.toLocaleString()} events</span>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
+            {[
+              ['Reservations submitted', 'booking_submitted'],
+              ['Staff-recorded confirmations', 'booking_status_confirmed'],
+              ['Cancellations', 'booking_cancelled'],
+              ['Completed & paid', 'booking_completed'],
+              ['Payments received', 'payment_received'],
+              ['Partial payments', 'payment_partially_received'],
+              ['Payment failures', 'payment_failed'],
+              ['Refunds processed', 'refund_processed'],
+            ].map(([label, key]) => <div key={key} className="rounded-lg bg-slate-50 p-3 dark:bg-slate-800">
+              <p className="text-[10px] text-slate-500">{label}</p>
+              <p className="mt-1 text-xl font-bold tabular-nums">{(lifecycle.events[key] || 0).toLocaleString()}</p>
+            </div>)}
+          </div>
+          <p className="mt-3 text-[10px] text-slate-500">Confirmation means staff recorded the booking as confirmed in the supplier-managed workflow; it is not a direct supplier API event. Completed counts require both completed status and ledger-paid status. This ledger starts when its database migration is deployed and does not backfill earlier bookings.</p>
+          {lifecycle.truncated && <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">Showing the latest 20,000 lifecycle events; the reporting window is truncated.</p>}
+        </div> : <p className="rounded-lg border border-dashed border-slate-300 p-3 text-xs text-slate-500 dark:border-slate-700">Operational lifecycle reporting will appear after the lifecycle-ledger migration is deployed. The consented visitor funnel above remains separate.</p>}
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {[
             ['Top pages', topPages],
