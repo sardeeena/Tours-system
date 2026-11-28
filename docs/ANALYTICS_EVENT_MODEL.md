@@ -25,6 +25,8 @@ Do not join these domains by booking reference or customer identity. Session-to-
 
 The database event key is unique and each source event is written in the same transaction as the business change. Repeated delivery of the same transition is therefore idempotent. The event ledger deliberately omits names, email addresses, phone numbers, booking references, passenger details, and free text.
 
+Legacy `visitor_events.booking_confirmed` records are not authoritative supplier confirmations. Historical inspection found them occurring virtually simultaneously with `booking_submitted`; keep them out of operational conversion and sales reporting. The visitor funnel therefore reports started, completed steps, submitted, and cancellation requests only. Use `booking_status_confirmed` from the operational ledger for the staff-recorded confirmation count.
+
 ## Supplier workflow boundary
 
 The current business process is supplier-managed. Staff record the operational booking status after communicating with suppliers. The current schema has no supplier-rejected status and no supplier API callback, so the model does **not** invent a `supplier_booking_rejected` event or claim a direct supplier confirmation. Add those only when a supplier response is represented by an explicit, authenticated workflow field/event.
