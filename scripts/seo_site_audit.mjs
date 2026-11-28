@@ -172,6 +172,9 @@ export function parseHtmlPage(html, pageUrl, baseHost) {
     h1: h1[0] || '',
     jsonLdCount: jsonLdTags.length,
     jsonLdErrors,
+    hreflangLinks,
+    hreflangErrors,
+    imagesWithoutAlt,
     internalLinks: [...internalLinks],
     ogTitle: findMeta(html, 'property', 'og:title'),
     ogDescription: findMeta(html, 'property', 'og:description'),
@@ -237,9 +240,9 @@ function makeMarkdownReport(report) {
   else {
     for (const issue of report.issues) lines.push(`- **${issue.severity.toUpperCase()}** ${issue.url}: ${issue.message}`);
   }
-  lines.push('', '## Page inventory', '', '| URL | HTTP | Redirects | Title | Canonical | H1s | JSON-LD |', '|---|---:|---:|---|---|---:|---:|');
+  lines.push('', '## Page inventory', '', '| URL | HTTP | Redirects | Title | Canonical | H1s | JSON-LD | Hreflang |', '|---|---:|---:|---|---|---:|---:|');
   for (const page of report.pages) {
-    lines.push(`| ${page.url} | ${page.status ?? 'blocked'} | ${page.redirectCount} | ${(page.title || '').replace(/\|/g, '\\|').slice(0, 70)} | ${page.canonical || 'missing'} | ${page.h1Count ?? 'n/a'} | ${page.jsonLdCount ?? 'n/a'} |`);
+    lines.push(`| ${page.url} | ${page.status ?? 'blocked'} | ${page.redirectCount} | ${(page.title || '').replace(/\|/g, '\\|').slice(0, 70)} | ${page.canonical || 'missing'} | ${page.h1Count ?? 'n/a'} | ${page.jsonLdCount ?? 'n/a'} | ${page.hreflangLinks?.length ?? 'n/a'} |`);
   }
   lines.push('', 'A 403/429 response stops the crawl. The audit does not spoof browsers, bypass access controls, or retry around edge protection.', '');
   return lines.join('\n');
@@ -255,6 +258,7 @@ export async function runSiteAudit(options = {}) {
   let blocked = false;
   let blockedStatus = null;
   let crawlDelayMs = 10_000;
+  let robotsRules = [];
   let sitemapUrls = [];
   const discoveredUrls = new Set();
 
@@ -264,6 +268,7 @@ export async function runSiteAudit(options = {}) {
   } else {
     const robotsText = await robotsResult.response.text();
     const robots = parseRobots(robotsText);
+    robotsRules = robots.rules;
     crawlDelayMs = robots.crawlDelayMs;
     const sitemapCandidates = [...robotsText.matchAll(/^\s*Sitemap:\s*(\S+)\s*$/gim)].map((match) => match[1]);
     const sitemapUrl = sitemapCandidates[0] || new URL('/sitemap.xml', baseUrl).toString();
@@ -295,7 +300,8 @@ export async function runSiteAudit(options = {}) {
         addIssue(issues, 'critical', rawUrl, 'Sitemap contains a URL outside the canonical site host.');
         continue;
       }
-      if (new URL(rawUrl).search || new URL(rawUrl).hash) {
+      const parsedRawUrl = new URL(rawUrl, baseUrl);
+      if (parsedRawUrl.search || parsedRawUrl.hash) {
         addIssue(issues, 'warning', rawUrl, 'Sitemap URL contains a query string or fragment.');
       }
       if (!isAllowedByRobots(normalized, robots.rules)) {
@@ -312,7 +318,6 @@ export async function runSiteAudit(options = {}) {
   const linkedTargets = new Set();
   const queue = [...sitemapUrls];
   const seen = new Set();
-  let processedSitemapCount = 0;
   const excludedPrefixes = ['/admin', '/api', '/my-booking', '/booking/confirmation', '/staff', '/login', '/register', '/auth'];
 
   while (queue.length && pages.length < maxPages) {
@@ -364,14 +369,14 @@ export async function runSiteAudit(options = {}) {
       internalLinks: [],
     };
 
-    if (status < 200 || status >= 300) {
-      addIssue(issues, 'critical', url, `HTTP ${status} returned for a public crawl URL.`);
+    if (result.externalRedirect) {
+      addIssue(issues, 'warning', url, `Redirects outside the site to ${result.externalRedirect}.`);
       await result.response.body?.cancel().catch(() => {});
       pages.push(page);
       continue;
     }
-    if (result.externalRedirect) {
-      addIssue(issues, 'warning', url, `Redirects outside the site to ${result.externalRedirect}.`);
+    if (status < 200 || status >= 300) {
+      addIssue(issues, 'critical', url, `HTTP ${status} returned for a public crawl URL.`);
       await result.response.body?.cancel().catch(() => {});
       pages.push(page);
       continue;
@@ -389,17 +394,21 @@ export async function runSiteAudit(options = {}) {
     const parsed = parseHtmlPage(html, result.finalUrl, baseHost);
     Object.assign(page, parsed);
     if (!page.title) addIssue(issues, 'critical', url, 'Missing HTML title.');
+    else if (page.title.length < 25 || page.title.length > 65) addIssue(issues, 'warning', url, `Title length is ${page.title.length} characters.`);
     if (!page.description) addIssue(issues, 'warning', url, 'Missing meta description.');
+    else if (page.description.length < 70 || page.description.length > 160) addIssue(issues, 'warning', url, `Meta description length is ${page.description.length} characters.`);
     if (!page.canonical) addIssue(issues, 'critical', url, 'Missing canonical link.');
     else if (page.canonical !== normalizePageUrl(result.finalUrl, baseUrl)) addIssue(issues, 'critical', url, `Canonical does not match final URL (${page.canonical}).`);
     if (/\bnoindex\b/i.test(page.robots) && sitemapSet.has(url)) addIssue(issues, 'critical', url, 'URL is present in sitemap but declares noindex.');
     if (page.h1Count !== 1) addIssue(issues, 'warning', url, `Expected one H1 but found ${page.h1Count}.`);
     if (page.jsonLdErrors?.length) addIssue(issues, 'warning', url, page.jsonLdErrors.join('; '));
+    if (page.hreflangErrors?.length) addIssue(issues, 'warning', url, page.hreflangErrors.join('; '));
+    if (page.imagesWithoutAlt > 0) addIssue(issues, 'warning', url, `${page.imagesWithoutAlt} image(s) are missing an alt attribute.`);
     for (const link of page.internalLinks) {
       linkedTargets.add(link);
       if (!seen.has(link) && !queue.includes(link) && !sitemapSet.has(link) &&
           !excludedPrefixes.some((prefix) => new URL(link).pathname.startsWith(prefix)) &&
-          isAllowedByRobots(link, parseRobots(robotsResult.response ? '' : '').rules)) {
+          isAllowedByRobots(link, robotsRules)) {
         discoveredUrls.add(link);
         queue.push(link);
       }
