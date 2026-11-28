@@ -26,6 +26,7 @@ assert.match(script,/flag==='--apply'/,'Import requires an explicit apply flag')
 assert.match(script,/flags\.includes\('--apply'\)/,'Import apply mode is parsed independently from validation flags');
 assert.match(script,/flags\.includes\('--strict'\)/,'CI can request strict dry-run validation');
 assert.match(script,/if \(strict && skipped > 0\)[\s\S]*Strict translation validation failed/,'Strict validation fails when any draft would be skipped');
+assert.match(script,/if \(strict && apply\) throw new Error\('--strict is validation-only/,'Strict validation cannot partially write drafts before reporting skipped records');
 assert.match(script,/source_checksum/);
 assert.match(script,/projectRef !== 'uvtbtpxtrrmaublrztgv'/,'Tooling is pinned to the AwesomeAdventure Supabase project');
 assert.match(script,/legacyRole !== 'service_role'/,'Anon and publishable keys are rejected');
