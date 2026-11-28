@@ -82,6 +82,10 @@ assert.match(categorySeoResolver, /category\?\.seoDescription\?\.trim\(\)/, 'Cat
 assert.match(categorySeoResolver, /category\?\.seoKeywords/, 'Category SEO keywords are used when supplied');
 
 assert.match(robots, /^User-agent: OpenSEO-Audit\nCrawl-delay: 10\n/m, 'OpenSEO audit crawler uses a conservative ten-second request delay');
+assert.match(robots, /^# Hostinger-Release-Marker: aa-analytics-seo-2026-11-28$/m, 'robots.txt includes the release marker used to gate production Lighthouse audits');
+const lighthouseWorkflow = read('../.github/workflows/lighthouse-production.yml');
+assert.match(lighthouseWorkflow, /schedule:[\s\S]*?cron: '17 4 \* \* 1'/, 'Production Lighthouse audits run weekly');
+assert.match(lighthouseWorkflow, /Hostinger-Release-Marker: aa-analytics-seo-2026-11-28/, 'Production Lighthouse waits for the release-specific robots marker rather than a pre-existing crawl directive');
 assert.match(robots, /^User-agent: \*$/m, 'robots.txt contains a valid wildcard user-agent');
 assert.match(robots, /^Sitemap: https:\/\/awesomeadventure\.tours\/sitemap\.xml$/m, 'robots.txt advertises the canonical sitemap');
 
