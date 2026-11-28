@@ -1639,7 +1639,7 @@ CREATE TABLE IF NOT EXISTS public.visitor_events (
   user_id uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   event_name text NOT NULL CHECK (event_name IN (
     'page_view','page_exit','navigation','tour_view','search',
-    'booking_started','booking_step_completed','booking_submitted',
+    'booking_started','booking_step_completed','booking_created',
     'booking_confirmed','booking_cancelled','custom'
   )),
   page_path text,
@@ -4357,7 +4357,7 @@ CREATE TABLE IF NOT EXISTS public.booking_lifecycle_events (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   booking_id uuid NOT NULL REFERENCES public.bookings(id) ON DELETE RESTRICT,
   event_type text NOT NULL CHECK (event_type IN (
-    'booking_submitted',
+    'booking_created',
     'booking_status_confirmed',
     'booking_cancellation_requested',
     'booking_cancelled',
@@ -4444,8 +4444,8 @@ DECLARE
 BEGIN
   IF TG_OP = 'INSERT' THEN
     PERFORM private.record_booking_lifecycle_event(
-      NEW.id, 'booking_submitted', 'bookings', NEW.id,
-      'booking:' || NEW.id::text || ':submitted',
+      NEW.id, 'booking_created', 'bookings', NEW.id,
+      'booking:' || NEW.id::text || ':created',
       NULL, NEW.status, NEW.total, NEW.currency,
       jsonb_build_object('booking_kind', NEW.booking_kind),
       COALESCE(NEW.created_at, now())
