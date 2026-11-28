@@ -4391,8 +4391,8 @@ CREATE INDEX IF NOT EXISTS idx_booking_lifecycle_events_source
   ON public.booking_lifecycle_events (source_table, source_record_id);
 
 ALTER TABLE public.booking_lifecycle_events ENABLE ROW LEVEL SECURITY;
-REVOKE ALL ON TABLE public.booking_lifecycle_events FROM PUBLIC, anon, authenticated;
-GRANT SELECT, INSERT ON TABLE public.booking_lifecycle_events TO service_role;
+REVOKE ALL ON TABLE public.booking_lifecycle_events FROM PUBLIC, anon, authenticated, service_role;
+GRANT SELECT ON TABLE public.booking_lifecycle_events TO service_role;
 COMMENT ON TABLE public.booking_lifecycle_events IS
   'Operational booking/payment event ledger. Contains a pseudonymous booking UUID but no direct customer contact details; not visitor tracking and accessible only to trusted server/service-role workflows.';
 
