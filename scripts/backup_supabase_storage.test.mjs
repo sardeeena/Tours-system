@@ -107,6 +107,8 @@ test('off-site backup workflow encrypts the archive and verifies the remote uplo
   assert.match(workflow, /DB_OBJECT_COUNT/);
   assert.match(workflow, /DB_OBJECT_BYTES/);
   assert.match(workflow, /REMOTE_SHA256/);
+  assert.match(workflow, /DOWNLOADED_SHA256/);
+  assert.match(workflow, /verify-awesome-adventure-/);
   assert.match(workflow, /--metadata "sha256=\$LOCAL_SHA256"/);
   assert.doesNotMatch(workflow, /actions\/upload-artifact/);
 });
