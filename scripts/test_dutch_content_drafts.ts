@@ -15,18 +15,18 @@ const counts = (type: string) => records.filter((record) => record.entity_type =
 
 assert.equal(nl.locale, 'nl');
 assert.equal(nl.source_project, 'uvtbtpxtrrmaublrztgv');
-assert.equal(counts('tour'), 26);
+assert.equal(counts('tour'), 27);
 assert.equal(counts('blog_post'), 50);
 assert.equal(counts('destination'), 7);
 assert.equal(counts('static_page'), 10);
 assert.equal(counts('communication_template'), 18);
 assert.equal(counts('ui_catalog'), 1);
-assert.equal(records.length, 112);
+assert.equal(records.length, 113);
 assert.deepEqual(nl.coverage, {
-  tour: 26, blog_post: 50, destination: 7, static_page: 10,
+  tour: 27, blog_post: 50, destination: 7, static_page: 10,
   communication_template: 18, ui_catalog: 1,
   public_ui_messages: 81, private_ui_messages: 1090,
-  ui_catalog_messages: 1171, source_records: 112,
+  ui_catalog_messages: 1171, source_records: 113,
 });
 
 const sourceKeys = new Set(refRecords.map(key));
@@ -109,4 +109,4 @@ assert.equal(nl.source_data_warnings.length, 4, 'Known source schedule defects a
 assert.ok(nl.source_data_warnings.some((warning: any) => warning.source_value === '13:30 AM'));
 assert.ok(nl.source_data_warnings.some((warning: any) => warning.source_value === '13:00 PM'));
 
-console.log('Dutch review bundle checks passed: 112 content records, 1,171 UI messages, complete IDs and schema, unique slugs, and preserved placeholders.');
+console.log('Dutch review bundle checks passed: 113 content records, 1,171 UI messages, complete IDs and schema, unique slugs, and preserved placeholders.');
