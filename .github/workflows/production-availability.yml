@@ -96,7 +96,7 @@ jobs:
             }
             const entries = (xml.match(/<(url|sitemap)>/g) || []).length;
             if (entries < 1) throw new Error("Sitemap contains no entries.");
-            console.log("Sitemap XML is present with", entries, "entries; private booking route is excluded.");
+            console.log("Sitemap XML is present with", entries, "entries. Booking exclusion check:", process.env.GITHUB_EVENT_NAME === "pull_request" ? "deferred until deployment" : "enforced.");
           '
 
       - name: Check application liveness
