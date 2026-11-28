@@ -273,11 +273,14 @@ export const VisitorAnalyticsPanel: React.FC = () => {
             {[
               ['Reservations submitted', 'booking_submitted'],
               ['Staff-recorded confirmations', 'booking_status_confirmed'],
+              ['Cancellation requests', 'booking_cancellation_requested'],
               ['Cancellations', 'booking_cancelled'],
               ['Completed & paid', 'booking_completed'],
+              ['No shows', 'booking_no_show'],
               ['Payments received', 'payment_received'],
               ['Partial payments', 'payment_partially_received'],
               ['Payment failures', 'payment_failed'],
+              ['Payment transactions refunded', 'payment_transaction_refunded'],
               ['Refunds processed', 'refund_processed'],
             ].map(([label, key]) => <div key={key} className="rounded-lg bg-slate-50 p-3 dark:bg-slate-800">
               <p className="text-[10px] text-slate-500">{label}</p>
