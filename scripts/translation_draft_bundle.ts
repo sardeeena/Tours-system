@@ -140,6 +140,7 @@ async function currentSource(entityType:string, entityKey:string):Promise<any|nu
   return null;
 }
 async function importDrafts(path: string, apply: boolean, strict: boolean = false) {
+  if (strict && apply) throw new Error('--strict is validation-only and cannot be combined with --apply.');
   const parsed = JSON.parse(await readFile(path,'utf8'));
   if (parsed?.schema_version !== 1 || !Array.isArray(parsed.records)) throw new Error('Unsupported translation bundle schema.');
   let accepted=0, skipped=0;
